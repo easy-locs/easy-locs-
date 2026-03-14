@@ -1,6 +1,8 @@
 /**
  * OrbitSmartPayment — Premium dynamic payment screen
- * Features: auto-detect currency, FX conversion, LOCS toggle, wallet balance
+ * Fiat: routes through orbit-payment/pay_fiat (Stripe 3DS)
+ * LOCS: routes through orbit-payment/pay_locs (atomic RPC)
+ * Currency detection: preference → country → locale
  */
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -9,15 +11,17 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { useAuth } from "@/contexts/AuthContext";
 import { useWallet } from "@/hooks/useWallet";
 import { usePaymentFX } from "@/hooks/usePaymentFX";
+import { supabase } from "@/integrations/supabase/client";
 import {
   detectLocalCurrency,
   formatCurrency,
   formatLocs,
   SUPPORTED_CURRENCIES,
 } from "@/lib/orbit-payments";
-import type { PaymentMethod, PaymentContext, PaymentFormState } from "@/lib/orbit-payments/types";
+import type { PaymentMethod, PaymentContext } from "@/lib/orbit-payments/types";
 
 interface OrbitSmartPaymentProps {
   recipientUserId: string;
@@ -40,8 +44,12 @@ export default function OrbitSmartPayment({
   onSuccess,
   onCancel,
 }: OrbitSmartPaymentProps) {
-  const detected = detectLocalCurrency();
-  const { balance, loading: walletLoading, sendMoney, purchaseLocs } = useWallet();
+  const { userCurrency, userCountry } = useAuth();
+  const detected = detectLocalCurrency({
+    preferredCurrency: userCurrency || null,
+    accountCountry: userCountry || null,
+  });
+  const { balance, loading: walletLoading } = useWallet();
   const { preview, loading: fxLoading, convert, fetchRates } = usePaymentFX();
 
   const [method, setMethod] = useState<PaymentMethod>("fiat");
@@ -53,21 +61,18 @@ export default function OrbitSmartPayment({
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Fetch rates on mount
   useEffect(() => {
     fetchRates();
   }, [fetchRates]);
 
-  // Live FX conversion when amount/currency changes
   useEffect(() => {
     const num = parseFloat(amount);
-    if (num > 0 && currency !== "LOCS") {
+    if (num > 0 && currency !== "EUR") {
       convert(num, currency);
     }
   }, [amount, currency, convert]);
 
   const numericAmount = parseFloat(amount) || 0;
-  const locsEquivalent = preview?.locs_amount ?? numericAmount;
 
   const handlePay = useCallback(async () => {
     if (numericAmount <= 0) return;
@@ -76,28 +81,50 @@ export default function OrbitSmartPayment({
 
     try {
       if (method === "locs") {
-        // Direct LOCS transfer
-        const result = await sendMoney({
-          recipientUserId,
-          amount: numericAmount,
-          description: description || `Payment to ${recipientName}`,
-          threadId,
+        // LOCS transfer via atomic server RPC
+        const { data, error: fnErr } = await supabase.functions.invoke("orbit-payment", {
+          body: {
+            action: "pay_locs",
+            recipient_user_id: recipientUserId,
+            amount: numericAmount,
+            description: description || `Payment to ${recipientName}`,
+            thread_id: threadId || null,
+            context: context || null,
+          },
         });
-        if (!result.success) throw new Error(result.error);
+
+        if (fnErr) throw new Error(fnErr.message);
+        if (data?.error) throw new Error(data.error);
+
         setSuccess(true);
-        setTimeout(() => onSuccess?.("locs-transfer"), 1500);
+        setTimeout(() => onSuccess?.(data?.tx_out_id || "locs-transfer"), 1500);
       } else {
-        // Fiat → Stripe checkout
-        const result = await purchaseLocs(numericAmount, currency);
-        if (!result.success) throw new Error(result.error);
-        // Stripe redirects to checkout
+        // Fiat payment via Stripe checkout (3DS)
+        const { data, error: fnErr } = await supabase.functions.invoke("orbit-payment", {
+          body: {
+            action: "pay_fiat",
+            recipient_user_id: recipientUserId,
+            recipient_name: recipientName,
+            amount: numericAmount,
+            currency,
+            description: description || `Payment to ${recipientName}`,
+            thread_id: threadId || null,
+            context: context || null,
+          },
+        });
+
+        if (fnErr) throw new Error(fnErr.message);
+        if (data?.error) throw new Error(data.error);
+        if (data?.url) {
+          window.open(data.url, "_blank");
+        }
       }
     } catch (err: any) {
       setError(err.message || "Payment failed");
     } finally {
       setProcessing(false);
     }
-  }, [numericAmount, method, sendMoney, purchaseLocs, recipientUserId, recipientName, description, threadId, currency, onSuccess]);
+  }, [numericAmount, method, recipientUserId, recipientName, description, threadId, context, currency, onSuccess]);
 
   if (success) {
     return (
@@ -201,9 +228,7 @@ export default function OrbitSmartPayment({
 
       {/* Amount input */}
       <div className="space-y-2">
-        <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-          Amount
-        </Label>
+        <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Amount</Label>
         <div className="relative">
           <Input
             type="number"
@@ -244,10 +269,7 @@ export default function OrbitSmartPayment({
               {Object.entries(SUPPORTED_CURRENCIES).map(([code, info]) => (
                 <button
                   key={code}
-                  onClick={() => {
-                    setCurrency(code);
-                    setShowCurrencyPicker(false);
-                  }}
+                  onClick={() => { setCurrency(code); setShowCurrencyPicker(false); }}
                   className={`flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-xs transition-colors ${
                     currency === code
                       ? "bg-accent/15 text-accent font-semibold"
@@ -293,9 +315,7 @@ export default function OrbitSmartPayment({
 
       {/* Description */}
       <div className="space-y-2">
-        <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-          Note (optional)
-        </Label>
+        <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Note (optional)</Label>
         <Textarea
           placeholder="What's this payment for?"
           value={description}
@@ -307,11 +327,7 @@ export default function OrbitSmartPayment({
 
       {/* Error */}
       {error && (
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="text-sm text-destructive text-center"
-        >
+        <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-sm text-destructive text-center">
           {error}
         </motion.p>
       )}
@@ -337,7 +353,7 @@ export default function OrbitSmartPayment({
       {/* Security footer */}
       <div className="flex items-center justify-center gap-1.5 text-[10px] text-muted-foreground">
         <Shield className="w-3 h-3" />
-        <span>3D Secure • End-to-end encrypted • Orbit Payments</span>
+        <span>3D Secure • Atomic transfers • Server-signed • Orbit Payments</span>
       </div>
     </motion.div>
   );
