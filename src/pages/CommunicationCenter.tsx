@@ -34,7 +34,7 @@ import { useAuth } from "@/contexts/AuthContext";
 
 const VALID_SECTIONS: CommSection[] = ["chats", "calls", "contacts", "payments", "groups", "nearby", "meetings", "files", "settings", "you"];
 
-const CommunicationCenter = () => {
+export const CommunicationCenter = () => {
   const { orgId, user } = useAuth();
   const userId = user?.id;
   const { t } = useI18n();
