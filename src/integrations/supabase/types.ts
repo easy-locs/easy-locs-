@@ -3907,6 +3907,27 @@ export type Database = {
           },
         ]
       }
+      payment_nonces: {
+        Row: {
+          nonce: string
+          payload_json: Json | null
+          used_at: string
+          user_id: string
+        }
+        Insert: {
+          nonce: string
+          payload_json?: Json | null
+          used_at?: string
+          user_id: string
+        }
+        Update: {
+          nonce?: string
+          payload_json?: Json | null
+          used_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       payment_notices: {
         Row: {
           charges_amount: number
@@ -6945,6 +6966,7 @@ export type Database = {
         Returns: boolean
       }
       cleanup_expired_messages: { Args: never; Returns: number }
+      cleanup_expired_nonces: { Args: never; Returns: number }
       create_api_key: {
         Args: { _name: string; _org_id: string; _scopes: string[] }
         Returns: Json
@@ -7204,6 +7226,20 @@ export type Database = {
           status: string
           title: string
         }[]
+      }
+      transfer_locs: {
+        Args: {
+          _amount: number
+          _description?: string
+          _metadata?: Json
+          _qr_nonce?: string
+          _recipient_id: string
+          _reference_id?: string
+          _reference_type?: string
+          _sender_id: string
+          _thread_id?: string
+        }
+        Returns: Json
       }
       validate_tenant_invitation: { Args: { _token: string }; Returns: Json }
     }
