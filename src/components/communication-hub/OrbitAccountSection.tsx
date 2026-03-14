@@ -107,6 +107,10 @@ export default function OrbitAccountSection() {
 
   const goBack = () => setSubPage("main");
 
+  const goToSettingsSection = useCallback((section: string) => {
+    navigate(`/dashboard/settings?section=${encodeURIComponent(section)}`);
+  }, [navigate]);
+
   // Upload avatar photo
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
