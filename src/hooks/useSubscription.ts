@@ -48,8 +48,12 @@ export function useSubscriptionLoader(session: Session | null, userId: string | 
           trialDaysLeft,
         });
       }
-    } catch (err) {
-      console.error("[useSubscription] check-subscription error:", err);
+    } catch (err: any) {
+      // Suppress noisy network errors (e.g. during page reload / HMR)
+      const msg = err?.message || "";
+      if (!msg.includes("Load failed") && !msg.includes("Failed to send")) {
+        console.error("[useSubscription] check-subscription error:", err);
+      }
       setSubscription((prev) => ({ ...prev, loading: false, subscribed: false, plan: "free" }));
     }
   }, [session?.access_token]);

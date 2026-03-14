@@ -23,7 +23,9 @@ if (!rootElement) {
   throw new Error("Root element not found");
 }
 
-const root = createRoot(rootElement);
+// Guard against HMR re-execution calling createRoot twice
+const root = (rootElement as any).__reactRoot ?? createRoot(rootElement);
+(rootElement as any).__reactRoot = root;
 
 const BootScreen = ({
   title,

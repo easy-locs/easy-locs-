@@ -25,14 +25,14 @@ import OrbitWalletPanel from "@/components/orbit/payments/OrbitWalletPanel";
 type WalletView = "home" | "send" | "receive" | "scan" | "my_qr" | "history" | "buy" | "currency" | "settings";
 
 const WALLET_ACTIONS = [
-  { key: "send" as WalletView, icon: Send, label: "Send", desc: "Send LOCS", color: "bg-accent" },
-  { key: "receive" as WalletView, icon: ArrowDownLeft, label: "Receive", desc: "Request payment", color: "bg-primary" },
-  { key: "scan" as WalletView, icon: ScanLine, label: "Scan QR", desc: "Scan to pay", color: "bg-info" },
-  { key: "my_qr" as WalletView, icon: QrCode, label: "My QR", desc: "Share your code", color: "bg-success" },
-  { key: "history" as WalletView, icon: History, label: "History", desc: "All transactions", color: "bg-muted" },
-  { key: "buy" as WalletView, icon: Plus, label: "Buy LOCS", desc: "Add credits", color: "bg-warning" },
-  { key: "currency" as WalletView, icon: TrendingUp, label: "Currency", desc: "FX preferences", color: "bg-secondary" },
-  { key: "settings" as WalletView, icon: Settings, label: "Settings", desc: "PIN & wallet config", color: "bg-muted" },
+  { key: "send" as WalletView, icon: Send, label: "Send", desc: "Send LOCS", gradient: "from-accent to-accent/80" },
+  { key: "receive" as WalletView, icon: ArrowDownLeft, label: "Receive", desc: "Request payment", gradient: "from-primary to-primary/80" },
+  { key: "scan" as WalletView, icon: ScanLine, label: "Scan QR", desc: "Scan to pay", gradient: "from-blue-500 to-blue-600" },
+  { key: "my_qr" as WalletView, icon: QrCode, label: "My QR", desc: "Share your code", gradient: "from-emerald-500 to-emerald-600" },
+  { key: "history" as WalletView, icon: History, label: "History", desc: "All transactions", gradient: "from-muted-foreground/60 to-muted-foreground/40" },
+  { key: "buy" as WalletView, icon: Plus, label: "Buy LOCS", desc: "Add credits", gradient: "from-amber-500 to-amber-600" },
+  { key: "currency" as WalletView, icon: TrendingUp, label: "Currency", desc: "FX preferences", gradient: "from-secondary to-secondary/80" },
+  { key: "settings" as WalletView, icon: Settings, label: "Settings", desc: "PIN & security", gradient: "from-muted-foreground/50 to-muted-foreground/30" },
 ];
 
 export default function WalletHub() {
@@ -85,14 +85,21 @@ export default function WalletHub() {
         );
       case "scan":
         return (
-          <div className="flex flex-col items-center justify-center py-16 gap-4 text-center px-6">
-            <ScanLine className="w-16 h-16 text-muted-foreground/30" />
-            <p className="text-sm text-muted-foreground">
-              Point your camera at a QR code to initiate payment.
-            </p>
-            <p className="text-xs text-muted-foreground/60">
-              Camera scanner available on mobile devices.
-            </p>
+          <div className="flex flex-col items-center justify-center py-12 gap-5 text-center px-6">
+            <div className="w-48 h-48 rounded-2xl border-2 border-dashed border-accent/40 flex items-center justify-center bg-muted/30">
+              <ScanLine className="w-16 h-16 text-accent/50 animate-pulse" />
+            </div>
+            <div className="space-y-1.5">
+              <p className="text-sm font-medium text-foreground">
+                Scan QR Code to Pay
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Point your camera at a recipient's QR code to initiate an instant LOCS transfer.
+              </p>
+            </div>
+            <Button size="sm" variant="outline" onClick={() => setView("my_qr")}>
+              Show My QR Instead
+            </Button>
           </div>
         );
       case "my_qr":
@@ -224,7 +231,7 @@ export default function WalletHub() {
                 <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-3 px-1">
                   Quick Actions
                 </h3>
-                <div className="grid grid-cols-3 gap-2.5">
+                <div className="grid grid-cols-4 gap-2.5">
                   {WALLET_ACTIONS.map((action, i) => {
                     const Icon = action.icon;
                     return (
@@ -235,9 +242,9 @@ export default function WalletHub() {
                         transition={{ delay: i * 0.05 }}
                         whileTap={{ scale: 0.95 }}
                         onClick={() => setView(action.key)}
-                        className="flex flex-col items-center gap-1.5 p-4 rounded-2xl bg-card border border-border hover:border-accent/30 transition-colors"
+                        className="flex flex-col items-center gap-1.5 p-4 rounded-2xl bg-card border border-border hover:border-accent/40 hover:shadow-md transition-all"
                       >
-                        <div className={`w-10 h-10 rounded-xl ${action.color} text-primary-foreground flex items-center justify-center`}>
+                        <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${action.gradient} text-white flex items-center justify-center shadow-sm`}>
                           <Icon className="w-4.5 h-4.5" />
                         </div>
                         <span className="text-[11px] font-semibold text-foreground">{action.label}</span>

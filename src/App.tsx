@@ -66,10 +66,7 @@ const Interventions = safeLazy(() => import("./pages/Interventions"), "Intervent
 
 const Tasks = safeLazy(() => import("./pages/Tasks"), "Tasks");
 const Messages = safeLazy(() => import("./pages/Messages"), "Messages");
-const CommunicationCenter = safeLazy(
-  () => import("./pages/CommunicationCenter").then((m) => ({ default: m.default ?? m.CommunicationCenter })),
-  "CommunicationCenter"
-);
+const CommunicationCenter = safeLazy(() => import("./pages/CommunicationCenter"), "CommunicationCenter");
 const ChargesRegularization = safeLazy(() => import("./pages/ChargesRegularization"), "ChargesRegularization");
 const FiscalReport = safeLazy(() => import("./pages/FiscalReport"), "FiscalReport");
 const Expenses = safeLazy(() => import("./pages/Expenses"), "Expenses");
