@@ -137,15 +137,15 @@ export function useThreadActions({ updateThreadLocally, loadThreads }: UseThread
    */
   const favoriteThread = useCallback(async (thread: ConversationThread) => {
     if (!userId) return;
-    const wasFavorited = !!(thread as any).favorited;
+    const wasFavorited = !!thread.pinned;
     const newFavorited = !wasFavorited;
-    updateThreadLocally(thread.id, { pinned: newFavorited } as any);
+    updateThreadLocally(thread.id, { pinned: newFavorited });
     try {
       await upsertPref(thread, { favorited: newFavorited });
       toast.success(newFavorited ? `"${thread.name}" added to favourites` : `"${thread.name}" removed from favourites`);
     } catch (e: any) {
       console.error("[favorite] Failed:", e);
-      updateThreadLocally(thread.id, { pinned: wasFavorited } as any);
+      updateThreadLocally(thread.id, { pinned: wasFavorited });
       toast.error("Failed to update favourite");
     }
   }, [userId, updateThreadLocally, upsertPref]);
