@@ -1239,8 +1239,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
           setReplyTo({ msgId, content, senderName });
         }}
         onForward={(msgId, content) => {
-          navigator.clipboard.writeText(content);
-          toast.success("Message copied — paste in another conversation");
+          setForwardData({ messageId: msgId, content });
         }}
         onStarToggle={(msgId, starred) => {
           setRawMessages(prev => prev.map(m => m.id === msgId ? { ...m, starred } as any : m));
