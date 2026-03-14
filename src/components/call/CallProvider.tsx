@@ -52,7 +52,7 @@ export function CallProvider({ children }: { children: ReactNode }) {
   const [incomingOrgId, setIncomingOrgId] = useState("");
   const [incomingThreadId, setIncomingThreadId] = useState<string | null>(null);
   // Track active call metadata for logging
-  const activeCallRef = useRef<{ callId: string; threadId?: string; orgId: string } | null>(null);
+  const activeCallRef = useRef<{ callId: string; threadId?: string; orgId: string; contextId?: string } | null>(null);
   const startingCallRef = useRef(false); // Lock to prevent duplicate startCall
 
   // Keep ref in sync for use in realtime closures
