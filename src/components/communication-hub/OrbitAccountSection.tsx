@@ -297,8 +297,7 @@ export default function OrbitAccountSection() {
               <Input
                 value={customDisplayName}
                 onChange={e => {
-                  setCustomDisplayName(e.target.value);
-                  localStorage.setItem("orbit_custom_display_name", e.target.value);
+                  updatePrivacy({ customDisplayName: e.target.value });
                 }}
                 placeholder="Enter custom name..."
                 className="bg-muted/30 text-sm"
