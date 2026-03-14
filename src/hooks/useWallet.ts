@@ -62,6 +62,7 @@ export function useWallet() {
 
     if (existing) {
       setBalance(existing as unknown as WalletBalance);
+      platformBus.emit("wallet:balance_updated", { balance: (existing as any).balance }, "wallet", { userId: user.id });
     } else {
       const { data: created } = await supabase
         .from("wallet_balances")
