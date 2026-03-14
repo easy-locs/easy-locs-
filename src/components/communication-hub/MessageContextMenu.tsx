@@ -101,10 +101,26 @@ export default function MessageContextMenu({
         toast.success(type === "moderation" ? "Message removed by moderation" : "Message deleted for everyone");
       } else {
         if (message.isMe) {
-          await supabase.from("messages").update({
+          // Sender: use deleted_for_sender flag
+          const { error } = await supabase.from("messages").update({
             deleted_for_sender: true, deleted_at: new Date().toISOString(),
             deleted_by: currentUserId, deletion_reason: "self_hide",
           } as any).eq("id", message.msgId);
+          if (error) { toast.error("Failed to hide message"); setDeleting(false); return; }
+        } else {
+          // Recipient: append user to deleted_for_user_ids array
+          const { data: existing } = await supabase
+            .from("messages")
+            .select("deleted_for_user_ids")
+            .eq("id", message.msgId)
+            .single();
+          const currentIds: string[] = (existing?.deleted_for_user_ids as string[] | null) || [];
+          if (currentUserId && !currentIds.includes(currentUserId)) {
+            const { error } = await supabase.from("messages").update({
+              deleted_for_user_ids: [...currentIds, currentUserId],
+            } as any).eq("id", message.msgId);
+            if (error) { toast.error("Failed to hide message"); setDeleting(false); return; }
+          }
         }
         toast.success("Message hidden from your view");
       }
