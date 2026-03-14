@@ -173,6 +173,8 @@ export const pagesWorldwide: Record<string, Record<string, string>> = {
     "continent.oceania": "Oceania",
     "continent.middle_east": "Middle East",
     "continent.caribbean": "Caribbean",
+    "continent.asia_pacific": "Asia & Pacific",
+    "continent.americas": "Americas",
   },
   es: {
     "landing.hero.badge": "Larga duración • Airbnb • Booking • Multipaís",
