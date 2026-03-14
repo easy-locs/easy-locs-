@@ -164,7 +164,7 @@ const Dashboard = () => {
         </motion.div>
 
         {/* Global KPIs */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 sm:gap-4 mb-6 sm:mb-8">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-4 mb-6 sm:mb-8">
           {kpis.map((kpi, i) => (
             <motion.div
               key={kpi.label}
