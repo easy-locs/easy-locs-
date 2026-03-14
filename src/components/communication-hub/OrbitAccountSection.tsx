@@ -52,10 +52,10 @@ export default function OrbitAccountSection() {
   const { settings: privacy, update: updatePrivacy, loaded: privacyLoaded } = usePrivacySettings();
   const readReceipts = privacy.readReceipts;
   const typingIndicators = privacy.typingIndicators;
-  const [onlineStatus, setOnlineStatus] = useState(true);
-  const [lastSeen, setLastSeen] = useState(true);
-  const [profilePhoto, setProfilePhoto] = useState(true);
-  const [linkPreviews, setLinkPreviews] = useState(true);
+  const onlineStatus = privacy.onlineStatus;
+  const lastSeen = privacy.lastSeen;
+  const profilePhoto = privacy.profilePhoto;
+  const linkPreviews = privacy.linkPreviews;
 
   // Notifications states — synced with notif-alert-prefs
   const [alertPrefs, setAlertPrefsState] = useState<NotifAlertPrefs>(getNotifAlertPrefs());
