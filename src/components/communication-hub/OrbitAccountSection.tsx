@@ -431,19 +431,80 @@ export default function OrbitAccountSection() {
     );
   }
 
+  // ═══ Chats sub-page ═══
+  if (subPage === "chats") {
+    return (
+      <div className="flex-1 overflow-y-auto scrollbar-thin px-4 py-4">
+        <SubHeader title="Chats" icon={MessageSquare} />
+        <div className="space-y-1 mt-4">
+          <MenuItem icon={Palette} label="Default Chat Theme" desc="Customize conversation appearance" onClick={() => toast.info("Coming soon")} color="hsl(var(--primary))" />
+          <MenuItem icon={Film} label="Animations" desc="Emoji, stickers and GIFs movement" onClick={() => toast.info("Coming soon")} color="hsl(var(--accent))" />
+          <Row label="Save to Photos" desc="Auto-save received media to gallery">
+            <Switch checked={mediaAutoDownload} onCheckedChange={setMediaAutoDownload} />
+          </Row>
+          <Separator className="my-3" />
+          <MenuItem icon={Download} label="Export Chat" desc="Export conversation history" onClick={() => toast.info("Coming soon")} color="hsl(var(--primary))" />
+          <Separator className="my-3" />
+          <button onClick={() => toast.info("Coming soon")} className="w-full text-left px-3 py-3 rounded-xl hover:bg-destructive/5 transition-colors">
+            <p className="text-sm font-medium text-primary">Archive All Chats</p>
+          </button>
+          <button onClick={() => toast.info("Coming soon")} className="w-full text-left px-3 py-3 rounded-xl hover:bg-destructive/5 transition-colors">
+            <p className="text-sm font-medium text-destructive">Clear All Chats</p>
+          </button>
+          <button onClick={() => toast.info("Coming soon")} className="w-full text-left px-3 py-3 rounded-xl hover:bg-destructive/5 transition-colors">
+            <p className="text-sm font-medium text-destructive">Delete All Chats</p>
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   // ═══ Notifications sub-page ═══
   if (subPage === "notifications") {
     return (
       <div className="flex-1 overflow-y-auto scrollbar-thin px-4 py-4">
         <SubHeader title="Notifications" icon={Bell} />
         <div className="space-y-1 mt-4">
-          <Row label="Message Notifications" desc="Get notified for new messages"><Switch checked={notifMessages} onCheckedChange={setNotifMessages} /></Row>
-          <Row label="Show Preview" desc="Display message content"><Switch checked={notifPreview} onCheckedChange={setNotifPreview} /></Row>
-          <Row label="Sound" desc="Play sound for notifications"><Switch checked={notifSound} onCheckedChange={setNotifSound} /></Row>
-          <Row label="Vibration" desc="Vibrate for notifications"><Switch checked={notifVibrate} onCheckedChange={setNotifVibrate} /></Row>
+          <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-2">Message notifications</p>
+          <Row label="Show Notifications" desc="Get notified for new messages">
+            <Switch checked={notifMessages} onCheckedChange={() => toggleTypeAlert("messages")} />
+          </Row>
+          <Row label="Sound" desc="Play sound for notifications">
+            <Switch checked={notifSound} onCheckedChange={() => toggleAlertPref("sound")} />
+          </Row>
+          <Row label="Vibration" desc="Vibrate for notifications">
+            <Switch checked={notifVibrate} onCheckedChange={() => toggleAlertPref("vibration")} />
+          </Row>
+
           <Separator className="my-3" />
-          <Row label="Group Notifications" desc="Get notified for group messages"><Switch checked={notifGroups} onCheckedChange={setNotifGroups} /></Row>
-          <Row label="Call Notifications" desc="Ring for incoming calls"><Switch checked={notifCalls} onCheckedChange={setNotifCalls} /></Row>
+          <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-2">Group notifications</p>
+          <Row label="Show Notifications" desc="Get notified for group messages">
+            <Switch checked={notifGroups} onCheckedChange={() => toggleTypeAlert("bookings")} />
+          </Row>
+
+          <Separator className="my-3" />
+          <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-2">Call notifications</p>
+          <Row label="Ring for Calls" desc="Receive call notifications">
+            <Switch checked={notifCalls} onCheckedChange={() => toggleAlertPref("browserNotifications")} />
+          </Row>
+
+          <Separator className="my-3" />
+          <Row label="Show Preview" desc="Display message text in notifications">
+            <Switch checked={notifPreview} onCheckedChange={() => {}} />
+          </Row>
+
+          <Separator className="my-3" />
+          <button onClick={() => {
+            const next = setNotifAlertPrefs({
+              browserNotifications: true, sound: true, vibration: true,
+              typeAlerts: { messages: true, bookings: true, payments: true, documents: true, maintenance: true },
+            });
+            setAlertPrefsState(next);
+            toast.success("Notification settings reset");
+          }} className="w-full text-left px-3 py-3 rounded-xl hover:bg-destructive/5 transition-colors">
+            <p className="text-sm font-medium text-destructive">Reset Notification Settings</p>
+          </button>
+          <p className="text-[10px] text-muted-foreground mt-1 px-3">Reset all notification settings, including custom notification settings for your chats.</p>
         </div>
       </div>
     );
