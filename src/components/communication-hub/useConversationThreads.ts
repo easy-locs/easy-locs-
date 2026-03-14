@@ -441,7 +441,33 @@ export function useConversationThreads() {
       console.error("[comm-threads] loadThreads error:", err);
     }
 
-    const sorted = Array.from(threadMap.values()).sort((a, b) => {
+    // ── Load user preferences (archive, mute) ──
+    try {
+      if (user?.id) {
+        const { data: prefs } = await supabase
+          .from("conversation_preferences")
+          .select("context_id, archived, muted")
+          .eq("user_id", user.id);
+
+        if (prefs?.length) {
+          const prefMap = new Map(prefs.map(p => [p.context_id, p]));
+          for (const [, thread] of threadMap) {
+            const pref = prefMap.get(thread.contextId) || prefMap.get(thread.id);
+            if (pref) {
+              thread.archived = !!pref.archived;
+              thread.muted = !!pref.muted;
+            }
+          }
+        }
+      }
+    } catch (e) {
+      console.warn("[comm-threads] preferences load failed:", e);
+    }
+
+    // Filter out deleted (archived + muted) threads from non-archived views
+    const allThreads = Array.from(threadMap.values());
+
+    const sorted = allThreads.sort((a, b) => {
       if (a.pinned !== b.pinned) return a.pinned ? -1 : 1;
       if (a.unreadCount !== b.unreadCount) return b.unreadCount - a.unreadCount;
       const at = a.lastMessageTime || "";
@@ -450,7 +476,8 @@ export function useConversationThreads() {
     });
 
     setThreads(sorted);
-    setStats(s => ({ ...s, unread: sorted.reduce((acc, t) => acc + t.unreadCount, 0) }));
+    // Only count unread from non-archived threads
+    setStats(s => ({ ...s, unread: sorted.filter(t => !t.archived).reduce((acc, t) => acc + t.unreadCount, 0) }));
     setLoading(false);
     loadingRef.current = false;
   }, [orgId, user]);
