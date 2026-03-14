@@ -219,7 +219,7 @@ export default function WalletHub() {
                         onClick={() => setView(action.key)}
                         className="flex flex-col items-center gap-1.5 p-4 rounded-2xl bg-card border border-border hover:border-accent/30 transition-colors"
                       >
-                        <div className={`w-10 h-10 rounded-xl ${action.color} text-white flex items-center justify-center`}>
+                        <div className={`w-10 h-10 rounded-xl ${action.color} text-primary-foreground flex items-center justify-center`}>
                           <Icon className="w-4.5 h-4.5" />
                         </div>
                         <span className="text-[11px] font-semibold text-foreground">{action.label}</span>

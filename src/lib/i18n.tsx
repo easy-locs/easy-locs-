@@ -3367,6 +3367,14 @@ const pageEn: Record<string, string> = {
   "landing.nav.signup": "Sign up",
   "landing.nav.tenant_access": "Tenant portal",
   "landing.nav.pro_signup": "Create Account",
+  "landing.nav.post": "Post",
+  "landing.value.badge": "Run your business from anywhere — 190+ countries",
+  "landing.value.title": "Build your property business",
+  "landing.value.highlight": "internationally",
+  "landing.value.subtitle": "One platform to manage properties, process payments, and coordinate services.",
+  "landing.value.quick_links": "Quick Links",
+  "landing.value.quick_links_desc": "Jump directly to key sections",
+  "landing.value.get_started": "Get Started Free",
 
   // Explore radius search
   "explore.radius.title": "Where are you looking?",
