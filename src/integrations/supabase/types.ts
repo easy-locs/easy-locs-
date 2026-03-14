@@ -93,6 +93,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "activities_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs_tenant_view"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "activities_property_id_fkey"
             columns: ["property_id"]
             isOneToOne: false
@@ -147,6 +154,13 @@ export type Database = {
             columns: ["org_id"]
             isOneToOne: false
             referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "api_keys_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs_tenant_view"
             referencedColumns: ["id"]
           },
         ]
@@ -221,6 +235,13 @@ export type Database = {
             columns: ["org_id"]
             isOneToOne: false
             referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "audit_reports_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs_tenant_view"
             referencedColumns: ["id"]
           },
         ]
@@ -323,6 +344,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "booking_requests_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs_tenant_view"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "booking_requests_property_id_fkey"
             columns: ["property_id"]
             isOneToOne: false
@@ -395,6 +423,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "booking_tasks_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs_tenant_view"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "booking_tasks_property_id_fkey"
             columns: ["property_id"]
             isOneToOne: false
@@ -454,6 +489,13 @@ export type Database = {
             referencedRelation: "orgs"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "buildings_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs_tenant_view"
+            referencedColumns: ["id"]
+          },
         ]
       }
       call_logs: {
@@ -511,6 +553,13 @@ export type Database = {
             columns: ["callee_org_id"]
             isOneToOne: false
             referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "call_logs_callee_org_id_fkey"
+            columns: ["callee_org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs_tenant_view"
             referencedColumns: ["id"]
           },
           {
@@ -580,6 +629,13 @@ export type Database = {
             columns: ["org_id"]
             isOneToOne: false
             referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "candidates_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs_tenant_view"
             referencedColumns: ["id"]
           },
           {
@@ -661,6 +717,13 @@ export type Database = {
             columns: ["org_id"]
             isOneToOne: false
             referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "collaboration_invitations_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs_tenant_view"
             referencedColumns: ["id"]
           },
         ]
@@ -795,6 +858,13 @@ export type Database = {
             columns: ["org_id"]
             isOneToOne: false
             referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "concierge_orders_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs_tenant_view"
             referencedColumns: ["id"]
           },
           {
@@ -947,6 +1017,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "concierge_services_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs_tenant_view"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "concierge_services_property_id_fkey"
             columns: ["property_id"]
             isOneToOne: false
@@ -1078,6 +1155,13 @@ export type Database = {
             referencedRelation: "orgs"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "contacts_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs_tenant_view"
+            referencedColumns: ["id"]
+          },
         ]
       }
       conversation_preferences: {
@@ -1162,6 +1246,13 @@ export type Database = {
             columns: ["org_id"]
             isOneToOne: false
             referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conversation_threads_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs_tenant_view"
             referencedColumns: ["id"]
           },
         ]
@@ -1274,6 +1365,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "deal_rooms_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs_tenant_view"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "deal_rooms_thread_id_fkey"
             columns: ["thread_id"]
             isOneToOne: false
@@ -1322,6 +1420,13 @@ export type Database = {
             columns: ["org_id"]
             isOneToOne: false
             referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "document_requests_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs_tenant_view"
             referencedColumns: ["id"]
           },
           {
@@ -1434,6 +1539,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "documents_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs_tenant_view"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "documents_property_id_fkey"
             columns: ["property_id"]
             isOneToOne: false
@@ -1492,6 +1604,13 @@ export type Database = {
             columns: ["org_id"]
             isOneToOne: false
             referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dunning_letters_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs_tenant_view"
             referencedColumns: ["id"]
           },
           {
@@ -1562,6 +1681,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "expenses_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs_tenant_view"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "expenses_property_id_fkey"
             columns: ["property_id"]
             isOneToOne: false
@@ -1613,6 +1739,13 @@ export type Database = {
             columns: ["org_id"]
             isOneToOne: false
             referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "furniture_items_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs_tenant_view"
             referencedColumns: ["id"]
           },
           {
@@ -1730,6 +1863,13 @@ export type Database = {
             referencedRelation: "orgs"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "groups_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs_tenant_view"
+            referencedColumns: ["id"]
+          },
         ]
       }
       guest_call_signals: {
@@ -1805,6 +1945,13 @@ export type Database = {
             referencedRelation: "orgs"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "guest_call_signals_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs_tenant_view"
+            referencedColumns: ["id"]
+          },
         ]
       }
       guest_sessions: {
@@ -1862,6 +2009,13 @@ export type Database = {
             columns: ["org_id"]
             isOneToOne: false
             referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "guest_sessions_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs_tenant_view"
             referencedColumns: ["id"]
           },
         ]
@@ -1951,6 +2105,13 @@ export type Database = {
             columns: ["org_id"]
             isOneToOne: false
             referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "interventions_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs_tenant_view"
             referencedColumns: ["id"]
           },
           {
@@ -2074,6 +2235,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "inventory_reports_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs_tenant_view"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "inventory_reports_property_id_fkey"
             columns: ["property_id"]
             isOneToOne: false
@@ -2184,6 +2352,13 @@ export type Database = {
             referencedRelation: "orgs"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "landlord_profiles_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs_tenant_view"
+            referencedColumns: ["id"]
+          },
         ]
       }
       leases: {
@@ -2286,6 +2461,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "leases_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs_tenant_view"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "leases_owner_profile_id_fkey"
             columns: ["owner_profile_id"]
             isOneToOne: false
@@ -2375,6 +2557,13 @@ export type Database = {
             columns: ["org_id"]
             isOneToOne: false
             referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "local_services_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs_tenant_view"
             referencedColumns: ["id"]
           },
           {
@@ -2519,6 +2708,13 @@ export type Database = {
             columns: ["org_id"]
             isOneToOne: false
             referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "marketplace_bookings_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs_tenant_view"
             referencedColumns: ["id"]
           },
           {
@@ -2696,6 +2892,13 @@ export type Database = {
             columns: ["org_id"]
             isOneToOne: false
             referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "marketplace_providers_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs_tenant_view"
             referencedColumns: ["id"]
           },
         ]
@@ -2961,6 +3164,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "marketplace_services_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs_tenant_view"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "marketplace_services_provider_id_fkey"
             columns: ["provider_id"]
             isOneToOne: false
@@ -3209,6 +3419,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "messages_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs_tenant_view"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "messages_reply_to_id_fkey"
             columns: ["reply_to_id"]
             isOneToOne: false
@@ -3369,6 +3586,13 @@ export type Database = {
             referencedRelation: "orgs"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "org_members_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs_tenant_view"
+            referencedColumns: ["id"]
+          },
         ]
       }
       org_secrets: {
@@ -3402,6 +3626,13 @@ export type Database = {
             columns: ["org_id"]
             isOneToOne: true
             referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "org_secrets_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: true
+            referencedRelation: "orgs_tenant_view"
             referencedColumns: ["id"]
           },
         ]
@@ -3556,6 +3787,13 @@ export type Database = {
             referencedRelation: "orgs"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "ota_connections_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs_tenant_view"
+            referencedColumns: ["id"]
+          },
         ]
       }
       owner_profiles: {
@@ -3627,6 +3865,13 @@ export type Database = {
             referencedRelation: "orgs"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "owner_profiles_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs_tenant_view"
+            referencedColumns: ["id"]
+          },
         ]
       }
       payment_notices: {
@@ -3678,6 +3923,13 @@ export type Database = {
             columns: ["org_id"]
             isOneToOne: false
             referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payment_notices_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs_tenant_view"
             referencedColumns: ["id"]
           },
           {
@@ -3762,6 +4014,13 @@ export type Database = {
             referencedRelation: "orgs"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "payment_requests_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs_tenant_view"
+            referencedColumns: ["id"]
+          },
         ]
       }
       pricing_rules: {
@@ -3825,6 +4084,13 @@ export type Database = {
             columns: ["org_id"]
             isOneToOne: false
             referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pricing_rules_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs_tenant_view"
             referencedColumns: ["id"]
           },
           {
@@ -4086,6 +4352,13 @@ export type Database = {
             referencedRelation: "orgs"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "properties_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs_tenant_view"
+            referencedColumns: ["id"]
+          },
         ]
       }
       property_blocked_dates: {
@@ -4122,6 +4395,13 @@ export type Database = {
             columns: ["org_id"]
             isOneToOne: false
             referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "property_blocked_dates_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs_tenant_view"
             referencedColumns: ["id"]
           },
           {
@@ -4209,6 +4489,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "public_listings_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs_tenant_view"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "public_listings_property_id_fkey"
             columns: ["property_id"]
             isOneToOne: false
@@ -4264,6 +4551,13 @@ export type Database = {
             columns: ["org_id"]
             isOneToOne: false
             referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "real_estate_leads_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs_tenant_view"
             referencedColumns: ["id"]
           },
         ]
@@ -4437,6 +4731,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "real_estate_listings_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs_tenant_view"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "real_estate_listings_property_id_fkey"
             columns: ["property_id"]
             isOneToOne: false
@@ -4490,6 +4791,13 @@ export type Database = {
             referencedRelation: "orgs"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "referrals_referrer_org_id_fkey"
+            columns: ["referrer_org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs_tenant_view"
+            referencedColumns: ["id"]
+          },
         ]
       }
       reminders: {
@@ -4532,6 +4840,13 @@ export type Database = {
             columns: ["org_id"]
             isOneToOne: false
             referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reminders_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs_tenant_view"
             referencedColumns: ["id"]
           },
         ]
@@ -4618,6 +4933,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "rent_calls_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs_tenant_view"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "rent_calls_property_id_fkey"
             columns: ["property_id"]
             isOneToOne: false
@@ -4682,6 +5004,13 @@ export type Database = {
             columns: ["org_id"]
             isOneToOne: false
             referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rent_revisions_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs_tenant_view"
             referencedColumns: ["id"]
           },
           {
@@ -4779,6 +5108,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "reservations_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs_tenant_view"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "reservations_ota_connection_id_fkey"
             columns: ["ota_connection_id"]
             isOneToOne: false
@@ -4837,6 +5173,13 @@ export type Database = {
             columns: ["org_id"]
             isOneToOne: false
             referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reviews_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs_tenant_view"
             referencedColumns: ["id"]
           },
           {
@@ -4958,6 +5301,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "seasonal_bookings_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs_tenant_view"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "seasonal_bookings_property_id_fkey"
             columns: ["property_id"]
             isOneToOne: false
@@ -5027,6 +5377,13 @@ export type Database = {
             columns: ["org_id"]
             isOneToOne: false
             referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_bookings_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs_tenant_view"
             referencedColumns: ["id"]
           },
           {
@@ -5141,6 +5498,13 @@ export type Database = {
             referencedRelation: "orgs"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "share_links_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs_tenant_view"
+            referencedColumns: ["id"]
+          },
         ]
       }
       subscriptions: {
@@ -5243,6 +5607,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "tasks_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs_tenant_view"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "tasks_property_id_fkey"
             columns: ["property_id"]
             isOneToOne: false
@@ -5304,6 +5675,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "tenant_documents_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs_tenant_view"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "tenant_documents_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
@@ -5355,6 +5733,13 @@ export type Database = {
             columns: ["org_id"]
             isOneToOne: false
             referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tenant_invitations_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs_tenant_view"
             referencedColumns: ["id"]
           },
           {
@@ -5466,6 +5851,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "tenants_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs_tenant_view"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "tenants_property_id_fkey"
             columns: ["property_id"]
             isOneToOne: false
@@ -5532,6 +5924,13 @@ export type Database = {
             columns: ["org_id"]
             isOneToOne: false
             referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transaction_journal_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs_tenant_view"
             referencedColumns: ["id"]
           },
           {
@@ -5777,6 +6176,13 @@ export type Database = {
             referencedRelation: "orgs"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "vault_files_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs_tenant_view"
+            referencedColumns: ["id"]
+          },
         ]
       }
       webhook_deliveries: {
@@ -5865,6 +6271,13 @@ export type Database = {
             referencedRelation: "orgs"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "webhooks_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs_tenant_view"
+            referencedColumns: ["id"]
+          },
         ]
       }
     }
@@ -5939,6 +6352,13 @@ export type Database = {
             columns: ["org_id"]
             isOneToOne: false
             referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "activities_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs_tenant_view"
             referencedColumns: ["id"]
           },
           {
@@ -6044,6 +6464,13 @@ export type Database = {
             columns: ["org_id"]
             isOneToOne: false
             referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "concierge_services_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs_tenant_view"
             referencedColumns: ["id"]
           },
           {
@@ -6171,8 +6598,6 @@ export type Database = {
           requires_id_document: boolean | null
           rooms: number | null
           sort_order: number | null
-          source_contact_email: string | null
-          source_contact_phone: string | null
           status: Database["public"]["Enums"]["listing_status"] | null
           surface_sqm: number | null
           time_slots: Json | null
@@ -6216,8 +6641,6 @@ export type Database = {
           requires_id_document?: boolean | null
           rooms?: number | null
           sort_order?: number | null
-          source_contact_email?: string | null
-          source_contact_phone?: string | null
           status?: Database["public"]["Enums"]["listing_status"] | null
           surface_sqm?: number | null
           time_slots?: Json | null
@@ -6261,8 +6684,6 @@ export type Database = {
           requires_id_document?: boolean | null
           rooms?: number | null
           sort_order?: number | null
-          source_contact_email?: string | null
-          source_contact_phone?: string | null
           status?: Database["public"]["Enums"]["listing_status"] | null
           surface_sqm?: number | null
           time_slots?: Json | null
@@ -6280,6 +6701,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "marketplace_services_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs_tenant_view"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "marketplace_services_provider_id_fkey"
             columns: ["provider_id"]
             isOneToOne: false
@@ -6287,6 +6715,54 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      orgs_tenant_view: {
+        Row: {
+          address: string | null
+          brand_accent_color: string | null
+          brand_favicon_url: string | null
+          brand_name: string | null
+          brand_primary_color: string | null
+          city: string | null
+          country: string | null
+          email: string | null
+          id: string | null
+          logo_url: string | null
+          name: string | null
+          phone: string | null
+          postal_code: string | null
+        }
+        Insert: {
+          address?: string | null
+          brand_accent_color?: string | null
+          brand_favicon_url?: string | null
+          brand_name?: string | null
+          brand_primary_color?: string | null
+          city?: string | null
+          country?: string | null
+          email?: string | null
+          id?: string | null
+          logo_url?: string | null
+          name?: string | null
+          phone?: string | null
+          postal_code?: string | null
+        }
+        Update: {
+          address?: string | null
+          brand_accent_color?: string | null
+          brand_favicon_url?: string | null
+          brand_name?: string | null
+          brand_primary_color?: string | null
+          city?: string | null
+          country?: string | null
+          email?: string | null
+          id?: string | null
+          logo_url?: string | null
+          name?: string | null
+          phone?: string | null
+          postal_code?: string | null
+        }
+        Relationships: []
       }
     }
     Functions: {
