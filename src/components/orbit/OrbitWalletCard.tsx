@@ -26,7 +26,6 @@ export default function OrbitWalletCard() {
   const detected = detectLocalCurrency({ preferredCurrency: userCurrency || null, accountCountry: null });
   const currencyInfo = SUPPORTED_CURRENCIES[detected.code];
   const navigate = useNavigate();
-  const [walletOpen, setWalletOpen] = useState(false);
 
   return (
     <div className="w-full max-w-md">

@@ -28,9 +28,9 @@ const PRIORITY_CARDS = [
 
 /* ── Orbit Infrastructure — Wallet, Payments, Security, Identity ── */
 const ORBIT_INFRA_CARDS = [
-  { icon: Wallet, label: "Wallet", desc: "Solde", key: null, to: "/dashboard/finances" },
-  { icon: CreditCard, label: "Paiements", desc: "Transactions", key: null, to: "/dashboard/communication?section=payments" },
-  { icon: History, label: "Historique", desc: "Activité", key: null, to: "/dashboard/finances" },
+  { icon: Wallet, label: "Wallet", desc: "Solde", key: null, to: "/dashboard/wallet" },
+  { icon: CreditCard, label: "Paiements", desc: "Transactions", key: null, to: "/dashboard/wallet?action=history" },
+  { icon: History, label: "Historique", desc: "Activité", key: null, to: "/dashboard/wallet?action=history" },
   { icon: Shield, label: "Sécurité", desc: "MFA / 2FA", key: null, to: "/dashboard/settings?section=security" },
   { icon: Fingerprint, label: "Identité", desc: "Profil", key: null, to: "/dashboard/settings" },
   { icon: Lock, label: "Confidentialité", desc: "Données", key: null, to: "/dashboard/settings?section=privacy" },
