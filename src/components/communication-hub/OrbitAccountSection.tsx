@@ -2,12 +2,12 @@
  * OrbitAccountSection — "YOU" section inside Orbit hub.
  * Signal/WhatsApp-level personal account control panel with profile editing.
  */
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import {
   User, Shield, Lock, Eye, Fingerprint, Smartphone,
   Copy, Check, QrCode, ChevronRight, Key, LogOut,
   Bell, Database, ShieldCheck, HelpCircle, Camera, Pencil,
-  Image, ShieldAlert, Timer, Ban, UserX, Globe, ScanFace, KeyRound, Wifi
+  Image, ShieldAlert, Timer, Ban, UserX, Globe, ScanFace, KeyRound, Wifi, AtSign
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { Switch } from "@/components/ui/switch";
@@ -22,6 +22,7 @@ import { useNavigate } from "react-router-dom";
 import { haptic } from "@/lib/haptics";
 import { supabase } from "@/integrations/supabase/client";
 import { usePrivacySettings } from "@/hooks/usePrivacySettings";
+import { useUsername } from "@/hooks/useUsername";
 type SubPage = "main" | "privacy" | "security" | "notifications" | "storage" | "devices" | "edit-profile";
 
 export default function OrbitAccountSection() {
@@ -37,6 +38,12 @@ export default function OrbitAccountSection() {
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { username, saveUsername, checkAvailability } = useUsername();
+  const [usernameInput, setUsernameInput] = useState("");
+  const [usernameStatus, setUsernameStatus] = useState<{ msg: string; ok: boolean } | null>(null);
+  const [savingUsername, setSavingUsername] = useState(false);
+
+  useEffect(() => { if (username) setUsernameInput(username); }, [username]);
 
   // Privacy states — backed by profiles table via usePrivacySettings
   const { settings: privacy, update: updatePrivacy, loaded: privacyLoaded } = usePrivacySettings();
@@ -238,6 +245,50 @@ export default function OrbitAccountSection() {
                 {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
               </Button>
             </div>
+          </div>
+
+          {/* Username */}
+          <div>
+            <label className="text-xs font-medium text-muted-foreground mb-1.5 block flex items-center gap-1">
+              <AtSign className="h-3 w-3" /> Username
+            </label>
+            <div className="flex items-center gap-2">
+              <Input
+                value={usernameInput}
+                onChange={async (e) => {
+                  const v = e.target.value.toLowerCase().replace(/[^a-z0-9._]/g, "");
+                  setUsernameInput(v);
+                  if (v.length >= 3) {
+                    const res = await checkAvailability(v);
+                    setUsernameStatus(res.available ? { msg: "✅ Available", ok: true } : { msg: res.error || "Taken", ok: false });
+                  } else {
+                    setUsernameStatus(v.length > 0 ? { msg: "Min 3 characters", ok: false } : null);
+                  }
+                }}
+                placeholder="your.username"
+                className="bg-muted/30 font-mono text-sm"
+              />
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={savingUsername || !usernameInput || usernameStatus?.ok === false}
+                onClick={async () => {
+                  setSavingUsername(true);
+                  const res = await saveUsername(usernameInput);
+                  if (res.success) { toast.success("Username saved!"); haptic("medium"); }
+                  else toast.error(res.error || "Failed");
+                  setSavingUsername(false);
+                }}
+              >
+                {savingUsername ? "..." : "Set"}
+              </Button>
+            </div>
+            {usernameStatus && (
+              <p className={`text-[10px] mt-1 ${usernameStatus.ok ? "text-primary" : "text-destructive"}`}>
+                {usernameStatus.msg}
+              </p>
+            )}
+            <p className="text-[10px] text-muted-foreground mt-1">Others can find you by @{usernameInput || "username"}</p>
           </div>
 
           <Button
@@ -445,6 +496,9 @@ export default function OrbitAccountSection() {
         <p className="text-base font-semibold text-foreground mt-3">
           {displayName || displayEmail}
         </p>
+        {username && (
+          <p className="text-xs font-mono mt-0.5" style={{ color: "hsl(var(--primary))" }}>@{username}</p>
+        )}
         {displayName && <p className="text-xs text-muted-foreground">{displayEmail}</p>}
         <div className="flex items-center gap-1.5 mt-1">
           <span className="text-[10px] font-mono font-bold tracking-wider px-2 py-0.5 rounded-full"

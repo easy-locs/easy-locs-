@@ -7,9 +7,10 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import {
   Send, ArrowLeft, Loader2, Paperclip, Globe, CheckCheck, Check,
   Mail, CreditCard, CalendarCheck, Ban, Phone, Video, ChevronRight, MessageCircle,
-  Shield, Lock, Zap, Sparkles, MapPin, Camera, MoreVertical, Mic, Smile,
+  Shield, Lock, Zap, Sparkles, MapPin, Camera, MoreVertical, Mic, Smile, Eye,
 } from "lucide-react";
 import MessageContextMenu, { DisappearingMessagesToggle } from "./MessageContextMenu";
+import MessageMultiSelectToolbar from "./MessageMultiSelect";
 import ChatLocationPicker from "./ChatLocationPicker";
 import { useCall } from "@/components/call/CallProvider";
 import AIGenerateButton from "@/components/ai/AIGenerateButton";
@@ -91,6 +92,9 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
   const [showSecurityPanel, setShowSecurityPanel] = useState(false);
   const [showAttachMenu, setShowAttachMenu] = useState(false);
   const [voicePreview, setVoicePreview] = useState<{ blob: Blob; duration: number; url: string } | null>(null);
+  const [selectMode, setSelectMode] = useState(false);
+  const [selectedMsgIds, setSelectedMsgIds] = useState<Set<string>>(new Set());
+  const [viewOnceNext, setViewOnceNext] = useState(false);
   const holdTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const slideStartRef = useRef<number>(0);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -323,6 +327,42 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
     setUploading(false);
   };
 
+  const handleViewOnceUpload = async (file: File) => {
+    if (!thread || !orgId) return;
+    const authUserId = await resolveAuthUserId();
+    if (!authUserId) return;
+    if (!file.type.startsWith("image/")) { toast.error("View-once only supports photos"); return; }
+    setUploading(true);
+    try {
+      const path = `${orgId}/${thread.id}/viewonce-${Date.now()}.${file.name.split(".").pop() || "jpg"}`;
+      const buckets = ["chat-media", "property-photos"];
+      let finalUrl: string | null = null;
+      for (const bucket of buckets) {
+        const { error } = await supabase.storage.from(bucket).upload(path, file, { upsert: false });
+        if (error) continue;
+        const { data: signed } = await supabase.storage.from(bucket).createSignedUrl(path, 60 * 60 * 24 * 365);
+        finalUrl = signed?.signedUrl || null;
+        break;
+      }
+      if (!finalUrl) throw new Error("Upload failed");
+
+      const effectiveTTL = disappearTTL !== "off" ? disappearTTL : privacySettings.defaultDisappearTtl;
+      const disappearAt = computeDisappearAt(effectiveTTL);
+
+      await supabase.from("messages").insert({
+        org_id: orgId, sender_id: authUserId, tenant_id: thread.tenantId || null,
+        booking_id: thread.bookingId || null, booking_type: thread.bookingType || null,
+        content: "📷 View-once photo", attachment_url: finalUrl,
+        category: "general", message_type: "user", sender_locale: locale,
+        context_type: thread.contextType, context_id: thread.contextId,
+        view_once: true, disappear_at: disappearAt,
+      } as any);
+      toast.success("📷 View-once photo sent");
+    } catch (e: any) { toast.error(e?.message || "Upload failed"); }
+    setUploading(false);
+    setViewOnceNext(false);
+  };
+
   const handleSend = async () => {
     if (!newMessage.trim() || !thread) return;
     const msgText = newMessage.trim();
@@ -478,6 +518,16 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); }
   };
+
+  const toggleMsgSelect = useCallback((id: string) => {
+    setSelectedMsgIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      if (next.size === 0) setSelectMode(false);
+      return next;
+    });
+  }, []);
 
   const handleTranslateMessage = async (msg: ChatMessage) => {
     if (translatingMsgId) return;
@@ -741,11 +791,31 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
                   <DropdownMenuItem onClick={onToggleContext}>
                     <ChevronRight className="h-3.5 w-3.5 mr-2" /> Details
                   </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => { haptic("light"); setSelectMode(true); setSelectedMsgIds(new Set()); }}>
+                    <CheckCheck className="h-3.5 w-3.5 mr-2" style={{ color: "hsl(var(--hud-text-dim))" }} />
+                    Select Messages
+                  </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
           </div>
         </div>
+
+        {/* ══ Multi-select toolbar ══ */}
+        {selectMode && (
+          <MessageMultiSelectToolbar
+            selectedIds={selectedMsgIds}
+            messages={messages as any[]}
+            currentUserId={user?.id}
+            onClearSelection={() => { setSelectMode(false); setSelectedMsgIds(new Set()); }}
+            onDeletedForMe={(ids) => setHiddenMsgIds(prev => new Set([...prev, ...ids]))}
+            onDeletedForAll={(ids) => {
+              setRawMessages(prev => prev.map(m => ids.includes(m.id) ? {
+                ...m, content: "🚫 This message was deleted", deleted_for_all: true, attachment_url: null,
+              } as any : m));
+            }}
+          />
+        )}
 
         {/* ══ Offline Banner ══ */}
         {!offline.isOnline && (
@@ -824,8 +894,15 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
                       showOriginal={!!showOriginal[msg.id]}
                       translatingMsgId={translatingMsgId}
                       isPendingOffline={pendingOffline.some(p => p.id === msg.id)}
+                      selected={selectedMsgIds.has(msg.id)}
+                      selectMode={selectMode}
+                      currentUserId={user?.id}
                       onTranslate={handleTranslateMessage}
-                      onContextMenu={(e, m, me) => setContextMessage({ msgId: m.id, content: m.content, isMe: me, createdAt: m.created_at, hasAudio: !!(m as any).audio_url, hasAttachment: !!m.attachment_url, senderId: m.sender_id, canModerate: false })}
+                      onContextMenu={(e, m, me) => {
+                        if (selectMode) { toggleMsgSelect(m.id); return; }
+                        setContextMessage({ msgId: m.id, content: m.content, isMe: me, createdAt: m.created_at, hasAudio: !!(m as any).audio_url, hasAttachment: !!m.attachment_url, senderId: m.sender_id, canModerate: false });
+                      }}
+                      onToggleSelect={toggleMsgSelect}
                       getCategoryIcon={getCategoryIcon}
                     />
                   </div>
@@ -1017,6 +1094,17 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => { setShowAttachMenu(false); setPaymentLinkDialog(true); }}>
                       <CreditCard className="h-4 w-4 mr-2" style={{ color: "hsl(var(--hud-purple))" }} /> Payment
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={() => {
+                      setShowAttachMenu(false);
+                      setViewOnceNext(true);
+                      const inp = document.createElement("input");
+                      inp.type = "file"; inp.accept = "image/*";
+                      inp.onchange = () => { const f = inp.files?.[0]; if (f) handleViewOnceUpload(f); };
+                      inp.click();
+                    }}>
+                      <Eye className="h-4 w-4 mr-2" style={{ color: "hsl(var(--hud-danger))" }} /> View Once Photo
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>

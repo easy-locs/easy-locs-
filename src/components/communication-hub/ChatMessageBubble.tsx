@@ -1,6 +1,6 @@
 /**
  * ChatMessageBubble — Premium Signal-grade message bubble.
- * Handles text, voice, media, payment, email, system messages with unified HUD design.
+ * Handles text, voice, media, payment, email, system, view-once messages with unified HUD design.
  */
 import { memo } from "react";
 import {
@@ -10,6 +10,7 @@ import {
 import { format } from "date-fns";
 import ChatMediaPreview from "@/components/communication/ChatMediaPreview";
 import VoiceMessageBubble from "@/components/communication/VoiceMessageBubble";
+import ViewOnceMedia from "./ViewOnceMedia";
 import OrbitEncryptedIndicator from "@/components/orbit/OrbitEncryptedIndicator";
 import { haptic } from "@/lib/haptics";
 import type { ChatMessage } from "./types";
@@ -26,21 +27,27 @@ interface Props {
   translatingMsgId: string | null;
   isPendingOffline: boolean;
   isConsecutive?: boolean;
+  selected?: boolean;
+  selectMode?: boolean;
+  currentUserId?: string;
   onTranslate: (msg: ChatMessage) => void;
   onContextMenu: (e: React.MouseEvent, msg: ChatMessage, isMe: boolean) => void;
+  onToggleSelect?: (id: string) => void;
   getCategoryIcon: (cat: string) => string;
 }
 
 function ChatMessageBubble({
   msg, isMe, threadName, locale, showOriginal,
   translatingMsgId, isPendingOffline, isConsecutive,
-  onTranslate, onContextMenu, getCategoryIcon,
+  selected, selectMode, currentUserId,
+  onTranslate, onContextMenu, onToggleSelect, getCategoryIcon,
 }: Props) {
   const isSystem = msg.message_type === "system" || msg.sender_id === SYSTEM_SENDER_ID;
   const isDeleted = !!(msg as any).deleted_for_all;
   const isInboundEmail = msg.message_type === "inbound_email";
   const isPayment = !isDeleted && msg.content?.startsWith("💳");
   const isVoice = !isDeleted && !!(msg as any).audio_url;
+  const isViewOnce = !isDeleted && !!(msg as any).view_once;
 
   // Deleted message bubble — shows inline in conversation flow
   if (isDeleted && !isSystem) {
@@ -90,10 +97,18 @@ function ChatMessageBubble({
 
   return (
     <div
-      className={`flex ${isMe ? "justify-end" : "justify-start"} group`}
+      className={`flex ${isMe ? "justify-end" : "justify-start"} group ${selected ? "bg-primary/5 rounded-lg" : ""}`}
       style={{ marginTop: isConsecutive ? 2 : 8 }}
+      onClick={selectMode ? () => onToggleSelect?.(msg.id) : undefined}
       onContextMenu={e => { e.preventDefault(); haptic("medium"); onContextMenu(e, msg, isMe); }}
     >
+      {selectMode && (
+        <div className="flex items-center px-1 shrink-0">
+          <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors ${selected ? "border-primary bg-primary" : "border-muted-foreground/30"}`}>
+            {selected && <Check className="h-3 w-3 text-primary-foreground" />}
+          </div>
+        </div>
+      )}
       <div
         className="relative max-w-[78%] sm:max-w-[60%]"
         style={{
@@ -149,12 +164,23 @@ function ChatMessageBubble({
           <span className="text-[10px] opacity-50 mb-0.5 block">{getCategoryIcon(msg.category)}</span>
         )}
 
-        {/* Media */}
-        {msg.attachment_url && (
+        {/* Media — view-once or regular */}
+        {isViewOnce && msg.attachment_url ? (
+          <div className="mb-1">
+            <ViewOnceMedia
+              messageId={msg.id}
+              attachmentUrl={msg.attachment_url}
+              isMe={isMe}
+              viewOnceOpenedAt={(msg as any).view_once_opened_at}
+              viewOnceOpenedBy={(msg as any).view_once_opened_by}
+              currentUserId={currentUserId}
+            />
+          </div>
+        ) : msg.attachment_url ? (
           <div className="mb-1 -mx-1 rounded-lg overflow-hidden">
             <ChatMediaPreview url={msg.attachment_url} />
           </div>
-        )}
+        ) : null}
 
         {/* Voice message */}
         {isVoice ? (

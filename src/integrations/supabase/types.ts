@@ -3015,6 +3015,9 @@ export type Database = {
           thread_id: string | null
           translated_content: string | null
           translated_locale: string | null
+          view_once: boolean | null
+          view_once_opened_at: string | null
+          view_once_opened_by: string | null
         }
         Insert: {
           assigned_to?: string | null
@@ -3061,6 +3064,9 @@ export type Database = {
           thread_id?: string | null
           translated_content?: string | null
           translated_locale?: string | null
+          view_once?: boolean | null
+          view_once_opened_at?: string | null
+          view_once_opened_by?: string | null
         }
         Update: {
           assigned_to?: string | null
@@ -3107,6 +3113,9 @@ export type Database = {
           thread_id?: string | null
           translated_content?: string | null
           translated_locale?: string | null
+          view_once?: boolean | null
+          view_once_opened_at?: string | null
+          view_once_opened_by?: string | null
         }
         Relationships: [
           {
@@ -3793,6 +3802,7 @@ export type Database = {
           telegram_username: string | null
           updated_at: string
           user_type: string
+          username: string | null
           whatsapp_number: string | null
         }
         Insert: {
@@ -3829,6 +3839,7 @@ export type Database = {
           telegram_username?: string | null
           updated_at?: string
           user_type?: string
+          username?: string | null
           whatsapp_number?: string | null
         }
         Update: {
@@ -3865,6 +3876,7 @@ export type Database = {
           telegram_username?: string | null
           updated_at?: string
           user_type?: string
+          username?: string | null
           whatsapp_number?: string | null
         }
         Relationships: []
