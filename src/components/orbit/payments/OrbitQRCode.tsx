@@ -41,10 +41,28 @@ export default function OrbitQRCode({
   expiresInMinutes = 30,
   orgId,
 }: OrbitQRCodeProps) {
-  const { user, profile } = useAuth();
+  const { user } = useAuth();
   const { toast } = useToast();
   const [qrData, setQrData] = useState<string | null>(null);
   const [payload, setPayload] = useState<QRPayload | null>(null);
+  const [copied, setCopied] = useState(false);
+  const [userName, setUserName] = useState("User");
+
+  // Load user display name from profiles
+  useEffect(() => {
+    if (!user?.id) return;
+    const loadName = async () => {
+      const { supabase } = await import("@/integrations/supabase/client");
+      const { data } = await supabase
+        .from("profiles")
+        .select("full_name")
+        .eq("id", user.id)
+        .maybeSingle();
+      if (data?.full_name) setUserName(data.full_name);
+      else if (user.email) setUserName(user.email);
+    };
+    loadName();
+  }, [user]);
   const [copied, setCopied] = useState(false);
 
   const generateQR = useCallback(async () => {
