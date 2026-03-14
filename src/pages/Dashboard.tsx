@@ -131,6 +131,13 @@ const Dashboard = () => {
       path: "/dashboard/receipts",
       sub: t("page.dashboard.view_receipts") || "View receipts →",
     },
+    {
+      icon: Wallet,
+      label: `Wallet (${userCurrencyCode})`,
+      value: fmtLocal(balance?.balance || 0),
+      path: "/dashboard/wallet",
+      sub: t("page.dashboard.view_wallet") || "Open wallet →",
+    },
   ];
 
   return (
