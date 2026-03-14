@@ -363,6 +363,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
     setViewOnceNext(false);
   };
 
+  const handleSend = async () => {
     if (!newMessage.trim() || !thread) return;
     const msgText = newMessage.trim();
 
