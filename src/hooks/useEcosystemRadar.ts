@@ -208,29 +208,27 @@ export function useEcosystemRadar({
         threeMonths.setMonth(threeMonths.getMonth() + 3);
         const { data: leases } = await supabase
           .from("leases")
-          .select("id, property_id, end_date, properties!inner(label, lat, lng, city, country, photo_urls)")
+          .select("id, property_id, end_date, properties(label, city, country, photo_urls)")
           .lte("end_date", threeMonths.toISOString().split("T")[0])
           .gte("end_date", new Date().toISOString().split("T")[0])
           .eq("status", "active")
-          .not("properties.lat", "is", null)
-          .not("properties.lng", "is", null)
           .limit(50);
 
         if (leases) {
           (leases as any[]).forEach(l => {
             const p = l.properties;
-            if (!p?.lat || !p?.lng) return;
-            const dist = haversineKm(lat, lng, p.lat, p.lng);
-            if (dist > radius) return;
+            if (!p) return;
+            // Without lat/lng on properties, place at user position with small offset for visibility
+            const offset = Math.random() * 0.01;
             const photos = Array.isArray(p.photo_urls) ? p.photo_urls : [];
             all.push({
               id: l.id,
               category: "releasing_soon",
               title: p.label || "Property",
-              subtitle: `Free ${l.end_date}`,
+              subtitle: `Free ${l.end_date} · ${p.city || ""}`,
               photo: photos[0] || null,
-              lat: p.lat, lng: p.lng,
-              distance_km: dist,
+              lat: lat + offset, lng: lng + offset,
+              distance_km: 0,
               meta: { property_id: l.property_id, end_date: l.end_date, city: p.city },
             });
           });
