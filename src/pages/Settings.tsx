@@ -341,6 +341,11 @@ const Settings = () => {
           )}
         </div>
 
+        {/* App Security — PIN, Ghost, Panic */}
+        <div className="ui-card">
+          <AppSecuritySettings />
+        </div>
+
         {/* Pro Settings — Signal/WhatsApp style */}
         <ProSettingsSection />
 
