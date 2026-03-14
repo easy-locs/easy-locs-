@@ -22,7 +22,7 @@ import OrbitWalletCard from "@/components/orbit/OrbitWalletCard";
 const PRIORITY_CARDS = [
   { icon: MessageCircle, label: "Messages", desc: "Conversations", key: "unreadMessages" as const, to: "/dashboard/communication" },
   { icon: Phone, label: "Appels", desc: "Historique", key: "missedCalls" as const, to: "/dashboard/communication?section=calls" },
-  { icon: Bell, label: "Notifications", desc: "Alertes", key: "pendingNotifications" as const, to: "/dashboard/settings?section=notifications" },
+  { icon: Bell, label: "Alertes", desc: "Notifications", key: "pendingNotifications" as const, to: "/dashboard/settings?section=notifications" },
   { icon: Users, label: "Contacts", desc: "Répertoire", key: "activeContacts" as const, to: "/dashboard/communication?section=contacts" },
 ];
 
