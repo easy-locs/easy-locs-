@@ -2436,6 +2436,8 @@ const pageFr: Record<string, string> = {
   "orbit.nav.calls": "Appels",
   "orbit.nav.contacts": "Contacts",
   "orbit.nav.nearby": "À proximité",
+  "orbit.nav.wallet": "Wallet",
+  "orbit.nav.security": "Sécurité",
   "orbit.nav.settings": "Paramètres",
   "orbit.nav.you": "Vous",
 
