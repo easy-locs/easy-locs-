@@ -104,6 +104,7 @@ export function useWallet() {
       });
       if (error) return { success: false, error: error.message };
       if (data?.url) {
+        platformBus.emit("wallet:locs_purchased", { amount, currency, locsPreview: data.locs_preview }, "wallet", { userId: user?.id });
         window.location.href = data.url;
         return { success: true, url: data.url, locsPreview: data.locs_preview };
       }
