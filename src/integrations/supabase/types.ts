@@ -6321,6 +6321,7 @@ export type Database = {
           metadata_json: Json | null
           original_amount: number | null
           original_currency: string | null
+          reference_code: string | null
           reference_id: string | null
           reference_type: string | null
           status: string
@@ -6343,6 +6344,7 @@ export type Database = {
           metadata_json?: Json | null
           original_amount?: number | null
           original_currency?: string | null
+          reference_code?: string | null
           reference_id?: string | null
           reference_type?: string | null
           status?: string
@@ -6365,6 +6367,7 @@ export type Database = {
           metadata_json?: Json | null
           original_amount?: number | null
           original_currency?: string | null
+          reference_code?: string | null
           reference_id?: string | null
           reference_type?: string | null
           status?: string
