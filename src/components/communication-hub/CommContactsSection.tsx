@@ -322,7 +322,12 @@ export default function CommContactsSection() {
     haptic("light");
     const newVal = !contact.is_favorite;
     setContacts(prev => prev.map(c => c.id === contact.id ? { ...c, is_favorite: newVal } : c));
-    await supabase.from("contacts").update({ is_favorite: newVal } as any).eq("id", contact.id);
+    const { error } = await supabase.from("contacts").update({ is_favorite: newVal } as any).eq("id", contact.id);
+    if (error) {
+      // Rollback on failure
+      setContacts(prev => prev.map(c => c.id === contact.id ? { ...c, is_favorite: !newVal } : c));
+      toast.error("Failed to update favorite");
+    }
   };
 
   const startChat = async (contact: ResolvedContact) => {
