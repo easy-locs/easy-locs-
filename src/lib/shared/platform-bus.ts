@@ -3,9 +3,6 @@
  * 
  * Every module fires events here. Every module listens here.
  * Wallet ↔ Orbit ↔ Marketplace ↔ Property Management
- * 
- * This replaces scattered, siloed event handling with a unified,
- * observable event stream that guarantees cross-module consistency.
  */
 
 type PlatformEventType =
@@ -44,15 +41,22 @@ type PlatformEventType =
   | "deal:offer_sent"
   | "deal:accepted"
   | "deal:cancelled"
+  // Tracking
+  | "tracking:started"
+  | "tracking:position_updated"
+  | "tracking:status_changed"
+  | "tracking:completed"
   // System
   | "system:currency_changed"
   | "system:sync_completed"
   | "system:user_online";
 
-export interface PlatformEvent<T = any> {
+export type { PlatformEventType };
+
+export interface PlatformEvent<T = unknown> {
   type: PlatformEventType;
   payload: T;
-  source: "wallet" | "orbit" | "marketplace" | "pm" | "system";
+  source: "wallet" | "orbit" | "marketplace" | "pm" | "system" | "tracking";
   userId?: string;
   orgId?: string;
   timestamp: number;
@@ -64,9 +68,8 @@ class PlatformBus {
   private listeners = new Map<string, Set<EventListener>>();
   private globalListeners = new Set<EventListener>();
   private eventLog: PlatformEvent[] = [];
-  private readonly MAX_LOG = 100;
+  private readonly MAX_LOG = 200;
 
-  /** Subscribe to a specific event type */
   on(type: PlatformEventType, listener: EventListener): () => void {
     if (!this.listeners.has(type)) {
       this.listeners.set(type, new Set());
@@ -75,13 +78,11 @@ class PlatformBus {
     return () => this.listeners.get(type)?.delete(listener);
   }
 
-  /** Subscribe to ALL events (for logging, analytics, debugging) */
   onAll(listener: EventListener): () => void {
     this.globalListeners.add(listener);
     return () => this.globalListeners.delete(listener);
   }
 
-  /** Subscribe to events matching a prefix (e.g. "wallet:" for all wallet events) */
   onPrefix(prefix: string, listener: EventListener): () => void {
     const wrappedListener: EventListener = (event) => {
       if (event.type.startsWith(prefix)) listener(event);
@@ -90,8 +91,7 @@ class PlatformBus {
     return () => this.globalListeners.delete(wrappedListener);
   }
 
-  /** Emit an event across the entire platform */
-  emit<T = any>(
+  emit<T = unknown>(
     type: PlatformEventType,
     payload: T,
     source: PlatformEvent["source"],
@@ -106,74 +106,97 @@ class PlatformBus {
       timestamp: Date.now(),
     };
 
-    // Log for debugging
     this.eventLog.push(event);
     if (this.eventLog.length > this.MAX_LOG) {
       this.eventLog = this.eventLog.slice(-this.MAX_LOG);
     }
 
-    // Notify type-specific listeners
     this.listeners.get(type)?.forEach((fn) => {
       try { fn(event); } catch (e) { console.error(`[platform-bus] listener error for ${type}:`, e); }
     });
 
-    // Notify global listeners
     this.globalListeners.forEach((fn) => {
       try { fn(event); } catch (e) { console.error(`[platform-bus] global listener error:`, e); }
     });
   }
 
-  /** Get recent event log (for debugging) */
   getLog(): PlatformEvent[] {
     return [...this.eventLog];
   }
 
-  /** Clear all listeners (for cleanup) */
   clear(): void {
     this.listeners.clear();
     this.globalListeners.clear();
   }
 }
 
-// Singleton instance — import this everywhere
+// Singleton
 export const platformBus = new PlatformBus();
 
-// ═══════════════════════════════════════════════
-// Cross-module reaction rules
-// These are the "synapses" that connect modules
-// ═══════════════════════════════════════════════
-
 /**
- * Install the default cross-module reactions.
- * Call once at app startup (e.g. in App.tsx or main.tsx).
+ * Install cross-module reactions.
+ * Called once at app startup. Uses direct Zustand store updates instead of window events.
  */
 export function installPlatformReactions(): () => void {
   const unsubs: (() => void)[] = [];
 
-  // 1. Wallet payment → refresh Orbit engine counters
+  // Lazy import to avoid circular deps
+  const refreshOrbitEngine = () => {
+    import("@/stores/orbit-engine").then(({ useOrbitEngine }) => {
+      const state = useOrbitEngine.getState();
+      // Debounced refresh — wait 300ms to batch multiple events
+      const userId = state.lastRefreshUserId;
+      const orgId = state.lastRefreshOrgId;
+      if (userId) state.refresh(userId, orgId);
+    }).catch(() => {});
+  };
+
+  // 1. Wallet payment → refresh Orbit counters + wallet balance
   unsubs.push(
     platformBus.on("wallet:payment_completed", () => {
-      // Orbit engine will pick this up via its own refresh cycle
-      window.dispatchEvent(new CustomEvent("orbit:refresh"));
+      refreshOrbitEngine();
     })
   );
 
-  // 2. Marketplace booking paid → update wallet display
+  unsubs.push(
+    platformBus.on("wallet:transfer_sent", () => {
+      refreshOrbitEngine();
+    })
+  );
+
+  unsubs.push(
+    platformBus.on("wallet:locs_purchased", () => {
+      refreshOrbitEngine();
+    })
+  );
+
+  // 2. Marketplace booking paid → refresh orbit + wallet
   unsubs.push(
     platformBus.on("marketplace:booking_paid", () => {
-      window.dispatchEvent(new CustomEvent("wallet:refresh"));
+      refreshOrbitEngine();
     })
   );
 
-  // 3. PM payment received → update wallet + orbit
+  unsubs.push(
+    platformBus.on("marketplace:booking_confirmed", () => {
+      refreshOrbitEngine();
+    })
+  );
+
+  unsubs.push(
+    platformBus.on("marketplace:booking_cancelled", () => {
+      refreshOrbitEngine();
+    })
+  );
+
+  // 3. PM payment received → refresh orbit + wallet
   unsubs.push(
     platformBus.on("pm:payment_received", () => {
-      window.dispatchEvent(new CustomEvent("wallet:refresh"));
-      window.dispatchEvent(new CustomEvent("orbit:refresh"));
+      refreshOrbitEngine();
     })
   );
 
-  // 4. Currency changed → propagate to all displays
+  // 4. Currency changed → propagate via custom event for legacy components
   unsubs.push(
     platformBus.on("system:currency_changed", (event) => {
       window.dispatchEvent(new CustomEvent("currency:changed", { detail: event.payload }));
@@ -183,14 +206,33 @@ export function installPlatformReactions(): () => void {
   // 5. Listing published → refresh orbit counters
   unsubs.push(
     platformBus.on("marketplace:listing_published", () => {
-      window.dispatchEvent(new CustomEvent("orbit:refresh"));
+      refreshOrbitEngine();
+    })
+  );
+
+  unsubs.push(
+    platformBus.on("marketplace:listing_paused", () => {
+      refreshOrbitEngine();
     })
   );
 
   // 6. Lease activated → refresh PM + orbit
   unsubs.push(
     platformBus.on("pm:lease_activated", () => {
-      window.dispatchEvent(new CustomEvent("orbit:refresh"));
+      refreshOrbitEngine();
+    })
+  );
+
+  unsubs.push(
+    platformBus.on("pm:lease_created", () => {
+      refreshOrbitEngine();
+    })
+  );
+
+  // 7. Tracking events → refresh orbit
+  unsubs.push(
+    platformBus.on("tracking:completed", () => {
+      refreshOrbitEngine();
     })
   );
 
