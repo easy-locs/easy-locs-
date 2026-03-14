@@ -271,7 +271,7 @@ export function useConversationThreads() {
               threadMap.set(key, {
                 id: key,
                 conversationType: convType,
-                sourceModule,
+                sourceModule: srcModule,
                 contextType: ctxType,
                 contextId: ct.context_id || ct.id,
                 name: ct.provider_name || ct.listing_title || "Contact",
