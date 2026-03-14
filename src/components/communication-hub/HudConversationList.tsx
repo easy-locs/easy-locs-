@@ -2,6 +2,7 @@
  * HudConversationList — WhatsApp-style conversation sidebar.
  * Supports swipe-to-reveal (More + Archive) and contextual "More" bottom sheet.
  * Archived section displayed at top like WhatsApp.
+ * Fully i18n-aware.
  */
 import { useState, useMemo, useCallback } from "react";
 import { Search, Loader2, MessageCircle, Archive } from "lucide-react";
@@ -12,6 +13,7 @@ import HudConversationCard from "./HudConversationCard";
 import SwipeableThreadItem from "./SwipeableThreadItem";
 import ThreadContextMenu from "./ThreadContextMenu";
 import ScrollableFilterBar from "@/components/ui/ScrollableFilterBar";
+import { useI18n } from "@/lib/i18n";
 
 interface Props {
   threads: ConversationThread[];
@@ -34,15 +36,6 @@ interface Props {
   multiSelectActive?: boolean;
 }
 
-const FILTERS = [
-  { value: "all", label: "All" },
-  { value: "direct", label: "Direct" },
-  { value: "booking", label: "Bookings" },
-  { value: "property", label: "Property" },
-  { value: "listing", label: "Listings" },
-  { value: "deal", label: "Deals" },
-];
-
 export default function HudConversationList({
   threads, loading, selectedThread, onSelectThread,
   onDeleteThread, onArchiveThread, onMuteThread, onBlockThread, onClearThread,
@@ -50,10 +43,20 @@ export default function HudConversationList({
   onDetails, onSelectMessages,
   visible, multiSelectActive,
 }: Props) {
+  const { t } = useI18n();
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState("all");
   const [showArchived, setShowArchived] = useState(false);
   const [contextMenuThread, setContextMenuThread] = useState<ConversationThread | null>(null);
+
+  const FILTERS = useMemo(() => [
+    { value: "all", label: t("filter.all") || "All" },
+    { value: "direct", label: t("filter.direct") || "Direct" },
+    { value: "booking", label: t("filter.bookings") || "Bookings" },
+    { value: "property", label: t("filter.property") || "Property" },
+    { value: "listing", label: t("filter.listings") || "Listings" },
+    { value: "deal", label: t("filter.deals") || "Deals" },
+  ], [t]);
 
   const archivedThreads = useMemo(() =>
     threads.filter(t => !!t.archived),
@@ -71,7 +74,6 @@ export default function HudConversationList({
         if (t.archived) return false;
         if (activeFilter === "all") return true;
         if (t.conversationType === activeFilter) return true;
-        // "team" threads show under "direct" since there's no dedicated team tab
         if (activeFilter === "direct" && t.conversationType === "team") return true;
         return false;
       })
@@ -87,12 +89,11 @@ export default function HudConversationList({
 
   const filterCounts = useMemo(() => {
     const counts: Record<string, number> = { all: 0 };
-    for (const t of threads) {
-      if (t.archived) continue;
+    for (const th of threads) {
+      if (th.archived) continue;
       counts.all++;
-      counts[t.conversationType] = (counts[t.conversationType] || 0) + 1;
-      // Team threads also count under "direct"
-      if (t.conversationType === "team") {
+      counts[th.conversationType] = (counts[th.conversationType] || 0) + 1;
+      if (th.conversationType === "team") {
         counts["direct"] = (counts["direct"] || 0) + 1;
       }
     }
@@ -128,7 +129,7 @@ export default function HudConversationList({
           <Input
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
-            placeholder="Search conversations…"
+            placeholder={t("orbit.search_conversations") || "Search conversations…"}
             className="pl-10 h-9 text-sm rounded-xl border-none"
             style={{
               background: "hsl(var(--hud-surface))",
@@ -156,7 +157,7 @@ export default function HudConversationList({
         {loading ? (
           <div className="py-16 text-center">
             <Loader2 className="h-6 w-6 animate-spin mx-auto" style={{ color: "hsl(var(--hud-cyan) / 0.5)" }} />
-            <p className="text-xs mt-3" style={{ color: "hsl(var(--muted-foreground) / 0.5)" }}>Loading…</p>
+            <p className="text-xs mt-3" style={{ color: "hsl(var(--muted-foreground) / 0.5)" }}>{t("orbit.loading") || "Loading…"}</p>
           </div>
         ) : (
           <div>
@@ -172,7 +173,7 @@ export default function HudConversationList({
                 </div>
                 <div className="flex-1 text-left">
                   <span className="text-[15px] font-semibold" style={{ color: "hsl(var(--foreground))" }}>
-                    Archived
+                    {t("orbit.archived") || "Archived"}
                   </span>
                 </div>
                 <span className="text-xs font-medium" style={{ color: "hsl(var(--primary))" }}>
@@ -190,7 +191,7 @@ export default function HudConversationList({
               >
                 <Archive className="h-4 w-4" style={{ color: "hsl(var(--primary))" }} />
                 <span className="text-sm font-semibold" style={{ color: "hsl(var(--primary))" }}>
-                  ← Back to Chats
+                  {t("orbit.back_to_chats") || "← Back to Chats"}
                 </span>
               </button>
             )}
@@ -199,12 +200,14 @@ export default function HudConversationList({
               <div className="py-16 text-center px-6">
                 <MessageCircle className="h-10 w-10 mx-auto mb-3" style={{ color: "hsl(var(--muted-foreground) / 0.15)" }} />
                 <p className="text-sm font-medium" style={{ color: "hsl(var(--foreground) / 0.7)" }}>
-                  {showArchived ? "No archived conversations" : "No conversations"}
+                  {showArchived
+                    ? (t("orbit.no_archived") || "No archived conversations")
+                    : (t("orbit.no_conversations") || "No conversations")}
                 </p>
                 <p className="text-xs mt-1" style={{ color: "hsl(var(--muted-foreground) / 0.4)" }}>
                   {showArchived
-                    ? "Swipe left on a conversation → Archive"
-                    : "Messages will appear here"}
+                    ? (t("orbit.swipe_archive") || "Swipe left on a conversation → Archive")
+                    : (t("orbit.messages_appear") || "Messages will appear here")}
                 </p>
               </div>
             ) : (
