@@ -25,6 +25,7 @@ const FILTERS = [
   { value: "property", label: "Property" },
   { value: "listing", label: "Listings" },
   { value: "deal", label: "Deals" },
+  { value: "archived", label: "Archived" },
 ];
 
 export default function HudConversationList({ threads, loading, selectedThread, onSelectThread, visible }: Props) {
