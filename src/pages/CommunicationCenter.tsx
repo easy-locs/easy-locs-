@@ -42,7 +42,7 @@ const CommunicationCenter = () => {
   const [searchParams, setSearchParams] = useSearchParams();
 
   const { threads, loading, stats, loadThreads, updateThreadLocally } = useConversationThreads();
-  const { archiveThread, unarchiveThread, deleteThread } = useThreadActions({ updateThreadLocally, loadThreads });
+  const { archiveThread, unarchiveThread, deleteThread, muteThread, blockThread, clearThread } = useThreadActions({ updateThreadLocally, loadThreads });
   useOrbitCallSync();
   const [selectedThread, setSelectedThread] = useState<ConversationThread | null>(null);
   const [showContext, setShowContext] = useState(false);
