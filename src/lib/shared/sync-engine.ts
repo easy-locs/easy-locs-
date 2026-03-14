@@ -503,6 +503,16 @@ function buildEventContent(event: SyncEvent): { subject: string; message: string
         subject: `✅ Deal accepted — ${event.contextTitle}`,
         message: `Deal for "${event.contextTitle}" accepted at ${event.acceptedAmount} ${event.currency}. Payment request will follow.`,
       };
+    case "wallet_payment_completed":
+      return {
+        subject: `💰 Payment received — ${event.amount} ${event.currency}`,
+        message: `Payment of ${event.amount} ${event.currency} from ${event.recipientName} completed via ${event.paymentMethod === "locs" ? "LOCS Wallet" : "Card (Stripe)"}. Ref: ${event.txnId.slice(0, 12)}.`,
+      };
+    case "wallet_payment_failed":
+      return {
+        subject: `❌ Payment failed — ${event.amount} ${event.currency}`,
+        message: `Payment of ${event.amount} ${event.currency} via ${event.paymentMethod === "locs" ? "LOCS" : "Card"} failed. Reason: ${event.reason}.`,
+      };
     default:
       return { subject: "Platform notification", message: "An event occurred." };
   }
