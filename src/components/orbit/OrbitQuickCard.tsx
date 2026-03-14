@@ -87,7 +87,7 @@ export default function OrbitQuickCard({
 
       {/* Label */}
       <span
-        className="text-[11px] font-semibold leading-tight"
+        className="text-[10px] font-semibold leading-tight text-center break-words w-full"
         style={{ color: "hsl(var(--hud-text))" }}
       >
         {label}

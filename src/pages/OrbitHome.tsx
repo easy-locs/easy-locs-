@@ -22,7 +22,7 @@ import OrbitWalletCard from "@/components/orbit/OrbitWalletCard";
 const PRIORITY_CARDS = [
   { icon: MessageCircle, label: "Messages", desc: "Conversations", key: "unreadMessages" as const, to: "/dashboard/communication" },
   { icon: Phone, label: "Appels", desc: "Historique", key: "missedCalls" as const, to: "/dashboard/communication?section=calls" },
-  { icon: Bell, label: "Notifications", desc: "Alertes", key: "pendingNotifications" as const, to: "/dashboard/settings?section=notifications" },
+  { icon: Bell, label: "Alertes", desc: "Notifications", key: "pendingNotifications" as const, to: "/dashboard/settings?section=notifications" },
   { icon: Users, label: "Contacts", desc: "Répertoire", key: "activeContacts" as const, to: "/dashboard/communication?section=contacts" },
 ];
 
@@ -33,7 +33,7 @@ const ORBIT_INFRA_CARDS = [
   { icon: History, label: "Historique", desc: "Activité", key: null, to: "/dashboard/wallet?action=history" },
   { icon: Shield, label: "Sécurité", desc: "MFA / 2FA", key: null, to: "/dashboard/settings?section=security" },
   { icon: Fingerprint, label: "Identité", desc: "Profil", key: null, to: "/dashboard/settings" },
-  { icon: Lock, label: "Confidentialité", desc: "Données", key: null, to: "/dashboard/settings?section=privacy" },
+  { icon: Lock, label: "Privé", desc: "Données", key: null, to: "/dashboard/settings?section=privacy" },
 ];
 
 /* ══════ MARKETPLACE = Commerce layer ══════ */
@@ -41,7 +41,7 @@ const ORBIT_INFRA_CARDS = [
 /* ── Marketplace Commerce — Services, Bookings, Listings ── */
 const MARKETPLACE_CARDS = [
   { icon: Store, label: "Annonces", desc: "Mes services", key: "activeListings" as const, to: "/dashboard/marketplace" },
-  { icon: ShoppingBag, label: "Réservations", desc: "Commandes", key: "pendingOrders" as const, to: "/dashboard/marketplace" },
+  { icon: ShoppingBag, label: "Bookings", desc: "Commandes", key: "pendingOrders" as const, to: "/dashboard/marketplace" },
   { icon: Star, label: "Avis", desc: "Reviews", key: null, to: "/dashboard/marketplace" },
   { icon: TrendingUp, label: "Leads", desc: "Prospects", key: "newLeads" as const, to: "/dashboard/communication" },
 ];
@@ -49,7 +49,7 @@ const MARKETPLACE_CARDS = [
 /* ── Platform Modules — role-aware shortcuts ── */
 const MODULE_CARDS = [
   { icon: Building2, label: "Gestion", desc: "Immobilier", key: null, to: "/dashboard/rental", roles: ["landlord"] },
-  { icon: CalendarCheck, label: "Saisonnier", desc: "Réservations", key: "pendingBookings" as const, to: "/dashboard/seasonal", roles: ["landlord"] },
+  { icon: CalendarCheck, label: "Saisonnier", desc: "Bookings", key: "pendingBookings" as const, to: "/dashboard/seasonal", roles: ["landlord"] },
   { icon: Radar, label: "Radar", desc: "À proximité", key: "radarNearby" as const, to: "/dashboard/communication?section=nearby" },
   { icon: Palette, label: "Réglages", desc: "Global", key: null, to: "/dashboard/settings" },
 ];
@@ -161,7 +161,7 @@ export default function OrbitHome() {
             </span>
           )}
         </div>
-        <div className="grid grid-cols-4 gap-2.5">
+        <div className="grid grid-cols-4 gap-2">
           {PRIORITY_CARDS.map((card, i) => (
             <div key={card.label} className="animate-fade-in" style={{ animationDelay: `${150 + i * 50}ms` }}>
               <OrbitQuickCard
@@ -252,7 +252,7 @@ export default function OrbitHome() {
         >
           Marketplace — Commerce
         </h2>
-        <div className="grid grid-cols-4 gap-2.5">
+        <div className="grid grid-cols-4 gap-2">
           {MARKETPLACE_CARDS.map((card, i) => (
             <div key={card.label} className="animate-fade-in" style={{ animationDelay: `${450 + i * 35}ms` }}>
               <OrbitQuickCard
@@ -276,7 +276,7 @@ export default function OrbitHome() {
         >
           Modules
         </h2>
-        <div className="grid grid-cols-4 gap-2.5">
+        <div className="grid grid-cols-4 gap-2">
           {MODULE_CARDS.map((card, i) => (
             <div key={card.label} className="animate-fade-in" style={{ animationDelay: `${540 + i * 35}ms` }}>
               <OrbitQuickCard
