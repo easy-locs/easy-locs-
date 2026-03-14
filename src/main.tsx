@@ -58,7 +58,7 @@ const bootApp = async () => {
   root.render(<BootScreen title="Loading Easy-Locs…" description="Starting the application safely." />);
 
   try {
-    const appModule = await import("./App.tsx");
+    const appModule = await import("./App");
     const App = appModule?.default;
     if (!App) {
       throw new Error("App module loaded but default export is missing — possible chunk init failure.");
