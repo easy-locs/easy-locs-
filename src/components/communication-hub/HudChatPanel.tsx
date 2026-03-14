@@ -100,6 +100,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
   const [viewOnceNext, setViewOnceNext] = useState(false);
   const [replyTo, setReplyTo] = useState<{ msgId: string; content: string; senderName?: string } | null>(null);
   const [forwardData, setForwardData] = useState<{ messageId: string; content: string } | null>(null);
+  const [securityLevel, setSecurityLevel] = useState<SecurityLevel>("normal");
   const holdTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const slideStartRef = useRef<number>(0);
   const scrollRef = useRef<HTMLDivElement>(null);
