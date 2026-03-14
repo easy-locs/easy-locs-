@@ -23,6 +23,8 @@ interface Props {
   onMuteThread?: (thread: ConversationThread) => void;
   onBlockThread?: (thread: ConversationThread) => void;
   onClearThread?: (thread: ConversationThread) => void;
+  onFavoriteThread?: (thread: ConversationThread) => void;
+  onContactInfo?: (thread: ConversationThread) => void;
   visible: boolean;
   multiSelectActive?: boolean;
 }
