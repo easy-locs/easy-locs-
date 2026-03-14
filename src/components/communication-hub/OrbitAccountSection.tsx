@@ -21,7 +21,7 @@ import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { haptic } from "@/lib/haptics";
 import { supabase } from "@/integrations/supabase/client";
-
+import { usePrivacySettings } from "@/hooks/usePrivacySettings";
 type SubPage = "main" | "privacy" | "security" | "notifications" | "storage" | "devices" | "edit-profile";
 
 export default function OrbitAccountSection() {
