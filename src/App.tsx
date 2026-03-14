@@ -194,12 +194,13 @@ const App = () => (
       <BrowserRouter>
         <AuthProvider>
           <CallProvider>
+           <AppLockGuard>
            <OrbitSessionGuard />
            <OrbitPresenceGuard />
            <RealtimeMessageToast />
            <UpdateNotification />
           
-          <Suspense fallback={<PageLoader />}>
+           <Suspense fallback={<PageLoader />}>
             <Routes>
               {/* ══════ PUBLIC WEBSITE ══════ */}
               {/* Homepage */}
