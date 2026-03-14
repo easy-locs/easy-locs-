@@ -19,6 +19,7 @@ export default function SwipeableCallItem({ children, onDelete }: Props) {
   const [offsetX, setOffsetX] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
   const startX = useRef(0);
+  const startY = useRef(0);
   const isTracking = useRef(false);
   const locked = useRef<"h" | "v" | null>(null);
   const wasDragging = useRef(false);
