@@ -4,6 +4,7 @@
  */
 import { useState } from "react";
 import { Trash2, Copy, Forward, X, CheckSquare } from "lucide-react";
+import ForwardMessageDialog from "@/components/communication/ForwardMessageDialog";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
