@@ -362,7 +362,7 @@ serve(async (req) => {
         },
       });
 
-      return new Response(JSON.stringify({ url: session.url, session_id: session.id, tx_id: txRecord?.id }), {
+      return new Response(JSON.stringify({ url: session.url, session_id: session.id, tx_id: txRecord?.id, reference_code: txRecord?.reference_code }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
