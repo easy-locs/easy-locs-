@@ -232,6 +232,8 @@ const REQUIRED_CONTEXT: Record<SyncEvent["type"], (ctx: SyncContext, event: Sync
   intervention_created: (ctx) => ctx.propertyId ? null : "intervention_created requires context.propertyId",
   deal_created:         (ctx, e) => (e as DealCreatedEvent).dealId ? null : "deal_created requires dealId",
   deal_accepted:        (ctx, e) => (e as DealAcceptedEvent).dealId ? null : "deal_accepted requires dealId",
+  wallet_payment_completed: (ctx, e) => (e as WalletPaymentCompletedEvent).txnId ? null : "wallet_payment_completed requires txnId",
+  wallet_payment_failed:    () => null, // No strict requirement beyond orgId
 };
 
 // ═══════════════════════════════════════════════════════
