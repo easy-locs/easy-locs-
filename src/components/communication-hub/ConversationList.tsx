@@ -51,7 +51,11 @@ export default function ConversationList({ threads, loading, selectedThread, onS
     threads
       .filter(t => {
         if (activeFilter === "all") return true;
-        return t.conversationType === activeFilter || t.bookingType === activeFilter || t.sourceModule === activeFilter;
+        // Primary match on conversationType
+        if (t.conversationType === activeFilter) return true;
+        // "team" threads also show under "direct" since there's no dedicated team tab
+        if (activeFilter === "direct" && t.conversationType === "team") return true;
+        return false;
       })
       .filter(t => filterProperty === "all" || t.propertyId === filterProperty)
       .filter(t => !searchQuery ||
@@ -69,6 +73,10 @@ export default function ConversationList({ threads, loading, selectedThread, onS
     const counts: Record<string, number> = { all: threads.length };
     for (const t of threads) {
       counts[t.conversationType] = (counts[t.conversationType] || 0) + 1;
+      // Team threads also count under "direct"
+      if (t.conversationType === "team") {
+        counts["direct"] = (counts["direct"] || 0) + 1;
+      }
     }
     return counts;
   }, [threads]);
