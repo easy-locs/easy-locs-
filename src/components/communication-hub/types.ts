@@ -18,7 +18,6 @@ export type SourceModule =
   | "long_term"
   | "seasonal"
   | "marketplace"
-  | "concierge"
   | "real_estate"
   | "direct"
   | "team";
