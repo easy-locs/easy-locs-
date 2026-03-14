@@ -2,12 +2,12 @@
  * OrbitAccountSection — "YOU" section inside Orbit hub.
  * Signal/WhatsApp-level personal account control panel with profile editing.
  */
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import {
   User, Shield, Lock, Eye, Fingerprint, Smartphone,
   Copy, Check, QrCode, ChevronRight, Key, LogOut,
   Bell, Database, ShieldCheck, HelpCircle, Camera, Pencil,
-  Image, ShieldAlert, Timer, Ban, UserX, Globe, ScanFace, KeyRound, Wifi
+  Image, ShieldAlert, Timer, Ban, UserX, Globe, ScanFace, KeyRound, Wifi, AtSign
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { Switch } from "@/components/ui/switch";
