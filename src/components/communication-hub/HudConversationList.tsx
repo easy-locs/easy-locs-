@@ -63,7 +63,11 @@ export default function HudConversationList({
     return threads
       .filter(t => {
         if (t.archived) return false;
-        return activeFilter === "all" || t.conversationType === activeFilter || t.bookingType === activeFilter || t.sourceModule === activeFilter;
+        if (activeFilter === "all") return true;
+        if (t.conversationType === activeFilter) return true;
+        // "team" threads show under "direct" since there's no dedicated team tab
+        if (activeFilter === "direct" && t.conversationType === "team") return true;
+        return false;
       })
       .filter(t => !searchQuery ||
         t.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
