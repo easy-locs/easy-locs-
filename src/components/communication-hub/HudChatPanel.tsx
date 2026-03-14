@@ -12,6 +12,7 @@ import {
 import MessageContextMenu, { DisappearingMessagesToggle } from "./MessageContextMenu";
 import MessageMultiSelectToolbar from "./MessageMultiSelect";
 import ChatLocationPicker from "./ChatLocationPicker";
+import ForwardMessageDialog from "@/components/communication/ForwardMessageDialog";
 import { useCall } from "@/components/call/CallProvider";
 import AIGenerateButton from "@/components/ai/AIGenerateButton";
 import { haptic } from "@/lib/haptics";
