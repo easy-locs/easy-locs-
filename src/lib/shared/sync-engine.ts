@@ -210,7 +210,9 @@ export type SyncEvent =
   | PaymentRequestSentEvent
   | InterventionCreatedEvent
   | DealCreatedEvent
-  | DealAcceptedEvent;
+  | DealAcceptedEvent
+  | WalletPaymentCompletedEvent
+  | WalletPaymentFailedEvent;
 
 // ═══════════════════════════════════════════════════════
 // Strict Context Validation — rejects incomplete events
