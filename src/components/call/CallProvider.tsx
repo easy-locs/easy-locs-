@@ -348,6 +348,7 @@ export function CallProvider({ children }: { children: ReactNode }) {
           callId: meta.callId, threadId: meta.threadId,
           orgId: meta.orgId, senderId: user.id, event: "ended",
           durationSeconds: (log as any)?.duration_seconds || 0,
+          contextId: meta.contextId,
         });
       }
     }
