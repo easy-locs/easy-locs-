@@ -46,7 +46,8 @@ const FILTERS = [
 export default function HudConversationList({
   threads, loading, selectedThread, onSelectThread,
   onDeleteThread, onArchiveThread, onMuteThread, onBlockThread, onClearThread,
-  onFavoriteThread, onContactInfo,
+  onFavoriteThread, onContactInfo, onStatusChange, onSecurity, onSafetyNumber,
+  onDetails, onSelectMessages,
   visible, multiSelectActive,
 }: Props) {
   const [searchQuery, setSearchQuery] = useState("");
