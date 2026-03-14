@@ -86,6 +86,11 @@ serve(async (req) => {
       cancel_url: `${origin}/dashboard/billing?canceled=true`,
       allow_promotion_codes: true,
       payment_method_types: ["card"],
+      payment_method_options: {
+        card: {
+          request_three_d_secure: "any",
+        },
+      },
     };
     
     if (!customerId) {

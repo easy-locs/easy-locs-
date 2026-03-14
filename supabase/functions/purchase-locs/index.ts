@@ -84,6 +84,12 @@ serve(async (req) => {
         },
       ],
       mode: "payment",
+      payment_method_types: ["card"],
+      payment_method_options: {
+        card: {
+          request_three_d_secure: "any",
+        },
+      },
       success_url: `${req.headers.get("origin")}/dashboard/communication?wallet=success&locs=${locsToCredit}`,
       cancel_url: `${req.headers.get("origin")}/dashboard/communication?wallet=cancelled`,
       metadata: {
