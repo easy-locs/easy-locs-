@@ -94,14 +94,14 @@ export async function getOrCreateDirectThread(opts: {
   return { contextId, orgId, threadId: threadId || undefined };
 }
 
-/** Ensure a conversation_threads row exists for a direct thread */
+/** Ensure a conversation_threads row exists for a direct thread. Returns thread ID. */
 async function ensureConversationThread(
   orgId: string,
   contextId: string,
   opts: { currentUserId: string; targetUserId: string; targetName: string }
-) {
+): Promise<string | null> {
   try {
-    await supabase.from("conversation_threads").insert({
+    const { data } = await supabase.from("conversation_threads").insert({
       org_id: orgId,
       context_type: "direct",
       context_id: contextId,
@@ -111,8 +111,16 @@ async function ensureConversationThread(
       status: "active",
       last_message_at: new Date().toISOString(),
     }).select("id").maybeSingle();
+    return data?.id || null;
   } catch (e) {
-    // May already exist (race condition) — that's fine
+    // May already exist (race condition) — fetch existing
     console.warn("[direct-thread] conversation_threads insert:", e);
+    const { data: existing } = await supabase
+      .from("conversation_threads")
+      .select("id")
+      .eq("context_id", contextId)
+      .limit(1)
+      .maybeSingle();
+    return existing?.id || null;
   }
 }
