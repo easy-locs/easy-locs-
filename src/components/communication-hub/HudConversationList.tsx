@@ -25,6 +25,11 @@ interface Props {
   onClearThread?: (thread: ConversationThread) => void;
   onFavoriteThread?: (thread: ConversationThread) => void;
   onContactInfo?: (thread: ConversationThread) => void;
+  onStatusChange?: (thread: ConversationThread, status: string) => void;
+  onSecurity?: (thread: ConversationThread) => void;
+  onSafetyNumber?: (thread: ConversationThread) => void;
+  onDetails?: (thread: ConversationThread) => void;
+  onSelectMessages?: (thread: ConversationThread) => void;
   visible: boolean;
   multiSelectActive?: boolean;
 }
