@@ -538,6 +538,9 @@ export function useConversationThreads() {
       .on("postgres_changes", { event: "*", schema: "public", table: "conversation_threads", filter: `org_id=eq.${orgId}` }, () => {
         debouncedReload();
       })
+      .on("postgres_changes", { event: "*", schema: "public", table: "conversation_preferences", filter: `user_id=eq.${user.id}` }, () => {
+        debouncedReload();
+      })
       .subscribe();
 
     return () => {
