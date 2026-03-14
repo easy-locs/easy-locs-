@@ -322,8 +322,36 @@ function ChatMessageBubble({
           </div>
         ) : null}
 
-        {/* Voice message */}
-        {isVoice ? (
+        {/* Location message */}
+        {isLocation && locLat && locLng ? (
+          <div className="space-y-1.5">
+            <div className="rounded-lg overflow-hidden -mx-1" style={{ border: "1px solid hsl(var(--hud-border) / 0.1)" }}>
+              <iframe
+                src={`https://www.openstreetmap.org/export/embed.html?bbox=${parseFloat(locLng) - 0.008},${parseFloat(locLat) - 0.006},${parseFloat(locLng) + 0.008},${parseFloat(locLat) + 0.006}&layer=mapnik&marker=${locLat},${locLng}`}
+                className="w-full border-0 pointer-events-none"
+                style={{ height: 120 }}
+                loading="lazy"
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              <MapPin className="h-3.5 w-3.5 shrink-0" style={{ color: "hsl(var(--hud-cyan))" }} />
+              <span className="text-[12.5px] flex-1" style={{ color: "hsl(var(--foreground))" }}>
+                {locLabel || "📍 Location"}
+              </span>
+            </div>
+            <a
+              href={`https://www.openstreetmap.org/?mlat=${locLat}&mlon=${locLng}#map=16/${locLat}/${locLng}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 text-[11px] font-medium hover:opacity-80 transition-opacity"
+              style={{ color: "hsl(var(--hud-cyan))" }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <ExternalLink className="h-3 w-3" />
+              Open in Maps
+            </a>
+          </div>
+        ) : isVoice ? (
           <div>
             <VoiceMessageBubble
               url={(msg as any).audio_url}
