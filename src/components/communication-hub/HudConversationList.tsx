@@ -63,7 +63,11 @@ export default function HudConversationList({
     return threads
       .filter(t => {
         if (t.archived) return false;
-        return activeFilter === "all" || t.conversationType === activeFilter || t.bookingType === activeFilter || t.sourceModule === activeFilter;
+        if (activeFilter === "all") return true;
+        if (t.conversationType === activeFilter) return true;
+        // "team" threads show under "direct" since there's no dedicated team tab
+        if (activeFilter === "direct" && t.conversationType === "team") return true;
+        return false;
       })
       .filter(t => !searchQuery ||
         t.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -81,6 +85,10 @@ export default function HudConversationList({
       if (t.archived) continue;
       counts.all++;
       counts[t.conversationType] = (counts[t.conversationType] || 0) + 1;
+      // Team threads also count under "direct"
+      if (t.conversationType === "team") {
+        counts["direct"] = (counts["direct"] || 0) + 1;
+      }
     }
     return counts;
   }, [threads]);
