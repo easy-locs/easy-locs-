@@ -439,7 +439,7 @@ export default function ExploreHeader({
 
             <div className="flex items-center gap-1">
               {user && (
-                <Link to={`${dash}/messages`} className="relative flex items-center justify-center h-9 w-9 rounded-full hover:bg-muted/60 transition-colors">
+                <Link to="/dashboard/communication" className="relative flex items-center justify-center h-9 w-9 rounded-full hover:bg-muted/60 transition-colors">
                   <MessageSquare className="h-[18px] w-[18px] text-muted-foreground" />
                   {unreadCount > 0 && (
                     <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-[16px] flex items-center justify-center rounded-full bg-destructive text-destructive-foreground text-[9px] font-bold px-0.5">

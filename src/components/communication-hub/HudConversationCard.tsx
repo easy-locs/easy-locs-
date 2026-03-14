@@ -122,7 +122,7 @@ export default function HudConversationCard({ thread, isActive, onClick }: Props
                 whiteSpace: "nowrap",
               }}
             >
-              No messages yet
+              {t("orbit.no_messages_yet") || "No messages yet"}
             </p>
           )}
 
