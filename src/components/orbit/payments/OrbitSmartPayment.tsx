@@ -30,6 +30,7 @@ import OrbitWalletPinDialog from "./OrbitWalletPinDialog";
 /** Rich payment confirmation data passed to onSuccess */
 export interface PaymentConfirmation {
   txnId: string;
+  referenceCode: string | null;
   amount: number;
   currency: string;
   method: PaymentMethod;
