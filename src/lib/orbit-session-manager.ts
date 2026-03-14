@@ -4,12 +4,8 @@
  * Tracks active devices/sessions, detects suspicious logins,
  * and provides REAL session revocation via Supabase Auth.
  * 
- * Key security properties:
- * - revokeAllOtherSessions: calls supabase.auth.signOut({ scope: 'others' })
- *   to invalidate ALL other refresh tokens server-side
- * - revokeSession: deletes the session record AND calls edge function
- *   to revoke the specific auth session via admin API
- * - registerDeviceSession: logs device on login for tracking
+ * FIXED: Deduplicates sessions by user_id + device_fingerprint
+ * to prevent 189+ ghost sessions from accumulating.
  */
 
 import { supabase } from "@/integrations/supabase/client";
@@ -74,11 +70,16 @@ export async function registerDeviceSession(userId: string): Promise<{
     os,
   };
 
+  // First deduplicate: remove all but the most recent session for this fingerprint
+  await deduplicateSessions(userId, fingerprint);
+
   const { data: existing } = await supabase
     .from("user_sessions")
     .select("id, last_active_at")
     .eq("user_id", userId)
     .eq("device_fingerprint", fingerprint)
+    .order("last_active_at", { ascending: false })
+    .limit(1)
     .maybeSingle();
 
   const isNewDevice = !existing;
@@ -102,11 +103,36 @@ export async function registerDeviceSession(userId: string): Promise<{
     await logLoginEvent(userId, fingerprint, label, true);
   }
 
-  // Auto-cleanup: remove stale sessions (>30 days) and enforce max 5
-  await cleanupStaleSessions(userId, 30);
+  // Auto-cleanup: remove stale sessions (>7 days) and enforce max 5
+  await cleanupStaleSessions(userId, 7);
   await enforceMaxSessions(userId, 5);
 
   return { isNewDevice, sessionInfo };
+}
+
+/**
+ * Deduplicate sessions — keep only the most recent session per device_fingerprint.
+ * This fixes the 189+ sessions problem caused by duplicate inserts.
+ */
+async function deduplicateSessions(userId: string, fingerprint: string): Promise<void> {
+  const { data: dupes } = await supabase
+    .from("user_sessions")
+    .select("id, last_active_at")
+    .eq("user_id", userId)
+    .eq("device_fingerprint", fingerprint)
+    .order("last_active_at", { ascending: false });
+
+  if (!dupes || dupes.length <= 1) return;
+
+  // Keep the first (most recent), delete the rest
+  const toDelete = dupes.slice(1).map(s => s.id);
+  if (toDelete.length > 0) {
+    await supabase
+      .from("user_sessions")
+      .delete()
+      .in("id", toDelete);
+    console.log(`[SessionManager] Cleaned ${toDelete.length} duplicate sessions for fingerprint`);
+  }
 }
 
 async function logLoginEvent(
@@ -125,21 +151,55 @@ async function logLoginEvent(
 }
 
 export async function getUserSessions(userId: string): Promise<DeviceSession[]> {
+  // First deduplicate ALL sessions for this user
+  await deduplicateAllSessions(userId);
+
   const { data } = await supabase
     .from("user_sessions")
     .select("*")
     .eq("user_id", userId)
-    .order("last_active_at", { ascending: false });
+    .order("last_active_at", { ascending: false })
+    .limit(10); // Hard cap
 
   return (data || []) as unknown as DeviceSession[];
 }
 
 /**
- * Revoke a single session:
- * 1. Delete from user_sessions table (tracking)
- * 2. The actual auth token cannot be individually revoked from client-side,
- *    but the device will be signed out on next token refresh (within ~1h)
- *    and immediately disappears from the session list.
+ * Deduplicate ALL sessions for a user — one session per unique device_fingerprint.
+ */
+async function deduplicateAllSessions(userId: string): Promise<void> {
+  const { data: all } = await supabase
+    .from("user_sessions")
+    .select("id, device_fingerprint, last_active_at")
+    .eq("user_id", userId)
+    .order("last_active_at", { ascending: false });
+
+  if (!all || all.length <= 5) return;
+
+  // Group by fingerprint, keep only the most recent per fingerprint
+  const seen = new Set<string>();
+  const toDelete: string[] = [];
+
+  for (const s of all) {
+    if (seen.has(s.device_fingerprint)) {
+      toDelete.push(s.id);
+    } else {
+      seen.add(s.device_fingerprint);
+    }
+  }
+
+  if (toDelete.length > 0) {
+    // Delete in batches of 50
+    for (let i = 0; i < toDelete.length; i += 50) {
+      const batch = toDelete.slice(i, i + 50);
+      await supabase.from("user_sessions").delete().in("id", batch);
+    }
+    console.log(`[SessionManager] Deduplicated ${toDelete.length} total sessions`);
+  }
+}
+
+/**
+ * Revoke a single session
  */
 export async function revokeSession(sessionId: string): Promise<boolean> {
   const { error } = await supabase
@@ -152,7 +212,6 @@ export async function revokeSession(sessionId: string): Promise<boolean> {
     return false;
   }
 
-  // Log the revocation event
   const { data: { user } } = await supabase.auth.getUser();
   if (user) {
     const fingerprint = await getDeviceFingerprint();
@@ -170,16 +229,6 @@ export async function revokeSession(sessionId: string): Promise<boolean> {
 
 /**
  * Revoke ALL other sessions — the nuclear option.
- * This ACTUALLY invalidates other refresh tokens via Supabase Auth.
- * 
- * Steps:
- * 1. Call supabase.auth.signOut({ scope: 'others' }) to revoke ALL other
- *    Supabase auth sessions (refresh tokens invalidated server-side)
- * 2. Delete all other device records from user_sessions table
- * 3. Log the global revocation event
- * 
- * After this, other devices will be immediately signed out on their
- * next API call or token refresh attempt.
  */
 export async function revokeAllOtherSessions(userId: string): Promise<boolean> {
   const fingerprint = await getDeviceFingerprint();
@@ -210,7 +259,7 @@ export async function revokeAllOtherSessions(userId: string): Promise<boolean> {
   return true;
 }
 
-export async function getSuspiciousLogins(userId: string, limit = 10): Promise<LoginEvent[]> {
+export async function getSuspiciousLogins(userId: string, limit = 5): Promise<LoginEvent[]> {
   const { data } = await supabase
     .from("login_events")
     .select("*")
@@ -224,9 +273,8 @@ export async function getSuspiciousLogins(userId: string, limit = 10): Promise<L
 
 /**
  * Clean up stale sessions — removes sessions inactive for more than `maxAgeDays`.
- * Call this on login or periodically to keep the session list accurate.
  */
-export async function cleanupStaleSessions(userId: string, maxAgeDays = 30): Promise<number> {
+export async function cleanupStaleSessions(userId: string, maxAgeDays = 7): Promise<number> {
   const cutoff = new Date(Date.now() - maxAgeDays * 24 * 60 * 60 * 1000).toISOString();
   const { data } = await supabase
     .from("user_sessions")
@@ -240,7 +288,6 @@ export async function cleanupStaleSessions(userId: string, maxAgeDays = 30): Pro
 
 /**
  * Enforce maximum active sessions.
- * If sessionCount > maxSessions, revokes the oldest sessions beyond the limit.
  */
 export async function enforceMaxSessions(userId: string, maxSessions = 5): Promise<number> {
   const fingerprint = await getDeviceFingerprint();
@@ -253,8 +300,8 @@ export async function enforceMaxSessions(userId: string, maxSessions = 5): Promi
 
   if (!sessions || sessions.length <= maxSessions) return 0;
 
-  // Keep current device + most recent sessions up to maxSessions
   const toKeep = new Set<string>();
+  // Always keep current device
   for (const s of sessions) {
     if (s.device_fingerprint === fingerprint) { toKeep.add(s.id); continue; }
     if (toKeep.size < maxSessions) toKeep.add(s.id);

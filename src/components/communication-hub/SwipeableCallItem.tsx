@@ -1,11 +1,10 @@
 /**
- * SwipeableCallItem — Swipe-to-delete/archive on call entries.
- * Left swipe reveals delete, right swipe reveals archive.
- * Also supports keyboard Delete key.
+ * SwipeableCallItem — Swipe-to-delete on call entries.
+ * Left swipe reveals Delete button (like WhatsApp calls).
+ * Native touch implementation for reliable iOS behavior.
  */
-import { useState, type ReactNode } from "react";
-import { motion, useMotionValue, useTransform, PanInfo } from "framer-motion";
-import { Trash2, Archive } from "lucide-react";
+import { useState, useRef, useCallback, type ReactNode } from "react";
+import { Trash2 } from "lucide-react";
 import { haptic } from "@/lib/haptics";
 
 interface Props {
@@ -14,84 +13,112 @@ interface Props {
   onArchive?: () => void;
 }
 
-const THRESHOLD = 80;
+const BUTTON_WIDTH = 76;
 
-export default function SwipeableCallItem({ children, onDelete, onArchive }: Props) {
-  const x = useMotionValue(0);
-  const [swiped, setSwiped] = useState<"left" | "right" | null>(null);
-  const [focused, setFocused] = useState(false);
+export default function SwipeableCallItem({ children, onDelete }: Props) {
+  const [offsetX, setOffsetX] = useState(0);
+  const [isOpen, setIsOpen] = useState(false);
+  const startX = useRef(0);
+  const isTracking = useRef(false);
+  const locked = useRef<"h" | "v" | null>(null);
+  const wasDragging = useRef(false);
+  const baseOffset = useRef(0);
 
-  // Left swipe background (delete)
-  const deleteBg = useTransform(x, [-200, -THRESHOLD, 0], [1, 0.8, 0]);
-  // Right swipe background (archive) 
-  const archiveBg = useTransform(x, [0, THRESHOLD, 200], [0, 0.8, 1]);
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    const t = e.touches[0];
+    startX.current = t.clientX;
+    isTracking.current = true;
+    locked.current = null;
+    wasDragging.current = false;
+    baseOffset.current = isOpen ? -BUTTON_WIDTH : 0;
+  }, [isOpen]);
 
-  const handleDragEnd = (_: any, info: PanInfo) => {
-    const offset = info.offset.x;
-    if (offset < -THRESHOLD) {
-      haptic("medium");
-      setSwiped("left");
-      onDelete();
-    } else if (offset > THRESHOLD && onArchive) {
-      haptic("medium");
-      setSwiped("right");
-      onArchive();
+  const handleTouchMove = useCallback((e: React.TouchEvent) => {
+    if (!isTracking.current) return;
+    const t = e.touches[0];
+    const dx = t.clientX - startX.current;
+    const dy = e.touches[0].clientY - (e as any)._startY || 0;
+
+    if (!locked.current) {
+      if (Math.abs(dx) > 8) locked.current = "h";
+      else return;
     }
-  };
+    if (locked.current !== "h") return;
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Delete" || e.key === "Backspace") {
-      e.preventDefault();
-      haptic("medium");
-      setSwiped("left");
-      onDelete();
+    e.preventDefault();
+    wasDragging.current = true;
+
+    const raw = baseOffset.current + dx;
+    const clamped = Math.max(-BUTTON_WIDTH - 15, Math.min(0, raw));
+    setOffsetX(clamped);
+  }, []);
+
+  const handleTouchEnd = useCallback(() => {
+    if (!isTracking.current) return;
+    isTracking.current = false;
+    locked.current = null;
+
+    if (Math.abs(offsetX) > BUTTON_WIDTH * 0.5) {
+      setOffsetX(-BUTTON_WIDTH);
+      setIsOpen(true);
+      haptic("light");
+    } else {
+      setOffsetX(0);
+      setIsOpen(false);
     }
-  };
+  }, [offsetX]);
 
-  if (swiped) return null;
+  const close = useCallback(() => {
+    setOffsetX(0);
+    setIsOpen(false);
+  }, []);
+
+  const handleDeleteClick = useCallback((e: React.MouseEvent | React.TouchEvent) => {
+    e.stopPropagation();
+    haptic("medium");
+    close();
+    onDelete();
+  }, [onDelete, close]);
+
+  const handleContentClick = useCallback((e: React.MouseEvent) => {
+    if (wasDragging.current) { e.stopPropagation(); e.preventDefault(); return; }
+    if (isOpen) { e.stopPropagation(); e.preventDefault(); close(); }
+  }, [isOpen, close]);
 
   return (
-    <div
-      className="relative overflow-hidden"
-      tabIndex={0}
-      onKeyDown={handleKeyDown}
-      onFocus={() => setFocused(true)}
-      onBlur={() => setFocused(false)}
-      style={{
-        outline: focused ? "2px solid hsl(var(--hud-cyan) / 0.3)" : "none",
-        outlineOffset: -2,
-        borderRadius: 4,
-      }}
-    >
-      {/* Delete background (left swipe) */}
-      <motion.div
-        className="absolute inset-0 flex items-center justify-end px-6"
-        style={{ background: "hsl(var(--hud-danger))", opacity: deleteBg }}
-      >
-        <Trash2 className="h-5 w-5 text-white" />
-      </motion.div>
-
-      {/* Archive background (right swipe) */}
-      {onArchive && (
-        <motion.div
-          className="absolute inset-0 flex items-center justify-start px-6"
-          style={{ background: "hsl(var(--hud-cyan))", opacity: archiveBg }}
+    <div className="relative overflow-hidden">
+      {/* Delete button revealed */}
+      <div className="absolute inset-y-0 right-0 flex" style={{ width: `${Math.abs(offsetX)}px` }}>
+        <button
+          onClick={handleDeleteClick}
+          className="flex flex-col items-center justify-center gap-1 w-full active:opacity-80"
+          style={{
+            background: "hsl(var(--destructive))",
+            color: "hsl(var(--destructive-foreground))",
+          }}
         >
-          <Archive className="h-5 w-5 text-white" />
-        </motion.div>
-      )}
+          <Trash2 className="h-5 w-5" />
+          <span className="text-[10px] font-medium">Delete</span>
+        </button>
+      </div>
 
-      {/* Swipeable content */}
-      <motion.div
-        drag="x"
-        dragConstraints={{ left: -160, right: onArchive ? 160 : 0 }}
-        dragElastic={0.2}
-        onDragEnd={handleDragEnd}
-        style={{ x }}
+      {/* Content */}
+      <div
         className="relative z-10"
+        style={{
+          transform: `translateX(${offsetX}px)`,
+          transition: isTracking.current ? "none" : "transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+          willChange: "transform",
+          background: "hsl(var(--background))",
+        }}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        onTouchCancel={handleTouchEnd}
+        onClickCapture={handleContentClick}
       >
         {children}
-      </motion.div>
+      </div>
     </div>
   );
 }

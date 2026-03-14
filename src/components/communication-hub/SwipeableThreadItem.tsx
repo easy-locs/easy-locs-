@@ -1,168 +1,185 @@
 /**
- * SwipeableThreadItem — Swipe-to-delete/archive on conversation threads.
- * Left swipe → Delete (red), Right swipe → Archive (teal).
+ * SwipeableThreadItem — WhatsApp-style swipe actions on conversation threads.
+ * Left swipe reveals "More" + "Archive" buttons (like WhatsApp iOS).
  * Touch-optimized with conflict prevention for scroll, click, long-press, and multi-select.
  */
-import { useState, useRef, type ReactNode } from "react";
-import { motion, useMotionValue, useTransform, type PanInfo, AnimatePresence } from "framer-motion";
-import { Trash2, Archive, ArchiveRestore } from "lucide-react";
+import { useState, useRef, useCallback, type ReactNode } from "react";
+import { Archive, ArchiveRestore, MoreHorizontal } from "lucide-react";
 import { haptic } from "@/lib/haptics";
 
 interface Props {
   children: ReactNode;
   onDelete: () => void;
   onArchive: () => void;
+  onMore?: () => void;
   isArchived?: boolean;
   disabled?: boolean;
 }
 
-const THRESHOLD = 72;
-const VELOCITY_THRESHOLD = 300;
+const SWIPE_THRESHOLD = 60;
+const BUTTON_WIDTH = 76; // Width of each action button
+const TOTAL_REVEAL = BUTTON_WIDTH * 2; // Two buttons
 
 export default function SwipeableThreadItem({
-  children, onDelete, onArchive, isArchived = false, disabled = false,
+  children, onDelete, onArchive, onMore, isArchived = false, disabled = false,
 }: Props) {
-  const x = useMotionValue(0);
-  const [dismissed, setDismissed] = useState(false);
-  const isDragging = useRef(false);
-  const dragStartX = useRef(0);
-  const dragStartY = useRef(0);
-  const isHorizontalDrag = useRef<boolean | null>(null);
+  const [offsetX, setOffsetX] = useState(0);
+  const [isOpen, setIsOpen] = useState(false);
+  const startX = useRef(0);
+  const startY = useRef(0);
+  const startTime = useRef(0);
+  const isTracking = useRef(false);
+  const locked = useRef<"horizontal" | "vertical" | null>(null);
+  const wasDragging = useRef(false);
+  const currentOffset = useRef(0);
 
-  // Opacity transforms for background reveals
-  const deleteOpacity = useTransform(x, [-160, -THRESHOLD, -20, 0], [1, 0.9, 0, 0]);
-  const archiveOpacity = useTransform(x, [0, 20, THRESHOLD, 160], [0, 0, 0.9, 1]);
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    if (disabled) return;
+    const t = e.touches[0];
+    startX.current = t.clientX;
+    startY.current = t.clientY;
+    startTime.current = Date.now();
+    isTracking.current = true;
+    locked.current = null;
+    wasDragging.current = false;
+    currentOffset.current = isOpen ? -TOTAL_REVEAL : 0;
+  }, [disabled, isOpen]);
 
-  // Scale transforms for icons
-  const deleteScale = useTransform(x, [-160, -THRESHOLD, 0], [1.2, 1, 0.5]);
-  const archiveScale = useTransform(x, [0, THRESHOLD, 160], [0.5, 1, 1.2]);
+  const handleTouchMove = useCallback((e: React.TouchEvent) => {
+    if (!isTracking.current || disabled) return;
+    const t = e.touches[0];
+    const dx = t.clientX - startX.current;
+    const dy = t.clientY - startY.current;
 
-  const handleDragStart = () => {
-    isDragging.current = false;
-    isHorizontalDrag.current = null;
-  };
-
-  const handleDrag = (_: any, info: PanInfo) => {
-    // Determine drag direction on first significant movement
-    if (isHorizontalDrag.current === null) {
-      const absX = Math.abs(info.offset.x);
-      const absY = Math.abs(info.offset.y);
-      if (absX > 8 || absY > 8) {
-        isHorizontalDrag.current = absX > absY * 1.5;
-      }
+    if (!locked.current) {
+      if (Math.abs(dy) > 8) { locked.current = "vertical"; return; }
+      if (Math.abs(dx) > 8) locked.current = "horizontal";
+      else return;
     }
+    if (locked.current === "vertical") return;
 
-    // If vertical scroll detected, kill horizontal drag
-    if (isHorizontalDrag.current === false) {
-      x.set(0);
-      return;
+    e.preventDefault();
+    wasDragging.current = true;
+
+    const raw = currentOffset.current + dx;
+    // Only allow left swipe (negative), clamp
+    const clamped = Math.max(-TOTAL_REVEAL - 20, Math.min(0, raw));
+    // Apply dampening beyond total reveal
+    const dampened = clamped < -TOTAL_REVEAL
+      ? -TOTAL_REVEAL + (clamped + TOTAL_REVEAL) * 0.3
+      : clamped;
+    
+    setOffsetX(dampened);
+  }, [disabled]);
+
+  const handleTouchEnd = useCallback(() => {
+    if (!isTracking.current) return;
+    isTracking.current = false;
+    locked.current = null;
+
+    // Snap logic: if past threshold, open; otherwise close
+    if (Math.abs(offsetX) > SWIPE_THRESHOLD) {
+      setOffsetX(-TOTAL_REVEAL);
+      setIsOpen(true);
+      haptic("light");
+    } else {
+      setOffsetX(0);
+      setIsOpen(false);
     }
+  }, [offsetX]);
 
-    if (Math.abs(info.offset.x) > 10) {
-      isDragging.current = true;
-    }
-  };
+  const close = useCallback(() => {
+    setOffsetX(0);
+    setIsOpen(false);
+  }, []);
 
-  const handleDragEnd = (_: any, info: PanInfo) => {
-    isHorizontalDrag.current = null;
+  const handleArchiveClick = useCallback((e: React.MouseEvent | React.TouchEvent) => {
+    e.stopPropagation();
+    haptic("medium");
+    close();
+    onArchive();
+  }, [onArchive, close]);
 
-    if (disabled) {
-      x.set(0);
-      return;
-    }
+  const handleMoreClick = useCallback((e: React.MouseEvent | React.TouchEvent) => {
+    e.stopPropagation();
+    haptic("light");
+    close();
+    onMore?.();
+  }, [onMore, close]);
 
-    const offset = info.offset.x;
-    const velocity = info.velocity.x;
-
-    // Left swipe = Delete
-    if (offset < -THRESHOLD || (offset < -30 && velocity < -VELOCITY_THRESHOLD)) {
-      haptic("medium");
-      setDismissed(true);
-      setTimeout(onDelete, 200);
-      return;
-    }
-
-    // Right swipe = Archive/Unarchive
-    if (offset > THRESHOLD || (offset > 30 && velocity > VELOCITY_THRESHOLD)) {
-      haptic("medium");
-      setDismissed(true);
-      setTimeout(onArchive, 200);
-      return;
-    }
-
-    // Reset below threshold
-    isDragging.current = false;
-  };
-
-  // Prevent click from firing after swipe
-  const handleClick = (e: React.MouseEvent) => {
-    if (isDragging.current) {
+  const handleContentClick = useCallback((e: React.MouseEvent) => {
+    if (wasDragging.current) {
       e.stopPropagation();
       e.preventDefault();
+      return;
     }
-  };
+    if (isOpen) {
+      e.stopPropagation();
+      e.preventDefault();
+      close();
+    }
+  }, [isOpen, close]);
+
+  const absOffset = Math.abs(offsetX);
+  const moreWidth = Math.min(absOffset / 2, BUTTON_WIDTH);
+  const archiveWidth = Math.min(absOffset / 2, BUTTON_WIDTH);
 
   return (
-    <AnimatePresence>
-      {!dismissed && (
-        <motion.div
-          className="relative overflow-hidden"
-          initial={{ height: "auto", opacity: 1 }}
-          exit={{ height: 0, opacity: 0 }}
-          transition={{ duration: 0.2 }}
+    <div className="relative overflow-hidden">
+      {/* Action buttons revealed behind content */}
+      <div className="absolute inset-y-0 right-0 flex" style={{ width: `${absOffset}px` }}>
+        {/* More button */}
+        <button
+          onClick={handleMoreClick}
+          className="flex flex-col items-center justify-center gap-1 transition-colors active:opacity-80"
+          style={{
+            width: `${moreWidth}px`,
+            background: "hsl(var(--muted-foreground) / 0.7)",
+            color: "white",
+          }}
         >
-          {/* Delete background (left swipe) */}
-          <motion.div
-            className="absolute inset-0 flex items-center justify-end px-6"
-            style={{
-              background: "hsl(var(--destructive))",
-              opacity: deleteOpacity,
-            }}
-          >
-            <motion.div style={{ scale: deleteScale }} className="flex items-center gap-2">
-              <Trash2 className="h-5 w-5 text-destructive-foreground" />
-              <span className="text-xs font-semibold text-destructive-foreground">Delete</span>
-            </motion.div>
-          </motion.div>
+          <MoreHorizontal className="h-5 w-5" />
+          <span className="text-[10px] font-medium">More</span>
+        </button>
 
-          {/* Archive background (right swipe) */}
-          <motion.div
-            className="absolute inset-0 flex items-center justify-start px-6"
-            style={{
-              background: "hsl(var(--primary))",
-              opacity: archiveOpacity,
-            }}
-          >
-            <motion.div style={{ scale: archiveScale }} className="flex items-center gap-2">
-              {isArchived ? (
-                <ArchiveRestore className="h-5 w-5 text-primary-foreground" />
-              ) : (
-                <Archive className="h-5 w-5 text-primary-foreground" />
-              )}
-              <span className="text-xs font-semibold text-primary-foreground">
-                {isArchived ? "Unarchive" : "Archive"}
-              </span>
-            </motion.div>
-          </motion.div>
+        {/* Archive button */}
+        <button
+          onClick={handleArchiveClick}
+          className="flex flex-col items-center justify-center gap-1 transition-colors active:opacity-80"
+          style={{
+            width: `${archiveWidth}px`,
+            background: "hsl(var(--primary))",
+            color: "hsl(var(--primary-foreground))",
+          }}
+        >
+          {isArchived ? (
+            <ArchiveRestore className="h-5 w-5" />
+          ) : (
+            <Archive className="h-5 w-5" />
+          )}
+          <span className="text-[10px] font-medium">
+            {isArchived ? "Unarchive" : "Archive"}
+          </span>
+        </button>
+      </div>
 
-          {/* Swipeable content */}
-          <motion.div
-            drag={disabled ? false : "x"}
-            dragConstraints={{ left: -160, right: 160 }}
-            dragElastic={0.15}
-            dragDirectionLock
-            onDragStart={handleDragStart}
-            onDrag={handleDrag}
-            onDragEnd={handleDragEnd}
-            onClickCapture={handleClick}
-            style={{ x }}
-            className="relative z-10 bg-background"
-            whileTap={{ cursor: "grabbing" }}
-          >
-            {children}
-          </motion.div>
-        </motion.div>
-      )}
-    </AnimatePresence>
+      {/* Swipeable content */}
+      <div
+        className="relative z-10"
+        style={{
+          transform: `translateX(${offsetX}px)`,
+          transition: isTracking.current ? "none" : "transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+          willChange: "transform",
+          background: "hsl(var(--background))",
+        }}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        onTouchCancel={handleTouchEnd}
+        onClickCapture={handleContentClick}
+      >
+        {children}
+      </div>
+    </div>
   );
 }
