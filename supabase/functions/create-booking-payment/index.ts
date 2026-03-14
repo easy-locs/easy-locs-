@@ -55,11 +55,22 @@ serve(async (req) => {
     const { booking_request_id, listing_id, guest_email, guest_name, amount, nights, property_label, origin } = await req.json();
     logStep("Request received", { booking_request_id, listing_id, amount, nights });
 
-    if (!nights || nights <= 0) throw new Error("Invalid nights");
-    if (!guest_email) throw new Error("Guest email required");
-    if (!listing_id) throw new Error("Listing ID required");
+    if (!nights || nights <= 0) {
+      return new Response(JSON.stringify({ error: "Invalid nights" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 400,
+      });
+    }
+    if (!guest_email) {
+      return new Response(JSON.stringify({ error: "Guest email required" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 400,
+      });
+    }
+    if (!listing_id) {
+      return new Response(JSON.stringify({ error: "Listing ID required" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 400,
+      });
+    }
 
-    // Validate origin against allowlist to prevent open redirects
     const ALLOWED_ORIGINS = [
       "https://www.easy-locs.com",
       "https://easy-locs.com",
@@ -67,7 +78,11 @@ serve(async (req) => {
     const safeOrigin = ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
 
     const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
-    if (!stripeKey) throw new Error("STRIPE_SECRET_KEY not configured");
+    if (!stripeKey) {
+      return new Response(JSON.stringify({ error: "Payment system not configured" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 503,
+      });
+    }
 
     const supabaseClient = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
