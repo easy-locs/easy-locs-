@@ -403,7 +403,7 @@ export default function ExploreHeader({
 
             {/* Messages — logged in only */}
             {user && (
-              <Link to={`${dash}/messages`} className="relative flex items-center justify-center h-9 w-9 rounded-full hover:bg-muted/60 transition-colors" title="Messages">
+              <Link to="/dashboard/communication" className="relative flex items-center justify-center h-9 w-9 rounded-full hover:bg-muted/60 transition-colors" title="Messages">
                 <MessageSquare className="h-[18px] w-[18px] text-muted-foreground" />
                 {unreadCount > 0 && (
                   <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] flex items-center justify-center rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold px-1 animate-in fade-in zoom-in">
