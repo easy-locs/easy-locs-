@@ -6,6 +6,7 @@
 import { useState, useCallback, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { platformBus } from "@/lib/shared/platform-bus";
 
 export interface WalletBalance {
   id: string;
