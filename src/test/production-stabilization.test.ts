@@ -170,7 +170,7 @@ describe("Deep Link Routing — buildTargetUrl", () => {
   it("builds correct URL for concierge_order", async () => {
     const { buildTargetUrl } = await import("@/lib/shared/routes");
     const url = buildTargetUrl("concierge_order", { bookingId: "co-1" });
-    expect(url).toBe("/dashboard/concierge?booking=co-1");
+    expect(url).toBe("/dashboard/activities?booking=co-1");
   });
 
   it("tenant portal remaps lease correctly", async () => {

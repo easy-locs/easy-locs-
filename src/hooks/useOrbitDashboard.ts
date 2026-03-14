@@ -209,7 +209,7 @@ export function useOrbitDashboard(): DashboardData {
         icon: "🎯",
         label: `${n} commande${n > 1 ? "s" : ""} à traiter`,
         description: "Confirmer les commandes conciergerie",
-        link: "/dashboard/concierge",
+        link: "/dashboard/activities",
         priority: 4,
         type: "action",
       });

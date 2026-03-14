@@ -21,8 +21,8 @@ const TARGET_ROUTES: Record<TargetType, { landlord: string; tenant?: string }> =
   // Marketplace / Concierge
   marketplace_booking: { landlord: "/dashboard/activities" },
   marketplace_service: { landlord: "/dashboard/activities" },
-  concierge_order:     { landlord: "/dashboard/concierge" },
-  concierge_service:   { landlord: "/dashboard/concierge" },
+  concierge_order:     { landlord: "/dashboard/activities" },
+  concierge_service:   { landlord: "/dashboard/activities" },
   // Real Estate
   real_estate_lead:    { landlord: "/dashboard/real-estate?tab=leads" },
   real_estate_listing: { landlord: "/dashboard/real-estate" },

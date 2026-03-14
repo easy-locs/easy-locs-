@@ -122,7 +122,7 @@ export function useConversationThreads() {
           threadMap.set(`booking-${o.id}`, {
             id: `booking-${o.id}`,
             conversationType: "booking",
-            sourceModule: "concierge",
+            sourceModule: "marketplace",
             contextType: "concierge_booking",
             contextId: o.id,
             name: o.guest_name || "Client",
@@ -263,7 +263,7 @@ export function useConversationThreads() {
             if (ctxType === "direct") { convType = "direct"; srcModule = "direct"; }
             else if (ctxType === "team") { convType = "team"; srcModule = "team"; }
             else if (ctxType === "listing" || ctxType === "marketplace_service") { convType = "listing"; srcModule = "marketplace"; }
-            else if (ctxType === "concierge_service") { convType = "listing"; srcModule = "concierge"; }
+            else if (ctxType === "concierge_service") { convType = "listing"; srcModule = "marketplace"; }
             else if (ctxType === "business" || ctxType === "service") { convType = "business"; srcModule = "marketplace"; }
 
             const key = `${convType}-${ct.id}`;
