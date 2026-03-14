@@ -80,29 +80,23 @@ export default function OrbitWalletCard() {
             {QUICK_ACTIONS.map((action) => {
               const Icon = action.icon;
               return (
-                <Sheet key={action.key} open={walletOpen} onOpenChange={setWalletOpen}>
-                  <SheetTrigger asChild>
-                    <motion.button
-                      whileTap={{ scale: 0.92 }}
-                      className="flex flex-col items-center gap-1 flex-1 py-2 rounded-xl transition-colors"
-                      style={{ background: "hsl(0 0% 100% / 0.1)" }}
-                      onClick={() => setWalletOpen(true)}
-                    >
-                      <Icon className="w-4 h-4 text-primary-foreground" />
-                      <span className="text-[10px] font-semibold text-primary-foreground/80">{action.label}</span>
-                    </motion.button>
-                  </SheetTrigger>
-                  <SheetContent side="bottom" className="rounded-t-3xl max-h-[85vh] overflow-y-auto p-0">
-                    <OrbitPaymentActions onClose={() => setWalletOpen(false)} />
-                  </SheetContent>
-                </Sheet>
+                <motion.button
+                  key={action.key}
+                  whileTap={{ scale: 0.92 }}
+                  className="flex flex-col items-center gap-1 flex-1 py-2 rounded-xl transition-colors"
+                  style={{ background: "hsl(0 0% 100% / 0.1)" }}
+                  onClick={() => navigate(`/dashboard/wallet?action=${action.key}`)}
+                >
+                  <Icon className="w-4 h-4 text-primary-foreground" />
+                  <span className="text-[10px] font-semibold text-primary-foreground/80">{action.label}</span>
+                </motion.button>
               );
             })}
 
             {/* History */}
             <motion.button
               whileTap={{ scale: 0.92 }}
-              onClick={() => navigate("/dashboard/finances")}
+              onClick={() => navigate("/dashboard/wallet?action=history")}
               className="flex flex-col items-center gap-1 flex-1 py-2 rounded-xl transition-colors"
               style={{ background: "hsl(0 0% 100% / 0.1)" }}
             >
