@@ -19,7 +19,7 @@ export function useThreadActions({ updateThreadLocally, loadThreads }: UseThread
 
   const upsertPref = useCallback(async (
     thread: ConversationThread,
-    updates: { archived?: boolean; muted?: boolean }
+    updates: Record<string, unknown>
   ) => {
     if (!userId) throw new Error("No user");
     const contextId = thread.contextId || thread.id;
@@ -29,7 +29,7 @@ export function useThreadActions({ updateThreadLocally, loadThreads }: UseThread
         context_id: contextId,
         ...updates,
         updated_at: new Date().toISOString(),
-      },
+      } as any,
       { onConflict: "user_id,context_id" }
     );
     if (error) throw error;
@@ -90,7 +90,6 @@ export function useThreadActions({ updateThreadLocally, loadThreads }: UseThread
 
   const blockThread = useCallback(async (thread: ConversationThread) => {
     if (!userId) return;
-    // Resolve the other user's ID from thread participants
     const otherUserId = resolveOtherUserId(thread, userId);
     if (!otherUserId) {
       toast.error("Cannot identify user to block");
@@ -104,7 +103,6 @@ export function useThreadActions({ updateThreadLocally, loadThreads }: UseThread
       } as any, { onConflict: "blocker_id,blocked_id" });
       if (error) throw error;
 
-      // Also archive + mute the conversation
       updateThreadLocally(thread.id, { archived: true, muted: true });
       await upsertPref(thread, { archived: true, muted: true });
       toast.success(`${thread.name} blocked`);
@@ -114,42 +112,49 @@ export function useThreadActions({ updateThreadLocally, loadThreads }: UseThread
     }
   }, [userId, updateThreadLocally, upsertPref]);
 
+  /**
+   * clearThread — "Clear chat for me" using cleared_at timestamp.
+   * Messages before this timestamp are hidden for the current user only.
+   * Does NOT modify or delete any messages — safe for the other participant.
+   */
   const clearThread = useCallback(async (thread: ConversationThread) => {
     if (!userId) return;
-    // Clear = soft-delete all messages in this thread for the current user
-    // We mark them as deleted_for_me by updating the thread's messages
+    const prevLastMessage = thread.lastMessage;
+    const prevUnread = thread.unreadCount;
+    updateThreadLocally(thread.id, { lastMessage: undefined, unreadCount: 0 });
     try {
-      const contextId = thread.contextId || thread.id;
-      // Delete messages from this thread where sender is current user OR mark as cleared
-      // For now, we delete messages from the messages table for this context
-      const { error } = await supabase
-        .from("messages")
-        .update({
-          deleted_by: userId,
-          content: "[Message cleared]",
-        } as any)
-        .eq("thread_id", contextId);
-
-      if (error) {
-        // If messages table doesn't have these columns, just acknowledge
-        console.warn("[clear] Partial clear:", error.message);
-      }
-
-      // Update the thread's last message display
-      updateThreadLocally(thread.id, { lastMessage: undefined, unreadCount: 0 });
+      await upsertPref(thread, { cleared_at: new Date().toISOString() });
       toast.success(`Chat with ${thread.name} cleared`);
     } catch (e: any) {
       console.error("[clear] Failed:", e);
+      updateThreadLocally(thread.id, { lastMessage: prevLastMessage, unreadCount: prevUnread });
       toast.error("Failed to clear chat");
     }
-  }, [userId, updateThreadLocally]);
+  }, [userId, updateThreadLocally, upsertPref]);
 
-  return { archiveThread, unarchiveThread, deleteThread, muteThread, blockThread, clearThread };
+  /**
+   * favoriteThread — Toggle favourite status with persistence.
+   */
+  const favoriteThread = useCallback(async (thread: ConversationThread) => {
+    if (!userId) return;
+    const wasFavorited = !!(thread as any).favorited;
+    const newFavorited = !wasFavorited;
+    updateThreadLocally(thread.id, { pinned: newFavorited } as any);
+    try {
+      await upsertPref(thread, { favorited: newFavorited });
+      toast.success(newFavorited ? `"${thread.name}" added to favourites` : `"${thread.name}" removed from favourites`);
+    } catch (e: any) {
+      console.error("[favorite] Failed:", e);
+      updateThreadLocally(thread.id, { pinned: wasFavorited } as any);
+      toast.error("Failed to update favourite");
+    }
+  }, [userId, updateThreadLocally, upsertPref]);
+
+  return { archiveThread, unarchiveThread, deleteThread, muteThread, blockThread, clearThread, favoriteThread };
 }
 
 /** Resolve the other participant's user ID from the thread */
 function resolveOtherUserId(thread: ConversationThread, currentUserId: string): string | null {
-  // contextId for direct threads is usually "direct:uuid1:uuid2"
   if (thread.contextId?.startsWith("direct:")) {
     const parts = thread.contextId.split(":");
     const id1 = parts[1];
@@ -157,10 +162,6 @@ function resolveOtherUserId(thread: ConversationThread, currentUserId: string): 
     if (id1 && id2) {
       return id1 === currentUserId ? id2 : id1;
     }
-  }
-  // Fallback: try to extract from thread ID format
-  if (thread.id?.includes("-")) {
-    // Can't determine from thread.id alone
   }
   return null;
 }
