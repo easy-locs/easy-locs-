@@ -6,6 +6,7 @@ import { formatDistanceToNow, isToday, isYesterday, format } from "date-fns";
 import { User } from "lucide-react";
 import type { ConversationThread } from "./types";
 import { CONV_TYPE_CONFIG } from "./types";
+import { useI18n } from "@/lib/i18n";
 
 interface Props {
   thread: ConversationThread;
@@ -22,6 +23,7 @@ function formatTime(dateStr: string): string {
 }
 
 export default function HudConversationCard({ thread, isActive, onClick }: Props) {
+  const { t } = useI18n();
   const hasUnread = thread.unreadCount > 0;
   const typeConfig = CONV_TYPE_CONFIG[thread.conversationType];
   const contextLabel = thread.propertyLabel || thread.listingTitle || thread.serviceTitle || null;
@@ -122,7 +124,7 @@ export default function HudConversationCard({ thread, isActive, onClick }: Props
                 whiteSpace: "nowrap",
               }}
             >
-              No messages yet
+              {t("orbit.no_messages_yet") || "No messages yet"}
             </p>
           )}
 

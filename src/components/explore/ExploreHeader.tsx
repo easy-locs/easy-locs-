@@ -107,7 +107,7 @@ function DesktopUserMenu() {
           <DropdownMenuItem className="px-4 py-2.5 cursor-pointer" onClick={() => navigate(dash)}>
             <LayoutDashboard className="h-4 w-4 mr-3 text-muted-foreground" /> Dashboard
           </DropdownMenuItem>
-          <DropdownMenuItem className="px-4 py-2.5 cursor-pointer" onClick={() => navigate(`${dash}/messages`)}>
+          <DropdownMenuItem className="px-4 py-2.5 cursor-pointer" onClick={() => navigate("/dashboard/communication")}>
             <MessageSquare className="h-4 w-4 mr-3 text-muted-foreground" /> Messages
           </DropdownMenuItem>
           <DropdownMenuItem className="px-4 py-2.5 cursor-pointer" onClick={() => navigate("/saved")}>
@@ -273,7 +273,7 @@ function MobileUserSheet() {
           {/* Universal */}
           <MobileNavItem icon={Plus} label="Post a listing" onClick={() => go("/dashboard/create-listing")} accent />
           <MobileNavItem icon={LayoutDashboard} label="Dashboard" onClick={() => go(dash)} />
-          <MobileNavItem icon={MessageSquare} label="Messages" onClick={() => go(`${dash}/messages`)} />
+          <MobileNavItem icon={MessageSquare} label="Messages" onClick={() => go("/dashboard/communication")} />
           <MobileNavItem icon={Heart} label="Saved" onClick={() => go("/saved")} />
 
           {/* Landlord/Pro */}
@@ -403,7 +403,7 @@ export default function ExploreHeader({
 
             {/* Messages — logged in only */}
             {user && (
-              <Link to={`${dash}/messages`} className="relative flex items-center justify-center h-9 w-9 rounded-full hover:bg-muted/60 transition-colors" title="Messages">
+              <Link to="/dashboard/communication" className="relative flex items-center justify-center h-9 w-9 rounded-full hover:bg-muted/60 transition-colors" title="Messages">
                 <MessageSquare className="h-[18px] w-[18px] text-muted-foreground" />
                 {unreadCount > 0 && (
                   <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] flex items-center justify-center rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold px-1 animate-in fade-in zoom-in">
@@ -439,7 +439,7 @@ export default function ExploreHeader({
 
             <div className="flex items-center gap-1">
               {user && (
-                <Link to={`${dash}/messages`} className="relative flex items-center justify-center h-9 w-9 rounded-full hover:bg-muted/60 transition-colors">
+                <Link to="/dashboard/communication" className="relative flex items-center justify-center h-9 w-9 rounded-full hover:bg-muted/60 transition-colors">
                   <MessageSquare className="h-[18px] w-[18px] text-muted-foreground" />
                   {unreadCount > 0 && (
                     <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-[16px] flex items-center justify-center rounded-full bg-destructive text-destructive-foreground text-[9px] font-bold px-0.5">
