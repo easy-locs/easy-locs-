@@ -11,6 +11,7 @@ import { usePresence } from "@/hooks/usePresence";
 import { I18nProvider } from "@/lib/i18n";
 import { ThemeProvider } from "next-themes";
 import { Suspense, lazy } from "react";
+import AppLockGuard from "@/components/security/AppLockGuard";
 import UpdateNotification from "@/components/UpdateNotification";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import ErrorBoundary from "@/components/ErrorBoundary";
