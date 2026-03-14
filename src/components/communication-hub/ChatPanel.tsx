@@ -157,7 +157,7 @@ export default function ChatPanel({ thread, onBack, onToggleContext, showContext
       const url = signedData?.signedUrl || path;
       const isMedia = file.type.startsWith("image/") || file.type.startsWith("video/");
 
-      await supabase.from("messages").insert({
+      const filePayload: any = {
         org_id: orgId, sender_id: user.id,
         tenant_id: thread.tenantId || null,
         booking_id: thread.bookingId || null,
@@ -167,7 +167,9 @@ export default function ChatPanel({ thread, onBack, onToggleContext, showContext
         content: isMedia ? `📷 ${file.name}` : `📎 ${file.name}`,
         category: "general", attachment_url: url, message_type: "user", sender_locale: locale,
         context_type: thread.contextType, context_id: thread.contextId,
-      });
+      };
+      if (thread.threadId) filePayload.thread_id = thread.threadId;
+      await supabase.from("messages").insert(filePayload);
       toast.success("File sent");
     } catch (e: any) { toast.error("Error: " + e.message); }
     setUploading(false);
