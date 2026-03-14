@@ -17,10 +17,10 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import OrbitPaymentActions from "@/components/orbit/payments/OrbitPaymentActions";
 
 const QUICK_ACTIONS = [
-  { icon: Send, label: "Send", key: "pay" as const },
-  { icon: ArrowDownLeft, label: "Receive", key: "request" as const },
-  { icon: ScanLine, label: "Scan", key: "scan_qr" as const },
-  { icon: QrCode, label: "My QR", key: "my_qr" as const },
+  { icon: Send, label: "Send", key: "send" },
+  { icon: ArrowDownLeft, label: "Receive", key: "receive" },
+  { icon: ScanLine, label: "Scan", key: "scan" },
+  { icon: QrCode, label: "My QR", key: "my_qr" },
 ];
 
 export default function OrbitWalletCard() {
