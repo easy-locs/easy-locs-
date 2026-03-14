@@ -1286,7 +1286,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
             defaultCurrency={thread.currency?.toUpperCase()}
             onSuccess={(conf: PaymentConfirmation) => {
               setPaymentLinkDialog(false);
-              // Send rich payment confirmation message in chat
+              // Send rich payment confirmation message in chat with E2EE
               const sendPaymentMessage = async () => {
                 const authUserId = await resolveAuthUserId();
                 if (!authUserId || !orgId) return;
@@ -1296,15 +1296,50 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
                 const headerLabel = conf.status === "completed" ? "💰 Payment sent" : "💰 Payment initiated";
                 const contextLine = conf.context ? `\n📎 ${conf.context.type}: ${conf.context.label || conf.context.id.slice(0, 8)}` : "";
                 const richContent = `${headerLabel}\n━━━━━━━━━━━━━━━━\n💵 Amount: ${conf.amount} ${conf.currency}\n💳 Method: ${methodLabel}\n📋 Status: ${statusLabel}\n🔖 Ref: ${conf.txnId.slice(0, 12)}${contextLine}\n━━━━━━━━━━━━━━━━`;
+
+                // E2EE: encrypt payment message like any other message
+                let storedContent = richContent;
+                let isEncrypted = false;
+                const peerId = thread.tenantId || thread.contextId || thread.id;
+                if (e2eReady && peerId) {
+                  const enc = await encrypt(richContent, peerId);
+                  if (enc) { storedContent = enc; isEncrypted = true; }
+                }
+
                 const msgPayload: any = {
                   org_id: orgId, sender_id: authUserId, tenant_id: thread.tenantId || null,
                   booking_id: thread.bookingId || null, booking_type: thread.bookingType || null,
-                  content: richContent,
+                  content: storedContent,
                   category: "payment", message_type: "system", read: false,
                   context_type: thread.contextType, context_id: thread.contextId,
+                  encrypted: isEncrypted,
                 };
                 if (thread.threadId) msgPayload.thread_id = thread.threadId;
                 await supabase.from("messages").insert(msgPayload);
+
+                // Cross-module sync: dispatch wallet_payment event for LOCS (instant)
+                if (conf.status === "completed" && conf.context) {
+                  try {
+                    const { dispatchSyncEvent } = await import("@/lib/shared/sync-engine");
+                    await dispatchSyncEvent({
+                      type: "wallet_payment_completed",
+                      context: {
+                        orgId,
+                        bookingId: thread.bookingId || undefined,
+                        propertyId: thread.propertyId || undefined,
+                      },
+                      actorUserId: authUserId,
+                      targetUserId: conf.recipientName ? undefined : undefined,
+                      amount: conf.amount,
+                      currency: conf.currency,
+                      paymentMethod: conf.method,
+                      txnId: conf.txnId,
+                      recipientName: conf.recipientName,
+                    });
+                  } catch (syncErr) {
+                    console.warn("[HudChatPanel] Sync event dispatch failed (non-blocking):", syncErr);
+                  }
+                }
               };
               sendPaymentMessage();
               toast.success(conf.status === "completed" ? "Payment sent!" : "Payment initiated — awaiting confirmation");
