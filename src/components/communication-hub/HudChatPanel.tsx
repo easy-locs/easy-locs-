@@ -602,12 +602,14 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
       } else if (thread.bookingType === "seasonal") await supabase.from("booking_requests").update({ status: newStatus }).eq("id", thread.bookingId);
 
       const actionLabels = { confirm: "✅ Booking confirmed", cancel: "❌ Booking cancelled", complete: "🏁 Booking completed" };
-      await supabase.from("messages").insert({
+      const bookingMsgPayload: any = {
         org_id: orgId, sender_id: SYSTEM_SENDER_ID, tenant_id: thread.tenantId || null,
         booking_id: thread.bookingId, booking_type: thread.bookingType, content: actionLabels[action],
         category: "booking", message_type: "system", read: false,
         context_type: thread.contextType, context_id: thread.contextId,
-      });
+      };
+      if (thread.threadId) bookingMsgPayload.thread_id = thread.threadId;
+      await supabase.from("messages").insert(bookingMsgPayload);
       onThreadUpdate(thread.id, { bookingStatus: newStatus });
       toast.success(actionLabels[action]);
 
