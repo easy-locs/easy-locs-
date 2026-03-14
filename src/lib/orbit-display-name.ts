@@ -11,6 +11,7 @@ export function getOrbitDisplayName(opts: {
   mode?: DisplayNameMode;
   customName?: string;
 }): string {
+  // Mode priority: explicit param > (caller should pass from DB). Fallback to localStorage only as last resort.
   const mode = opts.mode || (localStorage.getItem("orbit_display_name_mode") as DisplayNameMode) || "real";
   const customName = opts.customName || localStorage.getItem("orbit_custom_display_name") || "";
 

@@ -34,7 +34,13 @@ export default function HudConversationList({ threads, loading, selectedThread, 
 
   const filteredThreads = useMemo(() =>
     threads
-      .filter(t => activeFilter === "all" || t.conversationType === activeFilter || t.bookingType === activeFilter || t.sourceModule === activeFilter)
+      .filter(t => {
+        // Archive filter: show archived only when "archived" filter selected, hide from all other views
+        const isArchived = !!(t as any).archived;
+        if (activeFilter === "archived") return isArchived;
+        if (isArchived) return false;
+        return activeFilter === "all" || t.conversationType === activeFilter || t.bookingType === activeFilter || t.sourceModule === activeFilter;
+      })
       .filter(t => !searchQuery ||
         t.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         t.propertyLabel?.toLowerCase().includes(searchQuery.toLowerCase()) ||
