@@ -1059,6 +1059,17 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
                     <DropdownMenuItem onClick={() => { setShowAttachMenu(false); setPaymentLinkDialog(true); }}>
                       <CreditCard className="h-4 w-4 mr-2" style={{ color: "hsl(var(--hud-purple))" }} /> Payment
                     </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={() => {
+                      setShowAttachMenu(false);
+                      setViewOnceNext(true);
+                      const inp = document.createElement("input");
+                      inp.type = "file"; inp.accept = "image/*";
+                      inp.onchange = () => { const f = inp.files?.[0]; if (f) handleViewOnceUpload(f); };
+                      inp.click();
+                    }}>
+                      <Eye className="h-4 w-4 mr-2" style={{ color: "hsl(var(--hud-danger))" }} /> View Once Photo
+                    </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
                 {/* Text input */}
