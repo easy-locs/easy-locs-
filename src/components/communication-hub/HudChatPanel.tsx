@@ -950,9 +950,30 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
           </div>
         )}
 
+        {/* ══ Reply-to banner ══ */}
+        {replyTo && (
+          <div className="px-3 py-2 flex items-center gap-2 shrink-0" style={{
+            borderTop: "1px solid hsl(var(--hud-border) / 0.08)",
+            background: "hsl(var(--hud-cyan) / 0.05)",
+            borderLeft: "3px solid hsl(var(--hud-cyan))",
+          }}>
+            <div className="flex-1 min-w-0">
+              <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-cyan))" }}>
+                {replyTo.senderName === user?.id ? "You" : "Reply"}
+              </p>
+              <p className="text-[11px] line-clamp-1" style={{ color: "hsl(var(--hud-text-dim))" }}>
+                {replyTo.content.length > 80 ? replyTo.content.slice(0, 80) + "…" : replyTo.content}
+              </p>
+            </div>
+            <button onClick={() => setReplyTo(null)} className="shrink-0 h-6 w-6 rounded-full flex items-center justify-center" style={{ color: "hsl(var(--hud-text-dim))" }}>
+              ✕
+            </button>
+          </div>
+        )}
+
         {/* ══ Composer ══ */}
         <div className="px-2 sm:px-3 py-2 safe-area-pb shrink-0" style={{
-          borderTop: "1px solid hsl(var(--hud-border) / 0.08)",
+          borderTop: replyTo ? "none" : "1px solid hsl(var(--hud-border) / 0.08)",
           background: "hsl(var(--hud-surface) / 0.4)",
         }}>
           <input ref={fileInputRef} type="file" className="hidden" accept="image/*,video/mp4,video/webm,video/quicktime,.pdf,.doc,.docx"
