@@ -1,27 +1,15 @@
 /**
  * OrbitWalletPinDialog — PIN setup & verification for wallet transactions
- * Requires 6-digit PIN before any payment. Hashed client-side, stored in profile.
- * Lockout after 5 failed attempts (5 min cooldown).
+ * Uses server-side bcrypt hashing via edge function.
+ * Server-side lockout tracking (no localStorage dependency).
  */
-import { useState, useCallback, useEffect, useRef } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Shield, Lock, AlertTriangle, Loader2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
-
-const MAX_ATTEMPTS = 5;
-const LOCKOUT_MS = 5 * 60 * 1000; // 5 minutes
-
-/** Simple SHA-256 hash for PIN (not crypto-grade but sufficient for client-side check) */
-async function hashPin(pin: string): Promise<string> {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(`orbit-wallet-pin:${pin}`);
-  const hash = await crypto.subtle.digest("SHA-256", data);
-  return Array.from(new Uint8Array(hash), (b) => b.toString(16).padStart(2, "0")).join("");
-}
 
 interface OrbitWalletPinDialogProps {
   open: boolean;
@@ -30,67 +18,54 @@ interface OrbitWalletPinDialogProps {
 }
 
 export default function OrbitWalletPinDialog({ open, onVerified, onCancel }: OrbitWalletPinDialogProps) {
-  const { user } = useAuth();
   const [mode, setMode] = useState<"loading" | "setup" | "verify">("loading");
   const [pin, setPin] = useState("");
   const [confirmPin, setConfirmPin] = useState("");
   const [step, setStep] = useState<"enter" | "confirm">("enter");
   const [error, setError] = useState<string | null>(null);
   const [processing, setProcessing] = useState(false);
-  const [attempts, setAttempts] = useState(0);
-  const [lockedUntil, setLockedUntil] = useState<number | null>(null);
+  const [isLocked, setIsLocked] = useState(false);
+  const [lockedUntil, setLockedUntil] = useState<string | null>(null);
   const [lockCountdown, setLockCountdown] = useState(0);
-  const storedHash = useRef<string | null>(null);
+  const [attemptsRemaining, setAttemptsRemaining] = useState(5);
 
-  // Check if user has a PIN set
+  // Check PIN status from server
   useEffect(() => {
-    if (!open || !user?.id) return;
-    const check = async () => {
-      const { data } = await supabase
-        .from("profiles")
-        .select("wallet_pin_hash")
-        .eq("id", user.id)
-        .maybeSingle();
-      const hash = data?.wallet_pin_hash;
-      storedHash.current = hash || null;
-      setMode(hash ? "verify" : "setup");
-
-      // Restore lockout from localStorage
-      const lockKey = `wallet-lock-${user.id}`;
-      const lock = localStorage.getItem(lockKey);
-      if (lock) {
-        const until = parseInt(lock, 10);
-        if (until > Date.now()) {
-          setLockedUntil(until);
-          setAttempts(MAX_ATTEMPTS);
-        } else {
-          localStorage.removeItem(lockKey);
-        }
-      }
-    };
-    check();
+    if (!open) return;
     setPin("");
     setConfirmPin("");
     setStep("enter");
     setError(null);
-  }, [open, user?.id]);
+
+    const check = async () => {
+      const { data, error: fnErr } = await supabase.functions.invoke("wallet-pin", {
+        body: { action: "check_status" },
+      });
+      if (fnErr || !data) { setMode("setup"); return; }
+      setMode(data.has_pin ? "verify" : "setup");
+      setIsLocked(data.is_locked);
+      setLockedUntil(data.locked_until);
+      setAttemptsRemaining(5 - (data.failed_attempts || 0));
+    };
+    check();
+  }, [open]);
 
   // Lockout countdown
   useEffect(() => {
-    if (!lockedUntil) { setLockCountdown(0); return; }
+    if (!isLocked || !lockedUntil) { setLockCountdown(0); return; }
     const tick = () => {
-      const remaining = Math.max(0, Math.ceil((lockedUntil - Date.now()) / 1000));
+      const remaining = Math.max(0, Math.ceil((new Date(lockedUntil).getTime() - Date.now()) / 1000));
       setLockCountdown(remaining);
       if (remaining <= 0) {
+        setIsLocked(false);
         setLockedUntil(null);
-        setAttempts(0);
-        if (user?.id) localStorage.removeItem(`wallet-lock-${user.id}`);
+        setAttemptsRemaining(5);
       }
     };
     tick();
     const interval = setInterval(tick, 1000);
     return () => clearInterval(interval);
-  }, [lockedUntil, user?.id]);
+  }, [isLocked, lockedUntil]);
 
   const handleSetup = useCallback(async () => {
     if (step === "enter") {
@@ -100,48 +75,44 @@ export default function OrbitWalletPinDialog({ open, onVerified, onCancel }: Orb
       setError(null);
       return;
     }
-    // confirm step
     if (confirmPin !== pin) { setError("PINs don't match. Try again."); setConfirmPin(""); return; }
     setProcessing(true);
-    const hash = await hashPin(pin);
-    await supabase
-      .from("profiles")
-      .update({ wallet_pin_hash: hash })
-      .eq("id", user!.id);
-    storedHash.current = hash;
+    const { data, error: fnErr } = await supabase.functions.invoke("wallet-pin", {
+      body: { action: "set_pin", pin },
+    });
     setProcessing(false);
+    if (fnErr || data?.error) { setError(data?.error || "Failed to set PIN"); return; }
     toast.success("Wallet PIN set successfully");
     onVerified();
-  }, [step, pin, confirmPin, user, onVerified]);
+  }, [step, pin, confirmPin, onVerified]);
 
   const handleVerify = useCallback(async () => {
-    if (lockedUntil && lockedUntil > Date.now()) return;
+    if (isLocked) return;
     if (pin.length !== 6) { setError("Enter your 6-digit PIN"); return; }
     setProcessing(true);
-    const hash = await hashPin(pin);
-    if (hash === storedHash.current) {
-      setProcessing(false);
-      setAttempts(0);
+    const { data, error: fnErr } = await supabase.functions.invoke("wallet-pin", {
+      body: { action: "verify_pin", pin },
+    });
+    setProcessing(false);
+
+    if (fnErr) { setError("Server error"); return; }
+    if (data?.verified) {
+      setAttemptsRemaining(5);
       onVerified();
-    } else {
-      const newAttempts = attempts + 1;
-      setAttempts(newAttempts);
-      setPin("");
-      setProcessing(false);
-      if (newAttempts >= MAX_ATTEMPTS) {
-        const until = Date.now() + LOCKOUT_MS;
-        setLockedUntil(until);
-        if (user?.id) localStorage.setItem(`wallet-lock-${user.id}`, until.toString());
-        setError(`Wallet locked for 5 minutes`);
-      } else {
-        setError(`Wrong PIN (${MAX_ATTEMPTS - newAttempts} attempts left)`);
-      }
+      return;
     }
-  }, [pin, attempts, lockedUntil, user?.id, onVerified]);
+    setPin("");
+    if (data?.locked) {
+      setIsLocked(true);
+      setLockedUntil(data.locked_until);
+      setError(data.error || "Wallet locked for 5 minutes");
+    } else {
+      setAttemptsRemaining(data?.attempts_remaining ?? 0);
+      setError(data?.error || "Wrong PIN");
+    }
+  }, [pin, isLocked, onVerified]);
 
   if (!open) return null;
-
-  const isLocked = lockedUntil && lockedUntil > Date.now();
 
   return (
     <motion.div
@@ -237,7 +208,7 @@ export default function OrbitWalletPinDialog({ open, onVerified, onCancel }: Orb
 
             <p className="text-[10px] text-muted-foreground text-center">
               <Shield className="w-3 h-3 inline mr-1" />
-              Your PIN is hashed and never stored in plain text
+              PIN hashed with bcrypt • Server-side lockout protection
             </p>
           </div>
         )}
