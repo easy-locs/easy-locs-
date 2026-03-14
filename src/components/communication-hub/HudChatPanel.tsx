@@ -506,6 +506,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
 
       // Replace optimistic message with real one on next realtime event (auto via listener)
       setConvStatus("waiting_tenant");
+      setSecurityLevel("normal"); // Reset security level after successful send
 
       const recipientEmail = normalizeEmail(thread.email);
       if (recipientEmail && isValidEmail(recipientEmail)) {
@@ -1112,6 +1113,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
                     }).catch(err => console.error("[Orbit] Transcription trigger failed:", err));
                   }
 
+                  setSecurityLevel("normal"); // Reset security level after voice send
                   toast.success("Voice message sent");
                 } catch (e: any) {
                   toast.error(e?.message || "Failed to send voice message");
