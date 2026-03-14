@@ -27,6 +27,7 @@ export default function HudConversationCard({ thread, isActive, onClick }: Props
   const hasUnread = thread.unreadCount > 0;
   const typeConfig = CONV_TYPE_CONFIG[thread.conversationType];
   const contextLabel = thread.propertyLabel || thread.listingTitle || thread.serviceTitle || null;
+  const statusConfig = thread.conversationStatus ? CONV_STATUSES.find(s => s.value === thread.conversationStatus) : null;
 
   return (
     <button
