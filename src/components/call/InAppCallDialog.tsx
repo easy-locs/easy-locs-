@@ -417,7 +417,7 @@ export default function InAppCallDialog({
                 <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-medium" style={{
                   background: "hsl(142 70% 50% / 0.08)", color: "hsl(142 70% 50%)",
                 }}>
-                  <Shield className="h-2.5 w-2.5" /> Encrypted
+                  <Shield className="h-2.5 w-2.5" /> {status === "active" ? "Orbit Secure" : "Encrypted"}
                 </div>
                 {usingRelay && status === "active" && (
                   <div className="inline-flex items-center px-2 py-1 rounded-full text-[10px] font-medium" style={{
