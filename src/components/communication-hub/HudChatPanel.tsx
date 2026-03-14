@@ -12,6 +12,7 @@ import {
 import MessageContextMenu, { DisappearingMessagesToggle } from "./MessageContextMenu";
 import MessageMultiSelectToolbar from "./MessageMultiSelect";
 import ChatLocationPicker from "./ChatLocationPicker";
+import ForwardMessageDialog from "@/components/communication/ForwardMessageDialog";
 import { useCall } from "@/components/call/CallProvider";
 import AIGenerateButton from "@/components/ai/AIGenerateButton";
 import { haptic } from "@/lib/haptics";
@@ -96,6 +97,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
   const [selectedMsgIds, setSelectedMsgIds] = useState<Set<string>>(new Set());
   const [viewOnceNext, setViewOnceNext] = useState(false);
   const [replyTo, setReplyTo] = useState<{ msgId: string; content: string; senderName?: string } | null>(null);
+  const [forwardData, setForwardData] = useState<{ messageId: string; content: string } | null>(null);
   const holdTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const slideStartRef = useRef<number>(0);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -133,10 +135,20 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
     else if (thread.tenantId) query = query.eq("tenant_id", thread.tenantId).is("booking_id", null);
     const { data } = await query;
     if (data) {
-      setRawMessages(data as ChatMessage[]);
+      // Enrich reply_to_content for messages that have reply_to_id
+      const enriched = data.map((msg: any) => {
+        if (msg.reply_to_id && !msg.reply_to_content) {
+          const parent = data.find((m: any) => m.id === msg.reply_to_id);
+          if (parent) {
+            return { ...msg, reply_to_content: (parent as any).content?.slice(0, 120) || "Message" };
+          }
+        }
+        return msg;
+      });
+      setRawMessages(enriched as ChatMessage[]);
       // Cache for offline reading
-      offline.cacheMessages(data);
-      const lastMsg = data[data.length - 1] as any;
+      offline.cacheMessages(enriched);
+      const lastMsg = enriched[enriched.length - 1] as any;
       if (lastMsg?.conversation_status) setConvStatus(lastMsg.conversation_status);
       const unreadIds = data.filter(m => !m.read && m.sender_id !== user?.id).map(m => m.id);
       if (unreadIds.length > 0 && privacySettings.readReceipts) {
@@ -474,6 +486,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
         encrypted: isEncrypted,
         disappear_at: disappearAt,
         reply_to_id: currentReplyTo?.msgId || null,
+        reply_to_content: currentReplyTo?.content?.slice(0, 120) || null,
       } as any);
 
       if (insertErr) {
@@ -811,11 +824,15 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
             selectedIds={selectedMsgIds}
             messages={messages as any[]}
             currentUserId={user?.id}
+            currentContextId={thread?.contextId}
+            userEmail={user?.email}
+            userName={user?.user_metadata?.full_name || user?.email || "User"}
             onClearSelection={() => { setSelectMode(false); setSelectedMsgIds(new Set()); }}
             onDeletedForMe={(ids) => setHiddenMsgIds(prev => new Set([...prev, ...ids]))}
             onDeletedForAll={(ids) => {
               setRawMessages(prev => prev.map(m => ids.includes(m.id) ? {
                 ...m, content: "🚫 This message was deleted", deleted_for_all: true, attachment_url: null,
+                audio_url: null, audio_duration_seconds: null,
               } as any : m));
             }}
           />
@@ -1228,8 +1245,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
           setReplyTo({ msgId, content, senderName });
         }}
         onForward={(msgId, content) => {
-          navigator.clipboard.writeText(content);
-          toast.success("Message copied — paste in another conversation");
+          setForwardData({ messageId: msgId, content });
         }}
         onStarToggle={(msgId, starred) => {
           setRawMessages(prev => prev.map(m => m.id === msgId ? { ...m, starred } as any : m));
@@ -1295,6 +1311,20 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
         open={showSecurityPanel}
         onOpenChange={setShowSecurityPanel}
       />
+
+      {/* Forward Message Dialog */}
+      {forwardData && (
+        <ForwardMessageDialog
+          open={!!forwardData}
+          onClose={() => setForwardData(null)}
+          messageContent={forwardData.content}
+          messageId={forwardData.messageId}
+          userId={user?.id || ""}
+          userEmail={user?.email || ""}
+          userName={user?.user_metadata?.full_name || user?.email || "User"}
+          currentContextId={thread?.contextId || ""}
+        />
+      )}
     </>
   );
 }

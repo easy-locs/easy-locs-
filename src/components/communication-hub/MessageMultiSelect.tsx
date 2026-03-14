@@ -4,6 +4,7 @@
  */
 import { useState } from "react";
 import { Trash2, Copy, Forward, X, CheckSquare } from "lucide-react";
+import ForwardMessageDialog from "@/components/communication/ForwardMessageDialog";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
@@ -14,16 +15,20 @@ interface Props {
   selectedIds: Set<string>;
   messages: Array<{ id: string; content: string; sender_id: string; attachment_url?: string }>;
   currentUserId?: string;
+  currentContextId?: string;
+  userEmail?: string;
+  userName?: string;
   onClearSelection: () => void;
   onDeletedForMe: (ids: string[]) => void;
   onDeletedForAll: (ids: string[]) => void;
 }
 
 export default function MessageMultiSelectToolbar({
-  selectedIds, messages, currentUserId, onClearSelection, onDeletedForMe, onDeletedForAll,
+  selectedIds, messages, currentUserId, currentContextId, userEmail, userName, onClearSelection, onDeletedForMe, onDeletedForAll,
 }: Props) {
   const [confirmAction, setConfirmAction] = useState<"deleteMe" | "deleteAll" | null>(null);
   const [processing, setProcessing] = useState(false);
+  const [showForward, setShowForward] = useState(false);
   const count = selectedIds.size;
 
   if (count === 0) return null;
@@ -97,6 +102,9 @@ export default function MessageMultiSelectToolbar({
           <Button variant="ghost" size="icon" onClick={handleCopyAll} className="h-8 w-8 rounded-full" title="Copy">
             <Copy className="h-4 w-4" style={{ color: "hsl(var(--hud-text-dim))" }} />
           </Button>
+          <Button variant="ghost" size="icon" onClick={() => setShowForward(true)} className="h-8 w-8 rounded-full" title="Forward">
+            <Forward className="h-4 w-4" style={{ color: "hsl(var(--hud-text-dim))" }} />
+          </Button>
           <Button variant="ghost" size="icon" onClick={() => setConfirmAction("deleteMe")} className="h-8 w-8 rounded-full" title="Delete for me">
             <Trash2 className="h-4 w-4" style={{ color: "hsl(var(--hud-danger))" }} />
           </Button>
@@ -132,6 +140,20 @@ export default function MessageMultiSelectToolbar({
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Bulk Forward Dialog */}
+      {showForward && currentUserId && (
+        <ForwardMessageDialog
+          open={showForward}
+          onClose={() => { setShowForward(false); onClearSelection(); }}
+          messageContent={selectedMessages.map(m => m.content).join("\n\n")}
+          messageId={selectedMessages[0]?.id || ""}
+          userId={currentUserId}
+          userEmail={userEmail || ""}
+          userName={userName || "User"}
+          currentContextId={currentContextId || ""}
+        />
+      )}
     </>
   );
 }
