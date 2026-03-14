@@ -65,8 +65,8 @@ export async function searchByUsername(query: string) {
   if (!normalized) return [];
   const { data } = await supabase
     .from("profiles")
-    .select("id, name, email, username, avatar_url")
+    .select("id, name, email, username")
     .ilike("username", `%${normalized}%` as any)
     .limit(10);
-  return (data || []) as Array<{ id: string; name: string; email: string; username: string | null; avatar_url: string | null }>;
+  return (data || []) as unknown as Array<{ id: string; name: string; email: string; username: string | null }>;
 }
