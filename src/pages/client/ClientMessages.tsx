@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import ChatMediaPreview from "@/components/communication/ChatMediaPreview";
 import CallEventBubble from "@/components/communication/CallEventBubble";
 import MessageActionsMenu from "@/components/communication/MessageActionsMenu";
+import SwipeableMessage from "@/components/communication/SwipeableMessage";
 import ReplyPreview from "@/components/communication/ReplyPreview";
 import VoiceRecorder from "@/components/communication/VoiceRecorder";
 import VoiceMessageBubble from "@/components/communication/VoiceMessageBubble";
