@@ -107,7 +107,7 @@ export default function OrbitQRCode({
     try {
       await navigator.share({
         title: "Orbit Payment QR",
-        text: `Pay ${(profile as any)?.full_name || "me"} via Orbit`,
+        text: `Pay ${userName} via Orbit`,
         url: `${window.location.origin}/pay?qr=${encodeURIComponent(qrData)}`,
       });
     } catch {
