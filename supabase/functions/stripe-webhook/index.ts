@@ -249,6 +249,40 @@ serve(async (req) => {
         }
         break;
       }
+      case "checkout.session.expired": {
+        const session = event.data.object as Stripe.Checkout.Session;
+        const meta = session.metadata || {};
+        if (meta.type === "orbit_payment" && meta.user_id) {
+          logStep("Orbit payment session expired", { sessionId: session.id });
+          // Mark wallet transaction as failed
+          await supabase
+            .from("wallet_transactions")
+            .update({ status: "failed" })
+            .eq("reference_id", session.id)
+            .eq("user_id", meta.user_id)
+            .eq("status", "pending");
+          // Audit
+          await supabase.from("audit_logs").insert({
+            user_id: meta.user_id,
+            action: "orbit_payment_fiat_expired",
+            metadata_json: { session_id: session.id, amount: meta.amount, currency: meta.currency },
+          });
+          // Post failure message in chat
+          if (meta.thread_id) {
+            const { data: thread } = await supabase.from("conversation_threads").select("org_id").eq("id", meta.thread_id).maybeSingle();
+            await supabase.from("messages").insert({
+              org_id: thread?.org_id || null,
+              sender_id: "00000000-0000-0000-0000-000000000000",
+              thread_id: meta.thread_id,
+              content: `❌ Payment expired\n━━━━━━━━━━━━━━━━\n💵 Amount: ${meta.amount} ${meta.currency}\n📋 Status: ❌ Expired / Cancelled\n━━━━━━━━━━━━━━━━`,
+              category: "payment",
+              message_type: "system",
+              read: false,
+            });
+          }
+        }
+        break;
+      }
       default:
         logStep("Unhandled event type", { type: event.type });
     }
