@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Wallet, Send, ArrowDownLeft, ScanLine, QrCode,
   History, Settings, ArrowLeft, TrendingUp, TrendingDown,
-  Plus, Shield, Coins, ChevronRight,
+  Plus, Shield, ChevronRight, MessageCircle,
 } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";

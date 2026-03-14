@@ -1136,6 +1136,14 @@ const pageFr: Record<string, string> = {
   "landing.nav.signup": "S'inscrire",
   "landing.nav.tenant_access": "Espace locataire",
   "landing.nav.pro_signup": "Créer mon compte",
+  "landing.nav.post": "Publier",
+  "landing.value.badge": "Gérez votre business depuis n'importe où — 190+ pays",
+  "landing.value.title": "Créez votre business immobilier",
+  "landing.value.highlight": "à l'international",
+  "landing.value.subtitle": "Une plateforme pour gérer vos biens locatifs, encaisser des paiements et coordonner vos services.",
+  "landing.value.quick_links": "Liens rapides",
+  "landing.value.quick_links_desc": "Accédez rapidement aux sections clés",
+  "landing.value.get_started": "Commencer gratuitement",
 
   // Explore radius search
   "explore.radius.title": "Où cherchez-vous ?",
