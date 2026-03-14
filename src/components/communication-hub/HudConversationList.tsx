@@ -244,6 +244,11 @@ export default function HudConversationList({
           onClearChat={() => onClearThread?.(contextMenuThread)}
           onFavorite={() => onFavoriteThread?.(contextMenuThread)}
           onContactInfo={() => onContactInfo?.(contextMenuThread)}
+          onStatusChange={onStatusChange ? (status) => onStatusChange(contextMenuThread, status) : undefined}
+          onSecurity={onSecurity ? () => onSecurity(contextMenuThread) : undefined}
+          onSafetyNumber={onSafetyNumber ? () => onSafetyNumber(contextMenuThread) : undefined}
+          onDetails={onDetails ? () => onDetails(contextMenuThread) : undefined}
+          onSelectMessages={onSelectMessages ? () => onSelectMessages(contextMenuThread) : undefined}
         />
       )}
     </div>
