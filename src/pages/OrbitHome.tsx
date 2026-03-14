@@ -252,7 +252,7 @@ export default function OrbitHome() {
         >
           Marketplace — Commerce
         </h2>
-        <div className="grid grid-cols-4 gap-2.5">
+        <div className="grid grid-cols-4 gap-2">
           {MARKETPLACE_CARDS.map((card, i) => (
             <div key={card.label} className="animate-fade-in" style={{ animationDelay: `${450 + i * 35}ms` }}>
               <OrbitQuickCard
