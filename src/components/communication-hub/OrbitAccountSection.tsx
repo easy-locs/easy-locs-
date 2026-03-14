@@ -311,8 +311,8 @@ export default function OrbitAccountSection() {
           <Row label="Last Seen" desc="Show when you were last online"><Switch checked={lastSeen} onCheckedChange={setLastSeen} /></Row>
           <Row label="Online Status" desc="Show when you're currently online"><Switch checked={onlineStatus} onCheckedChange={setOnlineStatus} /></Row>
           <Row label="Profile Photo" desc="Who can see your profile photo"><Switch checked={profilePhoto} onCheckedChange={setProfilePhoto} /></Row>
-          <Row label="Read Receipts" desc="Others see when you've read their messages"><Switch checked={readReceipts} onCheckedChange={setReadReceipts} /></Row>
-          <Row label="Typing Indicators" desc="Show when you're typing a message"><Switch checked={typingIndicators} onCheckedChange={setTypingIndicators} /></Row>
+          <Row label="Read Receipts" desc="Others see when you've read their messages"><Switch checked={readReceipts} onCheckedChange={(v) => updatePrivacy({ readReceipts: v })} /></Row>
+          <Row label="Typing Indicators" desc="Show when you're typing a message"><Switch checked={typingIndicators} onCheckedChange={(v) => updatePrivacy({ typingIndicators: v })} /></Row>
           <Row label="Link Previews" desc="Generate previews for sent links"><Switch checked={linkPreviews} onCheckedChange={setLinkPreviews} /></Row>
         </div>
         <Separator className="my-4" />
