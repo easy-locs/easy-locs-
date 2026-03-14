@@ -6212,6 +6212,87 @@ export type Database = {
           },
         ]
       }
+      wallet_balances: {
+        Row: {
+          balance: number
+          created_at: string
+          currency: string
+          frozen_balance: number
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          balance?: number
+          created_at?: string
+          currency?: string
+          frozen_balance?: number
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          balance?: number
+          created_at?: string
+          currency?: string
+          frozen_balance?: number
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      wallet_transactions: {
+        Row: {
+          amount: number
+          counterpart_user_id: string | null
+          created_at: string
+          currency: string
+          description: string | null
+          direction: string
+          id: string
+          metadata_json: Json | null
+          reference_id: string | null
+          reference_type: string | null
+          status: string
+          thread_id: string | null
+          type: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          counterpart_user_id?: string | null
+          created_at?: string
+          currency?: string
+          description?: string | null
+          direction?: string
+          id?: string
+          metadata_json?: Json | null
+          reference_id?: string | null
+          reference_type?: string | null
+          status?: string
+          thread_id?: string | null
+          type?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          counterpart_user_id?: string | null
+          created_at?: string
+          currency?: string
+          description?: string | null
+          direction?: string
+          id?: string
+          metadata_json?: Json | null
+          reference_id?: string | null
+          reference_type?: string | null
+          status?: string
+          thread_id?: string | null
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       webhook_deliveries: {
         Row: {
           delivered_at: string
