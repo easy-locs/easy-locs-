@@ -27,6 +27,7 @@ import NewConversationDialog from "@/components/communication-hub/NewConversatio
 import OrbitSecuritySettings from "@/components/orbit/OrbitSecuritySettings";
 import OrbitAccountSection from "@/components/communication-hub/OrbitAccountSection";
 import { useConversationThreads } from "@/components/communication-hub/useConversationThreads";
+import { useThreadActions } from "@/hooks/useThreadActions";
 import type { ConversationThread } from "@/components/communication-hub/types";
 import { useOrbitCallSync } from "@/hooks/useOrbitCallSync";
 import { useAuth } from "@/contexts/AuthContext";
