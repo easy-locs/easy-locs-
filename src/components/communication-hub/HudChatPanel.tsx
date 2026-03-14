@@ -84,7 +84,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
   const [paymentAmount, setPaymentAmount] = useState("");
   const [paymentDescription, setPaymentDescription] = useState("");
   const [sendingPaymentLink, setSendingPaymentLink] = useState(false);
-  const [contextMessage, setContextMessage] = useState<{ msgId: string; content: string; isMe: boolean; createdAt: string; hasAudio?: boolean; hasAttachment?: boolean; senderId?: string; canModerate?: boolean } | null>(null);
+  const [contextMessage, setContextMessage] = useState<{ msgId: string; content: string; isMe: boolean; createdAt: string; hasAudio?: boolean; hasAttachment?: boolean; senderId?: string; canModerate?: boolean; isStarred?: boolean } | null>(null);
   const [hiddenMsgIds, setHiddenMsgIds] = useState<Set<string>>(new Set());
   const [disappearTTL, setDisappearTTL] = useState("off");
   const [showLocationPicker, setShowLocationPicker] = useState(false);
@@ -95,6 +95,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
   const [selectMode, setSelectMode] = useState(false);
   const [selectedMsgIds, setSelectedMsgIds] = useState<Set<string>>(new Set());
   const [viewOnceNext, setViewOnceNext] = useState(false);
+  const [replyTo, setReplyTo] = useState<{ msgId: string; content: string; senderName?: string } | null>(null);
   const holdTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const slideStartRef = useRef<number>(0);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -900,7 +901,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
                       onTranslate={handleTranslateMessage}
                       onContextMenu={(e, m, me) => {
                         if (selectMode) { toggleMsgSelect(m.id); return; }
-                        setContextMessage({ msgId: m.id, content: m.content, isMe: me, createdAt: m.created_at, hasAudio: !!(m as any).audio_url, hasAttachment: !!m.attachment_url, senderId: m.sender_id, canModerate: false });
+                        setContextMessage({ msgId: m.id, content: m.content, isMe: me, createdAt: m.created_at, hasAudio: !!(m as any).audio_url, hasAttachment: !!m.attachment_url, senderId: m.sender_id, canModerate: false, isStarred: !!(m as any).starred });
                       }}
                       onToggleSelect={toggleMsgSelect}
                       getCategoryIcon={getCategoryIcon}
@@ -949,9 +950,30 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
           </div>
         )}
 
+        {/* ══ Reply-to banner ══ */}
+        {replyTo && (
+          <div className="px-3 py-2 flex items-center gap-2 shrink-0" style={{
+            borderTop: "1px solid hsl(var(--hud-border) / 0.08)",
+            background: "hsl(var(--hud-cyan) / 0.05)",
+            borderLeft: "3px solid hsl(var(--hud-cyan))",
+          }}>
+            <div className="flex-1 min-w-0">
+              <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-cyan))" }}>
+                {replyTo.senderName === user?.id ? "You" : "Reply"}
+              </p>
+              <p className="text-[11px] line-clamp-1" style={{ color: "hsl(var(--hud-text-dim))" }}>
+                {replyTo.content.length > 80 ? replyTo.content.slice(0, 80) + "…" : replyTo.content}
+              </p>
+            </div>
+            <button onClick={() => setReplyTo(null)} className="shrink-0 h-6 w-6 rounded-full flex items-center justify-center" style={{ color: "hsl(var(--hud-text-dim))" }}>
+              ✕
+            </button>
+          </div>
+        )}
+
         {/* ══ Composer ══ */}
         <div className="px-2 sm:px-3 py-2 safe-area-pb shrink-0" style={{
-          borderTop: "1px solid hsl(var(--hud-border) / 0.08)",
+          borderTop: replyTo ? "none" : "1px solid hsl(var(--hud-border) / 0.08)",
           background: "hsl(var(--hud-surface) / 0.4)",
         }}>
           <input ref={fileInputRef} type="file" className="hidden" accept="image/*,video/mp4,video/webm,video/quicktime,.pdf,.doc,.docx"
@@ -1189,21 +1211,29 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
           if (type === "self") {
             setHiddenMsgIds(prev => new Set([...prev, msgId]));
           } else {
-            // For "everyone" and "moderation" — update in-memory state to show deleted bubble
             setRawMessages(prev => prev.map(m => m.id === msgId ? { 
-              ...m, 
-              content: "🚫 This message was deleted", 
-              message_type: "system",
-              attachment_url: null,
-              audio_url: undefined,
-              audio_duration_seconds: undefined,
-              deleted_for_all: true,
+              ...m, content: "🚫 This message was deleted", message_type: "system",
+              attachment_url: null, audio_url: undefined, audio_duration_seconds: undefined, deleted_for_all: true,
             } as any : m));
           }
         }}
         onCopy={() => {}}
         onEdited={(msgId, newContent) => {
           setRawMessages(prev => prev.map(m => m.id === msgId ? { ...m, content: newContent, edited_at: new Date().toISOString() } : m));
+        }}
+        onReply={(msgId, content, senderName) => {
+          setReplyTo({ msgId, content, senderName });
+        }}
+        onForward={(msgId, content) => {
+          navigator.clipboard.writeText(content);
+          toast.success("Message copied — paste in another conversation");
+        }}
+        onStarToggle={(msgId, starred) => {
+          setRawMessages(prev => prev.map(m => m.id === msgId ? { ...m, starred } as any : m));
+        }}
+        onEnterSelectMode={(msgId) => {
+          setSelectMode(true);
+          setSelectedMsgIds(new Set([msgId]));
         }}
       />
 
