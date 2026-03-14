@@ -374,10 +374,20 @@ export default function CommContactsSection() {
 
     setActionLoading(`${isVideo ? "video" : "call"}-${contact.id}`);
     try {
+      // Resolve thread to ensure call events are logged in the correct conversation
+      const thread = await getOrCreateDirectThread({
+        currentUserId: user.id,
+        targetUserId: contact.contact_user_id!,
+        targetName: contact.name,
+      });
+
+      const directContextId = `direct:${[user.id, contact.contact_user_id!].sort().join(":")}`;
+
       await initiateCall({
         orgId: contact.targetOrgId!,
+        threadId: thread?.threadId,
         contextType: "direct",
-        contextId: `direct:${[user.id, contact.contact_user_id!].sort().join(":")}`,
+        contextId: directContextId,
         contextLabel: `Appel avec ${contact.name}`,
         peerName: contact.name,
         isVideo,
