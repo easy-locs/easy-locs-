@@ -342,7 +342,7 @@ export default function InAppCallDialog({
                 background: "hsl(var(--background) / 0.7)", backdropFilter: "blur(8px)",
                 color: "hsl(142 70% 50%)",
               }}>
-                <Shield className="h-2.5 w-2.5" /> Encrypted
+                <Shield className="h-2.5 w-2.5" /> {status === "active" ? "Orbit Secure" : "Encrypted"}
               </div>
               {status === "active" && (
                 <div className="px-2 py-1 rounded-full text-[10px] font-mono font-semibold" style={{
