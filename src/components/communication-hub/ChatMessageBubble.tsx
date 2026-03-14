@@ -5,7 +5,7 @@
 import { memo, useRef, useCallback, useEffect, useState } from "react";
 import {
   Check, CheckCheck, Globe, Loader2, Mail, WifiOff, Lock,
-  ShieldCheck, CreditCard, EyeOff, Timer, Shield, FileText,
+  ShieldCheck, CreditCard, EyeOff, Timer, Shield, FileText, MapPin, ExternalLink,
 } from "lucide-react";
 import { format } from "date-fns";
 import ChatMediaPreview from "@/components/communication/ChatMediaPreview";
