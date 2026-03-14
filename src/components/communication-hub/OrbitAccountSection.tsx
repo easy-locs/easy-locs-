@@ -559,8 +559,8 @@ export default function OrbitAccountSection() {
       <div className="flex-1 overflow-y-auto scrollbar-thin px-4 py-4">
         <SubHeader title={t("orbit.you.chats") || "Chats"} icon={MessageSquare} />
         <div className="space-y-1 mt-4">
-          <MenuItem icon={Palette} label={t("orbit.chats.theme") || "Default Chat Theme"} desc={t("orbit.chats.theme_desc") || "Customize conversation appearance"} onClick={() => toast.info("Coming soon")} color="hsl(var(--primary))" />
-          <MenuItem icon={Film} label={t("orbit.chats.animations") || "Animations"} desc={t("orbit.chats.animations_desc") || "Emoji, stickers and GIFs movement"} onClick={() => toast.info("Coming soon")} color="hsl(var(--accent))" />
+          <MenuItem icon={Palette} label={t("orbit.chats.theme") || "Default Chat Theme"} desc={t("orbit.chats.theme_desc") || "Customize conversation appearance"} onClick={() => goToSettingsSection("appearance")} color="hsl(var(--primary))" />
+          <MenuItem icon={Film} label={t("orbit.chats.animations") || "Animations"} desc={t("orbit.chats.animations_desc") || "Emoji, stickers and GIFs movement"} onClick={() => goToSettingsSection("appearance")} color="hsl(var(--accent))" />
           <Row label={t("orbit.chats.save_photos") || "Save to Photos"} desc={t("orbit.chats.save_photos_desc") || "Auto-save received media to gallery"}>
             <Switch checked={mediaAutoDownload} onCheckedChange={setMediaAutoDownload} />
           </Row>
