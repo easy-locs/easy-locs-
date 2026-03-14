@@ -3767,7 +3767,10 @@ export type Database = {
           country: string | null
           created_at: string
           currency: string | null
+          custom_display_name: string | null
           date_of_birth: string | null
+          default_disappear_ttl: string
+          display_name_mode: string
           email: string
           first_name: string | null
           id: string
@@ -3782,6 +3785,8 @@ export type Database = {
           postal_code: string | null
           preferred_currency: string | null
           preferred_locale: string | null
+          privacy_read_receipts: boolean
+          privacy_typing_indicators: boolean
           referral_code: string | null
           signature_url: string | null
           tax_id: string | null
@@ -3798,7 +3803,10 @@ export type Database = {
           country?: string | null
           created_at?: string
           currency?: string | null
+          custom_display_name?: string | null
           date_of_birth?: string | null
+          default_disappear_ttl?: string
+          display_name_mode?: string
           email: string
           first_name?: string | null
           id: string
@@ -3813,6 +3821,8 @@ export type Database = {
           postal_code?: string | null
           preferred_currency?: string | null
           preferred_locale?: string | null
+          privacy_read_receipts?: boolean
+          privacy_typing_indicators?: boolean
           referral_code?: string | null
           signature_url?: string | null
           tax_id?: string | null
@@ -3829,7 +3839,10 @@ export type Database = {
           country?: string | null
           created_at?: string
           currency?: string | null
+          custom_display_name?: string | null
           date_of_birth?: string | null
+          default_disappear_ttl?: string
+          display_name_mode?: string
           email?: string
           first_name?: string | null
           id?: string
@@ -3844,6 +3857,8 @@ export type Database = {
           postal_code?: string | null
           preferred_currency?: string | null
           preferred_locale?: string | null
+          privacy_read_receipts?: boolean
+          privacy_typing_indicators?: boolean
           referral_code?: string | null
           signature_url?: string | null
           tax_id?: string | null
@@ -6133,6 +6148,7 @@ export type Database = {
         Args: { p_date_from: string; p_date_to?: string; p_service_id: string }
         Returns: boolean
       }
+      cleanup_expired_messages: { Args: never; Returns: number }
       create_api_key: {
         Args: { _name: string; _org_id: string; _scopes: string[] }
         Returns: Json
