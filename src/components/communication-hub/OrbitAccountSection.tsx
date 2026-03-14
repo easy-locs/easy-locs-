@@ -520,35 +520,34 @@ export default function OrbitAccountSection() {
           </div>
 
           <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mt-4">{t("orbit.security.auth") || "Authentication"}</p>
-          <MenuItem icon={Fingerprint} label={t("orbit.security.2fa") || "Two-Factor Authentication"} desc={t("orbit.security.2fa_desc") || "Add extra security to your account"} onClick={() => navigate("/dashboard/settings")} color="hsl(var(--primary))" />
-          <MenuItem icon={ScanFace} label={t("orbit.security.biometric") || "Biometric Lock"} desc={t("orbit.security.biometric_desc") || "Face ID / fingerprint to open Orbit"} onClick={() => toast.info("Coming soon")} color="hsl(var(--accent))" />
-          <MenuItem icon={KeyRound} label={t("orbit.security.pin") || "PIN Lock"} desc={t("orbit.security.pin_desc") || "4-digit PIN to access messages"} onClick={() => toast.info("Coming soon")} color="hsl(var(--primary))" />
+          <MenuItem icon={Fingerprint} label={t("orbit.security.2fa") || "Two-Factor Authentication"} desc={t("orbit.security.2fa_desc") || "Add extra security to your account"} onClick={() => goToSettingsSection("security")} color="hsl(var(--primary))" />
+          <MenuItem icon={ScanFace} label={t("orbit.security.biometric") || "Biometric Lock"} desc={t("orbit.security.biometric_desc") || "Face ID / fingerprint to open Orbit"} onClick={() => goToSettingsSection("security")} color="hsl(var(--accent))" />
+          <MenuItem icon={KeyRound} label={t("orbit.security.pin") || "PIN Lock"} desc={t("orbit.security.pin_desc") || "4-digit PIN to access messages"} onClick={() => goToSettingsSection("security")} color="hsl(var(--primary))" />
 
           <Separator className="my-2" />
           <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{t("orbit.security.encryption") || "Encryption"}</p>
-          <MenuItem icon={QrCode} label={t("orbit.security.safety_number") || "Safety Number"} desc={t("orbit.security.safety_number_desc") || "Verify encryption with contacts"} onClick={() => toast.info("Tap a contact → Shield icon")} color="hsl(var(--primary))" />
-          <MenuItem icon={Key} label={t("orbit.security.keys") || "Encryption Keys"} desc={t("orbit.security.keys_desc") || "View and export your identity keys"} onClick={() => toast.info("Keys stored securely on device")} color="hsl(var(--accent))" />
+          <MenuItem icon={QrCode} label={t("orbit.security.safety_number") || "Safety Number"} desc={t("orbit.security.safety_number_desc") || "Verify encryption with contacts"} onClick={() => goToSettingsSection("security")} color="hsl(var(--primary))" />
+          <MenuItem icon={Key} label={t("orbit.security.keys") || "Encryption Keys"} desc={t("orbit.security.keys_desc") || "View and export your identity keys"} onClick={() => goToSettingsSection("security")} color="hsl(var(--accent))" />
 
           <Separator className="my-2" />
           <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{t("orbit.security.message_protection") || "Message Protection"}</p>
-          <MenuItem icon={Lock} label={t("orbit.security.chat_lock") || "Chat Lock"} desc={t("orbit.security.chat_lock_desc") || "Lock individual conversations with PIN"} onClick={() => toast.info("Coming soon")} color="hsl(var(--primary))" />
+          <MenuItem icon={Lock} label={t("orbit.security.chat_lock") || "Chat Lock"} desc={t("orbit.security.chat_lock_desc") || "Lock individual conversations with PIN"} onClick={() => goToSettingsSection("security")} color="hsl(var(--primary))" />
           <MenuItem icon={Timer} label={t("orbit.security.disappearing") || "Disappearing Messages"} desc={t("orbit.security.disappearing_desc") || "Auto-delete after set time"} onClick={() => setSubPage("storage")} color="hsl(var(--accent))" />
-          <MenuItem icon={Ban} label={t("orbit.security.screenshot") || "Screenshot Protection"} desc={t("orbit.security.screenshot_desc") || "Block screenshots in private chats"} onClick={() => toast.info("Coming soon")} color="hsl(var(--primary))" />
+          <MenuItem icon={Ban} label={t("orbit.security.screenshot") || "Screenshot Protection"} desc={t("orbit.security.screenshot_desc") || "Block screenshots in private chats"} onClick={() => goToSettingsSection("security")} color="hsl(var(--primary))" />
 
           <Separator className="my-2" />
           <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{t("orbit.security.advanced") || "Advanced"}</p>
           <MenuItem icon={UserX} label={t("orbit.security.blocked") || "Blocked Contacts"} desc={t("orbit.security.blocked_desc") || "Manage blocked users"} onClick={async () => {
-            // Fetch actual blocked contacts count
             if (!user) return;
             const { count } = await supabase
               .from("blocked_users")
               .select("id", { count: "exact", head: true })
               .eq("blocker_id", user.id);
-            toast.info(count ? `${count} blocked contact(s)` : t("orbit.security.blocked_desc") || "No blocked contacts");
-          }} color="hsl(var(--destructive, 0 84% 60%))" />
-          <MenuItem icon={ShieldAlert} label={t("orbit.security.alerts") || "Security Notifications"} desc={t("orbit.security.alerts_desc") || "Get alerts on key changes"} onClick={() => toast.info("Enabled by default")} color="hsl(var(--accent))" />
-          <MenuItem icon={Globe} label={t("orbit.security.relay") || "Relay Calls"} desc={t("orbit.security.relay_desc") || "Route calls through Orbit servers"} onClick={() => toast.info("Coming soon")} color="hsl(var(--primary))" />
-          <MenuItem icon={Wifi} label={t("orbit.security.proxy") || "Proxy"} desc={t("orbit.security.proxy_desc") || "Route traffic through proxy for anonymity"} onClick={() => toast.info("Coming soon")} color="hsl(var(--accent))" />
+            toast.info(count ? `${count} ${t("orbit.security.blocked") || "blocked"}` : t("orbit.security.blocked_desc") || "No blocked contacts");
+          }} color="hsl(var(--destructive))" />
+          <MenuItem icon={ShieldAlert} label={t("orbit.security.alerts") || "Security Notifications"} desc={t("orbit.security.alerts_desc") || "Get alerts on key changes"} onClick={() => setSubPage("notifications")} color="hsl(var(--accent))" />
+          <MenuItem icon={Globe} label={t("orbit.security.relay") || "Relay Calls"} desc={t("orbit.security.relay_desc") || "Route calls through Orbit servers"} onClick={() => goToSettingsSection("security")} color="hsl(var(--primary))" />
+          <MenuItem icon={Wifi} label={t("orbit.security.proxy") || "Proxy"} desc={t("orbit.security.proxy_desc") || "Route traffic through proxy for anonymity"} onClick={() => goToSettingsSection("security")} color="hsl(var(--accent))" />
         </div>
       </div>
     );
