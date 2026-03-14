@@ -56,13 +56,29 @@ export default function OrbitAccountSection() {
   const [profilePhoto, setProfilePhoto] = useState(true);
   const [linkPreviews, setLinkPreviews] = useState(true);
 
-  // Notifications states
-  const [notifMessages, setNotifMessages] = useState(true);
-  const [notifPreview, setNotifPreview] = useState(true);
-  const [notifSound, setNotifSound] = useState(true);
-  const [notifVibrate, setNotifVibrate] = useState(true);
-  const [notifGroups, setNotifGroups] = useState(true);
-  const [notifCalls, setNotifCalls] = useState(true);
+  // Notifications states — synced with notif-alert-prefs
+  const [alertPrefs, setAlertPrefsState] = useState<NotifAlertPrefs>(getNotifAlertPrefs());
+  const notifMessages = alertPrefs.typeAlerts.messages;
+  const notifPreview = true; // placeholder
+  const notifSound = alertPrefs.sound;
+  const notifVibrate = alertPrefs.vibration;
+  const notifGroups = alertPrefs.typeAlerts.bookings;
+  const notifCalls = alertPrefs.browserNotifications;
+
+  const toggleAlertPref = (key: keyof NotifAlertPrefs) => {
+    if (key === "typeAlerts") return;
+    const next = setNotifAlertPrefs({ [key]: !alertPrefs[key as keyof NotifAlertPrefs] });
+    setAlertPrefsState(next);
+    // Trigger vibration feedback when toggling vibration on
+    if (key === "vibration" && !alertPrefs.vibration && navigator.vibrate) {
+      navigator.vibrate(50);
+    }
+  };
+
+  const toggleTypeAlert = (type: keyof typeof alertPrefs.typeAlerts) => {
+    const next = setNotifAlertPrefs({ typeAlerts: { ...alertPrefs.typeAlerts, [type]: !alertPrefs.typeAlerts[type] } });
+    setAlertPrefsState(next);
+  };
 
   // Storage states
   const [mediaAutoDownload, setMediaAutoDownload] = useState(true);
