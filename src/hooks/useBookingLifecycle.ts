@@ -140,6 +140,8 @@ export function useBookingLifecycle(opts: UseBookingLifecycleOpts = {}) {
     toast.success("Paiement confirmé !");
     invalidate();
 
+    platformBus.emit("marketplace:booking_paid", { bookingId: booking.id, amount: booking.total_price, currency: booking.currency }, "marketplace", { userId: user?.id, orgId });
+
     const svc = findService(booking.service_id);
     await notify(
       booking,
