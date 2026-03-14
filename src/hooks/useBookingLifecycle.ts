@@ -93,6 +93,16 @@ export function useBookingLifecycle(opts: UseBookingLifecycleOpts = {}) {
     toast.success(`Réservation ${labels[status] || status}`);
     invalidate();
 
+    // Emit platform bus events
+    const eventMap: Record<string, any> = {
+      confirmed: "marketplace:booking_confirmed",
+      completed: "marketplace:booking_completed",
+      cancelled: "marketplace:booking_cancelled",
+    };
+    if (eventMap[status]) {
+      platformBus.emit(eventMap[status], { bookingId: booking.id, status }, "marketplace", { userId: user?.id, orgId });
+    }
+
     // Resolve notifications
     try {
       const { resolveNotificationsForTarget } = await import("@/lib/shared/notification-engine");
