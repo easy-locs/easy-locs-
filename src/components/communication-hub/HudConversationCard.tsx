@@ -29,7 +29,7 @@ export default function HudConversationCard({ thread, isActive, onClick }: Props
   return (
     <button
       onClick={onClick}
-      className="w-full text-left flex items-center gap-3 px-4 py-[10px] transition-all duration-150 hover:bg-muted/10 active:scale-[0.995]"
+      className="w-full text-left flex items-center gap-3 px-4 py-[10px] transition-all duration-150 hover:bg-muted/10 active:scale-[0.995] overflow-hidden"
       style={{
         background: isActive ? "hsl(var(--primary) / 0.04)" : "transparent",
         borderLeft: isActive ? "2px solid hsl(var(--primary))" : "2px solid transparent",
