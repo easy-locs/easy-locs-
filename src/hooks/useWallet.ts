@@ -136,6 +136,7 @@ export function useWallet() {
     }
 
     await loadWallet();
+    platformBus.emit("wallet:transfer_sent", { recipientId: opts.recipientUserId, amount: opts.amount }, "wallet", { userId: user.id });
     return { success: true, data };
   }, [user?.id, loadWallet]);
 
