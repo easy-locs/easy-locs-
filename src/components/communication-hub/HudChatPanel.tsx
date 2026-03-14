@@ -92,6 +92,9 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
   const [showSecurityPanel, setShowSecurityPanel] = useState(false);
   const [showAttachMenu, setShowAttachMenu] = useState(false);
   const [voicePreview, setVoicePreview] = useState<{ blob: Blob; duration: number; url: string } | null>(null);
+  const [selectMode, setSelectMode] = useState(false);
+  const [selectedMsgIds, setSelectedMsgIds] = useState<Set<string>>(new Set());
+  const [viewOnceNext, setViewOnceNext] = useState(false);
   const holdTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const slideStartRef = useRef<number>(0);
   const scrollRef = useRef<HTMLDivElement>(null);
