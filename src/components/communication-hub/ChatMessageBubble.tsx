@@ -42,6 +42,41 @@ function ChatMessageBubble({
   selected, selectMode, currentUserId,
   onTranslate, onContextMenu, onToggleSelect, getCategoryIcon,
 }: Props) {
+  // Hooks MUST be called before any early returns
+  const longPressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const longPressTriggeredRef = useRef(false);
+
+  const handleTouchStart = useCallback(() => {
+    if (selectMode) return;
+    longPressTriggeredRef.current = false;
+    longPressTimerRef.current = setTimeout(() => {
+      longPressTriggeredRef.current = true;
+      haptic("medium");
+      onContextMenu({ preventDefault: () => {} } as React.MouseEvent, msg, isMe);
+    }, 500);
+  }, [selectMode, msg, isMe, onContextMenu]);
+
+  const handleTouchEnd = useCallback(() => {
+    if (longPressTimerRef.current) {
+      clearTimeout(longPressTimerRef.current);
+      longPressTimerRef.current = null;
+    }
+  }, []);
+
+  const handleTouchMove = useCallback(() => {
+    if (longPressTimerRef.current) {
+      clearTimeout(longPressTimerRef.current);
+      longPressTimerRef.current = null;
+    }
+  }, []);
+
+  const handleClick = useCallback(() => {
+    if (longPressTriggeredRef.current) return;
+    if (selectMode) {
+      onToggleSelect?.(msg.id);
+    }
+  }, [selectMode, msg.id, onToggleSelect]);
+
   const isSystem = msg.message_type === "system" || msg.sender_id === SYSTEM_SENDER_ID;
   const isDeleted = !!(msg as any).deleted_for_all;
   const isInboundEmail = msg.message_type === "inbound_email";
@@ -95,9 +130,6 @@ function ChatMessageBubble({
     );
   }
 
-  // Long-press detection for mobile
-  const longPressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const longPressTriggeredRef = useRef(false);
 
   const handleTouchStart = useCallback(() => {
     if (selectMode) return;
