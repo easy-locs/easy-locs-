@@ -151,20 +151,44 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
   useEffect(() => { if (offline.isOnline) loadMessages(); }, [offline.isOnline]);
   useEffect(() => { if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight; }, [messages]);
 
+  // Realtime: INSERT + UPDATE (for live deletion/edit sync)
   useEffect(() => {
     if (!orgId || !thread) return;
-    const channel = supabase.channel(`chat-${thread.id}`).on("postgres_changes", {
-      event: "INSERT", schema: "public", table: "messages", filter: `org_id=eq.${orgId}`,
-    }, (payload) => {
-      const newMsg = payload.new as ChatMessage;
-      const msgKey = newMsg.booking_id ? `booking-${newMsg.booking_id}` : newMsg.tenant_id ? `tenant-${newMsg.tenant_id}` : null;
-      if (msgKey === thread.id || (newMsg as any).context_id === thread.contextId) {
-        setRawMessages(prev => prev.some(m => m.id === newMsg.id) ? prev : [...prev, newMsg]);
-        if (newMsg.sender_id !== user?.id) supabase.from("messages").update({ read: true }).eq("id", newMsg.id);
-      }
-    }).subscribe();
+    const matchThread = (msg: any) => {
+      const msgKey = msg.booking_id ? `booking-${msg.booking_id}` : msg.tenant_id ? `tenant-${msg.tenant_id}` : null;
+      return msgKey === thread.id || msg.context_id === thread.contextId;
+    };
+    const channel = supabase.channel(`chat-${thread.id}`)
+      .on("postgres_changes", {
+        event: "INSERT", schema: "public", table: "messages", filter: `org_id=eq.${orgId}`,
+      }, (payload) => {
+        const newMsg = payload.new as ChatMessage;
+        if (matchThread(newMsg)) {
+          setRawMessages(prev => prev.some(m => m.id === newMsg.id) ? prev : [...prev, newMsg]);
+          if (newMsg.sender_id !== user?.id && privacySettings.readReceipts) {
+            supabase.from("messages").update({ read: true } as any).eq("id", newMsg.id);
+          }
+        }
+      })
+      .on("postgres_changes", {
+        event: "UPDATE", schema: "public", table: "messages", filter: `org_id=eq.${orgId}`,
+      }, (payload) => {
+        const updated = payload.new as ChatMessage;
+        if (matchThread(updated)) {
+          setRawMessages(prev => prev.map(m => m.id === updated.id ? updated : m));
+        }
+      })
+      .on("postgres_changes", {
+        event: "DELETE", schema: "public", table: "messages", filter: `org_id=eq.${orgId}`,
+      }, (payload) => {
+        const deleted = payload.old as any;
+        if (deleted?.id) {
+          setRawMessages(prev => prev.filter(m => m.id !== deleted.id));
+        }
+      })
+      .subscribe();
     return () => { supabase.removeChannel(channel); };
-  }, [orgId, thread, user]);
+  }, [orgId, thread, user, privacySettings.readReceipts]);
 
   useEffect(() => {
     if (!thread || !orgId) return;
