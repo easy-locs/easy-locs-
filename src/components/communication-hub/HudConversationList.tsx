@@ -23,6 +23,8 @@ interface Props {
   onMuteThread?: (thread: ConversationThread) => void;
   onBlockThread?: (thread: ConversationThread) => void;
   onClearThread?: (thread: ConversationThread) => void;
+  onFavoriteThread?: (thread: ConversationThread) => void;
+  onContactInfo?: (thread: ConversationThread) => void;
   visible: boolean;
   multiSelectActive?: boolean;
 }
@@ -39,6 +41,7 @@ const FILTERS = [
 export default function HudConversationList({
   threads, loading, selectedThread, onSelectThread,
   onDeleteThread, onArchiveThread, onMuteThread, onBlockThread, onClearThread,
+  onFavoriteThread, onContactInfo,
   visible, multiSelectActive,
 }: Props) {
   const [searchQuery, setSearchQuery] = useState("");
@@ -225,8 +228,8 @@ export default function HudConversationList({
           onDelete={() => onDeleteThread?.(contextMenuThread)}
           onBlock={() => onBlockThread?.(contextMenuThread)}
           onClearChat={() => onClearThread?.(contextMenuThread)}
-          onFavorite={() => {/* TODO: implement favorite */}}
-          onContactInfo={() => {/* TODO: navigate to contact info */}}
+          onFavorite={() => onFavoriteThread?.(contextMenuThread)}
+          onContactInfo={() => onContactInfo?.(contextMenuThread)}
         />
       )}
     </div>

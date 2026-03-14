@@ -446,16 +446,22 @@ export function useConversationThreads() {
       if (user?.id) {
         const { data: prefs } = await supabase
           .from("conversation_preferences")
-          .select("context_id, archived, muted")
+          .select("context_id, archived, muted, favorited, cleared_at")
           .eq("user_id", user.id);
 
         if (prefs?.length) {
-          const prefMap = new Map(prefs.map(p => [p.context_id, p]));
+          const prefMap = new Map(prefs.map((p: any) => [p.context_id, p]));
           for (const [, thread] of threadMap) {
             const pref = prefMap.get(thread.contextId) || prefMap.get(thread.id);
             if (pref) {
               thread.archived = !!pref.archived;
               thread.muted = !!pref.muted;
+              if (pref.favorited) thread.pinned = true;
+              // Hide messages before cleared_at
+              if (pref.cleared_at && thread.lastMessageTime && thread.lastMessageTime < pref.cleared_at) {
+                thread.lastMessage = undefined;
+                thread.unreadCount = 0;
+              }
             }
           }
         }

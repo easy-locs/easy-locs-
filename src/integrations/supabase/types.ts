@@ -1167,8 +1167,10 @@ export type Database = {
       conversation_preferences: {
         Row: {
           archived: boolean | null
+          cleared_at: string | null
           context_id: string
           created_at: string | null
+          favorited: boolean | null
           id: string
           muted: boolean | null
           updated_at: string | null
@@ -1176,8 +1178,10 @@ export type Database = {
         }
         Insert: {
           archived?: boolean | null
+          cleared_at?: string | null
           context_id: string
           created_at?: string | null
+          favorited?: boolean | null
           id?: string
           muted?: boolean | null
           updated_at?: string | null
@@ -1185,8 +1189,10 @@ export type Database = {
         }
         Update: {
           archived?: boolean | null
+          cleared_at?: string | null
           context_id?: string
           created_at?: string | null
+          favorited?: boolean | null
           id?: string
           muted?: boolean | null
           updated_at?: string | null
