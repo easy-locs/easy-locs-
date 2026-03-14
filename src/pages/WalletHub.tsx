@@ -25,14 +25,14 @@ import OrbitWalletPanel from "@/components/orbit/payments/OrbitWalletPanel";
 type WalletView = "home" | "send" | "receive" | "scan" | "my_qr" | "history" | "buy" | "currency" | "settings";
 
 const WALLET_ACTIONS = [
-  { key: "send" as WalletView, icon: Send, label: "Send", desc: "Send LOCS", color: "bg-accent" },
-  { key: "receive" as WalletView, icon: ArrowDownLeft, label: "Receive", desc: "Request payment", color: "bg-primary" },
-  { key: "scan" as WalletView, icon: ScanLine, label: "Scan QR", desc: "Scan to pay", color: "bg-info" },
-  { key: "my_qr" as WalletView, icon: QrCode, label: "My QR", desc: "Share your code", color: "bg-success" },
-  { key: "history" as WalletView, icon: History, label: "History", desc: "All transactions", color: "bg-muted" },
-  { key: "buy" as WalletView, icon: Plus, label: "Buy LOCS", desc: "Add credits", color: "bg-warning" },
-  { key: "currency" as WalletView, icon: TrendingUp, label: "Currency", desc: "FX preferences", color: "bg-secondary" },
-  { key: "settings" as WalletView, icon: Settings, label: "Settings", desc: "PIN & wallet config", color: "bg-muted" },
+  { key: "send" as WalletView, icon: Send, label: "Send", desc: "Send LOCS", gradient: "from-accent to-accent/80" },
+  { key: "receive" as WalletView, icon: ArrowDownLeft, label: "Receive", desc: "Request payment", gradient: "from-primary to-primary/80" },
+  { key: "scan" as WalletView, icon: ScanLine, label: "Scan QR", desc: "Scan to pay", gradient: "from-blue-500 to-blue-600" },
+  { key: "my_qr" as WalletView, icon: QrCode, label: "My QR", desc: "Share your code", gradient: "from-emerald-500 to-emerald-600" },
+  { key: "history" as WalletView, icon: History, label: "History", desc: "All transactions", gradient: "from-muted-foreground/60 to-muted-foreground/40" },
+  { key: "buy" as WalletView, icon: Plus, label: "Buy LOCS", desc: "Add credits", gradient: "from-amber-500 to-amber-600" },
+  { key: "currency" as WalletView, icon: TrendingUp, label: "Currency", desc: "FX preferences", gradient: "from-secondary to-secondary/80" },
+  { key: "settings" as WalletView, icon: Settings, label: "Settings", desc: "PIN & security", gradient: "from-muted-foreground/50 to-muted-foreground/30" },
 ];
 
 export default function WalletHub() {
