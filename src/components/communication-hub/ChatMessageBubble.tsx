@@ -164,12 +164,23 @@ function ChatMessageBubble({
           <span className="text-[10px] opacity-50 mb-0.5 block">{getCategoryIcon(msg.category)}</span>
         )}
 
-        {/* Media */}
-        {msg.attachment_url && (
+        {/* Media — view-once or regular */}
+        {isViewOnce && msg.attachment_url ? (
+          <div className="mb-1">
+            <ViewOnceMedia
+              messageId={msg.id}
+              attachmentUrl={msg.attachment_url}
+              isMe={isMe}
+              viewOnceOpenedAt={(msg as any).view_once_opened_at}
+              viewOnceOpenedBy={(msg as any).view_once_opened_by}
+              currentUserId={currentUserId}
+            />
+          </div>
+        ) : msg.attachment_url ? (
           <div className="mb-1 -mx-1 rounded-lg overflow-hidden">
             <ChatMediaPreview url={msg.attachment_url} />
           </div>
-        )}
+        ) : null}
 
         {/* Voice message */}
         {isVoice ? (
