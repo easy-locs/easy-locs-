@@ -2,5 +2,5 @@
  * Orbit Payments — Public API
  */
 export * from "./types";
-export * from "./qr-security";
-export * from "./currency-detect";
+export { encodeQRPayload, decodeQRPayload, isPayloadExpired } from "./qr-security";
+export { detectLocalCurrency, detectFromCountry, formatCurrency, formatLocs } from "./currency-detect";

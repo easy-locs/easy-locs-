@@ -1,19 +1,17 @@
 /**
  * OrbitQRCode — Generate and display payment QR codes (static & dynamic)
+ * Uses server-side signing via orbit-payment edge function
+ * Real QR rendering via qrcode.react
  */
 import { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
-import { QrCode, Copy, Share2, Clock, Shield, Check } from "lucide-react";
+import { Copy, Share2, Clock, Shield, Check, Loader2 } from "lucide-react";
+import { QRCodeSVG } from "qrcode.react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import {
-  createStaticQR,
-  createDynamicQR,
-  encodeQRPayload,
-  formatCurrency,
-  formatLocs,
-} from "@/lib/orbit-payments";
+import { supabase } from "@/integrations/supabase/client";
+import { formatCurrency, formatLocs } from "@/lib/orbit-payments";
 import type { QRPayload, StaticQRPayload, DynamicQRPayload } from "@/lib/orbit-payments/types";
 
 interface OrbitQRCodeProps {
@@ -46,49 +44,41 @@ export default function OrbitQRCode({
   const [qrData, setQrData] = useState<string | null>(null);
   const [payload, setPayload] = useState<QRPayload | null>(null);
   const [copied, setCopied] = useState(false);
-  const [userName, setUserName] = useState("User");
-
-  // Load user display name from profiles
-  useEffect(() => {
-    if (!user?.id) return;
-    const loadName = async () => {
-      const { supabase } = await import("@/integrations/supabase/client");
-      const { data } = await supabase
-        .from("profiles")
-        .select("name, first_name, last_name, email")
-        .eq("id", user.id)
-        .maybeSingle();
-      if (data?.name) setUserName(data.name);
-      else if (data?.first_name) setUserName(`${data.first_name} ${data.last_name || ""}`.trim());
-      else if (data?.email) setUserName(data.email);
-      else if (user.email) setUserName(user.email);
-    };
-    loadName();
-  }, [user]);
+  const [loading, setLoading] = useState(true);
 
   const generateQR = useCallback(async () => {
     if (!user?.id) return;
+    setLoading(true);
 
-    let qrPayload: QRPayload;
-    if (type === "static") {
-      qrPayload = createStaticQR({ userId: user.id, name: userName, type: recipientType, orgId });
-    } else {
-      qrPayload = await createDynamicQR({
-        userId: user.id,
-        name: userName,
-        amount: amount || 0,
-        currency,
-        locsEquivalent,
-        referenceType,
-        referenceId,
-        description,
-        expiresInMinutes,
+    try {
+      const { data, error } = await supabase.functions.invoke("orbit-payment", {
+        body: {
+          action: "generate_qr",
+          qr_type: type,
+          recipient_type: recipientType,
+          amount,
+          currency,
+          locs_equivalent: locsEquivalent,
+          reference_type: referenceType,
+          reference_id: referenceId,
+          description,
+          expires_in_minutes: expiresInMinutes,
+          org_id: orgId,
+        },
       });
-    }
 
-    setPayload(qrPayload);
-    setQrData(encodeQRPayload(qrPayload));
-  }, [user, userName, type, recipientType, amount, currency, locsEquivalent, referenceType, referenceId, description, expiresInMinutes, orgId]);
+      if (error) throw error;
+      if (data?.payload) {
+        setPayload(data.payload as QRPayload);
+        setQrData(data.encoded);
+      }
+    } catch (err) {
+      console.error("QR generation failed:", err);
+      toast({ title: "QR generation failed", variant: "destructive" });
+    } finally {
+      setLoading(false);
+    }
+  }, [user, type, recipientType, amount, currency, locsEquivalent, referenceType, referenceId, description, expiresInMinutes, orgId, toast]);
 
   useEffect(() => {
     generateQR();
@@ -105,13 +95,14 @@ export default function OrbitQRCode({
   const handleShare = async () => {
     if (!qrData || !navigator.share) return;
     try {
+      const name = payload?.recipient_name || "me";
       await navigator.share({
         title: "Orbit Payment QR",
-        text: `Pay ${userName} via Orbit`,
+        text: `Pay ${name} via Orbit`,
         url: `${window.location.origin}/pay?qr=${encodeURIComponent(qrData)}`,
       });
     } catch {
-      // User cancelled share
+      // User cancelled
     }
   };
 
@@ -125,45 +116,26 @@ export default function OrbitQRCode({
     >
       {/* QR Display */}
       <div className="relative p-6 rounded-2xl bg-card border border-border shadow-sm">
-        {/* SVG QR placeholder — in production, use a QR library */}
-        <div className="w-48 h-48 bg-foreground/5 rounded-xl flex items-center justify-center relative overflow-hidden">
-          {qrData ? (
-            <div className="w-full h-full flex items-center justify-center p-4">
-              {/* Grid-based QR visualization */}
-              <div className="w-full h-full grid grid-cols-11 grid-rows-11 gap-[1px]">
-                {Array.from({ length: 121 }).map((_, i) => {
-                  // Generate deterministic pattern from qrData
-                  const charCode = qrData.charCodeAt(i % qrData.length);
-                  const isActive = charCode % 3 !== 0;
-                  const isCorner =
-                    (i < 33 && i % 11 < 3) ||
-                    (i < 33 && i % 11 > 7) ||
-                    (i > 87 && i % 11 < 3);
-                  return (
-                    <div
-                      key={i}
-                      className={`rounded-[1px] ${
-                        isCorner
-                          ? "bg-foreground"
-                          : isActive
-                            ? "bg-foreground/90"
-                            : "bg-transparent"
-                      }`}
-                    />
-                  );
-                })}
-              </div>
-              {/* Center logo */}
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="w-10 h-10 rounded-lg bg-accent flex items-center justify-center shadow-md">
-                  <span className="text-[8px] font-black text-accent-foreground leading-none">
-                    EL
-                  </span>
-                </div>
-              </div>
-            </div>
+        <div className="w-52 h-52 flex items-center justify-center">
+          {loading ? (
+            <Loader2 className="w-8 h-8 text-muted-foreground animate-spin" />
+          ) : qrData ? (
+            <QRCodeSVG
+              value={qrData}
+              size={200}
+              level="M"
+              includeMargin={false}
+              bgColor="transparent"
+              fgColor="hsl(var(--foreground))"
+              imageSettings={{
+                src: "",
+                height: 0,
+                width: 0,
+                excavate: false,
+              }}
+            />
           ) : (
-            <QrCode className="w-12 h-12 text-muted-foreground/30" />
+            <p className="text-sm text-muted-foreground">Failed to generate QR</p>
           )}
         </div>
 
@@ -208,22 +180,12 @@ export default function OrbitQRCode({
 
       {/* Actions */}
       <div className="flex items-center gap-3 w-full">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleCopy}
-          className="flex-1 rounded-xl"
-        >
+        <Button variant="outline" size="sm" onClick={handleCopy} className="flex-1 rounded-xl" disabled={!qrData}>
           {copied ? <Check className="w-4 h-4 mr-1.5" /> : <Copy className="w-4 h-4 mr-1.5" />}
           {copied ? "Copied" : "Copy"}
         </Button>
         {"share" in navigator && (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleShare}
-            className="flex-1 rounded-xl"
-          >
+          <Button variant="outline" size="sm" onClick={handleShare} className="flex-1 rounded-xl" disabled={!qrData}>
             <Share2 className="w-4 h-4 mr-1.5" />
             Share
           </Button>
@@ -233,7 +195,7 @@ export default function OrbitQRCode({
       {/* Security */}
       <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
         <Shield className="w-3 h-3" />
-        <span>Signed payload • Anti-replay protection • Orbit Secure</span>
+        <span>Server-signed • Anti-replay • Orbit Secure</span>
       </div>
     </motion.div>
   );
