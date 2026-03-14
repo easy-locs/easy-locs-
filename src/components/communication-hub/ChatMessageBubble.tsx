@@ -39,13 +39,15 @@ interface Props {
 function ChatMessageBubble({
   msg, isMe, threadName, locale, showOriginal,
   translatingMsgId, isPendingOffline, isConsecutive,
-  onTranslate, onContextMenu, getCategoryIcon,
+  selected, selectMode, currentUserId,
+  onTranslate, onContextMenu, onToggleSelect, getCategoryIcon,
 }: Props) {
   const isSystem = msg.message_type === "system" || msg.sender_id === SYSTEM_SENDER_ID;
   const isDeleted = !!(msg as any).deleted_for_all;
   const isInboundEmail = msg.message_type === "inbound_email";
   const isPayment = !isDeleted && msg.content?.startsWith("💳");
   const isVoice = !isDeleted && !!(msg as any).audio_url;
+  const isViewOnce = !isDeleted && !!(msg as any).view_once;
 
   // Deleted message bubble — shows inline in conversation flow
   if (isDeleted && !isSystem) {
