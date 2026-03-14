@@ -27,6 +27,7 @@ import NewConversationDialog from "@/components/communication-hub/NewConversatio
 import OrbitSecuritySettings from "@/components/orbit/OrbitSecuritySettings";
 import OrbitAccountSection from "@/components/communication-hub/OrbitAccountSection";
 import { useConversationThreads } from "@/components/communication-hub/useConversationThreads";
+import { useThreadActions } from "@/hooks/useThreadActions";
 import type { ConversationThread } from "@/components/communication-hub/types";
 import { useOrbitCallSync } from "@/hooks/useOrbitCallSync";
 import { useAuth } from "@/contexts/AuthContext";
@@ -41,6 +42,7 @@ const CommunicationCenter = () => {
   const [searchParams, setSearchParams] = useSearchParams();
 
   const { threads, loading, stats, loadThreads, updateThreadLocally } = useConversationThreads();
+  const { archiveThread, unarchiveThread, deleteThread } = useThreadActions({ updateThreadLocally, loadThreads });
   useOrbitCallSync();
   const [selectedThread, setSelectedThread] = useState<ConversationThread | null>(null);
   const [showContext, setShowContext] = useState(false);
@@ -126,6 +128,26 @@ const CommunicationCenter = () => {
   }, [updateThreadLocally, selectedThread?.id]);
 
   const handleNewThreadCreated = useCallback(() => { loadThreads(); }, [loadThreads]);
+
+  const handleDeleteThread = useCallback((thread: ConversationThread) => {
+    if (selectedThread?.id === thread.id) {
+      setSelectedThread(null);
+      setShowContext(false);
+    }
+    deleteThread(thread);
+  }, [deleteThread, selectedThread?.id]);
+
+  const handleArchiveThread = useCallback((thread: ConversationThread) => {
+    if (selectedThread?.id === thread.id) {
+      setSelectedThread(null);
+      setShowContext(false);
+    }
+    if (thread.archived) {
+      unarchiveThread(thread);
+    } else {
+      archiveThread(thread);
+    }
+  }, [archiveThread, unarchiveThread, selectedThread?.id]);
 
   const handleSectionChange = useCallback((section: CommSection) => {
     setActiveSection(section);
@@ -234,6 +256,8 @@ const CommunicationCenter = () => {
                 loading={loading}
                 selectedThread={selectedThread}
                 onSelectThread={handleSelectThread}
+                onDeleteThread={handleDeleteThread}
+                onArchiveThread={handleArchiveThread}
                 visible={!selectedThread || !isMobile}
               />
               <div className={`flex-1 flex flex-col min-w-0 ${!selectedThread && isMobile ? "hidden" : "flex"}`}>
