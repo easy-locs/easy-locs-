@@ -10,13 +10,24 @@ import { useOrbitSessionInit } from "@/hooks/useOrbitSessionInit";
 import { usePresence } from "@/hooks/usePresence";
 import { I18nProvider } from "@/lib/i18n";
 import { ThemeProvider } from "next-themes";
-import { Suspense, lazy } from "react";
+import { Suspense, lazy, type ComponentType } from "react";
 import AppLockGuard from "@/components/security/AppLockGuard";
 import UpdateNotification from "@/components/UpdateNotification";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import CountryGuard from "@/components/dashboard/CountryGuard";
-const Explore = lazy(() => import("./pages/Explore"));
+
+// Safe lazy wrapper that catches chunk failures
+function safeLazy(factory: () => Promise<{ default: ComponentType<any> }>, name: string) {
+  return lazy(() =>
+    factory().catch((err) => {
+      console.error(`[lazy] Failed to load chunk: ${name}`, err);
+      return { default: () => <div className="p-8 text-center text-destructive">Failed to load {name}. <button onClick={() => window.location.reload()} className="underline ml-2">Reload</button></div> } as { default: ComponentType<any> };
+    })
+  );
+}
+
+const Explore = safeLazy(() => import("./pages/Explore"), "Explore");
 import { Loader2 } from "lucide-react";
 
 // Lazy load all pages
