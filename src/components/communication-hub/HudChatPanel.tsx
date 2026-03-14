@@ -1132,6 +1132,8 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
                 background: "hsl(var(--hud-surface))",
                 border: "1px solid hsl(var(--hud-border) / 0.12)",
               }}>
+                {/* Security level picker */}
+                <SecurityLevelPicker value={securityLevel} onChange={setSecurityLevel} />
                 {/* Attach button (opens dropdown) */}
                 <DropdownMenu open={showAttachMenu} onOpenChange={setShowAttachMenu}>
                   <DropdownMenuTrigger asChild>
