@@ -647,12 +647,14 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
       const msgContent = paymentUrl
         ? `💳 Payment request: ${amount.toFixed(2)} ${(thread.currency || "EUR").toUpperCase()}\n${paymentDescription ? `📝 ${paymentDescription}\n` : ""}🔗 ${paymentUrl}`
         : `💳 Payment request: ${amount.toFixed(2)} ${(thread.currency || "EUR").toUpperCase()}\n${paymentDescription ? `📝 ${paymentDescription}\n` : ""}Please contact us for payment details.`;
-      await supabase.from("messages").insert({
+      const paymentMsgPayload: any = {
         org_id: orgId, sender_id: authUserId, tenant_id: thread.tenantId || null,
         booking_id: thread.bookingId || null, booking_type: thread.bookingType || null,
         content: msgContent, category: "payment", message_type: "user", read: false,
         context_type: thread.contextType, context_id: thread.contextId,
-      });
+      };
+      if (thread.threadId) paymentMsgPayload.thread_id = thread.threadId;
+      await supabase.from("messages").insert(paymentMsgPayload);
       setPaymentLinkDialog(false); setPaymentAmount(""); setPaymentDescription("");
       toast.success("Payment link sent");
     } catch (e: any) { toast.error(e.message); }
