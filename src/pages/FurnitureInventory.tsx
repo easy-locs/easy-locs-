@@ -192,7 +192,8 @@ const FurnitureInventory = () => {
   };
 
   const remove = async (id: string) => {
-    await supabase.from("furniture_items").delete().eq("id", id);
+    const { error } = await supabase.from("furniture_items").delete().eq("id", id);
+    if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); return; }
     // Also try to remove photo
     if (orgId) {
       await supabase.storage.from("property-photos").remove([`${orgId}/furniture/${id}.jpg`, `${orgId}/furniture/${id}.png`, `${orgId}/furniture/${id}.webp`]);

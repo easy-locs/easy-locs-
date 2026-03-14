@@ -2,8 +2,9 @@
  * OrbitSecuritySettings — Signal-inspired Privacy & Security settings
  * Full settings interface with proper sections, i18n-ready labels,
  * and HUD-themed styling matching the Orbit design system.
+ * ALL toggles persist to the profiles table in the database.
  */
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   Shield, ShieldCheck, Fingerprint, Eye, EyeOff, Clock, Lock, KeyRound,
   Smartphone, Bell, BellOff, MessageSquareOff, UserX, Image, Trash2,
@@ -72,10 +73,59 @@ export default function OrbitSecuritySettings({ userId }: OrbitSecuritySettingsP
   const [notifications, setNotifications] = useState(true);
   const [messagePreview, setMessagePreview] = useState(true);
   const [mediaAutoDownload, setMediaAutoDownload] = useState(true);
+  const [loaded, setLoaded] = useState(false);
 
+  // Load settings from DB on mount
   useEffect(() => {
+    if (!userId) return;
+    (async () => {
+      const { data } = await supabase.from("profiles").select(
+        "privacy_read_receipts, privacy_typing_indicators, privacy_online_status, privacy_link_previews, orbit_notifications, orbit_message_preview, orbit_media_auto_download, default_disappear_ttl"
+      ).eq("id", userId).single();
+      if (data) {
+        setReadReceipts((data as any).privacy_read_receipts ?? true);
+        setTypingIndicators((data as any).privacy_typing_indicators ?? true);
+        setOnlineStatus((data as any).privacy_online_status ?? true);
+        setLinkPreviews((data as any).privacy_link_previews ?? true);
+        setNotifications((data as any).orbit_notifications ?? true);
+        setMessagePreview((data as any).orbit_message_preview ?? true);
+        setMediaAutoDownload((data as any).orbit_media_auto_download ?? true);
+        setAutoDeletePeriod((data as any).default_disappear_ttl || "off");
+      }
+      setLoaded(true);
+    })();
     hasIdentityKeys(userId).then(setHasKeys);
   }, [userId]);
+
+  // Persist a single setting to DB
+  const persistSetting = useCallback(async (column: string, value: any) => {
+    const { error } = await supabase.from("profiles").update({ [column]: value } as any).eq("id", userId);
+    if (error) {
+      console.error("[OrbitSettings] Failed to persist:", column, error);
+      toast.error("Failed to save setting");
+      return false;
+    }
+    return true;
+  }, [userId]);
+
+  const handleToggle = useCallback((
+    setter: (v: boolean) => void,
+    column: string,
+    currentValue: boolean,
+  ) => {
+    const newVal = !currentValue;
+    setter(newVal);
+    persistSetting(column, newVal).then(ok => {
+      if (!ok) setter(currentValue); // rollback
+    });
+  }, [persistSetting]);
+
+  const handleAutoDeleteChange = useCallback((value: string) => {
+    setAutoDeletePeriod(value);
+    persistSetting("default_disappear_ttl", value === "off" ? null : value).then(ok => {
+      if (!ok) setAutoDeletePeriod(autoDeletePeriod); // rollback
+    });
+  }, [persistSetting, autoDeletePeriod]);
 
   const handle2FAEnroll = async () => {
     setEnrolling2FA(true);
@@ -176,16 +226,16 @@ export default function OrbitSecuritySettings({ userId }: OrbitSecuritySettingsP
         {/* ═══ Privacy Controls ═══ */}
         <SettingSection icon={Eye} title="Confidentialité" iconColor="hsl(var(--hud-cyan))">
           <SettingRow label="Accusés de lecture" description="Les autres voient quand vous avez lu leurs messages">
-            <Switch checked={readReceipts} onCheckedChange={setReadReceipts} />
+            <Switch checked={readReceipts} onCheckedChange={() => handleToggle(setReadReceipts, "privacy_read_receipts", readReceipts)} disabled={!loaded} />
           </SettingRow>
           <SettingRow label="Statut en ligne" description="Montrer quand vous êtes en ligne">
-            <Switch checked={onlineStatus} onCheckedChange={setOnlineStatus} />
+            <Switch checked={onlineStatus} onCheckedChange={() => handleToggle(setOnlineStatus, "privacy_online_status", onlineStatus)} disabled={!loaded} />
           </SettingRow>
           <SettingRow label="Indicateur de saisie" description="Montrer quand vous écrivez un message">
-            <Switch checked={typingIndicators} onCheckedChange={setTypingIndicators} />
+            <Switch checked={typingIndicators} onCheckedChange={() => handleToggle(setTypingIndicators, "privacy_typing_indicators", typingIndicators)} disabled={!loaded} />
           </SettingRow>
           <SettingRow label="Aperçu des liens" description="Générer un aperçu pour les liens envoyés">
-            <Switch checked={linkPreviews} onCheckedChange={setLinkPreviews} />
+            <Switch checked={linkPreviews} onCheckedChange={() => handleToggle(setLinkPreviews, "privacy_link_previews", linkPreviews)} disabled={!loaded} />
           </SettingRow>
         </SettingSection>
 
@@ -194,7 +244,7 @@ export default function OrbitSecuritySettings({ userId }: OrbitSecuritySettingsP
         {/* ═══ Disappearing Messages ═══ */}
         <SettingSection icon={Clock} title="Messages éphémères" iconColor="hsl(var(--hud-warning))">
           <SettingRow label="Suppression automatique" description="Tous les nouveaux messages seront supprimés après ce délai">
-            <Select value={autoDeletePeriod} onValueChange={setAutoDeletePeriod}>
+            <Select value={autoDeletePeriod} onValueChange={handleAutoDeleteChange} disabled={!loaded}>
               <SelectTrigger className="w-28 h-8 text-xs" style={{
                 background: "hsl(var(--hud-surface))", borderColor: "hsl(var(--hud-border) / 0.15)", color: "hsl(var(--hud-text))",
               }}>
@@ -218,10 +268,10 @@ export default function OrbitSecuritySettings({ userId }: OrbitSecuritySettingsP
         {/* ═══ Notifications ═══ */}
         <SettingSection icon={Bell} title="Notifications" iconColor="hsl(var(--hud-cyan))">
           <SettingRow label="Notifications" description="Recevoir des notifications pour les nouveaux messages">
-            <Switch checked={notifications} onCheckedChange={setNotifications} />
+            <Switch checked={notifications} onCheckedChange={() => handleToggle(setNotifications, "orbit_notifications", notifications)} disabled={!loaded} />
           </SettingRow>
           <SettingRow label="Aperçu du message" description="Afficher le contenu dans la notification">
-            <Switch checked={messagePreview} onCheckedChange={setMessagePreview} />
+            <Switch checked={messagePreview} onCheckedChange={() => handleToggle(setMessagePreview, "orbit_message_preview", messagePreview)} disabled={!loaded} />
           </SettingRow>
         </SettingSection>
 
@@ -230,7 +280,7 @@ export default function OrbitSecuritySettings({ userId }: OrbitSecuritySettingsP
         {/* ═══ Storage & Data ═══ */}
         <SettingSection icon={Database} title="Stockage et données" iconColor="hsl(var(--hud-text-dim))">
           <SettingRow label="Téléchargement auto des médias" description="Télécharger automatiquement photos et vidéos">
-            <Switch checked={mediaAutoDownload} onCheckedChange={setMediaAutoDownload} />
+            <Switch checked={mediaAutoDownload} onCheckedChange={() => handleToggle(setMediaAutoDownload, "orbit_media_auto_download", mediaAutoDownload)} disabled={!loaded} />
           </SettingRow>
         </SettingSection>
 
@@ -273,6 +323,41 @@ export default function OrbitSecuritySettings({ userId }: OrbitSecuritySettingsP
         </p>
       </div>
     </div>
+    </div>
+  );
+}
+
+/** Disappearing messages config component */
+export function DisappearingMessagesToggle({
+  threadId, currentTTL, onChange,
+}: { threadId: string; currentTTL: string; onChange: (ttl: string) => void }) {
+  const DISAPPEAR_OPTIONS = [
+    { value: "off", label: "Off" },
+    { value: "30s", label: "30 seconds" },
+    { value: "5m", label: "5 minutes" },
+    { value: "1h", label: "1 hour" },
+    { value: "24h", label: "24 hours" },
+    { value: "7d", label: "7 days" },
+  ];
+
+  return (
+    <div className="flex items-center gap-2">
+      <Clock className="h-3.5 w-3.5" style={{ color: currentTTL !== "off" ? "hsl(var(--hud-cyan))" : "hsl(var(--hud-text-dim) / 0.4)" }} />
+      <Select value={currentTTL} onValueChange={onChange}>
+        <SelectTrigger className="h-7 text-[11px] w-auto gap-1 border-0" style={{
+          background: currentTTL !== "off" ? "hsl(var(--hud-cyan) / 0.1)" : "hsl(var(--hud-surface))",
+          color: currentTTL !== "off" ? "hsl(var(--hud-cyan))" : "hsl(var(--hud-text-dim))",
+        }}>
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          {DISAPPEAR_OPTIONS.map(opt => (
+            <SelectItem key={opt.value} value={opt.value}>
+              {opt.value === "off" ? "Off" : `⏱ ${opt.label}`}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
     </div>
   );
 }

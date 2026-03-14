@@ -222,7 +222,8 @@ export default function CommGroupsSection() {
 
   const leaveGroup = async () => {
     if (!activeGroup || !user?.id) return;
-    await supabase.from("group_members").delete().eq("group_id", activeGroup.id).eq("user_id", user.id);
+    const { error } = await supabase.from("group_members").delete().eq("group_id", activeGroup.id).eq("user_id", user.id);
+    if (error) { toast.error("Failed to leave group"); return; }
     haptic("medium");
     toast.success("Left group");
     setActiveGroup(null);
@@ -231,7 +232,8 @@ export default function CommGroupsSection() {
 
   const removeMember = async (memberId: string) => {
     if (!activeGroup) return;
-    await supabase.from("group_members").delete().eq("id", memberId);
+    const { error } = await supabase.from("group_members").delete().eq("id", memberId);
+    if (error) { toast.error("Failed to remove member"); return; }
     haptic("light");
     toast.success("Member removed");
     const { data: mems } = await supabase.from("group_members").select("*").eq("group_id", activeGroup.id);

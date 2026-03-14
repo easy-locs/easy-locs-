@@ -108,7 +108,8 @@ const Vault = () => {
     if (!confirm(`${t("page.vault.delete_confirm")} "${file.filename}" ?`)) return;
 
     await supabase.storage.from("vault").remove([file.file_url]);
-    await supabase.from("vault_files").delete().eq("id", file.id);
+    const { error } = await supabase.from("vault_files").delete().eq("id", file.id);
+    if (error) { toast({ title: t("page.common.error"), description: error.message, variant: "destructive" }); return; }
     toast({ title: t("page.vault.deleted") });
     await loadFiles();
   };

@@ -308,7 +308,8 @@ export default function PropertyCalendar() {
   };
 
   const handleUnblock = async (id: string) => {
-    await supabase.from("property_blocked_dates").delete().eq("id", id);
+    const { error } = await supabase.from("property_blocked_dates").delete().eq("id", id);
+    if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); return; }
     setEvents(prev => prev.filter(e => e.id !== id));
     setDrawerOpen(false);
     toast({ title: "Dates unblocked" });

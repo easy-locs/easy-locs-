@@ -249,7 +249,8 @@ export default function CommCallsSection() {
               const secondaryLabel = labels.length > 1 ? labels[1] : null;
 
               const handleDeleteCall = async () => {
-                await supabase.from("call_logs").delete().eq("id", call.id);
+                const { error } = await supabase.from("call_logs").delete().eq("id", call.id);
+                if (error) { toast.error("Failed to delete call"); return; }
                 setCalls(prev => prev.filter(c => c.id !== call.id));
                 toast.success("Call deleted");
               };

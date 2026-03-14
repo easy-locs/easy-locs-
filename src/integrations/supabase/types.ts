@@ -4125,10 +4125,15 @@ export type Database = {
           nationality: string | null
           onboarding_completed: boolean | null
           onboarding_step: number | null
+          orbit_media_auto_download: boolean | null
+          orbit_message_preview: boolean | null
+          orbit_notifications: boolean | null
           phone: string | null
           postal_code: string | null
           preferred_currency: string | null
           preferred_locale: string | null
+          privacy_link_previews: boolean | null
+          privacy_online_status: boolean | null
           privacy_read_receipts: boolean
           privacy_typing_indicators: boolean
           referral_code: string | null
@@ -4162,10 +4167,15 @@ export type Database = {
           nationality?: string | null
           onboarding_completed?: boolean | null
           onboarding_step?: number | null
+          orbit_media_auto_download?: boolean | null
+          orbit_message_preview?: boolean | null
+          orbit_notifications?: boolean | null
           phone?: string | null
           postal_code?: string | null
           preferred_currency?: string | null
           preferred_locale?: string | null
+          privacy_link_previews?: boolean | null
+          privacy_online_status?: boolean | null
           privacy_read_receipts?: boolean
           privacy_typing_indicators?: boolean
           referral_code?: string | null
@@ -4199,10 +4209,15 @@ export type Database = {
           nationality?: string | null
           onboarding_completed?: boolean | null
           onboarding_step?: number | null
+          orbit_media_auto_download?: boolean | null
+          orbit_message_preview?: boolean | null
+          orbit_notifications?: boolean | null
           phone?: string | null
           postal_code?: string | null
           preferred_currency?: string | null
           preferred_locale?: string | null
+          privacy_link_previews?: boolean | null
+          privacy_online_status?: boolean | null
           privacy_read_receipts?: boolean
           privacy_typing_indicators?: boolean
           referral_code?: string | null
