@@ -277,6 +277,12 @@ const CommunicationCenter = () => {
                 onMuteThread={handleMuteThread}
                 onBlockThread={handleBlockThread}
                 onClearThread={handleClearThread}
+                onFavoriteThread={favoriteThread}
+                onContactInfo={(thread) => {
+                  handleSelectThread(thread);
+                  if (isMobile) setMobileContextOpen(true);
+                  else setShowContext(true);
+                }}
                 visible={!selectedThread || !isMobile}
               />
               <div className={`flex-1 flex flex-col min-w-0 ${!selectedThread && isMobile ? "hidden" : "flex"}`}>
