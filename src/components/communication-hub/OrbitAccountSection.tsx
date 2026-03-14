@@ -247,6 +247,50 @@ export default function OrbitAccountSection() {
             </div>
           </div>
 
+          {/* Username */}
+          <div>
+            <label className="text-xs font-medium text-muted-foreground mb-1.5 block flex items-center gap-1">
+              <AtSign className="h-3 w-3" /> Username
+            </label>
+            <div className="flex items-center gap-2">
+              <Input
+                value={usernameInput}
+                onChange={async (e) => {
+                  const v = e.target.value.toLowerCase().replace(/[^a-z0-9._]/g, "");
+                  setUsernameInput(v);
+                  if (v.length >= 3) {
+                    const res = await checkAvailability(v);
+                    setUsernameStatus(res.available ? { msg: "✅ Available", ok: true } : { msg: res.error || "Taken", ok: false });
+                  } else {
+                    setUsernameStatus(v.length > 0 ? { msg: "Min 3 characters", ok: false } : null);
+                  }
+                }}
+                placeholder="your.username"
+                className="bg-muted/30 font-mono text-sm"
+              />
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={savingUsername || !usernameInput || usernameStatus?.ok === false}
+                onClick={async () => {
+                  setSavingUsername(true);
+                  const res = await saveUsername(usernameInput);
+                  if (res.success) { toast.success("Username saved!"); haptic("medium"); }
+                  else toast.error(res.error || "Failed");
+                  setSavingUsername(false);
+                }}
+              >
+                {savingUsername ? "..." : "Set"}
+              </Button>
+            </div>
+            {usernameStatus && (
+              <p className={`text-[10px] mt-1 ${usernameStatus.ok ? "text-primary" : "text-destructive"}`}>
+                {usernameStatus.msg}
+              </p>
+            )}
+            <p className="text-[10px] text-muted-foreground mt-1">Others can find you by @{usernameInput || "username"}</p>
+          </div>
+
           <Button
             onClick={handleSaveProfile}
             disabled={saving}
