@@ -401,6 +401,8 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
     } as any;
     setRawMessages(prev => [...prev, optimisticMsg]);
     setNewMessage("");
+    const currentReplyTo = replyTo;
+    setReplyTo(null);
 
     // Compress before encryption
     const { compressMessage } = await import("@/lib/orbit-message-compress");
