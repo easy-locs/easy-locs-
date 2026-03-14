@@ -231,7 +231,7 @@ export default function WalletHub() {
                 <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-3 px-1">
                   Quick Actions
                 </h3>
-                <div className="grid grid-cols-3 gap-2.5">
+                <div className="grid grid-cols-4 gap-2.5">
                   {WALLET_ACTIONS.map((action, i) => {
                     const Icon = action.icon;
                     return (
