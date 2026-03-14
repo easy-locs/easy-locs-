@@ -77,8 +77,18 @@ export default function InAppCallDialog({
     }
   }, [localStream]);
 
+  const secureAnnouncedRef = useRef(false);
+
   const handleStateChange = useCallback((state: Partial<CallState>) => {
-    if (state.status !== undefined) setStatus(state.status);
+    if (state.status !== undefined) {
+      setStatus(state.status);
+      // Play secure call announcement when call becomes active
+      if (state.status === "active" && callManager && !secureAnnouncedRef.current) {
+        secureAnnouncedRef.current = true;
+        const callId = (callManager as any)?.callId || `call-${Date.now()}`;
+        playSecureCallAnnouncement(callId).catch(() => {});
+      }
+    }
     if (state.elapsed !== undefined) setElapsed(state.elapsed);
     if (state.usingRelay !== undefined) setUsingRelay(state.usingRelay);
     if (state.error !== undefined) setError(state.error);
@@ -89,7 +99,7 @@ export default function InAppCallDialog({
       // Auto-switch to speaker for video calls
       if (state.isVideo) setSpeakerOn(true);
     }
-  }, []);
+  }, [callManager]);
 
   useEffect(() => {
     if (callManager) callManager.onStateChange = handleStateChange;
