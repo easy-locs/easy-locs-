@@ -146,7 +146,7 @@ export function installPlatformReactions(): () => void {
       const state = useOrbitEngine.getState();
       // Debounced refresh — wait 300ms to batch multiple events
       const userId = state.lastRefreshUserId;
-      const orgId = state.lastRefreshOrgId;
+      const orgId = state.lastRefreshOrgId ?? undefined;
       if (userId) state.refresh(userId, orgId);
     }).catch(() => {});
   };
