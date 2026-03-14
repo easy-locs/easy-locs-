@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { syncPaymentRequest } from "@/lib/shared/sync-engine";
+import { platformBus } from "@/lib/shared/platform-bus";
 
 export type BookingStatus =
   | "pending" | "new" | "awaiting_payment"
@@ -92,6 +93,16 @@ export function useBookingLifecycle(opts: UseBookingLifecycleOpts = {}) {
     toast.success(`Réservation ${labels[status] || status}`);
     invalidate();
 
+    // Emit platform bus events
+    const eventMap: Record<string, any> = {
+      confirmed: "marketplace:booking_confirmed",
+      completed: "marketplace:booking_completed",
+      cancelled: "marketplace:booking_cancelled",
+    };
+    if (eventMap[status]) {
+      platformBus.emit(eventMap[status], { bookingId: booking.id, status }, "marketplace", { userId: user?.id, orgId });
+    }
+
     // Resolve notifications
     try {
       const { resolveNotificationsForTarget } = await import("@/lib/shared/notification-engine");
@@ -128,6 +139,8 @@ export function useBookingLifecycle(opts: UseBookingLifecycleOpts = {}) {
 
     toast.success("Paiement confirmé !");
     invalidate();
+
+    platformBus.emit("marketplace:booking_paid", { bookingId: booking.id, amount: booking.total_price, currency: booking.currency }, "marketplace", { userId: user?.id, orgId });
 
     const svc = findService(booking.service_id);
     await notify(

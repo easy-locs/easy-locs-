@@ -17,6 +17,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { platformBus } from "@/lib/shared/platform-bus";
 
 /** Normalized lifecycle statuses */
 export type LeaseStatus = "draft" | "pending_signature" | "signed" | "active" | "archived" | "cancelled";
@@ -54,6 +55,7 @@ export function useLeaseWorkflow() {
         toast.info("A lease already exists for this tenant");
       } else if (data?.success) {
         toast.success("Lease generated — awaiting signatures");
+        platformBus.emit("pm:lease_created", { leaseId: data.lease_id, tenantId: tenantId, propertyId: propertyId }, "pm", { orgId });
       }
 
       return data;
@@ -160,6 +162,7 @@ export function useLeaseWorkflow() {
 
       if (tenantSigned) {
         toast.success("Both signatures complete — lease is now active. Rent schedule will be generated automatically.");
+        platformBus.emit("pm:lease_activated", { leaseId: leaseId }, "pm", { orgId: (current as any)?.org_id || orgId });
       } else {
         toast.success("Owner signature recorded — awaiting tenant signature");
       }

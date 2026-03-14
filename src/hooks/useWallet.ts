@@ -6,6 +6,7 @@
 import { useState, useCallback, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { platformBus } from "@/lib/shared/platform-bus";
 
 export interface WalletBalance {
   id: string;
@@ -61,6 +62,7 @@ export function useWallet() {
 
     if (existing) {
       setBalance(existing as unknown as WalletBalance);
+      platformBus.emit("wallet:balance_updated", { balance: (existing as any).balance }, "wallet", { userId: user.id });
     } else {
       const { data: created } = await supabase
         .from("wallet_balances")
@@ -103,6 +105,7 @@ export function useWallet() {
       });
       if (error) return { success: false, error: error.message };
       if (data?.url) {
+        platformBus.emit("wallet:locs_purchased", { amount, currency, locsPreview: data.locs_preview }, "wallet", { userId: user?.id });
         window.location.href = data.url;
         return { success: true, url: data.url, locsPreview: data.locs_preview };
       }
@@ -135,6 +138,7 @@ export function useWallet() {
     }
 
     await loadWallet();
+    platformBus.emit("wallet:transfer_sent", { recipientId: opts.recipientUserId, amount: opts.amount }, "wallet", { userId: user.id });
     return { success: true, data };
   }, [user?.id, loadWallet]);
 
