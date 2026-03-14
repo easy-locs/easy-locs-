@@ -270,12 +270,12 @@ serve(async (req) => {
           quantity: 1,
         }],
         mode: "payment",
-        payment_method_types: ["card"],
+        // No payment_method_types — lets Stripe dynamically show Apple Pay, Google Pay, cards, etc.
         payment_method_options: {
           card: { request_three_d_secure: "any" },
         },
-        success_url: `${req.headers.get("origin")}/app/orbit?payment=success`,
-        cancel_url: `${req.headers.get("origin")}/app/orbit?payment=cancelled`,
+        success_url: `${req.headers.get("origin")}/dashboard/communication?payment=success`,
+        cancel_url: `${req.headers.get("origin")}/dashboard/communication?payment=cancelled`,
         metadata: {
           user_id: user.id,
           recipient_user_id: recipient_user_id || "",
