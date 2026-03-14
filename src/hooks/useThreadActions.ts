@@ -155,6 +155,7 @@ export function useThreadActions({ updateThreadLocally, loadThreads }: UseThread
 
 /** Resolve the other participant's user ID from the thread */
 function resolveOtherUserId(thread: ConversationThread, currentUserId: string): string | null {
+  // Direct threads: context_id format is "direct:uuid1:uuid2"
   if (thread.contextId?.startsWith("direct:")) {
     const parts = thread.contextId.split(":");
     const id1 = parts[1];
@@ -163,5 +164,11 @@ function resolveOtherUserId(thread: ConversationThread, currentUserId: string): 
       return id1 === currentUserId ? id2 : id1;
     }
   }
+  // Tenant threads: the tenant may have a linked user
+  if (thread.tenantId) {
+    return thread.tenantId; // Will be resolved by backend
+  }
+  // For any thread type, if email is available we can't resolve a UUID
+  // Return contextId as fallback for non-direct threads (booking contacts, etc.)
   return null;
 }

@@ -138,10 +138,16 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
     else if (thread.tenantId) query = query.eq("tenant_id", thread.tenantId).is("booking_id", null);
     const { data } = await query;
     if (data) {
+      // Filter out messages before cleared_at (clear chat for current user only)
+      const clearedAt = thread.clearedAt;
+      const visible = clearedAt
+        ? data.filter((m: any) => m.created_at > clearedAt)
+        : data;
+
       // Enrich reply_to_content for messages that have reply_to_id
-      const enriched = data.map((msg: any) => {
+      const enriched = visible.map((msg: any) => {
         if (msg.reply_to_id && !msg.reply_to_content) {
-          const parent = data.find((m: any) => m.id === msg.reply_to_id);
+          const parent = visible.find((m: any) => m.id === msg.reply_to_id);
           if (parent) {
             return { ...msg, reply_to_content: (parent as any).content?.slice(0, 120) || "Message" };
           }
