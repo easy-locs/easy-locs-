@@ -103,7 +103,7 @@ export function useWallet() {
       });
       if (error) return { success: false, error: error.message };
       if (data?.url) {
-        window.open(data.url, "_blank");
+        window.location.href = data.url;
         return { success: true, url: data.url, locsPreview: data.locs_preview };
       }
       return { success: false, error: "No checkout URL returned" };

@@ -109,7 +109,7 @@ export default function OrbitSmartPayment({
         });
         if (fnErr) throw new Error(fnErr.message);
         if (data?.error) throw new Error(data.error);
-        if (data?.url) window.open(data.url, "_blank");
+        if (data?.url) window.location.href = data.url;
       }
     } catch (err: any) {
       setError(err.message || "Payment failed");
