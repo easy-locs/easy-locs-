@@ -144,6 +144,7 @@ export default function OrbitSmartPayment({
           // For fiat, fire confirmation before redirect
           const conf: PaymentConfirmation = {
             txnId: data?.session_id || "fiat-checkout",
+            referenceCode: data?.reference_code || null,
             amount: numericAmount,
             currency,
             method: "fiat",
