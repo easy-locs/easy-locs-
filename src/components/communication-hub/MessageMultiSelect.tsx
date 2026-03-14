@@ -29,7 +29,6 @@ export default function MessageMultiSelectToolbar({
   const [confirmAction, setConfirmAction] = useState<"deleteMe" | "deleteAll" | null>(null);
   const [processing, setProcessing] = useState(false);
   const [showForward, setShowForward] = useState(false);
-  const [processing, setProcessing] = useState(false);
   const count = selectedIds.size;
 
   if (count === 0) return null;
