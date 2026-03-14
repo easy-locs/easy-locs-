@@ -42,7 +42,7 @@ const CommunicationCenter = () => {
   const [searchParams, setSearchParams] = useSearchParams();
 
   const { threads, loading, stats, loadThreads, updateThreadLocally } = useConversationThreads();
-  const { archiveThread, unarchiveThread, deleteThread } = useThreadActions({ updateThreadLocally, loadThreads });
+  const { archiveThread, unarchiveThread, deleteThread, muteThread, blockThread, clearThread } = useThreadActions({ updateThreadLocally, loadThreads });
   useOrbitCallSync();
   const [selectedThread, setSelectedThread] = useState<ConversationThread | null>(null);
   const [showContext, setShowContext] = useState(false);
@@ -148,6 +148,22 @@ const CommunicationCenter = () => {
       archiveThread(thread);
     }
   }, [archiveThread, unarchiveThread, selectedThread?.id]);
+
+  const handleMuteThread = useCallback((thread: ConversationThread) => {
+    muteThread(thread);
+  }, [muteThread]);
+
+  const handleBlockThread = useCallback((thread: ConversationThread) => {
+    if (selectedThread?.id === thread.id) {
+      setSelectedThread(null);
+      setShowContext(false);
+    }
+    blockThread(thread);
+  }, [blockThread, selectedThread?.id]);
+
+  const handleClearThread = useCallback((thread: ConversationThread) => {
+    clearThread(thread);
+  }, [clearThread]);
 
   const handleSectionChange = useCallback((section: CommSection) => {
     setActiveSection(section);
@@ -258,6 +274,9 @@ const CommunicationCenter = () => {
                 onSelectThread={handleSelectThread}
                 onDeleteThread={handleDeleteThread}
                 onArchiveThread={handleArchiveThread}
+                onMuteThread={handleMuteThread}
+                onBlockThread={handleBlockThread}
+                onClearThread={handleClearThread}
                 visible={!selectedThread || !isMobile}
               />
               <div className={`flex-1 flex flex-col min-w-0 ${!selectedThread && isMobile ? "hidden" : "flex"}`}>
