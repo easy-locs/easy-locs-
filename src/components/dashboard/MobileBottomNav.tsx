@@ -17,7 +17,7 @@ const MobileBottomNav = ({ onMenuOpen }: MobileBottomNavProps) => {
     { icon: LayoutDashboard, label: t("nav.dashboard_short") || "Home", path: "/dashboard" },
     { icon: Home, label: t("nav.properties_short") || "Props", path: "/dashboard/rental" },
     { icon: MessageCircle, label: "Orbit", path: "/dashboard/communication" },
-    { icon: Compass, label: t("nav.explore") || "Explore", path: "/explore" },
+    { icon: Wallet, label: "Wallet", path: "/dashboard/wallet" },
     { icon: Menu, label: t("nav.more") || "More", path: "__menu__" },
   ];
 

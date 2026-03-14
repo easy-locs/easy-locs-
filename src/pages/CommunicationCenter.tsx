@@ -52,7 +52,9 @@ export const CommunicationCenter = () => {
   const pendingThreadRetryRef = useRef<string | null>(null);
 
   useEffect(() => {
-    import("@/lib/notif-alert-prefs").then(m => m.requestNotificationPermission());
+    void import("@/lib/notif-alert-prefs")
+      .then((m) => m?.requestNotificationPermission?.())
+      .catch(() => null);
   }, []);
 
   useEffect(() => {

@@ -485,6 +485,15 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
             <span className="hidden sm:inline">{t("nav.explore") || "Explore"}</span>
           </Link>
 
+          <Link
+            to="/dashboard/wallet"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm font-medium text-foreground/80 hover:text-foreground hover:bg-muted transition-colors"
+            title="Wallet"
+          >
+            <Wallet className="h-4 w-4" />
+            <span className="hidden sm:inline">Wallet</span>
+          </Link>
+
           <div className="flex-1" />
           {/* Hub quick access — desktop topbar */}
           <HubQuickAccess variant="topbar" />
