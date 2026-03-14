@@ -279,7 +279,86 @@ async function handleCheckoutCompleted(supabase: any, stripe: Stripe, session: S
     await handleRentPayment(supabase, metadata, session);
   } else if (type === "marketplace_booking") {
     await handleMarketplacePayment(supabase, metadata, session.payment_intent as string || "");
+  } else if (type === "orbit_payment") {
+    await handleOrbitPaymentCompleted(supabase, session);
   }
+}
+
+/* ── Handle Orbit fiat payment completion (webhook-confirmed) ── */
+async function handleOrbitPaymentCompleted(supabase: any, session: Stripe.Checkout.Session) {
+  const meta = session.metadata || {};
+  const sessionId = session.id;
+  const userId = meta.user_id;
+  const recipientUserId = meta.recipient_user_id;
+  const amount = parseFloat(meta.amount || "0");
+  const currency = meta.currency || "EUR";
+  const threadId = meta.thread_id || null;
+  const contextType = meta.context_type || null;
+  const contextId = meta.context_id || null;
+
+  logStep("Processing orbit_payment completion", { sessionId, userId, amount, currency });
+
+  // Update pending wallet_transaction to completed
+  const { data: updatedTx } = await supabase
+    .from("wallet_transactions")
+    .update({ status: "completed" })
+    .eq("reference_id", sessionId)
+    .eq("user_id", userId)
+    .eq("status", "pending")
+    .select("id")
+    .maybeSingle();
+
+  if (updatedTx) {
+    logStep("Wallet transaction marked completed", { tx_id: updatedTx.id });
+  } else {
+    logStep("No pending wallet transaction found for session", { sessionId });
+  }
+
+  // Post confirmation message in Orbit chat thread
+  if (threadId && userId) {
+    // Get sender org_id from thread
+    const { data: thread } = await supabase
+      .from("conversation_threads")
+      .select("org_id")
+      .eq("id", threadId)
+      .maybeSingle();
+
+    const contextLine = contextType && contextId
+      ? `\n📎 ${contextType}: ${contextId.slice(0, 8)}`
+      : "";
+
+    const richContent = `💰 Payment confirmed\n━━━━━━━━━━━━━━━━\n💵 Amount: ${amount} ${currency}\n💳 Method: Card (Stripe)\n📋 Status: ✅ Completed (verified)\n🔖 Ref: ${sessionId.slice(0, 16)}${contextLine}\n━━━━━━━━━━━━━━━━`;
+
+    await supabase.from("messages").insert({
+      org_id: thread?.org_id || null,
+      sender_id: "00000000-0000-0000-0000-000000000000",
+      thread_id: threadId,
+      content: richContent,
+      category: "payment",
+      message_type: "system",
+      read: false,
+      context_type: contextType,
+      context_id: contextId,
+    });
+
+    logStep("Payment confirmation message sent to thread", { threadId });
+  }
+
+  // Audit
+  await supabase.from("audit_logs").insert({
+    user_id: userId,
+    action: "orbit_payment_fiat_completed",
+    metadata_json: {
+      session_id: sessionId,
+      amount,
+      currency,
+      recipient_user_id: recipientUserId,
+      thread_id: threadId,
+      tx_id: updatedTx?.id,
+    },
+  });
+
+  logStep("Orbit fiat payment fully processed", { sessionId });
 }
 
 /** Handle marketplace booking payment completion */
