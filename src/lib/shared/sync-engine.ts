@@ -181,6 +181,23 @@ interface DealAcceptedEvent extends SyncEventBase {
   currency: string;
 }
 
+interface WalletPaymentCompletedEvent extends SyncEventBase {
+  type: "wallet_payment_completed";
+  amount: number;
+  currency: string;
+  paymentMethod: "locs" | "fiat";
+  txnId: string;
+  recipientName: string;
+}
+
+interface WalletPaymentFailedEvent extends SyncEventBase {
+  type: "wallet_payment_failed";
+  amount: number;
+  currency: string;
+  paymentMethod: "locs" | "fiat";
+  reason: string;
+}
+
 export type SyncEvent =
   | LeaseCreatedEvent
   | RentCallCreatedEvent
@@ -193,7 +210,9 @@ export type SyncEvent =
   | PaymentRequestSentEvent
   | InterventionCreatedEvent
   | DealCreatedEvent
-  | DealAcceptedEvent;
+  | DealAcceptedEvent
+  | WalletPaymentCompletedEvent
+  | WalletPaymentFailedEvent;
 
 // ═══════════════════════════════════════════════════════
 // Strict Context Validation — rejects incomplete events
@@ -213,6 +232,8 @@ const REQUIRED_CONTEXT: Record<SyncEvent["type"], (ctx: SyncContext, event: Sync
   intervention_created: (ctx) => ctx.propertyId ? null : "intervention_created requires context.propertyId",
   deal_created:         (ctx, e) => (e as DealCreatedEvent).dealId ? null : "deal_created requires dealId",
   deal_accepted:        (ctx, e) => (e as DealAcceptedEvent).dealId ? null : "deal_accepted requires dealId",
+  wallet_payment_completed: (ctx, e) => (e as WalletPaymentCompletedEvent).txnId ? null : "wallet_payment_completed requires txnId",
+  wallet_payment_failed:    () => null, // No strict requirement beyond orgId
 };
 
 // ═══════════════════════════════════════════════════════
@@ -232,6 +253,8 @@ const EVENT_CONFIG: Record<SyncEvent["type"], { targetType: TargetType; module: 
   intervention_created: { targetType: "intervention",        module: "long_term",    notifType: "request" },
   deal_created:         { targetType: "deal",                module: "marketplace",  notifType: "info" },
   deal_accepted:        { targetType: "deal",                module: "marketplace",  notifType: "payment" },
+  wallet_payment_completed: { targetType: "payment",         module: "marketplace",  notifType: "payment" },
+  wallet_payment_failed:    { targetType: "payment",         module: "marketplace",  notifType: "info" },
 };
 
 // Context-aware config resolution — certain events adapt based on context IDs
@@ -404,6 +427,8 @@ function resolveTargetId(event: SyncEvent): string {
     case "intervention_created": return ctx.propertyId || "";
     case "deal_created":         return event.dealId;
     case "deal_accepted":        return event.dealId;
+    case "wallet_payment_completed": return event.txnId;
+    case "wallet_payment_failed":    return ctx.bookingId || ctx.paymentRequestId || "";
     default:                     return "";
   }
 }
@@ -477,6 +502,16 @@ function buildEventContent(event: SyncEvent): { subject: string; message: string
       return {
         subject: `✅ Deal accepted — ${event.contextTitle}`,
         message: `Deal for "${event.contextTitle}" accepted at ${event.acceptedAmount} ${event.currency}. Payment request will follow.`,
+      };
+    case "wallet_payment_completed":
+      return {
+        subject: `💰 Payment received — ${event.amount} ${event.currency}`,
+        message: `Payment of ${event.amount} ${event.currency} from ${event.recipientName} completed via ${event.paymentMethod === "locs" ? "LOCS Wallet" : "Card (Stripe)"}. Ref: ${event.txnId.slice(0, 12)}.`,
+      };
+    case "wallet_payment_failed":
+      return {
+        subject: `❌ Payment failed — ${event.amount} ${event.currency}`,
+        message: `Payment of ${event.amount} ${event.currency} via ${event.paymentMethod === "locs" ? "LOCS" : "Card"} failed. Reason: ${event.reason}.`,
       };
     default:
       return { subject: "Platform notification", message: "An event occurred." };
