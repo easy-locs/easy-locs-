@@ -64,7 +64,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   // ═══════════════════════════════════════════════════════
 
   // Sections accessible on free tier (no subscription needed)
-  const FREE_NAV_SECTIONS = new Set(["dashboard", "listings", "marketplace", "communication", "settings"]);
+  const FREE_NAV_SECTIONS = new Set(["dashboard", "listings", "marketplace", "orbit", "settings"]);
 
   const navSections: NavSection[] = [
     // 1. Dashboard

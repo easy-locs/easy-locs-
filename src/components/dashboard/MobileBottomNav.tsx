@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { LayoutDashboard, Home, MessageCircle, Compass, Menu } from "lucide-react";
+import { LayoutDashboard, Home, MessageCircle, Wallet, Menu } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 
 interface MobileBottomNavProps {

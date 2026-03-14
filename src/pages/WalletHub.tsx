@@ -22,7 +22,7 @@ import OrbitQRCode from "@/components/orbit/payments/OrbitQRCode";
 import OrbitTransactionHistory from "@/components/orbit/payments/OrbitTransactionHistory";
 import OrbitWalletPanel from "@/components/orbit/payments/OrbitWalletPanel";
 
-type WalletView = "home" | "send" | "receive" | "scan" | "my_qr" | "history" | "buy";
+type WalletView = "home" | "send" | "receive" | "scan" | "my_qr" | "history" | "buy" | "currency" | "settings";
 
 const WALLET_ACTIONS = [
   { key: "send" as WalletView, icon: Send, label: "Send", desc: "Send LOCS", color: "bg-accent" },
