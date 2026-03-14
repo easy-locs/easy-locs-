@@ -24,9 +24,11 @@ interface Props {
 }
 
 export default function MessageMultiSelectToolbar({
-  selectedIds, messages, currentUserId, onClearSelection, onDeletedForMe, onDeletedForAll,
+  selectedIds, messages, currentUserId, currentContextId, userEmail, userName, onClearSelection, onDeletedForMe, onDeletedForAll,
 }: Props) {
   const [confirmAction, setConfirmAction] = useState<"deleteMe" | "deleteAll" | null>(null);
+  const [processing, setProcessing] = useState(false);
+  const [showForward, setShowForward] = useState(false);
   const [processing, setProcessing] = useState(false);
   const count = selectedIds.size;
 
