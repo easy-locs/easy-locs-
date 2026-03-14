@@ -10,6 +10,7 @@ import {
   Shield, Lock, Zap, Sparkles, MapPin, Camera, MoreVertical, Mic, Smile,
 } from "lucide-react";
 import MessageContextMenu, { DisappearingMessagesToggle } from "./MessageContextMenu";
+import MessageMultiSelectToolbar from "./MessageMultiSelect";
 import ChatLocationPicker from "./ChatLocationPicker";
 import { useCall } from "@/components/call/CallProvider";
 import AIGenerateButton from "@/components/ai/AIGenerateButton";
