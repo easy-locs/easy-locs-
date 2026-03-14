@@ -38,6 +38,12 @@ export default function OrbitAccountSection() {
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { username, saveUsername, checkAvailability } = useUsername();
+  const [usernameInput, setUsernameInput] = useState("");
+  const [usernameStatus, setUsernameStatus] = useState<{ msg: string; ok: boolean } | null>(null);
+  const [savingUsername, setSavingUsername] = useState(false);
+
+  useEffect(() => { if (username) setUsernameInput(username); }, [username]);
 
   // Privacy states — backed by profiles table via usePrivacySettings
   const { settings: privacy, update: updatePrivacy, loaded: privacyLoaded } = usePrivacySettings();
