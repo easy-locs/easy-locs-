@@ -14,6 +14,7 @@ import {
   ChevronRight, CalendarCheck, ShoppingBag, Building2,
   TrendingUp, CreditCard, Fingerprint, History, Star,
 } from "lucide-react";
+import OrbitWalletCard from "@/components/orbit/OrbitWalletCard";
 
 /* ══════ ORBIT = Infrastructure layer ══════ */
 
