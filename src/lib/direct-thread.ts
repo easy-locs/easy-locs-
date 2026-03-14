@@ -16,7 +16,7 @@ export async function getOrCreateDirectThread(opts: {
   currentUserId: string;
   targetUserId: string;
   targetName: string;
-}): Promise<{ contextId: string; orgId: string } | null> {
+}): Promise<{ contextId: string; orgId: string; threadId?: string } | null> {
   const contextId = getDirectContextId(opts.currentUserId, opts.targetUserId);
 
   // Check if a conversation_threads row already exists for this context
@@ -28,7 +28,7 @@ export async function getOrCreateDirectThread(opts: {
     .maybeSingle();
 
   if (existingThread) {
-    return { contextId: existingThread.context_id!, orgId: existingThread.org_id };
+    return { contextId: existingThread.context_id!, orgId: existingThread.org_id, threadId: existingThread.id };
   }
 
   // Also check by messages (legacy fallback)
@@ -63,12 +63,12 @@ export async function getOrCreateDirectThread(opts: {
 
   // If we found existing messages but no thread row, create the thread row
   if (existingMsg) {
-    await ensureConversationThread(orgId, contextId, opts);
-    return { contextId, orgId };
+    const threadId = await ensureConversationThread(orgId, contextId, opts);
+    return { contextId, orgId, threadId: threadId || undefined };
   }
 
   // Create conversation_threads row first
-  await ensureConversationThread(orgId, contextId, opts);
+  const threadId = await ensureConversationThread(orgId, contextId, opts);
 
   // Then create a system message to seed the conversation
   const { data: profile } = await supabase
@@ -91,7 +91,7 @@ export async function getOrCreateDirectThread(opts: {
       conversation_status: "active",
     } as any);
 
-  return { contextId, orgId };
+  return { contextId, orgId, threadId: threadId || undefined };
 }
 
 /** Ensure a conversation_threads row exists for a direct thread */
