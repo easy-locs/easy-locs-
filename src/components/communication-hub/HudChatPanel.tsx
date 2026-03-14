@@ -1079,7 +1079,9 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
                   const { data: signed } = await supabase.storage.from("chat-media").createSignedUrl(path, 60 * 60 * 24 * 365);
                   const audioUrl = signed?.signedUrl || path;
 
-                  await supabase.from("messages").insert({
+                  const voiceSecPayload = buildSecurityPayload(securityLevel);
+
+                  const { data: insertedMsg, error: insertErr } = await supabase.from("messages").insert({
                     org_id: orgId,
                     sender_id: authUserId,
                     tenant_id: thread.tenantId || null,
@@ -1095,7 +1097,20 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
                     sender_locale: locale,
                     context_type: thread.contextType,
                     context_id: thread.contextId,
-                  } as any);
+                    transcript_status: "pending",
+                    ...voiceSecPayload,
+                  } as any).select("id").single();
+
+                  // Trigger voice transcription in background
+                  if (insertedMsg?.id) {
+                    supabase.functions.invoke("voice-transcribe", {
+                      body: {
+                        message_id: insertedMsg.id,
+                        audio_url: audioUrl,
+                        target_locale: locale,
+                      },
+                    }).catch(err => console.error("[Orbit] Transcription trigger failed:", err));
+                  }
 
                   toast.success("Voice message sent");
                 } catch (e: any) {
