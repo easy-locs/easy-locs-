@@ -6,7 +6,7 @@
 import { useState } from "react";
 import {
   Trash2, Copy, Edit3, EyeOff, Timer, ShieldAlert,
-  Reply, Forward, Star, StarOff, CheckSquare,
+  Reply, Forward, Star, StarOff, CheckSquare, Shield,
 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { supabase } from "@/integrations/supabase/client";
 import { haptic } from "@/lib/haptics";
 import { toast } from "sonner";
+import { isActionAllowed, getMessagePolicy } from "@/lib/message-security";
 
 interface MessageAction {
   msgId: string;
