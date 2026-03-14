@@ -14,6 +14,7 @@ import {
   ChevronRight, CalendarCheck, ShoppingBag, Building2,
   TrendingUp, CreditCard, Fingerprint, History, Star,
 } from "lucide-react";
+import OrbitWalletCard from "@/components/orbit/OrbitWalletCard";
 
 /* ══════ ORBIT = Infrastructure layer ══════ */
 
@@ -130,7 +131,16 @@ export default function OrbitHome() {
         <OrbitSmartActions actions={smartActions} loading={dashLoading} />
       </div>
 
-      {/* ── Priority Section ── */}
+      {/* ── Wallet Card (prominently visible) ── */}
+      <div className="w-full max-w-md animate-fade-in" style={{ animationDelay: "130ms" }}>
+        <h2
+          className="text-[11px] font-bold uppercase tracking-widest mb-2 px-1"
+          style={{ color: "hsl(var(--hud-text-dim))" }}
+        >
+          Wallet
+        </h2>
+        <OrbitWalletCard />
+      </div>
       <div className="w-full max-w-md animate-fade-in" style={{ animationDelay: "160ms" }}>
         <div className="flex items-center justify-between mb-2 px-1">
           <h2

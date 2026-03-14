@@ -30,6 +30,7 @@ import OrbitWalletPinDialog from "./OrbitWalletPinDialog";
 /** Rich payment confirmation data passed to onSuccess */
 export interface PaymentConfirmation {
   txnId: string;
+  referenceCode: string | null;
   amount: number;
   currency: string;
   method: PaymentMethod;
@@ -112,6 +113,7 @@ export default function OrbitSmartPayment({
         if (data?.error) throw new Error(data.error);
         const conf: PaymentConfirmation = {
           txnId: data?.tx_out_id || "locs-transfer",
+          referenceCode: data?.reference_code || null,
           amount: numericAmount,
           currency: "LOCS",
           method: "locs",
@@ -142,6 +144,7 @@ export default function OrbitSmartPayment({
           // For fiat, fire confirmation before redirect
           const conf: PaymentConfirmation = {
             txnId: data?.session_id || "fiat-checkout",
+            referenceCode: data?.reference_code || null,
             amount: numericAmount,
             currency,
             method: "fiat",
@@ -177,6 +180,12 @@ export default function OrbitSmartPayment({
         <p className="text-sm text-muted-foreground">
           {confirmation.method === "locs" ? formatLocs(confirmation.amount) : formatCurrency(confirmation.amount, confirmation.currency)} → {recipientName}
         </p>
+        {confirmation.referenceCode && (
+          <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-muted/50 border border-border">
+            <Shield className="w-3.5 h-3.5 text-accent" />
+            <span className="text-xs font-mono text-foreground">{confirmation.referenceCode}</span>
+          </div>
+        )}
         {confirmation.context && (
           <p className="text-[10px] text-muted-foreground capitalize">
             {confirmation.context.type}: {confirmation.context.label || confirmation.context.id.slice(0, 8)}

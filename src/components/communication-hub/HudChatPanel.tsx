@@ -1295,7 +1295,8 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
                 const statusLabel = conf.status === "completed" ? "✅ Completed" : "⏳ Pending confirmation";
                 const headerLabel = conf.status === "completed" ? "💰 Payment sent" : "💰 Payment initiated";
                 const contextLine = conf.context ? `\n📎 ${conf.context.type}: ${conf.context.label || conf.context.id.slice(0, 8)}` : "";
-                const richContent = `${headerLabel}\n━━━━━━━━━━━━━━━━\n💵 Amount: ${conf.amount} ${conf.currency}\n💳 Method: ${methodLabel}\n📋 Status: ${statusLabel}\n🔖 Ref: ${conf.txnId.slice(0, 12)}${contextLine}\n━━━━━━━━━━━━━━━━`;
+                const refLine = conf.referenceCode ? `\n🔖 Ref: ${conf.referenceCode}` : `\n🔖 ID: ${conf.txnId.slice(0, 12)}`;
+                const richContent = `${headerLabel}\n━━━━━━━━━━━━━━━━\n💵 Amount: ${conf.amount} ${conf.currency}\n💳 Method: ${methodLabel}\n📋 Status: ${statusLabel}${refLine}${contextLine}\n━━━━━━━━━━━━━━━━`;
 
                 // E2EE: encrypt payment message like any other message
                 let storedContent = richContent;

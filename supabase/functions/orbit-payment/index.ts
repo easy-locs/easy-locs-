@@ -264,7 +264,19 @@ serve(async (req) => {
         });
       }
 
-      return new Response(JSON.stringify({ success: true, ...result }), {
+      // Fetch reference codes for the created transactions
+      let reference_code_out = null;
+      let reference_code_in = null;
+      if (result?.tx_out_id) {
+        const { data: txOut } = await supabase.from("wallet_transactions").select("reference_code").eq("id", result.tx_out_id).maybeSingle();
+        reference_code_out = txOut?.reference_code || null;
+      }
+      if (result?.tx_in_id) {
+        const { data: txIn } = await supabase.from("wallet_transactions").select("reference_code").eq("id", result.tx_in_id).maybeSingle();
+        reference_code_in = txIn?.reference_code || null;
+      }
+
+      return new Response(JSON.stringify({ success: true, ...result, reference_code: reference_code_out, reference_code_in }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
@@ -337,7 +349,7 @@ serve(async (req) => {
           context_type: context?.type || null,
           context_id: context?.id || null,
         },
-      }).select("id").maybeSingle();
+      }).select("id, reference_code").maybeSingle();
 
       // Audit
       await supabase.from("audit_logs").insert({
@@ -350,7 +362,7 @@ serve(async (req) => {
         },
       });
 
-      return new Response(JSON.stringify({ url: session.url, session_id: session.id, tx_id: txRecord?.id }), {
+      return new Response(JSON.stringify({ url: session.url, session_id: session.id, tx_id: txRecord?.id, reference_code: txRecord?.reference_code }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
