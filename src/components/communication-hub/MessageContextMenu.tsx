@@ -26,6 +26,7 @@ interface MessageAction {
   hasAttachment?: boolean;
   hasAudio?: boolean;
   isStarred?: boolean;
+  security_level?: string;
 }
 
 interface Props {
