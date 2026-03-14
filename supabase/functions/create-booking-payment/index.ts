@@ -101,17 +101,25 @@ serve(async (req) => {
       .eq("id", listing_id)
       .single();
 
-    if (!listing) throw new Error("Listing not found");
+    if (!listing) {
+      return new Response(JSON.stringify({ error: "Listing not found" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 404,
+      });
+    }
 
-    // Server-side price calculation — never trust client-supplied amount
     const pricePerNight = listing.price_per_night ?? 0;
-    if (pricePerNight <= 0) throw new Error("Listing has no valid price");
+    if (pricePerNight <= 0) {
+      return new Response(JSON.stringify({ error: "Listing has no valid price" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 400,
+      });
+    }
     const expectedTotal = pricePerNight * nights;
 
-    // Allow a tiny tolerance for floating-point rounding (max 1 cent)
     if (!amount || Math.abs(amount - expectedTotal) > 0.01) {
       logStep("Price mismatch", { clientAmount: amount, expectedTotal, pricePerNight, nights });
-      throw new Error(`Amount mismatch: expected ${expectedTotal}`);
+      return new Response(JSON.stringify({ error: `Amount mismatch: expected ${expectedTotal}` }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 400,
+      });
     }
 
     const verifiedAmount = expectedTotal;

@@ -59,13 +59,18 @@ serve(async (req) => {
       .eq("id", service_id)
       .single();
 
-    if (!service) throw new Error("Service not found");
+    if (!service) {
+      return new Response(JSON.stringify({ error: "Service not found" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 404,
+      });
+    }
 
-    // Server-side price validation
     const expectedAmount = service.price;
     if (Math.abs(amount - expectedAmount) > 0.01) {
       logStep("Price mismatch", { clientAmount: amount, expectedAmount });
-      throw new Error(`Amount mismatch: expected ${expectedAmount}`);
+      return new Response(JSON.stringify({ error: `Amount mismatch: expected ${expectedAmount}` }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 400,
+      });
     }
 
     // Check for Stripe Connect
