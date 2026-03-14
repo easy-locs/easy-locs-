@@ -7,7 +7,8 @@ import {
   User, Shield, Lock, Eye, Fingerprint, Smartphone,
   Copy, Check, QrCode, ChevronRight, Key, LogOut,
   Bell, Database, ShieldCheck, HelpCircle, Camera, Pencil,
-  Image, ShieldAlert, Timer, Ban, UserX, Globe, ScanFace, KeyRound, Wifi, AtSign
+  Image, ShieldAlert, Timer, Ban, UserX, Globe, ScanFace, KeyRound, Wifi, AtSign,
+  Store, MessageSquare, Palette, Film, Download, Archive, Trash2, Star
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { Switch } from "@/components/ui/switch";
