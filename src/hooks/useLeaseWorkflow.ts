@@ -162,6 +162,7 @@ export function useLeaseWorkflow() {
 
       if (tenantSigned) {
         toast.success("Both signatures complete — lease is now active. Rent schedule will be generated automatically.");
+        platformBus.emit("pm:lease_activated", { leaseId: leaseId }, "pm", { orgId: (current as any)?.org_id || orgId });
       } else {
         toast.success("Owner signature recorded — awaiting tenant signature");
       }
