@@ -1136,6 +1136,14 @@ const pageFr: Record<string, string> = {
   "landing.nav.signup": "S'inscrire",
   "landing.nav.tenant_access": "Espace locataire",
   "landing.nav.pro_signup": "Créer mon compte",
+  "landing.nav.post": "Publier",
+  "landing.value.badge": "Gérez votre business depuis n'importe où — 190+ pays",
+  "landing.value.title": "Créez votre business immobilier",
+  "landing.value.highlight": "à l'international",
+  "landing.value.subtitle": "Une plateforme pour gérer vos biens locatifs, encaisser des paiements et coordonner vos services.",
+  "landing.value.quick_links": "Liens rapides",
+  "landing.value.quick_links_desc": "Accédez rapidement aux sections clés",
+  "landing.value.get_started": "Commencer gratuitement",
 
   // Explore radius search
   "explore.radius.title": "Où cherchez-vous ?",
@@ -3359,6 +3367,14 @@ const pageEn: Record<string, string> = {
   "landing.nav.signup": "Sign up",
   "landing.nav.tenant_access": "Tenant portal",
   "landing.nav.pro_signup": "Create Account",
+  "landing.nav.post": "Post",
+  "landing.value.badge": "Run your business from anywhere — 190+ countries",
+  "landing.value.title": "Build your property business",
+  "landing.value.highlight": "internationally",
+  "landing.value.subtitle": "One platform to manage properties, process payments, and coordinate services.",
+  "landing.value.quick_links": "Quick Links",
+  "landing.value.quick_links_desc": "Jump directly to key sections",
+  "landing.value.get_started": "Get Started Free",
 
   // Explore radius search
   "explore.radius.title": "Where are you looking?",

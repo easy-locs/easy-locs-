@@ -17,14 +17,26 @@ import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import CountryGuard from "@/components/dashboard/CountryGuard";
 
-// Safe lazy wrapper that catches chunk failures
+// Safe lazy wrapper that catches chunk failures + missing default export issues
 function safeLazy(factory: () => Promise<{ default: ComponentType<any> }>, name: string) {
-  return lazy(() =>
-    factory().catch((err) => {
+  return lazy(async () => {
+    try {
+      const mod = await factory();
+      if (!mod?.default) {
+        throw new Error(`[lazy] Missing default export for ${name}`);
+      }
+      return mod;
+    } catch (err) {
       console.error(`[lazy] Failed to load chunk: ${name}`, err);
-      return { default: () => <div className="p-8 text-center text-destructive">Failed to load {name}. <button onClick={() => window.location.reload()} className="underline ml-2">Reload</button></div> } as { default: ComponentType<any> };
-    })
-  );
+      return {
+        default: () => (
+          <div className="p-8 text-center text-destructive">
+            Failed to load {name}. <button onClick={() => window.location.reload()} className="underline ml-2">Reload</button>
+          </div>
+        ),
+      } as { default: ComponentType<any> };
+    }
+  });
 }
 
 const Explore = safeLazy(() => import("./pages/Explore"), "Explore");

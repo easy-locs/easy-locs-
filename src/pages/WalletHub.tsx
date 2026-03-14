@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Wallet, Send, ArrowDownLeft, ScanLine, QrCode,
   History, Settings, ArrowLeft, TrendingUp, TrendingDown,
-  Plus, Shield, Coins, ChevronRight,
+  Plus, Shield, ChevronRight, MessageCircle,
 } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -43,20 +43,40 @@ export default function WalletHub() {
   const currencyInfo = SUPPORTED_CURRENCIES[detected.code];
   const navigate = useNavigate();
 
+  const recipientUserId = searchParams.get("recipientId") || searchParams.get("recipientUserId") || "";
+  const recipientName = searchParams.get("recipientName") || "Recipient";
+
+  const renderRecipientHint = (mode: "send" | "receive") => (
+    <div className="rounded-2xl border border-border bg-card p-5 text-center space-y-3">
+      <MessageCircle className="w-10 h-10 mx-auto text-muted-foreground/40" />
+      <p className="text-sm font-medium text-foreground">
+        {mode === "send" ? "Select a recipient from Orbit chat to send payment." : "Open a conversation to request payment."}
+      </p>
+      <div className="flex gap-2 justify-center">
+        <Button size="sm" onClick={() => navigate("/dashboard/communication")}>Open Orbit</Button>
+        <Button size="sm" variant="outline" onClick={() => setView("my_qr")}>Use My QR</Button>
+      </div>
+    </div>
+  );
+
   const renderSubView = () => {
     switch (view) {
       case "send":
+        if (!recipientUserId) return renderRecipientHint("send");
         return (
           <OrbitSmartPayment
-            recipientUserId=""
-            recipientName="Recipient"
+            recipientUserId={recipientUserId}
+            recipientName={recipientName}
             onSuccess={() => setView("home")}
             onCancel={() => setView("home")}
           />
         );
       case "receive":
+        if (!recipientUserId) return renderRecipientHint("receive");
         return (
           <OrbitPaymentRequest
+            recipientUserId={recipientUserId}
+            recipientName={recipientName}
             onSuccess={() => setView("home")}
             onCancel={() => setView("home")}
           />
@@ -199,7 +219,7 @@ export default function WalletHub() {
                         onClick={() => setView(action.key)}
                         className="flex flex-col items-center gap-1.5 p-4 rounded-2xl bg-card border border-border hover:border-accent/30 transition-colors"
                       >
-                        <div className={`w-10 h-10 rounded-xl ${action.color} text-white flex items-center justify-center`}>
+                        <div className={`w-10 h-10 rounded-xl ${action.color} text-primary-foreground flex items-center justify-center`}>
                           <Icon className="w-4.5 h-4.5" />
                         </div>
                         <span className="text-[11px] font-semibold text-foreground">{action.label}</span>
