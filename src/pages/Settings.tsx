@@ -15,6 +15,7 @@ import PaymentProvidersSettings from "@/components/settings/PaymentProvidersSett
 import NotificationPreferences from "@/components/communication/NotificationPreferences";
 import ProSettingsSection from "@/components/settings/ProSettingsSection";
 import OrbitSessionManager from "@/components/orbit/OrbitSessionManager";
+import AppSecuritySettings from "@/components/security/AppSecuritySettings";
 
 const Settings = () => {
   const { user, orgId } = useAuth();
