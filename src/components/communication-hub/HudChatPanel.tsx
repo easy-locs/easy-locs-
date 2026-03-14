@@ -478,7 +478,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
 
       const secPayload = buildSecurityPayload(securityLevel);
 
-      const { error: insertErr } = await supabase.from("messages").insert({
+      const insertPayload: any = {
         org_id: orgId, sender_id: authUserId, tenant_id: thread.tenantId || null,
         booking_id: thread.bookingId || null, booking_type: thread.bookingType || null,
         contact_name: thread.conversationType !== "property" ? thread.name : undefined,
@@ -493,7 +493,11 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
         reply_to_id: currentReplyTo?.msgId || null,
         reply_to_content: currentReplyTo?.content?.slice(0, 120) || null,
         ...secPayload,
-      } as any);
+      };
+      // Include thread_id for proper thread matching on forward/search
+      if (thread.threadId) insertPayload.thread_id = thread.threadId;
+
+      const { error: insertErr } = await supabase.from("messages").insert(insertPayload);
 
       if (insertErr) {
         console.error("[Orbit] Message insert failed:", insertErr);
