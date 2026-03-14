@@ -1104,7 +1104,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
 
                   const voiceSecPayload = buildSecurityPayload(securityLevel);
 
-                  const { data: insertedMsg, error: insertErr } = await supabase.from("messages").insert({
+                  const voiceInsertPayload: any = {
                     org_id: orgId,
                     sender_id: authUserId,
                     tenant_id: thread.tenantId || null,
@@ -1122,7 +1122,10 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
                     context_id: thread.contextId,
                     transcript_status: "pending",
                     ...voiceSecPayload,
-                  } as any).select("id").single();
+                  };
+                  if (thread.threadId) voiceInsertPayload.thread_id = thread.threadId;
+
+                  const { data: insertedMsg, error: insertErr } = await supabase.from("messages").insert(voiceInsertPayload).select("id").single();
 
                   // Trigger voice transcription in background
                   if (insertedMsg?.id) {
