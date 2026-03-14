@@ -288,14 +288,39 @@ serve(async (req) => {
         },
       });
 
+      // Create pending wallet transaction for tracking
+      const { data: txRecord } = await supabase.from("wallet_transactions").insert({
+        user_id: user.id,
+        counterpart_user_id: recipient_user_id || null,
+        type: "payment",
+        direction: "out",
+        amount,
+        currency,
+        description: description || "Fiat payment",
+        status: "pending",
+        thread_id: thread_id || null,
+        reference_type: context?.type || "fiat_checkout",
+        reference_id: session.id,
+        metadata_json: {
+          stripe_session_id: session.id,
+          recipient_name: recipient_name || null,
+          context_type: context?.type || null,
+          context_id: context?.id || null,
+        },
+      }).select("id").maybeSingle();
+
       // Audit
       await supabase.from("audit_logs").insert({
         user_id: user.id,
         action: "orbit_payment_fiat_initiated",
-        metadata_json: { session_id: session.id, amount, currency, recipient_user_id, thread_id, context },
+        metadata_json: {
+          session_id: session.id,
+          tx_id: txRecord?.id,
+          amount, currency, recipient_user_id, thread_id, context,
+        },
       });
 
-      return new Response(JSON.stringify({ url: session.url }), {
+      return new Response(JSON.stringify({ url: session.url, session_id: session.id, tx_id: txRecord?.id }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }

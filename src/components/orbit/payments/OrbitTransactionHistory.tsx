@@ -42,6 +42,7 @@ export default function OrbitTransactionHistory() {
         const Icon = TYPE_ICONS[tx.type] || Clock;
         const isIn = tx.direction === "in";
         const isPending = tx.status === "pending";
+        const isFailed = tx.status === "failed";
 
         return (
           <motion.div
@@ -49,17 +50,17 @@ export default function OrbitTransactionHistory() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.03 }}
-            className="flex items-center gap-3 px-4 py-3 border-b border-border last:border-0"
+            className={`flex items-center gap-3 px-4 py-3 border-b border-border last:border-0 ${isFailed ? "opacity-60" : ""}`}
           >
             <div
               className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
-                isIn ? "bg-success/10" : "bg-destructive/10"
+                isFailed ? "bg-destructive/10" : isIn ? "bg-success/10" : "bg-destructive/10"
               }`}
             >
               {isIn ? (
-                <ArrowDownLeft className={`w-4 h-4 ${isPending ? "text-warning" : "text-success"}`} />
+                <ArrowDownLeft className={`w-4 h-4 ${isPending ? "text-warning" : isFailed ? "text-destructive" : "text-success"}`} />
               ) : (
-                <ArrowUpRight className="w-4 h-4 text-destructive" />
+                <ArrowUpRight className={`w-4 h-4 ${isPending ? "text-warning" : isFailed ? "text-destructive" : "text-destructive"}`} />
               )}
             </div>
 
@@ -76,6 +77,9 @@ export default function OrbitTransactionHistory() {
                 })}
                 {isPending && (
                   <span className="ml-1.5 text-warning font-medium">• Pending</span>
+                )}
+                {isFailed && (
+                  <span className="ml-1.5 text-destructive font-medium">• Failed</span>
                 )}
               </p>
             </div>
