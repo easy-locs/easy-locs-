@@ -273,10 +273,8 @@ export default function OrbitAccountSection() {
               <button
                 key={opt.value}
                 onClick={() => {
-                  setDisplayNameMode(opt.value as any);
+                  updatePrivacy({ displayNameMode: opt.value as any });
                   haptic("selection");
-                  // Persist to localStorage
-                  localStorage.setItem("orbit_display_name_mode", opt.value);
                 }}
                 className="flex items-center gap-3 py-2.5 px-3 rounded-lg text-left transition-colors"
                 style={{
