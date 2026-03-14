@@ -3,6 +3,14 @@
  * 
  * For TRACKER (agent/driver): creates tracking, updates position in real-time.
  * For VIEWER (client): subscribes to position updates via Supabase Realtime.
+ * 
+ * BUSINESS CONTEXT ENFORCEMENT:
+ * Every tracking session MUST be linked to a business entity:
+ * - delivery     → concierge_order / marketplace_booking
+ * - visit        → booking_request / real_estate_listing
+ * - intervention → booking_task / maintenance request
+ * - appointment  → deal_room / conversation thread
+ * - agent        → org_member assignment
  */
 import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -10,6 +18,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { platformBus } from "@/lib/shared/platform-bus";
 
 export type TrackingStatus = "pending" | "en_route" | "nearby" | "arrived" | "completed" | "cancelled";
+
+export type TrackingContextType = "delivery" | "visit" | "intervention" | "appointment" | "agent";
 
 export interface TrackingData {
   id: string;
@@ -24,6 +34,7 @@ export interface TrackingData {
   speed_kmh: number;
   heading: number;
   context_type: string;
+  context_id: string | null;
   context_label: string | null;
   tracker_user_id: string;
   viewer_user_id: string | null;
@@ -34,25 +45,46 @@ export interface TrackingData {
 }
 
 interface UseTrackerOpts {
+  /** Resume an existing tracking session */
   trackingId?: string;
-  contextType?: string;
-  contextId?: string;
+  /** REQUIRED — business context type */
+  contextType: TrackingContextType;
+  /** REQUIRED — ID of the linked business entity (booking, order, task, deal, etc.) */
+  contextId: string;
+  /** Human-readable label shown on the map */
   contextLabel?: string;
+  /** User who will see the tracking (client / tenant) */
   viewerUserId?: string;
+  /** Destination coordinates */
   destinationLat?: number;
   destinationLng?: number;
 }
 
 /** Hook for the TRACKER (person being tracked) */
-export function useTracker(opts: UseTrackerOpts = {}) {
+export function useTracker(opts: UseTrackerOpts) {
   const { user, orgId } = useAuth();
   const [trackingId, setTrackingId] = useState<string | null>(opts.trackingId || null);
   const [status, setStatus] = useState<TrackingStatus>("pending");
   const watchIdRef = useRef<number | null>(null);
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const startTracking = useCallback(async () => {
     if (!user?.id || !orgId) return null;
+
+    // Enforce mandatory business context
+    if (!opts.contextType || !opts.contextId) {
+      console.error("[tracker] Cannot start: contextType and contextId are required");
+      return null;
+    }
+
+    // Capture origin position
+    const origin = await new Promise<{ lat: number; lng: number } | null>((resolve) => {
+      if (!("geolocation" in navigator)) { resolve(null); return; }
+      navigator.geolocation.getCurrentPosition(
+        (pos) => resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+        () => resolve(null),
+        { enableHighAccuracy: true, timeout: 10000 }
+      );
+    });
 
     const { data, error } = await supabase
       .from("live_trackings")
@@ -60,13 +92,22 @@ export function useTracker(opts: UseTrackerOpts = {}) {
         org_id: orgId,
         tracker_user_id: user.id,
         viewer_user_id: opts.viewerUserId || null,
-        context_type: opts.contextType || "delivery",
-        context_id: opts.contextId || null,
+        context_type: opts.contextType,
+        context_id: opts.contextId,
         context_label: opts.contextLabel || null,
         destination_lat: opts.destinationLat || null,
         destination_lng: opts.destinationLng || null,
+        origin_lat: origin?.lat || null,
+        origin_lng: origin?.lng || null,
+        current_lat: origin?.lat || null,
+        current_lng: origin?.lng || null,
         status: "en_route",
         started_at: new Date().toISOString(),
+        metadata_json: {
+          context_type: opts.contextType,
+          context_id: opts.contextId,
+          started_by: user.id,
+        },
       } as any)
       .select()
       .single();
@@ -77,7 +118,11 @@ export function useTracker(opts: UseTrackerOpts = {}) {
     setTrackingId(id);
     setStatus("en_route");
 
-    platformBus.emit("tracking:started", { trackingId: id, contextType: opts.contextType }, "tracking", { userId: user.id, orgId });
+    platformBus.emit("tracking:started", {
+      trackingId: id,
+      contextType: opts.contextType,
+      contextId: opts.contextId,
+    }, "tracking", { userId: user.id, orgId });
 
     // Start GPS watch
     if ("geolocation" in navigator) {
@@ -86,12 +131,12 @@ export function useTracker(opts: UseTrackerOpts = {}) {
           updatePosition(id, pos.coords.latitude, pos.coords.longitude, pos.coords.speed, pos.coords.heading);
         },
         () => {},
-        { enableHighAccuracy: true, maximumAge: 5000, timeout: 15000 }
+        { enableHighAccuracy: true, maximumAge: 3000, timeout: 15000 }
       );
     }
 
     return id;
-  }, [user?.id, orgId, opts]);
+  }, [user?.id, orgId, opts.contextType, opts.contextId, opts.contextLabel, opts.viewerUserId, opts.destinationLat, opts.destinationLng]);
 
   const updatePosition = useCallback(async (id: string, lat: number, lng: number, speed?: number | null, heading?: number | null) => {
     const eta = calculateETA(lat, lng, opts.destinationLat, opts.destinationLng, speed);
@@ -113,9 +158,14 @@ export function useTracker(opts: UseTrackerOpts = {}) {
 
     if (newStatus !== status) {
       setStatus(newStatus);
-      platformBus.emit("tracking:status_changed", { trackingId: id, status: newStatus }, "tracking", { userId: user?.id, orgId });
+      platformBus.emit("tracking:status_changed", {
+        trackingId: id,
+        status: newStatus,
+        contextType: opts.contextType,
+        contextId: opts.contextId,
+      }, "tracking", { userId: user?.id, orgId });
     }
-  }, [status, opts.destinationLat, opts.destinationLng, user?.id, orgId]);
+  }, [status, opts.destinationLat, opts.destinationLng, opts.contextType, opts.contextId, user?.id, orgId]);
 
   const updateStatus = useCallback(async (newStatus: TrackingStatus) => {
     if (!trackingId) return;
@@ -127,20 +177,25 @@ export function useTracker(opts: UseTrackerOpts = {}) {
 
     if (newStatus === "completed") {
       stopWatch();
-      platformBus.emit("tracking:completed", { trackingId }, "tracking", { userId: user?.id, orgId });
+      platformBus.emit("tracking:completed", {
+        trackingId,
+        contextType: opts.contextType,
+        contextId: opts.contextId,
+      }, "tracking", { userId: user?.id, orgId });
     } else {
-      platformBus.emit("tracking:status_changed", { trackingId, status: newStatus }, "tracking", { userId: user?.id, orgId });
+      platformBus.emit("tracking:status_changed", {
+        trackingId,
+        status: newStatus,
+        contextType: opts.contextType,
+        contextId: opts.contextId,
+      }, "tracking", { userId: user?.id, orgId });
     }
-  }, [trackingId, user?.id, orgId]);
+  }, [trackingId, user?.id, orgId, opts.contextType, opts.contextId]);
 
   const stopWatch = useCallback(() => {
     if (watchIdRef.current !== null) {
       navigator.geolocation.clearWatch(watchIdRef.current);
       watchIdRef.current = null;
-    }
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current);
-      intervalRef.current = null;
     }
   }, []);
 
@@ -166,7 +221,14 @@ export function useTrackingViewer(trackingId: string | null) {
         .select("*")
         .eq("id", trackingId)
         .single();
-      if (data) setTracking(data as unknown as TrackingData);
+      if (data) {
+        const td = data as unknown as TrackingData;
+        setTracking(td);
+        // Seed positions with initial position
+        if (td.current_lat && td.current_lng) {
+          setPositions([{ lat: td.current_lat, lng: td.current_lng, time: Date.now() }]);
+        }
+      }
     })();
   }, [trackingId]);
 
@@ -206,6 +268,20 @@ export function useTrackingViewer(trackingId: string | null) {
   return { tracking, positions, isComplete };
 }
 
+/** Find active tracking for a business context */
+export async function findActiveTracking(contextType: TrackingContextType, contextId: string): Promise<string | null> {
+  const { data } = await supabase
+    .from("live_trackings")
+    .select("id")
+    .eq("context_type", contextType)
+    .eq("context_id", contextId)
+    .in("status", ["pending", "en_route", "nearby", "arrived"] as any)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  return (data as any)?.id || null;
+}
+
 // ── Helpers ──
 
 function calculateETA(
@@ -215,8 +291,8 @@ function calculateETA(
 ): number | null {
   if (!destLat || !destLng) return null;
   const dist = haversineKm(lat, lng, destLat, destLng);
-  const speedKmh = speedMs ? speedMs * 3.6 : 30; // Default 30km/h
-  if (speedKmh < 1) return Math.round(dist / 0.5 * 60); // Walking speed
+  const speedKmh = speedMs ? speedMs * 3.6 : 30;
+  if (speedKmh < 1) return Math.round(dist / 0.5 * 60);
   return Math.max(1, Math.round((dist / speedKmh) * 60));
 }
 
@@ -226,8 +302,8 @@ function getProximityStatus(
 ): TrackingStatus {
   if (!destLat || !destLng) return "en_route";
   const dist = haversineKm(lat, lng, destLat, destLng);
-  if (dist < 0.05) return "arrived"; // 50m
-  if (dist < 0.5) return "nearby";   // 500m
+  if (dist < 0.05) return "arrived";
+  if (dist < 0.5) return "nearby";
   return "en_route";
 }
 
