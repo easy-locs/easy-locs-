@@ -498,25 +498,36 @@ const ClientMessages = () => {
 
                 if (isDeletedForAll) return <div key={m.id}>{bubble}</div>;
 
+                const handleDeleteForMe = async () => {
+                  await supabase.from("messages").update({ deleted_for_sender: true } as any).eq("id", m.id);
+                  setMessages(prev => prev.filter(x => x.id !== m.id));
+                  toast.success(t("chat.deleted_for_you") || "Deleted for you");
+                };
+
                 return (
-                  <MessageActionsMenu key={m.id}
-                    messageId={m.id} content={m.content} isMe={isMe}
-                    isStarred={!!(m as any).starred}
-                    minutesSinceSent={minutesSince}
-                    onReply={() => setReplyTo(m)}
-                    onForward={() => setForwardMsg(m)}
-                    onDeleted={(type) => {
-                      if (type === "for_all") {
-                        setMessages(prev => prev.map(x => x.id === m.id ? { ...x, deleted_for_all: true, content: "🚫 This message was deleted" } : x));
-                      } else {
-                        // delete for me — just hide locally
-                        setMessages(prev => prev.filter(x => x.id !== m.id));
-                      }
-                    }}
-                    onStarToggle={(s) => setMessages(prev => prev.map(x => x.id === m.id ? { ...x, starred: s } : x))}
+                  <SwipeableMessage
+                    key={m.id}
+                    onSwipeLeft={handleDeleteForMe}
+                    onSwipeRight={() => setReplyTo(m)}
                   >
-                    {bubble}
-                  </MessageActionsMenu>
+                    <MessageActionsMenu
+                      messageId={m.id} content={m.content} isMe={isMe}
+                      isStarred={!!(m as any).starred}
+                      minutesSinceSent={minutesSince}
+                      onReply={() => setReplyTo(m)}
+                      onForward={() => setForwardMsg(m)}
+                      onDeleted={(type) => {
+                        if (type === "for_all") {
+                          setMessages(prev => prev.map(x => x.id === m.id ? { ...x, deleted_for_all: true, content: "🚫 This message was deleted" } : x));
+                        } else {
+                          setMessages(prev => prev.filter(x => x.id !== m.id));
+                        }
+                      }}
+                      onStarToggle={(s) => setMessages(prev => prev.map(x => x.id === m.id ? { ...x, starred: s } : x))}
+                    >
+                      {bubble}
+                    </MessageActionsMenu>
+                  </SwipeableMessage>
                 );
               })
             )}
