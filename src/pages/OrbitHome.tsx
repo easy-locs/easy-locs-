@@ -210,16 +210,16 @@ export default function OrbitHome() {
         </div>
       )}
 
-      {/* ── Module Shortcuts (contextual links to core pillars) ── */}
+      {/* ── Orbit Infrastructure (Wallet, Payments, Security) ── */}
       <div className="w-full max-w-md animate-fade-in" style={{ animationDelay: "300ms" }}>
         <h2
           className="text-[11px] font-bold uppercase tracking-widest mb-2 px-1"
           style={{ color: "hsl(var(--hud-text-dim))" }}
         >
-          Mes modules
+          Orbit — Infrastructure
         </h2>
-        <div className="grid grid-cols-4 gap-2.5">
-          {MODULE_CARDS.map((card, i) => (
+        <div className="grid grid-cols-3 gap-2.5">
+          {ORBIT_INFRA_CARDS.map((card, i) => (
             <div key={card.label} className="animate-fade-in" style={{ animationDelay: `${320 + i * 40}ms` }}>
               <OrbitQuickCard
                 icon={card.icon}
@@ -234,21 +234,45 @@ export default function OrbitHome() {
         </div>
       </div>
 
-      {/* ── Utilities Section ── */}
+      {/* ── Marketplace Commerce (Services, Bookings, Reviews) ── */}
       <div className="w-full max-w-md animate-fade-in" style={{ animationDelay: "420ms" }}>
         <h2
           className="text-[11px] font-bold uppercase tracking-widest mb-2 px-1"
           style={{ color: "hsl(var(--hud-text-dim))" }}
         >
-          Outils
+          Marketplace — Commerce
         </h2>
         <div className="grid grid-cols-4 gap-2.5">
-          {SECONDARY_CARDS.map((card, i) => (
+          {MARKETPLACE_CARDS.map((card, i) => (
             <div key={card.label} className="animate-fade-in" style={{ animationDelay: `${450 + i * 35}ms` }}>
               <OrbitQuickCard
                 icon={card.icon}
                 label={card.label}
                 description={card.desc ?? undefined}
+                counter={card.key ? (engine[card.key] as number) : undefined}
+                status={card.key && (engine[card.key] as number) > 0 ? "active" : "idle"}
+                to={card.to}
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ── Platform Modules ── */}
+      <div className="w-full max-w-md animate-fade-in" style={{ animationDelay: "520ms" }}>
+        <h2
+          className="text-[11px] font-bold uppercase tracking-widest mb-2 px-1"
+          style={{ color: "hsl(var(--hud-text-dim))" }}
+        >
+          Modules
+        </h2>
+        <div className="grid grid-cols-4 gap-2.5">
+          {MODULE_CARDS.map((card, i) => (
+            <div key={card.label} className="animate-fade-in" style={{ animationDelay: `${540 + i * 35}ms` }}>
+              <OrbitQuickCard
+                icon={card.icon}
+                label={card.label}
+                description={card.desc}
                 counter={card.key ? (engine[card.key] as number) : undefined}
                 status={card.key && (engine[card.key] as number) > 0 ? "active" : "idle"}
                 to={card.to}
