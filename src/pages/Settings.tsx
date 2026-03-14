@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useSearchParams } from "react-router-dom";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
-import { User, Shield, Building2, Upload, Loader2, PenTool, FileSpreadsheet, CreditCard, Palette, Globe, Eye, EyeOff, Cog, Smartphone } from "lucide-react";
+import { User, Shield, Building2, Upload, Loader2, PenTool, FileSpreadsheet, CreditCard, Palette, Globe, Eye, EyeOff, Cog, Smartphone, Wallet } from "lucide-react";
 import MFASettings from "@/components/settings/MFASettings";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -16,6 +16,7 @@ import NotificationPreferences from "@/components/communication/NotificationPref
 import ProSettingsSection from "@/components/settings/ProSettingsSection";
 import OrbitSessionManager from "@/components/orbit/OrbitSessionManager";
 import AppSecuritySettings from "@/components/security/AppSecuritySettings";
+import WalletCurrencySettings from "@/components/settings/WalletCurrencySettings";
 
 const Settings = () => {
   const { user, orgId } = useAuth();
