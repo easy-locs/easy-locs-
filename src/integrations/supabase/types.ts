@@ -2523,6 +2523,102 @@ export type Database = {
           },
         ]
       }
+      live_trackings: {
+        Row: {
+          completed_at: string | null
+          context_id: string | null
+          context_label: string | null
+          context_type: string
+          created_at: string
+          current_lat: number | null
+          current_lng: number | null
+          destination_lat: number | null
+          destination_lng: number | null
+          eta_minutes: number | null
+          heading: number | null
+          id: string
+          last_position_at: string | null
+          metadata_json: Json | null
+          org_id: string
+          origin_lat: number | null
+          origin_lng: number | null
+          route_polyline: string | null
+          speed_kmh: number | null
+          started_at: string | null
+          status: string
+          tracker_user_id: string
+          updated_at: string
+          viewer_user_id: string | null
+        }
+        Insert: {
+          completed_at?: string | null
+          context_id?: string | null
+          context_label?: string | null
+          context_type?: string
+          created_at?: string
+          current_lat?: number | null
+          current_lng?: number | null
+          destination_lat?: number | null
+          destination_lng?: number | null
+          eta_minutes?: number | null
+          heading?: number | null
+          id?: string
+          last_position_at?: string | null
+          metadata_json?: Json | null
+          org_id: string
+          origin_lat?: number | null
+          origin_lng?: number | null
+          route_polyline?: string | null
+          speed_kmh?: number | null
+          started_at?: string | null
+          status?: string
+          tracker_user_id: string
+          updated_at?: string
+          viewer_user_id?: string | null
+        }
+        Update: {
+          completed_at?: string | null
+          context_id?: string | null
+          context_label?: string | null
+          context_type?: string
+          created_at?: string
+          current_lat?: number | null
+          current_lng?: number | null
+          destination_lat?: number | null
+          destination_lng?: number | null
+          eta_minutes?: number | null
+          heading?: number | null
+          id?: string
+          last_position_at?: string | null
+          metadata_json?: Json | null
+          org_id?: string
+          origin_lat?: number | null
+          origin_lng?: number | null
+          route_polyline?: string | null
+          speed_kmh?: number | null
+          started_at?: string | null
+          status?: string
+          tracker_user_id?: string
+          updated_at?: string
+          viewer_user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "live_trackings_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "live_trackings_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs_tenant_view"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       local_services: {
         Row: {
           active: boolean
