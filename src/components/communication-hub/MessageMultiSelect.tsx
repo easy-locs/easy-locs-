@@ -15,6 +15,9 @@ interface Props {
   selectedIds: Set<string>;
   messages: Array<{ id: string; content: string; sender_id: string; attachment_url?: string }>;
   currentUserId?: string;
+  currentContextId?: string;
+  userEmail?: string;
+  userName?: string;
   onClearSelection: () => void;
   onDeletedForMe: (ids: string[]) => void;
   onDeletedForAll: (ids: string[]) => void;
