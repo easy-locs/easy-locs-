@@ -39,9 +39,10 @@ export default function SwipeableCallItem({ children, onDelete }: Props) {
     if (!isTracking.current) return;
     const t = e.touches[0];
     const dx = t.clientX - startX.current;
-    const dy = e.touches[0].clientY - (e as any)._startY || 0;
+    const dy = t.clientY - startY.current;
 
     if (!locked.current) {
+      if (Math.abs(dy) > 8) { locked.current = "v"; return; }
       if (Math.abs(dx) > 8) locked.current = "h";
       else return;
     }
