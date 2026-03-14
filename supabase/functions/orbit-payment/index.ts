@@ -1,7 +1,10 @@
 /**
  * orbit-payment — Server-side payment processing for Orbit
- * Validates QR payloads, processes LOCS transfers, creates Stripe sessions
- * Includes: signature verification, anti-replay, expiration check, audit trail
+ * - Server-side QR signing with real HMAC secret
+ * - Atomic LOCS transfers via DB RPC
+ * - Stripe 3DS fiat payments
+ * - Anti-replay nonce persistence
+ * - Full audit trail
  */
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
@@ -12,12 +15,15 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const PLATFORM_SPREAD = 0.02;
+/** Server-side HMAC signing key — derived from service role key (never exposed to client) */
+function getSigningKey(): string {
+  return `orbit-qr-sign-${(Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "").slice(-16)}`;
+}
 
-/** HMAC-SHA256 verify (mirrors client-side signPayload) */
-async function verifySignature(payload: any): Promise<boolean> {
+/** Sign a dynamic QR payload server-side */
+async function signQRPayload(payload: Record<string, any>): Promise<string> {
   const data = [
-    payload.qr_type,
+    "dynamic",
     payload.recipient_user_id,
     payload.amount.toString(),
     payload.currency,
@@ -26,11 +32,23 @@ async function verifySignature(payload: any): Promise<boolean> {
   ].join("|");
 
   const encoder = new TextEncoder();
-  const keyData = encoder.encode(`orbit-pay-v1-${payload.recipient_user_id}`);
+  const keyData = encoder.encode(getSigningKey());
   const key = await crypto.subtle.importKey("raw", keyData, { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
   const sig = await crypto.subtle.sign("HMAC", key, encoder.encode(data));
-  const expected = Array.from(new Uint8Array(sig), (b) => b.toString(16).padStart(2, "0")).join("");
+  return Array.from(new Uint8Array(sig), (b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+/** Verify a dynamic QR payload server-side */
+async function verifyQRSignature(payload: Record<string, any>): Promise<boolean> {
+  const expected = await signQRPayload(payload);
   return expected === payload.signature;
+}
+
+/** Generate cryptographic nonce */
+function generateNonce(): string {
+  const array = new Uint8Array(16);
+  crypto.getRandomValues(array);
+  return Array.from(array, (b) => b.toString(16).padStart(2, "0")).join("");
 }
 
 serve(async (req) => {
@@ -56,13 +74,72 @@ serve(async (req) => {
     const body = await req.json();
     const { action } = body;
 
+    // ─── ACTION: generate_qr ─── Server-side QR generation & signing
+    if (action === "generate_qr") {
+      const { qr_type, recipient_type, amount, currency, locs_equivalent, reference_type, reference_id, description, expires_in_minutes, org_id } = body;
+
+      // Get user profile name
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("name, first_name, last_name, email")
+        .eq("id", user.id)
+        .maybeSingle();
+
+      const userName = profile?.name
+        || (profile?.first_name ? `${profile.first_name} ${profile.last_name || ""}`.trim() : null)
+        || profile?.email
+        || user.email
+        || "User";
+
+      if (qr_type === "static") {
+        const payload = {
+          qr_type: "static",
+          version: 1,
+          recipient_user_id: user.id,
+          recipient_name: userName,
+          recipient_type: recipient_type || "user",
+          org_id: org_id || null,
+          created_at: new Date().toISOString(),
+        };
+
+        return new Response(JSON.stringify({ payload, encoded: btoa(JSON.stringify(payload)) }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      // Dynamic QR — server-signed
+      const nonce = generateNonce();
+      const expiresAt = new Date(Date.now() + (expires_in_minutes || 30) * 60 * 1000).toISOString();
+
+      const base = {
+        qr_type: "dynamic",
+        version: 1,
+        recipient_user_id: user.id,
+        recipient_name: userName,
+        amount: amount || 0,
+        currency: currency || "EUR",
+        locs_equivalent: locs_equivalent || null,
+        reference_type: reference_type || null,
+        reference_id: reference_id || null,
+        description: description || null,
+        expires_at: expiresAt,
+        nonce,
+      };
+
+      const signature = await signQRPayload(base);
+      const payload = { ...base, signature };
+
+      return new Response(JSON.stringify({ payload, encoded: btoa(JSON.stringify(payload)) }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     // ─── ACTION: validate_qr ───
     if (action === "validate_qr") {
       const { payload } = body;
       if (!payload || !payload.qr_type) {
         return new Response(JSON.stringify({ valid: false, error: "Invalid QR payload" }), {
-          status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
 
@@ -74,20 +151,19 @@ serve(async (req) => {
           });
         }
 
-        // Verify signature
-        const sigValid = await verifySignature(payload);
+        // Verify server-side signature
+        const sigValid = await verifyQRSignature(payload);
         if (!sigValid) {
-          return new Response(JSON.stringify({ valid: false, error: "Invalid signature" }), {
+          return new Response(JSON.stringify({ valid: false, error: "Invalid signature — QR may be tampered" }), {
             headers: { ...corsHeaders, "Content-Type": "application/json" },
           });
         }
 
-        // Anti-replay: check nonce
+        // Anti-replay: check nonce in persistent store
         const { data: existingNonce } = await supabase
-          .from("wallet_transactions")
-          .select("id")
-          .eq("metadata_json->>qr_nonce", payload.nonce)
-          .limit(1)
+          .from("payment_nonces")
+          .select("nonce")
+          .eq("nonce", payload.nonce)
           .maybeSingle();
 
         if (existingNonce) {
@@ -113,39 +189,17 @@ serve(async (req) => {
       });
     }
 
-    // ─── ACTION: pay_locs ───
+    // ─── ACTION: pay_locs ─── Uses atomic DB RPC
     if (action === "pay_locs") {
       const { recipient_user_id, amount, description, thread_id, context, qr_nonce } = body;
 
       if (!recipient_user_id || !amount || amount <= 0) {
         return new Response(JSON.stringify({ error: "Invalid payment parameters" }), {
-          status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
 
-      if (recipient_user_id === user.id) {
-        return new Response(JSON.stringify({ error: "Cannot pay yourself" }), {
-          status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-
-      // Check sender balance
-      const { data: senderBal } = await supabase
-        .from("wallet_balances")
-        .select("balance")
-        .eq("user_id", user.id)
-        .eq("currency", "LOCS")
-        .maybeSingle();
-
-      if (!senderBal || (senderBal.balance as number) < amount) {
-        return new Response(JSON.stringify({ error: "Insufficient LOCS balance" }), {
-          status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-
+      // Build metadata
       const metadata: Record<string, any> = {};
       if (qr_nonce) metadata.qr_nonce = qr_nonce;
       if (context) {
@@ -154,121 +208,67 @@ serve(async (req) => {
         metadata.context_label = context.label;
       }
 
-      // Create outgoing transaction
-      const { error: txOutErr } = await supabase.from("wallet_transactions").insert({
-        user_id: user.id,
-        counterpart_user_id: recipient_user_id,
-        type: "transfer",
-        direction: "out",
-        amount,
-        currency: "LOCS",
-        description: description || "LOCS Transfer",
-        status: "completed",
-        thread_id: thread_id || null,
-        reference_type: context?.type || null,
-        reference_id: context?.id || null,
-        metadata_json: metadata,
-      });
-      if (txOutErr) throw new Error(txOutErr.message);
-
-      // Create incoming transaction
-      await supabase.from("wallet_transactions").insert({
-        user_id: recipient_user_id,
-        counterpart_user_id: user.id,
-        type: "transfer",
-        direction: "in",
-        amount,
-        currency: "LOCS",
-        description: description || "LOCS received",
-        status: "completed",
-        thread_id: thread_id || null,
-        reference_type: context?.type || null,
-        reference_id: context?.id || null,
-        metadata_json: metadata,
+      // Call atomic RPC — handles locking, balance check, debit, credit, nonce, audit
+      const { data: result, error: rpcError } = await supabase.rpc("transfer_locs", {
+        _sender_id: user.id,
+        _recipient_id: recipient_user_id,
+        _amount: amount,
+        _description: description || "LOCS Transfer",
+        _thread_id: thread_id || null,
+        _reference_type: context?.type || null,
+        _reference_id: context?.id || null,
+        _qr_nonce: qr_nonce || null,
+        _metadata: metadata,
       });
 
-      // Update balances
-      await supabase
-        .from("wallet_balances")
-        .update({
-          balance: (senderBal.balance as number) - amount,
-          total_spent: supabase.rpc ? undefined : undefined,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("user_id", user.id)
-        .eq("currency", "LOCS");
-
-      const { data: recipientBal } = await supabase
-        .from("wallet_balances")
-        .select("balance")
-        .eq("user_id", recipient_user_id)
-        .eq("currency", "LOCS")
-        .maybeSingle();
-
-      if (recipientBal) {
-        await supabase
-          .from("wallet_balances")
-          .update({
-            balance: (recipientBal.balance as number) + amount,
-            updated_at: new Date().toISOString(),
-          })
-          .eq("user_id", recipient_user_id)
-          .eq("currency", "LOCS");
+      if (rpcError) {
+        console.error("[orbit-payment] RPC error:", rpcError);
+        return new Response(JSON.stringify({ error: rpcError.message }), {
+          status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
       }
 
-      // Audit
-      await supabase.from("audit_logs").insert({
-        user_id: user.id,
-        action: "orbit_payment_locs",
-        metadata_json: {
-          recipient_user_id,
-          amount,
-          thread_id,
-          context,
-          qr_nonce: qr_nonce || null,
-        },
-      });
+      if (result && !result.success) {
+        return new Response(JSON.stringify({ error: result.error }), {
+          status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
 
-      return new Response(JSON.stringify({ success: true }), {
+      return new Response(JSON.stringify({ success: true, ...result }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    // ─── ACTION: pay_fiat ───
+    // ─── ACTION: pay_fiat ─── Stripe checkout with 3DS
     if (action === "pay_fiat") {
-      const { recipient_user_id, amount, currency = "EUR", description, thread_id, context } = body;
+      const { recipient_user_id, recipient_name, amount, currency = "EUR", description, thread_id, context } = body;
 
       if (!amount || amount < 1) {
         return new Response(JSON.stringify({ error: "Minimum payment is 1 EUR equivalent" }), {
-          status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
 
       const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", { apiVersion: "2025-08-27.basil" });
 
-      // Find or create customer
       const customers = await stripe.customers.list({ email: user.email!, limit: 1 });
       const customerId = customers.data.length > 0 ? customers.data[0].id : undefined;
-
       const amountInCents = Math.round(amount * 100);
 
       const session = await stripe.checkout.sessions.create({
         customer: customerId,
         customer_email: customerId ? undefined : user.email!,
-        line_items: [
-          {
-            price_data: {
-              currency: currency.toLowerCase(),
-              product_data: {
-                name: `Payment to ${body.recipient_name || "recipient"}`,
-                description: description || "Orbit Payment",
-              },
-              unit_amount: amountInCents,
+        line_items: [{
+          price_data: {
+            currency: currency.toLowerCase(),
+            product_data: {
+              name: `Payment to ${recipient_name || "recipient"}`,
+              description: description || "Orbit Payment",
             },
-            quantity: 1,
+            unit_amount: amountInCents,
           },
-        ],
+          quantity: 1,
+        }],
         mode: "payment",
         payment_method_types: ["card"],
         payment_method_options: {
@@ -292,14 +292,7 @@ serve(async (req) => {
       await supabase.from("audit_logs").insert({
         user_id: user.id,
         action: "orbit_payment_fiat_initiated",
-        metadata_json: {
-          session_id: session.id,
-          amount,
-          currency,
-          recipient_user_id,
-          thread_id,
-          context,
-        },
+        metadata_json: { session_id: session.id, amount, currency, recipient_user_id, thread_id, context },
       });
 
       return new Response(JSON.stringify({ url: session.url }), {
@@ -308,14 +301,12 @@ serve(async (req) => {
     }
 
     return new Response(JSON.stringify({ error: "Unknown action" }), {
-      status: 400,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (err) {
     console.error("[orbit-payment] Error:", err);
     return new Response(JSON.stringify({ error: err instanceof Error ? err.message : "Unknown error" }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
 });
