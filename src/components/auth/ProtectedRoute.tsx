@@ -59,7 +59,6 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const FREE_ACCESS_PREFIXES = [
     "/dashboard/marketplace",
     "/dashboard/activities",
-    "/dashboard/activities",
     "/dashboard/real-estate",
     "/dashboard/seasonal",
     "/dashboard/messages",
