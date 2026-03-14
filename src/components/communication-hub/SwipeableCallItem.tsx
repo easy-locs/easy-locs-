@@ -27,6 +27,7 @@ export default function SwipeableCallItem({ children, onDelete }: Props) {
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
     const t = e.touches[0];
     startX.current = t.clientX;
+    startY.current = t.clientY;
     isTracking.current = true;
     locked.current = null;
     wasDragging.current = false;
