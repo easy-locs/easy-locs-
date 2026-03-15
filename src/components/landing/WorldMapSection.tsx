@@ -43,6 +43,7 @@ const regions = [
 
 const WorldMapSection = () => {
   const { t } = useI18n();
+  const isMobile = useIsMobile();
   const [globeFailed, setGlobeFailed] = useState(false);
 
   return (
