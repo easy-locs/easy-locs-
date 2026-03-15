@@ -1,9 +1,0 @@
-ORBIT PASS 4
-
-- Marketplace category hierarchy expanded with safer normalization helpers.
-- CreateListing aligned with unified marketplace category groups and sub-category chips.
-- I18n locale normalization improved (country/region codes now fall back to supported base languages).
-- Missing i18n keys now degrade to readable labels instead of blank strings.
-- Ghost Elite security model expanded with document/profile masking helpers.
-- App Security Settings now expose extra Ghost Elite controls for documents and profile data.
-- Documents history view is more landlord/tenant aware and respects Ghost document masking.
