@@ -739,15 +739,15 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
           </div>
 
           <h3 className="text-lg font-bold mb-2" style={{ color: "hsl(var(--hud-text))" }}>
-            Command Center
+            {t("orbit.command_center") || "Command Center"}
           </h3>
           <p className="text-sm mb-1" style={{ color: "hsl(var(--hud-text-dim))" }}>
-            Secure business communication hub
+            {t("orbit.secure_hub") || "Secure business communication hub"}
           </p>
           <div className="flex items-center justify-center gap-2 mt-3 mb-6">
             <Lock className="h-3 w-3" style={{ color: "hsl(var(--hud-success) / 0.5)" }} />
             <span className="text-[10px] font-medium uppercase tracking-widest" style={{ color: "hsl(var(--hud-success) / 0.5)" }}>
-              End-to-end encrypted channel
+              {t("orbit.e2e_channel") || "End-to-end encrypted channel"}
             </span>
           </div>
 
