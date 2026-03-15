@@ -374,10 +374,10 @@ function ChatMessageBubble({
               <div className="mt-1.5 pt-1" style={{ borderTop: "1px solid hsl(var(--hud-border) / 0.06)" }}>
                 <button
                   onClick={() => setShowTranscript(!showTranscript)}
-                  className="flex items-center gap-1 text-[10px] mb-0.5 hover:opacity-80"
+                  className="flex items-center gap-1 text-[10px] mb-0.5 hover:opacity-80 min-h-[44px] sm:min-h-0 py-1"
                   style={{ color: "hsl(var(--hud-cyan) / 0.7)" }}
                 >
-                  <FileText className="h-2.5 w-2.5" />
+                  <FileText className="h-3 w-3 sm:h-2.5 sm:w-2.5" />
                   {showTranscript ? "Hide transcript" : "Show transcript"}
                 </button>
                 {showTranscript && (
