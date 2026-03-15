@@ -1,4 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
+import { motion } from "framer-motion";
 import { LayoutDashboard, Home, MessageCircle, Wallet, Menu } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 
@@ -27,18 +28,28 @@ const MobileBottomNav = ({ onMenuOpen }: MobileBottomNavProps) => {
   };
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-40 lg:hidden border-t border-border bg-card/98 backdrop-blur-lg safe-bottom" style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}>
-      <div className="flex items-stretch justify-around h-14">
+    <nav
+      className="fixed bottom-0 left-0 right-0 z-40 lg:hidden safe-bottom"
+      style={{
+        background: "hsl(var(--card) / 0.92)",
+        backdropFilter: "blur(24px) saturate(180%)",
+        WebkitBackdropFilter: "blur(24px) saturate(180%)",
+        borderTop: "1px solid hsl(var(--border) / 0.4)",
+        paddingBottom: "env(safe-area-inset-bottom, 0px)",
+        boxShadow: "0 -4px 24px hsl(var(--background) / 0.3)",
+      }}
+    >
+      <div className="flex items-stretch justify-around h-[60px]">
         {items.map((item) => {
           if (item.path === "__menu__") {
             return (
               <button
                 key="menu"
                 onClick={onMenuOpen}
-                className="flex flex-col items-center justify-center flex-1 gap-0.5 text-muted-foreground active:bg-muted/50 transition-colors min-w-[44px] min-h-[44px] max-w-[72px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 rounded-lg"
+                className="flex flex-col items-center justify-center flex-1 gap-1 text-muted-foreground active:bg-muted/50 transition-colors min-w-[44px] min-h-[44px] max-w-[72px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-lg relative"
               >
                 <item.icon className="h-5 w-5 shrink-0" />
-                <span className="text-[10px] font-medium leading-tight truncate w-full text-center">{item.label}</span>
+                <span className="text-[10px] font-medium leading-tight">{item.label}</span>
               </button>
             );
           }
@@ -48,12 +59,19 @@ const MobileBottomNav = ({ onMenuOpen }: MobileBottomNavProps) => {
             <Link
               key={item.path}
               to={item.path}
-              className={`flex flex-col items-center justify-center flex-1 gap-0.5 transition-colors min-w-[44px] min-h-[44px] max-w-[72px] active:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 rounded-lg ${
+              className={`flex flex-col items-center justify-center flex-1 gap-1 transition-all min-w-[44px] min-h-[44px] max-w-[72px] active:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-lg relative ${
                 active ? "text-accent" : "text-muted-foreground"
               }`}
             >
-              <item.icon className={`h-5 w-5 shrink-0 ${active ? "text-accent" : ""}`} />
-              <span className={`text-[10px] font-medium leading-tight truncate w-full text-center ${active ? "text-accent" : ""}`}>
+              {active && (
+                <motion.div
+                  layoutId="dash-tab-indicator"
+                  className="absolute top-0 left-3 right-3 h-[2.5px] rounded-full bg-accent"
+                  transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                />
+              )}
+              <item.icon className={`h-5 w-5 shrink-0 transition-colors ${active ? "text-accent" : ""}`} />
+              <span className={`text-[10px] leading-tight transition-colors ${active ? "text-accent font-bold" : "font-medium"}`}>
                 {item.label}
               </span>
             </Link>
