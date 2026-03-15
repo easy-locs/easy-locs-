@@ -2660,6 +2660,7 @@ const pageEn: Record<string, string> = {
   "page.dashboard.generate_receipt": "Generate receipt",
   "page.dashboard.create_lease": "Create lease",
   "page.dashboard.view_reminders": "View reminders",
+  "page.dashboard.view_wallet": "Open wallet →",
   "page.dashboard.my_vault": "My vault",
   "page.dashboard.ai_question": "What should I do now?",
   "page.dashboard.ai_desc": "Your assistant analyzes your situation and suggests actions.",
