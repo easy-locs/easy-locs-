@@ -697,3 +697,39 @@ function ChipButton({ selected, onClick, children }: {
     </button>
   );
 }
+
+function StorageUsageBar() {
+  const [usage, setUsage] = useState<{ used: number; quota: number } | null>(null);
+
+  useEffect(() => {
+    if ("storage" in navigator && "estimate" in (navigator as any).storage) {
+      (navigator as any).storage.estimate().then((est: { usage?: number; quota?: number }) => {
+        if (est.usage != null && est.quota != null) {
+          setUsage({ used: est.usage, quota: est.quota });
+        }
+      }).catch(() => {});
+    }
+  }, []);
+
+  const formatBytes = (b: number) => {
+    if (b < 1024) return `${b} B`;
+    if (b < 1024 * 1024) return `${(b / 1024).toFixed(1)} KB`;
+    if (b < 1024 * 1024 * 1024) return `${(b / (1024 * 1024)).toFixed(1)} MB`;
+    return `${(b / (1024 * 1024 * 1024)).toFixed(1)} GB`;
+  };
+
+  if (!usage) return null;
+
+  const pct = Math.min(100, (usage.used / usage.quota) * 100);
+  return (
+    <div className="p-3 rounded-xl border border-border bg-muted/30">
+      <div className="flex justify-between items-center mb-2">
+        <span className="text-xs font-medium text-foreground">Espace utilisé</span>
+        <span className="text-xs text-muted-foreground">{formatBytes(usage.used)} / {formatBytes(usage.quota)}</span>
+      </div>
+      <div className="w-full h-2 rounded-full bg-muted overflow-hidden">
+        <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, background: "hsl(var(--hud-cyan))" }} />
+      </div>
+    </div>
+  );
+}
