@@ -137,7 +137,7 @@ const StatCard = ({
         )}
       </div>
       {/* Row 2: Label — wrap allowed for all languages */}
-      <span className="text-[11px] sm:text-xs text-muted-foreground leading-tight mb-1 line-clamp-2">{label}</span>
+      <span className="text-2xs sm:text-xs text-muted-foreground leading-tight mb-1 line-clamp-2">{label}</span>
       {/* Row 3: Value — prominent, animated counter, allow wrapping for large numbers */}
       <div className={cn(
         "font-bold text-foreground mt-auto break-words hyphens-auto",
@@ -150,7 +150,7 @@ const StatCard = ({
       </div>
       {/* Row 4: Secondary info */}
       {sub && (
-        <div className="text-[10px] sm:text-xs text-muted-foreground leading-tight mt-1 line-clamp-2">{sub}</div>
+        <div className="text-2xs sm:text-xs text-muted-foreground leading-tight mt-1 line-clamp-2">{sub}</div>
       )}
     </div>
   );

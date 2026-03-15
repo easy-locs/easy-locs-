@@ -55,12 +55,13 @@ const ClientDashboard = () => {
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+        <div className="responsive-card-grid mb-8">
           {quickCards.map((card, i) => (
             <motion.div key={card.path} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 + i * 0.05 }}>
               <Link
                 to={card.path}
-                className="group flex flex-col h-full min-h-[148px] bg-card rounded-xl p-5 shadow-card border border-border/50 hover:shadow-card-hover hover:border-accent/30 transition-all relative overflow-hidden"
+                className="group flex flex-col h-full min-h-[148px] bg-card rounded-xl shadow-card border border-border/50 hover:shadow-card-hover hover:border-accent/30 transition-all relative overflow-hidden"
+                style={{ padding: "var(--card-padding)" }}
               >
                 <div className="absolute top-0 left-0 right-0 h-0.5 bg-accent opacity-0 group-hover:opacity-100 transition-opacity" />
                 <div className="flex items-center justify-between mb-3">
@@ -71,7 +72,7 @@ const ClientDashboard = () => {
                 </div>
                 <span className="text-sm text-muted-foreground mb-1">{card.label}</span>
                 <div className="font-bold text-foreground text-2xl tabular-nums mt-auto">{card.value}</div>
-                <p className="text-[10px] text-accent mt-1 opacity-0 group-hover:opacity-100 transition-opacity">{card.hint}</p>
+                <p className="text-2xs text-accent mt-1 opacity-0 group-hover:opacity-100 transition-opacity">{card.hint}</p>
               </Link>
             </motion.div>
           ))}

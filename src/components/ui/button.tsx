@@ -37,7 +37,7 @@ const buttonVariants = cva(
       },
       size: {
         default: "h-[var(--input-height)] px-4 py-2 text-sm rounded-[var(--btn-radius)]",
-        sm:     "h-[var(--input-height-sm)] px-3 py-1.5 text-xs rounded-[0.5rem]",
+        sm:     "h-[var(--input-height-sm)] sm:min-h-0 min-h-[var(--touch-min)] px-3 py-1.5 text-xs rounded-[0.5rem]",
         lg:     "h-12 px-6 py-2.5 text-sm rounded-[var(--btn-radius)]",
         icon:   "h-[var(--input-height)] w-[var(--input-height)] rounded-[0.5rem] p-0",
       },

@@ -137,13 +137,22 @@
     --space-xl: 2rem;      /* 32px */
     --space-2xl: 3rem;     /* 48px */
 
+    /* ── Typography scale tokens ── */
+    --text-2xs: 0.625rem;     /* 10px */
+    --text-xs: 0.6875rem;     /* 11px */
+    --text-sm: 0.75rem;       /* 12px — use sparingly */
+
     /* ── Component sizing ── */
     --input-height: 2.75rem;       /* 44px — iOS touch target */
     --input-height-sm: 2.25rem;    /* 36px */
+    --touch-min: 2.75rem;          /* 44px — minimum touch target */
     --input-radius: 0.75rem;       /* 12px */
     --btn-radius: 0.75rem;
     --card-radius: 0.75rem;
     --card-padding: 1.25rem;
+    --card-padding-sm: 1rem;
+    --card-gap: 1rem;              /* gap between cards on mobile */
+    --card-gap-lg: 1.5rem;         /* gap between cards on desktop */
     --modal-radius: 1rem;
     --label-gap: 0.375rem;         /* 6px */
     --field-gap: 1rem;             /* 16px */
@@ -680,10 +689,54 @@
     @apply space-y-3;
   }
   .section-block-title {
-    @apply text-xs font-bold uppercase tracking-wider text-muted-foreground;
+    font-size: var(--text-xs);
+    @apply font-bold uppercase tracking-wider text-muted-foreground;
   }
   .section-block-desc {
-    @apply text-[11px] text-muted-foreground/60 mt-0.5;
+    font-size: var(--text-2xs);
+    @apply text-muted-foreground/60 mt-0.5;
+  }
+
+  /* ── Typography utility classes for design tokens ── */
+  .text-2xs {
+    font-size: var(--text-2xs);
+    line-height: 1.4;
+  }
+  .text-token-xs {
+    font-size: var(--text-xs);
+    line-height: 1.4;
+  }
+
+  /* ── Touch target enforcement on mobile ── */
+  @media (max-width: 640px) {
+    .touch-target {
+      min-height: var(--touch-min);
+      min-width: var(--touch-min);
+    }
+  }
+
+  /* ── Responsive card grid with auto-fit ── */
+  .responsive-card-grid {
+    display: grid;
+    gap: var(--card-gap);
+    grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr));
+  }
+  @media (min-width: 1024px) {
+    .responsive-card-grid {
+      gap: var(--card-gap-lg);
+    }
+  }
+
+  /* ── Responsive stat grid ── */
+  .stat-grid {
+    display: grid;
+    gap: var(--card-gap);
+    grid-template-columns: repeat(auto-fill, minmax(min(160px, 100%), 1fr));
+  }
+  @media (min-width: 640px) {
+    .stat-grid {
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    }
   }
 }
 

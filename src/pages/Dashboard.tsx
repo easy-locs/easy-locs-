@@ -172,7 +172,7 @@ const Dashboard = () => {
         </motion.div>
 
         {/* Global KPIs */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-4 mb-6 sm:mb-8">
+        <div className="stat-grid mb-6 sm:mb-8">
           {kpis.map((kpi, i) => (
             <motion.div
               key={kpi.label}
@@ -215,12 +215,12 @@ const Dashboard = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
         >
-          <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-4">
+          <h2 className="section-block-title mb-4">
             {t("page.dashboard.select_country") || "Select a country to manage"}
           </h2>
 
           {loading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="responsive-card-grid">
               {[1, 2, 3].map((i) => (
                 <div key={i} className="h-28 rounded-xl bg-muted/30 animate-pulse" />
               ))}
@@ -251,7 +251,7 @@ const Dashboard = () => {
             </motion.div>
           ) : (
             <>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="responsive-card-grid">
                 {stats.propertiesByCountry.map((c, i) => (
                   <motion.div
                     key={c.code}
