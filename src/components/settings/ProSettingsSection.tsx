@@ -5,13 +5,14 @@
  * are persisted to profiles table to stay consistent with OrbitSecuritySettings.
  */
 import { useState, useEffect, useCallback } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import {
   Shield, Lock, Eye, EyeOff, Bell, Phone, MessageCircle, Clock,
   Fingerprint, Database, Trash2, Users, Ban, Copy, Check, Key,
   Wifi, Image, Type, Smartphone, HardDrive, Download, ChevronRight,
   Radio, Navigation, MapPin, Volume2, VolumeX, Vibrate, Mail,
   UserX, ShieldCheck, ShieldAlert, QrCode, RefreshCw, Monitor
 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
