@@ -104,7 +104,7 @@ export const ExploreListingCard = memo(function ExploreListingCard({ item }: { i
           </div>
 
           {Array.isArray(item.photo_urls) && item.photo_urls.length > 1 && (
-            <div className="absolute bottom-2.5 left-2.5 bg-background/80 backdrop-blur-sm rounded-md px-1.5 py-0.5 text-[10px] text-muted-foreground font-medium">
+            <div className="absolute bottom-2.5 left-2.5 bg-background/80 backdrop-blur-sm rounded-md px-1.5 py-0.5 text-2xs text-muted-foreground font-medium">
               1/{item.photo_urls.length}
             </div>
           )}
