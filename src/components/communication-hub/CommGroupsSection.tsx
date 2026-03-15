@@ -489,9 +489,25 @@ export default function CommGroupsSection() {
 
       <div className="flex-1 overflow-y-auto">
         {loading ? (
-          <div className="flex items-center justify-center py-16">
-            <div className="w-6 h-6 border-2 rounded-full animate-spin" style={{ borderColor: "hsl(var(--hud-cyan) / 0.3)", borderTopColor: "hsl(var(--hud-cyan))" }} />
+          <div className="divide-y" style={{ borderColor: "hsl(var(--hud-border) / 0.06)" }}>
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="flex items-center gap-3 px-4 py-3.5">
+                <Skeleton className="w-11 h-11 rounded-full shrink-0" />
+                <div className="flex-1 space-y-2">
+                  <Skeleton className="h-3.5 w-3/5" />
+                  <Skeleton className="h-2.5 w-4/5" />
+                  <Skeleton className="h-2 w-1/4" />
+                </div>
+                <Skeleton className="h-2.5 w-10 shrink-0" />
+              </div>
+            ))}
           </div>
+        ) : loadError ? (
+          <ErrorState
+            title="Failed to load groups"
+            message={loadError}
+            onRetry={loadGroups}
+          />
         ) : filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-center px-6">
             <UsersRound className="h-10 w-10 mb-3" style={{ color: "hsl(var(--hud-text-dim) / 0.2)" }} />

@@ -465,21 +465,24 @@ export default function CommNearbySection() {
           </div>
         ) : viewMode === "list" || !lat || !lng ? (
           <>
-        {loading && totalResults === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16">
-            <div className="relative w-20 h-20 mb-4">
-              <svg viewBox="0 0 80 80" className="w-full h-full">
-                <circle cx="40" cy="40" r="35" fill="none" stroke="hsl(var(--hud-cyan))" strokeWidth="0.5" opacity="0.15" />
-                <circle cx="40" cy="40" r="22" fill="none" stroke="hsl(var(--hud-cyan))" strokeWidth="0.5" opacity="0.12" />
-                <circle cx="40" cy="40" r="3" fill="hsl(var(--hud-cyan))" opacity="0.6" />
-                <g>
-                  <animateTransform attributeName="transform" type="rotate" from="0 40 40" to="360 40 40" dur="1.5s" repeatCount="indefinite" />
-                  <line x1="40" y1="40" x2="40" y2="5" stroke="hsl(var(--hud-cyan))" strokeWidth="1.5" opacity="0.4" />
-                  <path d="M 40 40 L 40 5 A 35 35 0 0 1 70.3 22 Z" fill="hsl(var(--hud-cyan))" opacity="0.08" />
-                </g>
-              </svg>
-            </div>
-            <p className="text-sm" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>Scanning nearby area...</p>
+        {loadError ? (
+          <ErrorState
+            title="Nearby scan failed"
+            message={loadError}
+            onRetry={loadNearby}
+          />
+        ) : loading && totalResults === 0 ? (
+          <div className="divide-y" style={{ borderColor: "hsl(var(--hud-border) / 0.06)" }}>
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="flex items-center gap-3 px-4 py-3.5">
+                <Skeleton className="w-12 h-12 rounded-full shrink-0" />
+                <div className="flex-1 space-y-2">
+                  <Skeleton className="h-3.5 w-2/5" />
+                  <Skeleton className="h-2.5 w-3/5" />
+                </div>
+                <Skeleton className="h-7 w-7 rounded-full shrink-0" />
+              </div>
+            ))}
           </div>
         ) : totalResults === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-center px-6">
