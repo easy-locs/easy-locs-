@@ -44,9 +44,20 @@ export default function IncomingGuestCallDialog({
   // Auto-decline after 30 seconds
   useEffect(() => {
     if (ringTime >= 30) {
+      stopRingtone();
       onDecline(callId);
     }
   }, [ringTime, callId, onDecline]);
+
+  const handleAccept = () => {
+    stopRingtone();
+    onAccept(callId);
+  };
+
+  const handleDecline = () => {
+    stopRingtone();
+    onDecline(callId);
+  };
 
   return (
     <Dialog open={open} onOpenChange={() => {}}>
