@@ -224,7 +224,7 @@ export default function OrbitSecuritySettings({ userId }: OrbitSecuritySettingsP
         <Separator style={{ background: "hsl(var(--hud-border) / 0.08)" }} />
 
         {/* ═══ Privacy Controls ═══ */}
-        <SettingSection icon={Eye} title="Confidentialité" iconColor="hsl(var(--hud-cyan))">
+        <SettingSection icon={Eye} title={t("orbit.privacy_controls") || "Confidentialité"} iconColor="hsl(var(--hud-cyan))">
           <SettingRow label="Accusés de lecture" description="Les autres voient quand vous avez lu leurs messages">
             <Switch checked={readReceipts} onCheckedChange={() => handleToggle(setReadReceipts, "privacy_read_receipts", readReceipts)} disabled={!loaded} />
           </SettingRow>
