@@ -710,7 +710,7 @@ export default function CommContactsSection() {
                 className="mt-1 border-0" style={{ background: "hsl(var(--hud-surface))", color: "hsl(var(--hud-text))" }} />
             </div>
             <div>
-              <Label className="text-xs" style={{ color: "hsl(var(--hud-text-dim))" }}>Phone</Label>
+              <Label className="text-xs" style={{ color: "hsl(var(--hud-text-dim))" }}>{t("orbit.contacts.phone") || "Phone"}</Label>
               <Input value={newContact.phone} onChange={e => setNewContact(p => ({ ...p, phone: e.target.value }))}
                 className="mt-1 border-0" style={{ background: "hsl(var(--hud-surface))", color: "hsl(var(--hud-text))" }} />
             </div>
