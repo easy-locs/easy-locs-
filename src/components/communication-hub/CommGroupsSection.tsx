@@ -597,7 +597,7 @@ export default function CommGroupsSection() {
               onClick={handleCreate}
               style={{ background: "hsl(var(--hud-cyan))", color: "hsl(var(--hud-bg))" }}
             >
-              {creating ? "Creating..." : "Create Group"}
+              {creating ? (t("orbit.groups.creating") || "Creating…") : (t("orbit.groups.create_title") || "Create Group")}
             </Button>
           </div>
         </DialogContent>
