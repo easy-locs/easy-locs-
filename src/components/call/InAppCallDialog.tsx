@@ -1,7 +1,7 @@
 /**
  * InAppCallDialog — Premium call UI (caller & callee).
  * Audio + video calls with camera feed, speaker/earpiece toggle.
- * Mobile-first, Signal/WhatsApp-grade design.
+ * Mobile-first, Signal/WhatsApp-grade design. Fully i18n'd.
  */
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { CallManager, type CallStatus, type CallState } from "@/lib/call-manager";
 import { playSecureCallAnnouncement, resetSecureAudioState } from "@/lib/orbit-secure-audio";
+import { useI18n } from "@/lib/i18n";
 
 interface InAppCallDialogProps {
   open: boolean;
@@ -24,6 +25,7 @@ interface InAppCallDialogProps {
 export default function InAppCallDialog({
   open, onClose, callManager, peerName, contextLabel, onFallbackChat,
 }: InAppCallDialogProps) {
+  const { t } = useI18n();
   const [status, setStatus] = useState<CallStatus>("idle");
   const [muted, setMuted] = useState(false);
   const [speakerOn, setSpeakerOn] = useState(true);
@@ -65,12 +67,8 @@ export default function InAppCallDialog({
 
   useEffect(() => {
     if (localStream && localVideoRef.current) {
-      // Keep mic active by default on new call
-      localStream.getAudioTracks().forEach((track) => {
-        track.enabled = true;
-      });
+      localStream.getAudioTracks().forEach((track) => { track.enabled = true; });
       setMuted(false);
-
       localVideoRef.current.srcObject = localStream;
       localVideoRef.current.play().catch(() => {});
       setVideoEnabled(localStream.getVideoTracks().some(t => t.enabled));
@@ -82,7 +80,6 @@ export default function InAppCallDialog({
   const handleStateChange = useCallback((state: Partial<CallState>) => {
     if (state.status !== undefined) {
       setStatus(state.status);
-      // Play secure call announcement when call becomes active
       if (state.status === "active" && callManager && !secureAnnouncedRef.current) {
         secureAnnouncedRef.current = true;
         const callId = (callManager as any)?.callId || `call-${Date.now()}`;
@@ -96,7 +93,6 @@ export default function InAppCallDialog({
     if (state.localStream !== undefined) setLocalStream(state.localStream);
     if (state.isVideo !== undefined) {
       setIsVideo(state.isVideo);
-      // Auto-switch to speaker for video calls
       if (state.isVideo) setSpeakerOn(true);
     }
   }, [callManager]);
@@ -110,22 +106,18 @@ export default function InAppCallDialog({
       setStatus("idle"); setMuted(false); setVideoEnabled(false);
       setElapsed(0); setUsingRelay(false); setError(null);
       setRemoteStream(null); setLocalStream(null); setIsVideo(false); setIsEnding(false); setFacingMode("user");
-      // Audio calls default to earpiece, video calls to speaker
       setSpeakerOn(false);
       secureAnnouncedRef.current = false;
       resetSecureAudioState();
     }
   }, [open]);
 
-  // Sync audio output routing when speakerOn changes or remote stream arrives
+  // Sync audio output routing
   useEffect(() => {
     const audioEl = remoteAudioRef.current;
     if (!audioEl || !remoteStream) return;
-    
     audioEl.volume = 1;
     audioEl.muted = false;
-    
-    // Route to correct output device
     if ("setSinkId" in audioEl && typeof (audioEl as any).setSinkId === "function") {
       const sinkId = speakerOn ? "default" : "communications";
       (audioEl as any).setSinkId(sinkId).catch(() => {});
@@ -150,8 +142,6 @@ export default function InAppCallDialog({
 
   const handleToggleVideo = useCallback(async () => {
     if (!callManager) return;
-    
-    // If we have video tracks, toggle them
     if (localStream) {
       const videoTracks = localStream.getVideoTracks();
       if (videoTracks.length > 0) {
@@ -161,8 +151,6 @@ export default function InAppCallDialog({
         return;
       }
     }
-    
-    // No video tracks — request camera access
     try {
       const videoStream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode, width: { ideal: 640 }, height: { ideal: 480 } },
@@ -170,26 +158,21 @@ export default function InAppCallDialog({
       const videoTrack = videoStream.getVideoTracks()[0];
       if (videoTrack && localStream) {
         localStream.addTrack(videoTrack);
-        setVideoEnabled(true);
-        setIsVideo(true);
+        setVideoEnabled(true); setIsVideo(true);
         callManager.addVideoTrack?.(videoTrack);
       } else if (videoTrack) {
-        // No localStream yet — create one
         const newStream = new MediaStream([videoTrack]);
         setLocalStream(newStream);
-        setVideoEnabled(true);
-        setIsVideo(true);
+        setVideoEnabled(true); setIsVideo(true);
         callManager.addVideoTrack?.(videoTrack);
       }
     } catch (err) {
-      console.error("[CallUI] Camera access failed:", err);
-      // Don't silently fail — show user feedback
       const msg = err instanceof DOMException && err.name === "NotAllowedError"
-        ? "Camera permission denied. Please allow camera access in your browser settings."
-        : "Could not access camera. Please check your device settings.";
+        ? (t("call.error.camera_denied") || "Camera permission denied.")
+        : (t("call.error.camera_failed") || "Could not access camera.");
       setError(msg);
     }
-  }, [callManager, localStream, facingMode]);
+  }, [callManager, localStream, facingMode, t]);
 
   const handleFlipCamera = async () => {
     if (!localStream) return;
@@ -211,48 +194,25 @@ export default function InAppCallDialog({
     setSpeakerOn(newState);
     const audioEl = remoteAudioRef.current;
     if (!audioEl) return;
-    
-    audioEl.volume = 1;
-    audioEl.muted = false;
-    
-    // Method 1: setSinkId (Chrome/Edge — best desktop support)
+    audioEl.volume = 1; audioEl.muted = false;
     if ("setSinkId" in audioEl && typeof (audioEl as any).setSinkId === "function") {
-      // "default" = speaker/loudspeaker, "communications" = earpiece
       const sinkId = newState ? "default" : "communications";
       (audioEl as any).setSinkId(sinkId).catch(() => {
-        // If "communications" isn't available, try enumerating devices
         navigator.mediaDevices?.enumerateDevices?.().then(devices => {
-          const earpiece = devices.find(d =>
-            d.kind === "audiooutput" &&
-            (d.label.toLowerCase().includes("earpiece") ||
-             d.label.toLowerCase().includes("écouteur") ||
-             d.label.toLowerCase().includes("receiver"))
-          );
-          const speaker = devices.find(d =>
-            d.kind === "audiooutput" &&
-            (d.label.toLowerCase().includes("speaker") ||
-             d.label.toLowerCase().includes("haut-parleur"))
-          );
+          const earpiece = devices.find(d => d.kind === "audiooutput" && (d.label.toLowerCase().includes("earpiece") || d.label.toLowerCase().includes("écouteur") || d.label.toLowerCase().includes("receiver")));
+          const speaker = devices.find(d => d.kind === "audiooutput" && (d.label.toLowerCase().includes("speaker") || d.label.toLowerCase().includes("haut-parleur")));
           const target = newState ? (speaker || { deviceId: "default" }) : (earpiece || { deviceId: "default" });
           (audioEl as any).setSinkId(target.deviceId).catch(() => {});
         }).catch(() => {});
       });
     }
-    
-    // Method 2: AudioSession API (Safari/iOS — emerging standard)
     const nav = navigator as any;
     if (nav?.audioSession && typeof nav.audioSession === "object") {
-      try {
-        nav.audioSession.type = newState ? "playback" : "play-and-record";
-      } catch {}
+      try { nav.audioSession.type = newState ? "playback" : "play-and-record"; } catch {}
     }
-    
-    // Method 3: WebKit audio routing (iOS Safari specific)
     try {
       if ((window as any).webkit?.messageHandlers?.audioSession) {
-        (window as any).webkit.messageHandlers.audioSession.postMessage({
-          type: newState ? "speaker" : "receiver",
-        });
+        (window as any).webkit.messageHandlers.audioSession.postMessage({ type: newState ? "speaker" : "receiver" });
       }
     } catch {}
   }, [speakerOn]);
@@ -264,7 +224,6 @@ export default function InAppCallDialog({
   const showVideoUI = isVideo || hasRemoteVideo || videoEnabled;
   const isTerminal = ["ended", "declined", "missed", "failed", "network_blocked"].includes(statusStr);
 
-  // Auto-close after call ends
   useEffect(() => {
     if (!isTerminal || !open) return;
     const timer = setTimeout(() => { onClose(); }, 3000);
@@ -272,12 +231,22 @@ export default function InAppCallDialog({
   }, [isTerminal, open, onClose]);
 
   const statusLabel: Record<string, string> = {
-    idle: "", ringing: "Appel en cours…", connecting: "Connexion…",
-    active: fmt(elapsed), ended: "Appel terminé", declined: "Appel refusé",
-    missed: "Pas de réponse", failed: "Échec de l'appel", network_blocked: "Réseau restreint",
+    idle: "",
+    ringing: t("call.status.ringing") || "Calling…",
+    connecting: t("call.status.connecting") || "Connecting…",
+    active: fmt(elapsed),
+    ended: t("call.status.ended") || "Call ended",
+    declined: t("call.status.declined") || "Call declined",
+    missed: t("call.status.missed") || "No answer",
+    failed: t("call.status.failed") || "Call failed",
+    network_blocked: t("call.status.network_blocked") || "Network restricted",
   };
   const isLoading = status === "ringing" || status === "connecting";
   const label = statusLabel[status] || "";
+
+  const secureLabel = status === "active"
+    ? (t("call.label.orbit_secure") || "Orbit Secure")
+    : (t("call.label.encrypted") || "Encrypted");
 
   /** Reusable control button */
   const CtrlBtn = ({ onClick, disabled, active, activeColor, icon, text }: {
@@ -289,12 +258,8 @@ export default function InAppCallDialog({
         onClick={onClick} disabled={disabled}
         className="w-14 h-14 rounded-full flex items-center justify-center transition-all disabled:opacity-40"
         style={{
-          background: active
-            ? `hsl(${activeColor || "var(--primary)"} / 0.15)`
-            : "hsl(var(--muted))",
-          color: active
-            ? `hsl(${activeColor || "var(--primary)"})`
-            : "hsl(var(--foreground))",
+          background: active ? `hsl(${activeColor || "var(--primary)"} / 0.15)` : "hsl(var(--muted))",
+          color: active ? `hsl(${activeColor || "var(--primary)"})` : "hsl(var(--foreground))",
         }}
       >
         {icon}
@@ -324,8 +289,7 @@ export default function InAppCallDialog({
               <div className="absolute inset-0 flex items-center justify-center" style={{ background: "hsl(var(--background))" }}>
                 <div className="text-center">
                   <div className="mx-auto w-24 h-24 rounded-full flex items-center justify-center mb-4" style={{
-                    background: "hsl(var(--primary) / 0.06)",
-                    border: "2px solid hsl(var(--primary) / 0.12)",
+                    background: "hsl(var(--primary) / 0.06)", border: "2px solid hsl(var(--primary) / 0.12)",
                   }}>
                     <span className="text-4xl font-bold" style={{ color: "hsl(var(--primary) / 0.5)" }}>
                       {(peerName || "?")[0].toUpperCase()}
@@ -355,22 +319,19 @@ export default function InAppCallDialog({
             {/* Top badges */}
             <div className="absolute top-4 left-4 flex items-center gap-1.5">
               <div className="flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-medium" style={{
-                background: "hsl(var(--background) / 0.7)", backdropFilter: "blur(8px)",
-                color: "hsl(142 70% 50%)",
+                background: "hsl(var(--background) / 0.7)", backdropFilter: "blur(8px)", color: "hsl(142 70% 50%)",
               }}>
-                <Shield className="h-2.5 w-2.5" /> {status === "active" ? "Orbit Secure" : "Encrypted"}
+                <Shield className="h-2.5 w-2.5" /> {secureLabel}
               </div>
               {status === "active" && (
                 <div className="px-2 py-1 rounded-full text-[10px] font-mono font-semibold" style={{
-                  background: "hsl(var(--background) / 0.7)", backdropFilter: "blur(8px)",
-                  color: "hsl(var(--foreground))",
+                  background: "hsl(var(--background) / 0.7)", backdropFilter: "blur(8px)", color: "hsl(var(--foreground))",
                 }}>{fmt(elapsed)}</div>
               )}
               {usingRelay && status === "active" && (
                 <div className="px-2 py-1 rounded-full text-[10px] font-medium" style={{
-                  background: "hsl(var(--background) / 0.7)", backdropFilter: "blur(8px)",
-                  color: "hsl(38 90% 55%)",
-                }}>Relay</div>
+                  background: "hsl(var(--background) / 0.7)", backdropFilter: "blur(8px)", color: "hsl(38 90% 55%)",
+                }}>{t("call.label.relay") || "Relay"}</div>
               )}
             </div>
 
@@ -414,7 +375,6 @@ export default function InAppCallDialog({
           /* ═══ AUDIO CALL ═══ */
           <div className="flex flex-col items-center">
             <div className="pt-12 pb-6 px-8 text-center w-full">
-              {/* Avatar */}
               <div className="mx-auto w-28 h-28 rounded-full flex items-center justify-center mb-6" style={{
                 background: "hsl(var(--primary) / 0.06)",
                 border: "3px solid hsl(var(--primary) / 0.12)",
@@ -428,21 +388,19 @@ export default function InAppCallDialog({
               <p className="text-xl font-bold" style={{ color: "hsl(var(--foreground))" }}>{peerName}</p>
               {contextLabel && <p className="text-xs mt-1 truncate" style={{ color: "hsl(var(--muted-foreground))" }}>{contextLabel}</p>}
 
-              {/* Encrypted badge */}
               <div className="flex items-center justify-center gap-1.5 mt-3">
                 <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-medium" style={{
                   background: "hsl(142 70% 50% / 0.08)", color: "hsl(142 70% 50%)",
                 }}>
-                  <Shield className="h-2.5 w-2.5" /> {status === "active" ? "Orbit Secure" : "Encrypted"}
+                  <Shield className="h-2.5 w-2.5" /> {secureLabel}
                 </div>
                 {usingRelay && status === "active" && (
                   <div className="inline-flex items-center px-2 py-1 rounded-full text-[10px] font-medium" style={{
                     background: "hsl(38 90% 55% / 0.08)", color: "hsl(38 90% 55%)",
-                  }}>Relay</div>
+                  }}>{t("call.label.relay") || "Relay"}</div>
                 )}
               </div>
 
-              {/* Status */}
               <div className="mt-5 flex items-center justify-center gap-1.5">
                 {isLoading && <Loader2 className="h-4 w-4 animate-spin" style={{ color: "hsl(var(--muted-foreground))" }} />}
                 <span className={`text-sm ${status === "active" ? "font-mono font-bold text-lg" : ""}`} style={{
@@ -456,22 +414,25 @@ export default function InAppCallDialog({
                 <div className="mx-auto w-14 h-14 rounded-full flex items-center justify-center" style={{ background: "hsl(var(--destructive) / 0.08)" }}>
                   <WifiOff className="h-7 w-7" style={{ color: "hsl(var(--destructive))" }} />
                 </div>
-                <p className="text-xs" style={{ color: "hsl(var(--muted-foreground))" }}>{error || "Votre réseau peut bloquer les appels internet."}</p>
+                <p className="text-xs" style={{ color: "hsl(var(--muted-foreground))" }}>
+                  {error || t("call.network_hint") || "Your network may block internet calls."}
+                </p>
                 {onFallbackChat && (
                   <button className="w-full inline-flex items-center justify-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-medium transition-colors"
                     style={{ borderColor: "hsl(var(--border))", color: "hsl(var(--foreground))" }}
                     onClick={() => { handleEndCall(); onFallbackChat(); }} disabled={isEnding}>
-                    <MessageSquare className="h-4 w-4" /> Basculer en chat
+                    <MessageSquare className="h-4 w-4" /> {t("call.btn.chat_fallback") || "Switch to chat"}
                   </button>
                 )}
                 <button className="w-full inline-flex items-center justify-center rounded-xl border px-4 py-2.5 text-sm font-medium transition-colors"
                   style={{ borderColor: "hsl(var(--border))", color: "hsl(var(--foreground))" }}
-                  onClick={handleEndCall} disabled={isEnding}>Fermer</button>
+                  onClick={handleEndCall} disabled={isEnding}>
+                  {t("call.btn.close") || "Close"}
+                </button>
               </div>
             ) : (
               <div className="px-8 pb-12 pt-4 w-full">
                 {isTerminal ? (
-                  /* Post-call: show clear Close button */
                   <div className="flex flex-col items-center gap-4">
                     <div className="mx-auto w-14 h-14 rounded-full flex items-center justify-center" style={{
                       background: statusStr === "failed" ? "hsl(var(--destructive) / 0.08)" : "hsl(var(--muted) / 0.5)",
@@ -481,7 +442,7 @@ export default function InAppCallDialog({
                     <button onClick={onClose}
                       className="w-full max-w-[200px] inline-flex items-center justify-center rounded-xl border px-6 py-3 text-sm font-semibold transition-all active:scale-95"
                       style={{ borderColor: "hsl(var(--border))", color: "hsl(var(--foreground))", background: "hsl(var(--muted) / 0.3)" }}>
-                      Fermer
+                      {t("call.btn.close") || "Close"}
                     </button>
                   </div>
                 ) : (
@@ -492,30 +453,31 @@ export default function InAppCallDialog({
                       active={muted}
                       activeColor="var(--destructive)"
                       icon={muted ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
-                      text={muted ? "Activer" : "Muet"}
+                      text={muted ? (t("call.btn.unmute") || "Unmute") : (t("call.btn.mute") || "Mute")}
                     />
                     <CtrlBtn
                       onClick={handleToggleVideo}
                       disabled={isTerminal || isEnding || status === "idle"}
                       active={videoEnabled}
                       icon={videoEnabled ? <VideoIcon className="h-5 w-5" /> : <VideoOff className="h-5 w-5" />}
-                      text="Vidéo"
+                      text={t("call.btn.video") || "Video"}
                     />
-                    {/* End call — large red button */}
                     <div className="flex flex-col items-center gap-1.5">
                       <button onClick={handleEndCall} disabled={isEnding}
                         className="w-16 h-16 rounded-full flex items-center justify-center shadow-lg disabled:opacity-60 transition-transform active:scale-95"
                         style={{ background: "hsl(var(--destructive))", color: "hsl(var(--destructive-foreground))" }}>
                         {isEnding ? <Loader2 className="h-6 w-6 animate-spin" /> : <PhoneOff className="h-6 w-6" />}
                       </button>
-                      <span className="text-[10px] font-medium" style={{ color: "hsl(var(--destructive))" }}>Fin</span>
+                      <span className="text-[10px] font-medium" style={{ color: "hsl(var(--destructive))" }}>
+                        {t("call.btn.end") || "End"}
+                      </span>
                     </div>
                     <CtrlBtn
                       onClick={handleToggleSpeaker}
                       disabled={isTerminal || isEnding || status === "idle"}
                       active={speakerOn}
                       icon={speakerOn ? <Volume2 className="h-5 w-5" /> : <VolumeX className="h-5 w-5" />}
-                      text={speakerOn ? "Haut-parleur" : "Écouteur"}
+                      text={speakerOn ? (t("call.btn.speaker") || "Speaker") : (t("call.btn.earpiece") || "Earpiece")}
                     />
                   </div>
                 )}
