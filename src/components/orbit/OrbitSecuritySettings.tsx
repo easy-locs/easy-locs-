@@ -163,10 +163,10 @@ export default function OrbitSecuritySettings({ userId }: OrbitSecuritySettingsP
         </div>
         <div className="flex-1">
           <h2 className="text-lg font-bold" style={{ color: "hsl(var(--hud-text))" }}>
-            Orbit Privacy
+            {t("orbit.privacy_title") || "Orbit Privacy"}
           </h2>
           <p className="text-xs" style={{ color: "hsl(var(--hud-text-dim))" }}>
-            Signal-inspired privacy standard
+            {t("orbit.privacy_subtitle") || "Signal-inspired privacy standard"}
           </p>
         </div>
         <OrbitPrivacyBadge encrypted />
