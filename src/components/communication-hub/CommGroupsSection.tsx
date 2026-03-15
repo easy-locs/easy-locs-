@@ -376,7 +376,7 @@ export default function CommGroupsSection() {
         <Dialog open={showMembers} onOpenChange={setShowMembers}>
           <DialogContent style={{ background: "hsl(var(--hud-bg))", borderColor: "hsl(var(--hud-border) / 0.15)" }}>
             <DialogHeader>
-              <DialogTitle style={{ color: "hsl(var(--hud-text))" }}>Members ({members.length})</DialogTitle>
+              <DialogTitle style={{ color: "hsl(var(--hud-text))" }}>{t("orbit.groups.members") || "Members"} ({members.length})</DialogTitle>
             </DialogHeader>
             <div className="space-y-1 max-h-60 overflow-y-auto">
               {members.map(m => (
