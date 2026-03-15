@@ -28,14 +28,14 @@ interface Props {
 }
 
 const ACTIONS = [
-  { icon: MessageSquare, label: "Chats", path: "/dashboard/communication?section=chats" },
-  { icon: Phone, label: "Calls", path: "/dashboard/communication?section=calls" },
-  { icon: FolderOpen, label: "Files", path: "/dashboard/communication?section=files" },
-  { icon: Users, label: "Contacts", path: "/dashboard/communication?section=contacts" },
-  { icon: CreditCard, label: "Pay", path: "/dashboard/communication?section=payments" },
-  { icon: Handshake, label: "Deals", path: "/dashboard/communication?section=chats" },
-  { icon: Shield, label: "Security", path: "/dashboard/communication?section=settings" },
-  { icon: UserCircle, label: "You", path: "/dashboard/communication?section=you" },
+  { icon: MessageSquare, labelKey: "orbit.nav.chats", fallback: "Chats", path: "/dashboard/communication?section=chats" },
+  { icon: Phone, labelKey: "orbit.nav.calls", fallback: "Calls", path: "/dashboard/communication?section=calls" },
+  { icon: FolderOpen, labelKey: "orbit.nav.files", fallback: "Files", path: "/dashboard/communication?section=files" },
+  { icon: Users, labelKey: "orbit.nav.contacts", fallback: "Contacts", path: "/dashboard/communication?section=contacts" },
+  { icon: CreditCard, labelKey: "orbit.nav.wallet", fallback: "Pay", path: "/dashboard/communication?section=payments" },
+  { icon: Handshake, labelKey: "orbit.nav.deals", fallback: "Deals", path: "/dashboard/communication?section=chats" },
+  { icon: Shield, labelKey: "orbit.nav.security", fallback: "Security", path: "/dashboard/communication?section=settings" },
+  { icon: UserCircle, labelKey: "orbit.nav.you", fallback: "You", path: "/dashboard/communication?section=you" },
 ] as const;
 
 export default function OrbitSmartHub({ totalProperties, totalCountries, propertiesByCountry }: Props) {
@@ -44,8 +44,8 @@ export default function OrbitSmartHub({ totalProperties, totalCountries, propert
   const reduceMotion = useReducedMotion();
   const [activeIdx, setActiveIdx] = useState<number | null>(null);
 
-  const R = 100;         // orbit radius
-  const SIZE = 280;      // container size
+  const R = 105;         // orbit radius (increased for label space)
+  const SIZE = 340;      // container size (expanded to prevent clipping)
   const C = SIZE / 2;    // center
   const BTN = 44;        // button size
 
@@ -60,7 +60,7 @@ export default function OrbitSmartHub({ totalProperties, totalCountries, propert
 
   return (
     <div
-      className="rounded-2xl overflow-hidden"
+      className="rounded-2xl overflow-visible"
       style={{
         background: "hsl(var(--hud-bg))",
         border: "1px solid hsl(var(--hud-border) / 0.18)",
@@ -117,10 +117,11 @@ export default function OrbitSmartHub({ totalProperties, totalCountries, propert
             const x = C + R * Math.cos(rad) - BTN / 2;
             const y = C + R * Math.sin(rad) - BTN / 2;
             const isActive = activeIdx === i;
+            const actionLabel = t(action.labelKey) || action.fallback;
 
             return (
               <motion.button
-                key={action.label}
+                key={action.fallback}
                 className="absolute flex flex-col items-center justify-center cursor-pointer z-10"
                 style={{
                   width: BTN,
@@ -142,7 +143,7 @@ export default function OrbitSmartHub({ totalProperties, totalCountries, propert
                 whileHover={{ scale: 1.12, borderColor: "hsl(var(--hud-cyan) / 0.6)" }}
                 whileTap={{ scale: 0.92 }}
                 onClick={() => handleAction(i)}
-                title={action.label}
+                title={actionLabel}
               >
                 <action.icon
                   className="h-4 w-4"
@@ -156,14 +157,15 @@ export default function OrbitSmartHub({ totalProperties, totalCountries, propert
           {ACTIONS.map((action, i) => {
             const angle = (i * 360) / ACTIONS.length - 90;
             const rad = (angle * Math.PI) / 180;
-            const labelR = R + 30;
+            const labelR = R + 32;
             const lx = C + labelR * Math.cos(rad);
             const ly = C + labelR * Math.sin(rad);
+            const actionLabel = t(action.labelKey) || action.fallback;
 
             return (
               <motion.span
-                key={`label-${action.label}`}
-                className="absolute text-[9px] font-semibold tracking-wide pointer-events-none"
+                key={`label-${action.fallback}`}
+                className="absolute text-[10px] font-semibold tracking-wide pointer-events-none"
                 style={{
                   top: ly,
                   left: lx,
@@ -175,7 +177,7 @@ export default function OrbitSmartHub({ totalProperties, totalCountries, propert
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.3 + i * 0.06 }}
               >
-                {action.label}
+                {actionLabel}
               </motion.span>
             );
           })}
