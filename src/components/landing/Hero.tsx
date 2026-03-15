@@ -214,7 +214,7 @@ const Hero = () => {
             </motion.div>
           </motion.div>
 
-          {/* Trust stats — glassmorphism cards */}
+          {/* Trust stats */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -225,16 +225,12 @@ const Hero = () => {
               {HERO_STATS.map((s, i) => (
                 <motion.div
                   key={s.label}
-                  className="flex items-center justify-center gap-2.5 px-4 py-3 rounded-2xl min-h-[44px] backdrop-blur-md"
+                  className="flex items-center justify-center gap-2.5 px-4 py-3 rounded-2xl min-h-[44px]"
                   style={{
                     background: "linear-gradient(135deg, hsl(220 20% 90% / 0.06), hsl(220 20% 90% / 0.02))",
                     border: "1px solid hsl(220 20% 90% / 0.08)",
                   }}
-                  animate={floatAnim(i * 0.6)}
-                  whileHover={{
-                    borderColor: "hsl(var(--accent) / 0.3)",
-                    background: "linear-gradient(135deg, hsl(var(--accent) / 0.08), hsl(var(--accent) / 0.02))",
-                  }}
+                  {...(!isMobile ? { animate: floatAnim(i * 0.6) } : {})}
                 >
                   <s.icon className="h-3.5 w-3.5 shrink-0" style={{ color: "hsl(var(--accent) / 0.7)" }} />
                   <span className="text-xs sm:text-sm font-extrabold whitespace-nowrap" style={{ color: "hsl(var(--accent))" }}>

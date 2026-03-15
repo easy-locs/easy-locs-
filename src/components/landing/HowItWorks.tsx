@@ -47,8 +47,8 @@ const HowItWorks = () => {
 
   return (
     <section className="py-20 sm:py-28 bg-background relative overflow-hidden">
-      {/* Subtle ambient glow */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] rounded-full bg-accent/[0.025] blur-[140px] pointer-events-none" />
+      {/* Subtle ambient glow — desktop only */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] rounded-full bg-accent/[0.025] blur-[140px] pointer-events-none hidden sm:block" />
 
       <div className="container max-w-5xl relative z-10">
         <motion.div

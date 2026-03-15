@@ -92,11 +92,13 @@ const TrustSection = () => {
                 transition={{ delay: 0.5 + i * 0.12, duration: 0.6 }}
               />
 
-              {/* Corner glow on hover */}
-              <div
-                className="absolute -top-12 -right-12 w-28 h-28 rounded-full blur-[60px] opacity-0 group-hover:opacity-25 transition-opacity duration-500"
-                style={{ background: `hsl(var(--${item.color}))` }}
-              />
+              {/* Corner glow on hover — desktop only */}
+              {!isMobile && (
+                <div
+                  className="absolute -top-12 -right-12 w-28 h-28 rounded-full blur-[60px] opacity-0 group-hover:opacity-25 transition-opacity duration-500"
+                  style={{ background: `hsl(var(--${item.color}))` }}
+                />
+              )}
 
               <motion.div
                 className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6 relative"

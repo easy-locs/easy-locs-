@@ -76,9 +76,9 @@ export default function ValueProposition() {
                 transition={{ delay: 0.3 + i * 0.08, duration: 0.5 }}
               />
 
-              {/* Corner glow */}
+              {/* Corner glow — desktop only */}
               <div
-                className="absolute -top-10 -right-10 w-24 h-24 rounded-full blur-[50px] opacity-0 group-hover:opacity-20 transition-opacity duration-500"
+                className="absolute -top-10 -right-10 w-24 h-24 rounded-full blur-[50px] opacity-0 group-hover:opacity-20 transition-opacity duration-500 hidden sm:block"
                 style={{ background: `hsl(var(--${adv.color}))` }}
               />
 
