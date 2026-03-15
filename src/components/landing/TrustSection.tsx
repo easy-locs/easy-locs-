@@ -15,7 +15,7 @@ const cardVariants = {
     opacity: 1,
     y: 0,
     scale: 1,
-    transition: { delay: i * 0.12, type: "spring", stiffness: 180, damping: 22 },
+    transition: { delay: i * 0.12, type: "spring" as const, stiffness: 180, damping: 22 },
   }),
 };
 
