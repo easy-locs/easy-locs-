@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import {
   Phone, PhoneOff, Video, Shield, User, MapPin,
 } from "lucide-react";
+import { startRingtone, stopRingtone } from "@/lib/ringtone";
 
 interface IncomingGuestCallDialogProps {
   open: boolean;
