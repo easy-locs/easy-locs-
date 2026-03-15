@@ -4750,6 +4750,14 @@ const pageEn: Record<string, string> = {
   "orbit.search_conversations": "Search conversations…",
   "orbit.loading": "Loading…",
   "orbit.no_messages_yet": "No messages yet",
+  "orbit.command_center": "Command Center",
+  "orbit.secure_hub": "Secure business communication hub",
+  "orbit.e2e_channel": "End-to-end encrypted channel",
+  "orbit.no_messages": "No messages yet",
+  "orbit.start_conversation": "Start the conversation",
+  "orbit.e2e_encrypted": "End-to-end encrypted",
+  "orbit.offline_banner": "Offline — messages will be sent when you reconnect",
+  "orbit.syncing_queued": "Syncing queued messages...",
 
   // ─── Orbit Navigation ───
   "orbit.nav.chats": "Chats",
