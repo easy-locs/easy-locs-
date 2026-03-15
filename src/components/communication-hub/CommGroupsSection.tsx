@@ -127,22 +127,26 @@ export default function CommGroupsSection() {
   const handleCreate = async () => {
     if (!user?.id || !orgId || !newGroup.name.trim()) return;
     setCreating(true);
-    const { data, error } = await supabase.from("groups").insert({
+    
+    // Insert group without .select() — SELECT policy requires membership which doesn't exist yet
+    const groupId = crypto.randomUUID();
+    const { error } = await supabase.from("groups").insert({
+      id: groupId,
       org_id: orgId,
       name: newGroup.name.trim(),
       description: newGroup.description.trim() || null,
       created_by: user.id,
-    } as any).select().single();
+    } as any);
     
-    if (error || !data) {
+    if (error) {
       toast.error("Failed to create group");
       setCreating(false);
       return;
     }
     
-    // Add creator as admin
+    // Add creator as admin — now the SELECT policy will work
     await supabase.from("group_members").insert({
-      group_id: (data as any).id,
+      group_id: groupId,
       user_id: user.id,
       role: "admin",
     } as any);
