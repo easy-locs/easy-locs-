@@ -614,7 +614,7 @@ export default function CommContactsSection() {
             </Button>
             <Button size="sm" variant="ghost" className="h-8 min-h-[44px] sm:min-h-0 gap-1.5 text-xs"
               style={{ color: "hsl(var(--hud-cyan))" }} onClick={() => setShowAdd(true)}>
-              <UserPlus className="h-4 w-4" /> Add
+              <UserPlus className="h-4 w-4" /> {t("orbit.contacts.add") || "Add"}
             </Button>
           </div>
         </div>
