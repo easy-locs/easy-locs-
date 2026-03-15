@@ -105,6 +105,7 @@ const Dashboard = () => {
       .catch((err) => {
         clearTimeout(timeout);
         console.error("[Dashboard] data fetch error:", err);
+        setError(t("error.load_failed") || "Failed to load dashboard data");
         setLoading(false);
       });
 
