@@ -2535,6 +2535,14 @@ const pageFr: Record<string, string> = {
   "orbit.search_conversations": "Rechercher des conversations…",
   "orbit.loading": "Chargement…",
   "orbit.no_messages_yet": "Aucun message pour le moment",
+  "orbit.command_center": "Centre de commande",
+  "orbit.secure_hub": "Hub de communication sécurisé",
+  "orbit.e2e_channel": "Canal chiffré de bout en bout",
+  "orbit.no_messages": "Aucun message pour le moment",
+  "orbit.start_conversation": "Commencez la conversation",
+  "orbit.e2e_encrypted": "Chiffré de bout en bout",
+  "orbit.offline_banner": "Hors ligne — les messages seront envoyés à la reconnexion",
+  "orbit.syncing_queued": "Synchronisation des messages en file d'attente…",
 
   // ─── Orbit Navigation ───
   "orbit.nav.chats": "Discussions",
