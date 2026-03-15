@@ -448,6 +448,7 @@ const pageFr: Record<string, string> = {
   "page.dashboard.generate_receipt": "Générer une quittance",
   "page.dashboard.create_lease": "Créer un bail",
   "page.dashboard.view_reminders": "Voir les rappels",
+  "page.dashboard.view_wallet": "Ouvrir le portefeuille →",
   "page.dashboard.my_vault": "Mon coffre-fort",
   "page.dashboard.ai_question": "Que dois-je faire maintenant ?",
   "page.dashboard.ai_desc": "Votre assistant analyse votre situation et vous propose des actions.",
