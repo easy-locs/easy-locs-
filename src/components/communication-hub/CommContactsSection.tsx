@@ -50,13 +50,14 @@ interface ResolvedContact extends Contact {
   targetOrgId: string | null;
 }
 
-const CATEGORY_TABS: { id: ContactCategory; label: string; icon: typeof Users }[] = [
-  { id: "all", label: "All", icon: Users },
-  { id: "client", label: "Clients", icon: Users },
-  { id: "team", label: "Team", icon: Users },
-  { id: "professional", label: "Pros", icon: Briefcase },
-  { id: "favorite", label: "Favorites", icon: Heart },
-  { id: "recent", label: "Recent", icon: Clock },
+// Category tabs will use i18n at render time
+const CATEGORY_IDS: { id: ContactCategory; labelKey: string; fallback: string; icon: typeof Users }[] = [
+  { id: "all", labelKey: "orbit.contacts.all", fallback: "All", icon: Users },
+  { id: "client", labelKey: "orbit.contacts.clients", fallback: "Clients", icon: Users },
+  { id: "team", labelKey: "orbit.contacts.team", fallback: "Team", icon: Users },
+  { id: "professional", labelKey: "orbit.contacts.pros", fallback: "Pros", icon: Briefcase },
+  { id: "favorite", labelKey: "orbit.contacts.favorites", fallback: "Favorites", icon: Heart },
+  { id: "recent", labelKey: "orbit.contacts.recent", fallback: "Recent", icon: Clock },
 ];
 
 function getInitials(name: string): string {
