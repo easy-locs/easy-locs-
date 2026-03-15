@@ -92,7 +92,7 @@ export const ExploreListingCard = memo(function ExploreListingCard({ item }: { i
           </div>
 
           <div className="absolute top-2.5 left-2.5 flex items-start gap-1.5 flex-wrap">
-            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-semibold border backdrop-blur-md ${typeBadge.color}`}>
+            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-token-xs font-semibold border backdrop-blur-md ${typeBadge.color}`}>
               {subInfo?.emoji && <span className="text-xs">{subInfo.emoji}</span>}
               <span className="truncate max-w-[120px]">{typeBadge.label}</span>
             </span>
