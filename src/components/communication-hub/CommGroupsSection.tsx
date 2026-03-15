@@ -471,9 +471,9 @@ export default function CommGroupsSection() {
             className="h-8 gap-1.5 text-xs"
             style={{ color: "hsl(var(--hud-cyan))" }}
             onClick={() => setShowCreate(true)}
-          >
-            <Plus className="h-4 w-4" />
-            Create
+            >
+              <Plus className="h-4 w-4" />
+              {t("orbit.groups.create") || "Create"}
           </Button>
         </div>
 
