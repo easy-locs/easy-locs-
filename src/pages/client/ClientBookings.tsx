@@ -155,7 +155,7 @@ const ClientBookings = () => {
                         <Star className="h-3 w-3" /> {t("mp.leave_review") || "Leave a review"}
                       </Button>
                       {windowInfo && (
-                        <span className="text-[10px] text-warning font-medium">{windowInfo}</span>
+                        <span className="text-2xs text-warning font-medium">{windowInfo}</span>
                       )}
                     </>
                   )}
