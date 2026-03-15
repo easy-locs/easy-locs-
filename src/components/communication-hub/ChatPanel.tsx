@@ -100,44 +100,29 @@ export default function ChatPanel({ thread, onBack, onToggleContext, showContext
     if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
   }, [messages]);
 
-  // Realtime messages
+  // Realtime messages + typing via centralized RealtimeManager
   useEffect(() => {
     if (!orgId || !thread) return;
-    const channel = supabase
-      .channel(`chat-${thread.id}`)
-      .on("postgres_changes", {
-        event: "INSERT", schema: "public", table: "messages", filter: `org_id=eq.${orgId}`,
-      }, (payload) => {
+    const { realtimeManager } = require("@/lib/realtime-manager");
+    const matchThread = (msg: any) => {
+      const msgKey = msg.booking_id ? `booking-${msg.booking_id}` : msg.tenant_id ? `tenant-${msg.tenant_id}` : null;
+      return msgKey === thread.id || msg.context_id === thread.contextId;
+    };
+    const sub = realtimeManager.openThread(thread.id, orgId, {
+      onMessage: (payload: any) => {
         const newMsg = payload.new as ChatMessage;
-        const msgKey = newMsg.booking_id ? `booking-${newMsg.booking_id}` : newMsg.tenant_id ? `tenant-${newMsg.tenant_id}` : null;
-        if (msgKey === thread.id || (newMsg as any).context_id === thread.contextId) {
+        if (matchThread(newMsg)) {
           setMessages(prev => prev.some(m => m.id === newMsg.id) ? prev : [...prev, newMsg]);
           if (newMsg.sender_id !== user?.id) {
             supabase.from("messages").update({ read: true }).eq("id", newMsg.id);
           }
         }
-      })
-      .subscribe();
-    return () => { supabase.removeChannel(channel); };
+      },
+      onTypingSync: (others) => setTypingIndicator(others.length > 0),
+      currentUserId: user?.id,
+    });
+    return () => { sub.unsubscribe(); };
   }, [orgId, thread, user]);
-
-  // Typing indicator
-  useEffect(() => {
-    if (!thread || !orgId) return;
-    const channel = supabase.channel(`typing-${thread.id}`);
-    channel
-      .on("presence", { event: "sync" }, () => {
-        const state = channel.presenceState();
-        const others = Object.values(state).flat().filter((p: any) => p.user_id !== user?.id);
-        setTypingIndicator(others.length > 0);
-      })
-      .subscribe(async (status) => {
-        if (status === "SUBSCRIBED") {
-          await channel.track({ user_id: user?.id, online_at: new Date().toISOString() });
-        }
-      });
-    return () => { supabase.removeChannel(channel); };
-  }, [thread, orgId, user?.id]);
 
   // File upload
   const handleFileUpload = async (file: File) => {
