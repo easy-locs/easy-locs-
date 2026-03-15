@@ -467,8 +467,7 @@ export default function CommNearbySection() {
           <>
         {loadError ? (
           <ErrorState
-            title="Nearby scan failed"
-            message={loadError}
+            message={`Nearby scan failed: ${loadError}`}
             onRetry={loadNearby}
           />
         ) : loading && totalResults === 0 ? (

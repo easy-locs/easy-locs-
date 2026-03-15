@@ -504,8 +504,7 @@ export default function CommGroupsSection() {
           </div>
         ) : loadError ? (
           <ErrorState
-            title="Failed to load groups"
-            message={loadError}
+            message={`Failed to load groups: ${loadError}`}
             onRetry={loadGroups}
           />
         ) : filtered.length === 0 ? (
