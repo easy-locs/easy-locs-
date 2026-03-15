@@ -137,6 +137,36 @@ export default function ProSettingsSection() {
   const [settings, setSettings] = useState<ProSettings>(getProSettings);
   const [copied, setCopied] = useState(false);
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
+  const [dbLoaded, setDbLoaded] = useState(false);
+
+  // ── Sync DB-backed settings on mount ──
+  useEffect(() => {
+    if (!user?.id) return;
+    (async () => {
+      const { data } = await supabase.from("profiles").select(
+        "privacy_read_receipts, privacy_typing_indicators, privacy_link_previews, privacy_online_status, orbit_notifications, orbit_message_preview, orbit_media_auto_download"
+      ).eq("id", user.id).single();
+      if (data) {
+        const dbSync: Partial<ProSettings> = {
+          readReceipts: (data as any).privacy_read_receipts ?? true,
+          typingIndicators: (data as any).privacy_typing_indicators ?? true,
+          linkPreview: (data as any).privacy_link_previews ?? true,
+          messagePreview: (data as any).orbit_message_preview ?? true,
+          mediaAutoDownload: (data as any).orbit_media_auto_download ? "always" : "wifi",
+        };
+        setSettings(prev => ({ ...prev, ...dbSync }));
+      }
+      setDbLoaded(true);
+    })();
+  }, [user?.id]);
+
+  // ── Column mapping for DB-synced toggles ──
+  const DB_COLUMN_MAP: Record<string, string> = {
+    readReceipts: "privacy_read_receipts",
+    typingIndicators: "privacy_typing_indicators",
+    linkPreview: "privacy_link_previews",
+    messagePreview: "orbit_message_preview",
+  };
 
   const update = useCallback(<K extends keyof ProSettings>(key: K, value: ProSettings[K]) => {
     setSettings(prev => {
@@ -144,7 +174,13 @@ export default function ProSettingsSection() {
       saveProSettings(next);
       return next;
     });
-  }, []);
+    // Persist to DB if this is a DB-synced setting
+    const dbCol = DB_COLUMN_MAP[key as string];
+    if (dbCol && user?.id) {
+      supabase.from("profiles").update({ [dbCol]: value } as any).eq("id", user.id)
+        .then(({ error }) => { if (error) console.error("[ProSettings] DB sync error:", error); });
+    }
+  }, [user?.id]);
 
   const userId = user?.id || "—";
   const shortId = userId.substring(0, 8).toUpperCase();
