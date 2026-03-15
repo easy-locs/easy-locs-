@@ -132,8 +132,8 @@ const Hero = () => {
           {/* Headline */}
           <motion.div className="space-y-5">
             <motion.h1
-              initial={{ opacity: 0, y: 30, filter: "blur(10px)" }}
-              animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.25 }}
               className="text-[1.75rem] leading-[1.15] sm:text-5xl lg:text-[3.6rem] font-extrabold tracking-tight sm:leading-[1.1]"
               style={{ color: "hsl(40 50% 97%)", textWrap: "balance" }}
