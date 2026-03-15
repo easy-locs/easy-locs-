@@ -53,6 +53,7 @@ export default function CommCallsSection() {
   const { startCall, isInCall, isStartingCall } = useCall();
   const [calls, setCalls] = useState<CallLog[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [filter, setFilter] = useState<CallFilter>("all");
   const [search, setSearch] = useState("");
 
