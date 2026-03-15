@@ -90,7 +90,7 @@ function getTypeColor(type: string): string {
 export default function CommNearbySection() {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const { lat, lng, loading: geoLoading, error: geoError, requestLocation } = useGeolocation();
+  const { lat, lng, loading: geoLoading, error: geoError, permissionDenied, requestLocation } = useGeolocation();
   const [items, setItems] = useState<NearbyItem[]>([]);
   const [nearbyUsers, setNearbyUsers] = useState<NearbyUser[]>([]);
   const [loading, setLoading] = useState(false);
