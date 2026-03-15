@@ -4,6 +4,7 @@
  * Renders IncomingCallDialog and InAppCallDialog globally.
  */
 import { createContext, useContext, useState, useEffect, useCallback, useRef, type ReactNode } from "react";
+import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { CallManager, type CallState } from "@/lib/call-manager";
