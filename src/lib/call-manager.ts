@@ -441,13 +441,13 @@ export class CallManager {
         if (this.iceConnected && this._reconnectAttempts < 3) {
           this._reconnectAttempts++;
           this.debug("ICE disconnected — attempting restart", { attempt: this._reconnectAttempts });
-          this.onStateChange({ error: "Reconnexion en cours…" });
+          this.onStateChange({ error: "Reconnecting…" });
           this.attemptIceRestart();
         } else if (!this.iceConnected) {
           this.debug("ICE disconnected without ever connecting");
           this.onStateChange({
             status: "network_blocked",
-            error: "Impossible de se connecter. Vérifiez votre connexion internet.",
+            error: "CONNECTION_FAILED",
           });
           this.cleanup("connection-failed");
         }
@@ -517,7 +517,7 @@ export class CallManager {
         this.debug("stream timeout — no connection established");
         this.onStateChange({
           status: "network_blocked",
-          error: "Impossible d'établir l'appel. Votre réseau bloque peut-être les appels internet. Essayez avec le Wi-Fi ou un autre réseau.",
+          error: "NETWORK_BLOCKED",
         });
         this.cleanup("stream-timeout");
       }
@@ -575,7 +575,7 @@ export class CallManager {
         } else if (state === "failed") {
           this.onStateChange({
             status: "network_blocked",
-            error: "Appels internet indisponibles sur ce réseau. Essayez un autre réseau.",
+            error: "RELAY_FAILED",
           });
           this.cleanup("relay-retry-failed");
         }
@@ -636,10 +636,8 @@ export class CallManager {
       this.onStateChange({
         status: "failed",
         error: isPermError
-          ? (isVideo
-            ? "Accès caméra/micro refusé. Autorisez l'accès dans les paramètres de votre navigateur."
-            : "Accès micro refusé. Autorisez l'accès au microphone pour passer des appels.")
-          : "Périphérique audio/vidéo indisponible. Vérifiez vos paramètres.",
+          ? (isVideo ? "CAMERA_MIC_DENIED" : "MIC_DENIED")
+          : "MEDIA_UNAVAILABLE",
       });
       throw new Error("Media permission denied");
     }
