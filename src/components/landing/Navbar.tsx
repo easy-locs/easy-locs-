@@ -253,16 +253,16 @@ const Navbar = () => {
               </div>
 
               <div className="pt-3 border-t space-y-2" style={{ borderColor: "hsl(220 15% 90% / 0.06)" }}>
-                <Link
+                  <Link
                   to="/login"
-                  className="block w-full text-center py-3 rounded-xl text-sm font-medium border transition-all text-white/80 border-white/12 hover:border-white/25"
+                  className="block w-full text-center py-3 min-h-[44px] rounded-xl text-sm font-medium border transition-all text-white/80 border-white/12 hover:border-white/25 flex items-center justify-center"
                   onClick={() => setMobileOpen(false)}
                 >
                   {t("landing.nav.login") || "Log in"}
                 </Link>
                 <Link
                   to="/signup"
-                  className="block w-full text-center py-2.5 rounded-xl text-sm font-bold relative overflow-hidden"
+                  className="block w-full text-center py-3 min-h-[44px] rounded-xl text-sm font-bold relative overflow-hidden flex items-center justify-center"
                   style={{
                     background: "var(--gradient-gold)",
                     color: "hsl(var(--accent-foreground))",
