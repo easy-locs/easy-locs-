@@ -1,9 +1,8 @@
 /**
  * useGeolocation — Reactive browser geolocation hook.
  * Auto-requests location on mount based on app preferences.
- * Handles denied permission with clear user guidance.
  */
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { getAppPreferences } from "@/components/settings/AppPreferencesSection";
 
 interface GeoState {
@@ -12,8 +11,6 @@ interface GeoState {
   loading: boolean;
   error: string | null;
   city: string | null;
-  /** True when the browser has permanently denied geolocation */
-  permissionDenied: boolean;
 }
 
 const GEO_CACHE_KEY = "orbit:last-geo";
@@ -42,7 +39,6 @@ function cacheGeo(lat: number, lng: number) {
 
 export function useGeolocation() {
   const cached = readCachedGeo();
-  const requestedRef = useRef(false);
 
   const [state, setState] = useState<GeoState>({
     lat: cached.lat,
@@ -50,12 +46,11 @@ export function useGeolocation() {
     loading: false,
     error: null,
     city: null,
-    permissionDenied: false,
   });
 
   const requestLocation = useCallback(() => {
     if (!("geolocation" in navigator)) {
-      setState((s) => ({ ...s, error: "Geolocation not supported", permissionDenied: true }));
+      setState((s) => ({ ...s, error: "Geolocation not supported" }));
       return;
     }
 
@@ -72,12 +67,11 @@ export function useGeolocation() {
           loading: false,
           error: null,
           city: null,
-          permissionDenied: false,
         });
       },
       (err) => {
         const fallback = readCachedGeo();
-        const denied = err.code === 1; // PERMISSION_DENIED
+        const denied = err.code === 1;
 
         setState((s) => ({
           ...s,
@@ -87,60 +81,38 @@ export function useGeolocation() {
           error: denied
             ? "Location permission denied"
             : "Could not get location",
-          permissionDenied: denied,
         }));
       },
       { enableHighAccuracy: true, timeout: 12000, maximumAge: 60000 }
     );
   }, []);
 
-  // Auto-request on mount if preference is enabled OR if entering Nearby section
+  // Auto-request on mount if preference is enabled
   useEffect(() => {
-    if (requestedRef.current) return;
-    requestedRef.current = true;
-
     const prefs = getAppPreferences();
+    if (!prefs.autoLocation) return;
 
-    // Always check permission state first
     if ("permissions" in navigator) {
       navigator.permissions
         .query({ name: "geolocation" as PermissionName })
         .then((perm) => {
-          if (perm.state === "granted") {
-            // Already granted — fetch silently
-            requestLocation();
-          } else if (perm.state === "prompt") {
-            // Will prompt — only auto-request if pref enabled
-            if (prefs.autoLocation) requestLocation();
-          } else {
-            // Denied
+          if (perm.state !== "denied") requestLocation();
+          else {
             const fallback = readCachedGeo();
             setState((s) => ({
               ...s,
               lat: fallback.lat ?? s.lat,
               lng: fallback.lng ?? s.lng,
               error: "Location permission denied",
-              permissionDenied: true,
               loading: false,
             }));
           }
-
-          // Listen for permission changes (user may toggle in browser settings)
-          perm.addEventListener("change", () => {
-            if (perm.state === "granted") {
-              requestLocation();
-            } else if (perm.state === "denied") {
-              setState((s) => ({ ...s, error: "Location permission denied", permissionDenied: true }));
-            }
-          });
         })
-        .catch(() => {
-          if (prefs.autoLocation) requestLocation();
-        });
+        .catch(() => requestLocation());
       return;
     }
 
-    if (prefs.autoLocation) requestLocation();
+    requestLocation();
   }, [requestLocation]);
 
   return { ...state, requestLocation };
