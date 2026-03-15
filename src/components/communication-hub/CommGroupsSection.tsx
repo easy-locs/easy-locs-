@@ -482,7 +482,7 @@ export default function CommGroupsSection() {
           <Input
             value={search}
             onChange={e => setSearch(e.target.value)}
-            placeholder="Search groups..."
+            placeholder={t("orbit.groups.search") || "Search groups…"}
             className="pl-9 h-9 text-sm border-0"
             style={{ background: "hsl(var(--hud-surface))", color: "hsl(var(--hud-text))" }}
           />
