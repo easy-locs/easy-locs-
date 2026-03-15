@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import {
   Phone, PhoneOff, Video, Shield, User, MapPin,
 } from "lucide-react";
+import { startRingtone, stopRingtone } from "@/lib/ringtone";
 
 interface IncomingGuestCallDialogProps {
   open: boolean;
@@ -30,16 +31,33 @@ export default function IncomingGuestCallDialog({
     if (open) {
       setRingTime(0);
       timerRef.current = setInterval(() => setRingTime((t) => t + 1), 1000);
+      startRingtone(isVideo ? "video" : "audio");
+    } else {
+      stopRingtone();
     }
-    return () => { if (timerRef.current) clearInterval(timerRef.current); };
-  }, [open]);
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+      stopRingtone();
+    };
+  }, [open, isVideo]);
 
   // Auto-decline after 30 seconds
   useEffect(() => {
     if (ringTime >= 30) {
+      stopRingtone();
       onDecline(callId);
     }
   }, [ringTime, callId, onDecline]);
+
+  const handleAccept = () => {
+    stopRingtone();
+    onAccept(callId);
+  };
+
+  const handleDecline = () => {
+    stopRingtone();
+    onDecline(callId);
+  };
 
   return (
     <Dialog open={open} onOpenChange={() => {}}>
@@ -83,7 +101,7 @@ export default function IncomingGuestCallDialog({
               variant="destructive"
               size="lg"
               className="rounded-full gap-2 px-6"
-              onClick={() => onDecline(callId)}
+              onClick={handleDecline}
             >
               <PhoneOff className="h-5 w-5" />
               Decline
@@ -91,7 +109,7 @@ export default function IncomingGuestCallDialog({
             <Button
               size="lg"
               className="rounded-full gap-2 px-6 bg-green-600 hover:bg-green-700 text-white"
-              onClick={() => onAccept(callId)}
+              onClick={handleAccept}
             >
               <Phone className="h-5 w-5" />
               Accept
