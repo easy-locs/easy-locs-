@@ -226,7 +226,7 @@ const Navbar = () => {
                     <button
                       key={l}
                       onClick={() => { setLocale(l as Locale); }}
-                      className={`px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                      className={`px-3 py-2 min-h-[44px] rounded-lg text-xs font-medium transition-colors inline-flex items-center gap-1 ${
                         l === locale
                           ? "bg-accent text-accent-foreground"
                           : "text-white/60 hover:text-white hover:bg-white/5"
