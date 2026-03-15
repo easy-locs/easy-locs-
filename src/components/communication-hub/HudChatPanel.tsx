@@ -4,6 +4,9 @@
  * Re-exports the original ChatPanel but overrides styling.
  */
 import { useState, useEffect, useRef, useCallback } from "react";
+import DealContextHeader from "./DealContextHeader";
+import DealStatusBubble from "./DealStatusBubble";
+import type { DealEventType } from "./DealStatusBubble";
 import {
   Send, ArrowLeft, Loader2, Paperclip, Globe, CheckCheck, Check,
   Mail, CreditCard, CalendarCheck, Ban, Phone, Video, ChevronRight, MessageCircle,
