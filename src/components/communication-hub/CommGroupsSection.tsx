@@ -247,7 +247,7 @@ export default function CommGroupsSection() {
     const { error } = await supabase.from("group_members").delete().eq("id", memberId);
     if (error) { toast.error("Failed to remove member"); return; }
     haptic("light");
-    toast.success("Member removed");
+    toast.success(t("orbit.groups.member_removed") || "Member removed");
     const { data: mems } = await supabase.from("group_members").select("*").eq("group_id", activeGroup.id);
     setMembers((mems as GroupMember[]) || []);
   };
