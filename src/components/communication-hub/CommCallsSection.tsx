@@ -60,34 +60,42 @@ export default function CommCallsSection() {
   const loadCalls = useCallback(async () => {
     if (!user?.id) return;
     setLoading(true);
+    setLoadError(null);
 
-    const { data: callData } = await supabase
-      .from("call_logs")
-      .select("id, caller_id, callee_org_id, status, is_video, duration_seconds, created_at, context_label, context_type, context_id, thread_id")
-      .order("created_at", { ascending: false })
-      .limit(100);
+    try {
+      const { data: callData, error } = await supabase
+        .from("call_logs")
+        .select("id, caller_id, callee_org_id, status, is_video, duration_seconds, created_at, context_label, context_type, context_id, thread_id")
+        .order("created_at", { ascending: false })
+        .limit(100);
 
-    if (!callData || callData.length === 0) {
-      setCalls([]);
+      if (error) throw error;
+
+      if (!callData || callData.length === 0) {
+        setCalls([]);
+        setLoading(false);
+        return;
+      }
+
+      const orgIds = [...new Set(callData.map(c => c.callee_org_id))];
+      const { data: orgs } = await supabase
+        .from("orgs")
+        .select("id, name")
+        .in("id", orgIds);
+
+      const orgMap = new Map((orgs || []).map(o => [o.id, o.name]));
+
+      const enriched: CallLog[] = callData.map(c => ({
+        ...c,
+        org_name: orgMap.get(c.callee_org_id) || undefined,
+      }));
+
+      setCalls(enriched);
+    } catch (err: any) {
+      setLoadError(err?.message || "Failed to load calls");
+    } finally {
       setLoading(false);
-      return;
     }
-
-    const orgIds = [...new Set(callData.map(c => c.callee_org_id))];
-    const { data: orgs } = await supabase
-      .from("orgs")
-      .select("id, name")
-      .in("id", orgIds);
-
-    const orgMap = new Map((orgs || []).map(o => [o.id, o.name]));
-
-    const enriched: CallLog[] = callData.map(c => ({
-      ...c,
-      org_name: orgMap.get(c.callee_org_id) || undefined,
-    }));
-
-    setCalls(enriched);
-    setLoading(false);
   }, [user?.id]);
 
   useEffect(() => { loadCalls(); }, [loadCalls]);
