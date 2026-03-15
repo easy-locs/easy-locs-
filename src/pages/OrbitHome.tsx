@@ -228,7 +228,7 @@ export default function OrbitHome() {
         >
           Orbit — Infrastructure
         </h2>
-        <div className="grid grid-cols-3 gap-2.5">
+        <div className="grid grid-cols-3 gap-2">
           {ORBIT_INFRA_CARDS.map((card, i) => (
             <div key={card.label} className="animate-fade-in" style={{ animationDelay: `${320 + i * 40}ms` }}>
               <OrbitQuickCard

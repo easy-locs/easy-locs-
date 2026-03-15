@@ -248,7 +248,6 @@ export function useEcosystemRadar({
             const cat: EcosystemCategory =
               t.task_type === "inspection" || t.task_type === "visit" ? "scheduled_visit" :
               t.task_type === "maintenance" || t.task_type === "renovation" ? "renovation" : "intervention";
-            const offset = Math.random() * 0.01;
             const photos = p && Array.isArray(p.photo_urls) ? p.photo_urls : [];
             all.push({
               id: t.id,
@@ -256,10 +255,10 @@ export function useEcosystemRadar({
               title: t.title,
               subtitle: `${t.status} · ${p?.label || ""}`,
               photo: photos[0] || null,
-              lat: lat + offset, lng: lng + offset,
+              lat: 0, lng: 0,
               distance_km: 0,
               status: t.status,
-              meta: { task_type: t.task_type, scheduled_at: t.scheduled_at },
+              meta: { task_type: t.task_type, scheduled_at: t.scheduled_at, no_geo: true },
             });
           });
         }
