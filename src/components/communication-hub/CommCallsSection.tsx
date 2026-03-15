@@ -104,7 +104,7 @@ export default function CommCallsSection() {
 
   const handleRedial = useCallback(async (call: CallLog) => {
     if (isInCall || isStartingCall) {
-      toast.info("Call already in progress");
+      toast.info(t("orbit.calls.in_progress") || "Call already in progress");
       return;
     }
 
