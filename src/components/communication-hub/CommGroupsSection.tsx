@@ -237,7 +237,7 @@ export default function CommGroupsSection() {
     const { error } = await supabase.from("group_members").delete().eq("group_id", activeGroup.id).eq("user_id", user.id);
     if (error) { toast.error("Failed to leave group"); return; }
     haptic("medium");
-    toast.success("Left group");
+    toast.success(t("orbit.groups.left") || "Left group");
     setActiveGroup(null);
     loadGroups();
   };
