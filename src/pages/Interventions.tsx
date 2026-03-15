@@ -259,8 +259,8 @@ const Interventions = () => {
                         </div>
                       </div>
                       <div className="flex gap-1 shrink-0 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
-                        <Button variant="ghost" size="icon" onClick={() => openEdit(i)} className="h-8 w-8"><Pencil className="h-3.5 w-3.5" /></Button>
-                        <Button variant="ghost" size="icon" onClick={() => remove(i.id)} className="h-8 w-8"><Trash2 className="h-3.5 w-3.5 text-destructive" /></Button>
+                        <Button variant="ghost" size="icon" onClick={() => openEdit(i)} className="h-8 w-8 sm:h-8 sm:w-8 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0"><Pencil className="h-3.5 w-3.5" /></Button>
+                        <Button variant="ghost" size="icon" onClick={() => remove(i.id)} className="h-8 w-8 sm:h-8 sm:w-8 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0"><Trash2 className="h-3.5 w-3.5 text-destructive" /></Button>
                       </div>
                     </div>
                   </motion.div>

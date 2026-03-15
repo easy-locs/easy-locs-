@@ -165,36 +165,43 @@ const SeasonalRentals = () => {
 
   const load = useCallback(async () => {
     if (!orgId) return;
-    const [{ data: b }, { data: p }, { data: reqs }] = await Promise.all([
-      supabase.from("seasonal_bookings").select("*").eq("org_id", orgId).order("check_in"),
-      supabase.from("properties").select("id, label, photo_urls").eq("org_id", orgId).order("label"),
-      supabase.from("booking_requests").select("*").eq("org_id", orgId).order("created_at", { ascending: false }).limit(50),
-    ]);
-    // Merge paid/approved booking_requests that have no matching seasonal_booking
-    const seasonalBookings = (b || []) as Booking[];
-    const paidRequests = (reqs || []).filter((r: any) => r.status === "paid" || r.status === "approved");
-    const existingKeys = new Set(seasonalBookings.map(sb => `${sb.property_id}-${sb.check_in}-${sb.check_out}-${sb.guest_name}`));
-    const missingBookings: Booking[] = paidRequests
-      .filter((r: any) => !existingKeys.has(`${r.property_id}-${r.check_in}-${r.check_out}-${r.guest_name}`))
-      .map((r: any) => ({
-        id: r.id,
-        property_id: r.property_id,
-        guest_name: r.guest_name,
-        guest_email: r.guest_email || "",
-        guest_phone: r.guest_phone || "",
-        check_in: r.check_in,
-        check_out: r.check_out,
-        total_price: 0,
-        cleaning_fee: 0,
-        deposit_amount: 0,
-        status: r.status === "paid" ? "confirmed" : "confirmed",
-        notes: `Via booking request (${r.status})`,
-      }));
-    setBookings([...seasonalBookings, ...missingBookings]);
-    if (p) setProperties(p);
-    if (reqs) setAllRequests(reqs);
-    setLoading(false);
-  }, [orgId]);
+    setLoadError(null);
+    try {
+      const [{ data: b, error: bErr }, { data: p }, { data: reqs }] = await Promise.all([
+        supabase.from("seasonal_bookings").select("*").eq("org_id", orgId).order("check_in"),
+        supabase.from("properties").select("id, label, photo_urls").eq("org_id", orgId).order("label"),
+        supabase.from("booking_requests").select("*").eq("org_id", orgId).order("created_at", { ascending: false }).limit(50),
+      ]);
+      if (bErr) throw bErr;
+      const seasonalBookings = (b || []) as Booking[];
+      const paidRequests = (reqs || []).filter((r: any) => r.status === "paid" || r.status === "approved");
+      const existingKeys = new Set(seasonalBookings.map(sb => `${sb.property_id}-${sb.check_in}-${sb.check_out}-${sb.guest_name}`));
+      const missingBookings: Booking[] = paidRequests
+        .filter((r: any) => !existingKeys.has(`${r.property_id}-${r.check_in}-${r.check_out}-${r.guest_name}`))
+        .map((r: any) => ({
+          id: r.id,
+          property_id: r.property_id,
+          guest_name: r.guest_name,
+          guest_email: r.guest_email || "",
+          guest_phone: r.guest_phone || "",
+          check_in: r.check_in,
+          check_out: r.check_out,
+          total_price: 0,
+          cleaning_fee: 0,
+          deposit_amount: 0,
+          status: r.status === "paid" ? "confirmed" : "confirmed",
+          notes: `Via booking request (${r.status})`,
+        }));
+      setBookings([...seasonalBookings, ...missingBookings]);
+      if (p) setProperties(p);
+      if (reqs) setAllRequests(reqs);
+    } catch (err: any) {
+      console.error("[SeasonalRentals] load error:", err);
+      setLoadError(t("error.load_failed") || "Failed to load data");
+    } finally {
+      setLoading(false);
+    }
+  }, [orgId, t]);
 
   useEffect(() => { load(); }, [load]);
 
