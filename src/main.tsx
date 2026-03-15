@@ -2,17 +2,21 @@ import { createRoot } from "react-dom/client";
 import App from "./App";
 import "./index.css";
 
+// Build anchor — forces fresh chunk hash on deploy
+const BUILD_REV = "2026-03-15T19:00:00Z";
+
 const rootElement = document.getElementById("root");
 
 if (!rootElement) {
   throw new Error("Root element not found");
 }
 
-// Guard against HMR re-execution calling createRoot twice
 const root = (rootElement as any).__reactRoot ?? createRoot(rootElement);
 (rootElement as any).__reactRoot = root;
 
 root.render(<App />);
+
+console.info(`[boot] Easy-Locs started (rev ${BUILD_REV})`);
 
 // ── Deferred non-critical init ──────────────────────────────────────────────
 
