@@ -231,8 +231,8 @@ const Tasks = () => {
                     </div>
                   </div>
                   <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEditForm(task)}><Edit className="h-4 w-4" /></Button>
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => setDeleteTaskId(task.id)}><Trash2 className="h-4 w-4" /></Button>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0" onClick={() => openEditForm(task)}><Edit className="h-4 w-4" /></Button>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 text-destructive" onClick={() => setDeleteTaskId(task.id)}><Trash2 className="h-4 w-4" /></Button>
                   </div>
                 </motion.div>
               );

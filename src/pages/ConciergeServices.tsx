@@ -51,12 +51,12 @@ const SERVICE_CATEGORIES = [
 ];
 
 const BOOKING_STATUSES: Record<string, { label: string; cls: string }> = {
-  pending: { label: "Pending", cls: "bg-amber-500/10 text-amber-600" },
-  awaiting_payment: { label: "Awaiting Payment", cls: "bg-orange-500/10 text-orange-600" },
-  paid: { label: "Paid", cls: "bg-emerald-500/10 text-emerald-600" },
-  confirmed: { label: "Confirmed", cls: "bg-blue-500/10 text-blue-600" },
+  pending: { label: "Pending", cls: "bg-warning/10 text-warning" },
+  awaiting_payment: { label: "Awaiting Payment", cls: "bg-warning/15 text-warning" },
+  paid: { label: "Paid", cls: "bg-success/10 text-success" },
+  confirmed: { label: "Confirmed", cls: "bg-info/10 text-info" },
   in_progress: { label: "In Progress", cls: "bg-accent/10 text-accent" },
-  completed: { label: "Completed", cls: "bg-emerald-500/10 text-emerald-600" },
+  completed: { label: "Completed", cls: "bg-success/10 text-success" },
   cancelled: { label: "Cancelled", cls: "bg-destructive/10 text-destructive" },
   refunded: { label: "Refunded", cls: "bg-muted text-muted-foreground" },
 };
