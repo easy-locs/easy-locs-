@@ -441,13 +441,13 @@ export class CallManager {
         if (this.iceConnected && this._reconnectAttempts < 3) {
           this._reconnectAttempts++;
           this.debug("ICE disconnected — attempting restart", { attempt: this._reconnectAttempts });
-          this.onStateChange({ error: "Reconnexion en cours…" });
+          this.onStateChange({ error: "Reconnecting…" });
           this.attemptIceRestart();
         } else if (!this.iceConnected) {
           this.debug("ICE disconnected without ever connecting");
           this.onStateChange({
             status: "network_blocked",
-            error: "Impossible de se connecter. Vérifiez votre connexion internet.",
+            error: "CONNECTION_FAILED",
           });
           this.cleanup("connection-failed");
         }
