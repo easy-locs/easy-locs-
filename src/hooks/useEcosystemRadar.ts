@@ -173,7 +173,7 @@ export function useEcosystemRadar({
         const { data: trackings } = await supabase
           .from("live_trackings")
           .select("id, context_type, context_id, context_label, current_lat, current_lng, status, tracker_user_id, heading")
-          .in("status", ["active", "en_route", "nearby"])
+          .in("status", ["en_route", "nearby", "arrived"])
           .not("current_lat", "is", null)
           .not("current_lng", "is", null);
 
