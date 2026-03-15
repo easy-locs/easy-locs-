@@ -7,6 +7,7 @@ import { Link } from "react-router-dom";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import OrbitSmartHub from "@/components/dashboard/OrbitSmartHub";
 import { StatCard } from "@/components/ui/stat-card";
+import { ErrorState } from "@/components/ui/error-state";
 import { useAuth } from "@/contexts/AuthContext";
 import { useI18n } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
