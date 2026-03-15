@@ -60,7 +60,8 @@ const ClientDashboard = () => {
             <motion.div key={card.path} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 + i * 0.05 }}>
               <Link
                 to={card.path}
-                className="group flex flex-col h-full min-h-[148px] bg-card rounded-xl p-5 shadow-card border border-border/50 hover:shadow-card-hover hover:border-accent/30 transition-all relative overflow-hidden"
+                className="group flex flex-col h-full min-h-[148px] bg-card rounded-xl shadow-card border border-border/50 hover:shadow-card-hover hover:border-accent/30 transition-all relative overflow-hidden"
+                style={{ padding: "var(--card-padding)" }}
               >
                 <div className="absolute top-0 left-0 right-0 h-0.5 bg-accent opacity-0 group-hover:opacity-100 transition-opacity" />
                 <div className="flex items-center justify-between mb-3">
