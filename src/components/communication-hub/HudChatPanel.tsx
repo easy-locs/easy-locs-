@@ -739,15 +739,15 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
           </div>
 
           <h3 className="text-lg font-bold mb-2" style={{ color: "hsl(var(--hud-text))" }}>
-            Command Center
+            {t("orbit.command_center") || "Command Center"}
           </h3>
           <p className="text-sm mb-1" style={{ color: "hsl(var(--hud-text-dim))" }}>
-            Secure business communication hub
+            {t("orbit.secure_hub") || "Secure business communication hub"}
           </p>
           <div className="flex items-center justify-center gap-2 mt-3 mb-6">
             <Lock className="h-3 w-3" style={{ color: "hsl(var(--hud-success) / 0.5)" }} />
             <span className="text-[10px] font-medium uppercase tracking-widest" style={{ color: "hsl(var(--hud-success) / 0.5)" }}>
-              End-to-end encrypted channel
+              {t("orbit.e2e_channel") || "End-to-end encrypted channel"}
             </span>
           </div>
 
@@ -900,7 +900,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
           >
             <WifiOff className="h-3.5 w-3.5 shrink-0" style={{ color: "hsl(var(--hud-warning))" }} />
             <span className="text-[11px] font-medium" style={{ color: "hsl(var(--hud-warning))" }}>
-              Offline — messages will be sent when you reconnect
+              {t("orbit.offline_banner") || "Offline — messages will be sent when you reconnect"}
             </span>
             {offline.queueCount > 0 && (
               <Badge variant="outline" className="ml-auto text-[9px] h-4 px-1.5" style={{ borderColor: "hsl(var(--hud-warning) / 0.4)", color: "hsl(var(--hud-warning))" }}>
@@ -918,7 +918,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
           >
             <CloudUpload className="h-3.5 w-3.5 animate-pulse shrink-0" style={{ color: "hsl(var(--hud-success))" }} />
             <span className="text-[11px] font-medium" style={{ color: "hsl(var(--hud-success))" }}>
-              Syncing queued messages...
+              {t("orbit.syncing_queued") || "Syncing queued messages..."}
             </span>
           </motion.div>
         )}
@@ -948,11 +948,11 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
                 }}>
                   <MessageCircle className="h-7 w-7" style={{ color: "hsl(var(--hud-text-dim) / 0.25)" }} />
                 </div>
-                <p className="text-sm font-medium" style={{ color: "hsl(var(--hud-text))" }}>No messages yet</p>
-                <p className="text-xs mt-1" style={{ color: "hsl(var(--hud-text-dim))" }}>Start the conversation</p>
+                <p className="text-sm font-medium" style={{ color: "hsl(var(--hud-text))" }}>{t("orbit.no_messages") || "No messages yet"}</p>
+                <p className="text-xs mt-1" style={{ color: "hsl(var(--hud-text-dim))" }}>{t("orbit.start_conversation") || "Start the conversation"}</p>
                 <div className="flex items-center justify-center gap-1.5 mt-3">
                   <Lock className="h-3 w-3" style={{ color: "hsl(var(--hud-success) / 0.5)" }} />
-                  <span className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>End-to-end encrypted</span>
+                  <span className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>{t("orbit.e2e_encrypted") || "End-to-end encrypted"}</span>
                 </div>
               </div>
             </div>
@@ -1142,13 +1142,15 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
                   const dur = voicePreview.duration;
                   const ext = blob.type.includes("mp4") ? "m4a" : blob.type.includes("webm") ? "webm" : "ogg";
                   const path = `${orgId}/${thread.id}/voice-${Date.now()}.${ext}`;
+                  let uploadedBucket = "chat-media";
                   const { error: uploadErr } = await supabase.storage.from("chat-media").upload(path, blob);
                   if (uploadErr) {
                     // Fallback to other buckets
                     const { error: uploadErr2 } = await supabase.storage.from("property-photos").upload(path, blob);
                     if (uploadErr2) throw new Error("Voice upload failed");
+                    uploadedBucket = "property-photos";
                   }
-                  const { data: signed } = await supabase.storage.from("chat-media").createSignedUrl(path, 60 * 60 * 24 * 365);
+                  const { data: signed } = await supabase.storage.from(uploadedBucket).createSignedUrl(path, 60 * 60 * 24 * 365);
                   const audioUrl = signed?.signedUrl || path;
 
                   const voiceSecPayload = buildSecurityPayload(securityLevel);

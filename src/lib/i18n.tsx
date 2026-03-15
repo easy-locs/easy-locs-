@@ -2535,6 +2535,14 @@ const pageFr: Record<string, string> = {
   "orbit.search_conversations": "Rechercher des conversations…",
   "orbit.loading": "Chargement…",
   "orbit.no_messages_yet": "Aucun message pour le moment",
+  "orbit.command_center": "Centre de commande",
+  "orbit.secure_hub": "Hub de communication sécurisé",
+  "orbit.e2e_channel": "Canal chiffré de bout en bout",
+  "orbit.no_messages": "Aucun message pour le moment",
+  "orbit.start_conversation": "Commencez la conversation",
+  "orbit.e2e_encrypted": "Chiffré de bout en bout",
+  "orbit.offline_banner": "Hors ligne — les messages seront envoyés à la reconnexion",
+  "orbit.syncing_queued": "Synchronisation des messages en file d'attente…",
 
   // ─── Orbit Navigation ───
   "orbit.nav.chats": "Discussions",
@@ -4742,6 +4750,14 @@ const pageEn: Record<string, string> = {
   "orbit.search_conversations": "Search conversations…",
   "orbit.loading": "Loading…",
   "orbit.no_messages_yet": "No messages yet",
+  "orbit.command_center": "Command Center",
+  "orbit.secure_hub": "Secure business communication hub",
+  "orbit.e2e_channel": "End-to-end encrypted channel",
+  "orbit.no_messages": "No messages yet",
+  "orbit.start_conversation": "Start the conversation",
+  "orbit.e2e_encrypted": "End-to-end encrypted",
+  "orbit.offline_banner": "Offline — messages will be sent when you reconnect",
+  "orbit.syncing_queued": "Syncing queued messages...",
 
   // ─── Orbit Navigation ───
   "orbit.nav.chats": "Chats",
