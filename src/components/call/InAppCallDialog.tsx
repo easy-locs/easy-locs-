@@ -88,7 +88,19 @@ export default function InAppCallDialog({
     }
     if (state.elapsed !== undefined) setElapsed(state.elapsed);
     if (state.usingRelay !== undefined) setUsingRelay(state.usingRelay);
-    if (state.error !== undefined) setError(state.error);
+    if (state.error !== undefined) {
+      // Translate error codes from CallManager into localized messages
+      const errorMap: Record<string, string> = {
+        "CONNECTION_FAILED": t("call.error.network_blocked") || "Unable to connect. Try a different network.",
+        "NETWORK_BLOCKED": t("call.error.network_blocked") || "Unable to connect. Try a different network.",
+        "RELAY_FAILED": t("call.error.network_retry") || "Internet calls unavailable on this network.",
+        "CAMERA_MIC_DENIED": t("call.error.camera_denied") || "Camera access denied.",
+        "MIC_DENIED": t("call.error.mic_denied") || "Microphone access denied.",
+        "MEDIA_UNAVAILABLE": t("call.error.media_unavailable") || "Audio/video device unavailable.",
+        "Reconnecting…": t("call.label.reconnecting") || "Reconnecting…",
+      };
+      setError(state.error ? (errorMap[state.error] || state.error) : null);
+    }
     if (state.remoteStream !== undefined) setRemoteStream(state.remoteStream);
     if (state.localStream !== undefined) setLocalStream(state.localStream);
     if (state.isVideo !== undefined) {
