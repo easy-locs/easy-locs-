@@ -206,9 +206,8 @@ const Navbar = () => {
             transition={{ duration: 0.25, ease: "easeInOut" }}
             className="md:hidden overflow-hidden"
             style={{
-              background: "hsl(var(--navy-deep) / 0.97)",
+              background: "hsl(var(--navy-deep) / 0.98)",
               borderTop: "1px solid hsl(220 15% 90% / 0.06)",
-              backdropFilter: "blur(20px)",
             }}
           >
             <div className="container px-4 py-5 space-y-1">
