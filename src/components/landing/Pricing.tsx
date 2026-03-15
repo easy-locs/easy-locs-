@@ -327,13 +327,13 @@ const Pricing = () => {
             <p className="text-xs text-muted-foreground max-w-xl mx-auto">
               {t("pricing.audience") || "Built for property owners, entrepreneurs, freelancers, service providers, agencies & companies in 190+ countries."}
             </p>
-            <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground">
+            <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 text-xs text-muted-foreground">
               <span className="flex items-center gap-1">💳 Credit card</span>
-              <span className="text-border">|</span>
+              <span className="hidden sm:inline text-border">|</span>
               <span className="flex items-center gap-1">🏦 SEPA</span>
-              <span className="text-border">|</span>
+              <span className="hidden sm:inline text-border">|</span>
               <span className="flex items-center gap-1"> Apple Pay</span>
-              <span className="text-border">|</span>
+              <span className="hidden sm:inline text-border">|</span>
               <span className="flex items-center gap-1">🟢 Google Pay</span>
             </div>
           </div>
