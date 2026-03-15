@@ -208,7 +208,7 @@ export default function CommGroupsSection() {
       .single();
     
     if (!profile) {
-      toast.error("User not found");
+      toast.error(t("orbit.groups.user_not_found") || "User not found");
       return;
     }
     
