@@ -575,7 +575,7 @@ export class CallManager {
         } else if (state === "failed") {
           this.onStateChange({
             status: "network_blocked",
-            error: "Internet calling unavailable on your network.",
+            error: "Appels internet indisponibles sur ce réseau. Essayez un autre réseau.",
           });
           this.cleanup("relay-retry-failed");
         }
