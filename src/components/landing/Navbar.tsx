@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion";
 import { useI18n, type Locale } from "@/lib/i18n";
 import ThemeSwitcher from "@/components/ThemeSwitcher";
 import AppLogo from "@/components/AppLogo";
@@ -32,6 +32,10 @@ const Navbar = () => {
   const [langOpen, setLangOpen] = useState(false);
   const langRef = useRef<HTMLDivElement>(null);
 
+  // Progressive blur on scroll
+  const { scrollY } = useScroll();
+  const navBg = useTransform(scrollY, [0, 80], [0.6, 0.92]);
+
   useEffect(() => {
     if (!langOpen) return;
     const handler = (e: MouseEvent) => {
@@ -60,10 +64,10 @@ const Navbar = () => {
       initial={{ y: -20, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.5 }}
-      className="fixed top-0 left-0 right-0 z-50 border-b"
+      className="fixed top-0 left-0 right-0 z-50"
       style={{
         background: "hsl(var(--navy-deep) / 0.8)",
-        borderColor: "hsl(220 15% 90% / 0.08)",
+        borderBottom: "1px solid hsl(220 15% 90% / 0.06)",
         backdropFilter: "blur(20px) saturate(180%)",
         WebkitBackdropFilter: "blur(20px) saturate(180%)",
       }}
@@ -72,29 +76,28 @@ const Navbar = () => {
         <AppLogo variant="landing" linkTo="/" />
 
         {/* Center links — desktop */}
-        <div className="hidden md:flex items-center gap-8 text-sm font-medium text-white/70">
-          {navLinks.map((link) =>
-            link.isRoute ? (
-              <Link key={link.to} to={link.to} className={`transition-colors duration-200 ${(link as any).accent ? "text-accent font-semibold" : "hover:text-accent"}`}>
-                {link.label}
-              </Link>
+        <div className="hidden md:flex items-center gap-1 text-sm font-medium">
+          {navLinks.map((link) => {
+            const cls = (link as any).accent
+              ? "text-accent font-semibold px-3 py-1.5 rounded-lg hover:bg-accent/10 transition-all"
+              : "text-white/65 hover:text-white px-3 py-1.5 rounded-lg hover:bg-white/5 transition-all";
+            return link.isRoute ? (
+              <Link key={link.to} to={link.to} className={cls}>{link.label}</Link>
             ) : (
-              <a key={link.to} href={link.to} className="hover:text-accent transition-colors duration-200">
-                {link.label}
-              </a>
-            )
-          )}
+              <a key={link.to} href={link.to} className={cls}>{link.label}</a>
+            );
+          })}
         </div>
 
         {/* Right actions */}
         <div className="flex items-center gap-1 sm:gap-2 shrink-0 min-w-0">
-          {/* Language switcher — hidden on small mobile to save space */}
+          {/* Language switcher */}
           <div className="relative hidden sm:block" ref={langRef}>
             <button
               onClick={() => setLangOpen(!langOpen)}
               aria-label="Change language"
               aria-expanded={langOpen}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-medium transition-colors hover:bg-white/10 text-white/75 min-h-[44px]"
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-medium transition-all hover:bg-white/10 text-white/75 min-h-[44px]"
             >
               <Globe className="h-3.5 w-3.5" />
               <span>{LANG_FLAGS[locale] || "🌐"} {locale.toUpperCase()}</span>
@@ -108,45 +111,40 @@ const Navbar = () => {
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: -4, scale: 0.96 }}
                   transition={{ duration: 0.15 }}
-                  className="absolute right-0 top-full mt-1 w-56 max-h-80 overflow-y-auto bg-card rounded-xl shadow-2xl border border-border z-50 py-1"
+                  className="absolute right-0 top-full mt-1 w-56 max-h-80 overflow-y-auto rounded-xl shadow-2xl border border-border z-50 py-1"
+                  style={{ background: "hsl(var(--card))" }}
                 >
                   <p className="px-3 pt-2 pb-1 text-[9px] uppercase tracking-widest font-bold text-muted-foreground">⭐ {t("landing.nav.popular") || "Popular"}</p>
-                  {sortedLocales.slice(0, POPULAR_LOCALES.length).map((l) => {
-                    const nativeName = LANG_NATIVE[l] || l.toUpperCase();
-                    return (
-                      <button
-                        key={l}
-                        onClick={() => { setLocale(l as Locale); setLangOpen(false); }}
-                        className={`w-full flex items-center gap-2.5 px-3 py-2 text-xs transition-colors ${
-                          l === locale ? "bg-accent/10 text-accent font-semibold" : "text-foreground hover:bg-muted"
-                        }`}
-                      >
-                        <span className="text-sm">{LANG_FLAGS[l] || "🌐"}</span>
-                        <span>{nativeName}</span>
-                        {l === locale && <span className="ml-auto text-accent">✓</span>}
-                      </button>
-                    );
-                  })}
+                  {sortedLocales.slice(0, POPULAR_LOCALES.length).map((l) => (
+                    <button
+                      key={l}
+                      onClick={() => { setLocale(l as Locale); setLangOpen(false); }}
+                      className={`w-full flex items-center gap-2.5 px-3 py-2 text-xs transition-colors ${
+                        l === locale ? "bg-accent/10 text-accent font-semibold" : "text-foreground hover:bg-muted"
+                      }`}
+                    >
+                      <span className="text-sm">{LANG_FLAGS[l] || "🌐"}</span>
+                      <span>{LANG_NATIVE[l] || l.toUpperCase()}</span>
+                      {l === locale && <span className="ml-auto text-accent">✓</span>}
+                    </button>
+                  ))}
                   {sortedLocales.length > POPULAR_LOCALES.length && (
                     <>
                       <div className="my-1 border-t border-border" />
                       <p className="px-3 pt-1 pb-1 text-[9px] uppercase tracking-widest font-bold text-muted-foreground">{t("landing.nav.more_languages") || "More"}</p>
-                      {sortedLocales.slice(POPULAR_LOCALES.length).map((l) => {
-                        const nativeName = LANG_NATIVE[l] || l.toUpperCase();
-                        return (
-                          <button
-                            key={l}
-                            onClick={() => { setLocale(l as Locale); setLangOpen(false); }}
-                            className={`w-full flex items-center gap-2.5 px-3 py-2 text-xs transition-colors ${
-                              l === locale ? "bg-accent/10 text-accent font-semibold" : "text-foreground hover:bg-muted"
-                            }`}
-                          >
-                            <span className="text-sm">{LANG_FLAGS[l] || "🌐"}</span>
-                            <span>{nativeName}</span>
-                            {l === locale && <span className="ml-auto text-accent">✓</span>}
-                          </button>
-                        );
-                      })}
+                      {sortedLocales.slice(POPULAR_LOCALES.length).map((l) => (
+                        <button
+                          key={l}
+                          onClick={() => { setLocale(l as Locale); setLangOpen(false); }}
+                          className={`w-full flex items-center gap-2.5 px-3 py-2 text-xs transition-colors ${
+                            l === locale ? "bg-accent/10 text-accent font-semibold" : "text-foreground hover:bg-muted"
+                          }`}
+                        >
+                          <span className="text-sm">{LANG_FLAGS[l] || "🌐"}</span>
+                          <span>{LANG_NATIVE[l] || l.toUpperCase()}</span>
+                          {l === locale && <span className="ml-auto text-accent">✓</span>}
+                        </button>
+                      ))}
                     </>
                   )}
                 </motion.div>
@@ -156,33 +154,44 @@ const Navbar = () => {
 
           <ThemeSwitcher />
 
-          {/* Auth buttons — adapt to language, never overflow */}
           <Link
             to="/login"
-            className="hidden sm:inline-block text-xs sm:text-sm font-medium transition-colors hover:text-accent px-2 sm:px-3 py-1.5 rounded-lg hover:bg-white/5 text-white/80 whitespace-nowrap"
+            className="hidden sm:inline-block text-xs sm:text-sm font-medium transition-all hover:text-accent px-2 sm:px-3 py-1.5 rounded-lg hover:bg-white/5 text-white/80 whitespace-nowrap"
           >
             {t("landing.nav.login") || "Log in"}
           </Link>
+
           <Link
             to="/signup"
-            className="text-[10px] sm:text-[11px] font-bold px-2.5 sm:px-3.5 py-1 sm:py-1 rounded-lg transition-all relative overflow-hidden whitespace-nowrap shrink-0 min-h-[44px] sm:min-h-[34px] inline-flex items-center"
+            className="text-[10px] sm:text-[11px] font-bold px-2.5 sm:px-3.5 py-1 sm:py-1 rounded-xl transition-all relative overflow-hidden whitespace-nowrap shrink-0 min-h-[44px] sm:min-h-[34px] inline-flex items-center group"
             style={{
               background: "var(--gradient-gold)",
               color: "hsl(var(--accent-foreground))",
-              boxShadow: "0 0 12px hsl(var(--accent) / 0.15)",
+              boxShadow: "0 0 16px hsl(var(--accent) / 0.2)",
             }}
           >
             <span className="relative z-10 sm:hidden">{t("landing.nav.signup") || "Sign Up"}</span>
             <span className="relative z-10 hidden sm:inline">{t("landing.nav.pro_signup") || "Create Account"}</span>
+            <div className="absolute inset-0 bg-white/0 group-hover:bg-white/10 transition-colors" />
           </Link>
 
           {/* Mobile hamburger */}
           <button
-            className="md:hidden flex items-center justify-center w-10 h-10 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 rounded-lg transition-colors text-white/80"
+            className="md:hidden flex items-center justify-center w-10 h-10 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 rounded-lg transition-colors text-white/80 hover:bg-white/10"
             onClick={() => setMobileOpen(!mobileOpen)}
             aria-label="Toggle menu"
           >
-            {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={mobileOpen ? "close" : "open"}
+                initial={{ rotate: -90, opacity: 0 }}
+                animate={{ rotate: 0, opacity: 1 }}
+                exit={{ rotate: 90, opacity: 0 }}
+                transition={{ duration: 0.15 }}
+              >
+                {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+              </motion.div>
+            </AnimatePresence>
           </button>
         </div>
       </div>
@@ -195,24 +204,30 @@ const Navbar = () => {
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.25, ease: "easeInOut" }}
-            className="md:hidden overflow-hidden border-t"
+            className="md:hidden overflow-hidden"
             style={{
-              background: "hsl(var(--navy-deep) / 0.95)",
-              borderColor: "hsl(220 15% 90% / 0.06)",
+              background: "hsl(var(--navy-deep) / 0.97)",
+              borderTop: "1px solid hsl(220 15% 90% / 0.06)",
               backdropFilter: "blur(20px)",
             }}
           >
             <div className="container px-4 py-5 space-y-1">
-              {navLinks.map((link) => {
-                const cls = "block w-full text-left px-4 py-3 rounded-xl text-sm font-medium transition-colors hover:bg-white/5 text-white/80";
+              {navLinks.map((link, i) => {
+                const inner = (
+                  <motion.span
+                    initial={{ opacity: 0, x: -12 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: i * 0.04 }}
+                    className="block"
+                  >
+                    {link.label}
+                  </motion.span>
+                );
+                const cls = "block w-full text-left px-4 py-3 rounded-xl text-sm font-medium transition-all hover:bg-white/5 text-white/80 active:bg-white/10";
                 return link.isRoute ? (
-                  <Link key={link.to} to={link.to} className={cls} onClick={() => setMobileOpen(false)}>
-                    {link.label}
-                  </Link>
+                  <Link key={link.to} to={link.to} className={cls} onClick={() => setMobileOpen(false)}>{inner}</Link>
                 ) : (
-                  <a key={link.to} href={link.to} className={cls} onClick={() => setMobileOpen(false)}>
-                    {link.label}
-                  </a>
+                  <a key={link.to} href={link.to} className={cls} onClick={() => setMobileOpen(false)}>{inner}</a>
                 );
               })}
 
@@ -226,9 +241,9 @@ const Navbar = () => {
                     <button
                       key={l}
                       onClick={() => { setLocale(l as Locale); }}
-                      className={`px-3 py-2 min-h-[44px] rounded-lg text-xs font-medium transition-colors inline-flex items-center gap-1 ${
+                      className={`px-3 py-2 min-h-[44px] rounded-lg text-xs font-medium transition-all inline-flex items-center gap-1 ${
                         l === locale
-                          ? "bg-accent text-accent-foreground"
+                          ? "bg-accent text-accent-foreground shadow-md shadow-accent/20"
                           : "text-white/60 hover:text-white hover:bg-white/5"
                       }`}
                     >
@@ -241,7 +256,7 @@ const Navbar = () => {
               <div className="pt-3 border-t space-y-2" style={{ borderColor: "hsl(220 15% 90% / 0.06)" }}>
                 <Link
                   to="/login"
-                  className="block w-full text-center py-3 rounded-xl text-sm font-medium border transition-colors text-white/80 border-white/12"
+                  className="block w-full text-center py-3 rounded-xl text-sm font-medium border transition-all text-white/80 border-white/12 hover:border-white/25"
                   onClick={() => setMobileOpen(false)}
                 >
                   {t("landing.nav.login") || "Log in"}

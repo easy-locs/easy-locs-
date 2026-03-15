@@ -1,4 +1,4 @@
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Check, Sparkles, User, Users, Building2, Zap, BadgePercent, Globe, ShieldCheck, ArrowRight, Star, Crown } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useState } from "react";
@@ -14,7 +14,6 @@ const usePricingFeatures = (t: (key: string) => string) => {
     t("pricing.f.free.6") || "Public visibility worldwide",
     t("pricing.f.free.7") || "0% commission on your revenue",
   ];
-
   const SOLO_FEATURES = [
     t("pricing.f.solo.0") || "Everything in Free",
     t("pricing.f.solo.1") || "Unlimited properties & services",
@@ -31,7 +30,6 @@ const usePricingFeatures = (t: (key: string) => string) => {
     t("pricing.f.solo.12") || "Worldwide service visibility",
     t("pricing.f.solo.13") || "Secure document archive",
   ];
-
   const TEAM_FEATURES = [
     t("pricing.f.team.0") || "Everything in Solo",
     t("pricing.f.team.1") || "Up to 10 employees",
@@ -43,7 +41,6 @@ const usePricingFeatures = (t: (key: string) => string) => {
     t("pricing.f.team.7") || "Priority support",
     t("pricing.f.team.8") || "Cross-city & cross-country organization",
   ];
-
   const COMPANY_FEATURES = [
     t("pricing.f.company.0") || "Everything in Team",
     t("pricing.f.company.1") || "Up to 50 employees",
@@ -55,20 +52,13 @@ const usePricingFeatures = (t: (key: string) => string) => {
     t("pricing.f.company.7") || "Stronger company management tools",
     t("pricing.f.company.8") || "Dedicated priority support",
   ];
-
   return { FREE_FEATURES, SOLO_FEATURES, TEAM_FEATURES, COMPANY_FEATURES };
 };
 
 interface TierData {
-  name: string;
-  subtitle: string;
-  audience: string;
-  icon: React.ReactNode;
-  monthly: number;
-  annual: number;
-  features: string[];
-  highlight?: boolean;
-  badge?: string;
+  name: string; subtitle: string; audience: string;
+  icon: React.ReactNode; monthly: number; annual: number;
+  features: string[]; highlight?: boolean; badge?: string;
 }
 
 const TIER_ICONS = [
@@ -105,7 +95,7 @@ const Pricing = () => {
 
   return (
     <section id="pricing" className="py-16 sm:py-24 relative overflow-hidden">
-      {/* Background */}
+      {/* Background dots */}
       <div className="absolute inset-0 opacity-[0.015]" style={{
         backgroundImage: `radial-gradient(circle at 1px 1px, hsl(var(--accent)) 1px, transparent 0)`,
         backgroundSize: "40px 40px",
@@ -154,7 +144,7 @@ const Pricing = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.06 }}
-              className="flex flex-col items-center gap-1.5 p-3 rounded-xl bg-card border border-border/50 text-center"
+              className="flex flex-col items-center gap-1.5 p-3 rounded-xl bg-card border border-border/50 text-center hover:border-accent/20 transition-colors"
             >
               <div className="text-accent">{s.icon}</div>
               <span className="text-xs font-bold text-foreground">{s.label}</span>
@@ -163,27 +153,31 @@ const Pricing = () => {
           ))}
         </motion.div>
 
-        {/* Toggle */}
+        {/* Toggle — enhanced */}
         <div className="flex items-center justify-center mb-10">
-          <div className="flex items-center bg-muted/50 rounded-full p-1 border border-border/50">
+          <div className="relative flex items-center bg-muted/50 rounded-full p-1 border border-border/50">
             {(["monthly", "annual"] as const).map((v) => (
               <button
                 key={v}
                 onClick={() => setInterval(v)}
-                className={`relative px-6 py-2.5 rounded-full text-sm font-medium transition-all duration-300 ${
-                  interval === v
-                    ? "bg-foreground text-background shadow-lg"
-                    : "text-muted-foreground hover:text-foreground"
+                className={`relative px-6 py-2.5 rounded-full text-sm font-medium transition-all duration-300 z-10 ${
+                  interval === v ? "text-background" : "text-muted-foreground hover:text-foreground"
                 }`}
               >
                 {v === "monthly" ? (t("pricing.monthly") || "Monthly") : (t("pricing.annual") || "Annual")}
                 {v === "annual" && interval === "annual" && (
-                  <span className="absolute -top-2 -right-1 bg-success text-success-foreground text-[9px] font-bold px-1.5 py-0.5 rounded-full shadow-sm">
+                  <span className="absolute -top-2 -right-1 bg-success text-success-foreground text-[9px] font-bold px-1.5 py-0.5 rounded-full shadow-sm animate-scale-in">
                     -17%
                   </span>
                 )}
               </button>
             ))}
+            {/* Sliding pill */}
+            <motion.div
+              className="absolute top-1 bottom-1 rounded-full bg-foreground shadow-lg"
+              animate={{ left: interval === "monthly" ? 4 : "50%", right: interval === "annual" ? 4 : "50%" }}
+              transition={{ type: "spring", stiffness: 350, damping: 30 }}
+            />
           </div>
         </div>
 
@@ -202,10 +196,10 @@ const Pricing = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: idx * 0.08, type: "spring", stiffness: 200 }}
-                className={`relative bg-card rounded-2xl flex flex-col overflow-hidden transition-all duration-300 hover:shadow-xl ${
+                className={`group relative bg-card rounded-2xl flex flex-col overflow-hidden transition-all duration-300 ${
                   isHighlight
-                    ? "border-2 border-primary shadow-lg shadow-primary/10 lg:-mt-2 lg:mb-2"
-                    : "border border-border hover:border-accent/30"
+                    ? "border-2 border-primary shadow-xl shadow-primary/10 lg:-mt-3 lg:mb-3"
+                    : "border border-border hover:border-accent/30 hover:shadow-lg"
                 }`}
               >
                 {/* Badge */}
@@ -224,8 +218,8 @@ const Pricing = () => {
                 <div className="p-5 flex flex-col flex-1">
                   {/* Tier header */}
                   <div className="flex items-center gap-2.5 mb-1">
-                    <div className={`p-2 rounded-xl ${
-                      isHighlight ? "bg-primary/10 text-primary" :
+                    <div className={`p-2 rounded-xl transition-colors ${
+                      isHighlight ? "bg-primary/10 text-primary group-hover:bg-primary/15" :
                       tier.name === "Company" ? "bg-amber-500/10 text-amber-600 dark:text-amber-400" :
                       isFree ? "bg-muted text-muted-foreground" :
                       "bg-accent/10 text-accent"
@@ -240,17 +234,21 @@ const Pricing = () => {
 
                   <p className="text-xs text-foreground/70 font-medium mb-4">{tier.subtitle}</p>
 
-                  {/* Price */}
+                  {/* Price with animation */}
                   <div className="mb-5">
                     <div className="flex items-baseline gap-1">
-                      <motion.span
-                        key={`${tier.name}-${price}`}
-                        initial={{ opacity: 0, y: -8 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="text-4xl font-black text-foreground tracking-tight"
-                      >
-                        {price === 0 ? "0" : price}€
-                      </motion.span>
+                      <AnimatePresence mode="wait">
+                        <motion.span
+                          key={`${tier.name}-${price}`}
+                          initial={{ opacity: 0, y: -12 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: 12 }}
+                          transition={{ duration: 0.2 }}
+                          className="text-4xl font-black text-foreground tracking-tight"
+                        >
+                          {price === 0 ? "0" : price}€
+                        </motion.span>
+                      </AnimatePresence>
                       <span className="text-muted-foreground text-sm">/{isFree ? (t("pricing.forever") || "forever") : intLabel}</span>
                     </div>
                     {interval === "annual" && tier.monthly > 0 && (
@@ -267,9 +265,7 @@ const Pricing = () => {
                   <ul className="space-y-2 mb-6 flex-1">
                     {tier.features.map((f, i) => (
                       <li key={i} className="flex items-start gap-2 text-[12px] text-muted-foreground leading-snug">
-                        <Check className={`h-3.5 w-3.5 shrink-0 mt-0.5 ${
-                          isHighlight ? "text-primary" : "text-success"
-                        }`} />
+                        <Check className={`h-3.5 w-3.5 shrink-0 mt-0.5 ${isHighlight ? "text-primary" : "text-success"}`} />
                         <span>{f}</span>
                       </li>
                     ))}
@@ -278,7 +274,7 @@ const Pricing = () => {
                   {/* CTA */}
                   <Link
                     to="/signup"
-                    className={`flex items-center justify-center gap-2 w-full py-3 rounded-xl font-semibold text-sm transition-all duration-200 ${
+                    className={`flex items-center justify-center gap-2 w-full py-3 rounded-xl font-semibold text-sm transition-all duration-200 group/btn ${
                       isHighlight
                         ? "bg-primary text-primary-foreground hover:opacity-90 shadow-md shadow-primary/20"
                         : tier.name === "Company"
@@ -289,7 +285,7 @@ const Pricing = () => {
                     }`}
                   >
                     {isFree ? (t("pricing.cta_free") || "Get started free") : (t("pricing.cta_trial") || "Start free trial")}
-                    <ArrowRight className="h-4 w-4" />
+                    <ArrowRight className="h-4 w-4 transition-transform group-hover/btn:translate-x-0.5" />
                   </Link>
                 </div>
               </motion.div>
@@ -299,7 +295,6 @@ const Pricing = () => {
 
         {/* Bottom section */}
         <div className="mt-12 space-y-6">
-          {/* 0% commission banner */}
           <motion.div
             initial={{ opacity: 0, y: 12 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -322,18 +317,17 @@ const Pricing = () => {
             </div>
           </motion.div>
 
-          {/* Audience + payment methods */}
           <div className="text-center space-y-3">
             <p className="text-xs text-muted-foreground max-w-xl mx-auto">
               {t("pricing.audience") || "Built for property owners, entrepreneurs, freelancers, service providers, agencies & companies in 190+ countries."}
             </p>
             <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 text-xs text-muted-foreground">
               <span className="flex items-center gap-1">💳 Credit card</span>
-              <span className="hidden sm:inline text-border">|</span>
+              <span className="w-1 h-1 rounded-full bg-muted-foreground/30 hidden sm:block" />
               <span className="flex items-center gap-1">🏦 SEPA</span>
-              <span className="hidden sm:inline text-border">|</span>
+              <span className="w-1 h-1 rounded-full bg-muted-foreground/30 hidden sm:block" />
               <span className="flex items-center gap-1"> Apple Pay</span>
-              <span className="hidden sm:inline text-border">|</span>
+              <span className="w-1 h-1 rounded-full bg-muted-foreground/30 hidden sm:block" />
               <span className="flex items-center gap-1">🟢 Google Pay</span>
             </div>
           </div>

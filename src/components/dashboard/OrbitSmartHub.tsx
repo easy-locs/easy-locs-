@@ -1,6 +1,6 @@
 /**
  * OrbitSmartHub — Premium command center with interactive orbit menu.
- * Fully functional navigation, HUD token colors, pulse animations.
+ * Enhanced glassmorphism, smoother transitions, better label legibility.
  */
 import { useState } from "react";
 import { motion, useReducedMotion, AnimatePresence } from "framer-motion";
@@ -8,17 +8,13 @@ import { useNavigate } from "react-router-dom";
 import {
   MessageSquare, Phone, FolderOpen, Users,
   CreditCard, Handshake, Shield, UserCircle,
-  Building, MapPin, Zap,
+  Building, MapPin,
 } from "lucide-react";
 import { haptic } from "@/lib/haptics";
 import { useI18n } from "@/lib/i18n";
 
 interface CountryStat {
-  code: string;
-  count: number;
-  flag: string;
-  name: string;
-  tenants: number;
+  code: string; count: number; flag: string; name: string; tenants: number;
 }
 
 interface Props {
@@ -44,10 +40,10 @@ export default function OrbitSmartHub({ totalProperties, totalCountries, propert
   const reduceMotion = useReducedMotion();
   const [activeIdx, setActiveIdx] = useState<number | null>(null);
 
-  const R = 105;         // orbit radius (increased for label space)
-  const SIZE = 340;      // container size (expanded to prevent clipping)
-  const C = SIZE / 2;    // center
-  const BTN = 44;        // button size
+  const R = 105;
+  const SIZE = 340;
+  const C = SIZE / 2;
+  const BTN = 44;
 
   const handleAction = (idx: number) => {
     haptic("medium");
@@ -64,7 +60,7 @@ export default function OrbitSmartHub({ totalProperties, totalCountries, propert
       style={{
         background: "hsl(var(--hud-bg))",
         border: "1px solid hsl(var(--hud-border) / 0.18)",
-        boxShadow: "0 8px 32px hsl(var(--hud-bg) / 0.6)",
+        boxShadow: "0 8px 40px hsl(var(--hud-bg) / 0.6), 0 0 0 1px hsl(var(--hud-cyan) / 0.04)",
       }}
     >
       <div className="p-4 sm:p-6">
@@ -74,76 +70,67 @@ export default function OrbitSmartHub({ totalProperties, totalCountries, propert
           <motion.div
             className="absolute rounded-full"
             style={{
-              width: R * 2 + 56,
-              height: R * 2 + 56,
-              top: C - R - 28,
-              left: C - R - 28,
-              border: "1px solid hsl(var(--hud-cyan) / 0.08)",
+              width: R * 2 + 56, height: R * 2 + 56,
+              top: C - R - 28, left: C - R - 28,
+              border: "1px solid hsl(var(--hud-cyan) / 0.06)",
             }}
-            animate={reduceMotion ? {} : { scale: [1, 1.03, 1], opacity: [0.4, 0.8, 0.4] }}
-            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+            animate={reduceMotion ? {} : { scale: [1, 1.02, 1], opacity: [0.3, 0.7, 0.3] }}
+            transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
           />
 
           {/* Main orbit track */}
           <div
             className="absolute rounded-full"
             style={{
-              width: R * 2,
-              height: R * 2,
-              top: C - R,
-              left: C - R,
-              border: "1px solid hsl(var(--hud-cyan) / 0.12)",
+              width: R * 2, height: R * 2,
+              top: C - R, left: C - R,
+              border: "1px solid hsl(var(--hud-cyan) / 0.1)",
+              background: "radial-gradient(circle, transparent 60%, hsl(var(--hud-cyan) / 0.02) 100%)",
             }}
           />
 
-          {/* Scanning sweep */}
+          {/* Scanning sweep — lighter */}
           <motion.div
             className="absolute rounded-full"
             style={{
-              width: R * 2 - 6,
-              height: R * 2 - 6,
-              top: C - R + 3,
-              left: C - R + 3,
-              background: "conic-gradient(from 0deg, transparent 0%, hsl(var(--hud-cyan) / 0.1) 12%, transparent 24%)",
+              width: R * 2 - 6, height: R * 2 - 6,
+              top: C - R + 3, left: C - R + 3,
+              background: "conic-gradient(from 0deg, transparent 0%, hsl(var(--hud-cyan) / 0.06) 10%, transparent 20%)",
             }}
             animate={reduceMotion ? {} : { rotate: 360 }}
-            transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+            transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
           />
 
-          {/* Action buttons — STATIC positions, no orbit rotation */}
+          {/* Action buttons */}
           {ACTIONS.map((action, i) => {
-            const angle = (i * 360) / ACTIONS.length - 90; // start from top
+            const angle = (i * 360) / ACTIONS.length - 90;
             const rad = (angle * Math.PI) / 180;
             const x = C + R * Math.cos(rad) - BTN / 2;
             const y = C + R * Math.sin(rad) - BTN / 2;
             const isActive = activeIdx === i;
-            const actionLabel = t(action.labelKey) || action.fallback;
 
             return (
               <motion.button
                 key={action.fallback}
                 className="absolute flex flex-col items-center justify-center cursor-pointer z-10"
                 style={{
-                  width: BTN,
-                  height: BTN,
-                  top: y,
-                  left: x,
+                  width: BTN, height: BTN, top: y, left: x,
                   borderRadius: 14,
-                  border: `1.5px solid hsl(var(--hud-cyan) / ${isActive ? 0.7 : 0.2})`,
+                  border: `1.5px solid hsl(var(--hud-cyan) / ${isActive ? 0.6 : 0.15})`,
                   background: isActive
-                    ? "hsl(var(--hud-cyan) / 0.15)"
-                    : "hsl(var(--hud-surface) / 0.95)",
+                    ? "hsl(var(--hud-cyan) / 0.12)"
+                    : "hsl(var(--hud-surface) / 0.9)",
                   boxShadow: isActive
-                    ? "0 0 20px hsl(var(--hud-cyan) / 0.3)"
-                    : "0 0 12px hsl(var(--hud-cyan) / 0.06)",
+                    ? "0 0 24px hsl(var(--hud-cyan) / 0.25)"
+                    : "0 2px 8px hsl(var(--background) / 0.3)",
                 }}
                 initial={{ opacity: 0, scale: 0 }}
                 animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.1 + i * 0.06, type: "spring", stiffness: 300, damping: 20 }}
-                whileHover={{ scale: 1.12, borderColor: "hsl(var(--hud-cyan) / 0.6)" }}
-                whileTap={{ scale: 0.92 }}
+                transition={{ delay: 0.1 + i * 0.05, type: "spring", stiffness: 300, damping: 22 }}
+                whileHover={{ scale: 1.15, boxShadow: "0 0 20px hsl(var(--hud-cyan) / 0.2)" }}
+                whileTap={{ scale: 0.9 }}
                 onClick={() => handleAction(i)}
-                title={actionLabel}
+                title={t(action.labelKey) || action.fallback}
               >
                 <action.icon
                   className="h-4 w-4"
@@ -153,57 +140,51 @@ export default function OrbitSmartHub({ totalProperties, totalCountries, propert
             );
           })}
 
-          {/* Labels — rendered outside buttons for no clipping */}
+          {/* Labels */}
           {ACTIONS.map((action, i) => {
             const angle = (i * 360) / ACTIONS.length - 90;
             const rad = (angle * Math.PI) / 180;
             const labelR = R + 32;
             const lx = C + labelR * Math.cos(rad);
             const ly = C + labelR * Math.sin(rad);
-            const actionLabel = t(action.labelKey) || action.fallback;
 
             return (
               <motion.span
                 key={`label-${action.fallback}`}
-                className="absolute text-[10px] font-semibold tracking-wide pointer-events-none"
+                className="absolute text-[10px] font-semibold tracking-wide pointer-events-none whitespace-nowrap"
                 style={{
-                  top: ly,
-                  left: lx,
+                  top: ly, left: lx,
                   transform: "translate(-50%, -50%)",
                   color: "hsl(var(--hud-text-dim))",
-                  whiteSpace: "nowrap",
+                  textShadow: "0 1px 3px hsl(var(--hud-bg) / 0.8)",
                 }}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                transition={{ delay: 0.3 + i * 0.06 }}
+                transition={{ delay: 0.3 + i * 0.05 }}
               >
-                {actionLabel}
+                {t(action.labelKey) || action.fallback}
               </motion.span>
             );
           })}
 
-          {/* Center core */}
+          {/* Center core — enhanced glow */}
           <motion.div
             className="absolute flex flex-col items-center justify-center rounded-full z-20"
             style={{
-              width: 110,
-              height: 110,
-              top: C - 55,
-              left: C - 55,
-              border: "1.5px solid hsl(var(--hud-cyan) / 0.25)",
-              background: "radial-gradient(circle, hsl(var(--hud-cyan) / 0.1) 0%, hsl(var(--hud-bg)) 70%)",
-              boxShadow: "0 0 40px hsl(var(--hud-cyan) / 0.12), inset 0 0 20px hsl(var(--hud-cyan) / 0.05)",
+              width: 110, height: 110, top: C - 55, left: C - 55,
+              border: "1.5px solid hsl(var(--hud-cyan) / 0.2)",
+              background: "radial-gradient(circle, hsl(var(--hud-cyan) / 0.08) 0%, hsl(var(--hud-bg)) 70%)",
+              boxShadow: "0 0 50px hsl(var(--hud-cyan) / 0.1), inset 0 0 30px hsl(var(--hud-cyan) / 0.04)",
             }}
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             transition={{ delay: 0.15, type: "spring", stiffness: 200 }}
           >
-            {/* Pulsing glow */}
             <motion.div
               className="absolute inset-0 rounded-full"
-              style={{ border: "1px solid hsl(var(--hud-cyan) / 0.15)" }}
-              animate={reduceMotion ? {} : { scale: [1, 1.08, 1], opacity: [0.5, 1, 0.5] }}
-              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+              style={{ border: "1px solid hsl(var(--hud-cyan) / 0.1)" }}
+              animate={reduceMotion ? {} : { scale: [1, 1.06, 1], opacity: [0.4, 0.8, 0.4] }}
+              transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}
             />
 
             <div className="flex items-center justify-center gap-1.5 mb-0.5">
@@ -226,25 +207,25 @@ export default function OrbitSmartHub({ totalProperties, totalCountries, propert
             </div>
           </motion.div>
 
-          {/* Orbit dot particles */}
-          {[0, 51, 102, 153, 204, 255, 306].map((angle, i) => {
+          {/* Orbit dot particles — fewer, subtler */}
+          {[0, 72, 144, 216, 288].map((angle, i) => {
             const rad = (angle * Math.PI) / 180;
-            const px = C + R * Math.cos(rad) - 2;
-            const py = C + R * Math.sin(rad) - 2;
+            const px = C + R * Math.cos(rad) - 1.5;
+            const py = C + R * Math.sin(rad) - 1.5;
             return (
               <motion.div
                 key={`dot-${angle}`}
-                className="absolute w-1 h-1 rounded-full"
-                style={{ top: py, left: px, background: "hsl(var(--hud-cyan) / 0.4)" }}
-                animate={{ opacity: [0.15, 0.8, 0.15] }}
-                transition={{ duration: 2.5, repeat: Infinity, delay: i * 0.35 }}
+                className="absolute w-[3px] h-[3px] rounded-full"
+                style={{ top: py, left: px, background: "hsl(var(--hud-cyan) / 0.3)" }}
+                animate={reduceMotion ? {} : { opacity: [0.1, 0.6, 0.1] }}
+                transition={{ duration: 3, repeat: Infinity, delay: i * 0.5 }}
               />
             );
           })}
         </div>
       </div>
 
-      {/* Country chips */}
+      {/* Country chips — enhanced */}
       {propertiesByCountry.length > 0 && (
         <div className="px-4 sm:px-6 pb-4 sm:pb-6">
           <div
@@ -257,13 +238,13 @@ export default function OrbitSmartHub({ totalProperties, totalCountries, propert
                 initial={{ opacity: 0, x: 10 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.4 + i * 0.04 }}
-                className="shrink-0 flex items-center gap-2 px-3.5 py-2 rounded-xl transition-all text-xs cursor-pointer"
+                className="shrink-0 flex items-center gap-2 px-3.5 py-2 rounded-xl transition-all text-xs cursor-pointer min-h-[44px] sm:min-h-0"
                 style={{
                   background: "hsl(var(--hud-surface))",
                   border: "1px solid hsl(var(--hud-border) / 0.1)",
                   color: "hsl(var(--hud-text))",
                 }}
-                whileHover={{ borderColor: "hsl(var(--hud-cyan) / 0.4)" }}
+                whileHover={{ borderColor: "hsl(var(--hud-cyan) / 0.35)", y: -1 }}
                 whileTap={{ scale: 0.96 }}
                 onClick={() => {
                   haptic("light");
