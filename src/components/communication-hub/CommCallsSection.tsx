@@ -189,7 +189,7 @@ export default function CommCallsSection() {
     if (call.org_name) parts.push(call.org_name);
     if (call.context_label && call.context_label !== call.org_name) parts.push(call.context_label);
     if (parts.length > 0) return parts;
-    return [call.caller_id === user?.id ? "Outgoing call" : "Incoming call"];
+    return [call.caller_id === user?.id ? (t("orbit.calls.outgoing_call") || "Outgoing call") : (t("orbit.calls.incoming_call") || "Incoming call")];
   };
 
   return (
