@@ -517,7 +517,7 @@ export class CallManager {
         this.debug("stream timeout — no connection established");
         this.onStateChange({
           status: "network_blocked",
-          error: "Impossible d'établir l'appel. Votre réseau bloque peut-être les appels internet. Essayez avec le Wi-Fi ou un autre réseau.",
+          error: "NETWORK_BLOCKED",
         });
         this.cleanup("stream-timeout");
       }
