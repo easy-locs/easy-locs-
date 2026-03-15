@@ -241,8 +241,8 @@ export default function CommNearbySection() {
 
   // ═══ No location state ═══
   if (!lat || !lng) {
-    // Auto-request location when entering Nearby
-    if (!geoLoading && !geoError) {
+    // Auto-request location when entering Nearby (only if not denied)
+    if (!geoLoading && !geoError && !permissionDenied) {
       requestLocation();
     }
     return (
@@ -262,14 +262,24 @@ export default function CommNearbySection() {
             )}
           </svg>
         </div>
-        {geoError ? (
+        {permissionDenied ? (
           <>
-            <p className="text-sm font-medium mb-1" style={{ color: "hsl(var(--hud-text))" }}>Location access needed</p>
-            <p className="text-xs text-center mb-4" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
-              {geoError}. Enable location to discover nearby activity.
+            <p className="text-sm font-medium mb-1" style={{ color: "hsl(var(--hud-text))" }}>Localisation requise</p>
+            <p className="text-xs text-center mb-4 max-w-[260px]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
+              La permission a été refusée. Ouvrez les réglages de votre navigateur pour activer la localisation, puis revenez ici.
             </p>
             <Button size="sm" onClick={requestLocation} className="gap-1.5" style={{ background: "hsl(var(--hud-cyan))", color: "hsl(var(--hud-bg))" }}>
-              <Navigation className="h-3.5 w-3.5" /> Enable Location
+              <Navigation className="h-3.5 w-3.5" /> Réessayer
+            </Button>
+          </>
+        ) : geoError ? (
+          <>
+            <p className="text-sm font-medium mb-1" style={{ color: "hsl(var(--hud-text))" }}>Localisation requise</p>
+            <p className="text-xs text-center mb-4" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
+              {geoError}
+            </p>
+            <Button size="sm" onClick={requestLocation} className="gap-1.5" style={{ background: "hsl(var(--hud-cyan))", color: "hsl(var(--hud-bg))" }}>
+              <Navigation className="h-3.5 w-3.5" /> Activer la localisation
             </Button>
           </>
         ) : (
