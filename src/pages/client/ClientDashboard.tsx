@@ -72,7 +72,7 @@ const ClientDashboard = () => {
                 </div>
                 <span className="text-sm text-muted-foreground mb-1">{card.label}</span>
                 <div className="font-bold text-foreground text-2xl tabular-nums mt-auto">{card.value}</div>
-                <p className="text-[10px] text-accent mt-1 opacity-0 group-hover:opacity-100 transition-opacity">{card.hint}</p>
+                <p className="text-2xs text-accent mt-1 opacity-0 group-hover:opacity-100 transition-opacity">{card.hint}</p>
               </Link>
             </motion.div>
           ))}

@@ -150,7 +150,7 @@ const StatCard = ({
       </div>
       {/* Row 4: Secondary info */}
       {sub && (
-        <div className="text-[10px] sm:text-xs text-muted-foreground leading-tight mt-1 line-clamp-2">{sub}</div>
+        <div className="text-2xs sm:text-xs text-muted-foreground leading-tight mt-1 line-clamp-2">{sub}</div>
       )}
     </div>
   );
