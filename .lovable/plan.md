@@ -121,8 +121,8 @@ Conversation → Offer → Counter offer → Accepted → Payment → Confirmed
 ### Implementation Phases
 | Phase | Scope | Status |
 |-------|-------|--------|
-| 9a | Schema + DealStatusBubble + "Start Deal" button (MVP) | 📋 Planned |
-| 9b | Negotiation flow with counter-offers | 📋 Planned |
+| 9a | Schema + DealStatusBubble + "Start Deal" button (MVP) | ✅ Done |
+| 9b | Negotiation flow: counter-offer history, offer expiration, documents & visits | ✅ Done |
 | 9c | Payment integration (Stripe link generation + tracking) | 📋 Planned |
 | 9d | Analytics & deal conversion metrics | 📋 Planned |
 
