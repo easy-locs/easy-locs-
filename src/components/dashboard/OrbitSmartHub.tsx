@@ -89,9 +89,9 @@ export default function OrbitSmartHub({ totalProperties, totalCountries, propert
             }}
           />
 
-          {/* Scanning sweep — lighter */}
+          {/* Scanning sweep — lighter, hidden on mobile for perf */}
           <motion.div
-            className="absolute rounded-full"
+            className="absolute rounded-full hidden sm:block"
             style={{
               width: R * 2 - 6, height: R * 2 - 6,
               top: C - R + 3, left: C - R + 3,
