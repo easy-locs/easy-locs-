@@ -112,7 +112,7 @@ export default function ChatMediaPreview({ url, fileName, isMe }: Props) {
           </div>
           {fileName && (
             <div className="flex items-center justify-between px-2.5 py-1.5">
-              <p className="text-[10px] text-muted-foreground truncate flex-1">{fileName}</p>
+              <p className="text-2xs text-muted-foreground truncate flex-1">{fileName}</p>
               <a href={url} download={fileName} target="_blank" rel="noopener noreferrer"
                 className="text-muted-foreground hover:text-foreground transition-colors p-0.5">
                 <Download className="h-3 w-3" />
