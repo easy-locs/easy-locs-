@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useOrbitEngine } from "@/stores/orbit-engine";
 import { useOrbitDashboard } from "@/hooks/useOrbitDashboard";
-import { useOrbitCallSync } from "@/hooks/useOrbitCallSync";
+// useOrbitCallSync removed — centralized in RealtimeHubGuard
 import OrbitOrb from "@/components/orbit/OrbitOrb";
 import OrbitQuickCard from "@/components/orbit/OrbitQuickCard";
 import OrbitSmartActions from "@/components/orbit/OrbitSmartActions";
