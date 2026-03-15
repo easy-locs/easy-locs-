@@ -48,7 +48,7 @@ const MobileBottomNav = ({ onMenuOpen }: MobileBottomNavProps) => {
             <Link
               key={item.path}
               to={item.path}
-              className={`flex flex-col items-center justify-center flex-1 gap-0.5 transition-colors min-w-[44px] min-h-[44px] max-w-[72px] active:bg-muted/50 ${
+              className={`flex flex-col items-center justify-center flex-1 gap-0.5 transition-colors min-w-[44px] min-h-[44px] max-w-[72px] active:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 rounded-lg ${
                 active ? "text-accent" : "text-muted-foreground"
               }`}
             >
