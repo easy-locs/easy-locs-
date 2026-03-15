@@ -40,7 +40,6 @@ function safeLazy(factory: () => Promise<{ default: ComponentType<any> }>, name:
 }
 
 const Explore = safeLazy(() => import("./pages/Explore"), "Explore");
-import { Loader2 } from "lucide-react";
 
 // Lazy load all pages
 const Index = safeLazy(() => import("./pages/Index"), "Index");
