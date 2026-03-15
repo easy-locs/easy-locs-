@@ -431,7 +431,7 @@ export default function CommGroupsSection() {
         <Dialog open={showAddMember} onOpenChange={setShowAddMember}>
           <DialogContent style={{ background: "hsl(var(--hud-bg))", borderColor: "hsl(var(--hud-border) / 0.15)" }}>
             <DialogHeader>
-              <DialogTitle style={{ color: "hsl(var(--hud-text))" }}>Add Member</DialogTitle>
+              <DialogTitle style={{ color: "hsl(var(--hud-text))" }}>{t("orbit.groups.add_member") || "Add Member"}</DialogTitle>
             </DialogHeader>
             <div className="space-y-3">
               <div>
