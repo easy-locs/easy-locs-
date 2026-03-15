@@ -130,7 +130,7 @@ export default function ContextPanel({ thread, orgId }: Props) {
             <Badge variant="outline" className={`text-xs px-2 py-0.5 ${moduleConfig.cls}`}>
               {moduleConfig.emoji} {moduleConfig.label}
             </Badge>
-            <Badge variant="outline" className={`text-[10px] px-1.5 py-0 ${config.bg} ${config.text} ${config.border}`}>
+            <Badge variant="outline" className={`text-2xs px-1.5 py-0 ${config.bg} ${config.text} ${config.border}`}>
               {config.emoji} {config.label}
             </Badge>
           </div>
