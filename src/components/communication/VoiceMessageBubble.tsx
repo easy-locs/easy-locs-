@@ -160,7 +160,7 @@ export default function VoiceMessageBubble({ url, durationSeconds, isMe, status 
       <button
         onClick={toggle}
         disabled={isSending || isFailed}
-        className="shrink-0 h-10 w-10 rounded-full flex items-center justify-center transition-all duration-200 active:scale-90"
+        className="shrink-0 h-10 w-10 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 rounded-full flex items-center justify-center transition-all duration-200 active:scale-90"
         style={{
           background: isFailed
             ? "hsl(var(--hud-danger) / 0.15)"
