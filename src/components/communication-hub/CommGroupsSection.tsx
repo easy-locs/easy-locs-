@@ -523,7 +523,7 @@ export default function CommGroupsSection() {
               onClick={() => setShowCreate(true)}
             >
               <Plus className="h-4 w-4" />
-              Create your first group
+              {t("orbit.groups.create_first") || "Create your first group"}
             </Button>
           </div>
         ) : (
