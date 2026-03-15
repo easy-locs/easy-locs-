@@ -1163,7 +1163,23 @@ const SeasonalRentals = () => {
         )}
 
         {viewMode === "bookings" && <div className="space-y-3">
-          {loading ? <p className="text-center text-muted-foreground py-8">{t("page.seasonal.loading")}</p> :
+          {loading ? (
+            <div className="space-y-3">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="bg-card rounded-xl border border-border/50 p-4 flex flex-col sm:flex-row sm:items-center gap-3 animate-pulse">
+                  <div className="flex-1 min-w-0 space-y-2">
+                    <div className="h-4 bg-muted rounded w-40" />
+                    <div className="h-3 bg-muted rounded w-64" />
+                  </div>
+                  <div className="h-6 bg-muted rounded-full w-20" />
+                  <div className="flex gap-2">
+                    <div className="h-9 w-9 bg-muted rounded-lg" />
+                    <div className="h-9 w-9 bg-muted rounded-lg" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) :
             bookings.length === 0 ? <p className="text-center text-muted-foreground py-8">{t("page.seasonal.no_reservations")}</p> :
               bookings.map(b => (
                 <div key={b.id} id={`booking-${b.id}`} className="bg-card rounded-xl border border-border/50 p-4 flex flex-col sm:flex-row sm:items-center gap-3 group transition-all">
