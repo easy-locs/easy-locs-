@@ -218,8 +218,6 @@ export function useEcosystemRadar({
           (leases as any[]).forEach(l => {
             const p = l.properties;
             if (!p) return;
-            // Without lat/lng on properties, place at user position with small offset for visibility
-            const offset = Math.random() * 0.01;
             const photos = Array.isArray(p.photo_urls) ? p.photo_urls : [];
             all.push({
               id: l.id,
@@ -227,9 +225,9 @@ export function useEcosystemRadar({
               title: p.label || "Property",
               subtitle: `Free ${l.end_date} · ${p.city || ""}`,
               photo: photos[0] || null,
-              lat: lat + offset, lng: lng + offset,
+              lat: 0, lng: 0,
               distance_km: 0,
-              meta: { property_id: l.property_id, end_date: l.end_date, city: p.city },
+              meta: { property_id: l.property_id, end_date: l.end_date, city: p.city, no_geo: true },
             });
           });
         }
