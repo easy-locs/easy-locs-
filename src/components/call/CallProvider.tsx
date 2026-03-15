@@ -38,6 +38,7 @@ export const useCall = () => useContext(CallContext);
 
 export function CallProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
+  const { t } = useI18n();
   const [callManager, setCallManager] = useState<CallManager | null>(null);
   const [callState, setCallState] = useState<Partial<CallState>>({});
   const [peerName, setPeerName] = useState("");
