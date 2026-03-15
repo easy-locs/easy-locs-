@@ -10,6 +10,7 @@ import { useRealtimeHub } from "@/hooks/useRealtimeHub";
 import { I18nProvider } from "@/lib/i18n";
 import { ThemeProvider } from "next-themes";
 import { Suspense, lazy, type ComponentType } from "react";
+import { Loader2 } from "lucide-react";
 import AppLockGuard from "@/components/security/AppLockGuard";
 import UpdateNotification from "@/components/UpdateNotification";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
