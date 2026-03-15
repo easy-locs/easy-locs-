@@ -81,10 +81,17 @@ export default function CommGroupsSection() {
   const loadGroups = useCallback(async () => {
     if (!user?.id) return;
     setLoading(true);
-    const { data } = await supabase
+    setLoadError(null);
+    const { data, error } = await supabase
       .from("groups")
       .select("*")
       .order("updated_at", { ascending: false });
+    
+    if (error) {
+      setLoadError(error.message);
+      setLoading(false);
+      return;
+    }
     
     if (data) {
       // Get member counts and last messages
