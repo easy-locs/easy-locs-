@@ -278,7 +278,7 @@ export default function OrbitSecuritySettings({ userId }: OrbitSecuritySettingsP
         <Separator style={{ background: "hsl(var(--hud-border) / 0.08)" }} />
 
         {/* ═══ Storage & Data ═══ */}
-        <SettingSection icon={Database} title="Stockage et données" iconColor="hsl(var(--hud-text-dim))">
+        <SettingSection icon={Database} title={t("orbit.storage_data") || "Stockage et données"} iconColor="hsl(var(--hud-text-dim))">
           <SettingRow label="Téléchargement auto des médias" description="Télécharger automatiquement photos et vidéos">
             <Switch checked={mediaAutoDownload} onCheckedChange={() => handleToggle(setMediaAutoDownload, "orbit_media_auto_download", mediaAutoDownload)} disabled={!loaded} />
           </SettingRow>
