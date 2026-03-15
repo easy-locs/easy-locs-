@@ -111,7 +111,7 @@ export default function TrustMetrics({
             <span className={`text-sm font-semibold ${item.accent ? "text-foreground" : "text-foreground"}`}>
               {item.value}
             </span>
-            <span className="text-[11px] text-muted-foreground">{item.label}</span>
+            <span className="text-token-xs text-muted-foreground">{item.label}</span>
           </div>
         ))}
       </div>

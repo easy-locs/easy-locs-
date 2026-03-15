@@ -302,7 +302,7 @@ export default function CommCallsSection() {
                     </div>
 
                     {/* Time */}
-                    <span className="text-[11px] tabular-nums shrink-0" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>
+                    <span className="text-token-xs tabular-nums shrink-0" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>
                       {formatCallTime(call.created_at)}
                     </span>
                   </button>
