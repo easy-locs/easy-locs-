@@ -379,7 +379,7 @@ const ConciergeServices = () => {
                 <CardContent className="pt-4 pb-3">
                   <div className="flex items-center gap-1.5 mb-1">
                     <kpi.icon className={`h-4 w-4 shrink-0 ${kpi.cls}`} />
-                    <span className="text-[10px] text-muted-foreground uppercase tracking-wider truncate">{kpi.label}</span>
+                    <span className="text-2xs text-muted-foreground uppercase tracking-wider truncate">{kpi.label}</span>
                   </div>
                   <p className="text-lg sm:text-xl font-bold text-foreground tabular-nums truncate">{kpi.value}</p>
                 </CardContent>
