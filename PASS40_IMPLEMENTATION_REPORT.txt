@@ -1,5 +1,0 @@
-PASS40
-- app-security now propagates runtime dataset + platform bus sync events
-- WalletHub reacts live to Ghost settings and blocks masked actions
-- CommunicationCenter reacts live to Ghost settings and blocks masked surfaces
-- Settings page shows live Ghost summary banner
