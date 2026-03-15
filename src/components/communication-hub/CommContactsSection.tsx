@@ -733,7 +733,7 @@ export default function CommContactsSection() {
               </Select>
             </div>
             <p className="text-[11px] flex items-center gap-1" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
-              <Info className="h-3 w-3" /> L'email permet la synchronisation automatique avec les utilisateurs de l'app.
+              <Info className="h-3 w-3" /> {t("orbit.contacts.email_sync_hint") || "Email enables auto-sync with app users."}
             </p>
             <Button onClick={handleAddContact} disabled={saving || !newContact.name.trim()} className="w-full gap-2"
               style={{ background: "hsl(var(--hud-cyan))", color: "hsl(var(--hud-bg))" }}>
