@@ -720,7 +720,7 @@ export default function CommContactsSection() {
                 className="mt-1 border-0" style={{ background: "hsl(var(--hud-surface))", color: "hsl(var(--hud-text))" }} />
             </div>
             <div>
-              <Label className="text-xs" style={{ color: "hsl(var(--hud-text-dim))" }}>Category</Label>
+              <Label className="text-xs" style={{ color: "hsl(var(--hud-text-dim))" }}>{t("orbit.contacts.category") || "Category"}</Label>
               <Select value={newContact.category} onValueChange={v => setNewContact(p => ({ ...p, category: v }))}>
                 <SelectTrigger className="mt-1 border-0" style={{ background: "hsl(var(--hud-surface))", color: "hsl(var(--hud-text))" }}>
                   <SelectValue />
