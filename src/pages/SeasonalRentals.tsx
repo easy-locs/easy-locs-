@@ -5,6 +5,7 @@ import { dispatchSyncEvent } from "@/lib/shared/sync-engine";
 import { scrollToAndHighlight } from "@/lib/shared/deep-link";
 import FeatureGate from "@/components/subscription/FeatureGate";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
+import { ErrorState } from "@/components/ui/error-state";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
