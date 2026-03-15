@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { ShieldCheck, Globe, Cpu, BrainCircuit } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const items = [
   { icon: ShieldCheck, key: "secure", color: "success", fallback: "Secure Platform", desc: "End-to-end encryption, GDPR & international compliance" },
@@ -21,6 +22,7 @@ const cardVariants = {
 
 const TrustSection = () => {
   const { t } = useI18n();
+  const isMobile = useIsMobile();
 
   return (
     <section className="py-20 sm:py-28 relative overflow-hidden">
@@ -30,8 +32,10 @@ const TrustSection = () => {
         style={{ background: "linear-gradient(180deg, hsl(var(--background)) 0%, hsl(222 47% 6%) 40%, hsl(222 47% 6%) 60%, hsl(var(--background)) 100%)" }}
       />
 
-      {/* Ambient glow */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-accent/[0.04] blur-[140px] pointer-events-none" />
+      {/* Ambient glow — reduced on mobile */}
+      {!isMobile && (
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-accent/[0.04] blur-[140px] pointer-events-none" />
+      )}
 
       <div className="container max-w-5xl relative z-10">
         <motion.div
@@ -75,7 +79,7 @@ const TrustSection = () => {
               style={{
                 borderColor: "hsl(220 20% 90% / 0.08)",
                 background: "linear-gradient(160deg, hsl(220 30% 12% / 0.8), hsl(220 35% 8% / 0.6))",
-                backdropFilter: "blur(20px)",
+                ...(isMobile ? {} : { backdropFilter: "blur(20px)" }),
               }}
             >
               {/* Animated top line */}
@@ -88,11 +92,13 @@ const TrustSection = () => {
                 transition={{ delay: 0.5 + i * 0.12, duration: 0.6 }}
               />
 
-              {/* Corner glow on hover */}
-              <div
-                className="absolute -top-12 -right-12 w-28 h-28 rounded-full blur-[60px] opacity-0 group-hover:opacity-25 transition-opacity duration-500"
-                style={{ background: `hsl(var(--${item.color}))` }}
-              />
+              {/* Corner glow on hover — desktop only */}
+              {!isMobile && (
+                <div
+                  className="absolute -top-12 -right-12 w-28 h-28 rounded-full blur-[60px] opacity-0 group-hover:opacity-25 transition-opacity duration-500"
+                  style={{ background: `hsl(var(--${item.color}))` }}
+                />
+              )}
 
               <motion.div
                 className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6 relative"

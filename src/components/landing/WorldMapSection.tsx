@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { Globe, ArrowRight, Loader2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useI18n } from "@/lib/i18n";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface GlobeCanvasProps {
   onError?: () => void;
@@ -42,6 +43,7 @@ const regions = [
 
 const WorldMapSection = () => {
   const { t } = useI18n();
+  const isMobile = useIsMobile();
   const [globeFailed, setGlobeFailed] = useState(false);
 
   return (
@@ -51,7 +53,7 @@ const WorldMapSection = () => {
         backgroundImage: `radial-gradient(circle, hsl(var(--accent)) 1px, transparent 1px)`,
         backgroundSize: "30px 30px",
       }} />
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-accent/[0.04] blur-[150px] pointer-events-none" />
+      {!isMobile && <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-accent/[0.04] blur-[150px] pointer-events-none" />}
 
       <div className="container max-w-6xl relative z-10">
         {/* Header */}
@@ -78,7 +80,7 @@ const WorldMapSection = () => {
 
         {/* Globe + flags layout */}
         <div className="grid lg:grid-cols-2 gap-10 items-center">
-          {/* 3D Globe */}
+          {/* 3D Globe — disabled on mobile for perf */}
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             whileInView={{ opacity: 1, scale: 1 }}
@@ -86,7 +88,13 @@ const WorldMapSection = () => {
             transition={{ duration: 0.6 }}
             className="relative aspect-square max-w-[480px] mx-auto w-full"
           >
-            {!globeFailed ? (
+            {isMobile || globeFailed ? (
+              <div className="absolute inset-0 flex items-center justify-center rounded-full border border-primary-foreground/10"
+                style={{ background: "hsl(var(--primary-foreground) / 0.03)" }}
+              >
+                <Globe className="h-24 w-24 animate-pulse" style={{ color: "hsl(var(--accent) / 0.3)" }} />
+              </div>
+            ) : (
               <Suspense
                 fallback={
                   <div className="absolute inset-0 flex items-center justify-center">
@@ -96,12 +104,6 @@ const WorldMapSection = () => {
               >
                 <GlobeCanvas onError={() => setGlobeFailed(true)} />
               </Suspense>
-            ) : (
-              <div className="absolute inset-0 flex items-center justify-center rounded-full border border-primary-foreground/10"
-                style={{ background: "hsl(var(--primary-foreground) / 0.03)" }}
-              >
-                <Globe className="h-24 w-24 animate-pulse" style={{ color: "hsl(var(--accent) / 0.3)" }} />
-              </div>
             )}
           </motion.div>
 

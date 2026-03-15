@@ -3,6 +3,7 @@ import { ArrowRight, Globe, Zap, Building2, CreditCard, Shield, Sparkles } from 
 import { Link } from "react-router-dom";
 import { useI18n } from "@/lib/i18n";
 import { useRef } from "react";
+import { useIsMobile } from "@/hooks/use-mobile";
 import type { Transition } from "framer-motion";
 
 const floatAnim = (delay: number): { y: number[]; transition: Transition } => ({
@@ -26,9 +27,10 @@ const FLOATING_FEATURES = [
 
 const Hero = () => {
   const { t } = useI18n();
+  const isMobile = useIsMobile();
   const ref = useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
-  const bgY = useTransform(scrollYProgress, [0, 1], ["0%", "30%"]);
+  const bgY = useTransform(scrollYProgress, [0, 1], ["0%", isMobile ? "10%" : "30%"]);
   const opacity = useTransform(scrollYProgress, [0, 0.6], [1, 0]);
 
   return (
@@ -38,37 +40,41 @@ const Hero = () => {
       className="relative min-h-[85vh] sm:min-h-[95vh] flex items-center overflow-hidden pt-14 sm:pt-16"
       style={{ background: "linear-gradient(145deg, hsl(222 50% 5%) 0%, hsl(220 48% 10%) 30%, hsl(222 42% 15%) 60%, hsl(220 38% 8%) 100%)" }}
     >
-      {/* Parallax background FX */}
-      <motion.div className="absolute inset-0 overflow-hidden pointer-events-none" style={{ y: bgY }}>
+      {/* Parallax background FX — reduced on mobile for Safari perf */}
+      <motion.div className="absolute inset-0 overflow-hidden pointer-events-none" style={{ y: isMobile ? undefined : bgY }}>
         {/* Primary radial glow */}
         <div
-          className="absolute top-[15%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1000px] h-[1000px] rounded-full"
+          className="absolute top-[15%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] sm:w-[1000px] h-[600px] sm:h-[1000px] rounded-full"
           style={{ background: "radial-gradient(circle, hsl(var(--accent) / 0.14) 0%, transparent 50%)" }}
         />
-        {/* Secondary animated orb */}
-        <motion.div
-          className="absolute top-[10%] right-[8%] w-96 h-96 rounded-full blur-[160px]"
-          style={{ background: "hsl(var(--accent) / 0.08)" }}
-          animate={{ scale: [1, 1.4, 1], opacity: [0.04, 0.12, 0.04] }}
-          transition={{ duration: 14, repeat: Infinity, ease: "easeInOut" }}
-        />
-        {/* Third orb — blue tint */}
-        <motion.div
-          className="absolute bottom-[20%] left-[5%] w-72 h-72 rounded-full blur-[140px]"
-          style={{ background: "hsl(var(--info) / 0.06)" }}
-          animate={{ scale: [1, 1.3, 1], opacity: [0.03, 0.08, 0.03] }}
-          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 3 }}
-        />
-        {/* Grid overlay */}
-        <div
-          className="absolute inset-0 opacity-[0.025]"
-          style={{
-            backgroundImage: `linear-gradient(hsl(var(--accent) / 0.5) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--accent) / 0.5) 1px, transparent 1px)`,
-            backgroundSize: "80px 80px",
-          }}
-        />
-        {/* Noise texture */}
-        <div className="absolute inset-0 opacity-[0.015]" style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")" }} />
+        {/* Secondary orb — static on mobile, animated on desktop */}
+        {!isMobile && (
+          <motion.div
+            className="absolute top-[10%] right-[8%] w-96 h-96 rounded-full blur-[120px]"
+            style={{ background: "hsl(var(--accent) / 0.08)" }}
+            animate={{ scale: [1, 1.4, 1], opacity: [0.04, 0.12, 0.04] }}
+            transition={{ duration: 14, repeat: Infinity, ease: "easeInOut" }}
+          />
+        )}
+        {/* Third orb — desktop only */}
+        {!isMobile && (
+          <motion.div
+            className="absolute bottom-[20%] left-[5%] w-72 h-72 rounded-full blur-[100px]"
+            style={{ background: "hsl(var(--info) / 0.06)" }}
+            animate={{ scale: [1, 1.3, 1], opacity: [0.03, 0.08, 0.03] }}
+            transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 3 }}
+          />
+        )}
+        {/* Grid overlay — desktop only */}
+        {!isMobile && (
+          <div
+            className="absolute inset-0 opacity-[0.025]"
+            style={{
+              backgroundImage: `linear-gradient(hsl(var(--accent) / 0.5) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--accent) / 0.5) 1px, transparent 1px)`,
+              backgroundSize: "80px 80px",
+            }}
+          />
+        )}
       </motion.div>
 
       {/* Floating feature pills — hidden on mobile */}
@@ -102,8 +108,8 @@ const Hero = () => {
 
           {/* Badge */}
           <motion.div
-            initial={{ opacity: 0, y: 20, filter: "blur(10px)" }}
-            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.1 }}
             className="flex justify-center"
           >
@@ -126,8 +132,8 @@ const Hero = () => {
           {/* Headline */}
           <motion.div className="space-y-5">
             <motion.h1
-              initial={{ opacity: 0, y: 30, filter: "blur(10px)" }}
-              animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.25 }}
               className="text-[1.75rem] leading-[1.15] sm:text-5xl lg:text-[3.6rem] font-extrabold tracking-tight sm:leading-[1.1]"
               style={{ color: "hsl(40 50% 97%)", textWrap: "balance" }}
@@ -208,7 +214,7 @@ const Hero = () => {
             </motion.div>
           </motion.div>
 
-          {/* Trust stats — glassmorphism cards */}
+          {/* Trust stats */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -219,16 +225,12 @@ const Hero = () => {
               {HERO_STATS.map((s, i) => (
                 <motion.div
                   key={s.label}
-                  className="flex items-center justify-center gap-2.5 px-4 py-3 rounded-2xl min-h-[44px] backdrop-blur-md"
+                  className="flex items-center justify-center gap-2.5 px-4 py-3 rounded-2xl min-h-[44px]"
                   style={{
                     background: "linear-gradient(135deg, hsl(220 20% 90% / 0.06), hsl(220 20% 90% / 0.02))",
                     border: "1px solid hsl(220 20% 90% / 0.08)",
                   }}
-                  animate={floatAnim(i * 0.6)}
-                  whileHover={{
-                    borderColor: "hsl(var(--accent) / 0.3)",
-                    background: "linear-gradient(135deg, hsl(var(--accent) / 0.08), hsl(var(--accent) / 0.02))",
-                  }}
+                  {...(!isMobile ? { animate: floatAnim(i * 0.6) } : {})}
                 >
                   <s.icon className="h-3.5 w-3.5 shrink-0" style={{ color: "hsl(var(--accent) / 0.7)" }} />
                   <span className="text-xs sm:text-sm font-extrabold whitespace-nowrap" style={{ color: "hsl(var(--accent))" }}>
