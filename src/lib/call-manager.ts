@@ -636,10 +636,8 @@ export class CallManager {
       this.onStateChange({
         status: "failed",
         error: isPermError
-          ? (isVideo
-            ? "Accès caméra/micro refusé. Autorisez l'accès dans les paramètres de votre navigateur."
-            : "Accès micro refusé. Autorisez l'accès au microphone pour passer des appels.")
-          : "Périphérique audio/vidéo indisponible. Vérifiez vos paramètres.",
+          ? (isVideo ? "CAMERA_MIC_DENIED" : "MIC_DENIED")
+          : "MEDIA_UNAVAILABLE",
       });
       throw new Error("Media permission denied");
     }
