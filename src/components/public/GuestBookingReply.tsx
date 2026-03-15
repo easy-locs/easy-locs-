@@ -130,10 +130,10 @@ export default function GuestBookingReply({ bookingId, guestName, guestEmail }: 
               }`}
             >
               <div className="flex items-center gap-2 mb-1">
-                <span className="text-[10px] font-medium text-muted-foreground">
+                <span className="text-2xs font-medium text-muted-foreground">
                   {m.isFromHost ? "Host" : "You"}
                 </span>
-                <span className="text-[10px] text-muted-foreground ml-auto">
+                <span className="text-2xs text-muted-foreground ml-auto">
                   {format(new Date(m.created_at), "dd/MM HH:mm")}
                 </span>
               </div>

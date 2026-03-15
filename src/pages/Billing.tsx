@@ -145,7 +145,7 @@ const Billing = () => {
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-all h-10 relative ${billingInterval === "annual" ? "bg-foreground text-background" : "bg-muted text-muted-foreground hover:bg-muted/80"}`}
           >
             {t("page.billing.annual") || "Annual"}
-            <span className="absolute -top-2 -right-2 bg-success text-success-foreground text-[10px] font-bold px-1.5 py-0.5 rounded-full">-17%</span>
+            <span className="absolute -top-2 -right-2 bg-success text-success-foreground text-2xs font-bold px-1.5 py-0.5 rounded-full">-17%</span>
           </button>
         </div>
 

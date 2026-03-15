@@ -216,7 +216,7 @@ export default function CommCallsSection() {
             >
               {f.label}
               {f.id === "missed" && missedCount > 0 && (
-                <span className="ml-1 text-[10px] font-bold" style={{ color: "hsl(var(--hud-danger))" }}>
+                <span className="ml-1 text-2xs font-bold" style={{ color: "hsl(var(--hud-danger))" }}>
                   {missedCount}
                 </span>
               )}
@@ -290,19 +290,19 @@ export default function CommCallsSection() {
                       </span>
                       <div className="flex items-center gap-1.5 mt-0.5">
                         {secondaryLabel && (
-                          <span className="text-[11px] truncate max-w-[140px]" style={{ color: "hsl(var(--hud-cyan) / 0.7)" }}>
+                          <span className="text-token-xs truncate max-w-[140px]" style={{ color: "hsl(var(--hud-cyan) / 0.7)" }}>
                             {secondaryLabel}
                           </span>
                         )}
-                        {secondaryLabel && <span className="text-[11px]" style={{ color: "hsl(var(--hud-text-dim) / 0.25)" }}>·</span>}
-                        <span className="text-[11px]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
+                        {secondaryLabel && <span className="text-token-xs" style={{ color: "hsl(var(--hud-text-dim) / 0.25)" }}>·</span>}
+                        <span className="text-token-xs" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
                           {call.status === "ended" ? formatDuration(call.duration_seconds) : call.status}
                         </span>
                       </div>
                     </div>
 
                     {/* Time */}
-                    <span className="text-[11px] tabular-nums shrink-0" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>
+                    <span className="text-token-xs tabular-nums shrink-0" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>
                       {formatCallTime(call.created_at)}
                     </span>
                   </button>

@@ -92,19 +92,19 @@ export const ExploreListingCard = memo(function ExploreListingCard({ item }: { i
           </div>
 
           <div className="absolute top-2.5 left-2.5 flex items-start gap-1.5 flex-wrap">
-            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-semibold border backdrop-blur-md ${typeBadge.color}`}>
+            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-token-xs font-semibold border backdrop-blur-md ${typeBadge.color}`}>
               {subInfo?.emoji && <span className="text-xs">{subInfo.emoji}</span>}
               <span className="truncate max-w-[120px]">{typeBadge.label}</span>
             </span>
             {isVerified && (
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-semibold bg-accent/90 text-accent-foreground backdrop-blur-md">
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-token-xs font-semibold bg-accent/90 text-accent-foreground backdrop-blur-md">
                 <CheckCircle className="h-3 w-3" /> {t("mp.verified") || "Verified"}
               </span>
             )}
           </div>
 
           {Array.isArray(item.photo_urls) && item.photo_urls.length > 1 && (
-            <div className="absolute bottom-2.5 left-2.5 bg-background/80 backdrop-blur-sm rounded-md px-1.5 py-0.5 text-[10px] text-muted-foreground font-medium">
+            <div className="absolute bottom-2.5 left-2.5 bg-background/80 backdrop-blur-sm rounded-md px-1.5 py-0.5 text-2xs text-muted-foreground font-medium">
               1/{item.photo_urls.length}
             </div>
           )}
@@ -153,7 +153,7 @@ export const ExploreListingCard = memo(function ExploreListingCard({ item }: { i
               {ctaLabel} <ArrowRight className="h-3 w-3" />
             </span>
             {!user && (
-              <span className="inline-flex items-center gap-1 text-[10px] text-muted-foreground">
+              <span className="inline-flex items-center gap-1 text-2xs text-muted-foreground">
                 <Lock className="h-3 w-3" /> {t("explore.login_to_contact") || "Login to contact"}
               </span>
             )}

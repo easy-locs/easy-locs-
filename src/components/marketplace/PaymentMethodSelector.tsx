@@ -69,7 +69,7 @@ export default function PaymentMethodSelector({
 
   return (
     <div className={cn("space-y-1.5", className)}>
-      <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
+      <p className="text-2xs font-semibold text-muted-foreground uppercase tracking-wider">
         {t("payment.method") || "Payment Method"}
       </p>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
