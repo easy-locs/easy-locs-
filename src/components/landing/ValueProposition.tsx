@@ -1,54 +1,24 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { useI18n } from "@/lib/i18n";
-import { BadgePercent, Shield, Globe, Zap, ArrowRight, Headphones, FileText, BarChart3 } from "lucide-react";
+import { BadgePercent, Shield, Globe, Zap, ArrowRight, Headphones, FileText } from "lucide-react";
 
 const ADVANTAGES = [
-  {
-    icon: BadgePercent,
-    title: "0% Commission",
-    desc: "Keep 100% of your revenue. No hidden fees, no transaction commissions.",
-    color: "success",
-  },
-  {
-    icon: Shield,
-    title: "Secure & Compliant",
-    desc: "GDPR compliant, encrypted data, and localized legal documents in 31 languages.",
-    color: "info",
-  },
-  {
-    icon: Globe,
-    title: "190+ Countries",
-    desc: "Manage properties and services across every continent from one dashboard.",
-    color: "accent",
-  },
-  {
-    icon: Zap,
-    title: "All-in-One Platform",
-    desc: "Rentals, bookings, marketplace, documents, payments — everything in one place.",
-    color: "warning",
-  },
-  {
-    icon: Headphones,
-    title: "24/7 Support",
-    desc: "Dedicated support team available around the clock to help you succeed.",
-    color: "info",
-  },
-  {
-    icon: FileText,
-    title: "Smart Documents",
-    desc: "AI-powered lease generation, rent receipts, and legal notices — country-specific.",
-    color: "accent",
-  },
+  { icon: BadgePercent, titleKey: "landing.value.adv1_title", descKey: "landing.value.adv1_desc", color: "success" },
+  { icon: Shield, titleKey: "landing.value.adv2_title", descKey: "landing.value.adv2_desc", color: "info" },
+  { icon: Globe, titleKey: "landing.value.adv3_title", descKey: "landing.value.adv3_desc", color: "accent" },
+  { icon: Zap, titleKey: "landing.value.adv4_title", descKey: "landing.value.adv4_desc", color: "warning" },
+  { icon: Headphones, titleKey: "landing.value.adv5_title", descKey: "landing.value.adv5_desc", color: "info" },
+  { icon: FileText, titleKey: "landing.value.adv6_title", descKey: "landing.value.adv6_desc", color: "accent" },
 ];
 
 const QUICK_LINKS = [
-  { label: "Property Management", to: "/property-management" },
-  { label: "Seasonal Rentals", to: "/seasonal-rentals" },
-  { label: "Marketplace Services", to: "/marketplace-services" },
-  { label: "Concierge", to: "/concierge-services" },
-  { label: "Pricing", to: "/#pricing" },
-  { label: "Help Center", to: "/help" },
+  { labelKey: "landing.value.link_property", to: "/property-management" },
+  { labelKey: "landing.value.link_seasonal", to: "/seasonal-rentals" },
+  { labelKey: "landing.value.link_marketplace", to: "/marketplace-services" },
+  { labelKey: "landing.value.link_concierge", to: "/concierge-services" },
+  { labelKey: "landing.value.link_pricing", to: "/#pricing" },
+  { labelKey: "landing.value.link_help", to: "/help" },
 ];
 
 export default function ValueProposition() {
@@ -86,7 +56,7 @@ export default function ValueProposition() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-16">
           {ADVANTAGES.map((adv, i) => (
             <motion.div
-              key={adv.title}
+              key={adv.titleKey}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
@@ -107,8 +77,8 @@ export default function ValueProposition() {
               >
                 <adv.icon className="h-6 w-6" style={{ color: `hsl(var(--${adv.color}))` }} />
               </div>
-              <h3 className="font-bold text-foreground mb-2">{adv.title}</h3>
-              <p className="text-sm text-muted-foreground leading-relaxed">{adv.desc}</p>
+              <h3 className="font-bold text-foreground mb-2">{t(adv.titleKey)}</h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">{t(adv.descKey)}</p>
             </motion.div>
           ))}
         </div>
@@ -135,11 +105,11 @@ export default function ValueProposition() {
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
             {QUICK_LINKS.map((link) => (
               <Link
-                key={link.label}
+                key={link.labelKey}
                 to={link.to}
-                className="text-sm font-medium text-muted-foreground hover:text-accent px-3 py-2.5 rounded-xl bg-muted/50 hover:bg-accent/10 transition-all text-center border border-transparent hover:border-accent/20"
+                className="text-sm font-medium text-muted-foreground hover:text-accent px-3 py-2.5 min-h-[44px] sm:min-h-0 rounded-xl bg-muted/50 hover:bg-accent/10 transition-all text-center border border-transparent hover:border-accent/20 inline-flex items-center justify-center"
               >
-                {link.label}
+                {t(link.labelKey)}
               </Link>
             ))}
           </div>
