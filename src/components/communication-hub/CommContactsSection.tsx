@@ -669,11 +669,11 @@ export default function CommContactsSection() {
           <div className="flex flex-col items-center justify-center py-16 text-center px-6">
             <Users className="h-10 w-10 mb-3" style={{ color: "hsl(var(--hud-text-dim) / 0.2)" }} />
             <p className="text-sm" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
-              {search ? "No contacts found" : "No contacts yet"}
+              {search ? (t("orbit.contacts.no_found") || "No contacts found") : (t("orbit.contacts.no_contacts") || "No contacts yet")}
             </p>
             <Button size="sm" variant="ghost" className="mt-3 gap-1.5" style={{ color: "hsl(var(--hud-cyan))" }}
               onClick={() => setShowAdd(true)}>
-              <UserPlus className="h-4 w-4" /> Add your first contact
+              <UserPlus className="h-4 w-4" /> {t("orbit.contacts.add_first") || "Add your first contact"}
             </Button>
           </div>
         ) : grouped ? (
