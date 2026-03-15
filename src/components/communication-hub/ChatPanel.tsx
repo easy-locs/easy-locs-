@@ -11,6 +11,7 @@ import {
 import AIGenerateButton from "@/components/ai/AIGenerateButton";
 import ChatMediaPreview from "@/components/communication/ChatMediaPreview";
 import { supabase } from "@/integrations/supabase/client";
+import { realtimeManager } from "@/lib/realtime-manager";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
