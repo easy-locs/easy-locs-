@@ -182,6 +182,31 @@ const RentalManagement = () => {
   const [messages, setMessages] = useState<any[]>([]);
   const [newMessage, setNewMessage] = useState("");
 
+  // Realtime listener for tenant messages
+  useEffect(() => {
+    if (!orgId || !selectedTenant) return;
+    const channel = supabase
+      .channel(`rental-msg-${selectedTenant.id}`)
+      .on("postgres_changes", {
+        event: "INSERT", schema: "public", table: "messages",
+        filter: `tenant_id=eq.${selectedTenant.id}`,
+      }, (payload) => {
+        const newMsg = payload.new as any;
+        if (newMsg.org_id === orgId) {
+          setMessages(prev => prev.some(m => m.id === newMsg.id) ? prev : [...prev, newMsg]);
+        }
+      })
+      .on("postgres_changes", {
+        event: "UPDATE", schema: "public", table: "messages",
+        filter: `tenant_id=eq.${selectedTenant.id}`,
+      }, (payload) => {
+        const updated = payload.new as any;
+        setMessages(prev => prev.map(m => m.id === updated.id ? { ...m, ...updated } : m));
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [orgId, selectedTenant?.id]);
+
   // Stripe rent payment
   const [payingRentId, setPayingRentId] = useState<string | null>(null);
   const [notifyingRentId, setNotifyingRentId] = useState<string | null>(null);
