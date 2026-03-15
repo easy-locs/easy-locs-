@@ -204,7 +204,8 @@ const seoPublicPrefixes = [
 
 /** Registers device session + suspicious login detection */
 const OrbitSessionGuard = () => { useOrbitSessionInit(); return null; };
-const OrbitPresenceGuard = () => { usePresence(); return null; };
+/** Centralized realtime: replaces usePresence, useOrbitCallSync, RealtimeMessageToast */
+const RealtimeHubGuard = () => { useRealtimeHub(); return null; };
 
 const App = () => (
   <ErrorBoundary>
@@ -219,8 +220,7 @@ const App = () => (
           <CallProvider>
            <AppLockGuard>
            <OrbitSessionGuard />
-           <OrbitPresenceGuard />
-           <RealtimeMessageToast />
+           <RealtimeHubGuard />
            <UpdateNotification />
           
            <Suspense fallback={<PageLoader />}>
