@@ -15,6 +15,23 @@ interface StatCardProps {
   path?: string;
   valueClassName?: string;
   className?: string;
+  loading?: boolean;
+}
+
+/**
+ * Skeleton variant for StatCard — shown during data loading.
+ */
+function StatCardSkeleton({ className }: { className?: string }) {
+  return (
+    <div className={cn(
+      "flex flex-col h-full bg-card rounded-xl p-4 sm:p-5 shadow-card border border-border/50 min-h-[120px] sm:min-h-[140px]",
+      className,
+    )}>
+      <Skeleton className="w-10 h-10 rounded-xl mb-3" />
+      <Skeleton className="w-20 h-3 rounded mb-2" />
+      <Skeleton className="w-16 h-6 rounded mt-auto" />
+    </div>
+  );
 }
 
 /**
