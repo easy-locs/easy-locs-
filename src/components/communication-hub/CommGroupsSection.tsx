@@ -318,7 +318,7 @@ export default function CommGroupsSection() {
           {messages.length === 0 && (
             <div className="text-center py-12">
               <UsersRound className="h-8 w-8 mx-auto mb-2" style={{ color: "hsl(var(--hud-text-dim) / 0.15)" }} />
-              <p className="text-xs" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>Start the conversation</p>
+              <p className="text-xs" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{t("orbit.groups.start_conversation") || "Start the conversation"}</p>
             </div>
           )}
           {messages.map(msg => {
