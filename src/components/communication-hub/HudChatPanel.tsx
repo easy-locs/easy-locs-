@@ -1098,7 +1098,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
             /* Voice preview before sending */
             <div className="flex items-center gap-2">
               <button onClick={() => { URL.revokeObjectURL(voicePreview.url); setVoicePreview(null); haptic("light"); }}
-                className="shrink-0 h-9 w-9 rounded-full flex items-center justify-center"
+                className="shrink-0 h-9 w-9 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 rounded-full flex items-center justify-center"
                 style={{ background: "hsl(var(--hud-danger) / 0.15)", color: "hsl(var(--hud-danger))" }}>
                 <Ban className="h-3.5 w-3.5" />
               </button>
