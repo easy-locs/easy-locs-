@@ -145,7 +145,7 @@ export default function OrbitSessionManager({ userId }: OrbitSessionManagerProps
           </div>
           <div className="space-y-1">
             {suspiciousLogins.map((login) => (
-              <p key={login.id} className="text-[11px]" style={{ color: "hsl(var(--hud-text-dim))" }}>
+              <p key={login.id} className="text-token-xs" style={{ color: "hsl(var(--hud-text-dim))" }}>
                 {login.device_label} — {formatDate(login.created_at)}
               </p>
             ))}
