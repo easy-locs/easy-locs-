@@ -5,9 +5,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { CallProvider } from "@/components/call/CallProvider";
-import RealtimeMessageToast from "@/components/communication/RealtimeMessageToast";
 import { useOrbitSessionInit } from "@/hooks/useOrbitSessionInit";
-import { usePresence } from "@/hooks/usePresence";
+import { useRealtimeHub } from "@/hooks/useRealtimeHub";
 import { I18nProvider } from "@/lib/i18n";
 import { ThemeProvider } from "next-themes";
 import { Suspense, lazy, type ComponentType } from "react";
@@ -205,7 +204,8 @@ const seoPublicPrefixes = [
 
 /** Registers device session + suspicious login detection */
 const OrbitSessionGuard = () => { useOrbitSessionInit(); return null; };
-const OrbitPresenceGuard = () => { usePresence(); return null; };
+/** Centralized realtime: replaces usePresence, useOrbitCallSync, RealtimeMessageToast */
+const RealtimeHubGuard = () => { useRealtimeHub(); return null; };
 
 const App = () => (
   <ErrorBoundary>
@@ -220,8 +220,7 @@ const App = () => (
           <CallProvider>
            <AppLockGuard>
            <OrbitSessionGuard />
-           <OrbitPresenceGuard />
-           <RealtimeMessageToast />
+           <RealtimeHubGuard />
            <UpdateNotification />
           
            <Suspense fallback={<PageLoader />}>

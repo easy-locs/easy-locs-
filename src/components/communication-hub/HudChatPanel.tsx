@@ -182,17 +182,16 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
   useEffect(() => { if (offline.isOnline) loadMessages(); }, [offline.isOnline]);
   useEffect(() => { if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight; }, [messages]);
 
-  // Realtime: INSERT + UPDATE (for live deletion/edit sync)
+  // Realtime messages + typing via centralized RealtimeManager
   useEffect(() => {
     if (!orgId || !thread) return;
+    const { realtimeManager } = require("@/lib/realtime-manager");
     const matchThread = (msg: any) => {
       const msgKey = msg.booking_id ? `booking-${msg.booking_id}` : msg.tenant_id ? `tenant-${msg.tenant_id}` : null;
       return msgKey === thread.id || msg.context_id === thread.contextId;
     };
-    const channel = supabase.channel(`chat-${thread.id}`)
-      .on("postgres_changes", {
-        event: "INSERT", schema: "public", table: "messages", filter: `org_id=eq.${orgId}`,
-      }, (payload) => {
+    const sub = realtimeManager.openThread(thread.id, orgId, {
+      onMessage: (payload: any) => {
         const newMsg = payload.new as ChatMessage;
         if (matchThread(newMsg)) {
           setRawMessages(prev => prev.some(m => m.id === newMsg.id) ? prev : [...prev, newMsg]);
@@ -200,49 +199,34 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
             supabase.from("messages").update({ read: true } as any).eq("id", newMsg.id);
           }
         }
-      })
-      .on("postgres_changes", {
-        event: "UPDATE", schema: "public", table: "messages", filter: `org_id=eq.${orgId}`,
-      }, (payload) => {
+      },
+      onUpdate: (payload: any) => {
         const updated = payload.new as ChatMessage;
         if (matchThread(updated)) {
           setRawMessages(prev => prev.map(m => m.id === updated.id ? updated : m));
         }
-      })
-      .on("postgres_changes", {
-        event: "DELETE", schema: "public", table: "messages", filter: `org_id=eq.${orgId}`,
-      }, (payload) => {
+      },
+      onDelete: (payload: any) => {
         const deleted = payload.old as any;
         if (deleted?.id) {
           setRawMessages(prev => prev.filter(m => m.id !== deleted.id));
         }
-      })
-      .subscribe();
-    return () => { supabase.removeChannel(channel); };
-  }, [orgId, thread, user, privacySettings.readReceipts]);
-
-  // Typing presence — broadcast when user is actually typing
-  useEffect(() => {
-    if (!thread || !orgId) return;
-    const channel = supabase.channel(`typing-${thread.id}`);
-    typingChannelRef.current = channel;
-    channel.on("presence", { event: "sync" }, () => {
-      const state = channel.presenceState();
-      const others = Object.values(state).flat().filter((p: any) => p.user_id !== user?.id);
-      setTypingIndicator(others.length > 0);
-    }).subscribe();
+      },
+      onTypingSync: (others) => setTypingIndicator(others.length > 0),
+      currentUserId: user?.id,
+    });
+    typingChannelRef.current = sub.typingChannel;
     return () => {
       typingChannelRef.current = null;
       if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
-      supabase.removeChannel(channel);
+      sub.unsubscribe();
     };
-  }, [thread, orgId, user?.id]);
+  }, [orgId, thread, user, privacySettings.readReceipts]);
 
   // Broadcast typing on input change (debounced, respects privacy)
   const broadcastTyping = useCallback(() => {
     if (!privacySettings.typingIndicators || !typingChannelRef.current) return;
     typingChannelRef.current.track({ user_id: user?.id, typing: true, ts: Date.now() }).catch(() => {});
-    // Auto-untrack after 3s of inactivity
     if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
     typingTimeoutRef.current = setTimeout(() => {
       typingChannelRef.current?.untrack().catch(() => {});
