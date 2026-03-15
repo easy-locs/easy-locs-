@@ -444,9 +444,10 @@ export class CallManager {
           this.onStateChange({ error: "Reconnexion en cours…" });
           this.attemptIceRestart();
         } else if (!this.iceConnected) {
+          this.debug("ICE disconnected without ever connecting");
           this.onStateChange({
             status: "network_blocked",
-            error: "Call could not connect. Your network may restrict internet calls.",
+            error: "Impossible de se connecter. Vérifiez votre connexion internet.",
           });
           this.cleanup("connection-failed");
         }
