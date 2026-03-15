@@ -1103,7 +1103,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
                 <Ban className="h-3.5 w-3.5" />
               </button>
               <div className="flex-1 flex items-center gap-2 rounded-xl px-3 py-2" style={{ background: "hsl(var(--hud-surface))" }}>
-                <button onClick={() => { const a = new Audio(voicePreview.url); a.play(); }} className="h-7 w-7 rounded-full flex items-center justify-center" style={{ background: "hsl(var(--hud-cyan) / 0.2)", color: "hsl(var(--hud-cyan))" }}>
+                <button onClick={() => { const a = new Audio(voicePreview.url); a.play(); }} className="h-8 w-8 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 rounded-full flex items-center justify-center" style={{ background: "hsl(var(--hud-cyan) / 0.2)", color: "hsl(var(--hud-cyan))" }}>
                   <Zap className="h-3.5 w-3.5" />
                 </button>
                 <div className="flex-1 h-1 rounded-full" style={{ background: "hsl(var(--hud-border) / 0.3)" }}>
