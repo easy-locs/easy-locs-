@@ -513,7 +513,7 @@ export default function CommGroupsSection() {
           <div className="flex flex-col items-center justify-center py-16 text-center px-6">
             <UsersRound className="h-10 w-10 mb-3" style={{ color: "hsl(var(--hud-text-dim) / 0.2)" }} />
             <p className="text-sm" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
-              {search ? "No groups found" : "No groups yet"}
+              {search ? (t("orbit.groups.no_found") || "No groups found") : (t("orbit.groups.no_groups") || "No groups yet")}
             </p>
             <Button
               size="sm"
