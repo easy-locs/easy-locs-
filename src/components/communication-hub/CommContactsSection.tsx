@@ -696,7 +696,7 @@ export default function CommContactsSection() {
       <Dialog open={showAdd} onOpenChange={setShowAdd}>
         <DialogContent style={{ background: "hsl(var(--hud-bg))", borderColor: "hsl(var(--hud-border) / 0.15)" }}>
           <DialogHeader>
-            <DialogTitle style={{ color: "hsl(var(--hud-text))" }}>Add Contact</DialogTitle>
+            <DialogTitle style={{ color: "hsl(var(--hud-text))" }}>{t("orbit.contacts.add_title") || "Add Contact"}</DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
             <div>
