@@ -161,7 +161,7 @@ const Documents = () => {
         {tab === "history" && (
           <div className="space-y-4">
             {/* Document routing legend */}
-            <div className="flex items-center gap-3 flex-wrap text-[10px] text-muted-foreground bg-muted/30 rounded-lg px-3 py-2">
+            <div className="flex items-center gap-3 flex-wrap text-2xs text-muted-foreground bg-muted/30 rounded-lg px-3 py-2">
               <span className="font-medium text-foreground text-xs">Routage :</span>
               {[
                 { icon: "🏠", label: "Bien" },
