@@ -117,10 +117,11 @@ export default function OrbitSmartHub({ totalProperties, totalCountries, propert
             const x = C + R * Math.cos(rad) - BTN / 2;
             const y = C + R * Math.sin(rad) - BTN / 2;
             const isActive = activeIdx === i;
+            const actionLabel = t(action.labelKey) || action.fallback;
 
             return (
               <motion.button
-                key={action.label}
+                key={action.fallback}
                 className="absolute flex flex-col items-center justify-center cursor-pointer z-10"
                 style={{
                   width: BTN,
@@ -142,7 +143,7 @@ export default function OrbitSmartHub({ totalProperties, totalCountries, propert
                 whileHover={{ scale: 1.12, borderColor: "hsl(var(--hud-cyan) / 0.6)" }}
                 whileTap={{ scale: 0.92 }}
                 onClick={() => handleAction(i)}
-                title={action.label}
+                title={actionLabel}
               >
                 <action.icon
                   className="h-4 w-4"
@@ -156,14 +157,15 @@ export default function OrbitSmartHub({ totalProperties, totalCountries, propert
           {ACTIONS.map((action, i) => {
             const angle = (i * 360) / ACTIONS.length - 90;
             const rad = (angle * Math.PI) / 180;
-            const labelR = R + 30;
+            const labelR = R + 32;
             const lx = C + labelR * Math.cos(rad);
             const ly = C + labelR * Math.sin(rad);
+            const actionLabel = t(action.labelKey) || action.fallback;
 
             return (
               <motion.span
-                key={`label-${action.label}`}
-                className="absolute text-[9px] font-semibold tracking-wide pointer-events-none"
+                key={`label-${action.fallback}`}
+                className="absolute text-[10px] font-semibold tracking-wide pointer-events-none"
                 style={{
                   top: ly,
                   left: lx,
@@ -175,7 +177,7 @@ export default function OrbitSmartHub({ totalProperties, totalCountries, propert
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.3 + i * 0.06 }}
               >
-                {action.label}
+                {actionLabel}
               </motion.span>
             );
           })}
