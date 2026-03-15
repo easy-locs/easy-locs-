@@ -420,8 +420,8 @@ function ChatMessageBubble({
 
         {/* Translate button */}
         {!isMe && msg.sender_locale && msg.sender_locale !== locale && !isVoice && (
-          <button onClick={() => onTranslate(msg)} className="mt-1 inline-flex items-center gap-1 text-[10px] hover:opacity-80 transition-opacity" style={{ color: "hsl(var(--hud-text-dim))" }}>
-            {translatingMsgId === msg.id ? <Loader2 className="h-2.5 w-2.5 animate-spin" /> : <Globe className="h-2.5 w-2.5" />}
+          <button onClick={() => onTranslate(msg)} className="mt-1 inline-flex items-center gap-1.5 text-[10px] hover:opacity-80 transition-opacity min-h-[44px] sm:min-h-0 py-1" style={{ color: "hsl(var(--hud-text-dim))" }}>
+            {translatingMsgId === msg.id ? <Loader2 className="h-3 w-3 sm:h-2.5 sm:w-2.5 animate-spin" /> : <Globe className="h-3 w-3 sm:h-2.5 sm:w-2.5" />}
             {showOriginal ? "Translation" : msg.translated_content ? "Original" : "Translate"}
           </button>
         )}
