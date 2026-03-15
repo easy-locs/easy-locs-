@@ -21,6 +21,8 @@ import { useWallet, type WalletTransaction } from "@/hooks/useWallet";
 import { useAuth } from "@/contexts/AuthContext";
 import { PURCHASE_CURRENCIES, LOCS_CONFIG, formatLocs } from "@/lib/locs-wallet";
 import { motion, AnimatePresence } from "framer-motion";
+import { Skeleton } from "@/components/ui/skeleton";
+import { ErrorState } from "@/components/ui/error-state";
 
 type TxFilter = "all" | "in" | "out" | "pending";
 type ModalMode = null | "send" | "request" | "buy";
