@@ -219,7 +219,7 @@ export default function CommGroupsSection() {
     } as any);
     
     if (error) {
-      toast.error(error.message.includes("duplicate") ? "Already a member" : "Failed to add member");
+      toast.error(error.message.includes("duplicate") ? (t("orbit.groups.already_member") || "Already a member") : (t("orbit.groups.add_member") || "Failed to add member"));
       return;
     }
     
