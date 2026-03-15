@@ -202,6 +202,11 @@ const DealStatusBubble = memo(function DealStatusBubble({
               {subtitle}
             </p>
           )}
+          {expiry && (
+            <p className="text-[9px] mt-0.5 leading-tight" style={{ color: "hsl(40 80% 55%)" }}>
+              ⏱ {expiry}
+            </p>
+          )}
         </div>
         <span className="text-[9px] shrink-0 self-end" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
           {format(new Date(createdAt), "HH:mm")}
