@@ -210,7 +210,7 @@ export default function OrbitSessionManager({ userId }: OrbitSessionManagerProps
                       {session.device_label}
                     </span>
                     {isCurrent && (
-                      <Badge variant="outline" className="text-[9px] px-1.5 py-0 shrink-0" style={{
+                      <Badge variant="outline" className="text-micro px-1.5 py-0 shrink-0" style={{
                         borderColor: "hsl(var(--hud-success) / 0.3)", color: "hsl(var(--hud-success))",
                         background: "hsl(var(--hud-success) / 0.08)",
                       }}>
