@@ -178,7 +178,7 @@ const Navbar = () => {
 
           {/* Mobile hamburger */}
           <button
-            className="md:hidden flex items-center justify-center w-9 h-9 rounded-lg transition-colors text-white/80"
+            className="md:hidden flex items-center justify-center w-10 h-10 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 rounded-lg transition-colors text-white/80"
             onClick={() => setMobileOpen(!mobileOpen)}
             aria-label="Toggle menu"
           >
