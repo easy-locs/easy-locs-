@@ -33,6 +33,7 @@ import { isE2EEncrypted, getEncryptedPreview } from "@/lib/orbit-metadata-guard"
 import { useOfflineMessages } from "@/hooks/useOfflineMessages";
 import { WifiOff, Wifi, CloudUpload } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger } from "@/components/ui/select";
