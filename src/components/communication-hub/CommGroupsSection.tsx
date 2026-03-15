@@ -61,6 +61,7 @@ function formatMsgTime(d: string): string {
 
 export default function CommGroupsSection() {
   const { user, orgId } = useAuth();
+  const { t } = useI18n();
   const [groups, setGroups] = useState<Group[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
