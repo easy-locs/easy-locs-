@@ -84,6 +84,8 @@ const STATUS_LABELS: Record<string, { label: string; icon: any; color: string }>
   cancelled:       { label: "Deal cancelled", icon: XCircle, color: "hsl(var(--hud-danger))" },
 };
 
+import { formatDistanceToNow, isPast } from "date-fns";
+
 function fmtCurrency(amount: number, currency: string = "EUR") {
   try {
     return new Intl.NumberFormat(undefined, {
@@ -97,23 +99,38 @@ function fmtCurrency(amount: number, currency: string = "EUR") {
   }
 }
 
-function getEventContent(eventType: string, data: Record<string, any>, actorRole?: string): { title: string; subtitle?: string } {
+function getEventContent(eventType: string, data: Record<string, any>, actorRole?: string): { title: string; subtitle?: string; expiry?: string } {
   const role = actorRole === "seller" ? "Seller" : "Buyer";
+  const round = data.round ? ` (R${data.round})` : "";
 
   switch (eventType) {
     case "offer":
       return {
-        title: `💰 Offer: ${fmtCurrency(data.amount, data.currency)}`,
+        title: `💰 Offer${round}: ${fmtCurrency(data.amount, data.currency)}`,
         subtitle: data.message || `${role} sent an offer`,
+        expiry: data.expires_at && !isPast(new Date(data.expires_at))
+          ? `Expires ${formatDistanceToNow(new Date(data.expires_at), { addSuffix: true })}`
+          : data.expires_at && isPast(new Date(data.expires_at))
+          ? "⏳ Expired"
+          : undefined,
       };
     case "counter_offer":
       return {
-        title: `🔄 Counter: ${fmtCurrency(data.amount, data.currency)}`,
+        title: `🔄 Counter${round}: ${fmtCurrency(data.amount, data.currency)}`,
         subtitle: data.message || `${role} made a counter-offer`,
+        expiry: data.expires_at && !isPast(new Date(data.expires_at))
+          ? `Expires ${formatDistanceToNow(new Date(data.expires_at), { addSuffix: true })}`
+          : undefined,
       };
     case "status_change": {
       const newStatus = data.new_status;
       const config = STATUS_LABELS[newStatus];
+      if (data.reason === "offer_expired") {
+        return {
+          title: "⏳ Offer expired",
+          subtitle: "The offer deadline has passed — back to negotiation",
+        };
+      }
       if (data.action === "accepted" && data.accepted_amount) {
         return {
           title: `✅ Accepted: ${fmtCurrency(data.accepted_amount, data.currency)}`,
@@ -138,7 +155,7 @@ function getEventContent(eventType: string, data: Record<string, any>, actorRole
     case "visit_scheduled":
       return {
         title: "📅 Visit scheduled",
-        subtitle: data.date || undefined,
+        subtitle: data.date ? `${data.date}${data.note ? ` — ${data.note}` : ""}` : undefined,
       };
     default:
       return { title: `Deal event: ${eventType}` };
@@ -153,7 +170,7 @@ const DealStatusBubble = memo(function DealStatusBubble({
 }: DealStatusBubbleProps) {
   const config = EVENT_CONFIG[eventType] || EVENT_CONFIG.status_change;
   const Icon = config.icon;
-  const { title, subtitle } = getEventContent(eventType, data, actorRole);
+  const { title, subtitle, expiry } = getEventContent(eventType, data, actorRole);
 
   return (
     <motion.div
@@ -183,6 +200,11 @@ const DealStatusBubble = memo(function DealStatusBubble({
           {subtitle && (
             <p className="text-[10px] mt-0.5 leading-tight break-words" style={{ color: `${config.text}80` }}>
               {subtitle}
+            </p>
+          )}
+          {expiry && (
+            <p className="text-[9px] mt-0.5 leading-tight" style={{ color: "hsl(40 80% 55%)" }}>
+              ⏱ {expiry}
             </p>
           )}
         </div>
