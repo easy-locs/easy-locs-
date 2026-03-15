@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { haptic } from "@/lib/haptics";
 import { toast } from "sonner";
 import SwipeableCallItem from "./SwipeableCallItem";
+import { Skeleton } from "@/components/ui/skeleton";
 
 type CallFilter = "all" | "missed" | "incoming" | "outgoing";
 
