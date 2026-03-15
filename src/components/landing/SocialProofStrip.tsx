@@ -1,6 +1,5 @@
 /**
  * Social proof strip — animated counters & trust indicators
- * Placed between Hero and RoleCards for maximum impact.
  */
 import { motion, useMotionValue, useTransform, animate } from "framer-motion";
 import { useEffect, useRef } from "react";
@@ -49,12 +48,19 @@ const stats = [
   { icon: Star, valueFrom: 0, valueTo: 4, suffix: ".8 ★", labelKey: "landing.proof.rating", fallback: "User Rating", color: "accent" },
 ];
 
+const TRUST_BADGES = [
+  { labelKey: "landing.proof.trust_gdpr", fallback: "GDPR Compliant" },
+  { labelKey: "landing.proof.trust_stripe", fallback: "Stripe Verified" },
+  { labelKey: "landing.proof.trust_ssl", fallback: "SSL Encrypted" },
+  { labelKey: "landing.proof.trust_uptime", fallback: "99.9% Uptime" },
+  { labelKey: "landing.proof.trust_soc2", fallback: "SOC 2 Ready" },
+];
+
 const SocialProofStrip = () => {
   const { t } = useI18n();
 
   return (
     <section className="py-10 sm:py-14 bg-background relative overflow-hidden border-b border-border/30">
-      {/* Subtle top glow */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[200px] rounded-full bg-accent/[0.02] blur-[100px] pointer-events-none" />
 
       <div className="container max-w-5xl relative z-10">
@@ -84,17 +90,17 @@ const SocialProofStrip = () => {
           ))}
         </div>
 
-        {/* Trust logos placeholder */}
+        {/* Trust logos */}
         <motion.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
           className="mt-8 flex flex-wrap items-center justify-center gap-6 text-[10px] font-medium text-muted-foreground/50 uppercase tracking-widest"
         >
-          {["GDPR Compliant", "Stripe Verified", "SSL Encrypted", "99.9% Uptime", "SOC 2 Ready"].map((label) => (
-            <span key={label} className="flex items-center gap-1.5">
+          {TRUST_BADGES.map((badge) => (
+            <span key={badge.labelKey} className="flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 rounded-full bg-success/40" />
-              {label}
+              {t(badge.labelKey) || badge.fallback}
             </span>
           ))}
         </motion.div>

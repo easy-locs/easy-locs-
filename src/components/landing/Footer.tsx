@@ -114,7 +114,7 @@ const Footer = React.forwardRef<HTMLElement>((_, ref) => {
               <Link
                 key={city.slug}
                 to={`/city/${city.slug}`}
-                className="text-xs px-3 py-1.5 rounded-lg border transition-colors hover:border-accent/30 hover:text-accent"
+                className="text-xs px-3 py-1.5 min-h-[44px] sm:min-h-0 rounded-lg border transition-colors hover:border-accent/30 hover:text-accent inline-flex items-center"
                 style={{ borderColor: "hsl(var(--primary-foreground) / 0.08)", color: "hsl(var(--primary-foreground) / 0.5)" }}
               >
                 {city.name}
