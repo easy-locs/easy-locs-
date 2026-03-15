@@ -32,8 +32,10 @@ const TrustSection = () => {
         style={{ background: "linear-gradient(180deg, hsl(var(--background)) 0%, hsl(222 47% 6%) 40%, hsl(222 47% 6%) 60%, hsl(var(--background)) 100%)" }}
       />
 
-      {/* Ambient glow */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-accent/[0.04] blur-[140px] pointer-events-none" />
+      {/* Ambient glow — reduced on mobile */}
+      {!isMobile && (
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-accent/[0.04] blur-[140px] pointer-events-none" />
+      )}
 
       <div className="container max-w-5xl relative z-10">
         <motion.div
