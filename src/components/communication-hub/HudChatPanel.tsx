@@ -11,6 +11,7 @@ import {
   Send, ArrowLeft, Loader2, Paperclip, Globe, CheckCheck, Check,
   Mail, CreditCard, CalendarCheck, Ban, Phone, Video, ChevronRight, MessageCircle,
   Shield, Lock, Zap, Sparkles, MapPin, Camera, MoreVertical, Mic, Smile, Eye,
+  Handshake,
 } from "lucide-react";
 import SecurityLevelPicker from "./SecurityLevelPicker";
 import { type SecurityLevel, buildSecurityPayload, isActionAllowed } from "@/lib/message-security";
