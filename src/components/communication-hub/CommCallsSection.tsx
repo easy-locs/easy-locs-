@@ -52,6 +52,7 @@ function formatDuration(s: number | null): string {
 export default function CommCallsSection() {
   const { user } = useAuth();
   const { startCall, isInCall, isStartingCall } = useCall();
+  const { t } = useI18n();
   const [calls, setCalls] = useState<CallLog[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
