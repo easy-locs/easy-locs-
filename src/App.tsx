@@ -10,6 +10,7 @@ import { useRealtimeHub } from "@/hooks/useRealtimeHub";
 import { I18nProvider } from "@/lib/i18n";
 import { ThemeProvider } from "next-themes";
 import { Suspense, lazy, type ComponentType } from "react";
+import { Loader2 } from "lucide-react";
 import AppLockGuard from "@/components/security/AppLockGuard";
 import UpdateNotification from "@/components/UpdateNotification";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
@@ -39,7 +40,6 @@ function safeLazy(factory: () => Promise<{ default: ComponentType<any> }>, name:
 }
 
 const Explore = safeLazy(() => import("./pages/Explore"), "Explore");
-import { Loader2 } from "lucide-react";
 
 // Lazy load all pages
 const Index = safeLazy(() => import("./pages/Index"), "Index");

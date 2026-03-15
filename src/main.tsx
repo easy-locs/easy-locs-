@@ -59,28 +59,46 @@ const BootScreen = ({
 const bootApp = async () => {
   root.render(<BootScreen title="Loading Easy-Locs…" description="Starting the application safely." />);
 
-  try {
-    const appModule = await import("./App");
-    const App = appModule?.default;
-    if (!App) {
-      throw new Error("App module loaded but default export is missing — possible chunk init failure.");
+  const MAX_RETRIES = 3;
+
+  for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+    try {
+      const appModule = await import("./App");
+      const App = appModule?.default;
+      if (!App) {
+        // Module loaded but default export missing — chunk init race condition.
+        // Wait a tick for module graph to settle, then retry.
+        if (attempt < MAX_RETRIES) {
+          console.warn(`[boot] attempt ${attempt}: default export missing, retrying in ${attempt * 200}ms…`);
+          await new Promise((r) => setTimeout(r, attempt * 200));
+          continue;
+        }
+        throw new Error("App module loaded but default export is missing after retries.");
+      }
+      root.render(<App />);
+      return; // success
+    } catch (error) {
+      if (attempt < MAX_RETRIES) {
+        console.warn(`[boot] attempt ${attempt} failed, retrying…`, error);
+        await new Promise((r) => setTimeout(r, attempt * 300));
+        continue;
+      }
+
+      console.error("[boot] App failed to start after all retries:", error);
+
+      const message =
+        error instanceof Error
+          ? error.message
+          : "A startup error prevented the application from rendering.";
+
+      root.render(
+        <BootScreen
+          title="Easy-Locs failed to start"
+          description={message}
+          showRetry
+        />,
+      );
     }
-    root.render(<App />);
-  } catch (error) {
-    console.error("[boot] App failed to start:", error);
-
-    const message =
-      error instanceof Error
-        ? error.message
-        : "A startup error prevented the application from rendering.";
-
-    root.render(
-      <BootScreen
-        title="Easy-Locs failed to start"
-        description={message}
-        showRetry
-      />,
-    );
   }
 };
 
