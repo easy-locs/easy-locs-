@@ -1,9 +1,11 @@
 /**
  * ProSettingsSection — Comprehensive Signal/WhatsApp-style professional settings.
  * Covers: User ID, encryption, chat, calls, storage, blocked users, privacy, security.
+ * DB-synced settings: readReceipts, typingIndicators, linkPreview, messagePreview, mediaAutoDownload
+ * are persisted to profiles table to stay consistent with OrbitSecuritySettings.
  */
 import { useState, useEffect, useCallback } from "react";
-import {
+import { supabase } from "@/integrations/supabase/client";
   Shield, Lock, Eye, EyeOff, Bell, Phone, MessageCircle, Clock,
   Fingerprint, Database, Trash2, Users, Ban, Copy, Check, Key,
   Wifi, Image, Type, Smartphone, HardDrive, Download, ChevronRight,
