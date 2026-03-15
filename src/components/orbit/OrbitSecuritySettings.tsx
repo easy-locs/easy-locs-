@@ -287,7 +287,7 @@ export default function OrbitSecuritySettings({ userId }: OrbitSecuritySettingsP
         <Separator style={{ background: "hsl(var(--hud-border) / 0.08)" }} />
 
         {/* ═══ Session Management ═══ */}
-        <SettingSection icon={Smartphone} title="Appareils connectés" iconColor="hsl(var(--hud-cyan))">
+        <SettingSection icon={Smartphone} title={t("orbit.connected_devices") || "Appareils connectés"} iconColor="hsl(var(--hud-cyan))">
           <OrbitSessionManager userId={userId} />
         </SettingSection>
 
