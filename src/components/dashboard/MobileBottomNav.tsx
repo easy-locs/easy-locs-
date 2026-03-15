@@ -31,9 +31,9 @@ const MobileBottomNav = ({ onMenuOpen }: MobileBottomNavProps) => {
     <nav
       className="fixed bottom-0 left-0 right-0 z-40 lg:hidden safe-bottom"
       style={{
-        background: "hsl(var(--card) / 0.92)",
-        backdropFilter: "blur(24px) saturate(180%)",
-        WebkitBackdropFilter: "blur(24px) saturate(180%)",
+        background: "hsl(var(--card) / 0.95)",
+        backdropFilter: "blur(12px) saturate(140%)",
+        WebkitBackdropFilter: "blur(12px) saturate(140%)",
         borderTop: "1px solid hsl(var(--border) / 0.4)",
         paddingBottom: "env(safe-area-inset-bottom, 0px)",
         boxShadow: "0 -4px 24px hsl(var(--background) / 0.3)",
