@@ -357,7 +357,7 @@ export default function CommGroupsSection() {
               value={msgInput}
               onChange={e => setMsgInput(e.target.value)}
               onKeyDown={e => e.key === "Enter" && !e.shiftKey && sendMessage()}
-              placeholder="Message..."
+              placeholder={t("orbit.groups.message_placeholder") || "Message…"}
               className="flex-1 h-10 text-sm border-0 rounded-full px-4"
               style={{ background: "hsl(var(--hud-surface))", color: "hsl(var(--hud-text))" }}
             />
