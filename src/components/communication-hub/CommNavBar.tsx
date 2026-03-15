@@ -3,7 +3,7 @@
  * Clean bottom tabs (mobile) / slim sidebar (desktop).
  * Fully i18n'd.
  */
-import { MessageCircle, Phone, Users, Wallet, UserCircle, Shield, BookUser } from "lucide-react";
+import { MessageCircle, Phone, Users, Wallet, UserCircle, Shield, BookUser, UsersRound } from "lucide-react";
 import { motion } from "framer-motion";
 import { useI18n } from "@/lib/i18n";
 
@@ -13,6 +13,7 @@ const TAB_IDS: { id: CommSection; icon: typeof MessageCircle; labelKey: string; 
   { id: "chats", icon: MessageCircle, labelKey: "orbit.nav.chats", fallback: "Chats" },
   { id: "calls", icon: Phone, labelKey: "orbit.nav.calls", fallback: "Calls" },
   { id: "contacts", icon: BookUser, labelKey: "orbit.nav.contacts", fallback: "Contacts" },
+  { id: "groups", icon: UsersRound, labelKey: "orbit.nav.groups", fallback: "Groups" },
   { id: "payments", icon: Wallet, labelKey: "orbit.nav.wallet", fallback: "Wallet" },
   { id: "settings", icon: Shield, labelKey: "orbit.nav.security", fallback: "Security" },
   { id: "you", icon: UserCircle, labelKey: "orbit.nav.you", fallback: "You" },
@@ -47,19 +48,19 @@ export default function CommNavBar({ active, onChange, isMobile, unreadCount = 0
             <button
               key={tab.id}
               onClick={() => onChange(tab.id)}
-              className="flex flex-col items-center gap-1 relative min-w-[48px] min-h-[44px] py-1"
+              className="flex flex-col items-center gap-0.5 relative min-w-[40px] min-h-[44px] py-1"
             >
               {isActive && (
                 <motion.div
                   layoutId="orbit-tab-active"
-                  className="absolute -top-[6px] left-3 right-3 h-[2px] rounded-full"
+                  className="absolute -top-[6px] left-2 right-2 h-[2px] rounded-full"
                   style={{ background: "hsl(var(--primary))" }}
                   transition={{ type: "spring", stiffness: 400, damping: 30 }}
                 />
               )}
               <div className="relative">
                 <Icon
-                  className="h-[22px] w-[22px]"
+                  className="h-[20px] w-[20px]"
                   strokeWidth={isActive ? 2.2 : 1.5}
                   style={{
                     color: isActive
@@ -80,7 +81,7 @@ export default function CommNavBar({ active, onChange, isMobile, unreadCount = 0
                 )}
               </div>
               <span
-                className="text-[10px] leading-none"
+                className="text-[9px] leading-none"
                 style={{
                   color: isActive
                     ? "hsl(var(--primary))"
