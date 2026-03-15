@@ -204,7 +204,7 @@ export default function CommCallsSection() {
           <Input
             value={search}
             onChange={e => setSearch(e.target.value)}
-            placeholder="Search..."
+            placeholder={t("orbit.calls.search") || "Search…"}
             className="pl-9 h-9 text-sm border-0"
             style={{
               background: "hsl(var(--hud-surface))",
