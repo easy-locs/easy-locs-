@@ -27,8 +27,8 @@ const ClientDashboard = () => {
 
       setStats({
         bookings: (seasonalRes.count || 0) + (conciergeRes.count || 0) + (marketplaceRes.count || 0),
-        messages: 0,
-        documents: 0,
+        messages: -1, // -1 = not yet implemented, display "—"
+        documents: -1,
       });
       setLoaded(true);
     };
@@ -38,8 +38,8 @@ const ClientDashboard = () => {
   const quickCards = [
     { icon: Search, label: t("nav.explore") || "Explore", path: "/explore", value: t("client.browse") || "Browse", color: "text-primary", hint: t("client.hint_explore") || "Discover listings & services" },
     { icon: CalendarCheck, label: t("nav.bookings") || "My Bookings", path: "/client/bookings", value: `${stats.bookings}`, color: "text-info", hint: t("client.hint_bookings") || "View my reservations" },
-    { icon: MessageCircle, label: t("nav.messages") || "Messages", path: "/client/messages", value: `${stats.messages}`, color: "text-warning", hint: t("client.hint_messages") || "Conversations with providers" },
-    { icon: FileText, label: t("nav.documents") || "Documents", path: "/client/documents", value: `${stats.documents}`, color: "text-muted-foreground", hint: t("client.hint_documents") || "Invoices & confirmations" },
+    { icon: MessageCircle, label: t("nav.messages") || "Messages", path: "/client/messages", value: stats.messages < 0 ? "—" : `${stats.messages}`, color: "text-warning", hint: t("client.hint_messages") || "Conversations with providers" },
+    { icon: FileText, label: t("nav.documents") || "Documents", path: "/client/documents", value: stats.documents < 0 ? "—" : `${stats.documents}`, color: "text-muted-foreground", hint: t("client.hint_documents") || "Invoices & confirmations" },
     { icon: CreditCard, label: t("nav.payments") || "Payments", path: "/client/payments", value: "—", color: "text-success", hint: t("client.hint_payments") || "Payment history" },
   ];
 
