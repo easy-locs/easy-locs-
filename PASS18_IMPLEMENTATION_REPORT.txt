@@ -1,0 +1,31 @@
+PASS18 IMPLEMENTATION REPORT
+
+Files changed:
+- src/hooks/useEcosystemRadar.ts
+- src/components/orbit/OrbitRadar.tsx
+- src/components/orbit/LiveEcosystemMap.tsx
+
+Main changes:
+1. Orbit Radar diagnostics added
+   - GPS active/missing
+   - Realtime connected
+   - Mapped vs total signals
+   - Tracking live/idle
+   - Source counts: marketplace, presence, tracking, leases, tasks
+   - Last scan timestamp
+
+2. Pro map controls improved
+   - Fit all button retained
+   - Follow me toggle added
+   - Better resize behavior kept
+
+3. Hook diagnostics exposed
+   - sourceCounts
+   - lastScanAt
+   - mapped/list-only counters
+   - live tracking presence
+
+Validation note:
+- Code patched on current structure only
+- No rebuild from scratch
+- Runtime build not fully validated in sandbox

@@ -1,0 +1,5 @@
+ORBIT pass8 modifications
+ - Orbit Radar title now shows Orbit Radar with clearer live subtitle
+ - Orbit Home gets WhatsApp-style / Signal-style communication shortcuts
+ - Ghost Elite yearly premium interface added in App Security (29.90€/year local UI layer)
+ - Marketplace browse page cleaned with clearer header and section card
