@@ -738,7 +738,7 @@ export default function CommContactsSection() {
             <Button onClick={handleAddContact} disabled={saving || !newContact.name.trim()} className="w-full gap-2"
               style={{ background: "hsl(var(--hud-cyan))", color: "hsl(var(--hud-bg))" }}>
               {saving && <Loader2 className="h-4 w-4 animate-spin" />}
-              Add Contact
+              {t("orbit.contacts.add_title") || "Add Contact"}
             </Button>
           </div>
         </DialogContent>
