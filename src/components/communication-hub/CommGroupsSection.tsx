@@ -224,7 +224,7 @@ export default function CommGroupsSection() {
     }
     
     haptic("success");
-    toast.success("Member added");
+    toast.success(t("orbit.groups.member_added") || "Member added");
     setAddMemberEmail("");
     setShowAddMember(false);
     // Reload members
