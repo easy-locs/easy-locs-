@@ -273,10 +273,10 @@ export default function CommCallsSection() {
           <div className="flex flex-col items-center justify-center py-16 text-center">
             <Phone className="h-10 w-10 mb-3" style={{ color: "hsl(var(--hud-text-dim) / 0.2)" }} />
             <p className="text-sm" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
-              {filter === "missed" ? "No missed calls" : "No calls yet"}
+              {filter === "missed" ? (t("orbit.calls.no_missed") || "No missed calls") : (t("orbit.calls.no_calls") || "No calls yet")}
             </p>
             <p className="text-xs mt-1" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>
-              Start a call from any conversation
+              {t("orbit.calls.start_hint") || "Start a call from any conversation"}
             </p>
           </div>
         ) : (
