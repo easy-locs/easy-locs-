@@ -900,7 +900,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
           >
             <WifiOff className="h-3.5 w-3.5 shrink-0" style={{ color: "hsl(var(--hud-warning))" }} />
             <span className="text-[11px] font-medium" style={{ color: "hsl(var(--hud-warning))" }}>
-              Offline — messages will be sent when you reconnect
+              {t("orbit.offline_banner") || "Offline — messages will be sent when you reconnect"}
             </span>
             {offline.queueCount > 0 && (
               <Badge variant="outline" className="ml-auto text-[9px] h-4 px-1.5" style={{ borderColor: "hsl(var(--hud-warning) / 0.4)", color: "hsl(var(--hud-warning))" }}>
