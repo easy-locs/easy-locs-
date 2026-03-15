@@ -276,7 +276,7 @@ class RealtimeManager {
         last_seen_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
         device_type: /Mobi|Android/i.test(navigator.userAgent) ? "mobile" : "web",
-      } as any, { onConflict: "user_id" }).catch(() => {});
+      } as any, { onConflict: "user_id" }).then(() => {}).catch?.(() => {});
     };
     document.addEventListener("visibilitychange", onVis);
 
