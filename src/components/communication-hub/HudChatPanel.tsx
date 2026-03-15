@@ -1035,6 +1035,11 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
         {(thread.conversationType === "booking" || thread.conversationType === "listing" || thread.conversationType === "deal") && (
           <div className="px-3 sm:px-4 py-2 shrink-0" style={{ borderTop: "1px solid hsl(var(--hud-border) / 0.06)", background: "hsl(var(--hud-surface) / 0.25)" }}>
             <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
+              {!thread.dealId && (
+                <Button size="sm" variant="outline" className="text-[11px] h-7 min-h-[44px] sm:min-h-0 gap-1.5 rounded-full px-3 shrink-0" style={{ borderColor: "hsl(var(--hud-cyan) / 0.2)", color: "hsl(var(--hud-cyan))", background: "hsl(var(--hud-cyan) / 0.06)" }} onClick={onToggleContext}>
+                  <Handshake className="h-3 w-3" /> Deal
+                </Button>
+              )}
               <Button size="sm" variant="outline" className="text-[11px] h-7 min-h-[44px] sm:min-h-0 gap-1.5 rounded-full px-3 shrink-0" style={{ borderColor: "hsl(var(--hud-border) / 0.15)", color: "hsl(var(--hud-text))", background: "hsl(var(--hud-surface))" }} onClick={() => setPaymentLinkDialog(true)}>
                 <CreditCard className="h-3 w-3" /> {t("orbit.payment") || "Payment"}
               </Button>
