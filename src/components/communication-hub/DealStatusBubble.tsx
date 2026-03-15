@@ -99,23 +99,38 @@ function fmtCurrency(amount: number, currency: string = "EUR") {
   }
 }
 
-function getEventContent(eventType: string, data: Record<string, any>, actorRole?: string): { title: string; subtitle?: string } {
+function getEventContent(eventType: string, data: Record<string, any>, actorRole?: string): { title: string; subtitle?: string; expiry?: string } {
   const role = actorRole === "seller" ? "Seller" : "Buyer";
+  const round = data.round ? ` (R${data.round})` : "";
 
   switch (eventType) {
     case "offer":
       return {
-        title: `💰 Offer: ${fmtCurrency(data.amount, data.currency)}`,
+        title: `💰 Offer${round}: ${fmtCurrency(data.amount, data.currency)}`,
         subtitle: data.message || `${role} sent an offer`,
+        expiry: data.expires_at && !isPast(new Date(data.expires_at))
+          ? `Expires ${formatDistanceToNow(new Date(data.expires_at), { addSuffix: true })}`
+          : data.expires_at && isPast(new Date(data.expires_at))
+          ? "⏳ Expired"
+          : undefined,
       };
     case "counter_offer":
       return {
-        title: `🔄 Counter: ${fmtCurrency(data.amount, data.currency)}`,
+        title: `🔄 Counter${round}: ${fmtCurrency(data.amount, data.currency)}`,
         subtitle: data.message || `${role} made a counter-offer`,
+        expiry: data.expires_at && !isPast(new Date(data.expires_at))
+          ? `Expires ${formatDistanceToNow(new Date(data.expires_at), { addSuffix: true })}`
+          : undefined,
       };
     case "status_change": {
       const newStatus = data.new_status;
       const config = STATUS_LABELS[newStatus];
+      if (data.reason === "offer_expired") {
+        return {
+          title: "⏳ Offer expired",
+          subtitle: "The offer deadline has passed — back to negotiation",
+        };
+      }
       if (data.action === "accepted" && data.accepted_amount) {
         return {
           title: `✅ Accepted: ${fmtCurrency(data.accepted_amount, data.currency)}`,
@@ -140,7 +155,7 @@ function getEventContent(eventType: string, data: Record<string, any>, actorRole
     case "visit_scheduled":
       return {
         title: "📅 Visit scheduled",
-        subtitle: data.date || undefined,
+        subtitle: data.date ? `${data.date}${data.note ? ` — ${data.note}` : ""}` : undefined,
       };
     default:
       return { title: `Deal event: ${eventType}` };
