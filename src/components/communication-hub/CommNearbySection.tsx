@@ -143,16 +143,19 @@ export default function CommNearbySection() {
     if (!lat || !lng) return;
     setLoading(true);
     setScanning(true);
+    setLoadError(null);
 
+    try {
     const shouldLoadItems = ["all", "service", "real_estate", "concierge"].includes(typeFilter);
     const shouldLoadUsers = ["all", "professionals", "people"].includes(typeFilter);
 
     // Load items
     if (shouldLoadItems) {
-      const { data } = await supabase.rpc("search_nearby_items", {
+      const { data, error } = await supabase.rpc("search_nearby_items", {
         _lat: lat, _lng: lng, _radius_km: radius,
         _item_type: ["service", "real_estate", "concierge"].includes(typeFilter) ? typeFilter : null,
       });
+      if (error) throw error;
       if (data) setItems(data as NearbyItem[]);
     } else {
       setItems([]);
