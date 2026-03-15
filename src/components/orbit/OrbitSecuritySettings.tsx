@@ -225,16 +225,16 @@ export default function OrbitSecuritySettings({ userId }: OrbitSecuritySettingsP
 
         {/* ═══ Privacy Controls ═══ */}
         <SettingSection icon={Eye} title={t("orbit.privacy_controls") || "Confidentialité"} iconColor="hsl(var(--hud-cyan))">
-          <SettingRow label="Accusés de lecture" description="Les autres voient quand vous avez lu leurs messages">
+          <SettingRow label={t("orbit.read_receipts") || "Accusés de lecture"} description={t("orbit.read_receipts_desc") || "Les autres voient quand vous avez lu leurs messages"}>
             <Switch checked={readReceipts} onCheckedChange={() => handleToggle(setReadReceipts, "privacy_read_receipts", readReceipts)} disabled={!loaded} />
           </SettingRow>
-          <SettingRow label="Statut en ligne" description="Montrer quand vous êtes en ligne">
+          <SettingRow label={t("orbit.online_status") || "Statut en ligne"} description={t("orbit.online_status_desc") || "Montrer quand vous êtes en ligne"}>
             <Switch checked={onlineStatus} onCheckedChange={() => handleToggle(setOnlineStatus, "privacy_online_status", onlineStatus)} disabled={!loaded} />
           </SettingRow>
-          <SettingRow label="Indicateur de saisie" description="Montrer quand vous écrivez un message">
+          <SettingRow label={t("orbit.typing_indicator") || "Indicateur de saisie"} description={t("orbit.typing_indicator_desc") || "Montrer quand vous écrivez un message"}>
             <Switch checked={typingIndicators} onCheckedChange={() => handleToggle(setTypingIndicators, "privacy_typing_indicators", typingIndicators)} disabled={!loaded} />
           </SettingRow>
-          <SettingRow label="Aperçu des liens" description="Générer un aperçu pour les liens envoyés">
+          <SettingRow label={t("orbit.link_preview") || "Aperçu des liens"} description={t("orbit.link_preview_desc") || "Générer un aperçu pour les liens envoyés"}>
             <Switch checked={linkPreviews} onCheckedChange={() => handleToggle(setLinkPreviews, "privacy_link_previews", linkPreviews)} disabled={!loaded} />
           </SettingRow>
         </SettingSection>
