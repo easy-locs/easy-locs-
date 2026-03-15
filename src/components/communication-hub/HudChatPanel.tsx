@@ -86,6 +86,8 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
   const [showOriginal, setShowOriginal] = useState<Record<string, boolean>>({});
   const [translatingMsgId, setTranslatingMsgId] = useState<string | null>(null);
   const [typingIndicator, setTypingIndicator] = useState(false);
+  const typingChannelRef = useRef<any>(null);
+  const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [paymentLinkDialog, setPaymentLinkDialog] = useState(false);
   const [paymentAmount, setPaymentAmount] = useState("");
   const [paymentDescription, setPaymentDescription] = useState("");
