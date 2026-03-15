@@ -215,7 +215,7 @@ const Dashboard = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
         >
-          <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-4">
+          <div className="section-block-title mb-4">
             {t("page.dashboard.select_country") || "Select a country to manage"}
           </h2>
 
