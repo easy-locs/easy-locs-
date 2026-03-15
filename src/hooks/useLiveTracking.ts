@@ -144,18 +144,20 @@ export function useTracker(opts: UseTrackerOpts) {
     const eta = calculateETA(lat, lng, opts.destinationLat, opts.destinationLng, speed);
     const newStatus = getProximityStatus(lat, lng, opts.destinationLat, opts.destinationLng);
 
+    const positionUpdate: Record<string, unknown> = {
+      current_lat: lat,
+      current_lng: lng,
+      speed_kmh: speed ? speed * 3.6 : 0,
+      heading: heading || 0,
+      eta_minutes: eta,
+      status: newStatus,
+      last_position_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+
     await supabase
       .from("live_trackings")
-      .update({
-        current_lat: lat,
-        current_lng: lng,
-        speed_kmh: speed ? speed * 3.6 : 0,
-        heading: heading || 0,
-        eta_minutes: eta,
-        status: newStatus,
-        last_position_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      } as any)
+      .update(positionUpdate as any)
       .eq("id", id);
 
     if (newStatus !== status) {
