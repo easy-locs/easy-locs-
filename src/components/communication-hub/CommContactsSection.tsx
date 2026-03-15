@@ -21,6 +21,7 @@ import ScrollableFilterBar from "@/components/ui/ScrollableFilterBar";
 import QRContactCard from "./QRContactCard";
 import { getOrCreateDirectThread } from "@/lib/direct-thread";
 import { useCall } from "@/components/call/CallProvider";
+import { Skeleton } from "@/components/ui/skeleton";
 
 type ContactCategory = "all" | "client" | "team" | "professional" | "favorite" | "recent";
 
