@@ -513,9 +513,10 @@ export class CallManager {
 
     this.streamTimer = setTimeout(() => {
       if (!this.iceConnected) {
+        this.debug("stream timeout — no connection established");
         this.onStateChange({
           status: "network_blocked",
-          error: "Unable to establish call. Your network may restrict internet calls.",
+          error: "Impossible d'établir l'appel. Votre réseau bloque peut-être les appels internet. Essayez avec le Wi-Fi ou un autre réseau.",
         });
         this.cleanup("stream-timeout");
       }
