@@ -185,6 +185,9 @@ export default function CommNearbySection() {
       setNearbyUsers([]);
     }
 
+    } catch (err: any) {
+      setLoadError(err?.message || "Failed to load nearby data");
+    }
     setLoading(false);
     setTimeout(() => setScanning(false), 1200);
   }, [lat, lng, radius, typeFilter, user?.id]);
