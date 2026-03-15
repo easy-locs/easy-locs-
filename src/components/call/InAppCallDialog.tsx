@@ -508,7 +508,7 @@ export default function InAppCallDialog({
                         style={{ background: "hsl(var(--destructive))", color: "hsl(var(--destructive-foreground))" }}>
                         {isEnding ? <Loader2 className="h-6 w-6 animate-spin" /> : <PhoneOff className="h-6 w-6" />}
                       </button>
-                      <span className="text-[10px] font-medium" style={{ color: "hsl(var(--destructive))" }}>End</span>
+                      <span className="text-[10px] font-medium" style={{ color: "hsl(var(--destructive))" }}>Fin</span>
                     </div>
                     <CtrlBtn
                       onClick={handleToggleSpeaker}
