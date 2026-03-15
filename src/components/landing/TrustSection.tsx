@@ -22,6 +22,7 @@ const cardVariants = {
 
 const TrustSection = () => {
   const { t } = useI18n();
+  const isMobile = useIsMobile();
 
   return (
     <section className="py-20 sm:py-28 relative overflow-hidden">
