@@ -51,22 +51,23 @@ export const ECOSYSTEM_CATEGORIES: {
   id: EcosystemFilter;
   label: string;
   emoji: string;
+  /** CSS custom property name (without var() wrapper), e.g. "--hud-cyan" */
   color: string;
 }[] = [
-  { id: "all",               label: "All",             emoji: "🌐", color: "var(--hud-cyan)" },
-  { id: "agent",             label: "Agents",          emoji: "🧑‍💼", color: "var(--hud-purple)" },
-  { id: "technician",        label: "Technicians",     emoji: "🔧", color: "var(--hud-warning)" },
-  { id: "delivery",          label: "Deliveries",      emoji: "📦", color: "var(--hud-success)" },
-  { id: "visit",             label: "Visits",          emoji: "🏠", color: "var(--hud-cyan)" },
-  { id: "intervention",      label: "Interventions",   emoji: "🛠️", color: "var(--hud-danger)" },
-  { id: "available_property",label: "Available",       emoji: "✅", color: "var(--hud-success)" },
-  { id: "releasing_soon",    label: "Releasing soon",  emoji: "📅", color: "var(--hud-warning)" },
-  { id: "scheduled_visit",   label: "Visits planned",  emoji: "🗓️", color: "var(--hud-purple)" },
-  { id: "renovation",        label: "Renovation",      emoji: "🏗️", color: "var(--hud-warning)" },
-  { id: "back_on_market",    label: "Back on market",  emoji: "🔄", color: "var(--hud-success)" },
-  { id: "service",           label: "Services",        emoji: "💼", color: "var(--hud-cyan)" },
-  { id: "concierge",         label: "Concierge",       emoji: "🛎️", color: "var(--hud-purple)" },
-  { id: "person",            label: "People",          emoji: "👤", color: "var(--hud-text-dim)" },
+  { id: "all",               label: "Tout",            emoji: "🌐", color: "--hud-cyan" },
+  { id: "agent",             label: "Agents",          emoji: "🧑‍💼", color: "--hud-purple" },
+  { id: "technician",        label: "Techniciens",     emoji: "🔧", color: "--hud-warning" },
+  { id: "delivery",          label: "Livraisons",      emoji: "📦", color: "--hud-success" },
+  { id: "visit",             label: "Visites",         emoji: "🏠", color: "--hud-cyan" },
+  { id: "intervention",      label: "Interventions",   emoji: "🛠️", color: "--hud-danger" },
+  { id: "available_property",label: "Disponible",      emoji: "✅", color: "--hud-success" },
+  { id: "releasing_soon",    label: "Bientôt libre",   emoji: "📅", color: "--hud-warning" },
+  { id: "scheduled_visit",   label: "Visites prévues", emoji: "🗓️", color: "--hud-purple" },
+  { id: "renovation",        label: "Rénovation",      emoji: "🏗️", color: "--hud-warning" },
+  { id: "back_on_market",    label: "Remis en marché", emoji: "🔄", color: "--hud-success" },
+  { id: "service",           label: "Services",        emoji: "💼", color: "--hud-cyan" },
+  { id: "concierge",         label: "Conciergerie",    emoji: "🛎️", color: "--hud-purple" },
+  { id: "person",            label: "Personnes",       emoji: "👤", color: "--hud-text-dim" },
 ];
 
 interface UseEcosystemRadarOptions {
