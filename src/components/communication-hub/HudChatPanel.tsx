@@ -221,22 +221,33 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
     return () => { supabase.removeChannel(channel); };
   }, [orgId, thread, user, privacySettings.readReceipts]);
 
-  // Typing presence — only broadcast if user has typing indicators enabled
+  // Typing presence — broadcast when user is actually typing
   useEffect(() => {
     if (!thread || !orgId) return;
     const channel = supabase.channel(`typing-${thread.id}`);
+    typingChannelRef.current = channel;
     channel.on("presence", { event: "sync" }, () => {
       const state = channel.presenceState();
       const others = Object.values(state).flat().filter((p: any) => p.user_id !== user?.id);
       setTypingIndicator(others.length > 0);
-    }).subscribe(async (status) => {
-      // Only track typing if user allows typing indicators
-      if (status === "SUBSCRIBED" && privacySettings.typingIndicators) {
-        await channel.track({ user_id: user?.id, online_at: new Date().toISOString() });
-      }
-    });
-    return () => { supabase.removeChannel(channel); };
-  }, [thread, orgId, user?.id, privacySettings.typingIndicators]);
+    }).subscribe();
+    return () => {
+      typingChannelRef.current = null;
+      if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+      supabase.removeChannel(channel);
+    };
+  }, [thread, orgId, user?.id]);
+
+  // Broadcast typing on input change (debounced, respects privacy)
+  const broadcastTyping = useCallback(() => {
+    if (!privacySettings.typingIndicators || !typingChannelRef.current) return;
+    typingChannelRef.current.track({ user_id: user?.id, typing: true, ts: Date.now() }).catch(() => {});
+    // Auto-untrack after 3s of inactivity
+    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+    typingTimeoutRef.current = setTimeout(() => {
+      typingChannelRef.current?.untrack().catch(() => {});
+    }, 3000);
+  }, [user?.id, privacySettings.typingIndicators]);
 
   const handleFileUpload = async (file: File) => {
     if (!thread) return;
