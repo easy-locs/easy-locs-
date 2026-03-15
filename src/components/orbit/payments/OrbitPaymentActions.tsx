@@ -106,7 +106,7 @@ export default function OrbitPaymentActions({
                 <p className="text-2xl font-black">
                   {walletLoading ? "..." : formatLocs(balance?.balance || 0)}
                 </p>
-                <p className="text-[10px] opacity-50 mt-1">1 LOCS = 1 EUR • 0% between users</p>
+                <p className="text-2xs opacity-50 mt-1">1 LOCS = 1 EUR • 0% between users</p>
               </div>
             </div>
 
