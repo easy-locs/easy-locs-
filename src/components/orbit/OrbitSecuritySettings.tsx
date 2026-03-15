@@ -266,7 +266,7 @@ export default function OrbitSecuritySettings({ userId }: OrbitSecuritySettingsP
         <Separator style={{ background: "hsl(var(--hud-border) / 0.08)" }} />
 
         {/* ═══ Notifications ═══ */}
-        <SettingSection icon={Bell} title="Notifications" iconColor="hsl(var(--hud-cyan))">
+        <SettingSection icon={Bell} title={t("orbit.notifications") || "Notifications"} iconColor="hsl(var(--hud-cyan))">
           <SettingRow label="Notifications" description="Recevoir des notifications pour les nouveaux messages">
             <Switch checked={notifications} onCheckedChange={() => handleToggle(setNotifications, "orbit_notifications", notifications)} disabled={!loaded} />
           </SettingRow>
