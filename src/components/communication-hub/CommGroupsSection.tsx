@@ -411,7 +411,7 @@ export default function CommGroupsSection() {
                   style={{ background: "hsl(var(--hud-cyan))", color: "hsl(var(--hud-bg))" }}
                   onClick={() => { setShowMembers(false); setShowAddMember(true); }}
                 >
-                  <UserPlus className="h-3.5 w-3.5" /> Add Member
+                  <UserPlus className="h-3.5 w-3.5" /> {t("orbit.groups.add_member") || "Add Member"}
                 </Button>
               )}
               <Button
