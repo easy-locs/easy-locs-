@@ -290,7 +290,7 @@ export default function CommCallsSection() {
                       </span>
                       <div className="flex items-center gap-1.5 mt-0.5">
                         {secondaryLabel && (
-                          <span className="text-[11px] truncate max-w-[140px]" style={{ color: "hsl(var(--hud-cyan) / 0.7)" }}>
+                          <span className="text-token-xs truncate max-w-[140px]" style={{ color: "hsl(var(--hud-cyan) / 0.7)" }}>
                             {secondaryLabel}
                           </span>
                         )}
