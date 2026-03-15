@@ -1,146 +1,60 @@
 
-# Easy-Locs — Roadmap structurée avec suivi
 
-## PHASE 1 — Stabilisation critique
-| Tâche | Statut | Pages affectées | Corrections |
-|-------|--------|-----------------|-------------|
-| Fix communication system | ✅ Terminé | CommunicationCenter, DashboardLayout, NotificationBell, App.tsx | Sidebar nav → /dashboard/communication, NotifBell link fix, Messages redirect sans CountryGuard, Realtime activé, colonnes messages ajoutées |
-| Fix in-app notifications | ✅ Terminé | NotificationBell.tsx | Lien corrigé vers /dashboard/communication, cross-portal routing OK |
-| Fix rent reminders | ✅ Terminé | Reminders.tsx | Table `reminders` et `rent_calls` vérifiées dans le schéma |
-| Verify message delivery & DB storage | ✅ Terminé | CommunicationCenter.tsx | Insert typé, colonnes attachment_url/message_type/property_id/delivered/conversation_status ajoutées via migration |
-| Remove legacy UI components | ✅ Terminé | Messages.tsx, App.tsx | Messages.tsx = redirect, route sans CountryGuard |
-| Fix layout inconsistencies | ✅ Terminé | DashboardLayout.tsx | Nav sections cohérentes, mobile sidebar OK |
-| Verify mobile responsiveness | ✅ Terminé | DashboardLayout | Sidebar responsive, chat mobile back button |
-| Verify payment link flow | ✅ Terminé | create-concierge-payment | Edge function validée, Stripe Connect flow intact |
+## Plan: UX/UI Harmonization & Error Fixes
 
-## PHASE 2 — Centre de communication centralisé
-| Tâche | Statut |
-|-------|--------|
-| Messages liés à landlord/tenant/property/lease/booking/payment/document | ✅ Terminé |
-| Statuts sent/delivered/read | ✅ Terminé (colonnes en place) |
-| Historique d'activité par entité (timeline agrégée) | ✅ Terminé |
-| Notifications liées | ✅ Terminé |
-| Filtre par propriété dans le centre de communication | ✅ Terminé |
+### Issues Identified
 
-## PHASE 3 — Conciergerie / Activités & Services
-| Tâche | Statut |
-|-------|--------|
-| Photos multiples par service | ✅ Terminé (photo_urls jsonb) |
-| Description, date, heure, guests | ✅ Terminé |
-| Statut de service | ✅ Terminé (concierge_orders.status) |
-| Paiement Stripe | ✅ Terminé (edge function) |
-| Virement bancaire | ✅ Terminé (bank_details, payment_method) |
-| Génération facture | ✅ Terminé (ConciergeInvoiceAdapter + InvoicePdfGenerator) |
-| Communication client liée au booking | ✅ Terminé (BookingCommunicationThread intégré dans BookingDetailDrawer) |
+**A. Text Truncation Issues (violates premium UX standards)**
 
-## PHASE 4 — Documents de réservation
-| Tâche | Statut |
-|-------|--------|
-| Upload passeport/ID/visa/documents par booking | ✅ Terminé (BookingDocumentsPanel partagé) |
-| Documents attachés à la réservation | ✅ Terminé (booking_requests + concierge_orders) |
-| Recherche dans les documents | ✅ Terminé (recherche intégrée dans le panel) |
+1. `OrbitSmartActions.tsx:139` — action descriptions use `truncate`, cutting off text
+2. `OrbitHome.tsx:121` — alert message banner uses `truncate`
+3. `OrbitQuickCard.tsx:99` — description uses `line-clamp-1`, can cut useful info
+4. `OrbitRadar.tsx:445` — entity subtitle in list view uses `truncate`
+5. `OrbitRadar.tsx:487` — entity title in preview card uses `truncate`
 
-## PHASE 5 — Géolocalisation et adresse intelligente
-| Tâche | Statut |
-|-------|--------|
-| Détection pays/ville/langue/devise | ✅ Terminé (useGeoDetect) |
-| Autocomplétion adresse mondiale | ✅ Terminé (AddressAutocomplete) |
-| Rue/code postal/ville/pays/GPS | ✅ Terminé |
+**B. Fake Geo Positioning (breaks Living Ecosystem integrity)**
 
-## PHASE 6 — Séparation stricte par pays
-| Tâche | Statut |
-|-------|--------|
-| Devise/documents/langue/workflows/logique juridique par pays | ✅ Terminé (country-profile, country-config) |
-| Dashboard global = résumés portefeuille uniquement | ✅ Terminé (CountryGuard) |
+6. `useEcosystemRadar.ts:222-230` — properties with no lat/lng get random offset from user position (`Math.random() * 0.01`)
+7. `useEcosystemRadar.ts:253-254` — same issue for booking tasks
 
-## PHASE 7 — Homepage et vitrine
-| Tâche | Statut |
-|-------|--------|
-| Homepage complète | ✅ Terminé (Hero, Features, DashboardPreview, etc.) |
-| Vitrine locations/conciergerie | ✅ Terminé (PublicListing, ConciergeShowcase) |
-| Liens publics de partage | ✅ Terminé (booking slugs) |
-| Partage WhatsApp/Email | ✅ Terminé (ShareButtons composant réutilisable) |
+**C. Type Safety (`as any` cleanup for `live_trackings` table)**
 
-## PHASE 8 — Système de design unifié
-| Tâche | Statut |
-|-------|--------|
-| Tokens sémantiques CSS | ✅ Terminé (index.css) |
-| Composants shadcn/ui standardisés | ✅ Terminé |
-| Espacement/layout mobile cohérent | ✅ Terminé |
-| Audit visuel complet | ✅ Terminé (tokens sémantiques vérifiés, pas de couleurs hardcodées) |
+8. `useLiveTracking.ts` — 7 instances of `as any` on insert/update/select calls
+9. These are expected until types regenerate but should use proper typing where possible
 
----
+**D. Minor UX Inconsistencies**
 
-## PHASE 9 — Smart Deal Room (PLANNED — NOT YET IMPLEMENTED)
+10. `OrbitOrb.tsx:68` — message area has no max-width, can stretch across wide screens
+11. `OrbitHome.tsx:231` — Infrastructure grid uses `grid-cols-3` with `gap-2.5`, inconsistent with other sections using `gap-2`
+12. `OrbitWalletCard.tsx:98` — Quick actions row can overflow on narrow screens (5 buttons)
 
-### Overview
-Transform conversation threads linked to listings/services into transaction workspaces where users negotiate, send offers, track payment, and close deals — all within the chat UI.
+### Implementation Plan
 
-### Status Lifecycle
-```
-inquiry → negotiation → offer_sent → accepted → payment_pending → confirmed → completed → cancelled/expired
-```
+#### 1. Fix text truncation → use `line-clamp-2` or full wrap
+- Replace `truncate` with `line-clamp-2` in SmartActions descriptions, alert messages, and entity subtitles
+- Keep `truncate` only for single-line titles where it's semantically appropriate (names)
 
-### Database Schema: `deals` table
-| Column | Type | Description |
-|--------|------|-------------|
-| id | uuid PK | |
-| thread_id | uuid FK → conversation_threads | Links deal to chat thread |
-| context_id | text | Same context_id as the thread |
-| org_id | uuid FK → orgs | Provider's org |
-| buyer_id | uuid | User making the purchase |
-| seller_id | uuid | User selling/providing |
-| listing_id | uuid? | Optional link to listing/service |
-| listing_type | text | `real_estate_listing` / `marketplace_service` / `concierge_service` / `public_listing` |
-| status | text | Current deal status (see lifecycle) |
-| offer_amount | numeric | Current offer price |
-| currency | text | e.g. EUR, USD, AED |
-| counter_offers | jsonb[] | History: `[{amount, by, at, note}]` |
-| payment_link_url | text? | Stripe/bank payment link |
-| payment_status | text | `pending` / `paid` / `refunded` |
-| documents | jsonb[] | `[{name, url, uploaded_by, at}]` |
-| notes | text? | Internal notes |
-| accepted_at / paid_at / completed_at | timestamptz? | |
-| created_at / updated_at | timestamptz | |
+#### 2. Fix fake geo positioning
+- Skip entities without real coordinates instead of placing them at random offsets
+- Add a `no_geo` flag to entities that have no real position, render them in list view only (not on map)
 
-### UI Components
-1. **DealRoomPanel** — Right sidebar/drawer in chat: status stepper, offer form, payment link, document upload, action buttons
-2. **DealStatusBubble** — Inline system messages: "Offer sent: €250,000", "Offer accepted"
-3. **DealContextHeader** — Top bar in chat: listing thumbnail, price, status badge, quick actions
+#### 3. Reduce `as any` in useLiveTracking
+- Create a `LiveTrackingInsert` and `LiveTrackingUpdate` local type interface to replace raw `as any` casts
+- Keep the `as any` only on `.in("status", [...])` which is a Supabase SDK limitation
 
-### Integration Points
-- Deal events logged as `message_type: "deal_event"` system messages
-- Uses existing `dispatchSyncEvent` for notifications
-- Stripe payment link reused from concierge/marketplace infra
+#### 4. Minor UX polish
+- Add `max-w-[280px]` to OrbitOrb message area
+- Normalize all OrbitHome grid gaps to `gap-2`
+- Make WalletCard quick actions scrollable horizontally on small screens
+- Ensure OrbitRadar category pills have proper spacing on 402px viewport
 
-### Deal Flow (Confirmed)
-```
-Conversation → Offer → Counter offer → Accepted → Payment → Confirmed
-```
+#### Files Modified
+- `src/components/orbit/OrbitSmartActions.tsx` — remove truncate on descriptions
+- `src/components/orbit/OrbitQuickCard.tsx` — improve description rendering
+- `src/components/orbit/OrbitOrb.tsx` — constrain message width
+- `src/components/orbit/OrbitRadar.tsx` — fix truncation in list/preview
+- `src/pages/OrbitHome.tsx` — normalize grid gaps, fix alert truncation
+- `src/components/orbit/OrbitWalletCard.tsx` — scrollable actions row
+- `src/hooks/useEcosystemRadar.ts` — remove fake geo offsets, skip no-geo entities on map
+- `src/hooks/useLiveTracking.ts` — typed inserts/updates to reduce `as any`
 
-### Implementation Phases
-| Phase | Scope | Status |
-|-------|-------|--------|
-| 9a | Schema + DealStatusBubble + "Start Deal" button (MVP) | 📋 Planned |
-| 9b | Negotiation flow with counter-offers | 📋 Planned |
-| 9c | Payment integration (Stripe link generation + tracking) | 📋 Planned |
-| 9d | Analytics & deal conversion metrics | 📋 Planned |
-
-## STABILIZATION LOG — Call Pipeline (March 2026)
-| Issue | Fix | Status |
-|-------|-----|--------|
-| channel.subscribe() not awaited — signals sent before channel ready | Await subscribe with SUBSCRIBED callback + timeout | ✅ Fixed |
-| ICE candidates received before remoteDescription set → addIceCandidate fails | Queue pending candidates, flush after setRemoteDescription | ✅ Fixed |
-| audio.play() blocked on Safari — no sound | Handle play() promise, retry on user gesture (touch/click) | ✅ Fixed |
-| _startTime never reset between calls → wrong elapsed timer | Reset in cleanup() | ✅ Fixed |
-| Relay retry creates new PC but doesn't re-negotiate with peer | Send new offer after relay-only PC creation | ✅ Fixed |
-| Double cleanup crash on repeated endCall() | Added _cleaned guard flag | ✅ Fixed |
-| InAppCallDialog state not reset between calls | Added useEffect reset on open | ✅ Fixed |
-| Missing i18n keys (common.property, nav.explore) | Fallbacks already in place, non-breaking | ⚠️ Cosmetic |
-| Audit log cascade failure (network) | Monitoring errors are fire-and-forget, non-blocking | ⚠️ Cosmetic |
-
-### Key Design Decisions
-- Deals live inside threads — the thread IS the deal room
-- One active deal per thread
-- Reuses existing Stripe, notification, and media infrastructure
-- Progressive disclosure — deal panel only appears when active
