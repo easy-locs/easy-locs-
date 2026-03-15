@@ -624,7 +624,7 @@ export default function CommContactsSection() {
             className="pl-9 h-9 text-sm border-0" style={{ background: "hsl(var(--hud-surface))", color: "hsl(var(--hud-text))" }} />
         </div>
         <ScrollableFilterBar<ContactCategory>
-          options={CATEGORY_TABS.map(t => ({ id: t.id, label: t.label, icon: t.icon }))}
+          options={CATEGORY_IDS.map(c => ({ id: c.id, label: t(c.labelKey) || c.fallback, icon: c.icon }))}
           value={category}
           onChange={setCategory}
         />
