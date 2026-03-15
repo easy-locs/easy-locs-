@@ -144,95 +144,51 @@ export function installPlatformReactions(): () => void {
   const refreshOrbitEngine = () => {
     import("@/stores/orbit-engine").then(({ useOrbitEngine }) => {
       const state = useOrbitEngine.getState();
-      // Debounced refresh — wait 300ms to batch multiple events
       const userId = state.lastRefreshUserId;
       const orgId = state.lastRefreshOrgId ?? undefined;
       if (userId) state.refresh(userId, orgId);
     }).catch(() => {});
   };
 
-  // 1. Wallet payment → refresh Orbit counters + wallet balance
+  // ── All wallet events → refresh orbit engine (balance + counters) ──
   unsubs.push(
-    platformBus.on("wallet:payment_completed", () => {
-      refreshOrbitEngine();
-    })
+    platformBus.onPrefix("wallet:", () => refreshOrbitEngine())
   );
 
+  // ── All marketplace events → refresh orbit engine ──
   unsubs.push(
-    platformBus.on("wallet:transfer_sent", () => {
-      refreshOrbitEngine();
-    })
+    platformBus.onPrefix("marketplace:", () => refreshOrbitEngine())
   );
 
+  // ── All PM events → refresh orbit engine ──
   unsubs.push(
-    platformBus.on("wallet:locs_purchased", () => {
-      refreshOrbitEngine();
-    })
+    platformBus.onPrefix("pm:", () => refreshOrbitEngine())
   );
 
-  // 2. Marketplace booking paid → refresh orbit + wallet
+  // ── All deal events → refresh orbit engine ──
   unsubs.push(
-    platformBus.on("marketplace:booking_paid", () => {
-      refreshOrbitEngine();
-    })
+    platformBus.onPrefix("deal:", () => refreshOrbitEngine())
   );
 
+  // ── Orbit communication events → refresh orbit engine ──
   unsubs.push(
-    platformBus.on("marketplace:booking_confirmed", () => {
-      refreshOrbitEngine();
-    })
+    platformBus.onPrefix("orbit:", () => refreshOrbitEngine())
   );
 
+  // ── Tracking completed → refresh orbit ──
   unsubs.push(
-    platformBus.on("marketplace:booking_cancelled", () => {
-      refreshOrbitEngine();
-    })
+    platformBus.on("tracking:completed", () => refreshOrbitEngine())
   );
 
-  // 3. PM payment received → refresh orbit + wallet
+  // ── Tracking started → refresh orbit (new entity on radar) ──
   unsubs.push(
-    platformBus.on("pm:payment_received", () => {
-      refreshOrbitEngine();
-    })
+    platformBus.on("tracking:started", () => refreshOrbitEngine())
   );
 
-  // 4. Currency changed → propagate via custom event for legacy components
+  // ── Currency changed → propagate via custom event for legacy components ──
   unsubs.push(
     platformBus.on("system:currency_changed", (event) => {
       window.dispatchEvent(new CustomEvent("currency:changed", { detail: event.payload }));
-    })
-  );
-
-  // 5. Listing published → refresh orbit counters
-  unsubs.push(
-    platformBus.on("marketplace:listing_published", () => {
-      refreshOrbitEngine();
-    })
-  );
-
-  unsubs.push(
-    platformBus.on("marketplace:listing_paused", () => {
-      refreshOrbitEngine();
-    })
-  );
-
-  // 6. Lease activated → refresh PM + orbit
-  unsubs.push(
-    platformBus.on("pm:lease_activated", () => {
-      refreshOrbitEngine();
-    })
-  );
-
-  unsubs.push(
-    platformBus.on("pm:lease_created", () => {
-      refreshOrbitEngine();
-    })
-  );
-
-  // 7. Tracking events → refresh orbit
-  unsubs.push(
-    platformBus.on("tracking:completed", () => {
-      refreshOrbitEngine();
     })
   );
 
