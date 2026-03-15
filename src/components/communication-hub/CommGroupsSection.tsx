@@ -148,7 +148,7 @@ export default function CommGroupsSection() {
     } as any);
     
     haptic("success");
-    toast.success("Group created");
+    toast.success(t("orbit.groups.created") || "Group created");
     setShowCreate(false);
     setNewGroup({ name: "", description: "" });
     setCreating(false);
