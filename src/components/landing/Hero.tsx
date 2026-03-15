@@ -3,6 +3,7 @@ import { ArrowRight, Globe, Zap, Building2, CreditCard, Shield, Sparkles } from 
 import { Link } from "react-router-dom";
 import { useI18n } from "@/lib/i18n";
 import { useRef } from "react";
+import { useIsMobile } from "@/hooks/use-mobile";
 import type { Transition } from "framer-motion";
 
 const floatAnim = (delay: number): { y: number[]; transition: Transition } => ({
