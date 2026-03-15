@@ -871,6 +871,14 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
           </div>
         </div>
 
+        {/* ══ Deal Context Header ══ */}
+        <DealContextHeader
+          dealId={thread.dealId}
+          contextType={thread.conversationType}
+          contextId={thread.contextId}
+          onToggleContext={onToggleContext}
+        />
+
         {/* ══ Multi-select toolbar ══ */}
         {selectMode && (
           <MessageMultiSelectToolbar
