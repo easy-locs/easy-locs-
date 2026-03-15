@@ -180,7 +180,7 @@ export default function OrbitSecuritySettings({ userId }: OrbitSecuritySettingsP
         <div className="flex items-center gap-2.5 mb-2">
           <Lock className="h-4 w-4" style={{ color: "hsl(var(--hud-success))" }} />
           <span className="text-sm font-semibold" style={{ color: "hsl(var(--hud-success))" }}>
-            Chiffrement de bout en bout actif
+            {t("orbit.e2e_active") || "Chiffrement de bout en bout actif"}
           </span>
         </div>
         <p className="text-xs leading-relaxed" style={{ color: "hsl(var(--hud-text-dim))" }}>
