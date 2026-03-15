@@ -1271,7 +1271,9 @@ export type Database = {
           data_json: Json | null
           deal_id: string
           event_type: string
+          expires_at: string | null
           id: string
+          round_number: number | null
         }
         Insert: {
           actor_id?: string | null
@@ -1280,7 +1282,9 @@ export type Database = {
           data_json?: Json | null
           deal_id: string
           event_type: string
+          expires_at?: string | null
           id?: string
+          round_number?: number | null
         }
         Update: {
           actor_id?: string | null
@@ -1289,7 +1293,9 @@ export type Database = {
           data_json?: Json | null
           deal_id?: string
           event_type?: string
+          expires_at?: string | null
           id?: string
+          round_number?: number | null
         }
         Relationships: [
           {
@@ -1315,7 +1321,9 @@ export type Database = {
           current_offer_currency: string | null
           id: string
           metadata_json: Json | null
+          negotiation_round: number | null
           notes: string | null
+          offer_expires_at: string | null
           org_id: string
           seller_id: string | null
           status: Database["public"]["Enums"]["deal_status"]
@@ -1335,7 +1343,9 @@ export type Database = {
           current_offer_currency?: string | null
           id?: string
           metadata_json?: Json | null
+          negotiation_round?: number | null
           notes?: string | null
+          offer_expires_at?: string | null
           org_id: string
           seller_id?: string | null
           status?: Database["public"]["Enums"]["deal_status"]
@@ -1355,7 +1365,9 @@ export type Database = {
           current_offer_currency?: string | null
           id?: string
           metadata_json?: Json | null
+          negotiation_round?: number | null
           notes?: string | null
+          offer_expires_at?: string | null
           org_id?: string
           seller_id?: string | null
           status?: Database["public"]["Enums"]["deal_status"]
