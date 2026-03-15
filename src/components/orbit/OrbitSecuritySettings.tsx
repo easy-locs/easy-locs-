@@ -163,10 +163,10 @@ export default function OrbitSecuritySettings({ userId }: OrbitSecuritySettingsP
         </div>
         <div className="flex-1">
           <h2 className="text-lg font-bold" style={{ color: "hsl(var(--hud-text))" }}>
-            Orbit Privacy
+            {t("orbit.privacy_title") || "Orbit Privacy"}
           </h2>
           <p className="text-xs" style={{ color: "hsl(var(--hud-text-dim))" }}>
-            Signal-inspired privacy standard
+            {t("orbit.privacy_subtitle") || "Signal-inspired privacy standard"}
           </p>
         </div>
         <OrbitPrivacyBadge encrypted />
@@ -180,17 +180,17 @@ export default function OrbitSecuritySettings({ userId }: OrbitSecuritySettingsP
         <div className="flex items-center gap-2.5 mb-2">
           <Lock className="h-4 w-4" style={{ color: "hsl(var(--hud-success))" }} />
           <span className="text-sm font-semibold" style={{ color: "hsl(var(--hud-success))" }}>
-            Chiffrement de bout en bout actif
+            {t("orbit.e2e_active") || "Chiffrement de bout en bout actif"}
           </span>
         </div>
         <p className="text-xs leading-relaxed" style={{ color: "hsl(var(--hud-text-dim))" }}>
-          Les messages, appels et fichiers partagés sont chiffrés sur votre appareil avant l'envoi. Le serveur ne peut pas lire vos contenus.
+          {t("orbit.e2e_description") || "Les messages, appels et fichiers partagés sont chiffrés sur votre appareil avant l'envoi. Le serveur ne peut pas lire vos contenus."}
         </p>
         {hasKeys && (
           <div className="flex items-center gap-2 mt-3">
             <div className="w-2 h-2 rounded-full animate-pulse" style={{ background: "hsl(var(--hud-success))" }} />
             <span className="text-[11px]" style={{ color: "hsl(var(--hud-success) / 0.7)" }}>
-              Clés d'identité présentes sur cet appareil
+              {t("orbit.keys_present") || "Clés d'identité présentes sur cet appareil"}
             </span>
           </div>
         )}
@@ -198,7 +198,7 @@ export default function OrbitSecuritySettings({ userId }: OrbitSecuritySettingsP
 
       <div className="space-y-6 pt-2">
         {/* ═══ Two-Factor Authentication ═══ */}
-        <SettingSection icon={Fingerprint} title="Authentification à deux facteurs" iconColor="hsl(var(--hud-purple))">
+        <SettingSection icon={Fingerprint} title={t("orbit.2fa_title") || "Authentification à deux facteurs"} iconColor="hsl(var(--hud-purple))">
           {qrCode ? (
             <div className="text-center space-y-3 py-2">
               <div className="inline-block p-2 rounded-xl bg-white">
@@ -224,17 +224,17 @@ export default function OrbitSecuritySettings({ userId }: OrbitSecuritySettingsP
         <Separator style={{ background: "hsl(var(--hud-border) / 0.08)" }} />
 
         {/* ═══ Privacy Controls ═══ */}
-        <SettingSection icon={Eye} title="Confidentialité" iconColor="hsl(var(--hud-cyan))">
-          <SettingRow label="Accusés de lecture" description="Les autres voient quand vous avez lu leurs messages">
+        <SettingSection icon={Eye} title={t("orbit.privacy_controls") || "Confidentialité"} iconColor="hsl(var(--hud-cyan))">
+          <SettingRow label={t("orbit.read_receipts") || "Accusés de lecture"} description={t("orbit.read_receipts_desc") || "Les autres voient quand vous avez lu leurs messages"}>
             <Switch checked={readReceipts} onCheckedChange={() => handleToggle(setReadReceipts, "privacy_read_receipts", readReceipts)} disabled={!loaded} />
           </SettingRow>
-          <SettingRow label="Statut en ligne" description="Montrer quand vous êtes en ligne">
+          <SettingRow label={t("orbit.online_status") || "Statut en ligne"} description={t("orbit.online_status_desc") || "Montrer quand vous êtes en ligne"}>
             <Switch checked={onlineStatus} onCheckedChange={() => handleToggle(setOnlineStatus, "privacy_online_status", onlineStatus)} disabled={!loaded} />
           </SettingRow>
-          <SettingRow label="Indicateur de saisie" description="Montrer quand vous écrivez un message">
+          <SettingRow label={t("orbit.typing_indicator") || "Indicateur de saisie"} description={t("orbit.typing_indicator_desc") || "Montrer quand vous écrivez un message"}>
             <Switch checked={typingIndicators} onCheckedChange={() => handleToggle(setTypingIndicators, "privacy_typing_indicators", typingIndicators)} disabled={!loaded} />
           </SettingRow>
-          <SettingRow label="Aperçu des liens" description="Générer un aperçu pour les liens envoyés">
+          <SettingRow label={t("orbit.link_preview") || "Aperçu des liens"} description={t("orbit.link_preview_desc") || "Générer un aperçu pour les liens envoyés"}>
             <Switch checked={linkPreviews} onCheckedChange={() => handleToggle(setLinkPreviews, "privacy_link_previews", linkPreviews)} disabled={!loaded} />
           </SettingRow>
         </SettingSection>
@@ -242,7 +242,7 @@ export default function OrbitSecuritySettings({ userId }: OrbitSecuritySettingsP
         <Separator style={{ background: "hsl(var(--hud-border) / 0.08)" }} />
 
         {/* ═══ Disappearing Messages ═══ */}
-        <SettingSection icon={Clock} title="Messages éphémères" iconColor="hsl(var(--hud-warning))">
+        <SettingSection icon={Clock} title={t("orbit.disappearing_messages") || "Messages éphémères"} iconColor="hsl(var(--hud-warning))">
           <SettingRow label="Suppression automatique" description="Tous les nouveaux messages seront supprimés après ce délai">
             <Select value={autoDeletePeriod} onValueChange={handleAutoDeleteChange} disabled={!loaded}>
               <SelectTrigger className="w-28 h-8 text-xs" style={{
@@ -266,7 +266,7 @@ export default function OrbitSecuritySettings({ userId }: OrbitSecuritySettingsP
         <Separator style={{ background: "hsl(var(--hud-border) / 0.08)" }} />
 
         {/* ═══ Notifications ═══ */}
-        <SettingSection icon={Bell} title="Notifications" iconColor="hsl(var(--hud-cyan))">
+        <SettingSection icon={Bell} title={t("orbit.notifications") || "Notifications"} iconColor="hsl(var(--hud-cyan))">
           <SettingRow label="Notifications" description="Recevoir des notifications pour les nouveaux messages">
             <Switch checked={notifications} onCheckedChange={() => handleToggle(setNotifications, "orbit_notifications", notifications)} disabled={!loaded} />
           </SettingRow>
@@ -278,7 +278,7 @@ export default function OrbitSecuritySettings({ userId }: OrbitSecuritySettingsP
         <Separator style={{ background: "hsl(var(--hud-border) / 0.08)" }} />
 
         {/* ═══ Storage & Data ═══ */}
-        <SettingSection icon={Database} title="Stockage et données" iconColor="hsl(var(--hud-text-dim))">
+        <SettingSection icon={Database} title={t("orbit.storage_data") || "Stockage et données"} iconColor="hsl(var(--hud-text-dim))">
           <SettingRow label="Téléchargement auto des médias" description="Télécharger automatiquement photos et vidéos">
             <Switch checked={mediaAutoDownload} onCheckedChange={() => handleToggle(setMediaAutoDownload, "orbit_media_auto_download", mediaAutoDownload)} disabled={!loaded} />
           </SettingRow>
@@ -287,14 +287,14 @@ export default function OrbitSecuritySettings({ userId }: OrbitSecuritySettingsP
         <Separator style={{ background: "hsl(var(--hud-border) / 0.08)" }} />
 
         {/* ═══ Session Management ═══ */}
-        <SettingSection icon={Smartphone} title="Appareils connectés" iconColor="hsl(var(--hud-cyan))">
+        <SettingSection icon={Smartphone} title={t("orbit.connected_devices") || "Appareils connectés"} iconColor="hsl(var(--hud-cyan))">
           <OrbitSessionManager userId={userId} />
         </SettingSection>
 
         <Separator style={{ background: "hsl(var(--hud-border) / 0.08)" }} />
 
         {/* ═══ Advanced / Danger Zone ═══ */}
-        <SettingSection icon={HardDrive} title="Avancé" iconColor="hsl(var(--hud-danger))">
+        <SettingSection icon={HardDrive} title={t("orbit.advanced") || "Avancé"} iconColor="hsl(var(--hud-danger))">
           <div className="space-y-2">
             <Button variant="outline" size="sm" className="w-full justify-start gap-2 text-xs"
               onClick={handleWipeKeys}

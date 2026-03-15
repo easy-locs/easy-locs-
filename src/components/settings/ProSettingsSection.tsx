@@ -1,6 +1,8 @@
 /**
  * ProSettingsSection — Comprehensive Signal/WhatsApp-style professional settings.
  * Covers: User ID, encryption, chat, calls, storage, blocked users, privacy, security.
+ * DB-synced settings: readReceipts, typingIndicators, linkPreview, messagePreview, mediaAutoDownload
+ * are persisted to profiles table to stay consistent with OrbitSecuritySettings.
  */
 import { useState, useEffect, useCallback } from "react";
 import {
@@ -10,6 +12,7 @@ import {
   Radio, Navigation, MapPin, Volume2, VolumeX, Vibrate, Mail,
   UserX, ShieldCheck, ShieldAlert, QrCode, RefreshCw, Monitor
 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
@@ -135,6 +138,36 @@ export default function ProSettingsSection() {
   const [settings, setSettings] = useState<ProSettings>(getProSettings);
   const [copied, setCopied] = useState(false);
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
+  const [dbLoaded, setDbLoaded] = useState(false);
+
+  // ── Sync DB-backed settings on mount ──
+  useEffect(() => {
+    if (!user?.id) return;
+    (async () => {
+      const { data } = await supabase.from("profiles").select(
+        "privacy_read_receipts, privacy_typing_indicators, privacy_link_previews, privacy_online_status, orbit_notifications, orbit_message_preview, orbit_media_auto_download"
+      ).eq("id", user.id).single();
+      if (data) {
+        const dbSync: Partial<ProSettings> = {
+          readReceipts: (data as any).privacy_read_receipts ?? true,
+          typingIndicators: (data as any).privacy_typing_indicators ?? true,
+          linkPreview: (data as any).privacy_link_previews ?? true,
+          messagePreview: (data as any).orbit_message_preview ?? true,
+          mediaAutoDownload: (data as any).orbit_media_auto_download ? "always" : "wifi",
+        };
+        setSettings(prev => ({ ...prev, ...dbSync }));
+      }
+      setDbLoaded(true);
+    })();
+  }, [user?.id]);
+
+  // ── Column mapping for DB-synced toggles ──
+  const DB_COLUMN_MAP: Record<string, string> = {
+    readReceipts: "privacy_read_receipts",
+    typingIndicators: "privacy_typing_indicators",
+    linkPreview: "privacy_link_previews",
+    messagePreview: "orbit_message_preview",
+  };
 
   const update = useCallback(<K extends keyof ProSettings>(key: K, value: ProSettings[K]) => {
     setSettings(prev => {
@@ -142,7 +175,13 @@ export default function ProSettingsSection() {
       saveProSettings(next);
       return next;
     });
-  }, []);
+    // Persist to DB if this is a DB-synced setting
+    const dbCol = DB_COLUMN_MAP[key as string];
+    if (dbCol && user?.id) {
+      supabase.from("profiles").update({ [dbCol]: value } as any).eq("id", user.id)
+        .then(({ error }) => { if (error) console.error("[ProSettings] DB sync error:", error); });
+    }
+  }, [user?.id]);
 
   const userId = user?.id || "—";
   const shortId = userId.substring(0, 8).toUpperCase();
@@ -486,21 +525,8 @@ export default function ProSettingsSection() {
         />
 
         <div className="space-y-4">
-          {/* Storage indicator */}
-          <div className="p-3 rounded-xl border border-border bg-muted/30">
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-xs font-medium text-foreground">Espace utilisé</span>
-              <span className="text-xs text-muted-foreground">~12 MB</span>
-            </div>
-            <div className="w-full h-2 rounded-full bg-muted overflow-hidden">
-              <div className="h-full rounded-full" style={{ width: "15%", background: "hsl(var(--hud-cyan))" }} />
-            </div>
-            <div className="flex justify-between mt-2 text-[10px] text-muted-foreground">
-              <span>Messages: ~4 MB</span>
-              <span>Médias: ~6 MB</span>
-              <span>Autre: ~2 MB</span>
-            </div>
-          </div>
+          {/* Storage estimate — uses StorageManager API when available */}
+          <StorageUsageBar />
 
           <ToggleRow
             icon={<RefreshCw className="h-4 w-4" />}
@@ -669,5 +695,41 @@ function ChipButton({ selected, onClick, children }: {
     >
       {children}
     </button>
+  );
+}
+
+function StorageUsageBar() {
+  const [usage, setUsage] = useState<{ used: number; quota: number } | null>(null);
+
+  useEffect(() => {
+    if ("storage" in navigator && "estimate" in (navigator as any).storage) {
+      (navigator as any).storage.estimate().then((est: { usage?: number; quota?: number }) => {
+        if (est.usage != null && est.quota != null) {
+          setUsage({ used: est.usage, quota: est.quota });
+        }
+      }).catch(() => {});
+    }
+  }, []);
+
+  const formatBytes = (b: number) => {
+    if (b < 1024) return `${b} B`;
+    if (b < 1024 * 1024) return `${(b / 1024).toFixed(1)} KB`;
+    if (b < 1024 * 1024 * 1024) return `${(b / (1024 * 1024)).toFixed(1)} MB`;
+    return `${(b / (1024 * 1024 * 1024)).toFixed(1)} GB`;
+  };
+
+  if (!usage) return null;
+
+  const pct = Math.min(100, (usage.used / usage.quota) * 100);
+  return (
+    <div className="p-3 rounded-xl border border-border bg-muted/30">
+      <div className="flex justify-between items-center mb-2">
+        <span className="text-xs font-medium text-foreground">Espace utilisé</span>
+        <span className="text-xs text-muted-foreground">{formatBytes(usage.used)} / {formatBytes(usage.quota)}</span>
+      </div>
+      <div className="w-full h-2 rounded-full bg-muted overflow-hidden">
+        <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, background: "hsl(var(--hud-cyan))" }} />
+      </div>
+    </div>
   );
 }
