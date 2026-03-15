@@ -442,7 +442,7 @@ function EntityRow({ entity, onSelect, onMessage }: {
           )}
         </div>
         {entity.subtitle && (
-          <p className="text-[9px] truncate mt-0.5" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{entity.subtitle}</p>
+          <p className="text-[9px] line-clamp-2 break-words mt-0.5" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{entity.subtitle}</p>
         )}
       </div>
       <button onClick={e => { e.stopPropagation(); onMessage(); }}
