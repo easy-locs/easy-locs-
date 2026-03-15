@@ -101,7 +101,7 @@ export default function IncomingGuestCallDialog({
               variant="destructive"
               size="lg"
               className="rounded-full gap-2 px-6"
-              onClick={() => onDecline(callId)}
+              onClick={handleDecline}
             >
               <PhoneOff className="h-5 w-5" />
               Decline
