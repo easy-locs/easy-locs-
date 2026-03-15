@@ -75,6 +75,7 @@ function presenceColor(status: string): string {
 
 export default function CommContactsSection() {
   const { user, orgId } = useAuth();
+  const { t } = useI18n();
   const navigate = useNavigate();
   const { startCall: initiateCall, isStartingCall } = useCall();
   const [contacts, setContacts] = useState<Contact[]>([]);
