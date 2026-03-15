@@ -162,7 +162,7 @@ export default function OrbitSessionManager({ userId }: OrbitSessionManagerProps
           {otherSessions.length > 0 && (
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <Button variant="ghost" size="sm" className="text-[11px] h-7 px-2 gap-1"
+                <Button variant="ghost" size="sm" className="text-token-xs h-7 px-2 gap-1"
                   disabled={revokingAll}
                   style={{ color: "hsl(var(--destructive))" }}>
                   {revokingAll ? <Loader2 className="h-3 w-3 animate-spin" /> : <LogOut className="h-3 w-3" />}
