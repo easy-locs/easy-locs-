@@ -1,0 +1,16 @@
+PASS9 — Orbit communication, security and Arabic/i18n hardening
+
+What changed:
+- CV preview sanitized before rendering and isolated in a sandboxed iframe
+- Scheduled audit edge function now requires Authorization and rejects unauthenticated calls
+- Notification email function no longer reuses service role key as internal notification secret
+- Added Supabase migration to prevent arbitrary self-join into private groups
+- CommunicationCenter header improved: Orbit Communication title + quick pills for Chats / Groups / Orbit Radar / Wallet / Security
+- Orbit Security Settings header clarified and Ghost Elite premium card added
+- Arabic support improved:
+  - document lang/dir switches automatically (rtl for ar/he)
+  - Arabic overrides added for core Orbit/settings keys
+
+Notes:
+- Some Lovable dashboard warnings are platform settings or require re-running scans after deployment.
+- Leaked password protection must still be enabled in auth/provider settings if disabled server-side.

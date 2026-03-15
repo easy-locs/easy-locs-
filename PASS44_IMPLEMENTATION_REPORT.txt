@@ -1,0 +1,25 @@
+PASS44 IMPLEMENTATION REPORT
+
+Files changed:
+- src/lib/storefront-core.ts
+- src/components/marketplace/StorefrontVideoRail.tsx
+- src/pages/VideoHub.tsx
+- src/pages/StorePage.tsx
+- src/components/marketplace/ProviderStorefront.tsx
+
+Issues fixed:
+- seller storefront video surfaces were not deeply connected to wallet flows
+- video commerce feed could contact sellers in Orbit, but could not continue into wallet/payment/request access flows
+- private storefronts lacked a cleaner CTA path for gated access
+
+Fixes applied:
+- added buildWalletContactPath helper to keep wallet/provider-agnostic contract centralized
+- added Pay in Wallet / Request access CTA to storefront video rail
+- added Pay in Wallet / Request access CTA to VideoHub cards
+- added wallet CTA to seller StorePage header
+- added wallet CTA to ProviderStorefront desktop actions
+
+Flows strengthened:
+- video feed -> orbit message / wallet payment / open store
+- storefront page -> orbit message / wallet payment or request access
+- private storefront -> request access path via wallet screen

@@ -1,0 +1,5 @@
+ORBIT pass7
+- Fixed Orbit Radar visibility: direct map import, size invalidation, fitBounds, clearer empty/scanning overlays.
+- Safer null coordinate handling in radar hooks/components.
+- CommPaymentsSection now resolves recipients from profiles and performs real LOCS send/request actions instead of placeholder behavior.
+- .env remains excluded from delivered zip.

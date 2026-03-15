@@ -1,0 +1,5 @@
+PASS20
+- Call lifecycle bus propagation improved
+- Calls section realtime and diagnostics improved
+- Message/file/voice/location sends now emit orbit:message_sent
+- Fixed duplicate prop bug in CommCallsSection input

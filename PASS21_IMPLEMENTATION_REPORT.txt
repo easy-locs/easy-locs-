@@ -1,0 +1,134 @@
+PASS21 — WORLDWIDE BANK CONNECTIVITY ROUTER
+
+Compatibility with current wallet:
+YES. This goes in the right direction for Easy-Locs / Orbit because it keeps the frontend provider-agnostic and routes bank logic through the backend only.
+To preserve the current architecture and avoid duplicate wallet ledgers, this pass reuses existing wallet_balances / wallet_transactions and exposes a compatibility view called wallets.
+
+FILES CHANGED
+1. supabase/functions/_shared/banking/types.ts
+2. supabase/functions/_shared/banking/env.ts
+3. supabase/functions/_shared/banking/auth.ts
+4. supabase/functions/_shared/banking/router.ts
+5. supabase/functions/_shared/banking/provider.ts
+6. supabase/functions/_shared/banking/plaid.ts
+7. supabase/functions/_shared/banking/yapily.ts
+8. supabase/functions/_shared/banking/saltedge.ts
+9. supabase/functions/_shared/banking/stripe.ts
+10. supabase/functions/bank-connections/index.ts
+11. supabase/functions/bank-payments/index.ts
+12. supabase/functions/bank-payouts/index.ts
+13. supabase/functions/bank-webhooks/index.ts
+14. supabase/functions/bank-sync-jobs/index.ts
+15. supabase/migrations/20260315060000_bank_connectivity_router.sql
+16. src/lib/banking/bankGateway.ts
+
+ROUTES / FUNCTIONS ADDED
+- bank-connections
+- bank-payments
+- bank-payouts
+- bank-webhooks
+- bank-sync-jobs
+
+SHARED BACKEND MODULES ADDED
+- provider-router
+- plaid adapter
+- yapily adapter
+- saltedge adapter
+- stripe adapter
+- auth helper
+- env helper
+- provider dispatcher
+
+TABLES / DB OBJECTS ADDED
+- bank_providers
+- bank_connections
+- bank_consents
+- bank_accounts
+- bank_payment_intents
+- bank_payout_requests
+- bank_webhooks
+- wallets (compatibility VIEW over wallet_balances to preserve current wallet architecture)
+
+WHAT WAS IMPLEMENTED
+1. Provider routing by region
+   - US/Canada → Plaid
+   - Europe/UK → Yapily
+   - Global fallback → Salt Edge
+   - Payments / payouts / commissions → Stripe supported through adapter
+
+2. Connect bank account
+   - backend-only provider resolution
+   - connection record creation
+   - consent record creation
+   - provider link response returned to frontend through one contract
+
+3. Store consent and provider connection state
+   - bank_connections stores status / state / provider refs / sync timestamps
+   - bank_consents stores consent state / scope / provider consent ref
+
+4. Sync linked accounts
+   - sync_accounts action and bank-sync-jobs function
+   - bank_accounts table for normalized account storage
+
+5. Pay-by-bank flows
+   - create_payment_intent
+   - confirm_payment_intent
+   - sync_wallet
+   - provider-agnostic backend contract
+
+6. Payout requests
+   - request_payout flow
+   - stored in bank_payout_requests
+
+7. Webhook processing foundation
+   - provider webhook intake
+   - payload persistence in bank_webhooks
+   - signature capture
+   - processed flag support
+
+8. Wallet + transaction sync
+   - payment intent can be synchronized into wallet_transactions
+   - preserves current Easy-Locs wallet model instead of replacing it
+
+9. Frontend provider-agnostic contract
+   - src/lib/banking/bankGateway.ts
+   - frontend never calls providers directly
+   - frontend only invokes Easy-Locs backend edge functions
+
+API / REQUEST CONTRACT
+All new backend functions return the requested contract shape:
+{
+  success: true|false,
+  data: ..., 
+  error: null | { code, message }
+}
+
+DB / SECURITY
+- no provider secret added to frontend
+- backend uses env only
+- RLS enabled on all bank_* tables
+- owner-based policies added for authenticated users
+- webhook table restricted to service role policy
+
+QA COVERAGE
+Verified in sandbox:
+- npm run typecheck → PASS
+
+Not fully verifiable in sandbox:
+- vite build (environment lacks local vite binary during execution)
+- real provider API connectivity (requires real env secrets)
+- live webhook callbacks from Plaid / Yapily / Salt Edge / Stripe
+
+INTENTIONAL LIMITS / WHAT IS NOT CLAIMED AS FULLY DONE
+- Real Plaid/Yapily/Salt Edge production API exchange is scaffolded through adapters but still requires environment secrets and provider-specific token flows.
+- Stripe payout behavior may require existing connected-account / treasury setup depending on your payout model.
+- No frontend UI screens were added yet; this pass adds the backend gateway and frontend contract only.
+- No duplicate wallet system was created. Existing wallet architecture was preserved intentionally.
+
+WHY THIS FITS THE PROJECT
+This is aligned with Easy-Locs / Orbit because:
+- frontend stays clean and provider-agnostic
+- backend becomes the single banking gateway
+- wallet can be extended without breaking current wallet flows
+- region-based routing supports worldwide expansion
+- the architecture remains modular and scalable instead of hard-wiring providers into UI

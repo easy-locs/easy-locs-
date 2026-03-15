@@ -1,0 +1,7 @@
+PASS41
+- Added storefront-core helpers for visibility, media detection and Orbit contact routing.
+- ProviderStorefront now supports mixed image/video gallery, storefront visibility badges and Orbit contact CTA.
+- StorePage now supports public/private storefront behavior, video availability badges and Orbit contact CTA.
+- ServiceCard supports private pricing masking and custom booking label.
+- Marketplace i18n extended for private storefront and video channel labels.
+- Typecheck: PASS.
