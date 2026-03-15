@@ -190,7 +190,7 @@ export default function OrbitSecuritySettings({ userId }: OrbitSecuritySettingsP
           <div className="flex items-center gap-2 mt-3">
             <div className="w-2 h-2 rounded-full animate-pulse" style={{ background: "hsl(var(--hud-success))" }} />
             <span className="text-[11px]" style={{ color: "hsl(var(--hud-success) / 0.7)" }}>
-              Clés d'identité présentes sur cet appareil
+              {t("orbit.keys_present") || "Clés d'identité présentes sur cet appareil"}
             </span>
           </div>
         )}
