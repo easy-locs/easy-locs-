@@ -492,7 +492,7 @@ export default function InAppCallDialog({
                       active={muted}
                       activeColor="var(--destructive)"
                       icon={muted ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
-                      text={muted ? "Unmute" : "Mute"}
+                      text={muted ? "Activer" : "Muet"}
                     />
                     <CtrlBtn
                       onClick={handleToggleVideo}
