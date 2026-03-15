@@ -107,7 +107,9 @@ const StatCard = ({
   path,
   valueClassName,
   className,
+  loading,
 }: StatCardProps) => {
+  if (loading) return <StatCardSkeleton className={className} />;
   const content = (
     <div
       className={cn(
