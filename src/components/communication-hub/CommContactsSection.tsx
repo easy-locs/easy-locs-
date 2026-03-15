@@ -605,11 +605,11 @@ export default function CommContactsSection() {
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-lg font-bold" style={{ color: "hsl(var(--hud-text))" }}>Contacts</h2>
           <div className="flex items-center gap-1.5">
-            <Button size="sm" variant="ghost" className="h-8 w-8 p-0"
+            <Button size="sm" variant="ghost" className="h-8 w-8 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 p-0"
               style={{ color: "hsl(var(--hud-cyan))" }} onClick={() => setShowQR(true)}>
               <QrCode className="h-4 w-4" />
             </Button>
-            <Button size="sm" variant="ghost" className="h-8 gap-1.5 text-xs"
+            <Button size="sm" variant="ghost" className="h-8 min-h-[44px] sm:min-h-0 gap-1.5 text-xs"
               style={{ color: "hsl(var(--hud-cyan))" }} onClick={() => setShowAdd(true)}>
               <UserPlus className="h-4 w-4" /> Add
             </Button>

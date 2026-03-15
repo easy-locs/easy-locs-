@@ -240,7 +240,7 @@ export const CommunicationCenter = () => {
             {showChatArea && !selectedThread && (
               <Button
                 size="sm" variant="ghost"
-                className="h-8 w-8 p-0 rounded-full"
+                className="h-8 w-8 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 p-0 rounded-full"
                 style={{ color: "hsl(var(--primary))" }}
                 onClick={() => setShowNewConversation(true)}
               >
