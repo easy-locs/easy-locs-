@@ -161,5 +161,5 @@ const StatCard = ({
   return content;
 };
 
-export { StatCard, AnimatedValue };
+export { StatCard, StatCardSkeleton, AnimatedValue };
 export type { StatCardProps };
