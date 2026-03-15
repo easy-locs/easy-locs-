@@ -146,6 +146,11 @@ const Dashboard = () => {
   return (
     <DashboardLayout>
       <div className="max-w-5xl mx-auto">
+        {/* Error state */}
+        {error && !loading && (
+          <ErrorState message={error} onRetry={() => { setError(null); setLoading(true); }} className="mb-6" />
+        )}
+
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 12 }}
