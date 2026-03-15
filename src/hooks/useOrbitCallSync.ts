@@ -22,7 +22,7 @@ export function useOrbitCallSync() {
       if (debounceRef.current) clearTimeout(debounceRef.current);
       debounceRef.current = setTimeout(() => {
         refresh(user.id, orgId || undefined);
-      }, 600);
+      }, 300);
     };
 
     const channelName = `orbit-global-sync-${user.id}`;
