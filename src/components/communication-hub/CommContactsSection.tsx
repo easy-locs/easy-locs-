@@ -620,7 +620,7 @@ export default function CommContactsSection() {
         </div>
         <div className="relative mb-3">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }} />
-          <Input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search contacts..."
+          <Input value={search} onChange={e => setSearch(e.target.value)} placeholder={t("orbit.contacts.search") || "Search contacts…"}
             className="pl-9 h-9 text-sm border-0" style={{ background: "hsl(var(--hud-surface))", color: "hsl(var(--hud-text))" }} />
         </div>
         <ScrollableFilterBar<ContactCategory>
