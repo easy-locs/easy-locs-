@@ -652,7 +652,7 @@ export default function CommContactsSection() {
           <div className="flex flex-col items-center justify-center py-16 text-center px-6">
             <Users className="h-10 w-10 mb-3" style={{ color: "hsl(var(--destructive) / 0.4)" }} />
             <p className="text-sm font-medium mb-1" style={{ color: "hsl(var(--foreground) / 0.7)" }}>
-              Failed to load contacts
+              {t("orbit.contacts.failed_load") || "Failed to load contacts"}
             </p>
             <p className="text-xs mb-4" style={{ color: "hsl(var(--muted-foreground) / 0.5)" }}>
               {loadError}
@@ -662,7 +662,7 @@ export default function CommContactsSection() {
               className="text-xs font-semibold px-4 py-2 rounded-lg min-h-[44px] transition-colors"
               style={{ background: "hsl(var(--primary) / 0.1)", color: "hsl(var(--primary))" }}
             >
-              Retry
+              {t("orbit.contacts.retry") || "Retry"}
             </button>
           </div>
         ) : filtered.length === 0 ? (
