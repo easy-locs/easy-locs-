@@ -78,6 +78,7 @@ export default function CommContactsSection() {
   const { startCall: initiateCall, isStartingCall } = useCall();
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [category, setCategory] = useState<ContactCategory>("all");
   const [search, setSearch] = useState("");
   const [showAdd, setShowAdd] = useState(false);
