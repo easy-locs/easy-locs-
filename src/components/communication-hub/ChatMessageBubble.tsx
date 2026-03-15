@@ -390,10 +390,10 @@ function ChatMessageBubble({
                 {showTranscript && translatedTranscript && (
                   <button
                     onClick={() => setShowTranslatedTranscript(!showTranslatedTranscript)}
-                    className="mt-0.5 inline-flex items-center gap-1 text-[9px] hover:opacity-80"
+                    className="mt-0.5 inline-flex items-center gap-1 text-[10px] hover:opacity-80 min-h-[44px] sm:min-h-0 py-1"
                     style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}
                   >
-                    <Globe className="h-2 w-2" />
+                    <Globe className="h-3 w-3 sm:h-2.5 sm:w-2.5" />
                     {showTranslatedTranscript ? "Original" : "Translated"}
                   </button>
                 )}
