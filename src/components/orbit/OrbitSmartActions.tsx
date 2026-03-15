@@ -136,7 +136,7 @@ export default function OrbitSmartActions({ actions, loading }: Props) {
                   {action.label}
                 </p>
                 <p
-                  className="text-[10px] leading-tight mt-0.5 truncate"
+                  className="text-[10px] leading-tight mt-0.5 line-clamp-2 break-words"
                   style={{ color: "hsl(var(--hud-text-dim))" }}
                 >
                   {action.description}

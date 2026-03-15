@@ -64,9 +64,9 @@ export default function OrbitOrb({ contextMessage, className = "" }: OrbitOrbPro
         )}
       </div>
 
-      <div className="mt-4 text-center animate-fade-in">
+      <div className="mt-4 text-center animate-fade-in max-w-[280px] mx-auto">
         <span className="text-2xl">{displayIcon}</span>
-        <p className="text-sm font-medium mt-1" style={{ color: "hsl(var(--hud-text))" }}>
+        <p className="text-sm font-medium mt-1 break-words" style={{ color: "hsl(var(--hud-text))" }}>
           {displayMessage}
         </p>
       </div>

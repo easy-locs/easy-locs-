@@ -218,8 +218,6 @@ export function useEcosystemRadar({
           (leases as any[]).forEach(l => {
             const p = l.properties;
             if (!p) return;
-            // Without lat/lng on properties, place at user position with small offset for visibility
-            const offset = Math.random() * 0.01;
             const photos = Array.isArray(p.photo_urls) ? p.photo_urls : [];
             all.push({
               id: l.id,
@@ -227,9 +225,9 @@ export function useEcosystemRadar({
               title: p.label || "Property",
               subtitle: `Free ${l.end_date} · ${p.city || ""}`,
               photo: photos[0] || null,
-              lat: lat + offset, lng: lng + offset,
+              lat: 0, lng: 0,
               distance_km: 0,
-              meta: { property_id: l.property_id, end_date: l.end_date, city: p.city },
+              meta: { property_id: l.property_id, end_date: l.end_date, city: p.city, no_geo: true },
             });
           });
         }
@@ -250,7 +248,6 @@ export function useEcosystemRadar({
             const cat: EcosystemCategory =
               t.task_type === "inspection" || t.task_type === "visit" ? "scheduled_visit" :
               t.task_type === "maintenance" || t.task_type === "renovation" ? "renovation" : "intervention";
-            const offset = Math.random() * 0.01;
             const photos = p && Array.isArray(p.photo_urls) ? p.photo_urls : [];
             all.push({
               id: t.id,
@@ -258,10 +255,10 @@ export function useEcosystemRadar({
               title: t.title,
               subtitle: `${t.status} · ${p?.label || ""}`,
               photo: photos[0] || null,
-              lat: lat + offset, lng: lng + offset,
+              lat: 0, lng: 0,
               distance_km: 0,
               status: t.status,
-              meta: { task_type: t.task_type, scheduled_at: t.scheduled_at },
+              meta: { task_type: t.task_type, scheduled_at: t.scheduled_at, no_geo: true },
             });
           });
         }

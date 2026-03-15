@@ -117,7 +117,7 @@ export default function OrbitHome() {
               <p className="text-xs font-bold" style={{ color: "hsl(var(--hud-text))" }}>
                 {engine.alerts[0].title}
               </p>
-              <p className="text-[11px] truncate" style={{ color: "hsl(var(--hud-text-dim))" }}>
+              <p className="text-[11px] line-clamp-2 break-words" style={{ color: "hsl(var(--hud-text-dim))" }}>
                 {engine.alerts[0].message}
               </p>
             </div>
@@ -228,7 +228,7 @@ export default function OrbitHome() {
         >
           Orbit — Infrastructure
         </h2>
-        <div className="grid grid-cols-3 gap-2.5">
+        <div className="grid grid-cols-3 gap-2">
           {ORBIT_INFRA_CARDS.map((card, i) => (
             <div key={card.label} className="animate-fade-in" style={{ animationDelay: `${320 + i * 40}ms` }}>
               <OrbitQuickCard

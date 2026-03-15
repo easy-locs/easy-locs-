@@ -285,7 +285,7 @@ export default function OrbitRadar() {
               lat={lat}
               lng={lng}
               radius={radius}
-              entities={entities}
+              entities={entities.filter(e => !e.meta?.no_geo)}
               onSelect={handleSelect}
             />
           </Suspense>
@@ -442,7 +442,7 @@ function EntityRow({ entity, onSelect, onMessage }: {
           )}
         </div>
         {entity.subtitle && (
-          <p className="text-[9px] truncate mt-0.5" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{entity.subtitle}</p>
+          <p className="text-[9px] line-clamp-2 break-words mt-0.5" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{entity.subtitle}</p>
         )}
       </div>
       <button onClick={e => { e.stopPropagation(); onMessage(); }}
@@ -484,7 +484,7 @@ function EntityPreview({ entity, onClose, onMessage, onCall, onOpen }: {
           )}
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-1.5">
-              <h3 className="text-sm font-bold truncate" style={{ color: "hsl(var(--hud-text))" }}>{entity.title}</h3>
+              <h3 className="text-sm font-bold break-words" style={{ color: "hsl(var(--hud-text))" }}>{entity.title}</h3>
               {entity.verified && <span className="text-[10px]">✅</span>}
               {entity.online && <span className="h-2 w-2 rounded-full shrink-0" style={{ background: "hsl(var(--hud-success))" }} />}
             </div>
