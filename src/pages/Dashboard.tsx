@@ -183,11 +183,6 @@ const Dashboard = () => {
                 path={kpi.path}
                 loading={loading}
               />
-                label={kpi.label}
-                value={kpi.value}
-                sub={kpi.sub}
-                path={kpi.path}
-              />
             </motion.div>
           ))}
         </div>
