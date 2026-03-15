@@ -582,7 +582,7 @@ export default function CommGroupsSection() {
               />
             </div>
             <div>
-              <Label className="text-xs" style={{ color: "hsl(var(--hud-text-dim))" }}>Description</Label>
+              <Label className="text-xs" style={{ color: "hsl(var(--hud-text-dim))" }}>{t("orbit.groups.description") || "Description"}</Label>
               <Input
                 value={newGroup.description}
                 onChange={e => setNewGroup(p => ({ ...p, description: e.target.value }))}
