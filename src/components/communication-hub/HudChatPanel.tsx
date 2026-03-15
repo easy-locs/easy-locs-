@@ -925,7 +925,22 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
 
         {/* ══ Messages ══ */}
         <div ref={scrollRef} className="flex-1 overflow-y-auto overflow-x-hidden px-3 sm:px-4 py-3" style={{ background: "hsl(var(--hud-bg))" }}>
-          {messages.length === 0 ? (
+          {isDecrypting && rawMessages.length > 0 && messages.length === 0 ? (
+            /* Skeleton while decrypting E2E messages */
+            <div className="space-y-4 py-4">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <div key={i} className={`flex ${i % 2 === 0 ? "justify-start" : "justify-end"}`}>
+                  <div className="space-y-1.5" style={{ maxWidth: "75%" }}>
+                    {i % 2 === 0 && <Skeleton className="h-2.5 w-16" />}
+                    <Skeleton className={`h-10 rounded-2xl ${i % 2 === 0 ? "w-48 rounded-bl-md" : "w-40 rounded-br-md"}`} />
+                    <div className={`flex gap-1 ${i % 2 === 0 ? "" : "justify-end"}`}>
+                      <Skeleton className="h-2 w-8" />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : messages.length === 0 ? (
             <div className="flex items-center justify-center h-full">
               <div className="text-center px-6">
                 <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4" style={{
@@ -935,6 +950,10 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
                 </div>
                 <p className="text-sm font-medium" style={{ color: "hsl(var(--hud-text))" }}>No messages yet</p>
                 <p className="text-xs mt-1" style={{ color: "hsl(var(--hud-text-dim))" }}>Start the conversation</p>
+                <div className="flex items-center justify-center gap-1.5 mt-3">
+                  <Lock className="h-3 w-3" style={{ color: "hsl(var(--hud-success) / 0.5)" }} />
+                  <span className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>End-to-end encrypted</span>
+                </div>
               </div>
             </div>
           ) : (
