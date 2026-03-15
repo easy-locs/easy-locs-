@@ -918,7 +918,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
           >
             <CloudUpload className="h-3.5 w-3.5 animate-pulse shrink-0" style={{ color: "hsl(var(--hud-success))" }} />
             <span className="text-[11px] font-medium" style={{ color: "hsl(var(--hud-success))" }}>
-              Syncing queued messages...
+              {t("orbit.syncing_queued") || "Syncing queued messages..."}
             </span>
           </motion.div>
         )}
