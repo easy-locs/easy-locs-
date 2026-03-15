@@ -285,7 +285,7 @@ export default function OrbitRadar() {
               lat={lat}
               lng={lng}
               radius={radius}
-              entities={entities}
+              entities={entities.filter(e => !e.meta?.no_geo)}
               onSelect={handleSelect}
             />
           </Suspense>
