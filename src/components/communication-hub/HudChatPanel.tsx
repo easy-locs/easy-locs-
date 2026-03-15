@@ -948,11 +948,11 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
                 }}>
                   <MessageCircle className="h-7 w-7" style={{ color: "hsl(var(--hud-text-dim) / 0.25)" }} />
                 </div>
-                <p className="text-sm font-medium" style={{ color: "hsl(var(--hud-text))" }}>No messages yet</p>
-                <p className="text-xs mt-1" style={{ color: "hsl(var(--hud-text-dim))" }}>Start the conversation</p>
+                <p className="text-sm font-medium" style={{ color: "hsl(var(--hud-text))" }}>{t("orbit.no_messages") || "No messages yet"}</p>
+                <p className="text-xs mt-1" style={{ color: "hsl(var(--hud-text-dim))" }}>{t("orbit.start_conversation") || "Start the conversation"}</p>
                 <div className="flex items-center justify-center gap-1.5 mt-3">
                   <Lock className="h-3 w-3" style={{ color: "hsl(var(--hud-success) / 0.5)" }} />
-                  <span className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>End-to-end encrypted</span>
+                  <span className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>{t("orbit.e2e_encrypted") || "End-to-end encrypted"}</span>
                 </div>
               </div>
             </div>
