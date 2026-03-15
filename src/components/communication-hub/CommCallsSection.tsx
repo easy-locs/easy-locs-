@@ -1,11 +1,12 @@
 /**
  * CommCallsSection — Call history with single direction icon per entry.
- * Uses HUD tokens. Functional redial. Swipe-to-delete.
+ * Uses HUD tokens. Functional redial. Swipe-to-delete. Fully i18n'd.
  */
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCall } from "@/components/call/CallProvider";
+import { useI18n } from "@/lib/i18n";
 import {
   Phone, PhoneMissed, Video, Search, ArrowDownLeft, ArrowUpRight,
 } from "lucide-react";
