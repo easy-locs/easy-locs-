@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { ShieldCheck, Globe, Cpu, BrainCircuit } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const items = [
   { icon: ShieldCheck, key: "secure", color: "success", fallback: "Secure Platform", desc: "End-to-end encryption, GDPR & international compliance" },
