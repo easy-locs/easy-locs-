@@ -31,9 +31,15 @@ export default function IncomingGuestCallDialog({
     if (open) {
       setRingTime(0);
       timerRef.current = setInterval(() => setRingTime((t) => t + 1), 1000);
+      startRingtone(isVideo ? "video" : "audio");
+    } else {
+      stopRingtone();
     }
-    return () => { if (timerRef.current) clearInterval(timerRef.current); };
-  }, [open]);
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+      stopRingtone();
+    };
+  }, [open, isVideo]);
 
   // Auto-decline after 30 seconds
   useEffect(() => {
