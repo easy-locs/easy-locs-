@@ -47,7 +47,7 @@ export default function CommNavBar({ active, onChange, isMobile, unreadCount = 0
             <button
               key={tab.id}
               onClick={() => onChange(tab.id)}
-              className="flex flex-col items-center gap-1 relative min-w-[48px] py-1"
+              className="flex flex-col items-center gap-1 relative min-w-[48px] min-h-[44px] py-1"
             >
               {isActive && (
                 <motion.div
