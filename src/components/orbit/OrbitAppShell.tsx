@@ -124,7 +124,7 @@ function OrbitBottomNav() {
               className={`w-5 h-5 transition-colors ${isActive ? "text-hud-cyan" : "text-hud-text-dim"}`}
             />
             <span
-              className={`text-[10px] font-medium ${isActive ? "text-hud-cyan" : "text-hud-text-dim"}`}
+              className={`text-2xs font-medium ${isActive ? "text-hud-cyan" : "text-hud-text-dim"}`}
             >
               {label}
             </span>

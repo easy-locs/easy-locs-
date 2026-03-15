@@ -153,7 +153,7 @@ export const ExploreListingCard = memo(function ExploreListingCard({ item }: { i
               {ctaLabel} <ArrowRight className="h-3 w-3" />
             </span>
             {!user && (
-              <span className="inline-flex items-center gap-1 text-[10px] text-muted-foreground">
+              <span className="inline-flex items-center gap-1 text-2xs text-muted-foreground">
                 <Lock className="h-3 w-3" /> {t("explore.login_to_contact") || "Login to contact"}
               </span>
             )}
