@@ -198,7 +198,7 @@ export default function OrbitSecuritySettings({ userId }: OrbitSecuritySettingsP
 
       <div className="space-y-6 pt-2">
         {/* ═══ Two-Factor Authentication ═══ */}
-        <SettingSection icon={Fingerprint} title="Authentification à deux facteurs" iconColor="hsl(var(--hud-purple))">
+        <SettingSection icon={Fingerprint} title={t("orbit.2fa_title") || "Authentification à deux facteurs"} iconColor="hsl(var(--hud-purple))">
           {qrCode ? (
             <div className="text-center space-y-3 py-2">
               <div className="inline-block p-2 rounded-xl bg-white">
