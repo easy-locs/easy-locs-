@@ -191,7 +191,7 @@ export default function Explore() {
         )}
 
         {loadError && (
-          <div className="mb-4 rounded-xl border border-border bg-card px-4 py-3 text-sm text-muted-foreground">{loadError}</div>
+          <ErrorState message={loadError} onRetry={() => window.location.reload()} className="mb-6" />
         )}
 
         {/* Results header */}
