@@ -526,7 +526,7 @@ export default function ProSettingsSection() {
 
         <div className="space-y-4">
           {/* Storage estimate — uses StorageManager API when available */}
-          <StorageEstimate />
+          <StorageUsageBar />
 
           <ToggleRow
             icon={<RefreshCw className="h-4 w-4" />}
