@@ -456,17 +456,17 @@ export default function InAppCallDialog({
                 <div className="mx-auto w-14 h-14 rounded-full flex items-center justify-center" style={{ background: "hsl(var(--destructive) / 0.08)" }}>
                   <WifiOff className="h-7 w-7" style={{ color: "hsl(var(--destructive))" }} />
                 </div>
-                <p className="text-xs" style={{ color: "hsl(var(--muted-foreground))" }}>{error || "Your network may restrict internet calls."}</p>
+                <p className="text-xs" style={{ color: "hsl(var(--muted-foreground))" }}>{error || "Votre réseau peut bloquer les appels internet."}</p>
                 {onFallbackChat && (
                   <button className="w-full inline-flex items-center justify-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-medium transition-colors"
                     style={{ borderColor: "hsl(var(--border))", color: "hsl(var(--foreground))" }}
                     onClick={() => { handleEndCall(); onFallbackChat(); }} disabled={isEnding}>
-                    <MessageSquare className="h-4 w-4" /> Switch to chat
+                    <MessageSquare className="h-4 w-4" /> Basculer en chat
                   </button>
                 )}
                 <button className="w-full inline-flex items-center justify-center rounded-xl border px-4 py-2.5 text-sm font-medium transition-colors"
                   style={{ borderColor: "hsl(var(--border))", color: "hsl(var(--foreground))" }}
-                  onClick={handleEndCall} disabled={isEnding}>Close</button>
+                  onClick={handleEndCall} disabled={isEnding}>Fermer</button>
               </div>
             ) : (
               <div className="px-8 pb-12 pt-4 w-full">
