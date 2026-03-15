@@ -185,7 +185,6 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
   // Realtime messages + typing via centralized RealtimeManager
   useEffect(() => {
     if (!orgId || !thread) return;
-    const { realtimeManager } = require("@/lib/realtime-manager");
     const matchThread = (msg: any) => {
       const msgKey = msg.booking_id ? `booking-${msg.booking_id}` : msg.tenant_id ? `tenant-${msg.tenant_id}` : null;
       return msgKey === thread.id || msg.context_id === thread.contextId;
