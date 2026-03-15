@@ -202,7 +202,7 @@ const Documents = () => {
                           {new Date(d.created_at).toLocaleDateString(activeLocale)}
                           <span className="bg-muted px-1.5 py-0.5 rounded text-xs">{d.doc_type}</span>
                           {d.routing_status === "routed" && (
-                            <span className="bg-success/10 text-success px-1.5 py-0.5 rounded text-[10px]">✓ Routé</span>
+                            <span className="bg-success/10 text-success px-1.5 py-0.5 rounded text-2xs">✓ Routé</span>
                           )}
                         </div>
                         {/* Routing chips */}
