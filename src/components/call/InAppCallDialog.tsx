@@ -481,7 +481,7 @@ export default function InAppCallDialog({
                     <button onClick={onClose}
                       className="w-full max-w-[200px] inline-flex items-center justify-center rounded-xl border px-6 py-3 text-sm font-semibold transition-all active:scale-95"
                       style={{ borderColor: "hsl(var(--border))", color: "hsl(var(--foreground))", background: "hsl(var(--muted) / 0.3)" }}>
-                      Close
+                      Fermer
                     </button>
                   </div>
                 ) : (
