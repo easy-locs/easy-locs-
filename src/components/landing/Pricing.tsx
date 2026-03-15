@@ -160,7 +160,7 @@ const Pricing = () => {
               <button
                 key={v}
                 onClick={() => setInterval(v)}
-                className={`relative px-6 py-2.5 rounded-full text-sm font-medium transition-all duration-300 z-10 ${
+                className={`relative px-6 py-2.5 min-h-[44px] rounded-full text-sm font-medium transition-all duration-300 z-10 ${
                   interval === v ? "text-background" : "text-muted-foreground hover:text-foreground"
                 }`}
               >
