@@ -333,6 +333,33 @@ const ConciergeServices = () => {
   return (
     <DashboardLayout>
       <div className="space-y-6">
+        {loading && (
+          <div className="space-y-6">
+            {/* Skeleton KPIs */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-3">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <Card key={i}><CardContent className="pt-4 pb-3 animate-pulse">
+                  <div className="h-3 bg-muted rounded w-16 mb-2" />
+                  <div className="h-6 bg-muted rounded w-12" />
+                </CardContent></Card>
+              ))}
+            </div>
+            {/* Skeleton service cards */}
+            <div className="responsive-card-grid">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <Card key={i} className="overflow-hidden animate-pulse">
+                  <div className="aspect-[16/10] bg-muted" />
+                  <CardContent className="pt-3 space-y-2">
+                    <div className="h-4 bg-muted rounded w-3/4" />
+                    <div className="h-3 bg-muted rounded w-1/2" />
+                    <div className="h-5 bg-muted rounded w-20 mt-2" />
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        )}
+        {!loading && (<>
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
@@ -365,7 +392,7 @@ const ConciergeServices = () => {
         </div>
 
         {/* KPIs */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-2 sm:gap-3">
           {[
             { icon: Sparkles, label: t?.("page.concierge.kpi_active") || "Active Services", value: String(activeServices), cls: "text-accent" },
             { icon: ShoppingBag, label: t?.("page.concierge.kpi_pending") || "Pending Orders", value: String(pendingOrders), cls: "text-amber-500" },
@@ -379,7 +406,7 @@ const ConciergeServices = () => {
                 <CardContent className="pt-4 pb-3">
                   <div className="flex items-center gap-1.5 mb-1">
                     <kpi.icon className={`h-4 w-4 shrink-0 ${kpi.cls}`} />
-                    <span className="text-[10px] text-muted-foreground uppercase tracking-wider truncate">{kpi.label}</span>
+                    <span className="text-2xs text-muted-foreground uppercase tracking-wider truncate">{kpi.label}</span>
                   </div>
                   <p className="text-lg sm:text-xl font-bold text-foreground tabular-nums truncate">{kpi.value}</p>
                 </CardContent>
@@ -413,7 +440,7 @@ const ConciergeServices = () => {
                 <Button onClick={() => setShowForm(true)}><Plus className="h-4 w-4 mr-1" /> Create Service</Button>
               </CardContent></Card>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="responsive-card-grid">
                 {filtered.map((s, i) => {
                   const photos: string[] = Array.isArray(s.photo_urls) ? s.photo_urls : s.photo_url ? [s.photo_url] : [];
                   return (
@@ -843,6 +870,7 @@ const ConciergeServices = () => {
             orgId={orgId}
           />
         )}
+        </>)}
       </div>
     </DashboardLayout>
   );

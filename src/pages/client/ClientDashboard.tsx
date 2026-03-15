@@ -56,26 +56,39 @@ const ClientDashboard = () => {
         </motion.div>
 
         <div className="responsive-card-grid mb-8">
-          {quickCards.map((card, i) => (
-            <motion.div key={card.path} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 + i * 0.05 }}>
-              <Link
-                to={card.path}
-                className="group flex flex-col h-full min-h-[148px] bg-card rounded-xl shadow-card border border-border/50 hover:shadow-card-hover hover:border-accent/30 transition-all relative overflow-hidden"
-                style={{ padding: "var(--card-padding)" }}
-              >
-                <div className="absolute top-0 left-0 right-0 h-0.5 bg-accent opacity-0 group-hover:opacity-100 transition-opacity" />
+          {!loaded ? (
+            // Skeleton loading cards
+            Array.from({ length: 5 }).map((_, i) => (
+              <div key={i} className="flex flex-col h-full min-h-[148px] bg-card rounded-xl shadow-card border border-border/50 animate-pulse" style={{ padding: "var(--card-padding)" }}>
                 <div className="flex items-center justify-between mb-3">
-                  <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center group-hover:bg-accent/10 transition-colors">
-                    <card.icon className={`h-5 w-5 ${card.color}`} />
-                  </div>
-                  <ArrowRight className="h-4 w-4 text-transparent group-hover:text-accent transition-colors" />
+                  <div className="w-10 h-10 rounded-lg bg-muted" />
                 </div>
-                <span className="text-sm text-muted-foreground mb-1">{card.label}</span>
-                <div className="font-bold text-foreground text-2xl tabular-nums mt-auto">{card.value}</div>
-                <p className="text-2xs text-accent mt-1 opacity-0 group-hover:opacity-100 transition-opacity">{card.hint}</p>
-              </Link>
-            </motion.div>
-          ))}
+                <div className="h-4 bg-muted rounded w-20 mb-2" />
+                <div className="h-7 bg-muted rounded w-12 mt-auto" />
+              </div>
+            ))
+          ) : (
+            quickCards.map((card, i) => (
+              <motion.div key={card.path} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 + i * 0.05 }}>
+                <Link
+                  to={card.path}
+                  className="group flex flex-col h-full min-h-[148px] bg-card rounded-xl shadow-card border border-border/50 hover:shadow-card-hover hover:border-accent/30 transition-all relative overflow-hidden"
+                  style={{ padding: "var(--card-padding)" }}
+                >
+                  <div className="absolute top-0 left-0 right-0 h-0.5 bg-accent opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center group-hover:bg-accent/10 transition-colors">
+                      <card.icon className={`h-5 w-5 ${card.color}`} />
+                    </div>
+                    <ArrowRight className="h-4 w-4 text-transparent group-hover:text-accent transition-colors" />
+                  </div>
+                  <span className="text-sm text-muted-foreground mb-1">{card.label}</span>
+                  <div className="font-bold text-foreground text-2xl tabular-nums mt-auto">{card.value}</div>
+                  <p className="text-2xs text-accent mt-1 opacity-0 group-hover:opacity-100 transition-opacity">{card.hint}</p>
+                </Link>
+              </motion.div>
+            ))
+          )}
         </div>
 
         {loaded && stats.bookings === 0 && (
