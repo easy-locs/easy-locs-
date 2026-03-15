@@ -60,7 +60,7 @@ export default function OrbitSmartHub({ totalProperties, totalCountries, propert
 
   return (
     <div
-      className="rounded-2xl overflow-hidden"
+      className="rounded-2xl overflow-visible"
       style={{
         background: "hsl(var(--hud-bg))",
         border: "1px solid hsl(var(--hud-border) / 0.18)",
