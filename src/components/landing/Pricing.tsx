@@ -160,7 +160,7 @@ const Pricing = () => {
               <button
                 key={v}
                 onClick={() => setInterval(v)}
-                className={`relative px-6 py-2.5 rounded-full text-sm font-medium transition-all duration-300 z-10 ${
+                className={`relative px-6 py-2.5 min-h-[44px] rounded-full text-sm font-medium transition-all duration-300 z-10 ${
                   interval === v ? "text-background" : "text-muted-foreground hover:text-foreground"
                 }`}
               >
@@ -274,7 +274,7 @@ const Pricing = () => {
                   {/* CTA */}
                   <Link
                     to="/signup"
-                    className={`flex items-center justify-center gap-2 w-full py-3 rounded-xl font-semibold text-sm transition-all duration-200 group/btn ${
+                    className={`flex items-center justify-center gap-2 w-full py-3 min-h-[44px] rounded-xl font-semibold text-sm transition-all duration-200 group/btn ${
                       isHighlight
                         ? "bg-primary text-primary-foreground hover:opacity-90 shadow-md shadow-primary/20"
                         : tier.name === "Company"

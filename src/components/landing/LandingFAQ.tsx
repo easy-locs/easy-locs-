@@ -91,7 +91,7 @@ const LandingFAQ = () => {
                   <button
                     type="button"
                     onClick={() => setOpenIndex(isOpen ? null : i)}
-                    className="w-full flex items-center justify-between gap-3 p-5 text-left group"
+                    className="w-full flex items-center justify-between gap-3 p-4 sm:p-5 min-h-[44px] text-left group"
                   >
                     <span className={`text-sm font-semibold transition-colors ${isOpen ? "text-foreground" : "text-foreground/80 group-hover:text-foreground"}`}>
                       {t(faq.qKey) || faq.qFallback}

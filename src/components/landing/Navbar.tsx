@@ -66,10 +66,10 @@ const Navbar = () => {
       transition={{ duration: 0.5 }}
       className="fixed top-0 left-0 right-0 z-50"
       style={{
-        background: "hsl(var(--navy-deep) / 0.8)",
+        background: "hsl(var(--navy-deep) / 0.92)",
         borderBottom: "1px solid hsl(220 15% 90% / 0.06)",
-        backdropFilter: "blur(20px) saturate(180%)",
-        WebkitBackdropFilter: "blur(20px) saturate(180%)",
+        backdropFilter: "blur(12px) saturate(140%)",
+        WebkitBackdropFilter: "blur(12px) saturate(140%)",
       }}
     >
       <div className="container flex items-center justify-between h-14 sm:h-16 px-4">
@@ -206,9 +206,8 @@ const Navbar = () => {
             transition={{ duration: 0.25, ease: "easeInOut" }}
             className="md:hidden overflow-hidden"
             style={{
-              background: "hsl(var(--navy-deep) / 0.97)",
+              background: "hsl(var(--navy-deep) / 0.98)",
               borderTop: "1px solid hsl(220 15% 90% / 0.06)",
-              backdropFilter: "blur(20px)",
             }}
           >
             <div className="container px-4 py-5 space-y-1">
@@ -254,16 +253,16 @@ const Navbar = () => {
               </div>
 
               <div className="pt-3 border-t space-y-2" style={{ borderColor: "hsl(220 15% 90% / 0.06)" }}>
-                <Link
+                  <Link
                   to="/login"
-                  className="block w-full text-center py-3 rounded-xl text-sm font-medium border transition-all text-white/80 border-white/12 hover:border-white/25"
+                  className="block w-full text-center py-3 min-h-[44px] rounded-xl text-sm font-medium border transition-all text-white/80 border-white/12 hover:border-white/25 flex items-center justify-center"
                   onClick={() => setMobileOpen(false)}
                 >
                   {t("landing.nav.login") || "Log in"}
                 </Link>
                 <Link
                   to="/signup"
-                  className="block w-full text-center py-2.5 rounded-xl text-sm font-bold relative overflow-hidden"
+                  className="block w-full text-center py-3 min-h-[44px] rounded-xl text-sm font-bold relative overflow-hidden flex items-center justify-center"
                   style={{
                     background: "var(--gradient-gold)",
                     color: "hsl(var(--accent-foreground))",
