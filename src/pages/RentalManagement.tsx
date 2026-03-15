@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useSubscriptionGating } from "@/hooks/useSubscriptionGating";
 import UpgradeBanner from "@/components/subscription/UpgradeBanner";
 import { useSearchParams, useNavigate } from "react-router-dom";
