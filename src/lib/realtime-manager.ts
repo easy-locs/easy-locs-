@@ -292,7 +292,7 @@ class RealtimeManager {
           status: "offline",
           last_seen_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
-        } as any, { onConflict: "user_id" }).catch(() => {});
+        } as any, { onConflict: "user_id" }).then(() => {}).catch?.(() => {});
       }
       origStop();
     };
