@@ -93,6 +93,11 @@ const DealContextHeader = memo(function DealContextHeader({
   const Icon = config.icon;
   const displayAmount = dealData.accepted_amount || dealData.counter_offer_amount || dealData.current_offer_amount;
   const currency = dealData.current_offer_currency || "EUR";
+  const offerExpiresAt = dealData.offer_expires_at ? new Date(dealData.offer_expires_at) : null;
+  const expired = offerExpiresAt ? isPast(offerExpiresAt) : false;
+  const expiryText = offerExpiresAt
+    ? expired ? "Expired" : formatDistanceToNow(offerExpiresAt, { addSuffix: true })
+    : null;
 
   return (
     <AnimatePresence>
@@ -121,7 +126,7 @@ const DealContextHeader = memo(function DealContextHeader({
 
           {/* Info */}
           <div className="min-w-0 flex-1 text-left">
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-1.5 flex-wrap">
               <span className="text-[11px] font-bold" style={{ color: config.text }}>
                 🤝 Deal Room
               </span>
@@ -131,12 +136,25 @@ const DealContextHeader = memo(function DealContextHeader({
               >
                 {config.label}
               </span>
+              {dealData.negotiation_round > 0 && (
+                <span className="text-[8px] px-1 py-0.5 rounded-full" style={{ background: "hsl(var(--hud-surface))", color: "hsl(var(--hud-text-dim))" }}>
+                  R{dealData.negotiation_round}
+                </span>
+              )}
             </div>
-            {dealData.context_title && (
-              <p className="text-[10px] truncate mt-0.5" style={{ color: "hsl(var(--hud-text-dim))" }}>
-                {dealData.context_title}
-              </p>
-            )}
+            <div className="flex items-center gap-1.5 mt-0.5">
+              {dealData.context_title && (
+                <p className="text-[10px] truncate" style={{ color: "hsl(var(--hud-text-dim))" }}>
+                  {dealData.context_title}
+                </p>
+              )}
+              {expiryText && (
+                <span className="text-[9px] flex items-center gap-0.5 shrink-0" style={{ color: expired ? "hsl(var(--hud-danger))" : "hsl(40 80% 55%)" }}>
+                  <Timer className="h-2.5 w-2.5" />
+                  {expiryText}
+                </span>
+              )}
+            </div>
           </div>
 
           {/* Price */}
