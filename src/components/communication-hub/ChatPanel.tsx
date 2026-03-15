@@ -11,6 +11,7 @@ import {
 import AIGenerateButton from "@/components/ai/AIGenerateButton";
 import ChatMediaPreview from "@/components/communication/ChatMediaPreview";
 import { supabase } from "@/integrations/supabase/client";
+import { realtimeManager } from "@/lib/realtime-manager";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -103,7 +104,6 @@ export default function ChatPanel({ thread, onBack, onToggleContext, showContext
   // Realtime messages + typing via centralized RealtimeManager
   useEffect(() => {
     if (!orgId || !thread) return;
-    const { realtimeManager } = require("@/lib/realtime-manager");
     const matchThread = (msg: any) => {
       const msgKey = msg.booking_id ? `booking-${msg.booking_id}` : msg.tenant_id ? `tenant-${msg.tenant_id}` : null;
       return msgKey === thread.id || msg.context_id === thread.contextId;

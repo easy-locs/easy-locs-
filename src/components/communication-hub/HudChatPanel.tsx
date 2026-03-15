@@ -21,6 +21,7 @@ import { haptic } from "@/lib/haptics";
 import { useVoiceRecorder, formatVoiceDuration } from "@/hooks/useVoiceRecorder";
 import ChatMediaPreview from "@/components/communication/ChatMediaPreview";
 import { supabase } from "@/integrations/supabase/client";
+import { realtimeManager } from "@/lib/realtime-manager";
 import { usePrivacySettings, computeDisappearAt } from "@/hooks/usePrivacySettings";
 import { useAuth } from "@/contexts/AuthContext";
 import { useOrbitEncryption } from "@/hooks/useOrbitEncryption";
@@ -185,7 +186,6 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
   // Realtime messages + typing via centralized RealtimeManager
   useEffect(() => {
     if (!orgId || !thread) return;
-    const { realtimeManager } = require("@/lib/realtime-manager");
     const matchThread = (msg: any) => {
       const msgKey = msg.booking_id ? `booking-${msg.booking_id}` : msg.tenant_id ? `tenant-${msg.tenant_id}` : null;
       return msgKey === thread.id || msg.context_id === thread.contextId;
