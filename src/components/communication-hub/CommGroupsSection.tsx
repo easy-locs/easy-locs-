@@ -16,6 +16,8 @@ import { Label } from "@/components/ui/label";
 import { haptic } from "@/lib/haptics";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
+import { Skeleton } from "@/components/ui/skeleton";
+import { ErrorState } from "@/components/ui/error-state";
 
 interface Group {
   id: string;
@@ -60,6 +62,7 @@ export default function CommGroupsSection() {
   const { user, orgId } = useAuth();
   const [groups, setGroups] = useState<Group[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [showCreate, setShowCreate] = useState(false);
   const [newGroup, setNewGroup] = useState({ name: "", description: "" });
@@ -78,10 +81,17 @@ export default function CommGroupsSection() {
   const loadGroups = useCallback(async () => {
     if (!user?.id) return;
     setLoading(true);
-    const { data } = await supabase
+    setLoadError(null);
+    const { data, error } = await supabase
       .from("groups")
       .select("*")
       .order("updated_at", { ascending: false });
+    
+    if (error) {
+      setLoadError(error.message);
+      setLoading(false);
+      return;
+    }
     
     if (data) {
       // Get member counts and last messages
@@ -479,9 +489,24 @@ export default function CommGroupsSection() {
 
       <div className="flex-1 overflow-y-auto">
         {loading ? (
-          <div className="flex items-center justify-center py-16">
-            <div className="w-6 h-6 border-2 rounded-full animate-spin" style={{ borderColor: "hsl(var(--hud-cyan) / 0.3)", borderTopColor: "hsl(var(--hud-cyan))" }} />
+          <div className="divide-y" style={{ borderColor: "hsl(var(--hud-border) / 0.06)" }}>
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="flex items-center gap-3 px-4 py-3.5">
+                <Skeleton className="w-11 h-11 rounded-full shrink-0" />
+                <div className="flex-1 space-y-2">
+                  <Skeleton className="h-3.5 w-3/5" />
+                  <Skeleton className="h-2.5 w-4/5" />
+                  <Skeleton className="h-2 w-1/4" />
+                </div>
+                <Skeleton className="h-2.5 w-10 shrink-0" />
+              </div>
+            ))}
           </div>
+        ) : loadError ? (
+          <ErrorState
+            message={`Failed to load groups: ${loadError}`}
+            onRetry={loadGroups}
+          />
         ) : filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-center px-6">
             <UsersRound className="h-10 w-10 mb-3" style={{ color: "hsl(var(--hud-text-dim) / 0.2)" }} />
