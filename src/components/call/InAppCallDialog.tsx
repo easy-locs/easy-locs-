@@ -499,7 +499,7 @@ export default function InAppCallDialog({
                       disabled={isTerminal || isEnding || status === "idle"}
                       active={videoEnabled}
                       icon={videoEnabled ? <VideoIcon className="h-5 w-5" /> : <VideoOff className="h-5 w-5" />}
-                      text="Video"
+                      text="Vidéo"
                     />
                     {/* End call — large red button */}
                     <div className="flex flex-col items-center gap-1.5">
