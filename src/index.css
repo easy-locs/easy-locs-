@@ -689,10 +689,54 @@
     @apply space-y-3;
   }
   .section-block-title {
-    @apply text-xs font-bold uppercase tracking-wider text-muted-foreground;
+    font-size: var(--text-xs);
+    @apply font-bold uppercase tracking-wider text-muted-foreground;
   }
   .section-block-desc {
-    @apply text-[11px] text-muted-foreground/60 mt-0.5;
+    font-size: var(--text-2xs);
+    @apply text-muted-foreground/60 mt-0.5;
+  }
+
+  /* ── Typography utility classes for design tokens ── */
+  .text-2xs {
+    font-size: var(--text-2xs);
+    line-height: 1.4;
+  }
+  .text-token-xs {
+    font-size: var(--text-xs);
+    line-height: 1.4;
+  }
+
+  /* ── Touch target enforcement on mobile ── */
+  @media (max-width: 640px) {
+    .touch-target {
+      min-height: var(--touch-min);
+      min-width: var(--touch-min);
+    }
+  }
+
+  /* ── Responsive card grid with auto-fit ── */
+  .responsive-card-grid {
+    display: grid;
+    gap: var(--card-gap);
+    grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr));
+  }
+  @media (min-width: 1024px) {
+    .responsive-card-grid {
+      gap: var(--card-gap-lg);
+    }
+  }
+
+  /* ── Responsive stat grid ── */
+  .stat-grid {
+    display: grid;
+    gap: var(--card-gap);
+    grid-template-columns: repeat(auto-fill, minmax(min(160px, 100%), 1fr));
+  }
+  @media (min-width: 640px) {
+    .stat-grid {
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    }
   }
 }
 
