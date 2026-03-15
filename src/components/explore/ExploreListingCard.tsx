@@ -97,7 +97,7 @@ export const ExploreListingCard = memo(function ExploreListingCard({ item }: { i
               <span className="truncate max-w-[120px]">{typeBadge.label}</span>
             </span>
             {isVerified && (
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-semibold bg-accent/90 text-accent-foreground backdrop-blur-md">
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-token-xs font-semibold bg-accent/90 text-accent-foreground backdrop-blur-md">
                 <CheckCircle className="h-3 w-3" /> {t("mp.verified") || "Verified"}
               </span>
             )}
