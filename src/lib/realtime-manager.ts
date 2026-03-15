@@ -58,6 +58,7 @@ class RealtimeManager {
   private threadSubs = new Map<string, ThreadSubscription>();
   private handlers = new Set<SignalHandler>();
   private presenceInterval: ReturnType<typeof setInterval> | null = null;
+  private visibilityHandler: (() => void) | null = null;
   private started = false;
 
   // ── Lifecycle ──
@@ -80,6 +81,22 @@ class RealtimeManager {
 
   /** Tear down all channels and clear state. */
   stop() {
+    // Set offline before tearing down channels
+    if (this.userId) {
+      supabase.from("user_presence").upsert({
+        user_id: this.userId,
+        status: "offline",
+        last_seen_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      } as any, { onConflict: "user_id" }).then(() => {}, () => {});
+    }
+
+    // Remove visibility listener
+    if (this.visibilityHandler) {
+      document.removeEventListener("visibilitychange", this.visibilityHandler);
+      this.visibilityHandler = null;
+    }
+
     if (this.userChannel) {
       supabase.removeChannel(this.userChannel);
       this.userChannel = null;
@@ -267,8 +284,8 @@ class RealtimeManager {
     heartbeat();
     this.presenceInterval = setInterval(heartbeat, 30_000);
 
-    // Visibility change
-    const onVis = () => {
+    // Visibility change — stored as a class reference for deterministic cleanup
+    this.visibilityHandler = () => {
       if (!this.userId) return;
       supabase.from("user_presence").upsert({
         user_id: this.userId,
@@ -278,24 +295,7 @@ class RealtimeManager {
         device_type: /Mobi|Android/i.test(navigator.userAgent) ? "mobile" : "web",
       } as any, { onConflict: "user_id" }).then(() => {}, () => {});
     };
-    document.addEventListener("visibilitychange", onVis);
-
-    // Store cleanup ref
-    const origStop = this.stop.bind(this);
-    const self = this;
-    this.stop = function () {
-      document.removeEventListener("visibilitychange", onVis);
-      // Set offline before teardown
-      if (self.userId) {
-        supabase.from("user_presence").upsert({
-          user_id: self.userId,
-          status: "offline",
-          last_seen_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        } as any, { onConflict: "user_id" }).then(() => {}, () => {});
-      }
-      origStop();
-    };
+    document.addEventListener("visibilitychange", this.visibilityHandler);
   }
 
   // ── Accessors ──
