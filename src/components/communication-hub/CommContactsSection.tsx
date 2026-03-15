@@ -199,16 +199,23 @@ export default function CommContactsSection() {
   const loadContacts = useCallback(async () => {
     if (!user?.id) return;
     setLoading(true);
-    const { data } = await supabase
-      .from("contacts")
-      .select("*")
-      .eq("owner_id", user.id)
-      .order("name");
-    const raw = (data as Contact[]) || [];
-    const linked = await batchAutoLink(raw);
-    setContacts(linked);
-    await batchResolveOrgs(linked);
-    setLoading(false);
+    setLoadError(null);
+    try {
+      const { data, error } = await supabase
+        .from("contacts")
+        .select("*")
+        .eq("owner_id", user.id)
+        .order("name");
+      if (error) throw error;
+      const raw = (data as Contact[]) || [];
+      const linked = await batchAutoLink(raw);
+      setContacts(linked);
+      await batchResolveOrgs(linked);
+    } catch (err: any) {
+      setLoadError(err?.message || "Failed to load contacts");
+    } finally {
+      setLoading(false);
+    }
   }, [user?.id, batchAutoLink, batchResolveOrgs]);
 
   useEffect(() => { loadContacts(); }, [loadContacts]);
