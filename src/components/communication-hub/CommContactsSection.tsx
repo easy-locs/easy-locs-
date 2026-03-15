@@ -21,6 +21,7 @@ import ScrollableFilterBar from "@/components/ui/ScrollableFilterBar";
 import QRContactCard from "./QRContactCard";
 import { getOrCreateDirectThread } from "@/lib/direct-thread";
 import { useCall } from "@/components/call/CallProvider";
+import { Skeleton } from "@/components/ui/skeleton";
 
 type ContactCategory = "all" | "client" | "team" | "professional" | "favorite" | "recent";
 
@@ -77,6 +78,7 @@ export default function CommContactsSection() {
   const { startCall: initiateCall, isStartingCall } = useCall();
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [category, setCategory] = useState<ContactCategory>("all");
   const [search, setSearch] = useState("");
   const [showAdd, setShowAdd] = useState(false);
@@ -197,16 +199,23 @@ export default function CommContactsSection() {
   const loadContacts = useCallback(async () => {
     if (!user?.id) return;
     setLoading(true);
-    const { data } = await supabase
-      .from("contacts")
-      .select("*")
-      .eq("owner_id", user.id)
-      .order("name");
-    const raw = (data as Contact[]) || [];
-    const linked = await batchAutoLink(raw);
-    setContacts(linked);
-    await batchResolveOrgs(linked);
-    setLoading(false);
+    setLoadError(null);
+    try {
+      const { data, error } = await supabase
+        .from("contacts")
+        .select("*")
+        .eq("owner_id", user.id)
+        .order("name");
+      if (error) throw error;
+      const raw = (data as Contact[]) || [];
+      const linked = await batchAutoLink(raw);
+      setContacts(linked);
+      await batchResolveOrgs(linked);
+    } catch (err: any) {
+      setLoadError(err?.message || "Failed to load contacts");
+    } finally {
+      setLoading(false);
+    }
   }, [user?.id, batchAutoLink, batchResolveOrgs]);
 
   useEffect(() => { loadContacts(); }, [loadContacts]);
@@ -596,11 +605,11 @@ export default function CommContactsSection() {
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-lg font-bold" style={{ color: "hsl(var(--hud-text))" }}>Contacts</h2>
           <div className="flex items-center gap-1.5">
-            <Button size="sm" variant="ghost" className="h-8 w-8 p-0"
+            <Button size="sm" variant="ghost" className="h-8 w-8 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 p-0"
               style={{ color: "hsl(var(--hud-cyan))" }} onClick={() => setShowQR(true)}>
               <QrCode className="h-4 w-4" />
             </Button>
-            <Button size="sm" variant="ghost" className="h-8 gap-1.5 text-xs"
+            <Button size="sm" variant="ghost" className="h-8 min-h-[44px] sm:min-h-0 gap-1.5 text-xs"
               style={{ color: "hsl(var(--hud-cyan))" }} onClick={() => setShowAdd(true)}>
               <UserPlus className="h-4 w-4" /> Add
             </Button>
@@ -621,8 +630,37 @@ export default function CommContactsSection() {
       {/* Contact list */}
       <div className="flex-1 overflow-y-auto">
         {loading ? (
-          <div className="flex items-center justify-center py-16">
-            <div className="w-6 h-6 border-2 rounded-full animate-spin" style={{ borderColor: "hsl(var(--hud-cyan) / 0.3)", borderTopColor: "hsl(var(--hud-cyan))" }} />
+          <div className="space-y-0.5 px-1 py-2">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <div key={i} className="flex items-center gap-3 px-3 py-2.5">
+                <Skeleton className="w-11 h-11 rounded-full shrink-0" />
+                <div className="flex-1 space-y-1.5">
+                  <Skeleton className="h-3.5 w-28" />
+                  <Skeleton className="h-2.5 w-20" />
+                </div>
+                <div className="flex gap-1 shrink-0">
+                  <Skeleton className="w-8 h-8 rounded-full" />
+                  <Skeleton className="w-8 h-8 rounded-full" />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : loadError ? (
+          <div className="flex flex-col items-center justify-center py-16 text-center px-6">
+            <Users className="h-10 w-10 mb-3" style={{ color: "hsl(var(--destructive) / 0.4)" }} />
+            <p className="text-sm font-medium mb-1" style={{ color: "hsl(var(--foreground) / 0.7)" }}>
+              Failed to load contacts
+            </p>
+            <p className="text-xs mb-4" style={{ color: "hsl(var(--muted-foreground) / 0.5)" }}>
+              {loadError}
+            </p>
+            <button
+              onClick={loadContacts}
+              className="text-xs font-semibold px-4 py-2 rounded-lg min-h-[44px] transition-colors"
+              style={{ background: "hsl(var(--primary) / 0.1)", color: "hsl(var(--primary))" }}
+            >
+              Retry
+            </button>
           </div>
         ) : filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-center px-6">

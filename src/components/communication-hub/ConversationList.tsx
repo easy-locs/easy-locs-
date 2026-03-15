@@ -103,7 +103,7 @@ export default function ConversationList({ threads, loading, selectedThread, onS
               size="sm"
               variant={activeFilter === f.value ? "default" : "ghost"}
               onClick={() => setActiveFilter(f.value)}
-              className={`text-xs h-7 px-2 gap-1 ${activeFilter === f.value ? "" : "text-muted-foreground"}`}
+              className={`text-xs h-7 min-h-[44px] sm:min-h-0 px-2 gap-1 ${activeFilter === f.value ? "" : "text-muted-foreground"}`}
             >
               {f.emoji && <span>{f.emoji}</span>}
               {f.label}
