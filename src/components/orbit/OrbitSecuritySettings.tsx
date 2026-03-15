@@ -184,7 +184,7 @@ export default function OrbitSecuritySettings({ userId }: OrbitSecuritySettingsP
           </span>
         </div>
         <p className="text-xs leading-relaxed" style={{ color: "hsl(var(--hud-text-dim))" }}>
-          Les messages, appels et fichiers partagés sont chiffrés sur votre appareil avant l'envoi. Le serveur ne peut pas lire vos contenus.
+          {t("orbit.e2e_description") || "Les messages, appels et fichiers partagés sont chiffrés sur votre appareil avant l'envoi. Le serveur ne peut pas lire vos contenus."}
         </p>
         {hasKeys && (
           <div className="flex items-center gap-2 mt-3">
