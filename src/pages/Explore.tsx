@@ -269,11 +269,11 @@ export default function Explore() {
       <footer className="border-t border-border py-8 text-center text-xs text-muted-foreground mt-auto">
         <div className="max-w-[1400px] mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
           <span>© {new Date().getFullYear()} <span className="font-semibold">EASY-LOCS®</span> — All rights reserved</span>
-          <div className="flex items-center gap-4">
-            <Link to="/about" className="hover:text-foreground transition-colors">About</Link>
-            <Link to="/contact" className="hover:text-foreground transition-colors">Contact</Link>
-            <Link to="/terms" className="hover:text-foreground transition-colors">Terms</Link>
-            <Link to="/privacy" className="hover:text-foreground transition-colors">Privacy</Link>
+          <div className="flex items-center gap-1 sm:gap-4 flex-wrap justify-center sm:justify-end">
+            <Link to="/about" className="hover:text-foreground transition-colors px-2 py-2 min-h-[44px] inline-flex items-center">About</Link>
+            <Link to="/contact" className="hover:text-foreground transition-colors px-2 py-2 min-h-[44px] inline-flex items-center">Contact</Link>
+            <Link to="/terms" className="hover:text-foreground transition-colors px-2 py-2 min-h-[44px] inline-flex items-center">Terms</Link>
+            <Link to="/privacy" className="hover:text-foreground transition-colors px-2 py-2 min-h-[44px] inline-flex items-center">Privacy</Link>
           </div>
         </div>
       </footer>

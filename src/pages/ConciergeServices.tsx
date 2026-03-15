@@ -392,7 +392,7 @@ const ConciergeServices = () => {
         </div>
 
         {/* KPIs */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-2 sm:gap-3">
           {[
             { icon: Sparkles, label: t?.("page.concierge.kpi_active") || "Active Services", value: String(activeServices), cls: "text-accent" },
             { icon: ShoppingBag, label: t?.("page.concierge.kpi_pending") || "Pending Orders", value: String(pendingOrders), cls: "text-amber-500" },
