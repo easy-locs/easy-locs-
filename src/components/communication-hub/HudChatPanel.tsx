@@ -823,20 +823,20 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
               <button
                 disabled={isInCall || isStartingCall}
                 onClick={() => handleStartCall(false)}
-                className="h-9 w-9 rounded-full flex items-center justify-center transition-colors hover:bg-[hsl(var(--hud-surface-2))] disabled:opacity-40"
+                className="h-9 w-9 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 rounded-full flex items-center justify-center transition-colors hover:bg-[hsl(var(--hud-surface-2))] disabled:opacity-40"
               >
                 <Phone className="h-[18px] w-[18px]" style={{ color: "hsl(var(--hud-success))" }} />
               </button>
               <button
                 disabled={isInCall || isStartingCall}
                 onClick={() => handleStartCall(true)}
-                className="h-9 w-9 rounded-full flex items-center justify-center transition-colors hover:bg-[hsl(var(--hud-surface-2))] disabled:opacity-40"
+                className="h-9 w-9 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 rounded-full flex items-center justify-center transition-colors hover:bg-[hsl(var(--hud-surface-2))] disabled:opacity-40"
               >
                 <Video className="h-[18px] w-[18px]" style={{ color: "hsl(var(--hud-cyan))" }} />
               </button>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button className="h-9 w-9 rounded-full flex items-center justify-center transition-colors hover:bg-[hsl(var(--hud-surface-2))]">
+                  <button className="h-9 w-9 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 rounded-full flex items-center justify-center transition-colors hover:bg-[hsl(var(--hud-surface-2))]">
                     <MoreVertical className="h-4 w-4" style={{ color: "hsl(var(--hud-text-dim))" }} />
                   </button>
                 </DropdownMenuTrigger>
