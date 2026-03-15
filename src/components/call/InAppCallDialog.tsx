@@ -272,9 +272,9 @@ export default function InAppCallDialog({
   }, [isTerminal, open, onClose]);
 
   const statusLabel: Record<string, string> = {
-    idle: "", ringing: "Ringing…", connecting: "Connecting…",
-    active: fmt(elapsed), ended: "Call ended", declined: "Call declined",
-    missed: "No answer", failed: "Call failed", network_blocked: "Network restricted",
+    idle: "", ringing: "Appel en cours…", connecting: "Connexion…",
+    active: fmt(elapsed), ended: "Appel terminé", declined: "Appel refusé",
+    missed: "Pas de réponse", failed: "Échec de l'appel", network_blocked: "Réseau restreint",
   };
   const isLoading = status === "ringing" || status === "connecting";
   const label = statusLabel[status] || "";

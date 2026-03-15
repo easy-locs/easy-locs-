@@ -632,11 +632,14 @@ export class CallManager {
       this.onStateChange({ localStream: this.localStream, isVideo: this.localStream.getVideoTracks().length > 0 });
     } catch (err) {
       this.debug("getUserMedia failed", { error: String(err) });
+      const isPermError = err instanceof DOMException && (err.name === "NotAllowedError" || err.name === "NotFoundError");
       this.onStateChange({
         status: "failed",
-        error: isVideo
-          ? "Camera/microphone access denied. Please allow access to make video calls."
-          : "Microphone access denied. Please allow microphone access to make calls.",
+        error: isPermError
+          ? (isVideo
+            ? "Accès caméra/micro refusé. Autorisez l'accès dans les paramètres de votre navigateur."
+            : "Accès micro refusé. Autorisez l'accès au microphone pour passer des appels.")
+          : "Périphérique audio/vidéo indisponible. Vérifiez vos paramètres.",
       });
       throw new Error("Media permission denied");
     }
