@@ -586,7 +586,7 @@ export default function CommGroupsSection() {
               <Input
                 value={newGroup.description}
                 onChange={e => setNewGroup(p => ({ ...p, description: e.target.value }))}
-                placeholder="What's this group about?"
+                placeholder={t("orbit.groups.desc_placeholder") || "What's this group about?"}
                 className="mt-1 border-0"
                 style={{ background: "hsl(var(--hud-surface))", color: "hsl(var(--hud-text))" }}
               />
