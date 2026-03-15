@@ -1142,13 +1142,15 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
                   const dur = voicePreview.duration;
                   const ext = blob.type.includes("mp4") ? "m4a" : blob.type.includes("webm") ? "webm" : "ogg";
                   const path = `${orgId}/${thread.id}/voice-${Date.now()}.${ext}`;
+                  let uploadedBucket = "chat-media";
                   const { error: uploadErr } = await supabase.storage.from("chat-media").upload(path, blob);
                   if (uploadErr) {
                     // Fallback to other buckets
                     const { error: uploadErr2 } = await supabase.storage.from("property-photos").upload(path, blob);
                     if (uploadErr2) throw new Error("Voice upload failed");
+                    uploadedBucket = "property-photos";
                   }
-                  const { data: signed } = await supabase.storage.from("chat-media").createSignedUrl(path, 60 * 60 * 24 * 365);
+                  const { data: signed } = await supabase.storage.from(uploadedBucket).createSignedUrl(path, 60 * 60 * 24 * 365);
                   const audioUrl = signed?.signedUrl || path;
 
                   const voiceSecPayload = buildSecurityPayload(securityLevel);
