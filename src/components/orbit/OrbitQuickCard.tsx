@@ -96,7 +96,7 @@ export default function OrbitQuickCard({
       {/* Description */}
       {description && (
         <span
-          className="text-[9px] leading-tight line-clamp-1 -mt-0.5"
+          className="text-[9px] leading-tight line-clamp-2 break-words -mt-0.5 w-full"
           style={{ color: "hsl(var(--hud-text-dim))" }}
         >
           {description}

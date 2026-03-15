@@ -95,7 +95,7 @@ export default function OrbitWalletCard() {
           </div>
 
           {/* Quick Actions Row */}
-          <div className="flex items-center gap-2 mt-4">
+          <div className="flex items-center gap-2 mt-4 overflow-x-auto scrollbar-none" style={{ WebkitOverflowScrolling: "touch" }}>
             {QUICK_ACTIONS.map((action) => {
               const Icon = action.icon;
               return (

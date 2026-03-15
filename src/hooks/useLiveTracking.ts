@@ -86,29 +86,31 @@ export function useTracker(opts: UseTrackerOpts) {
       );
     });
 
-    const { data, error } = await supabase
-      .from("live_trackings")
-      .insert({
-        org_id: orgId,
-        tracker_user_id: user.id,
-        viewer_user_id: opts.viewerUserId || null,
+    const insertPayload: Record<string, unknown> = {
+      org_id: orgId,
+      tracker_user_id: user.id,
+      viewer_user_id: opts.viewerUserId || null,
+      context_type: opts.contextType,
+      context_id: opts.contextId,
+      context_label: opts.contextLabel || null,
+      destination_lat: opts.destinationLat || null,
+      destination_lng: opts.destinationLng || null,
+      origin_lat: origin?.lat || null,
+      origin_lng: origin?.lng || null,
+      current_lat: origin?.lat || null,
+      current_lng: origin?.lng || null,
+      status: "en_route",
+      started_at: new Date().toISOString(),
+      metadata_json: {
         context_type: opts.contextType,
         context_id: opts.contextId,
-        context_label: opts.contextLabel || null,
-        destination_lat: opts.destinationLat || null,
-        destination_lng: opts.destinationLng || null,
-        origin_lat: origin?.lat || null,
-        origin_lng: origin?.lng || null,
-        current_lat: origin?.lat || null,
-        current_lng: origin?.lng || null,
-        status: "en_route",
-        started_at: new Date().toISOString(),
-        metadata_json: {
-          context_type: opts.contextType,
-          context_id: opts.contextId,
-          started_by: user.id,
-        },
-      } as any)
+        started_by: user.id,
+      },
+    };
+
+    const { data, error } = await supabase
+      .from("live_trackings")
+      .insert(insertPayload as any)
       .select()
       .single();
 
@@ -142,18 +144,20 @@ export function useTracker(opts: UseTrackerOpts) {
     const eta = calculateETA(lat, lng, opts.destinationLat, opts.destinationLng, speed);
     const newStatus = getProximityStatus(lat, lng, opts.destinationLat, opts.destinationLng);
 
+    const positionUpdate: Record<string, unknown> = {
+      current_lat: lat,
+      current_lng: lng,
+      speed_kmh: speed ? speed * 3.6 : 0,
+      heading: heading || 0,
+      eta_minutes: eta,
+      status: newStatus,
+      last_position_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+
     await supabase
       .from("live_trackings")
-      .update({
-        current_lat: lat,
-        current_lng: lng,
-        speed_kmh: speed ? speed * 3.6 : 0,
-        heading: heading || 0,
-        eta_minutes: eta,
-        status: newStatus,
-        last_position_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      } as any)
+      .update(positionUpdate as any)
       .eq("id", id);
 
     if (newStatus !== status) {
@@ -172,7 +176,7 @@ export function useTracker(opts: UseTrackerOpts) {
     const updates: Record<string, unknown> = { status: newStatus, updated_at: new Date().toISOString() };
     if (newStatus === "completed") updates.completed_at = new Date().toISOString();
 
-    await supabase.from("live_trackings").update(updates as any).eq("id", trackingId);
+    await supabase.from("live_trackings").update(updates as Record<string, unknown> as any).eq("id", trackingId);
     setStatus(newStatus);
 
     if (newStatus === "completed") {
