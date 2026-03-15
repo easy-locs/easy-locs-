@@ -117,7 +117,7 @@ export default function OrbitHome() {
               <p className="text-xs font-bold" style={{ color: "hsl(var(--hud-text))" }}>
                 {engine.alerts[0].title}
               </p>
-              <p className="text-[11px] truncate" style={{ color: "hsl(var(--hud-text-dim))" }}>
+              <p className="text-[11px] line-clamp-2 break-words" style={{ color: "hsl(var(--hud-text-dim))" }}>
                 {engine.alerts[0].message}
               </p>
             </div>
