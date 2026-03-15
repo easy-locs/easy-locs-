@@ -24,6 +24,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import ScrollableFilterBar from "@/components/ui/ScrollableFilterBar";
+import { Skeleton } from "@/components/ui/skeleton";
+import { ErrorState } from "@/components/ui/error-state";
 const NearbyLeafletMap = lazy(() => import("./NearbyLeafletMap"));
 
 interface NearbyItem {
