@@ -568,7 +568,7 @@ export default function CommGroupsSection() {
       <Dialog open={showCreate} onOpenChange={setShowCreate}>
         <DialogContent style={{ background: "hsl(var(--hud-bg))", borderColor: "hsl(var(--hud-border) / 0.15)" }}>
           <DialogHeader>
-            <DialogTitle style={{ color: "hsl(var(--hud-text))" }}>Create Group</DialogTitle>
+            <DialogTitle style={{ color: "hsl(var(--hud-text))" }}>{t("orbit.groups.create_title") || "Create Group"}</DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
             <div>
