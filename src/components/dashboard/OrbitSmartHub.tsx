@@ -28,14 +28,14 @@ interface Props {
 }
 
 const ACTIONS = [
-  { icon: MessageSquare, label: "Chats", path: "/dashboard/communication?section=chats" },
-  { icon: Phone, label: "Calls", path: "/dashboard/communication?section=calls" },
-  { icon: FolderOpen, label: "Files", path: "/dashboard/communication?section=files" },
-  { icon: Users, label: "Contacts", path: "/dashboard/communication?section=contacts" },
-  { icon: CreditCard, label: "Pay", path: "/dashboard/communication?section=payments" },
-  { icon: Handshake, label: "Deals", path: "/dashboard/communication?section=chats" },
-  { icon: Shield, label: "Security", path: "/dashboard/communication?section=settings" },
-  { icon: UserCircle, label: "You", path: "/dashboard/communication?section=you" },
+  { icon: MessageSquare, labelKey: "orbit.nav.chats", fallback: "Chats", path: "/dashboard/communication?section=chats" },
+  { icon: Phone, labelKey: "orbit.nav.calls", fallback: "Calls", path: "/dashboard/communication?section=calls" },
+  { icon: FolderOpen, labelKey: "orbit.nav.files", fallback: "Files", path: "/dashboard/communication?section=files" },
+  { icon: Users, labelKey: "orbit.nav.contacts", fallback: "Contacts", path: "/dashboard/communication?section=contacts" },
+  { icon: CreditCard, labelKey: "orbit.nav.wallet", fallback: "Pay", path: "/dashboard/communication?section=payments" },
+  { icon: Handshake, labelKey: "orbit.nav.deals", fallback: "Deals", path: "/dashboard/communication?section=chats" },
+  { icon: Shield, labelKey: "orbit.nav.security", fallback: "Security", path: "/dashboard/communication?section=settings" },
+  { icon: UserCircle, labelKey: "orbit.nav.you", fallback: "You", path: "/dashboard/communication?section=you" },
 ] as const;
 
 export default function OrbitSmartHub({ totalProperties, totalCountries, propertiesByCountry }: Props) {
@@ -44,8 +44,8 @@ export default function OrbitSmartHub({ totalProperties, totalCountries, propert
   const reduceMotion = useReducedMotion();
   const [activeIdx, setActiveIdx] = useState<number | null>(null);
 
-  const R = 100;         // orbit radius
-  const SIZE = 280;      // container size
+  const R = 105;         // orbit radius (increased for label space)
+  const SIZE = 340;      // container size (expanded to prevent clipping)
   const C = SIZE / 2;    // center
   const BTN = 44;        // button size
 
