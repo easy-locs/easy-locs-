@@ -1,11 +1,12 @@
 /**
  * CommCallsSection — Call history with single direction icon per entry.
- * Uses HUD tokens. Functional redial. Swipe-to-delete.
+ * Uses HUD tokens. Functional redial. Swipe-to-delete. Fully i18n'd.
  */
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCall } from "@/components/call/CallProvider";
+import { useI18n } from "@/lib/i18n";
 import {
   Phone, PhoneMissed, Video, Search, ArrowDownLeft, ArrowUpRight,
 } from "lucide-react";
@@ -51,6 +52,7 @@ function formatDuration(s: number | null): string {
 export default function CommCallsSection() {
   const { user } = useAuth();
   const { startCall, isInCall, isStartingCall } = useCall();
+  const { t } = useI18n();
   const [calls, setCalls] = useState<CallLog[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -102,7 +104,7 @@ export default function CommCallsSection() {
 
   const handleRedial = useCallback(async (call: CallLog) => {
     if (isInCall || isStartingCall) {
-      toast.info("Call already in progress");
+      toast.info(t("orbit.calls.in_progress") || "Call already in progress");
       return;
     }
 
@@ -133,10 +135,10 @@ export default function CommCallsSection() {
   });
 
   const filters: { id: CallFilter; label: string }[] = [
-    { id: "all", label: "All" },
-    { id: "missed", label: "Missed" },
-    { id: "incoming", label: "In" },
-    { id: "outgoing", label: "Out" },
+    { id: "all", label: t("orbit.calls.all") || "All" },
+    { id: "missed", label: t("orbit.calls.missed") || "Missed" },
+    { id: "incoming", label: t("orbit.calls.incoming") || "In" },
+    { id: "outgoing", label: t("orbit.calls.outgoing") || "Out" },
   ];
 
   const missedCount = calls.filter(c => c.status === "missed").length;
@@ -187,14 +189,14 @@ export default function CommCallsSection() {
     if (call.org_name) parts.push(call.org_name);
     if (call.context_label && call.context_label !== call.org_name) parts.push(call.context_label);
     if (parts.length > 0) return parts;
-    return [call.caller_id === user?.id ? "Outgoing call" : "Incoming call"];
+    return [call.caller_id === user?.id ? (t("orbit.calls.outgoing_call") || "Outgoing call") : (t("orbit.calls.incoming_call") || "Incoming call")];
   };
 
   return (
     <div className="flex-1 flex flex-col min-h-0" style={{ background: "hsl(var(--hud-bg))" }}>
       {/* Header */}
       <div className="px-4 pt-4 pb-2 shrink-0">
-        <h2 className="text-lg font-bold mb-3" style={{ color: "hsl(var(--hud-text))" }}>Calls</h2>
+        <h2 className="text-lg font-bold mb-3" style={{ color: "hsl(var(--hud-text))" }}>{t("orbit.calls.title") || "Calls"}</h2>
 
         {/* Search */}
         <div className="relative mb-3">
@@ -202,7 +204,7 @@ export default function CommCallsSection() {
           <Input
             value={search}
             onChange={e => setSearch(e.target.value)}
-            placeholder="Search..."
+            placeholder={t("orbit.calls.search") || "Search…"}
             className="pl-9 h-9 text-sm border-0"
             style={{
               background: "hsl(var(--hud-surface))",
@@ -254,7 +256,7 @@ export default function CommCallsSection() {
           <div className="flex flex-col items-center justify-center py-16 text-center px-6">
             <Phone className="h-10 w-10 mb-3" style={{ color: "hsl(var(--destructive) / 0.4)" }} />
             <p className="text-sm font-medium mb-1" style={{ color: "hsl(var(--foreground) / 0.7)" }}>
-              Failed to load calls
+              {t("orbit.calls.failed_load") || "Failed to load calls"}
             </p>
             <p className="text-xs mb-4" style={{ color: "hsl(var(--muted-foreground) / 0.5)" }}>
               {loadError}
@@ -264,17 +266,17 @@ export default function CommCallsSection() {
               className="text-xs font-semibold px-4 py-2 rounded-lg min-h-[44px] transition-colors"
               style={{ background: "hsl(var(--primary) / 0.1)", color: "hsl(var(--primary))" }}
             >
-              Retry
+              {t("orbit.calls.retry") || "Retry"}
             </button>
           </div>
         ) : filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-center">
             <Phone className="h-10 w-10 mb-3" style={{ color: "hsl(var(--hud-text-dim) / 0.2)" }} />
             <p className="text-sm" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
-              {filter === "missed" ? "No missed calls" : "No calls yet"}
+              {filter === "missed" ? (t("orbit.calls.no_missed") || "No missed calls") : (t("orbit.calls.no_calls") || "No calls yet")}
             </p>
             <p className="text-xs mt-1" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>
-              Start a call from any conversation
+              {t("orbit.calls.start_hint") || "Start a call from any conversation"}
             </p>
           </div>
         ) : (
@@ -286,9 +288,9 @@ export default function CommCallsSection() {
 
               const handleDeleteCall = async () => {
                 const { error } = await supabase.from("call_logs").delete().eq("id", call.id);
-                if (error) { toast.error("Failed to delete call"); return; }
+                if (error) { toast.error(t("orbit.calls.delete_failed") || "Failed to delete call"); return; }
                 setCalls(prev => prev.filter(c => c.id !== call.id));
-                toast.success("Call deleted");
+                toast.success(t("orbit.calls.deleted") || "Call deleted");
               };
 
               return (
