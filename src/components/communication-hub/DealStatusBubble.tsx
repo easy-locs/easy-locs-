@@ -170,7 +170,7 @@ const DealStatusBubble = memo(function DealStatusBubble({
 }: DealStatusBubbleProps) {
   const config = EVENT_CONFIG[eventType] || EVENT_CONFIG.status_change;
   const Icon = config.icon;
-  const { title, subtitle } = getEventContent(eventType, data, actorRole);
+  const { title, subtitle, expiry } = getEventContent(eventType, data, actorRole);
 
   return (
     <motion.div
