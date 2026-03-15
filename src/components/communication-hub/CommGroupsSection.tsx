@@ -1,9 +1,10 @@
 /**
- * CommGroupsSection — Real group management with create, list, chat, members.
+ * CommGroupsSection — Real group management with create, list, chat, members. Fully i18n'd.
  */
 import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useI18n } from "@/lib/i18n";
 import {
   UsersRound, Plus, Search, ArrowLeft, Send, Settings2,
   UserPlus, LogOut, Trash2, Crown, Users,
