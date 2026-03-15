@@ -80,7 +80,7 @@ const WorldMapSection = () => {
 
         {/* Globe + flags layout */}
         <div className="grid lg:grid-cols-2 gap-10 items-center">
-          {/* 3D Globe */}
+          {/* 3D Globe — disabled on mobile for perf */}
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             whileInView={{ opacity: 1, scale: 1 }}
@@ -88,7 +88,13 @@ const WorldMapSection = () => {
             transition={{ duration: 0.6 }}
             className="relative aspect-square max-w-[480px] mx-auto w-full"
           >
-            {!globeFailed ? (
+            {isMobile || globeFailed ? (
+              <div className="absolute inset-0 flex items-center justify-center rounded-full border border-primary-foreground/10"
+                style={{ background: "hsl(var(--primary-foreground) / 0.03)" }}
+              >
+                <Globe className="h-24 w-24 animate-pulse" style={{ color: "hsl(var(--accent) / 0.3)" }} />
+              </div>
+            ) : (
               <Suspense
                 fallback={
                   <div className="absolute inset-0 flex items-center justify-center">
@@ -98,12 +104,6 @@ const WorldMapSection = () => {
               >
                 <GlobeCanvas onError={() => setGlobeFailed(true)} />
               </Suspense>
-            ) : (
-              <div className="absolute inset-0 flex items-center justify-center rounded-full border border-primary-foreground/10"
-                style={{ background: "hsl(var(--primary-foreground) / 0.03)" }}
-              >
-                <Globe className="h-24 w-24 animate-pulse" style={{ color: "hsl(var(--accent) / 0.3)" }} />
-              </div>
             )}
           </motion.div>
 
