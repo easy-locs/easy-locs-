@@ -27,8 +27,8 @@ const ClientDashboard = () => {
 
       setStats({
         bookings: (seasonalRes.count || 0) + (conciergeRes.count || 0) + (marketplaceRes.count || 0),
-        messages: 0,
-        documents: 0,
+        messages: -1, // -1 = not yet implemented, display "—"
+        documents: -1,
       });
       setLoaded(true);
     };
