@@ -106,7 +106,7 @@ export default function OrbitPaymentActions({
                 <p className="text-2xl font-black">
                   {walletLoading ? "..." : formatLocs(balance?.balance || 0)}
                 </p>
-                <p className="text-[10px] opacity-50 mt-1">1 LOCS = 1 EUR • 0% between users</p>
+                <p className="text-2xs opacity-50 mt-1">1 LOCS = 1 EUR • 0% between users</p>
               </div>
             </div>
 
@@ -125,8 +125,8 @@ export default function OrbitPaymentActions({
                     <div className={`w-10 h-10 rounded-xl ${action.color} flex items-center justify-center`}>
                       <Icon className="w-4 h-4" />
                     </div>
-                    <span className="text-[11px] font-semibold text-foreground">{action.label}</span>
-                    <span className="text-[9px] text-muted-foreground leading-tight">{action.description}</span>
+                    <span className="text-token-xs font-semibold text-foreground">{action.label}</span>
+                    <span className="text-micro text-muted-foreground leading-tight">{action.description}</span>
                   </motion.button>
                 );
               })}

@@ -130,7 +130,7 @@ export default function ContextPanel({ thread, orgId }: Props) {
             <Badge variant="outline" className={`text-xs px-2 py-0.5 ${moduleConfig.cls}`}>
               {moduleConfig.emoji} {moduleConfig.label}
             </Badge>
-            <Badge variant="outline" className={`text-[10px] px-1.5 py-0 ${config.bg} ${config.text} ${config.border}`}>
+            <Badge variant="outline" className={`text-2xs px-1.5 py-0 ${config.bg} ${config.text} ${config.border}`}>
               {config.emoji} {config.label}
             </Badge>
           </div>
@@ -287,16 +287,16 @@ export default function ContextPanel({ thread, orgId }: Props) {
                       <Calendar className="h-3 w-3 text-accent" /> Booking
                     </h4>
                     <div className="flex items-center gap-2 flex-wrap">
-                      <Badge variant="outline" className={`text-[10px] px-1.5 py-0 ${moduleConfig.cls}`}>
+                      <Badge variant="outline" className={`text-2xs px-1.5 py-0 ${moduleConfig.cls}`}>
                         {moduleConfig.emoji} {moduleConfig.label}
                       </Badge>
                       {thread.bookingStatus && (
-                        <Badge variant="outline" className={`text-[10px] px-1.5 py-0 font-medium ${STATUS_COLORS[thread.bookingStatus] || ""}`}>
+                        <Badge variant="outline" className={`text-2xs px-1.5 py-0 font-medium ${STATUS_COLORS[thread.bookingStatus] || ""}`}>
                           {STATUS_LABELS[thread.bookingStatus] || thread.bookingStatus}
                         </Badge>
                       )}
                     </div>
-                    {thread.bookingId && <p className="text-[10px] text-muted-foreground font-mono">#{thread.bookingId.slice(0, 8)}</p>}
+                    {thread.bookingId && <p className="text-2xs text-muted-foreground font-mono">#{thread.bookingId.slice(0, 8)}</p>}
                     {thread.serviceTitle && <p className="text-xs text-foreground font-medium">{thread.serviceTitle}</p>}
                     {thread.totalPrice != null && (
                       <p className="text-sm font-bold text-foreground">
@@ -322,8 +322,8 @@ export default function ContextPanel({ thread, orgId }: Props) {
                         <Building className="h-3 w-3 text-accent" /> Service
                       </h4>
                       <p className="text-xs font-medium">{bookingCtx.service.title}</p>
-                      {bookingCtx.service.category && <Badge variant="outline" className="text-[9px] px-1 py-0">{bookingCtx.service.category}</Badge>}
-                      {bookingCtx.service.city && <p className="text-[11px] text-muted-foreground">📍 {bookingCtx.service.city}, {bookingCtx.service.country}</p>}
+                      {bookingCtx.service.category && <Badge variant="outline" className="text-micro px-1 py-0">{bookingCtx.service.category}</Badge>}
+                      {bookingCtx.service.city && <p className="text-token-xs text-muted-foreground">📍 {bookingCtx.service.city}, {bookingCtx.service.country}</p>}
                       <p className="text-xs font-semibold">{bookingCtx.service.price} {bookingCtx.service.currency}</p>
                     </div>
                   )}

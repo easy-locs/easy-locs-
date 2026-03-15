@@ -145,7 +145,7 @@ export default function OrbitSessionManager({ userId }: OrbitSessionManagerProps
           </div>
           <div className="space-y-1">
             {suspiciousLogins.map((login) => (
-              <p key={login.id} className="text-[11px]" style={{ color: "hsl(var(--hud-text-dim))" }}>
+              <p key={login.id} className="text-token-xs" style={{ color: "hsl(var(--hud-text-dim))" }}>
                 {login.device_label} — {formatDate(login.created_at)}
               </p>
             ))}
@@ -162,7 +162,7 @@ export default function OrbitSessionManager({ userId }: OrbitSessionManagerProps
           {otherSessions.length > 0 && (
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <Button variant="ghost" size="sm" className="text-[11px] h-7 px-2 gap-1"
+                <Button variant="ghost" size="sm" className="text-token-xs h-7 px-2 gap-1"
                   disabled={revokingAll}
                   style={{ color: "hsl(var(--destructive))" }}>
                   {revokingAll ? <Loader2 className="h-3 w-3 animate-spin" /> : <LogOut className="h-3 w-3" />}
@@ -210,7 +210,7 @@ export default function OrbitSessionManager({ userId }: OrbitSessionManagerProps
                       {session.device_label}
                     </span>
                     {isCurrent && (
-                      <Badge variant="outline" className="text-[9px] px-1.5 py-0 shrink-0" style={{
+                      <Badge variant="outline" className="text-micro px-1.5 py-0 shrink-0" style={{
                         borderColor: "hsl(var(--hud-success) / 0.3)", color: "hsl(var(--hud-success))",
                         background: "hsl(var(--hud-success) / 0.08)",
                       }}>
@@ -218,7 +218,7 @@ export default function OrbitSessionManager({ userId }: OrbitSessionManagerProps
                       </Badge>
                     )}
                   </div>
-                  <p className="text-[11px]" style={{ color: "hsl(var(--hud-text-dim) / 0.6)" }}>
+                  <p className="text-token-xs" style={{ color: "hsl(var(--hud-text-dim) / 0.6)" }}>
                     Dernière activité : {formatDate(session.last_active_at)}
                   </p>
                 </div>

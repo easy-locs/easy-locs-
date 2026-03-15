@@ -155,12 +155,12 @@ const ClientBookings = () => {
                         <Star className="h-3 w-3" /> {t("mp.leave_review") || "Leave a review"}
                       </Button>
                       {windowInfo && (
-                        <span className="text-[10px] text-warning font-medium">{windowInfo}</span>
+                        <span className="text-2xs text-warning font-medium">{windowInfo}</span>
                       )}
                     </>
                   )}
                   {b.type === "marketplace" && reviewedBookingIds.has(b.id) && (
-                    <Badge variant="secondary" className="text-[10px] h-5 gap-1 bg-success/10 text-success border-success/20">
+                    <Badge variant="secondary" className="text-2xs h-5 gap-1 bg-success/10 text-success border-success/20">
                        <Star className="h-2.5 w-2.5 fill-current" /> {t("mp.reviewed") || "Reviewed"}
                      </Badge>
                   )}

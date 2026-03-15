@@ -161,7 +161,7 @@ const Documents = () => {
         {tab === "history" && (
           <div className="space-y-4">
             {/* Document routing legend */}
-            <div className="flex items-center gap-3 flex-wrap text-[10px] text-muted-foreground bg-muted/30 rounded-lg px-3 py-2">
+            <div className="flex items-center gap-3 flex-wrap text-2xs text-muted-foreground bg-muted/30 rounded-lg px-3 py-2">
               <span className="font-medium text-foreground text-xs">Routage :</span>
               {[
                 { icon: "🏠", label: "Bien" },
@@ -202,14 +202,14 @@ const Documents = () => {
                           {new Date(d.created_at).toLocaleDateString(activeLocale)}
                           <span className="bg-muted px-1.5 py-0.5 rounded text-xs">{d.doc_type}</span>
                           {d.routing_status === "routed" && (
-                            <span className="bg-success/10 text-success px-1.5 py-0.5 rounded text-[10px]">✓ Routé</span>
+                            <span className="bg-success/10 text-success px-1.5 py-0.5 rounded text-2xs">✓ Routé</span>
                           )}
                         </div>
                         {/* Routing chips */}
                         {routed.length > 0 && (
                           <div className="flex items-center gap-1 mt-1.5 flex-wrap">
                             {routed.map(r => (
-                              <span key={r} className="inline-flex items-center gap-0.5 text-[10px] bg-muted/60 px-1.5 py-0.5 rounded" title={r}>
+                              <span key={r} className="inline-flex items-center gap-0.5 text-2xs bg-muted/60 px-1.5 py-0.5 rounded" title={r}>
                                 {routeIcons[r] || "📁"} {r.replace(/_/g, " ")}
                               </span>
                             ))}

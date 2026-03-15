@@ -16,6 +16,11 @@ export default {
       fontFamily: {
         sans: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
       },
+      fontSize: {
+        "micro": ["0.5625rem", { lineHeight: "1.4" }],    /* 9px */
+        "2xs": ["0.625rem", { lineHeight: "1.4" }],       /* 10px */
+        "token-xs": ["0.6875rem", { lineHeight: "1.4" }], /* 11px */
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
