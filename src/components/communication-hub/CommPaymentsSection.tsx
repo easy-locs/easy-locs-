@@ -21,6 +21,8 @@ import { useWallet, type WalletTransaction } from "@/hooks/useWallet";
 import { useAuth } from "@/contexts/AuthContext";
 import { PURCHASE_CURRENCIES, LOCS_CONFIG, formatLocs } from "@/lib/locs-wallet";
 import { motion, AnimatePresence } from "framer-motion";
+import { Skeleton } from "@/components/ui/skeleton";
+import { ErrorState } from "@/components/ui/error-state";
 
 type TxFilter = "all" | "in" | "out" | "pending";
 type ModalMode = null | "send" | "request" | "buy";
@@ -235,8 +237,17 @@ export default function CommPaymentsSection() {
       {/* ── Transaction History ── */}
       <div className="flex-1 overflow-y-auto px-2">
         {loading ? (
-          <div className="flex items-center justify-center py-16">
-            <div className="w-6 h-6 border-2 rounded-full animate-spin" style={{ borderColor: "hsl(var(--primary) / 0.3)", borderTopColor: "hsl(var(--primary))" }} />
+          <div className="divide-y" style={{ borderColor: "hsl(var(--hud-border) / 0.06)" }}>
+            {Array.from({ length: 5 }).map((_, i) => (
+              <div key={i} className="flex items-center gap-3 px-3 py-3">
+                <Skeleton className="w-10 h-10 rounded-full shrink-0" />
+                <div className="flex-1 space-y-2">
+                  <Skeleton className="h-3.5 w-2/3" />
+                  <Skeleton className="h-2.5 w-1/3" />
+                </div>
+                <Skeleton className="h-4 w-16 shrink-0" />
+              </div>
+            ))}
           </div>
         ) : filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-center px-6">
