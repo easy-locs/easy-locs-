@@ -27,9 +27,10 @@ const FLOATING_FEATURES = [
 
 const Hero = () => {
   const { t } = useI18n();
+  const isMobile = useIsMobile();
   const ref = useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
-  const bgY = useTransform(scrollYProgress, [0, 1], ["0%", "30%"]);
+  const bgY = useTransform(scrollYProgress, [0, 1], ["0%", isMobile ? "10%" : "30%"]);
   const opacity = useTransform(scrollYProgress, [0, 0.6], [1, 0]);
 
   return (
