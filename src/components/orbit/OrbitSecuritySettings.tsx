@@ -294,7 +294,7 @@ export default function OrbitSecuritySettings({ userId }: OrbitSecuritySettingsP
         <Separator style={{ background: "hsl(var(--hud-border) / 0.08)" }} />
 
         {/* ═══ Advanced / Danger Zone ═══ */}
-        <SettingSection icon={HardDrive} title="Avancé" iconColor="hsl(var(--hud-danger))">
+        <SettingSection icon={HardDrive} title={t("orbit.advanced") || "Avancé"} iconColor="hsl(var(--hud-danger))">
           <div className="space-y-2">
             <Button variant="outline" size="sm" className="w-full justify-start gap-2 text-xs"
               onClick={handleWipeKeys}
