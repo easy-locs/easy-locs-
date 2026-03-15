@@ -993,6 +993,14 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
                 return (
                   <div key={msg.id}>
                     {showDateSep && <DateSeparator date={dateLabel} />}
+                    {msg.message_type === "deal_event" && (msg as any).metadata_json ? (
+                      <DealStatusBubble
+                        eventType={((msg as any).metadata_json?.event_type || "status_change") as DealEventType}
+                        data={(msg as any).metadata_json?.data || {}}
+                        createdAt={msg.created_at}
+                        actorRole={(msg as any).metadata_json?.actor_role}
+                      />
+                    ) : (
                     <ChatMessageBubble
                       msg={msg}
                       isMe={isMe}
