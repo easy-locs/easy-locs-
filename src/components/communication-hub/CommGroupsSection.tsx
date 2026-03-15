@@ -551,7 +551,7 @@ export default function CommGroupsSection() {
                   </div>
                   <div className="flex items-center gap-2 mt-0.5">
                     <span className="text-[11px] truncate" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
-                      {group.last_message || group.description || "No messages yet"}
+                      {group.last_message || group.description || (t("orbit.groups.no_messages") || "No messages yet")}
                     </span>
                   </div>
                   <span className="text-[10px] mt-0.5 block" style={{ color: "hsl(var(--hud-text-dim) / 0.35)" }}>
