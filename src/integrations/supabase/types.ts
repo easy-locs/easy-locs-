@@ -5590,6 +5590,7 @@ export type Database = {
           city: string | null
           country: string
           created_at: string
+          created_by_org_id: string | null
           currency: string
           description: string | null
           email: string | null
@@ -5609,6 +5610,7 @@ export type Database = {
           city?: string | null
           country?: string
           created_at?: string
+          created_by_org_id?: string | null
           currency?: string
           description?: string | null
           email?: string | null
@@ -5628,6 +5630,7 @@ export type Database = {
           city?: string | null
           country?: string
           created_at?: string
+          created_by_org_id?: string | null
           currency?: string
           description?: string | null
           email?: string | null
@@ -5640,7 +5643,22 @@ export type Database = {
           updated_at?: string
           verified?: boolean | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "service_providers_created_by_org_id_fkey"
+            columns: ["created_by_org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_providers_created_by_org_id_fkey"
+            columns: ["created_by_org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs_tenant_view"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       share_links: {
         Row: {

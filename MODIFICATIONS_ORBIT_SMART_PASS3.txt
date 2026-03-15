@@ -1,8 +1,0 @@
-Orbit pass 3
-
-- Added wallet privacy masking helpers and integrated masked wallet amounts with reveal toggle.
-- Orbit Radar now respects Ghost Elite location masking and hidden presence rules more directly.
-- useGeolocation now expires stale cached coordinates and reacts to permission changes more safely.
-- OrbitAppShell now cleans its debounce timer and listens to listing changes for tighter end-to-end sync.
-- useEcosystemRadar now de-duplicates entities and refreshes on live_trackings / leases realtime changes.
-- .env removed from delivered archive and .gitignore strengthened.
