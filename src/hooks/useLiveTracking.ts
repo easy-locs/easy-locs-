@@ -160,6 +160,15 @@ export function useTracker(opts: UseTrackerOpts) {
       .update(positionUpdate as any)
       .eq("id", id);
 
+    // Emit position update for ecosystem radar refresh
+    platformBus.emit("tracking:position_updated", {
+      trackingId: id,
+      lat, lng,
+      status: newStatus,
+      contextType: opts.contextType,
+      contextId: opts.contextId,
+    }, "tracking", { userId: user?.id, orgId });
+
     if (newStatus !== status) {
       setStatus(newStatus);
       platformBus.emit("tracking:status_changed", {
