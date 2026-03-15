@@ -84,6 +84,8 @@ const STATUS_LABELS: Record<string, { label: string; icon: any; color: string }>
   cancelled:       { label: "Deal cancelled", icon: XCircle, color: "hsl(var(--hud-danger))" },
 };
 
+import { formatDistanceToNow, isPast } from "date-fns";
+
 function fmtCurrency(amount: number, currency: string = "EUR") {
   try {
     return new Intl.NumberFormat(undefined, {
