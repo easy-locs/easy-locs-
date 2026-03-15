@@ -7,9 +7,6 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import {
   Handshake, DollarSign, CheckCircle2, XCircle, Clock,
-  ArrowRightLeft, TrendingUp, CalendarCheck, ChevronRight,
-import {
-  Handshake, DollarSign, CheckCircle2, XCircle, Clock,
   ArrowRightLeft, TrendingUp, CalendarCheck, ChevronRight, Timer,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
