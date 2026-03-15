@@ -5,9 +5,10 @@
  * Fully i18n-aware.
  */
 import { useState, useMemo, useCallback } from "react";
-import { Search, Loader2, MessageCircle, Archive } from "lucide-react";
+import { Search, MessageCircle, Archive } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Skeleton } from "@/components/ui/skeleton";
 import type { ConversationThread } from "./types";
 import HudConversationCard from "./HudConversationCard";
 import SwipeableThreadItem from "./SwipeableThreadItem";
