@@ -43,6 +43,13 @@ import {
 
 const LiveEcosystemMap = lazy(() => import("./LiveEcosystemMap"));
 
+// ─── Helper: resolve category color to hsl() string ────────
+/** cat.color is a CSS custom property name like "--hud-cyan" */
+function catHsl(color: string, alpha?: number): string {
+  if (alpha !== undefined) return `hsl(var(${color}) / ${alpha})`;
+  return `hsl(var(${color}))`;
+}
+
 // ─── Radius options ────────────────────────────────────────
 
 const RADIUS_OPTIONS = [5, 10, 25, 50, 100, 200];
@@ -119,11 +126,11 @@ export default function OrbitRadar() {
         </div>
         {geoError ? (
           <>
-            <p className="text-sm font-semibold mb-1" style={{ color: "hsl(var(--hud-text))" }}>Location Required</p>
+            <p className="text-sm font-semibold mb-1" style={{ color: "hsl(var(--hud-text))" }}>Localisation requise</p>
             <p className="text-[11px] text-center mb-4 max-w-[240px]" style={{ color: "hsl(var(--hud-text-dim))" }}>{geoError}</p>
             <Button size="sm" onClick={() => { requestLocation(); haptic("medium"); }} className="gap-1.5"
               style={{ background: "hsl(var(--hud-cyan))", color: "hsl(var(--hud-bg))" }}>
-              <Navigation className="h-3.5 w-3.5" /> Enable Location
+              <Navigation className="h-3.5 w-3.5" /> Activer la localisation
             </Button>
           </>
         ) : (
@@ -131,7 +138,7 @@ export default function OrbitRadar() {
             <div className="relative w-12 h-12 mb-3">
               <div className="absolute inset-0 rounded-full animate-spin" style={{ border: "2px solid hsl(var(--hud-cyan) / 0.15)", borderTopColor: "hsl(var(--hud-cyan))", animationDuration: "1.2s" }} />
             </div>
-            <p className="text-xs" style={{ color: "hsl(var(--hud-text-dim))" }}>Acquiring position…</p>
+            <p className="text-xs" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>Acquisition de la position…</p>
           </>
         )}
       </div>
@@ -158,7 +165,7 @@ export default function OrbitRadar() {
             <div>
               <h2 className="text-sm font-bold leading-tight" style={{ color: "hsl(var(--hud-text))" }}>Living Ecosystem</h2>
               <p className="text-[9px]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
-                {entities.length} signals · {radius}km
+                {entities.length} signaux · {radius}km
               </p>
             </div>
           </div>
@@ -178,8 +185,12 @@ export default function OrbitRadar() {
                     initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}>
                     {RADIUS_OPTIONS.map(r => (
                       <button key={r} onClick={() => { setRadius(r); setShowRadiusMenu(false); haptic("selection"); }}
-                        className="w-full px-3 py-2 text-left text-xs transition-colors hover:bg-[hsl(var(--hud-cyan)/0.08)]"
-                        style={{ color: radius === r ? "hsl(var(--hud-cyan))" : "hsl(var(--hud-text))", fontWeight: radius === r ? 600 : 400 }}>
+                        className="w-full px-3 py-2 text-left text-xs transition-colors"
+                        style={{
+                          color: radius === r ? "hsl(var(--hud-cyan))" : "hsl(var(--hud-text))",
+                          fontWeight: radius === r ? 600 : 400,
+                          background: radius === r ? "hsl(var(--hud-cyan) / 0.08)" : "transparent",
+                        }}>
                         {r} km
                       </button>
                     ))}
@@ -200,7 +211,7 @@ export default function OrbitRadar() {
         {/* Search */}
         <div className="relative mb-2">
           <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }} />
-          <Input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search agents, properties, services…"
+          <Input value={search} onChange={e => setSearch(e.target.value)} placeholder="Rechercher agents, biens, services…"
             className="pl-8 h-8 text-[11px] border-0 rounded-xl"
             style={{ background: "hsl(var(--hud-surface))", color: "hsl(var(--hud-text))" }} />
         </div>
@@ -215,9 +226,9 @@ export default function OrbitRadar() {
                 onClick={() => { setFilter(cat.id); haptic("selection"); }}
                 className="shrink-0 flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-medium whitespace-nowrap transition-all"
                 style={{
-                  background: active ? `hsl(${cat.color} / 0.12)` : "hsl(var(--hud-surface) / 0.4)",
-                  color: active ? `hsl(${cat.color})` : "hsl(var(--hud-text-dim) / 0.5)",
-                  border: `1px solid ${active ? `hsl(${cat.color} / 0.25)` : "transparent"}`,
+                  background: active ? catHsl(cat.color, 0.12) : "hsl(var(--hud-surface) / 0.4)",
+                  color: active ? catHsl(cat.color) : "hsl(var(--hud-text-dim) / 0.5)",
+                  border: `1px solid ${active ? catHsl(cat.color, 0.25) : "transparent"}`,
                   transform: active ? "scale(1.04)" : "scale(1)",
                 }}>
                 <span className="text-xs">{cat.emoji}</span>
@@ -237,7 +248,7 @@ export default function OrbitRadar() {
               color: onlyAvailable ? "hsl(var(--hud-success))" : "hsl(var(--hud-text-dim) / 0.4)",
               border: `1px solid ${onlyAvailable ? "hsl(var(--hud-success) / 0.2)" : "hsl(var(--hud-border) / 0.08)"}`,
             }}>
-            🟢 Available
+            🟢 Dispo
           </button>
           <button onClick={() => { setOnlyVerified(!onlyVerified); haptic("light"); }}
             className="flex items-center gap-1 text-[9px] font-medium px-2 py-0.5 rounded-full"
@@ -246,7 +257,7 @@ export default function OrbitRadar() {
               color: onlyVerified ? "hsl(var(--hud-cyan))" : "hsl(var(--hud-text-dim) / 0.4)",
               border: `1px solid ${onlyVerified ? "hsl(var(--hud-cyan) / 0.2)" : "hsl(var(--hud-border) / 0.08)"}`,
             }}>
-            ✅ Verified
+            ✅ Vérifié
           </button>
 
           <div className="flex-1" />
@@ -259,7 +270,7 @@ export default function OrbitRadar() {
                 background: viewMode === "map" ? "hsl(var(--hud-cyan) / 0.12)" : "hsl(var(--hud-surface) / 0.3)",
                 color: viewMode === "map" ? "hsl(var(--hud-cyan))" : "hsl(var(--hud-text-dim) / 0.4)",
               }}>
-              <Map className="h-2.5 w-2.5" /> Map
+              <Map className="h-2.5 w-2.5" /> Carte
             </button>
             <button onClick={() => { setViewMode("list"); haptic("selection"); }}
               className="px-2 py-0.5 flex items-center gap-0.5 text-[9px]"
@@ -267,7 +278,7 @@ export default function OrbitRadar() {
                 background: viewMode === "list" ? "hsl(var(--hud-cyan) / 0.12)" : "hsl(var(--hud-surface) / 0.3)",
                 color: viewMode === "list" ? "hsl(var(--hud-cyan))" : "hsl(var(--hud-text-dim) / 0.4)",
               }}>
-              <List className="h-2.5 w-2.5" /> List
+              <List className="h-2.5 w-2.5" /> Liste
             </button>
           </div>
         </div>
@@ -297,7 +308,7 @@ export default function OrbitRadar() {
               if (!cfg) return null;
               return (
                 <div key={cat} className="flex items-center gap-1 px-2 py-1 rounded-full text-[9px] font-semibold backdrop-blur-md pointer-events-auto"
-                  style={{ background: "hsl(var(--hud-bg) / 0.85)", color: `hsl(${cfg.color})`, border: `1px solid hsl(${cfg.color} / 0.2)` }}>
+                  style={{ background: "hsl(var(--hud-bg) / 0.85)", color: catHsl(cfg.color), border: `1px solid ${catHsl(cfg.color, 0.2)}` }}>
                   {cfg.emoji} {count}
                 </div>
               );
@@ -329,17 +340,17 @@ export default function OrbitRadar() {
           {loading && entities.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16">
               <Radar className="h-10 w-10 animate-spin mb-3" style={{ color: "hsl(var(--hud-cyan) / 0.3)" }} />
-              <p className="text-xs" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>Scanning ecosystem…</p>
+              <p className="text-xs" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>Scan de l'écosystème…</p>
             </div>
           ) : entities.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 text-center">
               <Radar className="h-10 w-10 mb-3" style={{ color: "hsl(var(--hud-text-dim) / 0.15)" }} />
-              <p className="text-sm" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>No signals in range</p>
-              <p className="text-xs mt-1" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>Increase radius or change filters</p>
+              <p className="text-sm" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>Aucun signal à portée</p>
+              <p className="text-xs mt-1" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>Augmentez le rayon ou changez les filtres</p>
             </div>
           ) : (
             <div className="space-y-1 mt-1">
-              {entities.slice(0, 50).map((entity, idx) => (
+              {entities.slice(0, 50).map((entity) => (
                 <EntityRow key={entity.id + entity.category} entity={entity}
                   onSelect={() => handleSelect(entity)}
                   onMessage={() => {
@@ -386,12 +397,12 @@ export default function OrbitRadar() {
         <DialogContent className="max-w-sm" style={{ background: "hsl(var(--hud-bg))", border: "1px solid hsl(var(--hud-border) / 0.15)" }}>
           <DialogHeader>
             <DialogTitle className="text-sm flex items-center gap-2" style={{ color: "hsl(var(--hud-text))" }}>
-              <Shield className="h-4 w-4" style={{ color: "hsl(var(--hud-cyan))" }} /> Privacy Settings
+              <Shield className="h-4 w-4" style={{ color: "hsl(var(--hud-cyan))" }} /> Confidentialité
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-2">
-            <PrivacyRow label="Invisible Mode" desc="Hide from all ecosystem scans" checked={invisibleMode} onChange={v => { setInvisibleMode(v); haptic("light"); }} />
-            <PrivacyRow label="Approximate Location" desc="Share city-level only" checked={approxLocation} onChange={v => { setApproxLocation(v); haptic("light"); }} />
+            <PrivacyRow label="Mode invisible" desc="Masquer votre présence du radar" checked={invisibleMode} onChange={v => { setInvisibleMode(v); haptic("light"); }} />
+            <PrivacyRow label="Position approx." desc="Partager uniquement la ville" checked={approxLocation} onChange={v => { setApproxLocation(v); haptic("light"); }} />
           </div>
         </DialogContent>
       </Dialog>
@@ -405,7 +416,7 @@ function EntityRow({ entity, onSelect, onMessage }: {
   entity: EcosystemEntity; onSelect: () => void; onMessage: () => void;
 }) {
   const cfg = ECOSYSTEM_CATEGORIES.find(c => c.id === entity.category);
-  const color = cfg ? `hsl(${cfg.color})` : "hsl(var(--hud-cyan))";
+  const colorVar = cfg?.color || "--hud-cyan";
   const emoji = cfg?.emoji || "📍";
 
   const distStr = entity.distance_km < 1
@@ -414,14 +425,14 @@ function EntityRow({ entity, onSelect, onMessage }: {
 
   return (
     <button onClick={onSelect}
-      className="w-full flex items-center gap-2.5 p-2.5 rounded-xl text-left transition-colors hover:bg-[hsl(var(--hud-surface)/0.4)]"
+      className="w-full flex items-center gap-2.5 p-2.5 rounded-xl text-left transition-colors"
       style={{ background: "hsl(var(--hud-surface) / 0.12)" }}>
       {/* Icon */}
       {entity.photo ? (
         <img src={entity.photo} alt="" className="w-10 h-10 rounded-xl object-cover shrink-0" />
       ) : (
         <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 text-base"
-          style={{ background: `${color}10`, border: `1px solid ${color}20` }}>
+          style={{ background: catHsl(colorVar, 0.06), border: `1px solid ${catHsl(colorVar, 0.12)}` }}>
           {emoji}
         </div>
       )}
@@ -433,10 +444,10 @@ function EntityRow({ entity, onSelect, onMessage }: {
         </div>
         <div className="flex items-center gap-1.5 mt-0.5">
           <span className="text-[9px] font-medium px-1.5 py-0.5 rounded-full"
-            style={{ background: `${color}12`, color }}>{cfg?.label || entity.category}</span>
+            style={{ background: catHsl(colorVar, 0.08), color: catHsl(colorVar) }}>{cfg?.label || entity.category}</span>
           <span className="text-[9px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{distStr}</span>
           {entity.price != null && entity.price > 0 && (
-            <span className="text-[9px] font-medium" style={{ color }}>
+            <span className="text-[9px] font-medium" style={{ color: catHsl(colorVar) }}>
               {entity.price > 1000 ? `${(entity.price / 1000).toFixed(0)}k` : entity.price} {entity.currency}
             </span>
           )}
@@ -458,7 +469,7 @@ function EntityPreview({ entity, onClose, onMessage, onCall, onOpen }: {
   entity: EcosystemEntity; onClose: () => void; onMessage: () => void; onCall: () => void; onOpen: () => void;
 }) {
   const cfg = ECOSYSTEM_CATEGORIES.find(c => c.id === entity.category);
-  const color = cfg ? `hsl(${cfg.color})` : "hsl(var(--hud-cyan))";
+  const colorVar = cfg?.color || "--hud-cyan";
   const emoji = cfg?.emoji || "📍";
   const distStr = entity.distance_km < 1
     ? `${Math.round(entity.distance_km * 1000)}m`
@@ -478,7 +489,7 @@ function EntityPreview({ entity, onClose, onMessage, onCall, onOpen }: {
             <img src={entity.photo} alt="" className="w-12 h-12 rounded-xl object-cover shrink-0" />
           ) : (
             <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 text-lg"
-              style={{ background: `${color}10`, border: `1px solid ${color}20` }}>
+              style={{ background: catHsl(colorVar, 0.06), border: `1px solid ${catHsl(colorVar, 0.12)}` }}>
               {emoji}
             </div>
           )}
@@ -488,12 +499,12 @@ function EntityPreview({ entity, onClose, onMessage, onCall, onOpen }: {
               {entity.verified && <span className="text-[10px]">✅</span>}
               {entity.online && <span className="h-2 w-2 rounded-full shrink-0" style={{ background: "hsl(var(--hud-success))" }} />}
             </div>
-            {entity.subtitle && <p className="text-[11px] mt-0.5" style={{ color: "hsl(var(--hud-text-dim))" }}>{entity.subtitle}</p>}
+            {entity.subtitle && <p className="text-[11px] mt-0.5 break-words" style={{ color: "hsl(var(--hud-text-dim))" }}>{entity.subtitle}</p>}
             <div className="flex items-center gap-2 mt-1">
-              <Badge variant="outline" className="text-[8px] px-1.5 py-0 h-4" style={{ borderColor: `${color}25`, color }}>{cfg?.label || entity.category}</Badge>
+              <Badge variant="outline" className="text-[8px] px-1.5 py-0 h-4" style={{ borderColor: catHsl(colorVar, 0.2), color: catHsl(colorVar) }}>{cfg?.label || entity.category}</Badge>
               <span className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{distStr}</span>
               {entity.price != null && entity.price > 0 && (
-                <span className="text-[11px] font-semibold" style={{ color }}>{entity.price.toLocaleString()} {entity.currency}</span>
+                <span className="text-[11px] font-semibold" style={{ color: catHsl(colorVar) }}>{entity.price.toLocaleString()} {entity.currency}</span>
               )}
             </div>
           </div>
@@ -504,22 +515,22 @@ function EntityPreview({ entity, onClose, onMessage, onCall, onOpen }: {
         </div>
 
         <div className="px-3 pb-3 flex gap-1.5">
-          <ActionBtn icon={MessageCircle} label="Message" onClick={onMessage} color="hsl(var(--hud-cyan))" />
-          <ActionBtn icon={Phone} label="Call" onClick={onCall} color="hsl(var(--hud-success))" />
-          <ActionBtn icon={ExternalLink} label="Open" onClick={onOpen} color="hsl(var(--hud-purple))" />
+          <ActionBtn icon={MessageCircle} label="Message" onClick={onMessage} colorVar="--hud-cyan" />
+          <ActionBtn icon={Phone} label="Appel" onClick={onCall} colorVar="--hud-success" />
+          <ActionBtn icon={ExternalLink} label="Ouvrir" onClick={onOpen} colorVar="--hud-purple" />
         </div>
       </div>
     </motion.div>
   );
 }
 
-function ActionBtn({ icon: Icon, label, onClick, color }: {
-  icon: typeof MessageCircle; label: string; onClick: () => void; color: string;
+function ActionBtn({ icon: Icon, label, onClick, colorVar }: {
+  icon: typeof MessageCircle; label: string; onClick: () => void; colorVar: string;
 }) {
   return (
     <button onClick={onClick}
       className="flex-1 flex items-center justify-center gap-1 py-2.5 rounded-xl text-[11px] font-medium active:scale-95 transition-transform"
-      style={{ background: `${color}10`, color, border: `1px solid ${color}18` }}>
+      style={{ background: catHsl(colorVar, 0.06), color: catHsl(colorVar), border: `1px solid ${catHsl(colorVar, 0.12)}` }}>
       <Icon className="h-3.5 w-3.5" />
       {label}
     </button>
