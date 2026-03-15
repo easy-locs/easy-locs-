@@ -435,7 +435,7 @@ export default function CommGroupsSection() {
             </DialogHeader>
             <div className="space-y-3">
               <div>
-                <Label className="text-xs" style={{ color: "hsl(var(--hud-text-dim))" }}>User email</Label>
+                <Label className="text-xs" style={{ color: "hsl(var(--hud-text-dim))" }}>{t("orbit.groups.user_email") || "User email"}</Label>
                 <Input
                   value={addMemberEmail}
                   onChange={e => setAddMemberEmail(e.target.value)}
