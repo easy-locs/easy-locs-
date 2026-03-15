@@ -29,7 +29,7 @@ import OrbitAccountSection from "@/components/communication-hub/OrbitAccountSect
 import { useConversationThreads } from "@/components/communication-hub/useConversationThreads";
 import { useThreadActions } from "@/hooks/useThreadActions";
 import type { ConversationThread } from "@/components/communication-hub/types";
-import { useOrbitCallSync } from "@/hooks/useOrbitCallSync";
+// useOrbitCallSync removed — centralized in RealtimeHubGuard
 import { useAuth } from "@/contexts/AuthContext";
 
 const VALID_SECTIONS: CommSection[] = ["chats", "calls", "contacts", "payments", "groups", "nearby", "meetings", "files", "settings", "you"];
