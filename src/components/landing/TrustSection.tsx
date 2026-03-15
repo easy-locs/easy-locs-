@@ -79,7 +79,7 @@ const TrustSection = () => {
               style={{
                 borderColor: "hsl(220 20% 90% / 0.08)",
                 background: "linear-gradient(160deg, hsl(220 30% 12% / 0.8), hsl(220 35% 8% / 0.6))",
-                backdropFilter: "blur(20px)",
+                ...(isMobile ? {} : { backdropFilter: "blur(20px)" }),
               }}
             >
               {/* Animated top line */}
