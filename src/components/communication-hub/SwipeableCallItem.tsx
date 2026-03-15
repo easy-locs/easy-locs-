@@ -101,7 +101,7 @@ export default function SwipeableCallItem({ children, onDelete }: Props) {
           }}
         >
           <Trash2 className="h-5 w-5" />
-          <span className="text-[10px] font-medium">Delete</span>
+          <span className="text-2xs font-medium">Delete</span>
         </button>
       </div>
 
