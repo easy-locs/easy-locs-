@@ -525,21 +525,8 @@ export default function ProSettingsSection() {
         />
 
         <div className="space-y-4">
-          {/* Storage indicator */}
-          <div className="p-3 rounded-xl border border-border bg-muted/30">
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-xs font-medium text-foreground">Espace utilisé</span>
-              <span className="text-xs text-muted-foreground">~12 MB</span>
-            </div>
-            <div className="w-full h-2 rounded-full bg-muted overflow-hidden">
-              <div className="h-full rounded-full" style={{ width: "15%", background: "hsl(var(--hud-cyan))" }} />
-            </div>
-            <div className="flex justify-between mt-2 text-[10px] text-muted-foreground">
-              <span>Messages: ~4 MB</span>
-              <span>Médias: ~6 MB</span>
-              <span>Autre: ~2 MB</span>
-            </div>
-          </div>
+          {/* Storage estimate — uses StorageManager API when available */}
+          <StorageEstimate />
 
           <ToggleRow
             icon={<RefreshCw className="h-4 w-4" />}
