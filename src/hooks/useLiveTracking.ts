@@ -86,29 +86,31 @@ export function useTracker(opts: UseTrackerOpts) {
       );
     });
 
-    const { data, error } = await supabase
-      .from("live_trackings")
-      .insert({
-        org_id: orgId,
-        tracker_user_id: user.id,
-        viewer_user_id: opts.viewerUserId || null,
+    const insertPayload: Record<string, unknown> = {
+      org_id: orgId,
+      tracker_user_id: user.id,
+      viewer_user_id: opts.viewerUserId || null,
+      context_type: opts.contextType,
+      context_id: opts.contextId,
+      context_label: opts.contextLabel || null,
+      destination_lat: opts.destinationLat || null,
+      destination_lng: opts.destinationLng || null,
+      origin_lat: origin?.lat || null,
+      origin_lng: origin?.lng || null,
+      current_lat: origin?.lat || null,
+      current_lng: origin?.lng || null,
+      status: "en_route",
+      started_at: new Date().toISOString(),
+      metadata_json: {
         context_type: opts.contextType,
         context_id: opts.contextId,
-        context_label: opts.contextLabel || null,
-        destination_lat: opts.destinationLat || null,
-        destination_lng: opts.destinationLng || null,
-        origin_lat: origin?.lat || null,
-        origin_lng: origin?.lng || null,
-        current_lat: origin?.lat || null,
-        current_lng: origin?.lng || null,
-        status: "en_route",
-        started_at: new Date().toISOString(),
-        metadata_json: {
-          context_type: opts.contextType,
-          context_id: opts.contextId,
-          started_by: user.id,
-        },
-      } as any)
+        started_by: user.id,
+      },
+    };
+
+    const { data, error } = await supabase
+      .from("live_trackings")
+      .insert(insertPayload as any)
       .select()
       .single();
 
