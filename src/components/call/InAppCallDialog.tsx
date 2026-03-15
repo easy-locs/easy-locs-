@@ -110,11 +110,27 @@ export default function InAppCallDialog({
       setStatus("idle"); setMuted(false); setVideoEnabled(false);
       setElapsed(0); setUsingRelay(false); setError(null);
       setRemoteStream(null); setLocalStream(null); setIsVideo(false); setIsEnding(false); setFacingMode("user");
+      // Audio calls default to earpiece, video calls to speaker
       setSpeakerOn(false);
       secureAnnouncedRef.current = false;
       resetSecureAudioState();
     }
   }, [open]);
+
+  // Sync audio output routing when speakerOn changes or remote stream arrives
+  useEffect(() => {
+    const audioEl = remoteAudioRef.current;
+    if (!audioEl || !remoteStream) return;
+    
+    audioEl.volume = 1;
+    audioEl.muted = false;
+    
+    // Route to correct output device
+    if ("setSinkId" in audioEl && typeof (audioEl as any).setSinkId === "function") {
+      const sinkId = speakerOn ? "default" : "communications";
+      (audioEl as any).setSinkId(sinkId).catch(() => {});
+    }
+  }, [speakerOn, remoteStream]);
 
   const handleEndCall = async () => {
     if (isEnding) return;
