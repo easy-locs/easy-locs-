@@ -184,7 +184,7 @@ export function CallProvider({ children }: { children: ReactNode }) {
         const authUser = authData?.user;
 
         if (authError || !authUser?.id) {
-          toast.error("Session expirée. Reconnectez-vous pour lancer un appel.");
+          toast.error(t("call.error.session_expired") || "Session expired. Please log in again.");
           return;
         }
 
