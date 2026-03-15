@@ -700,7 +700,7 @@ export default function CommContactsSection() {
           </DialogHeader>
           <div className="space-y-3">
             <div>
-              <Label className="text-xs" style={{ color: "hsl(var(--hud-text-dim))" }}>Name *</Label>
+              <Label className="text-xs" style={{ color: "hsl(var(--hud-text-dim))" }}>{t("orbit.contacts.name") || "Name *"}</Label>
               <Input value={newContact.name} onChange={e => setNewContact(p => ({ ...p, name: e.target.value }))}
                 className="mt-1 border-0" style={{ background: "hsl(var(--hud-surface))", color: "hsl(var(--hud-text))" }} />
             </div>
