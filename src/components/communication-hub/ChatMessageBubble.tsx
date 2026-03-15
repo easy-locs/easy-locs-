@@ -374,10 +374,10 @@ function ChatMessageBubble({
               <div className="mt-1.5 pt-1" style={{ borderTop: "1px solid hsl(var(--hud-border) / 0.06)" }}>
                 <button
                   onClick={() => setShowTranscript(!showTranscript)}
-                  className="flex items-center gap-1 text-[10px] mb-0.5 hover:opacity-80"
+                  className="flex items-center gap-1 text-[10px] mb-0.5 hover:opacity-80 min-h-[44px] sm:min-h-0 py-1"
                   style={{ color: "hsl(var(--hud-cyan) / 0.7)" }}
                 >
-                  <FileText className="h-2.5 w-2.5" />
+                  <FileText className="h-3 w-3 sm:h-2.5 sm:w-2.5" />
                   {showTranscript ? "Hide transcript" : "Show transcript"}
                 </button>
                 {showTranscript && (
@@ -390,10 +390,10 @@ function ChatMessageBubble({
                 {showTranscript && translatedTranscript && (
                   <button
                     onClick={() => setShowTranslatedTranscript(!showTranslatedTranscript)}
-                    className="mt-0.5 inline-flex items-center gap-1 text-[9px] hover:opacity-80"
+                    className="mt-0.5 inline-flex items-center gap-1 text-[10px] hover:opacity-80 min-h-[44px] sm:min-h-0 py-1"
                     style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}
                   >
-                    <Globe className="h-2 w-2" />
+                    <Globe className="h-3 w-3 sm:h-2.5 sm:w-2.5" />
                     {showTranslatedTranscript ? "Original" : "Translated"}
                   </button>
                 )}
@@ -420,8 +420,8 @@ function ChatMessageBubble({
 
         {/* Translate button */}
         {!isMe && msg.sender_locale && msg.sender_locale !== locale && !isVoice && (
-          <button onClick={() => onTranslate(msg)} className="mt-1 inline-flex items-center gap-1 text-[10px] hover:opacity-80 transition-opacity" style={{ color: "hsl(var(--hud-text-dim))" }}>
-            {translatingMsgId === msg.id ? <Loader2 className="h-2.5 w-2.5 animate-spin" /> : <Globe className="h-2.5 w-2.5" />}
+          <button onClick={() => onTranslate(msg)} className="mt-1 inline-flex items-center gap-1.5 text-[10px] hover:opacity-80 transition-opacity min-h-[44px] sm:min-h-0 py-1" style={{ color: "hsl(var(--hud-text-dim))" }}>
+            {translatingMsgId === msg.id ? <Loader2 className="h-3 w-3 sm:h-2.5 sm:w-2.5 animate-spin" /> : <Globe className="h-3 w-3 sm:h-2.5 sm:w-2.5" />}
             {showOriginal ? "Translation" : msg.translated_content ? "Original" : "Translate"}
           </button>
         )}
