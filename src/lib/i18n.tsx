@@ -1323,6 +1323,8 @@ const pageFr: Record<string, string> = {
   "landing.footer.features": "Fonctionnalités",
   "landing.footer.pricing": "Tarifs",
   "landing.footer.copyright": "Tous droits réservés.",
+  "landing.footer.saas": "Plateforme SaaS",
+  "landing.footer.countries_count": "190+ pays",
 
   "landing.legal.title": "Information légale",
   "landing.legal.text": "Cette application fournit une assistance administrative uniquement. Les documents générés sont à titre informatif et ne remplacent pas un avocat, un notaire ou un expert-comptable.",
