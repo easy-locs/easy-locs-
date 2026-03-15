@@ -288,9 +288,9 @@ export default function CommCallsSection() {
 
               const handleDeleteCall = async () => {
                 const { error } = await supabase.from("call_logs").delete().eq("id", call.id);
-                if (error) { toast.error("Failed to delete call"); return; }
+                if (error) { toast.error(t("orbit.calls.delete_failed") || "Failed to delete call"); return; }
                 setCalls(prev => prev.filter(c => c.id !== call.id));
-                toast.success("Call deleted");
+                toast.success(t("orbit.calls.deleted") || "Call deleted");
               };
 
               return (
