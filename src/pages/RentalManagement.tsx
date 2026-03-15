@@ -1320,7 +1320,45 @@ const RentalManagement = () => {
   ];
 
   if (loading) {
-    return <DashboardLayout><div className="flex items-center justify-center py-20"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div></DashboardLayout>;
+    return (
+      <DashboardLayout>
+        <div className="max-w-5xl mx-auto space-y-6">
+          {/* Skeleton header */}
+          <div className="space-y-2">
+            <Skeleton className="h-7 w-64" />
+            <Skeleton className="h-4 w-96" />
+          </div>
+          {/* Skeleton tabs */}
+          <div className="flex gap-2">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <Skeleton key={i} className="h-9 w-28 rounded-lg" />
+            ))}
+          </div>
+          {/* Skeleton stat cards */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="bg-card rounded-xl border border-border/50 p-4 space-y-2">
+                <Skeleton className="h-4 w-20" />
+                <Skeleton className="h-7 w-16" />
+              </div>
+            ))}
+          </div>
+          {/* Skeleton list */}
+          <div className="space-y-3">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <div key={i} className="bg-card rounded-xl border border-border/50 p-4 flex items-center gap-4">
+                <Skeleton className="h-10 w-10 rounded-lg shrink-0" />
+                <div className="flex-1 space-y-2">
+                  <Skeleton className="h-4 w-3/4" />
+                  <Skeleton className="h-3 w-1/2" />
+                </div>
+                <Skeleton className="h-6 w-16 rounded-full" />
+              </div>
+            ))}
+          </div>
+        </div>
+      </DashboardLayout>
+    );
   }
 
   return (
