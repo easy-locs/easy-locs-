@@ -66,10 +66,10 @@ const Navbar = () => {
       transition={{ duration: 0.5 }}
       className="fixed top-0 left-0 right-0 z-50"
       style={{
-        background: "hsl(var(--navy-deep) / 0.8)",
+        background: "hsl(var(--navy-deep) / 0.92)",
         borderBottom: "1px solid hsl(220 15% 90% / 0.06)",
-        backdropFilter: "blur(20px) saturate(180%)",
-        WebkitBackdropFilter: "blur(20px) saturate(180%)",
+        backdropFilter: "blur(12px) saturate(140%)",
+        WebkitBackdropFilter: "blur(12px) saturate(140%)",
       }}
     >
       <div className="container flex items-center justify-between h-14 sm:h-16 px-4">
