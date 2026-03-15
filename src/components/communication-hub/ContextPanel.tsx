@@ -287,16 +287,16 @@ export default function ContextPanel({ thread, orgId }: Props) {
                       <Calendar className="h-3 w-3 text-accent" /> Booking
                     </h4>
                     <div className="flex items-center gap-2 flex-wrap">
-                      <Badge variant="outline" className={`text-[10px] px-1.5 py-0 ${moduleConfig.cls}`}>
+                      <Badge variant="outline" className={`text-2xs px-1.5 py-0 ${moduleConfig.cls}`}>
                         {moduleConfig.emoji} {moduleConfig.label}
                       </Badge>
                       {thread.bookingStatus && (
-                        <Badge variant="outline" className={`text-[10px] px-1.5 py-0 font-medium ${STATUS_COLORS[thread.bookingStatus] || ""}`}>
+                        <Badge variant="outline" className={`text-2xs px-1.5 py-0 font-medium ${STATUS_COLORS[thread.bookingStatus] || ""}`}>
                           {STATUS_LABELS[thread.bookingStatus] || thread.bookingStatus}
                         </Badge>
                       )}
                     </div>
-                    {thread.bookingId && <p className="text-[10px] text-muted-foreground font-mono">#{thread.bookingId.slice(0, 8)}</p>}
+                    {thread.bookingId && <p className="text-2xs text-muted-foreground font-mono">#{thread.bookingId.slice(0, 8)}</p>}
                     {thread.serviceTitle && <p className="text-xs text-foreground font-medium">{thread.serviceTitle}</p>}
                     {thread.totalPrice != null && (
                       <p className="text-sm font-bold text-foreground">
