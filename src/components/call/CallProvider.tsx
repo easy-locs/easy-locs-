@@ -4,6 +4,7 @@
  * Renders IncomingCallDialog and InAppCallDialog globally.
  */
 import { createContext, useContext, useState, useEffect, useCallback, useRef, type ReactNode } from "react";
+import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { CallManager, type CallState } from "@/lib/call-manager";
@@ -37,6 +38,7 @@ export const useCall = () => useContext(CallContext);
 
 export function CallProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
+  const { t } = useI18n();
   const [callManager, setCallManager] = useState<CallManager | null>(null);
   const [callState, setCallState] = useState<Partial<CallState>>({});
   const [peerName, setPeerName] = useState("");
@@ -182,7 +184,7 @@ export function CallProvider({ children }: { children: ReactNode }) {
         const authUser = authData?.user;
 
         if (authError || !authUser?.id) {
-          toast.error("Session expirée. Reconnectez-vous pour lancer un appel.");
+          toast.error(t("call.error.session_expired") || "Session expired. Please log in again.");
           return;
         }
 
@@ -210,9 +212,9 @@ export function CallProvider({ children }: { children: ReactNode }) {
 
         if (error || !callId) {
           console.error("Failed to create call:", error);
-          const errMsg = error?.message || "Impossible de démarrer l'appel";
+          const errMsg = error?.message || (t("call.error.start_failed") || "Unable to start call");
           if (errMsg.includes("Unauthorized")) {
-            toast.error("Autorisation refusée. Merci de vous reconnecter puis réessayer.");
+            toast.error(t("call.error.auth_denied") || "Authorization denied. Please log in again.");
           } else {
             toast.error(errMsg);
           }
