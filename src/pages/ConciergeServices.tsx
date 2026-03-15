@@ -333,6 +333,33 @@ const ConciergeServices = () => {
   return (
     <DashboardLayout>
       <div className="space-y-6">
+        {loading && (
+          <div className="space-y-6">
+            {/* Skeleton KPIs */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-3">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <Card key={i}><CardContent className="pt-4 pb-3 animate-pulse">
+                  <div className="h-3 bg-muted rounded w-16 mb-2" />
+                  <div className="h-6 bg-muted rounded w-12" />
+                </CardContent></Card>
+              ))}
+            </div>
+            {/* Skeleton service cards */}
+            <div className="responsive-card-grid">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <Card key={i} className="overflow-hidden animate-pulse">
+                  <div className="aspect-[16/10] bg-muted" />
+                  <CardContent className="pt-3 space-y-2">
+                    <div className="h-4 bg-muted rounded w-3/4" />
+                    <div className="h-3 bg-muted rounded w-1/2" />
+                    <div className="h-5 bg-muted rounded w-20 mt-2" />
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        )}
+        {!loading && (<>
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
