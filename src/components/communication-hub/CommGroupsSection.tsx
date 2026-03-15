@@ -421,7 +421,7 @@ export default function CommGroupsSection() {
                 style={{ color: "hsl(var(--hud-danger))" }}
                 onClick={leaveGroup}
               >
-                <LogOut className="h-3.5 w-3.5" /> Leave
+                <LogOut className="h-3.5 w-3.5" /> {t("orbit.groups.leave") || "Leave"}
               </Button>
             </div>
           </DialogContent>
