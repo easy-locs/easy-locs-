@@ -176,7 +176,7 @@ export function useTracker(opts: UseTrackerOpts) {
     const updates: Record<string, unknown> = { status: newStatus, updated_at: new Date().toISOString() };
     if (newStatus === "completed") updates.completed_at = new Date().toISOString();
 
-    await supabase.from("live_trackings").update(updates as any).eq("id", trackingId);
+    await supabase.from("live_trackings").update(updates as Record<string, unknown> as any).eq("id", trackingId);
     setStatus(newStatus);
 
     if (newStatus === "completed") {

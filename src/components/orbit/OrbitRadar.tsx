@@ -484,7 +484,7 @@ function EntityPreview({ entity, onClose, onMessage, onCall, onOpen }: {
           )}
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-1.5">
-              <h3 className="text-sm font-bold truncate" style={{ color: "hsl(var(--hud-text))" }}>{entity.title}</h3>
+              <h3 className="text-sm font-bold break-words" style={{ color: "hsl(var(--hud-text))" }}>{entity.title}</h3>
               {entity.verified && <span className="text-[10px]">✅</span>}
               {entity.online && <span className="h-2 w-2 rounded-full shrink-0" style={{ background: "hsl(var(--hud-success))" }} />}
             </div>
