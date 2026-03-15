@@ -109,7 +109,7 @@ export default function IncomingGuestCallDialog({
             <Button
               size="lg"
               className="rounded-full gap-2 px-6 bg-green-600 hover:bg-green-700 text-white"
-              onClick={() => onAccept(callId)}
+              onClick={handleAccept}
             >
               <Phone className="h-5 w-5" />
               Accept
