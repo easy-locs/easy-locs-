@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { ErrorState } from "@/components/ui/error-state";
 import { useExploreRealtimeSync } from "@/hooks/useListingSync";
 import { Link } from "react-router-dom";
 import SEOHead from "@/components/SEOHead";
@@ -167,7 +168,7 @@ export default function Explore() {
             <span className="text-sm text-muted-foreground flex-1">
               📍 {t("explore.detected_location") || "Detected location"}: <strong className="text-foreground">{geo.detection.city}, {geo.country.toUpperCase()}</strong>
             </span>
-            <button onClick={handleNearMe} className="text-xs font-semibold text-accent-foreground bg-accent px-3 py-1.5 rounded-full hover:opacity-90 transition-opacity whitespace-nowrap min-h-[36px]">
+            <button onClick={handleNearMe} className="text-xs font-semibold text-accent-foreground bg-accent px-3 py-1.5 rounded-full hover:opacity-90 transition-opacity whitespace-nowrap min-h-[44px]">
               {t("explore.near_me") || "Near me"}
             </button>
           </motion.div>
@@ -190,7 +191,7 @@ export default function Explore() {
         )}
 
         {loadError && (
-          <div className="mb-4 rounded-xl border border-border bg-card px-4 py-3 text-sm text-muted-foreground">{loadError}</div>
+          <ErrorState message={loadError} onRetry={() => window.location.reload()} className="mb-6" />
         )}
 
         {/* Results header */}
@@ -268,11 +269,11 @@ export default function Explore() {
       <footer className="border-t border-border py-8 text-center text-xs text-muted-foreground mt-auto">
         <div className="max-w-[1400px] mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
           <span>© {new Date().getFullYear()} <span className="font-semibold">EASY-LOCS®</span> — All rights reserved</span>
-          <div className="flex items-center gap-4">
-            <Link to="/about" className="hover:text-foreground transition-colors">About</Link>
-            <Link to="/contact" className="hover:text-foreground transition-colors">Contact</Link>
-            <Link to="/terms" className="hover:text-foreground transition-colors">Terms</Link>
-            <Link to="/privacy" className="hover:text-foreground transition-colors">Privacy</Link>
+          <div className="flex items-center gap-1 sm:gap-4 flex-wrap justify-center sm:justify-end">
+            <Link to="/about" className="hover:text-foreground transition-colors px-2 py-2 min-h-[44px] inline-flex items-center">About</Link>
+            <Link to="/contact" className="hover:text-foreground transition-colors px-2 py-2 min-h-[44px] inline-flex items-center">Contact</Link>
+            <Link to="/terms" className="hover:text-foreground transition-colors px-2 py-2 min-h-[44px] inline-flex items-center">Terms</Link>
+            <Link to="/privacy" className="hover:text-foreground transition-colors px-2 py-2 min-h-[44px] inline-flex items-center">Privacy</Link>
           </div>
         </div>
       </footer>
