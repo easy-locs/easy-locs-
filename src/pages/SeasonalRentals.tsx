@@ -1188,6 +1188,8 @@ const SeasonalRentals = () => {
                 </div>
               ))}
             </div>
+          ) : loadError ? (
+            <ErrorState message={loadError} onRetry={() => { setLoading(true); load(); }} />
           ) :
             bookings.length === 0 ? <p className="text-center text-muted-foreground py-8">{t("page.seasonal.no_reservations")}</p> :
               bookings.map(b => (
