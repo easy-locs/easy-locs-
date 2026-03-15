@@ -209,7 +209,7 @@ const Documents = () => {
                         {routed.length > 0 && (
                           <div className="flex items-center gap-1 mt-1.5 flex-wrap">
                             {routed.map(r => (
-                              <span key={r} className="inline-flex items-center gap-0.5 text-[10px] bg-muted/60 px-1.5 py-0.5 rounded" title={r}>
+                              <span key={r} className="inline-flex items-center gap-0.5 text-2xs bg-muted/60 px-1.5 py-0.5 rounded" title={r}>
                                 {routeIcons[r] || "📁"} {r.replace(/_/g, " ")}
                               </span>
                             ))}

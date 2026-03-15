@@ -218,7 +218,7 @@ export default function OrbitSessionManager({ userId }: OrbitSessionManagerProps
                       </Badge>
                     )}
                   </div>
-                  <p className="text-[11px]" style={{ color: "hsl(var(--hud-text-dim) / 0.6)" }}>
+                  <p className="text-token-xs" style={{ color: "hsl(var(--hud-text-dim) / 0.6)" }}>
                     Dernière activité : {formatDate(session.last_active_at)}
                   </p>
                 </div>

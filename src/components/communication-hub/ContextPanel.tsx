@@ -322,8 +322,8 @@ export default function ContextPanel({ thread, orgId }: Props) {
                         <Building className="h-3 w-3 text-accent" /> Service
                       </h4>
                       <p className="text-xs font-medium">{bookingCtx.service.title}</p>
-                      {bookingCtx.service.category && <Badge variant="outline" className="text-[9px] px-1 py-0">{bookingCtx.service.category}</Badge>}
-                      {bookingCtx.service.city && <p className="text-[11px] text-muted-foreground">📍 {bookingCtx.service.city}, {bookingCtx.service.country}</p>}
+                      {bookingCtx.service.category && <Badge variant="outline" className="text-micro px-1 py-0">{bookingCtx.service.category}</Badge>}
+                      {bookingCtx.service.city && <p className="text-token-xs text-muted-foreground">📍 {bookingCtx.service.city}, {bookingCtx.service.country}</p>}
                       <p className="text-xs font-semibold">{bookingCtx.service.price} {bookingCtx.service.currency}</p>
                     </div>
                   )}
