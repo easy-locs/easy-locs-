@@ -38,6 +38,7 @@ const Dashboard = () => {
     propertiesByCountry: [] as CountryStat[],
   });
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!orgId) {
