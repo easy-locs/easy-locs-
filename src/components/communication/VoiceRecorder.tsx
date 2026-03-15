@@ -202,7 +202,7 @@ export default function VoiceRecorder({ orgId, contextId, userId, userEmail, use
           {/* Cancel */}
           <button
             onClick={cancelRecording}
-            className="shrink-0 h-10 w-10 rounded-full flex items-center justify-center active:scale-90 transition-transform"
+            className="shrink-0 h-10 w-10 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 rounded-full flex items-center justify-center active:scale-90 transition-transform"
             style={{
               background: "hsl(var(--hud-danger) / 0.12)",
               color: "hsl(var(--hud-danger))",
@@ -267,7 +267,7 @@ export default function VoiceRecorder({ orgId, contextId, userId, userEmail, use
   return (
     <button
       onClick={startRecording}
-      className="shrink-0 h-10 w-10 rounded-full flex items-center justify-center transition-all active:scale-90"
+      className="shrink-0 h-10 w-10 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 rounded-full flex items-center justify-center transition-all active:scale-90"
       style={{
         background: "hsl(var(--hud-surface))",
         color: "hsl(var(--hud-text-dim))",

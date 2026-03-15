@@ -33,6 +33,7 @@ import { isE2EEncrypted, getEncryptedPreview } from "@/lib/orbit-metadata-guard"
 import { useOfflineMessages } from "@/hooks/useOfflineMessages";
 import { WifiOff, Wifi, CloudUpload } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger } from "@/components/ui/select";
@@ -823,20 +824,20 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
               <button
                 disabled={isInCall || isStartingCall}
                 onClick={() => handleStartCall(false)}
-                className="h-9 w-9 rounded-full flex items-center justify-center transition-colors hover:bg-[hsl(var(--hud-surface-2))] disabled:opacity-40"
+                className="h-9 w-9 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 rounded-full flex items-center justify-center transition-colors hover:bg-[hsl(var(--hud-surface-2))] disabled:opacity-40"
               >
                 <Phone className="h-[18px] w-[18px]" style={{ color: "hsl(var(--hud-success))" }} />
               </button>
               <button
                 disabled={isInCall || isStartingCall}
                 onClick={() => handleStartCall(true)}
-                className="h-9 w-9 rounded-full flex items-center justify-center transition-colors hover:bg-[hsl(var(--hud-surface-2))] disabled:opacity-40"
+                className="h-9 w-9 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 rounded-full flex items-center justify-center transition-colors hover:bg-[hsl(var(--hud-surface-2))] disabled:opacity-40"
               >
                 <Video className="h-[18px] w-[18px]" style={{ color: "hsl(var(--hud-cyan))" }} />
               </button>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button className="h-9 w-9 rounded-full flex items-center justify-center transition-colors hover:bg-[hsl(var(--hud-surface-2))]">
+                  <button className="h-9 w-9 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 rounded-full flex items-center justify-center transition-colors hover:bg-[hsl(var(--hud-surface-2))]">
                     <MoreVertical className="h-4 w-4" style={{ color: "hsl(var(--hud-text-dim))" }} />
                   </button>
                 </DropdownMenuTrigger>
@@ -924,7 +925,22 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
 
         {/* ══ Messages ══ */}
         <div ref={scrollRef} className="flex-1 overflow-y-auto overflow-x-hidden px-3 sm:px-4 py-3" style={{ background: "hsl(var(--hud-bg))" }}>
-          {messages.length === 0 ? (
+          {isDecrypting && rawMessages.length > 0 && messages.length === 0 ? (
+            /* Skeleton while decrypting E2E messages */
+            <div className="space-y-4 py-4">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <div key={i} className={`flex ${i % 2 === 0 ? "justify-start" : "justify-end"}`}>
+                  <div className="space-y-1.5" style={{ maxWidth: "75%" }}>
+                    {i % 2 === 0 && <Skeleton className="h-2.5 w-16" />}
+                    <Skeleton className={`h-10 rounded-2xl ${i % 2 === 0 ? "w-48 rounded-bl-md" : "w-40 rounded-br-md"}`} />
+                    <div className={`flex gap-1 ${i % 2 === 0 ? "" : "justify-end"}`}>
+                      <Skeleton className="h-2 w-8" />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : messages.length === 0 ? (
             <div className="flex items-center justify-center h-full">
               <div className="text-center px-6">
                 <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4" style={{
@@ -934,6 +950,10 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
                 </div>
                 <p className="text-sm font-medium" style={{ color: "hsl(var(--hud-text))" }}>No messages yet</p>
                 <p className="text-xs mt-1" style={{ color: "hsl(var(--hud-text-dim))" }}>Start the conversation</p>
+                <div className="flex items-center justify-center gap-1.5 mt-3">
+                  <Lock className="h-3 w-3" style={{ color: "hsl(var(--hud-success) / 0.5)" }} />
+                  <span className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>End-to-end encrypted</span>
+                </div>
               </div>
             </div>
           ) : (
@@ -1006,21 +1026,21 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
         {(thread.conversationType === "booking" || thread.conversationType === "listing" || thread.conversationType === "deal") && (
           <div className="px-3 sm:px-4 py-2 shrink-0" style={{ borderTop: "1px solid hsl(var(--hud-border) / 0.06)", background: "hsl(var(--hud-surface) / 0.25)" }}>
             <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
-              <Button size="sm" variant="outline" className="text-[11px] h-7 gap-1.5 rounded-full px-3 shrink-0" style={{ borderColor: "hsl(var(--hud-border) / 0.15)", color: "hsl(var(--hud-text))", background: "hsl(var(--hud-surface))" }} onClick={() => setPaymentLinkDialog(true)}>
+              <Button size="sm" variant="outline" className="text-[11px] h-7 min-h-[44px] sm:min-h-0 gap-1.5 rounded-full px-3 shrink-0" style={{ borderColor: "hsl(var(--hud-border) / 0.15)", color: "hsl(var(--hud-text))", background: "hsl(var(--hud-surface))" }} onClick={() => setPaymentLinkDialog(true)}>
                 <CreditCard className="h-3 w-3" /> {t("orbit.payment") || "Payment"}
               </Button>
               {thread.bookingStatus === "pending" && (
-                <Button size="sm" className="text-[11px] h-7 gap-1.5 rounded-full px-3 shrink-0" style={{ background: "hsl(var(--hud-success) / 0.15)", color: "hsl(var(--hud-success))", border: "1px solid hsl(var(--hud-success) / 0.25)" }} onClick={() => handleBookingAction("confirm")}>
+                <Button size="sm" className="text-[11px] h-7 min-h-[44px] sm:min-h-0 gap-1.5 rounded-full px-3 shrink-0" style={{ background: "hsl(var(--hud-success) / 0.15)", color: "hsl(var(--hud-success))", border: "1px solid hsl(var(--hud-success) / 0.25)" }} onClick={() => handleBookingAction("confirm")}>
                   <CalendarCheck className="h-3 w-3" /> {t("orbit.confirm") || "Confirm"}
                 </Button>
               )}
               {thread.bookingStatus === "confirmed" && (
-                <Button size="sm" variant="outline" className="text-[11px] h-7 gap-1.5 rounded-full px-3 shrink-0" style={{ borderColor: "hsl(var(--hud-cyan) / 0.25)", color: "hsl(var(--hud-cyan))" }} onClick={() => handleBookingAction("complete")}>
+                <Button size="sm" variant="outline" className="text-[11px] h-7 min-h-[44px] sm:min-h-0 gap-1.5 rounded-full px-3 shrink-0" style={{ borderColor: "hsl(var(--hud-cyan) / 0.25)", color: "hsl(var(--hud-cyan))" }} onClick={() => handleBookingAction("complete")}>
                   <CalendarCheck className="h-3 w-3" /> {t("orbit.complete") || "Complete"}
                 </Button>
               )}
               {!["cancelled", "completed"].includes(thread.bookingStatus || "") && (
-                <Button size="sm" variant="ghost" className="text-[11px] h-7 gap-1.5 rounded-full px-3 shrink-0" style={{ color: "hsl(var(--hud-danger) / 0.8)" }} onClick={() => handleBookingAction("cancel")}>
+                <Button size="sm" variant="ghost" className="text-[11px] h-7 min-h-[44px] sm:min-h-0 gap-1.5 rounded-full px-3 shrink-0" style={{ color: "hsl(var(--hud-danger) / 0.8)" }} onClick={() => handleBookingAction("cancel")}>
                   <Ban className="h-3 w-3" /> {t("orbit.cancel") || "Cancel"}
                 </Button>
               )}
@@ -1098,12 +1118,12 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
             /* Voice preview before sending */
             <div className="flex items-center gap-2">
               <button onClick={() => { URL.revokeObjectURL(voicePreview.url); setVoicePreview(null); haptic("light"); }}
-                className="shrink-0 h-9 w-9 rounded-full flex items-center justify-center"
+                className="shrink-0 h-9 w-9 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 rounded-full flex items-center justify-center"
                 style={{ background: "hsl(var(--hud-danger) / 0.15)", color: "hsl(var(--hud-danger))" }}>
                 <Ban className="h-3.5 w-3.5" />
               </button>
               <div className="flex-1 flex items-center gap-2 rounded-xl px-3 py-2" style={{ background: "hsl(var(--hud-surface))" }}>
-                <button onClick={() => { const a = new Audio(voicePreview.url); a.play(); }} className="h-7 w-7 rounded-full flex items-center justify-center" style={{ background: "hsl(var(--hud-cyan) / 0.2)", color: "hsl(var(--hud-cyan))" }}>
+                <button onClick={() => { const a = new Audio(voicePreview.url); a.play(); }} className="h-8 w-8 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 rounded-full flex items-center justify-center" style={{ background: "hsl(var(--hud-cyan) / 0.2)", color: "hsl(var(--hud-cyan))" }}>
                   <Zap className="h-3.5 w-3.5" />
                 </button>
                 <div className="flex-1 h-1 rounded-full" style={{ background: "hsl(var(--hud-border) / 0.3)" }}>
@@ -1193,7 +1213,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
                 {/* Attach button (opens dropdown) */}
                 <DropdownMenu open={showAttachMenu} onOpenChange={setShowAttachMenu}>
                   <DropdownMenuTrigger asChild>
-                    <button className="shrink-0 h-8 w-8 flex items-center justify-center rounded-full hover:bg-[hsl(var(--hud-surface-2))]" disabled={uploading}>
+                     <button className="shrink-0 h-8 w-8 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 flex items-center justify-center rounded-full hover:bg-[hsl(var(--hud-surface-2))]" disabled={uploading}>
                       {uploading ? <Loader2 className="h-4 w-4 animate-spin" style={{ color: "hsl(var(--hud-cyan))" }} /> : <Paperclip className="h-4 w-4" style={{ color: "hsl(var(--hud-text-dim))" }} />}
                     </button>
                   </DropdownMenuTrigger>
