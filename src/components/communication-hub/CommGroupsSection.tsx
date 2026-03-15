@@ -301,7 +301,7 @@ export default function CommGroupsSection() {
               {activeGroup.name}
             </span>
             <span className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
-              {members.length} members
+              {members.length} {t("orbit.groups.members") || "members"}
             </span>
           </div>
           <button
