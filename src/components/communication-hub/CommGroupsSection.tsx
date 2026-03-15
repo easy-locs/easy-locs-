@@ -1,9 +1,10 @@
 /**
- * CommGroupsSection — Real group management with create, list, chat, members.
+ * CommGroupsSection — Real group management with create, list, chat, members. Fully i18n'd.
  */
 import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useI18n } from "@/lib/i18n";
 import {
   UsersRound, Plus, Search, ArrowLeft, Send, Settings2,
   UserPlus, LogOut, Trash2, Crown, Users,
@@ -60,6 +61,7 @@ function formatMsgTime(d: string): string {
 
 export default function CommGroupsSection() {
   const { user, orgId } = useAuth();
+  const { t } = useI18n();
   const [groups, setGroups] = useState<Group[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -146,7 +148,7 @@ export default function CommGroupsSection() {
     } as any);
     
     haptic("success");
-    toast.success("Group created");
+    toast.success(t("orbit.groups.created") || "Group created");
     setShowCreate(false);
     setNewGroup({ name: "", description: "" });
     setCreating(false);
@@ -206,7 +208,7 @@ export default function CommGroupsSection() {
       .single();
     
     if (!profile) {
-      toast.error("User not found");
+      toast.error(t("orbit.groups.user_not_found") || "User not found");
       return;
     }
     
@@ -217,12 +219,12 @@ export default function CommGroupsSection() {
     } as any);
     
     if (error) {
-      toast.error(error.message.includes("duplicate") ? "Already a member" : "Failed to add member");
+      toast.error(error.message.includes("duplicate") ? (t("orbit.groups.already_member") || "Already a member") : (t("orbit.groups.add_member") || "Failed to add member"));
       return;
     }
     
     haptic("success");
-    toast.success("Member added");
+    toast.success(t("orbit.groups.member_added") || "Member added");
     setAddMemberEmail("");
     setShowAddMember(false);
     // Reload members
@@ -235,7 +237,7 @@ export default function CommGroupsSection() {
     const { error } = await supabase.from("group_members").delete().eq("group_id", activeGroup.id).eq("user_id", user.id);
     if (error) { toast.error("Failed to leave group"); return; }
     haptic("medium");
-    toast.success("Left group");
+    toast.success(t("orbit.groups.left") || "Left group");
     setActiveGroup(null);
     loadGroups();
   };
@@ -245,7 +247,7 @@ export default function CommGroupsSection() {
     const { error } = await supabase.from("group_members").delete().eq("id", memberId);
     if (error) { toast.error("Failed to remove member"); return; }
     haptic("light");
-    toast.success("Member removed");
+    toast.success(t("orbit.groups.member_removed") || "Member removed");
     const { data: mems } = await supabase.from("group_members").select("*").eq("group_id", activeGroup.id);
     setMembers((mems as GroupMember[]) || []);
   };
@@ -299,7 +301,7 @@ export default function CommGroupsSection() {
               {activeGroup.name}
             </span>
             <span className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
-              {members.length} members
+              {members.length} {t("orbit.groups.members") || "members"}
             </span>
           </div>
           <button
@@ -316,7 +318,7 @@ export default function CommGroupsSection() {
           {messages.length === 0 && (
             <div className="text-center py-12">
               <UsersRound className="h-8 w-8 mx-auto mb-2" style={{ color: "hsl(var(--hud-text-dim) / 0.15)" }} />
-              <p className="text-xs" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>Start the conversation</p>
+              <p className="text-xs" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{t("orbit.groups.start_conversation") || "Start the conversation"}</p>
             </div>
           )}
           {messages.map(msg => {
@@ -355,7 +357,7 @@ export default function CommGroupsSection() {
               value={msgInput}
               onChange={e => setMsgInput(e.target.value)}
               onKeyDown={e => e.key === "Enter" && !e.shiftKey && sendMessage()}
-              placeholder="Message..."
+              placeholder={t("orbit.groups.message_placeholder") || "Message…"}
               className="flex-1 h-10 text-sm border-0 rounded-full px-4"
               style={{ background: "hsl(var(--hud-surface))", color: "hsl(var(--hud-text))" }}
             />
@@ -374,7 +376,7 @@ export default function CommGroupsSection() {
         <Dialog open={showMembers} onOpenChange={setShowMembers}>
           <DialogContent style={{ background: "hsl(var(--hud-bg))", borderColor: "hsl(var(--hud-border) / 0.15)" }}>
             <DialogHeader>
-              <DialogTitle style={{ color: "hsl(var(--hud-text))" }}>Members ({members.length})</DialogTitle>
+              <DialogTitle style={{ color: "hsl(var(--hud-text))" }}>{t("orbit.groups.members") || "Members"} ({members.length})</DialogTitle>
             </DialogHeader>
             <div className="space-y-1 max-h-60 overflow-y-auto">
               {members.map(m => (
@@ -409,7 +411,7 @@ export default function CommGroupsSection() {
                   style={{ background: "hsl(var(--hud-cyan))", color: "hsl(var(--hud-bg))" }}
                   onClick={() => { setShowMembers(false); setShowAddMember(true); }}
                 >
-                  <UserPlus className="h-3.5 w-3.5" /> Add Member
+                  <UserPlus className="h-3.5 w-3.5" /> {t("orbit.groups.add_member") || "Add Member"}
                 </Button>
               )}
               <Button
@@ -419,7 +421,7 @@ export default function CommGroupsSection() {
                 style={{ color: "hsl(var(--hud-danger))" }}
                 onClick={leaveGroup}
               >
-                <LogOut className="h-3.5 w-3.5" /> Leave
+                <LogOut className="h-3.5 w-3.5" /> {t("orbit.groups.leave") || "Leave"}
               </Button>
             </div>
           </DialogContent>
@@ -429,11 +431,11 @@ export default function CommGroupsSection() {
         <Dialog open={showAddMember} onOpenChange={setShowAddMember}>
           <DialogContent style={{ background: "hsl(var(--hud-bg))", borderColor: "hsl(var(--hud-border) / 0.15)" }}>
             <DialogHeader>
-              <DialogTitle style={{ color: "hsl(var(--hud-text))" }}>Add Member</DialogTitle>
+              <DialogTitle style={{ color: "hsl(var(--hud-text))" }}>{t("orbit.groups.add_member") || "Add Member"}</DialogTitle>
             </DialogHeader>
             <div className="space-y-3">
               <div>
-                <Label className="text-xs" style={{ color: "hsl(var(--hud-text-dim))" }}>User email</Label>
+                <Label className="text-xs" style={{ color: "hsl(var(--hud-text-dim))" }}>{t("orbit.groups.user_email") || "User email"}</Label>
                 <Input
                   value={addMemberEmail}
                   onChange={e => setAddMemberEmail(e.target.value)}
@@ -448,7 +450,7 @@ export default function CommGroupsSection() {
                 onClick={handleAddMember}
                 style={{ background: "hsl(var(--hud-cyan))", color: "hsl(var(--hud-bg))" }}
               >
-                Add Member
+                {t("orbit.groups.add_member") || "Add Member"}
               </Button>
             </div>
           </DialogContent>
@@ -462,16 +464,16 @@ export default function CommGroupsSection() {
     <div className="flex-1 flex flex-col min-h-0" style={{ background: "hsl(var(--hud-bg))" }}>
       <div className="px-4 pt-4 pb-2 shrink-0">
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-lg font-bold" style={{ color: "hsl(var(--hud-text))" }}>Groups</h2>
+          <h2 className="text-lg font-bold" style={{ color: "hsl(var(--hud-text))" }}>{t("orbit.groups.title") || "Groups"}</h2>
           <Button
             size="sm"
             variant="ghost"
             className="h-8 gap-1.5 text-xs"
             style={{ color: "hsl(var(--hud-cyan))" }}
             onClick={() => setShowCreate(true)}
-          >
-            <Plus className="h-4 w-4" />
-            Create
+            >
+              <Plus className="h-4 w-4" />
+              {t("orbit.groups.create") || "Create"}
           </Button>
         </div>
 
@@ -480,7 +482,7 @@ export default function CommGroupsSection() {
           <Input
             value={search}
             onChange={e => setSearch(e.target.value)}
-            placeholder="Search groups..."
+            placeholder={t("orbit.groups.search") || "Search groups…"}
             className="pl-9 h-9 text-sm border-0"
             style={{ background: "hsl(var(--hud-surface))", color: "hsl(var(--hud-text))" }}
           />
@@ -511,7 +513,7 @@ export default function CommGroupsSection() {
           <div className="flex flex-col items-center justify-center py-16 text-center px-6">
             <UsersRound className="h-10 w-10 mb-3" style={{ color: "hsl(var(--hud-text-dim) / 0.2)" }} />
             <p className="text-sm" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
-              {search ? "No groups found" : "No groups yet"}
+              {search ? (t("orbit.groups.no_found") || "No groups found") : (t("orbit.groups.no_groups") || "No groups yet")}
             </p>
             <Button
               size="sm"
@@ -521,7 +523,7 @@ export default function CommGroupsSection() {
               onClick={() => setShowCreate(true)}
             >
               <Plus className="h-4 w-4" />
-              Create your first group
+              {t("orbit.groups.create_first") || "Create your first group"}
             </Button>
           </div>
         ) : (
@@ -549,11 +551,11 @@ export default function CommGroupsSection() {
                   </div>
                   <div className="flex items-center gap-2 mt-0.5">
                     <span className="text-[11px] truncate" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
-                      {group.last_message || group.description || "No messages yet"}
+                      {group.last_message || group.description || (t("orbit.groups.no_messages") || "No messages yet")}
                     </span>
                   </div>
                   <span className="text-[10px] mt-0.5 block" style={{ color: "hsl(var(--hud-text-dim) / 0.35)" }}>
-                    {group.member_count} members
+                    {group.member_count} {t("orbit.groups.members") || "members"}
                   </span>
                 </div>
               </button>
@@ -566,25 +568,25 @@ export default function CommGroupsSection() {
       <Dialog open={showCreate} onOpenChange={setShowCreate}>
         <DialogContent style={{ background: "hsl(var(--hud-bg))", borderColor: "hsl(var(--hud-border) / 0.15)" }}>
           <DialogHeader>
-            <DialogTitle style={{ color: "hsl(var(--hud-text))" }}>Create Group</DialogTitle>
+            <DialogTitle style={{ color: "hsl(var(--hud-text))" }}>{t("orbit.groups.create_title") || "Create Group"}</DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
             <div>
-              <Label className="text-xs" style={{ color: "hsl(var(--hud-text-dim))" }}>Group Name *</Label>
+              <Label className="text-xs" style={{ color: "hsl(var(--hud-text-dim))" }}>{t("orbit.groups.name") || "Group Name *"}</Label>
               <Input
                 value={newGroup.name}
                 onChange={e => setNewGroup(p => ({ ...p, name: e.target.value }))}
-                placeholder="e.g. Property Team"
+                placeholder={t("orbit.groups.name_placeholder") || "e.g. Property Team"}
                 className="mt-1 border-0"
                 style={{ background: "hsl(var(--hud-surface))", color: "hsl(var(--hud-text))" }}
               />
             </div>
             <div>
-              <Label className="text-xs" style={{ color: "hsl(var(--hud-text-dim))" }}>Description</Label>
+              <Label className="text-xs" style={{ color: "hsl(var(--hud-text-dim))" }}>{t("orbit.groups.description") || "Description"}</Label>
               <Input
                 value={newGroup.description}
                 onChange={e => setNewGroup(p => ({ ...p, description: e.target.value }))}
-                placeholder="What's this group about?"
+                placeholder={t("orbit.groups.desc_placeholder") || "What's this group about?"}
                 className="mt-1 border-0"
                 style={{ background: "hsl(var(--hud-surface))", color: "hsl(var(--hud-text))" }}
               />
@@ -595,7 +597,7 @@ export default function CommGroupsSection() {
               onClick={handleCreate}
               style={{ background: "hsl(var(--hud-cyan))", color: "hsl(var(--hud-bg))" }}
             >
-              {creating ? "Creating..." : "Create Group"}
+              {creating ? (t("orbit.groups.creating") || "Creating…") : (t("orbit.groups.create_title") || "Create Group")}
             </Button>
           </div>
         </DialogContent>

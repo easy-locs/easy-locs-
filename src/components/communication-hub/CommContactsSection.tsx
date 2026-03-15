@@ -6,6 +6,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useI18n } from "@/lib/i18n";
 import { usePresenceStatus, PresenceDot, presenceLabel } from "@/hooks/usePresenceStatus";
 import { Search, UserPlus, MessageCircle, Phone, Video, Star, Users, Briefcase, Heart, Clock, QrCode, Loader2, UserX, Send, Info } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -49,13 +50,14 @@ interface ResolvedContact extends Contact {
   targetOrgId: string | null;
 }
 
-const CATEGORY_TABS: { id: ContactCategory; label: string; icon: typeof Users }[] = [
-  { id: "all", label: "All", icon: Users },
-  { id: "client", label: "Clients", icon: Users },
-  { id: "team", label: "Team", icon: Users },
-  { id: "professional", label: "Pros", icon: Briefcase },
-  { id: "favorite", label: "Favorites", icon: Heart },
-  { id: "recent", label: "Recent", icon: Clock },
+// Category tabs will use i18n at render time
+const CATEGORY_IDS: { id: ContactCategory; labelKey: string; fallback: string; icon: typeof Users }[] = [
+  { id: "all", labelKey: "orbit.contacts.all", fallback: "All", icon: Users },
+  { id: "client", labelKey: "orbit.contacts.clients", fallback: "Clients", icon: Users },
+  { id: "team", labelKey: "orbit.contacts.team", fallback: "Team", icon: Users },
+  { id: "professional", labelKey: "orbit.contacts.pros", fallback: "Pros", icon: Briefcase },
+  { id: "favorite", labelKey: "orbit.contacts.favorites", fallback: "Favorites", icon: Heart },
+  { id: "recent", labelKey: "orbit.contacts.recent", fallback: "Recent", icon: Clock },
 ];
 
 function getInitials(name: string): string {
@@ -74,6 +76,7 @@ function presenceColor(status: string): string {
 
 export default function CommContactsSection() {
   const { user, orgId } = useAuth();
+  const { t } = useI18n();
   const navigate = useNavigate();
   const { startCall: initiateCall, isStartingCall } = useCall();
   const [contacts, setContacts] = useState<Contact[]>([]);
@@ -603,7 +606,7 @@ export default function CommContactsSection() {
       {/* Header */}
       <div className="px-4 pt-4 pb-2 shrink-0">
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-lg font-bold" style={{ color: "hsl(var(--hud-text))" }}>Contacts</h2>
+          <h2 className="text-lg font-bold" style={{ color: "hsl(var(--hud-text))" }}>{t("orbit.contacts.title") || "Contacts"}</h2>
           <div className="flex items-center gap-1.5">
             <Button size="sm" variant="ghost" className="h-8 w-8 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 p-0"
               style={{ color: "hsl(var(--hud-cyan))" }} onClick={() => setShowQR(true)}>
@@ -611,17 +614,17 @@ export default function CommContactsSection() {
             </Button>
             <Button size="sm" variant="ghost" className="h-8 min-h-[44px] sm:min-h-0 gap-1.5 text-xs"
               style={{ color: "hsl(var(--hud-cyan))" }} onClick={() => setShowAdd(true)}>
-              <UserPlus className="h-4 w-4" /> Add
+              <UserPlus className="h-4 w-4" /> {t("orbit.contacts.add") || "Add"}
             </Button>
           </div>
         </div>
         <div className="relative mb-3">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }} />
-          <Input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search contacts..."
+          <Input value={search} onChange={e => setSearch(e.target.value)} placeholder={t("orbit.contacts.search") || "Search contacts…"}
             className="pl-9 h-9 text-sm border-0" style={{ background: "hsl(var(--hud-surface))", color: "hsl(var(--hud-text))" }} />
         </div>
         <ScrollableFilterBar<ContactCategory>
-          options={CATEGORY_TABS.map(t => ({ id: t.id, label: t.label, icon: t.icon }))}
+          options={CATEGORY_IDS.map(c => ({ id: c.id, label: t(c.labelKey) || c.fallback, icon: c.icon }))}
           value={category}
           onChange={setCategory}
         />
@@ -649,7 +652,7 @@ export default function CommContactsSection() {
           <div className="flex flex-col items-center justify-center py-16 text-center px-6">
             <Users className="h-10 w-10 mb-3" style={{ color: "hsl(var(--destructive) / 0.4)" }} />
             <p className="text-sm font-medium mb-1" style={{ color: "hsl(var(--foreground) / 0.7)" }}>
-              Failed to load contacts
+              {t("orbit.contacts.failed_load") || "Failed to load contacts"}
             </p>
             <p className="text-xs mb-4" style={{ color: "hsl(var(--muted-foreground) / 0.5)" }}>
               {loadError}
@@ -659,18 +662,18 @@ export default function CommContactsSection() {
               className="text-xs font-semibold px-4 py-2 rounded-lg min-h-[44px] transition-colors"
               style={{ background: "hsl(var(--primary) / 0.1)", color: "hsl(var(--primary))" }}
             >
-              Retry
+              {t("orbit.contacts.retry") || "Retry"}
             </button>
           </div>
         ) : filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-center px-6">
             <Users className="h-10 w-10 mb-3" style={{ color: "hsl(var(--hud-text-dim) / 0.2)" }} />
             <p className="text-sm" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
-              {search ? "No contacts found" : "No contacts yet"}
+              {search ? (t("orbit.contacts.no_found") || "No contacts found") : (t("orbit.contacts.no_contacts") || "No contacts yet")}
             </p>
             <Button size="sm" variant="ghost" className="mt-3 gap-1.5" style={{ color: "hsl(var(--hud-cyan))" }}
               onClick={() => setShowAdd(true)}>
-              <UserPlus className="h-4 w-4" /> Add your first contact
+              <UserPlus className="h-4 w-4" /> {t("orbit.contacts.add_first") || "Add your first contact"}
             </Button>
           </div>
         ) : grouped ? (
@@ -693,31 +696,31 @@ export default function CommContactsSection() {
       <Dialog open={showAdd} onOpenChange={setShowAdd}>
         <DialogContent style={{ background: "hsl(var(--hud-bg))", borderColor: "hsl(var(--hud-border) / 0.15)" }}>
           <DialogHeader>
-            <DialogTitle style={{ color: "hsl(var(--hud-text))" }}>Add Contact</DialogTitle>
+            <DialogTitle style={{ color: "hsl(var(--hud-text))" }}>{t("orbit.contacts.add_title") || "Add Contact"}</DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
             <div>
-              <Label className="text-xs" style={{ color: "hsl(var(--hud-text-dim))" }}>Name *</Label>
+              <Label className="text-xs" style={{ color: "hsl(var(--hud-text-dim))" }}>{t("orbit.contacts.name") || "Name *"}</Label>
               <Input value={newContact.name} onChange={e => setNewContact(p => ({ ...p, name: e.target.value }))}
                 className="mt-1 border-0" style={{ background: "hsl(var(--hud-surface))", color: "hsl(var(--hud-text))" }} />
             </div>
             <div>
-              <Label className="text-xs" style={{ color: "hsl(var(--hud-text-dim))" }}>Email</Label>
+              <Label className="text-xs" style={{ color: "hsl(var(--hud-text-dim))" }}>{t("orbit.contacts.email") || "Email"}</Label>
               <Input value={newContact.email} onChange={e => setNewContact(p => ({ ...p, email: e.target.value }))}
                 className="mt-1 border-0" style={{ background: "hsl(var(--hud-surface))", color: "hsl(var(--hud-text))" }} />
             </div>
             <div>
-              <Label className="text-xs" style={{ color: "hsl(var(--hud-text-dim))" }}>Phone</Label>
+              <Label className="text-xs" style={{ color: "hsl(var(--hud-text-dim))" }}>{t("orbit.contacts.phone") || "Phone"}</Label>
               <Input value={newContact.phone} onChange={e => setNewContact(p => ({ ...p, phone: e.target.value }))}
                 className="mt-1 border-0" style={{ background: "hsl(var(--hud-surface))", color: "hsl(var(--hud-text))" }} />
             </div>
             <div>
-              <Label className="text-xs" style={{ color: "hsl(var(--hud-text-dim))" }}>Company</Label>
+              <Label className="text-xs" style={{ color: "hsl(var(--hud-text-dim))" }}>{t("orbit.contacts.company") || "Company"}</Label>
               <Input value={newContact.company} onChange={e => setNewContact(p => ({ ...p, company: e.target.value }))}
                 className="mt-1 border-0" style={{ background: "hsl(var(--hud-surface))", color: "hsl(var(--hud-text))" }} />
             </div>
             <div>
-              <Label className="text-xs" style={{ color: "hsl(var(--hud-text-dim))" }}>Category</Label>
+              <Label className="text-xs" style={{ color: "hsl(var(--hud-text-dim))" }}>{t("orbit.contacts.category") || "Category"}</Label>
               <Select value={newContact.category} onValueChange={v => setNewContact(p => ({ ...p, category: v }))}>
                 <SelectTrigger className="mt-1 border-0" style={{ background: "hsl(var(--hud-surface))", color: "hsl(var(--hud-text))" }}>
                   <SelectValue />
@@ -730,12 +733,12 @@ export default function CommContactsSection() {
               </Select>
             </div>
             <p className="text-[11px] flex items-center gap-1" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
-              <Info className="h-3 w-3" /> L'email permet la synchronisation automatique avec les utilisateurs de l'app.
+              <Info className="h-3 w-3" /> {t("orbit.contacts.email_sync_hint") || "Email enables auto-sync with app users."}
             </p>
             <Button onClick={handleAddContact} disabled={saving || !newContact.name.trim()} className="w-full gap-2"
               style={{ background: "hsl(var(--hud-cyan))", color: "hsl(var(--hud-bg))" }}>
               {saving && <Loader2 className="h-4 w-4 animate-spin" />}
-              Add Contact
+              {t("orbit.contacts.add_title") || "Add Contact"}
             </Button>
           </div>
         </DialogContent>

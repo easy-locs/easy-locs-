@@ -1,18 +1,15 @@
 /**
  * CommPlaceholderSection — Placeholder for future communication sections.
- * HUD-themed with consistent design tokens.
+ * HUD-themed with consistent design tokens. Fully i18n'd.
  */
-import { Phone, Users, UsersRound, Video, FolderOpen, Settings } from "lucide-react";
+import { Video, FolderOpen } from "lucide-react";
 import { motion } from "framer-motion";
+import { useI18n } from "@/lib/i18n";
 import type { CommSection } from "./CommNavBar";
 
-const SECTION_META: Record<string, { icon: typeof Phone; title: string; subtitle: string }> = {
-  calls: { icon: Phone, title: "Appels", subtitle: "L'historique des appels vocaux et vidéo apparaîtra ici" },
-  contacts: { icon: Users, title: "Contacts", subtitle: "Votre répertoire de contacts professionnels" },
-  groups: { icon: UsersRound, title: "Groupes", subtitle: "Conversations d'équipe et de groupe" },
-  meetings: { icon: Video, title: "Réunions", subtitle: "Réunions planifiées et salles vidéo" },
-  files: { icon: FolderOpen, title: "Fichiers", subtitle: "Fichiers partagés dans toutes les conversations" },
-  settings: { icon: Settings, title: "Paramètres", subtitle: "Préférences de communication et sécurité" },
+const SECTION_META: Record<string, { icon: typeof Video; titleKey: string; descKey: string; fallbackTitle: string; fallbackDesc: string }> = {
+  meetings: { icon: Video, titleKey: "orbit.placeholder.meetings", fallbackTitle: "Meetings", descKey: "orbit.placeholder.meetings_desc", fallbackDesc: "Scheduled meetings and video rooms" },
+  files: { icon: FolderOpen, titleKey: "orbit.placeholder.files", fallbackTitle: "Files", descKey: "orbit.placeholder.files_desc", fallbackDesc: "Shared files from all conversations" },
 };
 
 interface Props {
@@ -20,6 +17,7 @@ interface Props {
 }
 
 export default function CommPlaceholderSection({ section }: Props) {
+  const { t } = useI18n();
   const meta = SECTION_META[section];
   if (!meta) return null;
   const Icon = meta.icon;
@@ -43,10 +41,10 @@ export default function CommPlaceholderSection({ section }: Props) {
           <Icon className="h-7 w-7" style={{ color: "hsl(var(--hud-cyan) / 0.5)" }} />
         </div>
         <h3 className="text-base font-bold mb-1" style={{ color: "hsl(var(--hud-text))" }}>
-          {meta.title}
+          {t(meta.titleKey) || meta.fallbackTitle}
         </h3>
         <p className="text-sm" style={{ color: "hsl(var(--hud-text-dim))" }}>
-          {meta.subtitle}
+          {t(meta.descKey) || meta.fallbackDesc}
         </p>
         <div
           className="mt-4 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-medium uppercase tracking-wider"
@@ -56,7 +54,7 @@ export default function CommPlaceholderSection({ section }: Props) {
             color: "hsl(var(--hud-cyan) / 0.7)",
           }}
         >
-          Bientôt disponible
+          {t("orbit.placeholder.coming_soon") || "Coming soon"}
         </div>
       </motion.div>
     </div>
