@@ -242,7 +242,7 @@ export default function OrbitSecuritySettings({ userId }: OrbitSecuritySettingsP
         <Separator style={{ background: "hsl(var(--hud-border) / 0.08)" }} />
 
         {/* ═══ Disappearing Messages ═══ */}
-        <SettingSection icon={Clock} title="Messages éphémères" iconColor="hsl(var(--hud-warning))">
+        <SettingSection icon={Clock} title={t("orbit.disappearing_messages") || "Messages éphémères"} iconColor="hsl(var(--hud-warning))">
           <SettingRow label="Suppression automatique" description="Tous les nouveaux messages seront supprimés après ce délai">
             <Select value={autoDeletePeriod} onValueChange={handleAutoDeleteChange} disabled={!loaded}>
               <SelectTrigger className="w-28 h-8 text-xs" style={{
