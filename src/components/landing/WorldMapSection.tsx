@@ -53,7 +53,7 @@ const WorldMapSection = () => {
         backgroundImage: `radial-gradient(circle, hsl(var(--accent)) 1px, transparent 1px)`,
         backgroundSize: "30px 30px",
       }} />
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-accent/[0.04] blur-[150px] pointer-events-none" />
+      {!isMobile && <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-accent/[0.04] blur-[150px] pointer-events-none" />}
 
       <div className="container max-w-6xl relative z-10">
         {/* Header */}
