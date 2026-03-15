@@ -116,20 +116,20 @@ const Dashboard = () => {
     {
       icon: Building,
       label: t("page.dashboard.properties") || "Properties",
-      value: loading ? "…" : String(stats.totalProperties),
+      value: String(stats.totalProperties),
       path: "/dashboard/properties",
       sub: t("page.dashboard.view_all") || "View all properties →",
     },
     {
       icon: MapPin,
       label: t("page.dashboard.countries") || "Active Countries",
-      value: loading ? "…" : String(stats.totalCountries),
+      value: String(stats.totalCountries),
       sub: t("page.dashboard.select_country_hint") || "Select below",
     },
     {
       icon: TrendingUp,
       label: t("page.dashboard.collected_month") || "Collected This Month",
-      value: loading ? "…" : fmt(stats.revenueThisMonth),
+      value: fmt(stats.revenueThisMonth),
       path: "/dashboard/receipts",
       sub: t("page.dashboard.view_receipts") || "View receipts →",
     },
