@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { ErrorState } from "@/components/ui/error-state";
 import { useExploreRealtimeSync } from "@/hooks/useListingSync";
 import { Link } from "react-router-dom";
 import SEOHead from "@/components/SEOHead";
