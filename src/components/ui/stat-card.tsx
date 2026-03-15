@@ -1,9 +1,10 @@
 import * as React from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
-import { motion, useMotionValue, useTransform, animate } from "framer-motion";
+import { motion, animate } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { useEffect, useRef, useState } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface StatCardProps {
   icon: React.ElementType;
@@ -14,6 +15,23 @@ interface StatCardProps {
   path?: string;
   valueClassName?: string;
   className?: string;
+  loading?: boolean;
+}
+
+/**
+ * Skeleton variant for StatCard — shown during data loading.
+ */
+function StatCardSkeleton({ className }: { className?: string }) {
+  return (
+    <div className={cn(
+      "flex flex-col h-full bg-card rounded-xl p-4 sm:p-5 shadow-card border border-border/50 min-h-[120px] sm:min-h-[140px]",
+      className,
+    )}>
+      <Skeleton className="w-10 h-10 rounded-xl mb-3" />
+      <Skeleton className="w-20 h-3 rounded mb-2" />
+      <Skeleton className="w-16 h-6 rounded mt-auto" />
+    </div>
+  );
 }
 
 /**
@@ -89,7 +107,9 @@ const StatCard = ({
   path,
   valueClassName,
   className,
+  loading,
 }: StatCardProps) => {
+  if (loading) return <StatCardSkeleton className={className} />;
   const content = (
     <div
       className={cn(
@@ -141,5 +161,5 @@ const StatCard = ({
   return content;
 };
 
-export { StatCard, AnimatedValue };
+export { StatCard, StatCardSkeleton, AnimatedValue };
 export type { StatCardProps };

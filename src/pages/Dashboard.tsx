@@ -7,6 +7,7 @@ import { Link } from "react-router-dom";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import OrbitSmartHub from "@/components/dashboard/OrbitSmartHub";
 import { StatCard } from "@/components/ui/stat-card";
+import { ErrorState } from "@/components/ui/error-state";
 import { useAuth } from "@/contexts/AuthContext";
 import { useI18n } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
@@ -38,6 +39,7 @@ const Dashboard = () => {
     propertiesByCountry: [] as CountryStat[],
   });
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!orgId) {
@@ -104,6 +106,7 @@ const Dashboard = () => {
       .catch((err) => {
         clearTimeout(timeout);
         console.error("[Dashboard] data fetch error:", err);
+        setError(t("error.load_failed") || "Failed to load dashboard data");
         setLoading(false);
       });
 
@@ -114,20 +117,20 @@ const Dashboard = () => {
     {
       icon: Building,
       label: t("page.dashboard.properties") || "Properties",
-      value: loading ? "…" : String(stats.totalProperties),
+      value: String(stats.totalProperties),
       path: "/dashboard/properties",
       sub: t("page.dashboard.view_all") || "View all properties →",
     },
     {
       icon: MapPin,
       label: t("page.dashboard.countries") || "Active Countries",
-      value: loading ? "…" : String(stats.totalCountries),
+      value: String(stats.totalCountries),
       sub: t("page.dashboard.select_country_hint") || "Select below",
     },
     {
       icon: TrendingUp,
       label: t("page.dashboard.collected_month") || "Collected This Month",
-      value: loading ? "…" : fmt(stats.revenueThisMonth),
+      value: fmt(stats.revenueThisMonth),
       path: "/dashboard/receipts",
       sub: t("page.dashboard.view_receipts") || "View receipts →",
     },
@@ -143,6 +146,11 @@ const Dashboard = () => {
   return (
     <DashboardLayout>
       <div className="max-w-5xl mx-auto">
+        {/* Error state */}
+        {error && !loading && (
+          <ErrorState message={error} onRetry={() => { setError(null); setLoading(true); }} className="mb-6" />
+        )}
+
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 12 }}
@@ -179,6 +187,7 @@ const Dashboard = () => {
                 value={kpi.value}
                 sub={kpi.sub}
                 path={kpi.path}
+                loading={loading}
               />
             </motion.div>
           ))}
