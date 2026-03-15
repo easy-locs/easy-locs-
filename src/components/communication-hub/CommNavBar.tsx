@@ -14,7 +14,7 @@ const TAB_IDS: { id: CommSection; icon: typeof MessageCircle; labelKey: string; 
   { id: "calls", icon: Phone, labelKey: "orbit.nav.calls", fallback: "Calls" },
   { id: "contacts", icon: BookUser, labelKey: "orbit.nav.contacts", fallback: "Contacts" },
   { id: "groups", icon: UsersRound, labelKey: "orbit.nav.groups", fallback: "Groups" },
-  { id: "nearby", icon: Radar, labelKey: "orbit.nav.radar", fallback: "Radar" },
+  { id: "nearby", icon: Radar, labelKey: "orbit.nav.nearby", fallback: "Radar" },
   { id: "payments", icon: Wallet, labelKey: "orbit.nav.wallet", fallback: "Wallet" },
   { id: "settings", icon: Shield, labelKey: "orbit.nav.security", fallback: "Security" },
   { id: "you", icon: UserCircle, labelKey: "orbit.nav.you", fallback: "You" },
