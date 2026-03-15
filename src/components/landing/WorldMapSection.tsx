@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { Globe, ArrowRight, Loader2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useI18n } from "@/lib/i18n";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface GlobeCanvasProps {
   onError?: () => void;
