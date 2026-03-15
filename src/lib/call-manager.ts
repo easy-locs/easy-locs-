@@ -444,9 +444,10 @@ export class CallManager {
           this.onStateChange({ error: "Reconnexion en cours…" });
           this.attemptIceRestart();
         } else if (!this.iceConnected) {
+          this.debug("ICE disconnected without ever connecting");
           this.onStateChange({
             status: "network_blocked",
-            error: "Call could not connect. Your network may restrict internet calls.",
+            error: "Impossible de se connecter. Vérifiez votre connexion internet.",
           });
           this.cleanup("connection-failed");
         }
@@ -513,9 +514,10 @@ export class CallManager {
 
     this.streamTimer = setTimeout(() => {
       if (!this.iceConnected) {
+        this.debug("stream timeout — no connection established");
         this.onStateChange({
           status: "network_blocked",
-          error: "Unable to establish call. Your network may restrict internet calls.",
+          error: "Impossible d'établir l'appel. Votre réseau bloque peut-être les appels internet. Essayez avec le Wi-Fi ou un autre réseau.",
         });
         this.cleanup("stream-timeout");
       }
@@ -573,7 +575,7 @@ export class CallManager {
         } else if (state === "failed") {
           this.onStateChange({
             status: "network_blocked",
-            error: "Internet calling unavailable on your network.",
+            error: "Appels internet indisponibles sur ce réseau. Essayez un autre réseau.",
           });
           this.cleanup("relay-retry-failed");
         }
@@ -630,11 +632,14 @@ export class CallManager {
       this.onStateChange({ localStream: this.localStream, isVideo: this.localStream.getVideoTracks().length > 0 });
     } catch (err) {
       this.debug("getUserMedia failed", { error: String(err) });
+      const isPermError = err instanceof DOMException && (err.name === "NotAllowedError" || err.name === "NotFoundError");
       this.onStateChange({
         status: "failed",
-        error: isVideo
-          ? "Camera/microphone access denied. Please allow access to make video calls."
-          : "Microphone access denied. Please allow microphone access to make calls.",
+        error: isPermError
+          ? (isVideo
+            ? "Accès caméra/micro refusé. Autorisez l'accès dans les paramètres de votre navigateur."
+            : "Accès micro refusé. Autorisez l'accès au microphone pour passer des appels.")
+          : "Périphérique audio/vidéo indisponible. Vérifiez vos paramètres.",
       });
       throw new Error("Media permission denied");
     }

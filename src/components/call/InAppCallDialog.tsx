@@ -110,11 +110,27 @@ export default function InAppCallDialog({
       setStatus("idle"); setMuted(false); setVideoEnabled(false);
       setElapsed(0); setUsingRelay(false); setError(null);
       setRemoteStream(null); setLocalStream(null); setIsVideo(false); setIsEnding(false); setFacingMode("user");
+      // Audio calls default to earpiece, video calls to speaker
       setSpeakerOn(false);
       secureAnnouncedRef.current = false;
       resetSecureAudioState();
     }
   }, [open]);
+
+  // Sync audio output routing when speakerOn changes or remote stream arrives
+  useEffect(() => {
+    const audioEl = remoteAudioRef.current;
+    if (!audioEl || !remoteStream) return;
+    
+    audioEl.volume = 1;
+    audioEl.muted = false;
+    
+    // Route to correct output device
+    if ("setSinkId" in audioEl && typeof (audioEl as any).setSinkId === "function") {
+      const sinkId = speakerOn ? "default" : "communications";
+      (audioEl as any).setSinkId(sinkId).catch(() => {});
+    }
+  }, [speakerOn, remoteStream]);
 
   const handleEndCall = async () => {
     if (isEnding) return;
@@ -256,9 +272,9 @@ export default function InAppCallDialog({
   }, [isTerminal, open, onClose]);
 
   const statusLabel: Record<string, string> = {
-    idle: "", ringing: "Ringing…", connecting: "Connecting…",
-    active: fmt(elapsed), ended: "Call ended", declined: "Call declined",
-    missed: "No answer", failed: "Call failed", network_blocked: "Network restricted",
+    idle: "", ringing: "Appel en cours…", connecting: "Connexion…",
+    active: fmt(elapsed), ended: "Appel terminé", declined: "Appel refusé",
+    missed: "Pas de réponse", failed: "Échec de l'appel", network_blocked: "Réseau restreint",
   };
   const isLoading = status === "ringing" || status === "connecting";
   const label = statusLabel[status] || "";
@@ -440,17 +456,17 @@ export default function InAppCallDialog({
                 <div className="mx-auto w-14 h-14 rounded-full flex items-center justify-center" style={{ background: "hsl(var(--destructive) / 0.08)" }}>
                   <WifiOff className="h-7 w-7" style={{ color: "hsl(var(--destructive))" }} />
                 </div>
-                <p className="text-xs" style={{ color: "hsl(var(--muted-foreground))" }}>{error || "Your network may restrict internet calls."}</p>
+                <p className="text-xs" style={{ color: "hsl(var(--muted-foreground))" }}>{error || "Votre réseau peut bloquer les appels internet."}</p>
                 {onFallbackChat && (
                   <button className="w-full inline-flex items-center justify-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-medium transition-colors"
                     style={{ borderColor: "hsl(var(--border))", color: "hsl(var(--foreground))" }}
                     onClick={() => { handleEndCall(); onFallbackChat(); }} disabled={isEnding}>
-                    <MessageSquare className="h-4 w-4" /> Switch to chat
+                    <MessageSquare className="h-4 w-4" /> Basculer en chat
                   </button>
                 )}
                 <button className="w-full inline-flex items-center justify-center rounded-xl border px-4 py-2.5 text-sm font-medium transition-colors"
                   style={{ borderColor: "hsl(var(--border))", color: "hsl(var(--foreground))" }}
-                  onClick={handleEndCall} disabled={isEnding}>Close</button>
+                  onClick={handleEndCall} disabled={isEnding}>Fermer</button>
               </div>
             ) : (
               <div className="px-8 pb-12 pt-4 w-full">
@@ -465,7 +481,7 @@ export default function InAppCallDialog({
                     <button onClick={onClose}
                       className="w-full max-w-[200px] inline-flex items-center justify-center rounded-xl border px-6 py-3 text-sm font-semibold transition-all active:scale-95"
                       style={{ borderColor: "hsl(var(--border))", color: "hsl(var(--foreground))", background: "hsl(var(--muted) / 0.3)" }}>
-                      Close
+                      Fermer
                     </button>
                   </div>
                 ) : (
@@ -476,14 +492,14 @@ export default function InAppCallDialog({
                       active={muted}
                       activeColor="var(--destructive)"
                       icon={muted ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
-                      text={muted ? "Unmute" : "Mute"}
+                      text={muted ? "Activer" : "Muet"}
                     />
                     <CtrlBtn
                       onClick={handleToggleVideo}
                       disabled={isTerminal || isEnding || status === "idle"}
                       active={videoEnabled}
                       icon={videoEnabled ? <VideoIcon className="h-5 w-5" /> : <VideoOff className="h-5 w-5" />}
-                      text="Video"
+                      text="Vidéo"
                     />
                     {/* End call — large red button */}
                     <div className="flex flex-col items-center gap-1.5">
@@ -492,14 +508,14 @@ export default function InAppCallDialog({
                         style={{ background: "hsl(var(--destructive))", color: "hsl(var(--destructive-foreground))" }}>
                         {isEnding ? <Loader2 className="h-6 w-6 animate-spin" /> : <PhoneOff className="h-6 w-6" />}
                       </button>
-                      <span className="text-[10px] font-medium" style={{ color: "hsl(var(--destructive))" }}>End</span>
+                      <span className="text-[10px] font-medium" style={{ color: "hsl(var(--destructive))" }}>Fin</span>
                     </div>
                     <CtrlBtn
                       onClick={handleToggleSpeaker}
                       disabled={isTerminal || isEnding || status === "idle"}
                       active={speakerOn}
                       icon={speakerOn ? <Volume2 className="h-5 w-5" /> : <VolumeX className="h-5 w-5" />}
-                      text={speakerOn ? "Speaker" : "Earpiece"}
+                      text={speakerOn ? "Haut-parleur" : "Écouteur"}
                     />
                   </div>
                 )}
