@@ -62,6 +62,7 @@ export default function CommGroupsSection() {
   const { user, orgId } = useAuth();
   const [groups, setGroups] = useState<Group[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [showCreate, setShowCreate] = useState(false);
   const [newGroup, setNewGroup] = useState({ name: "", description: "" });
