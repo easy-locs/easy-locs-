@@ -3663,6 +3663,8 @@ const pageEn: Record<string, string> = {
   "landing.footer.marketplace": "Marketplace",
   "landing.footer.concierge": "Concierge",
   "landing.footer.top_cities": "Top Cities",
+  "landing.footer.saas": "SaaS Platform",
+  "landing.footer.countries_count": "190+ countries",
   "landing.nav.explore": "Explore",
   "landing.nav.marketplace": "Marketplace",
   "landing.nav.properties": "Properties",
