@@ -1021,6 +1021,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
                       onToggleSelect={toggleMsgSelect}
                       getCategoryIcon={getCategoryIcon}
                     />
+                    )}
                   </div>
                 );
               });
