@@ -1,4 +1,5 @@
 import { useState } from "react";
+import DOMPurify from "dompurify";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -119,7 +120,7 @@ export default function CVGenerator() {
             </div>
             <div
               className="bg-white text-black p-8 rounded-xl shadow-lg border print:shadow-none print:border-none"
-              dangerouslySetInnerHTML={{ __html: generatedCV }}
+              dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(generatedCV, { USE_PROFILES: { html: true }, FORBID_TAGS: ['script', 'style', 'iframe', 'object', 'embed'], FORBID_ATTR: ['onerror', 'onload', 'onclick', 'onmouseover'] }) }}
             />
           </div>
         ) : (
