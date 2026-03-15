@@ -1193,7 +1193,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
                 {/* Attach button (opens dropdown) */}
                 <DropdownMenu open={showAttachMenu} onOpenChange={setShowAttachMenu}>
                   <DropdownMenuTrigger asChild>
-                    <button className="shrink-0 h-8 w-8 flex items-center justify-center rounded-full hover:bg-[hsl(var(--hud-surface-2))]" disabled={uploading}>
+                     <button className="shrink-0 h-8 w-8 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 flex items-center justify-center rounded-full hover:bg-[hsl(var(--hud-surface-2))]" disabled={uploading}>
                       {uploading ? <Loader2 className="h-4 w-4 animate-spin" style={{ color: "hsl(var(--hud-cyan))" }} /> : <Paperclip className="h-4 w-4" style={{ color: "hsl(var(--hud-text-dim))" }} />}
                     </button>
                   </DropdownMenuTrigger>
