@@ -135,10 +135,10 @@ export default function CommCallsSection() {
   });
 
   const filters: { id: CallFilter; label: string }[] = [
-    { id: "all", label: "All" },
-    { id: "missed", label: "Missed" },
-    { id: "incoming", label: "In" },
-    { id: "outgoing", label: "Out" },
+    { id: "all", label: t("orbit.calls.all") || "All" },
+    { id: "missed", label: t("orbit.calls.missed") || "Missed" },
+    { id: "incoming", label: t("orbit.calls.incoming") || "In" },
+    { id: "outgoing", label: t("orbit.calls.outgoing") || "Out" },
   ];
 
   const missedCount = calls.filter(c => c.status === "missed").length;
