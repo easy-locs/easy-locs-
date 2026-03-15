@@ -1267,7 +1267,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
                 {/* Text input */}
                 <input
                   value={newMessage}
-                  onChange={e => setNewMessage(e.target.value)}
+                  onChange={e => { setNewMessage(e.target.value); broadcastTyping(); }}
                   onKeyDown={handleKeyDown}
                   placeholder="Message…"
                   className="flex-1 min-w-0 h-9 bg-transparent border-0 outline-none text-sm px-2"
