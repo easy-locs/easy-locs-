@@ -43,7 +43,7 @@ export const CommunicationCenter = () => {
 
   const { threads, loading, stats, loadThreads, updateThreadLocally } = useConversationThreads();
   const { archiveThread, unarchiveThread, deleteThread, muteThread, blockThread, clearThread, favoriteThread, changeStatus } = useThreadActions({ updateThreadLocally, loadThreads });
-  useOrbitCallSync();
+  // Realtime sync centralized in RealtimeHubGuard (App.tsx)
   const [selectedThread, setSelectedThread] = useState<ConversationThread | null>(null);
   const [showContext, setShowContext] = useState(false);
   const [showNewConversation, setShowNewConversation] = useState(false);

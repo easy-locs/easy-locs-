@@ -58,7 +58,7 @@ export default function OrbitHome() {
   const { user, orgId } = useAuth();
   const engine = useOrbitEngine();
   const { smartActions, loading: dashLoading } = useOrbitDashboard();
-  useOrbitCallSync();
+  // Realtime sync centralized in RealtimeHubGuard (App.tsx)
   const navigate = useNavigate();
 
   // Initial load + periodic refresh every 60s
