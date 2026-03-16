@@ -4,6 +4,7 @@
  */
 import { useState } from "react";
 import DeliveryAnalyticsDashboard from "@/components/delivery/DeliveryAnalyticsDashboard";
+import DeliveryDisputeFlow from "@/components/delivery/DeliveryDisputeFlow";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Plus, Package, Truck, MapPin, Clock, CheckCircle2,
@@ -189,7 +190,8 @@ export default function SellerLogisticsPanel() {
   const { jobs, loading, metrics, createJob, assignDriver, cancelJob } = useSellerDelivery();
   const [showCreate, setShowCreate] = useState(false);
   const [searchingJobId, setSearchingJobId] = useState<string | null>(null);
-  const [filter, setFilter] = useState<"all" | "active" | "completed" | "analytics">("all");
+  const [disputeJobId, setDisputeJobId] = useState<string | null>(null);
+  const [filter, setFilter] = useState<"all" | "active" | "completed" | "disputes" | "analytics">("all");
 
   const filteredJobs = jobs.filter(j => {
     if (filter === "active") return ["pending", "assigned", "accepted", "in_progress"].includes(j.status);
@@ -250,14 +252,14 @@ export default function SellerLogisticsPanel() {
 
       {/* Filter tabs */}
       <div className="flex gap-1 p-1 rounded-xl" style={{ background: "hsl(var(--hud-surface))" }}>
-        {(["all", "active", "completed", "analytics"] as const).map(f => (
+        {(["all", "active", "completed", "disputes", "analytics"] as const).map(f => (
           <button key={f} onClick={() => setFilter(f)}
             className="flex-1 py-1.5 rounded-lg text-[10px] font-semibold transition-all"
             style={{
               background: filter === f ? "hsl(var(--hud-cyan) / 0.12)" : "transparent",
               color: filter === f ? "hsl(var(--hud-cyan))" : "hsl(var(--hud-text-dim) / 0.5)",
             }}>
-            {f === "all" ? `Tout (${jobs.length})` : f === "active" ? `Actives (${metrics.active})` : f === "completed" ? `Terminées` : "📊 Analytics"}
+            {f === "all" ? `Tout (${jobs.length})` : f === "active" ? `Actives (${metrics.active})` : f === "completed" ? `Terminées` : f === "disputes" ? "⚠️ Litiges" : "📊 Analytics"}
           </button>
         ))}
       </div>
@@ -265,6 +267,8 @@ export default function SellerLogisticsPanel() {
       {/* Content */}
       {filter === "analytics" ? (
         <DeliveryAnalyticsDashboard orgId={jobs[0]?.org_id} />
+      ) : filter === "disputes" ? (
+        <DeliveryDisputeFlow orgId={jobs[0]?.org_id || ""} />
       ) : (
       <div className="space-y-2">
         {loading ? (
@@ -310,6 +314,13 @@ export default function SellerLogisticsPanel() {
                         <XCircle className="h-3 w-3" />
                       </Button>
                     )}
+                    {["completed", "cancelled"].includes(job.status) && (
+                      <Button size="sm" variant="ghost" className="text-[10px] h-7 px-2"
+                        onClick={() => setDisputeJobId(disputeJobId === job.id ? null : job.id)}
+                        style={{ color: "hsl(var(--destructive) / 0.6)" }}>
+                        <AlertTriangle className="h-3 w-3 mr-0.5" /> Litige
+                      </Button>
+                    )}
                     {job.delivery_fee != null && (
                       <span className="text-[10px] font-bold ml-1" style={{ color: "hsl(var(--hud-cyan))" }}>
                         {job.delivery_fee.toFixed(2)}€
@@ -328,6 +339,22 @@ export default function SellerLogisticsPanel() {
                           jobId={job.id}
                           onAssign={(driverId) => handleAssign(job.id, driverId)}
                           onClose={() => setSearchingJobId(null)}
+                        />
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                {/* Dispute panel */}
+                <AnimatePresence>
+                  {disputeJobId === job.id && (
+                    <motion.div initial={{ height: 0 }} animate={{ height: "auto" }} exit={{ height: 0 }}
+                      className="overflow-hidden">
+                      <div className="px-4 pb-3">
+                        <DeliveryDisputeFlow
+                          orgId={job.org_id}
+                          jobId={job.id}
+                          onClose={() => setDisputeJobId(null)}
                         />
                       </div>
                     </motion.div>
