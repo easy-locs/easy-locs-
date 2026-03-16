@@ -282,10 +282,18 @@ export default function ShopPage() {
               {filteredItems.map((item: any) => {
                 const photo = item.photo_url || (Array.isArray(item.photo_urls) && item.photo_urls[0]);
                 return (
-                  <Card key={item.id} className="overflow-hidden">
+                  <Card key={item.id} className="overflow-hidden relative">
                     {photo && (
-                      <div className="aspect-square bg-muted">
+                      <div className="aspect-square bg-muted relative">
                         <img src={photo} alt={item.title} className="w-full h-full object-cover" loading="lazy" />
+                        {user && (
+                          <button
+                            onClick={() => wishlist.toggle(item.id)}
+                            className="absolute top-2 right-2 h-7 w-7 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center transition-colors"
+                          >
+                            <Heart className={`h-3.5 w-3.5 transition-colors ${wishlist.isFavorite(item.id) ? "fill-red-500 text-red-500" : "text-muted-foreground"}`} />
+                          </button>
+                        )}
                       </div>
                     )}
                     <CardContent className="p-3 space-y-1.5">
