@@ -101,57 +101,24 @@ export default function ShopPage() {
   const discount = coupon.appliedCoupon?.discountAmount || 0;
   const finalTotal = Math.max(0, cart.total - discount);
 
-  const handleCheckout = async () => {
+  const handleCheckout = () => {
     if (!user) {
       toast.error("Please sign in to checkout");
       return;
     }
     if (cart.items.length === 0) return;
+    setCheckoutMode(true);
+    setCartOpen(false);
+  };
 
-    // Create order
-    const { data: order, error } = await (supabase as any)
-      .from("storefront_orders")
-      .insert({
-        shop_id: shop.id,
-        seller_id: shop.user_id,
-        buyer_id: user.id,
-        buyer_name: user.email?.split("@")[0] || "",
-        buyer_email: user.email || "",
-        subtotal: cart.total,
-        total: finalTotal,
-        currency: shop.currency || "EUR",
-        status: "pending",
-        notes: coupon.appliedCoupon ? `Coupon: ${coupon.appliedCoupon.code} (-${fmtPrice(discount, shop.currency || "EUR")})` : null,
-      })
-      .select("id")
-      .single();
-
-    if (error || !order) {
-      toast.error("Failed to create order");
-      return;
-    }
-
-    // Create order items
-    const orderItems = cart.items.map(ci => ({
-      order_id: order.id,
-      item_id: ci.item_id,
-      variant_id: ci.variant_id,
-      title: ci.title || "Item",
-      quantity: ci.quantity,
-      unit_price: ci.unit_price,
-      total_price: ci.unit_price * ci.quantity,
-    }));
-
-    await (supabase as any).from("storefront_order_items").insert(orderItems);
-
+  const handleCheckoutComplete = async (orderId: string) => {
     // Record coupon usage
     if (coupon.appliedCoupon) {
-      await coupon.recordUsage(order.id);
+      await coupon.recordUsage(orderId);
       coupon.removeCoupon();
     }
-
     await cart.clearCart();
-    setCartOpen(false);
+    setCheckoutMode(false);
     toast.success("Order placed! The seller will confirm soon.");
   };
 
