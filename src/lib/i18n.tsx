@@ -6939,21 +6939,31 @@ export function I18nProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const t = useCallback((key: string): string => {
-    // Check inline translations first (always available)
-    const inlineVal = translations[locale]?.[key];
-    if (inlineVal) return inlineVal;
-    // Check lazy-loaded locale extras
-    const lazyVal = lazyData.get(locale)?.[key];
-    if (lazyVal) return lazyVal;
-    // Fallback: en inline → en extras → fr inline → fr extras
-    const enVal = translations.en?.[key] || enExtras[key];
-    if (enVal) return enVal;
-    const frVal = translations.fr?.[key] || frExtras[key];
-    if (frVal) return frVal;
-    // Suppress warnings for keys with inline fallbacks
-    if (import.meta.env.DEV && !key.startsWith("pricing.")) console.warn(`[i18n] Missing key: "${key}" (locale: ${locale})`);
-    return "";
+  const t = useCallback((key: string, vars?: Record<string, string | number>): string => {
+    const { interpolate: interp, resolvePlural, trackMissingKey } = require("./i18n-utils");
+
+    // Lookup helper across all sources
+    const lookup = (k: string): string | undefined =>
+      translations[locale]?.[k] || lazyData.get(locale)?.[k] ||
+      translations.en?.[k] || enExtras[k] ||
+      translations.fr?.[k] || frExtras[k] || undefined;
+
+    // If count is provided, try plural resolution
+    let resolved: string | undefined;
+    if (vars && typeof vars.count === "number") {
+      resolved = resolvePlural(key, vars.count, lookup);
+    } else {
+      resolved = lookup(key);
+    }
+
+    if (resolved) return interp(resolved, vars);
+
+    // Missing key tracking
+    if (import.meta.env.DEV && !key.startsWith("pricing.")) {
+      console.warn(`[i18n] Missing key: "${key}" (locale: ${locale})`);
+    }
+    trackMissingKey(key, locale);
+    return vars ? interp(key, vars) : "";
   }, [locale]);
 
   return (
