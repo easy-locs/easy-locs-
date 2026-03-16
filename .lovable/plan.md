@@ -304,3 +304,15 @@ Conversation → Offer → Counter offer → Accepted → Payment → Confirmed
 | Extended channel prefs | Added deals and bookings channels (email + in-app toggles) | ✅ Done |
 | Status summary v2 | Added Digest and Quiet Hours indicators to status summary grid | ✅ Done |
 | DB migration | notification_preferences table extended with 10 new columns | ✅ Done |
+
+## PASS55 Block L — API publique / Webhooks
+| Feature | Implementation | Status |
+|---------|---------------|--------|
+| Public REST API edge function | public-api: API key auth, CRUD on properties/tenants/leases/rent-calls/documents/reservations/accounting | ✅ Done |
+| API key management | create_api_key RPC + DeveloperPortal UI (create, delete, copy) | ✅ Pre-existing |
+| Webhook endpoints table | webhooks table with secret, events, failure_count, RLS | ✅ Pre-existing |
+| Webhook deliveries table | webhook_deliveries with response_status, success, event_type | ✅ Pre-existing |
+| Webhook dispatcher edge function | dispatch-webhook: JWT auth, HMAC-SHA256 signing, delivery logging, failure tracking | ✅ Pre-existing |
+| Webhook management UI | DeveloperPortal: create/delete/toggle webhooks, event selector, delivery logs | ✅ Pre-existing |
+| API documentation tab | Inline endpoint reference, auth guide, webhook signature verification examples | ✅ Done |
+| Dynamic base URL in docs | Examples use actual project URL instead of placeholder | ✅ Done |
