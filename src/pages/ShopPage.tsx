@@ -446,6 +446,11 @@ export default function ShopPage() {
             <AdvancedReviews shopId={shop.id} mode="buyer" />
           </div>
 
+          {/* Storefront Reviews */}
+          <div className="mt-4">
+            <StorefrontReviews shopId={shop.id} mode="buyer" />
+          </div>
+
           {/* Live Shopping & Social */}
           <div className="mt-6">
             <LiveShopping shopId={shop.id} mode="buyer" catalogItems={catalogItems} />
