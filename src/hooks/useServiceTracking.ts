@@ -166,7 +166,7 @@ export function useTrackingStreamer(sessionId: string | null) {
           } as any)
           .then(() => {});
 
-        platformBus.emit("tracking:position_updated", { sessionId, lat, lng, eta });
+        platformBus.emit("tracking:position_updated", { sessionId, lat, lng, eta }, "tracking");
       },
       (err) => setError(err.message),
       { enableHighAccuracy: true, maximumAge: 2000, timeout: 10000 }
