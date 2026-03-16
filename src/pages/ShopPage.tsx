@@ -30,6 +30,9 @@ import LoyaltyProgram from "@/components/storefront/LoyaltyProgram";
 import WishlistRegistry from "@/components/storefront/WishlistRegistry";
 import AdvancedReviews from "@/components/storefront/AdvancedReviews";
 import FlashSales from "@/components/storefront/FlashSales";
+import ShippingTracker from "@/components/storefront/ShippingTracker";
+import MultiCurrencyTax from "@/components/storefront/MultiCurrencyTax";
+import AffiliateEngine from "@/components/storefront/AffiliateEngine";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -393,6 +396,27 @@ export default function ShopPage() {
           {user && (
             <div className="mt-4">
               <AffiliateProgram shopId={shop.id} shopSlug={shop.slug} mode="buyer" />
+            </div>
+          )}
+
+          {/* Affiliate Engine (advanced) */}
+          {user && (
+            <div className="mt-4">
+              <AffiliateEngine shopId={shop.id} shopSlug={shop.slug} mode="buyer" />
+            </div>
+          )}
+
+          {/* Shipping Tracker */}
+          {user && (
+            <div className="mt-4">
+              <ShippingTracker shopId={shop.id} mode="buyer" />
+            </div>
+          )}
+
+          {/* Invoices */}
+          {user && (
+            <div className="mt-4">
+              <MultiCurrencyTax shopId={shop.id} mode="buyer" />
             </div>
           )}
 

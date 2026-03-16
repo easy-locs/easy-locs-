@@ -7058,6 +7058,62 @@ export type Database = {
           },
         ]
       }
+      storefront_analytics_events: {
+        Row: {
+          country: string | null
+          created_at: string | null
+          currency: string | null
+          device_type: string | null
+          event_type: string
+          id: string
+          item_id: string | null
+          metadata_json: Json | null
+          referrer: string | null
+          revenue: number | null
+          session_id: string | null
+          shop_id: string
+          user_id: string | null
+        }
+        Insert: {
+          country?: string | null
+          created_at?: string | null
+          currency?: string | null
+          device_type?: string | null
+          event_type: string
+          id?: string
+          item_id?: string | null
+          metadata_json?: Json | null
+          referrer?: string | null
+          revenue?: number | null
+          session_id?: string | null
+          shop_id: string
+          user_id?: string | null
+        }
+        Update: {
+          country?: string | null
+          created_at?: string | null
+          currency?: string | null
+          device_type?: string | null
+          event_type?: string
+          id?: string
+          item_id?: string | null
+          metadata_json?: Json | null
+          referrer?: string | null
+          revenue?: number | null
+          session_id?: string | null
+          shop_id?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "storefront_analytics_events_shop_id_fkey"
+            columns: ["shop_id"]
+            isOneToOne: false
+            referencedRelation: "storefront_pages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       storefront_auction_bids: {
         Row: {
           amount: number
@@ -7684,6 +7740,102 @@ export type Database = {
           },
           {
             foreignKeyName: "storefront_inventory_alerts_shop_id_fkey"
+            columns: ["shop_id"]
+            isOneToOne: false
+            referencedRelation: "storefront_pages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      storefront_invoices: {
+        Row: {
+          buyer_address: string | null
+          buyer_email: string | null
+          buyer_name: string | null
+          buyer_tax_id: string | null
+          created_at: string | null
+          currency: string | null
+          discount_amount: number | null
+          display_currency: string | null
+          due_at: string | null
+          exchange_rate: number | null
+          id: string
+          invoice_number: string
+          issued_at: string | null
+          notes: string | null
+          order_id: string
+          paid_at: string | null
+          shipping_amount: number | null
+          shop_id: string
+          status: string | null
+          subtotal: number | null
+          tax_amount: number | null
+          tax_name: string | null
+          tax_rate: number | null
+          total: number | null
+        }
+        Insert: {
+          buyer_address?: string | null
+          buyer_email?: string | null
+          buyer_name?: string | null
+          buyer_tax_id?: string | null
+          created_at?: string | null
+          currency?: string | null
+          discount_amount?: number | null
+          display_currency?: string | null
+          due_at?: string | null
+          exchange_rate?: number | null
+          id?: string
+          invoice_number: string
+          issued_at?: string | null
+          notes?: string | null
+          order_id: string
+          paid_at?: string | null
+          shipping_amount?: number | null
+          shop_id: string
+          status?: string | null
+          subtotal?: number | null
+          tax_amount?: number | null
+          tax_name?: string | null
+          tax_rate?: number | null
+          total?: number | null
+        }
+        Update: {
+          buyer_address?: string | null
+          buyer_email?: string | null
+          buyer_name?: string | null
+          buyer_tax_id?: string | null
+          created_at?: string | null
+          currency?: string | null
+          discount_amount?: number | null
+          display_currency?: string | null
+          due_at?: string | null
+          exchange_rate?: number | null
+          id?: string
+          invoice_number?: string
+          issued_at?: string | null
+          notes?: string | null
+          order_id?: string
+          paid_at?: string | null
+          shipping_amount?: number | null
+          shop_id?: string
+          status?: string | null
+          subtotal?: number | null
+          tax_amount?: number | null
+          tax_name?: string | null
+          tax_rate?: number | null
+          total?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "storefront_invoices_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "storefront_orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "storefront_invoices_shop_id_fkey"
             columns: ["shop_id"]
             isOneToOne: false
             referencedRelation: "storefront_pages"
@@ -8621,6 +8773,81 @@ export type Database = {
           },
         ]
       }
+      storefront_shipments: {
+        Row: {
+          carrier: string | null
+          created_at: string | null
+          currency: string | null
+          delivered_at: string | null
+          estimated_delivery: string | null
+          id: string
+          notes: string | null
+          order_id: string
+          shipped_at: string | null
+          shipping_fee: number | null
+          shop_id: string
+          status: string | null
+          tracking_events: Json | null
+          tracking_number: string | null
+          tracking_url: string | null
+          updated_at: string | null
+          weight_kg: number | null
+        }
+        Insert: {
+          carrier?: string | null
+          created_at?: string | null
+          currency?: string | null
+          delivered_at?: string | null
+          estimated_delivery?: string | null
+          id?: string
+          notes?: string | null
+          order_id: string
+          shipped_at?: string | null
+          shipping_fee?: number | null
+          shop_id: string
+          status?: string | null
+          tracking_events?: Json | null
+          tracking_number?: string | null
+          tracking_url?: string | null
+          updated_at?: string | null
+          weight_kg?: number | null
+        }
+        Update: {
+          carrier?: string | null
+          created_at?: string | null
+          currency?: string | null
+          delivered_at?: string | null
+          estimated_delivery?: string | null
+          id?: string
+          notes?: string | null
+          order_id?: string
+          shipped_at?: string | null
+          shipping_fee?: number | null
+          shop_id?: string
+          status?: string | null
+          tracking_events?: Json | null
+          tracking_number?: string | null
+          tracking_url?: string | null
+          updated_at?: string | null
+          weight_kg?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "storefront_shipments_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "storefront_orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "storefront_shipments_shop_id_fkey"
+            columns: ["shop_id"]
+            isOneToOne: false
+            referencedRelation: "storefront_pages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       storefront_shipping_zones: {
         Row: {
           active: boolean
@@ -8918,6 +9145,59 @@ export type Database = {
             columns: ["variant_id"]
             isOneToOne: false
             referencedRelation: "catalog_variants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      storefront_tax_rules: {
+        Row: {
+          active: boolean | null
+          applies_to: string | null
+          country: string
+          created_at: string | null
+          id: string
+          region: string | null
+          shop_id: string
+          tax_exempt_categories: string[] | null
+          tax_inclusive: boolean | null
+          tax_name: string | null
+          tax_rate: number
+          user_id: string
+        }
+        Insert: {
+          active?: boolean | null
+          applies_to?: string | null
+          country: string
+          created_at?: string | null
+          id?: string
+          region?: string | null
+          shop_id: string
+          tax_exempt_categories?: string[] | null
+          tax_inclusive?: boolean | null
+          tax_name?: string | null
+          tax_rate?: number
+          user_id: string
+        }
+        Update: {
+          active?: boolean | null
+          applies_to?: string | null
+          country?: string
+          created_at?: string | null
+          id?: string
+          region?: string | null
+          shop_id?: string
+          tax_exempt_categories?: string[] | null
+          tax_inclusive?: boolean | null
+          tax_name?: string | null
+          tax_rate?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "storefront_tax_rules_shop_id_fkey"
+            columns: ["shop_id"]
+            isOneToOne: false
+            referencedRelation: "storefront_pages"
             referencedColumns: ["id"]
           },
         ]
