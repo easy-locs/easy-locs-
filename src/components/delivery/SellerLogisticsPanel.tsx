@@ -585,6 +585,14 @@ export default function SellerLogisticsPanel() {
         <FleetMaintenanceAI orgId={jobs[0]?.org_id || ""} />
       ) : filter === "regulatory" ? (
         <RegulatoryCompliance orgId={jobs[0]?.org_id || ""} />
+      ) : filter === "drone" ? (
+        <DroneDelivery orgId={jobs[0]?.org_id || ""} />
+      ) : filter === "blockchain" ? (
+        <BlockchainTraceability orgId={jobs[0]?.org_id || ""} />
+      ) : filter === "training" ? (
+        <DriverTrainingAcademy orgId={jobs[0]?.org_id || ""} />
+      ) : filter === "crowd" ? (
+        <CrowdDeliveryNetwork orgId={jobs[0]?.org_id || ""} />
       ) : (
       <div className="space-y-2">
         {loading ? (
