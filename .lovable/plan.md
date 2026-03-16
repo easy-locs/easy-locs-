@@ -126,7 +126,16 @@ Conversation → Offer → Counter offer → Accepted → Payment → Confirmed
 | 9c | Payment integration (Stripe link generation + tracking) | 📋 Planned |
 | 9d | Analytics & deal conversion metrics | 📋 Planned |
 
-## STABILIZATION LOG — Call Pipeline (March 2026)
+## PASS56 — Orbit Communication Hardening (Block A)
+| Issue | Fix | Status |
+|-------|-----|--------|
+| platformBus.emit("orbit:message_sent") never called | Added to text send, file upload, voice send, location share, forward, bulk delete | ✅ Fixed |
+| useUnreadMessages subscribed to ALL messages globally (noisy) | Scoped to org_id + event types (INSERT/UPDATE only) + platform bus listener | ✅ Fixed |
+| Forward flow missing platform bus emission | Added platformBus.emit after successful forward insert | ✅ Fixed |
+| Bulk delete (for me / for all) missing platform bus emission | Added to MessageMultiSelect handlers | ✅ Fixed |
+| useThreadActions missing platform bus import | Added platformBus import and orgId from auth | ✅ Fixed |
+| Cross-module unread badge refresh slow | Added platformBus.on("orbit:message_sent") with 500ms debounce in useUnreadMessages | ✅ Fixed |
+
 | Issue | Fix | Status |
 |-------|-----|--------|
 | channel.subscribe() not awaited — signals sent before channel ready | Await subscribe with SUBSCRIBED callback + timeout | ✅ Fixed |
