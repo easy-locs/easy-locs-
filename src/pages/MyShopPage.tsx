@@ -175,6 +175,7 @@ export default function MyShopPage() {
             <div className="space-y-4">
               <OrdersManager shopId={shop.id} />
               <ReturnsManager shopId={shop.id} />
+              <ReturnsRefundEngine shopId={shop.id} mode="seller" />
               <DeliveryDispatch shopId={shop.id} />
               <WarehouseManager shopId={shop.id} />
             </div>
