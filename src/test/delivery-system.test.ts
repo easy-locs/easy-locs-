@@ -129,7 +129,6 @@ describe("Seller Delivery Metrics", () => {
 
 describe("Edge Function Actions", () => {
   it("haversine formula produces reasonable distances", () => {
-    // Paris (48.8566, 2.3522) to Lyon (45.7640, 4.8357) ≈ 393 km
     const R = 6371;
     const lat1 = 48.8566, lng1 = 2.3522;
     const lat2 = 45.7640, lng2 = 4.8357;
@@ -147,5 +146,119 @@ describe("Edge Function Actions", () => {
     const code = String(Math.floor(100000 + Math.random() * 900000));
     expect(code).toHaveLength(6);
     expect(/^\d{6}$/.test(code)).toBe(true);
+  });
+});
+
+describe("Driver Ranking Engine", async () => {
+  const { rankDrivers, rankDriver, haversineDistance, estimateEta, checkEligibility, DEFAULT_WEIGHTS } = await import("@/lib/driver-ranking");
+  type DriverProfile = import("@/lib/driver-ranking").DriverProfile;
+  type DeliveryJob = import("@/lib/driver-ranking").DeliveryJob;
+
+  const mockDriver = (overrides: Partial<DriverProfile> = {}): DriverProfile => ({
+    id: "driver-1",
+    name: "Test Driver",
+    lat: 48.86,
+    lng: 2.35,
+    status: "online",
+    vehicleType: "car",
+    rating: 4.5,
+    completedDeliveries: 50,
+    cancelledDeliveries: 2,
+    avgDeliveryMinutes: 25,
+    acceptanceRate: 0.92,
+    lastActiveAt: Date.now(),
+    ...overrides,
+  });
+
+  const mockDeliveryJob = (overrides: Partial<DeliveryJob> = {}): DeliveryJob => ({
+    id: "job-1",
+    pickupLat: 48.85,
+    pickupLng: 2.34,
+    dropoffLat: 48.87,
+    dropoffLng: 2.36,
+    requiredVehicles: [],
+    weightKg: 5,
+    priority: "standard",
+    createdAt: Date.now(),
+    ...overrides,
+  });
+
+  it("ranks closer drivers higher", () => {
+    const close = mockDriver({ id: "close", lat: 48.851, lng: 2.341 });
+    const far = mockDriver({ id: "far", lat: 48.90, lng: 2.50 });
+    const job = mockDeliveryJob();
+    const ranked = rankDrivers([far, close], job, DEFAULT_WEIGHTS, { eligibleOnly: true });
+    expect(ranked[0].driver.id).toBe("close");
+  });
+
+  it("filters offline drivers", () => {
+    const offline = mockDriver({ id: "off", status: "offline" });
+    const online = mockDriver({ id: "on", status: "online" });
+    const job = mockDeliveryJob();
+    const ranked = rankDrivers([offline, online], job, DEFAULT_WEIGHTS, { eligibleOnly: true });
+    expect(ranked).toHaveLength(1);
+    expect(ranked[0].driver.id).toBe("on");
+  });
+
+  it("filters by vehicle capacity", () => {
+    const bicycle = mockDriver({ id: "bike", vehicleType: "bicycle" });
+    const van = mockDriver({ id: "van", vehicleType: "van" });
+    const heavyJob = mockDeliveryJob({ weightKg: 30 });
+    const ranked = rankDrivers([bicycle, van], heavyJob, DEFAULT_WEIGHTS, { eligibleOnly: true });
+    expect(ranked).toHaveLength(1);
+    expect(ranked[0].driver.id).toBe("van");
+  });
+
+  it("respects required vehicle types", () => {
+    const car = mockDriver({ id: "car", vehicleType: "car" });
+    const scooter = mockDriver({ id: "scooter", vehicleType: "scooter" });
+    const job = mockDeliveryJob({ requiredVehicles: ["scooter"] });
+    const ranked = rankDrivers([car, scooter], job, DEFAULT_WEIGHTS, { eligibleOnly: true });
+    expect(ranked).toHaveLength(1);
+    expect(ranked[0].driver.id).toBe("scooter");
+  });
+
+  it("boosts distance/eta weight for urgent jobs", () => {
+    const close = mockDriver({ id: "close", lat: 48.851, lng: 2.341, rating: 3 });
+    const farGood = mockDriver({ id: "far-good", lat: 48.88, lng: 2.40, rating: 5 });
+    const urgentJob = mockDeliveryJob({ priority: "urgent" });
+    const ranked = rankDrivers([farGood, close], urgentJob, DEFAULT_WEIGHTS, {
+      eligibleOnly: true, applyPriorityBoost: true,
+    });
+    // Close driver should win for urgent due to distance/eta boost
+    expect(ranked[0].driver.id).toBe("close");
+  });
+
+  it("produces score breakdown with all components", () => {
+    const driver = mockDriver();
+    const job = mockDeliveryJob();
+    const result = rankDriver(driver, job);
+    expect(result.breakdown).toHaveProperty("distanceScore");
+    expect(result.breakdown).toHaveProperty("etaScore");
+    expect(result.breakdown).toHaveProperty("reliabilityScore");
+    expect(result.breakdown).toHaveProperty("vehicleScore");
+    expect(result.breakdown).toHaveProperty("availabilityScore");
+    expect(result.breakdown).toHaveProperty("ratingScore");
+    expect(result.score).toBeGreaterThan(0);
+  });
+
+  it("haversineDistance calculates correctly", () => {
+    const dist = haversineDistance(48.8566, 2.3522, 45.7640, 4.8357);
+    expect(dist).toBeGreaterThan(380);
+    expect(dist).toBeLessThan(410);
+  });
+
+  it("estimateEta returns reasonable values", () => {
+    const eta = estimateEta(10, "car"); // 10km at 40km/h = 15min
+    expect(eta).toBe(15);
+  });
+
+  it("limits results with limit option", () => {
+    const drivers = Array.from({ length: 10 }, (_, i) =>
+      mockDriver({ id: `d-${i}`, lat: 48.85 + i * 0.001 })
+    );
+    const job = mockDeliveryJob();
+    const ranked = rankDrivers(drivers, job, DEFAULT_WEIGHTS, { limit: 3 });
+    expect(ranked).toHaveLength(3);
   });
 });

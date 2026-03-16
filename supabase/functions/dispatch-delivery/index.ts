@@ -1,6 +1,6 @@
 /**
  * dispatch-delivery — Edge function for delivery job dispatch
- * Actions: create_job, find_drivers, assign_driver, accept_job, update_status, confirm_delivery
+ * Actions: create_job, find_drivers, assign_driver, accept_job, update_status, confirm_delivery, auto_dispatch
  */
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
@@ -66,9 +66,9 @@ serve(async (req) => {
       return json({ success: true, job, confirmation_code: confirmationCode });
     }
 
-    // ─── FIND NEARBY DRIVERS ─────────────────────────────────
+    // ─── FIND NEARBY DRIVERS (with ranking) ────────────────
     if (action === "find_drivers") {
-      const { job_id, max_distance_km } = body;
+      const { job_id, max_distance_km, ranked } = body;
       if (!job_id) throw new Error("job_id required");
 
       const { data: job } = await supabaseAdmin.from("delivery_jobs").select("*").eq("id", job_id).single();
@@ -86,8 +86,15 @@ serve(async (req) => {
         return json({ success: true, drivers: [], message: "No drivers available" });
       }
 
-      // Filter by distance (haversine)
       const maxDist = max_distance_km || 15;
+
+      if (ranked) {
+        // Use ranking engine
+        const rankedDrivers = rankAndScoreDrivers(drivers, job, maxDist);
+        return json({ success: true, drivers: rankedDrivers, total: rankedDrivers.length, ranked: true });
+      }
+
+      // Legacy: simple distance sort
       const nearby = drivers
         .map((d: any) => {
           const dist = haversine(d.lat, d.lng, job.pickup_lat, job.pickup_lng);
@@ -97,6 +104,62 @@ serve(async (req) => {
         .sort((a: any, b: any) => a.distance_km - b.distance_km);
 
       return json({ success: true, drivers: nearby, total: nearby.length });
+    }
+
+    // ─── AUTO DISPATCH ───────────────────────────────────────
+    if (action === "auto_dispatch") {
+      const { job_id, max_distance_km } = body;
+      if (!job_id) throw new Error("job_id required");
+
+      const { data: job } = await supabaseAdmin.from("delivery_jobs").select("*").eq("id", job_id).single();
+      if (!job) throw new Error("Job not found");
+      if (!["pending"].includes(job.status)) throw new Error(`Cannot auto-dispatch in status: ${job.status}`);
+
+      // Find online drivers
+      const { data: drivers } = await supabaseAdmin
+        .from("driver_sessions")
+        .select("*")
+        .in("status", ["online"])
+        .not("lat", "is", null)
+        .not("lng", "is", null);
+
+      if (!drivers || drivers.length === 0) {
+        return json({ success: false, error: "No drivers available", drivers: [] });
+      }
+
+      const maxDist = max_distance_km || 15;
+      const rankedDrivers = rankAndScoreDrivers(drivers, job, maxDist);
+
+      if (rankedDrivers.length === 0) {
+        return json({ success: false, error: "No eligible drivers in range", drivers: [] });
+      }
+
+      const best = rankedDrivers[0];
+
+      // Auto-assign the best driver
+      const { error: assignErr } = await supabaseAdmin.from("delivery_jobs")
+        .update({ driver_id: best.user_id, status: "assigned", assigned_at: new Date().toISOString(), updated_at: new Date().toISOString() })
+        .eq("id", job_id);
+
+      if (assignErr) throw new Error(`Auto-assign failed: ${assignErr.message}`);
+
+      // Create offer record with score
+      await supabaseAdmin.from("delivery_offers").upsert({
+        job_id, driver_id: best.user_id, org_id: job.org_id,
+        status: "accepted",
+        distance_km: best.distance_km,
+        eta_minutes: best.eta_minutes,
+        score: best.score,
+        responded_at: new Date().toISOString(),
+      }, { onConflict: "job_id,driver_id" });
+
+      return json({
+        success: true,
+        job_id,
+        assigned_driver: best,
+        alternates: rankedDrivers.slice(1, 4),
+        total_candidates: rankedDrivers.length,
+      });
     }
 
     // ─── ASSIGN DRIVER ───────────────────────────────────────
@@ -258,4 +321,99 @@ function haversine(lat1: number, lng1: number, lat2: number, lng2: number): numb
     Math.sin(dLat / 2) ** 2 +
     Math.cos((lat1 * Math.PI) / 180) * Math.cos((lat2 * Math.PI) / 180) * Math.sin(dLng / 2) ** 2;
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+// ─── Ranking Engine ──────────────────────────────────────────────────────────
+
+const VEHICLE_SPEEDS: Record<string, number> = {
+  bicycle: 15, scooter: 30, car: 40, van: 35, truck: 30,
+};
+
+const VEHICLE_CAPACITY_KG: Record<string, number> = {
+  bicycle: 5, scooter: 15, car: 50, van: 200, truck: 1000,
+};
+
+const RANKING_WEIGHTS = {
+  distance: 0.30, eta: 0.20, reliability: 0.20,
+  vehicle: 0.10, availability: 0.10, rating: 0.10,
+};
+
+interface RankedDriverResult {
+  user_id: string;
+  score: number;
+  distance_km: number;
+  eta_minutes: number;
+  vehicle_type: string;
+  avg_rating: number | null;
+  acceptance_rate: number | null;
+  breakdown: Record<string, number>;
+}
+
+function rankAndScoreDrivers(drivers: any[], job: any, maxDistKm: number): RankedDriverResult[] {
+  const priorityBoost = job.priority === "urgent" ? 1.5 : job.priority === "express" ? 1.25 : 1;
+  
+  // Adjust weights for priority
+  let w = { ...RANKING_WEIGHTS };
+  if (priorityBoost > 1) {
+    w.distance *= priorityBoost;
+    w.eta *= priorityBoost;
+    const total = Object.values(w).reduce((a, b) => a + b, 0);
+    for (const k of Object.keys(w) as (keyof typeof w)[]) w[k] /= total;
+  }
+
+  const results: RankedDriverResult[] = [];
+
+  for (const d of drivers) {
+    const dist = haversine(d.lat, d.lng, job.pickup_lat ?? 0, job.pickup_lng ?? 0);
+    if (dist > (d.max_distance_km ?? maxDistKm)) continue;
+
+    // Vehicle capacity check
+    const capacity = VEHICLE_CAPACITY_KG[d.vehicle_type] ?? 50;
+    if ((job.weight_kg ?? 1) > capacity) continue;
+
+    // Required vehicles check
+    const reqVehicles: string[] = job.required_vehicles ?? [];
+    if (reqVehicles.length > 0 && !reqVehicles.includes(d.vehicle_type)) continue;
+
+    const speed = VEHICLE_SPEEDS[d.vehicle_type] ?? 30;
+    const etaMin = Math.round((dist / speed) * 60);
+
+    // Score components (0–100)
+    const distScore = dist <= 0 ? 100 : dist >= maxDistKm ? 0 : Math.round((1 - dist / maxDistKm) * 100);
+    const etaScore = etaMin <= 0 ? 100 : etaMin >= 45 ? 0 : Math.round((1 - etaMin / 45) * 100);
+
+    const totalCompleted = d.total_completed ?? 0;
+    const totalCancelled = d.total_cancelled ?? 0;
+    const totalJobs = totalCompleted + totalCancelled;
+    const completionRate = totalJobs > 0 ? totalCompleted / totalJobs : 0.5;
+    const acceptRate = d.acceptance_rate ?? 0.5;
+    const reliabilityScore = Math.round((completionRate * 0.7 + acceptRate * 0.3) * 100);
+
+    const vehicleScore = 100; // already passed capacity/type checks
+    const availabilityScore = d.status === "online" ? 100 : d.status === "busy" ? 30 : 0;
+    const ratingScore = Math.round(((d.avg_rating ?? 3) / 5) * 100);
+
+    const score = Math.round(
+      distScore * w.distance +
+      etaScore * w.eta +
+      reliabilityScore * w.reliability +
+      vehicleScore * w.vehicle +
+      availabilityScore * w.availability +
+      ratingScore * w.rating
+    );
+
+    results.push({
+      user_id: d.user_id,
+      score,
+      distance_km: Math.round(dist * 100) / 100,
+      eta_minutes: etaMin,
+      vehicle_type: d.vehicle_type,
+      avg_rating: d.avg_rating,
+      acceptance_rate: d.acceptance_rate,
+      breakdown: { distScore, etaScore, reliabilityScore, vehicleScore, availabilityScore, ratingScore },
+    });
+  }
+
+  results.sort((a, b) => b.score - a.score);
+  return results;
 }
