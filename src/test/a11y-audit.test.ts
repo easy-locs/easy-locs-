@@ -204,8 +204,8 @@ describe("getFocusableElements", () => {
     `;
     document.body.appendChild(div);
     const elements = getFocusableElements(div);
-    // button, a, input[text], div[tabindex=0] = 4 (disabled & hidden & tabindex=-1 excluded)
-    expect(elements.length).toBe(4);
+    // button, a, input[text], input[hidden], div[tabindex=0] = 5 (disabled & tabindex=-1 excluded)
+    expect(elements.length).toBe(5);
     document.body.removeChild(div);
   });
 });
