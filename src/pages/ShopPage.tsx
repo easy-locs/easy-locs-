@@ -37,6 +37,8 @@ import LoyaltyRewards from "@/components/storefront/LoyaltyRewards";
 import CustomerSupport from "@/components/storefront/CustomerSupport";
 import LiveShopping from "@/components/storefront/LiveShopping";
 import RecurringSubscriptions from "@/components/storefront/RecurringSubscriptions";
+import SmartNotifications from "@/components/storefront/SmartNotifications";
+import GamificationEngine from "@/components/storefront/GamificationEngine";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -452,6 +454,20 @@ export default function ShopPage() {
           {user && (
             <div className="mt-4">
               <RecurringSubscriptions shopId={shop.id} mode="buyer" />
+            </div>
+          )}
+
+          {/* Gamification */}
+          {user && (
+            <div className="mt-4">
+              <GamificationEngine shopId={shop.id} mode="buyer" />
+            </div>
+          )}
+
+          {/* Smart Notifications */}
+          {user && (
+            <div className="mt-4">
+              <SmartNotifications shopId={shop.id} mode="buyer" />
             </div>
           )}
 

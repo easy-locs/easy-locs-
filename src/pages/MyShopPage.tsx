@@ -50,6 +50,9 @@ import LoyaltyRewards from "@/components/storefront/LoyaltyRewards";
 import CustomerSupport from "@/components/storefront/CustomerSupport";
 import LiveShopping from "@/components/storefront/LiveShopping";
 import RecurringSubscriptions from "@/components/storefront/RecurringSubscriptions";
+import SmartNotifications from "@/components/storefront/SmartNotifications";
+import MultiStoreManager from "@/components/storefront/MultiStoreManager";
+import GamificationEngine from "@/components/storefront/GamificationEngine";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -216,8 +219,11 @@ export default function MyShopPage() {
             <div className="space-y-4">
               <ShopAnalytics shopId={shop.id} />
               <StoreAnalytics shopId={shop.id} />
+              <SmartNotifications shopId={shop.id} mode="seller" />
               <CustomerSupport shopId={shop.id} mode="seller" />
               <LiveShopping shopId={shop.id} mode="seller" />
+              <GamificationEngine shopId={shop.id} mode="seller" />
+              <MultiStoreManager />
             </div>
           )}
           {tab === "launch" && <LaunchAudit shopId={shop.id} />}
