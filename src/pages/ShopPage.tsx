@@ -364,7 +364,7 @@ export default function ShopPage() {
                     {ci.photo_url && <img src={ci.photo_url} alt="" className="w-12 h-12 rounded-lg object-cover" />}
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium truncate">{ci.title || "Item"}</p>
-                      <p className="text-xs text-muted-foreground">{fmtPrice(ci.unit_price, shop.currency)}</p>
+                      <p className="text-xs text-muted-foreground">{fx.formatPrice(ci.unit_price, shop.currency)}</p>
                     </div>
                     <div className="flex items-center gap-1.5">
                       <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => cart.updateQuantity(ci.id, ci.quantity - 1)}>
