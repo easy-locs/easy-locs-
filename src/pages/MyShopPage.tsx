@@ -42,6 +42,10 @@ import LoyaltyProgram from "@/components/storefront/LoyaltyProgram";
 import AdvancedReviews from "@/components/storefront/AdvancedReviews";
 import FlashSales from "@/components/storefront/FlashSales";
 import BulkProductManager from "@/components/storefront/BulkProductManager";
+import ShippingTracker from "@/components/storefront/ShippingTracker";
+import MultiCurrencyTax from "@/components/storefront/MultiCurrencyTax";
+import AffiliateEngine from "@/components/storefront/AffiliateEngine";
+import StoreAnalytics from "@/components/storefront/StoreAnalytics";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -183,6 +187,7 @@ export default function MyShopPage() {
               <ReturnsManager shopId={shop.id} />
               <ReturnsRefundEngine shopId={shop.id} mode="seller" />
               <DeliveryDispatch shopId={shop.id} />
+              <ShippingTracker shopId={shop.id} mode="seller" />
               <WarehouseManager shopId={shop.id} />
             </div>
           )}
@@ -192,6 +197,8 @@ export default function MyShopPage() {
               <SellerFinance shopId={shop.id} />
               <MultiVendorDashboard shopId={shop.id} />
               <AffiliateProgram shopId={shop.id} shopSlug={shop.slug} mode="seller" />
+              <AffiliateEngine shopId={shop.id} shopSlug={shop.slug} mode="seller" />
+              <MultiCurrencyTax shopId={shop.id} mode="seller" />
               <SubscriptionManager shopId={shop.id} />
               <SubscriptionEngine shopId={shop.id} mode="seller" />
               <GiftCardManager shopId={shop.id} mode="seller" />
@@ -199,7 +206,12 @@ export default function MyShopPage() {
               <LoyaltyProgram shopId={shop.id} mode="seller" />
             </div>
           )}
-          {tab === "analytics" && <ShopAnalytics shopId={shop.id} />}
+          {tab === "analytics" && (
+            <div className="space-y-4">
+              <ShopAnalytics shopId={shop.id} />
+              <StoreAnalytics shopId={shop.id} />
+            </div>
+          )}
           {tab === "launch" && <LaunchAudit shopId={shop.id} />}
           {tab === "settings" && (
             <div className="space-y-4">
