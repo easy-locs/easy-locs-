@@ -149,8 +149,7 @@ describe("Edge Function Actions", () => {
   });
 });
 
-describe("Driver Ranking Engine", () => {
-  // Import the client-side ranking engine for unit testing
+describe("Driver Ranking Engine", async () => {
   const { rankDrivers, rankDriver, haversineDistance, estimateEta, checkEligibility, DEFAULT_WEIGHTS } = await import("@/lib/driver-ranking");
   type DriverProfile = import("@/lib/driver-ranking").DriverProfile;
   type DeliveryJob = import("@/lib/driver-ranking").DeliveryJob;
