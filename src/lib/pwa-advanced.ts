@@ -49,7 +49,7 @@ export async function subscribeToPush(vapidPublicKey: string): Promise<PushSubsc
     
     const subscription = await reg.pushManager.subscribe({
       userVisibleOnly: true,
-      applicationServerKey,
+      applicationServerKey: applicationServerKey.buffer as ArrayBuffer,
     });
 
     return { subscribed: true, subscription };
