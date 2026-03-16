@@ -432,6 +432,14 @@ export default function SellerLogisticsPanel() {
         <DeliverySchedulingCalendar orgId={jobs[0]?.org_id || ""} />
       ) : filter === "driver-portal" ? (
         <DriverOnboardingPortal onComplete={() => setFilter("all")} />
+      ) : filter === "promo-coupons" ? (
+        <PromoCouponsEngine orgId={jobs[0]?.org_id || ""} />
+      ) : filter === "live-chat" ? (
+        <LiveDeliveryChat onClose={() => setFilter("all")} />
+      ) : filter === "warehouse" ? (
+        <WarehouseManagement orgId={jobs[0]?.org_id || ""} />
+      ) : filter === "green-delivery" ? (
+        <GreenDeliveryDashboard orgId={jobs[0]?.org_id || ""} />
       ) : (
       <div className="space-y-2">
         {loading ? (
