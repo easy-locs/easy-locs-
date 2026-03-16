@@ -493,6 +493,32 @@ export default function ShopPage() {
             </div>
           )}
 
+          {/* Subscription Plans */}
+          {user && (
+            <div className="mt-4">
+              <SubscriptionPlans shopId={shop.id} mode="buyer" />
+            </div>
+          )}
+
+          {/* Vendor Program */}
+          {user && (
+            <div className="mt-4">
+              <MultiVendorHub shopId={shop.id} mode="vendor" />
+            </div>
+          )}
+
+          {/* Loyalty Points */}
+          {user && (
+            <div className="mt-4">
+              <LoyaltyPointsEngine shopId={shop.id} mode="buyer" />
+            </div>
+          )}
+
+          {/* Gift Cards */}
+          <div className="mt-4">
+            <GiftCardStore shopId={shop.id} mode="buyer" />
+          </div>
+
           {/* Smart Notifications */}
           {user && (
             <div className="mt-4">
