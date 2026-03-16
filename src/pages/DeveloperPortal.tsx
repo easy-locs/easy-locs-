@@ -375,7 +375,7 @@ const DeveloperPortal = () => {
                 <div className="mt-6 p-4 bg-muted/50 rounded-lg">
                   <h4 className="font-semibold text-foreground text-sm mb-2">Authentification</h4>
                   <p className="text-xs text-muted-foreground">Incluez votre clé API dans le header <code className="bg-muted px-1 py-0.5 rounded">Authorization: Bearer el_xxxxx</code></p>
-                  <p className="text-xs text-muted-foreground mt-1">Base URL: <code className="bg-muted px-1 py-0.5 rounded">https://api.easy-locs.com/v1</code></p>
+                  <p className="text-xs text-muted-foreground mt-1">Base URL: <code className="bg-muted px-1 py-0.5 rounded">{`https://${import.meta.env.VITE_SUPABASE_PROJECT_ID}.supabase.co/functions/v1/public-api/v1`}</code></p>
                 </div>
 
                 <div className="mt-6 p-4 bg-muted/50 rounded-lg">
@@ -402,7 +402,7 @@ if (sig !== req.headers['x-webhook-signature']) {
                 <div>
                   <h4 className="font-semibold text-foreground text-sm mb-2">cURL — Lister les biens</h4>
                   <pre className="bg-muted rounded-lg p-4 text-xs font-mono text-foreground overflow-x-auto">
-{`curl -X GET https://api.easy-locs.com/v1/properties \\
+{`curl -X GET ${import.meta.env.VITE_SUPABASE_URL}/functions/v1/public-api/v1/properties \\
   -H "Authorization: Bearer el_your_api_key" \\
   -H "Content-Type: application/json"`}
                   </pre>
@@ -410,7 +410,7 @@ if (sig !== req.headers['x-webhook-signature']) {
                 <div>
                   <h4 className="font-semibold text-foreground text-sm mb-2">JavaScript — Créer un locataire</h4>
                   <pre className="bg-muted rounded-lg p-4 text-xs font-mono text-foreground overflow-x-auto">
-{`const response = await fetch('https://api.easy-locs.com/v1/tenants', {
+{`const response = await fetch('${import.meta.env.VITE_SUPABASE_URL}/functions/v1/public-api/v1/tenants', {
   method: 'POST',
   headers: {
     'Authorization': 'Bearer el_your_api_key',
@@ -432,7 +432,7 @@ const tenant = await response.json();`}
 {`import requests
 
 response = requests.get(
-    'https://api.easy-locs.com/v1/accounting/journal',
+    '${import.meta.env.VITE_SUPABASE_URL}/functions/v1/public-api/v1/accounting/journal',
     headers={'Authorization': 'Bearer el_your_api_key'}
 )
 transactions = response.json()`}
