@@ -22,6 +22,7 @@ import CouponManager from "@/components/storefront/CouponManager";
 import InventoryManager from "@/components/storefront/InventoryManager";
 import ShopSEOManager from "@/components/storefront/ShopSEOManager";
 import ShopReviews from "@/components/storefront/ShopReviews";
+import ShippingManager from "@/components/storefront/ShippingManager";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -321,6 +322,9 @@ export default function MyShopPage() {
 
               {/* Inventory */}
               <InventoryManager shopId={shop.id} />
+
+              {/* Shipping */}
+              <ShippingManager shopId={shop.id} />
 
               {/* SEO */}
               <ShopSEOManager shopId={shop.id} shopSlug={shop.slug} currentData={shop} />

@@ -12,13 +12,15 @@ import ShareButtons from "@/components/public/ShareButtons";
 import { useStorefrontCart } from "@/hooks/useStorefrontCart";
 import { useStorefrontCoupon } from "@/hooks/useStorefrontCoupon";
 import { useStorefrontWishlist } from "@/hooks/useStorefrontWishlist";
+import { useStorefrontCurrency } from "@/hooks/useStorefrontCurrency";
 import { useAuth } from "@/contexts/AuthContext";
 import ShopReviews from "@/components/storefront/ShopReviews";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, MapPin, ShoppingCart, Plus, Minus, Trash2, Phone, Mail, MessageCircle, Send, CheckCircle2, Store, Tag, X, Heart } from "lucide-react";
+import { Loader2, MapPin, ShoppingCart, Plus, Minus, Trash2, Phone, Mail, MessageCircle, Send, CheckCircle2, Store, Tag, X, Heart, Globe } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -84,7 +86,7 @@ export default function ShopPage() {
   const coupon = useStorefrontCoupon(shop?.id);
   const wishlist = useStorefrontWishlist(shop?.id);
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
-
+  const fx = useStorefrontCurrency(shop?.currency || shop?.default_currency || "EUR");
   const filteredItems = activeCategory
     ? catalogItems.filter((i: any) => i.category_id === activeCategory)
     : catalogItems;
@@ -214,6 +216,18 @@ export default function ShopPage() {
               </span>
             )}
             <Badge variant="outline" className="text-[10px]">{catalogItems.length} items</Badge>
+            {/* Currency selector */}
+            <Select value={fx.displayCurrency} onValueChange={fx.setDisplayCurrency}>
+              <SelectTrigger className="h-6 w-auto gap-1 text-[10px] border-none bg-muted/50 px-2">
+                <Globe className="h-3 w-3" />
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {["EUR", "USD", "GBP", "CHF", "AED", "MAD", "XOF", "CAD", "JPY", "CNY", "INR", "BRL", "TRY", "NGN"].map(c => (
+                  <SelectItem key={c} value={c} className="text-xs">{c}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             <ShareButtons type="host" slug={shop.slug} title={shop.name} />
           </div>
 
@@ -303,9 +317,9 @@ export default function ShopPage() {
                       )}
                       <div className="flex items-center justify-between pt-1">
                         <div>
-                          <span className="text-sm font-bold text-primary">{fmtPrice(item.price, item.currency)}</span>
+                          <span className="text-sm font-bold text-primary">{fx.formatPrice(item.price, item.currency)}</span>
                           {item.compare_at_price && item.compare_at_price > item.price && (
-                            <span className="text-[10px] text-muted-foreground line-through ml-1">{fmtPrice(item.compare_at_price, item.currency)}</span>
+                            <span className="text-[10px] text-muted-foreground line-through ml-1">{fx.formatPrice(item.compare_at_price, item.currency)}</span>
                           )}
                         </div>
                         <Button
@@ -337,7 +351,7 @@ export default function ShopPage() {
             <SheetTrigger asChild>
               <button className="fixed bottom-6 right-4 z-50 bg-primary text-primary-foreground rounded-full px-5 py-3 shadow-lg flex items-center gap-2 font-semibold text-sm">
                 <ShoppingCart className="h-4 w-4" />
-                {cart.itemCount} · {fmtPrice(finalTotal, shop.currency)}
+                {cart.itemCount} · {fx.formatPrice(finalTotal, shop.currency)}
               </button>
             </SheetTrigger>
             <SheetContent side="bottom" className="max-h-[80vh] rounded-t-2xl">
@@ -350,7 +364,7 @@ export default function ShopPage() {
                     {ci.photo_url && <img src={ci.photo_url} alt="" className="w-12 h-12 rounded-lg object-cover" />}
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium truncate">{ci.title || "Item"}</p>
-                      <p className="text-xs text-muted-foreground">{fmtPrice(ci.unit_price, shop.currency)}</p>
+                      <p className="text-xs text-muted-foreground">{fx.formatPrice(ci.unit_price, shop.currency)}</p>
                     </div>
                     <div className="flex items-center gap-1.5">
                       <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => cart.updateQuantity(ci.id, ci.quantity - 1)}>
@@ -375,7 +389,7 @@ export default function ShopPage() {
                     <div className="flex items-center gap-2">
                       <Tag className="h-3.5 w-3.5 text-primary" />
                       <span className="text-xs font-mono font-bold">{coupon.appliedCoupon.code}</span>
-                      <span className="text-xs text-primary">-{fmtPrice(discount, shop.currency)}</span>
+                      <span className="text-xs text-primary">-{fx.formatPrice(discount, shop.currency)}</span>
                     </div>
                     <button onClick={coupon.removeCoupon} className="p-1"><X className="h-3.5 w-3.5 text-muted-foreground" /></button>
                   </div>
@@ -400,17 +414,20 @@ export default function ShopPage() {
               <div className="border-t border-border mt-3 pt-3 space-y-2">
                 <div className="flex justify-between text-xs text-muted-foreground">
                   <span>Subtotal</span>
-                  <span>{fmtPrice(cart.total, shop.currency)}</span>
+                  <span>{fx.formatPrice(cart.total, shop.currency)}</span>
                 </div>
                 {discount > 0 && (
                   <div className="flex justify-between text-xs text-primary">
                     <span>Discount</span>
-                    <span>-{fmtPrice(discount, shop.currency)}</span>
+                    <span>-{fx.formatPrice(discount, shop.currency)}</span>
                   </div>
+                )}
+                {fx.isConverted && (
+                  <p className="text-[9px] text-muted-foreground text-right">≈ converted from {shop.currency || "EUR"}</p>
                 )}
                 <div className="flex justify-between text-sm">
                   <span className="font-medium">Total</span>
-                  <span className="font-bold text-lg">{fmtPrice(finalTotal, shop.currency)}</span>
+                  <span className="font-bold text-lg">{fx.formatPrice(finalTotal, shop.currency)}</span>
                 </div>
                 <Button className="w-full h-12 font-semibold" onClick={handleCheckout}>
                   Place Order
