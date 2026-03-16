@@ -429,6 +429,32 @@ export default function ShopPage() {
             <AdvancedReviews shopId={shop.id} mode="buyer" />
           </div>
 
+          {/* Live Shopping & Social */}
+          <div className="mt-6">
+            <LiveShopping shopId={shop.id} mode="buyer" catalogItems={catalogItems} />
+          </div>
+
+          {/* Customer Support */}
+          {user && (
+            <div className="mt-4">
+              <CustomerSupport shopId={shop.id} mode="buyer" />
+            </div>
+          )}
+
+          {/* Loyalty Rewards */}
+          {user && (
+            <div className="mt-4">
+              <LoyaltyRewards shopId={shop.id} mode="buyer" />
+            </div>
+          )}
+
+          {/* Recurring Subscriptions */}
+          {user && (
+            <div className="mt-4">
+              <RecurringSubscriptions shopId={shop.id} mode="buyer" />
+            </div>
+          )}
+
           {/* Reviews section */}
           <div className="mt-6">
             <ShopReviews shopId={shop.id} shopOwnerId={shop.user_id} />
