@@ -21,6 +21,10 @@ console.info(`[boot] Easy-Locs started (rev ${BUILD_REV})`);
 // ── Deferred non-critical init ──────────────────────────────────────────────
 
 const runDeferredInit = () => {
+  void import("./lib/security-utils")
+    .then((mod) => mod?.injectCSPMeta?.())
+    .catch((e) => console.debug("[boot] CSP skipped:", e));
+
   void import("./lib/shared/platform-bus")
     .then((mod) => mod?.installPlatformReactions?.())
     .catch((e) => console.debug("[boot] platform-bus skipped:", e));
