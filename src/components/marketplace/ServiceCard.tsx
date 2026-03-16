@@ -3,7 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { getCategoryInfo } from "./MarketplaceCategories";
-import { MapPin, Clock, Users, Star, Share2, Copy, Calendar, ChevronUp, ChevronLeft, ChevronRight, CheckCircle2, MessageSquare, Briefcase } from "lucide-react";
+import { MapPin, Clock, Users, Star, Share2, Copy, Calendar, ChevronUp, ChevronLeft, ChevronRight, CheckCircle2, MessageSquare, Briefcase, Play } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { getShareLinks, sharePage } from "@/lib/social-share";
 import { toast } from "sonner";
