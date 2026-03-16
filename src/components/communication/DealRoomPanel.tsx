@@ -22,6 +22,7 @@ import {
   Handshake, DollarSign, ArrowRightLeft, CheckCircle2,
   XCircle, Clock, Send, FileText, CalendarCheck, Loader2,
   ChevronRight, Plus, TrendingUp, Timer, Upload, MapPin, AlertTriangle,
+  CreditCard, ExternalLink, RefreshCw,
 } from "lucide-react";
 import { format, formatDistanceToNow, differenceInHours, differenceInMinutes, isPast } from "date-fns";
 import { toast } from "sonner";
@@ -368,6 +369,62 @@ export default function DealRoomPanel({
     onError: (e: any) => toast.error(e.message),
   });
 
+  // Generate Stripe payment link for deal
+  const generatePaymentLink = useMutation({
+    mutationFn: async () => {
+      if (!deal) throw new Error("No deal");
+      const { data, error } = await supabase.functions.invoke("orbit-payment", {
+        body: { action: "deal_checkout", deal_id: deal.id },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      return data;
+    },
+    onSuccess: (data) => {
+      qc.invalidateQueries({ queryKey: ["deal_room_context"] });
+      qc.invalidateQueries({ queryKey: ["deal_events"] });
+      if (data?.url) {
+        window.open(data.url, "_blank");
+        toast.success("Payment page opened");
+      }
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+
+  // Verify payment status
+  const verifyPayment = useMutation({
+    mutationFn: async () => {
+      if (!deal) throw new Error("No deal");
+      const { data, error } = await supabase.functions.invoke("orbit-payment", {
+        body: { action: "deal_verify_payment", deal_id: deal.id },
+      });
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (data) => {
+      qc.invalidateQueries({ queryKey: ["deal_room_context"] });
+      qc.invalidateQueries({ queryKey: ["deal_events"] });
+      if (data?.paid) {
+        toast.success("Payment confirmed! Deal is now confirmed.");
+      } else {
+        toast.info("Payment not yet received.");
+      }
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+
+  // Auto-verify payment when returning from Stripe
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("payment") === "success" && deal?.id && params.get("deal") === deal.id) {
+      const dealD = deal as any;
+      if (dealD?.status === "payment_pending") {
+        verifyPayment.mutate();
+      }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [deal?.id]);
+
   const dealData = deal as any;
   const dealStatus = dealData?.status as DealStatus | undefined;
   const statusConfig = dealStatus ? STATUS_CONFIG[dealStatus] : null;
@@ -581,6 +638,42 @@ export default function DealRoomPanel({
               <AlertTriangle className="h-3 w-3" /> Offer expired
             </Badge>
           )}
+
+          {/* Payment actions for accepted/payment_pending deals */}
+          {(dealStatus === "accepted" || dealStatus === "payment_pending") && !isOrgMember && (
+            <Button
+              size="sm"
+              className="text-[10px] h-7 gap-1 rounded-md bg-primary hover:bg-primary/90 text-primary-foreground"
+              onClick={() => generatePaymentLink.mutate()}
+              disabled={generatePaymentLink.isPending}
+            >
+              {generatePaymentLink.isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : <CreditCard className="h-3 w-3" />}
+              Pay Now
+            </Button>
+          )}
+          {dealStatus === "payment_pending" && isOrgMember && (
+            <Button
+              size="sm"
+              variant="outline"
+              className="text-[10px] h-7 gap-1 rounded-md"
+              onClick={() => verifyPayment.mutate()}
+              disabled={verifyPayment.isPending}
+            >
+              {verifyPayment.isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : <RefreshCw className="h-3 w-3" />}
+              Verify Payment
+            </Button>
+          )}
+          {dealData?.metadata_json?.payment_link_url && dealStatus === "payment_pending" && (
+            <a
+              href={dealData.metadata_json.payment_link_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 text-[9px] text-primary hover:underline"
+            >
+              <ExternalLink className="h-3 w-3" /> Open payment link
+            </a>
+          )}
+
           {/* Document & Visit */}
           <Button
             size="sm"
@@ -647,7 +740,10 @@ export default function DealRoomPanel({
                         : ev.event_type === "visit_scheduled"
                         ? `📅 Visit: ${data.date || "TBD"}`
                         : ev.event_type === "payment"
-                        ? `💳 ${data.action === "payment_request_sent" ? "Payment requested" : "Payment event"}`
+                        ? data.action === "payment_request_sent" ? "💳 Payment requested"
+                          : data.action === "stripe_checkout_created" ? `💳 Payment link generated — ${fmtCurrency(data.amount, data.currency)}`
+                          : data.action === "payment_confirmed" ? `✅ Payment confirmed — ${fmtCurrency(data.amount, data.currency)}`
+                          : "💳 Payment event"
                         : ev.event_type.replace(/_/g, " ")}
                     </p>
                     {data.message && (

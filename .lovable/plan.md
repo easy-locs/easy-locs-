@@ -123,7 +123,7 @@ Conversation → Offer → Counter offer → Accepted → Payment → Confirmed
 |-------|-------|--------|
 | 9a | Schema + DealStatusBubble + "Start Deal" button (MVP) | ✅ Done |
 | 9b | Negotiation flow: counter-offer history, offer expiration, documents & visits | ✅ Done |
-| 9c | Payment integration (Stripe link generation + tracking) | 📋 Planned |
+| 9c | Payment integration (Stripe link generation + tracking) | ✅ Done |
 | 9d | Analytics & deal conversion metrics | 📋 Planned |
 
 ## PASS56 — Orbit Communication Hardening (Block A)
@@ -186,3 +186,18 @@ Conversation → Offer → Counter offer → Accepted → Payment → Confirmed
 | Balance card refresh button | Added refresh button with loading spinner on WalletBalanceCard | ✅ Done |
 | Bank connection section | Added bank connection card with backend-routed messaging on WalletHub home | ✅ Done |
 | FX preview cleanup | Removed unused first supabase.functions.invoke call in getConversionPreview | ✅ Done |
+
+## PASS59 — Smart Deal Engine 9c: Payment Integration (Block F)
+| Feature | Implementation | Status |
+|---------|---------------|--------|
+| deal_checkout action | Edge function action generates Stripe Checkout for accepted deals | ✅ Done |
+| deal_verify_payment action | Edge function verifies Stripe session payment status | ✅ Done |
+| Stripe Connect routing | Payment routed to org's Stripe account if connected | ✅ Done |
+| 3DS enforcement | request_three_d_secure: "any" on deal checkout sessions | ✅ Done |
+| Pay Now button (buyer) | DealRoomPanel shows CreditCard Pay Now for accepted/payment_pending deals | ✅ Done |
+| Verify Payment button (seller) | Org members can manually verify payment status | ✅ Done |
+| Payment link display | External link shown in actions when payment_link_url exists | ✅ Done |
+| Auto-verify on return | useEffect detects ?payment=success&deal=X and auto-verifies | ✅ Done |
+| Deal status lifecycle | accepted → payment_pending → confirmed via Stripe | ✅ Done |
+| Payment events in timeline | stripe_checkout_created, payment_confirmed events rendered | ✅ Done |
+| Audit trail | deal_payment_checkout_created logged to audit_logs | ✅ Done |

@@ -367,6 +367,207 @@ serve(async (req) => {
       });
     }
 
+    // ─── ACTION: deal_checkout ─── Stripe checkout for accepted deals
+    if (action === "deal_checkout") {
+      const { deal_id } = body;
+      if (!deal_id) {
+        return new Response(JSON.stringify({ error: "Missing deal_id" }), {
+          status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      // Fetch deal
+      const { data: deal, error: dealErr } = await supabase
+        .from("deal_rooms")
+        .select("*")
+        .eq("id", deal_id)
+        .single();
+      if (dealErr || !deal) {
+        return new Response(JSON.stringify({ error: "Deal not found" }), {
+          status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      const dealData = deal as any;
+      // Only accepted or payment_pending deals can generate checkout
+      if (!["accepted", "payment_pending"].includes(dealData.status)) {
+        return new Response(JSON.stringify({ error: "Deal must be accepted before payment" }), {
+          status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      const amount = dealData.accepted_amount || dealData.current_offer_amount;
+      const currency = (dealData.current_offer_currency || "EUR").toLowerCase();
+      if (!amount || amount <= 0) {
+        return new Response(JSON.stringify({ error: "No valid amount on deal" }), {
+          status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      // Check if org has Stripe Connect — route payment to org's account
+      const { data: org } = await supabase
+        .from("orgs")
+        .select("stripe_account_id, stripe_onboarding_complete")
+        .eq("id", dealData.org_id)
+        .maybeSingle();
+
+      const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", { apiVersion: "2025-08-27.basil" });
+
+      const customers = await stripe.customers.list({ email: user.email!, limit: 1 });
+      const customerId = customers.data.length > 0 ? customers.data[0].id : undefined;
+      const amountInCents = Math.round(amount * 100);
+
+      const sessionParams: any = {
+        customer: customerId,
+        customer_email: customerId ? undefined : user.email!,
+        line_items: [{
+          price_data: {
+            currency,
+            product_data: {
+              name: `Deal: ${dealData.context_title || "Transaction"}`,
+              description: `Payment for deal #${deal_id.slice(0, 8)}`,
+            },
+            unit_amount: amountInCents,
+          },
+          quantity: 1,
+        }],
+        mode: "payment",
+        payment_method_options: {
+          card: { request_three_d_secure: "any" },
+        },
+        success_url: `${req.headers.get("origin")}/dashboard/communication?deal=${deal_id}&payment=success`,
+        cancel_url: `${req.headers.get("origin")}/dashboard/communication?deal=${deal_id}&payment=cancelled`,
+        metadata: {
+          user_id: user.id,
+          deal_id,
+          org_id: dealData.org_id,
+          amount: amount.toString(),
+          currency,
+          type: "deal_payment",
+        },
+      };
+
+      // Route to org's Stripe Connect account if available
+      const orgData = org as any;
+      if (orgData?.stripe_account_id && orgData?.stripe_onboarding_complete) {
+        sessionParams.payment_intent_data = {
+          transfer_data: { destination: orgData.stripe_account_id },
+        };
+      }
+
+      const session = await stripe.checkout.sessions.create(sessionParams);
+
+      // Update deal with payment link + status
+      await supabase
+        .from("deal_rooms")
+        .update({
+          status: "payment_pending" as any,
+          metadata_json: {
+            ...(dealData.metadata_json || {}),
+            stripe_session_id: session.id,
+            payment_link_url: session.url,
+            payment_initiated_at: new Date().toISOString(),
+            payment_initiated_by: user.id,
+          },
+        } as any)
+        .eq("id", deal_id);
+
+      // Record event
+      await supabase.from("deal_events").insert({
+        deal_id,
+        event_type: "payment",
+        actor_id: user.id,
+        data_json: {
+          action: "stripe_checkout_created",
+          session_id: session.id,
+          amount,
+          currency: currency.toUpperCase(),
+          url: session.url,
+        },
+      } as any);
+
+      // Audit
+      await supabase.from("audit_logs").insert({
+        user_id: user.id,
+        org_id: dealData.org_id,
+        action: "deal_payment_checkout_created",
+        metadata_json: { deal_id, session_id: session.id, amount, currency },
+      });
+
+      return new Response(JSON.stringify({ url: session.url, session_id: session.id }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // ─── ACTION: deal_verify_payment ─── Check if a deal's Stripe session was paid
+    if (action === "deal_verify_payment") {
+      const { deal_id } = body;
+      if (!deal_id) {
+        return new Response(JSON.stringify({ error: "Missing deal_id" }), {
+          status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      const { data: deal } = await supabase
+        .from("deal_rooms")
+        .select("*")
+        .eq("id", deal_id)
+        .single();
+      if (!deal) {
+        return new Response(JSON.stringify({ error: "Deal not found" }), {
+          status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      const dealData = deal as any;
+      const sessionId = dealData.metadata_json?.stripe_session_id;
+      if (!sessionId) {
+        return new Response(JSON.stringify({ paid: false, error: "No checkout session" }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", { apiVersion: "2025-08-27.basil" });
+      const session = await stripe.checkout.sessions.retrieve(sessionId);
+
+      if (session.payment_status === "paid") {
+        // Mark deal as confirmed
+        if (dealData.status !== "confirmed" && dealData.status !== "completed") {
+          await supabase
+            .from("deal_rooms")
+            .update({
+              status: "confirmed" as any,
+              metadata_json: {
+                ...(dealData.metadata_json || {}),
+                paid_at: new Date().toISOString(),
+                stripe_payment_intent_id: session.payment_intent,
+              },
+            } as any)
+            .eq("id", deal_id);
+
+          await supabase.from("deal_events").insert({
+            deal_id,
+            event_type: "payment",
+            actor_id: user.id,
+            data_json: {
+              action: "payment_confirmed",
+              amount: dealData.accepted_amount,
+              currency: dealData.current_offer_currency,
+              payment_intent: session.payment_intent,
+            },
+          } as any);
+        }
+
+        return new Response(JSON.stringify({ paid: true, status: "confirmed" }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      return new Response(JSON.stringify({ paid: false, payment_status: session.payment_status }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     return new Response(JSON.stringify({ error: "Unknown action" }), {
       status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
