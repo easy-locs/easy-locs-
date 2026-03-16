@@ -48,6 +48,10 @@ import ZoneBasedPricing from "@/components/delivery/ZoneBasedPricing";
 import CustomerWalletLoyalty from "@/components/delivery/CustomerWalletLoyalty";
 import ComplianceDashboard from "@/components/delivery/ComplianceDashboard";
 import AIPredictivePlanning from "@/components/delivery/AIPredictivePlanning";
+import MultiStopRoutePlanner from "@/components/delivery/MultiStopRoutePlanner";
+import ReturnsManagement from "@/components/delivery/ReturnsManagement";
+import DeliverySchedulingCalendar from "@/components/delivery/DeliverySchedulingCalendar";
+import DriverOnboardingPortal from "@/components/delivery/DriverOnboardingPortal";
 import { useDeliveryNotifications } from "@/hooks/useDeliveryNotifications";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -237,7 +241,7 @@ export default function SellerLogisticsPanel() {
   const [searchingJobId, setSearchingJobId] = useState<string | null>(null);
   const [disputeJobId, setDisputeJobId] = useState<string | null>(null);
   const [trackingJobId, setTrackingJobId] = useState<string | null>(null);
-  const [filter, setFilter] = useState<"all" | "active" | "completed" | "batch" | "scheduled" | "history" | "disputes" | "analytics" | "multistop" | "seller-stats" | "onboarding" | "wallet" | "geofence" | "chat" | "fleet" | "reputation" | "optimize" | "buyer" | "invoices" | "sla" | "multi-drop" | "driver-reg" | "reports" | "fleet-mgmt" | "dispatch-rules" | "customer-track" | "payroll" | "surge" | "shifts" | "moderation" | "notif-rules" | "multi-currency" | "route-optim" | "insurance" | "adv-analytics" | "referral" | "support-bot" | "returns" | "slot-booking" | "fleet-hub" | "gamification" | "smart-notifs" | "api-webhooks" | "zone-pricing" | "customer-loyalty" | "compliance" | "ai-planning">("all");
+  const [filter, setFilter] = useState<"all" | "active" | "completed" | "batch" | "scheduled" | "history" | "disputes" | "analytics" | "multistop" | "seller-stats" | "onboarding" | "wallet" | "geofence" | "chat" | "fleet" | "reputation" | "optimize" | "buyer" | "invoices" | "sla" | "multi-drop" | "driver-reg" | "reports" | "fleet-mgmt" | "dispatch-rules" | "customer-track" | "payroll" | "surge" | "shifts" | "moderation" | "notif-rules" | "multi-currency" | "route-optim" | "insurance" | "adv-analytics" | "referral" | "support-bot" | "returns" | "slot-booking" | "fleet-hub" | "gamification" | "smart-notifs" | "api-webhooks" | "zone-pricing" | "customer-loyalty" | "compliance" | "ai-planning" | "route-planner" | "returns-mgmt" | "schedule-cal" | "driver-portal">("all");
   const [chatJobId, setChatJobId] = useState<string | null>(null);
 
   const filteredJobs = jobs.filter(j => {
@@ -299,7 +303,7 @@ export default function SellerLogisticsPanel() {
 
       {/* Filter tabs */}
       <div className="flex gap-1 p-1 rounded-xl overflow-x-auto" style={{ background: "hsl(var(--hud-surface))" }}>
-        {(["all", "active", "completed", "batch", "multi-drop", "multistop", "scheduled", "slot-booking", "history", "disputes", "analytics", "reports", "adv-analytics", "seller-stats", "sla", "surge", "multi-currency", "zone-pricing", "route-optim", "insurance", "onboarding", "driver-reg", "referral", "gamification", "shifts", "wallet", "customer-loyalty", "geofence", "fleet", "fleet-hub", "fleet-mgmt", "dispatch-rules", "moderation", "compliance", "smart-notifs", "ai-planning", "reputation", "optimize", "buyer", "customer-track", "support-bot", "returns", "invoices", "payroll", "notif-rules", "api-webhooks"] as const).map(f => {
+        {(["all", "active", "completed", "batch", "multi-drop", "multistop", "route-planner", "scheduled", "schedule-cal", "slot-booking", "history", "disputes", "analytics", "reports", "adv-analytics", "seller-stats", "sla", "surge", "multi-currency", "zone-pricing", "route-optim", "insurance", "onboarding", "driver-reg", "driver-portal", "referral", "gamification", "shifts", "wallet", "customer-loyalty", "geofence", "fleet", "fleet-hub", "fleet-mgmt", "dispatch-rules", "moderation", "compliance", "smart-notifs", "ai-planning", "reputation", "optimize", "buyer", "customer-track", "support-bot", "returns", "returns-mgmt", "invoices", "payroll", "notif-rules", "api-webhooks"] as const).map(f => {
           const labels: Record<string, string> = {
             all: "Tout", active: "Actives", completed: "Terminées", batch: "⚡ Batch",
             "multi-drop": "📦 Multi-Drop",
@@ -313,6 +317,7 @@ export default function SellerLogisticsPanel() {
             reputation: "🏆 Réputation", optimize: "⚡ Optim.", buyer: "👤 Client", invoices: "🧾 Factures",
             "multi-currency": "💱 Devises", "zone-pricing": "📍 Zones Tarif", "route-optim": "🧭 Routes", insurance: "🛡️ Assurance", "adv-analytics": "📊 Analytics+",
             "fleet-hub": "🚐 Fleet Hub", gamification: "🎮 Gamification", "customer-loyalty": "💳 Fidélité", "smart-notifs": "🧠 Smart Notifs", "compliance": "🛡️ Compliance", "ai-planning": "🧠 IA Planning", "api-webhooks": "🔌 API",
+            "route-planner": "🗺️ Planner", "returns-mgmt": "📦 Retours+", "schedule-cal": "📅 Calendrier", "driver-portal": "🚀 Onboarding+",
           };
           return (
             <button key={f} onClick={() => setFilter(f)}
@@ -414,6 +419,14 @@ export default function SellerLogisticsPanel() {
         <ComplianceDashboard orgId={jobs[0]?.org_id || ""} />
       ) : filter === "ai-planning" ? (
         <AIPredictivePlanning orgId={jobs[0]?.org_id || ""} />
+      ) : filter === "route-planner" ? (
+        <MultiStopRoutePlanner orgId={jobs[0]?.org_id || ""} />
+      ) : filter === "returns-mgmt" ? (
+        <ReturnsManagement orgId={jobs[0]?.org_id || ""} />
+      ) : filter === "schedule-cal" ? (
+        <DeliverySchedulingCalendar orgId={jobs[0]?.org_id || ""} />
+      ) : filter === "driver-portal" ? (
+        <DriverOnboardingPortal onComplete={() => setFilter("all")} />
       ) : (
       <div className="space-y-2">
         {loading ? (
