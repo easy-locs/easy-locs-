@@ -245,3 +245,17 @@ Conversation → Offer → Counter offer → Accepted → Payment → Confirmed
 | DealAnalyticsDashboard | KPI cards, revenue summary, animated funnel bars, recent deals list | ✅ Done |
 | DealAnalyticsPage | /dashboard/deals route with DashboardLayout wrapper | ✅ Done |
 | Sidebar nav entry | BarChart3 "Deal Analytics" under Orbit section | ✅ Done |
+
+## PASS55 Block G — Radar / Service Tracking
+| Feature | Implementation | Status |
+|---------|---------------|--------|
+| tracking_sessions table | DB migration: status lifecycle, GPS coords, ETA, destination, context, RLS, realtime | ✅ Done |
+| tracking_positions table | Position history with speed, heading, accuracy for replay/audit | ✅ Done |
+| useServiceTracking hook | useTrackingObserver (realtime sub), useTrackingStreamer (GPS watchPosition + auto-status), useOrgTrackingSessions | ✅ Done |
+| ServiceTrackingMap | Leaflet dark map: tracker pulse marker, destination pin, dashed route line, auto-fit bounds | ✅ Done |
+| TrackingStatusBar | 5-step stepper (pending→completed), ETA badge, distance info, action buttons (Démarrer/Arrivé/Terminer) | ✅ Done |
+| TrackingDashboard | Org-wide active sessions list with expandable map+status detail panels | ✅ Done |
+| ServiceTrackingPage | /dashboard/tracking route with DashboardLayout wrapper | ✅ Done |
+| Sidebar nav entry | Compass "Live Tracking" under Orbit section | ✅ Done |
+| Auto-nearby detection | 300m threshold auto-transitions en_route→nearby | ✅ Done |
+| Platform bus integration | tracking:position_updated event emitted on position stream | ✅ Done |
