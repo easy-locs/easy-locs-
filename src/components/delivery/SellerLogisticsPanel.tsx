@@ -287,7 +287,7 @@ export default function SellerLogisticsPanel() {
 
       {/* Filter tabs */}
       <div className="flex gap-1 p-1 rounded-xl overflow-x-auto" style={{ background: "hsl(var(--hud-surface))" }}>
-        {(["all", "active", "completed", "batch", "multi-drop", "multistop", "scheduled", "history", "disputes", "analytics", "reports", "seller-stats", "sla", "surge", "onboarding", "driver-reg", "shifts", "wallet", "geofence", "fleet", "fleet-mgmt", "dispatch-rules", "moderation", "reputation", "optimize", "buyer", "customer-track", "invoices", "payroll", "notif-rules"] as const).map(f => {
+        {(["all", "active", "completed", "batch", "multi-drop", "multistop", "scheduled", "history", "disputes", "analytics", "reports", "adv-analytics", "seller-stats", "sla", "surge", "multi-currency", "route-optim", "insurance", "onboarding", "driver-reg", "shifts", "wallet", "geofence", "fleet", "fleet-mgmt", "dispatch-rules", "moderation", "reputation", "optimize", "buyer", "customer-track", "invoices", "payroll", "notif-rules"] as const).map(f => {
           const labels: Record<string, string> = {
             all: "Tout", active: "Actives", completed: "Terminées", batch: "⚡ Batch",
             "multi-drop": "📦 Multi-Drop",
