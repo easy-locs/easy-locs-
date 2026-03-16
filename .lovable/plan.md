@@ -286,3 +286,12 @@ Conversation → Offer → Counter offer → Accepted → Payment → Confirmed
 | WelcomeTour | First-visit overlay: 4-step animated tour (Biens, Orbit, Documents, Wallet) with dot navigation | ✅ Done |
 | Lazy loading | Both components lazy-loaded in Dashboard via React.lazy + Suspense | ✅ Done |
 | Auto-dismiss | Checklist auto-hides when all steps done, tour stores dismissal in localStorage | ✅ Done |
+
+## PASS55 Block J — Performance / Polish
+| Feature | Implementation | Status |
+|---------|---------------|--------|
+| Extended vendor chunks | date-fns, leaflet, tanstack, ui libs split into separate chunks | ✅ Done |
+| Performance utilities | prefetchRoute, prefetchRoutes, debounce, throttle, measurePerf in performance.ts | ✅ Done |
+| Critical route prefetch | Dashboard, Login, CommunicationCenter prefetched on idle after boot | ✅ Done |
+| OptimizedImage component | Lazy loading, blur-up placeholder, error fallback, priority flag, memo'd | ✅ Done |
+| Chunk size warning | Set chunkSizeWarningLimit to 600KB for better visibility | ✅ Done |
