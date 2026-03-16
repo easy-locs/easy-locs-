@@ -40,6 +40,7 @@ const TABS = [
   { id: "catalog", label: "Catalog", icon: Package },
   { id: "orders", label: "Orders", icon: ShoppingBag },
   { id: "deals", label: "Deals", icon: Handshake },
+  { id: "finance", label: "Finance", icon: DollarSign },
   { id: "analytics", label: "Analytics", icon: BarChart3 },
   { id: "launch", label: "Launch", icon: Rocket },
   { id: "settings", label: "Settings", icon: Settings },
