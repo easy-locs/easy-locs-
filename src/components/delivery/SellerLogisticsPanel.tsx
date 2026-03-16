@@ -338,6 +338,7 @@ export default function SellerLogisticsPanel() {
           })
         )}
       </div>
+      )}
     </div>
   );
 }
