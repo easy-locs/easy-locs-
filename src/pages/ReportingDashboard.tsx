@@ -301,7 +301,7 @@ const ReportingDashboard = () => {
                   ) : (
                     <div className="grid md:grid-cols-2 gap-4">
                       <Card>
-                        <CardHeader><CardTitle className="text-base">Répartition</CardTitle></CardHeader>
+                        <CardHeader><CardTitle className="text-base">{t("page.reporting.expense_breakdown")}</CardTitle></CardHeader>
                         <CardContent>
                           <ChartContainer config={{}} className="h-[250px] w-full">
                             <PieChart>
