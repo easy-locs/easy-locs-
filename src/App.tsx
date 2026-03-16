@@ -268,7 +268,11 @@ const App = () => (
               <Route path="/showcase/:orgSlug" element={<ProviderStorefront />} />
               <Route path="/store/:storeSlug" element={<StorePage />} />
               <Route path="/s/:shopSlug" element={<ShopPage />} />
-              <Route path="/shop/:categoryCity" element={<ShopCategoryPage />} />
+              <Route path="/discover" element={<DiscoverPage />} />
+              <Route path="/search" element={<DiscoverPage />} />
+              <Route path="/trending" element={<DiscoverPage />} />
+              <Route path="/nearby" element={<DiscoverPage />} />
+              <Route path="/top-rated" element={<DiscoverPage />} />
               <Route path="/landlord/:slug" element={<LandlordProfile />} />
               <Route path="/agency/:accountSlug" element={<AccountShowcase />} />
               <Route path="/agency/:accountSlug/:slug" element={<PublicRealEstateListing />} />
