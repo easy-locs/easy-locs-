@@ -123,11 +123,13 @@ export default function AppLockGuard({ children }: Props) {
   const handleUnlock = useCallback(() => {
     setLocked(false);
     setGhostMode(false);
+    deactivateGhostMode();
   }, []);
 
   const handleGhostMode = useCallback(() => {
     setLocked(false);
     setGhostMode(true);
+    activateGhostMode();
   }, []);
 
   if (locked) {
