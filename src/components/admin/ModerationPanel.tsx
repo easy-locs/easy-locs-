@@ -41,14 +41,14 @@ export default function ModerationPanel() {
     setLoading(true);
 
     if (tab === "reviews") {
-      supabase
+      (supabase
         .from("marketplace_reviews")
         .select("id, reviewer_name, rating, comment, status, created_at, service_id")
-        .eq("org_id", orgId)
-        .in("status", ["pending", "flagged"] as any)
+        .eq("org_id", orgId) as any)
+        .in("status", ["pending", "flagged"])
         .order("created_at", { ascending: false })
         .limit(100)
-        .then(({ data }) => {
+        .then(({ data }: any) => {
           setReviews((data || []) as PendingReview[]);
           setLoading(false);
         });
