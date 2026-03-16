@@ -50,6 +50,10 @@ import SubscriptionPlans from "@/components/storefront/SubscriptionPlans";
 import MultiVendorHub from "@/components/storefront/MultiVendorHub";
 import LoyaltyPointsEngine from "@/components/storefront/LoyaltyPointsEngine";
 import GiftCardStore from "@/components/storefront/GiftCardStore";
+import SubscriptionBoxes from "@/components/storefront/SubscriptionBoxes";
+import ReverseAuctionRFQ from "@/components/storefront/ReverseAuctionRFQ";
+import DigitalProducts from "@/components/storefront/DigitalProducts";
+import PeerMarketplace from "@/components/storefront/PeerMarketplace";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -517,6 +521,28 @@ export default function ShopPage() {
           {/* Gift Cards */}
           <div className="mt-4">
             <GiftCardStore shopId={shop.id} mode="buyer" />
+          </div>
+
+          {/* Subscription Boxes */}
+          <div className="mt-4">
+            <SubscriptionBoxes shopId={shop.id} mode="buyer" />
+          </div>
+
+          {/* Digital Products */}
+          <div className="mt-4">
+            <DigitalProducts shopId={shop.id} mode="buyer" />
+          </div>
+
+          {/* RFQ */}
+          {user && (
+            <div className="mt-4">
+              <ReverseAuctionRFQ shopId={shop.id} mode="buyer" />
+            </div>
+          )}
+
+          {/* P2P Marketplace */}
+          <div className="mt-4">
+            <PeerMarketplace shopId={shop.id} mode="buyer" />
           </div>
 
           {/* Smart Notifications */}
