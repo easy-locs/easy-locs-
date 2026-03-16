@@ -56,7 +56,7 @@ describe("DataPipeline", () => {
         await new Promise((r) => setTimeout(r, 50));
         return n;
       })
-      .step("next", "Next", (n) => n + 1);
+      .step("next", "Next", (n: any) => (n as number) + 1);
 
     const { promise, cancel } = p.createCancellable(1);
     cancel();
