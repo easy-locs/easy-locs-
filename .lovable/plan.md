@@ -215,3 +215,14 @@ Conversation → Offer → Counter offer → Accepted → Payment → Confirmed
 | Nonce cleanup | Calls cleanup_expired_nonces() RPC for anti-replay hygiene | ✅ Done |
 | Cleanup audit trail | Logs cleanup results (messages, files, nonces deleted) to audit_logs | ✅ Done |
 | Existing security verified | App Lock, PIN (main/ghost/panic), auto-lock, view-once, disappearing messages, anti-screenshot blur — all functional | ✅ Verified |
+
+## PASS61 — Wallet Payments Hardening v2 (Block D)
+| Feature | Implementation | Status |
+|---------|---------------|--------|
+| Daily transfer limits | wallet-limits.ts: 5K default / 20K verified / 100K premium, client-side enforcement in sendMoney | ✅ Done |
+| Large transaction warning | OrbitSmartPayment: confirm dialog for transfers ≥ 500 LOCS before PIN gate | ✅ Done |
+| Today's spent tracking | useWallet: todaySpent memo from transactions, exposed to components | ✅ Done |
+| Transaction CSV export | wallet-export.ts: exportTransactionsCSV with BOM for Excel compat | ✅ Done |
+| Transaction receipt generator | wallet-export.ts: printable receipt with reference code, FX details | ✅ Done |
+| Wallet security dashboard | WalletSecurityPanel: PIN status, atomic transfer status, daily limit progress bar, export button | ✅ Done |
+| WalletHub settings upgraded | Settings view replaced with full WalletSecurityPanel | ✅ Done |

@@ -3,13 +3,14 @@
  * Manages LOCS balance, transactions, send/request operations, and purchases.
  * 1 LOCS = 1 EUR | Non-refundable, non-withdrawable
  * 
- * PASS58: Added platformBus emit on requestMoney, bus listener for wallet refresh,
- * manual refresh exposed, scoped realtime subs.
+ * PASS58: platformBus emit, scoped realtime, manual refresh.
+ * PASS61: Daily transfer limit enforcement, today's spent tracking.
  */
-import { useState, useCallback, useEffect, useRef } from "react";
+import { useState, useCallback, useEffect, useRef, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { platformBus } from "@/lib/shared/platform-bus";
+import { checkDailyLimit, isLargeTransaction } from "@/lib/wallet-limits";
 
 export interface WalletBalance {
   id: string;
@@ -147,6 +148,15 @@ export function useWallet() {
     }
   }, [user?.id]);
 
+  /** Today's outgoing transfer total — for daily limit tracking */
+  const todaySpent = useMemo(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return transactions
+      .filter((tx) => tx.direction === "out" && tx.type === "transfer" && tx.status === "completed" && new Date(tx.created_at) >= today)
+      .reduce((sum, tx) => sum + tx.amount, 0);
+  }, [transactions]);
+
   /** Send LOCS to another user via secure server-side RPC */
   const sendMoney = useCallback(async (opts: {
     recipientUserId: string;
@@ -156,8 +166,17 @@ export function useWallet() {
     qrNonce?: string;
     referenceType?: string;
     referenceId?: string;
+    skipLimitCheck?: boolean;
   }) => {
     if (!user?.id) return { success: false, error: "Not authenticated" };
+
+    // Daily transfer limit check (client-side guard)
+    if (!opts.skipLimitCheck) {
+      const limitCheck = checkDailyLimit(todaySpent, opts.amount);
+      if (!limitCheck.allowed) {
+        return { success: false, error: `Daily transfer limit reached. Remaining: ${limitCheck.remaining} LOCS` };
+      }
+    }
 
     const { data, error } = await supabase.rpc("transfer_locs", {
       _sender_id: user.id,
@@ -182,7 +201,7 @@ export function useWallet() {
       threadId: opts.threadId,
     }, "wallet", { userId: user.id });
     return { success: true, data };
-  }, [user?.id, loadWallet]);
+  }, [user?.id, loadWallet, todaySpent]);
 
   /** Request LOCS from another user */
   const requestMoney = useCallback(async (opts: {
@@ -246,6 +265,10 @@ export function useWallet() {
     requestMoney,
     purchaseLocs,
     getConversionPreview,
+    /** Today's outgoing transfer total */
+    todaySpent,
+    /** Check if amount is flagged as large */
+    isLargeTx: isLargeTransaction,
     /** Manual refresh — call from UI refresh buttons */
     refresh: loadWallet,
   };
