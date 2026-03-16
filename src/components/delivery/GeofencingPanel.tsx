@@ -29,7 +29,7 @@ export default function GeofencingPanel({ className }: Props) {
   const { user } = useAuth();
   const [zones, setZones] = useState<GeoZone[]>([]);
   const [showAdd, setShowAdd] = useState(false);
-  const [newZone, setNewZone] = useState({ name: "", lat: 48.8566, lng: 2.3522, radius_km: 10, type: "allowed" as const });
+  const [newZone, setNewZone] = useState<{ name: string; lat: number; lng: number; radius_km: number; type: "allowed" | "restricted" | "premium" }>({ name: "", lat: 48.8566, lng: 2.3522, radius_km: 10, type: "allowed" });
   const [driverPos, setDriverPos] = useState<{ lat: number; lng: number } | null>(null);
 
   // Get driver position
