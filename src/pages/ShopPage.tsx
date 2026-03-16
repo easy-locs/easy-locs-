@@ -37,6 +37,8 @@ import LoyaltyRewards from "@/components/storefront/LoyaltyRewards";
 import CustomerSupport from "@/components/storefront/CustomerSupport";
 import LiveShopping from "@/components/storefront/LiveShopping";
 import RecurringSubscriptions from "@/components/storefront/RecurringSubscriptions";
+import SmartNotifications from "@/components/storefront/SmartNotifications";
+import GamificationEngine from "@/components/storefront/GamificationEngine";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
