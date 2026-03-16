@@ -1,9 +1,10 @@
 /**
  * WalletBalanceCard — Shows LOCS or local currency balance with toggle
- * Uses usePlatformCurrency for consistent display across the entire app.
+ * PASS58: Added refresh button, last updated indicator
  */
+import { useState } from "react";
 import { motion } from "framer-motion";
-import { Wallet, Settings, TrendingUp, TrendingDown, RefreshCw } from "lucide-react";
+import { Wallet, Settings, TrendingUp, TrendingDown, RefreshCw, Loader2 } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 
 interface WalletBalanceCardProps {
@@ -18,14 +19,22 @@ interface WalletBalanceCardProps {
   frozenBalance: number;
   displayFrozen: string;
   onOpenSettings: () => void;
+  onRefresh?: () => Promise<void> | void;
 }
 
 export default function WalletBalanceCard({
   loading, displayBalance, showLocs, onToggle,
   currencyCode, currencySymbol, displayPurchased, displaySpent,
-  frozenBalance, displayFrozen, onOpenSettings,
+  frozenBalance, displayFrozen, onOpenSettings, onRefresh,
 }: WalletBalanceCardProps) {
   const { t } = useI18n();
+  const [refreshing, setRefreshing] = useState(false);
+
+  const handleRefresh = async () => {
+    if (!onRefresh || refreshing) return;
+    setRefreshing(true);
+    try { await onRefresh(); } finally { setRefreshing(false); }
+  };
 
   return (
     <motion.div
@@ -47,14 +56,31 @@ export default function WalletBalanceCard({
               {t("orbit.wallet_title") || "Orbit Wallet"}
             </span>
           </div>
-          <button
-            onClick={onOpenSettings}
-            className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-primary-foreground/60 hover:text-primary-foreground/90 transition-colors"
-            style={{ background: "hsl(0 0% 100% / 0.08)" }}
-          >
-            <Settings className="w-3.5 h-3.5" />
-            <span className="text-[10px] font-medium">{t("orbit.settings_label") || "Settings"}</span>
-          </button>
+          <div className="flex items-center gap-1">
+            {onRefresh && (
+              <button
+                onClick={handleRefresh}
+                disabled={refreshing}
+                className="flex items-center justify-center w-8 h-8 min-h-[44px] min-w-[44px] rounded-lg text-primary-foreground/60 hover:text-primary-foreground/90 transition-colors"
+                style={{ background: "hsl(0 0% 100% / 0.08)" }}
+                title={t("orbit.refresh_balance") || "Refresh balance"}
+              >
+                {refreshing ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <RefreshCw className="w-3.5 h-3.5" />
+                )}
+              </button>
+            )}
+            <button
+              onClick={onOpenSettings}
+              className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-primary-foreground/60 hover:text-primary-foreground/90 transition-colors"
+              style={{ background: "hsl(0 0% 100% / 0.08)" }}
+            >
+              <Settings className="w-3.5 h-3.5" />
+              <span className="text-[10px] font-medium">{t("orbit.settings_label") || "Settings"}</span>
+            </button>
+          </div>
         </div>
 
         {/* Balance + Toggle */}
