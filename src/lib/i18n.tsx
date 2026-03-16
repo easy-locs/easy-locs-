@@ -6941,8 +6941,6 @@ export function I18nProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const t = useCallback((key: string, vars?: Record<string, string | number>): string => {
-    const { interpolate: interp, resolvePlural, trackMissingKey } = require("./i18n-utils");
-
     // Lookup helper across all sources
     const lookup = (k: string): string | undefined =>
       translations[locale]?.[k] || lazyData.get(locale)?.[k] ||
@@ -6957,14 +6955,14 @@ export function I18nProvider({ children }: { children: ReactNode }) {
       resolved = lookup(key);
     }
 
-    if (resolved) return interp(resolved, vars);
+    if (resolved) return interpolate(resolved, vars);
 
     // Missing key tracking
     if (import.meta.env.DEV && !key.startsWith("pricing.")) {
       console.warn(`[i18n] Missing key: "${key}" (locale: ${locale})`);
     }
     trackMissingKey(key, locale);
-    return vars ? interp(key, vars) : "";
+    return vars ? interpolate(key, vars) : "";
   }, [locale]);
 
   return (
