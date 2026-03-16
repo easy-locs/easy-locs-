@@ -216,6 +216,8 @@ export default function MyShopPage() {
             <div className="space-y-4">
               <ShopAnalytics shopId={shop.id} />
               <StoreAnalytics shopId={shop.id} />
+              <CustomerSupport shopId={shop.id} mode="seller" />
+              <LiveShopping shopId={shop.id} mode="seller" />
             </div>
           )}
           {tab === "launch" && <LaunchAudit shopId={shop.id} />}
