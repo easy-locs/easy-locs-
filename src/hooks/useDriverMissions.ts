@@ -10,6 +10,7 @@ export interface DeliveryJob {
   id: string;
   org_id: string;
   seller_id: string;
+  driver_id: string | null;
   status: string;
   priority: string;
   pickup_address: string;
