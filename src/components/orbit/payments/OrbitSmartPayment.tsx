@@ -164,11 +164,17 @@ export default function OrbitSmartPayment({
     }
   }, [numericAmount, method, recipientUserId, recipientName, description, threadId, context, currency, onSuccess]);
 
-  /** Initiate payment — show PIN gate first */
+  /** Initiate payment — show PIN gate first, warn on large tx */
   const handlePay = useCallback(() => {
     if (numericAmount <= 0) return;
+    if (method === "locs" && isLargeTx(numericAmount)) {
+      const confirmed = window.confirm(
+        `⚠️ Large transaction: ${numericAmount} LOCS (≈ €${numericAmount})\n\nAre you sure you want to proceed?`
+      );
+      if (!confirmed) return;
+    }
     setShowPin(true);
-  }, [numericAmount]);
+  }, [numericAmount, method, isLargeTx]);
 
   if (success && confirmation) {
     return (

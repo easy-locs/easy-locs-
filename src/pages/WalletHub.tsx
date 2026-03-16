@@ -150,19 +150,7 @@ export default function WalletHub() {
           </div>
         );
       case "settings":
-        return (
-          <div className="rounded-2xl border border-border bg-card p-5 space-y-3">
-            <p className="text-sm font-semibold text-foreground">
-              {t("orbit.wallet_security") || "Wallet security"}
-            </p>
-            <p className="text-xs text-muted-foreground">
-              {t("orbit.wallet_security_desc") || "Manage PIN, payment protection and wallet preferences."}
-            </p>
-            <Button size="sm" onClick={() => navigate("/dashboard/settings?section=wallet")}>
-              {t("orbit.open_wallet_settings") || "Open wallet settings"}
-            </Button>
-          </div>
-        );
+        return <WalletSecurityPanel />;
       default:
         return null;
     }
