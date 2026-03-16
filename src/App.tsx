@@ -154,6 +154,7 @@ const ShopPage = safeLazy(() => import("./pages/ShopPage"), "ShopPage");
 const MyShopPage = safeLazy(() => import("./pages/MyShopPage"), "MyShopPage");
 const DiscoverPage = safeLazy(() => import("./pages/DiscoverPage"), "DiscoverPage");
 const OpsCenter = safeLazy(() => import("./pages/OpsCenter"), "OpsCenter");
+const MyOrdersPage = safeLazy(() => import("./pages/MyOrdersPage"), "MyOrdersPage");
 const ConciergeServicesPage = safeLazy(() => import("./pages/seo/ConciergeServicesPage"), "ConciergeServicesPage");
 const MarketplaceServicesPage = safeLazy(() => import("./pages/seo/MarketplaceServicesPage"), "MarketplaceServicesPage");
 const ActivitiesPage = safeLazy(() => import("./pages/seo/ActivitiesPage"), "ActivitiesPage");
