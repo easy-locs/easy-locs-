@@ -406,6 +406,14 @@ export default function SellerLogisticsPanel() {
         <SmartNotificationsEngine orgId={jobs[0]?.org_id || ""} />
       ) : filter === "api-webhooks" ? (
         <DeliveryAPIWebhooks orgId={jobs[0]?.org_id || ""} />
+      ) : filter === "zone-pricing" ? (
+        <ZoneBasedPricing orgId={jobs[0]?.org_id || ""} />
+      ) : filter === "customer-loyalty" ? (
+        <CustomerWalletLoyalty />
+      ) : filter === "compliance" ? (
+        <ComplianceDashboard orgId={jobs[0]?.org_id || ""} />
+      ) : filter === "ai-planning" ? (
+        <AIPredictivePlanning orgId={jobs[0]?.org_id || ""} />
       ) : (
       <div className="space-y-2">
         {loading ? (
