@@ -172,3 +172,17 @@ Conversation → Offer → Counter offer → Accepted → Payment → Confirmed
 | Viewer posting block | Viewers see "View only" message, cannot compose | ✅ Done |
 | Realtime messages | Preserved existing postgres_changes subscription | ✅ Done |
 | 44px min touch targets | Back button, send button sized for mobile | ✅ Done |
+
+## PASS58 — Wallet / Payments Hardening (Block D)
+| Feature | Implementation | Status |
+|---------|---------------|--------|
+| platformBus emit on requestMoney | Added `wallet:payment_requested` event after insert | ✅ Done |
+| New bus event type registered | Added `wallet:payment_requested` to PlatformEventType union | ✅ Done |
+| Scoped realtime subscriptions | Channel per user_id, INSERT on wallet_transactions, UPDATE on wallet_balances | ✅ Done |
+| Debounced realtime refresh | 500ms debounce on realtime wallet reload to prevent cascading | ✅ Done |
+| Platform bus listener for cross-module refresh | Listens to `wallet:transfer_sent` with 600ms debounce | ✅ Done |
+| sendMoney RPC pass-through enhanced | Added qrNonce, referenceType, referenceId params | ✅ Done |
+| Manual refresh exposed | `refresh` alias added to useWallet, exposed to WalletHub | ✅ Done |
+| Balance card refresh button | Added refresh button with loading spinner on WalletBalanceCard | ✅ Done |
+| Bank connection section | Added bank connection card with backend-routed messaging on WalletHub home | ✅ Done |
+| FX preview cleanup | Removed unused first supabase.functions.invoke call in getConversionPreview | ✅ Done |
