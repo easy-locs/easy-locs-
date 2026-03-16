@@ -24,6 +24,7 @@ import { Loader2, MapPin, ShoppingCart, Plus, Minus, Trash2, Phone, Mail, Messag
 import { useState, useEffect, lazy, Suspense } from "react";
 import { toast } from "sonner";
 import { useStorefrontAnalytics } from "@/hooks/useStorefrontAnalytics";
+import { useShopTranslation } from "@/hooks/useShopTranslation";
 
 // Lazy-loaded secondary sections — only loaded when scrolled into view or needed
 const ShopReviews = lazy(() => import("@/components/storefront/ShopReviews"));
