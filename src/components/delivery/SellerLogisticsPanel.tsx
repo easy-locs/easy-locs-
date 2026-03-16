@@ -196,6 +196,7 @@ function DriverSearchPanel({ jobId, onAssign, onClose }: { jobId: string; onAssi
 
 export default function SellerLogisticsPanel() {
   const { jobs, loading, metrics, createJob, assignDriver, cancelJob } = useSellerDelivery();
+  useDeliveryNotifications(); // PASS81-P: activate push notifications
   const [showCreate, setShowCreate] = useState(false);
   const [searchingJobId, setSearchingJobId] = useState<string | null>(null);
   const [disputeJobId, setDisputeJobId] = useState<string | null>(null);
