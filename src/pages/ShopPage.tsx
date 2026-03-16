@@ -199,10 +199,10 @@ export default function ShopPage() {
             )}
             <div className="flex-1 min-w-0 pb-1">
               <div className="flex items-center gap-2">
-                <h1 className="text-xl font-bold text-foreground truncate">{shop.name}</h1>
+                <h1 className="text-xl font-bold text-foreground truncate">{shopT.t("name", shop.name)}</h1>
                 {shop.is_verified && <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />}
               </div>
-              {shop.tagline && <p className="text-sm text-muted-foreground truncate">{shop.tagline}</p>}
+              {(shopT.t("tagline", shop.tagline)) && <p className="text-sm text-muted-foreground truncate">{shopT.t("tagline", shop.tagline)}</p>}
             </div>
           </div>
 
