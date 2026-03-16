@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useCallback, useEffect, useRef, type ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { interpolate, resolvePlural, trackMissingKey } from "./i18n-utils";
 
 // Lazy-loaded locale data is merged at runtime — no more eager imports
 // fr + en are always inline; other locales load their heavy packs on demand
@@ -6716,7 +6717,7 @@ const translations: Record<Locale, Record<string, string>> = {
 interface I18nContextType {
   locale: Locale;
   setLocale: (l: Locale) => void;
-  t: (key: string) => string;
+  t: (key: string, vars?: Record<string, string | number>) => string;
   availableLocales: { value: Locale; label: string }[];
 }
 
@@ -6939,21 +6940,29 @@ export function I18nProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const t = useCallback((key: string): string => {
-    // Check inline translations first (always available)
-    const inlineVal = translations[locale]?.[key];
-    if (inlineVal) return inlineVal;
-    // Check lazy-loaded locale extras
-    const lazyVal = lazyData.get(locale)?.[key];
-    if (lazyVal) return lazyVal;
-    // Fallback: en inline → en extras → fr inline → fr extras
-    const enVal = translations.en?.[key] || enExtras[key];
-    if (enVal) return enVal;
-    const frVal = translations.fr?.[key] || frExtras[key];
-    if (frVal) return frVal;
-    // Suppress warnings for keys with inline fallbacks
-    if (import.meta.env.DEV && !key.startsWith("pricing.")) console.warn(`[i18n] Missing key: "${key}" (locale: ${locale})`);
-    return "";
+  const t = useCallback((key: string, vars?: Record<string, string | number>): string => {
+    // Lookup helper across all sources
+    const lookup = (k: string): string | undefined =>
+      translations[locale]?.[k] || lazyData.get(locale)?.[k] ||
+      translations.en?.[k] || enExtras[k] ||
+      translations.fr?.[k] || frExtras[k] || undefined;
+
+    // If count is provided, try plural resolution
+    let resolved: string | undefined;
+    if (vars && typeof vars.count === "number") {
+      resolved = resolvePlural(key, vars.count, lookup);
+    } else {
+      resolved = lookup(key);
+    }
+
+    if (resolved) return interpolate(resolved, vars);
+
+    // Missing key tracking
+    if (import.meta.env.DEV && !key.startsWith("pricing.")) {
+      console.warn(`[i18n] Missing key: "${key}" (locale: ${locale})`);
+    }
+    trackMissingKey(key, locale);
+    return vars ? interpolate(key, vars) : "";
   }, [locale]);
 
   return (
