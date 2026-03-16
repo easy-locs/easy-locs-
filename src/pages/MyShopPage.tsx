@@ -39,6 +39,9 @@ import SubscriptionEngine from "@/components/storefront/SubscriptionEngine";
 import GiftCardManager from "@/components/storefront/GiftCardManager";
 import ReturnsRefundEngine from "@/components/storefront/ReturnsRefundEngine";
 import LoyaltyProgram from "@/components/storefront/LoyaltyProgram";
+import AdvancedReviews from "@/components/storefront/AdvancedReviews";
+import FlashSales from "@/components/storefront/FlashSales";
+import BulkProductManager from "@/components/storefront/BulkProductManager";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -168,7 +171,10 @@ export default function MyShopPage() {
           {tab === "catalog" && (
             <div className="space-y-4">
               <CatalogManager shopId={shop.id} />
+              <BulkProductManager shopId={shop.id} />
+              <FlashSales shopId={shop.id} mode="seller" />
               <AuctionManager shopId={shop.id} mode="seller" />
+              <AdvancedReviews shopId={shop.id} mode="seller" />
             </div>
           )}
           {tab === "orders" && (
