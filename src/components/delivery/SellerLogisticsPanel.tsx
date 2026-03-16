@@ -598,6 +598,14 @@ export default function SellerLogisticsPanel() {
         <DriverTrainingAcademy orgId={jobs[0]?.org_id || ""} />
       ) : filter === "crowd" ? (
         <CrowdDeliveryNetwork orgId={jobs[0]?.org_id || ""} />
+      ) : filter === "smart-lockers" ? (
+        <SmartLockerNetwork orgId={jobs[0]?.org_id || ""} />
+      ) : filter === "carbon-offset" ? (
+        <CarbonOffsetEngine orgId={jobs[0]?.org_id || ""} />
+      ) : filter === "multimodal" ? (
+        <MultiModalTransport orgId={jobs[0]?.org_id || ""} />
+      ) : filter === "delivery-mkt" ? (
+        <DeliveryMarketplace orgId={jobs[0]?.org_id || ""} />
       ) : (
       <div className="space-y-2">
         {loading ? (
