@@ -12,6 +12,10 @@ import DeliveryHistoryExport from "@/components/delivery/DeliveryHistoryExport";
 import DriverOnboardingFlow from "@/components/delivery/DriverOnboardingFlow";
 import MultiStopRoutePanel from "@/components/delivery/MultiStopRoutePanel";
 import SellerAnalyticsDashboard from "@/components/delivery/SellerAnalyticsDashboard";
+import DriverWalletPanel from "@/components/delivery/DriverWalletPanel";
+import GeofencingPanel from "@/components/delivery/GeofencingPanel";
+import InMissionChat from "@/components/delivery/InMissionChat";
+import AdminFleetDashboard from "@/components/delivery/AdminFleetDashboard";
 import { useDeliveryNotifications } from "@/hooks/useDeliveryNotifications";
 import { motion, AnimatePresence } from "framer-motion";
 import {
