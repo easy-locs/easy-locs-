@@ -21,7 +21,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Plus, Package, Truck, MapPin, Clock, CheckCircle2,
   XCircle, ChevronRight, Users, TrendingUp, Search,
-  Send, Star, AlertTriangle,
+  Send, Star, AlertTriangle, MessageCircle,
 } from "lucide-react";
 import { useSellerDelivery, type CreateJobPayload, type NearbyDriver } from "@/hooks/useSellerDelivery";
 import { Button } from "@/components/ui/button";
