@@ -190,7 +190,7 @@ export default function OrgMemberManager() {
               {/* Avatar */}
               <div className="w-9 h-9 rounded-full flex items-center justify-center shrink-0 text-sm font-bold"
                 style={{ background: `${roleCfg.color}15`, color: roleCfg.color }}>
-                {member.profile?.full_name?.charAt(0)?.toUpperCase() || "?"}
+                {member.profile?.name?.charAt(0)?.toUpperCase() || "?"}
               </div>
 
               {/* Info */}
