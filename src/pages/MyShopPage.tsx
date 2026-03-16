@@ -317,6 +317,9 @@ export default function MyShopPage() {
               {/* Coupons & Promotions */}
               <CouponManager shopId={shop.id} />
 
+              {/* Inventory */}
+              <InventoryManager shopId={shop.id} />
+
               {/* Business Hierarchy */}
               <BusinessHierarchy />
             </div>
