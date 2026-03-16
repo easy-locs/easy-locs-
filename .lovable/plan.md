@@ -348,3 +348,13 @@ Conversation → Offer → Counter offer → Accepted → Payment → Confirmed
 | CSV export | Reuses existing exportToCSV with property-level breakdown | ✅ Done |
 | Year selector | Filter all data by fiscal year (current - 4 years) | ✅ Done |
 | Country filter integration | Respects CountryFilter for multi-country portfolios | ✅ Done |
+
+## PASS55 Block P — i18n / Localisation
+| Feature | Implementation | Status |
+|---------|---------------|--------|
+| ReportingDashboard i18n | All 15+ hardcoded FR strings → t() keys (FR + EN) | ✅ Done |
+| Sidebar nav i18n | Seller Hub, Deal Analytics, Live Tracking, Reporting, AI Assistant → t() keys | ✅ Done |
+| FR locale keys | page.reporting.* (title, subtitle, KPIs, tabs, chart labels, empty states, CSV headers) | ✅ Done |
+| EN locale keys | Full English translations for all reporting keys | ✅ Done |
+| RTL verified | dir="rtl" for ar/he already in I18nProvider, CSS logical properties in use | ✅ Pre-existing |
+| 31 locales supported | fr, en, es, de, it, pt, nl, pl, tr, ar, ja, ko, zh, hi, th, vi, id, ms, sv, da, nb, fi, el, cs, hu, ro, hr, bg, sk, he, uk | ✅ Pre-existing |
