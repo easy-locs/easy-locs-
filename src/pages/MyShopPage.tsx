@@ -216,6 +216,7 @@ export default function MyShopPage() {
               <ReturnsRefunds shopId={shop.id} mode="seller" />
               <DeliveryDispatch shopId={shop.id} />
               <ShippingTracker shopId={shop.id} mode="seller" />
+              <AdvancedShipping shopId={shop.id} mode="seller" />
               <WarehouseManager shopId={shop.id} />
             </div>
           )}
