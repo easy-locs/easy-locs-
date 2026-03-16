@@ -121,8 +121,8 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
       items: [
         { icon: MessageCircle, label: "Communication", path: "/dashboard/communication" },
         { icon: Wallet, label: "Wallet", path: "/dashboard/wallet" },
-        { icon: BarChart3, label: "Deal Analytics", path: "/dashboard/deals" },
-        { icon: Compass, label: "Live Tracking", path: "/dashboard/tracking" },
+        { icon: BarChart3, label: t("nav.deal_analytics") || "Deal Analytics", path: "/dashboard/deals" },
+        { icon: Compass, label: t("nav.live_tracking") || "Live Tracking", path: "/dashboard/tracking" },
       ],
     },
 
