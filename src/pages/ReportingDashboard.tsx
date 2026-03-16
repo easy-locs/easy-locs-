@@ -312,7 +312,7 @@ const ReportingDashboard = () => {
                                 cx="50%"
                                 cy="50%"
                                 outerRadius={80}
-                                label={({ category }) => category}
+                                label={({ name }) => name}
                               >
                                 {expensesByCategory.map((_, i) => (
                                   <Cell key={i} fill={COLORS[i % COLORS.length]} />
