@@ -3,6 +3,7 @@
  * PASS70-C: Seller Logistics UI
  */
 import { useState } from "react";
+import DeliveryAnalyticsDashboard from "@/components/delivery/DeliveryAnalyticsDashboard";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Plus, Package, Truck, MapPin, Clock, CheckCircle2,
@@ -188,7 +189,7 @@ export default function SellerLogisticsPanel() {
   const { jobs, loading, metrics, createJob, assignDriver, cancelJob } = useSellerDelivery();
   const [showCreate, setShowCreate] = useState(false);
   const [searchingJobId, setSearchingJobId] = useState<string | null>(null);
-  const [filter, setFilter] = useState<"all" | "active" | "completed">("all");
+  const [filter, setFilter] = useState<"all" | "active" | "completed" | "analytics">("all");
 
   const filteredJobs = jobs.filter(j => {
     if (filter === "active") return ["pending", "assigned", "accepted", "in_progress"].includes(j.status);
@@ -249,19 +250,22 @@ export default function SellerLogisticsPanel() {
 
       {/* Filter tabs */}
       <div className="flex gap-1 p-1 rounded-xl" style={{ background: "hsl(var(--hud-surface))" }}>
-        {(["all", "active", "completed"] as const).map(f => (
+        {(["all", "active", "completed", "analytics"] as const).map(f => (
           <button key={f} onClick={() => setFilter(f)}
             className="flex-1 py-1.5 rounded-lg text-[10px] font-semibold transition-all"
             style={{
               background: filter === f ? "hsl(var(--hud-cyan) / 0.12)" : "transparent",
               color: filter === f ? "hsl(var(--hud-cyan))" : "hsl(var(--hud-text-dim) / 0.5)",
             }}>
-            {f === "all" ? `Tout (${jobs.length})` : f === "active" ? `Actives (${metrics.active})` : `Terminées (${metrics.completed + metrics.cancelled})`}
+            {f === "all" ? `Tout (${jobs.length})` : f === "active" ? `Actives (${metrics.active})` : f === "completed" ? `Terminées` : "📊 Analytics"}
           </button>
         ))}
       </div>
 
-      {/* Jobs list */}
+      {/* Content */}
+      {filter === "analytics" ? (
+        <DeliveryAnalyticsDashboard orgId={jobs[0]?.org_id} />
+      ) : (
       <div className="space-y-2">
         {loading ? (
           <div className="flex items-center justify-center py-12">
@@ -334,6 +338,7 @@ export default function SellerLogisticsPanel() {
           })
         )}
       </div>
+      )}
     </div>
   );
 }
