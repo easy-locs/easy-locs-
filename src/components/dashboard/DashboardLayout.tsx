@@ -145,7 +145,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
       items: [
         { icon: Banknote, label: t("nav.payments") || "Payments", path: cPath("/dashboard/finances") },
         { icon: Wallet, label: t("nav.expenses") || "Expenses", path: cPath("/dashboard/expenses") },
-        { icon: BarChart3, label: "Reporting", path: "/dashboard/reporting" },
+        { icon: BarChart3, label: t("nav.reporting") || "Reporting", path: "/dashboard/reporting" },
         { icon: CreditCard, label: t("nav.subscription") || "Plan", path: "/dashboard/billing" },
       ],
     },
