@@ -63,6 +63,10 @@ import SellerRatingSystem from "@/components/delivery/SellerRatingSystem";
 import AddressBookManager from "@/components/delivery/AddressBookManager";
 import DeliveryKPIDashboard from "@/components/delivery/DeliveryKPIDashboard";
 import MaintenanceScheduler from "@/components/delivery/MaintenanceScheduler";
+import DriverOnboardingComplete from "@/components/delivery/DriverOnboardingComplete";
+import DeliveryNotificationCenter from "@/components/delivery/DeliveryNotificationCenter";
+import SellerPayoutReports from "@/components/delivery/SellerPayoutReports";
+import DeliveryZonesManager from "@/components/delivery/DeliveryZonesManager";
 import { useDeliveryNotifications } from "@/hooks/useDeliveryNotifications";
 import { motion, AnimatePresence } from "framer-motion";
 import {
