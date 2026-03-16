@@ -60,7 +60,7 @@ describe("Smoke: i18n System", () => {
     expect(locales.has("fr")).toBe(true);
     expect(locales.has("en")).toBe(true);
     expect(locales.has("es")).toBe(true);
-    expect(locales.has("ar")).toBe(true);
+    expect(locales.has("de")).toBe(true);
     expect(locales.size).toBeGreaterThanOrEqual(20);
   });
 
