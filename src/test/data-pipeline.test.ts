@@ -19,9 +19,9 @@ import {
 describe("DataPipeline", () => {
   it("runs a simple pipeline with multiple steps", async () => {
     const p = new DataPipeline<number[]>("test")
-      .step("double", "Double values", (data) => data.map((x) => x * 2))
-      .step("filter", "Filter > 4", (data: number[]) => data.filter((x) => x > 4))
-      .step("sum", "Sum", (data: number[]) => data.reduce((a, b) => a + b, 0));
+      .step("double", "Double values", (data: any) => (data as number[]).map((x: number) => x * 2))
+      .step("filter", "Filter > 4", (data: any) => (data as number[]).filter((x: number) => x > 4))
+      .step("sum", "Sum", (data: any) => (data as number[]).reduce((a: number, b: number) => a + b, 0));
 
     const result = await p.run([1, 2, 3, 4, 5]);
     expect(result.status).toBe("completed");
