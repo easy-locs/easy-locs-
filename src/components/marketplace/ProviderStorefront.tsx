@@ -13,6 +13,7 @@ import ReviewRatingBreakdown from "./ReviewRatingBreakdown";
 import MobileCTABar from "./MobileCTABar";
 import { getCategoryInfo } from "./MarketplaceCategories";
 import { MapPin, Globe, Phone, Mail, Star, CheckCircle2, MessageSquare, Store, ChevronLeft, ChevronRight, Shield } from "lucide-react";
+import LiveBadge from "./LiveBadge";
 import { useState, useRef } from "react";
 import { useI18n } from "@/lib/i18n";
 import { toast } from "sonner";
