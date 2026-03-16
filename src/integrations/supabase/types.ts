@@ -7615,6 +7615,56 @@ export type Database = {
           },
         ]
       }
+      storefront_faq: {
+        Row: {
+          answer: string
+          category: string | null
+          created_at: string
+          helpful_count: number | null
+          id: string
+          published: boolean
+          question: string
+          shop_id: string
+          sort_order: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          answer: string
+          category?: string | null
+          created_at?: string
+          helpful_count?: number | null
+          id?: string
+          published?: boolean
+          question: string
+          shop_id: string
+          sort_order?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          answer?: string
+          category?: string | null
+          created_at?: string
+          helpful_count?: number | null
+          id?: string
+          published?: boolean
+          question?: string
+          shop_id?: string
+          sort_order?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "storefront_faq_shop_id_fkey"
+            columns: ["shop_id"]
+            isOneToOne: false
+            referencedRelation: "storefront_pages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       storefront_flash_sales: {
         Row: {
           created_at: string
@@ -7689,6 +7739,56 @@ export type Database = {
           },
           {
             foreignKeyName: "storefront_flash_sales_shop_id_fkey"
+            columns: ["shop_id"]
+            isOneToOne: false
+            referencedRelation: "storefront_pages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      storefront_influencer_collabs: {
+        Row: {
+          commission_percent: number | null
+          created_at: string
+          id: string
+          influencer_id: string
+          notes: string | null
+          promo_code: string | null
+          shop_id: string
+          status: string
+          total_commission: number | null
+          total_sales: number | null
+          updated_at: string
+        }
+        Insert: {
+          commission_percent?: number | null
+          created_at?: string
+          id?: string
+          influencer_id: string
+          notes?: string | null
+          promo_code?: string | null
+          shop_id: string
+          status?: string
+          total_commission?: number | null
+          total_sales?: number | null
+          updated_at?: string
+        }
+        Update: {
+          commission_percent?: number | null
+          created_at?: string
+          id?: string
+          influencer_id?: string
+          notes?: string | null
+          promo_code?: string | null
+          shop_id?: string
+          status?: string
+          total_commission?: number | null
+          total_sales?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "storefront_influencer_collabs_shop_id_fkey"
             columns: ["shop_id"]
             isOneToOne: false
             referencedRelation: "storefront_pages"
@@ -7836,6 +7936,71 @@ export type Database = {
           },
           {
             foreignKeyName: "storefront_invoices_shop_id_fkey"
+            columns: ["shop_id"]
+            isOneToOne: false
+            referencedRelation: "storefront_pages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      storefront_live_sessions: {
+        Row: {
+          created_at: string
+          description: string | null
+          ended_at: string | null
+          featured_items: Json | null
+          host_id: string
+          id: string
+          peak_viewers: number | null
+          scheduled_at: string | null
+          shop_id: string
+          started_at: string | null
+          status: string
+          stream_url: string | null
+          thumbnail_url: string | null
+          title: string
+          updated_at: string
+          viewer_count: number | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          ended_at?: string | null
+          featured_items?: Json | null
+          host_id: string
+          id?: string
+          peak_viewers?: number | null
+          scheduled_at?: string | null
+          shop_id: string
+          started_at?: string | null
+          status?: string
+          stream_url?: string | null
+          thumbnail_url?: string | null
+          title: string
+          updated_at?: string
+          viewer_count?: number | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          ended_at?: string | null
+          featured_items?: Json | null
+          host_id?: string
+          id?: string
+          peak_viewers?: number | null
+          scheduled_at?: string | null
+          shop_id?: string
+          started_at?: string | null
+          status?: string
+          stream_url?: string | null
+          thumbnail_url?: string | null
+          title?: string
+          updated_at?: string
+          viewer_count?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "storefront_live_sessions_shop_id_fkey"
             columns: ["shop_id"]
             isOneToOne: false
             referencedRelation: "storefront_pages"
@@ -8966,37 +9131,52 @@ export type Database = {
         Row: {
           caption: string | null
           comments_count: number
+          content: string | null
           created_at: string
           id: string
+          is_featured: boolean | null
           item_id: string | null
           likes_count: number
+          media_urls: Json | null
           photo_url: string | null
           post_type: string
           shop_id: string
+          status: string
+          tagged_items: Json | null
           user_id: string
         }
         Insert: {
           caption?: string | null
           comments_count?: number
+          content?: string | null
           created_at?: string
           id?: string
+          is_featured?: boolean | null
           item_id?: string | null
           likes_count?: number
+          media_urls?: Json | null
           photo_url?: string | null
           post_type?: string
           shop_id: string
+          status?: string
+          tagged_items?: Json | null
           user_id: string
         }
         Update: {
           caption?: string | null
           comments_count?: number
+          content?: string | null
           created_at?: string
           id?: string
+          is_featured?: boolean | null
           item_id?: string | null
           likes_count?: number
+          media_urls?: Json | null
           photo_url?: string | null
           post_type?: string
           shop_id?: string
+          status?: string
+          tagged_items?: Json | null
           user_id?: string
         }
         Relationships: []
@@ -9051,6 +9231,115 @@ export type Database = {
           },
           {
             foreignKeyName: "storefront_stock_movements_shop_id_fkey"
+            columns: ["shop_id"]
+            isOneToOne: false
+            referencedRelation: "storefront_pages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      storefront_subscription_orders: {
+        Row: {
+          amount: number
+          created_at: string
+          currency: string
+          id: string
+          order_id: string | null
+          period_end: string
+          period_start: string
+          shop_id: string
+          status: string
+          subscription_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          currency?: string
+          id?: string
+          order_id?: string | null
+          period_end: string
+          period_start: string
+          shop_id: string
+          status?: string
+          subscription_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          order_id?: string | null
+          period_end?: string
+          period_start?: string
+          shop_id?: string
+          status?: string
+          subscription_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "storefront_subscription_orders_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "storefront_subscriptions_v2"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      storefront_subscription_plans: {
+        Row: {
+          active: boolean
+          billing_interval: string
+          created_at: string
+          currency: string
+          description: string | null
+          id: string
+          item_ids: Json | null
+          max_subscribers: number | null
+          name: string
+          photo_url: string | null
+          price: number
+          shop_id: string
+          trial_days: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          active?: boolean
+          billing_interval?: string
+          created_at?: string
+          currency?: string
+          description?: string | null
+          id?: string
+          item_ids?: Json | null
+          max_subscribers?: number | null
+          name: string
+          photo_url?: string | null
+          price: number
+          shop_id: string
+          trial_days?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          active?: boolean
+          billing_interval?: string
+          created_at?: string
+          currency?: string
+          description?: string | null
+          id?: string
+          item_ids?: Json | null
+          max_subscribers?: number | null
+          name?: string
+          photo_url?: string | null
+          price?: number
+          shop_id?: string
+          trial_days?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "storefront_subscription_plans_shop_id_fkey"
             columns: ["shop_id"]
             isOneToOne: false
             referencedRelation: "storefront_pages"
@@ -9149,6 +9438,134 @@ export type Database = {
           },
         ]
       }
+      storefront_subscriptions_v2: {
+        Row: {
+          cancelled_at: string | null
+          created_at: string
+          current_period_end: string | null
+          current_period_start: string
+          id: string
+          next_billing_at: string | null
+          orders_count: number | null
+          pause_until: string | null
+          plan_id: string
+          shipping_address: Json | null
+          shop_id: string
+          status: string
+          subscriber_id: string
+          total_paid: number | null
+          updated_at: string
+        }
+        Insert: {
+          cancelled_at?: string | null
+          created_at?: string
+          current_period_end?: string | null
+          current_period_start?: string
+          id?: string
+          next_billing_at?: string | null
+          orders_count?: number | null
+          pause_until?: string | null
+          plan_id: string
+          shipping_address?: Json | null
+          shop_id: string
+          status?: string
+          subscriber_id: string
+          total_paid?: number | null
+          updated_at?: string
+        }
+        Update: {
+          cancelled_at?: string | null
+          created_at?: string
+          current_period_end?: string | null
+          current_period_start?: string
+          id?: string
+          next_billing_at?: string | null
+          orders_count?: number | null
+          pause_until?: string | null
+          plan_id?: string
+          shipping_address?: Json | null
+          shop_id?: string
+          status?: string
+          subscriber_id?: string
+          total_paid?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "storefront_subscriptions_v2_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "storefront_subscription_plans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "storefront_subscriptions_v2_shop_id_fkey"
+            columns: ["shop_id"]
+            isOneToOne: false
+            referencedRelation: "storefront_pages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      storefront_support_tickets: {
+        Row: {
+          assigned_to: string | null
+          category: string
+          created_at: string
+          customer_id: string
+          description: string | null
+          id: string
+          order_id: string | null
+          priority: string
+          resolved_at: string | null
+          satisfaction_rating: number | null
+          shop_id: string
+          status: string
+          subject: string
+          updated_at: string
+        }
+        Insert: {
+          assigned_to?: string | null
+          category?: string
+          created_at?: string
+          customer_id: string
+          description?: string | null
+          id?: string
+          order_id?: string | null
+          priority?: string
+          resolved_at?: string | null
+          satisfaction_rating?: number | null
+          shop_id: string
+          status?: string
+          subject: string
+          updated_at?: string
+        }
+        Update: {
+          assigned_to?: string | null
+          category?: string
+          created_at?: string
+          customer_id?: string
+          description?: string | null
+          id?: string
+          order_id?: string | null
+          priority?: string
+          resolved_at?: string | null
+          satisfaction_rating?: number | null
+          shop_id?: string
+          status?: string
+          subject?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "storefront_support_tickets_shop_id_fkey"
+            columns: ["shop_id"]
+            isOneToOne: false
+            referencedRelation: "storefront_pages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       storefront_tax_rules: {
         Row: {
           active: boolean | null
@@ -9198,6 +9615,44 @@ export type Database = {
             columns: ["shop_id"]
             isOneToOne: false
             referencedRelation: "storefront_pages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      storefront_ticket_messages: {
+        Row: {
+          attachment_urls: Json | null
+          created_at: string
+          id: string
+          message: string
+          sender_id: string
+          sender_role: string
+          ticket_id: string
+        }
+        Insert: {
+          attachment_urls?: Json | null
+          created_at?: string
+          id?: string
+          message: string
+          sender_id: string
+          sender_role?: string
+          ticket_id: string
+        }
+        Update: {
+          attachment_urls?: Json | null
+          created_at?: string
+          id?: string
+          message?: string
+          sender_id?: string
+          sender_role?: string
+          ticket_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "storefront_ticket_messages_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "storefront_support_tickets"
             referencedColumns: ["id"]
           },
         ]

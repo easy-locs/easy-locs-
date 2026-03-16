@@ -46,6 +46,10 @@ import ShippingTracker from "@/components/storefront/ShippingTracker";
 import MultiCurrencyTax from "@/components/storefront/MultiCurrencyTax";
 import AffiliateEngine from "@/components/storefront/AffiliateEngine";
 import StoreAnalytics from "@/components/storefront/StoreAnalytics";
+import LoyaltyRewards from "@/components/storefront/LoyaltyRewards";
+import CustomerSupport from "@/components/storefront/CustomerSupport";
+import LiveShopping from "@/components/storefront/LiveShopping";
+import RecurringSubscriptions from "@/components/storefront/RecurringSubscriptions";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -201,15 +205,19 @@ export default function MyShopPage() {
               <MultiCurrencyTax shopId={shop.id} mode="seller" />
               <SubscriptionManager shopId={shop.id} />
               <SubscriptionEngine shopId={shop.id} mode="seller" />
+              <RecurringSubscriptions shopId={shop.id} mode="seller" />
               <GiftCardManager shopId={shop.id} mode="seller" />
               <LoyaltyDashboard shopId={shop.id} mode="seller" />
               <LoyaltyProgram shopId={shop.id} mode="seller" />
+              <LoyaltyRewards shopId={shop.id} mode="seller" />
             </div>
           )}
           {tab === "analytics" && (
             <div className="space-y-4">
               <ShopAnalytics shopId={shop.id} />
               <StoreAnalytics shopId={shop.id} />
+              <CustomerSupport shopId={shop.id} mode="seller" />
+              <LiveShopping shopId={shop.id} mode="seller" />
             </div>
           )}
           {tab === "launch" && <LaunchAudit shopId={shop.id} />}
