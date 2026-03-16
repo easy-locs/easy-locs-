@@ -546,6 +546,14 @@ export default function SellerLogisticsPanel() {
         <IncidentManagement orgId={jobs[0]?.org_id || ""} />
       ) : filter === "seller-portal" ? (
         <SellerPartnerPortal orgId={jobs[0]?.org_id || ""} />
+      ) : filter === "capacity" ? (
+        <SmartCapacityPlanning orgId={jobs[0]?.org_id || ""} />
+      ) : filter === "multi-vendor" ? (
+        <MultiVendorMarketplace orgId={jobs[0]?.org_id || ""} />
+      ) : filter === "quality" ? (
+        <QualityAssuranceSystem orgId={jobs[0]?.org_id || ""} />
+      ) : filter === "cx-hub" ? (
+        <CustomerExperienceHub orgId={jobs[0]?.org_id || ""} />
       ) : (
       <div className="space-y-2">
         {loading ? (
