@@ -3,13 +3,14 @@
  * Manages LOCS balance, transactions, send/request operations, and purchases.
  * 1 LOCS = 1 EUR | Non-refundable, non-withdrawable
  * 
- * PASS58: Added platformBus emit on requestMoney, bus listener for wallet refresh,
- * manual refresh exposed, scoped realtime subs.
+ * PASS58: platformBus emit, scoped realtime, manual refresh.
+ * PASS61: Daily transfer limit enforcement, today's spent tracking.
  */
-import { useState, useCallback, useEffect, useRef } from "react";
+import { useState, useCallback, useEffect, useRef, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { platformBus } from "@/lib/shared/platform-bus";
+import { checkDailyLimit, isLargeTransaction } from "@/lib/wallet-limits";
 
 export interface WalletBalance {
   id: string;
