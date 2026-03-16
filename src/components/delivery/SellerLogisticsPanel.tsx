@@ -444,6 +444,12 @@ export default function SellerLogisticsPanel() {
         <WarehouseManagement orgId={jobs[0]?.org_id || ""} />
       ) : filter === "green-delivery" ? (
         <GreenDeliveryDashboard orgId={jobs[0]?.org_id || ""} />
+      ) : filter === "fleet-system" ? (
+        <FleetManagementSystem orgId={jobs[0]?.org_id || ""} />
+      ) : filter === "order-bundle" ? (
+        <OrderBundlingEngine orgId={jobs[0]?.org_id || ""} />
+      ) : filter === "tracking-portal" ? (
+        <CustomerTrackingPortal orgId={jobs[0]?.org_id || ""} />
       ) : (
       <div className="space-y-2">
         {loading ? (
