@@ -372,6 +372,21 @@ export default function SellerLogisticsPanel() {
                     </motion.div>
                   )}
                 </AnimatePresence>
+
+                {/* Live GPS tracking panel */}
+                <AnimatePresence>
+                  {trackingJobId === job.id && (
+                    <motion.div initial={{ height: 0 }} animate={{ height: "auto" }} exit={{ height: 0 }}
+                      className="overflow-hidden">
+                      <div className="px-4 pb-3">
+                        <DeliveryLiveTracker
+                          jobId={job.id}
+                          onClose={() => setTrackingJobId(null)}
+                        />
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             );
           })
