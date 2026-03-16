@@ -317,9 +317,9 @@ export default function ShopPage() {
                       )}
                       <div className="flex items-center justify-between pt-1">
                         <div>
-                          <span className="text-sm font-bold text-primary">{fmtPrice(item.price, item.currency)}</span>
+                          <span className="text-sm font-bold text-primary">{fx.formatPrice(item.price, item.currency)}</span>
                           {item.compare_at_price && item.compare_at_price > item.price && (
-                            <span className="text-[10px] text-muted-foreground line-through ml-1">{fmtPrice(item.compare_at_price, item.currency)}</span>
+                            <span className="text-[10px] text-muted-foreground line-through ml-1">{fx.formatPrice(item.compare_at_price, item.currency)}</span>
                           )}
                         </div>
                         <Button
