@@ -149,6 +149,16 @@ const Dashboard = () => {
   return (
     <DashboardLayout>
       <div className="max-w-5xl mx-auto">
+        {/* Welcome Tour for first-time users */}
+        <Suspense fallback={null}><WelcomeTour /></Suspense>
+
+        {/* Onboarding Checklist */}
+        <Suspense fallback={null}>
+          <div className="mb-6">
+            <OnboardingChecklist />
+          </div>
+        </Suspense>
+
         {/* Error state */}
         {error && !loading && (
           <ErrorState message={error} onRetry={() => { setError(null); setLoading(true); }} className="mb-6" />
