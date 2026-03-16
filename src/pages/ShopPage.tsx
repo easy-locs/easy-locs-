@@ -24,6 +24,7 @@ import { Loader2, MapPin, ShoppingCart, Plus, Minus, Trash2, Phone, Mail, Messag
 import { useState, useEffect, lazy, Suspense } from "react";
 import { toast } from "sonner";
 import { useStorefrontAnalytics } from "@/hooks/useStorefrontAnalytics";
+import { useShopTranslation } from "@/hooks/useShopTranslation";
 
 // Lazy-loaded secondary sections — only loaded when scrolled into view or needed
 const ShopReviews = lazy(() => import("@/components/storefront/ShopReviews"));
@@ -113,6 +114,7 @@ export default function ShopPage() {
   const coupon = useStorefrontCoupon(shop?.id);
   const wishlist = useStorefrontWishlist(shop?.id);
   const analytics = useStorefrontAnalytics(shop?.id);
+  const shopT = useShopTranslation(shop?.id);
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const fx = useStorefrontCurrency(shop?.currency || shop?.default_currency || "EUR");
   const filteredItems = activeCategory
@@ -197,10 +199,10 @@ export default function ShopPage() {
             )}
             <div className="flex-1 min-w-0 pb-1">
               <div className="flex items-center gap-2">
-                <h1 className="text-xl font-bold text-foreground truncate">{shop.name}</h1>
+                <h1 className="text-xl font-bold text-foreground truncate">{shopT.t("name", shop.name)}</h1>
                 {shop.is_verified && <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />}
               </div>
-              {shop.tagline && <p className="text-sm text-muted-foreground truncate">{shop.tagline}</p>}
+              {(shopT.t("tagline", shop.tagline)) && <p className="text-sm text-muted-foreground truncate">{shopT.t("tagline", shop.tagline)}</p>}
             </div>
           </div>
 
@@ -226,8 +228,8 @@ export default function ShopPage() {
             <ShareButtons type="host" slug={shop.slug} title={shop.name} />
           </div>
 
-          {shop.description && (
-            <p className="text-sm text-muted-foreground mb-6 leading-relaxed">{shop.description}</p>
+          {(shopT.t("description", shop.description)) && (
+            <p className="text-sm text-muted-foreground mb-6 leading-relaxed">{shopT.t("description", shop.description)}</p>
           )}
 
           {/* Contact buttons */}

@@ -13082,6 +13082,7 @@ export type Database = {
         Args: { _token: string; _user_id: string }
         Returns: Json
       }
+      aggregate_storefront_analytics_daily: { Args: never; Returns: number }
       check_inquiry_quota:
         | { Args: { _user_id: string }; Returns: Json }
         | { Args: { _hourly_limit?: number; _user_id: string }; Returns: Json }
@@ -13361,6 +13362,32 @@ export type Database = {
           provider_name: string
           status: string
           title: string
+        }[]
+      }
+      search_nearby_shops: {
+        Args: {
+          _lat: number
+          _limit?: number
+          _lng: number
+          _query?: string
+          _radius_km?: number
+          _vertical?: string
+        }
+        Returns: {
+          banner_url: string
+          city: string
+          country: string
+          description: string
+          distance_km: number
+          id: string
+          is_verified: boolean
+          latitude: number
+          logo_url: string
+          longitude: number
+          name: string
+          slug: string
+          tagline: string
+          vertical: string
         }[]
       }
       transfer_locs: {

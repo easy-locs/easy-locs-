@@ -1,7 +1,7 @@
 /**
  * DiscoverPage — Module 13-14: Discovery + Search for shops, products, services.
  * Routes: /discover, /trending, /nearby, /top-rated, /search
- * FIXED: Real server-side search via ilike, not client-side filtering.
+ * FIXED: Real server-side search via ilike + geo-filtering via Haversine RPC.
  */
 import { useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Search, TrendingUp, MapPin, Star, Sparkles, Store, Package, Briefcase, Loader2, X } from "lucide-react";
+import { useGeolocation } from "@/hooks/useGeolocation";
 
 const VERTICALS = [
   { id: "all", label: "All", icon: Sparkles },
@@ -39,11 +40,28 @@ export default function DiscoverPage() {
   const query = searchParams.get("q") || "";
   const [search, setSearch] = useState(query);
   const [vertical, setVertical] = useState("all");
+  const geo = useGeolocation();
 
-  // Real server-side search for shops via ilike
+  // Use geo RPC when lat/lng available, otherwise fallback to ilike
+  const hasGeo = geo.lat != null && geo.lng != null;
+
   const { data: shops = [], isLoading: shopsLoading } = useQuery({
-    queryKey: ["discover-shops", vertical, query],
+    queryKey: ["discover-shops", vertical, query, hasGeo ? `${geo.lat},${geo.lng}` : "no-geo"],
     queryFn: async () => {
+      // If we have geo coordinates, use the server-side Haversine RPC
+      if (hasGeo) {
+        const { data } = await supabase.rpc("search_nearby_shops" as any, {
+          _lat: geo.lat!,
+          _lng: geo.lng!,
+          _radius_km: 100,
+          _query: query.trim(),
+          _vertical: vertical,
+          _limit: 50,
+        });
+        return data || [];
+      }
+
+      // Fallback: text-based search
       let q = (supabase as any).from("storefront_pages").select("*")
         .eq("shop_visibility", "public")
         .order("created_at", { ascending: false })
