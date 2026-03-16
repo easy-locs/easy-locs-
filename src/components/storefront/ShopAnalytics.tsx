@@ -1,12 +1,14 @@
 /**
- * ShopAnalytics — Enhanced seller analytics dashboard.
- * Views, visitors, orders, revenue, conversion, top products, order funnel.
+ * ShopAnalytics — Seller analytics dashboard consuming REAL events.
+ * Sources: storefront_analytics_events (views, add_to_cart, checkout, purchase)
+ *          storefront_orders (order stats, revenue, funnel)
+ *          storefront_order_items (top products)
  */
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { BarChart3, Eye, Users, ShoppingBag, DollarSign, TrendingUp, Loader2, Star, Package } from "lucide-react";
+import { BarChart3, Eye, Users, ShoppingBag, DollarSign, TrendingUp, Loader2, Star, Package, ShoppingCart, CreditCard } from "lucide-react";
 
 interface Props { shopId: string; }
 
@@ -26,22 +28,45 @@ const STATUS_COLORS: Record<string, string> = {
 };
 
 export default function ShopAnalytics({ shopId }: Props) {
-  const { data: analytics = [], isLoading } = useQuery({
-    queryKey: ["shop-analytics", shopId],
+  // Real event counts from storefront_analytics_events
+  const { data: eventStats, isLoading } = useQuery({
+    queryKey: ["shop-event-stats", shopId],
     queryFn: async () => {
-      const { data } = await (supabase as any).from("storefront_analytics_daily")
-        .select("*").eq("shop_id", shopId)
-        .order("day", { ascending: false }).limit(30);
-      return data || [];
+      const thirtyDaysAgo = new Date(Date.now() - 30 * 86400000).toISOString();
+      const { data: events } = await (supabase as any)
+        .from("storefront_analytics_events")
+        .select("event_type, session_id, revenue, created_at")
+        .eq("shop_id", shopId)
+        .gte("created_at", thirtyDaysAgo);
+
+      if (!events || events.length === 0) {
+        return { pageViews: 0, uniqueVisitors: 0, addToCart: 0, checkouts: 0, purchases: 0, purchaseRevenue: 0 };
+      }
+
+      const sessions = new Set<string>();
+      let pageViews = 0, addToCart = 0, checkouts = 0, purchases = 0, purchaseRevenue = 0;
+
+      events.forEach((e: any) => {
+        if (e.session_id) sessions.add(e.session_id);
+        switch (e.event_type) {
+          case "page_view": pageViews++; break;
+          case "add_to_cart": addToCart++; break;
+          case "checkout": checkouts++; break;
+          case "purchase": purchases++; purchaseRevenue += (e.revenue || 0); break;
+        }
+      });
+
+      return { pageViews, uniqueVisitors: sessions.size, addToCart, checkouts, purchases, purchaseRevenue };
     },
   });
 
+  // Order stats from storefront_orders
   const { data: orderStats } = useQuery({
     queryKey: ["shop-order-stats", shopId],
     queryFn: async () => {
       const { data: orders } = await (supabase as any).from("storefront_orders")
         .select("status, total, currency").eq("shop_id", shopId);
-      if (!orders) return { total: 0, completed: 0, revenue: 0, byStatus: {} };
+      if (!orders) return { total: 0, completed: 0, revenue: 0, byStatus: {} as Record<string, number> };
       const completed = orders.filter((o: any) => o.status === "completed");
       const byStatus: Record<string, number> = {};
       orders.forEach((o: any) => { byStatus[o.status] = (byStatus[o.status] || 0) + 1; });
@@ -54,7 +79,7 @@ export default function ShopAnalytics({ shopId }: Props) {
     },
   });
 
-  // Top products by order count
+  // Top products
   const { data: topProducts = [] } = useQuery({
     queryKey: ["shop-top-products", shopId],
     queryFn: async () => {
@@ -76,24 +101,27 @@ export default function ShopAnalytics({ shopId }: Props) {
     },
   });
 
-  const totals = analytics.reduce((acc: any, day: any) => ({
-    views: acc.views + (day.views || 0),
-    visitors: acc.visitors + (day.visitors || 0),
-    orders: acc.orders + (day.orders || 0),
-    revenue: acc.revenue + (day.revenue || 0),
-  }), { views: 0, visitors: 0, orders: 0, revenue: 0 });
-
-  const finalOrders = orderStats?.total || totals.orders;
-  const finalRevenue = orderStats?.revenue || totals.revenue;
-  const conversionRate = totals.visitors > 0 ? ((finalOrders / totals.visitors) * 100).toFixed(1) : "0";
+  const ev = eventStats || { pageViews: 0, uniqueVisitors: 0, addToCart: 0, checkouts: 0, purchases: 0, purchaseRevenue: 0 };
+  const totalOrders = orderStats?.total || 0;
+  const totalRevenue = orderStats?.revenue || 0;
+  const conversionRate = ev.uniqueVisitors > 0 ? ((totalOrders / ev.uniqueVisitors) * 100).toFixed(1) : "0";
 
   const metrics = [
-    { label: "Views (30d)", value: fmtNum(totals.views), icon: Eye, color: "text-info" },
-    { label: "Visitors", value: fmtNum(totals.visitors), icon: Users, color: "text-primary" },
-    { label: "Orders", value: fmtNum(finalOrders), icon: ShoppingBag, color: "text-success" },
-    { label: "Revenue", value: fmtPrice(finalRevenue), icon: DollarSign, color: "text-warning" },
-    { label: "Conversion", value: `${conversionRate}%`, icon: TrendingUp, color: "text-accent-foreground" },
+    { label: "Page Views (30d)", value: fmtNum(ev.pageViews), icon: Eye, color: "text-info" },
+    { label: "Unique Visitors", value: fmtNum(ev.uniqueVisitors), icon: Users, color: "text-primary" },
+    { label: "Add to Cart", value: fmtNum(ev.addToCart), icon: ShoppingCart, color: "text-warning" },
+    { label: "Checkouts", value: fmtNum(ev.checkouts), icon: CreditCard, color: "text-accent-foreground" },
+    { label: "Orders", value: fmtNum(totalOrders), icon: ShoppingBag, color: "text-success" },
+    { label: "Revenue", value: fmtPrice(totalRevenue), icon: DollarSign, color: "text-primary" },
   ];
+
+  const funnelSteps = [
+    { label: "Views", count: ev.pageViews, icon: Eye },
+    { label: "Add to Cart", count: ev.addToCart, icon: ShoppingCart },
+    { label: "Checkout", count: ev.checkouts, icon: CreditCard },
+    { label: "Purchase", count: ev.purchases, icon: ShoppingBag },
+  ];
+  const maxFunnel = Math.max(1, ...funnelSteps.map(s => s.count));
 
   if (isLoading) return <div className="py-8 text-center"><Loader2 className="h-5 w-5 animate-spin mx-auto text-muted-foreground" /></div>;
 
@@ -104,6 +132,7 @@ export default function ShopAnalytics({ shopId }: Props) {
     <div className="space-y-4">
       <h3 className="text-sm font-semibold flex items-center gap-2">
         <BarChart3 className="h-4 w-4 text-primary" /> Analytics
+        <Badge variant="outline" className="text-[9px] ml-auto">Live data</Badge>
       </h3>
 
       {/* Metrics grid */}
@@ -121,11 +150,31 @@ export default function ShopAnalytics({ shopId }: Props) {
         ))}
       </div>
 
-      {/* Order Funnel */}
+      {/* Conversion Funnel */}
+      <Card>
+        <CardContent className="p-3 space-y-2">
+          <h4 className="text-xs font-semibold text-muted-foreground flex items-center gap-1">
+            <TrendingUp className="h-3 w-3" /> Conversion Funnel (30d)
+          </h4>
+          {funnelSteps.map((step) => (
+            <div key={step.label} className="flex items-center gap-2">
+              <step.icon className="h-3 w-3 text-muted-foreground shrink-0" />
+              <span className="text-[11px] w-20 shrink-0">{step.label}</span>
+              <div className="flex-1 h-2.5 bg-muted rounded-full overflow-hidden">
+                <div className="h-full bg-primary/60 rounded-full transition-all" style={{ width: `${(step.count / maxFunnel) * 100}%` }} />
+              </div>
+              <span className="text-[10px] font-medium text-foreground w-8 text-right">{fmtNum(step.count)}</span>
+            </div>
+          ))}
+          <p className="text-[10px] text-muted-foreground text-right">Conversion: {conversionRate}%</p>
+        </CardContent>
+      </Card>
+
+      {/* Order Status Breakdown */}
       {statusEntries.length > 0 && (
         <Card>
           <CardContent className="p-3 space-y-2">
-            <h4 className="text-xs font-semibold text-muted-foreground">Order Status Breakdown</h4>
+            <h4 className="text-xs font-semibold text-muted-foreground">Order Status</h4>
             {statusEntries.map(([status, count]) => (
               <div key={status} className="flex items-center gap-2">
                 <Badge variant="secondary" className={`text-[9px] px-1.5 capitalize ${STATUS_COLORS[status] || ""}`}>{status}</Badge>
@@ -163,27 +212,6 @@ export default function ShopAnalytics({ shopId }: Props) {
                 <span className="text-[11px] font-semibold text-primary">{fmtPrice(p.revenue)}</span>
               </div>
             ))}
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Recent days */}
-      {analytics.length > 0 && (
-        <Card>
-          <CardContent className="p-3 space-y-2">
-            <h4 className="text-xs font-semibold text-muted-foreground">Last 7 Days</h4>
-            <div className="space-y-1">
-              {analytics.slice(0, 7).map((day: any) => (
-                <div key={day.day} className="flex items-center justify-between text-[11px]">
-                  <span className="text-muted-foreground">{new Date(day.day).toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" })}</span>
-                  <div className="flex items-center gap-3">
-                    <span>{day.views || 0} views</span>
-                    <span>{day.orders || 0} orders</span>
-                    <span className="font-medium text-primary">{fmtPrice(day.revenue || 0)}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
           </CardContent>
         </Card>
       )}
