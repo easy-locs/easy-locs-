@@ -402,7 +402,7 @@ if (sig !== req.headers['x-webhook-signature']) {
                 <div>
                   <h4 className="font-semibold text-foreground text-sm mb-2">cURL — Lister les biens</h4>
                   <pre className="bg-muted rounded-lg p-4 text-xs font-mono text-foreground overflow-x-auto">
-{`curl -X GET https://api.easy-locs.com/v1/properties \\
+{`curl -X GET ${import.meta.env.VITE_SUPABASE_URL}/functions/v1/public-api/v1/properties \\
   -H "Authorization: Bearer el_your_api_key" \\
   -H "Content-Type: application/json"`}
                   </pre>
