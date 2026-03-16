@@ -8,8 +8,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Clock, CheckCircle, Package, Truck, XCircle, ShoppingBag, ArrowLeft } from "lucide-react";
+import { Loader2, Clock, CheckCircle, Package, Truck, XCircle, ShoppingBag, ArrowLeft, Hash, MessageCircle } from "lucide-react";
 import { Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 interface BuyerOrderTrackerProps {
