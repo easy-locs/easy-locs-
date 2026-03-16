@@ -15,6 +15,8 @@ import { useStorefrontWishlist } from "@/hooks/useStorefrontWishlist";
 import { useStorefrontCurrency } from "@/hooks/useStorefrontCurrency";
 import { useAuth } from "@/contexts/AuthContext";
 import ShopReviews from "@/components/storefront/ShopReviews";
+import BundleManager from "@/components/storefront/BundleManager";
+import LoyaltyDashboard from "@/components/storefront/LoyaltyDashboard";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
