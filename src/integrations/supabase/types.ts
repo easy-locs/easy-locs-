@@ -7610,6 +7610,53 @@ export type Database = {
           },
         ]
       }
+      storefront_loyalty_members: {
+        Row: {
+          birthday: string | null
+          birthday_bonus_claimed_at: string | null
+          id: string
+          joined_at: string
+          lifetime_points: number
+          points: number
+          shop_id: string
+          tier: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          birthday?: string | null
+          birthday_bonus_claimed_at?: string | null
+          id?: string
+          joined_at?: string
+          lifetime_points?: number
+          points?: number
+          shop_id: string
+          tier?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          birthday?: string | null
+          birthday_bonus_claimed_at?: string | null
+          id?: string
+          joined_at?: string
+          lifetime_points?: number
+          points?: number
+          shop_id?: string
+          tier?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "storefront_loyalty_members_shop_id_fkey"
+            columns: ["shop_id"]
+            isOneToOne: false
+            referencedRelation: "storefront_pages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       storefront_loyalty_points: {
         Row: {
           id: string
@@ -7699,6 +7746,62 @@ export type Database = {
           },
         ]
       }
+      storefront_loyalty_rewards: {
+        Row: {
+          active: boolean
+          created_at: string
+          currency: string | null
+          current_redemptions: number | null
+          description: string | null
+          id: string
+          max_redemptions: number | null
+          min_tier: string | null
+          points_required: number
+          reward_type: string
+          reward_value: number | null
+          shop_id: string
+          title: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          currency?: string | null
+          current_redemptions?: number | null
+          description?: string | null
+          id?: string
+          max_redemptions?: number | null
+          min_tier?: string | null
+          points_required?: number
+          reward_type?: string
+          reward_value?: number | null
+          shop_id: string
+          title: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          currency?: string | null
+          current_redemptions?: number | null
+          description?: string | null
+          id?: string
+          max_redemptions?: number | null
+          min_tier?: string | null
+          points_required?: number
+          reward_type?: string
+          reward_value?: number | null
+          shop_id?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "storefront_loyalty_rewards_shop_id_fkey"
+            columns: ["shop_id"]
+            isOneToOne: false
+            referencedRelation: "storefront_pages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       storefront_loyalty_tiers: {
         Row: {
           badge_emoji: string | null
@@ -7736,6 +7839,54 @@ export type Database = {
             columns: ["program_id"]
             isOneToOne: false
             referencedRelation: "storefront_loyalty_programs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      storefront_loyalty_transactions: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          member_id: string
+          order_id: string | null
+          points: number
+          shop_id: string
+          type: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          member_id: string
+          order_id?: string | null
+          points: number
+          shop_id: string
+          type: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          member_id?: string
+          order_id?: string | null
+          points?: number
+          shop_id?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "storefront_loyalty_transactions_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: false
+            referencedRelation: "storefront_loyalty_members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "storefront_loyalty_transactions_shop_id_fkey"
+            columns: ["shop_id"]
+            isOneToOne: false
+            referencedRelation: "storefront_pages"
             referencedColumns: ["id"]
           },
         ]
@@ -8077,46 +8228,82 @@ export type Database = {
       }
       storefront_returns: {
         Row: {
+          admin_notes: string | null
+          approved_at: string | null
           buyer_id: string
           created_at: string
           currency: string
+          description: string | null
           id: string
+          item_ids: Json | null
           order_id: string
+          photo_urls: Json | null
           reason: string
+          received_at: string | null
           refund_amount: number | null
+          refund_type: string | null
+          refunded_at: string | null
           resolution: string | null
           resolved_at: string | null
+          rma_code: string | null
           seller_notes: string | null
+          shipped_at: string | null
           shop_id: string
           status: string
+          tracking_number: string | null
+          updated_at: string | null
         }
         Insert: {
+          admin_notes?: string | null
+          approved_at?: string | null
           buyer_id: string
           created_at?: string
           currency?: string
+          description?: string | null
           id?: string
+          item_ids?: Json | null
           order_id: string
+          photo_urls?: Json | null
           reason?: string
+          received_at?: string | null
           refund_amount?: number | null
+          refund_type?: string | null
+          refunded_at?: string | null
           resolution?: string | null
           resolved_at?: string | null
+          rma_code?: string | null
           seller_notes?: string | null
+          shipped_at?: string | null
           shop_id: string
           status?: string
+          tracking_number?: string | null
+          updated_at?: string | null
         }
         Update: {
+          admin_notes?: string | null
+          approved_at?: string | null
           buyer_id?: string
           created_at?: string
           currency?: string
+          description?: string | null
           id?: string
+          item_ids?: Json | null
           order_id?: string
+          photo_urls?: Json | null
           reason?: string
+          received_at?: string | null
           refund_amount?: number | null
+          refund_type?: string | null
+          refunded_at?: string | null
           resolution?: string | null
           resolved_at?: string | null
+          rma_code?: string | null
           seller_notes?: string | null
+          shipped_at?: string | null
           shop_id?: string
           status?: string
+          tracking_number?: string | null
+          updated_at?: string | null
         }
         Relationships: [
           {
@@ -8416,10 +8603,14 @@ export type Database = {
           id: string
           item_id: string | null
           last_order_at: string | null
+          max_cycles: number | null
+          metadata_json: Json | null
           next_order_at: string
+          paused_at: string | null
           quantity: number
           shop_id: string
           status: string
+          total_cycles: number | null
           total_orders: number
           unit_price: number
           variant_id: string | null
@@ -8434,10 +8625,14 @@ export type Database = {
           id?: string
           item_id?: string | null
           last_order_at?: string | null
+          max_cycles?: number | null
+          metadata_json?: Json | null
           next_order_at?: string
+          paused_at?: string | null
           quantity?: number
           shop_id: string
           status?: string
+          total_cycles?: number | null
           total_orders?: number
           unit_price?: number
           variant_id?: string | null
@@ -8452,10 +8647,14 @@ export type Database = {
           id?: string
           item_id?: string | null
           last_order_at?: string | null
+          max_cycles?: number | null
+          metadata_json?: Json | null
           next_order_at?: string
+          paused_at?: string | null
           quantity?: number
           shop_id?: string
           status?: string
+          total_cycles?: number | null
           total_orders?: number
           unit_price?: number
           variant_id?: string | null
