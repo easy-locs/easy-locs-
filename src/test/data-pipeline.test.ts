@@ -185,9 +185,9 @@ describe("createReportPipeline", () => {
 
     const pipeline = createReportPipeline({
       id: "rent-report",
-      filter: (d) => d.active,
-      keyFn: (d) => d.category,
-      valueFn: (d) => d.amount,
+      filter: (d: any) => d.active,
+      keyFn: (d: any) => d.category,
+      valueFn: (d: any) => d.amount,
     });
 
     const result = await pipeline.run(data);
