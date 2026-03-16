@@ -256,7 +256,7 @@ const ReportingDashboard = () => {
                   {propertyRows.length === 0 ? (
                     <Card><CardContent className="py-12 text-center text-muted-foreground text-sm">
                       <Home className="h-8 w-8 mx-auto mb-2 opacity-30" />
-                      Aucun bien pour cette période
+                      {t("page.reporting.no_properties")}
                     </CardContent></Card>
                   ) : (
                     <div className="space-y-2">
