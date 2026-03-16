@@ -6963,6 +6963,82 @@ export type Database = {
           },
         ]
       }
+      storefront_affiliate_conversions: {
+        Row: {
+          affiliate_id: string
+          commission_amount: number | null
+          created_at: string | null
+          id: string
+          order_amount: number | null
+          order_id: string | null
+          status: string | null
+        }
+        Insert: {
+          affiliate_id: string
+          commission_amount?: number | null
+          created_at?: string | null
+          id?: string
+          order_amount?: number | null
+          order_id?: string | null
+          status?: string | null
+        }
+        Update: {
+          affiliate_id?: string
+          commission_amount?: number | null
+          created_at?: string | null
+          id?: string
+          order_amount?: number | null
+          order_id?: string | null
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "storefront_affiliate_conversions_affiliate_id_fkey"
+            columns: ["affiliate_id"]
+            isOneToOne: false
+            referencedRelation: "storefront_affiliates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      storefront_affiliate_programs: {
+        Row: {
+          cookie_days: number | null
+          created_at: string | null
+          default_commission_rate: number | null
+          enabled: boolean | null
+          id: string
+          min_payout: number | null
+          shop_id: string
+        }
+        Insert: {
+          cookie_days?: number | null
+          created_at?: string | null
+          default_commission_rate?: number | null
+          enabled?: boolean | null
+          id?: string
+          min_payout?: number | null
+          shop_id: string
+        }
+        Update: {
+          cookie_days?: number | null
+          created_at?: string | null
+          default_commission_rate?: number | null
+          enabled?: boolean | null
+          id?: string
+          min_payout?: number | null
+          shop_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "storefront_affiliate_programs_shop_id_fkey"
+            columns: ["shop_id"]
+            isOneToOne: true
+            referencedRelation: "storefront_pages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       storefront_affiliates: {
         Row: {
           commission_rate: number
@@ -8149,6 +8225,41 @@ export type Database = {
           },
         ]
       }
+      storefront_live_chat: {
+        Row: {
+          created_at: string | null
+          id: string
+          message: string
+          session_id: string
+          user_id: string
+          user_name: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          message: string
+          session_id: string
+          user_id: string
+          user_name?: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          message?: string
+          session_id?: string
+          user_id?: string
+          user_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "storefront_live_chat_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "storefront_live_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       storefront_live_sessions: {
         Row: {
           created_at: string
@@ -9029,6 +9140,91 @@ export type Database = {
           },
         ]
       }
+      storefront_refund_policies: {
+        Row: {
+          accepts_used: boolean | null
+          created_at: string | null
+          free_returns: boolean | null
+          id: string
+          notes: string | null
+          return_window_days: number | null
+          shop_id: string
+        }
+        Insert: {
+          accepts_used?: boolean | null
+          created_at?: string | null
+          free_returns?: boolean | null
+          id?: string
+          notes?: string | null
+          return_window_days?: number | null
+          shop_id: string
+        }
+        Update: {
+          accepts_used?: boolean | null
+          created_at?: string | null
+          free_returns?: boolean | null
+          id?: string
+          notes?: string | null
+          return_window_days?: number | null
+          shop_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "storefront_refund_policies_shop_id_fkey"
+            columns: ["shop_id"]
+            isOneToOne: true
+            referencedRelation: "storefront_pages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      storefront_return_requests: {
+        Row: {
+          buyer_id: string
+          created_at: string | null
+          description: string | null
+          id: string
+          order_id: string | null
+          preferred_resolution: string | null
+          reason: string
+          resolved_at: string | null
+          shop_id: string
+          status: string
+        }
+        Insert: {
+          buyer_id: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          order_id?: string | null
+          preferred_resolution?: string | null
+          reason?: string
+          resolved_at?: string | null
+          shop_id: string
+          status?: string
+        }
+        Update: {
+          buyer_id?: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          order_id?: string | null
+          preferred_resolution?: string | null
+          reason?: string
+          resolved_at?: string | null
+          shop_id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "storefront_return_requests_shop_id_fkey"
+            columns: ["shop_id"]
+            isOneToOne: false
+            referencedRelation: "storefront_pages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       storefront_returns: {
         Row: {
           admin_notes: string | null
@@ -9541,6 +9737,41 @@ export type Database = {
           },
           {
             foreignKeyName: "storefront_stock_movements_shop_id_fkey"
+            columns: ["shop_id"]
+            isOneToOne: false
+            referencedRelation: "storefront_pages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      storefront_store_credits: {
+        Row: {
+          balance: number | null
+          created_at: string | null
+          id: string
+          shop_id: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          balance?: number | null
+          created_at?: string | null
+          id?: string
+          shop_id: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          balance?: number | null
+          created_at?: string | null
+          id?: string
+          shop_id?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "storefront_store_credits_shop_id_fkey"
             columns: ["shop_id"]
             isOneToOne: false
             referencedRelation: "storefront_pages"
