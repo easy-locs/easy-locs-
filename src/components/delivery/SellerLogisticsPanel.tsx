@@ -494,6 +494,14 @@ export default function SellerLogisticsPanel() {
         <SLAAlertSystem orgId={jobs[0]?.org_id || ""} />
       ) : filter === "job-marketplace" ? (
         <DriverJobMarketplace />
+      ) : filter === "fleet-gps" ? (
+        <FleetGPSTracker orgId={jobs[0]?.org_id || ""} />
+      ) : filter === "insurance-claims" ? (
+        <DeliveryInsuranceClaims orgId={jobs[0]?.org_id || ""} />
+      ) : filter === "shift-scheduler" ? (
+        <DriverShiftScheduler orgId={jobs[0]?.org_id || ""} />
+      ) : filter === "live-tracking" ? (
+        <CustomerLiveTracking />
       ) : (
       <div className="space-y-2">
         {loading ? (
