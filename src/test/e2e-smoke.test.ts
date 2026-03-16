@@ -265,7 +265,7 @@ describe("Cross-Module Integration", () => {
     const kpi1 = computeKPI(100, 80);
     const kpi2 = computeKPI(100, 80);
     expect(kpi1).toEqual(kpi2);
-    expect(kpi1.growth).toBeCloseTo(25, 0);
+    expect(kpi1.changePercent).toBe(25);
   });
 });
 
