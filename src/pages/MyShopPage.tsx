@@ -26,6 +26,10 @@ import ShippingManager from "@/components/storefront/ShippingManager";
 import ReturnsManager from "@/components/storefront/ReturnsManager";
 import SellerFinance from "@/components/storefront/SellerFinance";
 import SubscriptionManager from "@/components/storefront/SubscriptionManager";
+import DeliveryDispatch from "@/components/storefront/DeliveryDispatch";
+import SmartInventoryAlerts from "@/components/storefront/SmartInventoryAlerts";
+import BundleManager from "@/components/storefront/BundleManager";
+import LoyaltyDashboard from "@/components/storefront/LoyaltyDashboard";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -157,6 +161,7 @@ export default function MyShopPage() {
             <div className="space-y-4">
               <OrdersManager shopId={shop.id} />
               <ReturnsManager shopId={shop.id} />
+              <DeliveryDispatch shopId={shop.id} />
             </div>
           )}
           {tab === "deals" && <StorefrontDealRoom shopId={shop.id} isSeller />}
@@ -164,6 +169,7 @@ export default function MyShopPage() {
             <div className="space-y-4">
               <SellerFinance shopId={shop.id} />
               <SubscriptionManager shopId={shop.id} />
+              <LoyaltyDashboard shopId={shop.id} mode="seller" />
             </div>
           )}
           {tab === "analytics" && <ShopAnalytics shopId={shop.id} />}
@@ -335,8 +341,14 @@ export default function MyShopPage() {
               {/* Coupons & Promotions */}
               <CouponManager shopId={shop.id} />
 
+              {/* Product Bundles */}
+              <BundleManager shopId={shop.id} mode="manage" />
+
               {/* Inventory */}
               <InventoryManager shopId={shop.id} />
+
+              {/* Smart Inventory Alerts */}
+              <SmartInventoryAlerts shopId={shop.id} />
 
               {/* Shipping */}
               <ShippingManager shopId={shop.id} />
