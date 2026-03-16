@@ -87,6 +87,10 @@ import AdvancedReturnsHub from "@/components/delivery/AdvancedReturnsHub";
 import FinancialControlCenter from "@/components/delivery/FinancialControlCenter";
 import IncidentManagement from "@/components/delivery/IncidentManagement";
 import SellerPartnerPortal from "@/components/delivery/SellerPartnerPortal";
+import SmartCapacityPlanning from "@/components/delivery/SmartCapacityPlanning";
+import MultiVendorMarketplace from "@/components/delivery/MultiVendorMarketplace";
+import QualityAssuranceSystem from "@/components/delivery/QualityAssuranceSystem";
+import CustomerExperienceHub from "@/components/delivery/CustomerExperienceHub";
 import { useDeliveryNotifications } from "@/hooks/useDeliveryNotifications";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -276,7 +280,7 @@ export default function SellerLogisticsPanel() {
   const [searchingJobId, setSearchingJobId] = useState<string | null>(null);
   const [disputeJobId, setDisputeJobId] = useState<string | null>(null);
   const [trackingJobId, setTrackingJobId] = useState<string | null>(null);
-  const [filter, setFilter] = useState<"all" | "active" | "completed" | "batch" | "scheduled" | "history" | "disputes" | "analytics" | "multistop" | "seller-stats" | "onboarding" | "wallet" | "geofence" | "chat" | "fleet" | "reputation" | "optimize" | "buyer" | "invoices" | "sla" | "multi-drop" | "driver-reg" | "reports" | "fleet-mgmt" | "dispatch-rules" | "customer-track" | "payroll" | "surge" | "shifts" | "moderation" | "notif-rules" | "multi-currency" | "route-optim" | "insurance" | "adv-analytics" | "referral" | "support-bot" | "returns" | "slot-booking" | "fleet-hub" | "gamification" | "smart-notifs" | "api-webhooks" | "zone-pricing" | "customer-loyalty" | "compliance" | "ai-planning" | "route-planner" | "returns-mgmt" | "schedule-cal" | "driver-portal" | "promo-coupons" | "live-chat" | "warehouse" | "green-delivery" | "fleet-system" | "order-bundle" | "tracking-portal" | "seller-rating" | "address-book" | "delivery-kpi" | "maint-sched" | "driver-onboard" | "notif-center" | "payout-reports" | "zones-mgr" | "proof-delivery" | "driver-analytics" | "sla-alerts" | "job-marketplace" | "fleet-gps" | "insurance-claims" | "shift-scheduler" | "live-tracking" | "command-center" | "auto-invoicing" | "rewards" | "driver-comms" | "bi-dashboard" | "driver-registration" | "sla-monitor" | "notif-hub" | "adv-returns" | "finance-ctrl" | "incidents" | "seller-portal">("all");
+  const [filter, setFilter] = useState<"all" | "active" | "completed" | "batch" | "scheduled" | "history" | "disputes" | "analytics" | "multistop" | "seller-stats" | "onboarding" | "wallet" | "geofence" | "chat" | "fleet" | "reputation" | "optimize" | "buyer" | "invoices" | "sla" | "multi-drop" | "driver-reg" | "reports" | "fleet-mgmt" | "dispatch-rules" | "customer-track" | "payroll" | "surge" | "shifts" | "moderation" | "notif-rules" | "multi-currency" | "route-optim" | "insurance" | "adv-analytics" | "referral" | "support-bot" | "returns" | "slot-booking" | "fleet-hub" | "gamification" | "smart-notifs" | "api-webhooks" | "zone-pricing" | "customer-loyalty" | "compliance" | "ai-planning" | "route-planner" | "returns-mgmt" | "schedule-cal" | "driver-portal" | "promo-coupons" | "live-chat" | "warehouse" | "green-delivery" | "fleet-system" | "order-bundle" | "tracking-portal" | "seller-rating" | "address-book" | "delivery-kpi" | "maint-sched" | "driver-onboard" | "notif-center" | "payout-reports" | "zones-mgr" | "proof-delivery" | "driver-analytics" | "sla-alerts" | "job-marketplace" | "fleet-gps" | "insurance-claims" | "shift-scheduler" | "live-tracking" | "command-center" | "auto-invoicing" | "rewards" | "driver-comms" | "bi-dashboard" | "driver-registration" | "sla-monitor" | "notif-hub" | "adv-returns" | "finance-ctrl" | "incidents" | "seller-portal" | "capacity" | "multi-vendor" | "quality" | "cx-hub">("all");
   const [chatJobId, setChatJobId] = useState<string | null>(null);
 
   const filteredJobs = jobs.filter(j => {
@@ -338,7 +342,7 @@ export default function SellerLogisticsPanel() {
 
       {/* Filter tabs */}
       <div className="flex gap-1 p-1 rounded-xl overflow-x-auto" style={{ background: "hsl(var(--hud-surface))" }}>
-        {(["all", "active", "completed", "batch", "multi-drop", "multistop", "route-planner", "scheduled", "schedule-cal", "slot-booking", "history", "disputes", "analytics", "reports", "adv-analytics", "bi-dashboard", "seller-stats", "sla", "sla-alerts", "sla-monitor", "surge", "multi-currency", "zone-pricing", "zones-mgr", "promo-coupons", "route-optim", "insurance", "insurance-claims", "onboarding", "driver-reg", "driver-portal", "driver-onboard", "driver-registration", "driver-analytics", "job-marketplace", "referral", "gamification", "shifts", "shift-scheduler", "wallet", "customer-loyalty", "rewards", "geofence", "fleet", "fleet-gps", "fleet-hub", "fleet-mgmt", "warehouse", "dispatch-rules", "command-center", "moderation", "compliance", "smart-notifs", "notif-center", "notif-hub", "driver-comms", "ai-planning", "auto-invoicing", "green-delivery", "fleet-system", "order-bundle", "tracking-portal", "live-tracking", "proof-delivery", "seller-rating", "address-book", "delivery-kpi", "maint-sched", "payout-reports", "reputation", "optimize", "buyer", "customer-track", "live-chat", "support-bot", "returns", "returns-mgmt", "adv-returns", "finance-ctrl", "incidents", "seller-portal", "invoices", "payroll", "notif-rules", "api-webhooks"] as const).map(f => {
+        {(["all", "active", "completed", "batch", "multi-drop", "multistop", "route-planner", "scheduled", "schedule-cal", "slot-booking", "history", "disputes", "analytics", "reports", "adv-analytics", "bi-dashboard", "seller-stats", "sla", "sla-alerts", "sla-monitor", "surge", "multi-currency", "zone-pricing", "zones-mgr", "promo-coupons", "route-optim", "insurance", "insurance-claims", "onboarding", "driver-reg", "driver-portal", "driver-onboard", "driver-registration", "driver-analytics", "job-marketplace", "referral", "gamification", "shifts", "shift-scheduler", "wallet", "customer-loyalty", "rewards", "geofence", "fleet", "fleet-gps", "fleet-hub", "fleet-mgmt", "warehouse", "dispatch-rules", "command-center", "moderation", "compliance", "smart-notifs", "notif-center", "notif-hub", "driver-comms", "ai-planning", "auto-invoicing", "green-delivery", "fleet-system", "order-bundle", "tracking-portal", "live-tracking", "proof-delivery", "seller-rating", "address-book", "delivery-kpi", "maint-sched", "payout-reports", "reputation", "optimize", "buyer", "customer-track", "live-chat", "support-bot", "returns", "returns-mgmt", "adv-returns", "finance-ctrl", "incidents", "seller-portal", "capacity", "multi-vendor", "quality", "cx-hub", "invoices", "payroll", "notif-rules", "api-webhooks"] as const).map(f => {
           const labels: Record<string, string> = {
             all: "Tout", active: "Actives", completed: "Terminées", batch: "⚡ Batch",
             "multi-drop": "📦 Multi-Drop",
@@ -362,6 +366,7 @@ export default function SellerLogisticsPanel() {
             "command-center": "🎯 Command", "auto-invoicing": "🧾 Factures+", "rewards": "🏆 Récompenses", "driver-comms": "📡 Comms",
             "bi-dashboard": "📊 BI", "driver-registration": "📝 Registre", "sla-monitor": "⏱️ SLA+", "notif-hub": "🔔 Hub Notifs",
             "adv-returns": "🔄 Retours++", "finance-ctrl": "💵 Finance", "incidents": "🚨 Incidents", "seller-portal": "🏪 Partenaires",
+            "capacity": "🧠 Capacité", "multi-vendor": "🛒 Multi-vendeur", "quality": "🛡️ Qualité", "cx-hub": "❤️ CX Hub",
           };
           return (
             <button key={f} onClick={() => setFilter(f)}
@@ -541,6 +546,14 @@ export default function SellerLogisticsPanel() {
         <IncidentManagement orgId={jobs[0]?.org_id || ""} />
       ) : filter === "seller-portal" ? (
         <SellerPartnerPortal orgId={jobs[0]?.org_id || ""} />
+      ) : filter === "capacity" ? (
+        <SmartCapacityPlanning orgId={jobs[0]?.org_id || ""} />
+      ) : filter === "multi-vendor" ? (
+        <MultiVendorMarketplace orgId={jobs[0]?.org_id || ""} />
+      ) : filter === "quality" ? (
+        <QualityAssuranceSystem orgId={jobs[0]?.org_id || ""} />
+      ) : filter === "cx-hub" ? (
+        <CustomerExperienceHub orgId={jobs[0]?.org_id || ""} />
       ) : (
       <div className="space-y-2">
         {loading ? (
