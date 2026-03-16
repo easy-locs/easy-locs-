@@ -107,6 +107,7 @@ export default function MessageMultiSelectToolbar({
       }
       onDeletedForAll(ids);
       toast.success(`${count} ${t("orbit.messages_deleted_all") || "messages deleted for everyone"}`);
+      platformBus.emit("orbit:message_sent", { type: "bulk_delete_for_all", count: ids.length }, "orbit", { userId: currentUserId });
     } catch (e: any) {
       toast.error("Failed to delete some messages");
     }
