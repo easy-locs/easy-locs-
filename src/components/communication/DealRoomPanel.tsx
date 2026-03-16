@@ -638,6 +638,42 @@ export default function DealRoomPanel({
               <AlertTriangle className="h-3 w-3" /> Offer expired
             </Badge>
           )}
+
+          {/* Payment actions for accepted/payment_pending deals */}
+          {(dealStatus === "accepted" || dealStatus === "payment_pending") && !isOrgMember && (
+            <Button
+              size="sm"
+              className="text-[10px] h-7 gap-1 rounded-md bg-primary hover:bg-primary/90 text-primary-foreground"
+              onClick={() => generatePaymentLink.mutate()}
+              disabled={generatePaymentLink.isPending}
+            >
+              {generatePaymentLink.isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : <CreditCard className="h-3 w-3" />}
+              Pay Now
+            </Button>
+          )}
+          {dealStatus === "payment_pending" && isOrgMember && (
+            <Button
+              size="sm"
+              variant="outline"
+              className="text-[10px] h-7 gap-1 rounded-md"
+              onClick={() => verifyPayment.mutate()}
+              disabled={verifyPayment.isPending}
+            >
+              {verifyPayment.isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : <RefreshCw className="h-3 w-3" />}
+              Verify Payment
+            </Button>
+          )}
+          {dealData?.metadata_json?.payment_link_url && dealStatus === "payment_pending" && (
+            <a
+              href={dealData.metadata_json.payment_link_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 text-[9px] text-primary hover:underline"
+            >
+              <ExternalLink className="h-3 w-3" /> Open payment link
+            </a>
+          )}
+
           {/* Document & Visit */}
           <Button
             size="sm"
