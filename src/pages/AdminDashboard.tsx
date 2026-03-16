@@ -180,11 +180,11 @@ const AdminDashboard = () => {
               <p className="text-sm text-muted-foreground">Platform analytics, retention & revenue</p>
             </div>
           </div>
-          <div className="flex items-center bg-muted rounded-lg p-0.5">
-            {(["overview", "users", "revenue", "health"] as const).map(tab => (
+          <div className="flex items-center bg-muted rounded-lg p-0.5 overflow-x-auto scrollbar-none">
+            {(["overview", "users", "revenue", "team", "moderation", "health"] as const).map(tab => (
               <button key={tab} onClick={() => setActiveTab(tab)}
-                className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${activeTab === tab ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
-                {tab === "overview" ? "Overview" : tab === "users" ? "Users" : tab === "revenue" ? "Revenue" : "Health"}
+                className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors whitespace-nowrap shrink-0 ${activeTab === tab ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
+                {tab === "overview" ? "Overview" : tab === "users" ? "Users" : tab === "revenue" ? "Revenue" : tab === "team" ? "Team" : tab === "moderation" ? "Moderation" : "Health"}
               </button>
             ))}
           </div>
