@@ -153,3 +153,22 @@ Conversation → Offer → Counter offer → Accepted → Payment → Confirmed
 - One active deal per thread
 - Reuses existing Stripe, notification, and media infrastructure
 - Progressive disclosure — deal panel only appears when active
+
+## PASS57 — Orbit Communities / Channels / Broadcast (Block B)
+| Feature | Implementation | Status |
+|---------|---------------|--------|
+| group_type column (group/channel/community) | Migration: `groups.group_type text default 'group'` | ✅ Done |
+| posting_permission column | Migration: `groups.posting_permission text default 'everyone'` | ✅ Done |
+| Pinned messages | Migration: `group_messages.is_pinned`, `pinned_at`, `pinned_by` | ✅ Done |
+| Channel creation with auto admins_only | Create dialog with type selector, channels default to admins_only | ✅ Done |
+| Community creation | Create dialog supports community type | ✅ Done |
+| Viewer role support | Members can be assigned viewer role — cannot post | ✅ Done |
+| Admin role management | Admins can change member roles (admin/member/viewer) inline | ✅ Done |
+| Broadcast mode toggle | Admins can toggle posting_permission at runtime | ✅ Done |
+| Pinned messages bar | Collapsible pinned bar at top of chat, pin/unpin on hover | ✅ Done |
+| Type badges in list | Icons + labels for channel/community in group list | ✅ Done |
+| Broadcast indicator | Megaphone icon in header and list for admins_only spaces | ✅ Done |
+| Posting restriction enforcement | Non-admins see "Only admins can post" message in broadcast mode | ✅ Done |
+| Viewer posting block | Viewers see "View only" message, cannot compose | ✅ Done |
+| Realtime messages | Preserved existing postgres_changes subscription | ✅ Done |
+| 44px min touch targets | Back button, send button sized for mobile | ✅ Done |
