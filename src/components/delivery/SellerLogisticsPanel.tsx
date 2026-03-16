@@ -67,6 +67,10 @@ import DriverOnboardingComplete from "@/components/delivery/DriverOnboardingComp
 import DeliveryNotificationCenter from "@/components/delivery/DeliveryNotificationCenter";
 import SellerPayoutReports from "@/components/delivery/SellerPayoutReports";
 import DeliveryZonesManager from "@/components/delivery/DeliveryZonesManager";
+import ProofOfDeliveryPlus from "@/components/delivery/ProofOfDeliveryPlus";
+import DriverAnalyticsDashboard from "@/components/delivery/DriverAnalyticsDashboard";
+import SLAAlertSystem from "@/components/delivery/SLAAlertSystem";
+import DriverJobMarketplace from "@/components/delivery/DriverJobMarketplace";
 import { useDeliveryNotifications } from "@/hooks/useDeliveryNotifications";
 import { motion, AnimatePresence } from "framer-motion";
 import {
