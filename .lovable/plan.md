@@ -123,7 +123,7 @@ Conversation → Offer → Counter offer → Accepted → Payment → Confirmed
 |-------|-------|--------|
 | 9a | Schema + DealStatusBubble + "Start Deal" button (MVP) | ✅ Done |
 | 9b | Negotiation flow: counter-offer history, offer expiration, documents & visits | ✅ Done |
-| 9c | Payment integration (Stripe link generation + tracking) | 📋 Planned |
+| 9c | Payment integration (Stripe link generation + tracking) | ✅ Done |
 | 9d | Analytics & deal conversion metrics | 📋 Planned |
 
 ## PASS56 — Orbit Communication Hardening (Block A)
