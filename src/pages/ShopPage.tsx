@@ -549,6 +549,25 @@ export default function ShopPage() {
             <PeerMarketplace shopId={shop.id} mode="buyer" />
           </div>
 
+          {/* Wishlist & Save for Later */}
+          {user && (
+            <div className="mt-4">
+              <WishlistSaveLater shopId={shop.id} mode="buyer" catalogItems={catalogItems} />
+            </div>
+          )}
+
+          {/* Product Comparator */}
+          {user && (
+            <div className="mt-4">
+              <ProductComparator shopId={shop.id} catalogItems={catalogItems} mode="buyer" />
+            </div>
+          )}
+
+          {/* Shipping & Tracking */}
+          <div className="mt-4">
+            <AdvancedShipping shopId={shop.id} mode="buyer" />
+          </div>
+
           {/* Smart Notifications */}
           {user && (
             <div className="mt-4">
