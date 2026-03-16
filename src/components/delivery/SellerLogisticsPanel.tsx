@@ -299,7 +299,7 @@ export default function SellerLogisticsPanel() {
 
       {/* Filter tabs */}
       <div className="flex gap-1 p-1 rounded-xl overflow-x-auto" style={{ background: "hsl(var(--hud-surface))" }}>
-        {(["all", "active", "completed", "batch", "multi-drop", "multistop", "scheduled", "slot-booking", "history", "disputes", "analytics", "reports", "adv-analytics", "seller-stats", "sla", "surge", "multi-currency", "route-optim", "insurance", "onboarding", "driver-reg", "referral", "gamification", "shifts", "wallet", "geofence", "fleet", "fleet-hub", "fleet-mgmt", "dispatch-rules", "moderation", "smart-notifs", "reputation", "optimize", "buyer", "customer-track", "support-bot", "returns", "invoices", "payroll", "notif-rules", "api-webhooks"] as const).map(f => {
+        {(["all", "active", "completed", "batch", "multi-drop", "multistop", "scheduled", "slot-booking", "history", "disputes", "analytics", "reports", "adv-analytics", "seller-stats", "sla", "surge", "multi-currency", "zone-pricing", "route-optim", "insurance", "onboarding", "driver-reg", "referral", "gamification", "shifts", "wallet", "customer-loyalty", "geofence", "fleet", "fleet-hub", "fleet-mgmt", "dispatch-rules", "moderation", "compliance", "smart-notifs", "ai-planning", "reputation", "optimize", "buyer", "customer-track", "support-bot", "returns", "invoices", "payroll", "notif-rules", "api-webhooks"] as const).map(f => {
           const labels: Record<string, string> = {
             all: "Tout", active: "Actives", completed: "Terminées", batch: "⚡ Batch",
             "multi-drop": "📦 Multi-Drop",
