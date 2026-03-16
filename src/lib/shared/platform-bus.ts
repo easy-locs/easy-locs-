@@ -13,6 +13,7 @@ type PlatformEventType =
   | "wallet:locs_purchased"
   | "wallet:transfer_sent"
   | "wallet:transfer_received"
+  | "wallet:payment_requested"
   // Orbit / Communication
   | "orbit:message_sent"
   | "orbit:call_started"
