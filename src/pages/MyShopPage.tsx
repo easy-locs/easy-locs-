@@ -227,6 +227,10 @@ export default function MyShopPage() {
               <LoyaltyDashboard shopId={shop.id} mode="seller" />
               <LoyaltyProgram shopId={shop.id} mode="seller" />
               <LoyaltyRewards shopId={shop.id} mode="seller" />
+              <SubscriptionPlans shopId={shop.id} mode="seller" />
+              <MultiVendorHub shopId={shop.id} mode="seller" />
+              <LoyaltyPointsEngine shopId={shop.id} mode="seller" />
+              <GiftCardStore shopId={shop.id} mode="seller" />
             </div>
           )}
           {tab === "analytics" && (
