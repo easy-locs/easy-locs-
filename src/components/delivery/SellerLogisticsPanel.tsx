@@ -79,6 +79,10 @@ import AdminCommandCenter from "@/components/delivery/AdminCommandCenter";
 import AutomatedInvoicingEngine from "@/components/delivery/AutomatedInvoicingEngine";
 import CustomerRewardsProgram from "@/components/delivery/CustomerRewardsProgram";
 import MultiChannelDriverComms from "@/components/delivery/MultiChannelDriverComms";
+import DeliveryBIDashboard from "@/components/delivery/DeliveryBIDashboard";
+import DriverOnboardingRegistration from "@/components/delivery/DriverOnboardingRegistration";
+import SLAPerformanceMonitor from "@/components/delivery/SLAPerformanceMonitor";
+import DeliveryNotificationHub from "@/components/delivery/DeliveryNotificationHub";
 import { useDeliveryNotifications } from "@/hooks/useDeliveryNotifications";
 import { motion, AnimatePresence } from "framer-motion";
 import {
