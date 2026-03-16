@@ -54,6 +54,10 @@ import SubscriptionBoxes from "@/components/storefront/SubscriptionBoxes";
 import ReverseAuctionRFQ from "@/components/storefront/ReverseAuctionRFQ";
 import DigitalProducts from "@/components/storefront/DigitalProducts";
 import PeerMarketplace from "@/components/storefront/PeerMarketplace";
+import WishlistSaveLater from "@/components/storefront/WishlistSaveLater";
+import ProductComparator from "@/components/storefront/ProductComparator";
+import AdvancedShipping from "@/components/storefront/AdvancedShipping";
+import StoreAnalyticsDashboard from "@/components/storefront/StoreAnalyticsDashboard";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -543,6 +547,25 @@ export default function ShopPage() {
           {/* P2P Marketplace */}
           <div className="mt-4">
             <PeerMarketplace shopId={shop.id} mode="buyer" />
+          </div>
+
+          {/* Wishlist & Save for Later */}
+          {user && (
+            <div className="mt-4">
+              <WishlistSaveLater shopId={shop.id} mode="buyer" catalogItems={catalogItems} />
+            </div>
+          )}
+
+          {/* Product Comparator */}
+          {user && (
+            <div className="mt-4">
+              <ProductComparator shopId={shop.id} catalogItems={catalogItems} mode="buyer" />
+            </div>
+          )}
+
+          {/* Shipping & Tracking */}
+          <div className="mt-4">
+            <AdvancedShipping shopId={shop.id} mode="buyer" />
           </div>
 
           {/* Smart Notifications */}

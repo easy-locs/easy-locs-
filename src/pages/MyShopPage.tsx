@@ -68,6 +68,10 @@ import SubscriptionBoxes from "@/components/storefront/SubscriptionBoxes";
 import ReverseAuctionRFQ from "@/components/storefront/ReverseAuctionRFQ";
 import DigitalProducts from "@/components/storefront/DigitalProducts";
 import PeerMarketplace from "@/components/storefront/PeerMarketplace";
+import WishlistSaveLater from "@/components/storefront/WishlistSaveLater";
+import ProductComparator from "@/components/storefront/ProductComparator";
+import AdvancedShipping from "@/components/storefront/AdvancedShipping";
+import StoreAnalyticsDashboard from "@/components/storefront/StoreAnalyticsDashboard";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -212,6 +216,7 @@ export default function MyShopPage() {
               <ReturnsRefunds shopId={shop.id} mode="seller" />
               <DeliveryDispatch shopId={shop.id} />
               <ShippingTracker shopId={shop.id} mode="seller" />
+              <AdvancedShipping shopId={shop.id} mode="seller" />
               <WarehouseManager shopId={shop.id} />
             </div>
           )}
@@ -245,6 +250,7 @@ export default function MyShopPage() {
             <div className="space-y-4">
               <ShopAnalytics shopId={shop.id} />
               <StoreAnalytics shopId={shop.id} />
+              <StoreAnalyticsDashboard shopId={shop.id} />
               <SellerAnalyticsPro shopId={shop.id} />
               <SmartNotifications shopId={shop.id} mode="seller" />
               <CustomerSupport shopId={shop.id} mode="seller" />
