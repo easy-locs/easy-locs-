@@ -29,6 +29,8 @@ type PlatformEventType =
   | "marketplace:booking_completed"
   | "marketplace:booking_cancelled"
   | "marketplace:review_submitted"
+  | "marketplace:provider_went_live"
+  | "marketplace:provider_went_offline"
   // Property Management
   | "pm:lease_created"
   | "pm:lease_activated"
