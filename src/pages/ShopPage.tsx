@@ -474,6 +474,23 @@ export default function ShopPage() {
             </div>
           )}
 
+          {/* Coupons & Promotions */}
+          <div className="mt-4">
+            <CouponsPromotions shopId={shop.id} mode="buyer" />
+          </div>
+
+          {/* Wishlist */}
+          {user && (
+            <div className="mt-4">
+              <WishlistFavorites shopId={shop.id} catalogItems={catalogItems} />
+            </div>
+          )}
+
+          {/* Shipping */}
+          <div className="mt-4">
+            <ShippingFulfillment shopId={shop.id} mode="buyer" />
+          </div>
+
           {/* Reviews section */}
           <div className="mt-6">
             <ShopReviews shopId={shop.id} shopOwnerId={shop.user_id} />

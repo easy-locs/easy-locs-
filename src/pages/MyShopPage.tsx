@@ -222,10 +222,13 @@ export default function MyShopPage() {
             <div className="space-y-4">
               <ShopAnalytics shopId={shop.id} />
               <StoreAnalytics shopId={shop.id} />
+              <SellerAnalyticsPro shopId={shop.id} />
               <SmartNotifications shopId={shop.id} mode="seller" />
               <CustomerSupport shopId={shop.id} mode="seller" />
               <LiveShopping shopId={shop.id} mode="seller" />
               <GamificationEngine shopId={shop.id} mode="seller" />
+              <CouponsPromotions shopId={shop.id} mode="seller" />
+              <ShippingFulfillment shopId={shop.id} mode="seller" />
               <MultiStoreManager />
             </div>
           )}
