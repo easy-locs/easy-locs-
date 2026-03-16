@@ -190,6 +190,7 @@ export default function SellerLogisticsPanel() {
   const { jobs, loading, metrics, createJob, assignDriver, cancelJob } = useSellerDelivery();
   const [showCreate, setShowCreate] = useState(false);
   const [searchingJobId, setSearchingJobId] = useState<string | null>(null);
+  const [disputeJobId, setDisputeJobId] = useState<string | null>(null);
   const [filter, setFilter] = useState<"all" | "active" | "completed" | "disputes" | "analytics">("all");
 
   const filteredJobs = jobs.filter(j => {
