@@ -311,8 +311,8 @@ export default function SellerLogisticsPanel() {
             "customer-track": "📲 Suivi client", "support-bot": "🤖 Support IA", returns: "🔄 Retours",
             payroll: "💶 Paie", "notif-rules": "🔔 Notifs",
             reputation: "🏆 Réputation", optimize: "⚡ Optim.", buyer: "👤 Client", invoices: "🧾 Factures",
-            "multi-currency": "💱 Devises", "route-optim": "🧭 Routes", insurance: "🛡️ Assurance", "adv-analytics": "📊 Analytics+",
-            "fleet-hub": "🚐 Fleet Hub", gamification: "🎮 Gamification", "smart-notifs": "🧠 Smart Notifs", "api-webhooks": "🔌 API",
+            "multi-currency": "💱 Devises", "zone-pricing": "📍 Zones Tarif", "route-optim": "🧭 Routes", insurance: "🛡️ Assurance", "adv-analytics": "📊 Analytics+",
+            "fleet-hub": "🚐 Fleet Hub", gamification: "🎮 Gamification", "customer-loyalty": "💳 Fidélité", "smart-notifs": "🧠 Smart Notifs", "compliance": "🛡️ Compliance", "ai-planning": "🧠 IA Planning", "api-webhooks": "🔌 API",
           };
           return (
             <button key={f} onClick={() => setFilter(f)}
