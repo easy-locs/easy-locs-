@@ -528,6 +528,7 @@ export default function SellerLogisticsPanel() {
         <SLAPerformanceMonitor orgId={jobs[0]?.org_id || ""} />
       ) : filter === "notif-hub" ? (
         <DeliveryNotificationHub orgId={jobs[0]?.org_id || ""} />
+      ) : (
       <div className="space-y-2">
         {loading ? (
           <div className="flex items-center justify-center py-12">
