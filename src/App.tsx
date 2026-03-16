@@ -392,6 +392,7 @@ const App = () => (
               {/* Catch-all — legacy SEO + 404 */}
               <Route path="*" element={<SEOCatchAll />} />
             </Routes>
+            <SmartInstallBanner />
           </Suspense>
            </AppLockGuard>
           </CallProvider>
