@@ -2,10 +2,12 @@ import { useState, useEffect, useMemo, lazy, Suspense } from "react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { Users, CreditCard, TrendingUp, Shield, Activity, AlertTriangle, Building2, FileText, BarChart3, Calendar, DollarSign, ArrowUpRight, ArrowDownRight, HeartPulse } from "lucide-react";
+import { Users, CreditCard, TrendingUp, Shield, Activity, AlertTriangle, Building2, FileText, BarChart3, Calendar, DollarSign, ArrowUpRight, ArrowDownRight, HeartPulse, UserCog, ShieldAlert } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 
 const HealthDashboard = lazy(() => import("@/components/admin/HealthDashboard"));
+const OrgMemberManager = lazy(() => import("@/components/admin/OrgMemberManager"));
+const ModerationPanel = lazy(() => import("@/components/admin/ModerationPanel"));
 
 interface Stats {
   totalUsers: number;
@@ -39,7 +41,7 @@ const AdminDashboard = () => {
   });
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [activeTab, setActiveTab] = useState<"overview" | "users" | "revenue" | "health">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "users" | "revenue" | "health" | "team" | "moderation">("overview");
 
   useEffect(() => {
     if (!user) return;
@@ -178,11 +180,11 @@ const AdminDashboard = () => {
               <p className="text-sm text-muted-foreground">Platform analytics, retention & revenue</p>
             </div>
           </div>
-          <div className="flex items-center bg-muted rounded-lg p-0.5">
-            {(["overview", "users", "revenue", "health"] as const).map(tab => (
+          <div className="flex items-center bg-muted rounded-lg p-0.5 overflow-x-auto scrollbar-none">
+            {(["overview", "users", "revenue", "team", "moderation", "health"] as const).map(tab => (
               <button key={tab} onClick={() => setActiveTab(tab)}
-                className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${activeTab === tab ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
-                {tab === "overview" ? "Overview" : tab === "users" ? "Users" : tab === "revenue" ? "Revenue" : "Health"}
+                className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors whitespace-nowrap shrink-0 ${activeTab === tab ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
+                {tab === "overview" ? "Overview" : tab === "users" ? "Users" : tab === "revenue" ? "Revenue" : tab === "team" ? "Team" : tab === "moderation" ? "Moderation" : "Health"}
               </button>
             ))}
           </div>
@@ -407,6 +409,20 @@ const AdminDashboard = () => {
                   ))}
                 </div>
               </div>
+            )}
+
+            {/* Team Tab */}
+            {activeTab === "team" && (
+              <Suspense fallback={<div className="text-center py-20 text-muted-foreground">Loading…</div>}>
+                <OrgMemberManager />
+              </Suspense>
+            )}
+
+            {/* Moderation Tab */}
+            {activeTab === "moderation" && (
+              <Suspense fallback={<div className="text-center py-20 text-muted-foreground">Loading…</div>}>
+                <ModerationPanel />
+              </Suspense>
             )}
 
             {/* Health Tab */}
