@@ -315,6 +315,14 @@ export default function SellerLogisticsPanel() {
         <GeofencingPanel />
       ) : filter === "fleet" ? (
         <AdminFleetDashboard orgId={jobs[0]?.org_id || ""} />
+      ) : filter === "reputation" ? (
+        <DriverReputationPanel />
+      ) : filter === "optimize" ? (
+        <RouteOptimizationEngine orgId={jobs[0]?.org_id || ""} />
+      ) : filter === "buyer" ? (
+        <BuyerDeliveryDashboard />
+      ) : filter === "invoices" ? (
+        <DeliveryInvoicePanel orgId={jobs[0]?.org_id || ""} />
       ) : (
       <div className="space-y-2">
         {loading ? (
