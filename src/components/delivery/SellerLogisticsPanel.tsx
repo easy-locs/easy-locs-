@@ -430,6 +430,23 @@ export default function SellerLogisticsPanel() {
                     </motion.div>
                   )}
                 </AnimatePresence>
+
+                {/* In-mission chat */}
+                <AnimatePresence>
+                  {chatJobId === job.id && job.driver_id && (
+                    <motion.div initial={{ height: 0 }} animate={{ height: "auto" }} exit={{ height: 0 }}
+                      className="overflow-hidden">
+                      <div className="px-4 pb-3">
+                        <InMissionChat
+                          jobId={job.id}
+                          sellerId={job.seller_id}
+                          driverId={job.driver_id}
+                          onClose={() => setChatJobId(null)}
+                        />
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             );
           })
