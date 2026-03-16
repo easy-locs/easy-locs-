@@ -46,6 +46,10 @@ import StorefrontReviews from "@/components/storefront/StorefrontReviews";
 import LiveCommerceStream from "@/components/storefront/LiveCommerceStream";
 import AffiliateReferralProgram from "@/components/storefront/AffiliateReferralProgram";
 import ReturnsRefunds from "@/components/storefront/ReturnsRefunds";
+import SubscriptionPlans from "@/components/storefront/SubscriptionPlans";
+import MultiVendorHub from "@/components/storefront/MultiVendorHub";
+import LoyaltyPointsEngine from "@/components/storefront/LoyaltyPointsEngine";
+import GiftCardStore from "@/components/storefront/GiftCardStore";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -488,6 +492,32 @@ export default function ShopPage() {
               <GamificationEngine shopId={shop.id} mode="buyer" />
             </div>
           )}
+
+          {/* Subscription Plans */}
+          {user && (
+            <div className="mt-4">
+              <SubscriptionPlans shopId={shop.id} mode="buyer" />
+            </div>
+          )}
+
+          {/* Vendor Program */}
+          {user && (
+            <div className="mt-4">
+              <MultiVendorHub shopId={shop.id} mode="vendor" />
+            </div>
+          )}
+
+          {/* Loyalty Points */}
+          {user && (
+            <div className="mt-4">
+              <LoyaltyPointsEngine shopId={shop.id} mode="buyer" />
+            </div>
+          )}
+
+          {/* Gift Cards */}
+          <div className="mt-4">
+            <GiftCardStore shopId={shop.id} mode="buyer" />
+          </div>
 
           {/* Smart Notifications */}
           {user && (
