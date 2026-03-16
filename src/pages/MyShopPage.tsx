@@ -235,6 +235,10 @@ export default function MyShopPage() {
               <MultiVendorHub shopId={shop.id} mode="seller" />
               <LoyaltyPointsEngine shopId={shop.id} mode="seller" />
               <GiftCardStore shopId={shop.id} mode="seller" />
+              <SubscriptionBoxes shopId={shop.id} mode="seller" />
+              <ReverseAuctionRFQ shopId={shop.id} mode="seller" />
+              <DigitalProducts shopId={shop.id} mode="seller" />
+              <PeerMarketplace shopId={shop.id} mode="seller" />
             </div>
           )}
           {tab === "analytics" && (
