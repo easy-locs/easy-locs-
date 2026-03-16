@@ -328,3 +328,13 @@ Conversation → Offer → Counter offer → Accepted → Payment → Confirmed
 | ClientMessages verified | Full chat with realtime, media, voice, reply, forward, thread actions, search, archive | ✅ Pre-existing |
 | ClientPayments verified | Concierge + marketplace payments with status badges | ✅ Pre-existing |
 | ClientSettings verified | Profile form, app prefs, pro settings, upgrade CTA | ✅ Pre-existing |
+
+## PASS55 Block N — Testing / QA
+| Feature | Implementation | Status |
+|---------|---------------|--------|
+| Fix landing.test.tsx failures | Updated framer-motion mock to use importOriginal for useScroll/useTransform | ✅ Done |
+| Wallet limits tests | 13 tests: checkDailyLimit, isLargeTransaction, formatLimitInfo, tier constants | ✅ Done |
+| Wallet export tests | 7 tests: receipt generation, FX info, direction labels, branding | ✅ Done |
+| Security / Ghost Mode tests | 5 tests: activate, deactivate, idempotency, default state | ✅ Done |
+| Platform Bus tests | 5 tests: emit/receive, unsubscribe, multiple listeners, event metadata, log | ✅ Done |
+| Full test suite | 29 files, 417 tests, 0 failures | ✅ Passing |
