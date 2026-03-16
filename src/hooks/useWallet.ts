@@ -265,6 +265,10 @@ export function useWallet() {
     requestMoney,
     purchaseLocs,
     getConversionPreview,
+    /** Today's outgoing transfer total */
+    todaySpent,
+    /** Check if amount is flagged as large */
+    isLargeTx: isLargeTransaction,
     /** Manual refresh — call from UI refresh buttons */
     refresh: loadWallet,
   };
