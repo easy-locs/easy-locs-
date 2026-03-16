@@ -75,7 +75,7 @@ export default function OrgMemberManager() {
       .select("id, name, email, first_name, last_name")
       .in("id", userIds);
 
-    const profileMap = new Map((profiles || []).map((p) => [p.id, p]));
+    const profileMap = new Map((profiles || []).map((p: any) => [p.id, p]));
 
     const enriched = membersData.map((m) => ({
       ...m,
