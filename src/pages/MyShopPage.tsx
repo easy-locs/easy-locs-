@@ -160,7 +160,12 @@ export default function MyShopPage() {
             </div>
           )}
           {tab === "deals" && <StorefrontDealRoom shopId={shop.id} isSeller />}
-          {tab === "finance" && <SellerFinance shopId={shop.id} />}
+          {tab === "finance" && (
+            <div className="space-y-4">
+              <SellerFinance shopId={shop.id} />
+              <SubscriptionManager shopId={shop.id} />
+            </div>
+          )}
           {tab === "analytics" && <ShopAnalytics shopId={shop.id} />}
           {tab === "launch" && <LaunchAudit shopId={shop.id} />}
           {tab === "settings" && (
