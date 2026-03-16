@@ -48,6 +48,10 @@ import ZoneBasedPricing from "@/components/delivery/ZoneBasedPricing";
 import CustomerWalletLoyalty from "@/components/delivery/CustomerWalletLoyalty";
 import ComplianceDashboard from "@/components/delivery/ComplianceDashboard";
 import AIPredictivePlanning from "@/components/delivery/AIPredictivePlanning";
+import MultiStopRoutePlanner from "@/components/delivery/MultiStopRoutePlanner";
+import ReturnsManagement from "@/components/delivery/ReturnsManagement";
+import DeliverySchedulingCalendar from "@/components/delivery/DeliverySchedulingCalendar";
+import DriverOnboardingPortal from "@/components/delivery/DriverOnboardingPortal";
 import { useDeliveryNotifications } from "@/hooks/useDeliveryNotifications";
 import { motion, AnimatePresence } from "framer-motion";
 import {
