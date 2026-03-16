@@ -159,7 +159,7 @@ const ReportingDashboard = () => {
 
   const handleExportPDF = () => {
     const report: ReportSummary = {
-      title: `Rapport Financier ${year}`,
+      title: `${t("page.reporting.title")} ${year}`,
       period: String(year),
       generatedAt: new Date().toLocaleDateString(),
       currency: activeCountry === "US" ? "USD" : activeCountry === "GB" ? "GBP" : activeCountry === "MA" ? "MAD" : "EUR",
