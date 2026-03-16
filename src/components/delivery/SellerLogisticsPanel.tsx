@@ -266,6 +266,8 @@ export default function SellerLogisticsPanel() {
       {/* Content */}
       {filter === "analytics" ? (
         <DeliveryAnalyticsDashboard orgId={jobs[0]?.org_id} />
+      ) : filter === "disputes" ? (
+        <DeliveryDisputeFlow orgId={jobs[0]?.org_id || ""} />
       ) : (
       <div className="space-y-2">
         {loading ? (
