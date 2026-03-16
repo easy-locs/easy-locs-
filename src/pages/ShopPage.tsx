@@ -11,12 +11,13 @@ import { buildAppUrl } from "@/lib/app-domain";
 import ShareButtons from "@/components/public/ShareButtons";
 import { useStorefrontCart } from "@/hooks/useStorefrontCart";
 import { useStorefrontCoupon } from "@/hooks/useStorefrontCoupon";
+import { useStorefrontWishlist } from "@/hooks/useStorefrontWishlist";
 import { useAuth } from "@/contexts/AuthContext";
 import ShopReviews from "@/components/storefront/ShopReviews";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, MapPin, ShoppingCart, Plus, Minus, Trash2, Phone, Mail, MessageCircle, Send, CheckCircle2, Store, Tag, X } from "lucide-react";
+import { Loader2, MapPin, ShoppingCart, Plus, Minus, Trash2, Phone, Mail, MessageCircle, Send, CheckCircle2, Store, Tag, X, Heart } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { useState } from "react";
@@ -81,6 +82,7 @@ export default function ShopPage() {
 
   const cart = useStorefrontCart(shop?.id);
   const coupon = useStorefrontCoupon(shop?.id);
+  const wishlist = useStorefrontWishlist(shop?.id);
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
 
   const filteredItems = activeCategory
@@ -280,10 +282,18 @@ export default function ShopPage() {
               {filteredItems.map((item: any) => {
                 const photo = item.photo_url || (Array.isArray(item.photo_urls) && item.photo_urls[0]);
                 return (
-                  <Card key={item.id} className="overflow-hidden">
+                  <Card key={item.id} className="overflow-hidden relative">
                     {photo && (
-                      <div className="aspect-square bg-muted">
+                      <div className="aspect-square bg-muted relative">
                         <img src={photo} alt={item.title} className="w-full h-full object-cover" loading="lazy" />
+                        {user && (
+                          <button
+                            onClick={() => wishlist.toggle(item.id)}
+                            className="absolute top-2 right-2 h-7 w-7 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center transition-colors"
+                          >
+                            <Heart className={`h-3.5 w-3.5 transition-colors ${wishlist.isFavorite(item.id) ? "fill-red-500 text-red-500" : "text-muted-foreground"}`} />
+                          </button>
+                        )}
                       </div>
                     )}
                     <CardContent className="p-3 space-y-1.5">
