@@ -72,6 +72,10 @@ import WishlistSaveLater from "@/components/storefront/WishlistSaveLater";
 import ProductComparator from "@/components/storefront/ProductComparator";
 import AdvancedShipping from "@/components/storefront/AdvancedShipping";
 import StoreAnalyticsDashboard from "@/components/storefront/StoreAnalyticsDashboard";
+import LiveChatSupport from "@/components/storefront/LiveChatSupport";
+import AdvancedReferralSystem from "@/components/storefront/AdvancedReferralSystem";
+import TaxComplianceEngine from "@/components/storefront/TaxComplianceEngine";
+import BulkImportSync from "@/components/storefront/BulkImportSync";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -202,6 +206,7 @@ export default function MyShopPage() {
             <div className="space-y-4">
               <CatalogManager shopId={shop.id} />
               <BulkProductManager shopId={shop.id} />
+              <BulkImportSync shopId={shop.id} />
               <FlashSales shopId={shop.id} mode="seller" />
               <AuctionManager shopId={shop.id} mode="seller" />
               <AdvancedReviews shopId={shop.id} mode="seller" />
@@ -244,6 +249,8 @@ export default function MyShopPage() {
               <ReverseAuctionRFQ shopId={shop.id} mode="seller" />
               <DigitalProducts shopId={shop.id} mode="seller" />
               <PeerMarketplace shopId={shop.id} mode="seller" />
+              <TaxComplianceEngine shopId={shop.id} mode="seller" />
+              <AdvancedReferralSystem shopId={shop.id} shopSlug={shop.slug} mode="seller" />
             </div>
           )}
           {tab === "analytics" && (
@@ -256,6 +263,7 @@ export default function MyShopPage() {
               <CustomerSupport shopId={shop.id} mode="seller" />
               <LiveShopping shopId={shop.id} mode="seller" />
               <LiveCommerceStream shopId={shop.id} mode="seller" />
+              <LiveChatSupport shopId={shop.id} mode="seller" />
               <GamificationEngine shopId={shop.id} mode="seller" />
               <CouponsPromotions shopId={shop.id} mode="seller" />
               <ShippingFulfillment shopId={shop.id} mode="seller" />
