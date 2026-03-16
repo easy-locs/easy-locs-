@@ -329,6 +329,14 @@ export default function SellerLogisticsPanel() {
         <BuyerDeliveryDashboard />
       ) : filter === "invoices" ? (
         <DeliveryInvoicePanel orgId={jobs[0]?.org_id || ""} />
+      ) : filter === "sla" ? (
+        <DeliverySLAPanel orgId={jobs[0]?.org_id || ""} />
+      ) : filter === "multi-drop" ? (
+        <MultiDropBatchPanel orgId={jobs[0]?.org_id || ""} />
+      ) : filter === "driver-reg" ? (
+        <DriverOnboardingWizard onComplete={() => setFilter("all")} />
+      ) : filter === "reports" ? (
+        <DeliveryAnalyticsReports orgId={jobs[0]?.org_id || ""} />
       ) : (
       <div className="space-y-2">
         {loading ? (
