@@ -41,17 +41,16 @@ export default function ModerationPanel() {
     setLoading(true);
 
     if (tab === "reviews") {
-      (supabase
-        .from("marketplace_reviews")
-        .select("id, reviewer_name, rating, comment, status, created_at, service_id")
-        .eq("org_id", orgId) as any)
-        .in("status", ["pending", "flagged"])
-        .order("created_at", { ascending: false })
-        .limit(100)
-        .then(({ data }: any) => {
-          setReviews((data || []) as PendingReview[]);
-          setLoading(false);
-        });
+      const fetchReviews = async () => {
+        const query = supabase
+          .from("marketplace_reviews")
+          .select("*")
+          .eq("org_id", orgId);
+        const { data } = await (query as any).in("status", ["pending", "flagged"]).order("created_at", { ascending: false }).limit(100);
+        setReviews((data || []) as PendingReview[]);
+        setLoading(false);
+      };
+      fetchReviews();
     } else {
       supabase
         .from("blocked_users")
