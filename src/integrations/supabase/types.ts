@@ -7183,11 +7183,16 @@ export type Database = {
           payment_method: string | null
           payment_status: string | null
           seller_id: string
+          shipped_at: string | null
+          shipping_address: string | null
+          shipping_fee: number | null
+          shipping_zone_id: string | null
           shop_id: string
           status: string | null
           stripe_session_id: string | null
           subtotal: number | null
           total: number | null
+          tracking_number: string | null
           updated_at: string | null
         }
         Insert: {
@@ -7207,11 +7212,16 @@ export type Database = {
           payment_method?: string | null
           payment_status?: string | null
           seller_id: string
+          shipped_at?: string | null
+          shipping_address?: string | null
+          shipping_fee?: number | null
+          shipping_zone_id?: string | null
           shop_id: string
           status?: string | null
           stripe_session_id?: string | null
           subtotal?: number | null
           total?: number | null
+          tracking_number?: string | null
           updated_at?: string | null
         }
         Update: {
@@ -7231,14 +7241,26 @@ export type Database = {
           payment_method?: string | null
           payment_status?: string | null
           seller_id?: string
+          shipped_at?: string | null
+          shipping_address?: string | null
+          shipping_fee?: number | null
+          shipping_zone_id?: string | null
           shop_id?: string
           status?: string | null
           stripe_session_id?: string | null
           subtotal?: number | null
           total?: number | null
+          tracking_number?: string | null
           updated_at?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "storefront_orders_shipping_zone_id_fkey"
+            columns: ["shipping_zone_id"]
+            isOneToOne: false
+            referencedRelation: "storefront_shipping_zones"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "storefront_orders_shop_id_fkey"
             columns: ["shop_id"]
@@ -7261,6 +7283,7 @@ export type Database = {
           country: string | null
           created_at: string | null
           currency: string | null
+          default_currency: string | null
           description: string | null
           geo_scope: string | null
           id: string
@@ -7301,6 +7324,7 @@ export type Database = {
           country?: string | null
           created_at?: string | null
           currency?: string | null
+          default_currency?: string | null
           description?: string | null
           geo_scope?: string | null
           id?: string
@@ -7341,6 +7365,7 @@ export type Database = {
           country?: string | null
           created_at?: string | null
           currency?: string | null
+          default_currency?: string | null
           description?: string | null
           geo_scope?: string | null
           id?: string
@@ -7439,6 +7464,56 @@ export type Database = {
           },
           {
             foreignKeyName: "storefront_reviews_shop_id_fkey"
+            columns: ["shop_id"]
+            isOneToOne: false
+            referencedRelation: "storefront_pages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      storefront_shipping_zones: {
+        Row: {
+          active: boolean
+          countries: string[] | null
+          created_at: string
+          currency: string
+          delivery_days_max: number | null
+          delivery_days_min: number | null
+          fee: number
+          free_above: number | null
+          id: string
+          name: string
+          shop_id: string
+        }
+        Insert: {
+          active?: boolean
+          countries?: string[] | null
+          created_at?: string
+          currency?: string
+          delivery_days_max?: number | null
+          delivery_days_min?: number | null
+          fee?: number
+          free_above?: number | null
+          id?: string
+          name?: string
+          shop_id: string
+        }
+        Update: {
+          active?: boolean
+          countries?: string[] | null
+          created_at?: string
+          currency?: string
+          delivery_days_max?: number | null
+          delivery_days_min?: number | null
+          fee?: number
+          free_above?: number | null
+          id?: string
+          name?: string
+          shop_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "storefront_shipping_zones_shop_id_fkey"
             columns: ["shop_id"]
             isOneToOne: false
             referencedRelation: "storefront_pages"
