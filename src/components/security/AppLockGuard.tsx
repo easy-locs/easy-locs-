@@ -7,7 +7,7 @@
  * Document title is neutralized. Browser notifications are suppressed.
  */
 import { useState, useEffect, useCallback } from "react";
-import { isAppLocked, setupAutoLock, getSecurityConfig } from "@/lib/app-security";
+import { isAppLocked, setupAutoLock, getSecurityConfig, activateGhostMode, deactivateGhostMode } from "@/lib/app-security";
 import AppLockScreen from "./AppLockScreen";
 import { MessageCircle, Search, Users, Settings, MoreHorizontal } from "lucide-react";
 
