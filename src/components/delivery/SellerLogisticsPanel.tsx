@@ -419,6 +419,14 @@ export default function SellerLogisticsPanel() {
         <ComplianceDashboard orgId={jobs[0]?.org_id || ""} />
       ) : filter === "ai-planning" ? (
         <AIPredictivePlanning orgId={jobs[0]?.org_id || ""} />
+      ) : filter === "route-planner" ? (
+        <MultiStopRoutePlanner orgId={jobs[0]?.org_id || ""} />
+      ) : filter === "returns-mgmt" ? (
+        <ReturnsManagement orgId={jobs[0]?.org_id || ""} />
+      ) : filter === "schedule-cal" ? (
+        <DeliverySchedulingCalendar orgId={jobs[0]?.org_id || ""} />
+      ) : filter === "driver-portal" ? (
+        <DriverOnboardingPortal onComplete={() => setFilter("all")} />
       ) : (
       <div className="space-y-2">
         {loading ? (
