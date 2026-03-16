@@ -1,8 +1,9 @@
 /**
  * DiscoverPage — Module 13-14: Discovery + Search for shops, products, services.
  * Routes: /discover, /trending, /nearby, /top-rated, /search
+ * FIXED: Real server-side search via ilike, not client-side filtering.
  */
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -11,8 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Search, TrendingUp, MapPin, Star, Sparkles, Store, Package, Briefcase, ArrowRight, Loader2, X } from "lucide-react";
+import { Search, TrendingUp, MapPin, Star, Sparkles, Store, Package, Briefcase, Loader2, X } from "lucide-react";
 
 const VERTICALS = [
   { id: "all", label: "All", icon: Sparkles },
@@ -40,50 +40,40 @@ export default function DiscoverPage() {
   const [search, setSearch] = useState(query);
   const [vertical, setVertical] = useState("all");
 
-  // Fetch public shops
+  // Real server-side search for shops via ilike
   const { data: shops = [], isLoading: shopsLoading } = useQuery({
-    queryKey: ["discover-shops", vertical],
+    queryKey: ["discover-shops", vertical, query],
     queryFn: async () => {
       let q = (supabase as any).from("storefront_pages").select("*")
-        .eq("shop_visibility", "public").order("created_at", { ascending: false }).limit(50);
+        .eq("shop_visibility", "public")
+        .order("created_at", { ascending: false })
+        .limit(50);
       if (vertical !== "all") q = q.eq("vertical", vertical);
+      if (query.trim()) q = q.or(`name.ilike.%${query}%,description.ilike.%${query}%,city.ilike.%${query}%`);
       const { data } = await q;
       return data || [];
     },
   });
 
-  // Fetch trending products
+  // Real server-side search for products via ilike
   const { data: products = [] } = useQuery({
-    queryKey: ["discover-products", vertical],
+    queryKey: ["discover-products", vertical, query],
     queryFn: async () => {
-      const shopIds = shops.map((s: any) => s.id);
-      if (shopIds.length === 0) return [];
-      const { data } = await (supabase as any).from("catalog_items").select("*, storefront_pages!catalog_items_shop_id_fkey(name, slug)")
-        .in("shop_id", shopIds.slice(0, 20)).eq("available", true).order("created_at", { ascending: false }).limit(24);
-      return data || [];
+      let q = (supabase as any).from("catalog_items")
+        .select("*, storefront_pages!catalog_items_shop_id_fkey(name, slug, shop_visibility)")
+        .eq("available", true)
+        .order("created_at", { ascending: false })
+        .limit(24);
+      if (query.trim()) q = q.or(`title.ilike.%${query}%,description.ilike.%${query}%`);
+      const { data } = await q;
+      // Filter to only show items from public shops
+      return (data || []).filter((item: any) => item.storefront_pages?.shop_visibility === "public");
     },
-    enabled: shops.length > 0,
   });
-
-  // Search filtering
-  const filteredShops = useMemo(() => {
-    if (!search.trim()) return shops;
-    const q = search.toLowerCase();
-    return shops.filter((s: any) =>
-      s.name?.toLowerCase().includes(q) || s.description?.toLowerCase().includes(q) ||
-      s.city?.toLowerCase().includes(q) || s.tags?.some((t: string) => t.toLowerCase().includes(q))
-    );
-  }, [shops, search]);
-
-  const filteredProducts = useMemo(() => {
-    if (!search.trim()) return products;
-    const q = search.toLowerCase();
-    return products.filter((p: any) => p.title?.toLowerCase().includes(q) || p.description?.toLowerCase().includes(q));
-  }, [products, search]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    setSearchParams(search ? { q: search } : {});
+    setSearchParams(search.trim() ? { q: search.trim() } : {});
   };
 
   return (
@@ -129,7 +119,7 @@ export default function DiscoverPage() {
 
         <div className="px-4 space-y-6">
           {/* Discovery rails */}
-          {!search && (
+          {!query && (
             <div className="flex gap-2 overflow-x-auto scrollbar-none pb-1">
               {RAILS.map(r => (
                 <button key={r.id} onClick={() => navigate(`/discover?rail=${r.id}`)}
@@ -144,18 +134,18 @@ export default function DiscoverPage() {
           <div>
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-sm font-semibold text-foreground">
-                {search ? `Shops matching "${search}"` : "Featured Shops"}
+                {query ? `Shops matching "${query}"` : "Featured Shops"}
               </h2>
-              <span className="text-[10px] text-muted-foreground">{filteredShops.length} results</span>
+              <span className="text-[10px] text-muted-foreground">{shops.length} results</span>
             </div>
 
             {shopsLoading ? (
               <div className="py-8 text-center"><Loader2 className="h-5 w-5 animate-spin mx-auto text-muted-foreground" /></div>
-            ) : filteredShops.length === 0 ? (
+            ) : shops.length === 0 ? (
               <Card><CardContent className="py-8 text-center text-muted-foreground text-sm">No shops found</CardContent></Card>
             ) : (
               <div className="grid grid-cols-2 gap-3">
-                {filteredShops.slice(0, 12).map((shop: any) => (
+                {shops.slice(0, 12).map((shop: any) => (
                   <Card key={shop.id} className="overflow-hidden cursor-pointer hover:shadow-md transition-shadow" onClick={() => navigate(`/s/${shop.slug}`)}>
                     {shop.banner_url && (
                       <div className="h-20 bg-muted"><img src={shop.banner_url} alt="" className="w-full h-full object-cover" loading="lazy" /></div>
@@ -183,13 +173,13 @@ export default function DiscoverPage() {
           </div>
 
           {/* Products section */}
-          {filteredProducts.length > 0 && (
+          {products.length > 0 && (
             <div>
               <h2 className="text-sm font-semibold text-foreground mb-3">
-                {search ? `Products matching "${search}"` : "Latest Products"}
+                {query ? `Products matching "${query}"` : "Latest Products"}
               </h2>
               <div className="grid grid-cols-2 gap-3">
-                {filteredProducts.slice(0, 8).map((item: any) => {
+                {products.slice(0, 8).map((item: any) => {
                   const photo = item.photo_url || (Array.isArray(item.photo_urls) && item.photo_urls[0]);
                   const shopData = item.storefront_pages;
                   return (
