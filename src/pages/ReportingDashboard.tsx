@@ -138,8 +138,8 @@ const ReportingDashboard = () => {
   }, [properties, yearCalls, yearExpenses]);
 
   const chartConfig = {
-    collected: { label: "Encaissé", color: "hsl(var(--accent))" },
-    expenses: { label: "Dépenses", color: "hsl(var(--destructive))" },
+    collected: { label: t("page.reporting.collected"), color: "hsl(var(--accent))" },
+    expenses: { label: t("page.reporting.expenses"), color: "hsl(var(--destructive))" },
   };
 
   const handleExportCSV = () => {
