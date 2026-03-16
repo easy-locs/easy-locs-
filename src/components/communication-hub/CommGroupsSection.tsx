@@ -1,13 +1,17 @@
 /**
- * CommGroupsSection — Real group management with create, list, chat, members. Fully i18n'd.
+ * CommGroupsSection — Groups, Channels & Communities for Orbit.
+ * Supports group_type: group | channel | community
+ * Supports posting_permission: everyone | admins_only
+ * Supports pinned messages, viewer role, broadcast indicator.
  */
 import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useI18n } from "@/lib/i18n";
 import {
-  UsersRound, Plus, Search, ArrowLeft, Send, Settings2,
-  UserPlus, LogOut, Trash2, Crown, Users,
+  UsersRound, Plus, Search, ArrowLeft, Send, Pin, PinOff,
+  UserPlus, LogOut, Trash2, Crown, Users, Megaphone, Hash, Globe,
+  ShieldCheck, Eye, ChevronDown, ChevronUp,
 } from "lucide-react";
 import { format, isToday, isYesterday } from "date-fns";
 import { Input } from "@/components/ui/input";
@@ -16,9 +20,14 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Label } from "@/components/ui/label";
 import { haptic } from "@/lib/haptics";
 import { toast } from "sonner";
-import { motion, AnimatePresence } from "framer-motion";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorState } from "@/components/ui/error-state";
+
+// ── Types ──
+
+type GroupType = "group" | "channel" | "community";
+type PostingPermission = "everyone" | "admins_only";
+type MemberRole = "admin" | "member" | "viewer";
 
 interface Group {
   id: string;
@@ -27,6 +36,8 @@ interface Group {
   photo_url: string | null;
   created_by: string;
   created_at: string;
+  group_type: GroupType;
+  posting_permission: PostingPermission;
   member_count?: number;
   last_message?: string;
   last_message_at?: string;
@@ -35,7 +46,7 @@ interface Group {
 interface GroupMember {
   id: string;
   user_id: string;
-  role: string;
+  role: MemberRole;
   joined_at: string;
   profile_name?: string;
 }
@@ -46,7 +57,12 @@ interface GroupMessage {
   content: string;
   created_at: string;
   sender_name?: string;
+  is_pinned?: boolean;
+  pinned_at?: string;
+  pinned_by?: string;
 }
+
+// ── Helpers ──
 
 function getInitials(name: string): string {
   return name.split(" ").slice(0, 2).map(w => w[0]).join("").toUpperCase();
@@ -59,6 +75,26 @@ function formatMsgTime(d: string): string {
   return format(date, "dd/MM");
 }
 
+const TYPE_ICONS: Record<GroupType, typeof UsersRound> = {
+  group: UsersRound,
+  channel: Hash,
+  community: Globe,
+};
+
+const TYPE_LABELS: Record<GroupType, string> = {
+  group: "Group",
+  channel: "Channel",
+  community: "Community",
+};
+
+const ROLE_LABELS: Record<MemberRole, string> = {
+  admin: "Admin",
+  member: "Member",
+  viewer: "Viewer",
+};
+
+// ── Component ──
+
 export default function CommGroupsSection() {
   const { user, orgId } = useAuth();
   const { t } = useI18n();
@@ -67,7 +103,7 @@ export default function CommGroupsSection() {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [showCreate, setShowCreate] = useState(false);
-  const [newGroup, setNewGroup] = useState({ name: "", description: "" });
+  const [newGroup, setNewGroup] = useState({ name: "", description: "", group_type: "group" as GroupType });
   const [creating, setCreating] = useState(false);
 
   // Chat state
@@ -78,7 +114,22 @@ export default function CommGroupsSection() {
   const [showMembers, setShowMembers] = useState(false);
   const [showAddMember, setShowAddMember] = useState(false);
   const [addMemberEmail, setAddMemberEmail] = useState("");
+  const [addMemberRole, setAddMemberRole] = useState<MemberRole>("member");
+  const [showPinned, setShowPinned] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Derived
+  const myMember = members.find(m => m.user_id === user?.id);
+  const isAdmin = myMember?.role === "admin";
+  const isViewer = myMember?.role === "viewer";
+  const canPost = activeGroup
+    ? activeGroup.posting_permission === "everyone"
+      ? !isViewer
+      : isAdmin
+    : false;
+  const pinnedMessages = messages.filter(m => m.is_pinned);
+
+  // ── Data Loading ──
 
   const loadGroups = useCallback(async () => {
     if (!user?.id) return;
@@ -88,30 +139,24 @@ export default function CommGroupsSection() {
       .from("groups")
       .select("*")
       .order("updated_at", { ascending: false });
-    
-    if (error) {
-      setLoadError(error.message);
-      setLoading(false);
-      return;
-    }
-    
+
+    if (error) { setLoadError(error.message); setLoading(false); return; }
     if (data) {
-      // Get member counts and last messages
       const enriched = await Promise.all(data.map(async (g: any) => {
         const { count } = await supabase
           .from("group_members")
           .select("*", { count: "exact", head: true })
           .eq("group_id", g.id);
-        
         const { data: lastMsg } = await supabase
           .from("group_messages")
           .select("content, created_at")
           .eq("group_id", g.id)
           .order("created_at", { ascending: false })
           .limit(1);
-        
         return {
           ...g,
+          group_type: g.group_type || "group",
+          posting_permission: g.posting_permission || "everyone",
           member_count: count || 0,
           last_message: lastMsg?.[0]?.content || null,
           last_message_at: lastMsg?.[0]?.created_at || g.created_at,
@@ -124,37 +169,41 @@ export default function CommGroupsSection() {
 
   useEffect(() => { loadGroups(); }, [loadGroups]);
 
+  // ── Actions ──
+
   const handleCreate = async () => {
     if (!user?.id || !orgId || !newGroup.name.trim()) return;
     setCreating(true);
-    
-    // Insert group without .select() — SELECT policy requires membership which doesn't exist yet
+
     const groupId = crypto.randomUUID();
+    const postingPermission: PostingPermission = newGroup.group_type === "channel" ? "admins_only" : "everyone";
+
     const { error } = await supabase.from("groups").insert({
       id: groupId,
       org_id: orgId,
       name: newGroup.name.trim(),
       description: newGroup.description.trim() || null,
       created_by: user.id,
+      group_type: newGroup.group_type,
+      posting_permission: postingPermission,
     } as any);
-    
-    if (error) {
-      toast.error("Failed to create group");
-      setCreating(false);
-      return;
-    }
-    
-    // Add creator as admin — now the SELECT policy will work
+
+    if (error) { toast.error("Failed to create"); setCreating(false); return; }
+
     await supabase.from("group_members").insert({
       group_id: groupId,
       user_id: user.id,
       role: "admin",
     } as any);
-    
+
     haptic("success");
-    toast.success(t("orbit.groups.created") || "Group created");
+    toast.success(
+      newGroup.group_type === "channel" ? "Channel created" :
+        newGroup.group_type === "community" ? "Community created" :
+          (t("orbit.groups.created") || "Group created")
+    );
     setShowCreate(false);
-    setNewGroup({ name: "", description: "" });
+    setNewGroup({ name: "", description: "", group_type: "group" });
     setCreating(false);
     loadGroups();
   };
@@ -162,8 +211,6 @@ export default function CommGroupsSection() {
   const openGroupChat = async (group: Group) => {
     setActiveGroup(group);
     haptic("light");
-    
-    // Load messages
     const { data: msgs } = await supabase
       .from("group_messages")
       .select("*")
@@ -171,75 +218,95 @@ export default function CommGroupsSection() {
       .order("created_at", { ascending: true })
       .limit(200);
     setMessages((msgs as GroupMessage[]) || []);
-    
-    // Load members
     const { data: mems } = await supabase
       .from("group_members")
       .select("*")
       .eq("group_id", group.id);
     setMembers((mems as GroupMember[]) || []);
-    
     setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
   };
 
   const sendMessage = async () => {
-    if (!msgInput.trim() || !activeGroup || !user?.id) return;
+    if (!msgInput.trim() || !activeGroup || !user?.id || !canPost) return;
     const content = msgInput.trim();
     setMsgInput("");
     haptic("light");
-    
     const { data, error } = await supabase.from("group_messages").insert({
       group_id: activeGroup.id,
       sender_id: user.id,
       content,
     } as any).select().single();
-    
     if (!error && data) {
       setMessages(prev => [...prev, data as GroupMessage]);
-      // Update group timestamp
       await supabase.from("groups").update({ updated_at: new Date().toISOString() } as any).eq("id", activeGroup.id);
       setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }), 50);
     }
   };
 
+  const togglePin = async (msg: GroupMessage) => {
+    if (!isAdmin || !activeGroup) return;
+    const newPinned = !msg.is_pinned;
+    const { error } = await supabase.from("group_messages").update({
+      is_pinned: newPinned,
+      pinned_at: newPinned ? new Date().toISOString() : null,
+      pinned_by: newPinned ? user?.id : null,
+    } as any).eq("id", msg.id);
+    if (!error) {
+      setMessages(prev => prev.map(m => m.id === msg.id ? { ...m, is_pinned: newPinned, pinned_at: newPinned ? new Date().toISOString() : undefined, pinned_by: newPinned ? user?.id : undefined } : m));
+      haptic("light");
+      toast.success(newPinned ? "Message pinned" : "Message unpinned");
+    }
+  };
+
   const handleAddMember = async () => {
     if (!addMemberEmail.trim() || !activeGroup) return;
-    // Look up user by email in profiles
     const { data: profile } = await supabase
       .from("profiles")
       .select("id")
       .eq("email", addMemberEmail.trim().toLowerCase())
       .single();
-    
-    if (!profile) {
-      toast.error(t("orbit.groups.user_not_found") || "User not found");
-      return;
-    }
-    
+    if (!profile) { toast.error(t("orbit.groups.user_not_found") || "User not found"); return; }
     const { error } = await supabase.from("group_members").insert({
       group_id: activeGroup.id,
       user_id: profile.id,
-      role: "member",
+      role: addMemberRole,
     } as any);
-    
     if (error) {
-      toast.error(error.message.includes("duplicate") ? (t("orbit.groups.already_member") || "Already a member") : (t("orbit.groups.add_member") || "Failed to add member"));
+      toast.error(error.message.includes("duplicate") ? "Already a member" : "Failed to add member");
       return;
     }
-    
     haptic("success");
     toast.success(t("orbit.groups.member_added") || "Member added");
     setAddMemberEmail("");
     setShowAddMember(false);
-    // Reload members
     const { data: mems } = await supabase.from("group_members").select("*").eq("group_id", activeGroup.id);
     setMembers((mems as GroupMember[]) || []);
   };
 
+  const changeMemberRole = async (memberId: string, newRole: MemberRole) => {
+    if (!isAdmin) return;
+    const { error } = await supabase.from("group_members").update({ role: newRole } as any).eq("id", memberId);
+    if (!error) {
+      setMembers(prev => prev.map(m => m.id === memberId ? { ...m, role: newRole } : m));
+      haptic("light");
+      toast.success(`Role updated to ${ROLE_LABELS[newRole]}`);
+    }
+  };
+
+  const togglePostingPermission = async () => {
+    if (!isAdmin || !activeGroup) return;
+    const newPerm: PostingPermission = activeGroup.posting_permission === "everyone" ? "admins_only" : "everyone";
+    const { error } = await supabase.from("groups").update({ posting_permission: newPerm } as any).eq("id", activeGroup.id);
+    if (!error) {
+      setActiveGroup(prev => prev ? { ...prev, posting_permission: newPerm } : null);
+      haptic("light");
+      toast.success(newPerm === "admins_only" ? "Only admins can post now" : "Everyone can post now");
+    }
+  };
+
   const leaveGroup = async () => {
     if (!activeGroup || !user?.id) return;
-    const { error } = await supabase.from("group_members").delete().eq("group_id", activeGroup.id).eq("user_id", user.id);
-    if (error) { toast.error("Failed to leave group"); return; }
+    await supabase.from("group_members").delete().eq("group_id", activeGroup.id).eq("user_id", user.id);
     haptic("medium");
     toast.success(t("orbit.groups.left") || "Left group");
     setActiveGroup(null);
@@ -248,17 +315,14 @@ export default function CommGroupsSection() {
 
   const removeMember = async (memberId: string) => {
     if (!activeGroup) return;
-    const { error } = await supabase.from("group_members").delete().eq("id", memberId);
-    if (error) { toast.error("Failed to remove member"); return; }
+    await supabase.from("group_members").delete().eq("id", memberId);
     haptic("light");
     toast.success(t("orbit.groups.member_removed") || "Member removed");
     const { data: mems } = await supabase.from("group_members").select("*").eq("group_id", activeGroup.id);
     setMembers((mems as GroupMember[]) || []);
   };
 
-  const isAdmin = members.some(m => m.user_id === user?.id && m.role === "admin");
-
-  // Realtime subscription for active group
+  // Realtime
   useEffect(() => {
     if (!activeGroup) return;
     const channel = supabase
@@ -276,77 +340,141 @@ export default function CommGroupsSection() {
         }
       })
       .subscribe();
-    
     return () => { supabase.removeChannel(channel); };
   }, [activeGroup?.id, user?.id]);
 
-  const filtered = groups.filter(g => {
-    if (!search) return true;
-    return g.name.toLowerCase().includes(search.toLowerCase());
-  });
+  const filtered = groups.filter(g => !search || g.name.toLowerCase().includes(search.toLowerCase()));
 
-  // ═══ Group Chat View ═══
+  // ═══════════════════════════════
+  //  GROUP CHAT VIEW
+  // ═══════════════════════════════
   if (activeGroup) {
+    const TypeIcon = TYPE_ICONS[activeGroup.group_type];
+    const isBroadcast = activeGroup.posting_permission === "admins_only";
+
     return (
       <div className="flex-1 flex flex-col min-h-0" style={{ background: "hsl(var(--hud-bg))" }}>
-        {/* Chat header */}
+        {/* Header */}
         <div className="flex items-center gap-3 px-3 py-2.5 shrink-0" style={{ borderBottom: "1px solid hsl(var(--hud-border) / 0.08)" }}>
-          <button onClick={() => { setActiveGroup(null); haptic("light"); }} className="p-1.5 rounded-full hover:bg-[hsl(var(--hud-surface)/0.5)]">
+          <button onClick={() => { setActiveGroup(null); haptic("light"); }} className="p-1.5 rounded-full hover:bg-[hsl(var(--hud-surface)/0.5)] min-h-[44px] min-w-[44px] flex items-center justify-center">
             <ArrowLeft className="h-5 w-5" style={{ color: "hsl(var(--hud-text))" }} />
           </button>
-          <div
-            className="w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold shrink-0"
-            style={{ background: "hsl(var(--hud-cyan) / 0.12)", color: "hsl(var(--hud-cyan))" }}
-          >
-            {getInitials(activeGroup.name)}
+          <div className="w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold shrink-0"
+            style={{ background: "hsl(var(--hud-cyan) / 0.12)", color: "hsl(var(--hud-cyan))" }}>
+            <TypeIcon className="h-4.5 w-4.5" />
           </div>
           <div className="flex-1 min-w-0">
             <span className="text-sm font-semibold truncate block" style={{ color: "hsl(var(--hud-text))" }}>
               {activeGroup.name}
             </span>
-            <span className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
-              {members.length} {t("orbit.groups.members") || "members"}
-            </span>
+            <div className="flex items-center gap-1.5">
+              <span className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
+                {members.length} {t("orbit.groups.members") || "members"}
+              </span>
+              {isBroadcast && (
+                <span className="inline-flex items-center gap-0.5 px-1 py-px rounded text-[8px] font-semibold"
+                  style={{ background: "hsl(var(--hud-cyan) / 0.1)", color: "hsl(var(--hud-cyan))" }}>
+                  <Megaphone className="h-2 w-2" /> BROADCAST
+                </span>
+              )}
+              <span className="text-[9px] px-1 py-px rounded"
+                style={{ background: "hsl(var(--hud-surface))", color: "hsl(var(--hud-text-dim) / 0.5)" }}>
+                {TYPE_LABELS[activeGroup.group_type]}
+              </span>
+            </div>
           </div>
-          <button
-            onClick={() => setShowMembers(true)}
-            className="p-2 rounded-full"
-            style={{ color: "hsl(var(--hud-cyan))" }}
-          >
-            <Users className="h-4.5 w-4.5" />
-          </button>
+          <div className="flex items-center gap-1">
+            {isAdmin && (
+              <button onClick={togglePostingPermission} className="p-2 rounded-full" title={isBroadcast ? "Allow everyone to post" : "Admins only"}>
+                <Megaphone className="h-4 w-4" style={{ color: isBroadcast ? "hsl(var(--hud-cyan))" : "hsl(var(--hud-text-dim) / 0.3)" }} />
+              </button>
+            )}
+            <button onClick={() => setShowMembers(true)} className="p-2 rounded-full" style={{ color: "hsl(var(--hud-cyan))" }}>
+              <Users className="h-4.5 w-4.5" />
+            </button>
+          </div>
         </div>
+
+        {/* Pinned bar */}
+        {pinnedMessages.length > 0 && (
+          <button
+            onClick={() => setShowPinned(!showPinned)}
+            className="flex items-center gap-2 px-4 py-2 text-left shrink-0"
+            style={{ background: "hsl(var(--hud-cyan) / 0.04)", borderBottom: "1px solid hsl(var(--hud-border) / 0.06)" }}
+          >
+            <Pin className="h-3 w-3" style={{ color: "hsl(var(--hud-cyan))" }} />
+            <span className="text-[11px] font-medium flex-1" style={{ color: "hsl(var(--hud-cyan))" }}>
+              {pinnedMessages.length} pinned message{pinnedMessages.length > 1 ? "s" : ""}
+            </span>
+            {showPinned ? <ChevronUp className="h-3 w-3" style={{ color: "hsl(var(--hud-cyan))" }} /> : <ChevronDown className="h-3 w-3" style={{ color: "hsl(var(--hud-cyan))" }} />}
+          </button>
+        )}
+
+        {/* Pinned messages expanded */}
+        {showPinned && pinnedMessages.length > 0 && (
+          <div className="px-3 py-2 space-y-1.5 max-h-32 overflow-y-auto shrink-0" style={{ background: "hsl(var(--hud-cyan) / 0.02)", borderBottom: "1px solid hsl(var(--hud-border) / 0.06)" }}>
+            {pinnedMessages.map(pm => (
+              <div key={pm.id} className="flex items-start gap-2 px-2 py-1.5 rounded-lg" style={{ background: "hsl(var(--hud-surface) / 0.5)" }}>
+                <Pin className="h-2.5 w-2.5 mt-1 shrink-0" style={{ color: "hsl(var(--hud-cyan) / 0.6)" }} />
+                <p className="text-[11px] flex-1 line-clamp-2" style={{ color: "hsl(var(--hud-text))" }}>{pm.content}</p>
+                {isAdmin && (
+                  <button onClick={() => togglePin(pm)} className="p-1 shrink-0">
+                    <PinOff className="h-3 w-3" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }} />
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
 
         {/* Messages */}
         <div className="flex-1 overflow-y-auto px-3 py-3 space-y-2">
           {messages.length === 0 && (
             <div className="text-center py-12">
-              <UsersRound className="h-8 w-8 mx-auto mb-2" style={{ color: "hsl(var(--hud-text-dim) / 0.15)" }} />
+              <TypeIcon className="h-8 w-8 mx-auto mb-2" style={{ color: "hsl(var(--hud-text-dim) / 0.15)" }} />
               <p className="text-xs" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{t("orbit.groups.start_conversation") || "Start the conversation"}</p>
             </div>
           )}
           {messages.map(msg => {
             const isMine = msg.sender_id === user?.id;
             return (
-              <div key={msg.id} className={`flex ${isMine ? "justify-end" : "justify-start"}`}>
+              <div key={msg.id} className={`flex ${isMine ? "justify-end" : "justify-start"} group/msg`}>
                 <div
-                  className="max-w-[75%] px-3 py-2 rounded-2xl text-[13px]"
+                  className="max-w-[75%] px-3 py-2 rounded-2xl text-[13px] relative"
                   style={{
-                    background: isMine ? "hsl(var(--hud-cyan) / 0.15)" : "hsl(var(--hud-surface))",
+                    background: msg.is_pinned
+                      ? "hsl(var(--hud-cyan) / 0.08)"
+                      : isMine ? "hsl(var(--hud-cyan) / 0.15)" : "hsl(var(--hud-surface))",
                     color: "hsl(var(--hud-text))",
                     borderBottomRightRadius: isMine ? 6 : undefined,
                     borderBottomLeftRadius: !isMine ? 6 : undefined,
                   }}
                 >
+                  {msg.is_pinned && (
+                    <Pin className="h-2 w-2 absolute top-1 right-1.5" style={{ color: "hsl(var(--hud-cyan) / 0.5)" }} />
+                  )}
                   {!isMine && (
                     <span className="text-[10px] font-semibold block mb-0.5" style={{ color: "hsl(var(--hud-cyan) / 0.7)" }}>
                       {msg.sender_id.slice(0, 8)}
                     </span>
                   )}
                   <p>{msg.content}</p>
-                  <span className="text-[9px] mt-1 block text-right" style={{ color: "hsl(var(--hud-text-dim) / 0.35)" }}>
-                    {format(new Date(msg.created_at), "HH:mm")}
-                  </span>
+                  <div className="flex items-center justify-end gap-1 mt-1">
+                    {isAdmin && (
+                      <button
+                        onClick={() => togglePin(msg)}
+                        className="opacity-0 group-hover/msg:opacity-100 transition-opacity p-0.5"
+                      >
+                        {msg.is_pinned
+                          ? <PinOff className="h-2.5 w-2.5" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }} />
+                          : <Pin className="h-2.5 w-2.5" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }} />
+                        }
+                      </button>
+                    )}
+                    <span className="text-[9px]" style={{ color: "hsl(var(--hud-text-dim) / 0.35)" }}>
+                      {format(new Date(msg.created_at), "HH:mm")}
+                    </span>
+                  </div>
                 </div>
               </div>
             );
@@ -356,27 +484,39 @@ export default function CommGroupsSection() {
 
         {/* Composer */}
         <div className="px-3 py-2 shrink-0" style={{ borderTop: "1px solid hsl(var(--hud-border) / 0.06)" }}>
-          <div className="flex items-center gap-2">
-            <Input
-              value={msgInput}
-              onChange={e => setMsgInput(e.target.value)}
-              onKeyDown={e => e.key === "Enter" && !e.shiftKey && sendMessage()}
-              placeholder={t("orbit.groups.message_placeholder") || "Message…"}
-              className="flex-1 h-10 text-sm border-0 rounded-full px-4"
-              style={{ background: "hsl(var(--hud-surface))", color: "hsl(var(--hud-text))" }}
-            />
-            <button
-              onClick={sendMessage}
-              disabled={!msgInput.trim()}
-              className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 disabled:opacity-30"
-              style={{ background: "hsl(var(--hud-cyan))" }}
-            >
-              <Send className="h-4 w-4" style={{ color: "hsl(var(--hud-bg))" }} />
-            </button>
-          </div>
+          {canPost ? (
+            <div className="flex items-center gap-2">
+              <Input
+                value={msgInput}
+                onChange={e => setMsgInput(e.target.value)}
+                onKeyDown={e => e.key === "Enter" && !e.shiftKey && sendMessage()}
+                placeholder={t("orbit.groups.message_placeholder") || "Message…"}
+                className="flex-1 h-10 text-sm border-0 rounded-full px-4"
+                style={{ background: "hsl(var(--hud-surface))", color: "hsl(var(--hud-text))" }}
+              />
+              <button
+                onClick={sendMessage}
+                disabled={!msgInput.trim()}
+                className="w-10 h-10 min-h-[44px] min-w-[44px] rounded-full flex items-center justify-center shrink-0 disabled:opacity-30"
+                style={{ background: "hsl(var(--hud-cyan))" }}
+              >
+                <Send className="h-4 w-4" style={{ color: "hsl(var(--hud-bg))" }} />
+              </button>
+            </div>
+          ) : (
+            <div className="text-center py-2">
+              <p className="text-[11px] flex items-center justify-center gap-1.5" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>
+                {isViewer ? (
+                  <><Eye className="h-3 w-3" /> View only — you cannot post</>
+                ) : (
+                  <><Megaphone className="h-3 w-3" /> Only admins can post in this {TYPE_LABELS[activeGroup.group_type].toLowerCase()}</>
+                )}
+              </p>
+            </div>
+          )}
         </div>
 
-        {/* Members sheet */}
+        {/* Members dialog */}
         <Dialog open={showMembers} onOpenChange={setShowMembers}>
           <DialogContent style={{ background: "hsl(var(--hud-bg))", borderColor: "hsl(var(--hud-border) / 0.15)" }}>
             <DialogHeader>
@@ -393,16 +533,38 @@ export default function CommGroupsSection() {
                     <span className="text-sm truncate block" style={{ color: "hsl(var(--hud-text))" }}>
                       {m.user_id === user?.id ? "You" : m.user_id.slice(0, 8)}
                     </span>
-                    {m.role === "admin" && (
-                      <span className="text-[10px] flex items-center gap-1" style={{ color: "hsl(var(--hud-cyan) / 0.7)" }}>
-                        <Crown className="h-2.5 w-2.5" /> Admin
-                      </span>
-                    )}
+                    <div className="flex items-center gap-1">
+                      {m.role === "admin" && (
+                        <span className="text-[10px] flex items-center gap-0.5" style={{ color: "hsl(var(--hud-cyan) / 0.7)" }}>
+                          <Crown className="h-2.5 w-2.5" /> Admin
+                        </span>
+                      )}
+                      {m.role === "viewer" && (
+                        <span className="text-[10px] flex items-center gap-0.5" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
+                          <Eye className="h-2.5 w-2.5" /> Viewer
+                        </span>
+                      )}
+                      {m.role === "member" && (
+                        <span className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>Member</span>
+                      )}
+                    </div>
                   </div>
                   {isAdmin && m.user_id !== user?.id && (
-                    <button onClick={() => removeMember(m.id)} className="p-1.5 rounded-full hover:bg-[hsl(var(--hud-surface)/0.5)]">
-                      <Trash2 className="h-3.5 w-3.5" style={{ color: "hsl(var(--hud-danger))" }} />
-                    </button>
+                    <div className="flex items-center gap-1">
+                      <select
+                        value={m.role}
+                        onChange={e => changeMemberRole(m.id, e.target.value as MemberRole)}
+                        className="text-[10px] rounded px-1 py-0.5 border-0"
+                        style={{ background: "hsl(var(--hud-surface))", color: "hsl(var(--hud-text))" }}
+                      >
+                        <option value="admin">Admin</option>
+                        <option value="member">Member</option>
+                        <option value="viewer">Viewer</option>
+                      </select>
+                      <button onClick={() => removeMember(m.id)} className="p-1.5 rounded-full hover:bg-[hsl(var(--hud-surface)/0.5)]">
+                        <Trash2 className="h-3.5 w-3.5" style={{ color: "hsl(var(--hud-danger))" }} />
+                      </button>
+                    </div>
                   )}
                 </div>
               ))}
@@ -410,21 +572,14 @@ export default function CommGroupsSection() {
             <div className="flex gap-2 pt-2">
               {isAdmin && (
                 <Button
-                  size="sm"
-                  className="flex-1 gap-1.5"
+                  size="sm" className="flex-1 gap-1.5"
                   style={{ background: "hsl(var(--hud-cyan))", color: "hsl(var(--hud-bg))" }}
                   onClick={() => { setShowMembers(false); setShowAddMember(true); }}
                 >
                   <UserPlus className="h-3.5 w-3.5" /> {t("orbit.groups.add_member") || "Add Member"}
                 </Button>
               )}
-              <Button
-                size="sm"
-                variant="ghost"
-                className="gap-1.5"
-                style={{ color: "hsl(var(--hud-danger))" }}
-                onClick={leaveGroup}
-              >
+              <Button size="sm" variant="ghost" className="gap-1.5" style={{ color: "hsl(var(--hud-danger))" }} onClick={leaveGroup}>
                 <LogOut className="h-3.5 w-3.5" /> {t("orbit.groups.leave") || "Leave"}
               </Button>
             </div>
@@ -439,7 +594,7 @@ export default function CommGroupsSection() {
             </DialogHeader>
             <div className="space-y-3">
               <div>
-                <Label className="text-xs" style={{ color: "hsl(var(--hud-text-dim))" }}>{t("orbit.groups.user_email") || "User email"}</Label>
+                <Label className="text-xs" style={{ color: "hsl(var(--hud-text-dim))" }}>Email</Label>
                 <Input
                   value={addMemberEmail}
                   onChange={e => setAddMemberEmail(e.target.value)}
@@ -448,13 +603,32 @@ export default function CommGroupsSection() {
                   style={{ background: "hsl(var(--hud-surface))", color: "hsl(var(--hud-text))" }}
                 />
               </div>
+              <div>
+                <Label className="text-xs" style={{ color: "hsl(var(--hud-text-dim))" }}>Role</Label>
+                <div className="flex gap-2 mt-1">
+                  {(["member", "viewer", "admin"] as MemberRole[]).map(r => (
+                    <button
+                      key={r}
+                      onClick={() => setAddMemberRole(r)}
+                      className="flex-1 py-2 rounded-lg text-xs font-medium transition-colors"
+                      style={{
+                        background: addMemberRole === r ? "hsl(var(--hud-cyan) / 0.15)" : "hsl(var(--hud-surface))",
+                        color: addMemberRole === r ? "hsl(var(--hud-cyan))" : "hsl(var(--hud-text-dim))",
+                        border: addMemberRole === r ? "1px solid hsl(var(--hud-cyan) / 0.3)" : "1px solid transparent",
+                      }}
+                    >
+                      {ROLE_LABELS[r]}
+                    </button>
+                  ))}
+                </div>
+              </div>
               <Button
                 className="w-full"
                 disabled={!addMemberEmail.trim()}
                 onClick={handleAddMember}
                 style={{ background: "hsl(var(--hud-cyan))", color: "hsl(var(--hud-bg))" }}
               >
-                {t("orbit.groups.add_member") || "Add Member"}
+                Add {ROLE_LABELS[addMemberRole]}
               </Button>
             </div>
           </DialogContent>
@@ -463,21 +637,23 @@ export default function CommGroupsSection() {
     );
   }
 
-  // ═══ Group List View ═══
+  // ═══════════════════════════════
+  //  GROUP LIST VIEW
+  // ═══════════════════════════════
   return (
     <div className="flex-1 flex flex-col min-h-0" style={{ background: "hsl(var(--hud-bg))" }}>
       <div className="px-4 pt-4 pb-2 shrink-0">
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-lg font-bold" style={{ color: "hsl(var(--hud-text))" }}>{t("orbit.groups.title") || "Groups"}</h2>
+          <h2 className="text-lg font-bold" style={{ color: "hsl(var(--hud-text))" }}>
+            {t("orbit.groups.title") || "Communities"}
+          </h2>
           <Button
-            size="sm"
-            variant="ghost"
+            size="sm" variant="ghost"
             className="h-8 gap-1.5 text-xs"
             style={{ color: "hsl(var(--hud-cyan))" }}
             onClick={() => setShowCreate(true)}
-            >
-              <Plus className="h-4 w-4" />
-              {t("orbit.groups.create") || "Create"}
+          >
+            <Plus className="h-4 w-4" /> {t("orbit.groups.create") || "Create"}
           </Button>
         </div>
 
@@ -486,7 +662,7 @@ export default function CommGroupsSection() {
           <Input
             value={search}
             onChange={e => setSearch(e.target.value)}
-            placeholder={t("orbit.groups.search") || "Search groups…"}
+            placeholder={t("orbit.groups.search") || "Search…"}
             className="pl-9 h-9 text-sm border-0"
             style={{ background: "hsl(var(--hud-surface))", color: "hsl(var(--hud-text))" }}
           />
@@ -502,95 +678,126 @@ export default function CommGroupsSection() {
                 <div className="flex-1 space-y-2">
                   <Skeleton className="h-3.5 w-3/5" />
                   <Skeleton className="h-2.5 w-4/5" />
-                  <Skeleton className="h-2 w-1/4" />
                 </div>
-                <Skeleton className="h-2.5 w-10 shrink-0" />
               </div>
             ))}
           </div>
         ) : loadError ? (
-          <ErrorState
-            message={`Failed to load groups: ${loadError}`}
-            onRetry={loadGroups}
-          />
+          <ErrorState message={`Failed to load: ${loadError}`} onRetry={loadGroups} />
         ) : filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-center px-6">
             <UsersRound className="h-10 w-10 mb-3" style={{ color: "hsl(var(--hud-text-dim) / 0.2)" }} />
             <p className="text-sm" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
-              {search ? (t("orbit.groups.no_found") || "No groups found") : (t("orbit.groups.no_groups") || "No groups yet")}
+              {search ? "No results" : "No groups yet"}
             </p>
-            <Button
-              size="sm"
-              variant="ghost"
-              className="mt-3 gap-1.5"
-              style={{ color: "hsl(var(--hud-cyan))" }}
-              onClick={() => setShowCreate(true)}
-            >
-              <Plus className="h-4 w-4" />
-              {t("orbit.groups.create_first") || "Create your first group"}
+            <Button size="sm" variant="ghost" className="mt-3 gap-1.5" style={{ color: "hsl(var(--hud-cyan))" }} onClick={() => setShowCreate(true)}>
+              <Plus className="h-4 w-4" /> Create your first
             </Button>
           </div>
         ) : (
           <div className="divide-y" style={{ borderColor: "hsl(var(--hud-border) / 0.06)" }}>
-            {filtered.map(group => (
-              <button
-                key={group.id}
-                onClick={() => openGroupChat(group)}
-                className="w-full flex items-center gap-3 px-4 py-3.5 hover:bg-[hsl(var(--hud-surface)/0.3)] transition-colors text-left"
-              >
-                <div
-                  className="w-11 h-11 rounded-full flex items-center justify-center text-sm font-bold shrink-0"
-                  style={{ background: "hsl(var(--hud-cyan) / 0.1)", color: "hsl(var(--hud-cyan))" }}
+            {filtered.map(group => {
+              const GIcon = TYPE_ICONS[group.group_type];
+              return (
+                <button
+                  key={group.id}
+                  onClick={() => openGroupChat(group)}
+                  className="w-full flex items-center gap-3 px-4 py-3.5 hover:bg-[hsl(var(--hud-surface)/0.3)] transition-colors text-left min-h-[44px]"
                 >
-                  {getInitials(group.name)}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-semibold truncate" style={{ color: "hsl(var(--hud-text))" }}>
-                      {group.name}
+                  <div className="w-11 h-11 rounded-full flex items-center justify-center text-sm font-bold shrink-0"
+                    style={{ background: "hsl(var(--hud-cyan) / 0.1)", color: "hsl(var(--hud-cyan))" }}>
+                    <GIcon className="h-5 w-5" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-1.5 min-w-0">
+                        <span className="text-sm font-semibold truncate" style={{ color: "hsl(var(--hud-text))" }}>
+                          {group.name}
+                        </span>
+                        {group.group_type !== "group" && (
+                          <span className="text-[8px] px-1 py-px rounded font-medium shrink-0"
+                            style={{ background: "hsl(var(--hud-surface))", color: "hsl(var(--hud-text-dim) / 0.6)" }}>
+                            {TYPE_LABELS[group.group_type]}
+                          </span>
+                        )}
+                        {group.posting_permission === "admins_only" && (
+                          <Megaphone className="h-2.5 w-2.5 shrink-0" style={{ color: "hsl(var(--hud-cyan) / 0.5)" }} />
+                        )}
+                      </div>
+                      <span className="text-[10px] shrink-0 ml-2" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>
+                        {group.last_message_at ? formatMsgTime(group.last_message_at) : ""}
+                      </span>
+                    </div>
+                    <span className="text-[11px] truncate block mt-0.5" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
+                      {group.last_message || group.description || "No messages yet"}
                     </span>
-                    <span className="text-[10px] shrink-0 ml-2" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>
-                      {group.last_message_at ? formatMsgTime(group.last_message_at) : ""}
+                    <span className="text-[10px] mt-0.5 block" style={{ color: "hsl(var(--hud-text-dim) / 0.35)" }}>
+                      {group.member_count} members
                     </span>
                   </div>
-                  <div className="flex items-center gap-2 mt-0.5">
-                    <span className="text-[11px] truncate" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
-                      {group.last_message || group.description || (t("orbit.groups.no_messages") || "No messages yet")}
-                    </span>
-                  </div>
-                  <span className="text-[10px] mt-0.5 block" style={{ color: "hsl(var(--hud-text-dim) / 0.35)" }}>
-                    {group.member_count} {t("orbit.groups.members") || "members"}
-                  </span>
-                </div>
-              </button>
-            ))}
+                </button>
+              );
+            })}
           </div>
         )}
       </div>
 
-      {/* Create Group Dialog */}
+      {/* Create Dialog */}
       <Dialog open={showCreate} onOpenChange={setShowCreate}>
         <DialogContent style={{ background: "hsl(var(--hud-bg))", borderColor: "hsl(var(--hud-border) / 0.15)" }}>
           <DialogHeader>
-            <DialogTitle style={{ color: "hsl(var(--hud-text))" }}>{t("orbit.groups.create_title") || "Create Group"}</DialogTitle>
+            <DialogTitle style={{ color: "hsl(var(--hud-text))" }}>Create</DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
+            {/* Type selector */}
             <div>
-              <Label className="text-xs" style={{ color: "hsl(var(--hud-text-dim))" }}>{t("orbit.groups.name") || "Group Name *"}</Label>
+              <Label className="text-xs" style={{ color: "hsl(var(--hud-text-dim))" }}>Type</Label>
+              <div className="flex gap-2 mt-1">
+                {(["group", "channel", "community"] as GroupType[]).map(gt => {
+                  const Icon = TYPE_ICONS[gt];
+                  return (
+                    <button
+                      key={gt}
+                      onClick={() => setNewGroup(p => ({ ...p, group_type: gt }))}
+                      className="flex-1 flex flex-col items-center gap-1 py-3 rounded-lg text-xs font-medium transition-colors"
+                      style={{
+                        background: newGroup.group_type === gt ? "hsl(var(--hud-cyan) / 0.12)" : "hsl(var(--hud-surface))",
+                        color: newGroup.group_type === gt ? "hsl(var(--hud-cyan))" : "hsl(var(--hud-text-dim))",
+                        border: newGroup.group_type === gt ? "1px solid hsl(var(--hud-cyan) / 0.3)" : "1px solid transparent",
+                      }}
+                    >
+                      <Icon className="h-5 w-5" />
+                      {TYPE_LABELS[gt]}
+                    </button>
+                  );
+                })}
+              </div>
+              <p className="text-[10px] mt-1.5" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>
+                {newGroup.group_type === "group" && "Private group — everyone can post"}
+                {newGroup.group_type === "channel" && "Broadcast channel — only admins can post"}
+                {newGroup.group_type === "community" && "Open community — everyone can post and discover"}
+              </p>
+            </div>
+            <div>
+              <Label className="text-xs" style={{ color: "hsl(var(--hud-text-dim))" }}>Name *</Label>
               <Input
                 value={newGroup.name}
                 onChange={e => setNewGroup(p => ({ ...p, name: e.target.value }))}
-                placeholder={t("orbit.groups.name_placeholder") || "e.g. Property Team"}
+                placeholder={
+                  newGroup.group_type === "channel" ? "e.g. Announcements" :
+                    newGroup.group_type === "community" ? "e.g. Local Landlords" :
+                      "e.g. Property Team"
+                }
                 className="mt-1 border-0"
                 style={{ background: "hsl(var(--hud-surface))", color: "hsl(var(--hud-text))" }}
               />
             </div>
             <div>
-              <Label className="text-xs" style={{ color: "hsl(var(--hud-text-dim))" }}>{t("orbit.groups.description") || "Description"}</Label>
+              <Label className="text-xs" style={{ color: "hsl(var(--hud-text-dim))" }}>Description</Label>
               <Input
                 value={newGroup.description}
                 onChange={e => setNewGroup(p => ({ ...p, description: e.target.value }))}
-                placeholder={t("orbit.groups.desc_placeholder") || "What's this group about?"}
+                placeholder="What's this about?"
                 className="mt-1 border-0"
                 style={{ background: "hsl(var(--hud-surface))", color: "hsl(var(--hud-text))" }}
               />
@@ -601,7 +808,7 @@ export default function CommGroupsSection() {
               onClick={handleCreate}
               style={{ background: "hsl(var(--hud-cyan))", color: "hsl(var(--hud-bg))" }}
             >
-              {creating ? (t("orbit.groups.creating") || "Creating…") : (t("orbit.groups.create_title") || "Create Group")}
+              {creating ? "Creating…" : `Create ${TYPE_LABELS[newGroup.group_type]}`}
             </Button>
           </div>
         </DialogContent>
