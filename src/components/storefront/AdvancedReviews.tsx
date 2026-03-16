@@ -69,7 +69,7 @@ export default function AdvancedReviews({ shopId, itemId, mode }: Props) {
     mutationFn: async () => {
       if (!comment.trim()) throw new Error("Write a review");
       await (supabase as any).from("storefront_reviews").insert({
-        shop_id: shopId, item_id: itemId || null, user_id: user!.id, rating, title: title || null, comment,
+        shop_id: shopId, item_id: itemId || null, reviewer_id: user!.id, rating, title: title || null, comment,
       });
     },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["storefront-reviews"] }); toast.success("Review posted!"); setWriting(false); setComment(""); setTitle(""); },
