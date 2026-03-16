@@ -26,6 +26,7 @@ import { useVoiceRecorder, formatVoiceDuration } from "@/hooks/useVoiceRecorder"
 import ChatMediaPreview from "@/components/communication/ChatMediaPreview";
 import { supabase } from "@/integrations/supabase/client";
 import { realtimeManager } from "@/lib/realtime-manager";
+import { platformBus } from "@/lib/shared/platform-bus";
 import { usePrivacySettings, computeDisappearAt } from "@/hooks/usePrivacySettings";
 import { useAuth } from "@/contexts/AuthContext";
 import { useOrbitEncryption } from "@/hooks/useOrbitEncryption";
