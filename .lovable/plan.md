@@ -269,3 +269,11 @@ Conversation → Offer → Counter offer → Accepted → Payment → Confirmed
 | SellerHubPage | /dashboard/seller with 4-tab layout (Dashboard, Vidéos, Analytics, Live) | ✅ Done |
 | Platform bus events | marketplace:provider_went_live / provider_went_offline registered | ✅ Done |
 | Sidebar nav entry | Zap "Seller Hub" under Marketplace section | ✅ Done |
+
+## PASS55 Block H — Admin / Audit
+| Feature | Implementation | Status |
+|---------|---------------|--------|
+| OrgMemberManager | View, change roles (owner→member), invite, remove members with RBAC | ✅ Done |
+| ModerationPanel | Review moderation queue (approve/reject), blocked users management | ✅ Done |
+| AuditTrail v2 | Category grouping, CSV export, pagination, quick stat pills, enhanced action labels | ✅ Done |
+| AdminDashboard tabs | Added "Team" and "Moderation" tabs to admin dashboard | ✅ Done |
