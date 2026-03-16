@@ -75,6 +75,10 @@ import FleetGPSTracker from "@/components/delivery/FleetGPSTracker";
 import DeliveryInsuranceClaims from "@/components/delivery/DeliveryInsuranceClaims";
 import DriverShiftScheduler from "@/components/delivery/DriverShiftScheduler";
 import CustomerLiveTracking from "@/components/delivery/CustomerLiveTracking";
+import AdminCommandCenter from "@/components/delivery/AdminCommandCenter";
+import AutomatedInvoicingEngine from "@/components/delivery/AutomatedInvoicingEngine";
+import CustomerRewardsProgram from "@/components/delivery/CustomerRewardsProgram";
+import MultiChannelDriverComms from "@/components/delivery/MultiChannelDriverComms";
 import { useDeliveryNotifications } from "@/hooks/useDeliveryNotifications";
 import { motion, AnimatePresence } from "framer-motion";
 import {
