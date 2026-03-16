@@ -316,7 +316,7 @@ export default function ShopPage() {
                             <span className="text-[10px] text-muted-foreground line-through ml-1">{fx.formatPrice(item.compare_at_price, item.currency)}</span>
                           )}
                         </div>
-                        <Button size="icon" variant="outline" className="h-8 w-8" onClick={() => cart.addItem(item.id, item.price)} disabled={cart.loading}>
+                        <Button size="icon" variant="outline" className="h-8 w-8" onClick={() => { cart.addItem(item.id, item.price); analytics.trackAddToCart(item.id, item.price, item.currency); }} disabled={cart.loading}>
                           <Plus className="h-3.5 w-3.5" />
                         </Button>
                       </div>
