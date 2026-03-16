@@ -205,9 +205,11 @@ export default function MyShopPage() {
               <MultiCurrencyTax shopId={shop.id} mode="seller" />
               <SubscriptionManager shopId={shop.id} />
               <SubscriptionEngine shopId={shop.id} mode="seller" />
+              <RecurringSubscriptions shopId={shop.id} mode="seller" />
               <GiftCardManager shopId={shop.id} mode="seller" />
               <LoyaltyDashboard shopId={shop.id} mode="seller" />
               <LoyaltyProgram shopId={shop.id} mode="seller" />
+              <LoyaltyRewards shopId={shop.id} mode="seller" />
             </div>
           )}
           {tab === "analytics" && (
