@@ -314,6 +314,13 @@ export default function SellerLogisticsPanel() {
                         <XCircle className="h-3 w-3" />
                       </Button>
                     )}
+                    {["completed", "cancelled"].includes(job.status) && (
+                      <Button size="sm" variant="ghost" className="text-[10px] h-7 px-2"
+                        onClick={() => setDisputeJobId(disputeJobId === job.id ? null : job.id)}
+                        style={{ color: "hsl(var(--destructive) / 0.6)" }}>
+                        <AlertTriangle className="h-3 w-3 mr-0.5" /> Litige
+                      </Button>
+                    )}
                     {job.delivery_fee != null && (
                       <span className="text-[10px] font-bold ml-1" style={{ color: "hsl(var(--hud-cyan))" }}>
                         {job.delivery_fee.toFixed(2)}€
@@ -332,6 +339,22 @@ export default function SellerLogisticsPanel() {
                           jobId={job.id}
                           onAssign={(driverId) => handleAssign(job.id, driverId)}
                           onClose={() => setSearchingJobId(null)}
+                        />
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                {/* Dispute panel */}
+                <AnimatePresence>
+                  {disputeJobId === job.id && (
+                    <motion.div initial={{ height: 0 }} animate={{ height: "auto" }} exit={{ height: 0 }}
+                      className="overflow-hidden">
+                      <div className="px-4 pb-3">
+                        <DeliveryDisputeFlow
+                          orgId={job.org_id}
+                          jobId={job.id}
+                          onClose={() => setDisputeJobId(null)}
                         />
                       </div>
                     </motion.div>
