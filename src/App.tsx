@@ -149,6 +149,7 @@ const PlatformVision = safeLazy(() => import("./pages/PlatformVision"), "Platfor
 const DealAnalyticsPage = safeLazy(() => import("./pages/DealAnalyticsPage"), "DealAnalyticsPage");
 const ServiceTrackingPage = safeLazy(() => import("./pages/ServiceTrackingPage"), "ServiceTrackingPage");
 const SellerHubPage = safeLazy(() => import("./pages/SellerHubPage"), "SellerHubPage");
+const DriverDashboard = safeLazy(() => import("./pages/DriverDashboard"), "DriverDashboard");
 const ConciergeServicesPage = safeLazy(() => import("./pages/seo/ConciergeServicesPage"), "ConciergeServicesPage");
 const MarketplaceServicesPage = safeLazy(() => import("./pages/seo/MarketplaceServicesPage"), "MarketplaceServicesPage");
 const ActivitiesPage = safeLazy(() => import("./pages/seo/ActivitiesPage"), "ActivitiesPage");
@@ -365,6 +366,7 @@ const App = () => (
               <Route path="/dashboard/tracking" element={<ProtectedRoute><ServiceTrackingPage /></ProtectedRoute>} />
               
               <Route path="/dashboard/seller" element={<ProtectedRoute><SellerHubPage /></ProtectedRoute>} />
+              <Route path="/dashboard/driver" element={<ProtectedRoute><DriverDashboard /></ProtectedRoute>} />
               <Route path="/dashboard/activities" element={<ProtectedRoute><ActivitiesMarketplace /></ProtectedRoute>} />
               <Route path="/dashboard/calendar" element={<ProtectedRoute><PropertyCalendar /></ProtectedRoute>} />
               <Route path="/dashboard/real-estate" element={<ProtectedRoute><RealEstateListings /></ProtectedRoute>} />
