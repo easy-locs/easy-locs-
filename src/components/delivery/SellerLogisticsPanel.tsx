@@ -322,6 +322,7 @@ export default function SellerLogisticsPanel() {
             "multi-currency": "💱 Devises", "zone-pricing": "📍 Zones Tarif", "route-optim": "🧭 Routes", insurance: "🛡️ Assurance", "adv-analytics": "📊 Analytics+",
             "fleet-hub": "🚐 Fleet Hub", gamification: "🎮 Gamification", "customer-loyalty": "💳 Fidélité", "smart-notifs": "🧠 Smart Notifs", "compliance": "🛡️ Compliance", "ai-planning": "🧠 IA Planning", "api-webhooks": "🔌 API",
             "route-planner": "🗺️ Planner", "returns-mgmt": "📦 Retours+", "schedule-cal": "📅 Calendrier", "driver-portal": "🚀 Onboarding+",
+            "promo-coupons": "🎟️ Promos", "live-chat": "💬 Chat Live", "warehouse": "🏭 Entrepôts", "green-delivery": "🌱 Green",
           };
           return (
             <button key={f} onClick={() => setFilter(f)}
