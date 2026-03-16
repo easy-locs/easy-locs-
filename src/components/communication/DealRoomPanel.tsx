@@ -369,6 +369,62 @@ export default function DealRoomPanel({
     onError: (e: any) => toast.error(e.message),
   });
 
+  // Generate Stripe payment link for deal
+  const generatePaymentLink = useMutation({
+    mutationFn: async () => {
+      if (!deal) throw new Error("No deal");
+      const { data, error } = await supabase.functions.invoke("orbit-payment", {
+        body: { action: "deal_checkout", deal_id: deal.id },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      return data;
+    },
+    onSuccess: (data) => {
+      qc.invalidateQueries({ queryKey: ["deal_room_context"] });
+      qc.invalidateQueries({ queryKey: ["deal_events"] });
+      if (data?.url) {
+        window.open(data.url, "_blank");
+        toast.success("Payment page opened");
+      }
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+
+  // Verify payment status
+  const verifyPayment = useMutation({
+    mutationFn: async () => {
+      if (!deal) throw new Error("No deal");
+      const { data, error } = await supabase.functions.invoke("orbit-payment", {
+        body: { action: "deal_verify_payment", deal_id: deal.id },
+      });
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (data) => {
+      qc.invalidateQueries({ queryKey: ["deal_room_context"] });
+      qc.invalidateQueries({ queryKey: ["deal_events"] });
+      if (data?.paid) {
+        toast.success("Payment confirmed! Deal is now confirmed.");
+      } else {
+        toast.info("Payment not yet received.");
+      }
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+
+  // Auto-verify payment when returning from Stripe
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("payment") === "success" && deal?.id && params.get("deal") === deal.id) {
+      const dealD = deal as any;
+      if (dealD?.status === "payment_pending") {
+        verifyPayment.mutate();
+      }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [deal?.id]);
+
   const dealData = deal as any;
   const dealStatus = dealData?.status as DealStatus | undefined;
   const statusConfig = dealStatus ? STATUS_CONFIG[dealStatus] : null;
