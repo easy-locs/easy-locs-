@@ -16,7 +16,7 @@ interface UseThreadActionsParams {
 }
 
 export function useThreadActions({ updateThreadLocally, loadThreads }: UseThreadActionsParams) {
-  const { user } = useAuth();
+  const { user, orgId } = useAuth();
   const userId = user?.id;
 
   const upsertPref = useCallback(async (
