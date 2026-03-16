@@ -152,8 +152,14 @@ export default function MyShopPage() {
 
         <div className="px-4">
           {tab === "catalog" && <CatalogManager shopId={shop.id} />}
-          {tab === "orders" && <OrdersManager shopId={shop.id} />}
+          {tab === "orders" && (
+            <div className="space-y-4">
+              <OrdersManager shopId={shop.id} />
+              <ReturnsManager shopId={shop.id} />
+            </div>
+          )}
           {tab === "deals" && <StorefrontDealRoom shopId={shop.id} isSeller />}
+          {tab === "finance" && <SellerFinance shopId={shop.id} />}
           {tab === "analytics" && <ShopAnalytics shopId={shop.id} />}
           {tab === "launch" && <LaunchAudit shopId={shop.id} />}
           {tab === "settings" && (
