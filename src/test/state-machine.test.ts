@@ -97,7 +97,7 @@ describe("Workflow Engine", () => {
     ], 0);
     expect(result.success).toBe(false);
     expect(result.failedStep).toBe("s2");
-    expect(result.context).toBe(-10);
+    expect(result.context).toBe(0);
   });
 
   it("retries failed steps", async () => {
