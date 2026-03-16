@@ -32,6 +32,10 @@ import DynamicPricingSurge from "@/components/delivery/DynamicPricingSurge";
 import DriverShiftScheduling from "@/components/delivery/DriverShiftScheduling";
 import AdminModerationPanel from "@/components/delivery/AdminModerationPanel";
 import DeliveryEventNotifications from "@/components/delivery/DeliveryEventNotifications";
+import MultiCurrencyDelivery from "@/components/delivery/MultiCurrencyDelivery";
+import RouteOptimizationPanel from "@/components/delivery/RouteOptimizationPanel";
+import DeliveryInsurancePanel from "@/components/delivery/DeliveryInsurancePanel";
+import DeliveryAdvancedAnalytics from "@/components/delivery/DeliveryAdvancedAnalytics";
 import { useDeliveryNotifications } from "@/hooks/useDeliveryNotifications";
 import { motion, AnimatePresence } from "framer-motion";
 import {
