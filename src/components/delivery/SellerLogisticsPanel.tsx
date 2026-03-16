@@ -394,6 +394,14 @@ export default function SellerLogisticsPanel() {
         <ReturnsReverseLogistics orgId={jobs[0]?.org_id || ""} />
       ) : filter === "slot-booking" ? (
         <DeliverySlotBooking orgId={jobs[0]?.org_id || ""} />
+      ) : filter === "fleet-hub" ? (
+        <FleetManagementHub orgId={jobs[0]?.org_id || ""} />
+      ) : filter === "gamification" ? (
+        <DeliveryGamification />
+      ) : filter === "smart-notifs" ? (
+        <SmartNotificationsEngine orgId={jobs[0]?.org_id || ""} />
+      ) : filter === "api-webhooks" ? (
+        <DeliveryAPIWebhooks orgId={jobs[0]?.org_id || ""} />
       ) : (
       <div className="space-y-2">
         {loading ? (
