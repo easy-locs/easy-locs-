@@ -6100,6 +6100,131 @@ export type Database = {
           },
         ]
       }
+      tracking_positions: {
+        Row: {
+          accuracy_m: number | null
+          heading: number | null
+          id: string
+          lat: number
+          lng: number
+          recorded_at: string
+          session_id: string
+          speed_kmh: number | null
+        }
+        Insert: {
+          accuracy_m?: number | null
+          heading?: number | null
+          id?: string
+          lat: number
+          lng: number
+          recorded_at?: string
+          session_id: string
+          speed_kmh?: number | null
+        }
+        Update: {
+          accuracy_m?: number | null
+          heading?: number | null
+          id?: string
+          lat?: number
+          lng?: number
+          recorded_at?: string
+          session_id?: string
+          speed_kmh?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tracking_positions_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "tracking_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tracking_sessions: {
+        Row: {
+          arrived_at: string | null
+          completed_at: string | null
+          context_id: string | null
+          context_label: string | null
+          context_type: string
+          created_at: string
+          current_lat: number | null
+          current_lng: number | null
+          destination_label: string | null
+          destination_lat: number | null
+          destination_lng: number | null
+          eta_minutes: number | null
+          id: string
+          metadata_json: Json | null
+          org_id: string
+          route_polyline: string | null
+          started_at: string | null
+          status: string
+          tracker_user_id: string
+          updated_at: string
+        }
+        Insert: {
+          arrived_at?: string | null
+          completed_at?: string | null
+          context_id?: string | null
+          context_label?: string | null
+          context_type?: string
+          created_at?: string
+          current_lat?: number | null
+          current_lng?: number | null
+          destination_label?: string | null
+          destination_lat?: number | null
+          destination_lng?: number | null
+          eta_minutes?: number | null
+          id?: string
+          metadata_json?: Json | null
+          org_id: string
+          route_polyline?: string | null
+          started_at?: string | null
+          status?: string
+          tracker_user_id: string
+          updated_at?: string
+        }
+        Update: {
+          arrived_at?: string | null
+          completed_at?: string | null
+          context_id?: string | null
+          context_label?: string | null
+          context_type?: string
+          created_at?: string
+          current_lat?: number | null
+          current_lng?: number | null
+          destination_label?: string | null
+          destination_lat?: number | null
+          destination_lng?: number | null
+          eta_minutes?: number | null
+          id?: string
+          metadata_json?: Json | null
+          org_id?: string
+          route_polyline?: string | null
+          started_at?: string | null
+          status?: string
+          tracker_user_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tracking_sessions_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tracking_sessions_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs_tenant_view"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       transaction_journal: {
         Row: {
           category: string
