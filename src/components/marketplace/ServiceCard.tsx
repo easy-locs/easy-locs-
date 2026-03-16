@@ -105,6 +105,11 @@ export default function ServiceCard({ service, provider, onBook, onEdit, showAct
           {service.requires_id_document && (
             <Badge variant="outline" className="absolute top-2.5 right-2.5 text-[10px] bg-background/80 backdrop-blur-sm border-0 shadow-sm">🪪 ID</Badge>
           )}
+          {service.video_url && (
+            <span className="absolute bottom-2.5 right-2.5 flex items-center gap-1 bg-background/80 backdrop-blur-sm text-[10px] font-semibold px-2 py-1 rounded-full shadow-sm">
+              <Play className="w-3 h-3" /> Video
+            </span>
+          )}
         </div>
       ) : (
         <div className="h-36 sm:h-48 shrink-0 bg-gradient-to-br from-accent/5 to-muted/50 flex flex-col items-center justify-center gap-2 relative">

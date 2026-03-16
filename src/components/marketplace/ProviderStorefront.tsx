@@ -196,6 +196,7 @@ export default function ProviderStorefront() {
             <div className="min-w-0 flex-1 space-y-3">
               <div className="flex items-center gap-2.5 flex-wrap">
                 <h1 className="text-2xl font-bold text-foreground">{provider.display_name}</h1>
+                <LiveBadge isLive={!!(provider as any).is_live} size="md" />
                 {provider.verified && (
                    <span className="flex items-center gap-1 bg-accent/10 text-accent text-xs font-semibold px-2 py-0.5 rounded-full">
                      <CheckCircle2 className="h-3.5 w-3.5" /> {t("mp.verified") || "Verified"}
