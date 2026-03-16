@@ -171,7 +171,10 @@ export default function MyShopPage() {
           {tab === "catalog" && (
             <div className="space-y-4">
               <CatalogManager shopId={shop.id} />
+              <BulkProductManager shopId={shop.id} />
+              <FlashSales shopId={shop.id} mode="seller" />
               <AuctionManager shopId={shop.id} mode="seller" />
+              <AdvancedReviews shopId={shop.id} mode="seller" />
             </div>
           )}
           {tab === "orders" && (
