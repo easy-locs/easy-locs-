@@ -56,6 +56,9 @@ import PromoCouponsEngine from "@/components/delivery/PromoCouponsEngine";
 import LiveDeliveryChat from "@/components/delivery/LiveDeliveryChat";
 import WarehouseManagement from "@/components/delivery/WarehouseManagement";
 import GreenDeliveryDashboard from "@/components/delivery/GreenDeliveryDashboard";
+import FleetManagementSystem from "@/components/delivery/FleetManagementSystem";
+import OrderBundlingEngine from "@/components/delivery/OrderBundlingEngine";
+import CustomerTrackingPortal from "@/components/delivery/CustomerTrackingPortal";
 import { useDeliveryNotifications } from "@/hooks/useDeliveryNotifications";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -245,7 +248,7 @@ export default function SellerLogisticsPanel() {
   const [searchingJobId, setSearchingJobId] = useState<string | null>(null);
   const [disputeJobId, setDisputeJobId] = useState<string | null>(null);
   const [trackingJobId, setTrackingJobId] = useState<string | null>(null);
-  const [filter, setFilter] = useState<"all" | "active" | "completed" | "batch" | "scheduled" | "history" | "disputes" | "analytics" | "multistop" | "seller-stats" | "onboarding" | "wallet" | "geofence" | "chat" | "fleet" | "reputation" | "optimize" | "buyer" | "invoices" | "sla" | "multi-drop" | "driver-reg" | "reports" | "fleet-mgmt" | "dispatch-rules" | "customer-track" | "payroll" | "surge" | "shifts" | "moderation" | "notif-rules" | "multi-currency" | "route-optim" | "insurance" | "adv-analytics" | "referral" | "support-bot" | "returns" | "slot-booking" | "fleet-hub" | "gamification" | "smart-notifs" | "api-webhooks" | "zone-pricing" | "customer-loyalty" | "compliance" | "ai-planning" | "route-planner" | "returns-mgmt" | "schedule-cal" | "driver-portal" | "promo-coupons" | "live-chat" | "warehouse" | "green-delivery">("all");
+  const [filter, setFilter] = useState<"all" | "active" | "completed" | "batch" | "scheduled" | "history" | "disputes" | "analytics" | "multistop" | "seller-stats" | "onboarding" | "wallet" | "geofence" | "chat" | "fleet" | "reputation" | "optimize" | "buyer" | "invoices" | "sla" | "multi-drop" | "driver-reg" | "reports" | "fleet-mgmt" | "dispatch-rules" | "customer-track" | "payroll" | "surge" | "shifts" | "moderation" | "notif-rules" | "multi-currency" | "route-optim" | "insurance" | "adv-analytics" | "referral" | "support-bot" | "returns" | "slot-booking" | "fleet-hub" | "gamification" | "smart-notifs" | "api-webhooks" | "zone-pricing" | "customer-loyalty" | "compliance" | "ai-planning" | "route-planner" | "returns-mgmt" | "schedule-cal" | "driver-portal" | "promo-coupons" | "live-chat" | "warehouse" | "green-delivery" | "fleet-system" | "order-bundle" | "tracking-portal">("all");
   const [chatJobId, setChatJobId] = useState<string | null>(null);
 
   const filteredJobs = jobs.filter(j => {
@@ -307,7 +310,7 @@ export default function SellerLogisticsPanel() {
 
       {/* Filter tabs */}
       <div className="flex gap-1 p-1 rounded-xl overflow-x-auto" style={{ background: "hsl(var(--hud-surface))" }}>
-        {(["all", "active", "completed", "batch", "multi-drop", "multistop", "route-planner", "scheduled", "schedule-cal", "slot-booking", "history", "disputes", "analytics", "reports", "adv-analytics", "seller-stats", "sla", "surge", "multi-currency", "zone-pricing", "promo-coupons", "route-optim", "insurance", "onboarding", "driver-reg", "driver-portal", "referral", "gamification", "shifts", "wallet", "customer-loyalty", "geofence", "fleet", "fleet-hub", "fleet-mgmt", "warehouse", "dispatch-rules", "moderation", "compliance", "smart-notifs", "ai-planning", "green-delivery", "reputation", "optimize", "buyer", "customer-track", "live-chat", "support-bot", "returns", "returns-mgmt", "invoices", "payroll", "notif-rules", "api-webhooks"] as const).map(f => {
+        {(["all", "active", "completed", "batch", "multi-drop", "multistop", "route-planner", "scheduled", "schedule-cal", "slot-booking", "history", "disputes", "analytics", "reports", "adv-analytics", "seller-stats", "sla", "surge", "multi-currency", "zone-pricing", "promo-coupons", "route-optim", "insurance", "onboarding", "driver-reg", "driver-portal", "referral", "gamification", "shifts", "wallet", "customer-loyalty", "geofence", "fleet", "fleet-hub", "fleet-mgmt", "warehouse", "dispatch-rules", "moderation", "compliance", "smart-notifs", "ai-planning", "green-delivery", "fleet-system", "order-bundle", "tracking-portal", "reputation", "optimize", "buyer", "customer-track", "live-chat", "support-bot", "returns", "returns-mgmt", "invoices", "payroll", "notif-rules", "api-webhooks"] as const).map(f => {
           const labels: Record<string, string> = {
             all: "Tout", active: "Actives", completed: "Terminées", batch: "⚡ Batch",
             "multi-drop": "📦 Multi-Drop",
@@ -323,6 +326,7 @@ export default function SellerLogisticsPanel() {
             "fleet-hub": "🚐 Fleet Hub", gamification: "🎮 Gamification", "customer-loyalty": "💳 Fidélité", "smart-notifs": "🧠 Smart Notifs", "compliance": "🛡️ Compliance", "ai-planning": "🧠 IA Planning", "api-webhooks": "🔌 API",
             "route-planner": "🗺️ Planner", "returns-mgmt": "📦 Retours+", "schedule-cal": "📅 Calendrier", "driver-portal": "🚀 Onboarding+",
             "promo-coupons": "🎟️ Promos", "live-chat": "💬 Chat Live", "warehouse": "🏭 Entrepôts", "green-delivery": "🌱 Green",
+            "fleet-system": "🚐 Flotte+", "order-bundle": "📦 Lots", "tracking-portal": "📲 Tracking",
           };
           return (
             <button key={f} onClick={() => setFilter(f)}
@@ -440,6 +444,12 @@ export default function SellerLogisticsPanel() {
         <WarehouseManagement orgId={jobs[0]?.org_id || ""} />
       ) : filter === "green-delivery" ? (
         <GreenDeliveryDashboard orgId={jobs[0]?.org_id || ""} />
+      ) : filter === "fleet-system" ? (
+        <FleetManagementSystem orgId={jobs[0]?.org_id || ""} />
+      ) : filter === "order-bundle" ? (
+        <OrderBundlingEngine orgId={jobs[0]?.org_id || ""} />
+      ) : filter === "tracking-portal" ? (
+        <CustomerTrackingPortal orgId={jobs[0]?.org_id || ""} />
       ) : (
       <div className="space-y-2">
         {loading ? (
