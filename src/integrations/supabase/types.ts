@@ -7581,6 +7581,85 @@ export type Database = {
           },
         ]
       }
+      storefront_subscriptions: {
+        Row: {
+          buyer_email: string
+          buyer_id: string
+          cancelled_at: string | null
+          created_at: string
+          currency: string
+          frequency: string
+          id: string
+          item_id: string | null
+          last_order_at: string | null
+          next_order_at: string
+          quantity: number
+          shop_id: string
+          status: string
+          total_orders: number
+          unit_price: number
+          variant_id: string | null
+        }
+        Insert: {
+          buyer_email?: string
+          buyer_id: string
+          cancelled_at?: string | null
+          created_at?: string
+          currency?: string
+          frequency?: string
+          id?: string
+          item_id?: string | null
+          last_order_at?: string | null
+          next_order_at?: string
+          quantity?: number
+          shop_id: string
+          status?: string
+          total_orders?: number
+          unit_price?: number
+          variant_id?: string | null
+        }
+        Update: {
+          buyer_email?: string
+          buyer_id?: string
+          cancelled_at?: string | null
+          created_at?: string
+          currency?: string
+          frequency?: string
+          id?: string
+          item_id?: string | null
+          last_order_at?: string | null
+          next_order_at?: string
+          quantity?: number
+          shop_id?: string
+          status?: string
+          total_orders?: number
+          unit_price?: number
+          variant_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "storefront_subscriptions_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "catalog_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "storefront_subscriptions_shop_id_fkey"
+            columns: ["shop_id"]
+            isOneToOne: false
+            referencedRelation: "storefront_pages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "storefront_subscriptions_variant_id_fkey"
+            columns: ["variant_id"]
+            isOneToOne: false
+            referencedRelation: "catalog_variants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       storefront_translations: {
         Row: {
           created_at: string | null
