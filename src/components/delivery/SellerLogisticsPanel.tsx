@@ -16,6 +16,10 @@ import DriverWalletPanel from "@/components/delivery/DriverWalletPanel";
 import GeofencingPanel from "@/components/delivery/GeofencingPanel";
 import InMissionChat from "@/components/delivery/InMissionChat";
 import AdminFleetDashboard from "@/components/delivery/AdminFleetDashboard";
+import DriverReputationPanel from "@/components/delivery/DriverReputationPanel";
+import RouteOptimizationEngine from "@/components/delivery/RouteOptimizationEngine";
+import BuyerDeliveryDashboard from "@/components/delivery/BuyerDeliveryDashboard";
+import DeliveryInvoicePanel from "@/components/delivery/DeliveryInvoicePanel";
 import { useDeliveryNotifications } from "@/hooks/useDeliveryNotifications";
 import { motion, AnimatePresence } from "framer-motion";
 import {
