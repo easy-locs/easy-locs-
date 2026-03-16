@@ -28,6 +28,10 @@ import FleetManagementDashboard from "@/components/delivery/FleetManagementDashb
 import AutomatedDispatchRules from "@/components/delivery/AutomatedDispatchRules";
 import CustomerTrackingPage from "@/components/delivery/CustomerTrackingPage";
 import DriverEarningsPayroll from "@/components/delivery/DriverEarningsPayroll";
+import DynamicPricingSurge from "@/components/delivery/DynamicPricingSurge";
+import DriverShiftScheduling from "@/components/delivery/DriverShiftScheduling";
+import AdminModerationPanel from "@/components/delivery/AdminModerationPanel";
+import DeliveryEventNotifications from "@/components/delivery/DeliveryEventNotifications";
 import { useDeliveryNotifications } from "@/hooks/useDeliveryNotifications";
 import { motion, AnimatePresence } from "framer-motion";
 import {
