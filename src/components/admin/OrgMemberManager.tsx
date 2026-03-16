@@ -112,7 +112,7 @@ export default function OrgMemberManager() {
       toast.error("Impossible de retirer le propriétaire");
       return;
     }
-    if (!confirm(`Retirer ${member.profile?.full_name || member.profile?.email || "ce membre"} de l'organisation ?`)) return;
+    if (!confirm(`Retirer ${member.profile?.name || member.profile?.email || "ce membre"} de l'organisation ?`)) return;
 
     const { error } = await supabase.from("org_members").delete().eq("id", member.id);
     if (error) {
