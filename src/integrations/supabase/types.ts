@@ -2929,6 +2929,8 @@ export type Database = {
           invoice_prefix: string | null
           invoice_tax_id: string | null
           invoicing_enabled: boolean | null
+          is_live: boolean | null
+          live_since: string | null
           org_id: string
           payment_bank_details: Json | null
           payment_custom_url: string | null
@@ -2975,6 +2977,8 @@ export type Database = {
           invoice_prefix?: string | null
           invoice_tax_id?: string | null
           invoicing_enabled?: boolean | null
+          is_live?: boolean | null
+          live_since?: string | null
           org_id: string
           payment_bank_details?: Json | null
           payment_custom_url?: string | null
@@ -3021,6 +3025,8 @@ export type Database = {
           invoice_prefix?: string | null
           invoice_tax_id?: string | null
           invoicing_enabled?: boolean | null
+          is_live?: boolean | null
+          live_since?: string | null
           org_id?: string
           payment_bank_details?: Json | null
           payment_custom_url?: string | null
@@ -3197,6 +3203,7 @@ export type Database = {
           updated_at: string
           user_id: string
           verification_types: Json | null
+          video_url: string | null
           year_built: number | null
         }
         Insert: {
@@ -3253,6 +3260,7 @@ export type Database = {
           updated_at?: string
           user_id: string
           verification_types?: Json | null
+          video_url?: string | null
           year_built?: number | null
         }
         Update: {
@@ -3309,6 +3317,7 @@ export type Database = {
           updated_at?: string
           user_id?: string
           verification_types?: Json | null
+          video_url?: string | null
           year_built?: number | null
         }
         Relationships: [
