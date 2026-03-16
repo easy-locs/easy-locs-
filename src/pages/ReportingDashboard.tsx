@@ -275,7 +275,7 @@ const ReportingDashboard = () => {
                                     <p className="font-medium text-foreground">{fmt(p.collected)}</p>
                                   </div>
                                   <div>
-                                    <p className="text-muted-foreground">Dépenses</p>
+                                    <p className="text-muted-foreground">{t("page.reporting.expenses")}</p>
                                     <p className="font-medium text-foreground">{fmt(p.expenses)}</p>
                                   </div>
                                   <div>
