@@ -87,6 +87,10 @@ import AdvancedReturnsHub from "@/components/delivery/AdvancedReturnsHub";
 import FinancialControlCenter from "@/components/delivery/FinancialControlCenter";
 import IncidentManagement from "@/components/delivery/IncidentManagement";
 import SellerPartnerPortal from "@/components/delivery/SellerPartnerPortal";
+import SmartCapacityPlanning from "@/components/delivery/SmartCapacityPlanning";
+import MultiVendorMarketplace from "@/components/delivery/MultiVendorMarketplace";
+import QualityAssuranceSystem from "@/components/delivery/QualityAssuranceSystem";
+import CustomerExperienceHub from "@/components/delivery/CustomerExperienceHub";
 import { useDeliveryNotifications } from "@/hooks/useDeliveryNotifications";
 import { motion, AnimatePresence } from "framer-motion";
 import {
