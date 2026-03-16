@@ -24,6 +24,10 @@ import DeliverySLAPanel from "@/components/delivery/DeliverySLAPanel";
 import MultiDropBatchPanel from "@/components/delivery/MultiDropBatchPanel";
 import DriverOnboardingWizard from "@/components/delivery/DriverOnboardingWizard";
 import DeliveryAnalyticsReports from "@/components/delivery/DeliveryAnalyticsReports";
+import FleetManagementDashboard from "@/components/delivery/FleetManagementDashboard";
+import AutomatedDispatchRules from "@/components/delivery/AutomatedDispatchRules";
+import CustomerTrackingPage from "@/components/delivery/CustomerTrackingPage";
+import DriverEarningsPayroll from "@/components/delivery/DriverEarningsPayroll";
 import { useDeliveryNotifications } from "@/hooks/useDeliveryNotifications";
 import { motion, AnimatePresence } from "framer-motion";
 import {
