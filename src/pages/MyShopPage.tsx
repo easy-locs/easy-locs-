@@ -206,7 +206,12 @@ export default function MyShopPage() {
               <LoyaltyProgram shopId={shop.id} mode="seller" />
             </div>
           )}
-          {tab === "analytics" && <ShopAnalytics shopId={shop.id} />}
+          {tab === "analytics" && (
+            <div className="space-y-4">
+              <ShopAnalytics shopId={shop.id} />
+              <StoreAnalytics shopId={shop.id} />
+            </div>
+          )}
           {tab === "launch" && <LaunchAudit shopId={shop.id} />}
           {tab === "settings" && (
             <div className="space-y-4">

@@ -399,6 +399,27 @@ export default function ShopPage() {
             </div>
           )}
 
+          {/* Affiliate Engine (advanced) */}
+          {user && (
+            <div className="mt-4">
+              <AffiliateEngine shopId={shop.id} shopSlug={shop.slug} mode="buyer" />
+            </div>
+          )}
+
+          {/* Shipping Tracker */}
+          {user && (
+            <div className="mt-4">
+              <ShippingTracker shopId={shop.id} mode="buyer" />
+            </div>
+          )}
+
+          {/* Invoices */}
+          {user && (
+            <div className="mt-4">
+              <MultiCurrencyTax shopId={shop.id} mode="buyer" />
+            </div>
+          )}
+
           {/* Advanced Reviews & Q&A */}
           <div className="mt-6">
             <AdvancedReviews shopId={shop.id} mode="buyer" />
