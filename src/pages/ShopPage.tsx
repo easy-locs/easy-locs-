@@ -82,6 +82,7 @@ export default function ShopPage() {
 
   const cart = useStorefrontCart(shop?.id);
   const coupon = useStorefrontCoupon(shop?.id);
+  const wishlist = useStorefrontWishlist(shop?.id);
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
 
   const filteredItems = activeCategory
