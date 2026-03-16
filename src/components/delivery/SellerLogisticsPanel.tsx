@@ -304,6 +304,12 @@ export default function SellerLogisticsPanel() {
         <ScheduledDeliveryPanel onDone={() => setFilter("all")} />
       ) : filter === "history" ? (
         <DeliveryHistoryExport jobs={jobs} loading={loading} />
+      ) : filter === "wallet" ? (
+        <DriverWalletPanel />
+      ) : filter === "geofence" ? (
+        <GeofencingPanel />
+      ) : filter === "fleet" ? (
+        <AdminFleetDashboard orgId={jobs[0]?.org_id || ""} />
       ) : (
       <div className="space-y-2">
         {loading ? (
