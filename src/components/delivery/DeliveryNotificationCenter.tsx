@@ -187,7 +187,7 @@ export default function DeliveryNotificationCenter({ orgId, className }: Props) 
           {filtered.map(n => {
             const cfg = NOTIF_ICONS[n.type] || NOTIF_ICONS.info;
             const Icon = cfg.icon;
-            const isNew = n.status === "new";
+            const isNew = !n.read;
             return (
               <motion.div key={n.id} layout initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
                 className="flex items-start gap-3 p-3 rounded-xl cursor-pointer transition-all"
