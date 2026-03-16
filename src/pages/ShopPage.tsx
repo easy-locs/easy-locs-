@@ -351,7 +351,7 @@ export default function ShopPage() {
             <SheetTrigger asChild>
               <button className="fixed bottom-6 right-4 z-50 bg-primary text-primary-foreground rounded-full px-5 py-3 shadow-lg flex items-center gap-2 font-semibold text-sm">
                 <ShoppingCart className="h-4 w-4" />
-                {cart.itemCount} · {fmtPrice(finalTotal, shop.currency)}
+                {cart.itemCount} · {fx.formatPrice(finalTotal, shop.currency)}
               </button>
             </SheetTrigger>
             <SheetContent side="bottom" className="max-h-[80vh] rounded-t-2xl">
