@@ -279,7 +279,7 @@ export default function SellerLogisticsPanel() {
 
       {/* Filter tabs */}
       <div className="flex gap-1 p-1 rounded-xl overflow-x-auto" style={{ background: "hsl(var(--hud-surface))" }}>
-        {(["all", "active", "completed", "batch", "multi-drop", "multistop", "scheduled", "history", "disputes", "analytics", "reports", "seller-stats", "sla", "onboarding", "driver-reg", "wallet", "geofence", "fleet", "reputation", "optimize", "buyer", "invoices"] as const).map(f => {
+        {(["all", "active", "completed", "batch", "multi-drop", "multistop", "scheduled", "history", "disputes", "analytics", "reports", "seller-stats", "sla", "onboarding", "driver-reg", "wallet", "geofence", "fleet", "fleet-mgmt", "dispatch-rules", "reputation", "optimize", "buyer", "customer-track", "invoices", "payroll"] as const).map(f => {
           const labels: Record<string, string> = {
             all: "Tout", active: "Actives", completed: "Terminées", batch: "⚡ Batch",
             "multi-drop": "📦 Multi-Drop",
@@ -287,6 +287,7 @@ export default function SellerLogisticsPanel() {
             disputes: "⚠️ Litiges", analytics: "📊 Stats", reports: "📈 Rapports", "seller-stats": "📈 Perf.",
             sla: "⏱️ SLA", onboarding: "🚗 Livreur", "driver-reg": "📝 Inscription",
             wallet: "💰 Wallet", geofence: "🛡️ Zones", fleet: "🏢 Flotte",
+            "fleet-mgmt": "🗺️ Fleet", "dispatch-rules": "⚙️ Dispatch", "customer-track": "📲 Suivi client", payroll: "💶 Paie",
             reputation: "🏆 Réputation", optimize: "⚡ Optim.", buyer: "👤 Client", invoices: "🧾 Factures",
           };
           return (
