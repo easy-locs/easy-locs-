@@ -507,6 +507,14 @@ export default function SellerLogisticsPanel() {
         <DriverShiftScheduler orgId={jobs[0]?.org_id || ""} />
       ) : filter === "live-tracking" ? (
         <CustomerLiveTracking />
+      ) : filter === "command-center" ? (
+        <AdminCommandCenter orgId={jobs[0]?.org_id || ""} />
+      ) : filter === "auto-invoicing" ? (
+        <AutomatedInvoicingEngine orgId={jobs[0]?.org_id || ""} />
+      ) : filter === "rewards" ? (
+        <CustomerRewardsProgram />
+      ) : filter === "driver-comms" ? (
+        <MultiChannelDriverComms orgId={jobs[0]?.org_id || ""} />
       ) : (
       <div className="space-y-2">
         {loading ? (
