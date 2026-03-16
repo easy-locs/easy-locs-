@@ -32,7 +32,7 @@ describe("DataPipeline", () => {
 
   it("handles validation failure", async () => {
     const p = new DataPipeline<number>("val-fail")
-      .step("check", "Check positive", (n) => n, { validate: (n) => n > 0 });
+      .step("check", "Check positive", (n: any) => n, { validate: (n: any) => (n as number) > 0 });
 
     const result = await p.run(-1);
     expect(result.status).toBe("failed");
