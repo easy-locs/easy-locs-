@@ -1,7 +1,8 @@
 /**
- * OrdersManager — Seller-facing order management.
+ * OrdersManager — Seller-facing order management with realtime updates.
  * Status lifecycle: pending → accepted → preparing → shipped → completed / cancelled
  */
+import { useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
