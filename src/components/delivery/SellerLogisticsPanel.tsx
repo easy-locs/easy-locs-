@@ -305,7 +305,6 @@ export default function SellerLogisticsPanel() {
             reputation: "🏆 Réputation", optimize: "⚡ Optim.", buyer: "👤 Client", invoices: "🧾 Factures",
             "multi-currency": "💱 Devises", "route-optim": "🧭 Routes", insurance: "🛡️ Assurance", "adv-analytics": "📊 Analytics+",
           };
-          };
           return (
             <button key={f} onClick={() => setFilter(f)}
               className="shrink-0 py-1.5 px-2 rounded-lg text-[9px] font-semibold transition-all"
