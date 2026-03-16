@@ -404,6 +404,11 @@ export default function ShopPage() {
               <ReturnsRefundEngine shopId={shop.id} mode="buyer" />
             </div>
           )}
+          {user && (
+            <div className="mt-4">
+              <ReturnsRefunds shopId={shop.id} mode="buyer" />
+            </div>
+          )}
 
           {/* Affiliate Program */}
           {user && (
