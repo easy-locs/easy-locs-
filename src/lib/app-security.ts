@@ -49,6 +49,24 @@ const DEFAULT_CONFIG: AppSecurityConfig = {
 const STORAGE_KEY = "orbit:security-config";
 const ATTEMPTS_KEY = "orbit:pin-attempts";
 const LOCK_STATE_KEY = "orbit:lock-state";
+const GHOST_ACTIVE_KEY = "orbit:ghost-active";
+
+// ─── Ghost Mode State ─────────────────────────────────────
+
+/** Check if Ghost Mode is currently active (session-level) */
+export function isGhostModeActive(): boolean {
+  return sessionStorage.getItem(GHOST_ACTIVE_KEY) === "true";
+}
+
+/** Activate Ghost Mode — suppresses presence, hides financial data */
+export function activateGhostMode(): void {
+  sessionStorage.setItem(GHOST_ACTIVE_KEY, "true");
+}
+
+/** Deactivate Ghost Mode */
+export function deactivateGhostMode(): void {
+  sessionStorage.removeItem(GHOST_ACTIVE_KEY);
+}
 
 // ─── Hashing ──────────────────────────────────────────────
 
