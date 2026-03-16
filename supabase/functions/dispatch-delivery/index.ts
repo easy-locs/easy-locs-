@@ -322,3 +322,98 @@ function haversine(lat1: number, lng1: number, lat2: number, lng2: number): numb
     Math.cos((lat1 * Math.PI) / 180) * Math.cos((lat2 * Math.PI) / 180) * Math.sin(dLng / 2) ** 2;
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
+
+// ─── Ranking Engine ──────────────────────────────────────────────────────────
+
+const VEHICLE_SPEEDS: Record<string, number> = {
+  bicycle: 15, scooter: 30, car: 40, van: 35, truck: 30,
+};
+
+const VEHICLE_CAPACITY_KG: Record<string, number> = {
+  bicycle: 5, scooter: 15, car: 50, van: 200, truck: 1000,
+};
+
+const RANKING_WEIGHTS = {
+  distance: 0.30, eta: 0.20, reliability: 0.20,
+  vehicle: 0.10, availability: 0.10, rating: 0.10,
+};
+
+interface RankedDriverResult {
+  user_id: string;
+  score: number;
+  distance_km: number;
+  eta_minutes: number;
+  vehicle_type: string;
+  avg_rating: number | null;
+  acceptance_rate: number | null;
+  breakdown: Record<string, number>;
+}
+
+function rankAndScoreDrivers(drivers: any[], job: any, maxDistKm: number): RankedDriverResult[] {
+  const priorityBoost = job.priority === "urgent" ? 1.5 : job.priority === "express" ? 1.25 : 1;
+  
+  // Adjust weights for priority
+  let w = { ...RANKING_WEIGHTS };
+  if (priorityBoost > 1) {
+    w.distance *= priorityBoost;
+    w.eta *= priorityBoost;
+    const total = Object.values(w).reduce((a, b) => a + b, 0);
+    for (const k of Object.keys(w) as (keyof typeof w)[]) w[k] /= total;
+  }
+
+  const results: RankedDriverResult[] = [];
+
+  for (const d of drivers) {
+    const dist = haversine(d.lat, d.lng, job.pickup_lat ?? 0, job.pickup_lng ?? 0);
+    if (dist > (d.max_distance_km ?? maxDistKm)) continue;
+
+    // Vehicle capacity check
+    const capacity = VEHICLE_CAPACITY_KG[d.vehicle_type] ?? 50;
+    if ((job.weight_kg ?? 1) > capacity) continue;
+
+    // Required vehicles check
+    const reqVehicles: string[] = job.required_vehicles ?? [];
+    if (reqVehicles.length > 0 && !reqVehicles.includes(d.vehicle_type)) continue;
+
+    const speed = VEHICLE_SPEEDS[d.vehicle_type] ?? 30;
+    const etaMin = Math.round((dist / speed) * 60);
+
+    // Score components (0–100)
+    const distScore = dist <= 0 ? 100 : dist >= maxDistKm ? 0 : Math.round((1 - dist / maxDistKm) * 100);
+    const etaScore = etaMin <= 0 ? 100 : etaMin >= 45 ? 0 : Math.round((1 - etaMin / 45) * 100);
+
+    const totalCompleted = d.total_completed ?? 0;
+    const totalCancelled = d.total_cancelled ?? 0;
+    const totalJobs = totalCompleted + totalCancelled;
+    const completionRate = totalJobs > 0 ? totalCompleted / totalJobs : 0.5;
+    const acceptRate = d.acceptance_rate ?? 0.5;
+    const reliabilityScore = Math.round((completionRate * 0.7 + acceptRate * 0.3) * 100);
+
+    const vehicleScore = 100; // already passed capacity/type checks
+    const availabilityScore = d.status === "online" ? 100 : d.status === "busy" ? 30 : 0;
+    const ratingScore = Math.round(((d.avg_rating ?? 3) / 5) * 100);
+
+    const score = Math.round(
+      distScore * w.distance +
+      etaScore * w.eta +
+      reliabilityScore * w.reliability +
+      vehicleScore * w.vehicle +
+      availabilityScore * w.availability +
+      ratingScore * w.rating
+    );
+
+    results.push({
+      user_id: d.user_id,
+      score,
+      distance_km: Math.round(dist * 100) / 100,
+      eta_minutes: etaMin,
+      vehicle_type: d.vehicle_type,
+      avg_rating: d.avg_rating,
+      acceptance_rate: d.acceptance_rate,
+      breakdown: { distScore, etaScore, reliabilityScore, vehicleScore, availabilityScore, ratingScore },
+    });
+  }
+
+  results.sort((a, b) => b.score - a.score);
+  return results;
+}
