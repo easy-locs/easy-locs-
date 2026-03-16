@@ -20,6 +20,10 @@ import DriverReputationPanel from "@/components/delivery/DriverReputationPanel";
 import RouteOptimizationEngine from "@/components/delivery/RouteOptimizationEngine";
 import BuyerDeliveryDashboard from "@/components/delivery/BuyerDeliveryDashboard";
 import DeliveryInvoicePanel from "@/components/delivery/DeliveryInvoicePanel";
+import DeliverySLAPanel from "@/components/delivery/DeliverySLAPanel";
+import MultiDropBatchPanel from "@/components/delivery/MultiDropBatchPanel";
+import DriverOnboardingWizard from "@/components/delivery/DriverOnboardingWizard";
+import DeliveryAnalyticsReports from "@/components/delivery/DeliveryAnalyticsReports";
 import { useDeliveryNotifications } from "@/hooks/useDeliveryNotifications";
 import { motion, AnimatePresence } from "framer-motion";
 import {
