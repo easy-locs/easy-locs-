@@ -416,11 +416,14 @@ export default function ShopPage() {
               <AffiliateProgram shopId={shop.id} shopSlug={shop.slug} mode="buyer" />
             </div>
           )}
-
-          {/* Affiliate Engine (advanced) */}
           {user && (
             <div className="mt-4">
               <AffiliateEngine shopId={shop.id} shopSlug={shop.slug} mode="buyer" />
+            </div>
+          )}
+          {user && (
+            <div className="mt-4">
+              <AffiliateReferralProgram shopId={shop.id} shopSlug={shop.slug} mode="buyer" />
             </div>
           )}
 
