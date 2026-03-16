@@ -26,7 +26,8 @@ vi.mock("@/integrations/lovable/index", () => ({
   lovable: { auth: { signInWithOAuth: vi.fn() } },
 }));
 
-vi.mock("framer-motion", () => {
+vi.mock("framer-motion", async (importOriginal) => {
+  const actual = await importOriginal() as any;
   const handler = {
     get(_: any, tag: string) {
       if (tag === '__esModule') return false;
@@ -39,6 +40,7 @@ vi.mock("framer-motion", () => {
     },
   };
   return {
+    ...actual,
     motion: new Proxy({}, handler),
     AnimatePresence: ({ children }: any) => <>{children}</>,
   };
