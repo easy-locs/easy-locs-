@@ -66,9 +66,9 @@ serve(async (req) => {
       return json({ success: true, job, confirmation_code: confirmationCode });
     }
 
-    // ─── FIND NEARBY DRIVERS ─────────────────────────────────
+    // ─── FIND NEARBY DRIVERS (with ranking) ────────────────
     if (action === "find_drivers") {
-      const { job_id, max_distance_km } = body;
+      const { job_id, max_distance_km, ranked } = body;
       if (!job_id) throw new Error("job_id required");
 
       const { data: job } = await supabaseAdmin.from("delivery_jobs").select("*").eq("id", job_id).single();
@@ -86,8 +86,15 @@ serve(async (req) => {
         return json({ success: true, drivers: [], message: "No drivers available" });
       }
 
-      // Filter by distance (haversine)
       const maxDist = max_distance_km || 15;
+
+      if (ranked) {
+        // Use ranking engine
+        const rankedDrivers = rankAndScoreDrivers(drivers, job, maxDist);
+        return json({ success: true, drivers: rankedDrivers, total: rankedDrivers.length, ranked: true });
+      }
+
+      // Legacy: simple distance sort
       const nearby = drivers
         .map((d: any) => {
           const dist = haversine(d.lat, d.lng, job.pickup_lat, job.pickup_lng);
@@ -97,6 +104,62 @@ serve(async (req) => {
         .sort((a: any, b: any) => a.distance_km - b.distance_km);
 
       return json({ success: true, drivers: nearby, total: nearby.length });
+    }
+
+    // ─── AUTO DISPATCH ───────────────────────────────────────
+    if (action === "auto_dispatch") {
+      const { job_id, max_distance_km } = body;
+      if (!job_id) throw new Error("job_id required");
+
+      const { data: job } = await supabaseAdmin.from("delivery_jobs").select("*").eq("id", job_id).single();
+      if (!job) throw new Error("Job not found");
+      if (!["pending"].includes(job.status)) throw new Error(`Cannot auto-dispatch in status: ${job.status}`);
+
+      // Find online drivers
+      const { data: drivers } = await supabaseAdmin
+        .from("driver_sessions")
+        .select("*")
+        .in("status", ["online"])
+        .not("lat", "is", null)
+        .not("lng", "is", null);
+
+      if (!drivers || drivers.length === 0) {
+        return json({ success: false, error: "No drivers available", drivers: [] });
+      }
+
+      const maxDist = max_distance_km || 15;
+      const rankedDrivers = rankAndScoreDrivers(drivers, job, maxDist);
+
+      if (rankedDrivers.length === 0) {
+        return json({ success: false, error: "No eligible drivers in range", drivers: [] });
+      }
+
+      const best = rankedDrivers[0];
+
+      // Auto-assign the best driver
+      const { error: assignErr } = await supabaseAdmin.from("delivery_jobs")
+        .update({ driver_id: best.user_id, status: "assigned", assigned_at: new Date().toISOString(), updated_at: new Date().toISOString() })
+        .eq("id", job_id);
+
+      if (assignErr) throw new Error(`Auto-assign failed: ${assignErr.message}`);
+
+      // Create offer record with score
+      await supabaseAdmin.from("delivery_offers").upsert({
+        job_id, driver_id: best.user_id, org_id: job.org_id,
+        status: "accepted",
+        distance_km: best.distance_km,
+        eta_minutes: best.eta_minutes,
+        score: best.score,
+        responded_at: new Date().toISOString(),
+      }, { onConflict: "job_id,driver_id" });
+
+      return json({
+        success: true,
+        job_id,
+        assigned_driver: best,
+        alternates: rankedDrivers.slice(1, 4),
+        total_candidates: rankedDrivers.length,
+      });
     }
 
     // ─── ASSIGN DRIVER ───────────────────────────────────────
