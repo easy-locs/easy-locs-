@@ -5,7 +5,7 @@
  */
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Wallet, Heart, Gift, Star, MapPin, Clock, ArrowUpRight, ArrowDownLeft, Crown } from "lucide-react";
+import { Wallet, Heart, Gift, Star, MapPin, Clock, ArrowUpRight, ArrowDownLeft, Crown, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface LoyaltyTier {
