@@ -283,6 +283,12 @@ export default function SellerLogisticsPanel() {
       {/* Content */}
       {filter === "analytics" ? (
         <DeliveryAnalyticsDashboard orgId={jobs[0]?.org_id} />
+      ) : filter === "seller-stats" ? (
+        <SellerAnalyticsDashboard orgId={jobs[0]?.org_id || ""} />
+      ) : filter === "multistop" ? (
+        <MultiStopRoutePanel orgId={jobs[0]?.org_id || ""} />
+      ) : filter === "onboarding" ? (
+        <DriverOnboardingFlow onComplete={() => setFilter("all")} />
       ) : filter === "disputes" ? (
         <DeliveryDisputeFlow orgId={jobs[0]?.org_id || ""} />
       ) : filter === "batch" ? (
