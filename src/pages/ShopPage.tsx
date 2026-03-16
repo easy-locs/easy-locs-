@@ -130,6 +130,7 @@ export default function ShopPage() {
   const handleCheckout = () => {
     if (!user) { toast.error("Please sign in to checkout"); return; }
     if (cart.items.length === 0) return;
+    analytics.trackCheckout(finalTotal, shop.currency);
     setCheckoutMode(true);
     setCartOpen(false);
   };
