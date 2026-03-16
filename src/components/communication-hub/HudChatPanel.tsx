@@ -26,6 +26,7 @@ import { useVoiceRecorder, formatVoiceDuration } from "@/hooks/useVoiceRecorder"
 import ChatMediaPreview from "@/components/communication/ChatMediaPreview";
 import { supabase } from "@/integrations/supabase/client";
 import { realtimeManager } from "@/lib/realtime-manager";
+import { platformBus } from "@/lib/shared/platform-bus";
 import { usePrivacySettings, computeDisappearAt } from "@/hooks/usePrivacySettings";
 import { useAuth } from "@/contexts/AuthContext";
 import { useOrbitEncryption } from "@/hooks/useOrbitEncryption";
@@ -350,6 +351,12 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
 
       if (insertError) throw insertError;
       toast.success(fileMetaJson ? "🔒 Encrypted file sent" : "File sent");
+      // Platform bus: file sent
+      platformBus.emit("orbit:message_sent", {
+        threadId: thread.threadId || thread.id,
+        contextId: thread.contextId,
+        type: "file",
+      }, "orbit", { userId: user?.id, orgId });
     } catch (e: any) {
       toast.error(e?.message || "Upload failed");
     }
@@ -526,6 +533,14 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
       // Replace optimistic message with real one on next realtime event (auto via listener)
       setConvStatus("waiting_tenant");
       setSecurityLevel("normal"); // Reset security level after successful send
+
+      // Platform bus: emit message_sent for cross-module sync
+      platformBus.emit("orbit:message_sent", {
+        threadId: thread.threadId || thread.id,
+        contextId: thread.contextId,
+        recipientName: thread.name,
+        contentPreview: content.slice(0, 80),
+      }, "orbit", { userId: authUserId, orgId });
 
       const recipientEmail = normalizeEmail(thread.email);
       if (recipientEmail && isValidEmail(recipientEmail)) {
@@ -1212,8 +1227,14 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
                     }).catch(err => console.error("[Orbit] Transcription trigger failed:", err));
                   }
 
-                  setSecurityLevel("normal"); // Reset security level after voice send
-                  toast.success("Voice message sent");
+                   setSecurityLevel("normal"); // Reset security level after voice send
+                   toast.success("Voice message sent");
+                   // Platform bus: voice sent
+                   platformBus.emit("orbit:message_sent", {
+                     threadId: thread.threadId || thread.id,
+                     contextId: thread.contextId,
+                     type: "voice",
+                   }, "orbit", { userId: authUserId, orgId });
                 } catch (e: any) {
                   toast.error(e?.message || "Failed to send voice message");
                 }
@@ -1471,10 +1492,15 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
           if (thread.threadId) insertData.thread_id = thread.threadId;
           
           const { error } = await supabase.from("messages").insert(insertData);
-          if (error) {
+           if (error) {
             console.error("[Location] Insert failed:", error);
             toast.error("Failed to send location");
           } else {
+            platformBus.emit("orbit:message_sent", {
+              threadId: thread.threadId || thread.id,
+              contextId: thread.contextId,
+              type: "location",
+            }, "orbit", { userId: user?.id, orgId });
             toast.success("📍 Location shared");
           }
           loadMessages();
