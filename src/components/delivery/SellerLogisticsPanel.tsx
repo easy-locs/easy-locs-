@@ -32,6 +32,10 @@ import DynamicPricingSurge from "@/components/delivery/DynamicPricingSurge";
 import DriverShiftScheduling from "@/components/delivery/DriverShiftScheduling";
 import AdminModerationPanel from "@/components/delivery/AdminModerationPanel";
 import DeliveryEventNotifications from "@/components/delivery/DeliveryEventNotifications";
+import MultiCurrencyDelivery from "@/components/delivery/MultiCurrencyDelivery";
+import RouteOptimizationPanel from "@/components/delivery/RouteOptimizationPanel";
+import DeliveryInsurancePanel from "@/components/delivery/DeliveryInsurancePanel";
+import DeliveryAdvancedAnalytics from "@/components/delivery/DeliveryAdvancedAnalytics";
 import { useDeliveryNotifications } from "@/hooks/useDeliveryNotifications";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -221,7 +225,7 @@ export default function SellerLogisticsPanel() {
   const [searchingJobId, setSearchingJobId] = useState<string | null>(null);
   const [disputeJobId, setDisputeJobId] = useState<string | null>(null);
   const [trackingJobId, setTrackingJobId] = useState<string | null>(null);
-  const [filter, setFilter] = useState<"all" | "active" | "completed" | "batch" | "scheduled" | "history" | "disputes" | "analytics" | "multistop" | "seller-stats" | "onboarding" | "wallet" | "geofence" | "chat" | "fleet" | "reputation" | "optimize" | "buyer" | "invoices" | "sla" | "multi-drop" | "driver-reg" | "reports" | "fleet-mgmt" | "dispatch-rules" | "customer-track" | "payroll" | "surge" | "shifts" | "moderation" | "notif-rules">("all");
+  const [filter, setFilter] = useState<"all" | "active" | "completed" | "batch" | "scheduled" | "history" | "disputes" | "analytics" | "multistop" | "seller-stats" | "onboarding" | "wallet" | "geofence" | "chat" | "fleet" | "reputation" | "optimize" | "buyer" | "invoices" | "sla" | "multi-drop" | "driver-reg" | "reports" | "fleet-mgmt" | "dispatch-rules" | "customer-track" | "payroll" | "surge" | "shifts" | "moderation" | "notif-rules" | "multi-currency" | "route-optim" | "insurance" | "adv-analytics">("all");
   const [chatJobId, setChatJobId] = useState<string | null>(null);
 
   const filteredJobs = jobs.filter(j => {
@@ -283,7 +287,7 @@ export default function SellerLogisticsPanel() {
 
       {/* Filter tabs */}
       <div className="flex gap-1 p-1 rounded-xl overflow-x-auto" style={{ background: "hsl(var(--hud-surface))" }}>
-        {(["all", "active", "completed", "batch", "multi-drop", "multistop", "scheduled", "history", "disputes", "analytics", "reports", "seller-stats", "sla", "surge", "onboarding", "driver-reg", "shifts", "wallet", "geofence", "fleet", "fleet-mgmt", "dispatch-rules", "moderation", "reputation", "optimize", "buyer", "customer-track", "invoices", "payroll", "notif-rules"] as const).map(f => {
+        {(["all", "active", "completed", "batch", "multi-drop", "multistop", "scheduled", "history", "disputes", "analytics", "reports", "adv-analytics", "seller-stats", "sla", "surge", "multi-currency", "route-optim", "insurance", "onboarding", "driver-reg", "shifts", "wallet", "geofence", "fleet", "fleet-mgmt", "dispatch-rules", "moderation", "reputation", "optimize", "buyer", "customer-track", "invoices", "payroll", "notif-rules"] as const).map(f => {
           const labels: Record<string, string> = {
             all: "Tout", active: "Actives", completed: "Terminées", batch: "⚡ Batch",
             "multi-drop": "📦 Multi-Drop",
@@ -294,6 +298,7 @@ export default function SellerLogisticsPanel() {
             "fleet-mgmt": "🗺️ Fleet", "dispatch-rules": "⚙️ Dispatch", moderation: "🛡️ Modération",
             "customer-track": "📲 Suivi client", payroll: "💶 Paie", "notif-rules": "🔔 Notifs",
             reputation: "🏆 Réputation", optimize: "⚡ Optim.", buyer: "👤 Client", invoices: "🧾 Factures",
+            "multi-currency": "💱 Devises", "route-optim": "🧭 Routes", insurance: "🛡️ Assurance", "adv-analytics": "📊 Analytics+",
           };
           return (
             <button key={f} onClick={() => setFilter(f)}
@@ -363,6 +368,14 @@ export default function SellerLogisticsPanel() {
         <AdminModerationPanel orgId={jobs[0]?.org_id || ""} />
       ) : filter === "notif-rules" ? (
         <DeliveryEventNotifications orgId={jobs[0]?.org_id || ""} />
+      ) : filter === "multi-currency" ? (
+        <MultiCurrencyDelivery orgId={jobs[0]?.org_id || ""} />
+      ) : filter === "route-optim" ? (
+        <RouteOptimizationPanel orgId={jobs[0]?.org_id || ""} />
+      ) : filter === "insurance" ? (
+        <DeliveryInsurancePanel orgId={jobs[0]?.org_id || ""} />
+      ) : filter === "adv-analytics" ? (
+        <DeliveryAdvancedAnalytics orgId={jobs[0]?.org_id || ""} />
       ) : (
       <div className="space-y-2">
         {loading ? (
