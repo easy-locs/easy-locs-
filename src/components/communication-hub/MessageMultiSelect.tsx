@@ -12,6 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { haptic } from "@/lib/haptics";
 import { toast } from "sonner";
 import { useI18n } from "@/lib/i18n";
+import { platformBus } from "@/lib/shared/platform-bus";
 
 interface Props {
   selectedIds: Set<string>;
@@ -77,6 +78,7 @@ export default function MessageMultiSelectToolbar({
       }
       onDeletedForMe(ids);
       toast.success(`${count} ${t("orbit.messages_hidden") || "messages hidden"}`);
+      platformBus.emit("orbit:message_sent", { type: "bulk_delete_for_me", count: ids.length }, "orbit", { userId: currentUserId });
     } catch (e: any) {
       console.error("[bulk-delete-for-me]", e);
       toast.error("Failed to hide some messages");
@@ -105,6 +107,7 @@ export default function MessageMultiSelectToolbar({
       }
       onDeletedForAll(ids);
       toast.success(`${count} ${t("orbit.messages_deleted_all") || "messages deleted for everyone"}`);
+      platformBus.emit("orbit:message_sent", { type: "bulk_delete_for_all", count: ids.length }, "orbit", { userId: currentUserId });
     } catch (e: any) {
       toast.error("Failed to delete some messages");
     }

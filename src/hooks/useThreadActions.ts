@@ -1,11 +1,13 @@
 /**
  * useThreadActions — Archive, delete, unarchive, mute, block, clear, and favorite conversation threads.
  * Persists to conversation_preferences / blocked_users tables with optimistic UI + rollback.
+ * Emits platform bus events for cross-module sync.
  */
 import { useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { platformBus } from "@/lib/shared/platform-bus";
 import type { ConversationThread } from "@/components/communication-hub/types";
 
 interface UseThreadActionsParams {
@@ -14,7 +16,7 @@ interface UseThreadActionsParams {
 }
 
 export function useThreadActions({ updateThreadLocally, loadThreads }: UseThreadActionsParams) {
-  const { user } = useAuth();
+  const { user, orgId } = useAuth();
   const userId = user?.id;
 
   const upsertPref = useCallback(async (

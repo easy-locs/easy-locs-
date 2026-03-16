@@ -12,6 +12,7 @@ import { MessageCircle, Loader2, Forward, Send, Check, AlertCircle } from "lucid
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useI18n } from "@/lib/i18n";
+import { platformBus } from "@/lib/shared/platform-bus";
 
 interface Props {
   open: boolean;
@@ -153,6 +154,13 @@ export default function ForwardMessageDialog({
       toast.success(
         (t("chat.forwarded_to") || "Forwarded to") + " " + (selectedThread.display_name || t("chat.conversation") || "conversation")
       );
+      // Platform bus: forwarded message sent
+      platformBus.emit("orbit:message_sent", {
+        threadId: selectedThread.id,
+        contextId: selectedThread.context_id,
+        type: "forward",
+        originalMessageId: messageId,
+      }, "orbit", { userId });
       onClose();
     } catch (e: any) {
       console.error("[Forward] Insert failed:", e);
