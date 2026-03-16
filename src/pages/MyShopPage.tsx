@@ -249,6 +249,8 @@ export default function MyShopPage() {
               <ReverseAuctionRFQ shopId={shop.id} mode="seller" />
               <DigitalProducts shopId={shop.id} mode="seller" />
               <PeerMarketplace shopId={shop.id} mode="seller" />
+              <TaxComplianceEngine shopId={shop.id} mode="seller" />
+              <AdvancedReferralSystem shopId={shop.id} shopSlug={shop.slug} mode="seller" />
             </div>
           )}
           {tab === "analytics" && (
