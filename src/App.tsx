@@ -154,6 +154,7 @@ const ShopPage = safeLazy(() => import("./pages/ShopPage"), "ShopPage");
 const MyShopPage = safeLazy(() => import("./pages/MyShopPage"), "MyShopPage");
 const DiscoverPage = safeLazy(() => import("./pages/DiscoverPage"), "DiscoverPage");
 const OpsCenter = safeLazy(() => import("./pages/OpsCenter"), "OpsCenter");
+const MyOrdersPage = safeLazy(() => import("./pages/MyOrdersPage"), "MyOrdersPage");
 const ConciergeServicesPage = safeLazy(() => import("./pages/seo/ConciergeServicesPage"), "ConciergeServicesPage");
 const MarketplaceServicesPage = safeLazy(() => import("./pages/seo/MarketplaceServicesPage"), "MarketplaceServicesPage");
 const ActivitiesPage = safeLazy(() => import("./pages/seo/ActivitiesPage"), "ActivitiesPage");
@@ -280,7 +281,8 @@ const App = () => (
               <Route path="/saved" element={<SavedListings />} />
               <Route path="/cv-generator" element={<CVGenerator />} />
               <Route path="/category-notifications" element={<CategorySubscriptions />} />
-              <Route path="/vision" element={<PlatformVision />} />
+               <Route path="/vision" element={<PlatformVision />} />
+               <Route path="/my-orders" element={<MyOrdersPage />} />
 
               {/* SEO landing pages */}
               <Route path="/property-management" element={<PropertyManagement />} />
