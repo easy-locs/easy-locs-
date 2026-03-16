@@ -147,12 +147,12 @@ const ReportingDashboard = () => {
       propertyRows.map(r => ({ ...r })) as any,
       `rapport-financier-${year}`,
       [
-        { key: "label", label: "Bien" },
-        { key: "country", label: "Pays" },
-        { key: "revenue", label: "Revenus" },
-        { key: "collected", label: "Encaissé" },
-        { key: "expenses", label: "Dépenses" },
-        { key: "net", label: "Résultat net" },
+        { key: "label", label: t("page.reporting.property") },
+        { key: "country", label: t("page.reporting.country") },
+        { key: "revenue", label: t("page.reporting.revenue") },
+        { key: "collected", label: t("page.reporting.collected") },
+        { key: "expenses", label: t("page.reporting.expenses") },
+        { key: "net", label: t("page.reporting.net_income") },
       ]
     );
   };
