@@ -2672,6 +2672,33 @@ export type Database = {
           },
         ]
       }
+      featured_shops: {
+        Row: {
+          created_at: string
+          featured_until: string | null
+          id: string
+          reason: string | null
+          shop_id: string
+          tier: string
+        }
+        Insert: {
+          created_at?: string
+          featured_until?: string | null
+          id?: string
+          reason?: string | null
+          shop_id: string
+          tier?: string
+        }
+        Update: {
+          created_at?: string
+          featured_until?: string | null
+          id?: string
+          reason?: string | null
+          shop_id?: string
+          tier?: string
+        }
+        Relationships: []
+      }
       furniture_items: {
         Row: {
           condition: string
@@ -6820,6 +6847,84 @@ export type Database = {
           },
         ]
       }
+      storefront_addresses: {
+        Row: {
+          address_line1: string
+          address_line2: string | null
+          city: string
+          country: string
+          created_at: string
+          full_name: string | null
+          id: string
+          is_default: boolean
+          label: string
+          phone: string | null
+          postal_code: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          address_line1: string
+          address_line2?: string | null
+          city: string
+          country?: string
+          created_at?: string
+          full_name?: string | null
+          id?: string
+          is_default?: boolean
+          label?: string
+          phone?: string | null
+          postal_code?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          address_line1?: string
+          address_line2?: string | null
+          city?: string
+          country?: string
+          created_at?: string
+          full_name?: string | null
+          id?: string
+          is_default?: boolean
+          label?: string
+          phone?: string | null
+          postal_code?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      storefront_ai_chats: {
+        Row: {
+          created_at: string
+          id: string
+          messages: Json
+          session_id: string
+          shop_id: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          messages?: Json
+          session_id: string
+          shop_id: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          messages?: Json
+          session_id?: string
+          shop_id?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       storefront_analytics_daily: {
         Row: {
           conversion_rate: number | null
@@ -7499,7 +7604,12 @@ export type Database = {
           seller_id: string
           shipped_at: string | null
           shipping_address: string | null
+          shipping_address_id: string | null
+          shipping_city: string | null
+          shipping_country: string | null
           shipping_fee: number | null
+          shipping_name: string | null
+          shipping_phone: string | null
           shipping_zone_id: string | null
           shop_id: string
           status: string | null
@@ -7531,7 +7641,12 @@ export type Database = {
           seller_id: string
           shipped_at?: string | null
           shipping_address?: string | null
+          shipping_address_id?: string | null
+          shipping_city?: string | null
+          shipping_country?: string | null
           shipping_fee?: number | null
+          shipping_name?: string | null
+          shipping_phone?: string | null
           shipping_zone_id?: string | null
           shop_id: string
           status?: string | null
@@ -7563,7 +7678,12 @@ export type Database = {
           seller_id?: string
           shipped_at?: string | null
           shipping_address?: string | null
+          shipping_address_id?: string | null
+          shipping_city?: string | null
+          shipping_country?: string | null
           shipping_fee?: number | null
+          shipping_name?: string | null
+          shipping_phone?: string | null
           shipping_zone_id?: string | null
           shop_id?: string
           status?: string | null
@@ -7907,6 +8027,109 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      storefront_social_comments: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          post_id: string
+          user_id: string
+          user_name: string | null
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          post_id: string
+          user_id: string
+          user_name?: string | null
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          post_id?: string
+          user_id?: string
+          user_name?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "storefront_social_comments_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "storefront_social_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      storefront_social_likes: {
+        Row: {
+          created_at: string
+          id: string
+          post_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          post_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          post_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "storefront_social_likes_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "storefront_social_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      storefront_social_posts: {
+        Row: {
+          caption: string | null
+          comments_count: number
+          created_at: string
+          id: string
+          item_id: string | null
+          likes_count: number
+          photo_url: string | null
+          post_type: string
+          shop_id: string
+          user_id: string
+        }
+        Insert: {
+          caption?: string | null
+          comments_count?: number
+          created_at?: string
+          id?: string
+          item_id?: string | null
+          likes_count?: number
+          photo_url?: string | null
+          post_type?: string
+          shop_id: string
+          user_id: string
+        }
+        Update: {
+          caption?: string | null
+          comments_count?: number
+          created_at?: string
+          id?: string
+          item_id?: string | null
+          likes_count?: number
+          photo_url?: string | null
+          post_type?: string
+          shop_id?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       storefront_stock_movements: {
         Row: {
@@ -8961,6 +9184,48 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      vendor_commissions: {
+        Row: {
+          created_at: string
+          currency: string
+          id: string
+          last_payout_at: string | null
+          payout_method: string | null
+          pending_payout: number
+          platform_rate: number
+          shop_id: string
+          total_earned: number
+          total_paid: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          currency?: string
+          id?: string
+          last_payout_at?: string | null
+          payout_method?: string | null
+          pending_payout?: number
+          platform_rate?: number
+          shop_id: string
+          total_earned?: number
+          total_paid?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          currency?: string
+          id?: string
+          last_payout_at?: string | null
+          payout_method?: string | null
+          pending_payout?: number
+          platform_rate?: number
+          shop_id?: string
+          total_earned?: number
+          total_paid?: number
+          updated_at?: string
+        }
+        Relationships: []
       }
       verticals: {
         Row: {
