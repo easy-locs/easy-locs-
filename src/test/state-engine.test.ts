@@ -65,8 +65,9 @@ describe("createSelector", () => {
 
 describe("createDerivedSelector", () => {
   it("combines multiple inputs", () => {
-    const selector = createDerivedSelector(
-      [(s: { a: number; b: number }) => s.a, (s) => s.b],
+    type AB = { a: number; b: number };
+    const selector = createDerivedSelector<AB, [number, number], number>(
+      [(s) => s.a, (s) => s.b],
       (a, b) => a + b
     );
     expect(selector({ a: 3, b: 7 })).toBe(10);
