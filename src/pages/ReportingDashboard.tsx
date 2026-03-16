@@ -138,8 +138,8 @@ const ReportingDashboard = () => {
   }, [properties, yearCalls, yearExpenses]);
 
   const chartConfig = {
-    collected: { label: "Encaissé", color: "hsl(var(--accent))" },
-    expenses: { label: "Dépenses", color: "hsl(var(--destructive))" },
+    collected: { label: t("page.reporting.collected"), color: "hsl(var(--accent))" },
+    expenses: { label: t("page.reporting.expenses"), color: "hsl(var(--destructive))" },
   };
 
   const handleExportCSV = () => {
@@ -147,19 +147,19 @@ const ReportingDashboard = () => {
       propertyRows.map(r => ({ ...r })) as any,
       `rapport-financier-${year}`,
       [
-        { key: "label", label: "Bien" },
-        { key: "country", label: "Pays" },
-        { key: "revenue", label: "Revenus" },
-        { key: "collected", label: "Encaissé" },
-        { key: "expenses", label: "Dépenses" },
-        { key: "net", label: "Résultat net" },
+        { key: "label", label: t("page.reporting.property") },
+        { key: "country", label: t("page.reporting.country") },
+        { key: "revenue", label: t("page.reporting.revenue") },
+        { key: "collected", label: t("page.reporting.collected") },
+        { key: "expenses", label: t("page.reporting.expenses") },
+        { key: "net", label: t("page.reporting.net_income") },
       ]
     );
   };
 
   const handleExportPDF = () => {
     const report: ReportSummary = {
-      title: `Rapport Financier ${year}`,
+      title: `${t("page.reporting.title")} ${year}`,
       period: String(year),
       generatedAt: new Date().toLocaleDateString(),
       currency: activeCountry === "US" ? "USD" : activeCountry === "GB" ? "GBP" : activeCountry === "MA" ? "MAD" : "EUR",
@@ -187,10 +187,10 @@ const ReportingDashboard = () => {
                 <div className="p-1.5 sm:p-2 rounded-xl bg-accent/10 shrink-0">
                   <BarChart3 className="h-4 w-4 sm:h-5 sm:w-5 text-accent" />
                 </div>
-                Tableau de bord financier
+                {t("page.reporting.title")}
               </h1>
               <p className="text-xs sm:text-sm text-muted-foreground mt-1">
-                Vue consolidée revenus, dépenses et résultat net
+                {t("page.reporting.subtitle")}
               </p>
             </div>
             <div className="flex items-center gap-2 flex-wrap">
@@ -209,32 +209,32 @@ const ReportingDashboard = () => {
 
           {loading ? (
             <div className="flex items-center justify-center py-20 text-muted-foreground">
-              <Loader2 className="h-6 w-6 animate-spin mr-2" /> Chargement…
+              <Loader2 className="h-6 w-6 animate-spin mr-2" /> {t("page.common.loading") || "Loading…"}
             </div>
           ) : (
             <>
               {/* KPI Cards */}
               <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3">
-                <StatCard icon={TrendingUp} iconClassName="text-accent" label="Revenus attendus" value={fmt(totalRevenue)} />
-                <StatCard icon={ArrowUpRight} iconClassName="text-primary" label="Encaissé" value={fmt(totalCollected)} />
-                <StatCard icon={ArrowDownRight} iconClassName="text-destructive" label="Impayés" value={fmt(totalUnpaid)} />
-                <StatCard icon={TrendingDown} iconClassName="text-destructive" label="Dépenses" value={fmt(totalExpenses)} />
-                <StatCard icon={PiggyBank} iconClassName={netIncome >= 0 ? "text-accent" : "text-destructive"} label="Résultat net" value={fmt(netIncome)} />
-                <StatCard icon={Percent} iconClassName="text-primary" label="Taux encaissement" value={`${collectionRate.toFixed(1)}%`} />
+                <StatCard icon={TrendingUp} iconClassName="text-accent" label={t("page.reporting.expected_revenue")} value={fmt(totalRevenue)} />
+                <StatCard icon={ArrowUpRight} iconClassName="text-primary" label={t("page.reporting.collected")} value={fmt(totalCollected)} />
+                <StatCard icon={ArrowDownRight} iconClassName="text-destructive" label={t("page.reporting.unpaid")} value={fmt(totalUnpaid)} />
+                <StatCard icon={TrendingDown} iconClassName="text-destructive" label={t("page.reporting.expenses")} value={fmt(totalExpenses)} />
+                <StatCard icon={PiggyBank} iconClassName={netIncome >= 0 ? "text-accent" : "text-destructive"} label={t("page.reporting.net_income")} value={fmt(netIncome)} />
+                <StatCard icon={Percent} iconClassName="text-primary" label={t("page.reporting.collection_rate")} value={`${collectionRate.toFixed(1)}%`} />
               </div>
 
               <Tabs defaultValue="overview" className="space-y-4">
                 <TabsList className="grid w-full grid-cols-3">
-                  <TabsTrigger value="overview">Vue d'ensemble</TabsTrigger>
-                  <TabsTrigger value="properties">Par bien</TabsTrigger>
-                  <TabsTrigger value="expenses">Dépenses</TabsTrigger>
+                  <TabsTrigger value="overview">{t("page.reporting.overview")}</TabsTrigger>
+                  <TabsTrigger value="properties">{t("page.reporting.by_property")}</TabsTrigger>
+                  <TabsTrigger value="expenses">{t("page.reporting.expenses_tab")}</TabsTrigger>
                 </TabsList>
 
                 {/* Overview Tab */}
                 <TabsContent value="overview" className="space-y-4">
                   <Card>
                     <CardHeader>
-                      <CardTitle className="text-base">Évolution mensuelle</CardTitle>
+                      <CardTitle className="text-base">{t("page.reporting.monthly_evolution")}</CardTitle>
                     </CardHeader>
                     <CardContent>
                       <ChartContainer config={chartConfig} className="h-[280px] w-full">
@@ -256,7 +256,7 @@ const ReportingDashboard = () => {
                   {propertyRows.length === 0 ? (
                     <Card><CardContent className="py-12 text-center text-muted-foreground text-sm">
                       <Home className="h-8 w-8 mx-auto mb-2 opacity-30" />
-                      Aucun bien pour cette période
+                      {t("page.reporting.no_properties")}
                     </CardContent></Card>
                   ) : (
                     <div className="space-y-2">
@@ -271,15 +271,15 @@ const ReportingDashboard = () => {
                                 </div>
                                 <div className="flex items-center gap-4 text-right text-xs shrink-0">
                                   <div>
-                                    <p className="text-muted-foreground">Encaissé</p>
+                                    <p className="text-muted-foreground">{t("page.reporting.collected")}</p>
                                     <p className="font-medium text-foreground">{fmt(p.collected)}</p>
                                   </div>
                                   <div>
-                                    <p className="text-muted-foreground">Dépenses</p>
+                                    <p className="text-muted-foreground">{t("page.reporting.expenses")}</p>
                                     <p className="font-medium text-foreground">{fmt(p.expenses)}</p>
                                   </div>
                                   <div>
-                                    <p className="text-muted-foreground">Net</p>
+                                    <p className="text-muted-foreground">{t("page.reporting.net_income")}</p>
                                     <p className={`font-bold ${p.net >= 0 ? "text-accent" : "text-destructive"}`}>{fmt(p.net)}</p>
                                   </div>
                                 </div>
@@ -296,12 +296,12 @@ const ReportingDashboard = () => {
                 <TabsContent value="expenses" className="space-y-4">
                   {expensesByCategory.length === 0 ? (
                     <Card><CardContent className="py-12 text-center text-muted-foreground text-sm">
-                      Aucune dépense enregistrée pour {year}
+                      {t("page.reporting.no_expenses")} {year}
                     </CardContent></Card>
                   ) : (
                     <div className="grid md:grid-cols-2 gap-4">
                       <Card>
-                        <CardHeader><CardTitle className="text-base">Répartition</CardTitle></CardHeader>
+                        <CardHeader><CardTitle className="text-base">{t("page.reporting.expense_breakdown")}</CardTitle></CardHeader>
                         <CardContent>
                           <ChartContainer config={{}} className="h-[250px] w-full">
                             <PieChart>
@@ -324,7 +324,7 @@ const ReportingDashboard = () => {
                         </CardContent>
                       </Card>
                       <Card>
-                        <CardHeader><CardTitle className="text-base">Détail</CardTitle></CardHeader>
+                        <CardHeader><CardTitle className="text-base">{t("page.reporting.expense_detail")}</CardTitle></CardHeader>
                         <CardContent className="space-y-2">
                           {expensesByCategory.map((cat, i) => {
                             const maxAmt = expensesByCategory[0]?.amount || 1;

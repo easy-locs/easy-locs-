@@ -109,7 +109,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
       icon: Store,
       items: [
         { icon: Store, label: t("nav.marketplace") || "Services & Concierge", path: "/dashboard/activities" },
-        { icon: Zap, label: "Seller Hub", path: "/dashboard/seller" },
+        { icon: Zap, label: t("nav.seller_hub") || "Seller Hub", path: "/dashboard/seller" },
       ],
     },
 
@@ -121,8 +121,8 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
       items: [
         { icon: MessageCircle, label: "Communication", path: "/dashboard/communication" },
         { icon: Wallet, label: "Wallet", path: "/dashboard/wallet" },
-        { icon: BarChart3, label: "Deal Analytics", path: "/dashboard/deals" },
-        { icon: Compass, label: "Live Tracking", path: "/dashboard/tracking" },
+        { icon: BarChart3, label: t("nav.deal_analytics") || "Deal Analytics", path: "/dashboard/deals" },
+        { icon: Compass, label: t("nav.live_tracking") || "Live Tracking", path: "/dashboard/tracking" },
       ],
     },
 
@@ -145,7 +145,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
       items: [
         { icon: Banknote, label: t("nav.payments") || "Payments", path: cPath("/dashboard/finances") },
         { icon: Wallet, label: t("nav.expenses") || "Expenses", path: cPath("/dashboard/expenses") },
-        { icon: BarChart3, label: "Reporting", path: "/dashboard/reporting" },
+        { icon: BarChart3, label: t("nav.reporting") || "Reporting", path: "/dashboard/reporting" },
         { icon: CreditCard, label: t("nav.subscription") || "Plan", path: "/dashboard/billing" },
       ],
     },
@@ -158,7 +158,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
       items: [
         { icon: Settings, label: t("settings.organization") || "Organization", path: "/dashboard/settings" },
         { icon: UsersRound, label: t("settings.team") || "Team", path: "/dashboard/collaboration" },
-        { icon: BrainCircuit, label: "AI Assistant", path: "/dashboard/assistant" },
+        { icon: BrainCircuit, label: t("nav.ai_assistant") || "AI Assistant", path: "/dashboard/assistant" },
       ],
     },
   ];
