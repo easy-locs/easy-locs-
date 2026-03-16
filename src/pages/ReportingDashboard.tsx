@@ -271,7 +271,7 @@ const ReportingDashboard = () => {
                                 </div>
                                 <div className="flex items-center gap-4 text-right text-xs shrink-0">
                                   <div>
-                                    <p className="text-muted-foreground">Encaissé</p>
+                                    <p className="text-muted-foreground">{t("page.reporting.collected")}</p>
                                     <p className="font-medium text-foreground">{fmt(p.collected)}</p>
                                   </div>
                                   <div>
