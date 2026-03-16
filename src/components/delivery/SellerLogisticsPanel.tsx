@@ -12,12 +12,16 @@ import DeliveryHistoryExport from "@/components/delivery/DeliveryHistoryExport";
 import DriverOnboardingFlow from "@/components/delivery/DriverOnboardingFlow";
 import MultiStopRoutePanel from "@/components/delivery/MultiStopRoutePanel";
 import SellerAnalyticsDashboard from "@/components/delivery/SellerAnalyticsDashboard";
+import DriverWalletPanel from "@/components/delivery/DriverWalletPanel";
+import GeofencingPanel from "@/components/delivery/GeofencingPanel";
+import InMissionChat from "@/components/delivery/InMissionChat";
+import AdminFleetDashboard from "@/components/delivery/AdminFleetDashboard";
 import { useDeliveryNotifications } from "@/hooks/useDeliveryNotifications";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Plus, Package, Truck, MapPin, Clock, CheckCircle2,
   XCircle, ChevronRight, Users, TrendingUp, Search,
-  Send, Star, AlertTriangle,
+  Send, Star, AlertTriangle, MessageCircle,
 } from "lucide-react";
 import { useSellerDelivery, type CreateJobPayload, type NearbyDriver } from "@/hooks/useSellerDelivery";
 import { Button } from "@/components/ui/button";
@@ -201,7 +205,8 @@ export default function SellerLogisticsPanel() {
   const [searchingJobId, setSearchingJobId] = useState<string | null>(null);
   const [disputeJobId, setDisputeJobId] = useState<string | null>(null);
   const [trackingJobId, setTrackingJobId] = useState<string | null>(null);
-  const [filter, setFilter] = useState<"all" | "active" | "completed" | "batch" | "scheduled" | "history" | "disputes" | "analytics" | "multistop" | "seller-stats" | "onboarding">("all");
+  const [filter, setFilter] = useState<"all" | "active" | "completed" | "batch" | "scheduled" | "history" | "disputes" | "analytics" | "multistop" | "seller-stats" | "onboarding" | "wallet" | "geofence" | "chat" | "fleet">("all");
+  const [chatJobId, setChatJobId] = useState<string | null>(null);
 
   const filteredJobs = jobs.filter(j => {
     if (filter === "active") return ["pending", "assigned", "accepted", "in_progress"].includes(j.status);
@@ -262,11 +267,12 @@ export default function SellerLogisticsPanel() {
 
       {/* Filter tabs */}
       <div className="flex gap-1 p-1 rounded-xl overflow-x-auto" style={{ background: "hsl(var(--hud-surface))" }}>
-        {(["all", "active", "completed", "batch", "multistop", "scheduled", "history", "disputes", "analytics", "seller-stats", "onboarding"] as const).map(f => {
+        {(["all", "active", "completed", "batch", "multistop", "scheduled", "history", "disputes", "analytics", "seller-stats", "onboarding", "wallet", "geofence", "fleet"] as const).map(f => {
           const labels: Record<string, string> = {
             all: "Tout", active: "Actives", completed: "Terminées", batch: "⚡ Batch",
             multistop: "🗺️ Multi", scheduled: "📅 Planif.", history: "📋 Histo.",
-            disputes: "⚠️ Litiges", analytics: "📊 Stats", "seller-stats": "📈 Perf.", onboarding: "🚗 Livreur",
+            disputes: "⚠️ Litiges", analytics: "📊 Stats", "seller-stats": "📈 Perf.",
+            onboarding: "🚗 Livreur", wallet: "💰 Wallet", geofence: "🛡️ Zones", fleet: "🏢 Flotte",
           };
           return (
             <button key={f} onClick={() => setFilter(f)}
@@ -298,6 +304,12 @@ export default function SellerLogisticsPanel() {
         <ScheduledDeliveryPanel onDone={() => setFilter("all")} />
       ) : filter === "history" ? (
         <DeliveryHistoryExport jobs={jobs} loading={loading} />
+      ) : filter === "wallet" ? (
+        <DriverWalletPanel />
+      ) : filter === "geofence" ? (
+        <GeofencingPanel />
+      ) : filter === "fleet" ? (
+        <AdminFleetDashboard orgId={jobs[0]?.org_id || ""} />
       ) : (
       <div className="space-y-2">
         {loading ? (
@@ -341,6 +353,13 @@ export default function SellerLogisticsPanel() {
                         onClick={() => setTrackingJobId(trackingJobId === job.id ? null : job.id)}
                         style={{ background: "hsl(var(--hud-cyan) / 0.12)", color: "hsl(var(--hud-cyan))" }}>
                         <MapPin className="h-3 w-3 mr-0.5" /> GPS
+                      </Button>
+                    )}
+                    {["assigned", "accepted", "in_progress"].includes(job.status) && job.driver_id && (
+                      <Button size="sm" className="text-[10px] h-7 px-2"
+                        onClick={() => setChatJobId(chatJobId === job.id ? null : job.id)}
+                        style={{ background: "hsl(var(--info) / 0.12)", color: "hsl(var(--info))" }}>
+                        <MessageCircle className="h-3 w-3 mr-0.5" /> Chat
                       </Button>
                     )}
                     {["pending", "assigned"].includes(job.status) && (
@@ -406,6 +425,23 @@ export default function SellerLogisticsPanel() {
                         <DeliveryLiveTracker
                           jobId={job.id}
                           onClose={() => setTrackingJobId(null)}
+                        />
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                {/* In-mission chat */}
+                <AnimatePresence>
+                  {chatJobId === job.id && job.driver_id && (
+                    <motion.div initial={{ height: 0 }} animate={{ height: "auto" }} exit={{ height: 0 }}
+                      className="overflow-hidden">
+                      <div className="px-4 pb-3">
+                        <InMissionChat
+                          jobId={job.id}
+                          sellerId={job.seller_id}
+                          driverId={job.driver_id}
+                          onClose={() => setChatJobId(null)}
                         />
                       </div>
                     </motion.div>
