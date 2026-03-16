@@ -8221,6 +8221,51 @@ export type Database = {
           },
         ]
       }
+      storefront_import_jobs: {
+        Row: {
+          completed_at: string | null
+          created_at: string | null
+          error_rows: number | null
+          errors_json: Json | null
+          file_url: string | null
+          id: string
+          processed_rows: number | null
+          shop_id: string
+          source_type: string | null
+          status: string | null
+          total_rows: number | null
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string | null
+          error_rows?: number | null
+          errors_json?: Json | null
+          file_url?: string | null
+          id?: string
+          processed_rows?: number | null
+          shop_id: string
+          source_type?: string | null
+          status?: string | null
+          total_rows?: number | null
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string | null
+          error_rows?: number | null
+          errors_json?: Json | null
+          file_url?: string | null
+          id?: string
+          processed_rows?: number | null
+          shop_id?: string
+          source_type?: string | null
+          status?: string | null
+          total_rows?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       storefront_influencer_collabs: {
         Row: {
           commission_percent: number | null
@@ -9501,6 +9546,92 @@ export type Database = {
           },
         ]
       }
+      storefront_referral_conversions: {
+        Row: {
+          buyer_id: string | null
+          commission_amount: number | null
+          created_at: string | null
+          id: string
+          link_id: string
+          order_amount: number | null
+          order_id: string | null
+          status: string | null
+        }
+        Insert: {
+          buyer_id?: string | null
+          commission_amount?: number | null
+          created_at?: string | null
+          id?: string
+          link_id: string
+          order_amount?: number | null
+          order_id?: string | null
+          status?: string | null
+        }
+        Update: {
+          buyer_id?: string | null
+          commission_amount?: number | null
+          created_at?: string | null
+          id?: string
+          link_id?: string
+          order_amount?: number | null
+          order_id?: string | null
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "storefront_referral_conversions_link_id_fkey"
+            columns: ["link_id"]
+            isOneToOne: false
+            referencedRelation: "storefront_referral_links"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      storefront_referral_links: {
+        Row: {
+          active: boolean | null
+          clicks: number | null
+          code: string
+          commission_percent: number | null
+          conversions: number | null
+          created_at: string | null
+          id: string
+          parent_referrer_id: string | null
+          referrer_id: string
+          shop_id: string
+          tier: number | null
+          total_earned: number | null
+        }
+        Insert: {
+          active?: boolean | null
+          clicks?: number | null
+          code?: string
+          commission_percent?: number | null
+          conversions?: number | null
+          created_at?: string | null
+          id?: string
+          parent_referrer_id?: string | null
+          referrer_id: string
+          shop_id: string
+          tier?: number | null
+          total_earned?: number | null
+        }
+        Update: {
+          active?: boolean | null
+          clicks?: number | null
+          code?: string
+          commission_percent?: number | null
+          conversions?: number | null
+          created_at?: string | null
+          id?: string
+          parent_referrer_id?: string | null
+          referrer_id?: string
+          shop_id?: string
+          tier?: number | null
+          total_earned?: number | null
+        }
+        Relationships: []
+      }
       storefront_refund_policies: {
         Row: {
           accepts_used: boolean | null
@@ -10708,6 +10839,41 @@ export type Database = {
             columns: ["shop_id"]
             isOneToOne: false
             referencedRelation: "storefront_pages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      storefront_support_messages: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_bot: boolean | null
+          message: string
+          sender_id: string
+          ticket_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_bot?: boolean | null
+          message: string
+          sender_id: string
+          ticket_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_bot?: boolean | null
+          message?: string
+          sender_id?: string
+          ticket_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "storefront_support_messages_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "storefront_support_tickets"
             referencedColumns: ["id"]
           },
         ]

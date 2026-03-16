@@ -58,6 +58,8 @@ import WishlistSaveLater from "@/components/storefront/WishlistSaveLater";
 import ProductComparator from "@/components/storefront/ProductComparator";
 import AdvancedShipping from "@/components/storefront/AdvancedShipping";
 import StoreAnalyticsDashboard from "@/components/storefront/StoreAnalyticsDashboard";
+import LiveChatSupport from "@/components/storefront/LiveChatSupport";
+import AdvancedReferralSystem from "@/components/storefront/AdvancedReferralSystem";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -591,6 +593,20 @@ export default function ShopPage() {
           <div className="mt-4">
             <ShippingFulfillment shopId={shop.id} mode="buyer" />
           </div>
+
+          {/* Live Chat Support */}
+          {user && (
+            <div className="mt-4">
+              <LiveChatSupport shopId={shop.id} mode="buyer" />
+            </div>
+          )}
+
+          {/* Referral Program */}
+          {user && (
+            <div className="mt-4">
+              <AdvancedReferralSystem shopId={shop.id} shopSlug={shop.slug} mode="buyer" />
+            </div>
+          )}
 
           {/* Reviews section */}
           <div className="mt-6">
