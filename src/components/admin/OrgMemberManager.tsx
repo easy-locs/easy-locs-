@@ -40,7 +40,7 @@ interface OrgMember {
   user_id: string;
   role: OrgRole;
   created_at: string;
-  profile?: { full_name: string | null; email: string | null; avatar_url: string | null };
+  profile?: { name: string | null; email: string | null; first_name: string | null; last_name: string | null };
 }
 
 export default function OrgMemberManager() {
