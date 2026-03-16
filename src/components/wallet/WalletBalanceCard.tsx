@@ -29,6 +29,7 @@ export default function WalletBalanceCard({
   frozenBalance, displayFrozen, onOpenSettings, onRefresh,
 }: WalletBalanceCardProps) {
   const { t } = useI18n();
+  const { isGhost } = useGhostMask();
   const [refreshing, setRefreshing] = useState(false);
 
   const handleRefresh = async () => {
