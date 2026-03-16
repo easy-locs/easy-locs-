@@ -6717,7 +6717,7 @@ const translations: Record<Locale, Record<string, string>> = {
 interface I18nContextType {
   locale: Locale;
   setLocale: (l: Locale) => void;
-  t: (key: string) => string;
+  t: (key: string, vars?: Record<string, string | number>) => string;
   availableLocales: { value: Locale; label: string }[];
 }
 
