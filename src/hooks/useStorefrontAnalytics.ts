@@ -70,7 +70,7 @@ export function useStorefrontAnalytics(shopId: string | undefined) {
       [track]
     ),
     trackCheckout: useCallback(
-      (total: number, currency?: string) => track("checkout", { revenue: total, currency }),
+      (total: number, currency?: string) => track("checkout_start", { revenue: total, currency }),
       [track]
     ),
     trackPurchase: useCallback(
