@@ -296,7 +296,7 @@ const ReportingDashboard = () => {
                 <TabsContent value="expenses" className="space-y-4">
                   {expensesByCategory.length === 0 ? (
                     <Card><CardContent className="py-12 text-center text-muted-foreground text-sm">
-                      Aucune dépense enregistrée pour {year}
+                      {t("page.reporting.no_expenses")} {year}
                     </CardContent></Card>
                   ) : (
                     <div className="grid md:grid-cols-2 gap-4">
