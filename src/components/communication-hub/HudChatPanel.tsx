@@ -1227,8 +1227,14 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
                     }).catch(err => console.error("[Orbit] Transcription trigger failed:", err));
                   }
 
-                  setSecurityLevel("normal"); // Reset security level after voice send
-                  toast.success("Voice message sent");
+                   setSecurityLevel("normal"); // Reset security level after voice send
+                   toast.success("Voice message sent");
+                   // Platform bus: voice sent
+                   platformBus.emit("orbit:message_sent", {
+                     threadId: thread.threadId || thread.id,
+                     contextId: thread.contextId,
+                     type: "voice",
+                   }, "orbit", { userId: authUserId, orgId });
                 } catch (e: any) {
                   toast.error(e?.message || "Failed to send voice message");
                 }
