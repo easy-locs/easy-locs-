@@ -186,7 +186,10 @@ export default function MyShopPage() {
               <MultiVendorDashboard shopId={shop.id} />
               <AffiliateProgram shopId={shop.id} shopSlug={shop.slug} mode="seller" />
               <SubscriptionManager shopId={shop.id} />
+              <SubscriptionEngine shopId={shop.id} mode="seller" />
+              <GiftCardManager shopId={shop.id} mode="seller" />
               <LoyaltyDashboard shopId={shop.id} mode="seller" />
+              <LoyaltyProgram shopId={shop.id} mode="seller" />
             </div>
           )}
           {tab === "analytics" && <ShopAnalytics shopId={shop.id} />}
