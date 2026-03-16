@@ -7990,6 +7990,112 @@ export type Database = {
           },
         ]
       }
+      storefront_gift_card_transactions: {
+        Row: {
+          amount: number
+          created_at: string | null
+          description: string | null
+          gift_card_id: string
+          id: string
+          order_id: string | null
+          type: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string | null
+          description?: string | null
+          gift_card_id: string
+          id?: string
+          order_id?: string | null
+          type?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          description?: string | null
+          gift_card_id?: string
+          id?: string
+          order_id?: string | null
+          type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "storefront_gift_card_transactions_gift_card_id_fkey"
+            columns: ["gift_card_id"]
+            isOneToOne: false
+            referencedRelation: "storefront_gift_cards"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      storefront_gift_cards: {
+        Row: {
+          code: string
+          created_at: string | null
+          created_by: string
+          currency: string | null
+          expires_at: string | null
+          id: string
+          initial_amount: number
+          personal_message: string | null
+          recipient_email: string | null
+          recipient_name: string | null
+          redeemed_at: string | null
+          redeemed_by: string | null
+          remaining_amount: number
+          sender_name: string | null
+          shop_id: string
+          status: string | null
+        }
+        Insert: {
+          code?: string
+          created_at?: string | null
+          created_by: string
+          currency?: string | null
+          expires_at?: string | null
+          id?: string
+          initial_amount: number
+          personal_message?: string | null
+          recipient_email?: string | null
+          recipient_name?: string | null
+          redeemed_at?: string | null
+          redeemed_by?: string | null
+          remaining_amount: number
+          sender_name?: string | null
+          shop_id: string
+          status?: string | null
+        }
+        Update: {
+          code?: string
+          created_at?: string | null
+          created_by?: string
+          currency?: string | null
+          expires_at?: string | null
+          id?: string
+          initial_amount?: number
+          personal_message?: string | null
+          recipient_email?: string | null
+          recipient_name?: string | null
+          redeemed_at?: string | null
+          redeemed_by?: string | null
+          remaining_amount?: number
+          sender_name?: string | null
+          shop_id?: string
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "storefront_gift_cards_shop_id_fkey"
+            columns: ["shop_id"]
+            isOneToOne: false
+            referencedRelation: "storefront_pages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       storefront_influencer_collabs: {
         Row: {
           commission_percent: number | null
@@ -10324,6 +10430,125 @@ export type Database = {
             columns: ["badge_id"]
             isOneToOne: false
             referencedRelation: "storefront_badges"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      storefront_vendor_payouts: {
+        Row: {
+          amount: number
+          created_at: string | null
+          currency: string | null
+          id: string
+          method: string | null
+          paid_at: string | null
+          reference: string | null
+          shop_id: string
+          status: string
+          vendor_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string | null
+          currency?: string | null
+          id?: string
+          method?: string | null
+          paid_at?: string | null
+          reference?: string | null
+          shop_id: string
+          status?: string
+          vendor_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          currency?: string | null
+          id?: string
+          method?: string | null
+          paid_at?: string | null
+          reference?: string | null
+          shop_id?: string
+          status?: string
+          vendor_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "storefront_vendor_payouts_shop_id_fkey"
+            columns: ["shop_id"]
+            isOneToOne: false
+            referencedRelation: "storefront_pages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "storefront_vendor_payouts_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "storefront_vendors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      storefront_vendors: {
+        Row: {
+          approved_at: string | null
+          bio: string | null
+          commission_rate: number | null
+          created_at: string | null
+          display_name: string
+          email: string | null
+          id: string
+          logo_url: string | null
+          payout_balance: number | null
+          phone: string | null
+          shop_id: string
+          status: string
+          total_commission: number | null
+          total_sales: number | null
+          updated_at: string | null
+          vendor_user_id: string
+        }
+        Insert: {
+          approved_at?: string | null
+          bio?: string | null
+          commission_rate?: number | null
+          created_at?: string | null
+          display_name: string
+          email?: string | null
+          id?: string
+          logo_url?: string | null
+          payout_balance?: number | null
+          phone?: string | null
+          shop_id: string
+          status?: string
+          total_commission?: number | null
+          total_sales?: number | null
+          updated_at?: string | null
+          vendor_user_id: string
+        }
+        Update: {
+          approved_at?: string | null
+          bio?: string | null
+          commission_rate?: number | null
+          created_at?: string | null
+          display_name?: string
+          email?: string | null
+          id?: string
+          logo_url?: string | null
+          payout_balance?: number | null
+          phone?: string | null
+          shop_id?: string
+          status?: string
+          total_commission?: number | null
+          total_sales?: number | null
+          updated_at?: string | null
+          vendor_user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "storefront_vendors_shop_id_fkey"
+            columns: ["shop_id"]
+            isOneToOne: false
+            referencedRelation: "storefront_pages"
             referencedColumns: ["id"]
           },
         ]
