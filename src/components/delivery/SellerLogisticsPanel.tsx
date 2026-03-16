@@ -44,6 +44,10 @@ import FleetManagementHub from "@/components/delivery/FleetManagementHub";
 import DeliveryGamification from "@/components/delivery/DeliveryGamification";
 import SmartNotificationsEngine from "@/components/delivery/SmartNotificationsEngine";
 import DeliveryAPIWebhooks from "@/components/delivery/DeliveryAPIWebhooks";
+import ZoneBasedPricing from "@/components/delivery/ZoneBasedPricing";
+import CustomerWalletLoyalty from "@/components/delivery/CustomerWalletLoyalty";
+import ComplianceDashboard from "@/components/delivery/ComplianceDashboard";
+import AIPredictivePlanning from "@/components/delivery/AIPredictivePlanning";
 import { useDeliveryNotifications } from "@/hooks/useDeliveryNotifications";
 import { motion, AnimatePresence } from "framer-motion";
 import {
