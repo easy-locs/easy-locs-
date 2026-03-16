@@ -4,7 +4,7 @@
  * Buyer: browse vendors.
  */
 import { useState } from "react";
-import { useQuery, useQueryClient } from "@tantml/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
