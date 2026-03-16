@@ -1,6 +1,6 @@
 /**
  * dispatch-delivery — Edge function for delivery job dispatch
- * Actions: create_job, find_drivers, assign_driver, accept_job, update_status, confirm_delivery
+ * Actions: create_job, find_drivers, assign_driver, accept_job, update_status, confirm_delivery, auto_dispatch
  */
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
