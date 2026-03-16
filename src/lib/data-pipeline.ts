@@ -277,7 +277,7 @@ export function createReportPipeline<T>(config: {
   const pipeline = new DataPipeline<T[]>(config.id);
 
   if (config.filter) {
-    pipeline.step("filter", "Filter data", (data) => data.filter(config.filter!));
+    pipeline.step("filter", "Filter data", (data: any) => (data as T[]).filter(config.filter!));
   }
 
   if (config.transform) {
