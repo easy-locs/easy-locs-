@@ -313,6 +313,9 @@ export default function MyShopPage() {
               {/* Translations */}
               <TranslationManager shopId={shop.id} />
 
+              {/* Coupons & Promotions */}
+              <CouponManager shopId={shop.id} />
+
               {/* Business Hierarchy */}
               <BusinessHierarchy />
             </div>
