@@ -7001,6 +7001,112 @@ export type Database = {
           },
         ]
       }
+      storefront_coupon_usage: {
+        Row: {
+          coupon_id: string
+          created_at: string | null
+          discount_amount: number
+          id: string
+          order_id: string | null
+          user_id: string
+        }
+        Insert: {
+          coupon_id: string
+          created_at?: string | null
+          discount_amount?: number
+          id?: string
+          order_id?: string | null
+          user_id: string
+        }
+        Update: {
+          coupon_id?: string
+          created_at?: string | null
+          discount_amount?: number
+          id?: string
+          order_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "storefront_coupon_usage_coupon_id_fkey"
+            columns: ["coupon_id"]
+            isOneToOne: false
+            referencedRelation: "storefront_coupons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      storefront_coupons: {
+        Row: {
+          active: boolean | null
+          categories: string[] | null
+          code: string
+          created_at: string | null
+          currency: string | null
+          id: string
+          max_discount: number | null
+          min_order: number | null
+          per_user_limit: number | null
+          shop_id: string
+          type: string
+          updated_at: string | null
+          usage_count: number | null
+          usage_limit: number | null
+          user_id: string
+          valid_from: string | null
+          valid_to: string | null
+          value: number
+        }
+        Insert: {
+          active?: boolean | null
+          categories?: string[] | null
+          code: string
+          created_at?: string | null
+          currency?: string | null
+          id?: string
+          max_discount?: number | null
+          min_order?: number | null
+          per_user_limit?: number | null
+          shop_id: string
+          type?: string
+          updated_at?: string | null
+          usage_count?: number | null
+          usage_limit?: number | null
+          user_id: string
+          valid_from?: string | null
+          valid_to?: string | null
+          value?: number
+        }
+        Update: {
+          active?: boolean | null
+          categories?: string[] | null
+          code?: string
+          created_at?: string | null
+          currency?: string | null
+          id?: string
+          max_discount?: number | null
+          min_order?: number | null
+          per_user_limit?: number | null
+          shop_id?: string
+          type?: string
+          updated_at?: string | null
+          usage_count?: number | null
+          usage_limit?: number | null
+          user_id?: string
+          valid_from?: string | null
+          valid_to?: string | null
+          value?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "storefront_coupons_shop_id_fkey"
+            columns: ["shop_id"]
+            isOneToOne: false
+            referencedRelation: "storefront_pages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       storefront_order_items: {
         Row: {
           created_at: string | null
