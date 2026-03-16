@@ -263,6 +263,7 @@ export default function MyShopPage() {
               <CustomerSupport shopId={shop.id} mode="seller" />
               <LiveShopping shopId={shop.id} mode="seller" />
               <LiveCommerceStream shopId={shop.id} mode="seller" />
+              <LiveChatSupport shopId={shop.id} mode="seller" />
               <GamificationEngine shopId={shop.id} mode="seller" />
               <CouponsPromotions shopId={shop.id} mode="seller" />
               <ShippingFulfillment shopId={shop.id} mode="seller" />
