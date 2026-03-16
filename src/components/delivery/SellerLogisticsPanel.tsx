@@ -229,7 +229,7 @@ export default function SellerLogisticsPanel() {
   const [searchingJobId, setSearchingJobId] = useState<string | null>(null);
   const [disputeJobId, setDisputeJobId] = useState<string | null>(null);
   const [trackingJobId, setTrackingJobId] = useState<string | null>(null);
-  const [filter, setFilter] = useState<"all" | "active" | "completed" | "batch" | "scheduled" | "history" | "disputes" | "analytics" | "multistop" | "seller-stats" | "onboarding" | "wallet" | "geofence" | "chat" | "fleet" | "reputation" | "optimize" | "buyer" | "invoices" | "sla" | "multi-drop" | "driver-reg" | "reports" | "fleet-mgmt" | "dispatch-rules" | "customer-track" | "payroll" | "surge" | "shifts" | "moderation" | "notif-rules" | "multi-currency" | "route-optim" | "insurance" | "adv-analytics">("all");
+  const [filter, setFilter] = useState<"all" | "active" | "completed" | "batch" | "scheduled" | "history" | "disputes" | "analytics" | "multistop" | "seller-stats" | "onboarding" | "wallet" | "geofence" | "chat" | "fleet" | "reputation" | "optimize" | "buyer" | "invoices" | "sla" | "multi-drop" | "driver-reg" | "reports" | "fleet-mgmt" | "dispatch-rules" | "customer-track" | "payroll" | "surge" | "shifts" | "moderation" | "notif-rules" | "multi-currency" | "route-optim" | "insurance" | "adv-analytics" | "referral" | "support-bot" | "returns" | "slot-booking">("all");
   const [chatJobId, setChatJobId] = useState<string | null>(null);
 
   const filteredJobs = jobs.filter(j => {
