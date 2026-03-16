@@ -3633,44 +3633,74 @@ export type Database = {
       }
       notification_preferences: {
         Row: {
+          email_bookings: boolean
+          email_deals: boolean
+          email_digest_day: string
+          email_digest_frequency: string
+          email_digest_hour: number
           email_documents: boolean
           email_maintenance: boolean
           email_messages: boolean
           email_payments: boolean
           email_urgent_only: boolean
           id: string
+          in_app_bookings: boolean
+          in_app_deals: boolean
           in_app_documents: boolean
           in_app_maintenance: boolean
           in_app_messages: boolean
           in_app_payments: boolean
+          quiet_hours_enabled: boolean
+          quiet_hours_end: string
+          quiet_hours_start: string
           updated_at: string
           user_id: string
         }
         Insert: {
+          email_bookings?: boolean
+          email_deals?: boolean
+          email_digest_day?: string
+          email_digest_frequency?: string
+          email_digest_hour?: number
           email_documents?: boolean
           email_maintenance?: boolean
           email_messages?: boolean
           email_payments?: boolean
           email_urgent_only?: boolean
           id?: string
+          in_app_bookings?: boolean
+          in_app_deals?: boolean
           in_app_documents?: boolean
           in_app_maintenance?: boolean
           in_app_messages?: boolean
           in_app_payments?: boolean
+          quiet_hours_enabled?: boolean
+          quiet_hours_end?: string
+          quiet_hours_start?: string
           updated_at?: string
           user_id: string
         }
         Update: {
+          email_bookings?: boolean
+          email_deals?: boolean
+          email_digest_day?: string
+          email_digest_frequency?: string
+          email_digest_hour?: number
           email_documents?: boolean
           email_maintenance?: boolean
           email_messages?: boolean
           email_payments?: boolean
           email_urgent_only?: boolean
           id?: string
+          in_app_bookings?: boolean
+          in_app_deals?: boolean
           in_app_documents?: boolean
           in_app_maintenance?: boolean
           in_app_messages?: boolean
           in_app_payments?: boolean
+          quiet_hours_enabled?: boolean
+          quiet_hours_end?: string
+          quiet_hours_start?: string
           updated_at?: string
           user_id?: string
         }
