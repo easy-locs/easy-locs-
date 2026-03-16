@@ -328,7 +328,38 @@ export default function ShopPage() {
           <div className="mt-6">
             <ShopReviews shopId={shop.id} shopOwnerId={shop.user_id} />
           </div>
+
+          {/* Social Commerce */}
+          <div className="mt-6">
+            <SocialCommerce shopId={shop.id} catalogItems={catalogItems} />
+          </div>
         </div>
+
+        {/* AI Shopping Assistant */}
+        <AIShoppingAssistant shopId={shop.id} shopName={shop.name} catalogItems={catalogItems} />
+
+        {/* Advanced Checkout Modal */}
+        {checkoutMode && (
+          <div className="fixed inset-0 z-50 bg-background overflow-y-auto">
+            <div className="max-w-lg mx-auto pb-10">
+              <div className="flex items-center justify-between p-4 border-b border-border">
+                <h2 className="text-sm font-bold">Checkout</h2>
+                <Button variant="ghost" size="sm" onClick={() => setCheckoutMode(false)}>Cancel</Button>
+              </div>
+              <AdvancedCheckout
+                shop={shop}
+                cartItems={cart.items}
+                total={finalTotal}
+                discount={discount}
+                couponNote={coupon.appliedCoupon ? `Coupon: ${coupon.appliedCoupon.code}` : undefined}
+                currency={shop.currency || "EUR"}
+                formatPrice={(n, c) => fx.formatPrice(n, c)}
+                onComplete={handleCheckoutComplete}
+                onCancel={() => setCheckoutMode(false)}
+              />
+            </div>
+          </div>
+        )}
 
         {/* Floating cart button */}
         {cart.itemCount > 0 && (
