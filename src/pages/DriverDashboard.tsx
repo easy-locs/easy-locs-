@@ -3,6 +3,7 @@
  * PASS70-B
  */
 import { useState } from "react";
+import DeliveryHeatmapPanel from "@/components/delivery/DeliveryHeatmapPanel";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Power, Navigation, Package, Clock, CheckCircle2,
