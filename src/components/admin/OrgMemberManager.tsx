@@ -72,7 +72,7 @@ export default function OrgMemberManager() {
     const userIds = membersData.map((m) => m.user_id);
     const { data: profiles } = await supabase
       .from("profiles")
-      .select("id, full_name, email, avatar_url")
+      .select("id, name, email, first_name, last_name")
       .in("id", userIds);
 
     const profileMap = new Map((profiles || []).map((p) => [p.id, p]));
