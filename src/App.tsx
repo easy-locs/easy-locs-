@@ -150,6 +150,8 @@ const DealAnalyticsPage = safeLazy(() => import("./pages/DealAnalyticsPage"), "D
 const ServiceTrackingPage = safeLazy(() => import("./pages/ServiceTrackingPage"), "ServiceTrackingPage");
 const SellerHubPage = safeLazy(() => import("./pages/SellerHubPage"), "SellerHubPage");
 const DriverDashboard = safeLazy(() => import("./pages/DriverDashboard"), "DriverDashboard");
+const ShopPage = safeLazy(() => import("./pages/ShopPage"), "ShopPage");
+const MyShopPage = safeLazy(() => import("./pages/MyShopPage"), "MyShopPage");
 const ConciergeServicesPage = safeLazy(() => import("./pages/seo/ConciergeServicesPage"), "ConciergeServicesPage");
 const MarketplaceServicesPage = safeLazy(() => import("./pages/seo/MarketplaceServicesPage"), "MarketplaceServicesPage");
 const ActivitiesPage = safeLazy(() => import("./pages/seo/ActivitiesPage"), "ActivitiesPage");
@@ -263,6 +265,7 @@ const App = () => (
               <Route path="/book/:slug" element={<PublicServiceBooking />} />
               <Route path="/showcase/:orgSlug" element={<ProviderStorefront />} />
               <Route path="/store/:storeSlug" element={<StorePage />} />
+              <Route path="/s/:shopSlug" element={<ShopPage />} />
               <Route path="/shop/:categoryCity" element={<ShopCategoryPage />} />
               <Route path="/landlord/:slug" element={<LandlordProfile />} />
               <Route path="/agency/:accountSlug" element={<AccountShowcase />} />
@@ -366,6 +369,7 @@ const App = () => (
               <Route path="/dashboard/tracking" element={<ProtectedRoute><ServiceTrackingPage /></ProtectedRoute>} />
               
               <Route path="/dashboard/seller" element={<ProtectedRoute><SellerHubPage /></ProtectedRoute>} />
+              <Route path="/dashboard/my-shop" element={<ProtectedRoute><MyShopPage /></ProtectedRoute>} />
               <Route path="/dashboard/driver" element={<ProtectedRoute><DriverDashboard /></ProtectedRoute>} />
               <Route path="/dashboard/activities" element={<ProtectedRoute><ActivitiesMarketplace /></ProtectedRoute>} />
               <Route path="/dashboard/calendar" element={<ProtectedRoute><PropertyCalendar /></ProtectedRoute>} />
