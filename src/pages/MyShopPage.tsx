@@ -341,8 +341,14 @@ export default function MyShopPage() {
               {/* Coupons & Promotions */}
               <CouponManager shopId={shop.id} />
 
+              {/* Product Bundles */}
+              <BundleManager shopId={shop.id} mode="manage" />
+
               {/* Inventory */}
               <InventoryManager shopId={shop.id} />
+
+              {/* Smart Inventory Alerts */}
+              <SmartInventoryAlerts shopId={shop.id} />
 
               {/* Shipping */}
               <ShippingManager shopId={shop.id} />
