@@ -295,3 +295,12 @@ Conversation → Offer → Counter offer → Accepted → Payment → Confirmed
 | Critical route prefetch | Dashboard, Login, CommunicationCenter prefetched on idle after boot | ✅ Done |
 | OptimizedImage component | Lazy loading, blur-up placeholder, error fallback, priority flag, memo'd | ✅ Done |
 | Chunk size warning | Set chunkSizeWarningLimit to 600KB for better visibility | ✅ Done |
+
+## PASS55 Block K — Notification Engine v2
+| Feature | Implementation | Status |
+|---------|---------------|--------|
+| Email digest scheduling | email_digest_frequency (none/daily/weekly), email_digest_day, email_digest_hour columns + UI | ✅ Done |
+| Quiet hours | quiet_hours_enabled, quiet_hours_start, quiet_hours_end with time picker UI | ✅ Done |
+| Extended channel prefs | Added deals and bookings channels (email + in-app toggles) | ✅ Done |
+| Status summary v2 | Added Digest and Quiet Hours indicators to status summary grid | ✅ Done |
+| DB migration | notification_preferences table extended with 10 new columns | ✅ Done |
