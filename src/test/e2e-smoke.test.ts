@@ -169,9 +169,10 @@ describe("Data Layer", () => {
     expect(mod.supabase.from).toBeDefined();
   });
 
-  it("supabase types export Database type", async () => {
+  it("supabase types module loads", async () => {
     const mod = await import("@/integrations/supabase/types");
-    expect(mod).toHaveProperty("Database");
+    // Database is a type export, not a runtime value; verify module loads
+    expect(mod).toBeDefined();
   });
 });
 
