@@ -83,6 +83,10 @@ import DeliveryBIDashboard from "@/components/delivery/DeliveryBIDashboard";
 import DriverOnboardingRegistration from "@/components/delivery/DriverOnboardingRegistration";
 import SLAPerformanceMonitor from "@/components/delivery/SLAPerformanceMonitor";
 import DeliveryNotificationHub from "@/components/delivery/DeliveryNotificationHub";
+import AdvancedReturnsHub from "@/components/delivery/AdvancedReturnsHub";
+import FinancialControlCenter from "@/components/delivery/FinancialControlCenter";
+import IncidentManagement from "@/components/delivery/IncidentManagement";
+import SellerPartnerPortal from "@/components/delivery/SellerPartnerPortal";
 import { useDeliveryNotifications } from "@/hooks/useDeliveryNotifications";
 import { motion, AnimatePresence } from "framer-motion";
 import {
