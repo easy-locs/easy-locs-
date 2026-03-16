@@ -187,10 +187,10 @@ const ReportingDashboard = () => {
                 <div className="p-1.5 sm:p-2 rounded-xl bg-accent/10 shrink-0">
                   <BarChart3 className="h-4 w-4 sm:h-5 sm:w-5 text-accent" />
                 </div>
-                Tableau de bord financier
+                {t("page.reporting.title")}
               </h1>
               <p className="text-xs sm:text-sm text-muted-foreground mt-1">
-                Vue consolidée revenus, dépenses et résultat net
+                {t("page.reporting.subtitle")}
               </p>
             </div>
             <div className="flex items-center gap-2 flex-wrap">
