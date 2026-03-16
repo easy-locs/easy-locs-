@@ -4,8 +4,9 @@
  */
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Wallet, Settings, TrendingUp, TrendingDown, RefreshCw, Loader2 } from "lucide-react";
+import { Wallet, Settings, TrendingUp, TrendingDown, RefreshCw, Loader2, Ghost } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
+import { useGhostMask } from "@/hooks/useGhostMask";
 
 interface WalletBalanceCardProps {
   loading: boolean;
