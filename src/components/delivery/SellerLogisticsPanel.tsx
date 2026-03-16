@@ -36,6 +36,10 @@ import MultiCurrencyDelivery from "@/components/delivery/MultiCurrencyDelivery";
 import RouteOptimizationPanel from "@/components/delivery/RouteOptimizationPanel";
 import DeliveryInsurancePanel from "@/components/delivery/DeliveryInsurancePanel";
 import DeliveryAdvancedAnalytics from "@/components/delivery/DeliveryAdvancedAnalytics";
+import DriverReferralProgram from "@/components/delivery/DriverReferralProgram";
+import DeliverySupportBot from "@/components/delivery/DeliverySupportBot";
+import ReturnsReverseLogistics from "@/components/delivery/ReturnsReverseLogistics";
+import DeliverySlotBooking from "@/components/delivery/DeliverySlotBooking";
 import { useDeliveryNotifications } from "@/hooks/useDeliveryNotifications";
 import { motion, AnimatePresence } from "framer-motion";
 import {
