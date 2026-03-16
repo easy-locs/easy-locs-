@@ -6,6 +6,7 @@ import { useState } from "react";
 import DeliveryAnalyticsDashboard from "@/components/delivery/DeliveryAnalyticsDashboard";
 import DeliveryDisputeFlow from "@/components/delivery/DeliveryDisputeFlow";
 import BatchDispatchPanel from "@/components/delivery/BatchDispatchPanel";
+import DeliveryLiveTracker from "@/components/delivery/DeliveryLiveTracker";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Plus, Package, Truck, MapPin, Clock, CheckCircle2,
@@ -192,6 +193,7 @@ export default function SellerLogisticsPanel() {
   const [showCreate, setShowCreate] = useState(false);
   const [searchingJobId, setSearchingJobId] = useState<string | null>(null);
   const [disputeJobId, setDisputeJobId] = useState<string | null>(null);
+  const [trackingJobId, setTrackingJobId] = useState<string | null>(null);
   const [filter, setFilter] = useState<"all" | "active" | "completed" | "disputes" | "batch" | "analytics">("all");
 
   const filteredJobs = jobs.filter(j => {
@@ -310,6 +312,13 @@ export default function SellerLogisticsPanel() {
                         <Users className="h-3 w-3 mr-0.5" /> Assigner
                       </Button>
                     )}
+                    {["assigned", "accepted", "in_progress"].includes(job.status) && (
+                      <Button size="sm" className="text-[10px] h-7 px-2"
+                        onClick={() => setTrackingJobId(trackingJobId === job.id ? null : job.id)}
+                        style={{ background: "hsl(var(--hud-cyan) / 0.12)", color: "hsl(var(--hud-cyan))" }}>
+                        <MapPin className="h-3 w-3 mr-0.5" /> GPS
+                      </Button>
+                    )}
                     {["pending", "assigned"].includes(job.status) && (
                       <Button size="sm" variant="ghost" className="text-[10px] h-7 px-1.5"
                         onClick={() => handleCancel(job.id)}
@@ -358,6 +367,21 @@ export default function SellerLogisticsPanel() {
                           orgId={job.org_id}
                           jobId={job.id}
                           onClose={() => setDisputeJobId(null)}
+                        />
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                {/* Live GPS tracking panel */}
+                <AnimatePresence>
+                  {trackingJobId === job.id && (
+                    <motion.div initial={{ height: 0 }} animate={{ height: "auto" }} exit={{ height: 0 }}
+                      className="overflow-hidden">
+                      <div className="px-4 pb-3">
+                        <DeliveryLiveTracker
+                          jobId={job.id}
+                          onClose={() => setTrackingJobId(null)}
                         />
                       </div>
                     </motion.div>
