@@ -215,12 +215,12 @@ const ReportingDashboard = () => {
             <>
               {/* KPI Cards */}
               <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3">
-                <StatCard icon={TrendingUp} iconClassName="text-accent" label="Revenus attendus" value={fmt(totalRevenue)} />
-                <StatCard icon={ArrowUpRight} iconClassName="text-primary" label="Encaissé" value={fmt(totalCollected)} />
-                <StatCard icon={ArrowDownRight} iconClassName="text-destructive" label="Impayés" value={fmt(totalUnpaid)} />
-                <StatCard icon={TrendingDown} iconClassName="text-destructive" label="Dépenses" value={fmt(totalExpenses)} />
-                <StatCard icon={PiggyBank} iconClassName={netIncome >= 0 ? "text-accent" : "text-destructive"} label="Résultat net" value={fmt(netIncome)} />
-                <StatCard icon={Percent} iconClassName="text-primary" label="Taux encaissement" value={`${collectionRate.toFixed(1)}%`} />
+                <StatCard icon={TrendingUp} iconClassName="text-accent" label={t("page.reporting.expected_revenue")} value={fmt(totalRevenue)} />
+                <StatCard icon={ArrowUpRight} iconClassName="text-primary" label={t("page.reporting.collected")} value={fmt(totalCollected)} />
+                <StatCard icon={ArrowDownRight} iconClassName="text-destructive" label={t("page.reporting.unpaid")} value={fmt(totalUnpaid)} />
+                <StatCard icon={TrendingDown} iconClassName="text-destructive" label={t("page.reporting.expenses")} value={fmt(totalExpenses)} />
+                <StatCard icon={PiggyBank} iconClassName={netIncome >= 0 ? "text-accent" : "text-destructive"} label={t("page.reporting.net_income")} value={fmt(netIncome)} />
+                <StatCard icon={Percent} iconClassName="text-primary" label={t("page.reporting.collection_rate")} value={`${collectionRate.toFixed(1)}%`} />
               </div>
 
               <Tabs defaultValue="overview" className="space-y-4">
