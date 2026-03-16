@@ -523,6 +523,28 @@ export default function ShopPage() {
             <GiftCardStore shopId={shop.id} mode="buyer" />
           </div>
 
+          {/* Subscription Boxes */}
+          <div className="mt-4">
+            <SubscriptionBoxes shopId={shop.id} mode="buyer" />
+          </div>
+
+          {/* Digital Products */}
+          <div className="mt-4">
+            <DigitalProducts shopId={shop.id} mode="buyer" />
+          </div>
+
+          {/* RFQ */}
+          {user && (
+            <div className="mt-4">
+              <ReverseAuctionRFQ shopId={shop.id} mode="buyer" />
+            </div>
+          )}
+
+          {/* P2P Marketplace */}
+          <div className="mt-4">
+            <PeerMarketplace shopId={shop.id} mode="buyer" />
+          </div>
+
           {/* Smart Notifications */}
           {user && (
             <div className="mt-4">
