@@ -455,6 +455,14 @@ export default function SellerLogisticsPanel() {
         <OrderBundlingEngine orgId={jobs[0]?.org_id || ""} />
       ) : filter === "tracking-portal" ? (
         <CustomerTrackingPortal orgId={jobs[0]?.org_id || ""} />
+      ) : filter === "seller-rating" ? (
+        <SellerRatingSystem orgId={jobs[0]?.org_id || ""} />
+      ) : filter === "address-book" ? (
+        <AddressBookManager orgId={jobs[0]?.org_id || ""} />
+      ) : filter === "delivery-kpi" ? (
+        <DeliveryKPIDashboard orgId={jobs[0]?.org_id || ""} />
+      ) : filter === "maint-sched" ? (
+        <MaintenanceScheduler orgId={jobs[0]?.org_id || ""} />
       ) : (
       <div className="space-y-2">
         {loading ? (
