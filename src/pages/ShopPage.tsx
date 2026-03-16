@@ -42,6 +42,10 @@ import GamificationEngine from "@/components/storefront/GamificationEngine";
 import CouponsPromotions from "@/components/storefront/CouponsPromotions";
 import WishlistFavorites from "@/components/storefront/WishlistFavorites";
 import ShippingFulfillment from "@/components/storefront/ShippingFulfillment";
+import StorefrontReviews from "@/components/storefront/StorefrontReviews";
+import LiveCommerceStream from "@/components/storefront/LiveCommerceStream";
+import AffiliateReferralProgram from "@/components/storefront/AffiliateReferralProgram";
+import ReturnsRefunds from "@/components/storefront/ReturnsRefunds";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -400,6 +404,11 @@ export default function ShopPage() {
               <ReturnsRefundEngine shopId={shop.id} mode="buyer" />
             </div>
           )}
+          {user && (
+            <div className="mt-4">
+              <ReturnsRefunds shopId={shop.id} mode="buyer" />
+            </div>
+          )}
 
           {/* Affiliate Program */}
           {user && (
@@ -407,11 +416,14 @@ export default function ShopPage() {
               <AffiliateProgram shopId={shop.id} shopSlug={shop.slug} mode="buyer" />
             </div>
           )}
-
-          {/* Affiliate Engine (advanced) */}
           {user && (
             <div className="mt-4">
               <AffiliateEngine shopId={shop.id} shopSlug={shop.slug} mode="buyer" />
+            </div>
+          )}
+          {user && (
+            <div className="mt-4">
+              <AffiliateReferralProgram shopId={shop.id} shopSlug={shop.slug} mode="buyer" />
             </div>
           )}
 
@@ -434,9 +446,19 @@ export default function ShopPage() {
             <AdvancedReviews shopId={shop.id} mode="buyer" />
           </div>
 
+          {/* Storefront Reviews */}
+          <div className="mt-4">
+            <StorefrontReviews shopId={shop.id} mode="buyer" />
+          </div>
+
           {/* Live Shopping & Social */}
           <div className="mt-6">
             <LiveShopping shopId={shop.id} mode="buyer" catalogItems={catalogItems} />
+          </div>
+
+          {/* Live Commerce Stream */}
+          <div className="mt-4">
+            <LiveCommerceStream shopId={shop.id} mode="buyer" catalogItems={catalogItems} />
           </div>
 
           {/* Customer Support */}
