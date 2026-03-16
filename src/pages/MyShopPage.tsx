@@ -187,6 +187,7 @@ export default function MyShopPage() {
               <ReturnsManager shopId={shop.id} />
               <ReturnsRefundEngine shopId={shop.id} mode="seller" />
               <DeliveryDispatch shopId={shop.id} />
+              <ShippingTracker shopId={shop.id} mode="seller" />
               <WarehouseManager shopId={shop.id} />
             </div>
           )}
