@@ -4,8 +4,9 @@
  */
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Wallet, Settings, TrendingUp, TrendingDown, RefreshCw, Loader2 } from "lucide-react";
+import { Wallet, Settings, TrendingUp, TrendingDown, RefreshCw, Loader2, Ghost } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
+import { useGhostMask } from "@/hooks/useGhostMask";
 
 interface WalletBalanceCardProps {
   loading: boolean;
@@ -28,6 +29,7 @@ export default function WalletBalanceCard({
   frozenBalance, displayFrozen, onOpenSettings, onRefresh,
 }: WalletBalanceCardProps) {
   const { t } = useI18n();
+  const { isGhost } = useGhostMask();
   const [refreshing, setRefreshing] = useState(false);
 
   const handleRefresh = async () => {
@@ -86,8 +88,14 @@ export default function WalletBalanceCard({
         {/* Balance + Toggle */}
         <div className="flex items-end gap-3">
           <p className="text-4xl font-black text-primary-foreground tracking-tight">
-            {loading ? "..." : displayBalance}
+            {loading ? "..." : isGhost ? "••••••" : displayBalance}
           </p>
+          {isGhost && (
+            <span className="flex items-center gap-1 mb-1 px-2 py-0.5 rounded-full text-primary-foreground/40" style={{ background: "hsl(0 0% 100% / 0.08)" }}>
+              <Ghost className="w-3 h-3" />
+              <span className="text-[9px] font-medium">Hidden</span>
+            </span>
+          )}
           <button
             onClick={onToggle}
             className="flex items-center gap-1 mb-1 px-2 py-0.5 rounded-full text-primary-foreground/70 hover:text-primary-foreground transition-colors"
@@ -116,15 +124,15 @@ export default function WalletBalanceCard({
         <div className="flex items-center gap-4 mt-4 text-xs text-primary-foreground/60">
           <span className="flex items-center gap-1">
             <TrendingUp className="w-3 h-3" />
-            {t("orbit.purchased") || "Purchased"}: {displayPurchased}
+            {t("orbit.purchased") || "Purchased"}: {isGhost ? "••••" : displayPurchased}
           </span>
           <span className="flex items-center gap-1">
             <TrendingDown className="w-3 h-3" />
-            {t("orbit.spent") || "Spent"}: {displaySpent}
+            {t("orbit.spent") || "Spent"}: {isGhost ? "••••" : displaySpent}
           </span>
         </div>
 
-        {frozenBalance > 0 && (
+        {frozenBalance > 0 && !isGhost && (
           <p className="mt-2 text-xs text-primary-foreground/40">
             🔒 {t("orbit.frozen") || "Frozen"}: {displayFrozen}
           </p>
