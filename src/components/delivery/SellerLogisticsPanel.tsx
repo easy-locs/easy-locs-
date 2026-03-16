@@ -189,7 +189,7 @@ export default function SellerLogisticsPanel() {
   const { jobs, loading, metrics, createJob, assignDriver, cancelJob } = useSellerDelivery();
   const [showCreate, setShowCreate] = useState(false);
   const [searchingJobId, setSearchingJobId] = useState<string | null>(null);
-  const [filter, setFilter] = useState<"all" | "active" | "completed">("all");
+  const [filter, setFilter] = useState<"all" | "active" | "completed" | "analytics">("all");
 
   const filteredJobs = jobs.filter(j => {
     if (filter === "active") return ["pending", "assigned", "accepted", "in_progress"].includes(j.status);
