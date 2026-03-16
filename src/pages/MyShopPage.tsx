@@ -30,6 +30,8 @@ import DeliveryDispatch from "@/components/storefront/DeliveryDispatch";
 import SmartInventoryAlerts from "@/components/storefront/SmartInventoryAlerts";
 import BundleManager from "@/components/storefront/BundleManager";
 import LoyaltyDashboard from "@/components/storefront/LoyaltyDashboard";
+import MultiVendorDashboard from "@/components/storefront/MultiVendorDashboard";
+import SocialCommerce from "@/components/storefront/SocialCommerce";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -168,6 +170,7 @@ export default function MyShopPage() {
           {tab === "finance" && (
             <div className="space-y-4">
               <SellerFinance shopId={shop.id} />
+              <MultiVendorDashboard shopId={shop.id} />
               <SubscriptionManager shopId={shop.id} />
               <LoyaltyDashboard shopId={shop.id} mode="seller" />
             </div>
@@ -358,6 +361,9 @@ export default function MyShopPage() {
 
               {/* Reviews (owner view — can respond) */}
               <ShopReviews shopId={shop.id} shopOwnerId={shop.user_id} />
+
+              {/* Social Commerce */}
+              <SocialCommerce shopId={shop.id} />
 
               {/* Business Hierarchy */}
               <BusinessHierarchy />
