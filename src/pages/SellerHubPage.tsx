@@ -18,6 +18,7 @@ import { haptic } from "@/lib/haptics";
 
 const TABS = [
   { id: "dashboard", label: "Dashboard", icon: Store },
+  { id: "logistics", label: "Livraisons", icon: Truck },
   { id: "videos", label: "Vidéos", icon: Video },
   { id: "analytics", label: "Analytics", icon: BarChart3 },
   { id: "live", label: "Live", icon: Radio },
