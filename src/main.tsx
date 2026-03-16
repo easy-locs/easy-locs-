@@ -33,6 +33,10 @@ const runDeferredInit = () => {
     .then((mod) => mod?.initMonitoring?.())
     .catch((e) => console.debug("[boot] monitoring skipped:", e));
 
+  void import("./lib/web-vitals")
+    .then((mod) => mod?.initWebVitals?.())
+    .catch((e) => console.debug("[boot] web-vitals skipped:", e));
+
   // Prefetch critical routes after boot settles
   void import("./lib/performance").then(({ prefetchRoutes }) => {
     prefetchRoutes([
