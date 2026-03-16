@@ -15,6 +15,8 @@ import { useStorefrontWishlist } from "@/hooks/useStorefrontWishlist";
 import { useStorefrontCurrency } from "@/hooks/useStorefrontCurrency";
 import { useAuth } from "@/contexts/AuthContext";
 import ShopReviews from "@/components/storefront/ShopReviews";
+import BundleManager from "@/components/storefront/BundleManager";
+import LoyaltyDashboard from "@/components/storefront/LoyaltyDashboard";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -339,8 +341,20 @@ export default function ShopPage() {
             </div>
           )}
 
+          {/* Bundles section */}
+          <div className="mt-6">
+            <BundleManager shopId={shop.id} mode="display" onAddBundle={(bundleId, price) => cart.addItem(bundleId, price)} />
+          </div>
+
+          {/* Loyalty section */}
+          {user && (
+            <div className="mt-4">
+              <LoyaltyDashboard shopId={shop.id} mode="buyer" />
+            </div>
+          )}
+
           {/* Reviews section */}
-          <div className="mt-8">
+          <div className="mt-6">
             <ShopReviews shopId={shop.id} shopOwnerId={shop.user_id} />
           </div>
         </div>
