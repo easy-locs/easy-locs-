@@ -1841,6 +1841,9 @@ export type Database = {
           created_at: string
           group_id: string
           id: string
+          is_pinned: boolean
+          pinned_at: string | null
+          pinned_by: string | null
           sender_id: string
         }
         Insert: {
@@ -1849,6 +1852,9 @@ export type Database = {
           created_at?: string
           group_id: string
           id?: string
+          is_pinned?: boolean
+          pinned_at?: string | null
+          pinned_by?: string | null
           sender_id: string
         }
         Update: {
@@ -1857,6 +1863,9 @@ export type Database = {
           created_at?: string
           group_id?: string
           id?: string
+          is_pinned?: boolean
+          pinned_at?: string | null
+          pinned_by?: string | null
           sender_id?: string
         }
         Relationships: [
@@ -1874,30 +1883,36 @@ export type Database = {
           created_at: string
           created_by: string
           description: string | null
+          group_type: string
           id: string
           name: string
           org_id: string
           photo_url: string | null
+          posting_permission: string
           updated_at: string
         }
         Insert: {
           created_at?: string
           created_by: string
           description?: string | null
+          group_type?: string
           id?: string
           name: string
           org_id: string
           photo_url?: string | null
+          posting_permission?: string
           updated_at?: string
         }
         Update: {
           created_at?: string
           created_by?: string
           description?: string | null
+          group_type?: string
           id?: string
           name?: string
           org_id?: string
           photo_url?: string | null
+          posting_permission?: string
           updated_at?: string
         }
         Relationships: [
