@@ -23,6 +23,9 @@ import InventoryManager from "@/components/storefront/InventoryManager";
 import ShopSEOManager from "@/components/storefront/ShopSEOManager";
 import ShopReviews from "@/components/storefront/ShopReviews";
 import ShippingManager from "@/components/storefront/ShippingManager";
+import ReturnsManager from "@/components/storefront/ReturnsManager";
+import SellerFinance from "@/components/storefront/SellerFinance";
+import SubscriptionManager from "@/components/storefront/SubscriptionManager";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -30,7 +33,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Store, Package, ShoppingBag, Settings, ExternalLink, Copy, Check, Loader2, Handshake, BarChart3, Rocket } from "lucide-react";
+import { Store, Package, ShoppingBag, Settings, ExternalLink, Copy, Check, Loader2, Handshake, BarChart3, Rocket, DollarSign } from "lucide-react";
 import { toast } from "sonner";
 import { haptic } from "@/lib/haptics";
 
@@ -38,6 +41,7 @@ const TABS = [
   { id: "catalog", label: "Catalog", icon: Package },
   { id: "orders", label: "Orders", icon: ShoppingBag },
   { id: "deals", label: "Deals", icon: Handshake },
+  { id: "finance", label: "Finance", icon: DollarSign },
   { id: "analytics", label: "Analytics", icon: BarChart3 },
   { id: "launch", label: "Launch", icon: Rocket },
   { id: "settings", label: "Settings", icon: Settings },
@@ -149,8 +153,19 @@ export default function MyShopPage() {
 
         <div className="px-4">
           {tab === "catalog" && <CatalogManager shopId={shop.id} />}
-          {tab === "orders" && <OrdersManager shopId={shop.id} />}
+          {tab === "orders" && (
+            <div className="space-y-4">
+              <OrdersManager shopId={shop.id} />
+              <ReturnsManager shopId={shop.id} />
+            </div>
+          )}
           {tab === "deals" && <StorefrontDealRoom shopId={shop.id} isSeller />}
+          {tab === "finance" && (
+            <div className="space-y-4">
+              <SellerFinance shopId={shop.id} />
+              <SubscriptionManager shopId={shop.id} />
+            </div>
+          )}
           {tab === "analytics" && <ShopAnalytics shopId={shop.id} />}
           {tab === "launch" && <LaunchAudit shopId={shop.id} />}
           {tab === "settings" && (
