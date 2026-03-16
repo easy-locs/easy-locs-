@@ -1398,6 +1398,301 @@ export type Database = {
           },
         ]
       }
+      delivery_disputes: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          evidence_urls: Json | null
+          id: string
+          job_id: string
+          org_id: string | null
+          raised_by: string
+          raised_by_role: string
+          reason: string
+          resolution: string | null
+          resolved_at: string | null
+          status: string
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          evidence_urls?: Json | null
+          id?: string
+          job_id: string
+          org_id?: string | null
+          raised_by: string
+          raised_by_role: string
+          reason: string
+          resolution?: string | null
+          resolved_at?: string | null
+          status?: string
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          evidence_urls?: Json | null
+          id?: string
+          job_id?: string
+          org_id?: string | null
+          raised_by?: string
+          raised_by_role?: string
+          reason?: string
+          resolution?: string | null
+          resolved_at?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "delivery_disputes_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "delivery_jobs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "delivery_disputes_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "delivery_disputes_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs_tenant_view"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      delivery_jobs: {
+        Row: {
+          accepted_at: string | null
+          assigned_at: string | null
+          cancellation_reason: string | null
+          cancelled_at: string | null
+          cancelled_by: string | null
+          confirmation_code: string | null
+          created_at: string | null
+          currency: string | null
+          delivered_at: string | null
+          delivery_fee: number | null
+          driver_id: string | null
+          dropoff_address: string
+          dropoff_lat: number | null
+          dropoff_lng: number | null
+          id: string
+          notes: string | null
+          order_id: string | null
+          org_id: string
+          package_description: string | null
+          photo_proof_url: string | null
+          picked_up_at: string | null
+          pickup_address: string
+          pickup_lat: number | null
+          pickup_lng: number | null
+          priority: string
+          reassignment_count: number | null
+          required_vehicles: string[] | null
+          scheduled_at: string | null
+          seller_id: string
+          status: string
+          updated_at: string | null
+          weight_kg: number | null
+        }
+        Insert: {
+          accepted_at?: string | null
+          assigned_at?: string | null
+          cancellation_reason?: string | null
+          cancelled_at?: string | null
+          cancelled_by?: string | null
+          confirmation_code?: string | null
+          created_at?: string | null
+          currency?: string | null
+          delivered_at?: string | null
+          delivery_fee?: number | null
+          driver_id?: string | null
+          dropoff_address?: string
+          dropoff_lat?: number | null
+          dropoff_lng?: number | null
+          id?: string
+          notes?: string | null
+          order_id?: string | null
+          org_id: string
+          package_description?: string | null
+          photo_proof_url?: string | null
+          picked_up_at?: string | null
+          pickup_address?: string
+          pickup_lat?: number | null
+          pickup_lng?: number | null
+          priority?: string
+          reassignment_count?: number | null
+          required_vehicles?: string[] | null
+          scheduled_at?: string | null
+          seller_id: string
+          status?: string
+          updated_at?: string | null
+          weight_kg?: number | null
+        }
+        Update: {
+          accepted_at?: string | null
+          assigned_at?: string | null
+          cancellation_reason?: string | null
+          cancelled_at?: string | null
+          cancelled_by?: string | null
+          confirmation_code?: string | null
+          created_at?: string | null
+          currency?: string | null
+          delivered_at?: string | null
+          delivery_fee?: number | null
+          driver_id?: string | null
+          dropoff_address?: string
+          dropoff_lat?: number | null
+          dropoff_lng?: number | null
+          id?: string
+          notes?: string | null
+          order_id?: string | null
+          org_id?: string
+          package_description?: string | null
+          photo_proof_url?: string | null
+          picked_up_at?: string | null
+          pickup_address?: string
+          pickup_lat?: number | null
+          pickup_lng?: number | null
+          priority?: string
+          reassignment_count?: number | null
+          required_vehicles?: string[] | null
+          scheduled_at?: string | null
+          seller_id?: string
+          status?: string
+          updated_at?: string | null
+          weight_kg?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "delivery_jobs_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "delivery_jobs_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs_tenant_view"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      delivery_offers: {
+        Row: {
+          created_at: string | null
+          distance_km: number | null
+          driver_id: string
+          eta_minutes: number | null
+          id: string
+          job_id: string
+          message: string | null
+          org_id: string | null
+          proposed_fee: number | null
+          responded_at: string | null
+          score: number | null
+          status: string
+        }
+        Insert: {
+          created_at?: string | null
+          distance_km?: number | null
+          driver_id: string
+          eta_minutes?: number | null
+          id?: string
+          job_id: string
+          message?: string | null
+          org_id?: string | null
+          proposed_fee?: number | null
+          responded_at?: string | null
+          score?: number | null
+          status?: string
+        }
+        Update: {
+          created_at?: string | null
+          distance_km?: number | null
+          driver_id?: string
+          eta_minutes?: number | null
+          id?: string
+          job_id?: string
+          message?: string | null
+          org_id?: string | null
+          proposed_fee?: number | null
+          responded_at?: string | null
+          score?: number | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "delivery_offers_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "delivery_jobs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "delivery_offers_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "delivery_offers_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs_tenant_view"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      delivery_ratings: {
+        Row: {
+          categories: string[] | null
+          comment: string | null
+          created_at: string | null
+          driver_id: string
+          id: string
+          job_id: string
+          rated_by: string
+          rating: number
+        }
+        Insert: {
+          categories?: string[] | null
+          comment?: string | null
+          created_at?: string | null
+          driver_id: string
+          id?: string
+          job_id: string
+          rated_by: string
+          rating: number
+        }
+        Update: {
+          categories?: string[] | null
+          comment?: string | null
+          created_at?: string | null
+          driver_id?: string
+          id?: string
+          job_id?: string
+          rated_by?: string
+          rating?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "delivery_ratings_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "delivery_jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       document_requests: {
         Row: {
           created_at: string
@@ -1575,6 +1870,81 @@ export type Database = {
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      driver_sessions: {
+        Row: {
+          acceptance_rate: number | null
+          avg_rating: number | null
+          created_at: string | null
+          current_job_id: string | null
+          id: string
+          last_heartbeat_at: string | null
+          lat: number | null
+          lng: number | null
+          max_distance_km: number | null
+          online_since: string | null
+          org_id: string | null
+          status: string
+          total_cancelled: number | null
+          total_completed: number | null
+          updated_at: string | null
+          user_id: string
+          vehicle_type: string
+        }
+        Insert: {
+          acceptance_rate?: number | null
+          avg_rating?: number | null
+          created_at?: string | null
+          current_job_id?: string | null
+          id?: string
+          last_heartbeat_at?: string | null
+          lat?: number | null
+          lng?: number | null
+          max_distance_km?: number | null
+          online_since?: string | null
+          org_id?: string | null
+          status?: string
+          total_cancelled?: number | null
+          total_completed?: number | null
+          updated_at?: string | null
+          user_id: string
+          vehicle_type?: string
+        }
+        Update: {
+          acceptance_rate?: number | null
+          avg_rating?: number | null
+          created_at?: string | null
+          current_job_id?: string | null
+          id?: string
+          last_heartbeat_at?: string | null
+          lat?: number | null
+          lng?: number | null
+          max_distance_km?: number | null
+          online_since?: string | null
+          org_id?: string | null
+          status?: string
+          total_cancelled?: number | null
+          total_completed?: number | null
+          updated_at?: string | null
+          user_id?: string
+          vehicle_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "driver_sessions_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "driver_sessions_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs_tenant_view"
             referencedColumns: ["id"]
           },
         ]
