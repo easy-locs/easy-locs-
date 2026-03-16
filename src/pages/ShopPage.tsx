@@ -456,6 +456,11 @@ export default function ShopPage() {
             <LiveShopping shopId={shop.id} mode="buyer" catalogItems={catalogItems} />
           </div>
 
+          {/* Live Commerce Stream */}
+          <div className="mt-4">
+            <LiveCommerceStream shopId={shop.id} mode="buyer" catalogItems={catalogItems} />
+          </div>
+
           {/* Customer Support */}
           {user && (
             <div className="mt-4">
