@@ -294,6 +294,26 @@ export default function MyShopPage() {
                   </div>
                 </CardContent>
               </Card>
+              {/* AI Category Suggest */}
+              <AICategorySuggest
+                shopId={shop.id}
+                onAccept={(s) => {
+                  updateShop("vertical", s.vertical);
+                  updateShop("subcategory", s.category);
+                  updateShop("tags", s.tags);
+                }}
+              />
+
+              {/* Private invites (if private shop) */}
+              {shop.shop_visibility === "private" && (
+                <PrivateInviteManager shopId={shop.id} shopSlug={shop.slug} />
+              )}
+
+              {/* Translations */}
+              <TranslationManager shopId={shop.id} />
+
+              {/* Business Hierarchy */}
+              <BusinessHierarchy />
             </div>
           )}
         </div>
