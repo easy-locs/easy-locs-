@@ -279,7 +279,7 @@ const ReportingDashboard = () => {
                                     <p className="font-medium text-foreground">{fmt(p.expenses)}</p>
                                   </div>
                                   <div>
-                                    <p className="text-muted-foreground">Net</p>
+                                    <p className="text-muted-foreground">{t("page.reporting.net_income")}</p>
                                     <p className={`font-bold ${p.net >= 0 ? "text-accent" : "text-destructive"}`}>{fmt(p.net)}</p>
                                   </div>
                                 </div>
