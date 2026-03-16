@@ -261,16 +261,23 @@ export default function SellerLogisticsPanel() {
 
       {/* Filter tabs */}
       <div className="flex gap-1 p-1 rounded-xl overflow-x-auto" style={{ background: "hsl(var(--hud-surface))" }}>
-        {(["all", "active", "completed", "batch", "scheduled", "history", "disputes", "analytics"] as const).map(f => (
-          <button key={f} onClick={() => setFilter(f)}
-            className="shrink-0 py-1.5 px-2 rounded-lg text-[9px] font-semibold transition-all"
-            style={{
-              background: filter === f ? "hsl(var(--hud-cyan) / 0.12)" : "transparent",
-              color: filter === f ? "hsl(var(--hud-cyan))" : "hsl(var(--hud-text-dim) / 0.5)",
-            }}>
-            {f === "all" ? "Tout" : f === "active" ? "Actives" : f === "completed" ? "Terminées" : f === "batch" ? "⚡ Batch" : f === "scheduled" ? "📅 Planif." : f === "history" ? "📋 Histo." : f === "disputes" ? "⚠️ Litiges" : "📊 Stats"}
-          </button>
-        ))}
+        {(["all", "active", "completed", "batch", "multistop", "scheduled", "history", "disputes", "analytics", "seller-stats", "onboarding"] as const).map(f => {
+          const labels: Record<string, string> = {
+            all: "Tout", active: "Actives", completed: "Terminées", batch: "⚡ Batch",
+            multistop: "🗺️ Multi", scheduled: "📅 Planif.", history: "📋 Histo.",
+            disputes: "⚠️ Litiges", analytics: "📊 Stats", "seller-stats": "📈 Perf.", onboarding: "🚗 Livreur",
+          };
+          return (
+            <button key={f} onClick={() => setFilter(f)}
+              className="shrink-0 py-1.5 px-2 rounded-lg text-[9px] font-semibold transition-all"
+              style={{
+                background: filter === f ? "hsl(var(--hud-cyan) / 0.12)" : "transparent",
+                color: filter === f ? "hsl(var(--hud-cyan))" : "hsl(var(--hud-text-dim) / 0.5)",
+              }}>
+              {labels[f] || f}
+            </button>
+          );
+        })}
       </div>
 
       {/* Content */}
