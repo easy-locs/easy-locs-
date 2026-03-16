@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
 interface SEOData {
@@ -20,15 +20,23 @@ export const useAISeo = (
 ) => {
   const [seo, setSeo] = useState<SEOData | null>(null);
   const [loading, setLoading] = useState(false);
+  const contextRef = useRef<string>("");
 
   useEffect(() => {
     if (!enabled || !context) return;
 
-    const cacheKey = `${type}:${locale}:${JSON.stringify(context)}`;
+    const contextKey = JSON.stringify(context);
+    // Prevent re-fetching if context hasn't actually changed
+    if (contextKey === contextRef.current) return;
+    contextRef.current = contextKey;
+
+    const cacheKey = `${type}:${locale}:${contextKey}`;
     if (seoCache.has(cacheKey)) {
       setSeo(seoCache.get(cacheKey)!);
       return;
     }
+
+    let cancelled = false;
 
     const generate = async () => {
       setLoading(true);
@@ -37,19 +45,21 @@ export const useAISeo = (
           body: { type, context, locale },
         });
 
-        if (!error && data?.seo) {
+        if (!error && data?.seo && !cancelled) {
           seoCache.set(cacheKey, data.seo);
           setSeo(data.seo);
         }
       } catch (e) {
         console.error("AI SEO generation failed:", e);
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     };
 
     generate();
-  }, [type, JSON.stringify(context), locale, enabled]);
+
+    return () => { cancelled = true; };
+  }, [type, locale, enabled]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return { seo, loading };
 };
