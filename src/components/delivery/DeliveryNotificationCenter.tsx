@@ -25,7 +25,8 @@ interface DeliveryNotif {
   type: string;
   title: string;
   message: string;
-  status: string;
+  read: boolean;
+  resolved: boolean;
   link: string | null;
   metadata_json: Record<string, any> | null;
   created_at: string;
