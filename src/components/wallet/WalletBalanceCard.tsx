@@ -124,15 +124,15 @@ export default function WalletBalanceCard({
         <div className="flex items-center gap-4 mt-4 text-xs text-primary-foreground/60">
           <span className="flex items-center gap-1">
             <TrendingUp className="w-3 h-3" />
-            {t("orbit.purchased") || "Purchased"}: {displayPurchased}
+            {t("orbit.purchased") || "Purchased"}: {isGhost ? "••••" : displayPurchased}
           </span>
           <span className="flex items-center gap-1">
             <TrendingDown className="w-3 h-3" />
-            {t("orbit.spent") || "Spent"}: {displaySpent}
+            {t("orbit.spent") || "Spent"}: {isGhost ? "••••" : displaySpent}
           </span>
         </div>
 
-        {frozenBalance > 0 && (
+        {frozenBalance > 0 && !isGhost && (
           <p className="mt-2 text-xs text-primary-foreground/40">
             🔒 {t("orbit.frozen") || "Frozen"}: {displayFrozen}
           </p>
