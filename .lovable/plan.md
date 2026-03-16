@@ -259,3 +259,13 @@ Conversation → Offer → Counter offer → Accepted → Payment → Confirmed
 | Sidebar nav entry | Compass "Live Tracking" under Orbit section | ✅ Done |
 | Auto-nearby detection | 300m threshold auto-transitions en_route→nearby | ✅ Done |
 | Platform bus integration | tracking:position_updated event emitted on position stream | ✅ Done |
+
+## PASS55 Block E2 — Seller Deep
+| Feature | Implementation | Status |
+|---------|---------------|--------|
+| StorefrontAnalytics | KPIs (views, clicks, conversion, reveals), top services, channel breakdown with animated bars | ✅ Done |
+| SellerVideoHub | Video gallery listing all services with video_url, inline playback, edit links | ✅ Done |
+| LiveCommerceToggle | Toggle live status with elapsed timer, platform bus broadcast, Switch UI | ✅ Done |
+| SellerHubPage | /dashboard/seller with 4-tab layout (Dashboard, Vidéos, Analytics, Live) | ✅ Done |
+| Platform bus events | marketplace:provider_went_live / provider_went_offline registered | ✅ Done |
+| Sidebar nav entry | Zap "Seller Hub" under Marketplace section | ✅ Done |
