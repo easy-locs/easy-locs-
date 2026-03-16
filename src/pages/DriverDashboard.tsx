@@ -256,7 +256,7 @@ export default function DriverDashboard() {
 
       {/* Tab bar */}
       <div className="flex gap-1 mx-4 mb-3 p-1 rounded-xl" style={{ background: "hsl(var(--hud-surface))" }}>
-        {(["active", "history"] as const).map(t => (
+        {(["active", "heatmap", "history"] as const).map(t => (
           <button
             key={t}
             onClick={() => { setTab(t); haptic("light"); }}
@@ -266,7 +266,7 @@ export default function DriverDashboard() {
               color: tab === t ? "hsl(var(--hud-cyan))" : "hsl(var(--hud-text-dim) / 0.5)",
             }}
           >
-            {t === "active" ? `Missions (${stats.active})` : "Historique"}
+            {t === "active" ? `Missions (${stats.active})` : t === "heatmap" ? "🔥 Demande" : "Historique"}
           </button>
         ))}
       </div>
