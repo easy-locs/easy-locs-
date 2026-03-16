@@ -170,6 +170,7 @@ export default function MyShopPage() {
           {tab === "finance" && (
             <div className="space-y-4">
               <SellerFinance shopId={shop.id} />
+              <MultiVendorDashboard shopId={shop.id} />
               <SubscriptionManager shopId={shop.id} />
               <LoyaltyDashboard shopId={shop.id} mode="seller" />
             </div>
