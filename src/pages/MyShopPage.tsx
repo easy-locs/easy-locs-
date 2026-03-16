@@ -322,6 +322,12 @@ export default function MyShopPage() {
               {/* Inventory */}
               <InventoryManager shopId={shop.id} />
 
+              {/* SEO */}
+              <ShopSEOManager shopId={shop.id} shopSlug={shop.slug} currentData={shop} />
+
+              {/* Reviews (owner view — can respond) */}
+              <ShopReviews shopId={shop.id} shopOwnerId={shop.user_id} />
+
               {/* Business Hierarchy */}
               <BusinessHierarchy />
             </div>
