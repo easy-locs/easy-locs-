@@ -12,7 +12,8 @@ import SellerDashboardPanel from "@/components/marketplace/SellerDashboardPanel"
 import SellerVideoHub from "@/components/marketplace/SellerVideoHub";
 import StorefrontAnalytics from "@/components/marketplace/StorefrontAnalytics";
 import LiveCommerceToggle from "@/components/marketplace/LiveCommerceToggle";
-import { Store, Video, BarChart3, Radio } from "lucide-react";
+import SellerLogisticsPanel from "@/components/delivery/SellerLogisticsPanel";
+import { Store, Video, BarChart3, Radio, Truck } from "lucide-react";
 import { haptic } from "@/lib/haptics";
 
 const TABS = [
