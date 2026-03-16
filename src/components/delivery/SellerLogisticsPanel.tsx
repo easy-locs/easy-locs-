@@ -481,6 +481,14 @@ export default function SellerLogisticsPanel() {
         <SellerPayoutReports orgId={jobs[0]?.org_id || ""} />
       ) : filter === "zones-mgr" ? (
         <DeliveryZonesManager orgId={jobs[0]?.org_id || ""} />
+      ) : filter === "proof-delivery" ? (
+        <ProofOfDeliveryPlus orgId={jobs[0]?.org_id || ""} />
+      ) : filter === "driver-analytics" ? (
+        <DriverAnalyticsDashboard />
+      ) : filter === "sla-alerts" ? (
+        <SLAAlertSystem orgId={jobs[0]?.org_id || ""} />
+      ) : filter === "job-marketplace" ? (
+        <DriverJobMarketplace />
       ) : (
       <div className="space-y-2">
         {loading ? (
