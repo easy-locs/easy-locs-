@@ -145,6 +145,7 @@ const HelpPage = safeLazy(() => import("./pages/legal/HelpPage"), "HelpPage");
 const PlatformVision = safeLazy(() => import("./pages/PlatformVision"), "PlatformVision");
 const DealAnalyticsPage = safeLazy(() => import("./pages/DealAnalyticsPage"), "DealAnalyticsPage");
 const ServiceTrackingPage = safeLazy(() => import("./pages/ServiceTrackingPage"), "ServiceTrackingPage");
+const SellerHubPage = safeLazy(() => import("./pages/SellerHubPage"), "SellerHubPage");
 const ConciergeServicesPage = safeLazy(() => import("./pages/seo/ConciergeServicesPage"), "ConciergeServicesPage");
 const MarketplaceServicesPage = safeLazy(() => import("./pages/seo/MarketplaceServicesPage"), "MarketplaceServicesPage");
 const ActivitiesPage = safeLazy(() => import("./pages/seo/ActivitiesPage"), "ActivitiesPage");
