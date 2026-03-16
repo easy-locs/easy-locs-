@@ -206,6 +206,7 @@ export default function WalletHub() {
                 frozenBalance={balance?.frozen_balance || 0}
                 displayFrozen={displayFrozen}
                 onOpenSettings={() => navigate("/dashboard/settings?section=wallet")}
+                onRefresh={loadWallet}
               />
 
               {/* Action Grid */}
