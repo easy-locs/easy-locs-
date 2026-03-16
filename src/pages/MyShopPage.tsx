@@ -1,6 +1,6 @@
 /**
  * MyShopPage — Seller dashboard for managing their storefront.
- * Tabs: Shop Settings, Catalog, Orders
+ * Tabs: Catalog, Orders, Deals, Analytics, Launch, Settings
  */
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -10,6 +10,10 @@ import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import ShopCreator from "@/components/storefront/ShopCreator";
 import CatalogManager from "@/components/storefront/CatalogManager";
 import OrdersManager from "@/components/storefront/OrdersManager";
+import StorefrontDealRoom from "@/components/storefront/StorefrontDealRoom";
+import ShopAnalytics from "@/components/storefront/ShopAnalytics";
+import LaunchAudit from "@/components/storefront/LaunchAudit";
+import ShopShareEngine from "@/components/storefront/ShopShareEngine";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -17,13 +21,16 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Store, Package, ShoppingBag, Settings, ExternalLink, Copy, Check, Loader2 } from "lucide-react";
+import { Store, Package, ShoppingBag, Settings, ExternalLink, Copy, Check, Loader2, Handshake, BarChart3, Rocket } from "lucide-react";
 import { toast } from "sonner";
 import { haptic } from "@/lib/haptics";
 
 const TABS = [
   { id: "catalog", label: "Catalog", icon: Package },
   { id: "orders", label: "Orders", icon: ShoppingBag },
+  { id: "deals", label: "Deals", icon: Handshake },
+  { id: "analytics", label: "Analytics", icon: BarChart3 },
+  { id: "launch", label: "Launch", icon: Rocket },
   { id: "settings", label: "Settings", icon: Settings },
 ] as const;
 type TabId = typeof TABS[number]["id"];
