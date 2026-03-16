@@ -161,12 +161,18 @@ export default function MyShopPage() {
         </div>
 
         <div className="px-4">
-          {tab === "catalog" && <CatalogManager shopId={shop.id} />}
+          {tab === "catalog" && (
+            <div className="space-y-4">
+              <CatalogManager shopId={shop.id} />
+              <AuctionManager shopId={shop.id} mode="seller" />
+            </div>
+          )}
           {tab === "orders" && (
             <div className="space-y-4">
               <OrdersManager shopId={shop.id} />
               <ReturnsManager shopId={shop.id} />
               <DeliveryDispatch shopId={shop.id} />
+              <WarehouseManager shopId={shop.id} />
             </div>
           )}
           {tab === "deals" && <StorefrontDealRoom shopId={shop.id} isSeller />}
@@ -174,6 +180,7 @@ export default function MyShopPage() {
             <div className="space-y-4">
               <SellerFinance shopId={shop.id} />
               <MultiVendorDashboard shopId={shop.id} />
+              <AffiliateProgram shopId={shop.id} shopSlug={shop.slug} mode="seller" />
               <SubscriptionManager shopId={shop.id} />
               <LoyaltyDashboard shopId={shop.id} mode="seller" />
             </div>
