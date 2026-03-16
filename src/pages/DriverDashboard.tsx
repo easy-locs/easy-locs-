@@ -165,7 +165,7 @@ function MissionCard({ mission, onAccept, onPickup, onDeliver, onCancel }: {
 export default function DriverDashboard() {
   const { session, isOnline, goOnline, goOffline, loading: sessionLoading } = useDriverSession();
   const { activeMissions, completedMissions, stats, loading: missionsLoading, acceptMission, updateStatus, confirmDelivery } = useDriverMissions();
-  const [tab, setTab] = useState<"active" | "history">("active");
+  const [tab, setTab] = useState<"active" | "history" | "heatmap">("active");
 
   const handleToggleOnline = async () => {
     haptic("medium");
