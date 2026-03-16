@@ -337,10 +337,22 @@ export default function ShopPage() {
             <BundleManager shopId={shop.id} mode="display" onAddBundle={(bundleId, price) => cart.addItem(bundleId, price)} />
           </div>
 
+          {/* Flash Sales */}
+          <div className="mt-6">
+            <FlashSales shopId={shop.id} mode="buyer" catalogItems={catalogItems} onAddToCart={(id, p) => cart.addItem(id, p)} formatPrice={(n, c) => fx.formatPrice(n, c)} />
+          </div>
+
           {/* Auctions */}
           <div className="mt-6">
             <AuctionManager shopId={shop.id} mode="buyer" />
           </div>
+
+          {/* Wishlists & Registries */}
+          {user && (
+            <div className="mt-4">
+              <WishlistRegistry shopId={shop.id} catalogItems={catalogItems} formatPrice={(n, c) => fx.formatPrice(n, c)} />
+            </div>
+          )}
 
           {/* Subscriptions */}
           {user && (
@@ -383,6 +395,11 @@ export default function ShopPage() {
               <AffiliateProgram shopId={shop.id} shopSlug={shop.slug} mode="buyer" />
             </div>
           )}
+
+          {/* Advanced Reviews & Q&A */}
+          <div className="mt-6">
+            <AdvancedReviews shopId={shop.id} mode="buyer" />
+          </div>
 
           {/* Reviews section */}
           <div className="mt-6">
