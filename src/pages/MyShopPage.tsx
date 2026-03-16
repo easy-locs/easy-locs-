@@ -18,6 +18,7 @@ import BusinessHierarchy from "@/components/storefront/BusinessHierarchy";
 import AICategorySuggest from "@/components/storefront/AICategorySuggest";
 import PrivateInviteManager from "@/components/storefront/PrivateInviteManager";
 import TranslationManager from "@/components/storefront/TranslationManager";
+import CouponManager from "@/components/storefront/CouponManager";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
