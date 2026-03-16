@@ -249,6 +249,7 @@ export default function MyShopPage() {
             <div className="space-y-4">
               <ShopAnalytics shopId={shop.id} />
               <StoreAnalytics shopId={shop.id} />
+              <StoreAnalyticsDashboard shopId={shop.id} />
               <SellerAnalyticsPro shopId={shop.id} />
               <SmartNotifications shopId={shop.id} mode="seller" />
               <CustomerSupport shopId={shop.id} mode="seller" />
