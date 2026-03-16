@@ -414,17 +414,20 @@ export default function ShopPage() {
               <div className="border-t border-border mt-3 pt-3 space-y-2">
                 <div className="flex justify-between text-xs text-muted-foreground">
                   <span>Subtotal</span>
-                  <span>{fmtPrice(cart.total, shop.currency)}</span>
+                  <span>{fx.formatPrice(cart.total, shop.currency)}</span>
                 </div>
                 {discount > 0 && (
                   <div className="flex justify-between text-xs text-primary">
                     <span>Discount</span>
-                    <span>-{fmtPrice(discount, shop.currency)}</span>
+                    <span>-{fx.formatPrice(discount, shop.currency)}</span>
                   </div>
+                )}
+                {fx.isConverted && (
+                  <p className="text-[9px] text-muted-foreground text-right">≈ converted from {shop.currency || "EUR"}</p>
                 )}
                 <div className="flex justify-between text-sm">
                   <span className="font-medium">Total</span>
-                  <span className="font-bold text-lg">{fmtPrice(finalTotal, shop.currency)}</span>
+                  <span className="font-bold text-lg">{fx.formatPrice(finalTotal, shop.currency)}</span>
                 </div>
                 <Button className="w-full h-12 font-semibold" onClick={handleCheckout}>
                   Place Order
