@@ -201,6 +201,7 @@ export default function MyShopPage() {
               <OrdersManager shopId={shop.id} />
               <ReturnsManager shopId={shop.id} />
               <ReturnsRefundEngine shopId={shop.id} mode="seller" />
+              <ReturnsRefunds shopId={shop.id} mode="seller" />
               <DeliveryDispatch shopId={shop.id} />
               <ShippingTracker shopId={shop.id} mode="seller" />
               <WarehouseManager shopId={shop.id} />
