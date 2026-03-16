@@ -314,6 +314,11 @@ export default function ShopPage() {
               })}
             </div>
           )}
+
+          {/* Reviews section */}
+          <div className="mt-8">
+            <ShopReviews shopId={shop.id} shopOwnerId={shop.user_id} />
+          </div>
         </div>
 
         {/* Floating cart button */}
@@ -322,14 +327,14 @@ export default function ShopPage() {
             <SheetTrigger asChild>
               <button className="fixed bottom-6 right-4 z-50 bg-primary text-primary-foreground rounded-full px-5 py-3 shadow-lg flex items-center gap-2 font-semibold text-sm">
                 <ShoppingCart className="h-4 w-4" />
-                {cart.itemCount} · {fmtPrice(cart.total, shop.currency)}
+                {cart.itemCount} · {fmtPrice(finalTotal, shop.currency)}
               </button>
             </SheetTrigger>
             <SheetContent side="bottom" className="max-h-[80vh] rounded-t-2xl">
               <SheetHeader>
                 <SheetTitle>Your Cart</SheetTitle>
               </SheetHeader>
-              <div className="mt-4 space-y-3 max-h-[50vh] overflow-y-auto">
+              <div className="mt-4 space-y-3 max-h-[40vh] overflow-y-auto">
                 {cart.items.map(ci => (
                   <div key={ci.id} className="flex items-center gap-3 p-2 rounded-lg bg-muted/30">
                     {ci.photo_url && <img src={ci.photo_url} alt="" className="w-12 h-12 rounded-lg object-cover" />}
@@ -352,10 +357,50 @@ export default function ShopPage() {
                   </div>
                 ))}
               </div>
-              <div className="border-t border-border mt-4 pt-4 space-y-3">
+
+              {/* Coupon section */}
+              <div className="border-t border-border mt-3 pt-3">
+                {coupon.appliedCoupon ? (
+                  <div className="flex items-center justify-between bg-primary/5 rounded-lg px-3 py-2">
+                    <div className="flex items-center gap-2">
+                      <Tag className="h-3.5 w-3.5 text-primary" />
+                      <span className="text-xs font-mono font-bold">{coupon.appliedCoupon.code}</span>
+                      <span className="text-xs text-primary">-{fmtPrice(discount, shop.currency)}</span>
+                    </div>
+                    <button onClick={coupon.removeCoupon} className="p-1"><X className="h-3.5 w-3.5 text-muted-foreground" /></button>
+                  </div>
+                ) : (
+                  <div className="flex gap-2">
+                    <Input
+                      value={couponCode}
+                      onChange={e => setCouponCode(e.target.value.toUpperCase())}
+                      placeholder="Coupon code"
+                      className="h-8 text-xs uppercase flex-1"
+                    />
+                    <Button size="sm" variant="outline" className="h-8 text-xs"
+                      disabled={coupon.validating || !couponCode.trim()}
+                      onClick={() => coupon.applyCoupon(couponCode, cart.total)}>
+                      {coupon.validating ? <Loader2 className="h-3 w-3 animate-spin" /> : "Apply"}
+                    </Button>
+                  </div>
+                )}
+                {coupon.error && <p className="text-[10px] text-destructive mt-1">{coupon.error}</p>}
+              </div>
+
+              <div className="border-t border-border mt-3 pt-3 space-y-2">
+                <div className="flex justify-between text-xs text-muted-foreground">
+                  <span>Subtotal</span>
+                  <span>{fmtPrice(cart.total, shop.currency)}</span>
+                </div>
+                {discount > 0 && (
+                  <div className="flex justify-between text-xs text-primary">
+                    <span>Discount</span>
+                    <span>-{fmtPrice(discount, shop.currency)}</span>
+                  </div>
+                )}
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Total</span>
-                  <span className="font-bold text-lg">{fmtPrice(cart.total, shop.currency)}</span>
+                  <span className="font-medium">Total</span>
+                  <span className="font-bold text-lg">{fmtPrice(finalTotal, shop.currency)}</span>
                 </div>
                 <Button className="w-full h-12 font-semibold" onClick={handleCheckout}>
                   Place Order
