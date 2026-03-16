@@ -368,6 +368,14 @@ export default function SellerLogisticsPanel() {
         <AdminModerationPanel orgId={jobs[0]?.org_id || ""} />
       ) : filter === "notif-rules" ? (
         <DeliveryEventNotifications orgId={jobs[0]?.org_id || ""} />
+      ) : filter === "multi-currency" ? (
+        <MultiCurrencyDelivery orgId={jobs[0]?.org_id || ""} />
+      ) : filter === "route-optim" ? (
+        <RouteOptimizationPanel orgId={jobs[0]?.org_id || ""} />
+      ) : filter === "insurance" ? (
+        <DeliveryInsurancePanel orgId={jobs[0]?.org_id || ""} />
+      ) : filter === "adv-analytics" ? (
+        <DeliveryAdvancedAnalytics orgId={jobs[0]?.org_id || ""} />
       ) : (
       <div className="space-y-2">
         {loading ? (
