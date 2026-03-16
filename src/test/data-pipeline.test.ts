@@ -67,7 +67,7 @@ describe("DataPipeline", () => {
 
   it("records input/output counts for arrays", async () => {
     const p = new DataPipeline<number[]>("counts")
-      .step("filter", "Filter evens", (data) => data.filter((x) => x % 2 === 0));
+      .step("filter", "Filter evens", (data: any) => (data as number[]).filter((x: number) => x % 2 === 0));
 
     const result = await p.run([1, 2, 3, 4, 5, 6]);
     expect(result.metrics[0].inputCount).toBe(6);
