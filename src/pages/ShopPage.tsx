@@ -389,7 +389,7 @@ export default function ShopPage() {
                     <div className="flex items-center gap-2">
                       <Tag className="h-3.5 w-3.5 text-primary" />
                       <span className="text-xs font-mono font-bold">{coupon.appliedCoupon.code}</span>
-                      <span className="text-xs text-primary">-{fmtPrice(discount, shop.currency)}</span>
+                      <span className="text-xs text-primary">-{fx.formatPrice(discount, shop.currency)}</span>
                     </div>
                     <button onClick={coupon.removeCoupon} className="p-1"><X className="h-3.5 w-3.5 text-muted-foreground" /></button>
                   </div>
