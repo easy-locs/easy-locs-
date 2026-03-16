@@ -99,7 +99,7 @@ export function formatList(
   if (items.length === 1) return items[0];
 
   try {
-    return new Intl.ListFormat(locale, { style: "long", type }).format(items);
+    return new (Intl as any).ListFormat(locale, { style: "long", type }).format(items);
   } catch {
     // Fallback for unsupported
     const sep = type === "conjunction" ? " & " : " / ";
