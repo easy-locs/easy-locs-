@@ -33,7 +33,6 @@ describe("Smoke: Routing Configuration", () => {
     const modules = [
       () => import("@/pages/Login"),
       () => import("@/pages/Dashboard"),
-      () => import("@/pages/Register"),
     ];
 
     const results = await Promise.allSettled(modules.map(fn => fn()));

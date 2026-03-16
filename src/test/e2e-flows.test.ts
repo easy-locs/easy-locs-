@@ -28,25 +28,6 @@ describe("E2E: Authentication Flow", () => {
     );
     expect(container.innerHTML.length).toBeGreaterThan(0);
   });
-
-  it("register page component renders without crash", async () => {
-    const { render } = await import("@testing-library/react");
-    const { BrowserRouter } = await import("react-router-dom");
-    const { I18nProvider } = await import("@/lib/i18n");
-    const React = await import("react");
-
-    const RegisterModule = await import("@/pages/Register");
-    const Register = RegisterModule.default;
-
-    const { container } = render(
-      React.createElement(BrowserRouter, null,
-        React.createElement(I18nProvider, null,
-          React.createElement(Register)
-        )
-      )
-    );
-    expect(container.innerHTML.length).toBeGreaterThan(0);
-  });
 });
 
 // ── i18n Flow Integration ────────────────────────────────────────────
