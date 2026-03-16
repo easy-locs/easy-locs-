@@ -520,7 +520,14 @@ export default function SellerLogisticsPanel() {
         <CustomerRewardsProgram />
       ) : filter === "driver-comms" ? (
         <MultiChannelDriverComms orgId={jobs[0]?.org_id || ""} />
-      ) : (
+      ) : filter === "bi-dashboard" ? (
+        <DeliveryBIDashboard orgId={jobs[0]?.org_id || ""} />
+      ) : filter === "driver-registration" ? (
+        <DriverOnboardingRegistration onComplete={() => setFilter("all")} />
+      ) : filter === "sla-monitor" ? (
+        <SLAPerformanceMonitor orgId={jobs[0]?.org_id || ""} />
+      ) : filter === "notif-hub" ? (
+        <DeliveryNotificationHub orgId={jobs[0]?.org_id || ""} />
       <div className="space-y-2">
         {loading ? (
           <div className="flex items-center justify-center py-12">
