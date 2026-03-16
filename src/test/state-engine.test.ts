@@ -73,9 +73,10 @@ describe("createDerivedSelector", () => {
     expect(selector({ a: 3, b: 7 })).toBe(10);
   });
   it("memoizes", () => {
+    type XY = { x: number; y: number };
     const combine = vi.fn((a: number, b: number) => a * b);
-    const selector = createDerivedSelector(
-      [(s: { x: number; y: number }) => s.x, (s) => s.y],
+    const selector = createDerivedSelector<XY, [number, number], number>(
+      [(s) => s.x, (s) => s.y],
       combine
     );
     const state = { x: 2, y: 5 };
