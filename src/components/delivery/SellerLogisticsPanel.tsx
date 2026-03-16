@@ -361,6 +361,7 @@ export default function SellerLogisticsPanel() {
             "fleet-gps": "📡 GPS Fleet", "insurance-claims": "🛡️ Réclamations", "shift-scheduler": "📅 Shifts+", "live-tracking": "📲 Live Track",
             "command-center": "🎯 Command", "auto-invoicing": "🧾 Factures+", "rewards": "🏆 Récompenses", "driver-comms": "📡 Comms",
             "bi-dashboard": "📊 BI", "driver-registration": "📝 Registre", "sla-monitor": "⏱️ SLA+", "notif-hub": "🔔 Hub Notifs",
+            "adv-returns": "🔄 Retours++", "finance-ctrl": "💵 Finance", "incidents": "🚨 Incidents", "seller-portal": "🏪 Partenaires",
           };
           return (
             <button key={f} onClick={() => setFilter(f)}
