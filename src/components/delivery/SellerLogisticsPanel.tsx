@@ -270,6 +270,8 @@ export default function SellerLogisticsPanel() {
         <DeliveryAnalyticsDashboard orgId={jobs[0]?.org_id} />
       ) : filter === "disputes" ? (
         <DeliveryDisputeFlow orgId={jobs[0]?.org_id || ""} />
+      ) : filter === "batch" ? (
+        <BatchDispatchPanel jobs={jobs} onDone={() => setFilter("all")} />
       ) : (
       <div className="space-y-2">
         {loading ? (
