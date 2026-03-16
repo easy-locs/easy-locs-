@@ -71,6 +71,10 @@ import ProofOfDeliveryPlus from "@/components/delivery/ProofOfDeliveryPlus";
 import DriverAnalyticsDashboard from "@/components/delivery/DriverAnalyticsDashboard";
 import SLAAlertSystem from "@/components/delivery/SLAAlertSystem";
 import DriverJobMarketplace from "@/components/delivery/DriverJobMarketplace";
+import FleetGPSTracker from "@/components/delivery/FleetGPSTracker";
+import DeliveryInsuranceClaims from "@/components/delivery/DeliveryInsuranceClaims";
+import DriverShiftScheduler from "@/components/delivery/DriverShiftScheduler";
+import CustomerLiveTracking from "@/components/delivery/CustomerLiveTracking";
 import { useDeliveryNotifications } from "@/hooks/useDeliveryNotifications";
 import { motion, AnimatePresence } from "framer-motion";
 import {
