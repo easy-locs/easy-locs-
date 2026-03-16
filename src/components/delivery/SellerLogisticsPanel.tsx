@@ -355,6 +355,14 @@ export default function SellerLogisticsPanel() {
         <CustomerTrackingPage />
       ) : filter === "payroll" ? (
         <DriverEarningsPayroll />
+      ) : filter === "surge" ? (
+        <DynamicPricingSurge orgId={jobs[0]?.org_id || ""} />
+      ) : filter === "shifts" ? (
+        <DriverShiftScheduling orgId={jobs[0]?.org_id || ""} />
+      ) : filter === "moderation" ? (
+        <AdminModerationPanel orgId={jobs[0]?.org_id || ""} />
+      ) : filter === "notif-rules" ? (
+        <DeliveryEventNotifications orgId={jobs[0]?.org_id || ""} />
       ) : (
       <div className="space-y-2">
         {loading ? (
