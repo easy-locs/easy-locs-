@@ -382,6 +382,14 @@ export default function SellerLogisticsPanel() {
         <DeliveryInsurancePanel orgId={jobs[0]?.org_id || ""} />
       ) : filter === "adv-analytics" ? (
         <DeliveryAdvancedAnalytics orgId={jobs[0]?.org_id || ""} />
+      ) : filter === "referral" ? (
+        <DriverReferralProgram />
+      ) : filter === "support-bot" ? (
+        <DeliverySupportBot />
+      ) : filter === "returns" ? (
+        <ReturnsReverseLogistics orgId={jobs[0]?.org_id || ""} />
+      ) : filter === "slot-booking" ? (
+        <DeliverySlotBooking orgId={jobs[0]?.org_id || ""} />
       ) : (
       <div className="space-y-2">
         {loading ? (
