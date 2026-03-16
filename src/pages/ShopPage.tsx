@@ -58,6 +58,8 @@ import WishlistSaveLater from "@/components/storefront/WishlistSaveLater";
 import ProductComparator from "@/components/storefront/ProductComparator";
 import AdvancedShipping from "@/components/storefront/AdvancedShipping";
 import StoreAnalyticsDashboard from "@/components/storefront/StoreAnalyticsDashboard";
+import LiveChatSupport from "@/components/storefront/LiveChatSupport";
+import AdvancedReferralSystem from "@/components/storefront/AdvancedReferralSystem";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
