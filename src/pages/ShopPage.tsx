@@ -457,6 +457,20 @@ export default function ShopPage() {
             </div>
           )}
 
+          {/* Gamification */}
+          {user && (
+            <div className="mt-4">
+              <GamificationEngine shopId={shop.id} mode="buyer" />
+            </div>
+          )}
+
+          {/* Smart Notifications */}
+          {user && (
+            <div className="mt-4">
+              <SmartNotifications shopId={shop.id} mode="buyer" />
+            </div>
+          )}
+
           {/* Reviews section */}
           <div className="mt-6">
             <ShopReviews shopId={shop.id} shopOwnerId={shop.user_id} />
