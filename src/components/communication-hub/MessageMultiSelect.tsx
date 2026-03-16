@@ -12,6 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { haptic } from "@/lib/haptics";
 import { toast } from "sonner";
 import { useI18n } from "@/lib/i18n";
+import { platformBus } from "@/lib/shared/platform-bus";
 
 interface Props {
   selectedIds: Set<string>;
