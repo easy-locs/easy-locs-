@@ -216,6 +216,18 @@ export default function ShopPage() {
               </span>
             )}
             <Badge variant="outline" className="text-[10px]">{catalogItems.length} items</Badge>
+            {/* Currency selector */}
+            <Select value={fx.displayCurrency} onValueChange={fx.setDisplayCurrency}>
+              <SelectTrigger className="h-6 w-auto gap-1 text-[10px] border-none bg-muted/50 px-2">
+                <Globe className="h-3 w-3" />
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {["EUR", "USD", "GBP", "CHF", "AED", "MAD", "XOF", "CAD", "JPY", "CNY", "INR", "BRL", "TRY", "NGN"].map(c => (
+                  <SelectItem key={c} value={c} className="text-xs">{c}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             <ShareButtons type="host" slug={shop.slug} title={shop.name} />
           </div>
 
