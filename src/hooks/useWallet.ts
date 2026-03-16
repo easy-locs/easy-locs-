@@ -2,8 +2,11 @@
  * useWallet — LOCS Wallet Manager
  * Manages LOCS balance, transactions, send/request operations, and purchases.
  * 1 LOCS = 1 EUR | Non-refundable, non-withdrawable
+ * 
+ * PASS58: Added platformBus emit on requestMoney, bus listener for wallet refresh,
+ * manual refresh exposed, scoped realtime subs.
  */
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { platformBus } from "@/lib/shared/platform-bus";
@@ -40,6 +43,7 @@ export interface WalletTransaction {
   thread_id: string | null;
   metadata_json: any;
   created_at: string;
+  reference_code?: string;
 }
 
 export function useWallet() {
@@ -47,6 +51,7 @@ export function useWallet() {
   const [balance, setBalance] = useState<WalletBalance | null>(null);
   const [transactions, setTransactions] = useState<WalletTransaction[]>([]);
   const [loading, setLoading] = useState(true);
+  const refreshTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const loadWallet = useCallback(async () => {
     if (!user?.id) { setLoading(false); return; }
@@ -86,15 +91,42 @@ export function useWallet() {
 
   useEffect(() => { loadWallet(); }, [loadWallet]);
 
-  // Realtime
+  // Realtime — scoped to user
   useEffect(() => {
     if (!user?.id) return;
     const channel = supabase
-      .channel("wallet-live")
-      .on("postgres_changes", { event: "*", schema: "public", table: "wallet_transactions" }, () => { loadWallet(); })
-      .on("postgres_changes", { event: "*", schema: "public", table: "wallet_balances" }, () => { loadWallet(); })
+      .channel(`wallet-live-${user.id}`)
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "wallet_transactions" }, (payload) => {
+        const row = payload.new as any;
+        if (row.user_id === user.id || row.counterpart_user_id === user.id) {
+          // Debounced reload
+          if (refreshTimer.current) clearTimeout(refreshTimer.current);
+          refreshTimer.current = setTimeout(() => loadWallet(), 500);
+        }
+      })
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "wallet_balances" }, (payload) => {
+        const row = payload.new as any;
+        if (row.user_id === user.id) {
+          setBalance(row as unknown as WalletBalance);
+          platformBus.emit("wallet:balance_updated", { balance: row.balance }, "wallet", { userId: user.id });
+        }
+      })
       .subscribe();
-    return () => { supabase.removeChannel(channel); };
+
+    return () => {
+      supabase.removeChannel(channel);
+      if (refreshTimer.current) clearTimeout(refreshTimer.current);
+    };
+  }, [user?.id, loadWallet]);
+
+  // Platform bus listener — refresh on wallet events from other modules
+  useEffect(() => {
+    if (!user?.id) return;
+    const unsub = platformBus.on("wallet:transfer_sent", () => {
+      if (refreshTimer.current) clearTimeout(refreshTimer.current);
+      refreshTimer.current = setTimeout(() => loadWallet(), 600);
+    });
+    return unsub;
   }, [user?.id, loadWallet]);
 
   /** Purchase LOCS credits via Stripe */
@@ -113,7 +145,7 @@ export function useWallet() {
     } catch (err: any) {
       return { success: false, error: err.message };
     }
-  }, []);
+  }, [user?.id]);
 
   /** Send LOCS to another user via secure server-side RPC */
   const sendMoney = useCallback(async (opts: {
@@ -121,6 +153,9 @@ export function useWallet() {
     amount: number;
     description?: string;
     threadId?: string;
+    qrNonce?: string;
+    referenceType?: string;
+    referenceId?: string;
   }) => {
     if (!user?.id) return { success: false, error: "Not authenticated" };
 
@@ -130,6 +165,9 @@ export function useWallet() {
       _amount: opts.amount,
       _description: opts.description || "LOCS Transfer",
       _thread_id: opts.threadId || null,
+      _qr_nonce: opts.qrNonce || null,
+      _reference_type: opts.referenceType || null,
+      _reference_id: opts.referenceId || null,
     });
 
     if (error) return { success: false, error: error.message };
@@ -138,7 +176,11 @@ export function useWallet() {
     }
 
     await loadWallet();
-    platformBus.emit("wallet:transfer_sent", { recipientId: opts.recipientUserId, amount: opts.amount }, "wallet", { userId: user.id });
+    platformBus.emit("wallet:transfer_sent", {
+      recipientId: opts.recipientUserId,
+      amount: opts.amount,
+      threadId: opts.threadId,
+    }, "wallet", { userId: user.id });
     return { success: true, data };
   }, [user?.id, loadWallet]);
 
@@ -167,17 +209,17 @@ export function useWallet() {
 
     if (error) return { success: false, error: error.message };
     await loadWallet();
+    platformBus.emit("wallet:payment_requested", {
+      fromUserId: opts.fromUserId,
+      amount: opts.amount,
+      threadId: opts.threadId,
+    }, "wallet", { userId: user.id });
     return { success: true };
   }, [user?.id, loadWallet]);
 
   /** Get FX conversion preview */
   const getConversionPreview = useCallback(async (amount: number, currency: string) => {
     try {
-      const { data, error } = await supabase.functions.invoke("fx-rates", {
-        body: {},
-        method: "GET",
-      });
-      // Use query params approach via direct fetch
       const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
       const res = await fetch(
         `https://${projectId}.supabase.co/functions/v1/fx-rates?action=convert&from=${currency}&amount=${amount}`,
@@ -190,7 +232,7 @@ export function useWallet() {
       );
       if (!res.ok) throw new Error("FX preview failed");
       return await res.json();
-    } catch (err: any) {
+    } catch {
       return null;
     }
   }, []);
@@ -204,5 +246,7 @@ export function useWallet() {
     requestMoney,
     purchaseLocs,
     getConversionPreview,
+    /** Manual refresh — call from UI refresh buttons */
+    refresh: loadWallet,
   };
 }
