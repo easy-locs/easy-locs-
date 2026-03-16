@@ -20,6 +20,8 @@ import PrivateInviteManager from "@/components/storefront/PrivateInviteManager";
 import TranslationManager from "@/components/storefront/TranslationManager";
 import CouponManager from "@/components/storefront/CouponManager";
 import InventoryManager from "@/components/storefront/InventoryManager";
+import ShopSEOManager from "@/components/storefront/ShopSEOManager";
+import ShopReviews from "@/components/storefront/ShopReviews";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -319,6 +321,12 @@ export default function MyShopPage() {
 
               {/* Inventory */}
               <InventoryManager shopId={shop.id} />
+
+              {/* SEO */}
+              <ShopSEOManager shopId={shop.id} shopSlug={shop.slug} currentData={shop} />
+
+              {/* Reviews (owner view — can respond) */}
+              <ShopReviews shopId={shop.id} shopOwnerId={shop.user_id} />
 
               {/* Business Hierarchy */}
               <BusinessHierarchy />

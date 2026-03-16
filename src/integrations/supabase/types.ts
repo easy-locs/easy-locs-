@@ -7269,12 +7269,15 @@ export type Database = {
           logo_url: string | null
           longitude: number | null
           name: string
+          og_image_url: string | null
           org_id: string
           radius_km: number | null
           rating: number | null
           region: string | null
           reviews_count: number | null
           scheduled_publish_at: string | null
+          seo_description: string | null
+          seo_title: string | null
           shop_visibility: string | null
           slug: string
           subcategory: string | null
@@ -7306,12 +7309,15 @@ export type Database = {
           logo_url?: string | null
           longitude?: number | null
           name: string
+          og_image_url?: string | null
           org_id: string
           radius_km?: number | null
           rating?: number | null
           region?: string | null
           reviews_count?: number | null
           scheduled_publish_at?: string | null
+          seo_description?: string | null
+          seo_title?: string | null
           shop_visibility?: string | null
           slug: string
           subcategory?: string | null
@@ -7343,12 +7349,15 @@ export type Database = {
           logo_url?: string | null
           longitude?: number | null
           name?: string
+          og_image_url?: string | null
           org_id?: string
           radius_km?: number | null
           rating?: number | null
           region?: string | null
           reviews_count?: number | null
           scheduled_publish_at?: string | null
+          seo_description?: string | null
+          seo_title?: string | null
           shop_visibility?: string | null
           slug?: string
           subcategory?: string | null
@@ -7373,6 +7382,66 @@ export type Database = {
             columns: ["org_id"]
             isOneToOne: false
             referencedRelation: "orgs_tenant_view"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      storefront_reviews: {
+        Row: {
+          comment: string | null
+          created_at: string | null
+          id: string
+          order_id: string | null
+          rating: number
+          responded_at: string | null
+          response: string | null
+          reviewer_id: string
+          reviewer_name: string | null
+          shop_id: string
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string | null
+          id?: string
+          order_id?: string | null
+          rating: number
+          responded_at?: string | null
+          response?: string | null
+          reviewer_id: string
+          reviewer_name?: string | null
+          shop_id: string
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string | null
+          id?: string
+          order_id?: string | null
+          rating?: number
+          responded_at?: string | null
+          response?: string | null
+          reviewer_id?: string
+          reviewer_name?: string | null
+          shop_id?: string
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "storefront_reviews_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "storefront_orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "storefront_reviews_shop_id_fkey"
+            columns: ["shop_id"]
+            isOneToOne: false
+            referencedRelation: "storefront_pages"
             referencedColumns: ["id"]
           },
         ]
