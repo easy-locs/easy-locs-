@@ -1,7 +1,8 @@
 /**
- * OrdersManager — Seller-facing order management.
+ * OrdersManager — Seller-facing order management with realtime updates.
  * Status lifecycle: pending → accepted → preparing → shipped → completed / cancelled
  */
+import { useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -53,6 +54,23 @@ export default function OrdersManager({ shopId }: OrdersManagerProps) {
     },
     enabled: !!user,
   });
+
+  // Realtime: auto-refresh on new/updated orders
+  useEffect(() => {
+    const channel = supabase
+      .channel(`storefront-orders-${shopId}`)
+      .on("postgres_changes", {
+        event: "*",
+        schema: "public",
+        table: "storefront_orders",
+        filter: `shop_id=eq.${shopId}`,
+      }, () => {
+        qc.invalidateQueries({ queryKey: ["my-orders", shopId] });
+      })
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, [shopId, qc]);
 
   const updateStatus = async (orderId: string, newStatus: string) => {
     await (supabase as any).from("storefront_orders").update({ status: newStatus, updated_at: new Date().toISOString() }).eq("id", orderId);
