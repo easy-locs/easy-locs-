@@ -351,6 +351,12 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
 
       if (insertError) throw insertError;
       toast.success(fileMetaJson ? "🔒 Encrypted file sent" : "File sent");
+      // Platform bus: file sent
+      platformBus.emit("orbit:message_sent", {
+        threadId: thread.threadId || thread.id,
+        contextId: thread.contextId,
+        type: "file",
+      }, "orbit", { userId: user?.id, orgId });
     } catch (e: any) {
       toast.error(e?.message || "Upload failed");
     }
