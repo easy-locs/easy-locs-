@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useCallback, useEffect, useRef, type ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { interpolate, resolvePlural, trackMissingKey } from "./i18n-utils";
 
 // Lazy-loaded locale data is merged at runtime — no more eager imports
 // fr + en are always inline; other locales load their heavy packs on demand
