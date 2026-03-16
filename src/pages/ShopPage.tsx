@@ -112,6 +112,7 @@ export default function ShopPage() {
   const cart = useStorefrontCart(shop?.id);
   const coupon = useStorefrontCoupon(shop?.id);
   const wishlist = useStorefrontWishlist(shop?.id);
+  const analytics = useStorefrontAnalytics(shop?.id);
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const fx = useStorefrontCurrency(shop?.currency || shop?.default_currency || "EUR");
   const filteredItems = activeCategory
@@ -120,6 +121,11 @@ export default function ShopPage() {
 
   const discount = coupon.appliedCoupon?.discountAmount || 0;
   const finalTotal = Math.max(0, cart.total - discount);
+
+  // Track page view when shop loads
+  useEffect(() => {
+    if (shop?.id) analytics.trackPageView();
+  }, [shop?.id]);
 
   const handleCheckout = () => {
     if (!user) { toast.error("Please sign in to checkout"); return; }
