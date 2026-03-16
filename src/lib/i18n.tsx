@@ -709,6 +709,10 @@ const pageFr: Record<string, string> = {
   "page.install.feature_offline": "Accès hors-ligne",
   "page.install.feature_fast": "Lancement rapide",
   "page.install.feature_native": "Expérience native",
+  "pwa.banner.title": "Installer Easy-Locs",
+  "pwa.banner.hint": "Rapide, hors-ligne, toujours accessible",
+  "pwa.banner.ios_hint": "Partager → Sur l'écran d'accueil",
+  "pwa.banner.install": "Installer",
 
   // Candidates
   "page.candidates.title": "Candidats",
