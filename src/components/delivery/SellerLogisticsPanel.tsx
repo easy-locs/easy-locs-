@@ -331,6 +331,7 @@ export default function SellerLogisticsPanel() {
             "route-planner": "🗺️ Planner", "returns-mgmt": "📦 Retours+", "schedule-cal": "📅 Calendrier", "driver-portal": "🚀 Onboarding+",
             "promo-coupons": "🎟️ Promos", "live-chat": "💬 Chat Live", "warehouse": "🏭 Entrepôts", "green-delivery": "🌱 Green",
             "fleet-system": "🚐 Flotte+", "order-bundle": "📦 Lots", "tracking-portal": "📲 Tracking",
+            "seller-rating": "⭐ Rating", "address-book": "📍 Adresses", "delivery-kpi": "📊 KPIs", "maint-sched": "🔧 Maintenance",
           };
           return (
             <button key={f} onClick={() => setFilter(f)}
