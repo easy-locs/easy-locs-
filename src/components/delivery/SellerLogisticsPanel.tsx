@@ -71,6 +71,10 @@ import ProofOfDeliveryPlus from "@/components/delivery/ProofOfDeliveryPlus";
 import DriverAnalyticsDashboard from "@/components/delivery/DriverAnalyticsDashboard";
 import SLAAlertSystem from "@/components/delivery/SLAAlertSystem";
 import DriverJobMarketplace from "@/components/delivery/DriverJobMarketplace";
+import FleetGPSTracker from "@/components/delivery/FleetGPSTracker";
+import DeliveryInsuranceClaims from "@/components/delivery/DeliveryInsuranceClaims";
+import DriverShiftScheduler from "@/components/delivery/DriverShiftScheduler";
+import CustomerLiveTracking from "@/components/delivery/CustomerLiveTracking";
 import { useDeliveryNotifications } from "@/hooks/useDeliveryNotifications";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -260,7 +264,7 @@ export default function SellerLogisticsPanel() {
   const [searchingJobId, setSearchingJobId] = useState<string | null>(null);
   const [disputeJobId, setDisputeJobId] = useState<string | null>(null);
   const [trackingJobId, setTrackingJobId] = useState<string | null>(null);
-  const [filter, setFilter] = useState<"all" | "active" | "completed" | "batch" | "scheduled" | "history" | "disputes" | "analytics" | "multistop" | "seller-stats" | "onboarding" | "wallet" | "geofence" | "chat" | "fleet" | "reputation" | "optimize" | "buyer" | "invoices" | "sla" | "multi-drop" | "driver-reg" | "reports" | "fleet-mgmt" | "dispatch-rules" | "customer-track" | "payroll" | "surge" | "shifts" | "moderation" | "notif-rules" | "multi-currency" | "route-optim" | "insurance" | "adv-analytics" | "referral" | "support-bot" | "returns" | "slot-booking" | "fleet-hub" | "gamification" | "smart-notifs" | "api-webhooks" | "zone-pricing" | "customer-loyalty" | "compliance" | "ai-planning" | "route-planner" | "returns-mgmt" | "schedule-cal" | "driver-portal" | "promo-coupons" | "live-chat" | "warehouse" | "green-delivery" | "fleet-system" | "order-bundle" | "tracking-portal" | "seller-rating" | "address-book" | "delivery-kpi" | "maint-sched" | "driver-onboard" | "notif-center" | "payout-reports" | "zones-mgr" | "proof-delivery" | "driver-analytics" | "sla-alerts" | "job-marketplace">("all");
+  const [filter, setFilter] = useState<"all" | "active" | "completed" | "batch" | "scheduled" | "history" | "disputes" | "analytics" | "multistop" | "seller-stats" | "onboarding" | "wallet" | "geofence" | "chat" | "fleet" | "reputation" | "optimize" | "buyer" | "invoices" | "sla" | "multi-drop" | "driver-reg" | "reports" | "fleet-mgmt" | "dispatch-rules" | "customer-track" | "payroll" | "surge" | "shifts" | "moderation" | "notif-rules" | "multi-currency" | "route-optim" | "insurance" | "adv-analytics" | "referral" | "support-bot" | "returns" | "slot-booking" | "fleet-hub" | "gamification" | "smart-notifs" | "api-webhooks" | "zone-pricing" | "customer-loyalty" | "compliance" | "ai-planning" | "route-planner" | "returns-mgmt" | "schedule-cal" | "driver-portal" | "promo-coupons" | "live-chat" | "warehouse" | "green-delivery" | "fleet-system" | "order-bundle" | "tracking-portal" | "seller-rating" | "address-book" | "delivery-kpi" | "maint-sched" | "driver-onboard" | "notif-center" | "payout-reports" | "zones-mgr" | "proof-delivery" | "driver-analytics" | "sla-alerts" | "job-marketplace" | "fleet-gps" | "insurance-claims" | "shift-scheduler" | "live-tracking">("all");
   const [chatJobId, setChatJobId] = useState<string | null>(null);
 
   const filteredJobs = jobs.filter(j => {
@@ -322,7 +326,7 @@ export default function SellerLogisticsPanel() {
 
       {/* Filter tabs */}
       <div className="flex gap-1 p-1 rounded-xl overflow-x-auto" style={{ background: "hsl(var(--hud-surface))" }}>
-        {(["all", "active", "completed", "batch", "multi-drop", "multistop", "route-planner", "scheduled", "schedule-cal", "slot-booking", "history", "disputes", "analytics", "reports", "adv-analytics", "seller-stats", "sla", "sla-alerts", "surge", "multi-currency", "zone-pricing", "zones-mgr", "promo-coupons", "route-optim", "insurance", "onboarding", "driver-reg", "driver-portal", "driver-onboard", "driver-analytics", "job-marketplace", "referral", "gamification", "shifts", "wallet", "customer-loyalty", "geofence", "fleet", "fleet-hub", "fleet-mgmt", "warehouse", "dispatch-rules", "moderation", "compliance", "smart-notifs", "notif-center", "ai-planning", "green-delivery", "fleet-system", "order-bundle", "tracking-portal", "proof-delivery", "seller-rating", "address-book", "delivery-kpi", "maint-sched", "payout-reports", "reputation", "optimize", "buyer", "customer-track", "live-chat", "support-bot", "returns", "returns-mgmt", "invoices", "payroll", "notif-rules", "api-webhooks"] as const).map(f => {
+        {(["all", "active", "completed", "batch", "multi-drop", "multistop", "route-planner", "scheduled", "schedule-cal", "slot-booking", "history", "disputes", "analytics", "reports", "adv-analytics", "seller-stats", "sla", "sla-alerts", "surge", "multi-currency", "zone-pricing", "zones-mgr", "promo-coupons", "route-optim", "insurance", "insurance-claims", "onboarding", "driver-reg", "driver-portal", "driver-onboard", "driver-analytics", "job-marketplace", "referral", "gamification", "shifts", "shift-scheduler", "wallet", "customer-loyalty", "geofence", "fleet", "fleet-gps", "fleet-hub", "fleet-mgmt", "warehouse", "dispatch-rules", "moderation", "compliance", "smart-notifs", "notif-center", "ai-planning", "green-delivery", "fleet-system", "order-bundle", "tracking-portal", "live-tracking", "proof-delivery", "seller-rating", "address-book", "delivery-kpi", "maint-sched", "payout-reports", "reputation", "optimize", "buyer", "customer-track", "live-chat", "support-bot", "returns", "returns-mgmt", "invoices", "payroll", "notif-rules", "api-webhooks"] as const).map(f => {
           const labels: Record<string, string> = {
             all: "Tout", active: "Actives", completed: "Terminées", batch: "⚡ Batch",
             "multi-drop": "📦 Multi-Drop",
@@ -342,6 +346,7 @@ export default function SellerLogisticsPanel() {
             "seller-rating": "⭐ Rating", "address-book": "📍 Adresses", "delivery-kpi": "📊 KPIs", "maint-sched": "🔧 Maintenance",
             "driver-onboard": "🚀 Inscription+", "notif-center": "🔔 Notifs+", "payout-reports": "💰 Rapports$", "zones-mgr": "🗺️ Zones+",
             "proof-delivery": "📸 Preuve+", "driver-analytics": "📊 Driver Stats", "sla-alerts": "🚨 SLA Alertes", "job-marketplace": "🏪 Marketplace",
+            "fleet-gps": "📡 GPS Fleet", "insurance-claims": "🛡️ Réclamations", "shift-scheduler": "📅 Shifts+", "live-tracking": "📲 Live Track",
           };
           return (
             <button key={f} onClick={() => setFilter(f)}
@@ -489,6 +494,14 @@ export default function SellerLogisticsPanel() {
         <SLAAlertSystem orgId={jobs[0]?.org_id || ""} />
       ) : filter === "job-marketplace" ? (
         <DriverJobMarketplace />
+      ) : filter === "fleet-gps" ? (
+        <FleetGPSTracker orgId={jobs[0]?.org_id || ""} />
+      ) : filter === "insurance-claims" ? (
+        <DeliveryInsuranceClaims orgId={jobs[0]?.org_id || ""} />
+      ) : filter === "shift-scheduler" ? (
+        <DriverShiftScheduler orgId={jobs[0]?.org_id || ""} />
+      ) : filter === "live-tracking" ? (
+        <CustomerLiveTracking />
       ) : (
       <div className="space-y-2">
         {loading ? (
