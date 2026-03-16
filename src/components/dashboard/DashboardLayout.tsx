@@ -110,6 +110,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
       items: [
         { icon: Store, label: t("nav.marketplace") || "Services & Concierge", path: "/dashboard/activities" },
         { icon: Zap, label: t("nav.seller_hub") || "Seller Hub", path: "/dashboard/seller" },
+        { icon: Layers, label: "My Shop", path: "/dashboard/my-shop" },
       ],
     },
 
@@ -123,6 +124,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
         { icon: Wallet, label: "Wallet", path: "/dashboard/wallet" },
         { icon: BarChart3, label: t("nav.deal_analytics") || "Deal Analytics", path: "/dashboard/deals" },
         { icon: Compass, label: t("nav.live_tracking") || "Live Tracking", path: "/dashboard/tracking" },
+        { icon: Globe, label: "Discover", path: "/discover" },
       ],
     },
 

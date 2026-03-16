@@ -288,6 +288,9 @@ const MP_KEYS_EN: Record<string, string> = {
   // Booking form extras (complete)
   "mp.booking_summary_service": "Service",
   "mp.review_window_note": "Reviews can be submitted within 30 days of completion",
+  "mp.quick_actions": "Quick Actions",
+  "mp.view_storefront": "View Storefront",
+  "mp.manage_bookings": "Bookings",
 };
 
 export const marketplaceI18n: Record<string, Record<string, string>> = {
@@ -467,6 +470,9 @@ export const marketplaceI18n: Record<string, Record<string, string>> = {
     "payment.bank_transfer_desc": "Paiement par virement / IBAN",
     "payment.paypal_desc": "Payer avec PayPal",
     "mp.review_window_note": "Les avis peuvent être soumis dans les 30 jours suivant la complétion",
+    "mp.quick_actions": "Actions rapides",
+    "mp.view_storefront": "Voir la vitrine",
+    "mp.manage_bookings": "Réservations",
   },
   en: { ...MP_KEYS_EN },
   es: {
