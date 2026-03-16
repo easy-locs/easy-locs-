@@ -2,7 +2,8 @@
  * Performance utilities for Easy-Locs
  * - Route prefetching on idle
  * - Image lazy loading helper
- * - Debounced callback
+ * - Debounced/throttled callbacks
+ * - Render performance monitoring
  */
 
 /** Prefetch a route's chunk during idle time */
@@ -18,10 +19,10 @@ export function prefetchRoute(importFn: () => Promise<unknown>): void {
   }
 }
 
-/** Prefetch multiple routes */
+/** Prefetch multiple routes with stagger */
 export function prefetchRoutes(importFns: Array<() => Promise<unknown>>): void {
   importFns.forEach((fn, i) => {
-    const delay = i * 200; // stagger to avoid network contention
+    const delay = i * 200;
     setTimeout(() => prefetchRoute(fn), delay);
   });
 }
@@ -64,11 +65,10 @@ export function throttle<T extends (...args: any[]) => any>(
 
 /** Generate optimized image srcSet for responsive loading */
 export function imageSrcSet(url: string, widths: number[] = [320, 640, 960, 1280]): string {
-  // For Supabase storage URLs, append width transform
   if (url.includes("supabase") && url.includes("/storage/")) {
     return widths.map(w => `${url}?width=${w} ${w}w`).join(", ");
   }
-  return ""; // no transform available for external URLs
+  return "";
 }
 
 /** Measure a function's execution time (dev only) */
@@ -77,10 +77,105 @@ export function measurePerf<T>(label: string, fn: () => T): T {
     const start = performance.now();
     const result = fn();
     const elapsed = performance.now() - start;
-    if (elapsed > 16) { // Only log slow operations (>1 frame)
+    if (elapsed > 16) {
       console.warn(`[perf] ${label}: ${elapsed.toFixed(1)}ms`);
     }
     return result;
   }
   return fn();
+}
+
+/* ─── Render Performance ─── */
+
+/**
+ * Track render counts in dev mode.
+ * Usage: useRenderCount("MyComponent") in component body.
+ */
+export function useRenderCount(componentName: string): void {
+  if (!import.meta.env.DEV) return;
+  const countRef = { current: 0 };
+  countRef.current++;
+  if (countRef.current > 50) {
+    console.warn(`[perf] ${componentName} rendered ${countRef.current} times — possible infinite loop`);
+  }
+}
+
+/**
+ * Schedule non-critical work during idle time.
+ * Falls back to setTimeout on unsupported browsers.
+ */
+export function scheduleIdle(fn: () => void, timeout = 5000): void {
+  if (typeof window === "undefined") return;
+  if ("requestIdleCallback" in window) {
+    window.requestIdleCallback(fn, { timeout });
+  } else {
+    setTimeout(fn, 100);
+  }
+}
+
+/**
+ * Batch multiple DOM reads to avoid layout thrashing.
+ * Queues reads for the next animation frame.
+ */
+const readQueue: Array<() => void> = [];
+let readScheduled = false;
+
+export function batchDOMRead(fn: () => void): void {
+  readQueue.push(fn);
+  if (!readScheduled) {
+    readScheduled = true;
+    requestAnimationFrame(() => {
+      const batch = readQueue.splice(0);
+      batch.forEach(f => f());
+      readScheduled = false;
+    });
+  }
+}
+
+/**
+ * Detect slow network conditions.
+ * Returns true if the user is on a slow connection (2G, slow-2G, save-data).
+ */
+export function isSlowConnection(): boolean {
+  if (typeof navigator === "undefined") return false;
+  const conn = (navigator as any).connection;
+  if (!conn) return false;
+  if (conn.saveData) return true;
+  if (conn.effectiveType === "slow-2g" || conn.effectiveType === "2g") return true;
+  return false;
+}
+
+/**
+ * Create a memory-efficient LRU cache for expensive computations.
+ */
+export function createLRUCache<K, V>(maxSize: number) {
+  const cache = new Map<K, V>();
+
+  return {
+    get(key: K): V | undefined {
+      if (!cache.has(key)) return undefined;
+      const value = cache.get(key)!;
+      // Move to end (most recently used)
+      cache.delete(key);
+      cache.set(key, value);
+      return value;
+    },
+    set(key: K, value: V): void {
+      if (cache.has(key)) cache.delete(key);
+      cache.set(key, value);
+      if (cache.size > maxSize) {
+        const firstKey = cache.keys().next().value;
+        if (firstKey !== undefined) cache.delete(firstKey);
+      }
+    },
+    has(key: K): boolean {
+      return cache.has(key);
+    },
+    clear(): void {
+      cache.clear();
+    },
+    get size() {
+      return cache.size;
+    },
+  };
 }
