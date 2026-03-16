@@ -32,6 +32,15 @@ const runDeferredInit = () => {
   void import("./lib/monitoring")
     .then((mod) => mod?.initMonitoring?.())
     .catch((e) => console.debug("[boot] monitoring skipped:", e));
+
+  // Prefetch critical routes after boot settles
+  void import("./lib/performance").then(({ prefetchRoutes }) => {
+    prefetchRoutes([
+      () => import("./pages/Dashboard"),
+      () => import("./pages/Login"),
+      () => import("./pages/CommunicationCenter"),
+    ]);
+  }).catch(() => {});
 };
 
 if (typeof window !== "undefined") {
