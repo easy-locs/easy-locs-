@@ -88,8 +88,14 @@ export default function WalletBalanceCard({
         {/* Balance + Toggle */}
         <div className="flex items-end gap-3">
           <p className="text-4xl font-black text-primary-foreground tracking-tight">
-            {loading ? "..." : displayBalance}
+            {loading ? "..." : isGhost ? "••••••" : displayBalance}
           </p>
+          {isGhost && (
+            <span className="flex items-center gap-1 mb-1 px-2 py-0.5 rounded-full text-primary-foreground/40" style={{ background: "hsl(0 0% 100% / 0.08)" }}>
+              <Ghost className="w-3 h-3" />
+              <span className="text-[9px] font-medium">Hidden</span>
+            </span>
+          )}
           <button
             onClick={onToggle}
             className="flex items-center gap-1 mb-1 px-2 py-0.5 rounded-full text-primary-foreground/70 hover:text-primary-foreground transition-colors"
