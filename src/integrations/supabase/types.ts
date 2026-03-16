@@ -7859,6 +7859,131 @@ export type Database = {
           },
         ]
       }
+      storefront_digital_products: {
+        Row: {
+          active: boolean | null
+          created_at: string | null
+          currency: string | null
+          description: string | null
+          download_limit: number | null
+          file_size_bytes: number | null
+          file_url: string | null
+          id: string
+          license_type: string | null
+          photo_url: string | null
+          preview_url: string | null
+          price: number
+          product_type: string | null
+          shop_id: string
+          title: string
+          total_sales: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          active?: boolean | null
+          created_at?: string | null
+          currency?: string | null
+          description?: string | null
+          download_limit?: number | null
+          file_size_bytes?: number | null
+          file_url?: string | null
+          id?: string
+          license_type?: string | null
+          photo_url?: string | null
+          preview_url?: string | null
+          price?: number
+          product_type?: string | null
+          shop_id: string
+          title: string
+          total_sales?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          active?: boolean | null
+          created_at?: string | null
+          currency?: string | null
+          description?: string | null
+          download_limit?: number | null
+          file_size_bytes?: number | null
+          file_url?: string | null
+          id?: string
+          license_type?: string | null
+          photo_url?: string | null
+          preview_url?: string | null
+          price?: number
+          product_type?: string | null
+          shop_id?: string
+          title?: string
+          total_sales?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "storefront_digital_products_shop_id_fkey"
+            columns: ["shop_id"]
+            isOneToOne: false
+            referencedRelation: "storefront_pages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      storefront_digital_purchases: {
+        Row: {
+          buyer_id: string
+          created_at: string | null
+          download_count: number | null
+          expires_at: string | null
+          id: string
+          license_key: string | null
+          max_downloads: number | null
+          product_id: string
+          shop_id: string
+          status: string | null
+        }
+        Insert: {
+          buyer_id: string
+          created_at?: string | null
+          download_count?: number | null
+          expires_at?: string | null
+          id?: string
+          license_key?: string | null
+          max_downloads?: number | null
+          product_id: string
+          shop_id: string
+          status?: string | null
+        }
+        Update: {
+          buyer_id?: string
+          created_at?: string | null
+          download_count?: number | null
+          expires_at?: string | null
+          id?: string
+          license_key?: string | null
+          max_downloads?: number | null
+          product_id?: string
+          shop_id?: string
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "storefront_digital_purchases_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "storefront_digital_products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "storefront_digital_purchases_shop_id_fkey"
+            columns: ["shop_id"]
+            isOneToOne: false
+            referencedRelation: "storefront_pages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       storefront_faq: {
         Row: {
           answer: string
@@ -9048,6 +9173,136 @@ export type Database = {
           },
         ]
       }
+      storefront_p2p_listings: {
+        Row: {
+          category: string | null
+          condition: string | null
+          created_at: string | null
+          currency: string | null
+          description: string | null
+          escrow_enabled: boolean | null
+          id: string
+          location_city: string | null
+          location_country: string | null
+          photo_urls: Json | null
+          price: number
+          seller_id: string
+          shop_id: string
+          status: string | null
+          title: string
+          updated_at: string | null
+          verified_seller: boolean | null
+          views_count: number | null
+        }
+        Insert: {
+          category?: string | null
+          condition?: string | null
+          created_at?: string | null
+          currency?: string | null
+          description?: string | null
+          escrow_enabled?: boolean | null
+          id?: string
+          location_city?: string | null
+          location_country?: string | null
+          photo_urls?: Json | null
+          price: number
+          seller_id: string
+          shop_id: string
+          status?: string | null
+          title: string
+          updated_at?: string | null
+          verified_seller?: boolean | null
+          views_count?: number | null
+        }
+        Update: {
+          category?: string | null
+          condition?: string | null
+          created_at?: string | null
+          currency?: string | null
+          description?: string | null
+          escrow_enabled?: boolean | null
+          id?: string
+          location_city?: string | null
+          location_country?: string | null
+          photo_urls?: Json | null
+          price?: number
+          seller_id?: string
+          shop_id?: string
+          status?: string | null
+          title?: string
+          updated_at?: string | null
+          verified_seller?: boolean | null
+          views_count?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "storefront_p2p_listings_shop_id_fkey"
+            columns: ["shop_id"]
+            isOneToOne: false
+            referencedRelation: "storefront_pages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      storefront_p2p_transactions: {
+        Row: {
+          amount: number
+          buyer_confirmed: boolean | null
+          buyer_id: string
+          completed_at: string | null
+          created_at: string | null
+          currency: string | null
+          dispute_reason: string | null
+          escrow_status: string | null
+          id: string
+          listing_id: string
+          seller_id: string
+          seller_shipped: boolean | null
+          status: string | null
+          tracking_number: string | null
+        }
+        Insert: {
+          amount: number
+          buyer_confirmed?: boolean | null
+          buyer_id: string
+          completed_at?: string | null
+          created_at?: string | null
+          currency?: string | null
+          dispute_reason?: string | null
+          escrow_status?: string | null
+          id?: string
+          listing_id: string
+          seller_id: string
+          seller_shipped?: boolean | null
+          status?: string | null
+          tracking_number?: string | null
+        }
+        Update: {
+          amount?: number
+          buyer_confirmed?: boolean | null
+          buyer_id?: string
+          completed_at?: string | null
+          created_at?: string | null
+          currency?: string | null
+          dispute_reason?: string | null
+          escrow_status?: string | null
+          id?: string
+          listing_id?: string
+          seller_id?: string
+          seller_shipped?: boolean | null
+          status?: string | null
+          tracking_number?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "storefront_p2p_transactions_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "storefront_p2p_listings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       storefront_pages: {
         Row: {
           active: boolean | null
@@ -9550,6 +9805,115 @@ export type Database = {
           },
         ]
       }
+      storefront_rfq_quotes: {
+        Row: {
+          created_at: string | null
+          currency: string | null
+          delivery_days: number | null
+          id: string
+          message: string | null
+          price: number
+          rfq_id: string
+          selected: boolean | null
+          status: string | null
+          vendor_id: string
+          vendor_name: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          currency?: string | null
+          delivery_days?: number | null
+          id?: string
+          message?: string | null
+          price: number
+          rfq_id: string
+          selected?: boolean | null
+          status?: string | null
+          vendor_id: string
+          vendor_name?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          currency?: string | null
+          delivery_days?: number | null
+          id?: string
+          message?: string | null
+          price?: number
+          rfq_id?: string
+          selected?: boolean | null
+          status?: string | null
+          vendor_id?: string
+          vendor_name?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "storefront_rfq_quotes_rfq_id_fkey"
+            columns: ["rfq_id"]
+            isOneToOne: false
+            referencedRelation: "storefront_rfqs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      storefront_rfqs: {
+        Row: {
+          budget_max: number | null
+          buyer_id: string
+          category: string | null
+          created_at: string | null
+          currency: string | null
+          deadline: string | null
+          description: string | null
+          id: string
+          quantity: number | null
+          shop_id: string
+          status: string
+          title: string
+          updated_at: string | null
+          winning_quote_id: string | null
+        }
+        Insert: {
+          budget_max?: number | null
+          buyer_id: string
+          category?: string | null
+          created_at?: string | null
+          currency?: string | null
+          deadline?: string | null
+          description?: string | null
+          id?: string
+          quantity?: number | null
+          shop_id: string
+          status?: string
+          title: string
+          updated_at?: string | null
+          winning_quote_id?: string | null
+        }
+        Update: {
+          budget_max?: number | null
+          buyer_id?: string
+          category?: string | null
+          created_at?: string | null
+          currency?: string | null
+          deadline?: string | null
+          description?: string | null
+          id?: string
+          quantity?: number | null
+          shop_id?: string
+          status?: string
+          title?: string
+          updated_at?: string | null
+          winning_quote_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "storefront_rfqs_shop_id_fkey"
+            columns: ["shop_id"]
+            isOneToOne: false
+            referencedRelation: "storefront_pages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       storefront_shipments: {
         Row: {
           carrier: string | null
@@ -9950,6 +10314,125 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      storefront_sub_box_enrollments: {
+        Row: {
+          box_id: string
+          cancelled_at: string | null
+          created_at: string | null
+          delivery_count: number | null
+          id: string
+          last_delivery_at: string | null
+          next_delivery_at: string | null
+          paused_at: string | null
+          shipping_address: string | null
+          shop_id: string
+          status: string
+          subscriber_id: string
+        }
+        Insert: {
+          box_id: string
+          cancelled_at?: string | null
+          created_at?: string | null
+          delivery_count?: number | null
+          id?: string
+          last_delivery_at?: string | null
+          next_delivery_at?: string | null
+          paused_at?: string | null
+          shipping_address?: string | null
+          shop_id: string
+          status?: string
+          subscriber_id: string
+        }
+        Update: {
+          box_id?: string
+          cancelled_at?: string | null
+          created_at?: string | null
+          delivery_count?: number | null
+          id?: string
+          last_delivery_at?: string | null
+          next_delivery_at?: string | null
+          paused_at?: string | null
+          shipping_address?: string | null
+          shop_id?: string
+          status?: string
+          subscriber_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "storefront_sub_box_enrollments_box_id_fkey"
+            columns: ["box_id"]
+            isOneToOne: false
+            referencedRelation: "storefront_sub_boxes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "storefront_sub_box_enrollments_shop_id_fkey"
+            columns: ["shop_id"]
+            isOneToOne: false
+            referencedRelation: "storefront_pages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      storefront_sub_boxes: {
+        Row: {
+          active: boolean | null
+          created_at: string | null
+          currency: string | null
+          description: string | null
+          frequency: string
+          id: string
+          item_count: number | null
+          name: string
+          photo_url: string | null
+          price: number
+          shop_id: string
+          sort_order: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          active?: boolean | null
+          created_at?: string | null
+          currency?: string | null
+          description?: string | null
+          frequency?: string
+          id?: string
+          item_count?: number | null
+          name: string
+          photo_url?: string | null
+          price?: number
+          shop_id: string
+          sort_order?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          active?: boolean | null
+          created_at?: string | null
+          currency?: string | null
+          description?: string | null
+          frequency?: string
+          id?: string
+          item_count?: number | null
+          name?: string
+          photo_url?: string | null
+          price?: number
+          shop_id?: string
+          sort_order?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "storefront_sub_boxes_shop_id_fkey"
+            columns: ["shop_id"]
+            isOneToOne: false
+            referencedRelation: "storefront_pages"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       storefront_subscription_orders: {
         Row: {
