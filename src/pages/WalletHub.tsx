@@ -21,6 +21,7 @@ import OrbitQRCode from "@/components/orbit/payments/OrbitQRCode";
 import OrbitTransactionHistory from "@/components/orbit/payments/OrbitTransactionHistory";
 import OrbitWalletPanel from "@/components/orbit/payments/OrbitWalletPanel";
 import WalletBalanceCard from "@/components/wallet/WalletBalanceCard";
+import WalletSecurityPanel from "@/components/wallet/WalletSecurityPanel";
 import WalletActionGrid from "@/components/wallet/WalletActionGrid";
 
 export type WalletView = "home" | "send" | "receive" | "scan" | "my_qr" | "history" | "buy" | "currency" | "settings";
