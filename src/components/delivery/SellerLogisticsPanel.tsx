@@ -256,15 +256,15 @@ export default function SellerLogisticsPanel() {
       </AnimatePresence>
 
       {/* Filter tabs */}
-      <div className="flex gap-1 p-1 rounded-xl" style={{ background: "hsl(var(--hud-surface))" }}>
-        {(["all", "active", "completed", "batch", "disputes", "analytics"] as const).map(f => (
+      <div className="flex gap-1 p-1 rounded-xl overflow-x-auto" style={{ background: "hsl(var(--hud-surface))" }}>
+        {(["all", "active", "completed", "batch", "scheduled", "history", "disputes", "analytics"] as const).map(f => (
           <button key={f} onClick={() => setFilter(f)}
-            className="flex-1 py-1.5 rounded-lg text-[10px] font-semibold transition-all"
+            className="shrink-0 py-1.5 px-2 rounded-lg text-[9px] font-semibold transition-all"
             style={{
               background: filter === f ? "hsl(var(--hud-cyan) / 0.12)" : "transparent",
               color: filter === f ? "hsl(var(--hud-cyan))" : "hsl(var(--hud-text-dim) / 0.5)",
             }}>
-            {f === "all" ? `Tout` : f === "active" ? `Actives` : f === "completed" ? `Terminées` : f === "batch" ? "⚡ Batch" : f === "disputes" ? "⚠️ Litiges" : "📊 Stats"}
+            {f === "all" ? "Tout" : f === "active" ? "Actives" : f === "completed" ? "Terminées" : f === "batch" ? "⚡ Batch" : f === "scheduled" ? "📅 Planif." : f === "history" ? "📋 Histo." : f === "disputes" ? "⚠️ Litiges" : "📊 Stats"}
           </button>
         ))}
       </div>
@@ -276,6 +276,10 @@ export default function SellerLogisticsPanel() {
         <DeliveryDisputeFlow orgId={jobs[0]?.org_id || ""} />
       ) : filter === "batch" ? (
         <BatchDispatchPanel jobs={jobs} onDone={() => setFilter("all")} />
+      ) : filter === "scheduled" ? (
+        <ScheduledDeliveryPanel onDone={() => setFilter("all")} />
+      ) : filter === "history" ? (
+        <DeliveryHistoryExport jobs={jobs} loading={loading} />
       ) : (
       <div className="space-y-2">
         {loading ? (
