@@ -234,7 +234,7 @@ const ReportingDashboard = () => {
                 <TabsContent value="overview" className="space-y-4">
                   <Card>
                     <CardHeader>
-                      <CardTitle className="text-base">Évolution mensuelle</CardTitle>
+                      <CardTitle className="text-base">{t("page.reporting.monthly_evolution")}</CardTitle>
                     </CardHeader>
                     <CardContent>
                       <ChartContainer config={chartConfig} className="h-[280px] w-full">
