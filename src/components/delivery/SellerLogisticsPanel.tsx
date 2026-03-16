@@ -91,6 +91,10 @@ import SmartCapacityPlanning from "@/components/delivery/SmartCapacityPlanning";
 import MultiVendorMarketplace from "@/components/delivery/MultiVendorMarketplace";
 import QualityAssuranceSystem from "@/components/delivery/QualityAssuranceSystem";
 import CustomerExperienceHub from "@/components/delivery/CustomerExperienceHub";
+import EVFleetIntelligence from "@/components/delivery/EVFleetIntelligence";
+import FranchiseManagement from "@/components/delivery/FranchiseManagement";
+import CrossBorderLogistics from "@/components/delivery/CrossBorderLogistics";
+import RealTimeDataHub from "@/components/delivery/RealTimeDataHub";
 import { useDeliveryNotifications } from "@/hooks/useDeliveryNotifications";
 import { motion, AnimatePresence } from "framer-motion";
 import {
