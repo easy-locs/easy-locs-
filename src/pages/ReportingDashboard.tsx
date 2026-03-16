@@ -225,9 +225,9 @@ const ReportingDashboard = () => {
 
               <Tabs defaultValue="overview" className="space-y-4">
                 <TabsList className="grid w-full grid-cols-3">
-                  <TabsTrigger value="overview">Vue d'ensemble</TabsTrigger>
-                  <TabsTrigger value="properties">Par bien</TabsTrigger>
-                  <TabsTrigger value="expenses">Dépenses</TabsTrigger>
+                  <TabsTrigger value="overview">{t("page.reporting.overview")}</TabsTrigger>
+                  <TabsTrigger value="properties">{t("page.reporting.by_property")}</TabsTrigger>
+                  <TabsTrigger value="expenses">{t("page.reporting.expenses_tab")}</TabsTrigger>
                 </TabsList>
 
                 {/* Overview Tab */}
