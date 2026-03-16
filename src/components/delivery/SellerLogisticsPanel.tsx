@@ -342,6 +342,14 @@ export default function SellerLogisticsPanel() {
         <DriverOnboardingWizard onComplete={() => setFilter("all")} />
       ) : filter === "reports" ? (
         <DeliveryAnalyticsReports orgId={jobs[0]?.org_id || ""} />
+      ) : filter === "fleet-mgmt" ? (
+        <FleetManagementDashboard orgId={jobs[0]?.org_id || ""} />
+      ) : filter === "dispatch-rules" ? (
+        <AutomatedDispatchRules orgId={jobs[0]?.org_id || ""} />
+      ) : filter === "customer-track" ? (
+        <CustomerTrackingPage />
+      ) : filter === "payroll" ? (
+        <DriverEarningsPayroll />
       ) : (
       <div className="space-y-2">
         {loading ? (
