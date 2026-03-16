@@ -9916,11 +9916,14 @@ export type Database = {
       }
       storefront_shipments: {
         Row: {
+          buyer_id: string | null
           carrier: string | null
           created_at: string | null
           currency: string | null
           delivered_at: string | null
+          destination_country: string | null
           estimated_delivery: string | null
+          events_json: Json | null
           id: string
           notes: string | null
           order_id: string
@@ -9935,11 +9938,14 @@ export type Database = {
           weight_kg: number | null
         }
         Insert: {
+          buyer_id?: string | null
           carrier?: string | null
           created_at?: string | null
           currency?: string | null
           delivered_at?: string | null
+          destination_country?: string | null
           estimated_delivery?: string | null
+          events_json?: Json | null
           id?: string
           notes?: string | null
           order_id: string
@@ -9954,11 +9960,14 @@ export type Database = {
           weight_kg?: number | null
         }
         Update: {
+          buyer_id?: string | null
           carrier?: string | null
           created_at?: string | null
           currency?: string | null
           delivered_at?: string | null
+          destination_country?: string | null
           estimated_delivery?: string | null
+          events_json?: Json | null
           id?: string
           notes?: string | null
           order_id?: string
