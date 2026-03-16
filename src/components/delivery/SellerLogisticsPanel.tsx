@@ -308,6 +308,7 @@ export default function SellerLogisticsPanel() {
             payroll: "💶 Paie", "notif-rules": "🔔 Notifs",
             reputation: "🏆 Réputation", optimize: "⚡ Optim.", buyer: "👤 Client", invoices: "🧾 Factures",
             "multi-currency": "💱 Devises", "route-optim": "🧭 Routes", insurance: "🛡️ Assurance", "adv-analytics": "📊 Analytics+",
+            "fleet-hub": "🚐 Fleet Hub", gamification: "🎮 Gamification", "smart-notifs": "🧠 Smart Notifs", "api-webhooks": "🔌 API",
           };
           return (
             <button key={f} onClick={() => setFilter(f)}
