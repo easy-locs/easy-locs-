@@ -341,8 +341,20 @@ export default function ShopPage() {
             </div>
           )}
 
+          {/* Bundles section */}
+          <div className="mt-6">
+            <BundleManager shopId={shop.id} mode="display" onAddBundle={(bundleId, price) => cart.addItem(bundleId, price)} />
+          </div>
+
+          {/* Loyalty section */}
+          {user && (
+            <div className="mt-4">
+              <LoyaltyDashboard shopId={shop.id} mode="buyer" />
+            </div>
+          )}
+
           {/* Reviews section */}
-          <div className="mt-8">
+          <div className="mt-6">
             <ShopReviews shopId={shop.id} shopOwnerId={shop.user_id} />
           </div>
         </div>
