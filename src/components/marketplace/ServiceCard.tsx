@@ -3,7 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { getCategoryInfo } from "./MarketplaceCategories";
-import { MapPin, Clock, Users, Star, Share2, Copy, Calendar, ChevronUp, ChevronLeft, ChevronRight, CheckCircle2, MessageSquare, Briefcase } from "lucide-react";
+import { MapPin, Clock, Users, Star, Share2, Copy, Calendar, ChevronUp, ChevronLeft, ChevronRight, CheckCircle2, MessageSquare, Briefcase, Play } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { getShareLinks, sharePage } from "@/lib/social-share";
 import { toast } from "sonner";
@@ -104,6 +104,11 @@ export default function ServiceCard({ service, provider, onBook, onEdit, showAct
           )}
           {service.requires_id_document && (
             <Badge variant="outline" className="absolute top-2.5 right-2.5 text-[10px] bg-background/80 backdrop-blur-sm border-0 shadow-sm">🪪 ID</Badge>
+          )}
+          {service.video_url && (
+            <span className="absolute bottom-2.5 right-2.5 flex items-center gap-1 bg-background/80 backdrop-blur-sm text-[10px] font-semibold px-2 py-1 rounded-full shadow-sm">
+              <Play className="w-3 h-3" /> Video
+            </span>
           )}
         </div>
       ) : (

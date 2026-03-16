@@ -226,3 +226,14 @@ Conversation → Offer → Counter offer → Accepted → Payment → Confirmed
 | Transaction receipt generator | wallet-export.ts: printable receipt with reference code, FX details | ✅ Done |
 | Wallet security dashboard | WalletSecurityPanel: PIN status, atomic transfer status, daily limit progress bar, export button | ✅ Done |
 | WalletHub settings upgraded | Settings view replaced with full WalletSecurityPanel | ✅ Done |
+
+## PASS55 Block E — Seller / Video / Live
+| Feature | Implementation | Status |
+|---------|---------------|--------|
+| Seller Dashboard panel | SellerDashboardPanel: stats grid, quick actions, live indicator | ✅ Done |
+| Video showcase component | VideoShowcase: YouTube/Vimeo embed + direct mp4/webm, play overlay | ✅ Done |
+| video_url column | Migration: marketplace_services.video_url text | ✅ Done |
+| Live status columns | Migration: marketplace_providers.is_live bool + live_since timestamptz | ✅ Done |
+| LiveBadge component | Pulsing red LIVE badge, sm/md sizes | ✅ Done |
+| Storefront live badge | LiveBadge integrated in ProviderStorefront hero header | ✅ Done |
+| ServiceCard video indicator | Play badge on service cards with video_url | ✅ Done |
