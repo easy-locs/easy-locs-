@@ -250,14 +250,14 @@ export default function SellerLogisticsPanel() {
 
       {/* Filter tabs */}
       <div className="flex gap-1 p-1 rounded-xl" style={{ background: "hsl(var(--hud-surface))" }}>
-        {(["all", "active", "completed"] as const).map(f => (
+        {(["all", "active", "completed", "analytics"] as const).map(f => (
           <button key={f} onClick={() => setFilter(f)}
             className="flex-1 py-1.5 rounded-lg text-[10px] font-semibold transition-all"
             style={{
               background: filter === f ? "hsl(var(--hud-cyan) / 0.12)" : "transparent",
               color: filter === f ? "hsl(var(--hud-cyan))" : "hsl(var(--hud-text-dim) / 0.5)",
             }}>
-            {f === "all" ? `Tout (${jobs.length})` : f === "active" ? `Actives (${metrics.active})` : `Terminées (${metrics.completed + metrics.cancelled})`}
+            {f === "all" ? `Tout (${jobs.length})` : f === "active" ? `Actives (${metrics.active})` : f === "completed" ? `Terminées` : "📊 Analytics"}
           </button>
         ))}
       </div>
