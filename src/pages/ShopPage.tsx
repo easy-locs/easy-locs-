@@ -446,7 +446,7 @@ export default function ShopPage() {
                   <span className="font-bold text-lg">{fx.formatPrice(finalTotal, shop.currency)}</span>
                 </div>
                 <Button className="w-full h-12 font-semibold" onClick={handleCheckout}>
-                  Place Order
+                  Checkout
                 </Button>
               </div>
             </SheetContent>
