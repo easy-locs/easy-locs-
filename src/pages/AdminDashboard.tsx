@@ -411,6 +411,20 @@ const AdminDashboard = () => {
               </div>
             )}
 
+            {/* Team Tab */}
+            {activeTab === "team" && (
+              <Suspense fallback={<div className="text-center py-20 text-muted-foreground">Loading…</div>}>
+                <OrgMemberManager />
+              </Suspense>
+            )}
+
+            {/* Moderation Tab */}
+            {activeTab === "moderation" && (
+              <Suspense fallback={<div className="text-center py-20 text-muted-foreground">Loading…</div>}>
+                <ModerationPanel />
+              </Suspense>
+            )}
+
             {/* Health Tab */}
             {activeTab === "health" && (
               <Suspense fallback={<div className="text-center py-20 text-muted-foreground">Loading health dashboard…</div>}>
