@@ -740,7 +740,10 @@ export default function DealRoomPanel({
                         : ev.event_type === "visit_scheduled"
                         ? `📅 Visit: ${data.date || "TBD"}`
                         : ev.event_type === "payment"
-                        ? `💳 ${data.action === "payment_request_sent" ? "Payment requested" : "Payment event"}`
+                        ? data.action === "payment_request_sent" ? "💳 Payment requested"
+                          : data.action === "stripe_checkout_created" ? `💳 Payment link generated — ${fmtCurrency(data.amount, data.currency)}`
+                          : data.action === "payment_confirmed" ? `✅ Payment confirmed — ${fmtCurrency(data.amount, data.currency)}`
+                          : "💳 Payment event"
                         : ev.event_type.replace(/_/g, " ")}
                     </p>
                     {data.message && (
