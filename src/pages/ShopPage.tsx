@@ -21,8 +21,9 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Loader2, MapPin, ShoppingCart, Plus, Minus, Trash2, Phone, Mail, MessageCircle, Send, CheckCircle2, Store, Tag, X, Heart, Globe } from "lucide-react";
-import { useState, lazy, Suspense } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 import { toast } from "sonner";
+import { useStorefrontAnalytics } from "@/hooks/useStorefrontAnalytics";
 
 // Lazy-loaded secondary sections — only loaded when scrolled into view or needed
 const ShopReviews = lazy(() => import("@/components/storefront/ShopReviews"));
