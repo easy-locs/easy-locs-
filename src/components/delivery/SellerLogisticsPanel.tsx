@@ -103,6 +103,10 @@ import DroneDelivery from "@/components/delivery/DroneDelivery";
 import BlockchainTraceability from "@/components/delivery/BlockchainTraceability";
 import DriverTrainingAcademy from "@/components/delivery/DriverTrainingAcademy";
 import CrowdDeliveryNetwork from "@/components/delivery/CrowdDeliveryNetwork";
+import SmartLockerNetwork from "@/components/delivery/SmartLockerNetwork";
+import CarbonOffsetEngine from "@/components/delivery/CarbonOffsetEngine";
+import MultiModalTransport from "@/components/delivery/MultiModalTransport";
+import DeliveryMarketplace from "@/components/delivery/DeliveryMarketplace";
 import { useDeliveryNotifications } from "@/hooks/useDeliveryNotifications";
 import { motion, AnimatePresence } from "framer-motion";
 import {
