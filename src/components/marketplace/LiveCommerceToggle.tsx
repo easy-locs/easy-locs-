@@ -118,7 +118,7 @@ export default function LiveCommerceToggle({ providerId, isLive, liveSince, onSt
           checked={live}
           onCheckedChange={() => toggle()}
           disabled={toggling}
-          className="data-[state=checked]:bg-red-500"
+          className="data-[state=checked]:bg-destructive"
         />
       </div>
 
