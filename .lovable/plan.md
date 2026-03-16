@@ -316,3 +316,15 @@ Conversation → Offer → Counter offer → Accepted → Payment → Confirmed
 | Webhook management UI | DeveloperPortal: create/delete/toggle webhooks, event selector, delivery logs | ✅ Pre-existing |
 | API documentation tab | Inline endpoint reference, auth guide, webhook signature verification examples | ✅ Done |
 | Dynamic base URL in docs | Examples use actual project URL instead of placeholder | ✅ Done |
+
+## PASS55 Block M — Client Portal v2
+| Feature | Implementation | Status |
+|---------|---------------|--------|
+| ClientDashboard enhanced | Real stats (bookings, unread messages, documents, payments) from all providers | ✅ Done |
+| Unified activity timeline | Recent activity from bookings, concierge, messages aggregated with time-relative display | ✅ Done |
+| ClientDocuments fully implemented | Fetches tenant-linked documents, concierge order docs, booking request docs with tabs | ✅ Done |
+| Document view/download | Eye + Download buttons for PDFs, doc type badges | ✅ Done |
+| Multi-provider aggregation | Dashboard, Bookings, Payments, Documents all aggregate across seasonal, concierge, marketplace | ✅ Done |
+| ClientMessages verified | Full chat with realtime, media, voice, reply, forward, thread actions, search, archive | ✅ Pre-existing |
+| ClientPayments verified | Concierge + marketplace payments with status badges | ✅ Pre-existing |
+| ClientSettings verified | Profile form, app prefs, pro settings, upgrade CTA | ✅ Pre-existing |
