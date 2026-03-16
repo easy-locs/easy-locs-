@@ -346,6 +346,7 @@ export default function SellerLogisticsPanel() {
             "seller-rating": "⭐ Rating", "address-book": "📍 Adresses", "delivery-kpi": "📊 KPIs", "maint-sched": "🔧 Maintenance",
             "driver-onboard": "🚀 Inscription+", "notif-center": "🔔 Notifs+", "payout-reports": "💰 Rapports$", "zones-mgr": "🗺️ Zones+",
             "proof-delivery": "📸 Preuve+", "driver-analytics": "📊 Driver Stats", "sla-alerts": "🚨 SLA Alertes", "job-marketplace": "🏪 Marketplace",
+            "fleet-gps": "📡 GPS Fleet", "insurance-claims": "🛡️ Réclamations", "shift-scheduler": "📅 Shifts+", "live-tracking": "📲 Live Track",
           };
           return (
             <button key={f} onClick={() => setFilter(f)}
