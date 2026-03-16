@@ -21,8 +21,9 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Loader2, MapPin, ShoppingCart, Plus, Minus, Trash2, Phone, Mail, MessageCircle, Send, CheckCircle2, Store, Tag, X, Heart, Globe } from "lucide-react";
-import { useState, lazy, Suspense } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 import { toast } from "sonner";
+import { useStorefrontAnalytics } from "@/hooks/useStorefrontAnalytics";
 
 // Lazy-loaded secondary sections — only loaded when scrolled into view or needed
 const ShopReviews = lazy(() => import("@/components/storefront/ShopReviews"));
@@ -111,6 +112,7 @@ export default function ShopPage() {
   const cart = useStorefrontCart(shop?.id);
   const coupon = useStorefrontCoupon(shop?.id);
   const wishlist = useStorefrontWishlist(shop?.id);
+  const analytics = useStorefrontAnalytics(shop?.id);
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const fx = useStorefrontCurrency(shop?.currency || shop?.default_currency || "EUR");
   const filteredItems = activeCategory
@@ -120,14 +122,21 @@ export default function ShopPage() {
   const discount = coupon.appliedCoupon?.discountAmount || 0;
   const finalTotal = Math.max(0, cart.total - discount);
 
+  // Track page view when shop loads
+  useEffect(() => {
+    if (shop?.id) analytics.trackPageView();
+  }, [shop?.id]);
+
   const handleCheckout = () => {
     if (!user) { toast.error("Please sign in to checkout"); return; }
     if (cart.items.length === 0) return;
+    analytics.trackCheckout(finalTotal, shop.currency);
     setCheckoutMode(true);
     setCartOpen(false);
   };
 
   const handleCheckoutComplete = async (orderId: string) => {
+    analytics.trackPurchase(orderId, finalTotal, shop.currency);
     if (coupon.appliedCoupon) {
       await coupon.recordUsage(orderId);
       coupon.removeCoupon();
@@ -308,7 +317,7 @@ export default function ShopPage() {
                             <span className="text-[10px] text-muted-foreground line-through ml-1">{fx.formatPrice(item.compare_at_price, item.currency)}</span>
                           )}
                         </div>
-                        <Button size="icon" variant="outline" className="h-8 w-8" onClick={() => cart.addItem(item.id, item.price)} disabled={cart.loading}>
+                        <Button size="icon" variant="outline" className="h-8 w-8" onClick={() => { cart.addItem(item.id, item.price); analytics.trackAddToCart(item.id, item.price, item.currency); }} disabled={cart.loading}>
                           <Plus className="h-3.5 w-3.5" />
                         </Button>
                       </div>
