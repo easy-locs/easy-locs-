@@ -42,7 +42,7 @@ describe("DataPipeline", () => {
   it("skips optional steps on failure", async () => {
     const p = new DataPipeline<string>("opt")
       .step("fail", "Fail step", () => { throw new Error("boom"); }, { optional: true })
-      .step("pass", "Pass step", (s) => s.toUpperCase());
+      .step("pass", "Pass step", (s: any) => (s as string).toUpperCase());
 
     const result = await p.run("hello");
     expect(result.status).toBe("completed");
