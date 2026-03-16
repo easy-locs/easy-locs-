@@ -228,7 +228,9 @@ const App = () => (
            <RealtimeHubGuard />
            <UpdateNotification />
           
+           <SkipLink />
            <Suspense fallback={<PageLoader />}>
+            <main id="main-content">
             <Routes>
               {/* ══════ PUBLIC WEBSITE ══════ */}
               {/* Homepage */}
