@@ -13,6 +13,7 @@ import { Suspense, lazy, type ComponentType } from "react";
 import { Loader2 } from "lucide-react";
 import AppLockGuard from "@/components/security/AppLockGuard";
 import UpdateNotification from "@/components/UpdateNotification";
+import { SkipLink } from "@/components/ui/a11y";
 import SmartInstallBanner from "@/components/pwa/SmartInstallBanner";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import ErrorBoundary from "@/components/ErrorBoundary";
