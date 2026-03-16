@@ -33,6 +33,7 @@ export default function ShopPage() {
   const inviteToken = searchParams.get("invite");
   const { user } = useAuth();
   const [cartOpen, setCartOpen] = useState(false);
+  const [couponCode, setCouponCode] = useState("");
 
   // Load shop
   const { data: shop, isLoading } = useQuery({
