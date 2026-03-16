@@ -110,6 +110,10 @@ export default function SellerHubPage() {
             />
           )}
 
+          {tab === "logistics" && (
+            <SellerLogisticsPanel />
+          )}
+
           {tab === "videos" && (
             <SellerVideoHub services={services} />
           )}
