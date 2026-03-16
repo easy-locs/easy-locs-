@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
 interface UsePaginationOptions {
@@ -37,6 +37,8 @@ export function usePagination<T = any>({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const filtersKey = useMemo(() => JSON.stringify(filters), [filters]);
+
   const fetchPage = useCallback(
     async (pageNum: number) => {
       if (!orgId) return;
@@ -54,7 +56,8 @@ export function usePagination<T = any>({
         .range(from, to);
 
       // Apply additional filters
-      Object.entries(filters).forEach(([key, value]) => {
+      const parsedFilters = JSON.parse(filtersKey) as Record<string, unknown>;
+      Object.entries(parsedFilters).forEach(([key, value]) => {
         if (value !== undefined && value !== null && value !== "") {
           query = query.eq(key, value as any);
         }
@@ -72,7 +75,7 @@ export function usePagination<T = any>({
       setPage(pageNum);
       setLoading(false);
     },
-    [orgId, table, pageSize, orderBy, ascending, JSON.stringify(filters)]
+    [orgId, table, pageSize, orderBy, ascending, filtersKey]
   );
 
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
@@ -89,10 +92,10 @@ export function usePagination<T = any>({
   const prevPage = useCallback(() => goToPage(page - 1), [goToPage, page]);
   const refresh = useCallback(() => fetchPage(page), [fetchPage, page]);
 
-  // Auto-fetch on mount
-  useState(() => {
+  // Auto-fetch on mount / when orgId changes
+  useEffect(() => {
     if (orgId) fetchPage(0);
-  });
+  }, [orgId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return {
     data,
