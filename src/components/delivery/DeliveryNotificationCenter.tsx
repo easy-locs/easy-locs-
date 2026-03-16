@@ -60,7 +60,7 @@ export default function DeliveryNotificationCenter({ orgId, className }: Props) 
       setLoading(true);
       const { data } = await supabase
         .from("notifications")
-        .select("id, type, title, message, status, link, metadata_json, created_at")
+        .select("id, type, title, message, read, resolved, link, metadata_json, created_at")
         .eq("user_id", user.id)
         .order("created_at", { ascending: false })
         .limit(50);
