@@ -110,6 +110,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
       items: [
         { icon: Store, label: t("nav.marketplace") || "Services & Concierge", path: "/dashboard/activities" },
         { icon: Zap, label: t("nav.seller_hub") || "Seller Hub", path: "/dashboard/seller" },
+        { icon: Layers, label: "My Shop", path: "/dashboard/my-shop" },
       ],
     },
 
