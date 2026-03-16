@@ -136,6 +136,7 @@ export default function ShopPage() {
   };
 
   const handleCheckoutComplete = async (orderId: string) => {
+    analytics.trackPurchase(orderId, finalTotal, shop.currency);
     if (coupon.appliedCoupon) {
       await coupon.recordUsage(orderId);
       coupon.removeCoupon();
