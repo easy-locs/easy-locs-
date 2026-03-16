@@ -275,12 +275,14 @@ export default function SellerLogisticsPanel() {
 
       {/* Filter tabs */}
       <div className="flex gap-1 p-1 rounded-xl overflow-x-auto" style={{ background: "hsl(var(--hud-surface))" }}>
-        {(["all", "active", "completed", "batch", "multistop", "scheduled", "history", "disputes", "analytics", "seller-stats", "onboarding", "wallet", "geofence", "fleet", "reputation", "optimize", "buyer", "invoices"] as const).map(f => {
+        {(["all", "active", "completed", "batch", "multi-drop", "multistop", "scheduled", "history", "disputes", "analytics", "reports", "seller-stats", "sla", "onboarding", "driver-reg", "wallet", "geofence", "fleet", "reputation", "optimize", "buyer", "invoices"] as const).map(f => {
           const labels: Record<string, string> = {
             all: "Tout", active: "Actives", completed: "Terminées", batch: "⚡ Batch",
+            "multi-drop": "📦 Multi-Drop",
             multistop: "🗺️ Multi", scheduled: "📅 Planif.", history: "📋 Histo.",
-            disputes: "⚠️ Litiges", analytics: "📊 Stats", "seller-stats": "📈 Perf.",
-            onboarding: "🚗 Livreur", wallet: "💰 Wallet", geofence: "🛡️ Zones", fleet: "🏢 Flotte",
+            disputes: "⚠️ Litiges", analytics: "📊 Stats", reports: "📈 Rapports", "seller-stats": "📈 Perf.",
+            sla: "⏱️ SLA", onboarding: "🚗 Livreur", "driver-reg": "📝 Inscription",
+            wallet: "💰 Wallet", geofence: "🛡️ Zones", fleet: "🏢 Flotte",
             reputation: "🏆 Réputation", optimize: "⚡ Optim.", buyer: "👤 Client", invoices: "🧾 Factures",
           };
           return (
