@@ -559,6 +559,14 @@ export default function SellerLogisticsPanel() {
         <QualityAssuranceSystem orgId={jobs[0]?.org_id || ""} />
       ) : filter === "cx-hub" ? (
         <CustomerExperienceHub orgId={jobs[0]?.org_id || ""} />
+      ) : filter === "ev-fleet" ? (
+        <EVFleetIntelligence orgId={jobs[0]?.org_id || ""} />
+      ) : filter === "franchise" ? (
+        <FranchiseManagement orgId={jobs[0]?.org_id || ""} />
+      ) : filter === "cross-border" ? (
+        <CrossBorderLogistics orgId={jobs[0]?.org_id || ""} />
+      ) : filter === "data-hub" ? (
+        <RealTimeDataHub orgId={jobs[0]?.org_id || ""} />
       ) : (
       <div className="space-y-2">
         {loading ? (
