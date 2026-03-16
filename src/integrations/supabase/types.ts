@@ -7521,6 +7521,125 @@ export type Database = {
           },
         ]
       }
+      storefront_deal_subscribers: {
+        Row: {
+          created_at: string
+          email: string | null
+          id: string
+          notify_daily: boolean | null
+          notify_flash: boolean | null
+          shop_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          notify_daily?: boolean | null
+          notify_flash?: boolean | null
+          shop_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          notify_daily?: boolean | null
+          notify_flash?: boolean | null
+          shop_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "storefront_deal_subscribers_shop_id_fkey"
+            columns: ["shop_id"]
+            isOneToOne: false
+            referencedRelation: "storefront_pages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      storefront_flash_sales: {
+        Row: {
+          created_at: string
+          currency: string | null
+          description: string | null
+          discount_amount: number | null
+          discount_percent: number | null
+          ends_at: string
+          id: string
+          item_id: string | null
+          notify_subscribers: boolean | null
+          original_price: number | null
+          sale_price: number | null
+          sale_type: string
+          shop_id: string
+          sold_count: number | null
+          starts_at: string
+          status: string
+          stock_limit: number | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          currency?: string | null
+          description?: string | null
+          discount_amount?: number | null
+          discount_percent?: number | null
+          ends_at: string
+          id?: string
+          item_id?: string | null
+          notify_subscribers?: boolean | null
+          original_price?: number | null
+          sale_price?: number | null
+          sale_type?: string
+          shop_id: string
+          sold_count?: number | null
+          starts_at: string
+          status?: string
+          stock_limit?: number | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          currency?: string | null
+          description?: string | null
+          discount_amount?: number | null
+          discount_percent?: number | null
+          ends_at?: string
+          id?: string
+          item_id?: string | null
+          notify_subscribers?: boolean | null
+          original_price?: number | null
+          sale_price?: number | null
+          sale_type?: string
+          shop_id?: string
+          sold_count?: number | null
+          starts_at?: string
+          status?: string
+          stock_limit?: number | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "storefront_flash_sales_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "catalog_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "storefront_flash_sales_shop_id_fkey"
+            columns: ["shop_id"]
+            isOneToOne: false
+            referencedRelation: "storefront_pages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       storefront_inventory_alerts: {
         Row: {
           alert_type: string
@@ -8226,6 +8345,63 @@ export type Database = {
           },
         ]
       }
+      storefront_product_questions: {
+        Row: {
+          answer: string | null
+          answered_at: string | null
+          answered_by: string | null
+          created_at: string
+          helpful_count: number | null
+          id: string
+          item_id: string
+          question: string
+          shop_id: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          answer?: string | null
+          answered_at?: string | null
+          answered_by?: string | null
+          created_at?: string
+          helpful_count?: number | null
+          id?: string
+          item_id: string
+          question: string
+          shop_id: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          answer?: string | null
+          answered_at?: string | null
+          answered_by?: string | null
+          created_at?: string
+          helpful_count?: number | null
+          id?: string
+          item_id?: string
+          question?: string
+          shop_id?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "storefront_product_questions_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "catalog_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "storefront_product_questions_shop_id_fkey"
+            columns: ["shop_id"]
+            isOneToOne: false
+            referencedRelation: "storefront_pages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       storefront_returns: {
         Row: {
           admin_notes: string | null
@@ -8322,50 +8498,113 @@ export type Database = {
           },
         ]
       }
+      storefront_review_votes: {
+        Row: {
+          created_at: string
+          helpful: boolean
+          id: string
+          review_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          helpful?: boolean
+          id?: string
+          review_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          helpful?: boolean
+          id?: string
+          review_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "storefront_review_votes_review_id_fkey"
+            columns: ["review_id"]
+            isOneToOne: false
+            referencedRelation: "storefront_reviews"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       storefront_reviews: {
         Row: {
           comment: string | null
           created_at: string | null
+          helpful_count: number | null
           id: string
+          item_id: string | null
           order_id: string | null
+          photo_urls: Json | null
           rating: number
           responded_at: string | null
           response: string | null
           reviewer_id: string
           reviewer_name: string | null
+          seller_responded_at: string | null
+          seller_response: string | null
           shop_id: string
           status: string | null
+          title: string | null
           updated_at: string | null
+          verified_purchase: boolean | null
+          video_url: string | null
         }
         Insert: {
           comment?: string | null
           created_at?: string | null
+          helpful_count?: number | null
           id?: string
+          item_id?: string | null
           order_id?: string | null
+          photo_urls?: Json | null
           rating: number
           responded_at?: string | null
           response?: string | null
           reviewer_id: string
           reviewer_name?: string | null
+          seller_responded_at?: string | null
+          seller_response?: string | null
           shop_id: string
           status?: string | null
+          title?: string | null
           updated_at?: string | null
+          verified_purchase?: boolean | null
+          video_url?: string | null
         }
         Update: {
           comment?: string | null
           created_at?: string | null
+          helpful_count?: number | null
           id?: string
+          item_id?: string | null
           order_id?: string | null
+          photo_urls?: Json | null
           rating?: number
           responded_at?: string | null
           response?: string | null
           reviewer_id?: string
           reviewer_name?: string | null
+          seller_responded_at?: string | null
+          seller_response?: string | null
           shop_id?: string
           status?: string | null
+          title?: string | null
           updated_at?: string | null
+          verified_purchase?: boolean | null
+          video_url?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "storefront_reviews_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "catalog_items"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "storefront_reviews_order_id_fkey"
             columns: ["order_id"]
