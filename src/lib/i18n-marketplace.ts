@@ -470,6 +470,9 @@ export const marketplaceI18n: Record<string, Record<string, string>> = {
     "payment.bank_transfer_desc": "Paiement par virement / IBAN",
     "payment.paypal_desc": "Payer avec PayPal",
     "mp.review_window_note": "Les avis peuvent être soumis dans les 30 jours suivant la complétion",
+    "mp.quick_actions": "Actions rapides",
+    "mp.view_storefront": "Voir la vitrine",
+    "mp.manage_bookings": "Réservations",
   },
   en: { ...MP_KEYS_EN },
   es: {
