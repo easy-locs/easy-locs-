@@ -256,12 +256,9 @@ describe("validateForm", () => {
   });
 
   it("returns errors on invalid", () => {
-    const result = validateForm(emailSchema, "bad");
+    const result = validateForm(emailSchema, "bad") as any;
     expect(result.success).toBe(false);
-    if (!result.success) {
-      const errors = result.errors as Record<string, string>;
-      expect(Object.keys(errors).length).toBeGreaterThan(0);
-    }
+    expect(Object.keys(result.errors).length).toBeGreaterThan(0);
   });
 });
 
