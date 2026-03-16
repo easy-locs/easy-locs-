@@ -71,32 +71,32 @@ export default function DeliveryNotificationCenter({ orgId, className }: Props) 
   }, [user]);
 
   const filtered = notifs.filter(n => {
-    if (category === "new") return n.status === "new";
+    if (category === "new") return !n.read;
     if (category === "delivery") return n.title?.toLowerCase().includes("livr") || n.title?.includes("mission");
     if (category === "payment") return n.type === "payment";
     return true;
   });
 
-  const unreadCount = notifs.filter(n => n.status === "new").length;
+  const unreadCount = notifs.filter(n => !n.read).length;
 
   const markRead = async (id: string) => {
     haptic("light");
-    await supabase.from("notifications").update({ status: "read" }).eq("id", id);
-    setNotifs(p => p.map(n => n.id === id ? { ...n, status: "read" } : n));
+    await supabase.from("notifications").update({ read: true }).eq("id", id);
+    setNotifs(p => p.map(n => n.id === id ? { ...n, read: true } : n));
   };
 
   const markAllRead = async () => {
     haptic("medium");
-    const ids = notifs.filter(n => n.status === "new").map(n => n.id);
+    const ids = notifs.filter(n => !n.read).map(n => n.id);
     if (ids.length === 0) return;
-    await supabase.from("notifications").update({ status: "read" }).in("id", ids);
-    setNotifs(p => p.map(n => ({ ...n, status: n.status === "new" ? "read" : n.status })));
+    await supabase.from("notifications").update({ read: true }).in("id", ids);
+    setNotifs(p => p.map(n => ({ ...n, read: true })));
     toast.success(`${ids.length} notifications marquées comme lues`);
   };
 
   const deleteNotif = async (id: string) => {
     haptic("light");
-    await supabase.from("notifications").update({ status: "resolved" }).eq("id", id);
+    await supabase.from("notifications").update({ resolved: true }).eq("id", id);
     setNotifs(p => p.filter(n => n.id !== id));
   };
 
