@@ -192,7 +192,7 @@ export default function SellerLogisticsPanel() {
   const [showCreate, setShowCreate] = useState(false);
   const [searchingJobId, setSearchingJobId] = useState<string | null>(null);
   const [disputeJobId, setDisputeJobId] = useState<string | null>(null);
-  const [filter, setFilter] = useState<"all" | "active" | "completed" | "disputes" | "analytics">("all");
+  const [filter, setFilter] = useState<"all" | "active" | "completed" | "disputes" | "batch" | "analytics">("all");
 
   const filteredJobs = jobs.filter(j => {
     if (filter === "active") return ["pending", "assigned", "accepted", "in_progress"].includes(j.status);
