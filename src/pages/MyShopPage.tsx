@@ -14,6 +14,10 @@ import StorefrontDealRoom from "@/components/storefront/StorefrontDealRoom";
 import ShopAnalytics from "@/components/storefront/ShopAnalytics";
 import LaunchAudit from "@/components/storefront/LaunchAudit";
 import ShopShareEngine from "@/components/storefront/ShopShareEngine";
+import BusinessHierarchy from "@/components/storefront/BusinessHierarchy";
+import AICategorySuggest from "@/components/storefront/AICategorySuggest";
+import PrivateInviteManager from "@/components/storefront/PrivateInviteManager";
+import TranslationManager from "@/components/storefront/TranslationManager";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -290,6 +294,26 @@ export default function MyShopPage() {
                   </div>
                 </CardContent>
               </Card>
+              {/* AI Category Suggest */}
+              <AICategorySuggest
+                shopId={shop.id}
+                onAccept={(s) => {
+                  updateShop("vertical", s.vertical);
+                  updateShop("subcategory", s.category);
+                  updateShop("tags", s.tags);
+                }}
+              />
+
+              {/* Private invites (if private shop) */}
+              {shop.shop_visibility === "private" && (
+                <PrivateInviteManager shopId={shop.id} shopSlug={shop.slug} />
+              )}
+
+              {/* Translations */}
+              <TranslationManager shopId={shop.id} />
+
+              {/* Business Hierarchy */}
+              <BusinessHierarchy />
             </div>
           )}
         </div>
