@@ -7411,6 +7411,66 @@ export type Database = {
           },
         ]
       }
+      storefront_returns: {
+        Row: {
+          buyer_id: string
+          created_at: string
+          currency: string
+          id: string
+          order_id: string
+          reason: string
+          refund_amount: number | null
+          resolution: string | null
+          resolved_at: string | null
+          seller_notes: string | null
+          shop_id: string
+          status: string
+        }
+        Insert: {
+          buyer_id: string
+          created_at?: string
+          currency?: string
+          id?: string
+          order_id: string
+          reason?: string
+          refund_amount?: number | null
+          resolution?: string | null
+          resolved_at?: string | null
+          seller_notes?: string | null
+          shop_id: string
+          status?: string
+        }
+        Update: {
+          buyer_id?: string
+          created_at?: string
+          currency?: string
+          id?: string
+          order_id?: string
+          reason?: string
+          refund_amount?: number | null
+          resolution?: string | null
+          resolved_at?: string | null
+          seller_notes?: string | null
+          shop_id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "storefront_returns_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "storefront_orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "storefront_returns_shop_id_fkey"
+            columns: ["shop_id"]
+            isOneToOne: false
+            referencedRelation: "storefront_pages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       storefront_reviews: {
         Row: {
           comment: string | null
