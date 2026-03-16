@@ -63,6 +63,10 @@ import SellerRatingSystem from "@/components/delivery/SellerRatingSystem";
 import AddressBookManager from "@/components/delivery/AddressBookManager";
 import DeliveryKPIDashboard from "@/components/delivery/DeliveryKPIDashboard";
 import MaintenanceScheduler from "@/components/delivery/MaintenanceScheduler";
+import DriverOnboardingComplete from "@/components/delivery/DriverOnboardingComplete";
+import DeliveryNotificationCenter from "@/components/delivery/DeliveryNotificationCenter";
+import SellerPayoutReports from "@/components/delivery/SellerPayoutReports";
+import DeliveryZonesManager from "@/components/delivery/DeliveryZonesManager";
 import { useDeliveryNotifications } from "@/hooks/useDeliveryNotifications";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -252,7 +256,7 @@ export default function SellerLogisticsPanel() {
   const [searchingJobId, setSearchingJobId] = useState<string | null>(null);
   const [disputeJobId, setDisputeJobId] = useState<string | null>(null);
   const [trackingJobId, setTrackingJobId] = useState<string | null>(null);
-  const [filter, setFilter] = useState<"all" | "active" | "completed" | "batch" | "scheduled" | "history" | "disputes" | "analytics" | "multistop" | "seller-stats" | "onboarding" | "wallet" | "geofence" | "chat" | "fleet" | "reputation" | "optimize" | "buyer" | "invoices" | "sla" | "multi-drop" | "driver-reg" | "reports" | "fleet-mgmt" | "dispatch-rules" | "customer-track" | "payroll" | "surge" | "shifts" | "moderation" | "notif-rules" | "multi-currency" | "route-optim" | "insurance" | "adv-analytics" | "referral" | "support-bot" | "returns" | "slot-booking" | "fleet-hub" | "gamification" | "smart-notifs" | "api-webhooks" | "zone-pricing" | "customer-loyalty" | "compliance" | "ai-planning" | "route-planner" | "returns-mgmt" | "schedule-cal" | "driver-portal" | "promo-coupons" | "live-chat" | "warehouse" | "green-delivery" | "fleet-system" | "order-bundle" | "tracking-portal" | "seller-rating" | "address-book" | "delivery-kpi" | "maint-sched">("all");
+  const [filter, setFilter] = useState<"all" | "active" | "completed" | "batch" | "scheduled" | "history" | "disputes" | "analytics" | "multistop" | "seller-stats" | "onboarding" | "wallet" | "geofence" | "chat" | "fleet" | "reputation" | "optimize" | "buyer" | "invoices" | "sla" | "multi-drop" | "driver-reg" | "reports" | "fleet-mgmt" | "dispatch-rules" | "customer-track" | "payroll" | "surge" | "shifts" | "moderation" | "notif-rules" | "multi-currency" | "route-optim" | "insurance" | "adv-analytics" | "referral" | "support-bot" | "returns" | "slot-booking" | "fleet-hub" | "gamification" | "smart-notifs" | "api-webhooks" | "zone-pricing" | "customer-loyalty" | "compliance" | "ai-planning" | "route-planner" | "returns-mgmt" | "schedule-cal" | "driver-portal" | "promo-coupons" | "live-chat" | "warehouse" | "green-delivery" | "fleet-system" | "order-bundle" | "tracking-portal" | "seller-rating" | "address-book" | "delivery-kpi" | "maint-sched" | "driver-onboard" | "notif-center" | "payout-reports" | "zones-mgr">("all");
   const [chatJobId, setChatJobId] = useState<string | null>(null);
 
   const filteredJobs = jobs.filter(j => {
@@ -314,7 +318,7 @@ export default function SellerLogisticsPanel() {
 
       {/* Filter tabs */}
       <div className="flex gap-1 p-1 rounded-xl overflow-x-auto" style={{ background: "hsl(var(--hud-surface))" }}>
-        {(["all", "active", "completed", "batch", "multi-drop", "multistop", "route-planner", "scheduled", "schedule-cal", "slot-booking", "history", "disputes", "analytics", "reports", "adv-analytics", "seller-stats", "sla", "surge", "multi-currency", "zone-pricing", "promo-coupons", "route-optim", "insurance", "onboarding", "driver-reg", "driver-portal", "referral", "gamification", "shifts", "wallet", "customer-loyalty", "geofence", "fleet", "fleet-hub", "fleet-mgmt", "warehouse", "dispatch-rules", "moderation", "compliance", "smart-notifs", "ai-planning", "green-delivery", "fleet-system", "order-bundle", "tracking-portal", "seller-rating", "address-book", "delivery-kpi", "maint-sched", "reputation", "optimize", "buyer", "customer-track", "live-chat", "support-bot", "returns", "returns-mgmt", "invoices", "payroll", "notif-rules", "api-webhooks"] as const).map(f => {
+        {(["all", "active", "completed", "batch", "multi-drop", "multistop", "route-planner", "scheduled", "schedule-cal", "slot-booking", "history", "disputes", "analytics", "reports", "adv-analytics", "seller-stats", "sla", "surge", "multi-currency", "zone-pricing", "zones-mgr", "promo-coupons", "route-optim", "insurance", "onboarding", "driver-reg", "driver-portal", "driver-onboard", "referral", "gamification", "shifts", "wallet", "customer-loyalty", "geofence", "fleet", "fleet-hub", "fleet-mgmt", "warehouse", "dispatch-rules", "moderation", "compliance", "smart-notifs", "notif-center", "ai-planning", "green-delivery", "fleet-system", "order-bundle", "tracking-portal", "seller-rating", "address-book", "delivery-kpi", "maint-sched", "payout-reports", "reputation", "optimize", "buyer", "customer-track", "live-chat", "support-bot", "returns", "returns-mgmt", "invoices", "payroll", "notif-rules", "api-webhooks"] as const).map(f => {
           const labels: Record<string, string> = {
             all: "Tout", active: "Actives", completed: "Terminées", batch: "⚡ Batch",
             "multi-drop": "📦 Multi-Drop",
@@ -332,6 +336,7 @@ export default function SellerLogisticsPanel() {
             "promo-coupons": "🎟️ Promos", "live-chat": "💬 Chat Live", "warehouse": "🏭 Entrepôts", "green-delivery": "🌱 Green",
             "fleet-system": "🚐 Flotte+", "order-bundle": "📦 Lots", "tracking-portal": "📲 Tracking",
             "seller-rating": "⭐ Rating", "address-book": "📍 Adresses", "delivery-kpi": "📊 KPIs", "maint-sched": "🔧 Maintenance",
+            "driver-onboard": "🚀 Inscription+", "notif-center": "🔔 Notifs+", "payout-reports": "💰 Rapports$", "zones-mgr": "🗺️ Zones+",
           };
           return (
             <button key={f} onClick={() => setFilter(f)}
@@ -463,6 +468,14 @@ export default function SellerLogisticsPanel() {
         <DeliveryKPIDashboard orgId={jobs[0]?.org_id || ""} />
       ) : filter === "maint-sched" ? (
         <MaintenanceScheduler orgId={jobs[0]?.org_id || ""} />
+      ) : filter === "driver-onboard" ? (
+        <DriverOnboardingComplete onComplete={() => setFilter("all")} />
+      ) : filter === "notif-center" ? (
+        <DeliveryNotificationCenter orgId={jobs[0]?.org_id || ""} />
+      ) : filter === "payout-reports" ? (
+        <SellerPayoutReports orgId={jobs[0]?.org_id || ""} />
+      ) : filter === "zones-mgr" ? (
+        <DeliveryZonesManager orgId={jobs[0]?.org_id || ""} />
       ) : (
       <div className="space-y-2">
         {loading ? (
