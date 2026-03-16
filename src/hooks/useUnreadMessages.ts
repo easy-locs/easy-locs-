@@ -1,12 +1,11 @@
 /**
  * useUnreadMessages — Realtime unread message counter for any role.
- * Pro: counts unread where sender != user in org messages
- * Tenant: counts unread where tenant_id matches and sender != user
- * Client: counts unread where contact_email matches and sender != user
+ * Subscribes to both Supabase realtime AND platform bus for fast cross-module sync.
  */
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { platformBus } from "@/lib/shared/platform-bus";
 
 export function useUnreadMessages() {
   const { user, activeRole, orgId } = useAuth();
@@ -17,7 +16,6 @@ export function useUnreadMessages() {
 
     try {
       if (activeRole === "landlord" && orgId) {
-        // Pro: unread messages in org where sender is not user
         const { count: c } = await supabase
           .from("messages")
           .select("id", { count: "exact", head: true })
@@ -26,7 +24,6 @@ export function useUnreadMessages() {
           .neq("sender_id", user.id);
         setCount(c || 0);
       } else if (activeRole === "tenant") {
-        // Tenant: messages where tenant_id links to user, sender != user
         const { data: tenants } = await supabase
           .from("tenants")
           .select("id")
@@ -45,7 +42,6 @@ export function useUnreadMessages() {
           setCount(0);
         }
       } else if (activeRole === "client" && user.email) {
-        // Client: messages where contact_email = user email
         const { count: c } = await supabase
           .from("messages")
           .select("id", { count: "exact", head: true })
@@ -62,16 +58,29 @@ export function useUnreadMessages() {
   useEffect(() => {
     fetchCount();
 
-    // Subscribe to realtime changes on messages table
+    // Subscribe to realtime changes on messages table (scoped by org)
+    const filter = orgId ? `org_id=eq.${orgId}` : undefined;
     const channel = supabase
       .channel("unread-messages-count")
-      .on("postgres_changes", { event: "*", schema: "public", table: "messages" }, () => {
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages", ...(filter ? { filter } : {}) }, () => {
+        fetchCount();
+      })
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "messages", ...(filter ? { filter } : {}) }, () => {
         fetchCount();
       })
       .subscribe();
 
-    return () => { supabase.removeChannel(channel); };
-  }, [fetchCount]);
+    // Also listen to platform bus for immediate cross-module refresh
+    const unsubBus = platformBus.on("orbit:message_sent", () => {
+      // Debounce slightly to let DB settle
+      setTimeout(fetchCount, 500);
+    });
+
+    return () => {
+      supabase.removeChannel(channel);
+      unsubBus();
+    };
+  }, [fetchCount, orgId]);
 
   return { unreadCount: count, refresh: fetchCount };
 }
