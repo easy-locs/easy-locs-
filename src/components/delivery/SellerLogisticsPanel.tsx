@@ -366,6 +366,7 @@ export default function SellerLogisticsPanel() {
             "command-center": "🎯 Command", "auto-invoicing": "🧾 Factures+", "rewards": "🏆 Récompenses", "driver-comms": "📡 Comms",
             "bi-dashboard": "📊 BI", "driver-registration": "📝 Registre", "sla-monitor": "⏱️ SLA+", "notif-hub": "🔔 Hub Notifs",
             "adv-returns": "🔄 Retours++", "finance-ctrl": "💵 Finance", "incidents": "🚨 Incidents", "seller-portal": "🏪 Partenaires",
+            "capacity": "🧠 Capacité", "multi-vendor": "🛒 Multi-vendeur", "quality": "🛡️ Qualité", "cx-hub": "❤️ CX Hub",
           };
           return (
             <button key={f} onClick={() => setFilter(f)}
