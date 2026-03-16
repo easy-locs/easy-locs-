@@ -572,6 +572,14 @@ export default function SellerLogisticsPanel() {
         <CrossBorderLogistics orgId={jobs[0]?.org_id || ""} />
       ) : filter === "data-hub" ? (
         <RealTimeDataHub orgId={jobs[0]?.org_id || ""} />
+      ) : filter === "ai-dispatch" ? (
+        <AIDispatchBrain orgId={jobs[0]?.org_id || ""} />
+      ) : filter === "insur-claims" ? (
+        <InsuranceClaims orgId={jobs[0]?.org_id || ""} />
+      ) : filter === "maint-ai" ? (
+        <FleetMaintenanceAI orgId={jobs[0]?.org_id || ""} />
+      ) : filter === "regulatory" ? (
+        <RegulatoryCompliance orgId={jobs[0]?.org_id || ""} />
       ) : (
       <div className="space-y-2">
         {loading ? (
