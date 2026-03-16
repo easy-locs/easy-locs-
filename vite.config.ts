@@ -48,6 +48,7 @@ export default defineConfig(({ mode }) => ({
   build: {
     target: "es2020",
     cssCodeSplit: true,
+    chunkSizeWarningLimit: 600,
     rollupOptions: {
       output: {
         manualChunks(id) {
@@ -60,10 +61,11 @@ export default defineConfig(({ mode }) => ({
             if (id.includes("@supabase")) return "vendor-supabase";
             if (id.includes("@radix-ui")) return "vendor-radix";
             if (id.includes("jspdf")) return "vendor-pdf";
+            if (id.includes("date-fns")) return "vendor-datefns";
+            if (id.includes("leaflet")) return "vendor-leaflet";
+            if (id.includes("@tanstack")) return "vendor-tanstack";
+            if (id.includes("next-themes") || id.includes("sonner") || id.includes("lucide")) return "vendor-ui";
           }
-          // NOTE: Removed app-level manual chunks (landing, seo, templates)
-          // to prevent cross-chunk initialization order issues in production.
-          // Vite/Rollup's automatic code splitting via lazy() handles these better.
         },
       },
     },
