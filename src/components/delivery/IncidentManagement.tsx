@@ -41,7 +41,7 @@ const MOCK_INCIDENTS: Incident[] = [
 export default function IncidentManagement({ orgId, className }: { orgId: string; className?: string }) {
   const [incidents, setIncidents] = useState(MOCK_INCIDENTS);
   const [view, setView] = useState<"list" | "create" | "stats">("list");
-  const [newIncident, setNewIncident] = useState({ type: TYPES[0], severity: "medium" as const, description: "", driver: "", zone: "" });
+  const [newIncident, setNewIncident] = useState({ type: TYPES[0], severity: "medium" as "low" | "medium" | "high" | "critical", description: "", driver: "", zone: "" });
 
   const openCount = incidents.filter(i => i.status !== "resolved").length;
   const criticalCount = incidents.filter(i => i.severity === "critical" || i.severity === "high").filter(i => i.status !== "resolved").length;
