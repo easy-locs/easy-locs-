@@ -73,7 +73,7 @@ export default function ReturnsRefundEngine({ shopId, mode, orders = [] }: Props
       await (supabase as any).from("storefront_returns").insert({
         shop_id: shopId,
         order_id: selectedOrder,
-        user_id: user!.id,
+        buyer_id: user!.id,
         reason,
         description: description || null,
         refund_type: refundType,

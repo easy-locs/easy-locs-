@@ -339,10 +339,38 @@ export default function ShopPage() {
             <AuctionManager shopId={shop.id} mode="buyer" />
           </div>
 
+          {/* Subscriptions */}
+          {user && (
+            <div className="mt-4">
+              <SubscriptionEngine shopId={shop.id} mode="buyer" catalogItems={catalogItems} />
+            </div>
+          )}
+
+          {/* Gift Cards */}
+          {user && (
+            <div className="mt-4">
+              <GiftCardManager shopId={shop.id} mode="buyer" />
+            </div>
+          )}
+
           {/* Loyalty section */}
           {user && (
             <div className="mt-4">
               <LoyaltyDashboard shopId={shop.id} mode="buyer" />
+            </div>
+          )}
+
+          {/* Loyalty Program (advanced) */}
+          {user && (
+            <div className="mt-4">
+              <LoyaltyProgram shopId={shop.id} mode="buyer" />
+            </div>
+          )}
+
+          {/* Returns */}
+          {user && (
+            <div className="mt-4">
+              <ReturnsRefundEngine shopId={shop.id} mode="buyer" />
             </div>
           )}
 
