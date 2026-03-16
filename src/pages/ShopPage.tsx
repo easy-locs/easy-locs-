@@ -88,6 +88,9 @@ export default function ShopPage() {
     : catalogItems;
 
   // Handle checkout
+  const discount = coupon.appliedCoupon?.discountAmount || 0;
+  const finalTotal = Math.max(0, cart.total - discount);
+
   const handleCheckout = async () => {
     if (!user) {
       toast.error("Please sign in to checkout");
@@ -105,9 +108,10 @@ export default function ShopPage() {
         buyer_name: user.email?.split("@")[0] || "",
         buyer_email: user.email || "",
         subtotal: cart.total,
-        total: cart.total,
+        total: finalTotal,
         currency: shop.currency || "EUR",
         status: "pending",
+        notes: coupon.appliedCoupon ? `Coupon: ${coupon.appliedCoupon.code} (-${fmtPrice(discount, shop.currency || "EUR")})` : null,
       })
       .select("id")
       .single();
@@ -129,6 +133,13 @@ export default function ShopPage() {
     }));
 
     await (supabase as any).from("storefront_order_items").insert(orderItems);
+
+    // Record coupon usage
+    if (coupon.appliedCoupon) {
+      await coupon.recordUsage(order.id);
+      coupon.removeCoupon();
+    }
+
     await cart.clearCart();
     setCartOpen(false);
     toast.success("Order placed! The seller will confirm soon.");
