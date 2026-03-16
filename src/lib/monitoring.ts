@@ -6,19 +6,44 @@
 
 import { supabase } from "@/integrations/supabase/client";
 
+// ── Types ──────────────────────────────────────────────────────────
+
+export type EventSeverity = "critical" | "error" | "warning" | "info";
+
 export interface MonitoringEvent {
   id: string;
   type: "error" | "warning" | "performance" | "sync_failure" | "ui_issue";
+  severity: EventSeverity;
   source: string;
   message: string;
   metadata?: Record<string, unknown>;
   timestamp: string;
   resolved: boolean;
+  count: number; // dedup counter
 }
 
+export interface SyncCheckResult {
+  name: string;
+  status: "ok" | "warning" | "error";
+  message: string;
+  checkedAt: string;
+  durationMs?: number;
+}
+
+export interface HealthReport {
+  status: "healthy" | "degraded" | "unhealthy";
+  checks: SyncCheckResult[];
+  timestamp: string;
+  uptimeMs: number;
+}
+
+// ── Event Store ────────────────────────────────────────────────────
+
 const MAX_EVENTS = 200;
+const DEDUP_WINDOW_MS = 5000;
 let events: MonitoringEvent[] = [];
 let listeners: Array<() => void> = [];
+const startTime = Date.now();
 
 function uid() {
   return Math.random().toString(36).slice(2, 10);
@@ -37,12 +62,37 @@ export function getMonitoringEvents() {
   return [...events];
 }
 
-export function pushEvent(evt: Omit<MonitoringEvent, "id" | "timestamp" | "resolved">) {
+function inferSeverity(type: MonitoringEvent["type"]): EventSeverity {
+  switch (type) {
+    case "error": case "sync_failure": return "error";
+    case "warning": return "warning";
+    case "performance": case "ui_issue": return "info";
+    default: return "info";
+  }
+}
+
+export function pushEvent(evt: Omit<MonitoringEvent, "id" | "timestamp" | "resolved" | "severity" | "count"> & { severity?: EventSeverity }) {
+  // Dedup: merge with recent identical events
+  const now = Date.now();
+  const recent = events.find(
+    e => e.source === evt.source && e.message === evt.message && !e.resolved
+      && (now - new Date(e.timestamp).getTime()) < DEDUP_WINDOW_MS
+  );
+
+  if (recent) {
+    recent.count++;
+    recent.timestamp = new Date().toISOString();
+    notify();
+    return recent;
+  }
+
   const entry: MonitoringEvent = {
     ...evt,
     id: uid(),
+    severity: evt.severity || inferSeverity(evt.type),
     timestamp: new Date().toISOString(),
     resolved: false,
+    count: 1,
   };
   events = [entry, ...events].slice(0, MAX_EVENTS);
   notify();
@@ -64,11 +114,32 @@ export function clearEvents() {
   notify();
 }
 
-// Flag to prevent recursive error logging (audit_logs insert → network fail → pushEvent → insert → ...)
+// ── Structured Logger ──────────────────────────────────────────────
+
+export const logger = {
+  info: (source: string, message: string, meta?: Record<string, unknown>) => {
+    if (import.meta.env.DEV) console.log(`[${source}]`, message, meta || "");
+  },
+  warn: (source: string, message: string, meta?: Record<string, unknown>) => {
+    console.warn(`[${source}]`, message, meta || "");
+    pushEvent({ type: "warning", source, message, metadata: meta });
+  },
+  error: (source: string, message: string, meta?: Record<string, unknown>) => {
+    console.error(`[${source}]`, message, meta || "");
+    pushEvent({ type: "error", source, message, metadata: meta, severity: "error" });
+  },
+  critical: (source: string, message: string, meta?: Record<string, unknown>) => {
+    console.error(`[CRITICAL][${source}]`, message, meta || "");
+    pushEvent({ type: "error", source, message, metadata: meta, severity: "critical" });
+  },
+};
+
+// ── Audit Persistence ──────────────────────────────────────────────
+
 let _persistingAudit = false;
 
 async function persistToAuditLog(evt: MonitoringEvent) {
-  if (_persistingAudit) return; // break recursion
+  if (_persistingAudit) return;
   _persistingAudit = true;
   try {
     const { data: { session } } = await supabase.auth.getSession();
@@ -79,11 +150,12 @@ async function persistToAuditLog(evt: MonitoringEvent) {
       metadata_json: {
         source: evt.source,
         message: evt.message,
+        severity: evt.severity,
         metadata: evt.metadata,
       } as any,
     }]);
   } catch {
-    // Silent fail — never re-trigger monitoring for audit persistence
+    // Silent fail
   } finally {
     _persistingAudit = false;
   }
@@ -115,7 +187,7 @@ export function initMonitoring() {
     });
   });
 
-  // Performance observer for long tasks (>100ms)
+  // Performance observer for long tasks (>200ms)
   if ("PerformanceObserver" in window) {
     try {
       const obs = new PerformanceObserver((list) => {
@@ -132,7 +204,7 @@ export function initMonitoring() {
       });
       obs.observe({ entryTypes: ["longtask"] });
     } catch {
-      // longtask not supported in all browsers
+      // longtask not supported
     }
   }
 
@@ -155,7 +227,6 @@ export function initMonitoring() {
   const origFetch = window.fetch;
   window.fetch = async (...args) => {
     const url = typeof args[0] === "string" ? args[0] : (args[0] as Request)?.url || "unknown";
-    // Skip monitoring for audit_logs requests to prevent infinite loops
     const isAuditReq = url.includes("/audit_logs");
     try {
       const res = await origFetch(...args);
@@ -186,144 +257,65 @@ export function initMonitoring() {
 
 // ── Sync Health Checks ─────────────────────────────────────────────
 
-export interface SyncCheckResult {
-  name: string;
-  status: "ok" | "warning" | "error";
-  message: string;
-  checkedAt: string;
+async function timedCheck(name: string, fn: () => Promise<SyncCheckResult>): Promise<SyncCheckResult> {
+  const start = performance.now();
+  try {
+    const result = await fn();
+    result.durationMs = Math.round(performance.now() - start);
+    return result;
+  } catch (err: any) {
+    return {
+      name,
+      status: "error",
+      message: `Check failed: ${err.message}`,
+      checkedAt: new Date().toISOString(),
+      durationMs: Math.round(performance.now() - start),
+    };
+  }
 }
 
 export async function runSyncHealthChecks(): Promise<SyncCheckResult[]> {
-  const results: SyncCheckResult[] = [];
   const now = new Date().toISOString();
 
-  try {
-    // 1. Check bookings without payment status
-    const { data: pendingBookings } = await supabase
-      .from("booking_requests")
-      .select("id")
-      .eq("status", "confirmed")
-      .limit(50);
+  const checks = await Promise.allSettled([
+    timedCheck("Booking-Payment Sync", async () => {
+      const { data } = await supabase.from("booking_requests").select("id").eq("status", "confirmed").limit(50);
+      return { name: "Booking-Payment Sync", status: (data?.length || 0) > 20 ? "warning" as const : "ok" as const, message: `${data?.length || 0} confirmed bookings`, checkedAt: now };
+    }),
+    timedCheck("Concierge Payment Sync", async () => {
+      const { data } = await supabase.from("concierge_orders").select("id").eq("status", "confirmed").eq("payment_status", "pending").limit(50);
+      return { name: "Concierge Payment Sync", status: (data?.length || 0) > 5 ? "warning" as const : "ok" as const, message: `${data?.length || 0} pending payments`, checkedAt: now };
+    }),
+    timedCheck("Notification Queue", async () => {
+      const { count } = await supabase.from("notifications").select("id", { count: "exact", head: true }).eq("read", false);
+      return { name: "Notification Queue", status: (count || 0) > 100 ? "warning" as const : "ok" as const, message: `${count || 0} unread`, checkedAt: now };
+    }),
+    timedCheck("Marketplace Booking Sync", async () => {
+      const { data } = await supabase.from("marketplace_bookings").select("id").eq("status", "awaiting_payment").limit(50);
+      return { name: "Marketplace Booking Sync", status: (data?.length || 0) > 10 ? "warning" as const : "ok" as const, message: `${data?.length || 0} awaiting payment`, checkedAt: now };
+    }),
+    timedCheck("Edge Functions", async () => {
+      const { error } = await supabase.functions.invoke("check-subscription", { body: {} });
+      return { name: "Edge Functions", status: error ? "warning" as const : "ok" as const, message: error ? `Error: ${error.message}` : "Responding", checkedAt: now };
+    }),
+  ]);
 
-    results.push({
-      name: "Booking-Payment Sync",
-      status: (pendingBookings?.length || 0) > 20 ? "warning" : "ok",
-      message: `${pendingBookings?.length || 0} confirmed bookings found`,
-      checkedAt: now,
-    });
+  return checks.map(r => r.status === "fulfilled" ? r.value : { name: "Unknown", status: "error" as const, message: "Check failed", checkedAt: now });
+}
 
-    // 2. Check concierge orders with payment mismatch
-    const { data: mismatchOrders } = await supabase
-      .from("concierge_orders")
-      .select("id")
-      .eq("status", "confirmed")
-      .eq("payment_status", "pending")
-      .limit(50);
+// ── Health Report ──────────────────────────────────────────────────
 
-    results.push({
-      name: "Concierge Payment Sync",
-      status: (mismatchOrders?.length || 0) > 5 ? "warning" : "ok",
-      message: `${mismatchOrders?.length || 0} confirmed orders with pending payment`,
-      checkedAt: now,
-    });
+export async function getHealthReport(): Promise<HealthReport> {
+  const checks = await runSyncHealthChecks();
+  const hasError = checks.some(c => c.status === "error");
+  const hasWarning = checks.some(c => c.status === "warning");
 
-    // 3. Check orphaned notifications
-    const { count: notifCount } = await supabase
-      .from("notifications")
-      .select("id", { count: "exact", head: true })
-      .eq("read", false);
-
-    results.push({
-      name: "Notification Queue",
-      status: (notifCount || 0) > 100 ? "warning" : "ok",
-      message: `${notifCount || 0} unread notifications`,
-      checkedAt: now,
-    });
-
-    // 4. Check calendar consistency (listings with blocked dates conflicts)
-    const { data: activeListings } = await supabase
-      .from("public_listings")
-      .select("id")
-      .eq("active", true)
-      .limit(5);
-
-    results.push({
-      name: "Calendar Availability",
-      status: "ok",
-      message: `${activeListings?.length || 0} active listings checked`,
-      checkedAt: now,
-    });
-
-    // 5. Marketplace booking sync (L2.7)
-    const { data: staleBookings } = await supabase
-      .from("marketplace_bookings")
-      .select("id")
-      .eq("status", "awaiting_payment")
-      .limit(50);
-
-    results.push({
-      name: "Marketplace Booking Sync",
-      status: (staleBookings?.length || 0) > 10 ? "warning" : "ok",
-      message: `${staleBookings?.length || 0} bookings awaiting payment`,
-      checkedAt: now,
-    });
-
-    // 6. Refund tracking (L2.8)
-    const { data: refundedBookings } = await supabase
-      .from("marketplace_bookings")
-      .select("id")
-      .eq("status", "refunded")
-      .is("refunded_at", null)
-      .limit(50);
-
-    results.push({
-      name: "Refund Tracking",
-      status: (refundedBookings?.length || 0) > 0 ? "warning" : "ok",
-      message: `${refundedBookings?.length || 0} refunds missing timestamp`,
-      checkedAt: now,
-    });
-
-    // 7. Check messaging system
-    const { count: msgCount } = await supabase
-      .from("messages")
-      .select("id", { count: "exact", head: true });
-
-    results.push({
-      name: "Messaging System",
-      status: "ok",
-      message: `${msgCount || 0} total messages in system`,
-      checkedAt: now,
-    });
-
-    // 8. Edge function health
-    try {
-      const { error } = await supabase.functions.invoke("check-subscription", {
-        body: {},
-      });
-      results.push({
-        name: "Edge Functions",
-        status: error ? "warning" : "ok",
-        message: error ? `Edge function error: ${error.message}` : "Edge functions responding",
-        checkedAt: now,
-      });
-    } catch {
-      results.push({
-        name: "Edge Functions",
-        status: "error",
-        message: "Edge functions unreachable",
-        checkedAt: now,
-      });
-    }
-  } catch (err: any) {
-    results.push({
-      name: "Health Check System",
-      status: "error",
-      message: `Health check failed: ${err.message}`,
-      checkedAt: now,
-    });
-  }
-
-  return results;
+  return {
+    status: hasError ? "unhealthy" : hasWarning ? "degraded" : "healthy",
+    checks,
+    timestamp: new Date().toISOString(),
+    uptimeMs: Date.now() - startTime,
+  };
 }
 
 // ── Page Vitals ────────────────────────────────────────────────────
@@ -331,7 +323,6 @@ export async function runSyncHealthChecks(): Promise<SyncCheckResult[]> {
 export function capturePageVitals(pageName: string) {
   if (typeof window === "undefined") return;
   
-  // Report CLS, LCP via PerformanceObserver
   try {
     const clsObserver = new PerformanceObserver((list) => {
       let clsValue = 0;
@@ -350,10 +341,22 @@ export function capturePageVitals(pageName: string) {
       }
     });
     clsObserver.observe({ type: "layout-shift", buffered: true });
-
-    // Auto-disconnect after 10s
     setTimeout(() => clsObserver.disconnect(), 10000);
   } catch {
     // layout-shift not supported
   }
+}
+
+// ── Event Summary ──────────────────────────────────────────────────
+
+export function getEventSummary() {
+  const unresolvedEvents = events.filter(e => !e.resolved);
+  return {
+    total: events.length,
+    unresolved: unresolvedEvents.length,
+    errors: unresolvedEvents.filter(e => e.type === "error").length,
+    warnings: unresolvedEvents.filter(e => e.type === "warning").length,
+    performance: unresolvedEvents.filter(e => e.type === "performance").length,
+    critical: unresolvedEvents.filter(e => e.severity === "critical").length,
+  };
 }
