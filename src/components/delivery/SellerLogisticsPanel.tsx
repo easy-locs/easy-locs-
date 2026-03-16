@@ -24,6 +24,10 @@ import DeliverySLAPanel from "@/components/delivery/DeliverySLAPanel";
 import MultiDropBatchPanel from "@/components/delivery/MultiDropBatchPanel";
 import DriverOnboardingWizard from "@/components/delivery/DriverOnboardingWizard";
 import DeliveryAnalyticsReports from "@/components/delivery/DeliveryAnalyticsReports";
+import FleetManagementDashboard from "@/components/delivery/FleetManagementDashboard";
+import AutomatedDispatchRules from "@/components/delivery/AutomatedDispatchRules";
+import CustomerTrackingPage from "@/components/delivery/CustomerTrackingPage";
+import DriverEarningsPayroll from "@/components/delivery/DriverEarningsPayroll";
 import { useDeliveryNotifications } from "@/hooks/useDeliveryNotifications";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -213,7 +217,7 @@ export default function SellerLogisticsPanel() {
   const [searchingJobId, setSearchingJobId] = useState<string | null>(null);
   const [disputeJobId, setDisputeJobId] = useState<string | null>(null);
   const [trackingJobId, setTrackingJobId] = useState<string | null>(null);
-  const [filter, setFilter] = useState<"all" | "active" | "completed" | "batch" | "scheduled" | "history" | "disputes" | "analytics" | "multistop" | "seller-stats" | "onboarding" | "wallet" | "geofence" | "chat" | "fleet" | "reputation" | "optimize" | "buyer" | "invoices" | "sla" | "multi-drop" | "driver-reg" | "reports">("all");
+  const [filter, setFilter] = useState<"all" | "active" | "completed" | "batch" | "scheduled" | "history" | "disputes" | "analytics" | "multistop" | "seller-stats" | "onboarding" | "wallet" | "geofence" | "chat" | "fleet" | "reputation" | "optimize" | "buyer" | "invoices" | "sla" | "multi-drop" | "driver-reg" | "reports" | "fleet-mgmt" | "dispatch-rules" | "customer-track" | "payroll">("all");
   const [chatJobId, setChatJobId] = useState<string | null>(null);
 
   const filteredJobs = jobs.filter(j => {
@@ -275,7 +279,7 @@ export default function SellerLogisticsPanel() {
 
       {/* Filter tabs */}
       <div className="flex gap-1 p-1 rounded-xl overflow-x-auto" style={{ background: "hsl(var(--hud-surface))" }}>
-        {(["all", "active", "completed", "batch", "multi-drop", "multistop", "scheduled", "history", "disputes", "analytics", "reports", "seller-stats", "sla", "onboarding", "driver-reg", "wallet", "geofence", "fleet", "reputation", "optimize", "buyer", "invoices"] as const).map(f => {
+        {(["all", "active", "completed", "batch", "multi-drop", "multistop", "scheduled", "history", "disputes", "analytics", "reports", "seller-stats", "sla", "onboarding", "driver-reg", "wallet", "geofence", "fleet", "fleet-mgmt", "dispatch-rules", "reputation", "optimize", "buyer", "customer-track", "invoices", "payroll"] as const).map(f => {
           const labels: Record<string, string> = {
             all: "Tout", active: "Actives", completed: "Terminées", batch: "⚡ Batch",
             "multi-drop": "📦 Multi-Drop",
@@ -283,6 +287,7 @@ export default function SellerLogisticsPanel() {
             disputes: "⚠️ Litiges", analytics: "📊 Stats", reports: "📈 Rapports", "seller-stats": "📈 Perf.",
             sla: "⏱️ SLA", onboarding: "🚗 Livreur", "driver-reg": "📝 Inscription",
             wallet: "💰 Wallet", geofence: "🛡️ Zones", fleet: "🏢 Flotte",
+            "fleet-mgmt": "🗺️ Fleet", "dispatch-rules": "⚙️ Dispatch", "customer-track": "📲 Suivi client", payroll: "💶 Paie",
             reputation: "🏆 Réputation", optimize: "⚡ Optim.", buyer: "👤 Client", invoices: "🧾 Factures",
           };
           return (
@@ -337,6 +342,14 @@ export default function SellerLogisticsPanel() {
         <DriverOnboardingWizard onComplete={() => setFilter("all")} />
       ) : filter === "reports" ? (
         <DeliveryAnalyticsReports orgId={jobs[0]?.org_id || ""} />
+      ) : filter === "fleet-mgmt" ? (
+        <FleetManagementDashboard orgId={jobs[0]?.org_id || ""} />
+      ) : filter === "dispatch-rules" ? (
+        <AutomatedDispatchRules orgId={jobs[0]?.org_id || ""} />
+      ) : filter === "customer-track" ? (
+        <CustomerTrackingPage />
+      ) : filter === "payroll" ? (
+        <DriverEarningsPayroll />
       ) : (
       <div className="space-y-2">
         {loading ? (
