@@ -324,7 +324,7 @@ const ReportingDashboard = () => {
                         </CardContent>
                       </Card>
                       <Card>
-                        <CardHeader><CardTitle className="text-base">Détail</CardTitle></CardHeader>
+                        <CardHeader><CardTitle className="text-base">{t("page.reporting.expense_detail")}</CardTitle></CardHeader>
                         <CardContent className="space-y-2">
                           {expensesByCategory.map((cat, i) => {
                             const maxAmt = expensesByCategory[0]?.amount || 1;

@@ -158,7 +158,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
       items: [
         { icon: Settings, label: t("settings.organization") || "Organization", path: "/dashboard/settings" },
         { icon: UsersRound, label: t("settings.team") || "Team", path: "/dashboard/collaboration" },
-        { icon: BrainCircuit, label: "AI Assistant", path: "/dashboard/assistant" },
+        { icon: BrainCircuit, label: t("nav.ai_assistant") || "AI Assistant", path: "/dashboard/assistant" },
       ],
     },
   ];
