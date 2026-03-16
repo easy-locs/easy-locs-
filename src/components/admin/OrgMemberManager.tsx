@@ -197,7 +197,7 @@ export default function OrgMemberManager() {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-1.5">
                   <p className="text-xs font-semibold text-foreground truncate">
-                    {member.profile?.full_name || member.profile?.email || "Utilisateur"}
+                    {member.profile?.name || member.profile?.email || "Utilisateur"}
                   </p>
                   {isMe && (
                     <span className="text-[8px] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary font-bold">
