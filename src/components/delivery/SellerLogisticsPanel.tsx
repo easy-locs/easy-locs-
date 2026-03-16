@@ -355,6 +355,13 @@ export default function SellerLogisticsPanel() {
                         <MapPin className="h-3 w-3 mr-0.5" /> GPS
                       </Button>
                     )}
+                    {["assigned", "accepted", "in_progress"].includes(job.status) && job.driver_id && (
+                      <Button size="sm" className="text-[10px] h-7 px-2"
+                        onClick={() => setChatJobId(chatJobId === job.id ? null : job.id)}
+                        style={{ background: "hsl(var(--info) / 0.12)", color: "hsl(var(--info))" }}>
+                        <MessageCircle className="h-3 w-3 mr-0.5" /> Chat
+                      </Button>
+                    )}
                     {["pending", "assigned"].includes(job.status) && (
                       <Button size="sm" variant="ghost" className="text-[10px] h-7 px-1.5"
                         onClick={() => handleCancel(job.id)}
