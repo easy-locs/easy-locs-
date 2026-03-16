@@ -277,3 +277,12 @@ Conversation → Offer → Counter offer → Accepted → Payment → Confirmed
 | ModerationPanel | Review moderation queue (approve/reject), blocked users management | ✅ Done |
 | AuditTrail v2 | Category grouping, CSV export, pagination, quick stat pills, enhanced action labels | ✅ Done |
 | AdminDashboard tabs | Added "Team" and "Moderation" tabs to admin dashboard | ✅ Done |
+
+## PASS55 Block I — Onboarding / Wizard
+| Feature | Implementation | Status |
+|---------|---------------|--------|
+| Existing wizard verified | 8-step onboarding (type, owner, property, OTA, tenant, inventory, docs, activation) | ✅ Verified |
+| OnboardingChecklist | Dashboard widget: 5-step checklist (property, tenant, document, payments, communication) with progress bar, dismiss, collapse | ✅ Done |
+| WelcomeTour | First-visit overlay: 4-step animated tour (Biens, Orbit, Documents, Wallet) with dot navigation | ✅ Done |
+| Lazy loading | Both components lazy-loaded in Dashboard via React.lazy + Suspense | ✅ Done |
+| Auto-dismiss | Checklist auto-hides when all steps done, tour stores dismissal in localStorage | ✅ Done |
