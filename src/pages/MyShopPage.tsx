@@ -161,6 +161,7 @@ export default function MyShopPage() {
             <div className="space-y-4">
               <OrdersManager shopId={shop.id} />
               <ReturnsManager shopId={shop.id} />
+              <DeliveryDispatch shopId={shop.id} />
             </div>
           )}
           {tab === "deals" && <StorefrontDealRoom shopId={shop.id} isSeller />}
@@ -168,6 +169,7 @@ export default function MyShopPage() {
             <div className="space-y-4">
               <SellerFinance shopId={shop.id} />
               <SubscriptionManager shopId={shop.id} />
+              <LoyaltyDashboard shopId={shop.id} mode="seller" />
             </div>
           )}
           {tab === "analytics" && <ShopAnalytics shopId={shop.id} />}
