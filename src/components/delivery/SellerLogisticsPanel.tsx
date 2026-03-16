@@ -291,18 +291,20 @@ export default function SellerLogisticsPanel() {
 
       {/* Filter tabs */}
       <div className="flex gap-1 p-1 rounded-xl overflow-x-auto" style={{ background: "hsl(var(--hud-surface))" }}>
-        {(["all", "active", "completed", "batch", "multi-drop", "multistop", "scheduled", "history", "disputes", "analytics", "reports", "adv-analytics", "seller-stats", "sla", "surge", "multi-currency", "route-optim", "insurance", "onboarding", "driver-reg", "shifts", "wallet", "geofence", "fleet", "fleet-mgmt", "dispatch-rules", "moderation", "reputation", "optimize", "buyer", "customer-track", "invoices", "payroll", "notif-rules"] as const).map(f => {
+        {(["all", "active", "completed", "batch", "multi-drop", "multistop", "scheduled", "slot-booking", "history", "disputes", "analytics", "reports", "adv-analytics", "seller-stats", "sla", "surge", "multi-currency", "route-optim", "insurance", "onboarding", "driver-reg", "referral", "shifts", "wallet", "geofence", "fleet", "fleet-mgmt", "dispatch-rules", "moderation", "reputation", "optimize", "buyer", "customer-track", "support-bot", "returns", "invoices", "payroll", "notif-rules"] as const).map(f => {
           const labels: Record<string, string> = {
             all: "Tout", active: "Actives", completed: "Terminées", batch: "⚡ Batch",
             "multi-drop": "📦 Multi-Drop",
-            multistop: "🗺️ Multi", scheduled: "📅 Planif.", history: "📋 Histo.",
+            multistop: "🗺️ Multi", scheduled: "📅 Planif.", "slot-booking": "🕐 Créneaux", history: "📋 Histo.",
             disputes: "⚠️ Litiges", analytics: "📊 Stats", reports: "📈 Rapports", "seller-stats": "📈 Perf.",
             sla: "⏱️ SLA", surge: "💹 Surge", onboarding: "🚗 Livreur", "driver-reg": "📝 Inscription",
-            shifts: "📅 Shifts", wallet: "💰 Wallet", geofence: "🛡️ Zones", fleet: "🏢 Flotte",
+            referral: "🎁 Parrainage", shifts: "📅 Shifts", wallet: "💰 Wallet", geofence: "🛡️ Zones", fleet: "🏢 Flotte",
             "fleet-mgmt": "🗺️ Fleet", "dispatch-rules": "⚙️ Dispatch", moderation: "🛡️ Modération",
-            "customer-track": "📲 Suivi client", payroll: "💶 Paie", "notif-rules": "🔔 Notifs",
+            "customer-track": "📲 Suivi client", "support-bot": "🤖 Support IA", returns: "🔄 Retours",
+            payroll: "💶 Paie", "notif-rules": "🔔 Notifs",
             reputation: "🏆 Réputation", optimize: "⚡ Optim.", buyer: "👤 Client", invoices: "🧾 Factures",
             "multi-currency": "💱 Devises", "route-optim": "🧭 Routes", insurance: "🛡️ Assurance", "adv-analytics": "📊 Analytics+",
+          };
           };
           return (
             <button key={f} onClick={() => setFilter(f)}
