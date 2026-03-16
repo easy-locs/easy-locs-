@@ -7,6 +7,8 @@ import DeliveryAnalyticsDashboard from "@/components/delivery/DeliveryAnalyticsD
 import DeliveryDisputeFlow from "@/components/delivery/DeliveryDisputeFlow";
 import BatchDispatchPanel from "@/components/delivery/BatchDispatchPanel";
 import DeliveryLiveTracker from "@/components/delivery/DeliveryLiveTracker";
+import ScheduledDeliveryPanel from "@/components/delivery/ScheduledDeliveryPanel";
+import DeliveryHistoryExport from "@/components/delivery/DeliveryHistoryExport";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Plus, Package, Truck, MapPin, Clock, CheckCircle2,
