@@ -32,7 +32,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Store, Package, ShoppingBag, Settings, ExternalLink, Copy, Check, Loader2, Handshake, BarChart3, Rocket } from "lucide-react";
+import { Store, Package, ShoppingBag, Settings, ExternalLink, Copy, Check, Loader2, Handshake, BarChart3, Rocket, DollarSign } from "lucide-react";
 import { toast } from "sonner";
 import { haptic } from "@/lib/haptics";
 
