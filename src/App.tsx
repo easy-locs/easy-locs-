@@ -152,6 +152,8 @@ const SellerHubPage = safeLazy(() => import("./pages/SellerHubPage"), "SellerHub
 const DriverDashboard = safeLazy(() => import("./pages/DriverDashboard"), "DriverDashboard");
 const ShopPage = safeLazy(() => import("./pages/ShopPage"), "ShopPage");
 const MyShopPage = safeLazy(() => import("./pages/MyShopPage"), "MyShopPage");
+const DiscoverPage = safeLazy(() => import("./pages/DiscoverPage"), "DiscoverPage");
+const OpsCenter = safeLazy(() => import("./pages/OpsCenter"), "OpsCenter");
 const ConciergeServicesPage = safeLazy(() => import("./pages/seo/ConciergeServicesPage"), "ConciergeServicesPage");
 const MarketplaceServicesPage = safeLazy(() => import("./pages/seo/MarketplaceServicesPage"), "MarketplaceServicesPage");
 const ActivitiesPage = safeLazy(() => import("./pages/seo/ActivitiesPage"), "ActivitiesPage");
@@ -266,7 +268,11 @@ const App = () => (
               <Route path="/showcase/:orgSlug" element={<ProviderStorefront />} />
               <Route path="/store/:storeSlug" element={<StorePage />} />
               <Route path="/s/:shopSlug" element={<ShopPage />} />
-              <Route path="/shop/:categoryCity" element={<ShopCategoryPage />} />
+              <Route path="/discover" element={<DiscoverPage />} />
+              <Route path="/search" element={<DiscoverPage />} />
+              <Route path="/trending" element={<DiscoverPage />} />
+              <Route path="/nearby" element={<DiscoverPage />} />
+              <Route path="/top-rated" element={<DiscoverPage />} />
               <Route path="/landlord/:slug" element={<LandlordProfile />} />
               <Route path="/agency/:accountSlug" element={<AccountShowcase />} />
               <Route path="/agency/:accountSlug/:slug" element={<PublicRealEstateListing />} />
@@ -370,6 +376,8 @@ const App = () => (
               
               <Route path="/dashboard/seller" element={<ProtectedRoute><SellerHubPage /></ProtectedRoute>} />
               <Route path="/dashboard/my-shop" element={<ProtectedRoute><MyShopPage /></ProtectedRoute>} />
+              <Route path="/business/ops" element={<ProtectedRoute><OpsCenter /></ProtectedRoute>} />
+              <Route path="/dashboard/ops" element={<ProtectedRoute><OpsCenter /></ProtectedRoute>} />
               <Route path="/dashboard/driver" element={<ProtectedRoute><DriverDashboard /></ProtectedRoute>} />
               <Route path="/dashboard/activities" element={<ProtectedRoute><ActivitiesMarketplace /></ProtectedRoute>} />
               <Route path="/dashboard/calendar" element={<ProtectedRoute><PropertyCalendar /></ProtectedRoute>} />
