@@ -12,6 +12,7 @@ import ShareButtons from "@/components/public/ShareButtons";
 import { useStorefrontCart } from "@/hooks/useStorefrontCart";
 import { useStorefrontCoupon } from "@/hooks/useStorefrontCoupon";
 import { useStorefrontWishlist } from "@/hooks/useStorefrontWishlist";
+import { useStorefrontCurrency } from "@/hooks/useStorefrontCurrency";
 import { useAuth } from "@/contexts/AuthContext";
 import ShopReviews from "@/components/storefront/ShopReviews";
 import { Button } from "@/components/ui/button";
