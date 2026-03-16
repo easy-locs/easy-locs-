@@ -376,6 +376,7 @@ export default function SellerLogisticsPanel() {
             "adv-returns": "🔄 Retours++", "finance-ctrl": "💵 Finance", "incidents": "🚨 Incidents", "seller-portal": "🏪 Partenaires",
             "capacity": "🧠 Capacité", "multi-vendor": "🛒 Multi-vendeur", "quality": "🛡️ Qualité", "cx-hub": "❤️ CX Hub",
             "ev-fleet": "⚡ EV Fleet", "franchise": "🏢 Franchises", "cross-border": "🌍 Cross-Border", "data-hub": "📡 Data Hub",
+            "ai-dispatch": "🧠 AI Dispatch", "insur-claims": "🛡️ Assurance+", "maint-ai": "🔧 Maint. IA", "regulatory": "⚖️ Conformité",
           };
           return (
             <button key={f} onClick={() => setFilter(f)}
