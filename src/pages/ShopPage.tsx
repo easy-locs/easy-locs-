@@ -33,6 +33,10 @@ import FlashSales from "@/components/storefront/FlashSales";
 import ShippingTracker from "@/components/storefront/ShippingTracker";
 import MultiCurrencyTax from "@/components/storefront/MultiCurrencyTax";
 import AffiliateEngine from "@/components/storefront/AffiliateEngine";
+import LoyaltyRewards from "@/components/storefront/LoyaltyRewards";
+import CustomerSupport from "@/components/storefront/CustomerSupport";
+import LiveShopping from "@/components/storefront/LiveShopping";
+import RecurringSubscriptions from "@/components/storefront/RecurringSubscriptions";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -424,6 +428,32 @@ export default function ShopPage() {
           <div className="mt-6">
             <AdvancedReviews shopId={shop.id} mode="buyer" />
           </div>
+
+          {/* Live Shopping & Social */}
+          <div className="mt-6">
+            <LiveShopping shopId={shop.id} mode="buyer" catalogItems={catalogItems} />
+          </div>
+
+          {/* Customer Support */}
+          {user && (
+            <div className="mt-4">
+              <CustomerSupport shopId={shop.id} mode="buyer" />
+            </div>
+          )}
+
+          {/* Loyalty Rewards */}
+          {user && (
+            <div className="mt-4">
+              <LoyaltyRewards shopId={shop.id} mode="buyer" />
+            </div>
+          )}
+
+          {/* Recurring Subscriptions */}
+          {user && (
+            <div className="mt-4">
+              <RecurringSubscriptions shopId={shop.id} mode="buyer" />
+            </div>
+          )}
 
           {/* Reviews section */}
           <div className="mt-6">
