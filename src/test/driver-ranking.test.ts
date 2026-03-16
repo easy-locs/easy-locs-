@@ -150,7 +150,7 @@ describe("rankDriver", () => {
 describe("rankDrivers", () => {
   it("ranks multiple drivers by score", () => {
     const drivers = [
-      baseDriver({ id: "far", lat: 49.0, lng: 2.5, rating: 3.0 }), // far, low rating
+      baseDriver({ id: "far", lat: 48.88, lng: 2.38, rating: 3.0 }), // ~3km, low rating
       baseDriver({ id: "close", lat: 48.86, lng: 2.34, rating: 4.8 }), // close, high rating
       baseDriver({ id: "offline", status: "offline" }),
     ];
