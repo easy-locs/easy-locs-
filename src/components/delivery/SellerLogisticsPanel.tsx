@@ -52,6 +52,10 @@ import MultiStopRoutePlanner from "@/components/delivery/MultiStopRoutePlanner";
 import ReturnsManagement from "@/components/delivery/ReturnsManagement";
 import DeliverySchedulingCalendar from "@/components/delivery/DeliverySchedulingCalendar";
 import DriverOnboardingPortal from "@/components/delivery/DriverOnboardingPortal";
+import PromoCouponsEngine from "@/components/delivery/PromoCouponsEngine";
+import LiveDeliveryChat from "@/components/delivery/LiveDeliveryChat";
+import WarehouseManagement from "@/components/delivery/WarehouseManagement";
+import GreenDeliveryDashboard from "@/components/delivery/GreenDeliveryDashboard";
 import { useDeliveryNotifications } from "@/hooks/useDeliveryNotifications";
 import { motion, AnimatePresence } from "framer-motion";
 import {
