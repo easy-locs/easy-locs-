@@ -78,6 +78,7 @@ export default function MessageMultiSelectToolbar({
       }
       onDeletedForMe(ids);
       toast.success(`${count} ${t("orbit.messages_hidden") || "messages hidden"}`);
+      platformBus.emit("orbit:message_sent", { type: "bulk_delete_for_me", count: ids.length }, "orbit", { userId: currentUserId });
     } catch (e: any) {
       console.error("[bulk-delete-for-me]", e);
       toast.error("Failed to hide some messages");
