@@ -86,7 +86,7 @@ export default function ShopPage() {
   const coupon = useStorefrontCoupon(shop?.id);
   const wishlist = useStorefrontWishlist(shop?.id);
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
-
+  const fx = useStorefrontCurrency(shop?.currency || shop?.default_currency || "EUR");
   const filteredItems = activeCategory
     ? catalogItems.filter((i: any) => i.category_id === activeCategory)
     : catalogItems;
