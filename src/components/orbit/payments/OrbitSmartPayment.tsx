@@ -67,7 +67,7 @@ export default function OrbitSmartPayment({
     preferredCurrency: userCurrency || null,
     accountCountry: userCountry || null,
   });
-  const { balance, loading: walletLoading } = useWallet();
+  const { balance, loading: walletLoading, isLargeTx } = useWallet();
   const { preview, loading: fxLoading, convert, fetchRates } = usePaymentFX();
 
   const [method, setMethod] = useState<PaymentMethod>("fiat");
