@@ -533,6 +533,14 @@ export default function SellerLogisticsPanel() {
         <SLAPerformanceMonitor orgId={jobs[0]?.org_id || ""} />
       ) : filter === "notif-hub" ? (
         <DeliveryNotificationHub orgId={jobs[0]?.org_id || ""} />
+      ) : filter === "adv-returns" ? (
+        <AdvancedReturnsHub orgId={jobs[0]?.org_id || ""} />
+      ) : filter === "finance-ctrl" ? (
+        <FinancialControlCenter orgId={jobs[0]?.org_id || ""} />
+      ) : filter === "incidents" ? (
+        <IncidentManagement orgId={jobs[0]?.org_id || ""} />
+      ) : filter === "seller-portal" ? (
+        <SellerPartnerPortal orgId={jobs[0]?.org_id || ""} />
       ) : (
       <div className="space-y-2">
         {loading ? (
