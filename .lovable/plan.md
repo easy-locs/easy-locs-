@@ -201,3 +201,17 @@ Conversation → Offer → Counter offer → Accepted → Payment → Confirmed
 | Deal status lifecycle | accepted → payment_pending → confirmed via Stripe | ✅ Done |
 | Payment events in timeline | stripe_checkout_created, payment_confirmed events rendered | ✅ Done |
 | Audit trail | deal_payment_checkout_created logged to audit_logs | ✅ Done |
+
+## PASS60 — Security / Ghost Mode Hardening (Block C)
+| Feature | Implementation | Status |
+|---------|---------------|--------|
+| Ghost mode session state | `isGhostModeActive()` / `activateGhostMode()` / `deactivateGhostMode()` in app-security.ts | ✅ Done |
+| Ghost presence suppression | usePresence reports "offline" when ghost active — invisible on radar | ✅ Done |
+| Ghost heartbeat bypass | Heartbeat interval skipped entirely in ghost mode | ✅ Done |
+| Ghost financial masking | useGhostMask hook — masks amounts, names, sensitive data with "••••••" | ✅ Done |
+| WalletBalanceCard masking | Balance, purchased, spent, frozen all masked with Ghost indicator | ✅ Done |
+| Secure media cleanup edge fn | cleanup-expired-media: deletes storage files for expired/view-once messages | ✅ Done |
+| Expired message row cleanup | Calls existing cleanup_expired_messages() RPC | ✅ Done |
+| Nonce cleanup | Calls cleanup_expired_nonces() RPC for anti-replay hygiene | ✅ Done |
+| Cleanup audit trail | Logs cleanup results (messages, files, nonces deleted) to audit_logs | ✅ Done |
+| Existing security verified | App Lock, PIN (main/ghost/panic), auto-lock, view-once, disappearing messages, anti-screenshot blur — all functional | ✅ Verified |
