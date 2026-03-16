@@ -57,11 +57,11 @@ export default function FleetManagementDashboard({ orgId }: { orgId: string }) {
     if (userIds.length > 0) {
       const { data: profiles } = await supabase
         .from("profiles")
-        .select("id, full_name")
+        .select("id, name, first_name, last_name")
         .in("id", userIds);
 
       if (profiles) {
-        const nameMap = new Map(profiles.map(p => [p.id, p.full_name]));
+        const nameMap = new Map(profiles.map(p => [p.id, p.name || [p.first_name, p.last_name].filter(Boolean).join(" ") || null]));
         driverList.forEach(d => { d.full_name = nameMap.get(d.user_id) || undefined; });
       }
     }

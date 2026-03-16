@@ -82,11 +82,11 @@ export default function CustomerTrackingPage() {
 
         const { data: profile } = await supabase
           .from("profiles")
-          .select("full_name")
+          .select("name, first_name, last_name")
           .eq("id", data.driver_id)
           .maybeSingle();
 
-        if (profile) trackingData.driver_name = profile.full_name || undefined;
+        if (profile) trackingData.driver_name = profile.name || [profile.first_name, profile.last_name].filter(Boolean).join(" ") || undefined;
       }
 
       setTracking(trackingData);

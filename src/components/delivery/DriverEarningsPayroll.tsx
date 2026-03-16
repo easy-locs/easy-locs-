@@ -287,5 +287,3 @@ export default function DriverEarningsPayroll() {
   );
 }
 
-// Need toast import
-import { toast } from "sonner";
