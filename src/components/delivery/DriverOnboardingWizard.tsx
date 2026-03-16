@@ -80,7 +80,7 @@ export default function DriverOnboardingWizard({ onComplete }: { onComplete?: ()
 
       // Update profile with driver info
       await supabase.from("profiles").update({
-        full_name: profile.fullName,
+        name: profile.fullName,
         phone: profile.phone,
         city: profile.city,
         country: profile.country,
