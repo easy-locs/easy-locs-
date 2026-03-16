@@ -2017,6 +2017,85 @@ export type Database = {
           },
         ]
       }
+      escrow_payments: {
+        Row: {
+          amount: number
+          created_at: string
+          currency: string
+          held_at: string | null
+          id: string
+          job_id: string
+          metadata_json: Json | null
+          org_id: string
+          payee_id: string | null
+          payer_id: string
+          refund_reason: string | null
+          refunded_at: string | null
+          release_reason: string | null
+          released_at: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          amount?: number
+          created_at?: string
+          currency?: string
+          held_at?: string | null
+          id?: string
+          job_id: string
+          metadata_json?: Json | null
+          org_id: string
+          payee_id?: string | null
+          payer_id: string
+          refund_reason?: string | null
+          refunded_at?: string | null
+          release_reason?: string | null
+          released_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          currency?: string
+          held_at?: string | null
+          id?: string
+          job_id?: string
+          metadata_json?: Json | null
+          org_id?: string
+          payee_id?: string | null
+          payer_id?: string
+          refund_reason?: string | null
+          refunded_at?: string | null
+          release_reason?: string | null
+          released_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "escrow_payments_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "delivery_jobs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "escrow_payments_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "escrow_payments_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs_tenant_view"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       expenses: {
         Row: {
           amount: number

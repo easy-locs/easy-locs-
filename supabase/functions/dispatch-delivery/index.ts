@@ -297,6 +297,91 @@ serve(async (req) => {
       return json({ success: true, job_id, delivered_at: updates.delivered_at });
     }
 
+    // ─── ESCROW: HOLD FUNDS ─────────────────────────────────
+    if (action === "escrow_hold") {
+      const { job_id } = body;
+      if (!job_id) throw new Error("job_id required");
+
+      const { data: job } = await supabaseAdmin.from("delivery_jobs").select("*").eq("id", job_id).single();
+      if (!job) throw new Error("Job not found");
+
+      // Check no existing active escrow
+      const { data: existing } = await supabaseAdmin.from("escrow_payments")
+        .select("id").eq("job_id", job_id).in("status", ["held", "pending"]).maybeSingle();
+      if (existing) throw new Error("Escrow already exists for this job");
+
+      const { data: escrow, error } = await supabaseAdmin.from("escrow_payments").insert({
+        job_id, org_id: job.org_id, payer_id: userId,
+        payee_id: job.driver_id || null,
+        amount: job.delivery_fee || 0, currency: job.currency || "EUR",
+        status: "held", held_at: new Date().toISOString(),
+        metadata_json: { job_priority: job.priority, pickup: job.pickup_address, dropoff: job.dropoff_address },
+      }).select().single();
+
+      if (error) throw new Error(`Escrow hold failed: ${error.message}`);
+      return json({ success: true, escrow });
+    }
+
+    // ─── ESCROW: RELEASE FUNDS ───────────────────────────────
+    if (action === "escrow_release") {
+      const { job_id, reason } = body;
+      if (!job_id) throw new Error("job_id required");
+
+      const { data: escrow } = await supabaseAdmin.from("escrow_payments")
+        .select("*").eq("job_id", job_id).eq("status", "held").maybeSingle();
+      if (!escrow) throw new Error("No held escrow found for this job");
+
+      const { error } = await supabaseAdmin.from("escrow_payments").update({
+        status: "released", released_at: new Date().toISOString(),
+        release_reason: reason || "delivery_confirmed", updated_at: new Date().toISOString(),
+      }).eq("id", escrow.id);
+
+      if (error) throw new Error(`Escrow release failed: ${error.message}`);
+
+      // Audit
+      await supabaseAdmin.from("audit_logs").insert({
+        user_id: userId, org_id: escrow.org_id, action: "escrow_released",
+        metadata_json: { escrow_id: escrow.id, job_id, amount: escrow.amount, currency: escrow.currency },
+      });
+
+      return json({ success: true, escrow_id: escrow.id, amount: escrow.amount, released_at: new Date().toISOString() });
+    }
+
+    // ─── ESCROW: REFUND ──────────────────────────────────────
+    if (action === "escrow_refund") {
+      const { job_id, reason } = body;
+      if (!job_id) throw new Error("job_id required");
+
+      const { data: escrow } = await supabaseAdmin.from("escrow_payments")
+        .select("*").eq("job_id", job_id).eq("status", "held").maybeSingle();
+      if (!escrow) throw new Error("No held escrow found for this job");
+
+      const { error } = await supabaseAdmin.from("escrow_payments").update({
+        status: "refunded", refunded_at: new Date().toISOString(),
+        refund_reason: reason || "job_cancelled", updated_at: new Date().toISOString(),
+      }).eq("id", escrow.id);
+
+      if (error) throw new Error(`Escrow refund failed: ${error.message}`);
+
+      await supabaseAdmin.from("audit_logs").insert({
+        user_id: userId, org_id: escrow.org_id, action: "escrow_refunded",
+        metadata_json: { escrow_id: escrow.id, job_id, amount: escrow.amount, reason },
+      });
+
+      return json({ success: true, escrow_id: escrow.id, amount: escrow.amount, refunded_at: new Date().toISOString() });
+    }
+
+    // ─── ESCROW: STATUS ──────────────────────────────────────
+    if (action === "escrow_status") {
+      const { job_id } = body;
+      if (!job_id) throw new Error("job_id required");
+
+      const { data: escrow } = await supabaseAdmin.from("escrow_payments")
+        .select("*").eq("job_id", job_id).order("created_at", { ascending: false }).limit(1).maybeSingle();
+
+      return json({ success: true, escrow: escrow || null });
+    }
+
     throw new Error(`Unknown action: ${action}`);
   } catch (err) {
     console.error("[dispatch-delivery] Error:", err);
