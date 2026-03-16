@@ -3,6 +3,7 @@
  * PASS70-B
  */
 import { useState } from "react";
+import DeliveryHeatmapPanel from "@/components/delivery/DeliveryHeatmapPanel";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Power, Navigation, Package, Clock, CheckCircle2,
@@ -164,7 +165,7 @@ function MissionCard({ mission, onAccept, onPickup, onDeliver, onCancel }: {
 export default function DriverDashboard() {
   const { session, isOnline, goOnline, goOffline, loading: sessionLoading } = useDriverSession();
   const { activeMissions, completedMissions, stats, loading: missionsLoading, acceptMission, updateStatus, confirmDelivery } = useDriverMissions();
-  const [tab, setTab] = useState<"active" | "history">("active");
+  const [tab, setTab] = useState<"active" | "history" | "heatmap">("active");
 
   const handleToggleOnline = async () => {
     haptic("medium");
@@ -255,7 +256,7 @@ export default function DriverDashboard() {
 
       {/* Tab bar */}
       <div className="flex gap-1 mx-4 mb-3 p-1 rounded-xl" style={{ background: "hsl(var(--hud-surface))" }}>
-        {(["active", "history"] as const).map(t => (
+        {(["active", "heatmap", "history"] as const).map(t => (
           <button
             key={t}
             onClick={() => { setTab(t); haptic("light"); }}
@@ -265,7 +266,7 @@ export default function DriverDashboard() {
               color: tab === t ? "hsl(var(--hud-cyan))" : "hsl(var(--hud-text-dim) / 0.5)",
             }}
           >
-            {t === "active" ? `Missions (${stats.active})` : "Historique"}
+            {t === "active" ? `Missions (${stats.active})` : t === "heatmap" ? "🔥 Demande" : "Historique"}
           </button>
         ))}
       </div>
@@ -277,6 +278,8 @@ export default function DriverDashboard() {
             <Truck className="h-8 w-8 animate-pulse" style={{ color: "hsl(var(--hud-cyan) / 0.3)" }} />
             <p className="text-[11px] mt-2" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>Chargement…</p>
           </div>
+        ) : tab === "heatmap" ? (
+          <DeliveryHeatmapPanel orgId={session?.org_id ?? undefined} />
         ) : tab === "active" ? (
           activeMissions.length === 0 ? (
             <div className="flex flex-col items-center py-16 text-center">
