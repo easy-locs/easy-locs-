@@ -468,6 +468,14 @@ export default function SellerLogisticsPanel() {
         <DeliveryKPIDashboard orgId={jobs[0]?.org_id || ""} />
       ) : filter === "maint-sched" ? (
         <MaintenanceScheduler orgId={jobs[0]?.org_id || ""} />
+      ) : filter === "driver-onboard" ? (
+        <DriverOnboardingComplete onComplete={() => setFilter("all")} />
+      ) : filter === "notif-center" ? (
+        <DeliveryNotificationCenter orgId={jobs[0]?.org_id || ""} />
+      ) : filter === "payout-reports" ? (
+        <SellerPayoutReports orgId={jobs[0]?.org_id || ""} />
+      ) : filter === "zones-mgr" ? (
+        <DeliveryZonesManager orgId={jobs[0]?.org_id || ""} />
       ) : (
       <div className="space-y-2">
         {loading ? (
