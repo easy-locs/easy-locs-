@@ -114,30 +114,22 @@ describe("Disputes", () => {
 describe("calculateSellerMetrics", () => {
   it("calculates metrics correctly", () => {
     const m1 = assignDriver(mission(), "d1", "s1");
-    const m2 = transitionDeliveryMission(
-      transitionDeliveryMission(
-        transitionDeliveryMission(
-          transitionDeliveryMission(
-            assignDriver(createMission({
-              sellerId: "s1", orgId: "org1", orderId: "o2",
-              pickupAddress: "A", pickupLat: 48.85, pickupLng: 2.35,
-              dropoffAddress: "B", dropoffLat: 48.87, dropoffLng: 2.37,
-              packageDescription: "P", weightKg: 1, deliveryFee: 8,
-            }), "d1", "s1"),
-            "accepted", "d1"
-          ),
-          "in_progress", "d1"
-        ),
-        "completed", "d1"
-      ),
-      // Need a completed one — already completed above
-      // Let's fix: m2 is already completed
-      // Actually the last call was redundant, let me restructure
-    );
-    // Simpler approach:
-    const missions = [m1]; // 1 assigned
-    const metrics = calculateSellerMetrics(missions);
-    expect(metrics.totalMissions).toBe(1);
+
+    const m2Base = createMission({
+      sellerId: "s1", orgId: "org1", orderId: "o2",
+      pickupAddress: "A", pickupLat: 48.85, pickupLng: 2.35,
+      dropoffAddress: "B", dropoffLat: 48.87, dropoffLng: 2.37,
+      packageDescription: "P", weightKg: 1, deliveryFee: 8,
+    });
+    const m2Assigned = assignDriver(m2Base, "d1", "s1");
+    const m2Accepted = transitionDeliveryMission(m2Assigned, "accepted", "d1");
+    const m2InProgress = transitionDeliveryMission(m2Accepted, "in_progress", "d1");
+    const m2Completed = transitionDeliveryMission(m2InProgress, "completed", "d1");
+
+    const metrics = calculateSellerMetrics([m1, m2Completed]);
+    expect(metrics.totalMissions).toBe(2);
     expect(metrics.pending).toBe(1);
+    expect(metrics.completed).toBe(1);
+    expect(metrics.totalRevenue).toBe(8);
   });
 });
