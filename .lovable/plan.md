@@ -338,3 +338,13 @@ Conversation → Offer → Counter offer → Accepted → Payment → Confirmed
 | Security / Ghost Mode tests | 5 tests: activate, deactivate, idempotency, default state | ✅ Done |
 | Platform Bus tests | 5 tests: emit/receive, unsubscribe, multiple listeners, event metadata, log | ✅ Done |
 | Full test suite | 29 files, 417 tests, 0 failures | ✅ Passing |
+
+## PASS55 Block O — Reporting / Export
+| Feature | Implementation | Status |
+|---------|---------------|--------|
+| PDF financial report generator | pdf-report.ts: jsPDF with header, KPIs, property table, expense bars, footer | ✅ Done |
+| ReportingDashboard page | /dashboard/reporting: KPI cards, monthly bar chart, per-property breakdown, expense pie chart, CSV + PDF export | ✅ Done |
+| Sidebar nav entry | BarChart3 "Reporting" under Accounting section | ✅ Done |
+| CSV export | Reuses existing exportToCSV with property-level breakdown | ✅ Done |
+| Year selector | Filter all data by fiscal year (current - 4 years) | ✅ Done |
+| Country filter integration | Respects CountryFilter for multi-country portfolios | ✅ Done |
