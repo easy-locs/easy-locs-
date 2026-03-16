@@ -53,6 +53,9 @@ import RecurringSubscriptions from "@/components/storefront/RecurringSubscriptio
 import SmartNotifications from "@/components/storefront/SmartNotifications";
 import MultiStoreManager from "@/components/storefront/MultiStoreManager";
 import GamificationEngine from "@/components/storefront/GamificationEngine";
+import CouponsPromotions from "@/components/storefront/CouponsPromotions";
+import SellerAnalyticsPro from "@/components/storefront/SellerAnalyticsPro";
+import ShippingFulfillment from "@/components/storefront/ShippingFulfillment";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
