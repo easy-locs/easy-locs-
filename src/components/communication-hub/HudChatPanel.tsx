@@ -528,6 +528,14 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
       setConvStatus("waiting_tenant");
       setSecurityLevel("normal"); // Reset security level after successful send
 
+      // Platform bus: emit message_sent for cross-module sync
+      platformBus.emit("orbit:message_sent", {
+        threadId: thread.threadId || thread.id,
+        contextId: thread.contextId,
+        recipientName: thread.name,
+        contentPreview: content.slice(0, 80),
+      }, "orbit", { userId: authUserId, orgId });
+
       const recipientEmail = normalizeEmail(thread.email);
       if (recipientEmail && isValidEmail(recipientEmail)) {
         try {
