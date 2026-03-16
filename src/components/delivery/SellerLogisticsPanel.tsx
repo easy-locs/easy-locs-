@@ -40,6 +40,10 @@ import DriverReferralProgram from "@/components/delivery/DriverReferralProgram";
 import DeliverySupportBot from "@/components/delivery/DeliverySupportBot";
 import ReturnsReverseLogistics from "@/components/delivery/ReturnsReverseLogistics";
 import DeliverySlotBooking from "@/components/delivery/DeliverySlotBooking";
+import FleetManagementHub from "@/components/delivery/FleetManagementHub";
+import DeliveryGamification from "@/components/delivery/DeliveryGamification";
+import SmartNotificationsEngine from "@/components/delivery/SmartNotificationsEngine";
+import DeliveryAPIWebhooks from "@/components/delivery/DeliveryAPIWebhooks";
 import { useDeliveryNotifications } from "@/hooks/useDeliveryNotifications";
 import { motion, AnimatePresence } from "framer-motion";
 import {
