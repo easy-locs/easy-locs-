@@ -323,6 +323,9 @@ export default function MyShopPage() {
               {/* Inventory */}
               <InventoryManager shopId={shop.id} />
 
+              {/* Shipping */}
+              <ShippingManager shopId={shop.id} />
+
               {/* SEO */}
               <ShopSEOManager shopId={shop.id} shopSlug={shop.slug} currentData={shop} />
 
