@@ -1,7 +1,7 @@
 /**
- * ShopPage — Public storefront for any brand/branch.
- * Route: /shop/{slug}
- * Displays: logo, banner, catalog, contact, share, cart
+ * ShopPage — Public storefront for buyers.
+ * Route: /shop/{slug} or /s/{slug}
+ * CONSOLIDATED: 1 component per function, lazy-loaded sections.
  */
 import { useParams, useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -14,66 +14,49 @@ import { useStorefrontCoupon } from "@/hooks/useStorefrontCoupon";
 import { useStorefrontWishlist } from "@/hooks/useStorefrontWishlist";
 import { useStorefrontCurrency } from "@/hooks/useStorefrontCurrency";
 import { useAuth } from "@/contexts/AuthContext";
-import ShopReviews from "@/components/storefront/ShopReviews";
-import BundleManager from "@/components/storefront/BundleManager";
-import LoyaltyDashboard from "@/components/storefront/LoyaltyDashboard";
-import AIShoppingAssistant from "@/components/storefront/AIShoppingAssistant";
-import SocialCommerce from "@/components/storefront/SocialCommerce";
-import AdvancedCheckout from "@/components/storefront/AdvancedCheckout";
-import ProductComparison from "@/components/storefront/ProductComparison";
-import AffiliateProgram from "@/components/storefront/AffiliateProgram";
-import AuctionManager from "@/components/storefront/AuctionManager";
-import SubscriptionEngine from "@/components/storefront/SubscriptionEngine";
-import GiftCardManager from "@/components/storefront/GiftCardManager";
-import ReturnsRefundEngine from "@/components/storefront/ReturnsRefundEngine";
-import LoyaltyProgram from "@/components/storefront/LoyaltyProgram";
-import WishlistRegistry from "@/components/storefront/WishlistRegistry";
-import AdvancedReviews from "@/components/storefront/AdvancedReviews";
-import FlashSales from "@/components/storefront/FlashSales";
-import ShippingTracker from "@/components/storefront/ShippingTracker";
-import MultiCurrencyTax from "@/components/storefront/MultiCurrencyTax";
-import AffiliateEngine from "@/components/storefront/AffiliateEngine";
-import LoyaltyRewards from "@/components/storefront/LoyaltyRewards";
-import CustomerSupport from "@/components/storefront/CustomerSupport";
-import LiveShopping from "@/components/storefront/LiveShopping";
-import RecurringSubscriptions from "@/components/storefront/RecurringSubscriptions";
-import SmartNotifications from "@/components/storefront/SmartNotifications";
-import GamificationEngine from "@/components/storefront/GamificationEngine";
-import CouponsPromotions from "@/components/storefront/CouponsPromotions";
-import WishlistFavorites from "@/components/storefront/WishlistFavorites";
-import ShippingFulfillment from "@/components/storefront/ShippingFulfillment";
-import StorefrontReviews from "@/components/storefront/StorefrontReviews";
-import LiveCommerceStream from "@/components/storefront/LiveCommerceStream";
-import AffiliateReferralProgram from "@/components/storefront/AffiliateReferralProgram";
-import ReturnsRefunds from "@/components/storefront/ReturnsRefunds";
-import SubscriptionPlans from "@/components/storefront/SubscriptionPlans";
-import MultiVendorHub from "@/components/storefront/MultiVendorHub";
-import LoyaltyPointsEngine from "@/components/storefront/LoyaltyPointsEngine";
-import GiftCardStore from "@/components/storefront/GiftCardStore";
-import SubscriptionBoxes from "@/components/storefront/SubscriptionBoxes";
-import ReverseAuctionRFQ from "@/components/storefront/ReverseAuctionRFQ";
-import DigitalProducts from "@/components/storefront/DigitalProducts";
-import PeerMarketplace from "@/components/storefront/PeerMarketplace";
-import WishlistSaveLater from "@/components/storefront/WishlistSaveLater";
-import ProductComparator from "@/components/storefront/ProductComparator";
-import AdvancedShipping from "@/components/storefront/AdvancedShipping";
-import StoreAnalyticsDashboard from "@/components/storefront/StoreAnalyticsDashboard";
-import LiveChatSupport from "@/components/storefront/LiveChatSupport";
-import AdvancedReferralSystem from "@/components/storefront/AdvancedReferralSystem";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, MapPin, ShoppingCart, Plus, Minus, Trash2, Phone, Mail, MessageCircle, Send, CheckCircle2, Store, Tag, X, Heart, Globe } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { useState } from "react";
+import { Loader2, MapPin, ShoppingCart, Plus, Minus, Trash2, Phone, Mail, MessageCircle, Send, CheckCircle2, Store, Tag, X, Heart, Globe } from "lucide-react";
+import { useState, lazy, Suspense } from "react";
 import { toast } from "sonner";
+
+// Lazy-loaded secondary sections — only loaded when scrolled into view or needed
+const ShopReviews = lazy(() => import("@/components/storefront/ShopReviews"));
+const BundleManager = lazy(() => import("@/components/storefront/BundleManager"));
+const FlashSales = lazy(() => import("@/components/storefront/FlashSales"));
+const AuctionManager = lazy(() => import("@/components/storefront/AuctionManager"));
+const LoyaltyDashboard = lazy(() => import("@/components/storefront/LoyaltyDashboard"));
+const GiftCardManager = lazy(() => import("@/components/storefront/GiftCardManager"));
+const ReturnsRefundEngine = lazy(() => import("@/components/storefront/ReturnsRefundEngine"));
+const AffiliateProgram = lazy(() => import("@/components/storefront/AffiliateProgram"));
+const CustomerSupport = lazy(() => import("@/components/storefront/CustomerSupport"));
+const LiveShopping = lazy(() => import("@/components/storefront/LiveShopping"));
+const SmartNotifications = lazy(() => import("@/components/storefront/SmartNotifications"));
+const DigitalProducts = lazy(() => import("@/components/storefront/DigitalProducts"));
+const PeerMarketplace = lazy(() => import("@/components/storefront/PeerMarketplace"));
+const ReverseAuctionRFQ = lazy(() => import("@/components/storefront/ReverseAuctionRFQ"));
+const WishlistSaveLater = lazy(() => import("@/components/storefront/WishlistSaveLater"));
+const ProductComparator = lazy(() => import("@/components/storefront/ProductComparator"));
+const SubscriptionManager = lazy(() => import("@/components/storefront/SubscriptionManager"));
+const MultiCurrencyTax = lazy(() => import("@/components/storefront/MultiCurrencyTax"));
+const GamificationEngine = lazy(() => import("@/components/storefront/GamificationEngine"));
+const AdvancedCheckout = lazy(() => import("@/components/storefront/AdvancedCheckout"));
+const AIShoppingAssistant = lazy(() => import("@/components/storefront/AIShoppingAssistant"));
 
 const fmtPrice = (n: number, c = "EUR") => {
   try { return new Intl.NumberFormat(undefined, { style: "currency", currency: c, minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(n); }
   catch { return `${n} ${c}`; }
 };
+
+const SectionLoader = () => (
+  <div className="flex items-center justify-center py-6">
+    <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+  </div>
+);
 
 export default function ShopPage() {
   const { shopSlug } = useParams<{ shopSlug: string }>();
@@ -84,7 +67,6 @@ export default function ShopPage() {
   const [couponCode, setCouponCode] = useState("");
   const [checkoutMode, setCheckoutMode] = useState(false);
 
-  // Load shop
   const { data: shop, isLoading } = useQuery({
     queryKey: ["storefront-page", shopSlug],
     queryFn: async () => {
@@ -98,7 +80,6 @@ export default function ShopPage() {
     enabled: !!shopSlug,
   });
 
-  // Load catalog items
   const { data: catalogItems = [] } = useQuery({
     queryKey: ["storefront-catalog", shop?.id],
     queryFn: async () => {
@@ -113,7 +94,6 @@ export default function ShopPage() {
     enabled: !!shop?.id,
   });
 
-  // Load categories
   const { data: categories = [] } = useQuery({
     queryKey: ["storefront-categories", shop?.id],
     queryFn: async () => {
@@ -137,22 +117,17 @@ export default function ShopPage() {
     ? catalogItems.filter((i: any) => i.category_id === activeCategory)
     : catalogItems;
 
-  // Handle checkout
   const discount = coupon.appliedCoupon?.discountAmount || 0;
   const finalTotal = Math.max(0, cart.total - discount);
 
   const handleCheckout = () => {
-    if (!user) {
-      toast.error("Please sign in to checkout");
-      return;
-    }
+    if (!user) { toast.error("Please sign in to checkout"); return; }
     if (cart.items.length === 0) return;
     setCheckoutMode(true);
     setCartOpen(false);
   };
 
   const handleCheckoutComplete = async (orderId: string) => {
-    // Record coupon usage
     if (coupon.appliedCoupon) {
       await coupon.recordUsage(orderId);
       coupon.removeCoupon();
@@ -175,7 +150,6 @@ export default function ShopPage() {
     </div>
   );
 
-  // Private shop access check
   if (shop.shop_visibility === "private" && !inviteToken && shop.user_id !== user?.id) {
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4">
@@ -229,7 +203,6 @@ export default function ShopPage() {
               </span>
             )}
             <Badge variant="outline" className="text-[10px]">{catalogItems.length} items</Badge>
-            {/* Currency selector */}
             <Select value={fx.displayCurrency} onValueChange={fx.setDisplayCurrency}>
               <SelectTrigger className="h-6 w-auto gap-1 text-[10px] border-none bg-muted/50 px-2">
                 <Globe className="h-3 w-3" />
@@ -335,13 +308,7 @@ export default function ShopPage() {
                             <span className="text-[10px] text-muted-foreground line-through ml-1">{fx.formatPrice(item.compare_at_price, item.currency)}</span>
                           )}
                         </div>
-                        <Button
-                          size="icon"
-                          variant="outline"
-                          className="h-8 w-8"
-                          onClick={() => cart.addItem(item.id, item.price)}
-                          disabled={cart.loading}
-                        >
+                        <Button size="icon" variant="outline" className="h-8 w-8" onClick={() => cart.addItem(item.id, item.price)} disabled={cart.loading}>
                           <Plus className="h-3.5 w-3.5" />
                         </Button>
                       </div>
@@ -352,297 +319,78 @@ export default function ShopPage() {
             </div>
           )}
 
-          {/* Product Comparison */}
-          <div className="mt-6">
-            <ProductComparison
-              catalogItems={catalogItems}
-              currency={shop.currency || "EUR"}
-              formatPrice={(n, c) => fx.formatPrice(n, c)}
-              onAddToCart={(itemId, price) => cart.addItem(itemId, price)}
-            />
-          </div>
-
-          {/* Bundles section */}
-          <div className="mt-6">
-            <BundleManager shopId={shop.id} mode="display" onAddBundle={(bundleId, price) => cart.addItem(bundleId, price)} />
-          </div>
-
-          {/* Flash Sales */}
-          <div className="mt-6">
-            <FlashSales shopId={shop.id} mode="buyer" catalogItems={catalogItems} onAddToCart={(id, p) => cart.addItem(id, p)} formatPrice={(n, c) => fx.formatPrice(n, c)} />
-          </div>
-
-          {/* Auctions */}
-          <div className="mt-6">
-            <AuctionManager shopId={shop.id} mode="buyer" />
-          </div>
-
-          {/* Wishlists & Registries */}
-          {user && (
-            <div className="mt-4">
-              <WishlistRegistry shopId={shop.id} catalogItems={catalogItems} formatPrice={(n, c) => fx.formatPrice(n, c)} />
+          {/* Secondary sections — lazy loaded */}
+          <Suspense fallback={<SectionLoader />}>
+            <div className="mt-6">
+              <BundleManager shopId={shop.id} mode="display" onAddBundle={(bundleId: string, price: number) => cart.addItem(bundleId, price)} />
             </div>
+            <div className="mt-6">
+              <FlashSales shopId={shop.id} mode="buyer" catalogItems={catalogItems} onAddToCart={(id: string, p: number) => cart.addItem(id, p)} formatPrice={(n: number, c: string) => fx.formatPrice(n, c)} />
+            </div>
+            <div className="mt-6">
+              <AuctionManager shopId={shop.id} mode="buyer" />
+            </div>
+          </Suspense>
+
+          {/* Authenticated buyer sections */}
+          {user && (
+            <Suspense fallback={<SectionLoader />}>
+              <div className="mt-4 space-y-4">
+                <WishlistSaveLater shopId={shop.id} mode="buyer" catalogItems={catalogItems} />
+                <ProductComparator shopId={shop.id} catalogItems={catalogItems} mode="buyer" />
+                <LoyaltyDashboard shopId={shop.id} mode="buyer" />
+                <GiftCardManager shopId={shop.id} mode="buyer" />
+                <SubscriptionManager shopId={shop.id} />
+                <ReturnsRefundEngine shopId={shop.id} mode="buyer" />
+                <AffiliateProgram shopId={shop.id} shopSlug={shop.slug} mode="buyer" />
+                <MultiCurrencyTax shopId={shop.id} mode="buyer" />
+                <CustomerSupport shopId={shop.id} mode="buyer" />
+                <SmartNotifications shopId={shop.id} mode="buyer" />
+                <GamificationEngine shopId={shop.id} mode="buyer" />
+                <ReverseAuctionRFQ shopId={shop.id} mode="buyer" />
+              </div>
+            </Suspense>
           )}
 
-          {/* Subscriptions */}
-          {user && (
-            <div className="mt-4">
-              <SubscriptionEngine shopId={shop.id} mode="buyer" catalogItems={catalogItems} />
+          {/* Public sections */}
+          <Suspense fallback={<SectionLoader />}>
+            <div className="mt-6 space-y-4">
+              <DigitalProducts shopId={shop.id} mode="buyer" />
+              <PeerMarketplace shopId={shop.id} mode="buyer" />
+              <LiveShopping shopId={shop.id} mode="buyer" catalogItems={catalogItems} />
+              <ShopReviews shopId={shop.id} shopOwnerId={shop.user_id} />
             </div>
-          )}
-
-          {/* Gift Cards */}
-          {user && (
-            <div className="mt-4">
-              <GiftCardManager shopId={shop.id} mode="buyer" />
-            </div>
-          )}
-
-          {/* Loyalty section */}
-          {user && (
-            <div className="mt-4">
-              <LoyaltyDashboard shopId={shop.id} mode="buyer" />
-            </div>
-          )}
-
-          {/* Loyalty Program (advanced) */}
-          {user && (
-            <div className="mt-4">
-              <LoyaltyProgram shopId={shop.id} mode="buyer" />
-            </div>
-          )}
-
-          {/* Returns */}
-          {user && (
-            <div className="mt-4">
-              <ReturnsRefundEngine shopId={shop.id} mode="buyer" />
-            </div>
-          )}
-          {user && (
-            <div className="mt-4">
-              <ReturnsRefunds shopId={shop.id} mode="buyer" />
-            </div>
-          )}
-
-          {/* Affiliate Program */}
-          {user && (
-            <div className="mt-4">
-              <AffiliateProgram shopId={shop.id} shopSlug={shop.slug} mode="buyer" />
-            </div>
-          )}
-          {user && (
-            <div className="mt-4">
-              <AffiliateEngine shopId={shop.id} shopSlug={shop.slug} mode="buyer" />
-            </div>
-          )}
-          {user && (
-            <div className="mt-4">
-              <AffiliateReferralProgram shopId={shop.id} shopSlug={shop.slug} mode="buyer" />
-            </div>
-          )}
-
-          {/* Shipping Tracker */}
-          {user && (
-            <div className="mt-4">
-              <ShippingTracker shopId={shop.id} mode="buyer" />
-            </div>
-          )}
-
-          {/* Invoices */}
-          {user && (
-            <div className="mt-4">
-              <MultiCurrencyTax shopId={shop.id} mode="buyer" />
-            </div>
-          )}
-
-          {/* Advanced Reviews & Q&A */}
-          <div className="mt-6">
-            <AdvancedReviews shopId={shop.id} mode="buyer" />
-          </div>
-
-          {/* Storefront Reviews */}
-          <div className="mt-4">
-            <StorefrontReviews shopId={shop.id} mode="buyer" />
-          </div>
-
-          {/* Live Shopping & Social */}
-          <div className="mt-6">
-            <LiveShopping shopId={shop.id} mode="buyer" catalogItems={catalogItems} />
-          </div>
-
-          {/* Live Commerce Stream */}
-          <div className="mt-4">
-            <LiveCommerceStream shopId={shop.id} mode="buyer" catalogItems={catalogItems} />
-          </div>
-
-          {/* Customer Support */}
-          {user && (
-            <div className="mt-4">
-              <CustomerSupport shopId={shop.id} mode="buyer" />
-            </div>
-          )}
-
-          {/* Loyalty Rewards */}
-          {user && (
-            <div className="mt-4">
-              <LoyaltyRewards shopId={shop.id} mode="buyer" />
-            </div>
-          )}
-
-          {/* Recurring Subscriptions */}
-          {user && (
-            <div className="mt-4">
-              <RecurringSubscriptions shopId={shop.id} mode="buyer" />
-            </div>
-          )}
-
-          {/* Gamification */}
-          {user && (
-            <div className="mt-4">
-              <GamificationEngine shopId={shop.id} mode="buyer" />
-            </div>
-          )}
-
-          {/* Subscription Plans */}
-          {user && (
-            <div className="mt-4">
-              <SubscriptionPlans shopId={shop.id} mode="buyer" />
-            </div>
-          )}
-
-          {/* Vendor Program */}
-          {user && (
-            <div className="mt-4">
-              <MultiVendorHub shopId={shop.id} mode="vendor" />
-            </div>
-          )}
-
-          {/* Loyalty Points */}
-          {user && (
-            <div className="mt-4">
-              <LoyaltyPointsEngine shopId={shop.id} mode="buyer" />
-            </div>
-          )}
-
-          {/* Gift Cards */}
-          <div className="mt-4">
-            <GiftCardStore shopId={shop.id} mode="buyer" />
-          </div>
-
-          {/* Subscription Boxes */}
-          <div className="mt-4">
-            <SubscriptionBoxes shopId={shop.id} mode="buyer" />
-          </div>
-
-          {/* Digital Products */}
-          <div className="mt-4">
-            <DigitalProducts shopId={shop.id} mode="buyer" />
-          </div>
-
-          {/* RFQ */}
-          {user && (
-            <div className="mt-4">
-              <ReverseAuctionRFQ shopId={shop.id} mode="buyer" />
-            </div>
-          )}
-
-          {/* P2P Marketplace */}
-          <div className="mt-4">
-            <PeerMarketplace shopId={shop.id} mode="buyer" />
-          </div>
-
-          {/* Wishlist & Save for Later */}
-          {user && (
-            <div className="mt-4">
-              <WishlistSaveLater shopId={shop.id} mode="buyer" catalogItems={catalogItems} />
-            </div>
-          )}
-
-          {/* Product Comparator */}
-          {user && (
-            <div className="mt-4">
-              <ProductComparator shopId={shop.id} catalogItems={catalogItems} mode="buyer" />
-            </div>
-          )}
-
-          {/* Shipping & Tracking */}
-          <div className="mt-4">
-            <AdvancedShipping shopId={shop.id} mode="buyer" />
-          </div>
-
-          {/* Smart Notifications */}
-          {user && (
-            <div className="mt-4">
-              <SmartNotifications shopId={shop.id} mode="buyer" />
-            </div>
-          )}
-
-          {/* Coupons & Promotions */}
-          <div className="mt-4">
-            <CouponsPromotions shopId={shop.id} mode="buyer" />
-          </div>
-
-          {/* Wishlist */}
-          {user && (
-            <div className="mt-4">
-              <WishlistFavorites shopId={shop.id} catalogItems={catalogItems} />
-            </div>
-          )}
-
-          {/* Shipping */}
-          <div className="mt-4">
-            <ShippingFulfillment shopId={shop.id} mode="buyer" />
-          </div>
-
-          {/* Live Chat Support */}
-          {user && (
-            <div className="mt-4">
-              <LiveChatSupport shopId={shop.id} mode="buyer" />
-            </div>
-          )}
-
-          {/* Referral Program */}
-          {user && (
-            <div className="mt-4">
-              <AdvancedReferralSystem shopId={shop.id} shopSlug={shop.slug} mode="buyer" />
-            </div>
-          )}
-
-          {/* Reviews section */}
-          <div className="mt-6">
-            <ShopReviews shopId={shop.id} shopOwnerId={shop.user_id} />
-          </div>
-
-          {/* Social Commerce */}
-          <div className="mt-6">
-            <SocialCommerce shopId={shop.id} catalogItems={catalogItems} />
-          </div>
+          </Suspense>
         </div>
 
         {/* AI Shopping Assistant */}
-        <AIShoppingAssistant shopId={shop.id} shopName={shop.name} catalogItems={catalogItems} />
+        <Suspense fallback={null}>
+          <AIShoppingAssistant shopId={shop.id} shopName={shop.name} catalogItems={catalogItems} />
+        </Suspense>
 
-        {/* Advanced Checkout Modal */}
+        {/* Checkout Modal */}
         {checkoutMode && (
-          <div className="fixed inset-0 z-50 bg-background overflow-y-auto">
-            <div className="max-w-lg mx-auto pb-10">
-              <div className="flex items-center justify-between p-4 border-b border-border">
-                <h2 className="text-sm font-bold">Checkout</h2>
-                <Button variant="ghost" size="sm" onClick={() => setCheckoutMode(false)}>Cancel</Button>
+          <Suspense fallback={<SectionLoader />}>
+            <div className="fixed inset-0 z-50 bg-background overflow-y-auto">
+              <div className="max-w-lg mx-auto pb-10">
+                <div className="flex items-center justify-between p-4 border-b border-border">
+                  <h2 className="text-sm font-bold">Checkout</h2>
+                  <Button variant="ghost" size="sm" onClick={() => setCheckoutMode(false)}>Cancel</Button>
+                </div>
+                <AdvancedCheckout
+                  shop={shop}
+                  cartItems={cart.items}
+                  total={finalTotal}
+                  discount={discount}
+                  couponNote={coupon.appliedCoupon ? `Coupon: ${coupon.appliedCoupon.code}` : undefined}
+                  currency={shop.currency || "EUR"}
+                  formatPrice={(n: number, c: string) => fx.formatPrice(n, c)}
+                  onComplete={handleCheckoutComplete}
+                  onCancel={() => setCheckoutMode(false)}
+                />
               </div>
-              <AdvancedCheckout
-                shop={shop}
-                cartItems={cart.items}
-                total={finalTotal}
-                discount={discount}
-                couponNote={coupon.appliedCoupon ? `Coupon: ${coupon.appliedCoupon.code}` : undefined}
-                currency={shop.currency || "EUR"}
-                formatPrice={(n, c) => fx.formatPrice(n, c)}
-                onComplete={handleCheckoutComplete}
-                onCancel={() => setCheckoutMode(false)}
-              />
             </div>
-          </div>
+          </Suspense>
         )}
 
         {/* Floating cart button */}

@@ -1,81 +1,14 @@
 /**
  * MyShopPage — Seller dashboard for managing their storefront.
- * Tabs: Catalog, Orders, Deals, Analytics, Launch, Settings
+ * CONSOLIDATED: 1 component per function, lazy-loaded tabs.
  */
-import { useState } from "react";
+import { useState, lazy, Suspense } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import ShopCreator from "@/components/storefront/ShopCreator";
-import CatalogManager from "@/components/storefront/CatalogManager";
-import OrdersManager from "@/components/storefront/OrdersManager";
-import StorefrontDealRoom from "@/components/storefront/StorefrontDealRoom";
-import ShopAnalytics from "@/components/storefront/ShopAnalytics";
-import LaunchAudit from "@/components/storefront/LaunchAudit";
 import ShopShareEngine from "@/components/storefront/ShopShareEngine";
-import BusinessHierarchy from "@/components/storefront/BusinessHierarchy";
-import AICategorySuggest from "@/components/storefront/AICategorySuggest";
-import PrivateInviteManager from "@/components/storefront/PrivateInviteManager";
-import TranslationManager from "@/components/storefront/TranslationManager";
-import CouponManager from "@/components/storefront/CouponManager";
-import InventoryManager from "@/components/storefront/InventoryManager";
-import ShopSEOManager from "@/components/storefront/ShopSEOManager";
-import ShopReviews from "@/components/storefront/ShopReviews";
-import ShippingManager from "@/components/storefront/ShippingManager";
-import ReturnsManager from "@/components/storefront/ReturnsManager";
-import SellerFinance from "@/components/storefront/SellerFinance";
-import SubscriptionManager from "@/components/storefront/SubscriptionManager";
-import DeliveryDispatch from "@/components/storefront/DeliveryDispatch";
-import SmartInventoryAlerts from "@/components/storefront/SmartInventoryAlerts";
-import BundleManager from "@/components/storefront/BundleManager";
-import LoyaltyDashboard from "@/components/storefront/LoyaltyDashboard";
-import MultiVendorDashboard from "@/components/storefront/MultiVendorDashboard";
-import SocialCommerce from "@/components/storefront/SocialCommerce";
-import AffiliateProgram from "@/components/storefront/AffiliateProgram";
-import AuctionManager from "@/components/storefront/AuctionManager";
-import WarehouseManager from "@/components/storefront/WarehouseManager";
-import SubscriptionEngine from "@/components/storefront/SubscriptionEngine";
-import GiftCardManager from "@/components/storefront/GiftCardManager";
-import ReturnsRefundEngine from "@/components/storefront/ReturnsRefundEngine";
-import LoyaltyProgram from "@/components/storefront/LoyaltyProgram";
-import AdvancedReviews from "@/components/storefront/AdvancedReviews";
-import FlashSales from "@/components/storefront/FlashSales";
-import BulkProductManager from "@/components/storefront/BulkProductManager";
-import ShippingTracker from "@/components/storefront/ShippingTracker";
-import MultiCurrencyTax from "@/components/storefront/MultiCurrencyTax";
-import AffiliateEngine from "@/components/storefront/AffiliateEngine";
-import StoreAnalytics from "@/components/storefront/StoreAnalytics";
-import LoyaltyRewards from "@/components/storefront/LoyaltyRewards";
-import CustomerSupport from "@/components/storefront/CustomerSupport";
-import LiveShopping from "@/components/storefront/LiveShopping";
-import RecurringSubscriptions from "@/components/storefront/RecurringSubscriptions";
-import SmartNotifications from "@/components/storefront/SmartNotifications";
-import MultiStoreManager from "@/components/storefront/MultiStoreManager";
-import GamificationEngine from "@/components/storefront/GamificationEngine";
-import CouponsPromotions from "@/components/storefront/CouponsPromotions";
-import SellerAnalyticsPro from "@/components/storefront/SellerAnalyticsPro";
-import ShippingFulfillment from "@/components/storefront/ShippingFulfillment";
-import StorefrontReviews from "@/components/storefront/StorefrontReviews";
-import LiveCommerceStream from "@/components/storefront/LiveCommerceStream";
-import AffiliateReferralProgram from "@/components/storefront/AffiliateReferralProgram";
-import ReturnsRefunds from "@/components/storefront/ReturnsRefunds";
-import SubscriptionPlans from "@/components/storefront/SubscriptionPlans";
-import MultiVendorHub from "@/components/storefront/MultiVendorHub";
-import LoyaltyPointsEngine from "@/components/storefront/LoyaltyPointsEngine";
-import GiftCardStore from "@/components/storefront/GiftCardStore";
-import SubscriptionBoxes from "@/components/storefront/SubscriptionBoxes";
-import ReverseAuctionRFQ from "@/components/storefront/ReverseAuctionRFQ";
-import DigitalProducts from "@/components/storefront/DigitalProducts";
-import PeerMarketplace from "@/components/storefront/PeerMarketplace";
-import WishlistSaveLater from "@/components/storefront/WishlistSaveLater";
-import ProductComparator from "@/components/storefront/ProductComparator";
-import AdvancedShipping from "@/components/storefront/AdvancedShipping";
-import StoreAnalyticsDashboard from "@/components/storefront/StoreAnalyticsDashboard";
-import LiveChatSupport from "@/components/storefront/LiveChatSupport";
-import AdvancedReferralSystem from "@/components/storefront/AdvancedReferralSystem";
-import TaxComplianceEngine from "@/components/storefront/TaxComplianceEngine";
-import BulkImportSync from "@/components/storefront/BulkImportSync";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -86,6 +19,53 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Store, Package, ShoppingBag, Settings, ExternalLink, Copy, Check, Loader2, Handshake, BarChart3, Rocket, DollarSign } from "lucide-react";
 import { toast } from "sonner";
 import { haptic } from "@/lib/haptics";
+
+// Lazy-loaded tab modules — only loaded when the tab is active
+const CatalogManager = lazy(() => import("@/components/storefront/CatalogManager"));
+const OrdersManager = lazy(() => import("@/components/storefront/OrdersManager"));
+const StorefrontDealRoom = lazy(() => import("@/components/storefront/StorefrontDealRoom"));
+const ShopAnalytics = lazy(() => import("@/components/storefront/ShopAnalytics"));
+const LaunchAudit = lazy(() => import("@/components/storefront/LaunchAudit"));
+const SellerFinance = lazy(() => import("@/components/storefront/SellerFinance"));
+const CouponManager = lazy(() => import("@/components/storefront/CouponManager"));
+const ShippingManager = lazy(() => import("@/components/storefront/ShippingManager"));
+const ShopReviews = lazy(() => import("@/components/storefront/ShopReviews"));
+const InventoryManager = lazy(() => import("@/components/storefront/InventoryManager"));
+const SmartInventoryAlerts = lazy(() => import("@/components/storefront/SmartInventoryAlerts"));
+const BundleManager = lazy(() => import("@/components/storefront/BundleManager"));
+const DeliveryDispatch = lazy(() => import("@/components/storefront/DeliveryDispatch"));
+const AuctionManager = lazy(() => import("@/components/storefront/AuctionManager"));
+const FlashSales = lazy(() => import("@/components/storefront/FlashSales"));
+const GiftCardManager = lazy(() => import("@/components/storefront/GiftCardManager"));
+const ReturnsRefundEngine = lazy(() => import("@/components/storefront/ReturnsRefundEngine"));
+const SubscriptionManager = lazy(() => import("@/components/storefront/SubscriptionManager"));
+const LoyaltyDashboard = lazy(() => import("@/components/storefront/LoyaltyDashboard"));
+const AffiliateProgram = lazy(() => import("@/components/storefront/AffiliateProgram"));
+const MultiCurrencyTax = lazy(() => import("@/components/storefront/MultiCurrencyTax"));
+const CustomerSupport = lazy(() => import("@/components/storefront/CustomerSupport"));
+const LiveShopping = lazy(() => import("@/components/storefront/LiveShopping"));
+const SmartNotifications = lazy(() => import("@/components/storefront/SmartNotifications"));
+const BulkProductManager = lazy(() => import("@/components/storefront/BulkProductManager"));
+const DigitalProducts = lazy(() => import("@/components/storefront/DigitalProducts"));
+const PeerMarketplace = lazy(() => import("@/components/storefront/PeerMarketplace"));
+const ReverseAuctionRFQ = lazy(() => import("@/components/storefront/ReverseAuctionRFQ"));
+const MultiVendorDashboard = lazy(() => import("@/components/storefront/MultiVendorDashboard"));
+const WarehouseManager = lazy(() => import("@/components/storefront/WarehouseManager"));
+const GamificationEngine = lazy(() => import("@/components/storefront/GamificationEngine"));
+const MultiStoreManager = lazy(() => import("@/components/storefront/MultiStoreManager"));
+
+// Settings-only (loaded inline since settings tab is simple)
+const AICategorySuggest = lazy(() => import("@/components/storefront/AICategorySuggest"));
+const PrivateInviteManager = lazy(() => import("@/components/storefront/PrivateInviteManager"));
+const TranslationManager = lazy(() => import("@/components/storefront/TranslationManager"));
+const ShopSEOManager = lazy(() => import("@/components/storefront/ShopSEOManager"));
+const BusinessHierarchy = lazy(() => import("@/components/storefront/BusinessHierarchy"));
+
+const TabLoader = () => (
+  <div className="flex items-center justify-center py-12">
+    <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+  </div>
+);
 
 const TABS = [
   { id: "catalog", label: "Catalog", icon: Package },
@@ -140,7 +120,6 @@ export default function MyShopPage() {
     </DashboardLayout>
   );
 
-  // No shop yet — show creator
   if (!shop) return (
     <DashboardLayout>
       <div className="max-w-2xl mx-auto px-4 py-8">
@@ -202,267 +181,163 @@ export default function MyShopPage() {
         </div>
 
         <div className="px-4">
-          {tab === "catalog" && (
-            <div className="space-y-4">
-              <CatalogManager shopId={shop.id} />
-              <BulkProductManager shopId={shop.id} />
-              <BulkImportSync shopId={shop.id} />
-              <FlashSales shopId={shop.id} mode="seller" />
-              <AuctionManager shopId={shop.id} mode="seller" />
-              <AdvancedReviews shopId={shop.id} mode="seller" />
-              <StorefrontReviews shopId={shop.id} mode="seller" />
-            </div>
-          )}
-          {tab === "orders" && (
-            <div className="space-y-4">
-              <OrdersManager shopId={shop.id} />
-              <ReturnsManager shopId={shop.id} />
-              <ReturnsRefundEngine shopId={shop.id} mode="seller" />
-              <ReturnsRefunds shopId={shop.id} mode="seller" />
-              <DeliveryDispatch shopId={shop.id} />
-              <ShippingTracker shopId={shop.id} mode="seller" />
-              <AdvancedShipping shopId={shop.id} mode="seller" />
-              <WarehouseManager shopId={shop.id} />
-            </div>
-          )}
-          {tab === "deals" && <StorefrontDealRoom shopId={shop.id} isSeller />}
-          {tab === "finance" && (
-            <div className="space-y-4">
-              <SellerFinance shopId={shop.id} />
-              <MultiVendorDashboard shopId={shop.id} />
-              <AffiliateProgram shopId={shop.id} shopSlug={shop.slug} mode="seller" />
-              <AffiliateEngine shopId={shop.id} shopSlug={shop.slug} mode="seller" />
-              <AffiliateReferralProgram shopId={shop.id} shopSlug={shop.slug} mode="seller" />
-              <MultiCurrencyTax shopId={shop.id} mode="seller" />
-              <SubscriptionManager shopId={shop.id} />
-              <SubscriptionEngine shopId={shop.id} mode="seller" />
-              <RecurringSubscriptions shopId={shop.id} mode="seller" />
-              <GiftCardManager shopId={shop.id} mode="seller" />
-              <LoyaltyDashboard shopId={shop.id} mode="seller" />
-              <LoyaltyProgram shopId={shop.id} mode="seller" />
-              <LoyaltyRewards shopId={shop.id} mode="seller" />
-              <SubscriptionPlans shopId={shop.id} mode="seller" />
-              <MultiVendorHub shopId={shop.id} mode="seller" />
-              <LoyaltyPointsEngine shopId={shop.id} mode="seller" />
-              <GiftCardStore shopId={shop.id} mode="seller" />
-              <SubscriptionBoxes shopId={shop.id} mode="seller" />
-              <ReverseAuctionRFQ shopId={shop.id} mode="seller" />
-              <DigitalProducts shopId={shop.id} mode="seller" />
-              <PeerMarketplace shopId={shop.id} mode="seller" />
-              <TaxComplianceEngine shopId={shop.id} mode="seller" />
-              <AdvancedReferralSystem shopId={shop.id} shopSlug={shop.slug} mode="seller" />
-            </div>
-          )}
-          {tab === "analytics" && (
-            <div className="space-y-4">
-              <ShopAnalytics shopId={shop.id} />
-              <StoreAnalytics shopId={shop.id} />
-              <StoreAnalyticsDashboard shopId={shop.id} />
-              <SellerAnalyticsPro shopId={shop.id} />
-              <SmartNotifications shopId={shop.id} mode="seller" />
-              <CustomerSupport shopId={shop.id} mode="seller" />
-              <LiveShopping shopId={shop.id} mode="seller" />
-              <LiveCommerceStream shopId={shop.id} mode="seller" />
-              <LiveChatSupport shopId={shop.id} mode="seller" />
-              <GamificationEngine shopId={shop.id} mode="seller" />
-              <CouponsPromotions shopId={shop.id} mode="seller" />
-              <ShippingFulfillment shopId={shop.id} mode="seller" />
-              <MultiStoreManager />
-            </div>
-          )}
-          {tab === "launch" && <LaunchAudit shopId={shop.id} />}
-          {tab === "settings" && (
-            <div className="space-y-4">
-              <Card>
-                <CardContent className="p-4 space-y-3">
-                  <h4 className="text-sm font-semibold">Shop Details</h4>
-                  <div>
-                    <Label className="text-xs">Name</Label>
-                    <Input
-                      defaultValue={shop.name}
-                      onBlur={e => { if (e.target.value !== shop.name) updateShop("name", e.target.value); }}
-                      className="mt-1"
-                    />
-                  </div>
-                  <div>
-                    <Label className="text-xs">Tagline</Label>
-                    <Input
-                      defaultValue={shop.tagline || ""}
-                      onBlur={e => updateShop("tagline", e.target.value || null)}
-                      className="mt-1"
-                    />
-                  </div>
-                  <div>
-                    <Label className="text-xs">Description</Label>
-                    <Textarea
-                      defaultValue={shop.description || ""}
-                      onBlur={e => updateShop("description", e.target.value || null)}
-                      className="mt-1"
-                      rows={3}
-                    />
-                  </div>
-                  <div>
-                    <Label className="text-xs">Visibility</Label>
-                    <Select value={shop.shop_visibility} onValueChange={v => updateShop("shop_visibility", v)}>
-                      <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="public">🌐 Public</SelectItem>
-                        <SelectItem value="unlisted">🔗 Unlisted</SelectItem>
-                        <SelectItem value="private">🔒 Private</SelectItem>
-                        <SelectItem value="draft">📝 Draft</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardContent className="p-4 space-y-3">
-                  <h4 className="text-sm font-semibold">Contact</h4>
-                  <div className="grid grid-cols-2 gap-3">
+          <Suspense fallback={<TabLoader />}>
+            {tab === "catalog" && (
+              <div className="space-y-4">
+                <CatalogManager shopId={shop.id} />
+                <BulkProductManager shopId={shop.id} />
+                <FlashSales shopId={shop.id} mode="seller" />
+                <AuctionManager shopId={shop.id} mode="seller" />
+              </div>
+            )}
+            {tab === "orders" && (
+              <div className="space-y-4">
+                <OrdersManager shopId={shop.id} />
+                <ReturnsRefundEngine shopId={shop.id} mode="seller" />
+                <DeliveryDispatch shopId={shop.id} />
+                <WarehouseManager shopId={shop.id} />
+              </div>
+            )}
+            {tab === "deals" && <StorefrontDealRoom shopId={shop.id} isSeller />}
+            {tab === "finance" && (
+              <div className="space-y-4">
+                <SellerFinance shopId={shop.id} />
+                <MultiVendorDashboard shopId={shop.id} />
+                <AffiliateProgram shopId={shop.id} shopSlug={shop.slug} mode="seller" />
+                <MultiCurrencyTax shopId={shop.id} mode="seller" />
+                <SubscriptionManager shopId={shop.id} />
+                <GiftCardManager shopId={shop.id} mode="seller" />
+                <LoyaltyDashboard shopId={shop.id} mode="seller" />
+                <DigitalProducts shopId={shop.id} mode="seller" />
+                <PeerMarketplace shopId={shop.id} mode="seller" />
+                <ReverseAuctionRFQ shopId={shop.id} mode="seller" />
+              </div>
+            )}
+            {tab === "analytics" && (
+              <div className="space-y-4">
+                <ShopAnalytics shopId={shop.id} />
+                <SmartNotifications shopId={shop.id} mode="seller" />
+                <CustomerSupport shopId={shop.id} mode="seller" />
+                <LiveShopping shopId={shop.id} mode="seller" />
+                <GamificationEngine shopId={shop.id} mode="seller" />
+                <MultiStoreManager />
+              </div>
+            )}
+            {tab === "launch" && <LaunchAudit shopId={shop.id} />}
+            {tab === "settings" && (
+              <div className="space-y-4">
+                <Card>
+                  <CardContent className="p-4 space-y-3">
+                    <h4 className="text-sm font-semibold">Shop Details</h4>
                     <div>
-                      <Label className="text-xs">Phone</Label>
-                      <Input
-                        defaultValue={shop.contact_phone || ""}
-                        onBlur={e => updateShop("contact_phone", e.target.value || null)}
-                        className="mt-1"
-                      />
+                      <Label className="text-xs">Name</Label>
+                      <Input defaultValue={shop.name} onBlur={e => { if (e.target.value !== shop.name) updateShop("name", e.target.value); }} className="mt-1" />
                     </div>
                     <div>
-                      <Label className="text-xs">WhatsApp</Label>
-                      <Input
-                        defaultValue={shop.contact_whatsapp || ""}
-                        onBlur={e => updateShop("contact_whatsapp", e.target.value || null)}
-                        className="mt-1"
-                      />
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <Label className="text-xs">Telegram</Label>
-                      <Input
-                        defaultValue={shop.contact_telegram || ""}
-                        onBlur={e => updateShop("contact_telegram", e.target.value || null)}
-                        className="mt-1"
-                      />
+                      <Label className="text-xs">Tagline</Label>
+                      <Input defaultValue={shop.tagline || ""} onBlur={e => updateShop("tagline", e.target.value || null)} className="mt-1" />
                     </div>
                     <div>
-                      <Label className="text-xs">Email</Label>
-                      <Input
-                        defaultValue={shop.contact_email || ""}
-                        onBlur={e => updateShop("contact_email", e.target.value || null)}
-                        className="mt-1"
-                      />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardContent className="p-4 space-y-3">
-                  <h4 className="text-sm font-semibold">Branding</h4>
-                  <div>
-                    <Label className="text-xs">Logo URL</Label>
-                    <Input
-                      defaultValue={shop.logo_url || ""}
-                      onBlur={e => updateShop("logo_url", e.target.value || null)}
-                      className="mt-1"
-                      placeholder="https://..."
-                    />
-                  </div>
-                  <div>
-                    <Label className="text-xs">Banner URL</Label>
-                    <Input
-                      defaultValue={shop.banner_url || ""}
-                      onBlur={e => updateShop("banner_url", e.target.value || null)}
-                      className="mt-1"
-                      placeholder="https://..."
-                    />
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardContent className="p-4 space-y-3">
-                  <h4 className="text-sm font-semibold">Location</h4>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <Label className="text-xs">City</Label>
-                      <Input
-                        defaultValue={shop.city || ""}
-                        onBlur={e => updateShop("city", e.target.value)}
-                        className="mt-1"
-                      />
+                      <Label className="text-xs">Description</Label>
+                      <Textarea defaultValue={shop.description || ""} onBlur={e => updateShop("description", e.target.value || null)} className="mt-1" rows={3} />
                     </div>
                     <div>
-                      <Label className="text-xs">Country</Label>
-                      <Input
-                        defaultValue={shop.country || ""}
-                        onBlur={e => updateShop("country", e.target.value)}
-                        className="mt-1"
-                      />
+                      <Label className="text-xs">Visibility</Label>
+                      <Select value={shop.shop_visibility} onValueChange={v => updateShop("shop_visibility", v)}>
+                        <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="public">🌐 Public</SelectItem>
+                          <SelectItem value="unlisted">🔗 Unlisted</SelectItem>
+                          <SelectItem value="private">🔒 Private</SelectItem>
+                          <SelectItem value="draft">📝 Draft</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
-                  </div>
-                  <div>
-                    <Label className="text-xs">Geo Scope</Label>
-                    <Select value={shop.geo_scope || "city"} onValueChange={v => updateShop("geo_scope", v)}>
-                      <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="worldwide">🌍 Worldwide</SelectItem>
-                        <SelectItem value="country">🏳️ Country</SelectItem>
-                        <SelectItem value="city">🏙️ City</SelectItem>
-                        <SelectItem value="radius">📍 Radius</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </CardContent>
-              </Card>
-              {/* AI Category Suggest */}
-              <AICategorySuggest
-                shopId={shop.id}
-                onAccept={(s) => {
-                  updateShop("vertical", s.vertical);
-                  updateShop("subcategory", s.category);
-                  updateShop("tags", s.tags);
-                }}
-              />
+                  </CardContent>
+                </Card>
 
-              {/* Private invites (if private shop) */}
-              {shop.shop_visibility === "private" && (
-                <PrivateInviteManager shopId={shop.id} shopSlug={shop.slug} />
-              )}
+                <Card>
+                  <CardContent className="p-4 space-y-3">
+                    <h4 className="text-sm font-semibold">Contact</h4>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <Label className="text-xs">Phone</Label>
+                        <Input defaultValue={shop.contact_phone || ""} onBlur={e => updateShop("contact_phone", e.target.value || null)} className="mt-1" />
+                      </div>
+                      <div>
+                        <Label className="text-xs">WhatsApp</Label>
+                        <Input defaultValue={shop.contact_whatsapp || ""} onBlur={e => updateShop("contact_whatsapp", e.target.value || null)} className="mt-1" />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <Label className="text-xs">Telegram</Label>
+                        <Input defaultValue={shop.contact_telegram || ""} onBlur={e => updateShop("contact_telegram", e.target.value || null)} className="mt-1" />
+                      </div>
+                      <div>
+                        <Label className="text-xs">Email</Label>
+                        <Input defaultValue={shop.contact_email || ""} onBlur={e => updateShop("contact_email", e.target.value || null)} className="mt-1" />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
 
-              {/* Translations */}
-              <TranslationManager shopId={shop.id} />
+                <Card>
+                  <CardContent className="p-4 space-y-3">
+                    <h4 className="text-sm font-semibold">Branding</h4>
+                    <div>
+                      <Label className="text-xs">Logo URL</Label>
+                      <Input defaultValue={shop.logo_url || ""} onBlur={e => updateShop("logo_url", e.target.value || null)} className="mt-1" placeholder="https://..." />
+                    </div>
+                    <div>
+                      <Label className="text-xs">Banner URL</Label>
+                      <Input defaultValue={shop.banner_url || ""} onBlur={e => updateShop("banner_url", e.target.value || null)} className="mt-1" placeholder="https://..." />
+                    </div>
+                  </CardContent>
+                </Card>
 
-              {/* Coupons & Promotions */}
-              <CouponManager shopId={shop.id} />
+                <Card>
+                  <CardContent className="p-4 space-y-3">
+                    <h4 className="text-sm font-semibold">Location</h4>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <Label className="text-xs">City</Label>
+                        <Input defaultValue={shop.city || ""} onBlur={e => updateShop("city", e.target.value)} className="mt-1" />
+                      </div>
+                      <div>
+                        <Label className="text-xs">Country</Label>
+                        <Input defaultValue={shop.country || ""} onBlur={e => updateShop("country", e.target.value)} className="mt-1" />
+                      </div>
+                    </div>
+                    <div>
+                      <Label className="text-xs">Geo Scope</Label>
+                      <Select value={shop.geo_scope || "city"} onValueChange={v => updateShop("geo_scope", v)}>
+                        <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="worldwide">🌍 Worldwide</SelectItem>
+                          <SelectItem value="country">🏳️ Country</SelectItem>
+                          <SelectItem value="city">🏙️ City</SelectItem>
+                          <SelectItem value="radius">📍 Radius</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </CardContent>
+                </Card>
 
-              {/* Product Bundles */}
-              <BundleManager shopId={shop.id} mode="manage" />
-
-              {/* Inventory */}
-              <InventoryManager shopId={shop.id} />
-
-              {/* Smart Inventory Alerts */}
-              <SmartInventoryAlerts shopId={shop.id} />
-
-              {/* Shipping */}
-              <ShippingManager shopId={shop.id} />
-
-              {/* SEO */}
-              <ShopSEOManager shopId={shop.id} shopSlug={shop.slug} currentData={shop} />
-
-              {/* Reviews (owner view — can respond) */}
-              <ShopReviews shopId={shop.id} shopOwnerId={shop.user_id} />
-
-              {/* Social Commerce */}
-              <SocialCommerce shopId={shop.id} />
-
-              {/* Business Hierarchy */}
-              <BusinessHierarchy />
-            </div>
-          )}
+                <AICategorySuggest shopId={shop.id} onAccept={(s) => { updateShop("vertical", s.vertical); updateShop("subcategory", s.category); updateShop("tags", s.tags); }} />
+                {shop.shop_visibility === "private" && <PrivateInviteManager shopId={shop.id} shopSlug={shop.slug} />}
+                <TranslationManager shopId={shop.id} />
+                <CouponManager shopId={shop.id} />
+                <BundleManager shopId={shop.id} mode="manage" />
+                <InventoryManager shopId={shop.id} />
+                <SmartInventoryAlerts shopId={shop.id} />
+                <ShippingManager shopId={shop.id} />
+                <ShopSEOManager shopId={shop.id} shopSlug={shop.slug} currentData={shop} />
+                <ShopReviews shopId={shop.id} shopOwnerId={shop.user_id} />
+                <BusinessHierarchy />
+              </div>
+            )}
+          </Suspense>
         </div>
       </div>
     </DashboardLayout>
