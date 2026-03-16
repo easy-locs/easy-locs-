@@ -60,6 +60,10 @@ import StorefrontReviews from "@/components/storefront/StorefrontReviews";
 import LiveCommerceStream from "@/components/storefront/LiveCommerceStream";
 import AffiliateReferralProgram from "@/components/storefront/AffiliateReferralProgram";
 import ReturnsRefunds from "@/components/storefront/ReturnsRefunds";
+import SubscriptionPlans from "@/components/storefront/SubscriptionPlans";
+import MultiVendorHub from "@/components/storefront/MultiVendorHub";
+import LoyaltyPointsEngine from "@/components/storefront/LoyaltyPointsEngine";
+import GiftCardStore from "@/components/storefront/GiftCardStore";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -223,6 +227,10 @@ export default function MyShopPage() {
               <LoyaltyDashboard shopId={shop.id} mode="seller" />
               <LoyaltyProgram shopId={shop.id} mode="seller" />
               <LoyaltyRewards shopId={shop.id} mode="seller" />
+              <SubscriptionPlans shopId={shop.id} mode="seller" />
+              <MultiVendorHub shopId={shop.id} mode="seller" />
+              <LoyaltyPointsEngine shopId={shop.id} mode="seller" />
+              <GiftCardStore shopId={shop.id} mode="seller" />
             </div>
           )}
           {tab === "analytics" && (
