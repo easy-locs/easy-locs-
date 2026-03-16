@@ -193,6 +193,7 @@ export default function MyShopPage() {
               <FlashSales shopId={shop.id} mode="seller" />
               <AuctionManager shopId={shop.id} mode="seller" />
               <AdvancedReviews shopId={shop.id} mode="seller" />
+              <StorefrontReviews shopId={shop.id} mode="seller" />
             </div>
           )}
           {tab === "orders" && (
