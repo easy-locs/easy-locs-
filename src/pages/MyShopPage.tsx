@@ -141,6 +141,9 @@ export default function MyShopPage() {
         <div className="px-4">
           {tab === "catalog" && <CatalogManager shopId={shop.id} />}
           {tab === "orders" && <OrdersManager shopId={shop.id} />}
+          {tab === "deals" && <StorefrontDealRoom shopId={shop.id} isSeller />}
+          {tab === "analytics" && <ShopAnalytics shopId={shop.id} />}
+          {tab === "launch" && <LaunchAudit shopId={shop.id} />}
           {tab === "settings" && (
             <div className="space-y-4">
               <Card>
