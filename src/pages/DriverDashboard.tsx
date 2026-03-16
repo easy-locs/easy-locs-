@@ -278,6 +278,8 @@ export default function DriverDashboard() {
             <Truck className="h-8 w-8 animate-pulse" style={{ color: "hsl(var(--hud-cyan) / 0.3)" }} />
             <p className="text-[11px] mt-2" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>Chargement…</p>
           </div>
+        ) : tab === "heatmap" ? (
+          <DeliveryHeatmapPanel orgId={session?.org_id ?? undefined} />
         ) : tab === "active" ? (
           activeMissions.length === 0 ? (
             <div className="flex flex-col items-center py-16 text-center">
