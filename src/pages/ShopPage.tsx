@@ -315,15 +315,37 @@ export default function ShopPage() {
             </div>
           )}
 
+          {/* Product Comparison */}
+          <div className="mt-6">
+            <ProductComparison
+              catalogItems={catalogItems}
+              currency={shop.currency || "EUR"}
+              formatPrice={(n, c) => fx.formatPrice(n, c)}
+              onAddToCart={(itemId, price) => cart.addItem(itemId, price)}
+            />
+          </div>
+
           {/* Bundles section */}
           <div className="mt-6">
             <BundleManager shopId={shop.id} mode="display" onAddBundle={(bundleId, price) => cart.addItem(bundleId, price)} />
+          </div>
+
+          {/* Auctions */}
+          <div className="mt-6">
+            <AuctionManager shopId={shop.id} mode="buyer" />
           </div>
 
           {/* Loyalty section */}
           {user && (
             <div className="mt-4">
               <LoyaltyDashboard shopId={shop.id} mode="buyer" />
+            </div>
+          )}
+
+          {/* Affiliate Program */}
+          {user && (
+            <div className="mt-4">
+              <AffiliateProgram shopId={shop.id} shopSlug={shop.slug} mode="buyer" />
             </div>
           )}
 
