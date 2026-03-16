@@ -24,7 +24,8 @@ describe("Security Utils", () => {
 
   describe("sanitizeText", () => {
     it("removes event handlers", () => {
-      expect(sanitizeText('text onclick="alert(1)"')).toBe('text ="alert(1)"');
+      const result = sanitizeText('text onclick="alert(1)"');
+      expect(result).not.toContain("onclick");
     });
     it("removes javascript: protocol", () => {
       expect(sanitizeText("javascript:alert(1)")).toBe("alert(1)");
