@@ -60,7 +60,7 @@ export default function ReturnsRefundEngine({ shopId, mode, orders = [] }: Props
     queryKey: ["storefront-returns", shopId, mode],
     queryFn: async () => {
       let q = (supabase as any).from("storefront_returns").select("*").eq("shop_id", shopId);
-      if (mode === "buyer") q = q.eq("user_id", user!.id);
+      if (mode === "buyer") q = q.eq("buyer_id", user!.id);
       const { data } = await q.order("created_at", { ascending: false });
       return data || [];
     },
