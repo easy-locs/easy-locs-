@@ -39,6 +39,9 @@ import LiveShopping from "@/components/storefront/LiveShopping";
 import RecurringSubscriptions from "@/components/storefront/RecurringSubscriptions";
 import SmartNotifications from "@/components/storefront/SmartNotifications";
 import GamificationEngine from "@/components/storefront/GamificationEngine";
+import CouponsPromotions from "@/components/storefront/CouponsPromotions";
+import WishlistFavorites from "@/components/storefront/WishlistFavorites";
+import ShippingFulfillment from "@/components/storefront/ShippingFulfillment";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -470,6 +473,23 @@ export default function ShopPage() {
               <SmartNotifications shopId={shop.id} mode="buyer" />
             </div>
           )}
+
+          {/* Coupons & Promotions */}
+          <div className="mt-4">
+            <CouponsPromotions shopId={shop.id} mode="buyer" />
+          </div>
+
+          {/* Wishlist */}
+          {user && (
+            <div className="mt-4">
+              <WishlistFavorites shopId={shop.id} catalogItems={catalogItems} />
+            </div>
+          )}
+
+          {/* Shipping */}
+          <div className="mt-4">
+            <ShippingFulfillment shopId={shop.id} mode="buyer" />
+          </div>
 
           {/* Reviews section */}
           <div className="mt-6">

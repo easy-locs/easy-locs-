@@ -10273,6 +10273,85 @@ export type Database = {
           },
         ]
       }
+      storefront_wishlist_shares: {
+        Row: {
+          created_at: string
+          id: string
+          item_ids: string[]
+          share_token: string
+          shop_id: string
+          title: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          item_ids?: string[]
+          share_token?: string
+          shop_id: string
+          title?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          item_ids?: string[]
+          share_token?: string
+          shop_id?: string
+          title?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "storefront_wishlist_shares_shop_id_fkey"
+            columns: ["shop_id"]
+            isOneToOne: false
+            referencedRelation: "storefront_pages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      storefront_wishlists: {
+        Row: {
+          created_at: string
+          id: string
+          item_id: string
+          notify_back_in_stock: boolean
+          notify_price_drop: boolean
+          price_at_add: number | null
+          shop_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          item_id: string
+          notify_back_in_stock?: boolean
+          notify_price_drop?: boolean
+          price_at_add?: number | null
+          shop_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          item_id?: string
+          notify_back_in_stock?: boolean
+          notify_price_drop?: boolean
+          price_at_add?: number | null
+          shop_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "storefront_wishlists_shop_id_fkey"
+            columns: ["shop_id"]
+            isOneToOne: false
+            referencedRelation: "storefront_pages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       subcategories: {
         Row: {
           active: boolean | null
