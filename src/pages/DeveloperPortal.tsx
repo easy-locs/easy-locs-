@@ -432,7 +432,7 @@ const tenant = await response.json();`}
 {`import requests
 
 response = requests.get(
-    'https://api.easy-locs.com/v1/accounting/journal',
+    '${import.meta.env.VITE_SUPABASE_URL}/functions/v1/public-api/v1/accounting/journal',
     headers={'Authorization': 'Bearer el_your_api_key'}
 )
 transactions = response.json()`}
