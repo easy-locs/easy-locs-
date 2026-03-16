@@ -24,19 +24,47 @@ export default defineConfig(({ mode }) => ({
     VitePWA({
       registerType: "autoUpdate",
       workbox: {
-        navigateFallbackDenylist: [/^\/~oauth/],
+        navigateFallbackDenylist: [/^\/~oauth/, /^\/api\//],
         globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2}"],
+        runtimeCaching: [
+          {
+            urlPattern: /^https:\/\/fonts\.(googleapis|gstatic)\.com\/.*/i,
+            handler: "CacheFirst",
+            options: {
+              cacheName: "google-fonts",
+              expiration: { maxEntries: 30, maxAgeSeconds: 60 * 60 * 24 * 365 },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+          {
+            urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp)$/i,
+            handler: "CacheFirst",
+            options: {
+              cacheName: "images",
+              expiration: { maxEntries: 100, maxAgeSeconds: 60 * 60 * 24 * 30 },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+        ],
+        offlineGoogleAnalytics: false,
       },
       manifest: {
-        name: "Easy-Locs",
+        name: "Easy-Locs — Property Management",
         short_name: "Easy-Locs",
-        theme_color: "#1a1a2e",
-        background_color: "#0a0a0f",
+        description: "Manage rental properties worldwide. Leases, receipts, tenant portal — all-in-one.",
+        theme_color: "#D4A853",
+        background_color: "#0F1117",
         display: "standalone",
+        orientation: "portrait-primary",
+        start_url: "/",
+        scope: "/",
+        categories: ["business", "finance", "productivity"],
         icons: [
           { src: "/pwa-192x192.png", sizes: "192x192", type: "image/png" },
           { src: "/pwa-512x512.png", sizes: "512x512", type: "image/png" },
+          { src: "/pwa-512x512.png", sizes: "512x512", type: "image/png", purpose: "maskable" },
         ],
+        screenshots: [],
       },
     }),
   ].filter(Boolean),

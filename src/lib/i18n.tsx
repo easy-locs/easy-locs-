@@ -709,6 +709,10 @@ const pageFr: Record<string, string> = {
   "page.install.feature_offline": "Accès hors-ligne",
   "page.install.feature_fast": "Lancement rapide",
   "page.install.feature_native": "Expérience native",
+  "pwa.banner.title": "Installer Easy-Locs",
+  "pwa.banner.hint": "Rapide, hors-ligne, toujours accessible",
+  "pwa.banner.ios_hint": "Partager → Sur l'écran d'accueil",
+  "pwa.banner.install": "Installer",
 
   // Candidates
   "page.candidates.title": "Candidats",
@@ -3194,6 +3198,10 @@ const pageEn: Record<string, string> = {
   "page.install.feature_offline": "Offline access",
   "page.install.feature_fast": "Fast launch",
   "page.install.feature_native": "Native experience",
+  "pwa.banner.title": "Install Easy-Locs",
+  "pwa.banner.hint": "Fast, offline-ready, always accessible",
+  "pwa.banner.ios_hint": "Tap Share → Add to Home Screen",
+  "pwa.banner.install": "Install",
   "page.candidates.title": "Candidates",
   "page.candidates.subtitle": "Tenant application management",
   "page.candidates.add": "Add",

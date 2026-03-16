@@ -13,6 +13,7 @@ import { Suspense, lazy, type ComponentType } from "react";
 import { Loader2 } from "lucide-react";
 import AppLockGuard from "@/components/security/AppLockGuard";
 import UpdateNotification from "@/components/UpdateNotification";
+import SmartInstallBanner from "@/components/pwa/SmartInstallBanner";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import CountryGuard from "@/components/dashboard/CountryGuard";
@@ -391,6 +392,7 @@ const App = () => (
               {/* Catch-all — legacy SEO + 404 */}
               <Route path="*" element={<SEOCatchAll />} />
             </Routes>
+            <SmartInstallBanner />
           </Suspense>
            </AppLockGuard>
           </CallProvider>
