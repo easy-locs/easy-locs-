@@ -108,6 +108,53 @@ export type Database = {
           },
         ]
       }
+      ai_category_suggestions: {
+        Row: {
+          accepted: boolean | null
+          created_at: string | null
+          id: string
+          input_text: string
+          shop_id: string | null
+          suggested_category: string | null
+          suggested_subcategory: string | null
+          suggested_tags: string[] | null
+          suggested_vertical: string | null
+          user_id: string
+        }
+        Insert: {
+          accepted?: boolean | null
+          created_at?: string | null
+          id?: string
+          input_text: string
+          shop_id?: string | null
+          suggested_category?: string | null
+          suggested_subcategory?: string | null
+          suggested_tags?: string[] | null
+          suggested_vertical?: string | null
+          user_id: string
+        }
+        Update: {
+          accepted?: boolean | null
+          created_at?: string | null
+          id?: string
+          input_text?: string
+          shop_id?: string | null
+          suggested_category?: string | null
+          suggested_subcategory?: string | null
+          suggested_tags?: string[] | null
+          suggested_vertical?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_category_suggestions_shop_id_fkey"
+            columns: ["shop_id"]
+            isOneToOne: false
+            referencedRelation: "storefront_pages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       api_keys: {
         Row: {
           active: boolean
@@ -1446,6 +1493,10 @@ export type Database = {
           context_id: string | null
           context_title: string | null
           context_type: string
+          converted_delivery_job_id: string | null
+          converted_invoice_id: string | null
+          converted_order_id: string | null
+          converted_payment_id: string | null
           counter_offer_amount: number | null
           created_at: string
           current_offer_amount: number | null
@@ -1457,6 +1508,7 @@ export type Database = {
           offer_expires_at: string | null
           org_id: string
           seller_id: string | null
+          shop_id: string | null
           status: Database["public"]["Enums"]["deal_status"]
           thread_id: string | null
           updated_at: string
@@ -1468,6 +1520,10 @@ export type Database = {
           context_id?: string | null
           context_title?: string | null
           context_type?: string
+          converted_delivery_job_id?: string | null
+          converted_invoice_id?: string | null
+          converted_order_id?: string | null
+          converted_payment_id?: string | null
           counter_offer_amount?: number | null
           created_at?: string
           current_offer_amount?: number | null
@@ -1479,6 +1535,7 @@ export type Database = {
           offer_expires_at?: string | null
           org_id: string
           seller_id?: string | null
+          shop_id?: string | null
           status?: Database["public"]["Enums"]["deal_status"]
           thread_id?: string | null
           updated_at?: string
@@ -1490,6 +1547,10 @@ export type Database = {
           context_id?: string | null
           context_title?: string | null
           context_type?: string
+          converted_delivery_job_id?: string | null
+          converted_invoice_id?: string | null
+          converted_order_id?: string | null
+          converted_payment_id?: string | null
           counter_offer_amount?: number | null
           created_at?: string
           current_offer_amount?: number | null
@@ -1501,6 +1562,7 @@ export type Database = {
           offer_expires_at?: string | null
           org_id?: string
           seller_id?: string | null
+          shop_id?: string | null
           status?: Database["public"]["Enums"]["deal_status"]
           thread_id?: string | null
           updated_at?: string
@@ -1518,6 +1580,13 @@ export type Database = {
             columns: ["org_id"]
             isOneToOne: false
             referencedRelation: "orgs_tenant_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "deal_rooms_shop_id_fkey"
+            columns: ["shop_id"]
+            isOneToOne: false
+            referencedRelation: "storefront_pages"
             referencedColumns: ["id"]
           },
           {
@@ -4331,6 +4400,56 @@ export type Database = {
         }
         Relationships: []
       }
+      orbit_launch_audits: {
+        Row: {
+          analytics_ready: boolean | null
+          catalog_ready: boolean | null
+          checked_at: string | null
+          checkout_ready: boolean | null
+          geo_configured: boolean | null
+          id: string
+          overall_score: number | null
+          share_ready: boolean | null
+          shop_id: string
+          translation_ready: boolean | null
+          user_id: string
+        }
+        Insert: {
+          analytics_ready?: boolean | null
+          catalog_ready?: boolean | null
+          checked_at?: string | null
+          checkout_ready?: boolean | null
+          geo_configured?: boolean | null
+          id?: string
+          overall_score?: number | null
+          share_ready?: boolean | null
+          shop_id: string
+          translation_ready?: boolean | null
+          user_id: string
+        }
+        Update: {
+          analytics_ready?: boolean | null
+          catalog_ready?: boolean | null
+          checked_at?: string | null
+          checkout_ready?: boolean | null
+          geo_configured?: boolean | null
+          id?: string
+          overall_score?: number | null
+          share_ready?: boolean | null
+          shop_id?: string
+          translation_ready?: boolean | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orbit_launch_audits_shop_id_fkey"
+            columns: ["shop_id"]
+            isOneToOne: false
+            referencedRelation: "storefront_pages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       org_members: {
         Row: {
           created_at: string
@@ -6738,14 +6857,18 @@ export type Database = {
           org_id: string
           radius_km: number | null
           rating: number | null
+          region: string | null
           reviews_count: number | null
           scheduled_publish_at: string | null
           shop_visibility: string | null
           slug: string
+          subcategory: string | null
           tagline: string | null
+          tags: string[] | null
           theme_color: string | null
           updated_at: string | null
           user_id: string
+          vertical: string | null
           views_count: number | null
         }
         Insert: {
@@ -6771,14 +6894,18 @@ export type Database = {
           org_id: string
           radius_km?: number | null
           rating?: number | null
+          region?: string | null
           reviews_count?: number | null
           scheduled_publish_at?: string | null
           shop_visibility?: string | null
           slug: string
+          subcategory?: string | null
           tagline?: string | null
+          tags?: string[] | null
           theme_color?: string | null
           updated_at?: string | null
           user_id: string
+          vertical?: string | null
           views_count?: number | null
         }
         Update: {
@@ -6804,14 +6931,18 @@ export type Database = {
           org_id?: string
           radius_km?: number | null
           rating?: number | null
+          region?: string | null
           reviews_count?: number | null
           scheduled_publish_at?: string | null
           shop_visibility?: string | null
           slug?: string
+          subcategory?: string | null
           tagline?: string | null
+          tags?: string[] | null
           theme_color?: string | null
           updated_at?: string | null
           user_id?: string
+          vertical?: string | null
           views_count?: number | null
         }
         Relationships: [
@@ -6827,6 +6958,41 @@ export type Database = {
             columns: ["org_id"]
             isOneToOne: false
             referencedRelation: "orgs_tenant_view"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      storefront_translations: {
+        Row: {
+          created_at: string | null
+          field_name: string
+          field_value: string
+          id: string
+          locale: string
+          shop_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          field_name: string
+          field_value: string
+          id?: string
+          locale?: string
+          shop_id: string
+        }
+        Update: {
+          created_at?: string | null
+          field_name?: string
+          field_value?: string
+          id?: string
+          locale?: string
+          shop_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "storefront_translations_shop_id_fkey"
+            columns: ["shop_id"]
+            isOneToOne: false
+            referencedRelation: "storefront_pages"
             referencedColumns: ["id"]
           },
         ]
