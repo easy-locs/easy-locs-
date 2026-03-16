@@ -51,7 +51,7 @@ export default function ShopAnalytics({ shopId }: Props) {
         switch (e.event_type) {
           case "page_view": pageViews++; break;
           case "add_to_cart": addToCart++; break;
-          case "checkout": checkouts++; break;
+          case "checkout_start": checkouts++; break;
           case "purchase": purchases++; purchaseRevenue += (e.revenue || 0); break;
         }
       });
