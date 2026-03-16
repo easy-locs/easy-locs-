@@ -594,6 +594,20 @@ export default function ShopPage() {
             <ShippingFulfillment shopId={shop.id} mode="buyer" />
           </div>
 
+          {/* Live Chat Support */}
+          {user && (
+            <div className="mt-4">
+              <LiveChatSupport shopId={shop.id} mode="buyer" />
+            </div>
+          )}
+
+          {/* Referral Program */}
+          {user && (
+            <div className="mt-4">
+              <AdvancedReferralSystem shopId={shop.id} shopSlug={shop.slug} mode="buyer" />
+            </div>
+          )}
+
           {/* Reviews section */}
           <div className="mt-6">
             <ShopReviews shopId={shop.id} shopOwnerId={shop.user_id} />
