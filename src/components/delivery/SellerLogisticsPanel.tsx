@@ -312,6 +312,13 @@ export default function SellerLogisticsPanel() {
                         <Users className="h-3 w-3 mr-0.5" /> Assigner
                       </Button>
                     )}
+                    {["assigned", "accepted", "in_progress"].includes(job.status) && (
+                      <Button size="sm" className="text-[10px] h-7 px-2"
+                        onClick={() => setTrackingJobId(trackingJobId === job.id ? null : job.id)}
+                        style={{ background: "hsl(var(--hud-cyan) / 0.12)", color: "hsl(var(--hud-cyan))" }}>
+                        <MapPin className="h-3 w-3 mr-0.5" /> GPS
+                      </Button>
+                    )
                     {["pending", "assigned"].includes(job.status) && (
                       <Button size="sm" variant="ghost" className="text-[10px] h-7 px-1.5"
                         onClick={() => handleCancel(job.id)}
