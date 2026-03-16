@@ -35,6 +35,10 @@ import SocialCommerce from "@/components/storefront/SocialCommerce";
 import AffiliateProgram from "@/components/storefront/AffiliateProgram";
 import AuctionManager from "@/components/storefront/AuctionManager";
 import WarehouseManager from "@/components/storefront/WarehouseManager";
+import SubscriptionEngine from "@/components/storefront/SubscriptionEngine";
+import GiftCardManager from "@/components/storefront/GiftCardManager";
+import ReturnsRefundEngine from "@/components/storefront/ReturnsRefundEngine";
+import LoyaltyProgram from "@/components/storefront/LoyaltyProgram";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -171,6 +175,7 @@ export default function MyShopPage() {
             <div className="space-y-4">
               <OrdersManager shopId={shop.id} />
               <ReturnsManager shopId={shop.id} />
+              <ReturnsRefundEngine shopId={shop.id} mode="seller" />
               <DeliveryDispatch shopId={shop.id} />
               <WarehouseManager shopId={shop.id} />
             </div>
@@ -182,7 +187,10 @@ export default function MyShopPage() {
               <MultiVendorDashboard shopId={shop.id} />
               <AffiliateProgram shopId={shop.id} shopSlug={shop.slug} mode="seller" />
               <SubscriptionManager shopId={shop.id} />
+              <SubscriptionEngine shopId={shop.id} mode="seller" />
+              <GiftCardManager shopId={shop.id} mode="seller" />
               <LoyaltyDashboard shopId={shop.id} mode="seller" />
+              <LoyaltyProgram shopId={shop.id} mode="seller" />
             </div>
           )}
           {tab === "analytics" && <ShopAnalytics shopId={shop.id} />}
