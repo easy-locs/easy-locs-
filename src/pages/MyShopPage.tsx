@@ -30,6 +30,8 @@ import DeliveryDispatch from "@/components/storefront/DeliveryDispatch";
 import SmartInventoryAlerts from "@/components/storefront/SmartInventoryAlerts";
 import BundleManager from "@/components/storefront/BundleManager";
 import LoyaltyDashboard from "@/components/storefront/LoyaltyDashboard";
+import MultiVendorDashboard from "@/components/storefront/MultiVendorDashboard";
+import SocialCommerce from "@/components/storefront/SocialCommerce";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
