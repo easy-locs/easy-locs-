@@ -95,6 +95,10 @@ import EVFleetIntelligence from "@/components/delivery/EVFleetIntelligence";
 import FranchiseManagement from "@/components/delivery/FranchiseManagement";
 import CrossBorderLogistics from "@/components/delivery/CrossBorderLogistics";
 import RealTimeDataHub from "@/components/delivery/RealTimeDataHub";
+import AIDispatchBrain from "@/components/delivery/AIDispatchBrain";
+import InsuranceClaims from "@/components/delivery/InsuranceClaims";
+import FleetMaintenanceAI from "@/components/delivery/FleetMaintenanceAI";
+import RegulatoryCompliance from "@/components/delivery/RegulatoryCompliance";
 import { useDeliveryNotifications } from "@/hooks/useDeliveryNotifications";
 import { motion, AnimatePresence } from "framer-motion";
 import {

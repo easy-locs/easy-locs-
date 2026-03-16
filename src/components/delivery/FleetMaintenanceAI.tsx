@@ -8,6 +8,7 @@ import { motion } from "framer-motion";
 import {
   Wrench, Cpu, AlertTriangle, CheckCircle2, Clock,
   Thermometer, Activity, TrendingDown, Calendar, DollarSign,
+  RefreshCw,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
