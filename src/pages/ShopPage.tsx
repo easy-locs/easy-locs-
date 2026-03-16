@@ -17,6 +17,9 @@ import { useAuth } from "@/contexts/AuthContext";
 import ShopReviews from "@/components/storefront/ShopReviews";
 import BundleManager from "@/components/storefront/BundleManager";
 import LoyaltyDashboard from "@/components/storefront/LoyaltyDashboard";
+import AIShoppingAssistant from "@/components/storefront/AIShoppingAssistant";
+import SocialCommerce from "@/components/storefront/SocialCommerce";
+import AdvancedCheckout from "@/components/storefront/AdvancedCheckout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -39,6 +42,7 @@ export default function ShopPage() {
   const { user } = useAuth();
   const [cartOpen, setCartOpen] = useState(false);
   const [couponCode, setCouponCode] = useState("");
+  const [checkoutMode, setCheckoutMode] = useState(false);
 
   // Load shop
   const { data: shop, isLoading } = useQuery({
@@ -97,57 +101,24 @@ export default function ShopPage() {
   const discount = coupon.appliedCoupon?.discountAmount || 0;
   const finalTotal = Math.max(0, cart.total - discount);
 
-  const handleCheckout = async () => {
+  const handleCheckout = () => {
     if (!user) {
       toast.error("Please sign in to checkout");
       return;
     }
     if (cart.items.length === 0) return;
+    setCheckoutMode(true);
+    setCartOpen(false);
+  };
 
-    // Create order
-    const { data: order, error } = await (supabase as any)
-      .from("storefront_orders")
-      .insert({
-        shop_id: shop.id,
-        seller_id: shop.user_id,
-        buyer_id: user.id,
-        buyer_name: user.email?.split("@")[0] || "",
-        buyer_email: user.email || "",
-        subtotal: cart.total,
-        total: finalTotal,
-        currency: shop.currency || "EUR",
-        status: "pending",
-        notes: coupon.appliedCoupon ? `Coupon: ${coupon.appliedCoupon.code} (-${fmtPrice(discount, shop.currency || "EUR")})` : null,
-      })
-      .select("id")
-      .single();
-
-    if (error || !order) {
-      toast.error("Failed to create order");
-      return;
-    }
-
-    // Create order items
-    const orderItems = cart.items.map(ci => ({
-      order_id: order.id,
-      item_id: ci.item_id,
-      variant_id: ci.variant_id,
-      title: ci.title || "Item",
-      quantity: ci.quantity,
-      unit_price: ci.unit_price,
-      total_price: ci.unit_price * ci.quantity,
-    }));
-
-    await (supabase as any).from("storefront_order_items").insert(orderItems);
-
+  const handleCheckoutComplete = async (orderId: string) => {
     // Record coupon usage
     if (coupon.appliedCoupon) {
-      await coupon.recordUsage(order.id);
+      await coupon.recordUsage(orderId);
       coupon.removeCoupon();
     }
-
     await cart.clearCart();
-    setCartOpen(false);
+    setCheckoutMode(false);
     toast.success("Order placed! The seller will confirm soon.");
   };
 
@@ -357,7 +328,38 @@ export default function ShopPage() {
           <div className="mt-6">
             <ShopReviews shopId={shop.id} shopOwnerId={shop.user_id} />
           </div>
+
+          {/* Social Commerce */}
+          <div className="mt-6">
+            <SocialCommerce shopId={shop.id} catalogItems={catalogItems} />
+          </div>
         </div>
+
+        {/* AI Shopping Assistant */}
+        <AIShoppingAssistant shopId={shop.id} shopName={shop.name} catalogItems={catalogItems} />
+
+        {/* Advanced Checkout Modal */}
+        {checkoutMode && (
+          <div className="fixed inset-0 z-50 bg-background overflow-y-auto">
+            <div className="max-w-lg mx-auto pb-10">
+              <div className="flex items-center justify-between p-4 border-b border-border">
+                <h2 className="text-sm font-bold">Checkout</h2>
+                <Button variant="ghost" size="sm" onClick={() => setCheckoutMode(false)}>Cancel</Button>
+              </div>
+              <AdvancedCheckout
+                shop={shop}
+                cartItems={cart.items}
+                total={finalTotal}
+                discount={discount}
+                couponNote={coupon.appliedCoupon ? `Coupon: ${coupon.appliedCoupon.code}` : undefined}
+                currency={shop.currency || "EUR"}
+                formatPrice={(n, c) => fx.formatPrice(n, c)}
+                onComplete={handleCheckoutComplete}
+                onCancel={() => setCheckoutMode(false)}
+              />
+            </div>
+          </div>
+        )}
 
         {/* Floating cart button */}
         {cart.itemCount > 0 && (
@@ -444,7 +446,7 @@ export default function ShopPage() {
                   <span className="font-bold text-lg">{fx.formatPrice(finalTotal, shop.currency)}</span>
                 </div>
                 <Button className="w-full h-12 font-semibold" onClick={handleCheckout}>
-                  Place Order
+                  Checkout
                 </Button>
               </div>
             </SheetContent>
