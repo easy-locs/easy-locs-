@@ -228,8 +228,8 @@ export default function ShopPage() {
             <ShareButtons type="host" slug={shop.slug} title={shop.name} />
           </div>
 
-          {shop.description && (
-            <p className="text-sm text-muted-foreground mb-6 leading-relaxed">{shop.description}</p>
+          {(shopT.t("description", shop.description)) && (
+            <p className="text-sm text-muted-foreground mb-6 leading-relaxed">{shopT.t("description", shop.description)}</p>
           )}
 
           {/* Contact buttons */}
