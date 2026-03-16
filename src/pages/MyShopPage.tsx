@@ -362,6 +362,9 @@ export default function MyShopPage() {
               {/* Reviews (owner view — can respond) */}
               <ShopReviews shopId={shop.id} shopOwnerId={shop.user_id} />
 
+              {/* Social Commerce */}
+              <SocialCommerce shopId={shop.id} />
+
               {/* Business Hierarchy */}
               <BusinessHierarchy />
             </div>
