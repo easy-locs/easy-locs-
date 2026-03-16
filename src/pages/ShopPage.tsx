@@ -42,6 +42,7 @@ export default function ShopPage() {
   const { user } = useAuth();
   const [cartOpen, setCartOpen] = useState(false);
   const [couponCode, setCouponCode] = useState("");
+  const [checkoutMode, setCheckoutMode] = useState(false);
 
   // Load shop
   const { data: shop, isLoading } = useQuery({
