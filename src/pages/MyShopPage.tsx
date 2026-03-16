@@ -23,6 +23,8 @@ import InventoryManager from "@/components/storefront/InventoryManager";
 import ShopSEOManager from "@/components/storefront/ShopSEOManager";
 import ShopReviews from "@/components/storefront/ShopReviews";
 import ShippingManager from "@/components/storefront/ShippingManager";
+import ReturnsManager from "@/components/storefront/ReturnsManager";
+import SellerFinance from "@/components/storefront/SellerFinance";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
