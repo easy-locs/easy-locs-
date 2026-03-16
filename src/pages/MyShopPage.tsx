@@ -110,6 +110,7 @@ export default function MyShopPage() {
                 <a href={`/s/${shop.slug}`} target="_blank" rel="noopener noreferrer" className="text-[10px] text-muted-foreground hover:text-foreground">
                   <ExternalLink className="h-3 w-3 inline" /> Preview
                 </a>
+                <ShopShareEngine shopName={shop.name} shopSlug={shop.slug} shopDescription={shop.description} shopImage={shop.logo_url} />
               </div>
             </div>
           </div>
