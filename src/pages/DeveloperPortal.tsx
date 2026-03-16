@@ -410,7 +410,7 @@ if (sig !== req.headers['x-webhook-signature']) {
                 <div>
                   <h4 className="font-semibold text-foreground text-sm mb-2">JavaScript — Créer un locataire</h4>
                   <pre className="bg-muted rounded-lg p-4 text-xs font-mono text-foreground overflow-x-auto">
-{`const response = await fetch('https://api.easy-locs.com/v1/tenants', {
+{`const response = await fetch('${import.meta.env.VITE_SUPABASE_URL}/functions/v1/public-api/v1/tenants', {
   method: 'POST',
   headers: {
     'Authorization': 'Bearer el_your_api_key',
