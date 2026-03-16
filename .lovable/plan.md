@@ -237,3 +237,11 @@ Conversation → Offer → Counter offer → Accepted → Payment → Confirmed
 | LiveBadge component | Pulsing red LIVE badge, sm/md sizes | ✅ Done |
 | Storefront live badge | LiveBadge integrated in ProviderStorefront hero header | ✅ Done |
 | ServiceCard video indicator | Play badge on service cards with video_url | ✅ Done |
+
+## PASS55 Block 9d — Deal Analytics
+| Feature | Implementation | Status |
+|---------|---------------|--------|
+| useDealAnalytics hook | Aggregates deal_rooms: funnel, conversion rate, avg value, avg close time, revenue | ✅ Done |
+| DealAnalyticsDashboard | KPI cards, revenue summary, animated funnel bars, recent deals list | ✅ Done |
+| DealAnalyticsPage | /dashboard/deals route with DashboardLayout wrapper | ✅ Done |
+| Sidebar nav entry | BarChart3 "Deal Analytics" under Orbit section | ✅ Done |
