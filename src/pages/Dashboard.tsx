@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 import { motion } from "framer-motion";
 import {
   Globe, Building, Users, MapPin, Plus, TrendingUp, Wallet,
@@ -15,6 +15,9 @@ import { format } from "date-fns";
 import { getCountryEntryOrDefault } from "@/lib/global-country-registry";
 import { usePlatformCurrency } from "@/hooks/usePlatformCurrency";
 import { useWallet } from "@/hooks/useWallet";
+
+const OnboardingChecklist = lazy(() => import("@/components/onboarding/OnboardingChecklist"));
+const WelcomeTour = lazy(() => import("@/components/onboarding/WelcomeTour"));
 
 type CountryStat = {
   code: string;
