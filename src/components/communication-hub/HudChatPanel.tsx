@@ -1492,10 +1492,15 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
           if (thread.threadId) insertData.thread_id = thread.threadId;
           
           const { error } = await supabase.from("messages").insert(insertData);
-          if (error) {
+           if (error) {
             console.error("[Location] Insert failed:", error);
             toast.error("Failed to send location");
           } else {
+            platformBus.emit("orbit:message_sent", {
+              threadId: thread.threadId || thread.id,
+              contextId: thread.contextId,
+              type: "location",
+            }, "orbit", { userId: user?.id, orgId });
             toast.success("📍 Location shared");
           }
           loadMessages();
