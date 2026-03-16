@@ -56,6 +56,9 @@ import PromoCouponsEngine from "@/components/delivery/PromoCouponsEngine";
 import LiveDeliveryChat from "@/components/delivery/LiveDeliveryChat";
 import WarehouseManagement from "@/components/delivery/WarehouseManagement";
 import GreenDeliveryDashboard from "@/components/delivery/GreenDeliveryDashboard";
+import FleetManagementSystem from "@/components/delivery/FleetManagementSystem";
+import OrderBundlingEngine from "@/components/delivery/OrderBundlingEngine";
+import CustomerTrackingPortal from "@/components/delivery/CustomerTrackingPortal";
 import { useDeliveryNotifications } from "@/hooks/useDeliveryNotifications";
 import { motion, AnimatePresence } from "framer-motion";
 import {
