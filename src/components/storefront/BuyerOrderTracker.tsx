@@ -206,6 +206,20 @@ export default function BuyerOrderTracker({ orderId, buyerEmail }: BuyerOrderTra
                 ))}
               </div>
 
+              {/* Tracking & shipping info */}
+              {order.tracking_number && (
+                <div className="flex items-center gap-2 bg-muted/30 rounded-lg px-3 py-2">
+                  <Hash className="h-3.5 w-3.5 text-muted-foreground" />
+                  <div>
+                    <p className="text-[10px] text-muted-foreground">Tracking Number</p>
+                    <p className="text-xs font-mono font-medium">{order.tracking_number}</p>
+                  </div>
+                </div>
+              )}
+              {order.shipping_address && (
+                <p className="text-[10px] text-muted-foreground">📍 Ship to: {order.shipping_address}</p>
+              )}
+
               {/* Total */}
               <div className="flex items-center justify-between pt-2 border-t border-border">
                 <span className="text-xs text-muted-foreground">Total</span>
@@ -214,15 +228,24 @@ export default function BuyerOrderTracker({ orderId, buyerEmail }: BuyerOrderTra
                 </span>
               </div>
 
-              {/* Link to shop */}
-              {shop?.slug && (
-                <Link
-                  to={`/shop/${shop.slug}`}
-                  className="text-[11px] text-primary hover:underline flex items-center gap-1"
-                >
-                  <ArrowLeft className="h-3 w-3" /> Visit shop
-                </Link>
-              )}
+              {/* Actions */}
+              <div className="flex items-center gap-2">
+                {shop?.slug && (
+                  <Link
+                    to={`/shop/${shop.slug}`}
+                    className="text-[11px] text-primary hover:underline flex items-center gap-1"
+                  >
+                    <ArrowLeft className="h-3 w-3" /> Visit shop
+                  </Link>
+                )}
+                {shop?.slug && order.status !== "completed" && order.status !== "cancelled" && (
+                  <Link to={`/shop/${shop.slug}`}>
+                    <Button size="sm" variant="outline" className="h-7 text-[10px] gap-1">
+                      <MessageCircle className="h-3 w-3" /> Contact Seller
+                    </Button>
+                  </Link>
+                )}
+              </div>
             </CardContent>
           </Card>
         );
