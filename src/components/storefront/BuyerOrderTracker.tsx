@@ -141,7 +141,7 @@ export default function BuyerOrderTracker({ orderId, buyerEmail }: BuyerOrderTra
                     <XCircle className="h-3 w-3 mr-1" /> Cancelled
                   </Badge>
                 ) : order.status === "completed" ? (
-                  <Badge className="text-[10px] bg-emerald-500/10 text-emerald-600">
+                  <Badge className="text-[10px] bg-primary/10 text-primary">
                     <CheckCircle className="h-3 w-3 mr-1" /> Completed
                   </Badge>
                 ) : (
