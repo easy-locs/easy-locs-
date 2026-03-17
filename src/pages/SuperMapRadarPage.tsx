@@ -7,7 +7,9 @@ import { useNavigate } from "react-router-dom";
 import UniversalActionButtons from "@/components/actions/UniversalActionButtons";
 import UniversalEntityCard from "@/components/actions/UniversalEntityCard";
 
-mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN || "pk.eyJ1IjoiZWFzeWxvY3MyMDI2IiwiYSI6ImNtbXY0em5lYTJpaHQycHF0c3hrMGh4eHkifQ.y2GKHz1tZ_ZA6sFrEAvz7w";
+const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN || "pk.eyJ1IjoiZWFzeWxvY3MyMDI2IiwiYSI6ImNtbXY0em5lYTJpaHQycHF0c3hrMGh4eHkifQ.y2GKHz1tZ_ZA6sFrEAvz7w";
+console.log("[SuperMapRadar] Mapbox token available:", !!MAPBOX_TOKEN, "length:", MAPBOX_TOKEN?.length);
+mapboxgl.accessToken = MAPBOX_TOKEN;
 
 type ShopRow = {
   id: string;
