@@ -48,6 +48,7 @@ const MultiCurrencyTax = lazy(() => import("@/components/storefront/MultiCurrenc
 const GamificationEngine = lazy(() => import("@/components/storefront/GamificationEngine"));
 const AdvancedCheckout = lazy(() => import("@/components/storefront/AdvancedCheckout"));
 const AIShoppingAssistant = lazy(() => import("@/components/storefront/AIShoppingAssistant"));
+const ReorderEngine = lazy(() => import("@/components/storefront/ReorderEngine"));
 const TrustScoreBadge = lazy(() => import("@/components/storefront/TrustScoreBadge"));
 
 const fmtPrice = (n: number, c = "EUR") => {
@@ -332,6 +333,15 @@ export default function ShopPage() {
                 );
               })}
             </div>
+          )}
+
+          {/* PASS133: Quick reorder for returning buyers */}
+          {user && (
+            <Suspense fallback={null}>
+              <div className="mt-4">
+                <ReorderEngine shopId={shop.id} />
+              </div>
+            </Suspense>
           )}
 
           {/* Secondary sections — lazy loaded */}
