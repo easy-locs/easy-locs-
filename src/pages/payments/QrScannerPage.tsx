@@ -6,11 +6,15 @@
  */
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Camera, CameraOff, RefreshCcw, CheckCircle2, Info, UserPlus, MessageCircle, Send, Store, ExternalLink, Heart } from "lucide-react";
+import { ArrowLeft, Camera, CameraOff, RefreshCcw, CheckCircle2, Info, UserPlus, MessageCircle, Send, Store, ExternalLink, Heart, Loader2, Check } from "lucide-react";
 import { Html5Qrcode } from "html5-qrcode";
 import { decodeQr, resolveRoute, isExpired, isSecurityAction, type UniversalQrPayload } from "@/lib/qr-engine";
 import { useUnifiedPayment } from "@/payments/UnifiedPaymentSystem";
 import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { getOrCreateDirectThread } from "@/lib/direct-thread";
+import { toast } from "sonner";
 
 type ScanState = "idle" | "starting" | "scanning" | "paying" | "paid" | "stopped" | "error" | "resolved";
 type PermissionStateLike = "unknown" | "granted" | "denied" | "prompt" | "unsupported";
@@ -37,7 +41,7 @@ function wait(ms: number) {
 export default function QrScannerPage() {
   const navigate = useNavigate();
   const { openPayment } = useUnifiedPayment();
-
+  const { user, orgId } = useAuth();
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const mountedRef = useRef(true);
   const startingRef = useRef(false);
@@ -489,7 +493,7 @@ export default function QrScannerPage() {
             </button>
           </div>
         ) : state === "resolved" && resolvedPayload ? (
-          <QrResolvedCard payload={resolvedPayload} navigate={navigate} openPayment={openPayment} onReset={() => {
+          <QrResolvedCard payload={resolvedPayload} navigate={navigate} openPayment={openPayment} currentUserId={user?.id} currentOrgId={orgId} onReset={() => {
             setResolvedPayload(null);
             setLastText("");
             setState("idle");
@@ -593,6 +597,7 @@ export default function QrScannerPage() {
 
 /* ═══════════════════════════════════════════════════════════════
    QR Resolved Card — inline result for identity & commerce scans
+   Real business actions: add contact, open thread, follow shop.
    ═══════════════════════════════════════════════════════════════ */
 
 function QrResolvedCard({
@@ -600,17 +605,82 @@ function QrResolvedCard({
   navigate,
   openPayment,
   onReset,
+  currentUserId,
+  currentOrgId,
 }: {
   payload: UniversalQrPayload;
   navigate: ReturnType<typeof useNavigate>;
   openPayment: ReturnType<typeof useUnifiedPayment>["openPayment"];
   onReset: () => void;
+  currentUserId?: string;
+  currentOrgId?: string | null;
 }) {
+  const [busy, setBusy] = useState<string | null>(null);
+  const [contactAdded, setContactAdded] = useState(false);
+  const [followed, setFollowed] = useState(false);
+
   // ── User Profile / Add Contact ──
   if (payload.action === "profile" || payload.action === "add_contact") {
     const userId = payload.userId;
     const name = payload.name || "User";
     const isAddContact = payload.action === "add_contact";
+
+    const handleAddContact = async () => {
+      if (!currentUserId) { toast.error("Please sign in first"); return; }
+      if (userId === currentUserId) { toast.info("That's you!"); return; }
+      setBusy("contact");
+      try {
+        // Fetch target profile for enrichment
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("name, email")
+          .eq("id", userId)
+          .maybeSingle();
+
+        const { error } = await supabase.from("contacts").insert({
+          owner_id: currentUserId,
+          org_id: currentOrgId || null,
+          name: profile?.name || name,
+          email: profile?.email || null,
+          contact_user_id: userId,
+          category: "professional",
+        } as any);
+
+        if (error) {
+          if (error.code === "23505") {
+            toast.info("Already in your contacts!");
+            setContactAdded(true);
+          } else throw error;
+        } else {
+          toast.success(`${profile?.name || name} added to contacts!`);
+          setContactAdded(true);
+        }
+      } catch (e) {
+        console.error("[qr-add-contact]", e);
+        toast.error("Failed to add contact");
+      }
+      setBusy(null);
+    };
+
+    const handleChat = async () => {
+      if (!currentUserId) { toast.error("Please sign in first"); return; }
+      setBusy("chat");
+      try {
+        const thread = await getOrCreateDirectThread({
+          currentUserId,
+          targetUserId: userId!,
+          targetName: name,
+        });
+        if (thread) {
+          navigate(`/client/messages?thread=${thread.contextId}`);
+        } else {
+          toast.error("Could not open conversation");
+        }
+      } catch {
+        toast.error("Failed to open chat");
+      }
+      setBusy(null);
+    };
 
     return (
       <div className="w-full max-w-[320px] space-y-4 text-center">
@@ -624,13 +694,20 @@ function QrResolvedCard({
           </p>
         </div>
 
-        {/* Primary CTA */}
+        {/* Primary CTA — real add contact */}
         <Button
           className="w-full h-12 text-base gap-2 font-semibold"
-          onClick={() => navigate(`/u/${userId}`)}
+          onClick={contactAdded ? () => navigate(`/u/${userId}`) : handleAddContact}
+          disabled={busy === "contact"}
         >
-          <UserPlus className="h-5 w-5" />
-          {isAddContact ? "Add Contact" : "View Profile"}
+          {busy === "contact" ? (
+            <Loader2 className="h-5 w-5 animate-spin" />
+          ) : contactAdded ? (
+            <Check className="h-5 w-5" />
+          ) : (
+            <UserPlus className="h-5 w-5" />
+          )}
+          {contactAdded ? "View Profile" : isAddContact ? "Add Contact" : "Add Contact"}
         </Button>
 
         {/* Secondary CTAs */}
@@ -639,14 +716,17 @@ function QrResolvedCard({
             variant="outline"
             size="sm"
             className="gap-1.5"
-            onClick={() => navigate(`/u/${userId}`)}
+            onClick={handleChat}
+            disabled={!!busy}
           >
-            <MessageCircle className="h-4 w-4" /> Chat
+            {busy === "chat" ? <Loader2 className="h-4 w-4 animate-spin" /> : <MessageCircle className="h-4 w-4" />}
+            Chat
           </Button>
           <Button
             variant="outline"
             size="sm"
             className="gap-1.5"
+            disabled={!!busy}
             onClick={async () => {
               await openPayment({
                 amount: 0,
@@ -675,13 +755,85 @@ function QrResolvedCard({
   if (payload.action === "shop") {
     const slug = payload.shopSlug;
 
+    const handleFollowShop = async () => {
+      if (!currentUserId) { toast.error("Please sign in first"); return; }
+      setBusy("follow");
+      try {
+        // Resolve shop ID from slug
+        const { data: shop } = await supabase
+          .from("storefront_pages")
+          .select("id, name")
+          .eq("slug", slug)
+          .maybeSingle();
+
+        if (!shop) {
+          toast.error("Shop not found");
+          setBusy(null);
+          return;
+        }
+
+        const { error } = await supabase.from("shop_follows").insert({
+          user_id: currentUserId,
+          shop_id: shop.id,
+        } as any);
+
+        if (error) {
+          if (error.code === "23505") {
+            toast.info("Already following this shop!");
+            setFollowed(true);
+          } else throw error;
+        } else {
+          toast.success(`Following ${shop.name}!`);
+          setFollowed(true);
+        }
+      } catch (e) {
+        console.error("[qr-follow-shop]", e);
+        toast.error("Failed to follow shop");
+      }
+      setBusy(null);
+    };
+
+    const handleMessageShop = async () => {
+      if (!currentUserId) { toast.error("Please sign in first"); return; }
+      setBusy("message");
+      try {
+        // Resolve shop owner to create direct thread
+        const { data: shop } = await supabase
+          .from("storefront_pages")
+          .select("user_id, name, org_id")
+          .eq("slug", slug)
+          .maybeSingle();
+
+        if (!shop) {
+          toast.error("Shop not found");
+          setBusy(null);
+          return;
+        }
+
+        const thread = await getOrCreateDirectThread({
+          currentUserId,
+          targetUserId: shop.user_id,
+          targetName: shop.name || slug,
+        });
+
+        if (thread) {
+          navigate(`/client/messages?thread=${thread.contextId}`);
+        } else {
+          toast.error("Could not open conversation");
+        }
+      } catch {
+        toast.error("Failed to message shop");
+      }
+      setBusy(null);
+    };
+
     return (
       <div className="w-full max-w-[320px] space-y-4 text-center">
         <div className="rounded-2xl border border-border bg-card p-6 space-y-3">
           <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-accent/20">
             <Store className="h-7 w-7 text-accent-foreground" />
           </div>
-          <p className="text-lg font-bold text-foreground capitalize">{slug.replace(/-/g, " ")}</p>
+          <p className="text-lg font-bold text-foreground capitalize">{slug?.replace(/-/g, " ")}</p>
           <p className="text-xs text-muted-foreground">Shop scanned via QR</p>
         </div>
 
@@ -699,6 +851,7 @@ function QrResolvedCard({
             variant="outline"
             size="sm"
             className="gap-1"
+            disabled={!!busy}
             onClick={async () => {
               await openPayment({
                 amount: 0,
@@ -716,17 +869,27 @@ function QrResolvedCard({
             variant="outline"
             size="sm"
             className="gap-1"
-            onClick={() => navigate(`/s/${slug}`)}
+            onClick={handleFollowShop}
+            disabled={!!busy}
           >
-            <Heart className="h-3.5 w-3.5" /> Follow
+            {busy === "follow" ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            ) : followed ? (
+              <Check className="h-3.5 w-3.5" />
+            ) : (
+              <Heart className="h-3.5 w-3.5" />
+            )}
+            {followed ? "Following" : "Follow"}
           </Button>
           <Button
             variant="outline"
             size="sm"
             className="gap-1"
-            onClick={() => navigate(`/s/${slug}`)}
+            onClick={handleMessageShop}
+            disabled={!!busy}
           >
-            <MessageCircle className="h-3.5 w-3.5" /> Message
+            {busy === "message" ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <MessageCircle className="h-3.5 w-3.5" />}
+            Message
           </Button>
         </div>
 
