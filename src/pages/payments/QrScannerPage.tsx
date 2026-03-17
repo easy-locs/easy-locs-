@@ -491,7 +491,7 @@ export default function QrScannerPage() {
             </button>
           </div>
         ) : state === "resolved" && resolvedPayload ? (
-          <QrResolvedCard payload={resolvedPayload} navigate={navigate} openPayment={openPayment} currentUserId={user?.id} currentOrgId={orgId} onReset={() => {
+          <QrResolvedCard payload={resolvedPayload} openPayment={openPayment} currentUserId={user?.id} currentOrgId={orgId} onReset={() => {
             setResolvedPayload(null);
             setLastText("");
             setState("idle");
