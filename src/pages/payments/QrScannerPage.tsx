@@ -594,7 +594,7 @@ export default function QrScannerPage() {
 }
 
 
-function QrResolvedCard({
+
   payload,
   navigate,
   openPayment,
