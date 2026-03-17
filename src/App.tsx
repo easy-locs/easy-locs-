@@ -186,6 +186,12 @@ const ProviderSEOPage = safeLazy(() => import("./pages/seo/ProviderSEOPage"), "P
 const SlugResolver = safeLazy(() => import("./pages/seo/SEOShortUrlResolver").then(m => ({ default: m.SlugResolver })), "SlugResolver");
 const SlugCategoryResolver = safeLazy(() => import("./pages/seo/SEOShortUrlResolver").then(m => ({ default: m.SlugCategoryResolver })), "SlugCategoryResolver");
 
+// Deep-link public pages
+const UserProfilePage = safeLazy(() => import("./pages/deep-link/UserProfilePage"), "UserProfilePage");
+const ProductPage = safeLazy(() => import("./pages/deep-link/ProductPage"), "ProductPage");
+const LivePage = safeLazy(() => import("./pages/deep-link/LivePage"), "LivePage");
+const PayPage = safeLazy(() => import("./pages/deep-link/PayPage"), "PayPage");
+
 // City sub-page wrappers
 const CityServicesPage = () => <CityHubPage subPage="services" />;
 const CityActivitiesPage = () => <CityHubPage subPage="activities" />;
