@@ -17,7 +17,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, PieChart, Pie, Cell, Respon
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { format, subMonths } from "date-fns";
 import { fr, enUS, es, de, it, pt } from "@/lib/date-locales";
-import type { Locale as DateFnsLocale } from "date-fns";
+import type { Locale as DateFnsLocale } from "@/lib/date-locales";
 import { formatCurrency } from "@/lib/country-config";
 
 const DATE_LOCALES: Record<string, DateFnsLocale> = { fr, en: enUS, es, de, it, pt };
