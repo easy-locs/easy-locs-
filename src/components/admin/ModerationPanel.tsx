@@ -15,7 +15,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { haptic } from "@/lib/haptics";
 import { format } from "date-fns";
-import { fr as frLocale } from "date-fns/locale/fr";
+import { fr as frLocale } from "@/lib/date-locales";
 
 type ModerationTab = "reviews" | "blocked";
 

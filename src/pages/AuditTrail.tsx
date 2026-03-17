@@ -6,7 +6,7 @@ import { History, Search, Filter, Download, ChevronLeft, ChevronRight } from "lu
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
-import { fr } from "date-fns/locale";
+import { fr } from "@/lib/date-locales";
 import { toast } from "sonner";
 
 const ACTION_LABELS: Record<string, string> = {
