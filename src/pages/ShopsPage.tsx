@@ -1,6 +1,7 @@
 /**
  * ShopsPage — Browse all shops.
  * PASS136: Dedicated /shops route for bottom nav.
+ * PASS143: Sponsored banners + PASS144: Ranked display.
  */
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -10,6 +11,8 @@ import { Store, ArrowRight } from "lucide-react";
 import { MobilePageHeader } from "@/components/ui/mobile-page-header";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
+import { SponsoredBanner } from "@/components/monetization/SponsoredBanner";
+import { rankItems } from "@/lib/ranking-engine";
 
 export default function ShopsPage() {
   const { data: shops, isLoading } = useQuery({
