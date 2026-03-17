@@ -449,6 +449,9 @@ export const elComplete: Record<string, string> = {
   "explore.radius.title": "Πού ψάχνετε;", "explore.radius.worldwide": "Παγκόσμια",
   "explore.radius.reset": "Επαναφορά", "explore.radius.apply": "Εφαρμογή", "explore.clear_all": "Καθαρισμός",
   "page.listing.contact_direct": "Επικοινωνία", "page.listing.call": "Κλήση", "page.listing.share": "Κοινοποίηση",
+  "page.install.title": "Εγκατάσταση Easy-Locs", "page.install.install_btn": "Εγκατάσταση",
+  "page.install.back": "Πίσω", "page.install.continue_web": "Συνέχεια στον ιστό",
+  "pwa.banner.title": "Εγκατάσταση Easy-Locs", "pwa.banner.install": "Εγκατάσταση", "pwa.banner.dismiss": "Κλείσιμο",
 };
 
 // ─── Czech (CS) ───
