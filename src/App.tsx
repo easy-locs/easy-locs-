@@ -294,6 +294,7 @@ const App = () => (
               <Route path="/u/:userId" element={<UserProfilePage />} />
               <Route path="/p/:productId" element={<ProductPage />} />
               <Route path="/live/:liveId" element={<LivePage />} />
+              <Route path="/pay/scan" element={<QrScannerPage />} />
               <Route path="/pay/qr" element={<QrPayResolver />} />
               <Route path="/pay/request/:requestId" element={<PayRequestPage />} />
               <Route path="/qr/resolve" element={<QrResolvePage />} />
