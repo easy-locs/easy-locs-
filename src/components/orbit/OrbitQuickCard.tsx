@@ -30,8 +30,8 @@ export default function OrbitQuickCard({
 
   return (
     <motion.button
-      whileTap={{ scale: 0.94 }}
-      whileHover={{ scale: 1.03 }}
+      whileTap={{ scale: 0.95 }}
+      whileHover={{ y: -2 }}
       onClick={() => navigate(to)}
       className="relative flex flex-col items-center gap-1.5 p-3 rounded-2xl border transition-all duration-200 min-w-0 text-center overflow-hidden"
       style={{
@@ -41,10 +41,10 @@ export default function OrbitQuickCard({
         borderColor: isWarning
           ? "hsl(var(--hud-warning) / 0.3)"
           : hasActivity
-            ? "hsl(var(--hud-cyan) / 0.2)"
-            : "hsl(var(--hud-border) / 0.08)",
+            ? "hsl(var(--hud-cyan) / 0.15)"
+            : "hsl(var(--hud-border) / 0.06)",
         boxShadow: hasActivity
-          ? "0 2px 12px hsl(var(--hud-cyan) / 0.08)"
+          ? "0 2px 16px hsl(var(--hud-cyan) / 0.06)"
           : "none",
       }}
     >
