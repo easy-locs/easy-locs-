@@ -19,7 +19,7 @@ import {
 
 /* ─── Constants ─── */
 const MAX_LISTINGS_FREE = 5;
-const MIN_PHOTOS = 3;
+const MIN_PHOTOS = 2;
 const MAX_PHOTOS = 10;
 
 const LISTING_CATEGORIES = [
