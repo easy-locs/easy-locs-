@@ -129,8 +129,8 @@ function DesktopUserMenu() {
             <Separator />
             <div className="py-1">
               <p className="px-4 py-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">My business</p>
-              <DropdownMenuItem className="px-4 py-2.5 cursor-pointer" onClick={() => navigate("/dashboard/marketplace")}>
-                <Store className="h-4 w-4 mr-3 text-muted-foreground" /> My listings
+              <DropdownMenuItem className="px-4 py-2.5 cursor-pointer" onClick={() => navigate("/dashboard/my-shop")}>
+                <Store className="h-4 w-4 mr-3 text-muted-foreground" /> My Shop
               </DropdownMenuItem>
               <DropdownMenuItem className="px-4 py-2.5 cursor-pointer" onClick={() => navigate("/dashboard/seasonal")}>
                 <CalendarCheck className="h-4 w-4 mr-3 text-muted-foreground" /> Bookings
