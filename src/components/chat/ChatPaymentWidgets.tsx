@@ -1,11 +1,12 @@
 /**
  * ChatPaymentActions — Send money + Request money buttons for chat.
  * ChatPaymentRequestCard — Inline payment request card in message list (live status).
- * QrPayCard — Generate QR payment link card.
+ * QrPayCard — Generate QR payment link card with visual QR code.
  */
 import { useState } from "react";
 import { Send, Receipt, CheckCircle2, Clock, Wallet } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
+import QRCode from "react-qr-code";
 import { supabase } from "@/integrations/supabase/client";
 import { UnifiedPayButton } from "@/payments/UnifiedPaymentSystem";
 import { markPaymentRequestPaid, encodeQrPayload, type QrPayload } from "@/payments/payment-request-hooks";
