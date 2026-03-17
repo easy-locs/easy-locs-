@@ -23,11 +23,9 @@ import {
 } from "lucide-react";
 import {
   format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, addDays, addMonths,
-  subMonths, addWeeks, subWeeks, isSameMonth, isSameDay,
+  subMonths, addWeeks, subWeeks, isSameMonth, isSameDay, isWithinInterval,
   differenceInDays, parseISO, startOfDay,
 } from "date-fns";
-// @ts-ignore - isWithinInterval exists at runtime
-import { isWithinInterval } from "date-fns";
 
 /* ─── Types ─── */
 interface CalendarEvent {
