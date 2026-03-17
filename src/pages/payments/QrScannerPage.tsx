@@ -9,6 +9,7 @@ import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Camera, CameraOff, RefreshCcw, CheckCircle2, Info } from "lucide-react";
 import { Html5Qrcode } from "html5-qrcode";
 import { decodeQr, resolveRoute, isExpired, isSecurityAction, type UniversalQrPayload } from "@/lib/qr-engine";
+import { supabase } from "@/integrations/supabase/client";
 import { useUnifiedPayment } from "@/payments/UnifiedPaymentSystem";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
@@ -167,20 +168,42 @@ export default function QrScannerPage() {
         setTxId(result.transactionId || "");
         setState("paid");
       } else {
-        setError(result.error || "Payment failed");
-        setState("error");
+        if (result.error !== "Cancelled") {
+          setError(result.error || "Payment failed");
+          setState("error");
+        } else {
+          setState("idle");
+          handledRef.current = false;
+        }
       }
       return;
     }
 
     if (payload.action === "pay_shop") {
       setStateSafe("paying");
+      // Resolve shop owner's user_id as recipientId
+      let shopOwnerId: string | undefined;
+      try {
+        const { data: shop } = await supabase
+          .from("storefront_pages")
+          .select("user_id")
+          .eq("slug", payload.shopSlug)
+          .maybeSingle();
+        shopOwnerId = shop?.user_id || undefined;
+      } catch (e) {
+        console.error("[qr-scanner] shop lookup failed", e);
+      }
+      if (!shopOwnerId) {
+        setErrorSafe("Shop not found");
+        setStateSafe("error");
+        return;
+      }
       const result = await openPaymentRef.current({
         amount: payload.amount || 0,
         currency: payload.currency || "AED",
-        title: "Shop Payment",
+        title: `Pay ${payload.name || "Shop"}`,
         subtitle: "QR shop payment",
-        recipientId: undefined,
+        recipientId: shopOwnerId,
         contextType: "shop",
         contextId: payload.shopSlug,
         metadata: { source: "qr_scan", qr_type: "pay_shop", shopSlug: payload.shopSlug },
@@ -191,8 +214,13 @@ export default function QrScannerPage() {
         setTxId(result.transactionId || "");
         setState("paid");
       } else {
-        setError(result.error || "Payment failed");
-        setState("error");
+        if (result.error !== "Cancelled") {
+          setError(result.error || "Payment failed");
+          setState("error");
+        } else {
+          setState("idle");
+          handledRef.current = false;
+        }
       }
       return;
     }
