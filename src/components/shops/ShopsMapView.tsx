@@ -82,7 +82,7 @@ export default function ShopsMapView({ shops, radiusKm = 25, onOpenShop }: Props
     const map = mapRef.current;
     const cluster = clusterRef.current!;
 
-    map.setView([centerLat, centerLng], getZoom(radius), { animate: true });
+    map.setView([centerLat, centerLng], getZoom(radiusKm), { animate: true });
 
     // Clear old
     map.eachLayer((layer) => {
