@@ -8,7 +8,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Camera, CameraOff, RefreshCcw, CheckCircle2, Info } from "lucide-react";
 import { Html5Qrcode } from "html5-qrcode";
-import { decodeQrPayload } from "@/payments/payment-request-hooks";
+import { decodeQr, resolveRoute, isExpired, isSecurityAction } from "@/lib/qr-engine";
 import { useUnifiedPayment } from "@/payments/UnifiedPaymentSystem";
 
 type ScanState = "idle" | "starting" | "scanning" | "paying" | "paid" | "stopped" | "error";
