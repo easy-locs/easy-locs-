@@ -506,7 +506,8 @@ export default function CommNearbySection() {
               <motion.div key={u.user_id}
                 initial={{ opacity: 0, x: -12 }} animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: idx * 0.03 }}
-                className="flex items-center gap-3 px-4 py-3.5 hover:bg-[hsl(var(--hud-surface)/0.3)] transition-colors">
+                onClick={() => handleContact(u.display_name || "user")}
+                className="flex items-center gap-3 px-4 py-3.5 hover:bg-[hsl(var(--hud-surface)/0.3)] active:bg-[hsl(var(--hud-surface)/0.5)] transition-colors cursor-pointer">
                 {/* Avatar */}
                 <div className="relative shrink-0">
                   <div className="w-12 h-12 rounded-full flex items-center justify-center"
