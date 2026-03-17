@@ -153,11 +153,11 @@ export default function LiveEcosystemMap({ lat, lng, radius, entities, onSelect 
         html: `<div class="eco-marker" style="--marker-color:${style.color};--marker-glow:${style.glow};">
           <div class="eco-marker-bg">${svgIcon}</div>
           ${isOnline ? '<div class="eco-online-dot"></div>' : ""}
-          ${isActive ? '<div class="eco-active-ring"></div>' : ""}
+          ${isActive ? '<div class="eco-active-ring"></div><div class="eco-active-ring eco-active-ring-2"></div>' : ""}
           <div class="eco-marker-glow"></div>
         </div>`,
-        iconSize: [40, 40],
-        iconAnchor: [20, 20],
+        iconSize: [42, 42],
+        iconAnchor: [21, 21],
       });
 
       const priceStr = entity.price && entity.price > 0
