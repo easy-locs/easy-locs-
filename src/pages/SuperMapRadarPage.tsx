@@ -5,6 +5,7 @@ import { Search, Crosshair, Navigation, Store, Package, MapPin, Radar, X, Loader
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import UniversalActionButtons from "@/components/actions/UniversalActionButtons";
+import UniversalEntityCard from "@/components/actions/UniversalEntityCard";
 
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN || "pk.eyJ1IjoiZWFzeWxvY3MyMDI2IiwiYSI6ImNtbXY0em5lYTJpaHQycHF0c3hrMGh4eHkifQ.y2GKHz1tZ_ZA6sFrEAvz7w";
 
@@ -543,7 +544,7 @@ export default function SuperMapRadarPage() {
 
         {/* Search results dropdown */}
         {query.trim().length >= 2 && (
-          <div className="mt-2 max-h-64 overflow-y-auto rounded-xl bg-card/95 backdrop-blur-md border border-border shadow-lg divide-y divide-border">
+          <div className="mt-2 max-h-64 overflow-y-auto rounded-xl bg-card/95 backdrop-blur-md border border-border shadow-lg space-y-1 p-1">
             {searchLoading ? (
               <div className="flex items-center justify-center gap-2 py-6 text-muted-foreground text-sm">
                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -553,16 +554,17 @@ export default function SuperMapRadarPage() {
               <p className="text-center text-muted-foreground text-sm py-6">No results</p>
             ) : (
               searchResults.map((item) => (
-                <button
+                <UniversalEntityCard
                   key={item.id}
-                  className="w-full text-left px-4 py-3 hover:bg-accent/10 transition-colors"
-                  onClick={() => handleResultClick(item)}
-                >
-                  <div className="text-sm font-medium text-foreground">
-                    {item.kind === "shop" ? "🏪" : "📦"} {item.title}
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-0.5">{item.subtitle}</p>
-                </button>
+                  entityType={item.kind === "shop" ? "shop" : "product"}
+                  entityId={item.kind === "product" ? (item as any).productId : item.id}
+                  slug={item.kind === "shop" ? (item as any).slug : (item as any).shopSlug}
+                  title={item.title}
+                  subtitle={item.subtitle}
+                  compact
+                  metadata={{ source: "map_search" }}
+                  onActionComplete={() => setQuery("")}
+                />
               ))
             )}
           </div>
@@ -630,9 +632,9 @@ export default function SuperMapRadarPage() {
           {/* Nearby list */}
           <div className="flex gap-2 overflow-x-auto no-scrollbar">
             {nearbyShops.slice(0, 5).map((shop) => (
-              <button
+              <div
                 key={shop.id}
-                className="shrink-0 flex items-center gap-2 px-3 py-2 rounded-xl bg-muted/60 border border-border min-w-[140px]"
+                className="shrink-0 min-w-[200px] cursor-pointer"
                 onClick={() => {
                   setSelectedShop(shop);
                   if (mapRef.current && shop.lng != null && shop.lat != null) {
@@ -645,14 +647,18 @@ export default function SuperMapRadarPage() {
                   }
                 }}
               >
-                <div className="flex-1 min-w-0 text-left">
-                  <p className="text-xs font-semibold text-foreground truncate">{shop.name || "Shop"}</p>
-                  <p className="text-[10px] text-muted-foreground">{shop.city || "Nearby"}</p>
-                </div>
-                <span className="text-[10px] font-bold text-primary shrink-0">
-                  {shop.distanceKm.toFixed(1)} km
-                </span>
-              </button>
+                <UniversalEntityCard
+                  entityType="shop"
+                  entityId={shop.id}
+                  slug={shop.slug}
+                  title={shop.name || "Shop"}
+                  subtitle={`${shop.distanceKm.toFixed(1)} km • ${shop.city || "Nearby"}`}
+                  recipientId={shop.user_id}
+                  recipientName={shop.name}
+                  compact
+                  metadata={{ source: "map_nearby" }}
+                />
+              </div>
             ))}
           </div>
         </div>
