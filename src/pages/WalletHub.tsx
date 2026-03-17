@@ -112,19 +112,14 @@ export default function WalletHub() {
         );
       case "scan":
         return (
-          <div className="flex flex-col items-center justify-center py-12 gap-5 text-center px-6">
-            <div className="w-48 h-48 rounded-2xl border-2 border-dashed border-accent/40 flex items-center justify-center bg-muted/30">
-              <ScanLine className="w-16 h-16 text-accent/50 animate-pulse" />
-            </div>
-            <div className="space-y-1.5">
-              <p className="text-sm font-medium text-foreground">
-                {t("orbit.scan_qr_pay") || "Scan QR Code to Pay"}
-              </p>
-              <p className="text-xs text-muted-foreground">
-                {t("orbit.scan_qr_desc") || "Point your camera at a recipient's QR code to initiate an instant LOCS transfer."}
-              </p>
-            </div>
-            <Button size="sm" variant="outline" onClick={() => setView("my_qr")}>
+          <div className="space-y-4">
+            <iframe
+              src="/pay/scan"
+              className="w-full rounded-2xl border border-border bg-card"
+              style={{ height: 420 }}
+              allow="camera"
+            />
+            <Button size="sm" variant="outline" className="w-full" onClick={() => setView("my_qr")}>
               {t("orbit.show_my_qr") || "Show My QR Instead"}
             </Button>
           </div>

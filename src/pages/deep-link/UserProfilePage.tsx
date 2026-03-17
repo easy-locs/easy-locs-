@@ -137,10 +137,12 @@ export default function UserProfilePage() {
           )}
 
           {/* QR section */}
-          <div className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-muted/30 border border-border">
-            <QrCode className="h-12 w-12 text-muted-foreground/30" />
-            <p className="text-[10px] text-muted-foreground">Scan to connect</p>
-          </div>
+          <UserProfileQr userId={userId!} displayName={displayName} compact={isSelf} />
+          {!isSelf && (
+            <div className="flex justify-center">
+              <ScanQrButton label="Scan to pay" />
+            </div>
+          )}
         </div>
       </div>
     </>
