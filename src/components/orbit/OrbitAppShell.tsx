@@ -8,7 +8,6 @@ import { useAuth } from "@/contexts/AuthContext";
 import {
   Home,
   MessageCircle,
-  Phone,
   Store,
   User,
   Bell,
