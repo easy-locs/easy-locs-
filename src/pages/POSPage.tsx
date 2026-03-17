@@ -420,8 +420,8 @@ export default function POSPage() {
           {step === "receipt" && receiptData && (
             <Card>
               <CardContent className="p-4 space-y-4 text-center">
-                <div className="h-16 w-16 rounded-full bg-emerald-500/10 flex items-center justify-center mx-auto">
-                  <Check className="h-8 w-8 text-emerald-500" />
+                <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
+                  <Check className="h-8 w-8 text-primary" />
                 </div>
                 <h3 className="text-lg font-bold">Payment Successful</h3>
                 <p className="text-2xl font-bold text-primary">{fmtPrice(receiptData.total)}</p>
