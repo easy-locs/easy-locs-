@@ -18,6 +18,7 @@ import SmartInstallBanner from "@/components/pwa/SmartInstallBanner";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import CountryGuard from "@/components/dashboard/CountryGuard";
+import { UnifiedPaymentProvider } from "@/payments/UnifiedPaymentSystem";
 
 // Safe lazy wrapper that catches chunk failures + missing default export issues
 function safeLazy(factory: () => Promise<{ default: ComponentType<any> }>, name: string) {
