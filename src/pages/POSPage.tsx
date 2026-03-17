@@ -94,8 +94,9 @@ export default function POSPage() {
   /* ─── Process wallet payment ─── */
   const processPayment = async () => {
     if (!user?.id) return toast.error("Sign in required");
-    if (!buyerUserId.trim()) return toast.error("Enter buyer user ID");
-    if (total <= 0) return toast.error("Cart is empty");
+    if (!buyerUserId.trim()) return toast.error("Enter buyer user ID to settle payment");
+    if (total <= 0) return toast.error("Add items to the cart first");
+    if (cart.length === 0) return toast.error("Cart is empty");
 
     setProcessing(true);
     try {

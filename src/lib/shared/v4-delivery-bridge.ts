@@ -32,9 +32,15 @@ export function installDeliveryBridge(): () => void {
   );
 
   // ── Wallet payment completed with order context → ensure delivery ──
+  // RULE: Only create delivery if ALL conditions met:
+  //   1. referenceType === "order"
+  //   2. requires_delivery === true
+  //   3. payment completed (this event = completed)
+  // NO delivery for: wallet top-up, P2P transfer, service-only payments
   unsubs.push(
     platformBus.on("wallet:payment_completed", async (event) => {
       const { referenceType, referenceId, requiresDelivery } = event.payload as any;
+      // Strict gate: only orders flagged for delivery
       if (referenceType !== "order" || !requiresDelivery || !referenceId) return;
 
       try {
