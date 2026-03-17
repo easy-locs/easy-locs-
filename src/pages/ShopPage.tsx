@@ -215,6 +215,9 @@ export default function ShopPage() {
               </span>
             )}
             <Badge variant="outline" className="text-[10px]">{catalogItems.length} items</Badge>
+            <Suspense fallback={null}>
+              <TrustScoreBadge shopId={shop.id} compact />
+            </Suspense>
             <Select value={fx.displayCurrency} onValueChange={fx.setDisplayCurrency}>
               <SelectTrigger className="h-6 w-auto gap-1 text-[10px] border-none bg-muted/50 px-2">
                 <Globe className="h-3 w-3" />
