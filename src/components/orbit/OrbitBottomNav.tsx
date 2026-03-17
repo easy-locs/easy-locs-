@@ -1,17 +1,17 @@
 /**
- * OrbitBottomNav — V7 Bottom navigation for Orbit shell.
- * 5-tab layout: Home, Discover, Wallet, Business, Profile
+ * OrbitBottomNav — WeChat-style bottom navigation.
+ * 4-tab layout: Chats, Discover, Services, Me
+ * Chat is the center of the super app.
  */
 import { useNavigate, useLocation } from "react-router-dom";
-import { Home, Search, Wallet, Store, User } from "lucide-react";
+import { MessageCircle, Compass, LayoutGrid, User } from "lucide-react";
 import { useOrbitEngine } from "@/stores/orbit-engine";
 import { useI18n } from "@/lib/i18n";
 
 const NAV_ITEMS = [
-  { icon: Home, labelKey: "nav.home", path: "/app/orbit", matchPrefixes: ["/app"] },
-  { icon: Search, labelKey: "nav.discover", path: "/discover", matchPrefixes: ["/discover", "/search", "/explore", "/shops"] },
-  { icon: Wallet, labelKey: "nav.wallet", path: "/dashboard/wallet", matchPrefixes: ["/dashboard/wallet"] },
-  { icon: Store, labelKey: "nav.business", path: "/dashboard/my-shop", matchPrefixes: ["/dashboard/my-shop", "/dashboard/seller", "/pos", "/my-orders"] },
+  { icon: MessageCircle, labelKey: "nav.chats", path: "/dashboard/communication", matchPrefixes: ["/dashboard/communication"] },
+  { icon: Compass, labelKey: "nav.discover", path: "/discover", matchPrefixes: ["/discover", "/search", "/explore", "/shops"] },
+  { icon: LayoutGrid, labelKey: "nav.services", path: "/app/orbit", matchPrefixes: ["/app", "/dashboard/wallet", "/dashboard/my-shop", "/dashboard/seller", "/pos", "/my-orders", "/property-hub"] },
   { icon: User, labelKey: "nav.me", path: "/dashboard/settings", matchPrefixes: ["/dashboard/settings"] },
 ] as const;
 
@@ -22,8 +22,8 @@ export default function OrbitBottomNav() {
   const { t } = useI18n();
 
   const getBadge = (labelKey: string) => {
-    if (labelKey === "nav.home") return unreadMessages;
-    if (labelKey === "nav.business") return pendingOrders;
+    if (labelKey === "nav.chats") return unreadMessages;
+    if (labelKey === "nav.services") return pendingOrders;
     return 0;
   };
 
