@@ -25,6 +25,8 @@ import { useState, useEffect, lazy, Suspense } from "react";
 import { toast } from "sonner";
 import { useStorefrontAnalytics } from "@/hooks/useStorefrontAnalytics";
 import { useShopTranslation } from "@/hooks/useShopTranslation";
+import { MobilePageHeader } from "@/components/ui/mobile-page-header";
+import { Link } from "react-router-dom";
 
 // Lazy-loaded secondary sections — only loaded when scrolled into view or needed
 const ShopReviews = lazy(() => import("@/components/storefront/ShopReviews"));
