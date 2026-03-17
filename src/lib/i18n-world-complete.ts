@@ -308,6 +308,9 @@ export const msComplete: Record<string, string> = {
   "explore.radius.title": "Cari di mana?", "explore.radius.worldwide": "Seluruh Dunia",
   "explore.radius.reset": "Set semula", "explore.radius.apply": "Guna", "explore.clear_all": "Padam semua",
   "page.listing.contact_direct": "Hubungi terus", "page.listing.call": "Panggil", "page.listing.share": "Kongsi",
+  "page.install.title": "Pasang Easy-Locs", "page.install.install_btn": "Pasang aplikasi",
+  "page.install.back": "Kembali", "page.install.continue_web": "Teruskan di web",
+  "pwa.banner.title": "Pasang Easy-Locs", "pwa.banner.install": "Pasang", "pwa.banner.dismiss": "Tutup",
 };
 
 // ─── Swedish (SV) ───
