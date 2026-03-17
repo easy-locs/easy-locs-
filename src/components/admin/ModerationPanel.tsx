@@ -15,7 +15,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { haptic } from "@/lib/haptics";
 import { format } from "date-fns";
-import { fr } from "date-fns/locale";
+import { fr as frLocale } from "date-fns/locale/fr";
 
 type ModerationTab = "reviews" | "blocked";
 
@@ -165,7 +165,7 @@ export default function ModerationPanel() {
                     </div>
                   </div>
                   <time className="text-[10px] text-muted-foreground">
-                    {format(new Date(review.created_at), "dd MMM", { locale: fr })}
+                    {format(new Date(review.created_at), "dd MMM", { locale: frLocale })}
                   </time>
                 </div>
 
