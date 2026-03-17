@@ -1,6 +1,7 @@
 /**
  * ShopsPage — Browse all shops.
  * PASS136: Dedicated /shops route for bottom nav.
+ * PASS143: Sponsored banners + PASS144: Ranked display.
  */
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -10,6 +11,8 @@ import { Store, ArrowRight } from "lucide-react";
 import { MobilePageHeader } from "@/components/ui/mobile-page-header";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
+import { SponsoredBanner } from "@/components/monetization/SponsoredBanner";
+import { rankItems } from "@/lib/ranking-engine";
 
 export default function ShopsPage() {
   const { data: shops, isLoading } = useQuery({
@@ -17,14 +20,17 @@ export default function ShopsPage() {
     queryFn: async () => {
       const { data } = await (supabase as any)
         .from("storefront_pages")
-        .select("id, name, slug, logo_url, description, vertical")
+        .select("id, name, slug, logo_url, description, vertical, boost_tier, boost_until, created_at")
         .eq("published", true)
         .order("created_at", { ascending: false })
         .limit(50);
-      return data || [];
+      return rankItems(data || []);
     },
     staleTime: 60_000,
   });
+
+  // First boosted shop for sponsored banner
+  const sponsoredShop = shops?.find((s: any) => s.boost_tier && s.boost_until && new Date(s.boost_until) > new Date());
 
   return (
     <div>
@@ -43,6 +49,15 @@ export default function ShopsPage() {
             icon={Store}
             title="No shops yet"
             description="Shops will appear here once merchants publish their storefronts."
+          />
+        )}
+
+        {/* PASS143: Sponsored banner slot */}
+        {sponsoredShop && (
+          <SponsoredBanner
+            item={{ ...sponsoredShop, title: sponsoredShop.name, photo_url: sponsoredShop.logo_url }}
+            placement="shops_feed"
+            linkTo={`/s/${sponsoredShop.slug}`}
           />
         )}
 
