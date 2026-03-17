@@ -582,6 +582,9 @@ export const bgComplete: Record<string, string> = {
   "explore.radius.title": "Къде търсите?", "explore.radius.worldwide": "Световно",
   "explore.radius.reset": "Нулиране", "explore.radius.apply": "Приложи", "explore.clear_all": "Изчисти",
   "page.listing.contact_direct": "Директен контакт", "page.listing.call": "Обади се", "page.listing.share": "Сподели",
+  "page.install.title": "Инсталирай Easy-Locs", "page.install.install_btn": "Инсталирай",
+  "page.install.back": "Назад", "page.install.continue_web": "Продължи в уеб",
+  "pwa.banner.title": "Инсталирай Easy-Locs", "pwa.banner.install": "Инсталирай", "pwa.banner.dismiss": "Затвори",
 };
 
 // ─── Slovak (SK) ───
