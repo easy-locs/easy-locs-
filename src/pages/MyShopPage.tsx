@@ -188,6 +188,7 @@ export default function MyShopPage() {
           <Suspense fallback={<TabLoader />}>
             {tab === "catalog" && (
               <div className="space-y-4">
+                <SmartCatalogBuilder shopId={shop.id} />
                 <CatalogManager shopId={shop.id} />
                 <BulkProductManager shopId={shop.id} />
                 <FlashSales shopId={shop.id} mode="seller" />
