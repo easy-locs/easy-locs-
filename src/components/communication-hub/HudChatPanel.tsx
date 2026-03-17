@@ -47,6 +47,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogD
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import OrbitSmartPayment, { type PaymentConfirmation } from "@/components/orbit/payments/OrbitSmartPayment";
 import { RequestMoneyModal } from "@/components/chat/RequestMoneyModal";
+import { sendPaymentRequestMessageToThread } from "@/components/chat/chat-payment-bridge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 // date-fns format imported below with ChatMessageBubble
 import { toast } from "sonner";
