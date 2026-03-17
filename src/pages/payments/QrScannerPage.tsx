@@ -6,12 +6,13 @@
  */
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Camera, CameraOff, RefreshCcw, CheckCircle2, Info } from "lucide-react";
+import { ArrowLeft, Camera, CameraOff, RefreshCcw, CheckCircle2, Info, UserPlus, MessageCircle, Send, Store, ExternalLink, Heart } from "lucide-react";
 import { Html5Qrcode } from "html5-qrcode";
-import { decodeQr, resolveRoute, isExpired, isSecurityAction } from "@/lib/qr-engine";
+import { decodeQr, resolveRoute, isExpired, isSecurityAction, type UniversalQrPayload } from "@/lib/qr-engine";
 import { useUnifiedPayment } from "@/payments/UnifiedPaymentSystem";
+import { Button } from "@/components/ui/button";
 
-type ScanState = "idle" | "starting" | "scanning" | "paying" | "paid" | "stopped" | "error";
+type ScanState = "idle" | "starting" | "scanning" | "paying" | "paid" | "stopped" | "error" | "resolved";
 type PermissionStateLike = "unknown" | "granted" | "denied" | "prompt" | "unsupported";
 
 const REGION_ID = "qr-reader-region";
@@ -54,6 +55,7 @@ export default function QrScannerPage() {
   const [error, setError] = useState("");
   const [lastText, setLastText] = useState("");
   const [txId, setTxId] = useState("");
+  const [resolvedPayload, setResolvedPayload] = useState<UniversalQrPayload | null>(null);
   const [permissionState, setPermissionState] = useState<PermissionStateLike>("unknown");
   const [cameraCount, setCameraCount] = useState<number | null>(null);
 
@@ -143,7 +145,7 @@ export default function QrScannerPage() {
       return;
     }
 
-    // Payment actions — handle inline
+    // Payment actions — handle inline via overlay
     if (payload.action === "pay_user") {
       setStateSafe("paying");
       const result = await openPaymentRef.current({
@@ -193,7 +195,14 @@ export default function QrScannerPage() {
       return;
     }
 
-    // Route-based actions — navigate
+    // Identity & commerce actions — show inline result card with CTAs
+    if (payload.action === "profile" || payload.action === "add_contact" || payload.action === "shop") {
+      setResolvedPayload(payload);
+      setStateSafe("resolved");
+      return;
+    }
+
+    // Route-based actions — navigate directly
     const route = resolveRoute(payload);
     if (route) {
       navigateRef.current(route, { replace: true });
@@ -479,6 +488,13 @@ export default function QrScannerPage() {
               Done
             </button>
           </div>
+        ) : state === "resolved" && resolvedPayload ? (
+          <QrResolvedCard payload={resolvedPayload} navigate={navigate} openPayment={openPayment} onReset={() => {
+            setResolvedPayload(null);
+            setLastText("");
+            setState("idle");
+            handledRef.current = false;
+          }} />
         ) : (
           <>
             <div className="mb-4 flex w-full max-w-[320px] items-start gap-2 rounded-2xl border border-border bg-card p-3">
@@ -557,6 +573,7 @@ export default function QrScannerPage() {
                   setError("");
                   setLastText("");
                   setTxId("");
+                  setResolvedPayload(null);
                   setState("idle");
                   handledRef.current = false;
                   log("scanner reset");
@@ -572,4 +589,154 @@ export default function QrScannerPage() {
       </div>
     </div>
   );
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   QR Resolved Card — inline result for identity & commerce scans
+   ═══════════════════════════════════════════════════════════════ */
+
+function QrResolvedCard({
+  payload,
+  navigate,
+  openPayment,
+  onReset,
+}: {
+  payload: UniversalQrPayload;
+  navigate: ReturnType<typeof useNavigate>;
+  openPayment: ReturnType<typeof useUnifiedPayment>["openPayment"];
+  onReset: () => void;
+}) {
+  // ── User Profile / Add Contact ──
+  if (payload.action === "profile" || payload.action === "add_contact") {
+    const userId = payload.userId;
+    const name = payload.name || "User";
+    const isAddContact = payload.action === "add_contact";
+
+    return (
+      <div className="w-full max-w-[320px] space-y-4 text-center">
+        <div className="rounded-2xl border border-border bg-card p-6 space-y-3">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
+            <UserPlus className="h-7 w-7 text-primary" />
+          </div>
+          <p className="text-lg font-bold text-foreground">{name}</p>
+          <p className="text-xs text-muted-foreground">
+            {isAddContact ? "Add this person as a contact" : "User profile scanned"}
+          </p>
+        </div>
+
+        {/* Primary CTA */}
+        <Button
+          className="w-full h-12 text-base gap-2 font-semibold"
+          onClick={() => navigate(`/u/${userId}`)}
+        >
+          <UserPlus className="h-5 w-5" />
+          {isAddContact ? "Add Contact" : "View Profile"}
+        </Button>
+
+        {/* Secondary CTAs */}
+        <div className="grid grid-cols-2 gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-1.5"
+            onClick={() => navigate(`/u/${userId}`)}
+          >
+            <MessageCircle className="h-4 w-4" /> Chat
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-1.5"
+            onClick={async () => {
+              await openPayment({
+                amount: 0,
+                currency: "AED",
+                title: `Pay ${name}`,
+                recipientId: userId,
+                recipientName: name,
+                contextType: "generic",
+                contextId: userId,
+                metadata: { source: "qr_scan", qr_type: payload.action },
+              });
+            }}
+          >
+            <Send className="h-4 w-4" /> Pay
+          </Button>
+        </div>
+
+        <Button variant="ghost" size="sm" onClick={onReset} className="text-muted-foreground gap-1.5">
+          <RefreshCcw className="h-3.5 w-3.5" /> Scan again
+        </Button>
+      </div>
+    );
+  }
+
+  // ── Shop ──
+  if (payload.action === "shop") {
+    const slug = payload.shopSlug;
+
+    return (
+      <div className="w-full max-w-[320px] space-y-4 text-center">
+        <div className="rounded-2xl border border-border bg-card p-6 space-y-3">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-accent/20">
+            <Store className="h-7 w-7 text-accent-foreground" />
+          </div>
+          <p className="text-lg font-bold text-foreground capitalize">{slug.replace(/-/g, " ")}</p>
+          <p className="text-xs text-muted-foreground">Shop scanned via QR</p>
+        </div>
+
+        {/* Primary CTA */}
+        <Button
+          className="w-full h-12 text-base gap-2 font-semibold"
+          onClick={() => navigate(`/s/${slug}`)}
+        >
+          <ExternalLink className="h-5 w-5" /> Open Shop
+        </Button>
+
+        {/* Secondary CTAs */}
+        <div className="grid grid-cols-3 gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-1"
+            onClick={async () => {
+              await openPayment({
+                amount: 0,
+                currency: "AED",
+                title: "Shop Payment",
+                contextType: "shop",
+                contextId: slug,
+                metadata: { source: "qr_scan", qr_type: "shop_pay", shopSlug: slug },
+              });
+            }}
+          >
+            <Send className="h-3.5 w-3.5" /> Pay
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-1"
+            onClick={() => navigate(`/s/${slug}`)}
+          >
+            <Heart className="h-3.5 w-3.5" /> Follow
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-1"
+            onClick={() => navigate(`/s/${slug}`)}
+          >
+            <MessageCircle className="h-3.5 w-3.5" /> Message
+          </Button>
+        </div>
+
+        <Button variant="ghost" size="sm" onClick={onReset} className="text-muted-foreground gap-1.5">
+          <RefreshCcw className="h-3.5 w-3.5" /> Scan again
+        </Button>
+      </div>
+    );
+  }
+
+  // Fallback — should not reach here
+  return null;
 }
