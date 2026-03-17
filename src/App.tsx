@@ -196,6 +196,7 @@ const QrPayResolver = safeLazy(() => import("./pages/deep-link/QrPayResolver"), 
 const QrResolvePage = safeLazy(() => import("./pages/deep-link/QrResolvePage"), "QrResolvePage");
 const PayRequestPage = safeLazy(() => import("./pages/deep-link/PayRequestPage"), "PayRequestPage");
 const QrScannerPage = safeLazy(() => import("./pages/payments/QrScannerPage"), "QrScannerPage");
+const GuestPaymentSuccess = safeLazy(() => import("./pages/deep-link/GuestPaymentSuccess"), "GuestPaymentSuccess");
 
 // City sub-page wrappers
 const CityServicesPage = () => <CityHubPage subPage="services" />;
