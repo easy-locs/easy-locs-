@@ -46,6 +46,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger } from "@/components/u
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import OrbitSmartPayment, { type PaymentConfirmation } from "@/components/orbit/payments/OrbitSmartPayment";
+import { RequestMoneyModal } from "@/components/chat/RequestMoneyModal";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 // date-fns format imported below with ChatMessageBubble
 import { toast } from "sonner";
@@ -97,6 +98,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
   const [paymentLinkDialog, setPaymentLinkDialog] = useState(false);
   const [paymentAmount, setPaymentAmount] = useState("");
   const [paymentDescription, setPaymentDescription] = useState("");
+  const [requestMoneyDialog, setRequestMoneyDialog] = useState(false);
   const [sendingPaymentLink, setSendingPaymentLink] = useState(false);
   const [contextMessage, setContextMessage] = useState<{ msgId: string; content: string; isMe: boolean; createdAt: string; hasAudio?: boolean; hasAttachment?: boolean; senderId?: string; canModerate?: boolean; isStarred?: boolean } | null>(null);
   const [hiddenMsgIds, setHiddenMsgIds] = useState<Set<string>>(new Set());
@@ -1067,6 +1069,9 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
               <Button size="sm" variant="outline" className="text-[11px] h-7 min-h-[44px] sm:min-h-0 gap-1.5 rounded-full px-3 shrink-0" style={{ borderColor: "hsl(var(--hud-border) / 0.15)", color: "hsl(var(--hud-text))", background: "hsl(var(--hud-surface))" }} onClick={() => setPaymentLinkDialog(true)}>
                 <CreditCard className="h-3 w-3" /> {t("orbit.payment") || "Payment"}
               </Button>
+              <Button size="sm" variant="outline" className="text-[11px] h-7 min-h-[44px] sm:min-h-0 gap-1.5 rounded-full px-3 shrink-0" style={{ borderColor: "hsl(var(--hud-purple) / 0.2)", color: "hsl(var(--hud-purple))", background: "hsl(var(--hud-purple) / 0.06)" }} onClick={() => setRequestMoneyDialog(true)}>
+                <CreditCard className="h-3 w-3" /> Request
+              </Button>
               {thread.bookingStatus === "pending" && (
                 <Button size="sm" className="text-[11px] h-7 min-h-[44px] sm:min-h-0 gap-1.5 rounded-full px-3 shrink-0" style={{ background: "hsl(var(--hud-success) / 0.15)", color: "hsl(var(--hud-success))", border: "1px solid hsl(var(--hud-success) / 0.25)" }} onClick={() => handleBookingAction("confirm")}>
                   <CalendarCheck className="h-3 w-3" /> {t("orbit.confirm") || "Confirm"}
@@ -1282,6 +1287,9 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
                     <DropdownMenuItem onClick={() => { setShowAttachMenu(false); setPaymentLinkDialog(true); }}>
                       <CreditCard className="h-4 w-4 mr-2" style={{ color: "hsl(var(--hud-purple))" }} /> Payment
                     </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => { setShowAttachMenu(false); setRequestMoneyDialog(true); }}>
+                      <CreditCard className="h-4 w-4 mr-2" style={{ color: "hsl(var(--hud-warning))" }} /> Request Money
+                    </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={() => {
                       setShowAttachMenu(false);
@@ -1415,6 +1423,47 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
           />
         </SheetContent>
       </Sheet>
+
+      {/* Request Money Modal */}
+      <RequestMoneyModal
+        open={requestMoneyDialog}
+        onClose={() => setRequestMoneyDialog(false)}
+        recipientId={thread.tenantId || thread.contextId || null}
+        contextId={thread.threadId || thread.id || null}
+        onCreated={async (req) => {
+          // Auto-insert payment request card as system message in chat
+          const authUserId = await resolveAuthUserId();
+          if (!authUserId || !orgId) return;
+          const cardContent = JSON.stringify({
+            _type: "payment_request_card",
+            id: req.id,
+            amount: req.amount,
+            currency: req.currency,
+            title: req.title,
+            subtitle: req.subtitle,
+            requester_id: req.requester_id,
+            status: req.status,
+          });
+          let storedContent = cardContent;
+          let isEncrypted = false;
+          const peerId = thread.tenantId || thread.contextId || thread.id;
+          if (e2eReady && peerId) {
+            const enc = await encrypt(cardContent, peerId);
+            if (enc) { storedContent = enc; isEncrypted = true; }
+          }
+          const msgPayload: any = {
+            org_id: orgId, sender_id: authUserId, tenant_id: thread.tenantId || null,
+            booking_id: thread.bookingId || null, booking_type: thread.bookingType || null,
+            content: storedContent,
+            category: "payment_request", message_type: "system", read: false,
+            context_type: thread.contextType, context_id: thread.contextId,
+            encrypted: isEncrypted,
+          };
+          if (thread.threadId) msgPayload.thread_id = thread.threadId;
+          await supabase.from("messages").insert(msgPayload);
+          toast.success("Payment request sent in chat");
+        }}
+      />
 
       {/* Message Context Menu */}
       <MessageContextMenu
