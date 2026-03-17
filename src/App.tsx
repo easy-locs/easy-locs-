@@ -154,7 +154,9 @@ const ShopPage = safeLazy(() => import("./pages/ShopPage"), "ShopPage");
 const MyShopPage = safeLazy(() => import("./pages/MyShopPage"), "MyShopPage");
 const DiscoverPage = safeLazy(() => import("./pages/DiscoverPage"), "DiscoverPage");
 const OpsCenter = safeLazy(() => import("./pages/OpsCenter"), "OpsCenter");
-import V7BundleRoutes from "@/pages/V7Bundle";
+const ShopsPage = safeLazy(() => import("./pages/ShopsPage"), "ShopsPage");
+const MyBusinessHub = safeLazy(() => import("./pages/MyBusinessHub"), "MyBusinessHub");
+const MyShopsPage = safeLazy(() => import("./pages/MyShopsPage"), "MyShopsPage");
 const MyOrdersPage = safeLazy(() => import("./pages/MyOrdersPage"), "MyOrdersPage");
 const POSPage = safeLazy(() => import("./pages/POSPage"), "POSPage");
 const PropertyManagementHub = safeLazy(() => import("./pages/PropertyManagementHub"), "PropertyManagementHub");
@@ -244,7 +246,6 @@ const App = () => (
            <SkipLink />
            <Suspense fallback={<PageLoader />}>
             <main id="main-content">
-            <V7BundleRoutes />
             <Routes>
               {/* ══════ PUBLIC WEBSITE ══════ */}
               {/* Homepage */}
@@ -277,6 +278,9 @@ const App = () => (
               <Route path="/store/:storeSlug" element={<StorePage />} />
               <Route path="/s/:shopSlug" element={<ShopPage />} />
               <Route path="/discover" element={<DiscoverPage />} />
+              <Route path="/shops" element={<ShopsPage />} />
+              <Route path="/business" element={<MyBusinessHub />} />
+              <Route path="/business/my-shops" element={<MyShopsPage />} />
               
               <Route path="/search" element={<DiscoverPage />} />
               <Route path="/trending" element={<DiscoverPage />} />
