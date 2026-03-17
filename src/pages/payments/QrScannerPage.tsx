@@ -593,10 +593,6 @@ export default function QrScannerPage() {
   );
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   QR Resolved Card — inline result for identity & commerce scans
-   Real business actions: add contact, open thread, follow shop.
-   ═══════════════════════════════════════════════════════════════ */
 
 function QrResolvedCard({
   payload,
