@@ -216,6 +216,7 @@ export default function MyShopPage() {
                 <MultiVendorDashboard shopId={shop.id} />
                 <AffiliateProgram shopId={shop.id} shopSlug={shop.slug} mode="seller" />
                 <MultiCurrencyTax shopId={shop.id} mode="seller" />
+                <InvoiceList shopId={shop.id} />
                 <SubscriptionManager shopId={shop.id} />
                 <GiftCardManager shopId={shop.id} mode="seller" />
                 <LoyaltyDashboard shopId={shop.id} mode="seller" />
