@@ -1,9 +1,11 @@
 /**
- * DriverDashboard — Mobile-first driver dashboard with missions, earnings, online toggle.
- * PASS70-B
+ * DriverDashboard — PASS139: Mobile-first driver dashboard.
+ * 3 sections max: Stats, Active Missions, History.
+ * Clean status flow: assigned → accepted → in_progress → completed.
  */
 import { useState } from "react";
 import DeliveryHeatmapPanel from "@/components/delivery/DeliveryHeatmapPanel";
+import { MobilePageHeader } from "@/components/ui/mobile-page-header";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Power, Navigation, Package, Clock, CheckCircle2,
