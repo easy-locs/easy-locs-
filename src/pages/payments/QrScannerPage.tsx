@@ -488,6 +488,13 @@ export default function QrScannerPage() {
               Done
             </button>
           </div>
+        ) : state === "resolved" && resolvedPayload ? (
+          <QrResolvedCard payload={resolvedPayload} navigate={navigate} openPayment={openPayment} onReset={() => {
+            setResolvedPayload(null);
+            setLastText("");
+            setState("idle");
+            handledRef.current = false;
+          }} />
         ) : (
           <>
             <div className="mb-4 flex w-full max-w-[320px] items-start gap-2 rounded-2xl border border-border bg-card p-3">
