@@ -164,12 +164,13 @@ export default function POSPage() {
       }
 
       // Mark order as paid → triggers auto-delivery if requires_delivery
+      const refCode = (result.data as any)?.reference_code || null;
       await (supabase as any)
         .from("storefront_orders")
         .update({
           status: "accepted",
           payment_status: "paid",
-          wallet_reference_code: result.data?.reference_code || null,
+          wallet_reference_code: refCode,
         })
         .eq("id", order.id);
 
