@@ -381,7 +381,7 @@ export default function SuperMapRadarPage() {
     });
 
     mapRef.current = map;
-  }, [shops, radarKm]);
+  }, [radarKm]);
 
   useEffect(() => {
     initMap();
