@@ -242,7 +242,9 @@ function ChatMessageBubble({
           borderRadius: isMe
             ? (isConsecutive ? "16px 4px 4px 16px" : "16px 16px 4px 16px")
             : (isConsecutive ? "4px 16px 16px 4px" : "16px 16px 16px 4px"),
-          background: isPayment
+          background: isPaymentRequest
+            ? "linear-gradient(135deg, hsl(var(--hud-purple) / 0.08), hsl(var(--hud-purple) / 0.03))"
+            : isPayment
             ? "linear-gradient(135deg, hsl(var(--hud-cyan) / 0.08), hsl(var(--hud-cyan) / 0.03))"
             : isMe
               ? "hsl(var(--hud-cyan) / 0.08)"
