@@ -51,7 +51,7 @@ function QuickPayBar() {
     >
       {[
         { icon: QrCode, label: "Scan", to: "/dashboard/wallet?action=scan" },
-        { icon: Send, label: "Pay", to: "/dashboard/wallet?action=send" },
+        { icon: Send, label: "Pay", to: "/dashboard/wallet?action=pay" },
         { icon: Wallet, label: "Wallet", to: "/dashboard/wallet" },
       ].map(({ icon: Icon, label, to }) => (
         <Link key={label} to={to} className="flex flex-col items-center gap-1 active:scale-90 transition-transform px-4">
