@@ -1,9 +1,11 @@
 /**
- * DriverDashboard — Mobile-first driver dashboard with missions, earnings, online toggle.
- * PASS70-B
+ * DriverDashboard — PASS139: Mobile-first driver dashboard.
+ * 3 sections max: Stats, Active Missions, History.
+ * Clean status flow: assigned → accepted → in_progress → completed.
  */
 import { useState } from "react";
 import DeliveryHeatmapPanel from "@/components/delivery/DeliveryHeatmapPanel";
+import { MobilePageHeader } from "@/components/ui/mobile-page-header";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Power, Navigation, Package, Clock, CheckCircle2,
@@ -208,18 +210,13 @@ export default function DriverDashboard() {
   const loading = sessionLoading || missionsLoading;
 
   return (
-    <div className="min-h-screen" style={{ background: "hsl(var(--hud-bg))" }}>
-      {/* Header */}
-      <div className="px-4 pt-6 pb-4">
-        <div className="flex items-center justify-between mb-5">
-          <div>
-            <h1 className="text-lg font-bold" style={{ color: "hsl(var(--hud-text))" }}>
-              🚀 Driver Hub
-            </h1>
-            <p className="text-[11px] mt-0.5" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
-              Gérez vos missions de livraison
-            </p>
-          </div>
+    <div className="min-h-screen pb-20" style={{ background: "hsl(var(--hud-bg))" }}>
+      <MobilePageHeader title="Driver Hub" backTo="/dashboard" />
+      <div className="px-4 pt-3 pb-4">
+        <div className="flex items-center justify-between mb-4">
+          <p className="text-[11px]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
+            Manage your delivery missions
+          </p>
 
           {/* Online toggle */}
           <motion.button
@@ -233,7 +230,7 @@ export default function DriverDashboard() {
             }}
           >
             <Power className="h-4 w-4" />
-            {isOnline ? "En ligne" : "Hors ligne"}
+            {isOnline ? "Online" : "Offline"}
           </motion.button>
         </div>
 
