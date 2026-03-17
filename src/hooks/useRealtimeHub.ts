@@ -26,6 +26,7 @@ const TABLE_TO_MODULE: Record<string, OrbitModule> = {
 export function useRealtimeHub() {
   const { user, orgId, activeRole } = useAuth();
   const queryClient = useQueryClient();
+  const refreshModule = useOrbitEngine((s) => s.refreshModule);
   const refresh = useOrbitEngine((s) => s.refresh);
   const addAlert = useOrbitEngine((s) => s.addAlert);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
