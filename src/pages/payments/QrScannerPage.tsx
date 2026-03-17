@@ -593,9 +593,6 @@ export default function QrScannerPage() {
   );
 }
 
-
-
-  payload,
   navigate,
   openPayment,
   onReset,
