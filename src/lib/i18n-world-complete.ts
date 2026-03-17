@@ -73,6 +73,13 @@ export const koComplete: Record<string, string> = {
   "page.listing.contact_direct": "직접 연락", "page.listing.call": "전화", "page.listing.share": "공유",
   // Install
   "page.install.title": "Easy-Locs 설치", "page.install.install_btn": "앱 설치",
+  "page.install.desc": "홈 화면에서 Easy-Locs에 바로 접속하세요.", "page.install.installed": "앱이 설치되었습니다!",
+  "page.install.ios_title": "iPhone / iPad에서:", "page.install.ios_step": "Safari 하단의 공유 버튼을 누른 후 '홈 화면에 추가'를 선택하세요.",
+  "page.install.browser_hint": "Chrome 또는 Edge에서 이 페이지를 열어 앱을 설치하세요.",
+  "page.install.feature_offline": "오프라인 접속", "page.install.feature_fast": "빠른 실행", "page.install.feature_notif": "알림",
+  "page.install.back": "뒤로", "page.install.continue_web": "웹에서 계속",
+  "pwa.banner.title": "Easy-Locs 설치", "pwa.banner.hint": "빠르고 오프라인 사용 가능",
+  "pwa.banner.ios_hint": "공유 → 홈 화면에 추가", "pwa.banner.install": "설치", "pwa.banner.dismiss": "닫기",
 };
 
 // ─── Chinese Simplified (ZH) ───
@@ -129,6 +136,13 @@ export const zhComplete: Record<string, string> = {
   "page.rental.per_month": "/月", "page.rental.active": "活跃", "page.rental.terminated": "已终止",
   "page.listing.contact_direct": "直接联系", "page.listing.call": "电话", "page.listing.share": "分享",
   "page.install.title": "安装Easy-Locs", "page.install.install_btn": "安装应用",
+  "page.install.desc": "从主屏幕直接访问Easy-Locs。", "page.install.installed": "应用已安装！",
+  "page.install.ios_title": "在iPhone / iPad上：", "page.install.ios_step": "点击Safari底部的分享按钮，然后选择「添加到主屏幕」。",
+  "page.install.browser_hint": "请在Chrome或Edge中打开此页面以安装应用。",
+  "page.install.feature_offline": "离线访问", "page.install.feature_fast": "快速启动", "page.install.feature_notif": "通知",
+  "page.install.back": "返回", "page.install.continue_web": "继续使用网页版",
+  "pwa.banner.title": "安装Easy-Locs", "pwa.banner.hint": "快速、离线可用",
+  "pwa.banner.ios_hint": "分享 → 添加到主屏幕", "pwa.banner.install": "安装", "pwa.banner.dismiss": "关闭",
 };
 
 // ─── Hindi (HI) ───
@@ -158,6 +172,14 @@ export const hiComplete: Record<string, string> = {
   "page.features.heading": "सभी प्रशासन,", "page.features.heading_highlight": "एक ही जगह",
   "page.finances.title": "वित्त", "page.finances.subtitle": "किराया आय, खर्च और शुद्ध लाभ",
   "page.listing.contact_direct": "सीधे संपर्क करें", "page.listing.call": "कॉल करें", "page.listing.share": "शेयर करें",
+  "page.install.title": "Easy-Locs इंस्टॉल करें", "page.install.install_btn": "ऐप इंस्टॉल करें",
+  "page.install.desc": "अपनी होम स्क्रीन से Easy-Locs एक्सेस करें।", "page.install.installed": "ऐप इंस्टॉल हो गया!",
+  "page.install.ios_title": "iPhone / iPad पर:", "page.install.ios_step": "Safari में शेयर बटन दबाएं, फिर 'होम स्क्रीन पर जोड़ें' चुनें।",
+  "page.install.browser_hint": "ऐप इंस्टॉल करने के लिए Chrome या Edge में खोलें।",
+  "page.install.feature_offline": "ऑफ़लाइन एक्सेस", "page.install.feature_fast": "तेज़ लॉन्च", "page.install.feature_notif": "सूचनाएं",
+  "page.install.back": "वापस", "page.install.continue_web": "वेब पर जारी रखें",
+  "pwa.banner.title": "Easy-Locs इंस्टॉल करें", "pwa.banner.hint": "तेज़, ऑफ़लाइन तैयार",
+  "pwa.banner.ios_hint": "शेयर → होम स्क्रीन पर जोड़ें", "pwa.banner.install": "इंस्टॉल", "pwa.banner.dismiss": "बंद करें",
 };
 
 // ─── Thai (TH) ───
@@ -186,6 +208,14 @@ export const thComplete: Record<string, string> = {
   "page.features.heading": "จัดการทุกอย่าง", "page.features.heading_highlight": "ในที่เดียว",
   "page.finances.title": "การเงิน", "page.finances.subtitle": "รายได้ค่าเช่า ค่าใช้จ่าย และกำไรสุทธิ",
   "page.listing.contact_direct": "ติดต่อโดยตรง", "page.listing.call": "โทร", "page.listing.share": "แชร์",
+  "page.install.title": "ติดตั้ง Easy-Locs", "page.install.install_btn": "ติดตั้งแอป",
+  "page.install.desc": "เข้าถึง Easy-Locs จากหน้าจอหลักของคุณ", "page.install.installed": "ติดตั้งแอปแล้ว!",
+  "page.install.ios_title": "บน iPhone / iPad:", "page.install.ios_step": "แตะปุ่มแชร์ที่ด้านล่างของ Safari แล้วเลือก 'เพิ่มไปยังหน้าจอหลัก'",
+  "page.install.browser_hint": "เปิดหน้านี้ใน Chrome หรือ Edge เพื่อติดตั้งแอป",
+  "page.install.feature_offline": "เข้าถึงออฟไลน์", "page.install.feature_fast": "เปิดเร็ว", "page.install.feature_notif": "การแจ้งเตือน",
+  "page.install.back": "กลับ", "page.install.continue_web": "ใช้เว็บต่อ",
+  "pwa.banner.title": "ติดตั้ง Easy-Locs", "pwa.banner.hint": "เร็ว ใช้ออฟไลน์ได้",
+  "pwa.banner.ios_hint": "แชร์ → เพิ่มไปยังหน้าจอหลัก", "pwa.banner.install": "ติดตั้ง", "pwa.banner.dismiss": "ปิด",
 };
 
 // ─── Vietnamese (VI) ───
@@ -214,6 +244,12 @@ export const viComplete: Record<string, string> = {
   "page.features.heading": "Tất cả quản lý,", "page.features.heading_highlight": "một nơi duy nhất",
   "page.finances.title": "Tài chính", "page.finances.subtitle": "Thu nhập cho thuê, chi phí và lợi nhuận ròng",
   "page.listing.contact_direct": "Liên hệ trực tiếp", "page.listing.call": "Gọi", "page.listing.share": "Chia sẻ",
+  "page.install.title": "Cài đặt Easy-Locs", "page.install.install_btn": "Cài ứng dụng",
+  "page.install.desc": "Truy cập Easy-Locs từ màn hình chính.", "page.install.installed": "Đã cài ứng dụng!",
+  "page.install.back": "Quay lại", "page.install.continue_web": "Tiếp tục trên web",
+  "page.install.feature_offline": "Truy cập offline", "page.install.feature_fast": "Khởi động nhanh", "page.install.feature_notif": "Thông báo",
+  "pwa.banner.title": "Cài đặt Easy-Locs", "pwa.banner.hint": "Nhanh, dùng offline",
+  "pwa.banner.install": "Cài đặt", "pwa.banner.dismiss": "Đóng",
 };
 
 // ─── Indonesian (ID) ───
@@ -242,6 +278,11 @@ export const idComplete: Record<string, string> = {
   "page.features.heading": "Semua administrasi,", "page.features.heading_highlight": "di satu tempat",
   "page.finances.title": "Keuangan", "page.finances.subtitle": "Pendapatan sewa, pengeluaran dan laba bersih",
   "page.listing.contact_direct": "Hubungi langsung", "page.listing.call": "Telepon", "page.listing.share": "Bagikan",
+  "page.install.title": "Instal Easy-Locs", "page.install.install_btn": "Instal aplikasi",
+  "page.install.back": "Kembali", "page.install.continue_web": "Lanjutkan di web",
+  "page.install.feature_offline": "Akses offline", "page.install.feature_fast": "Peluncuran cepat", "page.install.feature_notif": "Notifikasi",
+  "pwa.banner.title": "Instal Easy-Locs", "pwa.banner.hint": "Cepat, bisa offline",
+  "pwa.banner.install": "Instal", "pwa.banner.dismiss": "Tutup",
 };
 
 // ─── Malay (MS) ───
@@ -267,6 +308,9 @@ export const msComplete: Record<string, string> = {
   "explore.radius.title": "Cari di mana?", "explore.radius.worldwide": "Seluruh Dunia",
   "explore.radius.reset": "Set semula", "explore.radius.apply": "Guna", "explore.clear_all": "Padam semua",
   "page.listing.contact_direct": "Hubungi terus", "page.listing.call": "Panggil", "page.listing.share": "Kongsi",
+  "page.install.title": "Pasang Easy-Locs", "page.install.install_btn": "Pasang aplikasi",
+  "page.install.back": "Kembali", "page.install.continue_web": "Teruskan di web",
+  "pwa.banner.title": "Pasang Easy-Locs", "pwa.banner.install": "Pasang", "pwa.banner.dismiss": "Tutup",
 };
 
 // ─── Swedish (SV) ───
@@ -293,6 +337,9 @@ export const svComplete: Record<string, string> = {
   "explore.radius.title": "Var söker du?", "explore.radius.worldwide": "Hela världen",
   "explore.radius.reset": "Återställ", "explore.radius.apply": "Tillämpa", "explore.clear_all": "Rensa allt",
   "page.listing.contact_direct": "Kontakta direkt", "page.listing.call": "Ring", "page.listing.share": "Dela",
+  "page.install.title": "Installera Easy-Locs", "page.install.install_btn": "Installera appen",
+  "page.install.back": "Tillbaka", "page.install.continue_web": "Fortsätt på webben",
+  "pwa.banner.title": "Installera Easy-Locs", "pwa.banner.install": "Installera", "pwa.banner.dismiss": "Stäng",
 };
 
 // ─── Danish (DA) ───
@@ -318,6 +365,9 @@ export const daComplete: Record<string, string> = {
   "explore.radius.title": "Hvor søger du?", "explore.radius.worldwide": "Hele verden",
   "explore.radius.reset": "Nulstil", "explore.radius.apply": "Anvend", "explore.clear_all": "Ryd alt",
   "page.listing.contact_direct": "Kontakt direkte", "page.listing.call": "Ring", "page.listing.share": "Del",
+  "page.install.title": "Installer Easy-Locs", "page.install.install_btn": "Installer appen",
+  "page.install.back": "Tilbage", "page.install.continue_web": "Fortsæt på web",
+  "pwa.banner.title": "Installer Easy-Locs", "pwa.banner.install": "Installer", "pwa.banner.dismiss": "Luk",
 };
 
 // ─── Norwegian (NB) ───
@@ -343,6 +393,9 @@ export const nbComplete: Record<string, string> = {
   "explore.radius.title": "Hvor leter du?", "explore.radius.worldwide": "Hele verden",
   "explore.radius.reset": "Tilbakestill", "explore.radius.apply": "Bruk", "explore.clear_all": "Fjern alt",
   "page.listing.contact_direct": "Kontakt direkte", "page.listing.call": "Ring", "page.listing.share": "Del",
+  "page.install.title": "Installer Easy-Locs", "page.install.install_btn": "Installer appen",
+  "page.install.back": "Tilbake", "page.install.continue_web": "Fortsett på nett",
+  "pwa.banner.title": "Installer Easy-Locs", "pwa.banner.install": "Installer", "pwa.banner.dismiss": "Lukk",
 };
 
 // ─── Finnish (FI) ───
@@ -368,6 +421,9 @@ export const fiComplete: Record<string, string> = {
   "explore.radius.title": "Mistä etsit?", "explore.radius.worldwide": "Maailmanlaajuinen",
   "explore.radius.reset": "Nollaa", "explore.radius.apply": "Käytä", "explore.clear_all": "Tyhjennä kaikki",
   "page.listing.contact_direct": "Ota yhteyttä", "page.listing.call": "Soita", "page.listing.share": "Jaa",
+  "page.install.title": "Asenna Easy-Locs", "page.install.install_btn": "Asenna sovellus",
+  "page.install.back": "Takaisin", "page.install.continue_web": "Jatka selaimessa",
+  "pwa.banner.title": "Asenna Easy-Locs", "pwa.banner.install": "Asenna", "pwa.banner.dismiss": "Sulje",
 };
 
 // ─── Greek (EL) ───
@@ -393,6 +449,9 @@ export const elComplete: Record<string, string> = {
   "explore.radius.title": "Πού ψάχνετε;", "explore.radius.worldwide": "Παγκόσμια",
   "explore.radius.reset": "Επαναφορά", "explore.radius.apply": "Εφαρμογή", "explore.clear_all": "Καθαρισμός",
   "page.listing.contact_direct": "Επικοινωνία", "page.listing.call": "Κλήση", "page.listing.share": "Κοινοποίηση",
+  "page.install.title": "Εγκατάσταση Easy-Locs", "page.install.install_btn": "Εγκατάσταση",
+  "page.install.back": "Πίσω", "page.install.continue_web": "Συνέχεια στον ιστό",
+  "pwa.banner.title": "Εγκατάσταση Easy-Locs", "pwa.banner.install": "Εγκατάσταση", "pwa.banner.dismiss": "Κλείσιμο",
 };
 
 // ─── Czech (CS) ───
@@ -417,6 +476,9 @@ export const csComplete: Record<string, string> = {
   "explore.radius.title": "Kde hledáte?", "explore.radius.worldwide": "Celosvětově",
   "explore.radius.reset": "Obnovit", "explore.radius.apply": "Použít", "explore.clear_all": "Vymazat vše",
   "page.listing.contact_direct": "Kontaktovat přímo", "page.listing.call": "Volat", "page.listing.share": "Sdílet",
+  "page.install.title": "Nainstalovat Easy-Locs", "page.install.install_btn": "Nainstalovat",
+  "page.install.back": "Zpět", "page.install.continue_web": "Pokračovat na webu",
+  "pwa.banner.title": "Nainstalovat Easy-Locs", "pwa.banner.install": "Nainstalovat", "pwa.banner.dismiss": "Zavřít",
 };
 
 // ─── Hungarian (HU) ───
@@ -441,6 +503,9 @@ export const huComplete: Record<string, string> = {
   "explore.radius.title": "Hol keres?", "explore.radius.worldwide": "Világszerte",
   "explore.radius.reset": "Visszaállítás", "explore.radius.apply": "Alkalmaz", "explore.clear_all": "Összes törlése",
   "page.listing.contact_direct": "Közvetlen kapcsolat", "page.listing.call": "Hívás", "page.listing.share": "Megosztás",
+  "page.install.title": "Easy-Locs telepítése", "page.install.install_btn": "Telepítés",
+  "page.install.back": "Vissza", "page.install.continue_web": "Folytatás a weben",
+  "pwa.banner.title": "Easy-Locs telepítése", "pwa.banner.install": "Telepítés", "pwa.banner.dismiss": "Bezárás",
 };
 
 // ─── Romanian (RO) ───
@@ -465,6 +530,9 @@ export const roComplete: Record<string, string> = {
   "explore.radius.title": "Unde căutați?", "explore.radius.worldwide": "Global",
   "explore.radius.reset": "Resetare", "explore.radius.apply": "Aplicare", "explore.clear_all": "Șterge tot",
   "page.listing.contact_direct": "Contact direct", "page.listing.call": "Apel", "page.listing.share": "Distribuie",
+  "page.install.title": "Instalează Easy-Locs", "page.install.install_btn": "Instalează",
+  "page.install.back": "Înapoi", "page.install.continue_web": "Continuă pe web",
+  "pwa.banner.title": "Instalează Easy-Locs", "pwa.banner.install": "Instalează", "pwa.banner.dismiss": "Închide",
 };
 
 // ─── Croatian (HR) ───
@@ -488,6 +556,9 @@ export const hrComplete: Record<string, string> = {
   "explore.radius.title": "Gdje tražite?", "explore.radius.worldwide": "Cijeli svijet",
   "explore.radius.reset": "Poništi", "explore.radius.apply": "Primijeni", "explore.clear_all": "Očisti sve",
   "page.listing.contact_direct": "Kontakt", "page.listing.call": "Pozovi", "page.listing.share": "Podijeli",
+  "page.install.title": "Instaliraj Easy-Locs", "page.install.install_btn": "Instaliraj",
+  "page.install.back": "Natrag", "page.install.continue_web": "Nastavi na webu",
+  "pwa.banner.title": "Instaliraj Easy-Locs", "pwa.banner.install": "Instaliraj", "pwa.banner.dismiss": "Zatvori",
 };
 
 // ─── Bulgarian (BG) ───
@@ -511,6 +582,9 @@ export const bgComplete: Record<string, string> = {
   "explore.radius.title": "Къде търсите?", "explore.radius.worldwide": "Световно",
   "explore.radius.reset": "Нулиране", "explore.radius.apply": "Приложи", "explore.clear_all": "Изчисти",
   "page.listing.contact_direct": "Директен контакт", "page.listing.call": "Обади се", "page.listing.share": "Сподели",
+  "page.install.title": "Инсталирай Easy-Locs", "page.install.install_btn": "Инсталирай",
+  "page.install.back": "Назад", "page.install.continue_web": "Продължи в уеб",
+  "pwa.banner.title": "Инсталирай Easy-Locs", "pwa.banner.install": "Инсталирай", "pwa.banner.dismiss": "Затвори",
 };
 
 // ─── Slovak (SK) ───
@@ -534,6 +608,9 @@ export const skComplete: Record<string, string> = {
   "explore.radius.title": "Kde hľadáte?", "explore.radius.worldwide": "Celosvetovo",
   "explore.radius.reset": "Obnoviť", "explore.radius.apply": "Použiť", "explore.clear_all": "Vymazať",
   "page.listing.contact_direct": "Priamy kontakt", "page.listing.call": "Volať", "page.listing.share": "Zdieľať",
+  "page.install.title": "Nainštalovať Easy-Locs", "page.install.install_btn": "Nainštalovať",
+  "page.install.back": "Späť", "page.install.continue_web": "Pokračovať na webe",
+  "pwa.banner.title": "Nainštalovať Easy-Locs", "pwa.banner.install": "Nainštalovať", "pwa.banner.dismiss": "Zavrieť",
 };
 
 // ─── Hebrew (HE) ───
@@ -558,6 +635,9 @@ export const heComplete: Record<string, string> = {
   "explore.radius.title": "איפה מחפשים?", "explore.radius.worldwide": "עולמי",
   "explore.radius.reset": "איפוס", "explore.radius.apply": "החל", "explore.clear_all": "נקה הכל",
   "page.listing.contact_direct": "צור קשר", "page.listing.call": "התקשר", "page.listing.share": "שתף",
+  "page.install.title": "התקנת Easy-Locs", "page.install.install_btn": "התקן",
+  "page.install.back": "חזרה", "page.install.continue_web": "המשך באתר",
+  "pwa.banner.title": "התקנת Easy-Locs", "pwa.banner.install": "התקן", "pwa.banner.dismiss": "סגור",
 };
 
 // ─── Ukrainian (UK) ───
@@ -582,4 +662,7 @@ export const ukComplete: Record<string, string> = {
   "explore.radius.title": "Де шукаєте?", "explore.radius.worldwide": "Весь світ",
   "explore.radius.reset": "Скинути", "explore.radius.apply": "Застосувати", "explore.clear_all": "Очистити все",
   "page.listing.contact_direct": "Прямий контакт", "page.listing.call": "Зателефонувати", "page.listing.share": "Поділитися",
+  "page.install.title": "Встановити Easy-Locs", "page.install.install_btn": "Встановити",
+  "page.install.back": "Назад", "page.install.continue_web": "Продовжити в браузері",
+  "pwa.banner.title": "Встановити Easy-Locs", "pwa.banner.install": "Встановити", "pwa.banner.dismiss": "Закрити",
 };
