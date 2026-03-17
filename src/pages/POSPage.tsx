@@ -225,24 +225,52 @@ export default function POSPage() {
           {/* ── CATALOG ── */}
           {step === "catalog" && (
             <>
-              <Card>
+               <Card>
                 <CardContent className="p-5 space-y-4">
                   <h3 className="text-base font-semibold flex items-center gap-2">
                     <ShoppingCart className="h-5 w-5 text-primary" />
-                    Quick Add
+                    Catalog
                   </h3>
-                  <div className="grid grid-cols-3 gap-3">
-                    {QUICK_AMOUNTS.map(amt => (
-                      <Button
-                        key={amt}
-                        variant="outline"
-                        className="h-14 text-base font-bold rounded-xl active:scale-95 transition-transform"
-                        onClick={() => addToCart(`Item ${amt}L`, amt)}
-                      >
-                        {amt} L
-                      </Button>
-                    ))}
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Search products..."
+                      value={searchQuery}
+                      onChange={e => setSearchQuery(e.target.value)}
+                      className="h-12 pl-10 text-sm rounded-xl"
+                    />
                   </div>
+                  {filteredCatalog.length > 0 ? (
+                    <div className="grid grid-cols-2 gap-3">
+                      {filteredCatalog.map((item: any) => (
+                        <Button
+                          key={item.id}
+                          variant="outline"
+                          className="h-auto min-h-[60px] flex flex-col items-start gap-1 p-3 rounded-xl active:scale-95 transition-transform text-left"
+                          onClick={() => addToCart(item.title, item.price || 0)}
+                        >
+                          <span className="text-xs font-semibold truncate w-full">{item.title}</span>
+                          <span className="text-sm font-bold text-primary">{(item.price || 0).toFixed(2)} L</span>
+                          {item.stock_quantity != null && (
+                            <span className="text-[10px] text-muted-foreground">Stock: {item.stock_quantity}</span>
+                          )}
+                        </Button>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-3 gap-3">
+                      {[5, 10, 15, 20, 25, 50].map(amt => (
+                        <Button
+                          key={amt}
+                          variant="outline"
+                          className="h-14 text-base font-bold rounded-xl active:scale-95 transition-transform"
+                          onClick={() => addToCart(`Item ${amt}L`, amt)}
+                        >
+                          {amt} L
+                        </Button>
+                      ))}
+                    </div>
+                  )}
                 </CardContent>
               </Card>
 
