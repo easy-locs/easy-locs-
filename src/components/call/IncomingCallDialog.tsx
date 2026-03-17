@@ -25,7 +25,7 @@ export default function IncomingCallDialog({
 }: IncomingCallDialogProps) {
   const { t } = useI18n();
   const [ringTime, setRingTime] = useState(0);
-  const timerRef = useRef<ReturnType<typeof setInterval>>();
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
     if (open) {
