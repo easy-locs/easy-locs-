@@ -61,6 +61,7 @@ const GrowthDashboard = lazy(() => import("@/components/storefront/GrowthDashboa
 const NotificationBell = lazy(() => import("@/components/storefront/NotificationBell"));
 const InvoiceList = lazy(() => import("@/components/storefront/InvoiceList"));
 const SellerOnboarding = lazy(() => import("@/components/storefront/SellerOnboarding"));
+const MerchantCRM = lazy(() => import("@/components/storefront/MerchantCRM"));
 // Settings-only (loaded inline since settings tab is simple)
 const AICategorySuggest = lazy(() => import("@/components/storefront/AICategorySuggest"));
 const PrivateInviteManager = lazy(() => import("@/components/storefront/PrivateInviteManager"));
@@ -210,6 +211,7 @@ export default function MyShopPage() {
             {tab === "orders" && (
               <div className="space-y-4">
                 <OrdersManager shopId={shop.id} />
+                <MerchantCRM shopId={shop.id} />
                 <ReturnsRefundEngine shopId={shop.id} mode="seller" />
                 <DeliveryDispatch shopId={shop.id} />
                 <WarehouseManager shopId={shop.id} />
