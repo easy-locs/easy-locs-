@@ -12505,6 +12505,54 @@ export type Database = {
           },
         ]
       }
+      unified_wallet_transactions: {
+        Row: {
+          amount: number
+          context_id: string | null
+          context_type: string
+          created_at: string
+          currency: string
+          id: string
+          metadata: Json
+          recipient_id: string | null
+          sender_id: string | null
+          status: string
+          subtitle: string | null
+          title: string | null
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          context_id?: string | null
+          context_type?: string
+          created_at?: string
+          currency?: string
+          id?: string
+          metadata?: Json
+          recipient_id?: string | null
+          sender_id?: string | null
+          status?: string
+          subtitle?: string | null
+          title?: string | null
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          context_id?: string | null
+          context_type?: string
+          created_at?: string
+          currency?: string
+          id?: string
+          metadata?: Json
+          recipient_id?: string | null
+          sender_id?: string | null
+          status?: string
+          subtitle?: string | null
+          title?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_key_bundles: {
         Row: {
           created_at: string
