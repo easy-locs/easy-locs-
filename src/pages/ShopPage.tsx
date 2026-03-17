@@ -48,6 +48,7 @@ const MultiCurrencyTax = lazy(() => import("@/components/storefront/MultiCurrenc
 const GamificationEngine = lazy(() => import("@/components/storefront/GamificationEngine"));
 const AdvancedCheckout = lazy(() => import("@/components/storefront/AdvancedCheckout"));
 const AIShoppingAssistant = lazy(() => import("@/components/storefront/AIShoppingAssistant"));
+const TrustScoreBadge = lazy(() => import("@/components/storefront/TrustScoreBadge"));
 
 const fmtPrice = (n: number, c = "EUR") => {
   try { return new Intl.NumberFormat(undefined, { style: "currency", currency: c, minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(n); }
