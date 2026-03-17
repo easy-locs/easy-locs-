@@ -32,6 +32,7 @@ export default function OrbitQuickCard({
     <motion.button
       whileTap={{ scale: 0.95 }}
       onClick={() => navigate(to)}
+      aria-label={label}
       className="relative flex flex-col items-center gap-1 p-2.5 rounded-2xl border transition-colors duration-150 min-w-0 text-center"
       style={{
         background: hasActivity
