@@ -135,6 +135,7 @@ function CreateJobForm({ onSubmit, onCancel }: { onSubmit: (p: CreateJobPayload)
   const [form, setForm] = useState<CreateJobPayload>({
     pickup_address: "", dropoff_address: "", package_description: "",
     weight_kg: 1, priority: "standard", delivery_fee: 5, currency: "EUR", notes: "",
+    package_size: "medium", pricing_mode: "fixed",
   });
   const [submitting, setSubmitting] = useState(false);
 
@@ -185,6 +186,39 @@ function CreateJobForm({ onSubmit, onCancel }: { onSubmit: (p: CreateJobPayload)
             <Label className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>Poids (kg)</Label>
             <Input type="number" value={form.weight_kg} onChange={e => set("weight_kg", +e.target.value)}
               className="h-9 text-xs mt-1" style={{ background: "hsl(var(--hud-bg))", borderColor: "hsl(var(--hud-border) / 0.15)", color: "hsl(var(--hud-text))" }} />
+          </div>
+        </div>
+
+        {/* Package size picker — PASS 182 */}
+        <div>
+          <Label className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>Taille du colis</Label>
+          <div className="mt-1">
+            <PackageSizePicker value={form.package_size || "medium"} onChange={v => set("package_size", v)} />
+          </div>
+        </div>
+
+        {/* Pricing mode — PASS 182 */}
+        <div>
+          <Label className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>Mode tarifaire</Label>
+          <div className="grid grid-cols-2 gap-2 mt-1">
+            <button type="button" onClick={() => set("pricing_mode", "fixed")}
+              className="flex items-center justify-center gap-1.5 py-2 rounded-xl border-2 text-xs font-semibold transition-all min-h-[40px]"
+              style={{
+                borderColor: form.pricing_mode === "fixed" ? "hsl(var(--accent))" : "hsl(var(--hud-border) / 0.15)",
+                background: form.pricing_mode === "fixed" ? "hsl(var(--accent) / 0.1)" : "transparent",
+                color: form.pricing_mode === "fixed" ? "hsl(var(--accent))" : "hsl(var(--hud-text-dim))",
+              }}>
+              📦 Prix fixe
+            </button>
+            <button type="button" onClick={() => set("pricing_mode", "progressive")}
+              className="flex items-center justify-center gap-1.5 py-2 rounded-xl border-2 text-xs font-semibold transition-all min-h-[40px]"
+              style={{
+                borderColor: form.pricing_mode === "progressive" ? "hsl(var(--accent))" : "hsl(var(--hud-border) / 0.15)",
+                background: form.pricing_mode === "progressive" ? "hsl(var(--accent) / 0.1)" : "transparent",
+                color: form.pricing_mode === "progressive" ? "hsl(var(--accent))" : "hsl(var(--hud-text-dim))",
+              }}>
+              📍 Par km
+            </button>
           </div>
         </div>
 
