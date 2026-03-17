@@ -9,7 +9,7 @@ import type { RadixPropsExtension } from "@/lib/ui-types";
 
 const Dialog = DialogPrimitive.Root;
 
-export type DialogTriggerProps = React.ComponentPropsWithoutRef<typeof DialogPrimitive.Trigger> & RadixPropsExtension;
+export type DialogTriggerProps = React.ComponentPropsWithoutRef<typeof DialogPrimitive.Trigger> & RadixPropsExtension & { asChild?: boolean };
 const DialogTrigger = React.forwardRef<React.ElementRef<typeof DialogPrimitive.Trigger>, DialogTriggerProps>(
   ({ ...props }, ref) => <DialogPrimitive.Trigger ref={ref} {...props} />,
 );
