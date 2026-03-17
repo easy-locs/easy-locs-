@@ -549,12 +549,12 @@ export default function CommNearbySection() {
                 </div>
                 {/* Actions */}
                 <div className="flex items-center gap-1 shrink-0">
-                  <button onClick={() => handleContact(u.display_name || "user")}
+                  <button onClick={(e) => { e.stopPropagation(); handleContact(u.display_name || "user"); }}
                     className="w-8 h-8 rounded-full flex items-center justify-center"
                     style={{ background: "hsl(var(--hud-cyan) / 0.1)" }}>
                     <MessageCircle className="h-3.5 w-3.5" style={{ color: "hsl(var(--hud-cyan))" }} />
                   </button>
-                  <button onClick={() => { haptic("medium"); navigate("/dashboard/communication?section=calls"); }}
+                  <button onClick={(e) => { e.stopPropagation(); haptic("medium"); navigate("/dashboard/communication?section=calls"); }}
                     className="w-8 h-8 rounded-full flex items-center justify-center"
                     style={{ background: "hsl(var(--hud-success) / 0.1)" }}>
                     <Phone className="h-3.5 w-3.5" style={{ color: "hsl(var(--hud-success))" }} />
