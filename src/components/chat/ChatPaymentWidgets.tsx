@@ -1,13 +1,17 @@
 /**
  * ChatPaymentActions — Send money + Request money buttons for chat.
- * ChatPaymentRequestCard — Inline payment request card in message list.
+ * ChatPaymentRequestCard — Inline payment request card in message list (live status).
  * QrPayCard — Generate QR payment link card.
  */
 import { useState } from "react";
 import { Send, Receipt, CheckCircle2, Clock, Wallet } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { UnifiedPayButton } from "@/payments/UnifiedPaymentSystem";
 import { markPaymentRequestPaid, encodeQrPayload, type QrPayload } from "@/payments/payment-request-hooks";
 import { RequestMoneyModal } from "@/components/chat/RequestMoneyModal";
+import { sendPaymentRequestMessageToThread } from "@/components/chat/chat-payment-bridge";
+import { useAuth } from "@/contexts/AuthContext";
 
 function formatMoney(amount: number, currency = "AED") {
   try {
@@ -22,14 +26,31 @@ export function ChatPaymentActions({
   recipientId,
   recipientName,
   threadId,
+  orgId,
+  tenantId,
+  bookingId,
+  bookingType,
+  contextType,
+  contextId,
+  encrypt,
+  peerId,
   onRequestCreated,
 }: {
   recipientId: string;
   recipientName?: string;
   threadId?: string | null;
+  orgId?: string | null;
+  tenantId?: string | null;
+  bookingId?: string | null;
+  bookingType?: string | null;
+  contextType?: string | null;
+  contextId?: string | null;
+  encrypt?: (content: string, peerId: string) => Promise<string | null>;
+  peerId?: string | null;
   onRequestCreated?: (request: any) => void;
 }) {
   const [showRequest, setShowRequest] = useState(false);
+  const { user } = useAuth();
 
   return (
     <>
@@ -62,13 +83,35 @@ export function ChatPaymentActions({
         onClose={() => setShowRequest(false)}
         recipientId={recipientId}
         contextId={threadId || null}
-        onCreated={onRequestCreated}
+        onCreated={async (req) => {
+          // Auto-send payment request card into the chat thread
+          if (threadId && user?.id && orgId) {
+            try {
+              await sendPaymentRequestMessageToThread({
+                threadId,
+                senderId: user.id,
+                orgId,
+                request: req,
+                tenantId,
+                bookingId,
+                bookingType,
+                contextType,
+                contextId,
+                encrypt,
+                peerId,
+              });
+            } catch (err) {
+              console.error("[ChatPaymentActions] Failed to send request message:", err);
+            }
+          }
+          onRequestCreated?.(req);
+        }}
       />
     </>
   );
 }
 
-/* ── Inline Payment Request Card ────────────────────────────── */
+/* ── Inline Payment Request Card (live status) ──────────────── */
 export function ChatPaymentRequestCard({
   request,
 }: {
@@ -82,7 +125,24 @@ export function ChatPaymentRequestCard({
     status: string;
   };
 }) {
-  const isPaid = request.status === "paid";
+  // Live poll the payment_requests table for real-time status
+  const { data } = useQuery({
+    queryKey: ["payment-request-live", request.id],
+    queryFn: async () => {
+      const { data, error } = await (supabase as any)
+        .from("payment_requests")
+        .select("id, amount, currency, title, subtitle, requester_id, status")
+        .eq("id", request.id)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!request.id,
+    refetchInterval: request.status !== "paid" ? 3000 : false,
+  });
+
+  const live = data || request;
+  const isPaid = live.status === "paid";
 
   return (
     <div className="rounded-2xl border border-border/40 bg-card p-3 max-w-[260px]">
@@ -92,35 +152,39 @@ export function ChatPaymentRequestCard({
         </div>
         <div className="min-w-0">
           <p className="text-xs font-medium text-foreground truncate">
-            {request.title || "Payment request"}
+            {live.title || "Payment request"}
           </p>
           <p className="text-[10px] text-muted-foreground">
-            {isPaid ? "Paid" : "Pending"}
+            {isPaid ? "Paid ✓" : "Pending"}
           </p>
         </div>
       </div>
 
+      {live.subtitle && (
+        <p className="text-[11px] text-muted-foreground mb-2 truncate">{live.subtitle}</p>
+      )}
+
       <div className="flex items-center justify-between">
         <span className="text-base font-bold text-foreground">
-          {formatMoney(request.amount, request.currency)}
+          {formatMoney(live.amount, live.currency)}
         </span>
 
         {isPaid ? (
           <CheckCircle2 className="h-4 w-4 text-emerald-500" />
         ) : (
           <UnifiedPayButton
-            amount={request.amount}
-            currency={request.currency}
-            title={request.title || "Payment request"}
-            subtitle={request.subtitle || undefined}
-            recipientId={request.requester_id}
-            recipientName={request.title || "Payment request"}
+            amount={live.amount}
+            currency={live.currency}
+            title={live.title || "Payment request"}
+            subtitle={live.subtitle || undefined}
+            recipientId={live.requester_id}
+            recipientName={live.title || "Payment request"}
             contextType="order"
-            contextId={request.id}
+            contextId={live.id}
             className="rounded-xl bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground transition hover:opacity-90"
             onSuccess={async (result) => {
               if (result.transactionId) {
-                await markPaymentRequestPaid(request.id, result.transactionId);
+                await markPaymentRequestPaid(live.id, result.transactionId);
               }
             }}
           >
