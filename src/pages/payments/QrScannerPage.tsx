@@ -68,12 +68,12 @@ export default function QrScannerPage() {
       mounted = false;
       const scanner = scannerRef.current;
       if (scanner) {
-        scanner
-          .stop()
-          .catch(() => {})
-          .finally(() => {
-            scanner.clear().catch(() => {});
-          });
+        try {
+          await scanner.stop();
+        } catch {}
+        try {
+          scanner.clear();
+        } catch {}
       }
     };
   }, []);
