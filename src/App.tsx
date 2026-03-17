@@ -289,6 +289,7 @@ const App = () => (
               <Route path="/category-notifications" element={<CategorySubscriptions />} />
                <Route path="/vision" element={<PlatformVision />} />
                <Route path="/my-orders" element={<MyOrdersPage />} />
+               <Route path="/pos" element={<POSPage />} />
 
               {/* SEO landing pages */}
               <Route path="/property-management" element={<PropertyManagement />} />
