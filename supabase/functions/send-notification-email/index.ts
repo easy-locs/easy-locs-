@@ -387,7 +387,7 @@ serve(async (req) => {
   try {
     const authHeader = req.headers.get("Authorization") || "";
     const token = authHeader.replace("Bearer ", "");
-    const isInternalCall = token === INTERNAL_SECRET;
+    const isInternalCall = INTERNAL_SECRET !== "" && token !== "" && token === INTERNAL_SECRET;
 
     if (!isInternalCall) {
       if (!authHeader.startsWith("Bearer ")) {
