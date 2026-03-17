@@ -73,9 +73,10 @@ export default function LiveEcosystemMap({ lat, lng, radius, entities, onSelect 
         const size = count < 10 ? 40 : count < 50 ? 48 : 56;
         return L.divIcon({
           className: "",
-          html: `<div class="eco-cluster" style="width:${size}px;height:${size}px;">
+      html: `<div class="eco-cluster" style="width:${size}px;height:${size}px;">
             <div class="eco-cluster-inner">${count}</div>
             <div class="eco-cluster-ring"></div>
+            <div class="eco-cluster-ring eco-cluster-ring-2"></div>
           </div>`,
           iconSize: [size, size],
           iconAnchor: [size / 2, size / 2],
