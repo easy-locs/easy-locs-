@@ -29,22 +29,15 @@ serve(async (req) => {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
-    // Auth guard: require service role key or valid JWT
+    // Auth guard: only service role key or dedicated cron secret allowed
     const authHeader = req.headers.get("authorization") || "";
     const token = authHeader.replace("Bearer ", "").trim();
-    if (token !== serviceRoleKey) {
-      // Try JWT validation
-      const anonKey = Deno.env.get("SUPABASE_ANON_KEY") || "";
-      const tempClient = createClient(supabaseUrl, anonKey, {
-        global: { headers: { Authorization: `Bearer ${token}` } },
+    const cronSecret = Deno.env.get("CRON_SECRET") || "";
+    if (token !== serviceRoleKey && (cronSecret === "" || token !== cronSecret)) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
-      const { data: { user }, error: authErr } = await tempClient.auth.getUser();
-      if (authErr || !user) {
-        return new Response(JSON.stringify({ error: "Unauthorized" }), {
-          status: 401,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
     }
 
     const supabase = createClient(supabaseUrl, serviceRoleKey);
