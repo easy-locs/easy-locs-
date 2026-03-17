@@ -2,9 +2,7 @@ import { useEffect, useRef } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 
-const MAPBOX_TOKEN =
-  import.meta.env.VITE_MAPBOX_TOKEN ||
-  "pk.eyJ1IjoiZWFzeWxvY3MyMDI2IiwiYSI6ImNtbXY0em5lYTJpaHQycHF0c3hrMGh4eHkifQ.y2GKHz1tZ_ZA6sFrEAvz7w";
+const MAPBOX_TOKEN = "pk.eyJ1IjoiZWFzeWxvY3MyMDI2IiwiYSI6ImNtbXY3ZTYwNDBqdTYycXNhcXFjZHhscnEifQ.0r0q-Ip7zMNaH7WgNX-u7g";
 
 const DUBAI_CENTER: [number, number] = [55.2708, 25.2048];
 
