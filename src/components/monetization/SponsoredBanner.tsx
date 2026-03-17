@@ -26,18 +26,18 @@ interface SponsoredBannerProps {
 export function SponsoredBanner({ item, placement = "feed", linkTo }: SponsoredBannerProps) {
   const { trackImpression, trackClick } = useAdTracking();
   const tracked = useRef(false);
-
-  // Only render for actively boosted items
-  if (!isActiveBoosted(item)) return null;
+  const active = isActiveBoosted(item);
 
   const href = linkTo || (item.shop_slug ? `/s/${item.shop_slug}/${item.id}` : `/s/${item.slug || item.id}`);
 
   useEffect(() => {
-    if (!tracked.current) {
+    if (active && !tracked.current) {
       trackImpression("listing", item.id, placement, item.shop_id);
       tracked.current = true;
     }
-  }, [item.id, placement, item.shop_id, trackImpression]);
+  }, [active, item.id, placement, item.shop_id, trackImpression]);
+
+  if (!active) return null;
 
   return (
     <Link
