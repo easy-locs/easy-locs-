@@ -252,7 +252,7 @@ const CreateListing = () => {
 
       if (error) throw error;
       toast({ title: "✅ Listing published!", description: "Your listing is now live for 30 days." });
-      navigate("/dashboard/marketplace");
+      navigate("/dashboard/my-shop");
     } catch (err: any) {
       toast({ title: "Error", description: err.message, variant: "destructive" });
     } finally {
