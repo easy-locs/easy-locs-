@@ -1,6 +1,6 @@
 /**
  * WalletHub — Super-app wallet with direct Pay / Receive / Request flows.
- * No intermediate Orbit-chat screen for main payment actions.
+ * Uses UniversalActionSheet for all payment entry points.
  */
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -19,9 +19,7 @@ import OrbitTransactionHistory from "@/components/orbit/payments/OrbitTransactio
 import WalletBalanceCard from "@/components/wallet/WalletBalanceCard";
 import WalletSecurityPanel from "@/components/wallet/WalletSecurityPanel";
 import WalletActionGrid from "@/components/wallet/WalletActionGrid";
-import PayActionSheet from "@/components/wallet/PayActionSheet";
-import ReceiveQrPanel from "@/components/wallet/ReceiveQrPanel";
-import RequestPaymentPanel from "@/components/wallet/RequestPaymentPanel";
+import UniversalActionSheet from "@/components/actions/UniversalActionSheet";
 
 export type WalletView = "home" | "pay" | "receive" | "request" | "scan" | "history" | "settings";
 
@@ -65,11 +63,11 @@ export default function WalletHub() {
   const renderSubView = () => {
     switch (view) {
       case "pay":
-        return <PayActionSheet onClose={() => setView("home")} />;
+        return <UniversalActionSheet mode="pay" onClose={() => setView("home")} />;
       case "receive":
-        return <ReceiveQrPanel />;
+        return <UniversalActionSheet mode="receive" />;
       case "request":
-        return <RequestPaymentPanel />;
+        return <UniversalActionSheet mode="request" />;
       case "scan":
         navigate("/pay/scan");
         return null;
