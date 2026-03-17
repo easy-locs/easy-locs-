@@ -210,8 +210,8 @@ export default function DriverDashboard() {
   const loading = sessionLoading || missionsLoading;
 
   return (
-    <div className="min-h-screen" style={{ background: "hsl(var(--hud-bg))" }}>
-      {/* Header */}
+    <div className="min-h-screen pb-20" style={{ background: "hsl(var(--hud-bg))" }}>
+      <MobilePageHeader title="Driver Hub" backTo="/dashboard" />
       <div className="px-4 pt-6 pb-4">
         <div className="flex items-center justify-between mb-5">
           <div>
