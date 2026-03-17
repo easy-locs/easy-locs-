@@ -60,14 +60,13 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   const cPath = (path: string) => appendCountryToPath(path, activeCountry);
 
   // ═══════════════════════════════════════════════════════
-  // NAVIGATION: Unified clean structure
+  // NAVIGATION: Smart clean structure
   // ═══════════════════════════════════════════════════════
 
-  // Sections accessible on free tier (no subscription needed)
   const FREE_NAV_SECTIONS = new Set(["dashboard", "listings", "marketplace", "orbit", "settings"]);
 
   const navSections: NavSection[] = [
-    // 1. Dashboard
+    // ── Dashboard ──
     {
       key: "dashboard",
       title: "Dashboard",
@@ -77,10 +76,10 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
       ],
     },
 
-    // 2. Properties
+    // ── Property Management (Gestion) ──
     {
       key: "properties",
-      title: t("nav.properties") || "Properties",
+      title: t("nav.property_mgmt") || "Gestion",
       icon: Home,
       items: [
         { icon: Home, label: t("nav.properties") || "Properties", path: cPath("/dashboard/rental") },
@@ -90,31 +89,31 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
       ],
     },
 
-    // 3. Listings
+    // ── Listings (Calendar / Seasonal / Sales) ──
     {
       key: "listings",
-      title: t("nav.listings") || "Listings",
+      title: t("nav.listings") || "Annonces",
       icon: Building,
       items: [
         { icon: CalendarRange, label: t("nav.calendar") || "Calendar", path: "/dashboard/calendar" },
-        { icon: Calendar, label: t("nav.seasonal") || "Seasonal", path: "/dashboard/seasonal" },
-        { icon: Building, label: t("nav.real_estate_listings") || "Sales", path: "/dashboard/real-estate" },
+        { icon: Calendar, label: t("nav.seasonal") || "Seasonal Rentals", path: "/dashboard/seasonal" },
+        { icon: Building, label: t("nav.sales") || "Sales / Listings", path: "/dashboard/real-estate" },
       ],
     },
 
-    // 4. Marketplace
+    // ── Marketplace ──
     {
       key: "marketplace",
       title: "Marketplace",
       icon: Store,
       items: [
-        { icon: Store, label: t("nav.marketplace") || "Services & Concierge", path: "/dashboard/activities" },
+        { icon: Store, label: t("nav.marketplace") || "Services", path: "/dashboard/activities" },
         { icon: Zap, label: t("nav.seller_hub") || "Seller Hub", path: "/dashboard/seller" },
         { icon: Layers, label: "My Shop", path: "/dashboard/my-shop" },
       ],
     },
 
-    // 5. Orbit
+    // ── Orbit ──
     {
       key: "orbit",
       title: "Orbit",
@@ -122,24 +121,24 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
       items: [
         { icon: MessageCircle, label: "Communication", path: "/dashboard/communication" },
         { icon: Wallet, label: "Wallet", path: "/dashboard/wallet" },
-        { icon: BarChart3, label: t("nav.deal_analytics") || "Deal Analytics", path: "/dashboard/deals" },
-        { icon: Compass, label: t("nav.live_tracking") || "Live Tracking", path: "/dashboard/tracking" },
+        { icon: BarChart3, label: t("nav.deals") || "Deals", path: "/dashboard/deals" },
+        { icon: Compass, label: t("nav.tracking") || "Tracking", path: "/dashboard/tracking" },
         { icon: Globe, label: "Discover", path: "/discover" },
       ],
     },
 
-    // 6. Documents
+    // ── Documents ──
     {
       key: "documents",
       title: t("nav.documents") || "Documents",
       icon: FileText,
       items: [
-        { icon: FileText, label: t("nav.all_documents") || "Documents", path: cPath("/dashboard/documents") },
+        { icon: FileText, label: t("nav.documents") || "Documents", path: cPath("/dashboard/documents") },
         { icon: CheckSquare, label: t("nav.tasks") || "Tasks", path: cPath("/dashboard/tasks") },
       ],
     },
 
-    // 7. Accounting
+    // ── Accounting ──
     {
       key: "accounting",
       title: t("nav.accounting") || "Accounting",
@@ -147,20 +146,20 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
       items: [
         { icon: Banknote, label: t("nav.payments") || "Payments", path: cPath("/dashboard/finances") },
         { icon: Wallet, label: t("nav.expenses") || "Expenses", path: cPath("/dashboard/expenses") },
-        { icon: BarChart3, label: t("nav.reporting") || "Reporting", path: "/dashboard/reporting" },
-        { icon: CreditCard, label: t("nav.subscription") || "Plan", path: "/dashboard/billing" },
+        { icon: BarChart3, label: t("nav.reporting") || "Reports", path: "/dashboard/reporting" },
+        { icon: CreditCard, label: t("nav.plan") || "Plan", path: "/dashboard/billing" },
       ],
     },
 
-    // 8. Settings & AI
+    // ── Settings ──
     {
       key: "settings",
       title: t("nav.settings") || "Settings",
       icon: Settings,
       items: [
-        { icon: Settings, label: t("settings.organization") || "Organization", path: "/dashboard/settings" },
+        { icon: Settings, label: t("nav.settings") || "Settings", path: "/dashboard/settings" },
         { icon: UsersRound, label: t("settings.team") || "Team", path: "/dashboard/collaboration" },
-        { icon: BrainCircuit, label: t("nav.ai_assistant") || "AI Assistant", path: "/dashboard/assistant" },
+        { icon: BrainCircuit, label: "AI Assistant", path: "/dashboard/assistant" },
       ],
     },
   ];
@@ -398,14 +397,14 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
                   key={`${section.key}-${item.path}-${item.label}`}
                   to={item.path}
                   onClick={() => setSidebarOpen(false)}
-                  className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  className={`flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] font-medium transition-colors ${
                     active
                       ? "bg-sidebar-accent text-sidebar-primary"
                       : "text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent/50"
                   }`}
                 >
                   <item.icon className="h-4 w-4 shrink-0" />
-                  <span className="whitespace-normal leading-tight">{item.label}</span>
+                  <span className="truncate">{item.label}</span>
                 </Link>
               );
             };
