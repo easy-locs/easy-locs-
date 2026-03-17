@@ -7321,6 +7321,53 @@ export type Database = {
         }
         Relationships: []
       }
+      storefront_auto_notifications: {
+        Row: {
+          actioned: boolean | null
+          buyer_email: string | null
+          buyer_id: string | null
+          created_at: string | null
+          id: string
+          notification_type: string
+          opened: boolean | null
+          payload_json: Json | null
+          sent_at: string | null
+          shop_id: string
+        }
+        Insert: {
+          actioned?: boolean | null
+          buyer_email?: string | null
+          buyer_id?: string | null
+          created_at?: string | null
+          id?: string
+          notification_type: string
+          opened?: boolean | null
+          payload_json?: Json | null
+          sent_at?: string | null
+          shop_id: string
+        }
+        Update: {
+          actioned?: boolean | null
+          buyer_email?: string | null
+          buyer_id?: string | null
+          created_at?: string | null
+          id?: string
+          notification_type?: string
+          opened?: boolean | null
+          payload_json?: Json | null
+          sent_at?: string | null
+          shop_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "storefront_auto_notifications_shop_id_fkey"
+            columns: ["shop_id"]
+            isOneToOne: false
+            referencedRelation: "storefront_pages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       storefront_badges: {
         Row: {
           badge_type: string
@@ -7814,6 +7861,74 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "storefront_coupons_shop_id_fkey"
+            columns: ["shop_id"]
+            isOneToOne: false
+            referencedRelation: "storefront_pages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      storefront_crm_customers: {
+        Row: {
+          avg_order_value: number | null
+          buyer_email: string | null
+          buyer_id: string | null
+          buyer_name: string | null
+          buyer_phone: string | null
+          created_at: string | null
+          first_order_at: string | null
+          id: string
+          last_order_at: string | null
+          loyalty_points: number | null
+          notes: string | null
+          segment: string
+          shop_id: string
+          tags: string[] | null
+          total_orders: number
+          total_spent: number
+          updated_at: string | null
+        }
+        Insert: {
+          avg_order_value?: number | null
+          buyer_email?: string | null
+          buyer_id?: string | null
+          buyer_name?: string | null
+          buyer_phone?: string | null
+          created_at?: string | null
+          first_order_at?: string | null
+          id?: string
+          last_order_at?: string | null
+          loyalty_points?: number | null
+          notes?: string | null
+          segment?: string
+          shop_id: string
+          tags?: string[] | null
+          total_orders?: number
+          total_spent?: number
+          updated_at?: string | null
+        }
+        Update: {
+          avg_order_value?: number | null
+          buyer_email?: string | null
+          buyer_id?: string | null
+          buyer_name?: string | null
+          buyer_phone?: string | null
+          created_at?: string | null
+          first_order_at?: string | null
+          id?: string
+          last_order_at?: string | null
+          loyalty_points?: number | null
+          notes?: string | null
+          segment?: string
+          shop_id?: string
+          tags?: string[] | null
+          total_orders?: number
+          total_spent?: number
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "storefront_crm_customers_shop_id_fkey"
             columns: ["shop_id"]
             isOneToOne: false
             referencedRelation: "storefront_pages"
