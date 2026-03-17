@@ -2,7 +2,7 @@
  * ChatMessageBubble — Premium Signal-grade message bubble.
  * Handles text, voice, media, payment, email, system, view-once messages with unified HUD design.
  */
-import { memo, useRef, useCallback, useEffect, useState } from "react";
+import { memo, useRef, useCallback, useEffect, useState, useMemo } from "react";
 import {
   Check, CheckCheck, Globe, Loader2, Mail, WifiOff, Lock,
   ShieldCheck, CreditCard, EyeOff, Timer, Shield, FileText, MapPin, ExternalLink,
@@ -14,6 +14,7 @@ import ViewOnceMedia from "./ViewOnceMedia";
 import OrbitEncryptedIndicator from "@/components/orbit/OrbitEncryptedIndicator";
 import { haptic } from "@/lib/haptics";
 import { getMessagePolicy, shouldHideMessage, type SecurityLevel } from "@/lib/message-security";
+import { ChatPaymentRequestCard } from "@/components/chat/ChatPaymentWidgets";
 import type { ChatMessage } from "./types";
 import { MESSAGE_CATEGORIES } from "./types";
 
@@ -82,6 +83,14 @@ function ChatMessageBubble({
   const isDeleted = !!(msg as any).deleted_for_all;
   const isInboundEmail = msg.message_type === "inbound_email";
   const isPayment = !isDeleted && msg.content?.startsWith("💳");
+  const isPaymentRequest = !isDeleted && msg.category === "payment_request";
+  const paymentRequestData = useMemo(() => {
+    if (!isPaymentRequest) return null;
+    try {
+      const parsed = JSON.parse(msg.content);
+      return parsed?._type === "payment_request_card" ? parsed : null;
+    } catch { return null; }
+  }, [isPaymentRequest, msg.content]);
   const isVoice = !isDeleted && !!(msg as any).audio_url;
   const isViewOnce = !isDeleted && !!(msg as any).view_once;
   
@@ -233,7 +242,9 @@ function ChatMessageBubble({
           borderRadius: isMe
             ? (isConsecutive ? "16px 4px 4px 16px" : "16px 16px 4px 16px")
             : (isConsecutive ? "4px 16px 16px 4px" : "16px 16px 16px 4px"),
-          background: isPayment
+          background: isPaymentRequest
+            ? "linear-gradient(135deg, hsl(var(--hud-purple) / 0.08), hsl(var(--hud-purple) / 0.03))"
+            : isPayment
             ? "linear-gradient(135deg, hsl(var(--hud-cyan) / 0.08), hsl(var(--hud-cyan) / 0.03))"
             : isMe
               ? "hsl(var(--hud-cyan) / 0.08)"
@@ -322,8 +333,10 @@ function ChatMessageBubble({
           </div>
         ) : null}
 
-        {/* Location message */}
-        {isLocation && locLat && locLng ? (
+        {/* Payment request card */}
+        {isPaymentRequest && paymentRequestData ? (
+          <ChatPaymentRequestCard request={paymentRequestData} />
+        ) : isLocation && locLat && locLng ? (
           <div className="space-y-1.5">
             <div className="rounded-lg overflow-hidden -mx-1" style={{ border: "1px solid hsl(var(--hud-border) / 0.1)" }}>
               <iframe
