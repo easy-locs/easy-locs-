@@ -32,8 +32,8 @@ export function validateListing(data: {
   if (photos.length < 2) {
     errors.push("Minimum 2 images required");
   }
-  if (data.price !== undefined && data.price < 0) {
-    errors.push("Price cannot be negative");
+  if (data.price === undefined || data.price <= 0) {
+    errors.push("Price must be greater than 0");
   }
 
   return { valid: errors.length === 0, errors };
