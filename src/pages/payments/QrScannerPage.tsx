@@ -633,7 +633,7 @@ function QrResolvedCard({
         // Fetch target profile for enrichment
         const { data: profile } = await supabase
           .from("profiles")
-          .select("name, email, avatar_url")
+          .select("name, email")
           .eq("id", userId)
           .maybeSingle();
 
@@ -643,7 +643,6 @@ function QrResolvedCard({
           name: profile?.name || name,
           email: profile?.email || null,
           contact_user_id: userId,
-          avatar_url: profile?.avatar_url || null,
           category: "professional",
         } as any);
 
