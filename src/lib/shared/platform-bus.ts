@@ -31,6 +31,18 @@ type PlatformEventType =
   | "marketplace:review_submitted"
   | "marketplace:provider_went_live"
   | "marketplace:provider_went_offline"
+  // Storefront / Commerce (PASS123)
+  | "storefront:order_placed"
+  | "storefront:order_paid"
+  | "storefront:order_shipped"
+  | "storefront:order_completed"
+  | "storefront:order_cancelled"
+  | "storefront:cart_updated"
+  | "storefront:deal_accepted"
+  | "storefront:deal_converted"
+  | "storefront:delivery_dispatched"
+  | "storefront:review_posted"
+  | "storefront:stock_low"
   // Property Management
   | "pm:lease_created"
   | "pm:lease_activated"
