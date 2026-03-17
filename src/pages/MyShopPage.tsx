@@ -53,6 +53,7 @@ const MultiVendorDashboard = lazy(() => import("@/components/storefront/MultiVen
 const WarehouseManager = lazy(() => import("@/components/storefront/WarehouseManager"));
 const GamificationEngine = lazy(() => import("@/components/storefront/GamificationEngine"));
 const MultiStoreManager = lazy(() => import("@/components/storefront/MultiStoreManager"));
+const SmartCatalogBuilder = lazy(() => import("@/components/storefront/SmartCatalogBuilder"));
 
 // Settings-only (loaded inline since settings tab is simple)
 const AICategorySuggest = lazy(() => import("@/components/storefront/AICategorySuggest"));
