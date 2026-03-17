@@ -126,15 +126,20 @@ export default function ShopsMapView({ shops, radius, onShopClick }: Props) {
       const icon = L.divIcon({
         className: "",
         html: `<div style="
-          width:32px;height:32px;border-radius:10px;
-          background:${shop.logo_url ? `url(${shop.logo_url}) center/cover` : "hsl(var(--primary))"};
-          border:2px solid white;
-          box-shadow:0 2px 8px rgba(0,0,0,0.25);
-          display:flex;align-items:center;justify-content:center;
-          color:white;font-size:14px;
-        ">${shop.logo_url ? "" : "🏪"}</div>`,
-        iconSize: [32, 32],
-        iconAnchor: [16, 16],
+          position:relative;width:36px;height:36px;
+        ">
+          <div style="
+            width:36px;height:36px;border-radius:11px;
+            background:${shop.logo_url ? `url(${shop.logo_url}) center/cover` : "linear-gradient(145deg, hsl(var(--primary)), hsl(var(--primary) / 0.7))"};
+            border:2px solid rgba(255,255,255,0.15);
+            box-shadow:0 4px 16px rgba(0,0,0,0.35), 0 0 12px hsl(var(--primary) / 0.2);
+            display:flex;align-items:center;justify-content:center;
+            color:white;font-size:15px;
+          ">${shop.logo_url ? "" : "🏪"}</div>
+          <div style="position:absolute;inset:-4px;border-radius:15px;background:radial-gradient(circle, hsl(var(--primary) / 0.3) 0%, transparent 65%);opacity:0.4;pointer-events:none;z-index:-1;animation:shopGlow 2.5s ease-in-out infinite alternate;"></div>
+        </div>`,
+        iconSize: [36, 36],
+        iconAnchor: [18, 18],
       });
 
       const marker = L.marker([sLat, sLng], { icon })
