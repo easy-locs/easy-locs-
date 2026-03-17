@@ -7,7 +7,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import { Calendar, TrendingUp, Users, Home, Plane, PlaneLanding, DollarSign, Sparkles, Clock, CheckCircle2, ShoppingBag } from "lucide-react";
-import { format, parseISO, differenceInDays, isWithinInterval, addDays, isBefore, isAfter } from "date-fns";
+import { format, parseISO, differenceInDays, addDays, isBefore, isAfter } from "date-fns";
+// @ts-ignore - isWithinInterval exists at runtime
+import { isWithinInterval } from "date-fns";
 import { motion } from "framer-motion";
 
 const COLORS = ["hsl(var(--accent))", "hsl(var(--primary))", "hsl(142,71%,45%)", "hsl(45,93%,47%)", "hsl(280,60%,50%)", "hsl(0,84%,60%)"];

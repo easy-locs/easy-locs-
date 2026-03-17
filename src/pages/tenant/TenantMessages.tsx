@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Button } from "@/components/ui/button";
 import { format, formatDistanceToNow } from "date-fns";
 import { fr, enUS, es, de, it, pt } from "@/lib/date-locales";
-import type { Locale as DateFnsLocale } from "date-fns";
+import type { Locale as DateFnsLocale } from "@/lib/date-locales";
 import { getCountryConfig } from "@/lib/country-config";
 import { useTenantProperty } from "@/hooks/useTenantProperty";
 import { buildAppUrl } from "@/lib/app-domain";
