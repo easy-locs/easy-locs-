@@ -63,11 +63,14 @@ export function UnifiedPaymentProvider({ children }: { children: ReactNode }) {
 
   const closePayment = useCallback(() => {
     if (loading) return;
+    // Resolve the pending promise so callers don't hang forever
+    resolver?.resolve({ ok: false, error: "Cancelled" });
     setOpen(false);
     setRequest(null);
     setSuccess(null);
     setError("");
-  }, [loading]);
+    setResolver(null);
+  }, [loading, resolver]);
 
   const openPayment = useCallback((req: PaymentRequest) => {
     setRequest(req);
