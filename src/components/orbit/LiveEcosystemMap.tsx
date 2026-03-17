@@ -191,6 +191,39 @@ export default function LiveEcosystemMap({ lat, lng, radius, entities, onSelect,
 
   useEffect(() => { renderMarkers(); }, [renderMarkers]);
 
+  // Heatmap layer (canvas-based via leaflet.heat)
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+
+    if (heatLayerRef.current) {
+      map.removeLayer(heatLayerRef.current);
+      heatLayerRef.current = null;
+    }
+
+    if (!showHeatmap || !heatmapPoints?.length) return;
+
+    try {
+      const heatData = heatmapPoints.map(p => [p.lat, p.lng, p.intensity] as [number, number, number]);
+      const heat = (L as any).heatLayer(heatData, {
+        radius: 25,
+        blur: 15,
+        maxZoom: 17,
+        gradient: { 0.0: "rgba(0,0,0,0)", 0.2: "#06b6d4", 0.4: "#22c55e", 0.6: "#f59e0b", 0.8: "#ef4444", 1.0: "#dc2626" },
+        minOpacity: 0.35,
+      });
+      heat.addTo(map);
+      heatLayerRef.current = heat;
+    } catch { /* leaflet.heat may not be loaded */ }
+
+    return () => {
+      if (heatLayerRef.current && map) {
+        map.removeLayer(heatLayerRef.current);
+        heatLayerRef.current = null;
+      }
+    };
+  }, [showHeatmap, heatmapPoints]);
+
   return (
     <>
       <div ref={containerRef} className="w-full h-full min-h-[400px]" style={{ zIndex: 1 }} />
