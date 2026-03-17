@@ -278,6 +278,11 @@ export const idComplete: Record<string, string> = {
   "page.features.heading": "Semua administrasi,", "page.features.heading_highlight": "di satu tempat",
   "page.finances.title": "Keuangan", "page.finances.subtitle": "Pendapatan sewa, pengeluaran dan laba bersih",
   "page.listing.contact_direct": "Hubungi langsung", "page.listing.call": "Telepon", "page.listing.share": "Bagikan",
+  "page.install.title": "Instal Easy-Locs", "page.install.install_btn": "Instal aplikasi",
+  "page.install.back": "Kembali", "page.install.continue_web": "Lanjutkan di web",
+  "page.install.feature_offline": "Akses offline", "page.install.feature_fast": "Peluncuran cepat", "page.install.feature_notif": "Notifikasi",
+  "pwa.banner.title": "Instal Easy-Locs", "pwa.banner.hint": "Cepat, bisa offline",
+  "pwa.banner.install": "Instal", "pwa.banner.dismiss": "Tutup",
 };
 
 // ─── Malay (MS) ───
