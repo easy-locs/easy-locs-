@@ -635,6 +635,9 @@ export const heComplete: Record<string, string> = {
   "explore.radius.title": "איפה מחפשים?", "explore.radius.worldwide": "עולמי",
   "explore.radius.reset": "איפוס", "explore.radius.apply": "החל", "explore.clear_all": "נקה הכל",
   "page.listing.contact_direct": "צור קשר", "page.listing.call": "התקשר", "page.listing.share": "שתף",
+  "page.install.title": "התקנת Easy-Locs", "page.install.install_btn": "התקן",
+  "page.install.back": "חזרה", "page.install.continue_web": "המשך באתר",
+  "pwa.banner.title": "התקנת Easy-Locs", "pwa.banner.install": "התקן", "pwa.banner.dismiss": "סגור",
 };
 
 // ─── Ukrainian (UK) ───
