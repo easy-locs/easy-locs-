@@ -246,7 +246,6 @@ const App = () => (
            <SkipLink />
            <Suspense fallback={<PageLoader />}>
             <main id="main-content">
-            <V7BundleRoutes />
             <Routes>
               {/* ══════ PUBLIC WEBSITE ══════ */}
               {/* Homepage */}
