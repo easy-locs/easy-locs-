@@ -1,7 +1,9 @@
 /**
  * /pay/request/:requestId — Public payment request page.
- * Shows request details + pay button using UnifiedPayButton.
+ * Shows request details + pay button using UnifiedPayButton for app users,
+ * or Stripe guest checkout (Apple Pay / card) for non-app users.
  */
+import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -12,8 +14,55 @@ import { MobilePageHeader } from "@/components/ui/mobile-page-header";
 import SEOHead from "@/components/SEOHead";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-import { Send, Shield, ArrowLeft, Receipt, CheckCircle2 } from "lucide-react";
+import { Send, Shield, ArrowLeft, Receipt, CheckCircle2, CreditCard, Loader2 } from "lucide-react";
 import { PaymentRequestQr } from "@/components/qr/UniversalQrWidgets";
+
+/** Guest checkout button — creates a Stripe Checkout session and redirects */
+function GuestCheckoutButton({ requestId, amount, currency }: { requestId: string; amount: number; currency: string }) {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleCheckout = async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const { data, error: fnErr } = await supabase.functions.invoke("create-guest-checkout", {
+        body: { payment_request_id: requestId },
+      });
+      if (fnErr) throw fnErr;
+      if (data?.url) {
+        window.location.href = data.url;
+      } else {
+        throw new Error("No checkout URL returned");
+      }
+    } catch (e: any) {
+      setError(e.message || "Failed to start checkout");
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="space-y-2">
+      <Button
+        onClick={handleCheckout}
+        disabled={loading}
+        className="w-full h-12 text-base gap-2 font-semibold"
+      >
+        {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : <CreditCard className="h-5 w-5" />}
+        {loading ? "Redirecting…" : `Pay ${formatMoney(amount, currency)}`}
+      </Button>
+      <p className="text-[10px] text-center text-muted-foreground">
+        Apple Pay, Google Pay & cards accepted
+      </p>
+      {error && <p className="text-xs text-center text-destructive">{error}</p>}
+      <Link to={`/login?redirect=/pay/request/${requestId}`} className="block">
+        <Button variant="ghost" className="w-full text-xs" size="sm">
+          Already have an account? Sign in
+        </Button>
+      </Link>
+    </div>
+  );
+}
 
 function formatMoney(amount: number, currency = "AED") {
   try {
@@ -118,11 +167,7 @@ export default function PayRequestPage() {
                   <Send className="h-5 w-5" /> Pay {formatMoney(amount, currency)}
                 </UnifiedPayButton>
               ) : (
-                <Link to={`/login?redirect=/pay/request/${requestId}`}>
-                  <Button className="w-full h-12 text-base gap-2 font-semibold">
-                    <Send className="h-5 w-5" /> Sign in to pay
-                  </Button>
-                </Link>
+                <GuestCheckoutButton requestId={data.id} amount={amount} currency={currency} />
               )}
             </>
           )}
