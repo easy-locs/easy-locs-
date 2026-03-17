@@ -4,7 +4,7 @@
  */
 import { memo, useRef, useCallback, useEffect, useState, useMemo } from "react";
 import {
-  Check, CheckCheck, Globe, Loader2, Mail, WifiOff, Lock,
+  Check, CheckCheck, Globe, Loader2, Mail, WifiOff, Lock, CheckCircle2,
   ShieldCheck, CreditCard, EyeOff, Timer, Shield, FileText, MapPin, ExternalLink,
 } from "lucide-react";
 import { format } from "date-fns";
@@ -84,6 +84,7 @@ function ChatMessageBubble({
   const isInboundEmail = msg.message_type === "inbound_email";
   const isPayment = !isDeleted && msg.content?.startsWith("💳");
   const isPaymentRequest = !isDeleted && msg.category === "payment_request";
+  const isPaymentReceipt = !isDeleted && msg.category === "payment_receipt";
   const paymentRequestData = useMemo(() => {
     if (!isPaymentRequest) return null;
     try {
@@ -91,6 +92,13 @@ function ChatMessageBubble({
       return parsed?._type === "payment_request_card" ? parsed : null;
     } catch { return null; }
   }, [isPaymentRequest, msg.content]);
+  const paymentReceiptData = useMemo(() => {
+    if (!isPaymentReceipt) return null;
+    try {
+      const parsed = JSON.parse(msg.content);
+      return parsed?._type === "payment_receipt_card" ? parsed : null;
+    } catch { return null; }
+  }, [isPaymentReceipt, msg.content]);
   const isVoice = !isDeleted && !!(msg as any).audio_url;
   const isViewOnce = !isDeleted && !!(msg as any).view_once;
   
@@ -242,7 +250,9 @@ function ChatMessageBubble({
           borderRadius: isMe
             ? (isConsecutive ? "16px 4px 4px 16px" : "16px 16px 4px 16px")
             : (isConsecutive ? "4px 16px 16px 4px" : "16px 16px 16px 4px"),
-          background: isPaymentRequest
+          background: isPaymentReceipt
+            ? "linear-gradient(135deg, hsl(var(--hud-success) / 0.08), hsl(var(--hud-success) / 0.03))"
+            : isPaymentRequest
             ? "linear-gradient(135deg, hsl(var(--hud-purple) / 0.08), hsl(var(--hud-purple) / 0.03))"
             : isPayment
             ? "linear-gradient(135deg, hsl(var(--hud-cyan) / 0.08), hsl(var(--hud-cyan) / 0.03))"
@@ -250,7 +260,9 @@ function ChatMessageBubble({
               ? "hsl(var(--hud-cyan) / 0.08)"
               : "hsl(var(--hud-surface))",
           border: `1px solid ${
-            isPayment
+            isPaymentReceipt
+              ? "hsl(var(--hud-success) / 0.12)"
+              : isPayment
               ? "hsl(var(--hud-cyan) / 0.12)"
               : isMe
                 ? "hsl(var(--hud-cyan) / 0.06)"
@@ -291,12 +303,12 @@ function ChatMessageBubble({
         )}
 
         {/* Payment badge */}
-        {isPayment && (
+        {(isPayment || isPaymentReceipt) && (
           <span className="inline-flex items-center gap-1 text-[10px] font-medium mb-1 rounded-md px-1.5 py-0.5" style={{
-            color: "hsl(var(--hud-cyan))",
-            background: "hsl(var(--hud-cyan) / 0.08)",
+            color: isPaymentReceipt ? "hsl(var(--hud-success))" : "hsl(var(--hud-cyan))",
+            background: isPaymentReceipt ? "hsl(var(--hud-success) / 0.08)" : "hsl(var(--hud-cyan) / 0.08)",
           }}>
-            <CreditCard className="h-2.5 w-2.5" /> Payment
+            <CreditCard className="h-2.5 w-2.5" /> {isPaymentReceipt ? "Receipt" : "Payment"}
           </span>
         )}
 
@@ -333,8 +345,33 @@ function ChatMessageBubble({
           </div>
         ) : null}
 
-        {/* Payment request card */}
-        {isPaymentRequest && paymentRequestData ? (
+        {/* Payment receipt card */}
+        {isPaymentReceipt && paymentReceiptData ? (
+          <div className="rounded-2xl border p-3 max-w-[260px]" style={{ borderColor: "hsl(var(--hud-success) / 0.15)", background: "hsl(var(--hud-success) / 0.04)" }}>
+            <div className="flex items-center gap-2 mb-2">
+              <div className="flex h-8 w-8 items-center justify-center rounded-xl" style={{ background: "hsl(var(--hud-success) / 0.12)" }}>
+                <CheckCircle2 className="h-4 w-4" style={{ color: "hsl(var(--hud-success))" }} />
+              </div>
+              <div className="min-w-0">
+                <p className="text-xs font-medium truncate" style={{ color: "hsl(var(--foreground))" }}>
+                  {paymentReceiptData.title || "Payment sent"}
+                </p>
+                <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim))" }}>Completed</p>
+              </div>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-base font-bold" style={{ color: "hsl(var(--hud-success))" }}>
+                {new Intl.NumberFormat(undefined, { style: "currency", currency: paymentReceiptData.currency || "AED", minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(paymentReceiptData.amount)}
+              </span>
+              <CheckCircle2 className="h-4 w-4" style={{ color: "hsl(var(--hud-success))" }} />
+            </div>
+            {paymentReceiptData.transaction_id && (
+              <p className="text-[10px] mt-1.5" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
+                TX: {paymentReceiptData.transaction_id.slice(0, 12)}…
+              </p>
+            )}
+          </div>
+        ) : isPaymentRequest && paymentRequestData ? (
           <ChatPaymentRequestCard request={paymentRequestData} />
         ) : isLocation && locLat && locLng ? (
           <div className="space-y-1.5">
