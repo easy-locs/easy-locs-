@@ -107,6 +107,7 @@ import SmartLockerNetwork from "@/components/delivery/SmartLockerNetwork";
 import CarbonOffsetEngine from "@/components/delivery/CarbonOffsetEngine";
 import MultiModalTransport from "@/components/delivery/MultiModalTransport";
 import DeliveryMarketplace from "@/components/delivery/DeliveryMarketplace";
+import PackageSizePicker from "@/components/delivery/PackageSizePicker";
 import { useDeliveryNotifications } from "@/hooks/useDeliveryNotifications";
 import { motion, AnimatePresence } from "framer-motion";
 import {
