@@ -9,6 +9,7 @@ import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Camera, CameraOff, RefreshCcw, CheckCircle2, Info } from "lucide-react";
 import { Html5Qrcode } from "html5-qrcode";
 import { decodeQr, resolveRoute, isExpired, isSecurityAction, type UniversalQrPayload } from "@/lib/qr-engine";
+import { supabase } from "@/integrations/supabase/client";
 import { useUnifiedPayment } from "@/payments/UnifiedPaymentSystem";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
