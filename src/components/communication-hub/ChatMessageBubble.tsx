@@ -331,8 +331,10 @@ function ChatMessageBubble({
           </div>
         ) : null}
 
-        {/* Location message */}
-        {isLocation && locLat && locLng ? (
+        {/* Payment request card */}
+        {isPaymentRequest && paymentRequestData ? (
+          <ChatPaymentRequestCard request={paymentRequestData} />
+        ) : isLocation && locLat && locLng ? (
           <div className="space-y-1.5">
             <div className="rounded-lg overflow-hidden -mx-1" style={{ border: "1px solid hsl(var(--hud-border) / 0.1)" }}>
               <iframe
