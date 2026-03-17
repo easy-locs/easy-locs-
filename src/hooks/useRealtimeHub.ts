@@ -7,14 +7,21 @@
 import { useEffect, useRef, useCallback } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/contexts/AuthContext";
-import { useOrbitEngine } from "@/stores/orbit-engine";
+import { useOrbitEngine, type OrbitModule } from "@/stores/orbit-engine";
 import { realtimeManager, type RealtimeSignal } from "@/lib/realtime-manager";
 import { toast } from "sonner";
 import { MessageSquare } from "lucide-react";
 import React from "react";
 
-// Tables that should trigger orbit engine refresh (communication + business)
-const ORBIT_REFRESH_TABLES = new Set(["call_logs", "messages", "notifications", "booking_requests"]);
+// V2: Map tables to specific orbit modules for targeted refresh
+const TABLE_TO_MODULE: Record<string, OrbitModule> = {
+  call_logs: "communication",
+  messages: "communication",
+  notifications: "notifications",
+  booking_requests: "business",
+  concierge_orders: "business",
+  deal_rooms: "business",
+};
 
 export function useRealtimeHub() {
   const { user, orgId, activeRole } = useAuth();
