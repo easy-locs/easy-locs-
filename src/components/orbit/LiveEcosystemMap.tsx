@@ -117,16 +117,6 @@ export default function LiveEcosystemMap({ lat, lng, radius, entities, onSelect 
         <div class="eco-user-dot"></div>
         <div class="eco-user-pulse"></div>
         <div class="eco-user-pulse eco-user-pulse-2"></div>
-      </div>`,
-      iconSize: [24, 24],
-      iconAnchor: [12, 12],
-    });
-    const userIcon = L.divIcon({
-      className: "",
-      html: `<div class="eco-user-marker">
-        <div class="eco-user-dot"></div>
-        <div class="eco-user-pulse"></div>
-        <div class="eco-user-pulse eco-user-pulse-2"></div>
         <div class="eco-user-pulse eco-user-pulse-3"></div>
       </div>`,
       iconSize: [28, 28],
