@@ -111,19 +111,8 @@ export default function WalletHub() {
           />
         );
       case "scan":
-        return (
-          <div className="space-y-4">
-            <iframe
-              src="/pay/scan"
-              className="w-full rounded-2xl border border-border bg-card"
-              style={{ height: 420 }}
-              allow="camera"
-            />
-            <Button size="sm" variant="outline" className="w-full" onClick={() => setView("my_qr")}>
-              {t("orbit.show_my_qr") || "Show My QR Instead"}
-            </Button>
-          </div>
-        );
+        navigate("/pay/scan");
+        return null;
       case "my_qr":
         return <OrbitQRCode type="static" />;
       case "history":
