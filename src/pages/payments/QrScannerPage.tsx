@@ -593,7 +593,7 @@ export default function QrScannerPage() {
   );
 }
 
-  navigate,
+
   openPayment,
   onReset,
   currentUserId,
