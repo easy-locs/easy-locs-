@@ -27,7 +27,7 @@ interface Props {
   onOpenShop?: (slug: string) => void;
 }
 
-export default function ShopsMapView({ shops, radius, onShopClick }: Props) {
+export default function ShopsMapView({ shops, radiusKm = 25, onOpenShop }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
   const clusterRef = useRef<L.MarkerClusterGroup | null>(null);
