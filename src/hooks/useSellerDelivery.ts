@@ -16,6 +16,8 @@ export interface CreateJobPayload {
   dropoff_lng?: number;
   package_description?: string;
   weight_kg?: number;
+  package_size?: "light" | "medium" | "heavy";
+  pricing_mode?: "fixed" | "progressive";
   priority?: "standard" | "express" | "urgent";
   delivery_fee?: number;
   currency?: string;

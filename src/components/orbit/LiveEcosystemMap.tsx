@@ -6,6 +6,7 @@
 import { useEffect, useRef, useCallback } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import "leaflet.heat";
 import "leaflet.markercluster";
 import "leaflet.markercluster/dist/MarkerCluster.css";
 import "leaflet.markercluster/dist/MarkerCluster.Default.css";
@@ -32,20 +33,29 @@ function makeSvgIcon(svgPath: string, color: string): string {
   return `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">${svgPath}</svg>`;
 }
 
+interface HeatPoint {
+  lat: number;
+  lng: number;
+  intensity: number;
+}
+
 interface Props {
   lat: number;
   lng: number;
   radius: number;
   entities: EcosystemEntity[];
   onSelect?: (entity: EcosystemEntity) => void;
+  heatmapPoints?: HeatPoint[];
+  showHeatmap?: boolean;
 }
 
-export default function LiveEcosystemMap({ lat, lng, radius, entities, onSelect }: Props) {
+export default function LiveEcosystemMap({ lat, lng, radius, entities, onSelect, heatmapPoints, showHeatmap }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
   const clusterRef = useRef<L.MarkerClusterGroup | null>(null);
   const radiusRef = useRef<L.Circle | null>(null);
   const userMarkerRef = useRef<L.Marker | null>(null);
+  const heatLayerRef = useRef<any>(null);
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
@@ -181,6 +191,39 @@ export default function LiveEcosystemMap({ lat, lng, radius, entities, onSelect 
   }, [entities, onSelect]);
 
   useEffect(() => { renderMarkers(); }, [renderMarkers]);
+
+  // Heatmap layer (canvas-based via leaflet.heat)
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+
+    if (heatLayerRef.current) {
+      map.removeLayer(heatLayerRef.current);
+      heatLayerRef.current = null;
+    }
+
+    if (!showHeatmap || !heatmapPoints?.length) return;
+
+    try {
+      const heatData = heatmapPoints.map(p => [p.lat, p.lng, p.intensity] as [number, number, number]);
+      const heat = (L as any).heatLayer(heatData, {
+        radius: 25,
+        blur: 15,
+        maxZoom: 17,
+        gradient: { 0.0: "rgba(0,0,0,0)", 0.2: "#06b6d4", 0.4: "#22c55e", 0.6: "#f59e0b", 0.8: "#ef4444", 1.0: "#dc2626" },
+        minOpacity: 0.35,
+      });
+      heat.addTo(map);
+      heatLayerRef.current = heat;
+    } catch { /* leaflet.heat may not be loaded */ }
+
+    return () => {
+      if (heatLayerRef.current && map) {
+        map.removeLayer(heatLayerRef.current);
+        heatLayerRef.current = null;
+      }
+    };
+  }, [showHeatmap, heatmapPoints]);
 
   return (
     <>
