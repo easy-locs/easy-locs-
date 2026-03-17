@@ -147,7 +147,7 @@ export default function PayRequestPage() {
                   currency={currency}
                   title={data.title || "Payment request"}
                   subtitle={data.subtitle || undefined}
-                  recipientId={data.requester_id || data.sender_id}
+                  recipientId={data.requester_id}
                   recipientName={data.title || "Payment request"}
                   contextType="order"
                   contextId={data.id}
