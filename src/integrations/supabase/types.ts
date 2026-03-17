@@ -13312,6 +13312,52 @@ export type Database = {
         }[]
       }
       get_real_estate_showcase: { Args: { p_slug: string }; Returns: Json }
+      get_smart_picks: {
+        Args: { _limit?: number; _user_id: string }
+        Returns: {
+          banner_url: string
+          city: string
+          description: string
+          id: string
+          logo_url: string
+          name: string
+          order_count: number
+          shop_visibility: string
+          slug: string
+          vertical: string
+        }[]
+      }
+      get_top_rated_shops: {
+        Args: { _limit?: number }
+        Returns: {
+          avg_rating: number
+          banner_url: string
+          city: string
+          description: string
+          id: string
+          logo_url: string
+          name: string
+          review_count: number
+          shop_visibility: string
+          slug: string
+          vertical: string
+        }[]
+      }
+      get_trending_shops: {
+        Args: { _limit?: number }
+        Returns: {
+          banner_url: string
+          city: string
+          description: string
+          id: string
+          logo_url: string
+          name: string
+          order_count: number
+          shop_visibility: string
+          slug: string
+          vertical: string
+        }[]
+      }
       get_user_org_id: { Args: { _user_id: string }; Returns: string }
       has_min_role: {
         Args: { _min_role: string; _org_id: string; _user_id: string }
