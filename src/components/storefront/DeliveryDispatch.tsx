@@ -37,6 +37,8 @@ export default function DeliveryDispatch({ shopId }: { shopId: string }) {
   const requestDelivery = async (order: any) => {
     if (!pickupAddress.trim()) return toast.error("Enter a pickup address");
     if (!order.shipping_address) return toast.error("Order has no shipping address");
+    // V4 dedup guard: never create two delivery jobs for same order
+    if (order.delivery_job_id) return toast.info("Delivery already dispatched for this order");
     setDispatching(order.id);
     try {
       // Get user's org
