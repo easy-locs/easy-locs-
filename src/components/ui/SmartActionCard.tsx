@@ -40,15 +40,15 @@ const SmartActionCard = ({
     <Link
       to={path}
       className={cn(
-        "group flex items-center gap-3 bg-card rounded-xl p-4 border border-border/50",
-        "shadow-card hover:shadow-card-hover hover:border-accent/30 transition-all",
+        "group flex items-center gap-3 bg-card rounded-[var(--card-radius)] p-4 border border-border/40",
+        "shadow-card hover:shadow-card-hover hover:-translate-y-0.5 hover:border-accent/30 transition-all duration-200",
         "min-h-[3.5rem]",
         className,
       )}
     >
       {/* Icon box — fixed size */}
-      <div className="icon-box group-hover:bg-accent/10 transition-colors">
-        <Icon className="h-4.5 w-4.5 text-muted-foreground group-hover:text-accent transition-colors" />
+      <div className="icon-box group-hover:bg-accent/12 transition-colors duration-200">
+        <Icon className="h-4.5 w-4.5 text-muted-foreground group-hover:text-accent transition-colors duration-200" />
       </div>
 
       {/* Label — never truncated on mobile */}
