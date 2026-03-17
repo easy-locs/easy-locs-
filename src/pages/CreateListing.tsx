@@ -163,8 +163,15 @@ const CreateListing = () => {
   const showService = form.listing_type === "service" || form.category === "services" || form.category === "freelance" || form.category === "tourism";
 
   const handleSave = async () => {
-    if (!form.title.trim()) {
-      toast({ title: "Error", description: "Title is required", variant: "destructive" });
+    // V4 Quality Gate: Validate listing before publish
+    const validation = validateListing({
+      title: form.title,
+      description: form.description,
+      photo_urls: form.photos,
+      price: form.price,
+    });
+    if (!validation.valid) {
+      toast({ title: "Quality check failed", description: validation.errors.join(". "), variant: "destructive" });
       return;
     }
     if (!form.city.trim()) {
