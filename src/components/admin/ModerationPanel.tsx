@@ -165,7 +165,7 @@ export default function ModerationPanel() {
                     </div>
                   </div>
                   <time className="text-[10px] text-muted-foreground">
-                    {format(new Date(review.created_at), "dd MMM", { locale: fr })}
+                    {format(new Date(review.created_at), "dd MMM", { locale: frLocale })}
                   </time>
                 </div>
 
