@@ -1,0 +1,1 @@
+ALTER TABLE public.driver_sessions ADD CONSTRAINT driver_sessions_user_id_unique UNIQUE (user_id);
