@@ -1,6 +1,6 @@
 /**
  * useBoostPurchase — PASS141: Purchase boost tiers with LOCS credits.
- * Deducts from wallet and creates a boost_purchases entry.
+ * Uses atomic RPC (purchase_boost) to prevent race conditions and double-spend.
  */
 import { useCallback, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -36,59 +36,28 @@ export function useBoostPurchase() {
       try {
         const config = BOOST_TIERS[opts.tier];
 
-        // Check balance
-        const { data: wallet } = await supabase
-          .from("wallet_balances")
-          .select("balance")
-          .eq("user_id", user.id)
-          .eq("currency", "LOCS")
-          .maybeSingle();
+        // Atomic RPC — handles locking, balance check, debit, boost creation, storefront update
+        const { data, error } = await (supabase as any).rpc("purchase_boost", {
+          _user_id: user.id,
+          _target_type: opts.targetType,
+          _target_id: opts.targetId,
+          _shop_id: opts.shopId || null,
+          _tier: opts.tier,
+          _locs_cost: config.locs,
+          _duration_days: config.durationDays,
+          _impressions_budget: config.impressions,
+          _label: config.label,
+        });
 
-        const balance = (wallet as any)?.balance || 0;
-        if (balance < config.locs) {
-          toast({ title: "Insufficient LOCS", description: `Need ${config.locs} LOCS, you have ${balance}.`, variant: "destructive" });
+        if (error) {
+          toast({ title: "Boost failed", description: error.message, variant: "destructive" });
           return { success: false };
         }
 
-        // Deduct LOCS
-        await supabase
-          .from("wallet_balances")
-          .update({
-            balance: balance - config.locs,
-            total_spent: ((wallet as any)?.total_spent || 0) + config.locs,
-          } as any)
-          .eq("user_id", user.id)
-          .eq("currency", "LOCS");
-
-        // Record transaction
-        await supabase.from("wallet_transactions").insert({
-          user_id: user.id,
-          type: "boost",
-          direction: "out",
-          amount: config.locs,
-          currency: "LOCS",
-          description: `${config.label} — ${opts.targetType}`,
-          status: "completed",
-          reference_type: "boost",
-          reference_id: opts.targetId,
-        } as any);
-
-        // Create boost entry
-        const endsAt = new Date();
-        endsAt.setDate(endsAt.getDate() + config.durationDays);
-
-        await (supabase as any).from("boost_purchases").insert({
-          user_id: user.id,
-          target_type: opts.targetType,
-          target_id: opts.targetId,
-          shop_id: opts.shopId || null,
-          tier: opts.tier,
-          locs_spent: config.locs,
-          starts_at: new Date().toISOString(),
-          ends_at: endsAt.toISOString(),
-          impressions_budget: config.impressions,
-          status: "active",
-        });
+        if (!data?.success) {
+          toast({ title: "Boost failed", description: data?.error || "Unknown error", variant: "destructive" });
+          return { success: false };
+        }
 
         toast({ title: "Boost activated!", description: `${config.label} for ${config.durationDays} days.` });
         return { success: true };

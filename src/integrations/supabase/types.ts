@@ -13794,6 +13794,20 @@ export type Database = {
         Args: { _org_id: string; _user_id: string }
         Returns: boolean
       }
+      purchase_boost: {
+        Args: {
+          _duration_days?: number
+          _impressions_budget?: number
+          _label?: string
+          _locs_cost?: number
+          _shop_id?: string
+          _target_id: string
+          _target_type: string
+          _tier?: string
+          _user_id: string
+        }
+        Returns: Json
+      }
       purge_expired_sessions: { Args: never; Returns: undefined }
       purge_old_login_events: { Args: never; Returns: undefined }
       search_nearby_items: {
