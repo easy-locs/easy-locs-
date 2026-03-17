@@ -9418,6 +9418,8 @@ export type Database = {
           longitude: number | null
           name: string
           og_image_url: string | null
+          onboarding_completed: boolean | null
+          onboarding_step: number | null
           org_id: string
           radius_km: number | null
           rating: number | null
@@ -9459,6 +9461,8 @@ export type Database = {
           longitude?: number | null
           name: string
           og_image_url?: string | null
+          onboarding_completed?: boolean | null
+          onboarding_step?: number | null
           org_id: string
           radius_km?: number | null
           rating?: number | null
@@ -9500,6 +9504,8 @@ export type Database = {
           longitude?: number | null
           name?: string
           og_image_url?: string | null
+          onboarding_completed?: boolean | null
+          onboarding_step?: number | null
           org_id?: string
           radius_km?: number | null
           rating?: number | null
