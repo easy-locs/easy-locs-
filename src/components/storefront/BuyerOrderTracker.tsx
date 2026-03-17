@@ -46,7 +46,7 @@ export default function BuyerOrderTracker({ orderId, buyerEmail }: BuyerOrderTra
     queryFn: async () => {
       let query = (supabase as any)
         .from("storefront_orders")
-        .select("*, storefront_order_items(*), storefront_pages!storefront_orders_shop_id_fkey(name, slug, logo_url)")
+        .select("*, storefront_order_items(*), storefront_pages!storefront_orders_shop_id_fkey(name, slug, logo_url), delivery_job_id, wallet_reference_code, delivery_source, requires_delivery")
         .order("created_at", { ascending: false });
 
       if (orderId) {
