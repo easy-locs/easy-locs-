@@ -1,9 +1,10 @@
 /**
  * OrbitSmartActions — Contextual priority actions widget.
- * PASS155: Stronger CTA hierarchy, tighter spacing, premium list items.
+ * PASS 157-163: i18n, accessibility, line-clamp-2 for descriptions.
  */
 import { useNavigate } from "react-router-dom";
 import { ChevronRight, Loader2 } from "lucide-react";
+import { useI18n } from "@/lib/i18n";
 import type { SmartAction } from "@/hooks/useOrbitDashboard";
 
 interface Props {
@@ -28,6 +29,7 @@ const TYPE_STYLES: Record<SmartAction["type"], { bg: string; accent: string }> =
 
 export default function OrbitSmartActions({ actions, loading }: Props) {
   const navigate = useNavigate();
+  const { t } = useI18n();
 
   if (loading) {
     return (
@@ -36,6 +38,8 @@ export default function OrbitSmartActions({ actions, loading }: Props) {
         <div
           className="flex items-center justify-center py-8 rounded-2xl"
           style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)" }}
+          role="status"
+          aria-label={t("common.loading")}
         >
           <Loader2 className="w-4 h-4 animate-spin" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }} />
         </div>
@@ -53,7 +57,7 @@ export default function OrbitSmartActions({ actions, loading }: Props) {
         >
           <span className="text-base">✨</span>
           <span className="text-[12px] font-medium" style={{ color: "hsl(var(--hud-text-dim) / 0.6)" }}>
-            Aucune action requise — tout est en ordre
+            {t("orbit.home.no_actions")}
           </span>
         </div>
       </div>
@@ -78,14 +82,13 @@ export default function OrbitSmartActions({ actions, loading }: Props) {
             <button
               key={action.id}
               onClick={() => navigate(action.link)}
-              aria-label={action.label}
-              className="w-full flex items-center gap-3 px-4 py-3.5 transition-colors active:scale-[0.98]"
+              aria-label={`${action.label} — ${action.description}`}
+              className="w-full flex items-center gap-3 px-4 py-3.5 transition-colors active:scale-[0.98] min-h-[44px]"
               style={{
                 background: style.bg,
                 borderBottom: i < actions.length - 1 ? "1px solid hsl(var(--hud-border) / 0.06)" : "none",
               }}
             >
-              {/* Icon + dot */}
               <div className="flex flex-col items-center gap-1 shrink-0">
                 <span className="text-lg">{action.icon}</span>
                 <span
@@ -98,16 +101,10 @@ export default function OrbitSmartActions({ actions, loading }: Props) {
               </div>
 
               <div className="flex-1 min-w-0 text-left">
-                <p
-                  className="text-[12px] font-semibold leading-snug"
-                  style={{ color: "hsl(var(--hud-text))" }}
-                >
+                <p className="text-[12px] font-semibold leading-snug" style={{ color: "hsl(var(--hud-text))" }}>
                   {action.label}
                 </p>
-                <p
-                  className="text-[10px] leading-snug mt-0.5 line-clamp-1"
-                  style={{ color: "hsl(var(--hud-text-dim) / 0.6)" }}
-                >
+                <p className="text-[10px] leading-snug mt-0.5 line-clamp-2" style={{ color: "hsl(var(--hud-text-dim) / 0.6)" }}>
                   {action.description}
                 </p>
               </div>
@@ -122,13 +119,14 @@ export default function OrbitSmartActions({ actions, loading }: Props) {
 }
 
 function SectionHead({ count, hasUrgent }: { count: number; hasUrgent: boolean }) {
+  const { t } = useI18n();
   return (
     <div className="flex items-center justify-between mb-2.5 px-0.5">
       <h2
         className="text-[11px] font-bold uppercase tracking-[0.12em]"
         style={{ color: "hsl(var(--hud-text-dim) / 0.7)" }}
       >
-        Actions suggérées
+        {t("orbit.home.section_actions")}
       </h2>
       {count > 0 && (
         <span

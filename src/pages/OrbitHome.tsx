@@ -1,22 +1,28 @@
-import { useEffect, useMemo } from "react";
+/**
+ * OrbitHome — Main Orbit dashboard.
+ * PASS 157-160: Full i18n, memoized sections, accessible.
+ * PASS 167-168: Performance — memoized card arrays, stable refs.
+ */
+import { useEffect, useMemo, memo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useOrbitEngine } from "@/stores/orbit-engine";
 import { useOrbitDashboard } from "@/hooks/useOrbitDashboard";
+import { useI18n } from "@/lib/i18n";
 import OrbitOrb from "@/components/orbit/OrbitOrb";
 import OrbitQuickCard from "@/components/orbit/OrbitQuickCard";
 import OrbitSmartActions from "@/components/orbit/OrbitSmartActions";
 import OrbitPermissionsDiag from "@/components/orbit/OrbitPermissionsDiag";
+import OrbitWalletCard from "@/components/orbit/OrbitWalletCard";
 import {
   MessageCircle, Phone, Users, Store, Radar, Wallet,
   Bell, Shield, Lock, Palette,
   ChevronRight, CalendarCheck, ShoppingBag, Building2,
   TrendingUp, CreditCard, Fingerprint, History, Star,
 } from "lucide-react";
-import OrbitWalletCard from "@/components/orbit/OrbitWalletCard";
 
 /* ══════ Section Header ══════ */
-function SectionLabel({ title, badge }: { title: string; badge?: number }) {
+const SectionLabel = memo(function SectionLabel({ title, badge }: { title: string; badge?: number }) {
   return (
     <div className="flex items-center justify-between mb-2.5 px-0.5">
       <h2
@@ -38,84 +44,87 @@ function SectionLabel({ title, badge }: { title: string; badge?: number }) {
       )}
     </div>
   );
-}
-
-/* ── Priority modules (top row) — communication core ── */
-const PRIORITY_CARDS = [
-  { icon: MessageCircle, label: "Messages", desc: "Inbox", key: "unreadMessages" as const, to: "/dashboard/communication" },
-  { icon: Phone, label: "Appels", desc: "Récents", key: "missedCalls" as const, to: "/dashboard/communication?section=calls" },
-  { icon: Bell, label: "Alertes", desc: "Notifs", key: "pendingNotifications" as const, to: "/dashboard/settings?section=notifications" },
-  { icon: Users, label: "Contacts", desc: "Réseau", key: "activeContacts" as const, to: "/dashboard/communication?section=contacts" },
-];
-
-/* ── Orbit Infrastructure ── */
-const ORBIT_INFRA_CARDS = [
-  { icon: Wallet, label: "Wallet", desc: "Solde", key: null, to: "/dashboard/wallet" },
-  { icon: CreditCard, label: "Paiements", desc: "Envois", key: null, to: "/dashboard/wallet?action=history" },
-  { icon: History, label: "Historique", desc: "Activité", key: null, to: "/dashboard/wallet?action=history" },
-  { icon: Shield, label: "Sécurité", desc: "2FA", key: null, to: "/dashboard/settings?section=security" },
-  { icon: Fingerprint, label: "Identité", desc: "Profil", key: null, to: "/dashboard/settings" },
-  { icon: Lock, label: "Privé", desc: "Data", key: null, to: "/dashboard/settings?section=privacy" },
-];
-
-/* ── Marketplace Commerce ── */
-const MARKETPLACE_CARDS = [
-  { icon: Store, label: "Annonces", desc: "Services", key: "activeListings" as const, to: "/dashboard/my-shop" },
-  { icon: ShoppingBag, label: "Bookings", desc: "Commandes", key: "pendingOrders" as const, to: "/dashboard/my-shop" },
-  { icon: Star, label: "Avis", desc: "Reviews", key: null, to: "/dashboard/my-shop" },
-  { icon: TrendingUp, label: "Leads", desc: "Prospects", key: "newLeads" as const, to: "/dashboard/communication" },
-];
-
-/* ── Platform Modules ── */
-const MODULE_CARDS = [
-  { icon: Building2, label: "Gestion", desc: "Immo", key: null, to: "/dashboard/rental", roles: ["landlord"] },
-  { icon: CalendarCheck, label: "Saisonnier", desc: "Bookings", key: "pendingBookings" as const, to: "/dashboard/seasonal", roles: ["landlord"] },
-  { icon: Radar, label: "Radar", desc: "Nearby", key: "radarNearby" as const, to: "/dashboard/communication?section=nearby" },
-  { icon: Palette, label: "Réglages", desc: "Config", key: null, to: "/dashboard/settings" },
-];
+});
 
 export default function OrbitHome() {
   const { user, orgId } = useAuth();
   const engine = useOrbitEngine();
   const { smartActions, loading: dashLoading } = useOrbitDashboard();
   const navigate = useNavigate();
+  const { t } = useI18n();
 
-  // Initial refresh only — polling is handled by OrbitAppShell
   useEffect(() => {
     if (!user?.id) return;
     engine.refresh(user.id, orgId || undefined);
   }, [user?.id, orgId]);
 
+  /* ── Card definitions (memoized) ── */
+  const PRIORITY_CARDS = useMemo(() => [
+    { icon: MessageCircle, label: t("orbit.card.messages"), desc: t("orbit.card.desc_inbox"), key: "unreadMessages" as const, to: "/dashboard/communication" },
+    { icon: Phone, label: t("orbit.card.calls"), desc: t("orbit.card.desc_recent"), key: "missedCalls" as const, to: "/dashboard/communication?section=calls" },
+    { icon: Bell, label: t("orbit.card.alerts"), desc: t("orbit.card.desc_notifs"), key: "pendingNotifications" as const, to: "/dashboard/settings?section=notifications" },
+    { icon: Users, label: t("orbit.card.contacts"), desc: t("orbit.card.desc_network"), key: "activeContacts" as const, to: "/dashboard/communication?section=contacts" },
+  ], [t]);
+
+  const ORBIT_INFRA_CARDS = useMemo(() => [
+    { icon: Wallet, label: t("orbit.card.wallet"), desc: t("orbit.card.desc_balance"), key: null, to: "/dashboard/wallet" },
+    { icon: CreditCard, label: t("orbit.card.payments"), desc: t("orbit.card.desc_sends"), key: null, to: "/dashboard/wallet?action=history" },
+    { icon: History, label: t("orbit.card.history"), desc: t("orbit.card.desc_activity"), key: null, to: "/dashboard/wallet?action=history" },
+    { icon: Shield, label: t("orbit.card.security"), desc: t("orbit.card.desc_2fa"), key: null, to: "/dashboard/settings?section=security" },
+    { icon: Fingerprint, label: t("orbit.card.identity"), desc: t("orbit.card.desc_profile"), key: null, to: "/dashboard/settings" },
+    { icon: Lock, label: t("orbit.card.private"), desc: t("orbit.card.desc_data"), key: null, to: "/dashboard/settings?section=privacy" },
+  ], [t]);
+
+  const MARKETPLACE_CARDS = useMemo(() => [
+    { icon: Store, label: t("orbit.card.listings"), desc: t("orbit.card.desc_services"), key: "activeListings" as const, to: "/dashboard/my-shop" },
+    { icon: ShoppingBag, label: t("orbit.card.bookings"), desc: t("orbit.card.desc_orders"), key: "pendingOrders" as const, to: "/dashboard/my-shop" },
+    { icon: Star, label: t("orbit.card.reviews"), desc: t("orbit.card.desc_reviews"), key: null, to: "/dashboard/my-shop" },
+    { icon: TrendingUp, label: t("orbit.card.leads"), desc: t("orbit.card.desc_prospects"), key: "newLeads" as const, to: "/dashboard/communication" },
+  ], [t]);
+
+  const MODULE_CARDS = useMemo(() => [
+    { icon: Building2, label: t("orbit.card.management"), desc: t("orbit.card.desc_property"), key: null, to: "/dashboard/rental" },
+    { icon: CalendarCheck, label: t("orbit.card.seasonal"), desc: t("orbit.card.desc_bookings"), key: "pendingBookings" as const, to: "/dashboard/seasonal" },
+    { icon: Radar, label: t("orbit.card.radar"), desc: t("orbit.card.desc_nearby"), key: "radarNearby" as const, to: "/dashboard/communication?section=nearby" },
+    { icon: Palette, label: t("orbit.card.settings"), desc: t("orbit.card.desc_config"), key: null, to: "/dashboard/settings" },
+  ], [t]);
+
   const orbMessage = useMemo(() => {
-    if (engine.syncStatus === "syncing") return "Synchronisation en cours…";
-    if (engine.syncStatus === "error") return "Erreur de synchronisation";
-    if (engine.networkStatus === "offline") return "Hors ligne — données locales";
+    if (engine.syncStatus === "syncing") return t("orbit.home.syncing");
+    if (engine.syncStatus === "error") return t("orbit.home.sync_error");
+    if (engine.networkStatus === "offline") return t("orbit.home.offline");
     if (engine.alerts.length > 0) return engine.alerts[0].message;
     if (engine.activeListings > 0)
-      return `${engine.activeListings} annonce${engine.activeListings > 1 ? "s" : ""} active${engine.activeListings > 1 ? "s" : ""}`;
-    return "Tout est en ordre ✨";
-  }, [engine.alerts, engine.syncStatus, engine.networkStatus, engine.activeListings]);
+      return t("orbit.home.active_listings").replace("{count}", String(engine.activeListings));
+    return t("orbit.home.all_good");
+  }, [engine.alerts, engine.syncStatus, engine.networkStatus, engine.activeListings, t]);
 
   const totalUrgent = engine.unreadMessages + engine.missedCalls + engine.pendingBookings + engine.newLeads;
 
   const activityItems = useMemo(() => {
     const items: { icon: string; label: string; value: number; link: string }[] = [];
-    if (engine.pendingBookings > 0) items.push({ icon: "📩", label: "Réservations en attente", value: engine.pendingBookings, link: "/dashboard/seasonal" });
-    if (engine.pendingOrders > 0) items.push({ icon: "🎯", label: "Commandes marketplace", value: engine.pendingOrders, link: "/dashboard/activities" });
-    if (engine.newLeads > 0) items.push({ icon: "🔥", label: "Nouveaux prospects", value: engine.newLeads, link: "/dashboard/communication" });
-    if (engine.activeListings > 0) items.push({ icon: "📊", label: "Annonces actives", value: engine.activeListings, link: "/dashboard/my-shop" });
+    if (engine.pendingBookings > 0) items.push({ icon: "📩", label: t("orbit.home.pending_bookings"), value: engine.pendingBookings, link: "/dashboard/seasonal" });
+    if (engine.pendingOrders > 0) items.push({ icon: "🎯", label: t("orbit.home.marketplace_orders"), value: engine.pendingOrders, link: "/dashboard/activities" });
+    if (engine.newLeads > 0) items.push({ icon: "🔥", label: t("orbit.home.new_leads"), value: engine.newLeads, link: "/dashboard/communication" });
+    if (engine.activeListings > 0) items.push({ icon: "📊", label: t("orbit.home.active_ads"), value: engine.activeListings, link: "/dashboard/my-shop" });
     return items;
-  }, [engine.pendingBookings, engine.pendingOrders, engine.newLeads, engine.activeListings]);
+  }, [engine.pendingBookings, engine.pendingOrders, engine.newLeads, engine.activeListings, t]);
+
+  const systemItems = useMemo(() => [
+    { label: t("orbit.home.encryption"), ok: engine.encryptionStatus === "active" },
+    { label: engine.syncStatus === "synced" ? t("orbit.home.synced") : engine.syncStatus === "syncing" ? t("orbit.home.sync_short") : t("orbit.home.error"), ok: engine.syncStatus === "synced" },
+    { label: engine.networkStatus === "online" ? t("orbit.home.online") : t("orbit.home.offline_short"), ok: engine.networkStatus === "online" },
+  ], [engine.encryptionStatus, engine.syncStatus, engine.networkStatus, t]);
 
   return (
     <div className="flex flex-col items-center px-4 pt-3 pb-10 gap-6 min-h-full">
-      {/* ── Orb ── */}
       <OrbitOrb contextMessage={orbMessage} />
 
-      {/* ── Alert Banner ── */}
+      {/* Alert Banner */}
       {engine.alerts.length > 0 && (
         <button
           onClick={() => engine.alerts[0]?.link && navigate(engine.alerts[0].link)}
+          aria-label={engine.alerts[0].title}
           className="w-full max-w-md rounded-2xl px-4 py-3.5 flex items-center gap-3 transition-all active:scale-[0.98]"
           style={{
             background: "linear-gradient(135deg, hsl(var(--hud-surface)), hsl(var(--hud-surface-2)))",
@@ -127,7 +136,7 @@ export default function OrbitHome() {
             <p className="text-xs font-bold leading-snug" style={{ color: "hsl(var(--hud-text))" }}>
               {engine.alerts[0].title}
             </p>
-            <p className="text-[11px] line-clamp-1" style={{ color: "hsl(var(--hud-text-dim))" }}>
+            <p className="text-[11px] line-clamp-2" style={{ color: "hsl(var(--hud-text-dim))" }}>
               {engine.alerts[0].message}
             </p>
           </div>
@@ -135,20 +144,20 @@ export default function OrbitHome() {
         </button>
       )}
 
-      {/* ── Smart Actions ── */}
+      {/* Smart Actions */}
       <div className="w-full max-w-md">
         <OrbitSmartActions actions={smartActions} loading={dashLoading} />
       </div>
 
-      {/* ── Wallet ── */}
+      {/* Wallet */}
       <div className="w-full max-w-md">
-        <SectionLabel title="Wallet" />
+        <SectionLabel title={t("orbit.home.section_wallet")} />
         <OrbitWalletCard />
       </div>
 
-      {/* ── Priorités ── */}
+      {/* Priorities */}
       <div className="w-full max-w-md">
-        <SectionLabel title="Priorités" badge={totalUrgent || undefined} />
+        <SectionLabel title={t("orbit.home.section_priorities")} badge={totalUrgent || undefined} />
         <div className="grid grid-cols-4 gap-2.5">
           {PRIORITY_CARDS.map((card) => (
             <OrbitQuickCard
@@ -164,10 +173,10 @@ export default function OrbitHome() {
         </div>
       </div>
 
-      {/* ── Activity Widget ── */}
+      {/* Activity Widget */}
       {activityItems.length > 0 && (
         <div className="w-full max-w-md">
-          <SectionLabel title="Activité" />
+          <SectionLabel title={t("orbit.home.section_activity")} />
           <div
             className="rounded-2xl overflow-hidden divide-y"
             style={{
@@ -179,7 +188,8 @@ export default function OrbitHome() {
               <button
                 key={item.label}
                 onClick={() => navigate(item.link)}
-                className="w-full flex items-center gap-3 px-4 py-3 transition-all active:scale-[0.98]"
+                aria-label={`${item.label}: ${item.value}`}
+                className="w-full flex items-center gap-3 px-4 py-3 transition-all active:scale-[0.98] min-h-[44px]"
               >
                 <span className="text-base shrink-0">{item.icon}</span>
                 <span className="flex-1 text-left text-[12px] font-medium" style={{ color: "hsl(var(--hud-text))" }}>
@@ -198,25 +208,19 @@ export default function OrbitHome() {
         </div>
       )}
 
-      {/* ── Orbit Infrastructure ── */}
+      {/* Infrastructure */}
       <div className="w-full max-w-md">
-        <SectionLabel title="Infrastructure" />
+        <SectionLabel title={t("orbit.home.section_infrastructure")} />
         <div className="grid grid-cols-3 gap-2.5">
           {ORBIT_INFRA_CARDS.map((card) => (
-            <OrbitQuickCard
-              key={card.label}
-              icon={card.icon}
-              label={card.label}
-              description={card.desc}
-              to={card.to}
-            />
+            <OrbitQuickCard key={card.label} icon={card.icon} label={card.label} description={card.desc} to={card.to} />
           ))}
         </div>
       </div>
 
-      {/* ── Marketplace ── */}
+      {/* Marketplace */}
       <div className="w-full max-w-md">
-        <SectionLabel title="Marketplace" />
+        <SectionLabel title={t("orbit.home.section_marketplace")} />
         <div className="grid grid-cols-4 gap-2.5">
           {MARKETPLACE_CARDS.map((card) => (
             <OrbitQuickCard
@@ -232,9 +236,9 @@ export default function OrbitHome() {
         </div>
       </div>
 
-      {/* ── Modules ── */}
+      {/* Modules */}
       <div className="w-full max-w-md">
-        <SectionLabel title="Modules" />
+        <SectionLabel title={t("orbit.home.section_modules")} />
         <div className="grid grid-cols-4 gap-2.5">
           {MODULE_CARDS.map((card) => (
             <OrbitQuickCard
@@ -250,24 +254,21 @@ export default function OrbitHome() {
         </div>
       </div>
 
-      {/* ── Permissions ── */}
+      {/* Permissions */}
       <div className="w-full max-w-md">
         <OrbitPermissionsDiag />
       </div>
 
-      {/* ── System Status ── */}
+      {/* System Status */}
       <div
         className="w-full max-w-md flex items-center justify-center gap-6 py-3.5 px-4 rounded-2xl"
+        role="status"
         style={{
           background: "hsl(var(--hud-surface) / 0.5)",
           border: "1px solid hsl(var(--hud-border) / 0.06)",
         }}
       >
-        {[
-          { label: "Chiffrement", ok: engine.encryptionStatus === "active" },
-          { label: engine.syncStatus === "synced" ? "Synchronisé" : engine.syncStatus === "syncing" ? "Sync…" : "Erreur", ok: engine.syncStatus === "synced" },
-          { label: engine.networkStatus === "online" ? "En ligne" : "Hors ligne", ok: engine.networkStatus === "online" },
-        ].map((item) => (
+        {systemItems.map((item) => (
           <div key={item.label} className="flex items-center gap-1.5">
             <span
               className="w-[6px] h-[6px] rounded-full"
@@ -283,10 +284,9 @@ export default function OrbitHome() {
         ))}
       </div>
 
-      {/* ── Last sync ── */}
       {engine.lastSyncAt && (
         <p className="text-[9px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>
-          Sync : {new Date(engine.lastSyncAt).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}
+          Sync : {new Date(engine.lastSyncAt).toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" })}
         </p>
       )}
     </div>
