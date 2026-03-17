@@ -276,6 +276,7 @@ export default function SuperMapRadarPage() {
   const shopsRef = useRef<ShopRow[]>([]);
 
   const { shops, loading: shopsLoading } = useRealtimeShops();
+  shopsRef.current = shops;
 
   const [userPos, setUserPos] = useState<UserPos | null>(null);
   const [radarKm, setRadarKm] = useState(5);
