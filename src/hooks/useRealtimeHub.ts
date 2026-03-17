@@ -7,24 +7,33 @@
 import { useEffect, useRef, useCallback } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/contexts/AuthContext";
-import { useOrbitEngine } from "@/stores/orbit-engine";
+import { useOrbitEngine, type OrbitModule } from "@/stores/orbit-engine";
 import { realtimeManager, type RealtimeSignal } from "@/lib/realtime-manager";
 import { toast } from "sonner";
 import { MessageSquare } from "lucide-react";
 import React from "react";
 
-// Tables that should trigger orbit engine refresh (communication + business)
-const ORBIT_REFRESH_TABLES = new Set(["call_logs", "messages", "notifications", "booking_requests"]);
+// V2: Map tables to specific orbit modules for targeted refresh
+const TABLE_TO_MODULE: Record<string, OrbitModule> = {
+  call_logs: "communication",
+  messages: "communication",
+  notifications: "notifications",
+  booking_requests: "business",
+  concierge_orders: "business",
+  deal_rooms: "business",
+};
 
 export function useRealtimeHub() {
   const { user, orgId, activeRole } = useAuth();
   const queryClient = useQueryClient();
+  const refreshModule = useOrbitEngine((s) => s.refreshModule);
   const refresh = useOrbitEngine((s) => s.refresh);
   const addAlert = useOrbitEngine((s) => s.addAlert);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastMsgToast = useRef("");
 
-  // Stable refresh callback that doesn't change on every render
+  const refreshModuleRef = useRef(refreshModule);
+  refreshModuleRef.current = refreshModule;
   const refreshRef = useRef(refresh);
   refreshRef.current = refresh;
   const addAlertRef = useRef(addAlert);
@@ -33,12 +42,13 @@ export function useRealtimeHub() {
   const handleSignal = useCallback((signal: RealtimeSignal) => {
     const { table, eventType, new: row } = signal;
 
-    // ─── Targeted orbit refresh — only for communication tables ───
-    if (ORBIT_REFRESH_TABLES.has(table)) {
+    // ─── V2: Targeted module refresh ───
+    const targetModule = TABLE_TO_MODULE[table];
+    if (targetModule) {
       if (debounceRef.current) clearTimeout(debounceRef.current);
       debounceRef.current = setTimeout(() => {
-        if (user?.id) refreshRef.current(user.id, orgId || undefined);
-      }, 500); // 500ms debounce for orbit (was 300ms)
+        if (user?.id) refreshModuleRef.current(targetModule, user.id, orgId || undefined);
+      }, 500);
     }
 
     // ─── Table-specific targeted invalidation ───
