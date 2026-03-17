@@ -1,42 +1,69 @@
 /**
- * MobileBottomNav — V7 Bottom navigation with 4 clear pillars.
- * 1. Marketplace (browse listings) 2. Shops (directory) 3. My Business (management) 4. Property (separate module)
+ * MobileBottomNav — V7 Bottom navigation with 4 strict pillars.
+ * 1. Marketplace (browse listings) 2. Shops (public directory) 3. My Business (private) 4. Property (separate)
+ * i18n-ready, no mixed language, professional wording.
  */
 import { Link, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Compass, Store, Briefcase, Building2 } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 
+const FALLBACKS: Record<string, string> = {
+  "nav.marketplace": "Marketplace",
+  "nav.shops": "Shops",
+  "nav.business": "Business",
+  "nav.property": "Property",
+};
+
 const MobileBottomNav = () => {
   const { pathname } = useLocation();
   const { t } = useI18n();
 
+  // Hide inside Orbit shell to avoid stacked nav layers
   if (pathname.startsWith("/app")) return null;
+
+  const tr = (key: string) => {
+    const val = t(key);
+    return val && val !== key ? val : FALLBACKS[key] || key.split(".").pop() || "";
+  };
 
   const items = [
     {
       icon: Compass,
-      label: "Marketplace",
+      labelKey: "nav.marketplace",
       path: "/discover",
-      match: (p: string) => p.startsWith("/discover") || p.startsWith("/search") || p.startsWith("/explore") || p.startsWith("/listing/") || p.startsWith("/trending") || p.startsWith("/nearby"),
+      match: (p: string) =>
+        p.startsWith("/discover") || p.startsWith("/search") || p.startsWith("/explore") ||
+        p.startsWith("/listing/") || p.startsWith("/trending") || p.startsWith("/nearby") ||
+        p.startsWith("/top-rated") || p.startsWith("/rentals") || p.startsWith("/book/"),
     },
     {
       icon: Store,
-      label: "Shops",
+      labelKey: "nav.shops",
       path: "/shops",
       match: (p: string) => p === "/shops" || p.startsWith("/shops/") || p.startsWith("/s/"),
     },
     {
       icon: Briefcase,
-      label: "Business",
+      labelKey: "nav.business",
       path: "/business",
-      match: (p: string) => p.startsWith("/business") || p === "/pos" || p === "/my-orders" || p.startsWith("/dashboard/my-shop") || p.startsWith("/dashboard/seller") || p.startsWith("/dashboard/wallet") || p.startsWith("/dashboard/driver"),
+      match: (p: string) =>
+        p.startsWith("/business") || p === "/pos" || p === "/my-orders" ||
+        p.startsWith("/dashboard/my-shop") || p.startsWith("/dashboard/seller") ||
+        p.startsWith("/dashboard/wallet") || p.startsWith("/dashboard/driver") ||
+        p.startsWith("/dashboard/reporting") || p.startsWith("/dashboard/communication") ||
+        p.startsWith("/dashboard/deals") || p.startsWith("/dashboard/ops"),
     },
     {
       icon: Building2,
-      label: "Property",
+      labelKey: "nav.property",
       path: "/property-hub",
-      match: (p: string) => p.startsWith("/property-hub") || p.startsWith("/dashboard/properties") || p.startsWith("/dashboard/property/") || p.startsWith("/dashboard/tenants") || p.startsWith("/dashboard/leases") || p.startsWith("/dashboard/finances") || p.startsWith("/tenant"),
+      match: (p: string) =>
+        p.startsWith("/property-hub") || p.startsWith("/dashboard/properties") ||
+        p.startsWith("/dashboard/property/") || p.startsWith("/dashboard/tenants") ||
+        p.startsWith("/dashboard/leases") || p.startsWith("/dashboard/finances") ||
+        p.startsWith("/dashboard/buildings") || p.startsWith("/dashboard/accounting") ||
+        p.startsWith("/dashboard/real-estate") || p.startsWith("/tenant"),
     },
   ];
 
@@ -57,27 +84,28 @@ const MobileBottomNav = () => {
       <div className="flex items-stretch justify-around h-[60px]">
         {items.map((item) => {
           const active = item.match(pathname);
+          const label = tr(item.labelKey);
           return (
             <Link
               key={item.path}
               to={item.path}
               role="tab"
               aria-selected={active}
-              aria-label={item.label}
+              aria-label={label}
               className={`flex flex-col items-center justify-center flex-1 gap-1 transition-all min-w-[44px] min-h-[44px] max-w-[80px] active:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-lg relative ${
                 active ? "text-accent" : "text-muted-foreground"
               }`}
             >
               {active && (
                 <motion.div
-                  layoutId="dash-tab-indicator"
+                  layoutId="v7-tab-indicator"
                   className="absolute top-0 left-3 right-3 h-[2.5px] rounded-full bg-accent"
                   transition={{ type: "spring", stiffness: 400, damping: 30 }}
                 />
               )}
               <item.icon className={`h-5 w-5 shrink-0 transition-colors ${active ? "text-accent" : ""}`} />
               <span className={`text-[10px] leading-tight transition-colors ${active ? "text-accent font-bold" : "font-medium"}`}>
-                {item.label}
+                {label}
               </span>
             </Link>
           );
