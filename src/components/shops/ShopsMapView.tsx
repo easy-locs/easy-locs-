@@ -42,7 +42,7 @@ export default function ShopsMapView({ shops, radiusKm = 25, onOpenShop }: Props
     if (!mapRef.current) {
       mapRef.current = L.map(containerRef.current, {
         center: [centerLat, centerLng],
-        zoom: getZoom(radius),
+        zoom: getZoom(radiusKm),
         zoomControl: false,
         attributionControl: false,
       });
