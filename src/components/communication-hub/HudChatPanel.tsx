@@ -1432,36 +1432,26 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
         recipientId={thread.tenantId || thread.contextId || null}
         contextId={thread.threadId || thread.id || null}
         onCreated={async (req) => {
-          // Auto-insert payment request card as system message in chat
           const authUserId = await resolveAuthUserId();
           if (!authUserId || !orgId) return;
-          const cardContent = JSON.stringify({
-            _type: "payment_request_card",
-            id: req.id,
-            amount: req.amount,
-            currency: req.currency,
-            title: req.title,
-            subtitle: req.subtitle,
-            requester_id: req.requester_id,
-            status: req.status,
-          });
-          let storedContent = cardContent;
-          let isEncrypted = false;
           const peerId = thread.tenantId || thread.contextId || thread.id;
-          if (e2eReady && peerId) {
-            const enc = await encrypt(cardContent, peerId);
-            if (enc) { storedContent = enc; isEncrypted = true; }
+          try {
+            await sendPaymentRequestMessageToThread({
+              threadId: thread.threadId || thread.id,
+              senderId: authUserId,
+              orgId,
+              request: req,
+              tenantId: thread.tenantId,
+              bookingId: thread.bookingId,
+              bookingType: thread.bookingType,
+              contextType: thread.contextType,
+              contextId: thread.contextId,
+              encrypt: e2eReady ? encrypt : undefined,
+              peerId: e2eReady ? peerId : null,
+            });
+          } catch (err) {
+            console.error("[HudChatPanel] Failed to send request message:", err);
           }
-          const msgPayload: any = {
-            org_id: orgId, sender_id: authUserId, tenant_id: thread.tenantId || null,
-            booking_id: thread.bookingId || null, booking_type: thread.bookingType || null,
-            content: storedContent,
-            category: "payment_request", message_type: "system", read: false,
-            context_type: thread.contextType, context_id: thread.contextId,
-            encrypted: isEncrypted,
-          };
-          if (thread.threadId) msgPayload.thread_id = thread.threadId;
-          await supabase.from("messages").insert(msgPayload);
           toast.success("Payment request sent in chat");
         }}
       />
