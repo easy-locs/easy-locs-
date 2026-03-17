@@ -1,35 +1,44 @@
 /**
- * MobileBottomNav — Bottom navigation for non-Orbit authenticated pages.
- * PASS 157-163: i18n, accessibility, consistent active states.
+ * MobileBottomNav — V7 Bottom navigation with 4 clear pillars.
+ * 1. Marketplace (browse listings) 2. Shops (directory) 3. My Business (management) 4. Property (separate module)
  */
 import { Link, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Home, Search, Store, ShoppingBag, User } from "lucide-react";
+import { Compass, Store, Briefcase, Building2 } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 
 const MobileBottomNav = () => {
   const { pathname } = useLocation();
   const { t } = useI18n();
 
-  // Hide inside Orbit shell to avoid stacked nav layers
   if (pathname.startsWith("/app")) return null;
 
   const items = [
-    { icon: Home, labelKey: "nav.home", path: "/dashboard" },
-    { icon: Search, labelKey: "nav.search", path: "/discover" },
-    { icon: Store, labelKey: "nav.shops", path: "/shops" },
-    { icon: ShoppingBag, labelKey: "nav.orders", path: "/my-orders" },
-    { icon: User, labelKey: "nav.me", path: "/dashboard/settings" },
+    {
+      icon: Compass,
+      label: "Marketplace",
+      path: "/discover",
+      match: (p: string) => p.startsWith("/discover") || p.startsWith("/search") || p.startsWith("/explore") || p.startsWith("/listing/") || p.startsWith("/trending") || p.startsWith("/nearby"),
+    },
+    {
+      icon: Store,
+      label: "Shops",
+      path: "/shops",
+      match: (p: string) => p === "/shops" || p.startsWith("/shops/") || p.startsWith("/s/"),
+    },
+    {
+      icon: Briefcase,
+      label: "Business",
+      path: "/business",
+      match: (p: string) => p.startsWith("/business") || p === "/pos" || p === "/my-orders" || p.startsWith("/dashboard/my-shop") || p.startsWith("/dashboard/seller") || p.startsWith("/dashboard/wallet") || p.startsWith("/dashboard/driver"),
+    },
+    {
+      icon: Building2,
+      label: "Property",
+      path: "/property-hub",
+      match: (p: string) => p.startsWith("/property-hub") || p.startsWith("/dashboard/properties") || p.startsWith("/dashboard/property/") || p.startsWith("/dashboard/tenants") || p.startsWith("/dashboard/leases") || p.startsWith("/dashboard/finances") || p.startsWith("/tenant"),
+    },
   ];
-
-  const isActive = (path: string) => {
-    if (path === "/dashboard") return pathname === "/dashboard" || pathname === "/";
-    if (path === "/my-orders") return pathname === "/my-orders" || pathname.startsWith("/my-orders/");
-    if (path === "/discover") return pathname.startsWith("/discover") || pathname.startsWith("/search") || pathname.startsWith("/s/");
-    if (path === "/shops") return pathname === "/shops" || pathname.startsWith("/shops/") || pathname === "/dashboard/my-shop";
-    if (path === "/dashboard/settings") return pathname.startsWith("/dashboard/settings");
-    return pathname.startsWith(path);
-  };
 
   return (
     <nav
@@ -47,16 +56,15 @@ const MobileBottomNav = () => {
     >
       <div className="flex items-stretch justify-around h-[60px]">
         {items.map((item) => {
-          const active = isActive(item.path);
-          const label = t(item.labelKey) || item.labelKey.split(".").pop() || "";
+          const active = item.match(pathname);
           return (
             <Link
               key={item.path}
               to={item.path}
               role="tab"
               aria-selected={active}
-              aria-label={label}
-              className={`flex flex-col items-center justify-center flex-1 gap-1 transition-all min-w-[44px] min-h-[44px] max-w-[72px] active:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-lg relative ${
+              aria-label={item.label}
+              className={`flex flex-col items-center justify-center flex-1 gap-1 transition-all min-w-[44px] min-h-[44px] max-w-[80px] active:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-lg relative ${
                 active ? "text-accent" : "text-muted-foreground"
               }`}
             >
@@ -69,7 +77,7 @@ const MobileBottomNav = () => {
               )}
               <item.icon className={`h-5 w-5 shrink-0 transition-colors ${active ? "text-accent" : ""}`} />
               <span className={`text-[10px] leading-tight transition-colors ${active ? "text-accent font-bold" : "font-medium"}`}>
-                {label}
+                {item.label}
               </span>
             </Link>
           );
