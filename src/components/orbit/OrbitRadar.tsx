@@ -290,6 +290,15 @@ export default function OrbitRadar() {
             }}>
             ✅ Vérifié
           </button>
+          <button onClick={() => { setShowHeatmap(!showHeatmap); haptic("light"); }}
+            className="flex items-center gap-1 text-[9px] font-medium px-2 py-0.5 rounded-full"
+            style={{
+              background: showHeatmap ? "hsl(var(--hud-danger) / 0.12)" : "transparent",
+              color: showHeatmap ? "hsl(var(--hud-danger))" : "hsl(var(--hud-text-dim) / 0.4)",
+              border: `1px solid ${showHeatmap ? "hsl(var(--hud-danger) / 0.2)" : "hsl(var(--hud-border) / 0.08)"}`,
+            }}>
+            🔥 Heatmap
+          </button>
 
           <div className="flex-1" />
 
