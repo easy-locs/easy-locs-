@@ -216,6 +216,7 @@ export const thComplete: Record<string, string> = {
   "page.install.back": "กลับ", "page.install.continue_web": "ใช้เว็บต่อ",
   "pwa.banner.title": "ติดตั้ง Easy-Locs", "pwa.banner.hint": "เร็ว ใช้ออฟไลน์ได้",
   "pwa.banner.ios_hint": "แชร์ → เพิ่มไปยังหน้าจอหลัก", "pwa.banner.install": "ติดตั้ง", "pwa.banner.dismiss": "ปิด",
+};
 
 // ─── Vietnamese (VI) ───
 export const viComplete: Record<string, string> = {
