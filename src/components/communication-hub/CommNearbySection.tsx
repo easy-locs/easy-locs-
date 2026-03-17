@@ -506,7 +506,8 @@ export default function CommNearbySection() {
               <motion.div key={u.user_id}
                 initial={{ opacity: 0, x: -12 }} animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: idx * 0.03 }}
-                className="flex items-center gap-3 px-4 py-3.5 hover:bg-[hsl(var(--hud-surface)/0.3)] transition-colors">
+                onClick={() => handleContact(u.display_name || "user")}
+                className="flex items-center gap-3 px-4 py-3.5 hover:bg-[hsl(var(--hud-surface)/0.3)] active:bg-[hsl(var(--hud-surface)/0.5)] transition-colors cursor-pointer">
                 {/* Avatar */}
                 <div className="relative shrink-0">
                   <div className="w-12 h-12 rounded-full flex items-center justify-center"
@@ -548,12 +549,12 @@ export default function CommNearbySection() {
                 </div>
                 {/* Actions */}
                 <div className="flex items-center gap-1 shrink-0">
-                  <button onClick={() => handleContact(u.display_name || "user")}
+                  <button onClick={(e) => { e.stopPropagation(); handleContact(u.display_name || "user"); }}
                     className="w-8 h-8 rounded-full flex items-center justify-center"
                     style={{ background: "hsl(var(--hud-cyan) / 0.1)" }}>
                     <MessageCircle className="h-3.5 w-3.5" style={{ color: "hsl(var(--hud-cyan))" }} />
                   </button>
-                  <button onClick={() => { haptic("medium"); navigate("/dashboard/communication?section=calls"); }}
+                  <button onClick={(e) => { e.stopPropagation(); haptic("medium"); navigate("/dashboard/communication?section=calls"); }}
                     className="w-8 h-8 rounded-full flex items-center justify-center"
                     style={{ background: "hsl(var(--hud-success) / 0.1)" }}>
                     <Phone className="h-3.5 w-3.5" style={{ color: "hsl(var(--hud-success))" }} />
@@ -567,7 +568,13 @@ export default function CommNearbySection() {
               <motion.div key={item.item_id}
                 initial={{ opacity: 0, x: -12 }} animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: (filteredUsers.length + idx) * 0.03 }}
-                className="flex items-center gap-3 px-4 py-3.5 hover:bg-[hsl(var(--hud-surface)/0.3)] transition-colors">
+                onClick={() => {
+                  haptic("light");
+                  if (item.item_type === "concierge") navigate(`/explore`);
+                  else if (item.item_type === "real_estate") navigate(`/explore`);
+                  else navigate(`/explore`);
+                }}
+                className="flex items-center gap-3 px-4 py-3.5 hover:bg-[hsl(var(--hud-surface)/0.3)] active:bg-[hsl(var(--hud-surface)/0.5)] transition-colors cursor-pointer">
                 <div className="relative shrink-0">
                   {item.photo_url ? (
                     <div className="w-12 h-12 rounded-xl bg-cover bg-center"
@@ -605,11 +612,11 @@ export default function CommNearbySection() {
                     {item.price > 0 ? `${item.price.toLocaleString()} ${item.currency}` : "Free"}
                   </span>
                   <div className="flex items-center gap-1">
-                    <button onClick={() => handleContact(item.provider_name || item.title)}
+                    <button onClick={(e) => { e.stopPropagation(); handleContact(item.provider_name || item.title); }}
                       className="w-7 h-7 rounded-full flex items-center justify-center" style={{ background: "hsl(var(--hud-cyan) / 0.1)" }}>
                       <MessageCircle className="h-3.5 w-3.5" style={{ color: "hsl(var(--hud-cyan))" }} />
                     </button>
-                    <button onClick={() => { haptic("medium"); navigate("/dashboard/communication?section=calls"); }}
+                    <button onClick={(e) => { e.stopPropagation(); haptic("medium"); navigate("/dashboard/communication?section=calls"); }}
                       className="w-7 h-7 rounded-full flex items-center justify-center" style={{ background: "hsl(var(--hud-success) / 0.1)" }}>
                       <Phone className="h-3.5 w-3.5" style={{ color: "hsl(var(--hud-success))" }} />
                     </button>
