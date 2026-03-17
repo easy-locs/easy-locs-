@@ -6,10 +6,11 @@
  */
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Camera, CameraOff, RefreshCcw, CheckCircle2, Info } from "lucide-react";
+import { ArrowLeft, Camera, CameraOff, RefreshCcw, CheckCircle2, Info, UserPlus, MessageCircle, Send, Store, ExternalLink, Heart } from "lucide-react";
 import { Html5Qrcode } from "html5-qrcode";
-import { decodeQr, resolveRoute, isExpired, isSecurityAction } from "@/lib/qr-engine";
+import { decodeQr, resolveRoute, isExpired, isSecurityAction, type UniversalQrPayload } from "@/lib/qr-engine";
 import { useUnifiedPayment } from "@/payments/UnifiedPaymentSystem";
+import { Button } from "@/components/ui/button";
 
 type ScanState = "idle" | "starting" | "scanning" | "paying" | "paid" | "stopped" | "error";
 type PermissionStateLike = "unknown" | "granted" | "denied" | "prompt" | "unsupported";
