@@ -4,7 +4,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { useNavigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import { useI18n } from "@/lib/i18n";
 import { Store, Plus } from "lucide-react";
 import { haptic } from "@/lib/haptics";
@@ -42,6 +42,10 @@ export default function MyShopsPage() {
     },
     enabled: !!user?.id,
   });
+
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
 
   return (
     <div className="flex flex-col min-h-0 flex-1 bg-background">
