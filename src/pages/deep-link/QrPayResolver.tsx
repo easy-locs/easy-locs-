@@ -6,7 +6,7 @@ import { useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUnifiedPayment } from "@/payments/UnifiedPaymentSystem";
-import { fetchPaymentRequest } from "@/payments/request-money";
+import { fetchPaymentRequest } from "@/payments/payment-request-hooks";
 import { decodeQr, resolveRoute } from "@/lib/qr-engine";
 import { Loader2 } from "lucide-react";
 

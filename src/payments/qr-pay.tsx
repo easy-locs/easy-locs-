@@ -6,7 +6,7 @@ import React, { useState, useCallback, useRef, useEffect } from "react";
 import QRCodeReact from "react-qr-code";
 import { Camera, X, QrCode, User, Store, Receipt } from "lucide-react";
 import { useUnifiedPayment } from "@/payments/UnifiedPaymentSystem";
-import { fetchPaymentRequest } from "@/payments/request-money";
+import { fetchPaymentRequest } from "@/payments/payment-request-hooks";
 import { useAuth } from "@/contexts/AuthContext";
 
 const BASE_URL = typeof window !== "undefined" ? window.location.origin : "";
