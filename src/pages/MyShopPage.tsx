@@ -211,6 +211,7 @@ export default function MyShopPage() {
             {tab === "orders" && (
               <div className="space-y-4">
                 <OrdersManager shopId={shop.id} />
+                <MerchantCRM shopId={shop.id} />
                 <ReturnsRefundEngine shopId={shop.id} mode="seller" />
                 <DeliveryDispatch shopId={shop.id} />
                 <WarehouseManager shopId={shop.id} />
