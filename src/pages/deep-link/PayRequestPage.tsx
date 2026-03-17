@@ -118,11 +118,7 @@ export default function PayRequestPage() {
                   <Send className="h-5 w-5" /> Pay {formatMoney(amount, currency)}
                 </UnifiedPayButton>
               ) : (
-                <Link to={`/login?redirect=/pay/request/${requestId}`}>
-                  <Button className="w-full h-12 text-base gap-2 font-semibold">
-                    <Send className="h-5 w-5" /> Sign in to pay
-                  </Button>
-                </Link>
+                <GuestCheckoutButton requestId={data.id} amount={amount} currency={currency} />
               )}
             </>
           )}
