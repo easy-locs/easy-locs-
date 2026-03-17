@@ -16,6 +16,7 @@ export default function QrScannerPage() {
   const navigate = useNavigate();
   const { openPayment } = useUnifiedPayment();
   const scannerRef = useRef<Html5Qrcode | null>(null);
+  const handledRef = useRef(false);
   const regionId = "qr-reader-region";
 
   const [state, setState] = useState<ScanState>("idle");
@@ -23,18 +24,26 @@ export default function QrScannerPage() {
   const [lastText, setLastText] = useState("");
   const [payResult, setPayResult] = useState<PaymentResult | null>(null);
 
+  // Use refs for callbacks to avoid re-creating the effect
+  const navigateRef = useRef(navigate);
+  const openPaymentRef = useRef(openPayment);
+  navigateRef.current = navigate;
+  openPaymentRef.current = openPayment;
+
   const handleQrResult = useCallback(async (raw: string) => {
+    if (handledRef.current) return;
+    handledRef.current = true;
+
     const payload = decodeQrPayload(raw);
 
     if (payload) {
-      // Direct payment types → open unified payment modal immediately
       if (payload.type === "user_pay") {
         setState("paying");
-        const result = await openPayment({
+        const result = await openPaymentRef.current({
           amount: payload.amount || 0,
           currency: payload.currency || "AED",
           title: "QR Payment",
-          subtitle: `Scanned payment`,
+          subtitle: "Scanned payment",
           recipientId: payload.userId,
           contextType: "generic",
           contextId: payload.userId,
@@ -48,11 +57,11 @@ export default function QrScannerPage() {
 
       if (payload.type === "shop_pay") {
         setState("paying");
-        const result = await openPayment({
+        const result = await openPaymentRef.current({
           amount: payload.amount || 0,
           currency: payload.currency || "AED",
           title: "Shop Payment",
-          subtitle: `QR shop payment`,
+          subtitle: "QR shop payment",
           recipientId: undefined,
           contextType: "shop",
           contextId: payload.shopSlug,
@@ -64,17 +73,16 @@ export default function QrScannerPage() {
         return;
       }
 
-      // Navigation types → redirect
       if (payload.type === "payment_request") {
-        navigate(`/pay/request/${payload.requestId}`, { replace: true });
+        navigateRef.current(`/pay/request/${payload.requestId}`, { replace: true });
         return;
       }
       if (payload.type === "profile") {
-        navigate(`/u/${payload.userId}`, { replace: true });
+        navigateRef.current(`/u/${payload.userId}`, { replace: true });
         return;
       }
       if (payload.type === "shop") {
-        navigate(`/s/${payload.shopSlug}`, { replace: true });
+        navigateRef.current(`/s/${payload.shopSlug}`, { replace: true });
         return;
       }
     }
@@ -84,22 +92,34 @@ export default function QrScannerPage() {
       try {
         const url = new URL(raw);
         const internal = `${url.pathname}${url.search}${url.hash}`;
-        navigate(internal, { replace: true });
+        navigateRef.current(internal, { replace: true });
         return;
       } catch {}
     }
 
     setState("error");
     setError("Unsupported QR format");
-  }, [navigate, openPayment]);
+  }, []);
 
   useEffect(() => {
     let mounted = true;
+    handledRef.current = false;
 
     async function startScanner() {
       try {
         setState("starting");
         setError("");
+
+        // Small delay to ensure DOM element is mounted
+        await new Promise(r => setTimeout(r, 300));
+        if (!mounted) return;
+
+        const el = document.getElementById(regionId);
+        if (!el) {
+          setState("error");
+          setError("Scanner container not found");
+          return;
+        }
 
         const scanner = new Html5Qrcode(regionId);
         scannerRef.current = scanner;
@@ -111,16 +131,11 @@ export default function QrScannerPage() {
             qrbox: { width: 240, height: 240 },
             aspectRatio: 1.0,
           },
-          async (decodedText) => {
-            if (!mounted) return;
-
+          (decodedText) => {
+            if (!mounted || handledRef.current) return;
             setLastText(decodedText);
             setState("success");
-
-            try {
-              await scanner.stop();
-            } catch {}
-
+            try { scanner.stop(); } catch {}
             handleQrResult(decodedText);
           },
           () => {}
@@ -140,14 +155,12 @@ export default function QrScannerPage() {
       mounted = false;
       const scanner = scannerRef.current;
       if (scanner) {
-        scanner.stop().then(() => {
-          try { scanner.clear(); } catch {}
-        }).catch(() => {
-          try { scanner.clear(); } catch {}
-        });
+        scanner.stop().catch(() => {});
+        try { scanner.clear(); } catch {}
+        scannerRef.current = null;
       }
     };
-  }, [handleQrResult]);
+  }, []); // stable — no deps
 
   return (
     <div className="fixed inset-0 z-[200] flex flex-col bg-background">
