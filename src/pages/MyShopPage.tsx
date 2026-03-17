@@ -123,7 +123,7 @@ export default function MyShopPage() {
   if (!shop) return (
     <DashboardLayout>
       <div className="max-w-2xl mx-auto px-4 py-8">
-        <ShopCreator />
+        <SmartShopBuilder />
       </div>
     </DashboardLayout>
   );
