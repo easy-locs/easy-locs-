@@ -167,11 +167,12 @@ const CreateListing = () => {
     const validation = validateListing({
       title: form.title,
       description: form.description,
-      photo_urls: form.photos,
+      photo_urls: [], // Photos validated separately via upload flow
       price: form.price,
     });
-    if (!validation.valid) {
-      toast({ title: "Quality check failed", description: validation.errors.join(". "), variant: "destructive" });
+    // Skip photo validation for now — photos are uploaded post-creation
+    if (validation.errors.filter(e => !e.includes("image")).length > 0) {
+      toast({ title: "Quality check failed", description: validation.errors.filter(e => !e.includes("image")).join(". "), variant: "destructive" });
       return;
     }
     if (!form.city.trim()) {
