@@ -1,11 +1,11 @@
 /**
- * WalletHub — Full-screen Orbit Wallet experience
- * Uses usePlatformCurrency for consistent currency display.
+ * WalletHub — Super-app wallet with direct Pay / Receive / Request flows.
+ * No intermediate Orbit-chat screen for main payment actions.
  */
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  ScanLine, Shield, ChevronRight, MessageCircle, ArrowLeft,
+  Shield, ChevronRight, ArrowLeft,
   Building2, Link2, ExternalLink,
 } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -15,16 +15,15 @@ import { useWallet } from "@/hooks/useWallet";
 import { formatLocs } from "@/lib/orbit-payments";
 import { usePlatformCurrency } from "@/hooks/usePlatformCurrency";
 import { useI18n } from "@/lib/i18n";
-import OrbitSmartPayment from "@/components/orbit/payments/OrbitSmartPayment";
-import OrbitPaymentRequest from "@/components/orbit/payments/OrbitPaymentRequest";
-import OrbitQRCode from "@/components/orbit/payments/OrbitQRCode";
 import OrbitTransactionHistory from "@/components/orbit/payments/OrbitTransactionHistory";
-import OrbitWalletPanel from "@/components/orbit/payments/OrbitWalletPanel";
 import WalletBalanceCard from "@/components/wallet/WalletBalanceCard";
 import WalletSecurityPanel from "@/components/wallet/WalletSecurityPanel";
 import WalletActionGrid from "@/components/wallet/WalletActionGrid";
+import PayActionSheet from "@/components/wallet/PayActionSheet";
+import ReceiveQrPanel from "@/components/wallet/ReceiveQrPanel";
+import RequestPaymentPanel from "@/components/wallet/RequestPaymentPanel";
 
-export type WalletView = "home" | "send" | "receive" | "scan" | "my_qr" | "history" | "buy" | "currency" | "settings";
+export type WalletView = "home" | "pay" | "receive" | "request" | "scan" | "history" | "settings";
 
 export default function WalletHub() {
   const [searchParams] = useSearchParams();
@@ -35,10 +34,6 @@ export default function WalletHub() {
   const { t } = useI18n();
   const navigate = useNavigate();
 
-  const recipientUserId = searchParams.get("recipientId") || searchParams.get("recipientUserId") || "";
-  const recipientName = searchParams.get("recipientName") || "Recipient";
-
-  // --- Display currency toggle ---
   const [showLocs, setShowLocs] = useState(true);
 
   const displayBalance = showLocs
@@ -59,80 +54,27 @@ export default function WalletHub() {
 
   const VIEW_LABELS: Record<WalletView, string> = {
     home: t("orbit.wallet") || "Wallet",
-    send: t("orbit.send") || "Send",
+    pay: t("orbit.pay") || "Pay",
     receive: t("orbit.receive") || "Receive",
+    request: t("orbit.request") || "Request",
     scan: t("orbit.scan_qr") || "Scan QR",
-    my_qr: t("orbit.my_qr") || "My QR",
     history: t("orbit.history") || "History",
-    buy: t("orbit.buy_locs") || "Buy LOCS",
-    currency: t("orbit.currency") || "Currency",
     settings: t("orbit.settings_label") || "Settings",
   };
 
-  const renderRecipientHint = (mode: "send" | "receive") => (
-    <div className="rounded-2xl border border-border bg-card p-5 text-center space-y-3">
-      <MessageCircle className="w-10 h-10 mx-auto text-muted-foreground/40" />
-      <p className="text-sm font-medium text-foreground">
-        {mode === "send"
-          ? (t("orbit.select_recipient_send") || "Select a recipient from Orbit chat to send payment.")
-          : (t("orbit.select_recipient_receive") || "Open a conversation to request payment.")}
-      </p>
-      <div className="flex gap-2 justify-center">
-        <Button size="sm" onClick={() => navigate("/dashboard/communication")}>
-          {t("orbit.open_orbit") || "Open Orbit"}
-        </Button>
-        <Button size="sm" variant="outline" onClick={() => setView("my_qr")}>
-          {t("orbit.use_qr") || "Use My QR"}
-        </Button>
-      </div>
-    </div>
-  );
-
   const renderSubView = () => {
     switch (view) {
-      case "send":
-        if (!recipientUserId) return renderRecipientHint("send");
-        return (
-          <OrbitSmartPayment
-            recipientUserId={recipientUserId}
-            recipientName={recipientName}
-            onSuccess={() => setView("home")}
-            onCancel={() => setView("home")}
-          />
-        );
+      case "pay":
+        return <PayActionSheet onClose={() => setView("home")} />;
       case "receive":
-        if (!recipientUserId) return renderRecipientHint("receive");
-        return (
-          <OrbitPaymentRequest
-            recipientUserId={recipientUserId}
-            recipientName={recipientName}
-            onSuccess={() => setView("home")}
-            onCancel={() => setView("home")}
-          />
-        );
+        return <ReceiveQrPanel />;
+      case "request":
+        return <RequestPaymentPanel />;
       case "scan":
         navigate("/pay/scan");
         return null;
-      case "my_qr":
-        return <OrbitQRCode type="static" />;
       case "history":
         return <OrbitTransactionHistory />;
-      case "buy":
-        return <OrbitWalletPanel />;
-      case "currency":
-        return (
-          <div className="rounded-2xl border border-border bg-card p-5 space-y-3">
-            <p className="text-sm font-semibold text-foreground">
-              {t("orbit.preferred_currency") || "Preferred currency"}
-            </p>
-            <p className="text-xs text-muted-foreground">
-              {t("orbit.current_detection") || "Current detection"}: {symbol} {code}
-            </p>
-            <Button size="sm" variant="outline" onClick={() => navigate("/dashboard/settings?section=locale")}>
-              {t("orbit.open_currency_settings") || "Open currency settings"}
-            </Button>
-          </div>
-        );
       case "settings":
         return <WalletSecurityPanel />;
       default:
@@ -183,10 +125,10 @@ export default function WalletHub() {
                 onRefresh={loadWallet}
               />
 
-              {/* Action Grid */}
+              {/* Action Grid — 3 primary + secondary row */}
               <WalletActionGrid onAction={setView} />
 
-              {/* Recent Transactions Preview */}
+              {/* Recent Transactions */}
               <div>
                 <div className="flex items-center justify-between mb-3 px-1">
                   <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
@@ -204,7 +146,7 @@ export default function WalletHub() {
                 </div>
               </div>
 
-              {/* Bank Connection Section */}
+              {/* Bank Connection */}
               <div>
                 <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-3 px-1">
                   {t("orbit.bank_connection") || "Bank Connection"}
@@ -219,14 +161,14 @@ export default function WalletHub() {
                         {t("orbit.connect_bank") || "Connect your bank"}
                       </p>
                       <p className="text-[11px] text-muted-foreground">
-                        {t("orbit.connect_bank_desc") || "Link your bank account for instant pay-by-bank transfers"}
+                        {t("orbit.connect_bank_desc") || "Link your bank account for instant transfers"}
                       </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-muted/50">
                     <Link2 className="w-3.5 h-3.5 text-muted-foreground" />
                     <span className="text-[10px] text-muted-foreground flex-1">
-                      {t("orbit.bank_routed") || "All connections routed securely via Easy-Locs backend"}
+                      {t("orbit.bank_routed") || "All connections routed securely via backend"}
                     </span>
                     <Shield className="w-3 h-3 text-accent/60" />
                   </div>
@@ -245,7 +187,7 @@ export default function WalletHub() {
               {/* Security Footer */}
               <div className="flex items-center justify-center gap-2 text-[10px] text-muted-foreground py-2">
                 <Shield className="w-3 h-3" />
-                <span>PIN Protected • Server-side validation • Atomic transfers • HMAC integrity</span>
+                <span>PIN Protected • Server-side validation • Atomic transfers</span>
               </div>
             </motion.div>
           )}
