@@ -9,9 +9,9 @@ import { useOrbitEngine } from "@/stores/orbit-engine";
 import { useI18n } from "@/lib/i18n";
 
 const NAV_ITEMS = [
+  { icon: Compass, labelKey: "nav.discover", path: "/discover", matchPrefixes: ["/discover", "/search", "/explore", "/listing/"] },
   { icon: MessageCircle, labelKey: "nav.chats", path: "/dashboard/communication", matchPrefixes: ["/dashboard/communication"] },
-  { icon: Compass, labelKey: "nav.discover", path: "/discover", matchPrefixes: ["/discover", "/search", "/explore", "/shops"] },
-  { icon: LayoutGrid, labelKey: "nav.services", path: "/app/orbit", matchPrefixes: ["/app", "/dashboard/wallet", "/dashboard/my-shop", "/dashboard/seller", "/pos", "/my-orders", "/property-hub"] },
+  { icon: LayoutGrid, labelKey: "nav.services", path: "/app/orbit", matchPrefixes: ["/app", "/dashboard/wallet", "/pos", "/my-orders", "/shops", "/business", "/dashboard/my-shop", "/dashboard/seller", "/dashboard/driver", "/property-hub"] },
   { icon: User, labelKey: "nav.me", path: "/dashboard/settings", matchPrefixes: ["/dashboard/settings"] },
 ] as const;
 
