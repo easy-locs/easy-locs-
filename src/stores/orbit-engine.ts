@@ -1,9 +1,17 @@
 /**
- * Orbit Engine — Centralized state aggregator for all platform modules.
- * Phase 3: connected to Platform Bus for reactive cross-module sync.
+ * Orbit Engine V2 — Granular state aggregator with selective refresh.
+ * 
+ * V2 improvements over V1:
+ * - Selective module refresh (only re-fetch affected counters)
+ * - Per-module staleness tracking
+ * - Stale-while-revalidate pattern
+ * - Computed urgency score for priority sorting
+ * - Smarter debounce per module group
  */
 import { create } from "zustand";
 import { supabase } from "@/integrations/supabase/client";
+
+// ─── Types ───────────────────────────────────────────────────────────────────
 
 export interface OrbitAlert {
   id: string;
@@ -14,6 +22,21 @@ export interface OrbitAlert {
   message: string;
   link?: string;
   timestamp: number;
+}
+
+/** Refresh module groups — allows targeted counter updates */
+export type OrbitModule =
+  | "communication"  // unreadMessages, missedCalls, activeContacts
+  | "business"       // activeListings, pendingBookings, newLeads, pendingOrders
+  | "notifications"  // pendingNotifications
+  | "wallet"         // walletBalance
+  | "all";           // everything
+
+interface ModuleFreshness {
+  communication: number | null;
+  business: number | null;
+  notifications: number | null;
+  wallet: number | null;
 }
 
 export interface OrbitModuleState {
@@ -39,17 +62,29 @@ export interface OrbitModuleState {
   encryptionStatus: "active" | "degraded" | "inactive";
   lastSyncAt: number | null;
 
+  // V2: Per-module freshness
+  moduleFreshness: ModuleFreshness;
+
+  // V2: Computed urgency (action items needing attention)
+  urgencyScore: number;
+
   // Track last refresh params for platform-bus triggered refreshes
   lastRefreshUserId: string | null;
   lastRefreshOrgId: string | null;
 
   alerts: OrbitAlert[];
 
+  // V2: Selective module refresh
+  refreshModule: (module: OrbitModule, userId: string, orgId?: string) => Promise<void>;
+  // Legacy full refresh (calls refreshModule("all"))
   refresh: (userId: string, orgId?: string) => Promise<void>;
+
   setNetworkStatus: (s: "online" | "offline" | "degraded") => void;
   dismissAlert: (id: string) => void;
   addAlert: (alert: Omit<OrbitAlert, "id" | "timestamp">) => void;
 }
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
 
 async function safeCount(table: string, build: (q: any) => any): Promise<number> {
   try {
@@ -63,8 +98,152 @@ async function safeCount(table: string, build: (q: any) => any): Promise<number>
   }
 }
 
-/** Debounce refresh to prevent rapid-fire from platform bus */
-let refreshTimer: ReturnType<typeof setTimeout> | null = null;
+function computeUrgency(state: {
+  pendingBookings: number;
+  pendingOrders: number;
+  newLeads: number;
+  unreadMessages: number;
+  missedCalls: number;
+  pendingNotifications: number;
+}): number {
+  return (
+    state.pendingBookings * 10 +
+    state.pendingOrders * 8 +
+    state.newLeads * 5 +
+    state.missedCalls * 4 +
+    state.unreadMessages * 2 +
+    Math.min(state.pendingNotifications, 10) * 1
+  );
+}
+
+/** Module-specific debounce timers */
+const moduleTimers: Partial<Record<OrbitModule, ReturnType<typeof setTimeout>>> = {};
+
+/** Staleness threshold: skip refresh if module was refreshed < N ms ago */
+const STALE_THRESHOLD_MS = 5_000;
+
+// ─── Refresh functions per module ────────────────────────────────────────────
+
+async function refreshCommunication(userId: string, orgId?: string) {
+  const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString();
+
+  const [unreadMessages, missedCalls, activeContacts] = await Promise.all([
+    safeCount("messages", (q) => {
+      let query = q.eq("read", false).neq("sender_id", userId);
+      if (orgId) query = query.eq("org_id", orgId);
+      return query;
+    }),
+    safeCount("call_logs", (q) => {
+      let query = q.eq("status", "missed").gt("created_at", weekAgo);
+      if (orgId) query = query.eq("callee_org_id", orgId);
+      return query;
+    }),
+    safeCount("contacts", (q) => q.eq("owner_id", userId)),
+  ]);
+
+  return { unreadMessages, missedCalls, activeContacts };
+}
+
+async function refreshBusiness(orgId?: string) {
+  if (!orgId) return { activeListings: 0, pendingBookings: 0, newLeads: 0, pendingOrders: 0 };
+  const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString();
+
+  const [activeListings, pendingBookings, newLeads, pendingOrders] = await Promise.all([
+    safeCount("public_listings", (q) => q.eq("org_id", orgId).eq("active", true)),
+    safeCount("booking_requests", (q) => q.eq("org_id", orgId).eq("status", "pending")),
+    safeCount("deal_rooms", (q) => q.eq("org_id", orgId).eq("status", "inquiry").gt("created_at", weekAgo)),
+    safeCount("concierge_orders", (q) => q.eq("org_id", orgId).eq("status", "pending")),
+  ]);
+
+  return { activeListings, pendingBookings, newLeads, pendingOrders };
+}
+
+async function refreshNotifications(userId: string) {
+  const pendingNotifications = await safeCount("notifications", (q) =>
+    q.eq("user_id", userId).eq("read", false)
+  );
+  return { pendingNotifications };
+}
+
+async function refreshWallet(userId: string) {
+  try {
+    const { data } = await supabase
+      .from("wallet_balances")
+      .select("balance")
+      .eq("user_id", userId)
+      .eq("currency", "LOCS")
+      .maybeSingle();
+    return { walletBalance: (data as any)?.balance ?? 0 };
+  } catch {
+    return { walletBalance: 0 };
+  }
+}
+
+// ─── Alert generation ────────────────────────────────────────────────────────
+
+function generateAlerts(state: {
+  pendingBookings: number;
+  newLeads: number;
+  pendingOrders: number;
+  unreadMessages: number;
+  missedCalls: number;
+  pendingNotifications: number;
+}): OrbitAlert[] {
+  const alerts: OrbitAlert[] = [];
+  const now = Date.now();
+
+  if (state.pendingBookings > 0)
+    alerts.push({
+      id: "pending-bookings", type: "action", priority: 1, icon: "📩",
+      title: "Réservations en attente",
+      message: `${state.pendingBookings} réservation${state.pendingBookings > 1 ? "s" : ""} à confirmer`,
+      link: "/dashboard/seasonal", timestamp: now,
+    });
+
+  if (state.newLeads > 0)
+    alerts.push({
+      id: "new-leads", type: "action", priority: 2, icon: "🔥",
+      title: "Nouveaux prospects",
+      message: `${state.newLeads} demande${state.newLeads > 1 ? "s" : ""} cette semaine`,
+      link: "/dashboard/communication", timestamp: now,
+    });
+
+  if (state.pendingOrders > 0)
+    alerts.push({
+      id: "pending-orders", type: "action", priority: 3, icon: "🎯",
+      title: "Commandes conciergerie",
+      message: `${state.pendingOrders} commande${state.pendingOrders > 1 ? "s" : ""} en attente`,
+      link: "/dashboard/activities", timestamp: now,
+    });
+
+  if (state.unreadMessages > 0)
+    alerts.push({
+      id: "unread-msg", type: "info", priority: 4, icon: "💬",
+      title: "Messages non lus",
+      message: `${state.unreadMessages} message${state.unreadMessages > 1 ? "s" : ""} non lu${state.unreadMessages > 1 ? "s" : ""}`,
+      link: "/dashboard/communication", timestamp: now,
+    });
+
+  if (state.missedCalls > 0)
+    alerts.push({
+      id: "missed-calls", type: "warning", priority: 5, icon: "📞",
+      title: "Appels manqués",
+      message: `${state.missedCalls} appel${state.missedCalls > 1 ? "s" : ""} manqué${state.missedCalls > 1 ? "s" : ""}`,
+      link: "/dashboard/communication", timestamp: now,
+    });
+
+  if (state.pendingNotifications > 5)
+    alerts.push({
+      id: "notif-pile", type: "info", priority: 6, icon: "🔔",
+      title: "Notifications",
+      message: `${state.pendingNotifications} notifications en attente`,
+      link: "/dashboard/settings", timestamp: now,
+    });
+
+  return alerts.sort((a, b) => a.priority - b.priority);
+}
+
+// ─── Store ───────────────────────────────────────────────────────────────────
 
 export const useOrbitEngine = create<OrbitModuleState>((set, get) => ({
   unreadMessages: 0,
@@ -82,6 +261,15 @@ export const useOrbitEngine = create<OrbitModuleState>((set, get) => ({
   syncStatus: "synced",
   encryptionStatus: "active",
   lastSyncAt: null,
+
+  moduleFreshness: {
+    communication: null,
+    business: null,
+    notifications: null,
+    wallet: null,
+  },
+
+  urgencyScore: 0,
 
   lastRefreshUserId: null,
   lastRefreshOrgId: null,
@@ -101,114 +289,79 @@ export const useOrbitEngine = create<OrbitModuleState>((set, get) => ({
       ].slice(-20),
     })),
 
-  refresh: async (userId: string, orgId?: string) => {
-    // Store params for platform-bus triggered re-refreshes
+  refreshModule: async (module: OrbitModule, userId: string, orgId?: string) => {
     set({ lastRefreshUserId: userId, lastRefreshOrgId: orgId ?? null });
 
-    // Debounce: if called rapidly, only execute the last one
-    if (refreshTimer) clearTimeout(refreshTimer);
+    const now = Date.now();
+    const freshness = get().moduleFreshness;
+
+    // Stale-while-revalidate: skip if recently refreshed (except "all")
+    if (module !== "all") {
+      const moduleKey = module as keyof ModuleFreshness;
+      const lastFresh = freshness[moduleKey];
+      if (lastFresh && now - lastFresh < STALE_THRESHOLD_MS) return;
+    }
+
+    // Debounce per module
+    if (moduleTimers[module]) clearTimeout(moduleTimers[module]!);
 
     return new Promise<void>((resolve) => {
-      refreshTimer = setTimeout(async () => {
+      moduleTimers[module] = setTimeout(async () => {
         set({ syncStatus: "syncing" });
-        const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString();
 
-        const [
-          unreadMessages, missedCalls, pendingNotifications,
-          activeListings, pendingBookings, newLeads,
-          pendingOrders, activeContacts, walletBalance,
-        ] = await Promise.all([
-          safeCount("messages", (q) => {
-            let query = q.eq("read", false).neq("sender_id", userId);
-            if (orgId) query = query.eq("org_id", orgId);
-            return query;
-          }),
-          safeCount("call_logs", (q) => {
-            let query = q.eq("status", "missed").gt("created_at", weekAgo);
-            if (orgId) query = query.eq("callee_org_id", orgId);
-            return query;
-          }),
-          safeCount("notifications", (q) => q.eq("user_id", userId).eq("read", false)),
-          orgId ? safeCount("public_listings", (q) => q.eq("org_id", orgId).eq("active", true)) : 0,
-          orgId ? safeCount("booking_requests", (q) => q.eq("org_id", orgId).eq("status", "pending")) : 0,
-          orgId ? safeCount("deal_rooms", (q) => q.eq("org_id", orgId).eq("status", "inquiry").gt("created_at", weekAgo)) : 0,
-          orgId ? safeCount("concierge_orders", (q) => q.eq("org_id", orgId).eq("status", "pending")) : 0,
-          safeCount("contacts", (q) => q.eq("owner_id", userId)),
-          // Wallet balance
-          (async () => {
-            try {
-              const { data } = await supabase
-                .from("wallet_balances")
-                .select("balance")
-                .eq("user_id", userId)
-                .eq("currency", "LOCS")
-                .maybeSingle();
-              return (data as any)?.balance ?? 0;
-            } catch { return 0; }
-          })(),
-        ]);
+        try {
+          const updates: Partial<OrbitModuleState> = {};
+          const freshnessUpdates: Partial<ModuleFreshness> = {};
 
-        const alerts: OrbitAlert[] = [];
+          if (module === "communication" || module === "all") {
+            const comm = await refreshCommunication(userId, orgId);
+            Object.assign(updates, comm);
+            freshnessUpdates.communication = Date.now();
+          }
 
-        if (pendingBookings > 0)
-          alerts.push({
-            id: "pending-bookings", type: "action", priority: 1, icon: "📩",
-            title: "Réservations en attente",
-            message: `${pendingBookings} réservation${pendingBookings > 1 ? "s" : ""} à confirmer`,
-            link: "/dashboard/seasonal", timestamp: Date.now(),
+          if (module === "business" || module === "all") {
+            const biz = await refreshBusiness(orgId);
+            Object.assign(updates, biz);
+            freshnessUpdates.business = Date.now();
+          }
+
+          if (module === "notifications" || module === "all") {
+            const notif = await refreshNotifications(userId);
+            Object.assign(updates, notif);
+            freshnessUpdates.notifications = Date.now();
+          }
+
+          if (module === "wallet" || module === "all") {
+            const wal = await refreshWallet(userId);
+            Object.assign(updates, wal);
+            freshnessUpdates.wallet = Date.now();
+          }
+
+          // Merge state and compute derived values
+          const merged = { ...get(), ...updates };
+          const urgencyScore = computeUrgency(merged);
+          const alerts = generateAlerts(merged);
+
+          set({
+            ...updates,
+            urgencyScore,
+            alerts,
+            syncStatus: "synced",
+            lastSyncAt: Date.now(),
+            moduleFreshness: { ...get().moduleFreshness, ...freshnessUpdates },
           });
-
-        if (newLeads > 0)
-          alerts.push({
-            id: "new-leads", type: "action", priority: 2, icon: "🔥",
-            title: "Nouveaux prospects",
-            message: `${newLeads} demande${newLeads > 1 ? "s" : ""} cette semaine`,
-            link: "/dashboard/communication", timestamp: Date.now(),
-          });
-
-        if (pendingOrders > 0)
-          alerts.push({
-            id: "pending-orders", type: "action", priority: 3, icon: "🎯",
-            title: "Commandes conciergerie",
-            message: `${pendingOrders} commande${pendingOrders > 1 ? "s" : ""} en attente`,
-            link: "/dashboard/activities", timestamp: Date.now(),
-          });
-
-        if (unreadMessages > 0)
-          alerts.push({
-            id: "unread-msg", type: "info", priority: 4, icon: "💬",
-            title: "Messages non lus",
-            message: `${unreadMessages} message${unreadMessages > 1 ? "s" : ""} non lu${unreadMessages > 1 ? "s" : ""}`,
-            link: "/dashboard/communication", timestamp: Date.now(),
-          });
-
-        if (missedCalls > 0)
-          alerts.push({
-            id: "missed-calls", type: "warning", priority: 5, icon: "📞",
-            title: "Appels manqués",
-            message: `${missedCalls} appel${missedCalls > 1 ? "s" : ""} manqué${missedCalls > 1 ? "s" : ""}`,
-            link: "/dashboard/communication", timestamp: Date.now(),
-          });
-
-        if (pendingNotifications > 5)
-          alerts.push({
-            id: "notif-pile", type: "info", priority: 6, icon: "🔔",
-            title: "Notifications",
-            message: `${pendingNotifications} notifications en attente`,
-            link: "/dashboard/settings", timestamp: Date.now(),
-          });
-
-        alerts.sort((a, b) => a.priority - b.priority);
-
-        set({
-          unreadMessages, missedCalls, activeContacts,
-          pendingNotifications, activeListings, pendingBookings,
-          newLeads, pendingOrders, walletBalance,
-          syncStatus: "synced", lastSyncAt: Date.now(), alerts,
-        });
+        } catch (e) {
+          console.warn("[OrbitEngine V2] refresh error:", e);
+          set({ syncStatus: "error" });
+        }
 
         resolve();
-      }, 300);
+      }, module === "all" ? 300 : 150); // Faster for targeted, slower for full
     });
+  },
+
+  // Legacy API — delegates to refreshModule("all")
+  refresh: async (userId: string, orgId?: string) => {
+    return get().refreshModule("all", userId, orgId);
   },
 }));
