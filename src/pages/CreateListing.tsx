@@ -163,24 +163,21 @@ const CreateListing = () => {
   const showService = form.listing_type === "service" || form.category === "services" || form.category === "freelance" || form.category === "tourism";
 
   const handleSave = async () => {
-    // V4 Quality Gate: Validate listing before publish
+    // V4 Quality Gate: Validate listing before publish — BLOCKING
     const validation = validateListing({
       title: form.title,
       description: form.description,
-      photo_urls: [], // Photos validated separately via upload flow
+      photo_urls: [], // Photos added post-creation — skip image check here
       price: form.price,
     });
-    // Skip photo validation for now — photos are uploaded post-creation
-    if (validation.errors.filter(e => !e.includes("image")).length > 0) {
-      toast({ title: "Quality check failed", description: validation.errors.filter(e => !e.includes("image")).join(". "), variant: "destructive" });
+    // Block on title, description, price errors (images validated post-upload)
+    const blockingErrors = validation.errors.filter(e => !e.includes("image"));
+    if (blockingErrors.length > 0) {
+      toast({ title: "Quality check failed", description: blockingErrors.join(". "), variant: "destructive" });
       return;
     }
     if (!form.city.trim()) {
       toast({ title: "Error", description: "City is required", variant: "destructive" });
-      return;
-    }
-    if (form.price <= 0) {
-      toast({ title: "Error", description: "Price must be greater than 0", variant: "destructive" });
       return;
     }
     if (!orgId || !user) {
