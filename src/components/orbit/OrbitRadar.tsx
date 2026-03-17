@@ -338,6 +338,12 @@ export default function OrbitRadar() {
               radius={radius}
               entities={entities.filter(e => !e.meta?.no_geo)}
               onSelect={handleSelect}
+              showHeatmap={showHeatmap}
+              heatmapPoints={entities.filter(e => e.lat && e.lng && (e.category === "delivery" || e.category === "service")).map(e => ({
+                lat: e.lat!,
+                lng: e.lng!,
+                intensity: e.category === "delivery" ? 0.8 : 0.5,
+              }))}
             />
           </Suspense>
 
