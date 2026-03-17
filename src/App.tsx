@@ -197,6 +197,9 @@ const queryClient = new QueryClient({
   },
 });
 
+// Expose query client globally for platform bus reactions
+(window as any).__REACT_QUERY_CLIENT__ = queryClient;
+
 const PageLoader = () => (
   <div className="min-h-screen bg-background flex items-center justify-center">
     <div className="fixed top-0 left-0 right-0 z-[9999] h-0.5 bg-primary/20 overflow-hidden">
