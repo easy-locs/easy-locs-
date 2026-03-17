@@ -726,7 +726,7 @@ export default function OrbitAccountSection() {
 
         <Separator className="my-2 mx-3" />
 
-        <MenuItem icon={Store} label={t("orbit.you.business_tools") || "Business Tools"} desc={t("orbit.you.marketplace_services") || "Marketplace, services, catalog"} onClick={() => navigate("/dashboard/marketplace")} color="hsl(var(--primary))" />
+        <MenuItem icon={Store} label={t("orbit.you.business_tools") || "Business Tools"} desc={t("orbit.you.marketplace_services") || "Marketplace, services, catalog"} onClick={() => navigate("/dashboard/my-shop")} color="hsl(var(--primary))" />
         <MenuItem icon={Star} label={t("orbit.you.starred") || "Starred"} desc={t("orbit.you.starred_messages") || "Starred messages and contacts"} onClick={() => toast.info("Coming soon")} color="hsl(var(--accent))" />
 
         <Separator className="my-2 mx-3" />

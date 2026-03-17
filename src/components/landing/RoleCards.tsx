@@ -56,7 +56,7 @@ const RoleCards = () => {
         { icon: CreditCard, label: t("landing.pillars.marketplace.f5") || "Online payments & invoicing" },
       ],
       cta: t("landing.pillars.marketplace.cta") || "Create Your Business",
-      to: user ? "/dashboard/marketplace" : "/marketplace-services",
+      to: user ? "/dashboard/my-shop" : "/marketplace-services",
       color: "success",
     },
   ];

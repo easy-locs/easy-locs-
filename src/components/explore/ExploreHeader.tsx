@@ -129,8 +129,8 @@ function DesktopUserMenu() {
             <Separator />
             <div className="py-1">
               <p className="px-4 py-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">My business</p>
-              <DropdownMenuItem className="px-4 py-2.5 cursor-pointer" onClick={() => navigate("/dashboard/marketplace")}>
-                <Store className="h-4 w-4 mr-3 text-muted-foreground" /> My listings
+              <DropdownMenuItem className="px-4 py-2.5 cursor-pointer" onClick={() => navigate("/dashboard/my-shop")}>
+                <Store className="h-4 w-4 mr-3 text-muted-foreground" /> My Shop
               </DropdownMenuItem>
               <DropdownMenuItem className="px-4 py-2.5 cursor-pointer" onClick={() => navigate("/dashboard/seasonal")}>
                 <CalendarCheck className="h-4 w-4 mr-3 text-muted-foreground" /> Bookings
@@ -281,7 +281,7 @@ function MobileUserSheet() {
             <>
               <Separator className="my-2" />
               <p className="px-5 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">My business</p>
-              <MobileNavItem icon={Store} label="My listings" onClick={() => go("/dashboard/marketplace")} />
+              <MobileNavItem icon={Store} label="My Shop" onClick={() => go("/dashboard/my-shop")} />
               <MobileNavItem icon={CalendarCheck} label="Bookings" onClick={() => go("/dashboard/seasonal")} />
               <MobileNavItem icon={Building2} label="Properties" onClick={() => go("/dashboard/rental")} />
               <MobileNavItem icon={FileText} label="Documents" onClick={() => go("/dashboard/documents")} />

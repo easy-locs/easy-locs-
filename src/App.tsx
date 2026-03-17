@@ -154,6 +154,7 @@ const ShopPage = safeLazy(() => import("./pages/ShopPage"), "ShopPage");
 const MyShopPage = safeLazy(() => import("./pages/MyShopPage"), "MyShopPage");
 const DiscoverPage = safeLazy(() => import("./pages/DiscoverPage"), "DiscoverPage");
 const OpsCenter = safeLazy(() => import("./pages/OpsCenter"), "OpsCenter");
+const ShopsPage = safeLazy(() => import("./pages/ShopsPage"), "ShopsPage");
 const MyOrdersPage = safeLazy(() => import("./pages/MyOrdersPage"), "MyOrdersPage");
 const ConciergeServicesPage = safeLazy(() => import("./pages/seo/ConciergeServicesPage"), "ConciergeServicesPage");
 const MarketplaceServicesPage = safeLazy(() => import("./pages/seo/MarketplaceServicesPage"), "MarketplaceServicesPage");
@@ -273,6 +274,7 @@ const App = () => (
               <Route path="/store/:storeSlug" element={<StorePage />} />
               <Route path="/s/:shopSlug" element={<ShopPage />} />
               <Route path="/discover" element={<DiscoverPage />} />
+              <Route path="/shops" element={<ShopsPage />} />
               <Route path="/search" element={<DiscoverPage />} />
               <Route path="/trending" element={<DiscoverPage />} />
               <Route path="/nearby" element={<DiscoverPage />} />

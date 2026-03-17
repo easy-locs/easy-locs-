@@ -22,10 +22,10 @@ import { supabase } from "@/integrations/supabase/client";
 
 const NAV_ITEMS = [
   { icon: Home, label: "Home", path: "/app/orbit", badge: null as string | null },
-  { icon: Search, label: "Search", path: "/explore", badge: null },
-  { icon: Store, label: "Shops", path: "/dashboard/marketplace", badge: null },
-  { icon: MessageCircle, label: "Orders", path: "/dashboard/operations", badge: null },
-  { icon: User, label: "Profile", path: "/dashboard/settings", badge: null },
+  { icon: Search, label: "Search", path: "/discover", badge: null },
+  { icon: Store, label: "Shops", path: "/shops", badge: null },
+  { icon: MessageCircle, label: "Orders", path: "/my-orders", badge: null },
+  { icon: User, label: "Me", path: "/dashboard/settings", badge: null },
 ] as const;
 
 function OrbitHeader() {
