@@ -335,9 +335,17 @@ export default function ShopPage() {
             </div>
           )}
 
+          {/* PASS133: Quick reorder for returning buyers */}
+          {user && (
+            <Suspense fallback={null}>
+              <div className="mt-4">
+                <ReorderEngine shopId={shop.id} />
+              </div>
+            </Suspense>
+          )}
+
           {/* Secondary sections — lazy loaded */}
           <Suspense fallback={<SectionLoader />}>
-            <div className="mt-6">
               <BundleManager shopId={shop.id} mode="display" onAddBundle={(bundleId: string, price: number) => cart.addItem(bundleId, price)} />
             </div>
             <div className="mt-6">
