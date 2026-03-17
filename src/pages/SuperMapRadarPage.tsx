@@ -632,9 +632,9 @@ export default function SuperMapRadarPage() {
           {/* Nearby list */}
           <div className="flex gap-2 overflow-x-auto no-scrollbar">
             {nearbyShops.slice(0, 5).map((shop) => (
-              <button
+              <div
                 key={shop.id}
-                className="shrink-0 flex items-center gap-2 px-3 py-2 rounded-xl bg-muted/60 border border-border min-w-[140px]"
+                className="shrink-0 min-w-[200px] cursor-pointer"
                 onClick={() => {
                   setSelectedShop(shop);
                   if (mapRef.current && shop.lng != null && shop.lat != null) {
@@ -647,14 +647,18 @@ export default function SuperMapRadarPage() {
                   }
                 }}
               >
-                <div className="flex-1 min-w-0 text-left">
-                  <p className="text-xs font-semibold text-foreground truncate">{shop.name || "Shop"}</p>
-                  <p className="text-[10px] text-muted-foreground">{shop.city || "Nearby"}</p>
-                </div>
-                <span className="text-[10px] font-bold text-primary shrink-0">
-                  {shop.distanceKm.toFixed(1)} km
-                </span>
-              </button>
+                <UniversalEntityCard
+                  entityType="shop"
+                  entityId={shop.id}
+                  slug={shop.slug}
+                  title={shop.name || "Shop"}
+                  subtitle={`${shop.distanceKm.toFixed(1)} km • ${shop.city || "Nearby"}`}
+                  recipientId={shop.user_id}
+                  recipientName={shop.name}
+                  compact
+                  metadata={{ source: "map_nearby" }}
+                />
+              </div>
             ))}
           </div>
         </div>
