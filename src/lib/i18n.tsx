@@ -7109,7 +7109,8 @@ export function I18nProvider({ children }: { children: ReactNode }) {
       console.warn(`[i18n] Missing key: "${key}" (locale: ${locale})`);
     }
     trackMissingKey(key, locale);
-    return vars ? interpolate(key, vars) : "";
+    // Return interpolated key as visible fallback (never empty string)
+    return vars ? interpolate(key, vars) : key;
   }, [locale]);
 
   return (
