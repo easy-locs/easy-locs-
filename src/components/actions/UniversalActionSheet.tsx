@@ -9,8 +9,8 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePlatformCurrency } from "@/hooks/usePlatformCurrency";
-import { createPaymentRequest } from "@/hooks/payment-request-hooks";
-import QRCode from "qrcode.react";
+import { createPaymentRequest } from "@/payments/payment-request-hooks";
+import { QRCodeSVG } from "qrcode.react";
 
 export type ActionSheetMode = "pay" | "receive" | "request";
 
