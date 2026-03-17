@@ -78,6 +78,7 @@ export default function OrbitSmartActions({ actions, loading }: Props) {
             <button
               key={action.id}
               onClick={() => navigate(action.link)}
+              aria-label={action.label}
               className="w-full flex items-center gap-3 px-4 py-3.5 transition-colors active:scale-[0.98]"
               style={{
                 background: style.bg,
