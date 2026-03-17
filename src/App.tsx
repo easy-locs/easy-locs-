@@ -298,7 +298,8 @@ const App = () => (
               <Route path="/pay/scan" element={<QrScannerPage />} />
               <Route path="/pay/qr" element={<QrPayResolver />} />
               <Route path="/pay/request/:requestId" element={<PayRequestPage />} />
-              <Route path="/qr/resolve" element={<QrResolvePage />} />
+               <Route path="/qr/resolve" element={<QrResolvePage />} />
+               <Route path="/pay/guest/success" element={<GuestPaymentSuccess />} />
               <Route path="/pay/:paymentId" element={<PayPage />} />
               <Route path="/discover" element={<DiscoverPage />} />
               <Route path="/shops" element={<ShopsPage />} />
