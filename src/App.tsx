@@ -291,6 +291,7 @@ const App = () => (
                <Route path="/vision" element={<PlatformVision />} />
                <Route path="/my-orders" element={<MyOrdersPage />} />
                <Route path="/pos" element={<POSPage />} />
+               <Route path="/property-hub" element={<PropertyManagementHub />} />
 
               {/* SEO landing pages */}
               <Route path="/property-management" element={<PropertyManagement />} />
