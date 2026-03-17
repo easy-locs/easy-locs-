@@ -32,12 +32,20 @@ function makeSvgIcon(svgPath: string, color: string): string {
   return `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">${svgPath}</svg>`;
 }
 
+interface HeatPoint {
+  lat: number;
+  lng: number;
+  intensity: number;
+}
+
 interface Props {
   lat: number;
   lng: number;
   radius: number;
   entities: EcosystemEntity[];
   onSelect?: (entity: EcosystemEntity) => void;
+  heatmapPoints?: HeatPoint[];
+  showHeatmap?: boolean;
 }
 
 export default function LiveEcosystemMap({ lat, lng, radius, entities, onSelect }: Props) {
