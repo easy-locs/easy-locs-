@@ -2,7 +2,7 @@
  * MyBusinessHub — V7 Private business control center.
  * Route: /business
  */
-import { useNavigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useI18n } from "@/lib/i18n";
 import {
@@ -59,8 +59,7 @@ export default function MyBusinessHub() {
   };
 
   if (!user) {
-    navigate("/login");
-    return null;
+    return <Navigate to="/login" replace />;
   }
 
   return (
