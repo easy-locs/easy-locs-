@@ -280,6 +280,7 @@ export default function ShopPage() {
                 <a href={`mailto:${shop.contact_email}`}><Mail className="h-3 w-3" /> Email</a>
               </Button>
             )}
+            <ScanQrButton label="Scan & Pay" size="sm" variant="outline" className="gap-1.5 text-xs shrink-0" />
           </div>
 
           {/* Category filters */}
