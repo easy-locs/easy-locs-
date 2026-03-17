@@ -354,14 +354,24 @@ export default function OrbitRadar() {
             })}
           </div>
 
-          {/* Floating scan button */}
+          {/* Floating scan button — glass effect */}
           <div className="absolute bottom-4 right-4 z-[1000]">
             <motion.button onClick={() => { scan(); haptic("medium"); }}
-              className="w-12 h-12 rounded-full flex items-center justify-center backdrop-blur-md"
-              style={{ background: "hsl(var(--hud-bg) / 0.9)", border: "1px solid hsl(var(--hud-cyan) / 0.3)", boxShadow: "0 4px 20px hsl(0 0% 0% / 0.3)" }}
+              className="w-14 h-14 rounded-full flex items-center justify-center backdrop-blur-xl"
+              style={{
+                background: "linear-gradient(135deg, hsl(var(--hud-bg) / 0.85), hsl(var(--hud-surface) / 0.7))",
+                border: "1px solid hsl(var(--hud-cyan) / 0.3)",
+                boxShadow: "0 4px 24px hsl(0 0% 0% / 0.4), 0 0 20px hsl(var(--hud-cyan) / 0.15)",
+              }}
               whileTap={{ scale: 0.9 }}>
               <Radar className={`h-5 w-5 ${scanning ? "animate-spin" : ""}`} style={{ color: "hsl(var(--hud-cyan))" }} />
             </motion.button>
+            {scanning && (
+              <motion.div className="absolute inset-0 rounded-full pointer-events-none"
+                style={{ border: "2px solid hsl(var(--hud-cyan))" }}
+                initial={{ scale: 1, opacity: 0.5 }} animate={{ scale: 2, opacity: 0 }}
+                transition={{ duration: 1, repeat: Infinity }} />
+            )}
           </div>
 
           {/* Recenter */}
