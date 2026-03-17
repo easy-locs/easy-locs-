@@ -12,7 +12,7 @@ import { decodeQr, resolveRoute, isExpired, isSecurityAction, type UniversalQrPa
 import { useUnifiedPayment } from "@/payments/UnifiedPaymentSystem";
 import { Button } from "@/components/ui/button";
 
-type ScanState = "idle" | "starting" | "scanning" | "paying" | "paid" | "stopped" | "error";
+type ScanState = "idle" | "starting" | "scanning" | "paying" | "paid" | "stopped" | "error" | "resolved";
 type PermissionStateLike = "unknown" | "granted" | "denied" | "prompt" | "unsupported";
 
 const REGION_ID = "qr-reader-region";
