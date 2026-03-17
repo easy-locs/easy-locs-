@@ -337,6 +337,9 @@ export const svComplete: Record<string, string> = {
   "explore.radius.title": "Var söker du?", "explore.radius.worldwide": "Hela världen",
   "explore.radius.reset": "Återställ", "explore.radius.apply": "Tillämpa", "explore.clear_all": "Rensa allt",
   "page.listing.contact_direct": "Kontakta direkt", "page.listing.call": "Ring", "page.listing.share": "Dela",
+  "page.install.title": "Installera Easy-Locs", "page.install.install_btn": "Installera appen",
+  "page.install.back": "Tillbaka", "page.install.continue_web": "Fortsätt på webben",
+  "pwa.banner.title": "Installera Easy-Locs", "pwa.banner.install": "Installera", "pwa.banner.dismiss": "Stäng",
 };
 
 // ─── Danish (DA) ───
