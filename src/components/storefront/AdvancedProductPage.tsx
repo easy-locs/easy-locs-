@@ -3,6 +3,7 @@
  * Used inside ShopPage when a product is selected
  */
 import { useState } from "react";
+import ProductMediaUploader from "./ProductMediaUploader";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -23,10 +24,20 @@ interface Props {
 
 export default function AdvancedProductPage({ item, currency = "EUR", formatPrice, onAddToCart, onClose, editMode = false, onSave }: Props) {
   const [currentImage, setCurrentImage] = useState(0);
+
+  // Collect existing images for media uploader
+  const existingImages: string[] = [];
+  if (item.photo_url) existingImages.push(item.photo_url);
+  if (Array.isArray(item.photo_urls)) existingImages.push(...item.photo_urls);
+  if (Array.isArray(item.gallery_urls)) existingImages.push(...item.gallery_urls);
+  const dedupedImages = [...new Set(existingImages)].filter(Boolean);
+
+  const [editImages, setEditImages] = useState<string[]>(dedupedImages);
+  const [editVideoUrl, setEditVideoUrl] = useState(item.video_url || "");
+  const [editCoverIndex, setEditCoverIndex] = useState(0);
   const [editData, setEditData] = useState({
     seo_title: item.seo_title || "",
     seo_description: item.seo_description || "",
-    video_url: item.video_url || "",
     weight_grams: item.weight_grams || "",
     brand_name: item.brand_name || "",
     warranty_info: item.warranty_info || "",
@@ -64,11 +75,15 @@ export default function AdvancedProductPage({ item, currency = "EUR", formatPric
             </div>
           </div>
 
-          <div>
-            <Label className="text-[10px]">Video URL</Label>
-            <Input value={editData.video_url} onChange={e => setEditData(p => ({ ...p, video_url: e.target.value }))}
-              className="mt-1 h-8 text-xs" placeholder="https://youtube.com/..." />
-          </div>
+          {/* Media upload replaces video URL input */}
+          <ProductMediaUploader
+            images={editImages}
+            videoUrl={editVideoUrl}
+            coverIndex={editCoverIndex}
+            onImagesChange={setEditImages}
+            onVideoChange={setEditVideoUrl}
+            onCoverChange={setEditCoverIndex}
+          />
 
           <div>
             <Label className="text-[10px]">Warranty</Label>
@@ -88,10 +103,17 @@ export default function AdvancedProductPage({ item, currency = "EUR", formatPric
               className="mt-1 text-xs" rows={2} placeholder="Meta description" maxLength={160} />
           </div>
 
-          <Button size="sm" className="w-full" onClick={() => onSave?.({
-            ...editData,
-            weight_grams: editData.weight_grams ? Number(editData.weight_grams) : null,
-          })}>
+          <Button size="sm" className="w-full" onClick={() => {
+            const coverUrl = editImages[editCoverIndex] || editImages[0] || null;
+            const additionalUrls = editImages.filter((_, i) => i !== editCoverIndex);
+            onSave?.({
+              ...editData,
+              photo_url: coverUrl,
+              photo_urls: additionalUrls.length > 0 ? additionalUrls : null,
+              video_url: editVideoUrl || null,
+              weight_grams: editData.weight_grams ? Number(editData.weight_grams) : null,
+            });
+          }}>
             Save Advanced Details
           </Button>
         </CardContent>

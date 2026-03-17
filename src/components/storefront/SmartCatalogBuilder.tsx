@@ -1,6 +1,7 @@
 /**
- * SmartCatalogBuilder — PASS103: AI-assisted product/service creation.
- * Auto-generates title, description, category, tags, SEO from minimal input.
+ * SmartCatalogBuilder — Product creation with real media upload.
+ * PASS GO LIVE 1: Replaced URL input with ProductMediaUploader.
+ * AI-assisted title/description/tags still works.
  */
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -15,6 +16,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Package, Loader2, Sparkles, Zap, Check, Tag } from "lucide-react";
 import { toast } from "sonner";
+import ProductMediaUploader from "./ProductMediaUploader";
 
 interface Props {
   shopId: string;
@@ -39,8 +41,12 @@ export default function SmartCatalogBuilder({ shopId, onCreated }: Props) {
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
   const [itemType, setItemType] = useState("product");
-  const [photoUrl, setPhotoUrl] = useState("");
   const [suggestion, setSuggestion] = useState<AISuggestion | null>(null);
+
+  // Media state
+  const [images, setImages] = useState<string[]>([]);
+  const [videoUrl, setVideoUrl] = useState("");
+  const [coverIndex, setCoverIndex] = useState(0);
 
   const handleAISuggest = async () => {
     if (!title.trim()) { toast.error("Enter a product name first"); return; }
@@ -79,6 +85,10 @@ Return: {"title":"optimized product title","description":"compelling product des
     if (!user) return;
     setLoading(true);
     try {
+      // Determine cover image (photo_url) and additional images (photo_urls)
+      const coverUrl = images[coverIndex] || images[0] || null;
+      const additionalUrls = images.filter((_, i) => i !== coverIndex);
+
       const { error } = await (supabase as any).from("catalog_items").insert({
         shop_id: shopId,
         user_id: user.id,
@@ -86,7 +96,9 @@ Return: {"title":"optimized product title","description":"compelling product des
         description: suggestion?.description || description.trim() || null,
         price: parseFloat(price),
         item_type: itemType,
-        photo_url: photoUrl.trim() || null,
+        photo_url: coverUrl,
+        photo_urls: additionalUrls.length > 0 ? additionalUrls : null,
+        video_url: videoUrl || null,
         available: true,
         tags: suggestion?.tags || [],
         seo_title: suggestion?.seo_title || title.trim(),
@@ -95,7 +107,9 @@ Return: {"title":"optimized product title","description":"compelling product des
       if (error) throw error;
       toast.success("Product created! 🎉");
       qc.invalidateQueries({ queryKey: ["my-catalog", shopId] });
-      setTitle(""); setDescription(""); setPrice(""); setPhotoUrl(""); setSuggestion(null);
+      // Reset
+      setTitle(""); setDescription(""); setPrice(""); setSuggestion(null);
+      setImages([]); setVideoUrl(""); setCoverIndex(0);
       onCreated?.();
     } catch (e: any) {
       toast.error(e.message || "Failed to create product");
@@ -140,10 +154,15 @@ Return: {"title":"optimized product title","description":"compelling product des
           <Textarea value={description} onChange={e => setDescription(e.target.value)} placeholder="Describe your product..." className="text-xs mt-0.5" rows={2} />
         </div>
 
-        <div>
-          <Label className="text-[10px]">Photo URL</Label>
-          <Input value={photoUrl} onChange={e => setPhotoUrl(e.target.value)} placeholder="https://..." className="h-8 text-xs mt-0.5" />
-        </div>
+        {/* Real media upload replaces URL input */}
+        <ProductMediaUploader
+          images={images}
+          videoUrl={videoUrl}
+          coverIndex={coverIndex}
+          onImagesChange={setImages}
+          onVideoChange={setVideoUrl}
+          onCoverChange={setCoverIndex}
+        />
 
         {/* AI Suggest */}
         <Button variant="outline" size="sm" className="w-full h-8 text-[11px] gap-1.5" onClick={handleAISuggest} disabled={aiLoading || !title.trim()}>
