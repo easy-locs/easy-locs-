@@ -1,25 +1,23 @@
 import { Link, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
-import { LayoutDashboard, Home, MessageCircle, Wallet, Menu } from "lucide-react";
-import { useI18n } from "@/lib/i18n";
+import { Home, Search, Store, ShoppingBag, User } from "lucide-react";
 
 interface MobileBottomNavProps {
-  onMenuOpen: () => void;
+  onMenuOpen?: () => void;
 }
 
 const MobileBottomNav = ({ onMenuOpen }: MobileBottomNavProps) => {
   const { pathname } = useLocation();
-  const { t } = useI18n();
 
-  // Hide main nav inside Orbit-related pages to avoid stacked nav layers
-  if (pathname.startsWith("/dashboard/communication") || pathname.startsWith("/app")) return null;
+  // Hide inside Orbit shell to avoid stacked nav layers
+  if (pathname.startsWith("/app")) return null;
 
   const items = [
-    { icon: LayoutDashboard, label: t("nav.dashboard_short") || "Home", path: "/dashboard" },
-    { icon: Home, label: t("nav.properties_short") || "Props", path: "/dashboard/rental" },
-    { icon: MessageCircle, label: "Orbit", path: "/dashboard/communication" },
-    { icon: Wallet, label: "Wallet", path: "/dashboard/wallet" },
-    { icon: Menu, label: t("nav.more") || "More", path: "__menu__" },
+    { icon: Home, label: "Home", path: "/dashboard" },
+    { icon: Search, label: "Search", path: "/explore" },
+    { icon: Store, label: "Shops", path: "/dashboard/marketplace" },
+    { icon: ShoppingBag, label: "Orders", path: "/dashboard/operations" },
+    { icon: User, label: "Profile", path: "/dashboard/settings" },
   ];
 
   const isActive = (path: string) => {
