@@ -3,7 +3,7 @@ import App from "./App";
 import "./index.css";
 
 // Build anchor — forces fresh chunk hash on deploy
-const BUILD_REV = "2026-03-17T22:10:00Z";
+const BUILD_REV = "2026-03-17T23:05:00Z";
 
 const rootElement = document.getElementById("root");
 
