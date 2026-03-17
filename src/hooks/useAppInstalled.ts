@@ -17,17 +17,26 @@ export function useAppInstalled(): boolean {
   const [installed, setInstalled] = useState(checkInstalled);
 
   useEffect(() => {
-    // Listen for display-mode change (e.g. user opens PWA)
     const mql = window.matchMedia("(display-mode: standalone)");
-    const onMqlChange = (e: MediaQueryListEvent) => setInstalled(e.matches);
-    mql.addEventListener("change", onMqlChange);
+    const onMqlChange = (e: MediaQueryListEvent | MediaQueryList) => {
+      setInstalled("matches" in e ? e.matches : false);
+    };
+    // Modern API with fallback for older WebKit
+    if (mql.addEventListener) {
+      mql.addEventListener("change", onMqlChange as any);
+    } else if (mql.addListener) {
+      mql.addListener(onMqlChange as any);
+    }
 
-    // Listen for appinstalled (Chrome fires this after install)
     const onInstalled = () => setInstalled(true);
     window.addEventListener("appinstalled", onInstalled);
 
     return () => {
-      mql.removeEventListener("change", onMqlChange);
+      if (mql.removeEventListener) {
+        mql.removeEventListener("change", onMqlChange as any);
+      } else if (mql.removeListener) {
+        mql.removeListener(onMqlChange as any);
+      }
       window.removeEventListener("appinstalled", onInstalled);
     };
   }, []);

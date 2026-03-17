@@ -41,9 +41,13 @@ const Install = () => {
       e.preventDefault();
       setDeferredPrompt(e);
     };
+    const onInstalled = () => setJustInstalled(true);
     window.addEventListener("beforeinstallprompt", handler);
-    window.addEventListener("appinstalled", () => setJustInstalled(true));
-    return () => window.removeEventListener("beforeinstallprompt", handler);
+    window.addEventListener("appinstalled", onInstalled);
+    return () => {
+      window.removeEventListener("beforeinstallprompt", handler);
+      window.removeEventListener("appinstalled", onInstalled);
+    };
   }, []);
 
   const handleInstall = async () => {
