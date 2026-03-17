@@ -23,7 +23,7 @@ interface Props {
 
 const TYPE_PATH: Record<ShareTarget, string> = {
   shop: "/s/",
-  product: "/s/",
+  product: "/p/",
   order: "/my-orders?id=",
   service: "/book/",
   listing: "/listing/",
