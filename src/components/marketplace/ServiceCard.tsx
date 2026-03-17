@@ -261,12 +261,25 @@ export default function ServiceCard({ service, provider, onBook, onEdit, showAct
             )}
 
             {showActions && onEdit && <Button size="sm" variant="outline" onClick={onEdit}>{t("mp.edit") || "Edit"}</Button>}
-            {onBook && (
-              <Button size="sm" onClick={onBook} className="shadow-sm">
-                {t("mp.book") || "Book"}
-              </Button>
-            )}
           </div>
+        </div>
+
+        {/* Universal Action Buttons for service */}
+        <div className="pt-2">
+          <UniversalActionButtons
+            entityType="service"
+            entityId={service.id}
+            slug={service.booking_slug}
+            title={service.title}
+            amount={service.price_type !== "quote" ? service.price : undefined}
+            currency={service.currency}
+            compact
+            metadata={{ source: "marketplace", category: service.category }}
+            overridePrimary={onBook ? { action: "open", label: t("mp.book") || "Book", icon: "open" } : undefined}
+            onActionComplete={(action) => {
+              if (action === "open" && onBook) onBook();
+            }}
+          />
         </div>
 
         {calendarOpen && (
