@@ -22,11 +22,11 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
 
 const NAV_ITEMS = [
-  { icon: Home, label: "Orbit", path: "/app/orbit", badge: null as string | null },
-  { icon: MessageCircle, label: "Messages", path: "/dashboard/communication", badge: "messages" },
-  { icon: Phone, label: "Appels", path: "/dashboard/communication?section=calls", badge: "calls" },
-  { icon: Store, label: "Annonces", path: "/dashboard/marketplace", badge: null },
-  { icon: User, label: "Profil", path: "/dashboard/settings", badge: null },
+  { icon: Home, label: "Home", path: "/app/orbit", badge: null as string | null },
+  { icon: Search, label: "Search", path: "/explore", badge: null },
+  { icon: Store, label: "Shops", path: "/dashboard/marketplace", badge: null },
+  { icon: MessageCircle, label: "Orders", path: "/dashboard/operations", badge: null },
+  { icon: User, label: "Profile", path: "/dashboard/settings", badge: null },
 ] as const;
 
 function OrbitHeader() {
