@@ -75,11 +75,15 @@ export default function AdvancedProductPage({ item, currency = "EUR", formatPric
             </div>
           </div>
 
-          <div>
-            <Label className="text-[10px]">Video URL</Label>
-            <Input value={editData.video_url} onChange={e => setEditData(p => ({ ...p, video_url: e.target.value }))}
-              className="mt-1 h-8 text-xs" placeholder="https://youtube.com/..." />
-          </div>
+          {/* Media upload replaces video URL input */}
+          <ProductMediaUploader
+            images={editImages}
+            videoUrl={editVideoUrl}
+            coverIndex={editCoverIndex}
+            onImagesChange={setEditImages}
+            onVideoChange={setEditVideoUrl}
+            onCoverChange={setEditCoverIndex}
+          />
 
           <div>
             <Label className="text-[10px]">Warranty</Label>
