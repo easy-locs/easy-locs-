@@ -1,15 +1,19 @@
 /**
  * EscrowDeliveryValidator — Ties escrow payment to delivery confirmation.
  * Shows escrow status, confirmation code entry, and auto-release on validation.
- * PASS GO LIVE: Delivery Radar Upgrade.
+ * 
+ * HARDENED: All mutations go through dispatch-delivery edge function (service_role).
+ * - Mandatory 6-digit confirmation code
+ * - GPS proximity enforcement (≤500m from dropoff)
+ * - GPS accuracy check (≤100m)
+ * - Server-side escrow release (no direct DB mutation)
  */
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Shield, Lock, Unlock, CheckCircle, AlertTriangle, Loader2 } from "lucide-react";
+import { Shield, Lock, Unlock, CheckCircle, AlertTriangle, Loader2, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { cn } from "@/lib/utils";
 
 interface Props {
   jobId: string;
@@ -18,6 +22,8 @@ interface Props {
   escrowAmount?: number;
   escrowCurrency?: string;
   confirmationCode?: string;
+  dropoffLat?: number;
+  dropoffLng?: number;
   role: "seller" | "buyer" | "driver";
   onStatusChange?: () => void;
 }
@@ -29,59 +35,159 @@ const STATUS_CONFIG: Record<string, { icon: typeof Lock; color: string; label: s
   pending: { icon: Shield, color: "hsl(var(--muted-foreground))", label: "En attente" },
 };
 
+const MAX_PROXIMITY_KM = 0.5; // 500m
+const MAX_GPS_ACCURACY_M = 100;
+
+function haversineKm(lat1: number, lng1: number, lat2: number, lng2: number): number {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLng = (lng2 - lng1) * Math.PI / 180;
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLng / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
 export default function EscrowDeliveryValidator({
   jobId,
   jobStatus,
-  escrowStatus = "pending",
+  escrowStatus: initialEscrowStatus,
   escrowAmount,
   escrowCurrency = "EUR",
   confirmationCode,
+  dropoffLat,
+  dropoffLng,
   role,
   onStatusChange,
 }: Props) {
   const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
+  const [escrowStatus, setEscrowStatus] = useState(initialEscrowStatus || "pending");
+  const [gpsStatus, setGpsStatus] = useState<"idle" | "checking" | "ok" | "too_far" | "low_accuracy" | "unavailable">("idle");
+  const [currentCoords, setCurrentCoords] = useState<{ lat: number; lng: number; accuracy: number } | null>(null);
+
+  // Fetch real escrow status from server
+  useEffect(() => {
+    async function fetchEscrow() {
+      try {
+        const { data } = await supabase.functions.invoke("dispatch-delivery", {
+          body: { action: "escrow_status", job_id: jobId },
+        });
+        if (data?.escrow) {
+          setEscrowStatus(data.escrow.status);
+        }
+      } catch { /* use prop fallback */ }
+    }
+    fetchEscrow();
+  }, [jobId]);
 
   const statusCfg = STATUS_CONFIG[escrowStatus] || STATUS_CONFIG.pending;
   const StatusIcon = statusCfg.icon;
 
+  // GPS proximity check
+  const checkGpsProximity = useCallback((): Promise<boolean> => {
+    return new Promise((resolve) => {
+      // If no dropoff coordinates, skip GPS check
+      if (!dropoffLat || !dropoffLng) {
+        setGpsStatus("ok");
+        resolve(true);
+        return;
+      }
+
+      setGpsStatus("checking");
+
+      if (!navigator.geolocation) {
+        setGpsStatus("unavailable");
+        toast.error("GPS non disponible sur cet appareil");
+        resolve(false);
+        return;
+      }
+
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const { latitude, longitude, accuracy } = pos.coords;
+          setCurrentCoords({ lat: latitude, lng: longitude, accuracy });
+
+          // Check accuracy
+          if (accuracy > MAX_GPS_ACCURACY_M) {
+            setGpsStatus("low_accuracy");
+            toast.error(`Précision GPS insuffisante (${Math.round(accuracy)}m). Minimum requis : ${MAX_GPS_ACCURACY_M}m`);
+            resolve(false);
+            return;
+          }
+
+          // Check proximity
+          const distKm = haversineKm(latitude, longitude, dropoffLat, dropoffLng);
+          if (distKm > MAX_PROXIMITY_KM) {
+            setGpsStatus("too_far");
+            toast.error(`Vous êtes à ${(distKm * 1000).toFixed(0)}m du point de livraison. Maximum autorisé : ${MAX_PROXIMITY_KM * 1000}m`);
+            resolve(false);
+            return;
+          }
+
+          setGpsStatus("ok");
+          resolve(true);
+        },
+        (err) => {
+          setGpsStatus("unavailable");
+          toast.error("Impossible d'obtenir la position GPS");
+          resolve(false);
+        },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 30000 }
+      );
+    });
+  }, [dropoffLat, dropoffLng]);
+
   const handleValidateDelivery = useCallback(async () => {
-    if (!code.trim()) {
-      toast.error("Entrez le code de confirmation");
+    // Mandatory 6-digit code
+    if (code.length !== 6) {
+      toast.error("Le code de confirmation doit contenir exactement 6 chiffres");
       return;
     }
 
+    // Client-side code pre-check (server will also validate)
     if (confirmationCode && code.trim() !== confirmationCode) {
       toast.error("Code incorrect");
       return;
     }
 
+    // GPS proximity check for driver role
+    if (role === "driver") {
+      const gpsOk = await checkGpsProximity();
+      if (!gpsOk) return;
+    }
+
     setLoading(true);
     try {
-      // Update job status to completed
-      const { error: jobError } = await supabase
-        .from("delivery_jobs")
-        .update({
-          status: "completed",
-          delivered_at: new Date().toISOString(),
-        } as any)
-        .eq("id", jobId);
+      // Step 1: Confirm delivery via edge function (server-side validation)
+      const { data: confirmData, error: confirmError } = await supabase.functions.invoke("dispatch-delivery", {
+        body: {
+          action: "confirm_delivery",
+          job_id: jobId,
+          confirmation_code: code,
+          gps_lat: currentCoords?.lat,
+          gps_lng: currentCoords?.lng,
+          gps_accuracy: currentCoords?.accuracy,
+        },
+      });
 
-      if (jobError) throw jobError;
+      if (confirmError) throw confirmError;
+      if (confirmData?.error) throw new Error(confirmData.error);
 
-      // Release escrow
-      const { error: escrowError } = await supabase
-        .from("escrow_payments")
-        .update({
-          status: "released",
-          released_at: new Date().toISOString(),
-          release_reason: "delivery_confirmed",
-        } as any)
-        .eq("job_id", jobId)
-        .eq("status", "held");
+      // Step 2: Release escrow via edge function
+      const { data: escrowData, error: escrowError } = await supabase.functions.invoke("dispatch-delivery", {
+        body: {
+          action: "escrow_release",
+          job_id: jobId,
+          reason: "delivery_confirmed",
+        },
+      });
 
       if (escrowError) throw escrowError;
+      if (escrowData?.error) {
+        // Non-blocking: escrow may not exist for all jobs
+        console.warn("[escrow] Release note:", escrowData.error);
+      }
 
+      setEscrowStatus("released");
       toast.success("Livraison confirmée ! Fonds libérés au livreur.");
       onStatusChange?.();
     } catch (err: any) {
@@ -89,23 +195,23 @@ export default function EscrowDeliveryValidator({
     } finally {
       setLoading(false);
     }
-  }, [code, confirmationCode, jobId, onStatusChange]);
+  }, [code, confirmationCode, jobId, onStatusChange, role, checkGpsProximity, currentCoords]);
 
   const handleRefund = useCallback(async () => {
     setLoading(true);
     try {
-      const { error } = await supabase
-        .from("escrow_payments")
-        .update({
-          status: "refunded",
-          refunded_at: new Date().toISOString(),
-          refund_reason: "delivery_issue",
-        } as any)
-        .eq("job_id", jobId)
-        .eq("status", "held");
+      const { data, error } = await supabase.functions.invoke("dispatch-delivery", {
+        body: {
+          action: "escrow_refund",
+          job_id: jobId,
+          reason: "delivery_issue",
+        },
+      });
 
       if (error) throw error;
+      if (data?.error) throw new Error(data.error);
 
+      setEscrowStatus("refunded");
       toast.success("Fonds remboursés.");
       onStatusChange?.();
     } catch (err: any) {
@@ -132,7 +238,7 @@ export default function EscrowDeliveryValidator({
           <p className="text-xs font-semibold" style={{ color: statusCfg.color }}>
             {statusCfg.label}
           </p>
-          {escrowAmount && (
+          {escrowAmount != null && escrowAmount > 0 && (
             <p className="text-lg font-black text-foreground">
               {escrowAmount.toFixed(2)} {escrowCurrency}
             </p>
@@ -144,7 +250,7 @@ export default function EscrowDeliveryValidator({
       {escrowStatus === "held" && (role === "buyer" || role === "driver") && (
         <div className="space-y-2">
           <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
-            Code de confirmation (6 chiffres)
+            Code de confirmation (6 chiffres — obligatoire)
           </label>
           <Input
             value={code}
@@ -154,9 +260,29 @@ export default function EscrowDeliveryValidator({
             className="text-center text-lg font-mono tracking-[0.3em] h-12"
             inputMode="numeric"
           />
+
+          {/* GPS status indicator for driver */}
+          {role === "driver" && dropoffLat && dropoffLng && (
+            <div className="flex items-center gap-2 text-[10px]">
+              <MapPin className="h-3 w-3" style={{
+                color: gpsStatus === "ok" ? "hsl(var(--success))" :
+                       gpsStatus === "too_far" || gpsStatus === "low_accuracy" ? "hsl(var(--destructive))" :
+                       "hsl(var(--muted-foreground))"
+              }} />
+              <span className="text-muted-foreground">
+                {gpsStatus === "idle" && "Vérification GPS au submit"}
+                {gpsStatus === "checking" && "Vérification GPS..."}
+                {gpsStatus === "ok" && `Position vérifiée${currentCoords ? ` (±${Math.round(currentCoords.accuracy)}m)` : ""}`}
+                {gpsStatus === "too_far" && "Trop loin du point de livraison"}
+                {gpsStatus === "low_accuracy" && "Précision GPS insuffisante"}
+                {gpsStatus === "unavailable" && "GPS non disponible"}
+              </span>
+            </div>
+          )}
+
           <Button
             onClick={handleValidateDelivery}
-            disabled={loading || code.length < 4}
+            disabled={loading || code.length !== 6}
             className="w-full min-h-[44px] gap-2"
           >
             {loading ? (
