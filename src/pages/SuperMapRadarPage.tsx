@@ -557,8 +557,8 @@ export default function SuperMapRadarPage() {
                 <UniversalEntityCard
                   key={item.id}
                   entityType={item.kind === "shop" ? "shop" : "product"}
-                  entityId={item.id}
-                  slug={item.slug}
+                  entityId={item.kind === "product" ? (item as any).productId : item.id}
+                  slug={item.kind === "shop" ? (item as any).slug : (item as any).shopSlug}
                   title={item.title}
                   subtitle={item.subtitle}
                   compact
