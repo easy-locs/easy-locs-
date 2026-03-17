@@ -1,15 +1,20 @@
 /**
- * MyOrdersPage — Buyer-facing page listing all storefront orders with realtime tracking.
+ * MyOrdersPage — PASS115: Enhanced buyer hub with dashboard + order tracker.
  * Route: /my-orders
  */
 import SEOHead from "@/components/SEOHead";
 import BuyerOrderTracker from "@/components/storefront/BuyerOrderTracker";
+import BuyerDashboard from "@/components/storefront/BuyerDashboard";
 import { useAuth } from "@/contexts/AuthContext";
+import { useStorefrontRealtime } from "@/hooks/useStorefrontRealtime";
 import { ShoppingBag } from "lucide-react";
 import { Link } from "react-router-dom";
 
 export default function MyOrdersPage() {
   const { user } = useAuth();
+
+  // PASS123: Realtime order updates for buyer
+  useStorefrontRealtime({ buyerId: user?.id });
 
   return (
     <>
@@ -25,6 +30,10 @@ export default function MyOrdersPage() {
             </Link>
           </div>
 
+          {/* PASS115: Buyer dashboard with stats */}
+          <BuyerDashboard />
+
+          {/* Order tracker with timeline */}
           <BuyerOrderTracker />
         </div>
       </div>
