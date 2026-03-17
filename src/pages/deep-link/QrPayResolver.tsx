@@ -1,12 +1,13 @@
 /**
- * /pay/qr — QR Pay resolver page.
- * Reads QR params from URL, resolves target, opens UnifiedPayment overlay.
+ * /pay/qr — Legacy QR Pay resolver page.
+ * Reads QR params from URL, converts to unified payload, resolves.
  */
 import { useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUnifiedPayment } from "@/payments/UnifiedPaymentSystem";
 import { fetchPaymentRequest } from "@/payments/request-money";
+import { decodeQr, resolveRoute } from "@/lib/qr-engine";
 import { Loader2 } from "lucide-react";
 
 export default function QrPayResolver() {
@@ -24,6 +25,11 @@ export default function QrPayResolver() {
   useEffect(() => {
     if (!id || !type) {
       navigate("/discover", { replace: true });
+      return;
+    }
+
+    if (!user) {
+      navigate(`/login?redirect=${encodeURIComponent(window.location.pathname + window.location.search)}`, { replace: true });
       return;
     }
 
@@ -54,11 +60,6 @@ export default function QrPayResolver() {
         });
       }
       navigate("/discover", { replace: true });
-    }
-
-    if (!user) {
-      navigate(`/login?redirect=${encodeURIComponent(window.location.pathname + window.location.search)}`, { replace: true });
-      return;
     }
 
     resolve();
