@@ -11,6 +11,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { MessageCircle, Send, QrCode, Store, ArrowLeft } from "lucide-react";
 import { MobilePageHeader } from "@/components/ui/mobile-page-header";
+import { UserProfileQr, ScanQrButton } from "@/components/qr/UniversalQrWidgets";
 
 export default function UserProfilePage() {
   const { userId } = useParams<{ userId: string }>();
