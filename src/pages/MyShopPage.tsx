@@ -169,6 +169,11 @@ export default function MyShopPage() {
           </div>
         </div>
 
+        {/* PASS127: Seller onboarding guide */}
+        <div className="px-4 pb-2">
+          <Suspense fallback={null}><SellerOnboarding shopId={shop.id} /></Suspense>
+        </div>
+
         {/* Tab bar */}
         <div className="flex gap-1 px-4 pb-3 overflow-x-auto scrollbar-none">
           {TABS.map((t) => {
