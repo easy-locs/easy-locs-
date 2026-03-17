@@ -1287,6 +1287,9 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
                     <DropdownMenuItem onClick={() => { setShowAttachMenu(false); setPaymentLinkDialog(true); }}>
                       <CreditCard className="h-4 w-4 mr-2" style={{ color: "hsl(var(--hud-purple))" }} /> Payment
                     </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => { setShowAttachMenu(false); setRequestMoneyDialog(true); }}>
+                      <CreditCard className="h-4 w-4 mr-2" style={{ color: "hsl(var(--hud-warning))" }} /> Request Money
+                    </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={() => {
                       setShowAttachMenu(false);
