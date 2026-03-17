@@ -2,7 +2,7 @@
  * DiscoverPage — V7 Premium Local Commerce Homepage.
  * Revenue-first, locally intelligent, conversion-driven.
  */
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
