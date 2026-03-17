@@ -203,11 +203,10 @@ export function QrPayCard({
   payload,
   title,
 }: {
-  payload: QrPayload;
+  payload: UniversalQrPayload;
   title: string;
 }) {
-  const raw = encodeQrPayload(payload);
-  const link = `${window.location.origin}/qr/resolve?data=${encodeURIComponent(raw)}`;
+  const link = toResolveUrl(payload);
   const [copied, setCopied] = useState(false);
 
   const handleCopy = async () => {
