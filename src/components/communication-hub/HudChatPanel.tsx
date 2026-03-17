@@ -1394,6 +1394,29 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
                 if (thread.threadId) msgPayload.thread_id = thread.threadId;
                 await supabase.from("messages").insert(msgPayload);
 
+                // Also send structured receipt card
+                try {
+                  await sendPaymentReceiptToThread({
+                    threadId: thread.threadId || thread.id,
+                    senderId: authUserId,
+                    orgId,
+                    transactionId: conf.txnId,
+                    amount: conf.amount,
+                    currency: conf.currency,
+                    recipientName: conf.recipientName || thread.name,
+                    title: conf.status === "completed" ? "Payment sent" : "Payment initiated",
+                    contextType: thread.contextType,
+                    contextId: thread.contextId,
+                    tenantId: thread.tenantId,
+                    bookingId: thread.bookingId,
+                    bookingType: thread.bookingType,
+                    encrypt: e2eReady ? encrypt : undefined,
+                    peerId: e2eReady ? (thread.tenantId || thread.contextId || thread.id) : null,
+                  });
+                } catch (receiptErr) {
+                  console.warn("[HudChatPanel] Receipt card insert failed (non-blocking):", receiptErr);
+                }
+
                 // Cross-module sync: dispatch wallet_payment event for LOCS (instant)
                 if (conf.status === "completed" && conf.context) {
                   try {
