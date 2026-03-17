@@ -84,6 +84,9 @@ export default function MyShopPage() {
   const [tab, setTab] = useState<TabId>("catalog");
   const [copied, setCopied] = useState(false);
 
+  // PASS123: Realtime sync for seller orders
+  // Imported dynamically to keep bundle light
+
   const { data: shop, isLoading, refetch } = useQuery({
     queryKey: ["my-storefront", user?.id],
     queryFn: async () => {
