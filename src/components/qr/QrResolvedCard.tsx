@@ -363,6 +363,10 @@ export function QrResolvedCard({
 
   async function handlePayShop() {
     if (!shopSlug) return;
+    if (!shopRow?.user_id) {
+      toast.error("Shop owner not found");
+      return;
+    }
 
     setBusy("pay");
 
@@ -376,8 +380,9 @@ export function QrResolvedCard({
           "currency" in payload && payload.currency
             ? payload.currency
             : "AED",
-        title: "Shop Payment",
+        title: `Pay ${displayShopName}`,
         subtitle: "Scanned via QR",
+        recipientId: shopRow.user_id,
         contextType: "shop",
         contextId: shopSlug,
         metadata: {
