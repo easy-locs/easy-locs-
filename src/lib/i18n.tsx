@@ -3757,6 +3757,12 @@ const pageEn: Record<string, string> = {
   "explore.radius.suggestions": "Suggestions",
   "explore.radius.reset": "Reset",
   "explore.radius.apply": "Apply",
+  "explore.browse_country": "Browse by Country",
+  "explore.popular_cities": "Popular Cities",
+  "explore.categories": "Categories",
+  "explore.services_directory": "Services Directory",
+  "explore.quick_links": "Quick Links",
+  "explore.you_may_like": "You may also be interested in",
 
   "landing.hero.badge": "Long-term | Airbnb | Booking | Multi-country",
   "landing.hero.title": "The first worldwide platform",
