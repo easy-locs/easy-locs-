@@ -573,6 +573,7 @@ export default function QrScannerPage() {
                   setError("");
                   setLastText("");
                   setTxId("");
+                  setResolvedPayload(null);
                   setState("idle");
                   handledRef.current = false;
                   log("scanner reset");
