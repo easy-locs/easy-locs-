@@ -54,7 +54,7 @@ const WarehouseManager = lazy(() => import("@/components/storefront/WarehouseMan
 const GamificationEngine = lazy(() => import("@/components/storefront/GamificationEngine"));
 const MultiStoreManager = lazy(() => import("@/components/storefront/MultiStoreManager"));
 const SmartCatalogBuilder = lazy(() => import("@/components/storefront/SmartCatalogBuilder"));
-
+const SellerAnalyticsV2 = lazy(() => import("@/components/storefront/SellerAnalyticsV2"));
 // Settings-only (loaded inline since settings tab is simple)
 const AICategorySuggest = lazy(() => import("@/components/storefront/AICategorySuggest"));
 const PrivateInviteManager = lazy(() => import("@/components/storefront/PrivateInviteManager"));
