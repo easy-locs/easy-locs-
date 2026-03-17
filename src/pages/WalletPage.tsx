@@ -8,6 +8,7 @@ import { MobilePageHeader } from "@/components/ui/mobile-page-header";
 import SEOHead from "@/components/SEOHead";
 import { Wallet, ArrowUpRight, ArrowDownLeft, Clock } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { QrActionRow } from "@/components/qr/UniversalQrWidgets";
 
 function formatMoney(amount: number, currency = "AED") {
   try {
