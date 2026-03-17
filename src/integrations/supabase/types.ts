@@ -2140,11 +2140,13 @@ export type Database = {
           order_id: string | null
           org_id: string
           package_description: string | null
+          package_size: string | null
           photo_proof_url: string | null
           picked_up_at: string | null
           pickup_address: string
           pickup_lat: number | null
           pickup_lng: number | null
+          pricing_mode: string | null
           priority: string
           reassignment_count: number | null
           required_vehicles: string[] | null
@@ -2174,11 +2176,13 @@ export type Database = {
           order_id?: string | null
           org_id: string
           package_description?: string | null
+          package_size?: string | null
           photo_proof_url?: string | null
           picked_up_at?: string | null
           pickup_address?: string
           pickup_lat?: number | null
           pickup_lng?: number | null
+          pricing_mode?: string | null
           priority?: string
           reassignment_count?: number | null
           required_vehicles?: string[] | null
@@ -2208,11 +2212,13 @@ export type Database = {
           order_id?: string | null
           org_id?: string
           package_description?: string | null
+          package_size?: string | null
           photo_proof_url?: string | null
           picked_up_at?: string | null
           pickup_address?: string
           pickup_lat?: number | null
           pickup_lng?: number | null
+          pricing_mode?: string | null
           priority?: string
           reassignment_count?: number | null
           required_vehicles?: string[] | null
@@ -2249,6 +2255,8 @@ export type Database = {
           job_id: string
           message: string | null
           org_id: string | null
+          per_km_rate: number | null
+          pricing_mode: string | null
           proposed_fee: number | null
           responded_at: string | null
           score: number | null
@@ -2263,6 +2271,8 @@ export type Database = {
           job_id: string
           message?: string | null
           org_id?: string | null
+          per_km_rate?: number | null
+          pricing_mode?: string | null
           proposed_fee?: number | null
           responded_at?: string | null
           score?: number | null
@@ -2277,6 +2287,8 @@ export type Database = {
           job_id?: string
           message?: string | null
           org_id?: string | null
+          per_km_rate?: number | null
+          pricing_mode?: string | null
           proposed_fee?: number | null
           responded_at?: string | null
           score?: number | null
