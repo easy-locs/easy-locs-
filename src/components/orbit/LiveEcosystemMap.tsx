@@ -117,7 +117,6 @@ export default function LiveEcosystemMap({ lat, lng, radius, entities, onSelect 
         <div class="eco-user-dot"></div>
         <div class="eco-user-pulse"></div>
         <div class="eco-user-pulse eco-user-pulse-2"></div>
-        <div class="eco-user-pulse eco-user-pulse-3"></div>
       </div>`,
       iconSize: [28, 28],
       iconAnchor: [14, 14],
