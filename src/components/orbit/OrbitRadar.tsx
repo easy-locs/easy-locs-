@@ -331,14 +331,23 @@ export default function OrbitRadar() {
             />
           </Suspense>
 
-          {/* Category legend overlay */}
-          <div className="absolute top-2 left-2 right-14 flex flex-wrap gap-1 z-[1000] pointer-events-none">
-            {Object.entries(counts).slice(0, 5).map(([cat, count]) => {
+          {/* Glass overlay — activity summary */}
+          <div className="absolute top-2 left-2 right-14 flex flex-wrap gap-1.5 z-[1000] pointer-events-none">
+            {/* Live badge */}
+            <div className="flex items-center gap-1 px-2.5 py-1.5 rounded-full text-[9px] font-bold backdrop-blur-xl pointer-events-auto"
+              style={{ background: "hsl(var(--hud-bg) / 0.75)", border: "1px solid hsl(var(--hud-danger) / 0.3)", boxShadow: "0 2px 12px hsl(var(--hud-danger) / 0.15)" }}>
+              <motion.div className="w-1.5 h-1.5 rounded-full" style={{ background: "hsl(var(--hud-danger))" }}
+                animate={{ opacity: [1, 0.3, 1] }} transition={{ duration: 1.5, repeat: Infinity }} />
+              <span style={{ color: "hsl(var(--hud-danger))" }}>LIVE</span>
+              <span style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>·</span>
+              <span style={{ color: "hsl(var(--hud-text))" }}>{entities.filter(e => !e.meta?.no_geo).length}</span>
+            </div>
+            {Object.entries(counts).slice(0, 4).map(([cat, count]) => {
               const cfg = ECOSYSTEM_CATEGORIES.find(c => c.id === cat);
               if (!cfg) return null;
               return (
-                <div key={cat} className="flex items-center gap-1 px-2 py-1 rounded-full text-[9px] font-semibold backdrop-blur-md pointer-events-auto"
-                  style={{ background: "hsl(var(--hud-bg) / 0.85)", color: catHsl(cfg.color), border: `1px solid ${catHsl(cfg.color, 0.2)}` }}>
+                <div key={cat} className="flex items-center gap-1 px-2 py-1.5 rounded-full text-[9px] font-semibold backdrop-blur-xl pointer-events-auto"
+                  style={{ background: "hsl(var(--hud-bg) / 0.75)", color: catHsl(cfg.color), border: `1px solid ${catHsl(cfg.color, 0.2)}`, boxShadow: `0 2px 12px ${catHsl(cfg.color, 0.1)}` }}>
                   {cfg.emoji} {count}
                 </div>
               );
