@@ -55,6 +55,7 @@ export default function QrScannerPage() {
   const [error, setError] = useState("");
   const [lastText, setLastText] = useState("");
   const [txId, setTxId] = useState("");
+  const [resolvedPayload, setResolvedPayload] = useState<UniversalQrPayload | null>(null);
   const [permissionState, setPermissionState] = useState<PermissionStateLike>("unknown");
   const [cameraCount, setCameraCount] = useState<number | null>(null);
 
