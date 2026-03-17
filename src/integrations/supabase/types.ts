@@ -8221,6 +8221,53 @@ export type Database = {
           },
         ]
       }
+      storefront_growth_metrics: {
+        Row: {
+          avg_order_value: number | null
+          created_at: string | null
+          id: string
+          metric_date: string
+          new_customers: number | null
+          organic_orders: number | null
+          referral_orders: number | null
+          returning_customers: number | null
+          shop_id: string
+          total_revenue: number | null
+        }
+        Insert: {
+          avg_order_value?: number | null
+          created_at?: string | null
+          id?: string
+          metric_date?: string
+          new_customers?: number | null
+          organic_orders?: number | null
+          referral_orders?: number | null
+          returning_customers?: number | null
+          shop_id: string
+          total_revenue?: number | null
+        }
+        Update: {
+          avg_order_value?: number | null
+          created_at?: string | null
+          id?: string
+          metric_date?: string
+          new_customers?: number | null
+          organic_orders?: number | null
+          referral_orders?: number | null
+          returning_customers?: number | null
+          shop_id?: string
+          total_revenue?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "storefront_growth_metrics_shop_id_fkey"
+            columns: ["shop_id"]
+            isOneToOne: false
+            referencedRelation: "storefront_pages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       storefront_import_jobs: {
         Row: {
           completed_at: string | null
@@ -10045,6 +10092,62 @@ export type Database = {
           },
         ]
       }
+      storefront_risk_flags: {
+        Row: {
+          created_at: string | null
+          flag_type: string
+          id: string
+          metadata_json: Json | null
+          order_id: string | null
+          reason: string
+          resolution_note: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          severity: string
+          shop_id: string | null
+          status: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          flag_type?: string
+          id?: string
+          metadata_json?: Json | null
+          order_id?: string | null
+          reason: string
+          resolution_note?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity?: string
+          shop_id?: string | null
+          status?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          flag_type?: string
+          id?: string
+          metadata_json?: Json | null
+          order_id?: string | null
+          reason?: string
+          resolution_note?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity?: string
+          shop_id?: string | null
+          status?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "storefront_risk_flags_shop_id_fkey"
+            columns: ["shop_id"]
+            isOneToOne: false
+            referencedRelation: "storefront_pages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       storefront_shipments: {
         Row: {
           buyer_id: string | null
@@ -11058,6 +11161,74 @@ export type Database = {
             foreignKeyName: "storefront_translations_shop_id_fkey"
             columns: ["shop_id"]
             isOneToOne: false
+            referencedRelation: "storefront_pages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      storefront_trust_scores: {
+        Row: {
+          account_age_days: number | null
+          avg_rating: number | null
+          avg_response_minutes: number | null
+          badges: string[] | null
+          completed_orders: number | null
+          created_at: string | null
+          id: string
+          last_computed_at: string | null
+          response_rate: number | null
+          shop_id: string
+          total_orders: number | null
+          total_reviews: number | null
+          trust_score: number | null
+          updated_at: string | null
+          user_id: string
+          verified_email: boolean | null
+          verified_identity: boolean | null
+        }
+        Insert: {
+          account_age_days?: number | null
+          avg_rating?: number | null
+          avg_response_minutes?: number | null
+          badges?: string[] | null
+          completed_orders?: number | null
+          created_at?: string | null
+          id?: string
+          last_computed_at?: string | null
+          response_rate?: number | null
+          shop_id: string
+          total_orders?: number | null
+          total_reviews?: number | null
+          trust_score?: number | null
+          updated_at?: string | null
+          user_id: string
+          verified_email?: boolean | null
+          verified_identity?: boolean | null
+        }
+        Update: {
+          account_age_days?: number | null
+          avg_rating?: number | null
+          avg_response_minutes?: number | null
+          badges?: string[] | null
+          completed_orders?: number | null
+          created_at?: string | null
+          id?: string
+          last_computed_at?: string | null
+          response_rate?: number | null
+          shop_id?: string
+          total_orders?: number | null
+          total_reviews?: number | null
+          trust_score?: number | null
+          updated_at?: string | null
+          user_id?: string
+          verified_email?: boolean | null
+          verified_identity?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "storefront_trust_scores_shop_id_fkey"
+            columns: ["shop_id"]
+            isOneToOne: true
             referencedRelation: "storefront_pages"
             referencedColumns: ["id"]
           },
@@ -13096,6 +13267,7 @@ export type Database = {
       }
       cleanup_expired_messages: { Args: never; Returns: number }
       cleanup_expired_nonces: { Args: never; Returns: number }
+      compute_trust_score: { Args: { p_shop_id: string }; Returns: number }
       create_api_key: {
         Args: { _name: string; _org_id: string; _scopes: string[] }
         Returns: Json
