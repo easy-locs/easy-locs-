@@ -80,13 +80,10 @@ export default function OrbitHome() {
   const { smartActions, loading: dashLoading } = useOrbitDashboard();
   const navigate = useNavigate();
 
+  // Initial refresh only — polling is handled by OrbitAppShell
   useEffect(() => {
     if (!user?.id) return;
     engine.refresh(user.id, orgId || undefined);
-    const interval = setInterval(() => {
-      engine.refresh(user.id, orgId || undefined);
-    }, 60000);
-    return () => clearInterval(interval);
   }, [user?.id, orgId]);
 
   const orbMessage = useMemo(() => {
