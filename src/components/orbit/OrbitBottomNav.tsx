@@ -4,7 +4,7 @@
  * Chat is the center of the super app.
  */
 import { useNavigate, useLocation } from "react-router-dom";
-import { MessageCircle, Compass, LayoutGrid, User } from "lucide-react";
+import { MessageCircle, Compass, LayoutGrid, User, Map } from "lucide-react";
 import { useOrbitEngine } from "@/stores/orbit-engine";
 import { useI18n } from "@/lib/i18n";
 
