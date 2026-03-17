@@ -1,7 +1,7 @@
 /**
- * LiveEcosystemMap — Premium Leaflet map with MarkerCluster support.
- * Each entity category gets a unique animated marker.
- * Features: clustering, radius overlay, pulse animations, popup cards, live updates.
+ * LiveEcosystemMap — Premium Leaflet map with MarkerCluster.
+ * PASS152: Premium markers with SVG icons (no emoji), pulse/glow animations,
+ * glassmorphic popups, and live activity feel.
  */
 import { useEffect, useRef, useCallback } from "react";
 import L from "leaflet";
@@ -11,21 +11,26 @@ import "leaflet.markercluster/dist/MarkerCluster.css";
 import "leaflet.markercluster/dist/MarkerCluster.Default.css";
 import type { EcosystemEntity, EcosystemCategory } from "@/hooks/useEcosystemRadar";
 
-const CATEGORY_STYLE: Record<EcosystemCategory, { emoji: string; color: string; borderColor: string }> = {
-  agent:              { emoji: "🧑‍💼", color: "#8b5cf6", borderColor: "#a78bfa" },
-  technician:         { emoji: "🔧",   color: "#f59e0b", borderColor: "#fbbf24" },
-  delivery:           { emoji: "📦",   color: "#22c55e", borderColor: "#4ade80" },
-  visit:              { emoji: "🏠",   color: "#06b6d4", borderColor: "#22d3ee" },
-  intervention:       { emoji: "🛠️",   color: "#ef4444", borderColor: "#f87171" },
-  available_property: { emoji: "✅",   color: "#22c55e", borderColor: "#4ade80" },
-  releasing_soon:     { emoji: "📅",   color: "#f59e0b", borderColor: "#fbbf24" },
-  scheduled_visit:    { emoji: "🗓️",   color: "#8b5cf6", borderColor: "#a78bfa" },
-  renovation:         { emoji: "🏗️",   color: "#f59e0b", borderColor: "#fbbf24" },
-  back_on_market:     { emoji: "🔄",   color: "#22c55e", borderColor: "#4ade80" },
-  service:            { emoji: "💼",   color: "#06b6d4", borderColor: "#22d3ee" },
-  concierge:          { emoji: "🛎️",   color: "#8b5cf6", borderColor: "#a78bfa" },
-  person:             { emoji: "👤",   color: "#64748b", borderColor: "#94a3b8" },
+// SVG icon paths for each category (replaces raw emoji)
+const CATEGORY_STYLE: Record<EcosystemCategory, { icon: string; color: string; glow: string; label: string }> = {
+  agent:              { icon: '<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>', color: "#8b5cf6", glow: "rgba(139,92,246,0.5)", label: "Agent" },
+  technician:         { icon: '<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>', color: "#f59e0b", glow: "rgba(245,158,11,0.5)", label: "Tech" },
+  delivery:           { icon: '<rect width="16" height="13" x="6" y="4" rx="2"/><path d="m2 7 4-3v6z"/><path d="m22 7-4-3v6z"/>', color: "#22c55e", glow: "rgba(34,197,94,0.5)", label: "Delivery" },
+  visit:              { icon: '<path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>', color: "#06b6d4", glow: "rgba(6,182,212,0.5)", label: "Visit" },
+  intervention:       { icon: '<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>', color: "#ef4444", glow: "rgba(239,68,68,0.5)", label: "Urgent" },
+  available_property: { icon: '<path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>', color: "#22c55e", glow: "rgba(34,197,94,0.5)", label: "Available" },
+  releasing_soon:     { icon: '<rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/>', color: "#f59e0b", glow: "rgba(245,158,11,0.5)", label: "Soon" },
+  scheduled_visit:    { icon: '<rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/>', color: "#8b5cf6", glow: "rgba(139,92,246,0.5)", label: "Scheduled" },
+  renovation:         { icon: '<rect width="20" height="14" x="2" y="7" rx="2" ry="2"/><path d="M16 3h-4l-2 4h8l-2-4z"/>', color: "#f59e0b", glow: "rgba(245,158,11,0.5)", label: "Reno" },
+  back_on_market:     { icon: '<polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>', color: "#22c55e", glow: "rgba(34,197,94,0.5)", label: "Back" },
+  service:            { icon: '<rect width="20" height="14" x="2" y="7" rx="2" ry="2"/><path d="M16 3h-4l-2 4h8l-2-4z"/>', color: "#06b6d4", glow: "rgba(6,182,212,0.5)", label: "Service" },
+  concierge:          { icon: '<path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>', color: "#8b5cf6", glow: "rgba(139,92,246,0.5)", label: "Concierge" },
+  person:             { icon: '<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>', color: "#64748b", glow: "rgba(100,116,139,0.4)", label: "Person" },
 };
+
+function makeSvgIcon(svgPath: string, color: string): string {
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">${svgPath}</svg>`;
+}
 
 interface Props {
   lat: number;
@@ -42,7 +47,6 @@ export default function LiveEcosystemMap({ lat, lng, radius, entities, onSelect 
   const radiusRef = useRef<L.Circle | null>(null);
   const userMarkerRef = useRef<L.Marker | null>(null);
 
-  // Initialize map once
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
 
@@ -59,7 +63,6 @@ export default function LiveEcosystemMap({ lat, lng, radius, entities, onSelect 
 
     L.control.zoom({ position: "bottomright" }).addTo(map);
 
-    // Create cluster group with custom styling
     const cluster = L.markerClusterGroup({
       maxClusterRadius: 50,
       spiderfyOnMaxZoom: true,
@@ -67,17 +70,13 @@ export default function LiveEcosystemMap({ lat, lng, radius, entities, onSelect 
       zoomToBoundsOnClick: true,
       iconCreateFunction: (clusterObj) => {
         const count = clusterObj.getChildCount();
-        const size = count < 10 ? 36 : count < 50 ? 44 : 52;
+        const size = count < 10 ? 40 : count < 50 ? 48 : 56;
         return L.divIcon({
           className: "",
-          html: `<div style="
-            width:${size}px;height:${size}px;border-radius:50%;
-            background:linear-gradient(135deg, #06b6d4, #8b5cf6);
-            display:flex;align-items:center;justify-content:center;
-            color:white;font-weight:700;font-size:${count < 10 ? 13 : 12}px;
-            box-shadow:0 4px 16px rgba(6,182,212,0.4);
-            border:2px solid rgba(255,255,255,0.2);
-          ">${count}</div>`,
+          html: `<div class="eco-cluster" style="width:${size}px;height:${size}px;">
+            <div class="eco-cluster-inner">${count}</div>
+            <div class="eco-cluster-ring"></div>
+          </div>`,
           iconSize: [size, size],
           iconAnchor: [size / 2, size / 2],
         });
@@ -95,49 +94,40 @@ export default function LiveEcosystemMap({ lat, lng, radius, entities, onSelect 
     };
   }, []);
 
-  // Update view when center/radius changes
   useEffect(() => {
     if (!mapRef.current) return;
     mapRef.current.setView([lat, lng], getZoomForRadius(radius), { animate: true });
 
-    // Update radius circle
-    if (radiusRef.current) {
-      mapRef.current.removeLayer(radiusRef.current);
-    }
+    if (radiusRef.current) mapRef.current.removeLayer(radiusRef.current);
     radiusRef.current = L.circle([lat, lng], {
       radius: radius * 1000,
       color: "#06b6d4",
       fillColor: "#06b6d4",
       fillOpacity: 0.03,
-      weight: 1,
-      opacity: 0.2,
-      dashArray: "6 4",
+      weight: 1.5,
+      opacity: 0.15,
+      dashArray: "8 6",
     }).addTo(mapRef.current);
 
-    // Update user marker
-    if (userMarkerRef.current) {
-      mapRef.current.removeLayer(userMarkerRef.current);
-    }
+    if (userMarkerRef.current) mapRef.current.removeLayer(userMarkerRef.current);
     const userIcon = L.divIcon({
       className: "",
-      html: `
-        <div style="position:relative;width:20px;height:20px;">
-          <div style="position:absolute;inset:0;border-radius:50%;background:#06b6d4;border:3px solid white;box-shadow:0 0 20px rgba(6,182,212,0.6);z-index:2;"></div>
-          <div style="position:absolute;inset:-8px;border-radius:50%;border:2px solid #06b6d4;opacity:0.4;animation:ecosystemPulse 2s ease-out infinite;"></div>
-        </div>`,
-      iconSize: [20, 20],
-      iconAnchor: [10, 10],
+      html: `<div class="eco-user-marker">
+        <div class="eco-user-dot"></div>
+        <div class="eco-user-pulse"></div>
+        <div class="eco-user-pulse eco-user-pulse-2"></div>
+      </div>`,
+      iconSize: [24, 24],
+      iconAnchor: [12, 12],
     });
     userMarkerRef.current = L.marker([lat, lng], { icon: userIcon, zIndexOffset: 2000 })
       .addTo(mapRef.current)
-      .bindPopup('<span style="font-weight:600;">📍 You are here</span>');
+      .bindPopup('<div class="eco-popup"><strong>📍 Your position</strong></div>');
   }, [lat, lng, radius]);
 
-  // Render entity markers into cluster group
   const renderMarkers = useCallback(() => {
     const cluster = clusterRef.current;
     if (!cluster) return;
-
     cluster.clearLayers();
 
     entities.forEach((entity) => {
@@ -145,29 +135,22 @@ export default function LiveEcosystemMap({ lat, lng, radius, entities, onSelect 
       const style = CATEGORY_STYLE[entity.category] || CATEGORY_STYLE.person;
       const isOnline = entity.online;
       const isActive = entity.status === "active" || entity.status === "en_route";
+      const svgIcon = makeSvgIcon(style.icon, "white");
 
       const icon = L.divIcon({
         className: "",
-        html: `
-          <div style="position:relative;width:36px;height:36px;cursor:pointer;">
-            <div style="
-              width:36px;height:36px;border-radius:10px;
-              background:${style.color}18;
-              border:2px solid ${style.borderColor}90;
-              display:flex;align-items:center;justify-content:center;
-              font-size:16px;
-              box-shadow:0 2px 12px ${style.color}40;
-              transition:transform 0.2s;
-            ">${style.emoji}</div>
-            ${isOnline ? `<div style="position:absolute;top:-2px;right:-2px;width:10px;height:10px;border-radius:50%;background:#22c55e;border:2px solid #0f172a;"></div>` : ""}
-            ${isActive ? `<div style="position:absolute;inset:-4px;border-radius:12px;border:2px solid ${style.color};opacity:0.5;animation:ecosystemPulse 1.5s ease-out infinite;"></div>` : ""}
-          </div>`,
-        iconSize: [36, 36],
-        iconAnchor: [18, 18],
+        html: `<div class="eco-marker" style="--marker-color:${style.color};--marker-glow:${style.glow};">
+          <div class="eco-marker-bg">${svgIcon}</div>
+          ${isOnline ? '<div class="eco-online-dot"></div>' : ""}
+          ${isActive ? '<div class="eco-active-ring"></div>' : ""}
+          <div class="eco-marker-glow"></div>
+        </div>`,
+        iconSize: [40, 40],
+        iconAnchor: [20, 20],
       });
 
       const priceStr = entity.price && entity.price > 0
-        ? `<br/><span style="font-weight:700;color:${style.color};">${entity.price > 1000 ? `${(entity.price / 1000).toFixed(0)}k` : entity.price} ${entity.currency || "EUR"}</span>`
+        ? `<div class="eco-popup-price" style="color:${style.color};">${entity.price > 1000 ? `${(entity.price / 1000).toFixed(0)}k` : entity.price} ${entity.currency || "EUR"}</div>`
         : "";
       const distStr = entity.distance_km < 1
         ? `${Math.round(entity.distance_km * 1000)}m`
@@ -175,40 +158,100 @@ export default function LiveEcosystemMap({ lat, lng, radius, entities, onSelect 
 
       const marker = L.marker([entity.lat, entity.lng], { icon })
         .bindPopup(`
-          <div style="min-width:160px;">
-            <div style="font-weight:700;font-size:13px;margin-bottom:2px;">${style.emoji} ${entity.title}</div>
-            ${entity.subtitle ? `<div style="font-size:11px;opacity:0.7;margin-bottom:4px;">${entity.subtitle}</div>` : ""}
-            <div style="font-size:10px;opacity:0.5;">${distStr} away</div>
+          <div class="eco-popup">
+            <div class="eco-popup-header">
+              <div class="eco-popup-icon" style="background:${style.color};">${svgIcon}</div>
+              <div>
+                <div class="eco-popup-title">${entity.title}</div>
+                ${entity.subtitle ? `<div class="eco-popup-sub">${entity.subtitle}</div>` : ""}
+              </div>
+            </div>
+            <div class="eco-popup-meta">
+              <span class="eco-popup-badge" style="background:${style.color}15;color:${style.color};border:1px solid ${style.color}30;">${style.label}</span>
+              <span class="eco-popup-dist">${distStr}</span>
+            </div>
             ${priceStr}
           </div>
         `);
 
-      if (onSelect) {
-        marker.on("click", () => onSelect(entity));
-      }
-
+      if (onSelect) marker.on("click", () => onSelect(entity));
       cluster.addLayer(marker);
     });
   }, [entities, onSelect]);
 
-  useEffect(() => {
-    renderMarkers();
-  }, [renderMarkers]);
+  useEffect(() => { renderMarkers(); }, [renderMarkers]);
 
   return (
     <>
       <div ref={containerRef} className="w-full h-full min-h-[400px]" style={{ zIndex: 1 }} />
       <style>{`
-        @keyframes ecosystemPulse {
-          0% { transform: scale(1); opacity: 0.5; }
-          100% { transform: scale(2.2); opacity: 0; }
+        /* ─── User Marker ─── */
+        .eco-user-marker { position:relative;width:24px;height:24px; }
+        .eco-user-dot { position:absolute;inset:4px;border-radius:50%;background:#06b6d4;border:3px solid rgba(255,255,255,0.9);box-shadow:0 0 20px rgba(6,182,212,0.7);z-index:2; }
+        .eco-user-pulse { position:absolute;inset:-4px;border-radius:50%;border:2px solid #06b6d4;animation:ecoPulse 2s ease-out infinite; }
+        .eco-user-pulse-2 { animation-delay:0.7s; }
+
+        /* ─── Entity Markers ─── */
+        .eco-marker { position:relative;width:40px;height:40px;cursor:pointer; }
+        .eco-marker-bg {
+          width:40px;height:40px;border-radius:12px;
+          background:linear-gradient(135deg, var(--marker-color), color-mix(in srgb, var(--marker-color) 70%, black));
+          display:flex;align-items:center;justify-content:center;
+          box-shadow:0 4px 16px var(--marker-glow);
+          transition:transform 0.15s ease;
         }
-        .marker-cluster-small, .marker-cluster-medium, .marker-cluster-large {
-          background: transparent !important;
+        .eco-marker:hover .eco-marker-bg { transform:scale(1.12); }
+        .eco-marker-glow {
+          position:absolute;inset:-3px;border-radius:15px;
+          background:radial-gradient(circle, var(--marker-glow) 0%, transparent 70%);
+          opacity:0.3;animation:ecoGlow 3s ease-in-out infinite alternate;
+          pointer-events:none;z-index:-1;
         }
-        .marker-cluster-small div, .marker-cluster-medium div, .marker-cluster-large div {
-          background: transparent !important;
+        .eco-online-dot { position:absolute;top:-1px;right:-1px;width:12px;height:12px;border-radius:50%;background:#22c55e;border:2.5px solid #0f172a;box-shadow:0 0 8px rgba(34,197,94,0.6);z-index:3; }
+        .eco-active-ring { position:absolute;inset:-5px;border-radius:16px;border:2px solid var(--marker-color);animation:ecoPulse 1.5s ease-out infinite;pointer-events:none; }
+
+        /* ─── Cluster ─── */
+        .eco-cluster { position:relative;display:flex;align-items:center;justify-content:center; }
+        .eco-cluster-inner {
+          width:100%;height:100%;border-radius:50%;
+          background:linear-gradient(135deg, #06b6d4, #8b5cf6);
+          display:flex;align-items:center;justify-content:center;
+          color:white;font-weight:800;font-size:13px;letter-spacing:-0.5px;
+          box-shadow:0 4px 24px rgba(6,182,212,0.45), inset 0 1px 0 rgba(255,255,255,0.2);
+          border:2px solid rgba(255,255,255,0.15);
         }
+        .eco-cluster-ring {
+          position:absolute;inset:-4px;border-radius:50%;
+          border:2px solid rgba(6,182,212,0.3);
+          animation:ecoPulse 2.5s ease-out infinite;
+        }
+
+        /* ─── Popup (glass) ─── */
+        .eco-popup { min-width:180px;font-family:system-ui,sans-serif; }
+        .eco-popup-header { display:flex;align-items:center;gap:8px;margin-bottom:6px; }
+        .eco-popup-icon { width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0; }
+        .eco-popup-title { font-weight:700;font-size:13px;line-height:1.2; }
+        .eco-popup-sub { font-size:11px;opacity:0.6;margin-top:1px; }
+        .eco-popup-meta { display:flex;align-items:center;gap:6px; }
+        .eco-popup-badge { font-size:9px;font-weight:600;padding:2px 6px;border-radius:4px; }
+        .eco-popup-dist { font-size:10px;opacity:0.45; }
+        .eco-popup-price { font-weight:700;font-size:14px;margin-top:4px; }
+
+        .leaflet-popup-content-wrapper { background:rgba(15,23,42,0.92)!important;backdrop-filter:blur(12px);color:white!important;border:1px solid rgba(6,182,212,0.15)!important;border-radius:14px!important;box-shadow:0 8px 40px rgba(0,0,0,0.5)!important; }
+        .leaflet-popup-tip { background:rgba(15,23,42,0.92)!important; }
+
+        /* ─── Animations ─── */
+        @keyframes ecoPulse {
+          0% { transform:scale(1); opacity:0.6; }
+          100% { transform:scale(2.2); opacity:0; }
+        }
+        @keyframes ecoGlow {
+          0% { opacity:0.2;transform:scale(0.95); }
+          100% { opacity:0.45;transform:scale(1.1); }
+        }
+
+        .marker-cluster-small, .marker-cluster-medium, .marker-cluster-large { background:transparent!important; }
+        .marker-cluster-small div, .marker-cluster-medium div, .marker-cluster-large div { background:transparent!important; }
       `}</style>
     </>
   );

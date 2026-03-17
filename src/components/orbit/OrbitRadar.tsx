@@ -163,10 +163,40 @@ export default function OrbitRadar() {
               )}
             </div>
             <div>
-              <h2 className="text-sm font-bold leading-tight" style={{ color: "hsl(var(--hud-text))" }}>Living Ecosystem</h2>
-              <p className="text-[9px]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
-                {entities.length} signaux · {radius}km
-              </p>
+              <div className="flex items-center gap-1.5">
+                <h2 className="text-sm font-bold leading-tight" style={{ color: "hsl(var(--hud-text))" }}>Living Ecosystem</h2>
+                {/* LIVE indicator */}
+                <div className="flex items-center gap-1 px-1.5 py-0.5 rounded-full"
+                  style={{ background: "hsl(var(--hud-danger) / 0.12)", border: "1px solid hsl(var(--hud-danger) / 0.25)" }}>
+                  <motion.div className="w-1.5 h-1.5 rounded-full" style={{ background: "hsl(var(--hud-danger))" }}
+                    animate={{ opacity: [1, 0.3, 1] }} transition={{ duration: 1.5, repeat: Infinity }} />
+                  <span className="text-[8px] font-bold uppercase tracking-wider" style={{ color: "hsl(var(--hud-danger))" }}>Live</span>
+                </div>
+              </div>
+              {/* Activity counts */}
+              <div className="flex items-center gap-2 mt-0.5">
+                <span className="text-[9px] flex items-center gap-0.5" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
+                  {entities.length} signaux · {radius}km
+                </span>
+                {(counts["person"] || 0) + (counts["agent"] || 0) > 0 && (
+                  <span className="text-[8px] flex items-center gap-0.5 px-1 py-0.5 rounded-full"
+                    style={{ background: "hsl(var(--hud-purple) / 0.1)", color: "hsl(var(--hud-purple))" }}>
+                    👤 {(counts["person"] || 0) + (counts["agent"] || 0)}
+                  </span>
+                )}
+                {(counts["delivery"] || 0) > 0 && (
+                  <span className="text-[8px] flex items-center gap-0.5 px-1 py-0.5 rounded-full"
+                    style={{ background: "hsl(var(--hud-success) / 0.1)", color: "hsl(var(--hud-success))" }}>
+                    📦 {counts["delivery"]}
+                  </span>
+                )}
+                {(counts["visit"] || 0) + (counts["intervention"] || 0) > 0 && (
+                  <span className="text-[8px] flex items-center gap-0.5 px-1 py-0.5 rounded-full"
+                    style={{ background: "hsl(var(--hud-cyan) / 0.1)", color: "hsl(var(--hud-cyan))" }}>
+                    🏠 {(counts["visit"] || 0) + (counts["intervention"] || 0)}
+                  </span>
+                )}
+              </div>
             </div>
           </div>
 
@@ -301,28 +331,47 @@ export default function OrbitRadar() {
             />
           </Suspense>
 
-          {/* Category legend overlay */}
-          <div className="absolute top-2 left-2 right-14 flex flex-wrap gap-1 z-[1000] pointer-events-none">
-            {Object.entries(counts).slice(0, 5).map(([cat, count]) => {
+          {/* Glass overlay — activity summary */}
+          <div className="absolute top-2 left-2 right-14 flex flex-wrap gap-1.5 z-[1000] pointer-events-none">
+            {/* Live badge */}
+            <div className="flex items-center gap-1 px-2.5 py-1.5 rounded-full text-[9px] font-bold backdrop-blur-xl pointer-events-auto"
+              style={{ background: "hsl(var(--hud-bg) / 0.75)", border: "1px solid hsl(var(--hud-danger) / 0.3)", boxShadow: "0 2px 12px hsl(var(--hud-danger) / 0.15)" }}>
+              <motion.div className="w-1.5 h-1.5 rounded-full" style={{ background: "hsl(var(--hud-danger))" }}
+                animate={{ opacity: [1, 0.3, 1] }} transition={{ duration: 1.5, repeat: Infinity }} />
+              <span style={{ color: "hsl(var(--hud-danger))" }}>LIVE</span>
+              <span style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>·</span>
+              <span style={{ color: "hsl(var(--hud-text))" }}>{entities.filter(e => !e.meta?.no_geo).length}</span>
+            </div>
+            {Object.entries(counts).slice(0, 4).map(([cat, count]) => {
               const cfg = ECOSYSTEM_CATEGORIES.find(c => c.id === cat);
               if (!cfg) return null;
               return (
-                <div key={cat} className="flex items-center gap-1 px-2 py-1 rounded-full text-[9px] font-semibold backdrop-blur-md pointer-events-auto"
-                  style={{ background: "hsl(var(--hud-bg) / 0.85)", color: catHsl(cfg.color), border: `1px solid ${catHsl(cfg.color, 0.2)}` }}>
+                <div key={cat} className="flex items-center gap-1 px-2 py-1.5 rounded-full text-[9px] font-semibold backdrop-blur-xl pointer-events-auto"
+                  style={{ background: "hsl(var(--hud-bg) / 0.75)", color: catHsl(cfg.color), border: `1px solid ${catHsl(cfg.color, 0.2)}`, boxShadow: `0 2px 12px ${catHsl(cfg.color, 0.1)}` }}>
                   {cfg.emoji} {count}
                 </div>
               );
             })}
           </div>
 
-          {/* Floating scan button */}
+          {/* Floating scan button — glass effect */}
           <div className="absolute bottom-4 right-4 z-[1000]">
             <motion.button onClick={() => { scan(); haptic("medium"); }}
-              className="w-12 h-12 rounded-full flex items-center justify-center backdrop-blur-md"
-              style={{ background: "hsl(var(--hud-bg) / 0.9)", border: "1px solid hsl(var(--hud-cyan) / 0.3)", boxShadow: "0 4px 20px hsl(0 0% 0% / 0.3)" }}
+              className="w-14 h-14 rounded-full flex items-center justify-center backdrop-blur-xl"
+              style={{
+                background: "linear-gradient(135deg, hsl(var(--hud-bg) / 0.85), hsl(var(--hud-surface) / 0.7))",
+                border: "1px solid hsl(var(--hud-cyan) / 0.3)",
+                boxShadow: "0 4px 24px hsl(0 0% 0% / 0.4), 0 0 20px hsl(var(--hud-cyan) / 0.15)",
+              }}
               whileTap={{ scale: 0.9 }}>
               <Radar className={`h-5 w-5 ${scanning ? "animate-spin" : ""}`} style={{ color: "hsl(var(--hud-cyan))" }} />
             </motion.button>
+            {scanning && (
+              <motion.div className="absolute inset-0 rounded-full pointer-events-none"
+                style={{ border: "2px solid hsl(var(--hud-cyan))" }}
+                initial={{ scale: 1, opacity: 0.5 }} animate={{ scale: 2, opacity: 0 }}
+                transition={{ duration: 1, repeat: Infinity }} />
+            )}
           </div>
 
           {/* Recenter */}
