@@ -187,6 +187,20 @@ export function installStorefrontReactions(): () => void {
     })
   );
 
+  // ── PASS126: Return processed → refresh orders + invoices ──
+  unsubs.push(
+    platformBus.on("storefront:return_processed", (event: PlatformEvent) => {
+      const { shopId } = event.payload as any;
+      toast.info("📦 Return processed");
+      invalidate([
+        ["shop-orders", shopId],
+        ["storefront-returns", shopId],
+        ["buyer-orders", event.userId || ""],
+        ["shop-invoices", shopId],
+      ]);
+    })
+  );
+
   // ── Order completed → also refresh trust + growth + loyalty + invoices ──
   unsubs.push(
     platformBus.on("storefront:order_completed", (event: PlatformEvent) => {
