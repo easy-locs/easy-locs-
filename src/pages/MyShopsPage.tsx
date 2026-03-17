@@ -43,6 +43,10 @@ export default function MyShopsPage() {
     enabled: !!user?.id,
   });
 
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+
   return (
     <div className="flex flex-col min-h-0 flex-1 bg-background">
       <div className="px-4 pt-4 pb-2">
