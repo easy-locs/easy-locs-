@@ -530,6 +530,9 @@ export const roComplete: Record<string, string> = {
   "explore.radius.title": "Unde căutați?", "explore.radius.worldwide": "Global",
   "explore.radius.reset": "Resetare", "explore.radius.apply": "Aplicare", "explore.clear_all": "Șterge tot",
   "page.listing.contact_direct": "Contact direct", "page.listing.call": "Apel", "page.listing.share": "Distribuie",
+  "page.install.title": "Instalează Easy-Locs", "page.install.install_btn": "Instalează",
+  "page.install.back": "Înapoi", "page.install.continue_web": "Continuă pe web",
+  "pwa.banner.title": "Instalează Easy-Locs", "pwa.banner.install": "Instalează", "pwa.banner.dismiss": "Închide",
 };
 
 // ─── Croatian (HR) ───
