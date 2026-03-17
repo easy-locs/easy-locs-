@@ -5556,9 +5556,6 @@ const pageEn: Record<string, string> = {
   "shops.results_count_one": "shop",
   "shops.results_count_other": "shops",
   "shops.sponsored": "Sponsored",
-  "shops.title": "Shops",
-  "shops.search_placeholder": "Search shops...",
-  "shops.all_shops": "All Shops",
 };
 
 const pageEs: Record<string, string> = {
