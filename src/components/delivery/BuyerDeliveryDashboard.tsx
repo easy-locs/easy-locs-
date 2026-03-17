@@ -8,6 +8,7 @@ import { Package, MapPin, Clock, CheckCircle2, Loader2, Eye, RefreshCw } from "l
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import EscrowDeliveryValidator from "@/components/delivery/EscrowDeliveryValidator";
 
 interface Props {
   className?: string;
@@ -161,6 +162,19 @@ export default function BuyerDeliveryDashboard({ className }: Props) {
                           {order.confirmation_code}
                         </p>
                       </div>
+                    )}
+                    {/* Escrow validator — PASS 182 */}
+                    {["assigned", "accepted", "in_progress"].includes(order.status) && (
+                      <EscrowDeliveryValidator
+                        jobId={order.id}
+                        jobStatus={order.status}
+                        escrowStatus="held"
+                        escrowAmount={order.delivery_fee ?? undefined}
+                        escrowCurrency={order.currency || "EUR"}
+                        confirmationCode={order.confirmation_code ?? undefined}
+                        role="buyer"
+                        onStatusChange={refresh}
+                      />
                     )}
                   </motion.div>
                 )}
