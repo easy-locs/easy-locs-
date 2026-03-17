@@ -5369,8 +5369,11 @@ export type Database = {
           org_id: string
           paid_at: string | null
           paid_by: string | null
+          payment_tx_id: string | null
           recipient_email: string | null
+          recipient_id: string | null
           recipient_name: string | null
+          requester_id: string | null
           sender_id: string
           status: string
           stripe_payment_intent_id: string | null
@@ -5393,8 +5396,11 @@ export type Database = {
           org_id: string
           paid_at?: string | null
           paid_by?: string | null
+          payment_tx_id?: string | null
           recipient_email?: string | null
+          recipient_id?: string | null
           recipient_name?: string | null
+          requester_id?: string | null
           sender_id: string
           status?: string
           stripe_payment_intent_id?: string | null
@@ -5417,8 +5423,11 @@ export type Database = {
           org_id?: string
           paid_at?: string | null
           paid_by?: string | null
+          payment_tx_id?: string | null
           recipient_email?: string | null
+          recipient_id?: string | null
           recipient_name?: string | null
+          requester_id?: string | null
           sender_id?: string
           status?: string
           stripe_payment_intent_id?: string | null
