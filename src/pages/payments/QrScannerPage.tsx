@@ -168,8 +168,13 @@ export default function QrScannerPage() {
         setTxId(result.transactionId || "");
         setState("paid");
       } else {
-        setError(result.error || "Payment failed");
-        setState("error");
+        if (result.error !== "Cancelled") {
+          setError(result.error || "Payment failed");
+          setState("error");
+        } else {
+          setState("idle");
+          handledRef.current = false;
+        }
       }
       return;
     }
