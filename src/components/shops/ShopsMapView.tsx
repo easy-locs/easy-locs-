@@ -23,11 +23,11 @@ interface Shop {
 
 interface Props {
   shops: Shop[];
-  radius: number;
-  onShopClick: (slug: string) => void;
+  radiusKm?: number;
+  onOpenShop?: (slug: string) => void;
 }
 
-export default function ShopsMapView({ shops, radius, onShopClick }: Props) {
+export default function ShopsMapView({ shops, radiusKm = 25, onOpenShop }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
   const clusterRef = useRef<L.MarkerClusterGroup | null>(null);
@@ -42,7 +42,7 @@ export default function ShopsMapView({ shops, radius, onShopClick }: Props) {
     if (!mapRef.current) {
       mapRef.current = L.map(containerRef.current, {
         center: [centerLat, centerLng],
-        zoom: getZoom(radius),
+        zoom: getZoom(radiusKm),
         zoomControl: false,
         attributionControl: false,
       });
@@ -82,7 +82,7 @@ export default function ShopsMapView({ shops, radius, onShopClick }: Props) {
     const map = mapRef.current;
     const cluster = clusterRef.current!;
 
-    map.setView([centerLat, centerLng], getZoom(radius), { animate: true });
+    map.setView([centerLat, centerLng], getZoom(radiusKm), { animate: true });
 
     // Clear old
     map.eachLayer((layer) => {
@@ -107,7 +107,7 @@ export default function ShopsMapView({ shops, radius, onShopClick }: Props) {
       L.marker([userLat, userLng], { icon: userIcon, zIndexOffset: 1000 }).addTo(map).bindPopup("You");
 
       L.circle([userLat, userLng], {
-        radius: radius * 1000,
+        radius: radiusKm * 1000,
         color: "#3b82f6",
         fillColor: "#3b82f6",
         fillOpacity: 0.04,
@@ -145,10 +145,10 @@ export default function ShopsMapView({ shops, radius, onShopClick }: Props) {
       const marker = L.marker([sLat, sLng], { icon })
         .bindPopup(`<div style="min-width:120px;"><strong>${shop.name}</strong>${shop.vertical ? `<br/><span style="font-size:11px;opacity:0.6;">${shop.vertical}</span>` : ""}</div>`);
 
-      marker.on("click", () => onShopClick(shop.slug));
+      marker.on("click", () => onOpenShop?.(shop.slug));
       cluster.addLayer(marker);
     });
-  }, [shops, radius, centerLat, centerLng, userLat, userLng, onShopClick]);
+  }, [shops, radiusKm, centerLat, centerLng, userLat, userLng, onOpenShop]);
 
   useEffect(() => {
     return () => {
