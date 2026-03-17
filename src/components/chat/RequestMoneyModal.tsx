@@ -1,5 +1,6 @@
 /**
  * RequestMoneyModal — modal to create a payment request from chat or anywhere.
+ * Supports async onCreated for bridge auto-insert.
  */
 import { useState } from "react";
 import { X } from "lucide-react";
@@ -17,7 +18,7 @@ export function RequestMoneyModal({
   onClose: () => void;
   recipientId?: string | null;
   contextId?: string | null;
-  onCreated?: (request: PaymentRequestRow) => void;
+  onCreated?: (request: PaymentRequestRow) => void | Promise<void>;
 }) {
   const { user } = useAuth();
   const [amount, setAmount] = useState("");
@@ -47,7 +48,7 @@ export function RequestMoneyModal({
         contextId: contextId || null,
         metadata: { source: "chat" },
       });
-      onCreated?.(req);
+      await onCreated?.(req);
       onClose();
       setAmount("");
       setTitle("");
