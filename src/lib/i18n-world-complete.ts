@@ -73,6 +73,13 @@ export const koComplete: Record<string, string> = {
   "page.listing.contact_direct": "직접 연락", "page.listing.call": "전화", "page.listing.share": "공유",
   // Install
   "page.install.title": "Easy-Locs 설치", "page.install.install_btn": "앱 설치",
+  "page.install.desc": "홈 화면에서 Easy-Locs에 바로 접속하세요.", "page.install.installed": "앱이 설치되었습니다!",
+  "page.install.ios_title": "iPhone / iPad에서:", "page.install.ios_step": "Safari 하단의 공유 버튼을 누른 후 '홈 화면에 추가'를 선택하세요.",
+  "page.install.browser_hint": "Chrome 또는 Edge에서 이 페이지를 열어 앱을 설치하세요.",
+  "page.install.feature_offline": "오프라인 접속", "page.install.feature_fast": "빠른 실행", "page.install.feature_notif": "알림",
+  "page.install.back": "뒤로", "page.install.continue_web": "웹에서 계속",
+  "pwa.banner.title": "Easy-Locs 설치", "pwa.banner.hint": "빠르고 오프라인 사용 가능",
+  "pwa.banner.ios_hint": "공유 → 홈 화면에 추가", "pwa.banner.install": "설치", "pwa.banner.dismiss": "닫기",
 };
 
 // ─── Chinese Simplified (ZH) ───
