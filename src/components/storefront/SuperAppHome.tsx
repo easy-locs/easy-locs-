@@ -1,283 +1,268 @@
 /**
- * SuperAppHome — PASS137-140: Role-based home hub.
- * Buyer: rails (trending, reorder, track) with strong CTAs
- * Merchant: orders, revenue, quick actions
- * Driver: active missions, earnings
- * New: discover + create shop
- * Max 3 visible sections per screen. Mobile-first.
+ * SuperAppHome — WeChat-inspired services hub.
+ * Chat-first super app: Mini-apps grid, quick pay, recent chats, order tracking.
+ * Ultra simple, mobile-first, everything connected.
  */
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
-  Store, ShoppingBag, Truck, Package, RotateCcw, Search,
-  Plus, BarChart3, ArrowRight, Clock, CheckCircle, TrendingUp,
-  MapPin, Star, DollarSign, Eye,
+  MessageCircle, Wallet, Store, Truck, ShoppingBag, Scan,
+  MapPin, Package, ArrowRight, QrCode, Send, Users,
+  Building2, Star, Sparkles, Video, BarChart3, Clock,
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
+import { useOrbitEngine } from "@/stores/orbit-engine";
 
-const fmtPrice = (n: number, c = "EUR") => {
-  try { return new Intl.NumberFormat(undefined, { style: "currency", currency: c, minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(n); }
-  catch { return `${n} ${c}`; }
-};
-
-type UserType = "buyer" | "merchant" | "driver" | "new";
-
-/* ═══════════════════════════════════════════
-   Quick Action Button (reusable)
-   ═══════════════════════════════════════════ */
-function QuickAction({ to, icon: Icon, label, sub, accent }: {
-  to: string; icon: React.ElementType; label: string; sub: string; accent?: boolean;
+/* ═══ Mini-App Grid Item ═══ */
+function MiniApp({ to, icon: Icon, label, color, badge }: {
+  to: string; icon: React.ElementType; label: string; color: string; badge?: number;
 }) {
   return (
-    <Link to={to} className="block">
-      <Button
-        variant={accent ? "default" : "outline"}
-        className={`w-full h-14 text-xs gap-2 justify-start ${accent ? "shadow-sm" : ""}`}
-      >
-        <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${accent ? "bg-primary-foreground/20" : "bg-primary/10"}`}>
-          <Icon className={`h-4 w-4 ${accent ? "text-primary-foreground" : "text-primary"}`} />
-        </div>
-        <div className="text-left">
-          <p className="font-semibold">{label}</p>
-          <p className={`text-[10px] ${accent ? "text-primary-foreground/70" : "text-muted-foreground"}`}>{sub}</p>
-        </div>
-        <ArrowRight className={`h-3.5 w-3.5 ml-auto ${accent ? "text-primary-foreground/50" : "text-muted-foreground/50"}`} />
-      </Button>
+    <Link to={to} className="flex flex-col items-center gap-1.5 active:scale-90 transition-transform">
+      <div className="relative w-12 h-12 rounded-2xl flex items-center justify-center" style={{ background: `${color}15` }}>
+        <Icon className="h-5 w-5" style={{ color }} />
+        {badge != null && badge > 0 && (
+          <span
+            className="absolute -top-1 -right-1 min-w-[16px] h-4 rounded-full text-[9px] font-bold flex items-center justify-center px-1"
+            style={{ background: "hsl(var(--hud-danger))", color: "#fff" }}
+          >
+            {badge > 9 ? "9+" : badge}
+          </span>
+        )}
+      </div>
+      <span className="text-[10px] font-medium text-center leading-tight" style={{ color: "hsl(var(--hud-text-dim) / 0.8)" }}>
+        {label}
+      </span>
     </Link>
   );
 }
 
-/* ═══════════════════════════════════════════
-   Stat Pill (compact KPI for merchant/driver)
-   ═══════════════════════════════════════════ */
-function StatPill({ icon: Icon, label, value, color }: {
-  icon: React.ElementType; label: string; value: string | number; color: string;
-}) {
+/* ═══ Quick Pay Actions ═══ */
+function QuickPayBar() {
   return (
-    <div className="flex flex-col items-center gap-1 rounded-xl bg-muted/50 px-3 py-3 flex-1">
-      <Icon className="h-4 w-4" style={{ color }} />
-      <span className="text-sm font-bold text-foreground">{value}</span>
-      <span className="text-[9px] text-muted-foreground">{label}</span>
+    <div
+      className="rounded-2xl p-3 flex items-center justify-around"
+      style={{
+        background: "linear-gradient(135deg, hsl(var(--hud-cyan) / 0.08), hsl(var(--primary) / 0.06))",
+        border: "1px solid hsl(var(--hud-border) / 0.08)",
+      }}
+    >
+      {[
+        { icon: QrCode, label: "Scan", to: "/dashboard/wallet?action=scan" },
+        { icon: Send, label: "Pay", to: "/dashboard/wallet?action=send" },
+        { icon: Wallet, label: "Wallet", to: "/dashboard/wallet" },
+      ].map(({ icon: Icon, label, to }) => (
+        <Link key={label} to={to} className="flex flex-col items-center gap-1 active:scale-90 transition-transform px-4">
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: "hsl(var(--hud-cyan) / 0.12)" }}>
+            <Icon className="h-5 w-5" style={{ color: "hsl(var(--hud-cyan))" }} />
+          </div>
+          <span className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-cyan))" }}>{label}</span>
+        </Link>
+      ))}
     </div>
   );
 }
 
-/* ═══════════════════════════════════════════
-   Main Component
-   ═══════════════════════════════════════════ */
+/* ═══ Recent Chat Preview ═══ */
+function RecentChats({ threads }: { threads: any[] }) {
+  if (!threads.length) return null;
+  return (
+    <div className="space-y-1">
+      <div className="flex items-center justify-between px-0.5 mb-2">
+        <h3 className="text-[11px] font-bold uppercase tracking-wider" style={{ color: "hsl(var(--hud-text-dim) / 0.6)" }}>
+          Recent Chats
+        </h3>
+        <Link to="/dashboard/communication" className="text-[10px] font-medium flex items-center gap-0.5" style={{ color: "hsl(var(--hud-cyan))" }}>
+          All <ArrowRight className="h-3 w-3" />
+        </Link>
+      </div>
+      {threads.slice(0, 3).map((t: any) => (
+        <Link
+          key={t.id}
+          to={`/dashboard/communication?thread=${t.id}`}
+          className="flex items-center gap-3 p-2.5 rounded-xl active:scale-[0.98] transition-transform"
+          style={{ background: "hsl(var(--hud-surface) / 0.5)" }}
+        >
+          <div className="w-9 h-9 rounded-full flex items-center justify-center shrink-0" style={{ background: "hsl(var(--hud-cyan) / 0.1)" }}>
+            <MessageCircle className="h-4 w-4" style={{ color: "hsl(var(--hud-cyan))" }} />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-semibold truncate" style={{ color: "hsl(var(--hud-text))" }}>
+              {t.provider_name || t.listing_title || "Conversation"}
+            </p>
+            <p className="text-[10px] truncate" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
+              {t.context_type === "direct" ? "Direct message" : t.context_type}
+            </p>
+          </div>
+          {t.last_message_at && (
+            <span className="text-[9px] shrink-0" style={{ color: "hsl(var(--hud-text-dim) / 0.35)" }}>
+              {new Date(t.last_message_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+            </span>
+          )}
+        </Link>
+      ))}
+    </div>
+  );
+}
+
+/* ═══ Active Orders ═══ */
+function ActiveOrders({ orders }: { orders: any[] }) {
+  if (!orders.length) return null;
+  return (
+    <div className="space-y-1">
+      <div className="flex items-center justify-between px-0.5 mb-2">
+        <h3 className="text-[11px] font-bold uppercase tracking-wider" style={{ color: "hsl(var(--hud-text-dim) / 0.6)" }}>
+          Active Orders
+        </h3>
+        <Link to="/my-orders" className="text-[10px] font-medium flex items-center gap-0.5" style={{ color: "hsl(var(--hud-cyan))" }}>
+          All <ArrowRight className="h-3 w-3" />
+        </Link>
+      </div>
+      {orders.slice(0, 2).map((o: any) => (
+        <Link
+          key={o.id}
+          to={`/my-orders?id=${o.id}`}
+          className="flex items-center gap-3 p-2.5 rounded-xl active:scale-[0.98] transition-transform"
+          style={{ background: "hsl(var(--hud-surface) / 0.5)" }}
+        >
+          <div className="w-9 h-9 rounded-full flex items-center justify-center shrink-0" style={{ background: "hsl(var(--warning) / 0.1)" }}>
+            <Package className="h-4 w-4" style={{ color: "hsl(var(--warning))" }} />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-semibold" style={{ color: "hsl(var(--hud-text))" }}>
+              #{o.id.slice(0, 8)}
+            </p>
+            <p className="text-[10px] capitalize" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
+              {o.status}
+            </p>
+          </div>
+          <Clock className="h-3.5 w-3.5" style={{ color: "hsl(var(--warning))" }} />
+        </Link>
+      ))}
+    </div>
+  );
+}
+
+/* ═══ Main Component ═══ */
 export default function SuperAppHome() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const engine = useOrbitEngine();
 
   const { data, isLoading } = useQuery({
-    queryKey: ["superapp-home", user?.id],
+    queryKey: ["superapp-home-v2", user?.id],
     queryFn: async () => {
-      const [shopRes, ordersRes, driverRes] = await Promise.all([
-        (supabase as any).from("storefront_pages").select("id, name, slug, logo_url").eq("user_id", user!.id).maybeSingle(),
+      const [threadsRes, ordersRes, shopRes] = await Promise.all([
+        (supabase as any).from("conversation_threads")
+          .select("id, context_type, provider_name, listing_title, last_message_at, status")
+          .contains("participant_ids", [user!.id])
+          .order("last_message_at", { ascending: false })
+          .limit(5),
         (supabase as any).from("storefront_orders")
-          .select("id, status, total, currency, created_at, shop_id")
+          .select("id, status, total, currency, created_at")
           .eq("buyer_id", user!.id)
+          .in("status", ["pending", "accepted", "preparing", "shipped"])
           .order("created_at", { ascending: false })
-          .limit(5),
-        (supabase as any).from("delivery_jobs")
-          .select("id, status, delivery_fee, currency")
-          .eq("driver_id", user!.id)
-          .in("status", ["assigned", "accepted", "in_progress"])
-          .limit(5),
+          .limit(3),
+        (supabase as any).from("storefront_pages")
+          .select("id, name, slug")
+          .eq("user_id", user!.id)
+          .maybeSingle(),
       ]);
-
-      const shop = shopRes.data;
-      const orders = ordersRes.data || [];
-      const activeDeliveries = driverRes.data || [];
-
-      let userType: UserType = "new";
-      if (activeDeliveries.length > 0) userType = "driver";
-      else if (shop) userType = "merchant";
-      else if (orders.length > 0) userType = "buyer";
-
-      // Merchant stats
-      let shopStats = null;
-      if (shop) {
-        const [orderCountRes, pendingRes, revenueRes] = await Promise.all([
-          (supabase as any).from("storefront_orders").select("id", { count: "exact", head: true }).eq("shop_id", shop.id),
-          (supabase as any).from("storefront_orders").select("id", { count: "exact", head: true }).eq("shop_id", shop.id).eq("status", "pending"),
-          (supabase as any).from("storefront_orders").select("total").eq("shop_id", shop.id).in("status", ["completed", "accepted"]),
-        ]);
-        const revenue = (revenueRes.data || []).reduce((s: number, o: any) => s + (o.total || 0), 0);
-        shopStats = {
-          totalOrders: orderCountRes.count || 0,
-          pendingOrders: pendingRes.count || 0,
-          revenue,
-        };
-      }
-
-      // Driver stats
-      let driverStats = null;
-      if (userType === "driver") {
-        const { data: completedJobs } = await (supabase as any).from("delivery_jobs")
-          .select("delivery_fee").eq("driver_id", user!.id).eq("status", "completed");
-        const earnings = (completedJobs || []).reduce((s: number, j: any) => s + (j.delivery_fee || 0), 0);
-        driverStats = { active: activeDeliveries.length, earnings, completed: completedJobs?.length || 0 };
-      }
-
-      return { userType, shop, orders, activeDeliveries, shopStats, driverStats };
+      return {
+        threads: threadsRes.data || [],
+        activeOrders: ordersRes.data || [],
+        hasShop: !!shopRes.data,
+      };
     },
     enabled: !!user,
     staleTime: 30_000,
   });
 
   if (isLoading) return (
-    <div className="space-y-3">
-      <Skeleton className="h-10 w-48 rounded-lg" />
-      <div className="grid grid-cols-2 gap-2">
-        <Skeleton className="h-14 rounded-xl" />
-        <Skeleton className="h-14 rounded-xl" />
+    <div className="space-y-4 px-1">
+      <Skeleton className="h-20 rounded-2xl" />
+      <div className="grid grid-cols-4 gap-4">
+        {Array.from({ length: 8 }).map((_, i) => <Skeleton key={i} className="h-16 rounded-2xl" />)}
       </div>
-      <Skeleton className="h-24 rounded-xl" />
+      <Skeleton className="h-24 rounded-2xl" />
     </div>
   );
 
-  const d = data || { userType: "new" as UserType, shop: null, orders: [], activeDeliveries: [], shopStats: null, driverStats: null };
+  const d = data || { threads: [], activeOrders: [], hasShop: false };
 
-  const statusIcon = (s: string) => {
-    if (s === "pending") return <Clock className="h-3.5 w-3.5 text-warning" />;
-    if (["accepted", "preparing"].includes(s)) return <Package className="h-3.5 w-3.5 text-primary" />;
-    if (s === "shipped") return <Truck className="h-3.5 w-3.5 text-info" />;
-    if (s === "completed") return <CheckCircle className="h-3.5 w-3.5 text-success" />;
-    return <Clock className="h-3.5 w-3.5 text-muted-foreground" />;
-  };
+  /* Mini-apps grid — the core WeChat-style service launcher */
+  const MINI_APPS = [
+    { icon: MessageCircle, label: "Chat", to: "/dashboard/communication", color: "hsl(var(--hud-cyan))", badge: engine.unreadMessages },
+    { icon: Store, label: "Shops", to: "/discover", color: "hsl(var(--primary))" },
+    { icon: Wallet, label: "Pay", to: "/dashboard/wallet", color: "hsl(var(--success))" },
+    { icon: ShoppingBag, label: "Orders", to: "/my-orders", color: "hsl(var(--warning))", badge: engine.pendingOrders },
+    { icon: Truck, label: "Delivery", to: "/dashboard/driver", color: "hsl(var(--info))" },
+    { icon: Scan, label: "POS", to: "/pos", color: "hsl(var(--accent))" },
+    { icon: MapPin, label: "Nearby", to: "/discover?rail=nearby", color: "hsl(var(--hud-cyan))" },
+    { icon: Building2, label: "Property", to: "/property-hub", color: "hsl(var(--primary))" },
+  ];
+
+  const EXTRA_APPS = [
+    { icon: Users, label: "Contacts", to: "/dashboard/communication?section=contacts", color: "hsl(var(--hud-text-dim) / 0.6)" },
+    { icon: BarChart3, label: "Analytics", to: "/dashboard/seller", color: "hsl(var(--hud-text-dim) / 0.6)" },
+    { icon: Video, label: "Live", to: "/dashboard/my-shop", color: "hsl(var(--hud-text-dim) / 0.6)" },
+    { icon: Sparkles, label: "AI", to: "/dashboard/assistant", color: "hsl(var(--hud-text-dim) / 0.6)" },
+  ];
 
   return (
-    <div className="space-y-4">
-      {/* ═══ Section 1: Greeting ═══ */}
+    <div className="space-y-5 px-1">
+      {/* Quick Pay Bar */}
+      <QuickPayBar />
+
+      {/* Mini-Apps Grid */}
+      <div className="grid grid-cols-4 gap-y-4 gap-x-2">
+        {MINI_APPS.map((app) => (
+          <MiniApp key={app.label} {...app} />
+        ))}
+      </div>
+
+      {/* Recent Chats */}
+      <RecentChats threads={d.threads} />
+
+      {/* Active Orders */}
+      <ActiveOrders orders={d.activeOrders} />
+
+      {/* More Services */}
       <div>
-        <h2 className="text-lg font-bold text-foreground">
-          {d.userType === "merchant" ? "🏪 Your Business" : d.userType === "driver" ? "🚗 Driver Hub" : d.userType === "buyer" ? "👋 Welcome back" : "👋 Get started"}
-        </h2>
-        <p className="text-xs text-muted-foreground mt-0.5">
-          {d.userType === "merchant" ? `${d.shopStats?.pendingOrders || 0} pending orders` : d.userType === "driver" ? `${d.driverStats?.active || 0} active deliveries` : d.userType === "buyer" ? "Track, reorder, discover" : "Find shops or start selling"}
-        </p>
+        <h3 className="text-[11px] font-bold uppercase tracking-wider mb-3 px-0.5" style={{ color: "hsl(var(--hud-text-dim) / 0.6)" }}>
+          More Services
+        </h3>
+        <div className="grid grid-cols-4 gap-y-4 gap-x-2">
+          {EXTRA_APPS.map((app) => (
+            <MiniApp key={app.label} {...app} />
+          ))}
+        </div>
       </div>
 
-      {/* ═══ Section 2: Stats (merchant/driver only) ═══ */}
-      {d.userType === "merchant" && d.shopStats && (
-        <div className="grid grid-cols-3 gap-2">
-          <StatPill icon={ShoppingBag} label="Orders" value={d.shopStats.totalOrders} color="hsl(var(--primary))" />
-          <StatPill icon={DollarSign} label="Revenue" value={fmtPrice(d.shopStats.revenue)} color="hsl(var(--success))" />
-          <StatPill icon={Clock} label="Pending" value={d.shopStats.pendingOrders} color="hsl(var(--warning))" />
-        </div>
-      )}
-
-      {d.userType === "driver" && d.driverStats && (
-        <div className="grid grid-cols-3 gap-2">
-          <StatPill icon={Truck} label="Active" value={d.driverStats.active} color="hsl(var(--primary))" />
-          <StatPill icon={DollarSign} label="Earned" value={fmtPrice(d.driverStats.earnings)} color="hsl(var(--success))" />
-          <StatPill icon={CheckCircle} label="Done" value={d.driverStats.completed} color="hsl(var(--accent))" />
-        </div>
-      )}
-
-      {/* ═══ Section 3: Quick Actions (max 2-3, contextual) ═══ */}
-      <div className="space-y-2">
-        {d.userType === "buyer" && (
-          <>
-            <QuickAction to="/my-orders" icon={ShoppingBag} label="Track Orders" sub={`${d.orders.filter((o: any) => o.status !== "completed").length} active`} accent />
-            <div className="grid grid-cols-2 gap-2">
-              <QuickAction to="/discover?rail=trending" icon={TrendingUp} label="Trending" sub="Popular now" />
-              <QuickAction to="/discover?rail=nearby" icon={MapPin} label="Nearby" sub="Around you" />
+      {/* Merchant CTA */}
+      {!d.hasShop && (
+        <Link
+          to="/dashboard/my-shop"
+          className="block rounded-2xl p-4 active:scale-[0.98] transition-transform"
+          style={{
+            background: "linear-gradient(135deg, hsl(var(--primary) / 0.1), hsl(var(--hud-cyan) / 0.08))",
+            border: "1px solid hsl(var(--hud-border) / 0.1)",
+          }}
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: "hsl(var(--primary) / 0.15)" }}>
+              <Store className="h-5 w-5" style={{ color: "hsl(var(--primary))" }} />
             </div>
-          </>
-        )}
-
-        {d.userType === "merchant" && d.shop && (
-          <>
-            <QuickAction to="/dashboard/my-shop" icon={ShoppingBag} label="Manage Orders" sub={`${d.shopStats?.pendingOrders || 0} pending`} accent />
-            <div className="grid grid-cols-2 gap-2">
-              <QuickAction to="/dashboard/my-shop" icon={Plus} label="Add Product" sub="Grow catalog" />
-              <QuickAction to={`/s/${d.shop.slug}`} icon={Eye} label="View Shop" sub="Customer view" />
+            <div className="flex-1">
+              <p className="text-sm font-bold" style={{ color: "hsl(var(--hud-text))" }}>Start Selling</p>
+              <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>Create your shop in 2 minutes</p>
             </div>
-          </>
-        )}
-
-        {d.userType === "driver" && (
-          <>
-            <QuickAction to="/dashboard/driver" icon={Truck} label="View Missions" sub={`${d.driverStats?.active || 0} waiting`} accent />
-            <QuickAction to="/dashboard/tracking" icon={BarChart3} label="Earnings & Stats" sub="Performance overview" />
-          </>
-        )}
-
-        {d.userType === "new" && (
-          <div className="grid grid-cols-2 gap-2">
-            <QuickAction to="/discover" icon={Search} label="Discover" sub="Browse shops" accent />
-            <QuickAction to="/dashboard/my-shop" icon={Plus} label="Start Selling" sub="Create a shop" />
+            <ArrowRight className="h-4 w-4" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }} />
           </div>
-        )}
-      </div>
-
-      {/* ═══ Merchant: Shop card with ownership feel ═══ */}
-      {d.userType === "merchant" && d.shop && (
-        <Card className="border-primary/20">
-          <CardContent className="p-3">
-            <div className="flex items-center gap-3">
-              {d.shop.logo_url ? (
-                <img src={d.shop.logo_url} alt="" className="w-11 h-11 rounded-xl object-cover" />
-              ) : (
-                <div className="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center">
-                  <Store className="h-5 w-5 text-primary" />
-                </div>
-              )}
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-bold truncate">{d.shop.name}</p>
-                <div className="flex items-center gap-2 mt-0.5">
-                  <Badge variant="outline" className="text-[9px] h-4">Live</Badge>
-                  <span className="text-[10px] text-muted-foreground">{d.shopStats?.totalOrders} orders</span>
-                </div>
-              </div>
-              <Link to="/dashboard/my-shop">
-                <Button size="sm" variant="ghost" className="h-8 text-xs gap-1 text-primary">
-                  Manage <ArrowRight className="h-3 w-3" />
-                </Button>
-              </Link>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* ═══ Buyer: Recent orders with reorder CTA ═══ */}
-      {d.userType === "buyer" && d.orders.length > 0 && (
-        <Card>
-          <CardContent className="p-3 space-y-1.5">
-            <div className="flex items-center justify-between mb-1">
-              <h4 className="text-xs font-semibold">Recent Orders</h4>
-              <Link to="/my-orders" className="text-[10px] text-primary font-medium hover:underline">View all →</Link>
-            </div>
-            {d.orders.slice(0, 3).map((o: any) => (
-              <div key={o.id} className="flex items-center gap-2.5 py-2 border-b border-border last:border-0">
-                {statusIcon(o.status)}
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs font-medium">#{o.id.slice(0, 8)}</p>
-                  <p className="text-[10px] text-muted-foreground">{new Date(o.created_at).toLocaleDateString()}</p>
-                </div>
-                <span className="text-xs font-semibold">{fmtPrice(o.total, o.currency)}</span>
-                {o.status === "completed" ? (
-                  <Button
-                    size="sm"
-                    className="h-7 px-3 text-[10px] gap-1"
-                    onClick={() => navigate(`/s/${o.shop_id}?reorder=${o.id}`)}
-                  >
-                    <RotateCcw className="h-3 w-3" /> Reorder
-                  </Button>
-                ) : (
-                  <Badge variant="outline" className="text-[9px] capitalize h-5">{o.status}</Badge>
-                )}
-              </div>
-            ))}
-          </CardContent>
-        </Card>
+        </Link>
       )}
     </div>
   );
