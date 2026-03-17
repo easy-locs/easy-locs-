@@ -7,7 +7,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
-import ShopCreator from "@/components/storefront/ShopCreator";
+import SmartShopBuilder from "@/components/storefront/SmartShopBuilder";
 import ShopShareEngine from "@/components/storefront/ShopShareEngine";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
