@@ -61,6 +61,7 @@ const GrowthDashboard = lazy(() => import("@/components/storefront/GrowthDashboa
 const NotificationBell = lazy(() => import("@/components/storefront/NotificationBell"));
 const InvoiceList = lazy(() => import("@/components/storefront/InvoiceList"));
 const SellerOnboarding = lazy(() => import("@/components/storefront/SellerOnboarding"));
+const MerchantCRM = lazy(() => import("@/components/storefront/MerchantCRM"));
 // Settings-only (loaded inline since settings tab is simple)
 const AICategorySuggest = lazy(() => import("@/components/storefront/AICategorySuggest"));
 const PrivateInviteManager = lazy(() => import("@/components/storefront/PrivateInviteManager"));
