@@ -172,7 +172,14 @@ export const hiComplete: Record<string, string> = {
   "page.features.heading": "सभी प्रशासन,", "page.features.heading_highlight": "एक ही जगह",
   "page.finances.title": "वित्त", "page.finances.subtitle": "किराया आय, खर्च और शुद्ध लाभ",
   "page.listing.contact_direct": "सीधे संपर्क करें", "page.listing.call": "कॉल करें", "page.listing.share": "शेयर करें",
-};
+  "page.install.title": "Easy-Locs इंस्टॉल करें", "page.install.install_btn": "ऐप इंस्टॉल करें",
+  "page.install.desc": "अपनी होम स्क्रीन से Easy-Locs एक्सेस करें।", "page.install.installed": "ऐप इंस्टॉल हो गया!",
+  "page.install.ios_title": "iPhone / iPad पर:", "page.install.ios_step": "Safari में शेयर बटन दबाएं, फिर 'होम स्क्रीन पर जोड़ें' चुनें।",
+  "page.install.browser_hint": "ऐप इंस्टॉल करने के लिए Chrome या Edge में खोलें।",
+  "page.install.feature_offline": "ऑफ़लाइन एक्सेस", "page.install.feature_fast": "तेज़ लॉन्च", "page.install.feature_notif": "सूचनाएं",
+  "page.install.back": "वापस", "page.install.continue_web": "वेब पर जारी रखें",
+  "pwa.banner.title": "Easy-Locs इंस्टॉल करें", "pwa.banner.hint": "तेज़, ऑफ़लाइन तैयार",
+  "pwa.banner.ios_hint": "शेयर → होम स्क्रीन पर जोड़ें", "pwa.banner.install": "इंस्टॉल", "pwa.banner.dismiss": "बंद करें",
 
 // ─── Thai (TH) ───
 export const thComplete: Record<string, string> = {
