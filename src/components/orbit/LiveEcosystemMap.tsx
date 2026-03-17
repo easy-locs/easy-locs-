@@ -73,9 +73,10 @@ export default function LiveEcosystemMap({ lat, lng, radius, entities, onSelect 
         const size = count < 10 ? 40 : count < 50 ? 48 : 56;
         return L.divIcon({
           className: "",
-          html: `<div class="eco-cluster" style="width:${size}px;height:${size}px;">
+      html: `<div class="eco-cluster" style="width:${size}px;height:${size}px;">
             <div class="eco-cluster-inner">${count}</div>
             <div class="eco-cluster-ring"></div>
+            <div class="eco-cluster-ring eco-cluster-ring-2"></div>
           </div>`,
           iconSize: [size, size],
           iconAnchor: [size / 2, size / 2],
@@ -116,9 +117,10 @@ export default function LiveEcosystemMap({ lat, lng, radius, entities, onSelect 
         <div class="eco-user-dot"></div>
         <div class="eco-user-pulse"></div>
         <div class="eco-user-pulse eco-user-pulse-2"></div>
+        <div class="eco-user-pulse eco-user-pulse-3"></div>
       </div>`,
-      iconSize: [24, 24],
-      iconAnchor: [12, 12],
+      iconSize: [28, 28],
+      iconAnchor: [14, 14],
     });
     userMarkerRef.current = L.marker([lat, lng], { icon: userIcon, zIndexOffset: 2000 })
       .addTo(mapRef.current)
@@ -142,11 +144,11 @@ export default function LiveEcosystemMap({ lat, lng, radius, entities, onSelect 
         html: `<div class="eco-marker" style="--marker-color:${style.color};--marker-glow:${style.glow};">
           <div class="eco-marker-bg">${svgIcon}</div>
           ${isOnline ? '<div class="eco-online-dot"></div>' : ""}
-          ${isActive ? '<div class="eco-active-ring"></div>' : ""}
+          ${isActive ? '<div class="eco-active-ring"></div><div class="eco-active-ring eco-active-ring-2"></div>' : ""}
           <div class="eco-marker-glow"></div>
         </div>`,
-        iconSize: [40, 40],
-        iconAnchor: [20, 20],
+        iconSize: [42, 42],
+        iconAnchor: [21, 21],
       });
 
       const priceStr = entity.price && entity.price > 0
@@ -186,68 +188,109 @@ export default function LiveEcosystemMap({ lat, lng, radius, entities, onSelect 
       <div ref={containerRef} className="w-full h-full min-h-[400px]" style={{ zIndex: 1 }} />
       <style>{`
         /* ─── User Marker ─── */
-        .eco-user-marker { position:relative;width:24px;height:24px; }
-        .eco-user-dot { position:absolute;inset:4px;border-radius:50%;background:#06b6d4;border:3px solid rgba(255,255,255,0.9);box-shadow:0 0 20px rgba(6,182,212,0.7);z-index:2; }
-        .eco-user-pulse { position:absolute;inset:-4px;border-radius:50%;border:2px solid #06b6d4;animation:ecoPulse 2s ease-out infinite; }
+        .eco-user-marker { position:relative;width:28px;height:28px; }
+        .eco-user-dot {
+          position:absolute;inset:6px;border-radius:50%;
+          background:radial-gradient(circle at 40% 40%, #67e8f9, #06b6d4);
+          border:3px solid rgba(255,255,255,0.95);
+          box-shadow:0 0 24px rgba(6,182,212,0.8), 0 0 48px rgba(6,182,212,0.3);
+          z-index:2;
+        }
+        .eco-user-pulse {
+          position:absolute;inset:-6px;border-radius:50%;
+          border:2px solid rgba(6,182,212,0.5);
+          animation:ecoPulse 2s ease-out infinite;
+        }
         .eco-user-pulse-2 { animation-delay:0.7s; }
+        .eco-user-pulse-3 { animation-delay:1.4s; }
 
         /* ─── Entity Markers ─── */
-        .eco-marker { position:relative;width:40px;height:40px;cursor:pointer; }
+        .eco-marker { position:relative;width:42px;height:42px;cursor:pointer;filter:drop-shadow(0 2px 6px rgba(0,0,0,0.3)); }
         .eco-marker-bg {
-          width:40px;height:40px;border-radius:12px;
-          background:linear-gradient(135deg, var(--marker-color), color-mix(in srgb, var(--marker-color) 70%, black));
+          width:42px;height:42px;border-radius:13px;
+          background:linear-gradient(145deg, var(--marker-color), color-mix(in srgb, var(--marker-color) 60%, #0f172a));
           display:flex;align-items:center;justify-content:center;
-          box-shadow:0 4px 16px var(--marker-glow);
-          transition:transform 0.15s ease;
+          box-shadow:0 6px 20px var(--marker-glow), inset 0 1px 0 rgba(255,255,255,0.2);
+          border:1.5px solid rgba(255,255,255,0.12);
+          transition:transform 0.2s cubic-bezier(0.34,1.56,0.64,1);
         }
-        .eco-marker:hover .eco-marker-bg { transform:scale(1.12); }
+        .eco-marker:hover .eco-marker-bg { transform:scale(1.18) translateY(-2px); }
         .eco-marker-glow {
-          position:absolute;inset:-3px;border-radius:15px;
-          background:radial-gradient(circle, var(--marker-glow) 0%, transparent 70%);
-          opacity:0.3;animation:ecoGlow 3s ease-in-out infinite alternate;
+          position:absolute;inset:-6px;border-radius:18px;
+          background:radial-gradient(circle, var(--marker-glow) 0%, transparent 65%);
+          opacity:0.35;animation:ecoGlow 2.5s ease-in-out infinite alternate;
           pointer-events:none;z-index:-1;
         }
-        .eco-online-dot { position:absolute;top:-1px;right:-1px;width:12px;height:12px;border-radius:50%;background:#22c55e;border:2.5px solid #0f172a;box-shadow:0 0 8px rgba(34,197,94,0.6);z-index:3; }
-        .eco-active-ring { position:absolute;inset:-5px;border-radius:16px;border:2px solid var(--marker-color);animation:ecoPulse 1.5s ease-out infinite;pointer-events:none; }
+        .eco-online-dot {
+          position:absolute;top:-2px;right:-2px;width:13px;height:13px;border-radius:50%;
+          background:radial-gradient(circle at 40% 40%, #4ade80, #22c55e);
+          border:2.5px solid #0f172a;
+          box-shadow:0 0 10px rgba(34,197,94,0.7), 0 0 20px rgba(34,197,94,0.3);
+          z-index:3;
+          animation:ecoOnlinePulse 2s ease-in-out infinite;
+        }
+        .eco-active-ring {
+          position:absolute;inset:-6px;border-radius:18px;
+          border:2px solid var(--marker-color);
+          animation:ecoPulse 1.8s ease-out infinite;
+          pointer-events:none;
+        }
+        .eco-active-ring-2 { animation-delay:0.6s; }
 
         /* ─── Cluster ─── */
         .eco-cluster { position:relative;display:flex;align-items:center;justify-content:center; }
         .eco-cluster-inner {
           width:100%;height:100%;border-radius:50%;
-          background:linear-gradient(135deg, #06b6d4, #8b5cf6);
+          background:linear-gradient(145deg, #06b6d4, #7c3aed, #8b5cf6);
           display:flex;align-items:center;justify-content:center;
           color:white;font-weight:800;font-size:13px;letter-spacing:-0.5px;
-          box-shadow:0 4px 24px rgba(6,182,212,0.45), inset 0 1px 0 rgba(255,255,255,0.2);
-          border:2px solid rgba(255,255,255,0.15);
+          box-shadow:0 6px 28px rgba(6,182,212,0.5), inset 0 1px 0 rgba(255,255,255,0.25), inset 0 -1px 0 rgba(0,0,0,0.2);
+          border:2px solid rgba(255,255,255,0.18);
         }
         .eco-cluster-ring {
-          position:absolute;inset:-4px;border-radius:50%;
-          border:2px solid rgba(6,182,212,0.3);
+          position:absolute;inset:-5px;border-radius:50%;
+          border:2px solid rgba(6,182,212,0.35);
           animation:ecoPulse 2.5s ease-out infinite;
         }
+        .eco-cluster-ring-2 { animation-delay:0.8s; }
 
         /* ─── Popup (glass) ─── */
-        .eco-popup { min-width:180px;font-family:system-ui,sans-serif; }
-        .eco-popup-header { display:flex;align-items:center;gap:8px;margin-bottom:6px; }
-        .eco-popup-icon { width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0; }
-        .eco-popup-title { font-weight:700;font-size:13px;line-height:1.2; }
-        .eco-popup-sub { font-size:11px;opacity:0.6;margin-top:1px; }
-        .eco-popup-meta { display:flex;align-items:center;gap:6px; }
-        .eco-popup-badge { font-size:9px;font-weight:600;padding:2px 6px;border-radius:4px; }
-        .eco-popup-dist { font-size:10px;opacity:0.45; }
-        .eco-popup-price { font-weight:700;font-size:14px;margin-top:4px; }
+        .eco-popup { min-width:190px;font-family:system-ui,-apple-system,sans-serif; }
+        .eco-popup-header { display:flex;align-items:center;gap:10px;margin-bottom:8px; }
+        .eco-popup-icon {
+          width:30px;height:30px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;
+          box-shadow:inset 0 1px 0 rgba(255,255,255,0.15);
+        }
+        .eco-popup-title { font-weight:700;font-size:13px;line-height:1.2;letter-spacing:-0.2px; }
+        .eco-popup-sub { font-size:11px;opacity:0.55;margin-top:2px; }
+        .eco-popup-meta { display:flex;align-items:center;gap:6px;margin-top:2px; }
+        .eco-popup-badge { font-size:9px;font-weight:700;padding:2px 7px;border-radius:5px;text-transform:uppercase;letter-spacing:0.3px; }
+        .eco-popup-dist { font-size:10px;opacity:0.4; }
+        .eco-popup-price { font-weight:800;font-size:15px;margin-top:6px;letter-spacing:-0.3px; }
 
-        .leaflet-popup-content-wrapper { background:rgba(15,23,42,0.92)!important;backdrop-filter:blur(12px);color:white!important;border:1px solid rgba(6,182,212,0.15)!important;border-radius:14px!important;box-shadow:0 8px 40px rgba(0,0,0,0.5)!important; }
-        .leaflet-popup-tip { background:rgba(15,23,42,0.92)!important; }
+        .leaflet-popup-content-wrapper {
+          background:rgba(10,18,35,0.94)!important;
+          backdrop-filter:blur(16px) saturate(1.5);
+          color:white!important;
+          border:1px solid rgba(6,182,212,0.18)!important;
+          border-radius:16px!important;
+          box-shadow:0 12px 48px rgba(0,0,0,0.6), 0 0 24px rgba(6,182,212,0.08)!important;
+        }
+        .leaflet-popup-tip { background:rgba(10,18,35,0.94)!important; }
 
         /* ─── Animations ─── */
         @keyframes ecoPulse {
-          0% { transform:scale(1); opacity:0.6; }
-          100% { transform:scale(2.2); opacity:0; }
+          0% { transform:scale(1); opacity:0.55; }
+          100% { transform:scale(2.4); opacity:0; }
         }
         @keyframes ecoGlow {
-          0% { opacity:0.2;transform:scale(0.95); }
-          100% { opacity:0.45;transform:scale(1.1); }
+          0% { opacity:0.2;transform:scale(0.92); }
+          50% { opacity:0.5;transform:scale(1.08); }
+          100% { opacity:0.25;transform:scale(1.02); }
+        }
+        @keyframes ecoOnlinePulse {
+          0%, 100% { box-shadow:0 0 8px rgba(34,197,94,0.6), 0 0 16px rgba(34,197,94,0.2); }
+          50% { box-shadow:0 0 14px rgba(34,197,94,0.8), 0 0 28px rgba(34,197,94,0.4); }
         }
 
         .marker-cluster-small, .marker-cluster-medium, .marker-cluster-large { background:transparent!important; }
