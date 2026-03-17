@@ -1,6 +1,6 @@
 /**
  * StorefrontRealtimeSync — PASS123-124: Realtime subscription for storefront orders.
- * Provides live order status updates for both buyers and sellers.
+ * Emits proper storefront:* bus events consumed by storefront-reactions.
  */
 import { useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -10,8 +10,8 @@ import { platformBus } from "@/lib/shared/platform-bus";
 import { toast } from "sonner";
 
 interface Props {
-  shopId?: string;  // Seller mode: subscribe to shop orders
-  buyerId?: string; // Buyer mode: subscribe to buyer orders
+  shopId?: string;
+  buyerId?: string;
 }
 
 export function useStorefrontRealtime({ shopId, buyerId }: Props) {
@@ -32,44 +32,40 @@ export function useStorefrontRealtime({ shopId, buyerId }: Props) {
           ...(shopId ? { filter: `shop_id=eq.${shopId}` } : { filter: `buyer_id=eq.${buyerId}` }),
         },
         (payload) => {
-          const { eventType, new: newRecord, old: oldRecord } = payload;
+          const { eventType, new: rec, old: oldRec } = payload;
+          const newRecord = rec as any;
+          const oldRecord = oldRec as any;
 
-          // Refresh queries
-          if (shopId) {
-            qc.invalidateQueries({ queryKey: ["shop-orders", shopId] });
-            qc.invalidateQueries({ queryKey: ["seller-analytics-v2", shopId] });
-            qc.invalidateQueries({ queryKey: ["shop-event-stats", shopId] });
-          }
-          if (buyerId) {
-            qc.invalidateQueries({ queryKey: ["buyer-orders", buyerId] });
-            qc.invalidateQueries({ queryKey: ["buyer-stats", buyerId] });
-          }
-
-          // Emit platform bus event
           if (eventType === "INSERT") {
-            platformBus.emit("marketplace:booking_created", {
-              orderId: (newRecord as any)?.id,
-              type: "storefront_order",
-            }, "marketplace", { userId: user?.id, orgId: undefined });
+            platformBus.emit("storefront:order_placed", {
+              orderId: newRecord?.id,
+              shopId: newRecord?.shop_id,
+              total: newRecord?.total,
+              currency: newRecord?.currency,
+            }, "marketplace", { userId: user?.id });
 
             if (shopId) toast.info("🛒 New order received!");
           }
 
-          if (eventType === "UPDATE") {
-            const newStatus = (newRecord as any)?.status;
-            const oldStatus = (oldRecord as any)?.status;
-            if (newStatus !== oldStatus) {
-              if (newStatus === "completed") {
-                platformBus.emit("marketplace:booking_completed", {
-                  orderId: (newRecord as any)?.id,
-                }, "marketplace", { userId: user?.id });
-              }
-              if ((newRecord as any)?.payment_status === "paid") {
-                platformBus.emit("marketplace:booking_paid", {
-                  orderId: (newRecord as any)?.id,
-                  total: (newRecord as any)?.total,
-                }, "marketplace", { userId: user?.id });
-              }
+          if (eventType === "UPDATE" && newRecord?.status !== oldRecord?.status) {
+            const status = newRecord.status;
+            const eventPayload = {
+              orderId: newRecord.id,
+              shopId: newRecord.shop_id,
+              total: newRecord.total,
+              currency: newRecord.currency,
+            };
+
+            if (status === "shipped") {
+              platformBus.emit("storefront:order_shipped", eventPayload, "marketplace", { userId: user?.id });
+            } else if (status === "completed") {
+              platformBus.emit("storefront:order_completed", eventPayload, "marketplace", { userId: user?.id });
+            } else if (status === "cancelled") {
+              platformBus.emit("storefront:order_cancelled", eventPayload, "marketplace", { userId: user?.id });
+            }
+
+            if (newRecord.payment_status === "paid" && oldRecord?.payment_status !== "paid") {
+              platformBus.emit("storefront:order_paid", eventPayload, "marketplace", { userId: user?.id });
             }
           }
         }
