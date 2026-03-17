@@ -842,7 +842,7 @@
 
   /* List rows — consistent height */
   .list-row {
-    @apply flex items-center gap-3 px-4 border-b border-border/30 hover:bg-muted/20 transition-colors;
+    @apply flex items-center gap-3 px-4 border-b border-border/20 hover:bg-muted/15 transition-colors duration-150;
     min-height: 3.25rem;
     padding-top: 0.75rem;
     padding-bottom: 0.75rem;
