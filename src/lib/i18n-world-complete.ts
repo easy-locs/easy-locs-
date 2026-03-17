@@ -476,6 +476,9 @@ export const csComplete: Record<string, string> = {
   "explore.radius.title": "Kde hledáte?", "explore.radius.worldwide": "Celosvětově",
   "explore.radius.reset": "Obnovit", "explore.radius.apply": "Použít", "explore.clear_all": "Vymazat vše",
   "page.listing.contact_direct": "Kontaktovat přímo", "page.listing.call": "Volat", "page.listing.share": "Sdílet",
+  "page.install.title": "Nainstalovat Easy-Locs", "page.install.install_btn": "Nainstalovat",
+  "page.install.back": "Zpět", "page.install.continue_web": "Pokračovat na webu",
+  "pwa.banner.title": "Nainstalovat Easy-Locs", "pwa.banner.install": "Nainstalovat", "pwa.banner.dismiss": "Zavřít",
 };
 
 // ─── Hungarian (HU) ───
