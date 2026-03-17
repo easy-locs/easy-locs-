@@ -84,6 +84,7 @@ function ChatMessageBubble({
   const isInboundEmail = msg.message_type === "inbound_email";
   const isPayment = !isDeleted && msg.content?.startsWith("💳");
   const isPaymentRequest = !isDeleted && msg.category === "payment_request";
+  const isPaymentReceipt = !isDeleted && msg.category === "payment_receipt";
   const paymentRequestData = useMemo(() => {
     if (!isPaymentRequest) return null;
     try {
@@ -91,6 +92,13 @@ function ChatMessageBubble({
       return parsed?._type === "payment_request_card" ? parsed : null;
     } catch { return null; }
   }, [isPaymentRequest, msg.content]);
+  const paymentReceiptData = useMemo(() => {
+    if (!isPaymentReceipt) return null;
+    try {
+      const parsed = JSON.parse(msg.content);
+      return parsed?._type === "payment_receipt_card" ? parsed : null;
+    } catch { return null; }
+  }, [isPaymentReceipt, msg.content]);
   const isVoice = !isDeleted && !!(msg as any).audio_url;
   const isViewOnce = !isDeleted && !!(msg as any).view_once;
   
