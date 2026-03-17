@@ -244,6 +244,12 @@ export const viComplete: Record<string, string> = {
   "page.features.heading": "Tất cả quản lý,", "page.features.heading_highlight": "một nơi duy nhất",
   "page.finances.title": "Tài chính", "page.finances.subtitle": "Thu nhập cho thuê, chi phí và lợi nhuận ròng",
   "page.listing.contact_direct": "Liên hệ trực tiếp", "page.listing.call": "Gọi", "page.listing.share": "Chia sẻ",
+  "page.install.title": "Cài đặt Easy-Locs", "page.install.install_btn": "Cài ứng dụng",
+  "page.install.desc": "Truy cập Easy-Locs từ màn hình chính.", "page.install.installed": "Đã cài ứng dụng!",
+  "page.install.back": "Quay lại", "page.install.continue_web": "Tiếp tục trên web",
+  "page.install.feature_offline": "Truy cập offline", "page.install.feature_fast": "Khởi động nhanh", "page.install.feature_notif": "Thông báo",
+  "pwa.banner.title": "Cài đặt Easy-Locs", "pwa.banner.hint": "Nhanh, dùng offline",
+  "pwa.banner.install": "Cài đặt", "pwa.banner.dismiss": "Đóng",
 };
 
 // ─── Indonesian (ID) ───
