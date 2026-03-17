@@ -125,9 +125,10 @@
     --gradient-hero: linear-gradient(135deg, hsl(220 45% 12%) 0%, hsl(220 40% 22%) 50%, hsl(220 35% 28%) 100%);
     --gradient-gold: linear-gradient(135deg, hsl(38 65% 56%) 0%, hsl(42 70% 62%) 100%);
     --gradient-card: linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(220 20% 98%) 100%);
-    --shadow-card: 0 1px 3px hsl(220 40% 13% / 0.06), 0 4px 12px hsl(220 40% 13% / 0.04);
-    --shadow-card-hover: 0 4px 12px hsl(220 40% 13% / 0.1), 0 8px 24px hsl(220 40% 13% / 0.06);
-    --shadow-gold: 0 4px 16px hsl(38 65% 56% / 0.3);
+    --shadow-card: 0 1px 2px hsl(220 40% 13% / 0.04), 0 2px 8px hsl(220 40% 13% / 0.03);
+    --shadow-card-hover: 0 4px 16px hsl(220 40% 13% / 0.08), 0 8px 32px hsl(220 40% 13% / 0.05);
+    --shadow-gold: 0 4px 20px hsl(38 65% 56% / 0.25);
+    --shadow-elevated: 0 8px 24px hsl(220 40% 13% / 0.06), 0 2px 8px hsl(220 40% 13% / 0.04);
 
     /* ── Spacing scale ── */
     --space-xs: 0.25rem;   /* 4px */
