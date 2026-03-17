@@ -29,6 +29,10 @@ const runDeferredInit = () => {
     .then((mod) => mod?.installPlatformReactions?.())
     .catch((e) => console.debug("[boot] platform-bus skipped:", e));
 
+  void import("./lib/shared/storefront-reactions")
+    .then((mod) => mod?.installStorefrontReactions?.())
+    .catch((e) => console.debug("[boot] storefront-reactions skipped:", e));
+
   void import("./lib/analytics")
     .then((mod) => mod?.initAnalytics?.())
     .catch((e) => console.debug("[boot] analytics skipped:", e));
