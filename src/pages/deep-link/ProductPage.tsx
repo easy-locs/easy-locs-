@@ -64,10 +64,10 @@ export default function ProductPage() {
       <SEOHead
         title={`${data.title} — ${shop?.name || "Shop"}`}
         description={data.description?.slice(0, 160) || data.title}
-        imageUrl={photos[0]}
+        ogImage={photos[0]}
       />
       <div className="min-h-screen bg-background">
-        <MobilePageHeader title={data.title} backPath={shop ? `/s/${shop.slug}` : "/discover"} />
+        <MobilePageHeader title={data.title} backTo={shop ? `/s/${shop.slug}` : "/discover"} />
 
         <div className="max-w-md mx-auto pb-28">
           {/* Product image */}

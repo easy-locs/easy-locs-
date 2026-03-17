@@ -73,7 +73,7 @@ export default function UserProfilePage() {
     <>
       <SEOHead title={`${displayName} — Easy Locs`} description={profile.bio || `${displayName}'s profile`} />
       <div className="min-h-screen bg-background">
-        <MobilePageHeader title="Profile" backPath="/discover" />
+        <MobilePageHeader title="Profile" backTo="/discover" />
 
         <div className="max-w-md mx-auto px-4 pt-6 pb-24 space-y-6">
           {/* Avatar + Name */}

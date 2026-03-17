@@ -51,7 +51,7 @@ export default function PayPage() {
     <>
       <SEOHead title="Payment — Easy Locs" description="Secure payment link" />
       <div className="min-h-screen bg-background">
-        <MobilePageHeader title="Payment" backPath="/discover" />
+        <MobilePageHeader title="Payment" backTo="/discover" />
 
         <div className="max-w-md mx-auto px-4 pt-8 pb-24 space-y-6">
           {notFound ? (
