@@ -5365,15 +5365,20 @@ export type Database = {
           currency: string
           description: string | null
           id: string
+          metadata: Json
           org_id: string
           paid_at: string | null
+          paid_by: string | null
           recipient_email: string | null
           recipient_name: string | null
           sender_id: string
           status: string
           stripe_payment_intent_id: string | null
           stripe_payment_link: string | null
+          subtitle: string | null
           thread_id: string | null
+          title: string | null
+          transaction_id: string | null
           updated_at: string
         }
         Insert: {
@@ -5384,15 +5389,20 @@ export type Database = {
           currency?: string
           description?: string | null
           id?: string
+          metadata?: Json
           org_id: string
           paid_at?: string | null
+          paid_by?: string | null
           recipient_email?: string | null
           recipient_name?: string | null
           sender_id: string
           status?: string
           stripe_payment_intent_id?: string | null
           stripe_payment_link?: string | null
+          subtitle?: string | null
           thread_id?: string | null
+          title?: string | null
+          transaction_id?: string | null
           updated_at?: string
         }
         Update: {
@@ -5403,15 +5413,20 @@ export type Database = {
           currency?: string
           description?: string | null
           id?: string
+          metadata?: Json
           org_id?: string
           paid_at?: string | null
+          paid_by?: string | null
           recipient_email?: string | null
           recipient_name?: string | null
           sender_id?: string
           status?: string
           stripe_payment_intent_id?: string | null
           stripe_payment_link?: string | null
+          subtitle?: string | null
           thread_id?: string | null
+          title?: string | null
+          transaction_id?: string | null
           updated_at?: string
         }
         Relationships: [
