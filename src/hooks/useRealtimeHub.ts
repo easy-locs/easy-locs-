@@ -42,12 +42,13 @@ export function useRealtimeHub() {
   const handleSignal = useCallback((signal: RealtimeSignal) => {
     const { table, eventType, new: row } = signal;
 
-    // ─── Targeted orbit refresh — only for communication tables ───
-    if (ORBIT_REFRESH_TABLES.has(table)) {
+    // ─── V2: Targeted module refresh ───
+    const targetModule = TABLE_TO_MODULE[table];
+    if (targetModule) {
       if (debounceRef.current) clearTimeout(debounceRef.current);
       debounceRef.current = setTimeout(() => {
-        if (user?.id) refreshRef.current(user.id, orgId || undefined);
-      }, 500); // 500ms debounce for orbit (was 300ms)
+        if (user?.id) refreshModuleRef.current(targetModule, user.id, orgId || undefined);
+      }, 500);
     }
 
     // ─── Table-specific targeted invalidation ───
