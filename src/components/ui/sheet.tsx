@@ -9,7 +9,11 @@ import type { RadixPropsExtension } from "@/lib/ui-types";
 
 const Sheet = SheetPrimitive.Root;
 
-const SheetTrigger = SheetPrimitive.Trigger;
+const SheetTrigger = React.forwardRef<
+  React.ElementRef<typeof SheetPrimitive.Trigger>,
+  React.ComponentPropsWithoutRef<typeof SheetPrimitive.Trigger> & RadixPropsExtension & { asChild?: boolean }
+>(({ ...props }, ref) => <SheetPrimitive.Trigger ref={ref} {...props} />);
+SheetTrigger.displayName = "SheetTrigger";
 
 const SheetClose = SheetPrimitive.Close;
 

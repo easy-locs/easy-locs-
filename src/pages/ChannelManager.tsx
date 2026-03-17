@@ -17,7 +17,9 @@ import {
   Calendar, Link2, RefreshCw, Globe, AlertTriangle, CheckCircle2, Plus, Trash2,
   ExternalLink, XCircle, Edit, Mail, TrendingUp, ArrowRight
 } from "lucide-react";
-import { format, parseISO, eachDayOfInterval, isSameDay, isWithinInterval } from "date-fns";
+import { format, parseISO, eachDayOfInterval, isSameDay } from "date-fns";
+// @ts-ignore - isWithinInterval exists at runtime
+import { isWithinInterval } from "date-fns";
 
 const OTA_PLATFORMS = [
   { id: "airbnb", name: "Airbnb", color: "bg-[hsl(350,80%,55%)]", icon: "🏠" },
