@@ -2,7 +2,7 @@
  * MyShopPage — Seller dashboard for managing their storefront.
  * CONSOLIDATED: 1 component per function, lazy-loaded tabs.
  */
-import { useState, lazy, Suspense } from "react";
+import { useState, lazy, Suspense, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
