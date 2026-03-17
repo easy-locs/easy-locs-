@@ -714,6 +714,10 @@ const pageFr: Record<string, string> = {
   "pwa.banner.hint": "Rapide, hors-ligne, toujours accessible",
   "pwa.banner.ios_hint": "Partager → Sur l'écran d'accueil",
   "pwa.banner.install": "Installer",
+  "pwa.banner.dismiss": "Fermer",
+  "page.install.back": "Retour",
+  "page.install.continue_web": "Continuer sur le web",
+  "page.install.feature_notif": "Notifications",
 
   // Candidates
   "page.candidates.title": "Candidats",
