@@ -2,7 +2,7 @@
  * DiscoverPage — V7 Premium Local Commerce Homepage.
  * Revenue-first, locally intelligent, conversion-driven.
  */
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -18,6 +18,7 @@ import { useGeolocation } from "@/hooks/useGeolocation";
 import GlobalSearch from "@/components/storefront/GlobalSearch";
 import { motion, AnimatePresence } from "framer-motion";
 import { haptic } from "@/lib/haptics";
+import UniversalActionButtons from "@/components/actions/UniversalActionButtons";
 
 /* ══════════════════════════════════════
    CONFIGURATION
@@ -283,49 +284,66 @@ function SmartLocalSection({ icon: Icon, title, shops, onShopClick, emptyText }:
    ══════════════════════════════════════ */
 function ShopCard({ shop, index, rail, onClick }: { shop: any; index: number; rail?: string; onClick: () => void }) {
   return (
-    <motion.button
+    <motion.div
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.2, delay: index * 0.025 }}
-      onClick={() => { haptic("light"); onClick(); }}
-      className="w-full rounded-2xl border border-border/30 bg-card overflow-hidden text-left transition-all duration-150 active:scale-[0.97]"
+      className="w-full rounded-2xl border border-border/30 bg-card overflow-hidden text-left transition-all duration-150"
     >
-      {shop.banner_url && (
-        <div className="h-20 bg-muted overflow-hidden">
-          <img src={shop.banner_url} alt="" className="w-full h-full object-cover" loading="lazy" />
-        </div>
-      )}
-      <div className="p-3 space-y-1.5">
-        <div className="flex items-center gap-2">
-          {shop.logo_url ? (
-            <img src={shop.logo_url} alt="" className="w-9 h-9 rounded-xl object-cover shrink-0 ring-1 ring-border/20" />
-          ) : (
-            <div className="w-9 h-9 rounded-xl bg-primary/8 flex items-center justify-center shrink-0">
-              <Store className="h-4 w-4 text-primary" />
+      <button
+        onClick={() => { haptic("light"); onClick(); }}
+        className="w-full text-left active:scale-[0.97] transition-transform"
+      >
+        {shop.banner_url && (
+          <div className="h-20 bg-muted overflow-hidden">
+            <img src={shop.banner_url} alt="" className="w-full h-full object-cover" loading="lazy" />
+          </div>
+        )}
+        <div className="p-3 space-y-1.5">
+          <div className="flex items-center gap-2">
+            {shop.logo_url ? (
+              <img src={shop.logo_url} alt="" className="w-9 h-9 rounded-xl object-cover shrink-0 ring-1 ring-border/20" />
+            ) : (
+              <div className="w-9 h-9 rounded-xl bg-primary/8 flex items-center justify-center shrink-0">
+                <Store className="h-4 w-4 text-primary" />
+              </div>
+            )}
+            <div className="flex-1 min-w-0">
+              <p className="text-[12px] font-bold text-foreground truncate">{shop.name}</p>
+              {shop.city && <p className="text-[10px] text-muted-foreground truncate">{shop.city}</p>}
             </div>
-          )}
-          <div className="flex-1 min-w-0">
-            <p className="text-[12px] font-bold text-foreground truncate">{shop.name}</p>
-            {shop.city && <p className="text-[10px] text-muted-foreground truncate">{shop.city}</p>}
+          </div>
+          <div className="flex items-center gap-1 flex-wrap">
+            {shop.vertical && (
+              <span className="text-[8px] font-semibold bg-primary/8 text-primary px-2 py-0.5 rounded-full">{shop.vertical}</span>
+            )}
+            {shop.avg_rating > 0 && (
+              <span className="inline-flex items-center gap-0.5 text-[8px] font-semibold text-amber-500">
+                <Star className="h-2.5 w-2.5 fill-current" /> {Number(shop.avg_rating).toFixed(1)}
+              </span>
+            )}
+            {shop.boost_tier && (
+              <span className="inline-flex items-center gap-0.5 text-[8px] font-bold text-accent">
+                <Zap className="h-2.5 w-2.5" /> Featured
+              </span>
+            )}
           </div>
         </div>
-        <div className="flex items-center gap-1 flex-wrap">
-          {shop.vertical && (
-            <span className="text-[8px] font-semibold bg-primary/8 text-primary px-2 py-0.5 rounded-full">{shop.vertical}</span>
-          )}
-          {shop.avg_rating > 0 && (
-            <span className="inline-flex items-center gap-0.5 text-[8px] font-semibold text-amber-500">
-              <Star className="h-2.5 w-2.5 fill-current" /> {Number(shop.avg_rating).toFixed(1)}
-            </span>
-          )}
-          {shop.boost_tier && (
-            <span className="inline-flex items-center gap-0.5 text-[8px] font-bold text-accent">
-              <Zap className="h-2.5 w-2.5" /> Featured
-            </span>
-          )}
-        </div>
+      </button>
+      <div className="px-3 pb-3">
+        <UniversalActionButtons
+          entityType="shop"
+          entityId={shop.id}
+          slug={shop.slug}
+          title={shop.name}
+          recipientId={shop.user_id}
+          recipientName={shop.name}
+          compact
+          primaryOnly
+          metadata={{ source: "discover" }}
+        />
       </div>
-    </motion.button>
+    </motion.div>
   );
 }
 
@@ -334,28 +352,47 @@ function ProductCard({ item, onClick }: { item: any; onClick: () => void }) {
   const photo = item.photo_url || (Array.isArray(item.photo_urls) && item.photo_urls[0]);
   const shopData = item.storefront_pages;
   return (
-    <motion.button
+    <motion.div
       initial={{ opacity: 0, scale: 0.96 }}
       animate={{ opacity: 1, scale: 1 }}
-      onClick={() => { haptic("light"); onClick(); }}
-      className="w-full rounded-2xl border border-border/30 bg-card overflow-hidden text-left transition-all duration-150 active:scale-[0.97]"
+      className="w-full rounded-2xl border border-border/30 bg-card overflow-hidden text-left transition-all duration-150"
     >
-      {photo && (
-        <div className="aspect-square bg-muted overflow-hidden">
-          <img src={photo} alt={item.title} className="w-full h-full object-cover" loading="lazy" />
+      <button
+        onClick={() => { haptic("light"); onClick(); }}
+        className="w-full text-left active:scale-[0.97] transition-transform"
+      >
+        {photo && (
+          <div className="aspect-square bg-muted overflow-hidden">
+            <img src={photo} alt={item.title} className="w-full h-full object-cover" loading="lazy" />
+          </div>
+        )}
+        <div className="p-2.5 space-y-1">
+          <p className="text-[11px] font-semibold text-foreground line-clamp-2 leading-tight">{item.title}</p>
+          <div className="flex items-center gap-1.5">
+            <span className="text-[13px] font-extrabold text-primary">{fmtPrice(item.price, item.currency)}</span>
+            {item.compare_at_price && item.compare_at_price > item.price && (
+              <span className="text-[9px] text-muted-foreground line-through">{fmtPrice(item.compare_at_price, item.currency)}</span>
+            )}
+          </div>
+          {shopData?.name && <p className="text-[9px] text-muted-foreground truncate">{shopData.name}</p>}
         </div>
-      )}
-      <div className="p-2.5 space-y-1">
-        <p className="text-[11px] font-semibold text-foreground line-clamp-2 leading-tight">{item.title}</p>
-        <div className="flex items-center gap-1.5">
-          <span className="text-[13px] font-extrabold text-primary">{fmtPrice(item.price, item.currency)}</span>
-          {item.compare_at_price && item.compare_at_price > item.price && (
-            <span className="text-[9px] text-muted-foreground line-through">{fmtPrice(item.compare_at_price, item.currency)}</span>
-          )}
-        </div>
-        {shopData?.name && <p className="text-[9px] text-muted-foreground truncate">{shopData.name}</p>}
+      </button>
+      <div className="px-2.5 pb-2.5">
+        <UniversalActionButtons
+          entityType="product"
+          entityId={item.id}
+          title={item.title}
+          amount={item.price}
+          currency={item.currency}
+          recipientId={shopData?.user_id}
+          recipientName={shopData?.name}
+          compact
+          primaryOnly
+          context={{ isPurchasable: (item.price ?? 0) > 0 }}
+          metadata={{ source: "discover", shopSlug: shopData?.slug }}
+        />
       </div>
-    </motion.button>
+    </motion.div>
   );
 }
 
