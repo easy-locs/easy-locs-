@@ -3,6 +3,7 @@
  * Used inside ShopPage when a product is selected
  */
 import { useState } from "react";
+import ProductMediaUploader from "./ProductMediaUploader";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
