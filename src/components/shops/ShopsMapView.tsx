@@ -145,7 +145,7 @@ export default function ShopsMapView({ shops, radiusKm = 25, onOpenShop }: Props
       const marker = L.marker([sLat, sLng], { icon })
         .bindPopup(`<div style="min-width:120px;"><strong>${shop.name}</strong>${shop.vertical ? `<br/><span style="font-size:11px;opacity:0.6;">${shop.vertical}</span>` : ""}</div>`);
 
-      marker.on("click", () => onShopClick(shop.slug));
+      marker.on("click", () => onOpenShop?.(shop.slug));
       cluster.addLayer(marker);
     });
   }, [shops, radius, centerLat, centerLng, userLat, userLng, onShopClick]);
