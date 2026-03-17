@@ -9394,6 +9394,7 @@ export type Database = {
           notes: string | null
           payment_method: string | null
           payment_status: string | null
+          requires_delivery: boolean | null
           seller_id: string
           shipped_at: string | null
           shipping_address: string | null
@@ -9431,6 +9432,7 @@ export type Database = {
           notes?: string | null
           payment_method?: string | null
           payment_status?: string | null
+          requires_delivery?: boolean | null
           seller_id: string
           shipped_at?: string | null
           shipping_address?: string | null
@@ -9468,6 +9470,7 @@ export type Database = {
           notes?: string | null
           payment_method?: string | null
           payment_status?: string | null
+          requires_delivery?: boolean | null
           seller_id?: string
           shipped_at?: string | null
           shipping_address?: string | null
@@ -12848,6 +12851,7 @@ export type Database = {
           amount: number
           counterpart_user_id: string | null
           created_at: string
+          crypto_id: string | null
           currency: string
           description: string | null
           direction: string
@@ -12871,6 +12875,7 @@ export type Database = {
           amount: number
           counterpart_user_id?: string | null
           created_at?: string
+          crypto_id?: string | null
           currency?: string
           description?: string | null
           direction?: string
@@ -12894,6 +12899,7 @@ export type Database = {
           amount?: number
           counterpart_user_id?: string | null
           created_at?: string
+          crypto_id?: string | null
           currency?: string
           description?: string | null
           direction?: string
