@@ -13,6 +13,7 @@ import React, {
 import { CheckCircle2, Wallet, X, AlertTriangle } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { walletTransfer } from "@/payments/wallet-hooks";
+import { formatMoney } from "@/lib/format";
 
 export type PaymentContextType =
   | "chat"
@@ -48,7 +49,6 @@ type UnifiedPaymentContextValue = {
 
 const UnifiedPaymentContext = createContext<UnifiedPaymentContextValue | null>(null);
 
-import { formatMoney } from "@/lib/format";
 
 export function UnifiedPaymentProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
