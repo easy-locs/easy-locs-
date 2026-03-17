@@ -405,6 +405,9 @@
   .shadow-gold {
     box-shadow: var(--shadow-gold);
   }
+  .shadow-elevated {
+    box-shadow: var(--shadow-elevated);
+  }
 }
 
 /* ══════════════════════════════════════════════════
