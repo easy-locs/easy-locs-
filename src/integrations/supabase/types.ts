@@ -108,6 +108,62 @@ export type Database = {
           },
         ]
       }
+      ad_events: {
+        Row: {
+          cost_locs: number | null
+          created_at: string
+          device_type: string | null
+          event_type: string
+          id: string
+          metadata_json: Json | null
+          placement: string
+          referrer: string | null
+          session_id: string | null
+          shop_id: string | null
+          target_id: string
+          target_type: string
+          user_id: string | null
+        }
+        Insert: {
+          cost_locs?: number | null
+          created_at?: string
+          device_type?: string | null
+          event_type?: string
+          id?: string
+          metadata_json?: Json | null
+          placement?: string
+          referrer?: string | null
+          session_id?: string | null
+          shop_id?: string | null
+          target_id: string
+          target_type?: string
+          user_id?: string | null
+        }
+        Update: {
+          cost_locs?: number | null
+          created_at?: string
+          device_type?: string | null
+          event_type?: string
+          id?: string
+          metadata_json?: Json | null
+          placement?: string
+          referrer?: string | null
+          session_id?: string | null
+          shop_id?: string | null
+          target_id?: string
+          target_type?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ad_events_shop_id_fkey"
+            columns: ["shop_id"]
+            isOneToOne: false
+            referencedRelation: "storefront_pages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ai_category_suggestions: {
         Row: {
           accepted: boolean | null
@@ -481,6 +537,68 @@ export type Database = {
             columns: ["property_id"]
             isOneToOne: false
             referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      boost_purchases: {
+        Row: {
+          clicks: number | null
+          conversions: number | null
+          created_at: string
+          ends_at: string
+          id: string
+          impressions_budget: number | null
+          impressions_used: number | null
+          locs_spent: number
+          shop_id: string | null
+          starts_at: string
+          status: string
+          target_id: string
+          target_type: string
+          tier: string
+          user_id: string
+        }
+        Insert: {
+          clicks?: number | null
+          conversions?: number | null
+          created_at?: string
+          ends_at: string
+          id?: string
+          impressions_budget?: number | null
+          impressions_used?: number | null
+          locs_spent?: number
+          shop_id?: string | null
+          starts_at?: string
+          status?: string
+          target_id: string
+          target_type?: string
+          tier?: string
+          user_id: string
+        }
+        Update: {
+          clicks?: number | null
+          conversions?: number | null
+          created_at?: string
+          ends_at?: string
+          id?: string
+          impressions_budget?: number | null
+          impressions_used?: number | null
+          locs_spent?: number
+          shop_id?: string | null
+          starts_at?: string
+          status?: string
+          target_id?: string
+          target_type?: string
+          tier?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "boost_purchases_shop_id_fkey"
+            columns: ["shop_id"]
+            isOneToOne: false
+            referencedRelation: "storefront_pages"
             referencedColumns: ["id"]
           },
         ]
