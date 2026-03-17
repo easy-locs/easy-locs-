@@ -48,12 +48,13 @@ interface Props {
   showHeatmap?: boolean;
 }
 
-export default function LiveEcosystemMap({ lat, lng, radius, entities, onSelect }: Props) {
+export default function LiveEcosystemMap({ lat, lng, radius, entities, onSelect, heatmapPoints, showHeatmap }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
   const clusterRef = useRef<L.MarkerClusterGroup | null>(null);
   const radiusRef = useRef<L.Circle | null>(null);
   const userMarkerRef = useRef<L.Marker | null>(null);
+  const heatLayerRef = useRef<any>(null);
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
