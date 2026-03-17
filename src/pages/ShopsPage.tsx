@@ -1,7 +1,7 @@
 /**
  * ShopsPage — Browse all shops.
  * PASS136: Dedicated /shops route for bottom nav.
- * PASS143: Sponsored banners + PASS144: Ranked display.
+ * PASS143-144: Ranked feed with sponsored slot injection via monetization engine.
  */
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -11,8 +11,8 @@ import { Store, ArrowRight } from "lucide-react";
 import { MobilePageHeader } from "@/components/ui/mobile-page-header";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
-import { SponsoredBanner } from "@/components/monetization/SponsoredBanner";
-import { rankItems } from "@/lib/ranking-engine";
+import { SponsoredSlot } from "@/components/monetization/SponsoredSlot";
+import { useRankedFeed } from "@/hooks/useRankedFeed";
 
 export default function ShopsPage() {
   const { data: shops, isLoading } = useQuery({
@@ -24,13 +24,12 @@ export default function ShopsPage() {
         .eq("published", true)
         .order("created_at", { ascending: false })
         .limit(50);
-      return rankItems(data || []);
+      return (data || []).map((s: any) => ({ ...s, title: s.name }));
     },
     staleTime: 60_000,
   });
 
-  // First boosted shop for sponsored banner
-  const sponsoredShop = shops?.find((s: any) => s.boost_tier && s.boost_until && new Date(s.boost_until) > new Date());
+  const { feed } = useRankedFeed(shops);
 
   return (
     <div>
@@ -44,7 +43,7 @@ export default function ShopsPage() {
           </div>
         )}
 
-        {!isLoading && (!shops || shops.length === 0) && (
+        {!isLoading && feed.length === 0 && (
           <EmptyState
             icon={Store}
             title="No shops yet"
@@ -52,45 +51,51 @@ export default function ShopsPage() {
           />
         )}
 
-        {/* PASS143: Sponsored banner slot */}
-        {sponsoredShop && (
-          <SponsoredBanner
-            item={{ ...sponsoredShop, title: sponsoredShop.name, photo_url: sponsoredShop.logo_url }}
-            placement="shops_feed"
-            linkTo={`/s/${sponsoredShop.slug}`}
-          />
-        )}
-
-        {shops?.map((shop: any) => (
-          <Link key={shop.id} to={`/s/${shop.slug}`}>
-            <Card className="hover:shadow-md transition-shadow">
-              <CardContent className="p-3 flex items-center gap-3">
-                {shop.logo_url ? (
-                  <img
-                    src={shop.logo_url}
-                    alt={shop.name}
-                    className="w-12 h-12 rounded-xl object-cover shrink-0"
-                    loading="lazy"
-                  />
-                ) : (
-                  <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-                    <Store className="h-5 w-5 text-primary" />
+        {feed.map(({ item: shop, sponsored }) =>
+          sponsored ? (
+            <SponsoredSlot
+              key={`sp-${shop.id}`}
+              id={shop.id}
+              title={shop.name}
+              description={shop.description}
+              photoUrl={shop.logo_url}
+              linkTo={`/s/${shop.slug}`}
+              targetType="shop"
+              shopId={shop.id}
+              placement="shops_feed"
+              tier={shop.boost_tier}
+            />
+          ) : (
+            <Link key={shop.id} to={`/s/${shop.slug}`}>
+              <Card className="hover:shadow-md transition-shadow">
+                <CardContent className="p-3 flex items-center gap-3">
+                  {shop.logo_url ? (
+                    <img
+                      src={shop.logo_url}
+                      alt={shop.name}
+                      className="w-12 h-12 rounded-xl object-cover shrink-0"
+                      loading="lazy"
+                    />
+                  ) : (
+                    <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                      <Store className="h-5 w-5 text-primary" />
+                    </div>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold truncate">{shop.name}</p>
+                    {shop.description && (
+                      <p className="text-xs text-muted-foreground line-clamp-1">{shop.description}</p>
+                    )}
+                    {shop.vertical && (
+                      <span className="text-[10px] text-muted-foreground capitalize">{shop.vertical}</span>
+                    )}
                   </div>
-                )}
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold truncate">{shop.name}</p>
-                  {shop.description && (
-                    <p className="text-xs text-muted-foreground line-clamp-1">{shop.description}</p>
-                  )}
-                  {shop.vertical && (
-                    <span className="text-[10px] text-muted-foreground capitalize">{shop.vertical}</span>
-                  )}
-                </div>
-                <ArrowRight className="h-4 w-4 text-muted-foreground shrink-0" />
-              </CardContent>
-            </Card>
-          </Link>
-        ))}
+                  <ArrowRight className="h-4 w-4 text-muted-foreground shrink-0" />
+                </CardContent>
+              </Card>
+            </Link>
+          )
+        )}
       </div>
     </div>
   );
