@@ -64,13 +64,7 @@ function GuestCheckoutButton({ requestId, amount, currency }: { requestId: strin
   );
 }
 
-function formatMoney(amount: number, currency = "AED") {
-  try {
-    return new Intl.NumberFormat(undefined, { style: "currency", currency, minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(amount);
-  } catch {
-    return `${amount} ${currency}`;
-  }
-}
+import { formatMoney } from "@/lib/format";
 
 export default function PayRequestPage() {
   const { requestId } = useParams<{ requestId: string }>();
