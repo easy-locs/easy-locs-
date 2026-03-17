@@ -1,6 +1,6 @@
 /**
  * OrbitQuickCard — Premium quick-access card for Orbit Home.
- * Unified HUD design with glass morphism, consistent icon styling.
+ * PASS155: Refined proportions, stronger icon presence, better label readability.
  */
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -31,63 +31,60 @@ export default function OrbitQuickCard({
   return (
     <motion.button
       whileTap={{ scale: 0.95 }}
-      whileHover={{ y: -2 }}
       onClick={() => navigate(to)}
-      className="relative flex flex-col items-center gap-1.5 p-3 rounded-2xl border transition-all duration-200 min-w-0 text-center overflow-hidden"
+      className="relative flex flex-col items-center gap-1 p-2.5 rounded-2xl border transition-colors duration-150 min-w-0 text-center"
       style={{
         background: hasActivity
           ? "linear-gradient(145deg, hsl(var(--hud-surface)), hsl(var(--hud-surface-2)))"
           : "hsl(var(--hud-surface))",
         borderColor: isWarning
-          ? "hsl(var(--hud-warning) / 0.3)"
+          ? "hsl(var(--hud-warning) / 0.25)"
           : hasActivity
-            ? "hsl(var(--hud-cyan) / 0.15)"
+            ? "hsl(var(--hud-cyan) / 0.12)"
             : "hsl(var(--hud-border) / 0.06)",
-        boxShadow: hasActivity
-          ? "0 2px 16px hsl(var(--hud-cyan) / 0.06)"
-          : "none",
       }}
     >
       {/* Counter badge */}
       {counter != null && counter > 0 && (
         <span
-          className="absolute -top-1 -right-1 min-w-[18px] h-[18px] flex items-center justify-center rounded-full text-[10px] font-bold px-1 z-10"
+          className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] flex items-center justify-center rounded-full text-[10px] font-bold px-1 z-10"
           style={{
             background: "hsl(var(--hud-danger))",
             color: "#fff",
-            boxShadow: "0 1px 6px hsl(var(--hud-danger) / 0.4)",
+            boxShadow: "0 2px 8px hsl(var(--hud-danger) / 0.35)",
           }}
         >
           {counter > 99 ? "99+" : counter}
         </span>
       )}
 
-      {/* Icon container */}
+      {/* Icon */}
       <div
-        className="relative w-9 h-9 flex items-center justify-center rounded-xl transition-colors"
+        className="w-10 h-10 flex items-center justify-center rounded-xl"
         style={{
           background: isWarning
-            ? "hsl(var(--hud-warning) / 0.12)"
+            ? "hsl(var(--hud-warning) / 0.1)"
             : hasActivity
-              ? "hsl(var(--hud-cyan) / 0.12)"
-              : "hsl(var(--hud-surface-2) / 0.6)",
+              ? "hsl(var(--hud-cyan) / 0.1)"
+              : "hsl(var(--hud-surface-2) / 0.5)",
         }}
       >
         <Icon
           className="w-[18px] h-[18px]"
+          strokeWidth={2}
           style={{
             color: isWarning
               ? "hsl(var(--hud-warning))"
               : hasActivity
                 ? "hsl(var(--hud-cyan))"
-                : "hsl(var(--hud-text-dim))",
+                : "hsl(var(--hud-text-dim) / 0.7)",
           }}
         />
       </div>
 
       {/* Label */}
       <span
-        className="text-[10px] font-semibold leading-tight text-center break-words w-full"
+        className="text-[11px] font-semibold leading-tight truncate w-full"
         style={{ color: "hsl(var(--hud-text))" }}
       >
         {label}
@@ -96,8 +93,8 @@ export default function OrbitQuickCard({
       {/* Description */}
       {description && (
         <span
-          className="text-[9px] leading-tight line-clamp-2 break-words -mt-0.5 w-full"
-          style={{ color: "hsl(var(--hud-text-dim))" }}
+          className="text-[9px] leading-tight truncate w-full -mt-0.5"
+          style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}
         >
           {description}
         </span>

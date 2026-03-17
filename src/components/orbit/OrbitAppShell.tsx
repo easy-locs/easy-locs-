@@ -1,19 +1,11 @@
 /**
  * OrbitAppShell — Persistent shell for /app/* routes.
- * Includes header, bottom nav, and main content area.
- * Phase 3: Realtime subscriptions for instant signal updates.
+ * PASS156: Refined header, polished bottom nav active states, smoother transitions.
  */
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import {
-  Home,
-  MessageCircle,
-  Store,
-  User,
-  Bell,
-  Wifi,
-  WifiOff,
-  Search,
+  Home, MessageCircle, Store, User, Bell, Wifi, WifiOff, Search,
 } from "lucide-react";
 import { useOrbitEngine } from "@/stores/orbit-engine";
 import { useEffect, useRef, useCallback } from "react";
@@ -28,6 +20,7 @@ const NAV_ITEMS = [
   { icon: User, label: "Me", path: "/dashboard/settings", badge: null },
 ] as const;
 
+/* ═══ Header ═══ */
 function OrbitHeader() {
   const { user } = useAuth();
   const { pendingNotifications, networkStatus, syncStatus } = useOrbitEngine();
@@ -35,49 +28,72 @@ function OrbitHeader() {
   const displayName = user?.user_metadata?.full_name || user?.email?.split("@")[0] || "Orbit";
 
   return (
-    <header className="sticky top-0 z-50 flex items-center gap-3 px-4 h-14 border-b bg-hud-bg border-hud-border/15">
+    <header
+      className="sticky top-0 z-50 flex items-center gap-3 px-4 h-14 border-b"
+      style={{
+        background: "hsl(var(--hud-bg))",
+        borderColor: "hsl(var(--hud-border) / 0.1)",
+      }}
+    >
       <Avatar className="w-8 h-8 shrink-0">
-        <AvatarFallback className="text-xs font-bold bg-hud-surface-2 text-hud-cyan">
+        <AvatarFallback
+          className="text-xs font-bold"
+          style={{ background: "hsl(var(--hud-surface-2))", color: "hsl(var(--hud-cyan))" }}
+        >
           {displayName[0]?.toUpperCase()}
         </AvatarFallback>
       </Avatar>
 
-      <span className="font-semibold text-sm truncate text-hud-text">
+      <span
+        className="font-semibold text-sm truncate"
+        style={{ color: "hsl(var(--hud-text))" }}
+      >
         {displayName}
       </span>
 
       <div className="flex-1" />
 
+      {/* Search */}
       <button
-        className="p-2 rounded-lg transition-colors text-hud-text-dim hover:text-hud-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        className="p-2 rounded-xl transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         onClick={() => navigate("/explore")}
         aria-label="Search"
+        style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}
       >
         <Search className="w-5 h-5" />
       </button>
 
-      <span className={networkStatus === "online" ? "text-hud-success" : "text-hud-danger"}>
-        {networkStatus === "online" ? <Wifi className="w-4 h-4" /> : <WifiOff className="w-4 h-4" />}
-      </span>
+      {/* Network + Sync */}
+      <div className="flex items-center gap-1.5">
+        <span style={{ color: networkStatus === "online" ? "hsl(var(--hud-success))" : "hsl(var(--hud-danger))" }}>
+          {networkStatus === "online" ? <Wifi className="w-3.5 h-3.5" /> : <WifiOff className="w-3.5 h-3.5" />}
+        </span>
+        <span
+          className="w-[5px] h-[5px] rounded-full"
+          style={{
+            background:
+              syncStatus === "synced"
+                ? "hsl(var(--hud-success))"
+                : syncStatus === "syncing"
+                ? "hsl(var(--hud-warning))"
+                : "hsl(var(--hud-danger))",
+          }}
+        />
+      </div>
 
-      <span
-        className={`w-2 h-2 rounded-full ${
-          syncStatus === "synced"
-            ? "bg-hud-success"
-            : syncStatus === "syncing"
-            ? "bg-hud-warning"
-            : "bg-hud-danger"
-        }`}
-      />
-
+      {/* Notifications */}
       <button
-        className="relative p-2 rounded-lg transition-colors text-hud-text-dim hover:text-hud-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        className="relative p-2 rounded-xl transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         onClick={() => navigate("/dashboard/settings")}
         aria-label="Notifications"
+        style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}
       >
         <Bell className="w-5 h-5" />
         {pendingNotifications > 0 && (
-          <span className="absolute top-1 right-1 w-4 h-4 rounded-full text-[9px] font-bold flex items-center justify-center bg-hud-danger text-white">
+          <span
+            className="absolute top-1 right-1 w-4 h-4 rounded-full text-[9px] font-bold flex items-center justify-center"
+            style={{ background: "hsl(var(--hud-danger))", color: "#fff" }}
+          >
             {pendingNotifications > 9 ? "9+" : pendingNotifications}
           </span>
         )}
@@ -86,6 +102,7 @@ function OrbitHeader() {
   );
 }
 
+/* ═══ Bottom Nav ═══ */
 function OrbitBottomNav() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -99,8 +116,10 @@ function OrbitBottomNav() {
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-50 flex items-end justify-around border-t bg-hud-bg border-hud-border/15"
+      className="fixed bottom-0 left-0 right-0 z-50 flex items-end justify-around border-t"
       style={{
+        background: "hsl(var(--hud-bg))",
+        borderColor: "hsl(var(--hud-border) / 0.08)",
         paddingBottom: "env(safe-area-inset-bottom, 8px)",
         height: "calc(56px + env(safe-area-inset-bottom, 8px))",
       }}
@@ -115,18 +134,36 @@ function OrbitBottomNav() {
             className="relative flex flex-col items-center justify-center gap-0.5 pt-2 pb-1 px-3 min-w-[56px] active:scale-90 transition-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-lg"
           >
             {counter > 0 && (
-              <span className="absolute top-0.5 right-1 min-w-[16px] h-4 rounded-full text-[9px] font-bold flex items-center justify-center px-1 bg-hud-danger text-white">
+              <span
+                className="absolute top-0.5 right-1 min-w-[16px] h-4 rounded-full text-[9px] font-bold flex items-center justify-center px-1"
+                style={{ background: "hsl(var(--hud-danger))", color: "#fff" }}
+              >
                 {counter > 99 ? "99+" : counter}
               </span>
             )}
             <Icon
-              className={`w-5 h-5 transition-colors ${isActive ? "text-hud-cyan" : "text-hud-text-dim"}`}
+              className="w-5 h-5 transition-colors duration-150"
+              strokeWidth={isActive ? 2.5 : 1.8}
+              style={{
+                color: isActive ? "hsl(var(--hud-cyan))" : "hsl(var(--hud-text-dim) / 0.45)",
+              }}
             />
             <span
-              className={`text-2xs font-medium ${isActive ? "text-hud-cyan" : "text-hud-text-dim"}`}
+              className="text-[10px] transition-colors duration-150"
+              style={{
+                color: isActive ? "hsl(var(--hud-cyan))" : "hsl(var(--hud-text-dim) / 0.45)",
+                fontWeight: isActive ? 700 : 500,
+              }}
             >
               {label}
             </span>
+            {/* Active indicator dot */}
+            {isActive && (
+              <span
+                className="absolute -bottom-0.5 w-4 h-[2px] rounded-full"
+                style={{ background: "hsl(var(--hud-cyan))", boxShadow: "0 0 6px hsl(var(--hud-cyan) / 0.4)" }}
+              />
+            )}
           </button>
         );
       })}
@@ -134,12 +171,12 @@ function OrbitBottomNav() {
   );
 }
 
+/* ═══ Shell ═══ */
 export default function OrbitAppShell() {
   const { user, orgId } = useAuth();
   const { refresh } = useOrbitEngine();
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Debounced refresh to avoid duplicate calls from multiple realtime events
   const debouncedRefresh = useCallback(() => {
     if (!user?.id) return;
     if (debounceRef.current) clearTimeout(debounceRef.current);
@@ -148,7 +185,7 @@ export default function OrbitAppShell() {
     }, 1500);
   }, [user?.id, orgId, refresh]);
 
-  // Polling fallback — 60s (reduced from 30s thanks to realtime)
+  // Polling fallback — 60s
   useEffect(() => {
     if (!user?.id) return;
     refresh(user.id, orgId || undefined);
@@ -156,45 +193,27 @@ export default function OrbitAppShell() {
     return () => clearInterval(interval);
   }, [user?.id, orgId]);
 
-  // Realtime subscriptions for instant signal updates
+  // Realtime subscriptions
   useEffect(() => {
     if (!user?.id) return;
-
     const channels: ReturnType<typeof supabase.channel>[] = [];
 
-    // Messages — instant unread count
     const msgChannel = supabase
       .channel("orbit-messages")
-      .on("postgres_changes", {
-        event: "*",
-        schema: "public",
-        table: "messages",
-      }, debouncedRefresh)
+      .on("postgres_changes", { event: "*", schema: "public", table: "messages" }, debouncedRefresh)
       .subscribe();
     channels.push(msgChannel);
 
-    // Notifications — instant badge
     const notifChannel = supabase
       .channel("orbit-notifications")
-      .on("postgres_changes", {
-        event: "INSERT",
-        schema: "public",
-        table: "notifications",
-        filter: `user_id=eq.${user.id}`,
-      }, debouncedRefresh)
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "notifications", filter: `user_id=eq.${user.id}` }, debouncedRefresh)
       .subscribe();
     channels.push(notifChannel);
 
-    // Booking requests — instant alert
     if (orgId) {
       const bookingChannel = supabase
         .channel("orbit-bookings")
-        .on("postgres_changes", {
-          event: "INSERT",
-          schema: "public",
-          table: "booking_requests",
-          filter: `org_id=eq.${orgId}`,
-        }, debouncedRefresh)
+        .on("postgres_changes", { event: "INSERT", schema: "public", table: "booking_requests", filter: `org_id=eq.${orgId}` }, debouncedRefresh)
         .subscribe();
       channels.push(bookingChannel);
     }
@@ -205,7 +224,7 @@ export default function OrbitAppShell() {
     };
   }, [user?.id, orgId, debouncedRefresh]);
 
-  // Network status listener
+  // Network status
   useEffect(() => {
     const { setNetworkStatus } = useOrbitEngine.getState();
     const onOnline = () => setNetworkStatus("online");
@@ -220,7 +239,7 @@ export default function OrbitAppShell() {
   }, []);
 
   return (
-    <div className="min-h-[100dvh] flex flex-col bg-hud-bg">
+    <div className="min-h-[100dvh] flex flex-col" style={{ background: "hsl(var(--hud-bg))" }}>
       <OrbitHeader />
       <main className="flex-1 overflow-y-auto pb-16">
         <Outlet />
