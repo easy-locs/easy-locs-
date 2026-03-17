@@ -1,7 +1,6 @@
 /**
- * OrbitHome — Main Orbit dashboard.
- * PASS 157-160: Full i18n, memoized sections, accessible.
- * PASS 167-168: Performance — memoized card arrays, stable refs.
+ * OrbitHome — V7 Command Center.
+ * Unified hub with all modules: Communication, Wallet, Business, POS, Live, AI, Property, Delivery.
  */
 import { useEffect, useMemo, memo } from "react";
 import { useNavigate } from "react-router-dom";
@@ -19,6 +18,8 @@ import {
   Bell, Shield, Lock, Palette,
   ChevronRight, CalendarCheck, ShoppingBag, Building2,
   TrendingUp, CreditCard, Fingerprint, History, Star,
+  Scan, Package, Truck, Video, Sparkles, BarChart3,
+  Globe, Layers, KeyRound, User, MapPin, Zap,
 } from "lucide-react";
 
 /* ══════ Section Header ══════ */
@@ -34,10 +35,7 @@ const SectionLabel = memo(function SectionLabel({ title, badge }: { title: strin
       {badge != null && badge > 0 && (
         <span
           className="text-[10px] font-bold px-2 py-0.5 rounded-full"
-          style={{
-            background: "hsl(var(--hud-danger) / 0.12)",
-            color: "hsl(var(--hud-danger))",
-          }}
+          style={{ background: "hsl(var(--hud-danger) / 0.12)", color: "hsl(var(--hud-danger))" }}
         >
           {badge}
         </span>
@@ -58,7 +56,7 @@ export default function OrbitHome() {
     engine.refresh(user.id, orgId || undefined);
   }, [user?.id, orgId]);
 
-  /* ── Card definitions (memoized) ── */
+  /* ── Card definitions ── */
   const PRIORITY_CARDS = useMemo(() => [
     { icon: MessageCircle, label: t("orbit.card.messages"), desc: t("orbit.card.desc_inbox"), key: "unreadMessages" as const, to: "/dashboard/communication" },
     { icon: Phone, label: t("orbit.card.calls"), desc: t("orbit.card.desc_recent"), key: "missedCalls" as const, to: "/dashboard/communication?section=calls" },
@@ -77,15 +75,38 @@ export default function OrbitHome() {
 
   const MARKETPLACE_CARDS = useMemo(() => [
     { icon: Store, label: t("orbit.card.listings"), desc: t("orbit.card.desc_services"), key: "activeListings" as const, to: "/dashboard/my-shop" },
-    { icon: ShoppingBag, label: t("orbit.card.bookings"), desc: t("orbit.card.desc_orders"), key: "pendingOrders" as const, to: "/dashboard/my-shop" },
+    { icon: ShoppingBag, label: t("orbit.card.bookings"), desc: t("orbit.card.desc_orders"), key: "pendingOrders" as const, to: "/my-orders" },
     { icon: Star, label: t("orbit.card.reviews"), desc: t("orbit.card.desc_reviews"), key: null, to: "/dashboard/my-shop" },
     { icon: TrendingUp, label: t("orbit.card.leads"), desc: t("orbit.card.desc_prospects"), key: "newLeads" as const, to: "/dashboard/communication" },
   ], [t]);
 
+  /* ── V6: Commerce & POS ── */
+  const V6_CARDS = useMemo(() => [
+    { icon: Scan, label: "POS", desc: "Point of Sale", key: null, to: "/pos" },
+    { icon: Package, label: "Inventory", desc: "Stock management", key: null, to: "/dashboard/my-shop" },
+    { icon: BarChart3, label: "Analytics", desc: "Sales reports", key: null, to: "/dashboard/seller" },
+    { icon: Truck, label: "Delivery", desc: "Fleet & logistics", key: null, to: "/dashboard/driver" },
+  ], []);
+
+  /* ── V7: Live Commerce + AI + Multi-branch + Property ── */
+  const V7_CARDS = useMemo(() => [
+    { icon: Video, label: "Live", desc: "Live shopping", key: null, to: "/dashboard/my-shop" },
+    { icon: Sparkles, label: "AI Assistant", desc: "Smart automation", key: null, to: "/dashboard/assistant" },
+    { icon: Globe, label: "Multi-Store", desc: "Branch network", key: null, to: "/dashboard/my-shop" },
+    { icon: Layers, label: "Franchise", desc: "Expand & scale", key: null, to: "/dashboard/ops" },
+  ], []);
+
+  const PROPERTY_CARDS = useMemo(() => [
+    { icon: Building2, label: "Properties", desc: "Manage assets", key: null, to: "/property-hub" },
+    { icon: KeyRound, label: "Landlord", desc: "Owner dashboard", key: null, to: "/dashboard" },
+    { icon: User, label: "Tenant", desc: "Tenant portal", key: null, to: "/tenant" },
+    { icon: CalendarCheck, label: "Seasonal", desc: "Short-term", key: "pendingBookings" as const, to: "/dashboard/seasonal" },
+  ], []);
+
   const MODULE_CARDS = useMemo(() => [
-    { icon: Building2, label: t("orbit.card.management"), desc: t("orbit.card.desc_property"), key: null, to: "/dashboard/rental" },
-    { icon: CalendarCheck, label: t("orbit.card.seasonal"), desc: t("orbit.card.desc_bookings"), key: "pendingBookings" as const, to: "/dashboard/seasonal" },
     { icon: Radar, label: t("orbit.card.radar"), desc: t("orbit.card.desc_nearby"), key: "radarNearby" as const, to: "/dashboard/communication?section=nearby" },
+    { icon: MapPin, label: "Explore", desc: "Nearby services", key: null, to: "/explore" },
+    { icon: Zap, label: "Deals", desc: "Negotiations", key: null, to: "/dashboard/deals" },
     { icon: Palette, label: t("orbit.card.settings"), desc: t("orbit.card.desc_config"), key: null, to: "/dashboard/settings" },
   ], [t]);
 
@@ -104,7 +125,7 @@ export default function OrbitHome() {
   const activityItems = useMemo(() => {
     const items: { icon: string; label: string; value: number; link: string }[] = [];
     if (engine.pendingBookings > 0) items.push({ icon: "📩", label: t("orbit.home.pending_bookings"), value: engine.pendingBookings, link: "/dashboard/seasonal" });
-    if (engine.pendingOrders > 0) items.push({ icon: "🎯", label: t("orbit.home.marketplace_orders"), value: engine.pendingOrders, link: "/dashboard/activities" });
+    if (engine.pendingOrders > 0) items.push({ icon: "🎯", label: t("orbit.home.marketplace_orders"), value: engine.pendingOrders, link: "/my-orders" });
     if (engine.newLeads > 0) items.push({ icon: "🔥", label: t("orbit.home.new_leads"), value: engine.newLeads, link: "/dashboard/communication" });
     if (engine.activeListings > 0) items.push({ icon: "📊", label: t("orbit.home.active_ads"), value: engine.activeListings, link: "/dashboard/my-shop" });
     return items;
@@ -207,6 +228,44 @@ export default function OrbitHome() {
           </div>
         </div>
       )}
+
+      {/* V6: Commerce & POS */}
+      <div className="w-full max-w-md">
+        <SectionLabel title="COMMERCE · V6" />
+        <div className="grid grid-cols-4 gap-2.5">
+          {V6_CARDS.map((card) => (
+            <OrbitQuickCard key={card.label} icon={card.icon} label={card.label} description={card.desc} to={card.to} />
+          ))}
+        </div>
+      </div>
+
+      {/* V7: Advanced */}
+      <div className="w-full max-w-md">
+        <SectionLabel title="ORBIT · V7" />
+        <div className="grid grid-cols-4 gap-2.5">
+          {V7_CARDS.map((card) => (
+            <OrbitQuickCard key={card.label} icon={card.icon} label={card.label} description={card.desc} to={card.to} />
+          ))}
+        </div>
+      </div>
+
+      {/* Property Management */}
+      <div className="w-full max-w-md">
+        <SectionLabel title="PROPERTY MANAGEMENT" />
+        <div className="grid grid-cols-4 gap-2.5">
+          {PROPERTY_CARDS.map((card) => (
+            <OrbitQuickCard
+              key={card.label}
+              icon={card.icon}
+              label={card.label}
+              description={card.desc}
+              counter={card.key ? (engine[card.key] as number) : undefined}
+              status={card.key && (engine[card.key] as number) > 0 ? "active" : "idle"}
+              to={card.to}
+            />
+          ))}
+        </div>
+      </div>
 
       {/* Infrastructure */}
       <div className="w-full max-w-md">
