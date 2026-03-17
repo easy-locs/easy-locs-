@@ -187,7 +187,7 @@ export function installStorefrontReactions(): () => void {
     })
   );
 
-  // ── Order completed → also refresh trust + growth + loyalty ──
+  // ── Order completed → also refresh trust + growth + loyalty + invoices ──
   unsubs.push(
     platformBus.on("storefront:order_completed", (event: PlatformEvent) => {
       const { shopId } = event.payload as any;
@@ -196,6 +196,8 @@ export function installStorefrontReactions(): () => void {
         ["growth-metrics", shopId],
         ["my-loyalty-points"],
         ["risk-flags", shopId],
+        ["shop-invoices", shopId],
+        ["notif-log", shopId],
       ]);
     })
   );
