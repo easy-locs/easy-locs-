@@ -6,8 +6,7 @@
  * - Render performance monitoring
  * - OptimizedImage component
  */
-import { useState, useCallback, useRef, memo, type ImgHTMLAttributes } from "react";
-import { cn } from "@/lib/utils";
+import { useCallback, useRef } from "react";
 
 /** Prefetch a route's chunk during idle time */
 export function prefetchRoute(importFn: () => Promise<unknown>): void {
