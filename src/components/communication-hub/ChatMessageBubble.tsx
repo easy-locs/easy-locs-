@@ -347,32 +347,8 @@ function ChatMessageBubble({
           </div>
         ) : null}
 
-        {/* Payment receipt card */}
         {isPaymentReceipt && paymentReceiptData ? (
-          <div className="rounded-2xl border p-3 max-w-[260px]" style={{ borderColor: "hsl(var(--hud-success) / 0.15)", background: "hsl(var(--hud-success) / 0.04)" }}>
-            <div className="flex items-center gap-2 mb-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-xl" style={{ background: "hsl(var(--hud-success) / 0.12)" }}>
-                <CheckCircle2 className="h-4 w-4" style={{ color: "hsl(var(--hud-success))" }} />
-              </div>
-              <div className="min-w-0">
-                <p className="text-xs font-medium truncate" style={{ color: "hsl(var(--foreground))" }}>
-                  {paymentReceiptData.title || "Payment sent"}
-                </p>
-                <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim))" }}>Completed</p>
-              </div>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-base font-bold" style={{ color: "hsl(var(--hud-success))" }}>
-                {new Intl.NumberFormat(undefined, { style: "currency", currency: paymentReceiptData.currency || "AED", minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(paymentReceiptData.amount)}
-              </span>
-              <CheckCircle2 className="h-4 w-4" style={{ color: "hsl(var(--hud-success))" }} />
-            </div>
-            {paymentReceiptData.transaction_id && (
-              <p className="text-[10px] mt-1.5" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
-                TX: {paymentReceiptData.transaction_id.slice(0, 12)}…
-              </p>
-            )}
-          </div>
+          <ChatPaymentReceiptCard receipt={paymentReceiptData} />
         ) : isPaymentRequest && paymentRequestData ? (
           <ChatPaymentRequestCard request={paymentRequestData} />
         ) : isLocation && locLat && locLng ? (
