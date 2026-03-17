@@ -244,7 +244,8 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
-          <CallProvider>
+           <CallProvider>
+          <UnifiedPaymentProvider>
            <AppLockGuard>
            <OrbitSessionGuard />
            <RealtimeHubGuard />
