@@ -5963,6 +5963,7 @@ const translations: Record<Locale, Record<string, string>> = {
     "reviews.write_reply": "Répondre", "reviews.updated": "Avis mis à jour", "reviews.submitted": "Avis publié !",
     "reviews.stars": "étoile(s)", "nav.reviews": "Avis", "nav.requests": "Demandes",
     "nav.reporting": "Reporting", "nav.seller_hub": "Hub Vendeur", "nav.deal_analytics": "Analyse deals", "nav.live_tracking": "Suivi en direct", "nav.ai_assistant": "Assistant IA",
+    "nav.property_mgmt": "Gestion", "nav.sales": "Ventes / Annonces", "nav.deals": "Deals", "nav.tracking": "Suivi", "nav.plan": "Abonnement",
     "page.reporting.title": "Tableau de bord financier", "page.reporting.subtitle": "Vue consolidée revenus, dépenses et résultat net",
     "page.reporting.expected_revenue": "Revenus attendus", "page.reporting.collected": "Encaissé", "page.reporting.unpaid": "Impayés",
     "page.reporting.expenses": "Dépenses", "page.reporting.net_income": "Résultat net", "page.reporting.collection_rate": "Taux encaissement",
