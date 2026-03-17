@@ -12900,6 +12900,27 @@ export type Database = {
         }
         Relationships: []
       }
+      wallet_balances_v2: {
+        Row: {
+          balance: number
+          currency: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          balance?: number
+          currency?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          balance?: number
+          currency?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       wallet_transactions: {
         Row: {
           amount: number
@@ -13948,6 +13969,20 @@ export type Database = {
         Returns: Json
       }
       validate_tenant_invitation: { Args: { _token: string }; Returns: Json }
+      wallet_transfer: {
+        Args: {
+          p_amount: number
+          p_context_id: string
+          p_context_type: string
+          p_currency: string
+          p_metadata: Json
+          p_recipient: string
+          p_sender: string
+          p_subtitle: string
+          p_title: string
+        }
+        Returns: string
+      }
     }
     Enums: {
       app_role: "owner" | "admin" | "member" | "agent" | "staff" | "accountant"
