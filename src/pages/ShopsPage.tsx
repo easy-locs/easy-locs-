@@ -52,6 +52,15 @@ export default function ShopsPage() {
           />
         )}
 
+        {/* PASS143: Sponsored banner slot */}
+        {sponsoredShop && (
+          <SponsoredBanner
+            item={{ ...sponsoredShop, title: sponsoredShop.name, photo_url: sponsoredShop.logo_url }}
+            placement="shops_feed"
+            linkTo={`/s/${sponsoredShop.slug}`}
+          />
+        )}
+
         {shops?.map((shop: any) => (
           <Link key={shop.id} to={`/s/${shop.slug}`}>
             <Card className="hover:shadow-md transition-shadow">
