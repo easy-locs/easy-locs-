@@ -586,26 +586,16 @@ export default function SuperMapRadarPage() {
               <X className="h-4 w-4" />
             </button>
           </div>
-          <div className="flex gap-2">
-            <button
-              className="flex-1 px-3 py-2 rounded-lg text-xs font-semibold bg-primary text-primary-foreground"
-              onClick={() => selectedShop.slug && navigate(`/s/${selectedShop.slug}`)}
-            >
-              Open Shop
-            </button>
-            <button
-              className="flex-1 px-3 py-2 rounded-lg text-xs font-semibold bg-secondary text-secondary-foreground"
-              onClick={() => navigate(`/dashboard/wallet?action=send&shop=${selectedShop.id}`)}
-            >
-              Pay
-            </button>
-            <button
-              className="flex-1 px-3 py-2 rounded-lg text-xs font-semibold bg-accent/20 text-accent-foreground"
-              onClick={() => navigate(`/client/messages?shop=${selectedShop.id}`)}
-            >
-              Message
-            </button>
-          </div>
+          <UniversalActionButtons
+            entityType="shop"
+            entityId={selectedShop.id}
+            slug={selectedShop.slug}
+            title={selectedShop.name}
+            recipientId={selectedShop.user_id}
+            recipientName={selectedShop.name}
+            compact
+            metadata={{ source: "map_radar" }}
+          />
         </div>
       )}
 
