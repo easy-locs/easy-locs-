@@ -59,8 +59,7 @@ export default function MyBusinessHub() {
   };
 
   if (!user) {
-    navigate("/login");
-    return null;
+    return <Navigate to="/login" replace />;
   }
 
   return (
