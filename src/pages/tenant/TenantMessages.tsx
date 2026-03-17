@@ -8,7 +8,7 @@ import { useCall } from "@/components/call/CallProvider";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { format, formatDistanceToNow } from "date-fns";
-import { fr, enUS, es, de, it, pt } from "date-fns/locale";
+import { fr, enUS, es, de, it, pt } from "@/lib/date-locales";
 import type { Locale as DateFnsLocale } from "date-fns";
 import { getCountryConfig } from "@/lib/country-config";
 import { useTenantProperty } from "@/hooks/useTenantProperty";

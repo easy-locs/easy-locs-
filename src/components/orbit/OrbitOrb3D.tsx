@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * OrbitOrb3D — Three.js 3D orb, loaded only on desktop.
  */

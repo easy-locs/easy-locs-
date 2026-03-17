@@ -48,7 +48,7 @@ export default function VoiceMessageBubble({ url, durationSeconds, isMe, status 
   const [progress, setProgress] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
   const audioRef = useRef<HTMLAudioElement>(null);
-  const animRef = useRef<number>();
+  const animRef = useRef<number | undefined>(undefined);
   const waveContainerRef = useRef<HTMLDivElement>(null);
   const isDraggingRef = useRef(false);
 
