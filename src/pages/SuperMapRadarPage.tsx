@@ -366,7 +366,7 @@ export default function SuperMapRadarPage() {
         const feature = e.features?.[0];
         if (!feature) return;
         const id = feature.properties?.id;
-        const shop = shops.find((s) => s.id === id);
+        const shop = shopsRef.current.find((s) => s.id === id);
         if (shop) setSelectedShop(shop);
       });
 
