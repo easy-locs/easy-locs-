@@ -8,6 +8,7 @@ import { Package, MapPin, Clock, CheckCircle2, Loader2, Eye, RefreshCw } from "l
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import EscrowDeliveryValidator from "@/components/delivery/EscrowDeliveryValidator";
 
 interface Props {
   className?: string;
