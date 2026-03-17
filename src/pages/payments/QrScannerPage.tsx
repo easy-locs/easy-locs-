@@ -175,12 +175,29 @@ export default function QrScannerPage() {
 
     if (payload.action === "pay_shop") {
       setStateSafe("paying");
+      // Resolve shop owner's user_id as recipientId
+      let shopOwnerId: string | undefined;
+      try {
+        const { data: shop } = await supabase
+          .from("storefront_pages")
+          .select("user_id")
+          .eq("slug", payload.shopSlug)
+          .maybeSingle();
+        shopOwnerId = shop?.user_id || undefined;
+      } catch (e) {
+        console.error("[qr-scanner] shop lookup failed", e);
+      }
+      if (!shopOwnerId) {
+        setErrorSafe("Shop not found");
+        setStateSafe("error");
+        return;
+      }
       const result = await openPaymentRef.current({
         amount: payload.amount || 0,
         currency: payload.currency || "AED",
-        title: "Shop Payment",
+        title: `Pay ${payload.name || "Shop"}`,
         subtitle: "QR shop payment",
-        recipientId: undefined,
+        recipientId: shopOwnerId,
         contextType: "shop",
         contextId: payload.shopSlug,
         metadata: { source: "qr_scan", qr_type: "pay_shop", shopSlug: payload.shopSlug },
@@ -191,8 +208,13 @@ export default function QrScannerPage() {
         setTxId(result.transactionId || "");
         setState("paid");
       } else {
-        setError(result.error || "Payment failed");
-        setState("error");
+        if (result.error !== "Cancelled") {
+          setError(result.error || "Payment failed");
+          setState("error");
+        } else {
+          setState("idle");
+          handledRef.current = false;
+        }
       }
       return;
     }
