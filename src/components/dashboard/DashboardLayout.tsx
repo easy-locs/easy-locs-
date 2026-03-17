@@ -559,7 +559,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
 
 
       {/* Mobile bottom navigation */}
-      <MobileBottomNav onMenuOpen={() => setSidebarOpen(true)} />
+      <MobileBottomNav />
     </div>
   );
 };
