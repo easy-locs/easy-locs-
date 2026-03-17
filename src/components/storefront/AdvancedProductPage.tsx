@@ -103,10 +103,17 @@ export default function AdvancedProductPage({ item, currency = "EUR", formatPric
               className="mt-1 text-xs" rows={2} placeholder="Meta description" maxLength={160} />
           </div>
 
-          <Button size="sm" className="w-full" onClick={() => onSave?.({
-            ...editData,
-            weight_grams: editData.weight_grams ? Number(editData.weight_grams) : null,
-          })}>
+          <Button size="sm" className="w-full" onClick={() => {
+            const coverUrl = editImages[editCoverIndex] || editImages[0] || null;
+            const additionalUrls = editImages.filter((_, i) => i !== editCoverIndex);
+            onSave?.({
+              ...editData,
+              photo_url: coverUrl,
+              photo_urls: additionalUrls.length > 0 ? additionalUrls : null,
+              video_url: editVideoUrl || null,
+              weight_grams: editData.weight_grams ? Number(editData.weight_grams) : null,
+            });
+          }}>
             Save Advanced Details
           </Button>
         </CardContent>
