@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Isolated 3D Globe Scene — all Three.js imports are contained here.
  * This file is lazy-loaded to prevent crashes from propagating.

@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Select, SelectContent, SelectItem, SelectTrigger } from "@/components/ui/select";
 import { formatDistanceToNow } from "date-fns";
-import { fr } from "date-fns/locale";
+import { fr } from "@/lib/date-locales";
 import { motion } from "framer-motion";
 import { getCountryEntryOrDefault } from "@/lib/global-country-registry";
 import type { ConversationThread, ConversationType } from "./types";

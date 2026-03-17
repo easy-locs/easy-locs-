@@ -16,7 +16,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, PieChart, Pie, Cell, ResponsiveContainer, LineChart, Line, Legend } from "recharts";
 import { format, subMonths } from "date-fns";
-import { fr, enUS } from "date-fns/locale";
+import { fr, enUS } from "@/lib/date-locales";
 import {
   TrendingUp, TrendingDown, PiggyBank, Download, FileText, BarChart3,
   ArrowUpRight, ArrowDownRight, Loader2, Home, Percent,
