@@ -16,12 +16,13 @@ export default function OrbitAppShell() {
   const { refresh } = useOrbitEngine();
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // 800ms debounce — fast enough for UX, prevents burst cascades
   const debouncedRefresh = useCallback(() => {
     if (!user?.id) return;
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
       refresh(user.id, orgId || undefined);
-    }, 1500);
+    }, 800);
   }, [user?.id, orgId, refresh]);
 
   // Polling fallback — 60s

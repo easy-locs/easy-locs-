@@ -7109,7 +7109,8 @@ export function I18nProvider({ children }: { children: ReactNode }) {
       console.warn(`[i18n] Missing key: "${key}" (locale: ${locale})`);
     }
     trackMissingKey(key, locale);
-    return vars ? interpolate(key, vars) : "";
+    // Return interpolated key as visible fallback (never empty string)
+    return vars ? interpolate(key, vars) : key;
   }, [locale]);
 
   return (
@@ -7123,4 +7124,14 @@ export function useI18n() {
   const ctx = useContext(I18nContext);
   if (!ctx) throw new Error("useI18n must be used within I18nProvider");
   return ctx;
+}
+
+/**
+ * tSafe — Safe translation with explicit fallback.
+ * Use when a visible default is required even if the key is missing.
+ */
+export function tSafe(t: (key: string, vars?: Record<string, any>) => string, key: string, fallback: string, vars?: Record<string, any>): string {
+  const result = t(key, vars);
+  // If t() returned the raw key (missing translation), use the fallback
+  return result === key ? fallback : result;
 }
