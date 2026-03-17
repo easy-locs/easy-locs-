@@ -36,7 +36,6 @@ interface CartItem {
 
 type POSStep = "catalog" | "cart" | "payment" | "receipt";
 
-/* ─── Quick catalog (seller adds items on-the-fly) ─── */
 const QUICK_AMOUNTS = [5, 10, 15, 20, 25, 50];
 
 export default function POSPage() {
@@ -78,7 +77,7 @@ export default function POSPage() {
     setCustomPrice("");
   };
 
-  /* ─── QR Payload for buyer to scan ─── */
+  /* ─── QR Payload ─── */
   const qrPayload = useMemo(() => {
     if (total <= 0 || !user?.id) return "";
     return JSON.stringify({
@@ -100,25 +99,13 @@ export default function POSPage() {
 
     setProcessing(true);
     try {
-      // Create storefront order
       const { data: orgMember } = await (supabase as any)
-        .from("org_members")
-        .select("org_id")
-        .eq("user_id", user.id)
-        .limit(1)
-        .maybeSingle();
-
+        .from("org_members").select("org_id").eq("user_id", user.id).limit(1).maybeSingle();
       const orgId = orgMember?.org_id;
 
-      // Get seller's shop
       const { data: shop } = await (supabase as any)
-        .from("storefront_pages")
-        .select("id")
-        .eq("user_id", user.id)
-        .limit(1)
-        .maybeSingle();
+        .from("storefront_pages").select("id").eq("user_id", user.id).limit(1).maybeSingle();
 
-      // Create order
       const { data: order, error: orderErr } = await (supabase as any)
         .from("storefront_orders")
         .insert({
@@ -132,22 +119,19 @@ export default function POSPage() {
           requires_delivery: requiresDelivery,
           notes: `POS order — ${cart.length} items`,
         })
-        .select("id")
-        .single();
+        .select("id").single();
 
       if (orderErr) throw orderErr;
 
-      // Insert order items
       const orderItems = cart.map(item => ({
         order_id: order.id,
         title: item.title,
         quantity: item.quantity,
         unit_price: item.price,
       }));
-
       await (supabase as any).from("storefront_order_items").insert(orderItems);
 
-      // Wallet settlement: buyer pays seller
+      // Wallet settlement
       const result = await sendMoney({
         recipientUserId: user.id,
         amount: total,
@@ -158,38 +142,21 @@ export default function POSPage() {
       });
 
       if (!result.success) {
-        // Rollback order
         await (supabase as any).from("storefront_orders").update({ status: "cancelled" }).eq("id", order.id);
         throw new Error(result.error || "Payment failed");
       }
 
-      // Mark order as paid → triggers auto-delivery if requires_delivery
       const refCode = (result.data as any)?.reference_code || null;
       await (supabase as any)
         .from("storefront_orders")
-        .update({
-          status: "accepted",
-          payment_status: "paid",
-          wallet_reference_code: refCode,
-        })
+        .update({ status: "accepted", payment_status: "paid", wallet_reference_code: refCode })
         .eq("id", order.id);
 
-      // Emit bus event
       platformBus.emit("storefront:order_paid", {
-        orderId: order.id,
-        shopId: shop?.id,
-        requiresDelivery,
-        total,
-        source: "pos",
+        orderId: order.id, shopId: shop?.id, requiresDelivery, total, source: "pos",
       }, "marketplace", { userId: user.id, orgId });
 
-      setReceiptData({
-        orderId: order.id,
-        total,
-        items: cart,
-        requiresDelivery,
-        timestamp: new Date().toISOString(),
-      });
+      setReceiptData({ orderId: order.id, total, items: cart, requiresDelivery, timestamp: new Date().toISOString() });
       setStep("receipt");
       toast.success("Payment completed!");
     } catch (err: any) {
@@ -219,89 +186,92 @@ export default function POSPage() {
           backTo="/dashboard"
         />
 
-        <div className="max-w-lg mx-auto px-4 py-4 space-y-4">
-          {/* ── Step: Catalog ── */}
+        <div className="max-w-lg mx-auto px-4 py-5 space-y-5">
+          {/* ── CATALOG ── */}
           {step === "catalog" && (
             <>
-              {/* Quick amounts */}
               <Card>
-                <CardContent className="p-4 space-y-3">
-                  <h3 className="text-sm font-semibold flex items-center gap-2">
-                    <ShoppingCart className="h-4 w-4 text-primary" />
+                <CardContent className="p-5 space-y-4">
+                  <h3 className="text-base font-semibold flex items-center gap-2">
+                    <ShoppingCart className="h-5 w-5 text-primary" />
                     Quick Add
                   </h3>
-                  <div className="grid grid-cols-3 gap-2">
+                  <div className="grid grid-cols-3 gap-3">
                     {QUICK_AMOUNTS.map(amt => (
                       <Button
                         key={amt}
                         variant="outline"
-                        className="h-12 text-sm font-bold"
-                        onClick={() => addToCart(`Item ${amt} LOCS`, amt)}
+                        className="h-14 text-base font-bold rounded-xl active:scale-95 transition-transform"
+                        onClick={() => addToCart(`Item ${amt}L`, amt)}
                       >
-                        {amt} LOCS
+                        {amt} L
                       </Button>
                     ))}
                   </div>
                 </CardContent>
               </Card>
 
-              {/* Custom item */}
               <Card>
-                <CardContent className="p-4 space-y-3">
-                  <h3 className="text-sm font-semibold">Custom Item</h3>
-                  <div className="flex gap-2">
+                <CardContent className="p-5 space-y-3">
+                  <h3 className="text-base font-semibold">Custom Item</h3>
+                  <div className="space-y-2">
                     <Input
                       placeholder="Item name"
                       value={customTitle}
                       onChange={e => setCustomTitle(e.target.value)}
-                      className="h-9 text-xs flex-1"
+                      className="h-12 text-sm rounded-xl"
                     />
-                    <Input
-                      placeholder="Price"
-                      type="number"
-                      min="0.01"
-                      step="0.01"
-                      value={customPrice}
-                      onChange={e => setCustomPrice(e.target.value)}
-                      className="h-9 text-xs w-24"
-                    />
-                    <Button size="sm" className="h-9" onClick={addCustomItem}>
-                      <Plus className="h-4 w-4" />
-                    </Button>
+                    <div className="flex gap-2">
+                      <Input
+                        placeholder="Price (LOCS)"
+                        type="number"
+                        min="0.01"
+                        step="0.01"
+                        value={customPrice}
+                        onChange={e => setCustomPrice(e.target.value)}
+                        className="h-12 text-sm rounded-xl flex-1"
+                      />
+                      <Button className="h-12 px-6 rounded-xl" onClick={addCustomItem}>
+                        <Plus className="h-5 w-5" />
+                      </Button>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
 
               {/* Cart preview */}
               {cart.length > 0 && (
-                <Card>
-                  <CardContent className="p-4 space-y-2">
+                <Card className="border-primary/20">
+                  <CardContent className="p-5 space-y-3">
                     <div className="flex items-center justify-between">
-                      <h3 className="text-sm font-semibold">Cart ({cart.length})</h3>
-                      <span className="text-sm font-bold text-primary">{fmtPrice(total)}</span>
+                      <h3 className="text-base font-semibold">Cart ({cart.length})</h3>
+                      <span className="text-base font-bold text-primary">{fmtPrice(total)}</span>
                     </div>
-                    {cart.map(item => (
-                      <div key={item.id} className="flex items-center justify-between text-xs">
-                        <span className="flex-1 truncate">{item.title}</span>
-                        <div className="flex items-center gap-1">
-                          <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => updateQty(item.id, -1)}>
-                            <Minus className="h-3 w-3" />
-                          </Button>
-                          <span className="w-6 text-center font-medium">{item.quantity}</span>
-                          <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => updateQty(item.id, 1)}>
-                            <Plus className="h-3 w-3" />
-                          </Button>
-                          <Button size="icon" variant="ghost" className="h-6 w-6 text-destructive" onClick={() => removeItem(item.id)}>
-                            <Trash2 className="h-3 w-3" />
+                    <div className="space-y-2">
+                      {cart.map(item => (
+                        <div key={item.id} className="flex items-center gap-3 bg-muted/30 rounded-xl p-3">
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium truncate">{item.title}</p>
+                            <p className="text-xs text-muted-foreground">{fmtPrice(item.price)} each</p>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <Button size="icon" variant="outline" className="h-8 w-8 rounded-lg" onClick={() => updateQty(item.id, -1)}>
+                              <Minus className="h-3.5 w-3.5" />
+                            </Button>
+                            <span className="w-8 text-center text-sm font-bold">{item.quantity}</span>
+                            <Button size="icon" variant="outline" className="h-8 w-8 rounded-lg" onClick={() => updateQty(item.id, 1)}>
+                              <Plus className="h-3.5 w-3.5" />
+                            </Button>
+                          </div>
+                          <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive" onClick={() => removeItem(item.id)}>
+                            <Trash2 className="h-4 w-4" />
                           </Button>
                         </div>
-                        <span className="w-16 text-right font-medium">{fmtPrice(item.price * item.quantity)}</span>
-                      </div>
-                    ))}
-                    <Separator />
-                    <Button className="w-full h-10 gap-2" onClick={() => setStep("cart")}>
-                      <ShoppingCart className="h-4 w-4" />
-                      Proceed to Checkout — {fmtPrice(total)}
+                      ))}
+                    </div>
+                    <Button className="w-full h-14 gap-2 text-base font-semibold rounded-xl active:scale-[0.98] transition-transform" onClick={() => setStep("cart")}>
+                      <ShoppingCart className="h-5 w-5" />
+                      Checkout — {fmtPrice(total)}
                     </Button>
                   </CardContent>
                 </Card>
@@ -309,148 +279,146 @@ export default function POSPage() {
             </>
           )}
 
-          {/* ── Step: Cart / Checkout ── */}
+          {/* ── CART / CHECKOUT ── */}
           {step === "cart" && (
             <Card>
-              <CardContent className="p-4 space-y-4">
-                <h3 className="text-sm font-semibold flex items-center gap-2">
-                  <Receipt className="h-4 w-4 text-primary" />
+              <CardContent className="p-5 space-y-5">
+                <h3 className="text-base font-semibold flex items-center gap-2">
+                  <Receipt className="h-5 w-5 text-primary" />
                   Order Summary
                 </h3>
 
-                {cart.map(item => (
-                  <div key={item.id} className="flex items-center justify-between text-xs border-b border-border pb-2">
-                    <div>
-                      <p className="font-medium">{item.title}</p>
-                      <p className="text-muted-foreground">×{item.quantity}</p>
+                <div className="space-y-3">
+                  {cart.map(item => (
+                    <div key={item.id} className="flex items-center justify-between pb-3 border-b border-border last:border-0">
+                      <div>
+                        <p className="text-sm font-medium">{item.title}</p>
+                        <p className="text-xs text-muted-foreground">×{item.quantity}</p>
+                      </div>
+                      <span className="text-sm font-bold">{fmtPrice(item.price * item.quantity)}</span>
                     </div>
-                    <span className="font-bold">{fmtPrice(item.price * item.quantity)}</span>
-                  </div>
-                ))}
+                  ))}
+                </div>
 
-                <div className="flex items-center justify-between pt-2">
-                  <span className="text-sm font-semibold">Total</span>
-                  <span className="text-lg font-bold text-primary">{fmtPrice(total)}</span>
+                <div className="flex items-center justify-between bg-primary/5 rounded-xl p-4">
+                  <span className="text-base font-semibold">Total</span>
+                  <span className="text-xl font-bold text-primary">{fmtPrice(total)}</span>
                 </div>
 
                 <Separator />
 
-                {/* Delivery toggle */}
-                <div className="flex items-center justify-between">
-                  <Label className="text-xs flex items-center gap-2">
-                    <Package className="h-3.5 w-3.5" />
+                <div className="flex items-center justify-between p-3 bg-muted/30 rounded-xl">
+                  <Label className="text-sm flex items-center gap-2">
+                    <Package className="h-4 w-4 text-primary" />
                     Requires Delivery
                   </Label>
                   <Switch checked={requiresDelivery} onCheckedChange={setRequiresDelivery} />
                 </div>
 
-                {/* Buyer ID */}
                 <div>
-                  <Label className="text-[10px] text-muted-foreground">Buyer User ID</Label>
+                  <Label className="text-xs text-muted-foreground mb-1.5 block">Buyer User ID</Label>
                   <Input
                     value={buyerUserId}
                     onChange={e => setBuyerUserId(e.target.value)}
-                    placeholder="Paste buyer's user ID or scan QR"
-                    className="h-9 text-xs mt-1"
+                    placeholder="Paste buyer's user ID"
+                    className="h-12 text-sm rounded-xl"
                   />
                 </div>
 
-                <div className="flex gap-2">
-                  <Button variant="outline" className="flex-1 h-10" onClick={() => setStep("catalog")}>
+                <div className="flex gap-3">
+                  <Button variant="outline" className="flex-1 h-14 rounded-xl text-sm" onClick={() => setStep("catalog")}>
                     Back
                   </Button>
-                  <Button className="flex-1 h-10 gap-2" onClick={() => setStep("payment")}>
-                    <QrCode className="h-4 w-4" />
-                    Show QR & Pay
+                  <Button className="flex-1 h-14 rounded-xl gap-2 text-sm font-semibold active:scale-[0.98] transition-transform" onClick={() => setStep("payment")}>
+                    <QrCode className="h-5 w-5" />
+                    QR & Pay
                   </Button>
                 </div>
               </CardContent>
             </Card>
           )}
 
-          {/* ── Step: QR Payment ── */}
+          {/* ── QR PAYMENT ── */}
           {step === "payment" && (
             <Card>
-              <CardContent className="p-4 space-y-4">
-                <h3 className="text-sm font-semibold text-center flex items-center justify-center gap-2">
-                  <QrCode className="h-4 w-4 text-primary" />
+              <CardContent className="p-5 space-y-5">
+                <h3 className="text-base font-semibold text-center flex items-center justify-center gap-2">
+                  <QrCode className="h-5 w-5 text-primary" />
                   Scan to Pay
                 </h3>
 
-                <div className="flex justify-center bg-white rounded-xl p-4">
+                <div className="flex justify-center bg-card border border-border rounded-2xl p-6">
                   {qrPayload ? (
-                    <QRCode value={qrPayload} size={200} />
+                    <QRCode value={qrPayload} size={220} />
                   ) : (
-                    <p className="text-xs text-muted-foreground py-8">Cannot generate QR</p>
+                    <p className="text-sm text-muted-foreground py-12">Cannot generate QR</p>
                   )}
                 </div>
 
                 <div className="text-center space-y-1">
-                  <p className="text-2xl font-bold text-primary">{fmtPrice(total)}</p>
-                  <p className="text-[10px] text-muted-foreground">
-                    {cart.length} item{cart.length > 1 ? "s" : ""} •
-                    {requiresDelivery ? " 📦 Delivery included" : " 🏪 Pickup only"}
+                  <p className="text-3xl font-bold text-primary">{fmtPrice(total)}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {cart.length} item{cart.length > 1 ? "s" : ""}
+                    {requiresDelivery ? " • 📦 Delivery" : " • 🏪 Pickup"}
                   </p>
                 </div>
 
-                <Separator />
-
-                {/* Manual wallet settlement */}
                 <Button
-                  className="w-full h-12 gap-2 text-sm"
+                  className="w-full h-14 gap-2 text-base font-semibold rounded-xl active:scale-[0.98] transition-transform"
                   onClick={processPayment}
                   disabled={processing || !buyerUserId.trim()}
                 >
-                  {processing ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <Wallet className="h-4 w-4" />
-                  )}
-                  Settle with Wallet — {fmtPrice(total)}
+                  {processing ? <Loader2 className="h-5 w-5 animate-spin" /> : <Wallet className="h-5 w-5" />}
+                  Settle — {fmtPrice(total)}
                 </Button>
 
-                <Button variant="outline" className="w-full h-9 text-xs" onClick={() => setStep("cart")}>
+                <Button variant="outline" className="w-full h-12 rounded-xl text-sm" onClick={() => setStep("cart")}>
                   Back to Cart
                 </Button>
               </CardContent>
             </Card>
           )}
 
-          {/* ── Step: Receipt ── */}
+          {/* ── RECEIPT ── */}
           {step === "receipt" && receiptData && (
             <Card>
-              <CardContent className="p-4 space-y-4 text-center">
-                <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
-                  <Check className="h-8 w-8 text-primary" />
+              <CardContent className="p-6 space-y-5 text-center">
+                <div className="h-20 w-20 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto">
+                  <Check className="h-10 w-10 text-primary" />
                 </div>
-                <h3 className="text-lg font-bold">Payment Successful</h3>
-                <p className="text-2xl font-bold text-primary">{fmtPrice(receiptData.total)}</p>
+                <h3 className="text-xl font-bold">Payment Successful</h3>
+                <p className="text-3xl font-bold text-primary">{fmtPrice(receiptData.total)}</p>
 
-                <div className="text-left space-y-1 bg-muted/30 rounded-lg p-3">
-                  <p className="text-[10px] text-muted-foreground">Order ID</p>
-                  <p className="text-xs font-mono">{receiptData.orderId}</p>
-                  <p className="text-[10px] text-muted-foreground mt-2">Items</p>
+                <div className="text-left space-y-2 bg-muted/30 rounded-xl p-4">
+                  <div>
+                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Order ID</p>
+                    <p className="text-sm font-mono">{receiptData.orderId}</p>
+                  </div>
+                  <Separator />
                   {receiptData.items.map((i: CartItem) => (
-                    <p key={i.id} className="text-xs">{i.quantity}× {i.title} — {fmtPrice(i.price * i.quantity)}</p>
+                    <div key={i.id} className="flex justify-between text-sm">
+                      <span>{i.quantity}× {i.title}</span>
+                      <span className="font-medium">{fmtPrice(i.price * i.quantity)}</span>
+                    </div>
                   ))}
                   {receiptData.requiresDelivery && (
-                    <Badge className="mt-2 text-[9px]" variant="secondary">
-                      <Package className="h-3 w-3 mr-1" /> Auto-delivery triggered
+                    <Badge className="mt-2 text-xs" variant="secondary">
+                      <Package className="h-3.5 w-3.5 mr-1" /> Auto-delivery triggered
                     </Badge>
                   )}
                 </div>
 
-                <Button className="w-full h-10 gap-2" onClick={resetPOS}>
-                  <Store className="h-4 w-4" />
+                <Button className="w-full h-14 gap-2 text-base font-semibold rounded-xl active:scale-[0.98] transition-transform" onClick={resetPOS}>
+                  <Store className="h-5 w-5" />
                   New Sale
                 </Button>
               </CardContent>
             </Card>
           )}
 
-          {/* Balance display */}
-          <div className="text-center text-[10px] text-muted-foreground">
-            Wallet: <span className="font-semibold text-foreground">{balance?.balance?.toFixed(2) || "0.00"} LOCS</span>
+          {/* Balance */}
+          <div className="text-center text-xs text-muted-foreground pt-2">
+            Wallet Balance: <span className="font-semibold text-foreground">{balance?.balance?.toFixed(2) || "0.00"} LOCS</span>
           </div>
         </div>
       </div>
