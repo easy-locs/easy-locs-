@@ -8,35 +8,51 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { useI18n } from "@/lib/i18n";
-import { Card, CardContent } from "@/components/ui/card";
-import { Store, ArrowRight, Map, List, MapPin, ChevronDown, Search, X } from "lucide-react";
+import { Store, Map, List, MapPin, Search, X } from "lucide-react";
 import { MobilePageHeader } from "@/components/ui/mobile-page-header";
-import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
-import { SponsoredSlot } from "@/components/monetization/SponsoredSlot";
-import { useRankedFeed } from "@/hooks/useRankedFeed";
 import { AnimatePresence, motion } from "framer-motion";
 import { haptic } from "@/lib/haptics";
 
 const ShopsMapView = lazy(() => import("@/components/shops/ShopsMapView"));
 
 const CATEGORIES = [
-  { id: "all", label: "All" },
-  { id: "food", label: "Food" },
-  { id: "fashion", label: "Fashion" },
-  { id: "tech", label: "Tech" },
-  { id: "beauty", label: "Beauty" },
-  { id: "home", label: "Home" },
-  { id: "services", label: "Services" },
+  { id: "all", labelKey: "shops.category.all" },
+  { id: "food", labelKey: "shops.category.food" },
+  { id: "fashion", labelKey: "shops.category.fashion" },
+  { id: "tech", labelKey: "shops.category.tech" },
+  { id: "beauty", labelKey: "shops.category.beauty" },
+  { id: "home", labelKey: "shops.category.home" },
+  { id: "services", labelKey: "shops.category.services" },
 ];
 
 const FB: Record<string, string> = {
   "shops.title": "Shops",
   "shops.search_placeholder": "Search shops...",
-  "shops.no_shops": "No shops found",
-  "shops.no_shops_desc": "Try a different search or category.",
-  "shops.all_shops": "All Shops",
+  "shops.no_public_shops": "No shops found",
+  "shops.no_public_shops_desc": "Try a different search or category.",
+  "shops.category.all": "All",
+  "shops.category.food": "Food",
+  "shops.category.fashion": "Fashion",
+  "shops.category.tech": "Tech",
+  "shops.category.beauty": "Beauty",
+  "shops.category.home": "Home",
+  "shops.category.services": "Services",
+  "shops.view.list": "List",
+  "shops.view.map": "Map",
+  "shops.results_count_one": "shop",
+  "shops.results_count_other": "shops",
+  "shops.sponsored": "Sponsored",
 };
+
+function useRankedFeedInline<T>(items: T[]) {
+  return {
+    feed: (items || []).map((item) => ({
+      item,
+      sponsored: false,
+    })),
+  };
+}
 
 export default function ShopsPage() {
   const navigate = useNavigate();
@@ -52,18 +68,18 @@ export default function ShopsPage() {
   const { data: shops, isLoading } = useQuery({
     queryKey: ["shops-browse"],
     queryFn: async () => {
-      const { data } = await (supabase as any)
+      const { data, error } = await (supabase as any)
         .from("storefront_pages")
         .select("id, name, slug, logo_url, description, vertical, boost_tier, boost_until, created_at, lat, lng, city")
         .eq("published", true)
         .order("created_at", { ascending: false })
         .limit(50);
+      if (error) throw error;
       return (data || []).map((s: any) => ({ ...s, title: s.name }));
     },
     staleTime: 60_000,
   });
 
-  // Client-side filtering
   const filtered = useMemo(() => {
     if (!shops) return [];
     let result = shops;
@@ -79,7 +95,7 @@ export default function ShopsPage() {
     return result;
   }, [shops, searchQuery, activeCategory]);
 
-  const { feed } = useRankedFeed(filtered);
+  const { feed } = useRankedFeedInline(filtered);
 
   return (
     <div className="flex flex-col min-h-0 flex-1 bg-background">
@@ -94,7 +110,7 @@ export default function ShopsPage() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder={tr("shops.search_placeholder")}
-            className="w-full h-10 pl-9 pr-9 rounded-xl bg-muted/50 border border-border/30 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
+            className="h-11 w-full rounded-2xl border border-border/40 bg-muted/40 pl-10 pr-10 text-sm outline-none ring-0 transition-all focus:border-primary/40 focus:bg-background"
           />
           {searchQuery && (
             <button onClick={() => setSearchQuery("")} className="absolute right-3 top-1/2 -translate-y-1/2">
@@ -111,44 +127,65 @@ export default function ShopsPage() {
             <button
               key={cat.id}
               onClick={() => { setActiveCategory(cat.id); haptic("selection"); }}
-              className={`px-3.5 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all ${
+              className={`rounded-full px-3.5 py-1.5 text-xs font-medium whitespace-nowrap transition-all ${
                 activeCategory === cat.id
                   ? "bg-primary text-primary-foreground shadow-sm"
                   : "bg-muted/50 text-muted-foreground hover:bg-muted"
               }`}
             >
-              {cat.label}
+              {tr(cat.labelKey)}
             </button>
           ))}
         </div>
       </div>
 
-      {/* View toggle + radius */}
+      {/* View toggle + radius/count */}
       <div className="px-4 pb-2 flex items-center gap-2">
         <div className="flex rounded-xl overflow-hidden border border-border/30">
-          <button onClick={() => { setViewMode("list"); haptic("selection"); }}
-            className={`px-3 py-1.5 flex items-center gap-1 text-xs font-medium transition-colors ${viewMode === "list" ? "bg-primary/10 text-primary" : "text-muted-foreground"}`}>
-            <List className="h-3.5 w-3.5" /> List
+          <button
+            onClick={() => { setViewMode("list"); haptic("selection"); }}
+            className={`flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
+              viewMode === "list" ? "bg-primary/10 text-primary" : "text-muted-foreground"
+            }`}
+          >
+            <List className="h-3.5 w-3.5" />
+            {tr("shops.view.list")}
           </button>
-          <button onClick={() => { setViewMode("map"); haptic("selection"); }}
-            className={`px-3 py-1.5 flex items-center gap-1 text-xs font-medium transition-colors ${viewMode === "map" ? "bg-primary/10 text-primary" : "text-muted-foreground"}`}>
-            <Map className="h-3.5 w-3.5" /> Map
+          <button
+            onClick={() => { setViewMode("map"); haptic("selection"); }}
+            className={`flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
+              viewMode === "map" ? "bg-primary/10 text-primary" : "text-muted-foreground"
+            }`}
+          >
+            <Map className="h-3.5 w-3.5" />
+            {tr("shops.view.map")}
           </button>
         </div>
 
-        {viewMode === "map" && (
+        {viewMode === "map" ? (
           <div className="relative ml-auto">
-            <button onClick={() => { setShowRadiusMenu(!showRadiusMenu); haptic("light"); }}
-              className="flex items-center gap-1 px-2.5 py-1.5 rounded-full text-xs font-medium bg-accent/10 text-accent border border-accent/20">
-              <MapPin className="h-3 w-3" /> {radius}km <ChevronDown className="h-3 w-3" />
+            <button
+              onClick={() => { setShowRadiusMenu(!showRadiusMenu); haptic("light"); }}
+              className="rounded-full border border-accent/20 bg-accent/10 px-2.5 py-1.5 text-xs font-medium text-accent"
+            >
+              {radius} km
             </button>
             <AnimatePresence>
               {showRadiusMenu && (
-                <motion.div className="absolute right-0 top-full mt-1 rounded-xl overflow-hidden z-30 min-w-[80px] bg-card border border-border shadow-lg"
-                  initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}>
-                  {[5, 10, 25, 50, 100].map(r => (
-                    <button key={r} onClick={() => { setRadius(r); setShowRadiusMenu(false); haptic("selection"); }}
-                      className={`w-full px-3 py-2 text-left text-xs transition-colors hover:bg-muted ${radius === r ? "text-primary font-semibold" : "text-foreground"}`}>
+                <motion.div
+                  className="absolute right-0 top-full mt-1 rounded-xl overflow-hidden z-30 min-w-[80px] bg-card border border-border shadow-lg"
+                  initial={{ scale: 0.9, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 0.9, opacity: 0 }}
+                >
+                  {[5, 10, 25, 50, 100].map((r) => (
+                    <button
+                      key={r}
+                      onClick={() => { setRadius(r); setShowRadiusMenu(false); haptic("selection"); }}
+                      className={`w-full rounded-xl px-3 py-2 text-left text-xs transition-colors hover:bg-muted ${
+                        radius === r ? "font-semibold text-primary" : "text-foreground"
+                      }`}
+                    >
                       {r} km
                     </button>
                   ))}
@@ -156,11 +193,9 @@ export default function ShopsPage() {
               )}
             </AnimatePresence>
           </div>
-        )}
-
-        {viewMode === "list" && (
+        ) : (
           <span className="ml-auto text-[11px] text-muted-foreground font-medium">
-            {filtered.length} {filtered.length === 1 ? "shop" : "shops"}
+            {filtered.length} {filtered.length === 1 ? tr("shops.results_count_one") : tr("shops.results_count_other")}
           </span>
         )}
       </div>
@@ -173,87 +208,77 @@ export default function ShopsPage() {
               <Store className="h-8 w-8 animate-pulse text-muted-foreground" />
             </div>
           }>
-            <ShopsMapView shops={filtered || []} radiusKm={radius} onOpenShop={(slug) => navigate(`/s/${slug}`)} />
+            <ShopsMapView
+              shops={feed.map((f: any) => f.item)}
+              radiusKm={radius}
+              onOpenShop={(slug: string) => navigate(`/s/${slug}`)}
+            />
           </Suspense>
         </div>
       ) : (
         /* List view */
         <div className="px-4 pb-4 space-y-2.5 max-w-2xl mx-auto flex-1 overflow-y-auto">
           {isLoading && (
-            <div className="space-y-2.5">
+            <>
               {[1, 2, 3, 4].map((i) => (
-                <Skeleton key={i} className="h-20 rounded-xl" />
+                <Skeleton key={i} className="h-20 rounded-2xl" />
               ))}
-            </div>
+            </>
           )}
 
           {!isLoading && feed.length === 0 && (
-            <EmptyState
-              icon={Store}
-              title={tr("shops.no_shops")}
-              description={tr("shops.no_shops_desc")}
-            />
+            <div className="flex flex-col items-center justify-center py-16 text-center">
+              <div className="w-16 h-16 rounded-2xl bg-muted/50 flex items-center justify-center mb-4">
+                <Store className="h-7 w-7 text-muted-foreground" />
+              </div>
+              <p className="text-sm font-semibold text-foreground">{tr("shops.no_public_shops")}</p>
+              <p className="text-xs text-muted-foreground mt-1">{tr("shops.no_public_shops_desc")}</p>
+            </div>
           )}
 
-          {feed.map(({ item: shop, sponsored }, idx) =>
-            sponsored ? (
-              <SponsoredSlot
-                key={`sp-${shop.id}`}
-                id={shop.id}
-                title={shop.name}
-                description={shop.description}
-                photoUrl={shop.logo_url}
-                linkTo={`/s/${shop.slug}`}
-                targetType="shop"
-                shopId={shop.id}
-                placement="shops_feed"
-                tier={shop.boost_tier}
-              />
-            ) : (
-              <motion.button
-                key={shop.id}
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.2, delay: idx * 0.03 }}
-                onClick={() => { haptic("light"); navigate(`/s/${shop.slug}`); }}
-                className="w-full text-left active:scale-[0.98] transition-transform duration-150"
-              >
-                <Card className="hover:shadow-md transition-shadow border-border/30">
-                  <CardContent className="p-3.5 flex items-center gap-3.5">
-                    {shop.logo_url ? (
-                      <img
-                        src={shop.logo_url}
-                        alt={shop.name}
-                        className="w-12 h-12 rounded-xl object-cover shrink-0 ring-1 ring-border/20"
-                        loading="lazy"
-                      />
-                    ) : (
-                      <div className="w-12 h-12 rounded-xl bg-primary/8 flex items-center justify-center shrink-0">
-                        <Store className="h-5 w-5 text-primary" />
-                      </div>
+          {feed.map(({ item: shop, sponsored }: any, idx: number) => (
+            <motion.button
+              key={shop.id}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.2, delay: idx * 0.03 }}
+              onClick={() => { haptic("light"); navigate(`/s/${shop.slug}`); }}
+              className="w-full rounded-3xl border border-border/50 bg-card p-4 text-left shadow-sm transition-transform duration-150 active:scale-[0.98]"
+            >
+              <div className="flex items-center gap-3.5">
+                {shop.logo_url ? (
+                  <img src={shop.logo_url} alt={shop.name} className="w-12 h-12 rounded-2xl object-cover shrink-0 ring-1 ring-border/20" loading="lazy" />
+                ) : (
+                  <div className="w-12 h-12 rounded-2xl bg-primary/8 flex items-center justify-center shrink-0">
+                    <Store className="h-5 w-5 text-primary" />
+                  </div>
+                )}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <p className="text-sm font-semibold text-foreground truncate">{shop.name}</p>
+                    {sponsored && (
+                      <span className="text-[9px] font-bold uppercase tracking-wider text-accent bg-accent/10 px-1.5 py-0.5 rounded-full">
+                        {tr("shops.sponsored")}
+                      </span>
                     )}
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-foreground truncate">{shop.name}</p>
-                      {shop.description && (
-                        <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">{shop.description}</p>
-                      )}
-                      <div className="flex items-center gap-2 mt-1">
-                        {shop.city && (
-                          <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">
-                            <MapPin className="h-2.5 w-2.5" /> {shop.city}
-                          </span>
-                        )}
-                        {shop.vertical && (
-                          <span className="text-[10px] text-muted-foreground capitalize bg-muted/50 px-1.5 py-0.5 rounded-full">{shop.vertical}</span>
-                        )}
-                      </div>
-                    </div>
-                    <ArrowRight className="h-4 w-4 text-muted-foreground/50 shrink-0" />
-                  </CardContent>
-                </Card>
-              </motion.button>
-            )
-          )}
+                  </div>
+                  {shop.description && (
+                    <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">{shop.description}</p>
+                  )}
+                  <div className="flex items-center gap-2 mt-1">
+                    {shop.city && (
+                      <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">
+                        <MapPin className="h-2.5 w-2.5" /> {shop.city}
+                      </span>
+                    )}
+                    {shop.vertical && (
+                      <span className="text-[10px] text-muted-foreground capitalize bg-muted/50 px-1.5 py-0.5 rounded-full">{shop.vertical}</span>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </motion.button>
+          ))}
         </div>
       )}
     </div>
