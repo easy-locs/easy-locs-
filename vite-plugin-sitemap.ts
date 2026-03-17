@@ -19,7 +19,7 @@ interface SitemapEntry {
   priority: string;
 }
 
-export function sitemapPlugin(): Plugin {
+export function sitemapPlugin(): any {
   return {
     name: "generate-sitemap",
     apply: "build",
