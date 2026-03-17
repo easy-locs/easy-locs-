@@ -140,7 +140,7 @@ function ReceiveMode() {
       {/* QR Code */}
       <div className="flex justify-center">
         <div className="rounded-2xl bg-white p-4">
-          <QRCode value={qrValue} size={200} level="M" />
+          <QRCodeSVG value={qrValue} size={200} level="M" />
         </div>
       </div>
 
