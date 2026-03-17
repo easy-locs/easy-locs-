@@ -1,12 +1,14 @@
 /**
- * POSPage — V5: Tactile Point-of-Sale with QR payment + Wallet settlement.
+ * POSPage — V7: Tactile Point-of-Sale with QR payment + Wallet settlement.
  * Route: /pos
  * 
- * Flow: Add items → Cart → Total → QR Payment → Wallet settlement → Auto delivery (if flagged)
+ * V7: Pulls real catalog items from seller's shop.
+ * Flow: Browse catalog → Cart → Total → QR Payment → Wallet settlement → Auto delivery
  */
 import { useState, useCallback, useMemo } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useWallet } from "@/hooks/useWallet";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { platformBus } from "@/lib/shared/platform-bus";
 import SEOHead from "@/components/SEOHead";
@@ -20,7 +22,7 @@ import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import {
   ShoppingCart, Plus, Minus, Trash2, QrCode, Wallet, Check,
-  Package, Loader2, Receipt, Store
+  Package, Loader2, Receipt, Store, Search
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -32,11 +34,10 @@ interface CartItem {
   title: string;
   price: number;
   quantity: number;
+  photo_url?: string;
 }
 
 type POSStep = "catalog" | "cart" | "payment" | "receipt";
-
-const QUICK_AMOUNTS = [5, 10, 15, 20, 25, 50];
 
 export default function POSPage() {
   const { user } = useAuth();
@@ -49,6 +50,39 @@ export default function POSPage() {
   const [buyerUserId, setBuyerUserId] = useState("");
   const [processing, setProcessing] = useState(false);
   const [receiptData, setReceiptData] = useState<any>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  /* ── Load seller's real catalog ── */
+  const { data: shopData } = useQuery({
+    queryKey: ["pos-shop", user?.id],
+    queryFn: async () => {
+      const { data } = await (supabase as any)
+        .from("storefront_pages").select("id").eq("user_id", user!.id).limit(1).maybeSingle();
+      return data;
+    },
+    enabled: !!user?.id,
+  });
+
+  const { data: catalogItems = [] } = useQuery({
+    queryKey: ["pos-catalog", shopData?.id],
+    queryFn: async () => {
+      const { data } = await (supabase as any)
+        .from("catalog_items")
+        .select("id, title, price, currency, photo_url, stock_quantity, available")
+        .eq("shop_id", shopData!.id)
+        .eq("available", true)
+        .order("sort_order", { ascending: true })
+        .limit(50);
+      return data || [];
+    },
+    enabled: !!shopData?.id,
+  });
+
+  const filteredCatalog = useMemo(() => {
+    if (!searchQuery.trim()) return catalogItems;
+    const q = searchQuery.toLowerCase();
+    return catalogItems.filter((i: any) => i.title?.toLowerCase().includes(q));
+  }, [catalogItems, searchQuery]);
 
   const total = useMemo(() => cart.reduce((s, i) => s + i.price * i.quantity, 0), [cart]);
 
@@ -191,24 +225,52 @@ export default function POSPage() {
           {/* ── CATALOG ── */}
           {step === "catalog" && (
             <>
-              <Card>
+               <Card>
                 <CardContent className="p-5 space-y-4">
                   <h3 className="text-base font-semibold flex items-center gap-2">
                     <ShoppingCart className="h-5 w-5 text-primary" />
-                    Quick Add
+                    Catalog
                   </h3>
-                  <div className="grid grid-cols-3 gap-3">
-                    {QUICK_AMOUNTS.map(amt => (
-                      <Button
-                        key={amt}
-                        variant="outline"
-                        className="h-14 text-base font-bold rounded-xl active:scale-95 transition-transform"
-                        onClick={() => addToCart(`Item ${amt}L`, amt)}
-                      >
-                        {amt} L
-                      </Button>
-                    ))}
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Search products..."
+                      value={searchQuery}
+                      onChange={e => setSearchQuery(e.target.value)}
+                      className="h-12 pl-10 text-sm rounded-xl"
+                    />
                   </div>
+                  {filteredCatalog.length > 0 ? (
+                    <div className="grid grid-cols-2 gap-3">
+                      {filteredCatalog.map((item: any) => (
+                        <Button
+                          key={item.id}
+                          variant="outline"
+                          className="h-auto min-h-[60px] flex flex-col items-start gap-1 p-3 rounded-xl active:scale-95 transition-transform text-left"
+                          onClick={() => addToCart(item.title, item.price || 0)}
+                        >
+                          <span className="text-xs font-semibold truncate w-full">{item.title}</span>
+                          <span className="text-sm font-bold text-primary">{(item.price || 0).toFixed(2)} L</span>
+                          {item.stock_quantity != null && (
+                            <span className="text-[10px] text-muted-foreground">Stock: {item.stock_quantity}</span>
+                          )}
+                        </Button>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-3 gap-3">
+                      {[5, 10, 15, 20, 25, 50].map(amt => (
+                        <Button
+                          key={amt}
+                          variant="outline"
+                          className="h-14 text-base font-bold rounded-xl active:scale-95 transition-transform"
+                          onClick={() => addToCart(`Item ${amt}L`, amt)}
+                        >
+                          {amt} L
+                        </Button>
+                      ))}
+                    </div>
+                  )}
                 </CardContent>
               </Card>
 
