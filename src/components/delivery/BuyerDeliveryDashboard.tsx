@@ -163,6 +163,19 @@ export default function BuyerDeliveryDashboard({ className }: Props) {
                         </p>
                       </div>
                     )}
+                    {/* Escrow validator — PASS 182 */}
+                    {["assigned", "accepted", "in_progress"].includes(order.status) && (
+                      <EscrowDeliveryValidator
+                        jobId={order.id}
+                        jobStatus={order.status}
+                        escrowStatus="held"
+                        escrowAmount={order.delivery_fee ?? undefined}
+                        escrowCurrency={order.currency || "EUR"}
+                        confirmationCode={order.confirmation_code ?? undefined}
+                        role="buyer"
+                        onStatusChange={refresh}
+                      />
+                    )}
                   </motion.div>
                 )}
               </motion.div>
