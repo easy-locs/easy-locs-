@@ -218,7 +218,13 @@ export function QrPayCard({
   return (
     <div className="rounded-2xl border border-border bg-card p-4 space-y-3">
       <p className="text-sm font-semibold text-foreground">{title}</p>
-      <p className="text-xs text-muted-foreground break-all">{link}</p>
+
+      <div className="flex justify-center p-3 bg-white rounded-xl">
+        <QRCode value={link} size={180} level="M" />
+      </div>
+
+      <p className="text-[10px] text-muted-foreground break-all text-center">{link}</p>
+
       <button
         type="button"
         onClick={handleCopy}
