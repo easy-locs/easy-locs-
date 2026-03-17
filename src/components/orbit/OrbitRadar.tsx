@@ -72,6 +72,7 @@ export default function OrbitRadar() {
   const [onlyVerified, setOnlyVerified] = useState(false);
   const [invisibleMode, setInvisibleMode] = useState(false);
   const [approxLocation, setApproxLocation] = useState(false);
+  const [showHeatmap, setShowHeatmap] = useState(false);
 
   const { entities, loading, scanning, scan, counts } = useEcosystemRadar({
     lat, lng, radius, userId: user?.id, filter, search, onlyAvailable, onlyVerified,
@@ -289,6 +290,15 @@ export default function OrbitRadar() {
             }}>
             ✅ Vérifié
           </button>
+          <button onClick={() => { setShowHeatmap(!showHeatmap); haptic("light"); }}
+            className="flex items-center gap-1 text-[9px] font-medium px-2 py-0.5 rounded-full"
+            style={{
+              background: showHeatmap ? "hsl(var(--hud-danger) / 0.12)" : "transparent",
+              color: showHeatmap ? "hsl(var(--hud-danger))" : "hsl(var(--hud-text-dim) / 0.4)",
+              border: `1px solid ${showHeatmap ? "hsl(var(--hud-danger) / 0.2)" : "hsl(var(--hud-border) / 0.08)"}`,
+            }}>
+            🔥 Heatmap
+          </button>
 
           <div className="flex-1" />
 
@@ -328,6 +338,12 @@ export default function OrbitRadar() {
               radius={radius}
               entities={entities.filter(e => !e.meta?.no_geo)}
               onSelect={handleSelect}
+              showHeatmap={showHeatmap}
+              heatmapPoints={entities.filter(e => e.lat && e.lng && (e.category === "delivery" || e.category === "service")).map(e => ({
+                lat: e.lat!,
+                lng: e.lng!,
+                intensity: e.category === "delivery" ? 0.8 : 0.5,
+              }))}
             />
           </Suspense>
 
