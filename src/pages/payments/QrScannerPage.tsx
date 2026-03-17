@@ -6,11 +6,15 @@
  */
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Camera, CameraOff, RefreshCcw, CheckCircle2, Info, UserPlus, MessageCircle, Send, Store, ExternalLink, Heart } from "lucide-react";
+import { ArrowLeft, Camera, CameraOff, RefreshCcw, CheckCircle2, Info, UserPlus, MessageCircle, Send, Store, ExternalLink, Heart, Loader2, Check } from "lucide-react";
 import { Html5Qrcode } from "html5-qrcode";
 import { decodeQr, resolveRoute, isExpired, isSecurityAction, type UniversalQrPayload } from "@/lib/qr-engine";
 import { useUnifiedPayment } from "@/payments/UnifiedPaymentSystem";
 import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { getOrCreateDirectThread } from "@/lib/direct-thread";
+import { toast } from "sonner";
 
 type ScanState = "idle" | "starting" | "scanning" | "paying" | "paid" | "stopped" | "error" | "resolved";
 type PermissionStateLike = "unknown" | "granted" | "denied" | "prompt" | "unsupported";
