@@ -18,6 +18,7 @@ import { useGeolocation } from "@/hooks/useGeolocation";
 import GlobalSearch from "@/components/storefront/GlobalSearch";
 import { motion, AnimatePresence } from "framer-motion";
 import { haptic } from "@/lib/haptics";
+import UniversalActionButtons from "@/components/actions/UniversalActionButtons";
 
 /* ══════════════════════════════════════
    CONFIGURATION
