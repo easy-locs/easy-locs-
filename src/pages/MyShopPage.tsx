@@ -26,6 +26,7 @@ const OrdersManager = lazy(() => import("@/components/storefront/OrdersManager")
 const StorefrontDealRoom = lazy(() => import("@/components/storefront/StorefrontDealRoom"));
 const ShopAnalytics = lazy(() => import("@/components/storefront/ShopAnalytics"));
 const LaunchAudit = lazy(() => import("@/components/storefront/LaunchAudit"));
+const BoostSelectorLazy = lazy(() => import("@/components/monetization/BoostSelectorWrapper"));
 const SellerFinance = lazy(() => import("@/components/storefront/SellerFinance"));
 const CouponManager = lazy(() => import("@/components/storefront/CouponManager"));
 const ShippingManager = lazy(() => import("@/components/storefront/ShippingManager"));
@@ -249,7 +250,18 @@ export default function MyShopPage() {
                 <MultiStoreManager />
               </div>
             )}
-            {tab === "launch" && <LaunchAudit shopId={shop.id} />}
+            {tab === "launch" && (
+              <div className="space-y-4">
+                <LaunchAudit shopId={shop.id} />
+                <Card>
+                  <CardContent className="p-4">
+                    <Suspense fallback={<TabLoader />}>
+                      <BoostSelectorLazy targetType="shop" targetId={shop.id} shopId={shop.id} onSuccess={() => refetch()} />
+                    </Suspense>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
             {tab === "settings" && (
               <div className="space-y-4">
                 <Card>
