@@ -1,10 +1,13 @@
 /**
- * Payment Request Hooks — create, mark paid, list, QR payload helpers.
+ * Payment Request Hooks — canonical module for create, mark paid, list, fulfill, fetch.
  * Uses requester_id / recipient_id schema on payment_requests table.
+ *
+ * Also re-exports QR payload helpers from the unified QR engine.
  */
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { walletTransfer } from "@/payments/wallet-hooks";
 
 export type PaymentRequestRow = {
   id: string;
@@ -22,6 +25,7 @@ export type PaymentRequestRow = {
   metadata: Record<string, any>;
 };
 
+/** Create a payment request */
 export async function createPaymentRequest(input: {
   requesterId: string;
   recipientId?: string | null;
@@ -54,6 +58,7 @@ export async function createPaymentRequest(input: {
   return data as PaymentRequestRow;
 }
 
+/** Mark a payment request as paid */
 export async function markPaymentRequestPaid(requestId: string, txId: string) {
   const { error } = await (supabase as any)
     .from("payment_requests")
@@ -62,6 +67,37 @@ export async function markPaymentRequestPaid(requestId: string, txId: string) {
   if (error) throw error;
 }
 
+/** Fetch a single payment request by ID */
+export async function fetchPaymentRequest(id: string): Promise<PaymentRequestRow | null> {
+  const { data } = await (supabase as any)
+    .from("payment_requests")
+    .select("*")
+    .eq("id", id)
+    .maybeSingle();
+  return data as PaymentRequestRow | null;
+}
+
+/** Fulfill a payment request using wallet_transfer (pay + mark paid) */
+export async function fulfillPaymentRequest(
+  payerId: string,
+  request: PaymentRequestRow
+): Promise<{ txId: string }> {
+  const { txId } = await walletTransfer({
+    senderId: payerId,
+    recipientId: request.requester_id,
+    amount: request.amount,
+    currency: request.currency,
+    contextType: "payment_request",
+    contextId: request.id,
+    title: request.title || "Payment request",
+    subtitle: request.subtitle,
+  });
+
+  await markPaymentRequestPaid(request.id, txId);
+  return { txId };
+}
+
+/** Hook: list current user's payment requests (sent + received) */
 export function useMyPaymentRequests(limit = 20) {
   const { user } = useAuth();
   const [items, setItems] = useState<PaymentRequestRow[]>([]);

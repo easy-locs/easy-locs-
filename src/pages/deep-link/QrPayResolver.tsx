@@ -6,7 +6,7 @@ import { useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUnifiedPayment } from "@/payments/UnifiedPaymentSystem";
-import { fetchPaymentRequest } from "@/payments/request-money";
+import { fetchPaymentRequest } from "@/payments/payment-request-hooks";
 import { decodeQr, resolveRoute } from "@/lib/qr-engine";
 import { Loader2 } from "lucide-react";
 
@@ -42,7 +42,7 @@ export default function QrPayResolver() {
             currency: pr.currency,
             title: pr.title || "Payment request",
             subtitle: pr.subtitle || undefined,
-            recipientId: pr.sender_id,
+            recipientId: pr.requester_id,
             recipientName: pr.title || "Payment request",
             contextType: "order",
             contextId: pr.id,

@@ -48,18 +48,7 @@ type UnifiedPaymentContextValue = {
 
 const UnifiedPaymentContext = createContext<UnifiedPaymentContextValue | null>(null);
 
-function formatMoney(amount: number, currency = "AED") {
-  try {
-    return new Intl.NumberFormat(undefined, {
-      style: "currency",
-      currency,
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 2,
-    }).format(amount);
-  } catch {
-    return `${amount} ${currency}`;
-  }
-}
+import { formatMoney } from "@/lib/format";
 
 export function UnifiedPaymentProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
