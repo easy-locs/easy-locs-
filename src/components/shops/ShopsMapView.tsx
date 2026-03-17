@@ -59,17 +59,19 @@ export default function ShopsMapView({ shops, radius, onShopClick }: Props) {
         zoomToBoundsOnClick: true,
         iconCreateFunction: (cluster) => {
           const count = cluster.getChildCount();
-          const size = count < 10 ? 36 : count < 50 ? 44 : 52;
+          const size = count < 10 ? 38 : count < 50 ? 46 : 54;
           return L.divIcon({
             className: "",
             html: `<div style="
               width:${size}px;height:${size}px;border-radius:50%;
-              background:hsl(var(--primary));
+              background:linear-gradient(145deg, hsl(var(--primary)), hsl(var(--primary) / 0.7));
               display:flex;align-items:center;justify-content:center;
-              color:white;font-weight:700;font-size:13px;
-              box-shadow:0 3px 12px rgba(0,0,0,0.2);
-              border:2px solid rgba(255,255,255,0.3);
-            ">${count}</div>`,
+              color:white;font-weight:800;font-size:13px;letter-spacing:-0.3px;
+              box-shadow:0 6px 24px hsl(var(--primary) / 0.45), inset 0 1px 0 rgba(255,255,255,0.2);
+              border:2px solid rgba(255,255,255,0.18);
+              position:relative;
+            "><span style="position:relative;z-index:1;">${count}</span></div>
+            <div style="position:absolute;inset:-5px;border-radius:50%;border:2px solid hsl(var(--primary) / 0.3);animation:shopPulse 2.5s ease-out infinite;pointer-events:none;"></div>`,
             iconSize: [size, size],
             iconAnchor: [size / 2, size / 2],
           });
