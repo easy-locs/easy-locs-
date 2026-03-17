@@ -190,14 +190,17 @@ export function installPlatformReactions(): () => void {
     platformBus.onPrefix("orbit:", () => refreshOrbitEngine())
   );
 
-  // ── Tracking completed → refresh orbit ──
+  // ── Tracking events → refresh orbit ──
   unsubs.push(
     platformBus.on("tracking:completed", () => refreshOrbitEngine())
   );
-
-  // ── Tracking started → refresh orbit (new entity on radar) ──
   unsubs.push(
     platformBus.on("tracking:started", () => refreshOrbitEngine())
+  );
+
+  // ── Storefront events → refresh orbit engine ──
+  unsubs.push(
+    platformBus.onPrefix("storefront:", () => refreshOrbitEngine())
   );
 
   // ── Currency changed → propagate via custom event for legacy components ──
