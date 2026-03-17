@@ -303,12 +303,12 @@ function ChatMessageBubble({
         )}
 
         {/* Payment badge */}
-        {isPayment && (
+        {(isPayment || isPaymentReceipt) && (
           <span className="inline-flex items-center gap-1 text-[10px] font-medium mb-1 rounded-md px-1.5 py-0.5" style={{
-            color: "hsl(var(--hud-cyan))",
-            background: "hsl(var(--hud-cyan) / 0.08)",
+            color: isPaymentReceipt ? "hsl(var(--hud-success))" : "hsl(var(--hud-cyan))",
+            background: isPaymentReceipt ? "hsl(var(--hud-success) / 0.08)" : "hsl(var(--hud-cyan) / 0.08)",
           }}>
-            <CreditCard className="h-2.5 w-2.5" /> Payment
+            <CreditCard className="h-2.5 w-2.5" /> {isPaymentReceipt ? "Receipt" : "Payment"}
           </span>
         )}
 
