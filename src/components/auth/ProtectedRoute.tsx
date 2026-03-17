@@ -57,7 +57,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
   // Routes accessible to free/client accounts (publishing, communication, explore, marketplace)
   const FREE_ACCESS_PREFIXES = [
-    "/dashboard/marketplace",
+    "/dashboard/my-shop",
     "/dashboard/activities",
     "/dashboard/real-estate",
     "/dashboard/seasonal",
