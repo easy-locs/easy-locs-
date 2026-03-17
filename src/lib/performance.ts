@@ -1,10 +1,12 @@
 /**
- * Performance utilities for Easy-Locs
+ * Performance utilities for Easy-Locs — PASS145-147
  * - Route prefetching on idle
- * - Image lazy loading helper
+ * - Image lazy loading / preloading
  * - Debounced/throttled callbacks
  * - Render performance monitoring
+ * - OptimizedImage component
  */
+import { useCallback, useRef } from "react";
 
 /** Prefetch a route's chunk during idle time */
 export function prefetchRoute(importFn: () => Promise<unknown>): void {
@@ -178,4 +180,35 @@ export function createLRUCache<K, V>(maxSize: number) {
       return cache.size;
     },
   };
+}
+
+// OptimizedImage component is in src/components/ui/optimized-image.tsx
+
+// ── Preload critical images ──────────────────────────────────────────
+
+const preloadedUrls = new Set<string>();
+
+export function preloadImage(url: string) {
+  if (!url || preloadedUrls.has(url)) return;
+  preloadedUrls.add(url);
+  const link = document.createElement("link");
+  link.rel = "preload";
+  link.as = "image";
+  link.href = url;
+  document.head.appendChild(link);
+}
+
+export function preloadFeedImages(items: Array<{ photo_url?: string | null; logo_url?: string | null }>, count = 3) {
+  items.slice(0, count).forEach((item) => {
+    if (item.photo_url) preloadImage(item.photo_url);
+    if (item.logo_url) preloadImage(item.logo_url);
+  });
+}
+
+// ── Stable callback ref ─────────────────────────────────────────────
+
+export function useStableCallback<T extends (...args: any[]) => any>(fn: T): T {
+  const ref = useRef(fn);
+  ref.current = fn;
+  return useCallback((...args: any[]) => ref.current(...args), []) as T;
 }

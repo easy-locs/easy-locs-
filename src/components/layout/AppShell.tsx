@@ -2,14 +2,27 @@
  * AppShell — Global layout shell for authenticated pages.
  * Provides: fixed bottom nav, safe-area support, no layout shifts.
  * PASS136: Single source of truth for navigation.
+ * PASS145: Prefetches critical queries on mount.
  */
-import { Outlet, useLocation } from "react-router-dom";
+import { useEffect } from "react";
+import { useLocation } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 import MobileBottomNav from "@/components/dashboard/MobileBottomNav";
+import { useAuth } from "@/contexts/AuthContext";
+import { prefetchCriticalData } from "@/lib/query-prefetch";
+import { scheduleIdle } from "@/lib/performance";
 
 const HIDE_SHELL_PREFIXES = ["/login", "/signup", "/forgot-password", "/reset-password", "/verify-email", "/tenant-signup"];
 
 export default function AppShell({ children }: { children?: React.ReactNode }) {
   const { pathname } = useLocation();
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+
+  // PASS145: Prefetch critical data during idle
+  useEffect(() => {
+    scheduleIdle(() => prefetchCriticalData(queryClient, user?.id));
+  }, [queryClient, user?.id]);
 
   const hideShell = HIDE_SHELL_PREFIXES.some((p) => pathname.startsWith(p));
 
