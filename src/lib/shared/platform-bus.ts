@@ -43,6 +43,10 @@ type PlatformEventType =
   | "storefront:delivery_dispatched"
   | "storefront:review_posted"
   | "storefront:stock_low"
+  | "storefront:trust_updated"
+  | "storefront:loyalty_earned"
+  | "storefront:risk_flagged"
+  | "storefront:growth_milestone"
   // Property Management
   | "pm:lease_created"
   | "pm:lease_activated"
