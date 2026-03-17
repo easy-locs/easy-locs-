@@ -112,7 +112,7 @@ export default function UserProfilePage() {
                   <MessageCircle className="h-4 w-4" /> Chat
                 </Button>
               </Link>
-              <Link to={user ? `/dashboard/wallet?action=send&to=${userId}` : `/login?redirect=/u/${userId}`}>
+              <Link to={user ? `/dashboard/wallet?action=pay` : `/login?redirect=/u/${userId}`}>
                 <Button size="sm" variant="outline" className="gap-1.5">
                   <Send className="h-4 w-4" /> Pay
                 </Button>
