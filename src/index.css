@@ -230,9 +230,10 @@
     --info-foreground: 0 0% 100%;
 
     --gradient-card: linear-gradient(180deg, hsl(222 42% 11%) 0%, hsl(222 42% 9%) 100%);
-    --shadow-card: 0 1px 3px hsl(0 0% 0% / 0.2), 0 4px 12px hsl(0 0% 0% / 0.15);
-    --shadow-card-hover: 0 4px 12px hsl(0 0% 0% / 0.3), 0 8px 24px hsl(0 0% 0% / 0.2);
-    --shadow-gold: 0 4px 16px hsl(38 65% 56% / 0.2);
+    --shadow-card: 0 1px 2px hsl(0 0% 0% / 0.15), 0 2px 8px hsl(0 0% 0% / 0.1);
+    --shadow-card-hover: 0 4px 16px hsl(0 0% 0% / 0.25), 0 8px 32px hsl(0 0% 0% / 0.15);
+    --shadow-gold: 0 4px 20px hsl(38 65% 56% / 0.2);
+    --shadow-elevated: 0 8px 24px hsl(0 0% 0% / 0.2), 0 2px 8px hsl(0 0% 0% / 0.1);
 
     color-scheme: dark;
   }

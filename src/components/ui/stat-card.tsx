@@ -113,18 +113,18 @@ const StatCard = ({
   const content = (
     <div
       className={cn(
-        "flex flex-col h-full bg-card rounded-xl p-4 sm:p-5 shadow-card border border-border/50 transition-all duration-300 relative overflow-hidden min-h-[120px] sm:min-h-[140px]",
-        path && "hover:shadow-card-hover hover:border-accent/30 group cursor-pointer",
+        "flex flex-col h-full bg-card rounded-[var(--card-radius)] p-4 sm:p-5 shadow-card border border-border/40 transition-all duration-200 relative overflow-hidden min-h-[110px] sm:min-h-[130px]",
+        path && "hover:shadow-card-hover hover:-translate-y-0.5 hover:border-accent/30 group cursor-pointer",
         className,
       )}
     >
-      {/* Hover accent line */}
+      {/* Top accent line */}
       <motion.div
-        className="absolute top-0 left-0 right-0 h-0.5 bg-accent origin-left"
+        className="absolute top-0 left-0 right-0 h-[2px] bg-accent/80 origin-left"
         initial={{ scaleX: 0, opacity: 0 }}
         whileInView={{ scaleX: 1, opacity: 1 }}
         viewport={{ once: true }}
-        transition={{ delay: 0.3, duration: 0.5, ease: "easeOut" }}
+        transition={{ delay: 0.2, duration: 0.4, ease: "easeOut" }}
       />
 
       {/* Row 1: Icon + optional arrow */}

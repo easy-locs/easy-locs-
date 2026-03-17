@@ -17,23 +17,23 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          "bg-primary text-primary-foreground shadow-sm hover:bg-primary/90 active:scale-[0.98]",
+          "bg-primary text-primary-foreground shadow-sm hover:bg-primary/90 active:scale-[0.97] transition-all duration-150",
         destructive:
-          "bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90 active:scale-[0.98]",
+          "bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90 active:scale-[0.97]",
         outline:
-          "border border-input bg-background hover:bg-accent/10 hover:text-accent-foreground hover:border-accent/40",
+          "border border-input bg-background hover:bg-accent/8 hover:text-accent-foreground hover:border-accent/40 transition-all duration-150",
         secondary:
-          "bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80 active:scale-[0.98]",
+          "bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80 active:scale-[0.97]",
         ghost:
-          "hover:bg-accent/10 hover:text-accent-foreground",
+          "hover:bg-accent/8 hover:text-accent-foreground transition-colors duration-150",
         link:
           "text-primary underline-offset-4 hover:underline",
-        /* ── Premium gold CTA ── */
+        /* ── Premium gold CTA — strongest visual weight ── */
         premium:
-          "bg-gradient-to-r from-gold to-gold-light text-accent-foreground shadow-gold hover:opacity-90 active:scale-[0.98]",
+          "bg-gradient-to-r from-gold to-gold-light text-accent-foreground shadow-gold hover:shadow-gold hover:-translate-y-0.5 active:scale-[0.97] active:translate-y-0 transition-all duration-200",
         /* ── Success (confirm, validate) ── */
         success:
-          "bg-success text-success-foreground shadow-sm hover:bg-success/90 active:scale-[0.98]",
+          "bg-success text-success-foreground shadow-sm hover:bg-success/90 active:scale-[0.97]",
       },
       size: {
         default: "h-[var(--input-height)] px-4 py-2 text-sm rounded-[var(--btn-radius)]",
