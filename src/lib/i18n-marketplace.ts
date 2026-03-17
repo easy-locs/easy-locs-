@@ -222,6 +222,13 @@ const MP_KEYS_EN: Record<string, string> = {
   "explore.listings": "listings",
   "explore.show_more": "Show more",
   "explore.nights": "nights",
+  // SEO Footer
+  "explore.browse_country": "Browse by Country",
+  "explore.popular_cities": "Popular Cities",
+  "explore.categories": "Categories",
+  "explore.services_directory": "Services Directory",
+  "explore.quick_links": "Quick Links",
+  "explore.you_may_like": "You may also be interested in",
   // Category groups
   "explore.cat.property": "Real Estate",
   "explore.cat.home_services": "Home Services",
