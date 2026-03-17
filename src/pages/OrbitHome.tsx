@@ -176,7 +176,6 @@ export default function OrbitHome() {
             style={{
               background: "hsl(var(--hud-surface))",
               border: "1px solid hsl(var(--hud-border) / 0.1)",
-              divideColor: "hsl(var(--hud-border) / 0.06)",
             }}
           >
             {activityItems.slice(0, 4).map((item) => (
