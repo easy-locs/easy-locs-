@@ -14,9 +14,9 @@ const MobileBottomNav = ({ onMenuOpen }: MobileBottomNavProps) => {
 
   const items = [
     { icon: Home, label: "Home", path: "/dashboard" },
-    { icon: Search, label: "Search", path: "/explore" },
-    { icon: Store, label: "Shops", path: "/dashboard/marketplace" },
-    { icon: ShoppingBag, label: "Orders", path: "/dashboard/operations" },
+    { icon: Search, label: "Search", path: "/discover" },
+    { icon: Store, label: "Shops", path: "/dashboard/my-shop" },
+    { icon: ShoppingBag, label: "Orders", path: "/my-orders" },
     { icon: User, label: "Profile", path: "/dashboard/settings" },
   ];
 

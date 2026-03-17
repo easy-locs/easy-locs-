@@ -49,6 +49,7 @@ type PlatformEventType =
   | "storefront:growth_milestone"
   | "storefront:return_requested"
   | "storefront:return_processed"
+  | "storefront:crm_updated"
   // Property Management
   | "pm:lease_created"
   | "pm:lease_activated"
