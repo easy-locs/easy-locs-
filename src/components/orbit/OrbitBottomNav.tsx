@@ -1,29 +1,29 @@
 /**
- * OrbitBottomNav — Bottom navigation for Orbit shell.
- * PASS 164: Extracted from OrbitAppShell. i18n-enabled, accessible.
+ * OrbitBottomNav — V7 Bottom navigation for Orbit shell.
+ * 5-tab layout: Home, Discover, Wallet, Business, Profile
  */
 import { useNavigate, useLocation } from "react-router-dom";
-import { Home, Search, Store, MessageCircle, User } from "lucide-react";
+import { Home, Search, Wallet, Store, User } from "lucide-react";
 import { useOrbitEngine } from "@/stores/orbit-engine";
 import { useI18n } from "@/lib/i18n";
 
 const NAV_ITEMS = [
-  { icon: Home, labelKey: "nav.home", path: "/app/orbit", badge: null as string | null },
-  { icon: Search, labelKey: "nav.search", path: "/discover", badge: null },
-  { icon: Store, labelKey: "nav.shops", path: "/shops", badge: null },
-  { icon: MessageCircle, labelKey: "nav.orders", path: "/my-orders", badge: null },
-  { icon: User, labelKey: "nav.me", path: "/dashboard/settings", badge: null },
+  { icon: Home, labelKey: "nav.home", path: "/app/orbit", matchPrefixes: ["/app"] },
+  { icon: Search, labelKey: "nav.discover", path: "/discover", matchPrefixes: ["/discover", "/search", "/explore", "/shops"] },
+  { icon: Wallet, labelKey: "nav.wallet", path: "/dashboard/wallet", matchPrefixes: ["/dashboard/wallet"] },
+  { icon: Store, labelKey: "nav.business", path: "/dashboard/my-shop", matchPrefixes: ["/dashboard/my-shop", "/dashboard/seller", "/pos", "/my-orders"] },
+  { icon: User, labelKey: "nav.me", path: "/dashboard/settings", matchPrefixes: ["/dashboard/settings"] },
 ] as const;
 
 export default function OrbitBottomNav() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { unreadMessages, missedCalls } = useOrbitEngine();
+  const { unreadMessages, pendingOrders } = useOrbitEngine();
   const { t } = useI18n();
 
-  const getCounter = (badge: string | null) => {
-    if (badge === "messages") return unreadMessages;
-    if (badge === "calls") return missedCalls;
+  const getBadge = (labelKey: string) => {
+    if (labelKey === "nav.home") return unreadMessages;
+    if (labelKey === "nav.business") return pendingOrders;
     return 0;
   };
 
@@ -39,39 +39,32 @@ export default function OrbitBottomNav() {
         height: "calc(56px + env(safe-area-inset-bottom, 8px))",
       }}
     >
-      {NAV_ITEMS.map(({ icon: Icon, labelKey, path, badge }) => {
+      {NAV_ITEMS.map(({ icon: Icon, labelKey, path, matchPrefixes }) => {
         const label = t(labelKey) || labelKey.split(".").pop() || "";
-        const isActive =
-          location.pathname === path ||
-          (labelKey === "nav.home" && location.pathname.startsWith("/app")) ||
-          (labelKey === "nav.orders" && location.pathname.startsWith("/my-orders")) ||
-          (labelKey === "nav.shops" && (location.pathname.startsWith("/shops") || location.pathname === "/dashboard/my-shop")) ||
-          (labelKey === "nav.search" && (location.pathname.startsWith("/discover") || location.pathname.startsWith("/search"))) ||
-          (labelKey === "nav.me" && location.pathname.startsWith("/dashboard/settings"));
-        const counter = getCounter(badge);
+        const isActive = matchPrefixes.some(p => location.pathname.startsWith(p)) || location.pathname === path;
+        const badge = getBadge(labelKey);
+
         return (
           <button
             key={labelKey}
             role="tab"
             aria-selected={isActive}
-            aria-label={`${label}${counter > 0 ? ` (${counter})` : ""}`}
+            aria-label={`${label}${badge > 0 ? ` (${badge})` : ""}`}
             onClick={() => navigate(path)}
             className="relative flex flex-col items-center justify-center gap-0.5 pt-2 pb-1 px-3 min-w-[56px] min-h-[44px] active:scale-90 transition-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-lg"
           >
-            {counter > 0 && (
+            {badge > 0 && (
               <span
                 className="absolute top-0.5 right-1 min-w-[16px] h-4 rounded-full text-[9px] font-bold flex items-center justify-center px-1"
                 style={{ background: "hsl(var(--hud-danger))", color: "#fff" }}
               >
-                {counter > 99 ? "99+" : counter}
+                {badge > 99 ? "99+" : badge}
               </span>
             )}
             <Icon
               className="w-5 h-5 transition-colors duration-150"
               strokeWidth={isActive ? 2.5 : 1.8}
-              style={{
-                color: isActive ? "hsl(var(--hud-cyan))" : "hsl(var(--hud-text-dim) / 0.45)",
-              }}
+              style={{ color: isActive ? "hsl(var(--hud-cyan))" : "hsl(var(--hud-text-dim) / 0.45)" }}
             />
             <span
               className="text-[10px] transition-colors duration-150"
