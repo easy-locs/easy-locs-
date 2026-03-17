@@ -53,6 +53,7 @@ export default function ShopCreator() {
           name: name.trim(),
           tagline: tagline.trim() || null,
           description: description.trim() || null,
+          logo_url: logoUrl.trim() || null,
           city: city.trim() || "",
           country: country.trim() || "",
           contact_email: user.email || "",
