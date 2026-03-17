@@ -82,6 +82,14 @@ export default function WalletPage() {
             )}
           </div>
 
+          {/* QR Actions */}
+          {user?.id && (
+            <QrActionRow
+              payload={{ type: "user_pay", userId: user.id }}
+              qrTitle="My payment QR"
+            />
+          )}
+
           {/* Transactions */}
           <div>
             <h2 className="text-sm font-semibold text-muted-foreground mb-3 flex items-center gap-2">

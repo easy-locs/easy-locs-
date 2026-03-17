@@ -126,6 +126,13 @@ export default function PayRequestPage() {
               )}
             </>
           )}
+
+          {/* Share as QR */}
+          <PaymentRequestQr
+            requestId={requestId!}
+            title={data.title || "Payment request"}
+            compact
+          />
         </div>
       </div>
     </>
