@@ -92,23 +92,6 @@ export function useMyPaymentRequests(limit = 20) {
   return { items, loading, reload: load };
 }
 
-/* ── QR Payload helpers ──────────────────────────────────────── */
-export type QrPayload =
-  | { type: "user_pay"; userId: string; amount?: number; currency?: string }
-  | { type: "shop_pay"; shopSlug: string; amount?: number; currency?: string }
-  | { type: "payment_request"; requestId: string }
-  | { type: "profile"; userId: string }
-  | { type: "shop"; shopSlug: string };
-
-export function encodeQrPayload(payload: QrPayload): string {
-  return JSON.stringify(payload);
-}
-
-export function decodeQrPayload(raw: string): QrPayload | null {
-  try {
-    const p = JSON.parse(raw);
-    return p?.type ? (p as QrPayload) : null;
-  } catch {
-    return null;
-  }
-}
+/* ── QR Payload helpers — re-exported from unified QR engine ── */
+export type { UniversalQrPayload as QrPayload } from "@/lib/qr-engine";
+export { encodeQr as encodeQrPayload, decodeQr as decodeQrPayload } from "@/lib/qr-engine";
