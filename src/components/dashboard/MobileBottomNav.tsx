@@ -3,7 +3,7 @@
  * 1. Marketplace (browse listings) 2. Shops (public directory) 3. My Business (private) 4. Property (separate)
  * i18n-ready, no mixed language, professional wording.
  */
-import { Link, useLocation } from "react-router-dom";
+import { NavLink, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Compass, Store, Briefcase, Building2 } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
@@ -86,7 +86,7 @@ const MobileBottomNav = () => {
           const active = item.match(pathname);
           const label = tr(item.labelKey);
           return (
-            <Link
+            <NavLink
               key={item.path}
               to={item.path}
               role="tab"
@@ -107,7 +107,7 @@ const MobileBottomNav = () => {
               <span className={`text-[10px] leading-tight transition-colors ${active ? "text-accent font-bold" : "font-medium"}`}>
                 {label}
               </span>
-            </Link>
+            </NavLink>
           );
         })}
       </div>
