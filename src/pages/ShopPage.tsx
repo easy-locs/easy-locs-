@@ -48,6 +48,7 @@ const MultiCurrencyTax = lazy(() => import("@/components/storefront/MultiCurrenc
 const GamificationEngine = lazy(() => import("@/components/storefront/GamificationEngine"));
 const AdvancedCheckout = lazy(() => import("@/components/storefront/AdvancedCheckout"));
 const AIShoppingAssistant = lazy(() => import("@/components/storefront/AIShoppingAssistant"));
+const TrustScoreBadge = lazy(() => import("@/components/storefront/TrustScoreBadge"));
 
 const fmtPrice = (n: number, c = "EUR") => {
   try { return new Intl.NumberFormat(undefined, { style: "currency", currency: c, minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(n); }
@@ -214,6 +215,9 @@ export default function ShopPage() {
               </span>
             )}
             <Badge variant="outline" className="text-[10px]">{catalogItems.length} items</Badge>
+            <Suspense fallback={null}>
+              <TrustScoreBadge shopId={shop.id} compact />
+            </Suspense>
             <Select value={fx.displayCurrency} onValueChange={fx.setDisplayCurrency}>
               <SelectTrigger className="h-6 w-auto gap-1 text-[10px] border-none bg-muted/50 px-2">
                 <Globe className="h-3 w-3" />

@@ -122,7 +122,7 @@ export function installStorefrontReactions(): () => void {
     })
   );
 
-  // ── Review posted → refresh analytics ──
+  // ── Review posted → refresh analytics + trust score ──
   unsubs.push(
     platformBus.on("storefront:review_posted", (event: PlatformEvent) => {
       const { shopId } = event.payload as any;
@@ -130,6 +130,7 @@ export function installStorefrontReactions(): () => void {
       invalidate([
         ["seller-analytics-v2", shopId],
         ["shop-reviews", shopId],
+        ["trust-score", shopId],
         ["discover-shops"],
       ]);
     })
@@ -140,6 +141,62 @@ export function installStorefrontReactions(): () => void {
     platformBus.on("storefront:stock_low", (event: PlatformEvent) => {
       const { itemTitle, remaining } = event.payload as any;
       toast.warning(`⚠️ Low stock: "${itemTitle}" — ${remaining} left`);
+    })
+  );
+
+  // ── PASS117: Trust score updated → refresh badge ──
+  unsubs.push(
+    platformBus.on("storefront:trust_updated", (event: PlatformEvent) => {
+      const { shopId, score } = event.payload as any;
+      invalidate([["trust-score", shopId]]);
+    })
+  );
+
+  // ── PASS118: Loyalty points earned → refresh buyer loyalty ──
+  unsubs.push(
+    platformBus.on("storefront:loyalty_earned", (event: PlatformEvent) => {
+      const { shopId, points } = event.payload as any;
+      toast.success(`🏆 +${points} loyalty points earned!`);
+      invalidate([
+        ["my-loyalty-points"],
+        ["my-loyalty-history"],
+        ["loyalty-rewards", shopId],
+      ]);
+    })
+  );
+
+  // ── PASS119: Risk flag raised → alert seller ──
+  unsubs.push(
+    platformBus.on("storefront:risk_flagged", (event: PlatformEvent) => {
+      const { shopId, severity, reason } = event.payload as any;
+      if (severity === "critical") {
+        toast.error(`🚨 Critical risk alert: ${reason}`);
+      } else {
+        toast.warning(`⚠️ Risk alert: ${reason}`);
+      }
+      invalidate([["risk-flags", shopId]]);
+    })
+  );
+
+  // ── PASS120: Growth milestone → celebrate ──
+  unsubs.push(
+    platformBus.on("storefront:growth_milestone", (event: PlatformEvent) => {
+      const { shopId, milestone } = event.payload as any;
+      toast.success(`🚀 ${milestone}`);
+      invalidate([["growth-metrics", shopId]]);
+    })
+  );
+
+  // ── Order completed → also refresh trust + growth + loyalty ──
+  unsubs.push(
+    platformBus.on("storefront:order_completed", (event: PlatformEvent) => {
+      const { shopId } = event.payload as any;
+      invalidate([
+        ["trust-score", shopId],
+        ["growth-metrics", shopId],
+        ["my-loyalty-points"],
+        ["risk-flags", shopId],
+      ]);
     })
   );
 
