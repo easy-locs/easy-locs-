@@ -15,7 +15,7 @@ import { Input } from "@/components/ui/input";
 const CURRENCIES = ["AED", "USD", "EUR", "GBP", "MAD"];
 
 export default function ReceiveQrPanel() {
-  const { user, profile } = useAuth();
+  const { user } = useAuth();
   const [amount, setAmount] = useState<string>("");
   const [currency, setCurrency] = useState("AED");
   const [copied, setCopied] = useState(false);
