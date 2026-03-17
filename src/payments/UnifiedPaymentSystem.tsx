@@ -49,7 +49,6 @@ type UnifiedPaymentContextValue = {
 
 const UnifiedPaymentContext = createContext<UnifiedPaymentContextValue | null>(null);
 
-import { formatMoney } from "@/lib/format";
 
 export function UnifiedPaymentProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
