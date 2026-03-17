@@ -1,7 +1,6 @@
 /**
  * UnifiedPaymentSystem — Single payment context for the entire super app.
- * Triggered from chat, product pages, deep links, live streams, rides, etc.
- * Writes directly to unified_wallet_transactions with RLS protection.
+ * Uses the atomic wallet_transfer RPC for real balance-checked transfers.
  */
 import React, {
   createContext,
@@ -12,8 +11,8 @@ import React, {
   type ReactNode,
 } from "react";
 import { CheckCircle2, Wallet, X, AlertTriangle } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { walletTransfer } from "@/payments/wallet-hooks";
 
 export type PaymentContextType =
   | "chat"
@@ -62,36 +61,6 @@ function formatMoney(amount: number, currency = "AED") {
   }
 }
 
-/** Insert into unified_wallet_transactions — RLS ensures sender_id = auth.uid() */
-async function runUnifiedPayment(
-  senderId: string,
-  req: PaymentRequest
-): Promise<PaymentResult> {
-  try {
-    const { data, error } = await (supabase as any)
-      .from("unified_wallet_transactions")
-      .insert({
-        sender_id: senderId,
-        recipient_id: req.recipientId || null,
-        amount: Number(req.amount),
-        currency: req.currency || "AED",
-        context_type: req.contextType || "generic",
-        context_id: req.contextId || null,
-        title: req.title || null,
-        subtitle: req.subtitle || null,
-        status: "completed",
-        metadata: req.metadata || {},
-      })
-      .select("id")
-      .single();
-
-    if (error) return { ok: false, error: error.message };
-    return { ok: true, transactionId: data?.id };
-  } catch (err: any) {
-    return { ok: false, error: err?.message || "Payment failed" };
-  }
-}
-
 export function UnifiedPaymentProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
   const [open, setOpen] = useState(false);
@@ -127,15 +96,34 @@ export function UnifiedPaymentProvider({ children }: { children: ReactNode }) {
       setError("You must sign in to pay.");
       return;
     }
+    if (!request.recipientId) {
+      setError("No recipient specified.");
+      return;
+    }
+
     setLoading(true);
     setError("");
-    const result = await runUnifiedPayment(user.id, request);
-    setLoading(false);
-    if (result.ok) {
+
+    try {
+      const { txId } = await walletTransfer({
+        senderId: user.id,
+        recipientId: request.recipientId,
+        amount: request.amount,
+        currency: request.currency || "AED",
+        contextType: request.contextType || "generic",
+        contextId: request.contextId,
+        title: request.title,
+        subtitle: request.subtitle,
+        metadata: request.metadata,
+      });
+      const result: PaymentResult = { ok: true, transactionId: txId };
       setSuccess(result);
       resolver?.resolve(result);
-    } else {
-      setError(result.error || "Payment failed");
+    } catch (err: any) {
+      const msg = err?.message || "Payment failed";
+      setError(msg);
+    } finally {
+      setLoading(false);
     }
   }, [request, loading, user?.id, resolver]);
 
@@ -275,7 +263,7 @@ export function useUnifiedPayment() {
   return ctx;
 }
 
-/** Reusable compact payment button — drop into any page */
+/** Reusable compact payment button */
 export function UnifiedPayButton({
   amount,
   currency = "AED",
