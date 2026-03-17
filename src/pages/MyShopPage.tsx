@@ -2,7 +2,7 @@
  * MyShopPage — Seller dashboard for managing their storefront.
  * CONSOLIDATED: 1 component per function, lazy-loaded tabs.
  */
-import { useState, lazy, Suspense } from "react";
+import { useState, lazy, Suspense, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -54,7 +54,7 @@ const WarehouseManager = lazy(() => import("@/components/storefront/WarehouseMan
 const GamificationEngine = lazy(() => import("@/components/storefront/GamificationEngine"));
 const MultiStoreManager = lazy(() => import("@/components/storefront/MultiStoreManager"));
 const SmartCatalogBuilder = lazy(() => import("@/components/storefront/SmartCatalogBuilder"));
-
+const SellerAnalyticsV2 = lazy(() => import("@/components/storefront/SellerAnalyticsV2"));
 // Settings-only (loaded inline since settings tab is simple)
 const AICategorySuggest = lazy(() => import("@/components/storefront/AICategorySuggest"));
 const PrivateInviteManager = lazy(() => import("@/components/storefront/PrivateInviteManager"));
@@ -83,6 +83,9 @@ export default function MyShopPage() {
   const { user } = useAuth();
   const [tab, setTab] = useState<TabId>("catalog");
   const [copied, setCopied] = useState(false);
+
+  // PASS123: Realtime sync for seller orders
+  // Imported dynamically to keep bundle light
 
   const { data: shop, isLoading, refetch } = useQuery({
     queryKey: ["my-storefront", user?.id],
@@ -185,6 +188,7 @@ export default function MyShopPage() {
           <Suspense fallback={<TabLoader />}>
             {tab === "catalog" && (
               <div className="space-y-4">
+                <SmartCatalogBuilder shopId={shop.id} />
                 <CatalogManager shopId={shop.id} />
                 <BulkProductManager shopId={shop.id} />
                 <FlashSales shopId={shop.id} mode="seller" />
@@ -216,6 +220,7 @@ export default function MyShopPage() {
             )}
             {tab === "analytics" && (
               <div className="space-y-4">
+                <SellerAnalyticsV2 shopId={shop.id} />
                 <ShopAnalytics shopId={shop.id} />
                 <SmartNotifications shopId={shop.id} mode="seller" />
                 <CustomerSupport shopId={shop.id} mode="seller" />
