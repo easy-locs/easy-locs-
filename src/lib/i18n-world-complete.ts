@@ -662,4 +662,7 @@ export const ukComplete: Record<string, string> = {
   "explore.radius.title": "Де шукаєте?", "explore.radius.worldwide": "Весь світ",
   "explore.radius.reset": "Скинути", "explore.radius.apply": "Застосувати", "explore.clear_all": "Очистити все",
   "page.listing.contact_direct": "Прямий контакт", "page.listing.call": "Зателефонувати", "page.listing.share": "Поділитися",
+  "page.install.title": "Встановити Easy-Locs", "page.install.install_btn": "Встановити",
+  "page.install.back": "Назад", "page.install.continue_web": "Продовжити в браузері",
+  "pwa.banner.title": "Встановити Easy-Locs", "pwa.banner.install": "Встановити", "pwa.banner.dismiss": "Закрити",
 };
