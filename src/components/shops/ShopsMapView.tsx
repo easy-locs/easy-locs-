@@ -107,7 +107,7 @@ export default function ShopsMapView({ shops, radiusKm = 25, onOpenShop }: Props
       L.marker([userLat, userLng], { icon: userIcon, zIndexOffset: 1000 }).addTo(map).bindPopup("You");
 
       L.circle([userLat, userLng], {
-        radius: radius * 1000,
+        radius: radiusKm * 1000,
         color: "#3b82f6",
         fillColor: "#3b82f6",
         fillOpacity: 0.04,
