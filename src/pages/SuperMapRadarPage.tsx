@@ -273,6 +273,7 @@ export default function SuperMapRadarPage() {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const userMarkerRef = useRef<Marker | null>(null);
   const watchIdRef = useRef<number | null>(null);
+  const shopsRef = useRef<ShopRow[]>([]);
 
   const { shops, loading: shopsLoading } = useRealtimeShops();
 
