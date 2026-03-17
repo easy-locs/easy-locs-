@@ -154,7 +154,7 @@ const ShopPage = safeLazy(() => import("./pages/ShopPage"), "ShopPage");
 const MyShopPage = safeLazy(() => import("./pages/MyShopPage"), "MyShopPage");
 const DiscoverPage = safeLazy(() => import("./pages/DiscoverPage"), "DiscoverPage");
 const OpsCenter = safeLazy(() => import("./pages/OpsCenter"), "OpsCenter");
-const ShopsPage = safeLazy(() => import("./pages/ShopsPage"), "ShopsPage");
+import V7BundleRoutes from "@/pages/V7Bundle";
 const MyOrdersPage = safeLazy(() => import("./pages/MyOrdersPage"), "MyOrdersPage");
 const POSPage = safeLazy(() => import("./pages/POSPage"), "POSPage");
 const PropertyManagementHub = safeLazy(() => import("./pages/PropertyManagementHub"), "PropertyManagementHub");
