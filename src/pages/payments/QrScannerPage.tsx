@@ -145,7 +145,7 @@ export default function QrScannerPage() {
       return;
     }
 
-    // Payment actions — handle inline
+    // Payment actions — handle inline via overlay
     if (payload.action === "pay_user") {
       setStateSafe("paying");
       const result = await openPaymentRef.current({
@@ -195,7 +195,14 @@ export default function QrScannerPage() {
       return;
     }
 
-    // Route-based actions — navigate
+    // Identity & commerce actions — show inline result card with CTAs
+    if (payload.action === "profile" || payload.action === "add_contact" || payload.action === "shop") {
+      setResolvedPayload(payload);
+      setStateSafe("resolved");
+      return;
+    }
+
+    // Route-based actions — navigate directly
     const route = resolveRoute(payload);
     if (route) {
       navigateRef.current(route, { replace: true });
