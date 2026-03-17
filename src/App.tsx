@@ -192,6 +192,7 @@ const UserProfilePage = safeLazy(() => import("./pages/deep-link/UserProfilePage
 const ProductPage = safeLazy(() => import("./pages/deep-link/ProductPage"), "ProductPage");
 const LivePage = safeLazy(() => import("./pages/deep-link/LivePage"), "LivePage");
 const PayPage = safeLazy(() => import("./pages/deep-link/PayPage"), "PayPage");
+const QrPayResolver = safeLazy(() => import("./pages/deep-link/QrPayResolver"), "QrPayResolver");
 
 // City sub-page wrappers
 const CityServicesPage = () => <CityHubPage subPage="services" />;
@@ -290,6 +291,7 @@ const App = () => (
               <Route path="/u/:userId" element={<UserProfilePage />} />
               <Route path="/p/:productId" element={<ProductPage />} />
               <Route path="/live/:liveId" element={<LivePage />} />
+              <Route path="/pay/qr" element={<QrPayResolver />} />
               <Route path="/pay/:paymentId" element={<PayPage />} />
               <Route path="/discover" element={<DiscoverPage />} />
               <Route path="/shops" element={<ShopsPage />} />
