@@ -1,12 +1,14 @@
 /**
- * POSPage — V5: Tactile Point-of-Sale with QR payment + Wallet settlement.
+ * POSPage — V7: Tactile Point-of-Sale with QR payment + Wallet settlement.
  * Route: /pos
  * 
- * Flow: Add items → Cart → Total → QR Payment → Wallet settlement → Auto delivery (if flagged)
+ * V7: Pulls real catalog items from seller's shop.
+ * Flow: Browse catalog → Cart → Total → QR Payment → Wallet settlement → Auto delivery
  */
 import { useState, useCallback, useMemo } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useWallet } from "@/hooks/useWallet";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { platformBus } from "@/lib/shared/platform-bus";
 import SEOHead from "@/components/SEOHead";
@@ -20,7 +22,7 @@ import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import {
   ShoppingCart, Plus, Minus, Trash2, QrCode, Wallet, Check,
-  Package, Loader2, Receipt, Store
+  Package, Loader2, Receipt, Store, Search
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -32,11 +34,10 @@ interface CartItem {
   title: string;
   price: number;
   quantity: number;
+  photo_url?: string;
 }
 
 type POSStep = "catalog" | "cart" | "payment" | "receipt";
-
-const QUICK_AMOUNTS = [5, 10, 15, 20, 25, 50];
 
 export default function POSPage() {
   const { user } = useAuth();
@@ -49,6 +50,7 @@ export default function POSPage() {
   const [buyerUserId, setBuyerUserId] = useState("");
   const [processing, setProcessing] = useState(false);
   const [receiptData, setReceiptData] = useState<any>(null);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const total = useMemo(() => cart.reduce((s, i) => s + i.price * i.quantity, 0), [cart]);
 
