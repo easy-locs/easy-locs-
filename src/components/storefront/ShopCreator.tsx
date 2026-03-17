@@ -3,6 +3,7 @@
  * Auto-generates slug, creates org if needed.
  */
 import { useState } from "react";
+import { validateShop } from "@/lib/validation/marketplace-validators";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -25,9 +26,15 @@ export default function ShopCreator() {
   const [description, setDescription] = useState("");
   const [city, setCity] = useState("");
   const [country, setCountry] = useState("");
+  const [logoUrl, setLogoUrl] = useState("");
 
   const handleCreate = async () => {
-    if (!name.trim()) { toast.error("Shop name is required"); return; }
+    // V4: Validate shop with logo requirement
+    const validation = validateShop({ name, logo_url: logoUrl || null });
+    if (!validation.valid) {
+      validation.errors.forEach(e => toast.error(e));
+      return;
+    }
     if (!user) { toast.error("Please sign in first"); return; }
 
     setLoading(true);
@@ -46,6 +53,7 @@ export default function ShopCreator() {
           name: name.trim(),
           tagline: tagline.trim() || null,
           description: description.trim() || null,
+          logo_url: logoUrl.trim() || null,
           city: city.trim() || "",
           country: country.trim() || "",
           contact_email: user.email || "",
@@ -106,6 +114,16 @@ export default function ShopCreator() {
             className="mt-1"
             rows={3}
           />
+        </div>
+        <div>
+          <Label className="text-xs">Shop Logo URL *</Label>
+          <Input
+            value={logoUrl}
+            onChange={e => setLogoUrl(e.target.value)}
+            placeholder="https://example.com/logo.png"
+            className="mt-1"
+          />
+          {!logoUrl && <p className="text-[10px] text-destructive mt-1">⚠️ Logo is required to create a shop</p>}
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div>

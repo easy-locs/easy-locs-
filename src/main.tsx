@@ -33,6 +33,10 @@ const runDeferredInit = () => {
     .then((mod) => mod?.installStorefrontReactions?.())
     .catch((e) => console.debug("[boot] storefront-reactions skipped:", e));
 
+  void import("./lib/shared/v4-delivery-bridge")
+    .then((mod) => mod?.installDeliveryBridge?.())
+    .catch((e) => console.debug("[boot] v4-delivery-bridge skipped:", e));
+
   void import("./lib/analytics")
     .then((mod) => mod?.initAnalytics?.())
     .catch((e) => console.debug("[boot] analytics skipped:", e));
