@@ -184,6 +184,20 @@ export default function ShopPage() {
       />
 
       <div className="min-h-screen bg-background pb-20">
+        {/* PASS137: Sticky header with back nav */}
+        <MobilePageHeader
+          title={shop.name}
+          subtitle={shop.city ? `${shop.city}${shop.country ? `, ${shop.country}` : ""}` : undefined}
+          backTo="/discover"
+          actions={
+            user?.id === shop.user_id ? (
+              <Link to="/dashboard/my-shop" className="text-[11px] text-primary font-medium hover:underline">
+                Manage →
+              </Link>
+            ) : undefined
+          }
+        />
+
         {/* Banner */}
         {shop.banner_url && (
           <div className="h-40 sm:h-56 bg-muted overflow-hidden">
