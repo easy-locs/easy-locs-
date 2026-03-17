@@ -41,7 +41,7 @@ function wait(ms: number) {
 export default function QrScannerPage() {
   const navigate = useNavigate();
   const { openPayment } = useUnifiedPayment();
-
+  const { user, orgId } = useAuth();
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const mountedRef = useRef(true);
   const startingRef = useRef(false);
