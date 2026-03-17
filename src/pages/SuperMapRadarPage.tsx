@@ -543,7 +543,7 @@ export default function SuperMapRadarPage() {
 
         {/* Search results dropdown */}
         {query.trim().length >= 2 && (
-          <div className="mt-2 max-h-64 overflow-y-auto rounded-xl bg-card/95 backdrop-blur-md border border-border shadow-lg divide-y divide-border">
+          <div className="mt-2 max-h-64 overflow-y-auto rounded-xl bg-card/95 backdrop-blur-md border border-border shadow-lg space-y-1 p-1">
             {searchLoading ? (
               <div className="flex items-center justify-center gap-2 py-6 text-muted-foreground text-sm">
                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -553,16 +553,17 @@ export default function SuperMapRadarPage() {
               <p className="text-center text-muted-foreground text-sm py-6">No results</p>
             ) : (
               searchResults.map((item) => (
-                <button
+                <UniversalEntityCard
                   key={item.id}
-                  className="w-full text-left px-4 py-3 hover:bg-accent/10 transition-colors"
-                  onClick={() => handleResultClick(item)}
-                >
-                  <div className="text-sm font-medium text-foreground">
-                    {item.kind === "shop" ? "🏪" : "📦"} {item.title}
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-0.5">{item.subtitle}</p>
-                </button>
+                  entityType={item.kind === "shop" ? "shop" : "product"}
+                  entityId={item.id}
+                  slug={item.slug}
+                  title={item.title}
+                  subtitle={item.subtitle}
+                  compact
+                  metadata={{ source: "map_search" }}
+                  onActionComplete={() => setQuery("")}
+                />
               ))
             )}
           </div>

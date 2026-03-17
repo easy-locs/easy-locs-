@@ -352,28 +352,47 @@ function ProductCard({ item, onClick }: { item: any; onClick: () => void }) {
   const photo = item.photo_url || (Array.isArray(item.photo_urls) && item.photo_urls[0]);
   const shopData = item.storefront_pages;
   return (
-    <motion.button
+    <motion.div
       initial={{ opacity: 0, scale: 0.96 }}
       animate={{ opacity: 1, scale: 1 }}
-      onClick={() => { haptic("light"); onClick(); }}
-      className="w-full rounded-2xl border border-border/30 bg-card overflow-hidden text-left transition-all duration-150 active:scale-[0.97]"
+      className="w-full rounded-2xl border border-border/30 bg-card overflow-hidden text-left transition-all duration-150"
     >
-      {photo && (
-        <div className="aspect-square bg-muted overflow-hidden">
-          <img src={photo} alt={item.title} className="w-full h-full object-cover" loading="lazy" />
+      <button
+        onClick={() => { haptic("light"); onClick(); }}
+        className="w-full text-left active:scale-[0.97] transition-transform"
+      >
+        {photo && (
+          <div className="aspect-square bg-muted overflow-hidden">
+            <img src={photo} alt={item.title} className="w-full h-full object-cover" loading="lazy" />
+          </div>
+        )}
+        <div className="p-2.5 space-y-1">
+          <p className="text-[11px] font-semibold text-foreground line-clamp-2 leading-tight">{item.title}</p>
+          <div className="flex items-center gap-1.5">
+            <span className="text-[13px] font-extrabold text-primary">{fmtPrice(item.price, item.currency)}</span>
+            {item.compare_at_price && item.compare_at_price > item.price && (
+              <span className="text-[9px] text-muted-foreground line-through">{fmtPrice(item.compare_at_price, item.currency)}</span>
+            )}
+          </div>
+          {shopData?.name && <p className="text-[9px] text-muted-foreground truncate">{shopData.name}</p>}
         </div>
-      )}
-      <div className="p-2.5 space-y-1">
-        <p className="text-[11px] font-semibold text-foreground line-clamp-2 leading-tight">{item.title}</p>
-        <div className="flex items-center gap-1.5">
-          <span className="text-[13px] font-extrabold text-primary">{fmtPrice(item.price, item.currency)}</span>
-          {item.compare_at_price && item.compare_at_price > item.price && (
-            <span className="text-[9px] text-muted-foreground line-through">{fmtPrice(item.compare_at_price, item.currency)}</span>
-          )}
-        </div>
-        {shopData?.name && <p className="text-[9px] text-muted-foreground truncate">{shopData.name}</p>}
+      </button>
+      <div className="px-2.5 pb-2.5">
+        <UniversalActionButtons
+          entityType="product"
+          entityId={item.id}
+          title={item.title}
+          amount={item.price}
+          currency={item.currency}
+          recipientId={shopData?.user_id}
+          recipientName={shopData?.name}
+          compact
+          primaryOnly
+          context={{ isPurchasable: (item.price ?? 0) > 0 }}
+          metadata={{ source: "discover", shopSlug: shopData?.slug }}
+        />
       </div>
-    </motion.button>
+    </motion.div>
   );
 }
 
