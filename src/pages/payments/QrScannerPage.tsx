@@ -129,80 +129,75 @@ export default function QrScannerPage() {
   }, [log, resetRuntimeFlags]);
 
   const handleQrResult = useCallback(async (raw: string) => {
-    const payload = decodeQrPayload(raw);
+    const payload = decodeQr(raw);
 
-    if (payload) {
-      if (payload.type === "user_pay") {
-        setStateSafe("paying");
-        const result = await openPaymentRef.current({
-          amount: payload.amount || 0,
-          currency: payload.currency || "AED",
-          title: "QR Payment",
-          subtitle: "Scanned payment",
-          recipientId: payload.userId,
-          recipientName: "QR Recipient",
-          contextType: "generic",
-          contextId: payload.userId,
-          metadata: { source: "qr_scan", qr_type: "user_pay" },
-        });
-
-        if (!mountedRef.current) return;
-        if (result.ok) {
-          setTxId(result.transactionId || "");
-          setState("paid");
-        } else {
-          setError(result.error || "Payment failed");
-          setState("error");
-        }
-        return;
-      }
-
-      if (payload.type === "shop_pay") {
-        setStateSafe("paying");
-        const result = await openPaymentRef.current({
-          amount: payload.amount || 0,
-          currency: payload.currency || "AED",
-          title: "Shop Payment",
-          subtitle: "QR shop payment",
-          recipientId: undefined,
-          contextType: "shop",
-          contextId: payload.shopSlug,
-          metadata: { source: "qr_scan", qr_type: "shop_pay", shopSlug: payload.shopSlug },
-        });
-
-        if (!mountedRef.current) return;
-        if (result.ok) {
-          setTxId(result.transactionId || "");
-          setState("paid");
-        } else {
-          setError(result.error || "Payment failed");
-          setState("error");
-        }
-        return;
-      }
-
-      if (payload.type === "payment_request") {
-        navigateRef.current(`/pay/request/${payload.requestId}`, { replace: true });
-        return;
-      }
-      if (payload.type === "profile") {
-        navigateRef.current(`/u/${payload.userId}`, { replace: true });
-        return;
-      }
-      if (payload.type === "shop") {
-        navigateRef.current(`/s/${payload.shopSlug}`, { replace: true });
-        return;
-      }
+    if (!payload) {
+      setErrorSafe("Unsupported QR format");
+      setStateSafe("error");
+      return;
     }
 
-    if (raw.startsWith("http://") || raw.startsWith("https://")) {
-      try {
-        const url = new URL(raw);
-        navigateRef.current(`${url.pathname}${url.search}${url.hash}`, { replace: true });
-        return;
-      } catch {
-        // ignore invalid URL payloads
+    if (isExpired(payload)) {
+      setErrorSafe("This QR code has expired");
+      setStateSafe("error");
+      return;
+    }
+
+    // Payment actions — handle inline
+    if (payload.action === "pay_user") {
+      setStateSafe("paying");
+      const result = await openPaymentRef.current({
+        amount: payload.amount || 0,
+        currency: payload.currency || "AED",
+        title: "QR Payment",
+        subtitle: "Scanned payment",
+        recipientId: payload.userId,
+        recipientName: payload.name || "QR Recipient",
+        contextType: "generic",
+        contextId: payload.userId,
+        metadata: { source: "qr_scan", qr_type: "pay_user" },
+      });
+
+      if (!mountedRef.current) return;
+      if (result.ok) {
+        setTxId(result.transactionId || "");
+        setState("paid");
+      } else {
+        setError(result.error || "Payment failed");
+        setState("error");
       }
+      return;
+    }
+
+    if (payload.action === "pay_shop") {
+      setStateSafe("paying");
+      const result = await openPaymentRef.current({
+        amount: payload.amount || 0,
+        currency: payload.currency || "AED",
+        title: "Shop Payment",
+        subtitle: "QR shop payment",
+        recipientId: undefined,
+        contextType: "shop",
+        contextId: payload.shopSlug,
+        metadata: { source: "qr_scan", qr_type: "pay_shop", shopSlug: payload.shopSlug },
+      });
+
+      if (!mountedRef.current) return;
+      if (result.ok) {
+        setTxId(result.transactionId || "");
+        setState("paid");
+      } else {
+        setError(result.error || "Payment failed");
+        setState("error");
+      }
+      return;
+    }
+
+    // Route-based actions — navigate
+    const route = resolveRoute(payload);
+    if (route) {
+      navigateRef.current(route, { replace: true });
+      return;
     }
 
     setErrorSafe("Unsupported QR format");
