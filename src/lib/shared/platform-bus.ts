@@ -162,52 +162,52 @@ export const platformBus = new PlatformBus();
 export function installPlatformReactions(): () => void {
   const unsubs: (() => void)[] = [];
 
-  // Lazy import to avoid circular deps
-  const refreshOrbitEngine = () => {
+  // V2: Targeted module refresh — map event prefixes to specific modules
+  const refreshModule = (module: import("@/stores/orbit-engine").OrbitModule) => {
     import("@/stores/orbit-engine").then(({ useOrbitEngine }) => {
       const state = useOrbitEngine.getState();
       const userId = state.lastRefreshUserId;
       const orgId = state.lastRefreshOrgId ?? undefined;
-      if (userId) state.refresh(userId, orgId);
+      if (userId) state.refreshModule(module, userId, orgId);
     }).catch(() => {});
   };
 
-  // ── All wallet events → refresh orbit engine (balance + counters) ──
+  // ── Wallet events → refresh wallet module only ──
   unsubs.push(
-    platformBus.onPrefix("wallet:", () => refreshOrbitEngine())
+    platformBus.onPrefix("wallet:", () => refreshModule("wallet"))
   );
 
-  // ── All marketplace events → refresh orbit engine ──
+  // ── Marketplace events → refresh business module ──
   unsubs.push(
-    platformBus.onPrefix("marketplace:", () => refreshOrbitEngine())
+    platformBus.onPrefix("marketplace:", () => refreshModule("business"))
   );
 
-  // ── All PM events → refresh orbit engine ──
+  // ── PM events → refresh business module ──
   unsubs.push(
-    platformBus.onPrefix("pm:", () => refreshOrbitEngine())
+    platformBus.onPrefix("pm:", () => refreshModule("business"))
   );
 
-  // ── All deal events → refresh orbit engine ──
+  // ── Deal events → refresh business module ──
   unsubs.push(
-    platformBus.onPrefix("deal:", () => refreshOrbitEngine())
+    platformBus.onPrefix("deal:", () => refreshModule("business"))
   );
 
-  // ── Orbit communication events → refresh orbit engine ──
+  // ── Orbit communication events → refresh communication module ──
   unsubs.push(
-    platformBus.onPrefix("orbit:", () => refreshOrbitEngine())
+    platformBus.onPrefix("orbit:", () => refreshModule("communication"))
   );
 
-  // ── Tracking events → refresh orbit ──
+  // ── Tracking events → refresh business ──
   unsubs.push(
-    platformBus.on("tracking:completed", () => refreshOrbitEngine())
+    platformBus.on("tracking:completed", () => refreshModule("business"))
   );
   unsubs.push(
-    platformBus.on("tracking:started", () => refreshOrbitEngine())
+    platformBus.on("tracking:started", () => refreshModule("business"))
   );
 
-  // ── Storefront events → refresh orbit engine ──
+  // ── Storefront events → refresh business module ──
   unsubs.push(
-    platformBus.onPrefix("storefront:", () => refreshOrbitEngine())
+    platformBus.onPrefix("storefront:", () => refreshModule("business"))
   );
 
   // ── Currency changed → propagate via custom event for legacy components ──
