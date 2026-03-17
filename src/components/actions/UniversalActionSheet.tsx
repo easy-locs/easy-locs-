@@ -253,7 +253,7 @@ function RequestMode() {
       <div className="space-y-5">
         <div className="flex justify-center">
           <div className="rounded-2xl bg-white p-4">
-            <QRCode value={requestUrl} size={200} level="M" />
+            <QRCodeSVG value={requestUrl} size={200} level="M" />
           </div>
         </div>
 
