@@ -5,6 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useI18n } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
+import { validateListing } from "@/lib/validation/marketplace-validators";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
@@ -162,8 +163,16 @@ const CreateListing = () => {
   const showService = form.listing_type === "service" || form.category === "services" || form.category === "freelance" || form.category === "tourism";
 
   const handleSave = async () => {
-    if (!form.title.trim()) {
-      toast({ title: "Error", description: "Title is required", variant: "destructive" });
+    // V4 Quality Gate: Validate listing before publish
+    const validation = validateListing({
+      title: form.title,
+      description: form.description,
+      photo_urls: [], // Photos validated separately via upload flow
+      price: form.price,
+    });
+    // Skip photo validation for now — photos are uploaded post-creation
+    if (validation.errors.filter(e => !e.includes("image")).length > 0) {
+      toast({ title: "Quality check failed", description: validation.errors.filter(e => !e.includes("image")).join(". "), variant: "destructive" });
       return;
     }
     if (!form.city.trim()) {
