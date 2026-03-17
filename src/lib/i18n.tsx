@@ -3550,6 +3550,11 @@ const pageEn: Record<string, string> = {
   "page.settings.sepa_eligible": "SEPA zone eligible",
   "page.settings.sepa_via_stripe": "Enabled via Stripe Connect. Tenants can pay by SEPA Direct Debit.",
   "page.settings.sepa_unavailable": "Not available — Your country is not in the SEPA zone",
+  "page.settings.bank_holder": "Account Holder",
+  "page.settings.bank_name_label": "Bank Name",
+  "page.settings.payment_link": "Payment Link",
+  "page.settings.payment_link_desc": "Custom payment link (Stripe, PayPal.me, Wise, etc.)",
+  "page.settings.save": "Save",
 
   "auth.login.title": "Login",
   "auth.login.subtitle": "Access your Easy-Locs workspace.",
