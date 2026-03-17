@@ -556,6 +556,9 @@ export const hrComplete: Record<string, string> = {
   "explore.radius.title": "Gdje tražite?", "explore.radius.worldwide": "Cijeli svijet",
   "explore.radius.reset": "Poništi", "explore.radius.apply": "Primijeni", "explore.clear_all": "Očisti sve",
   "page.listing.contact_direct": "Kontakt", "page.listing.call": "Pozovi", "page.listing.share": "Podijeli",
+  "page.install.title": "Instaliraj Easy-Locs", "page.install.install_btn": "Instaliraj",
+  "page.install.back": "Natrag", "page.install.continue_web": "Nastavi na webu",
+  "pwa.banner.title": "Instaliraj Easy-Locs", "pwa.banner.install": "Instaliraj", "pwa.banner.dismiss": "Zatvori",
 };
 
 // ─── Bulgarian (BG) ───
