@@ -1,3 +1,7 @@
+/**
+ * Install — PWA install page.
+ * PASS 169: Design token consistency, accessibility, i18n.
+ */
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useI18n } from "@/lib/i18n";
@@ -43,7 +47,10 @@ const Install = () => {
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-6">
       <div className="max-w-md w-full text-center space-y-6">
-        <div className="w-20 h-20 bg-accent/20 rounded-2xl flex items-center justify-center mx-auto">
+        <div
+          className="w-20 h-20 rounded-2xl flex items-center justify-center mx-auto"
+          style={{ background: "hsl(var(--accent) / 0.15)" }}
+        >
           <Smartphone className="h-10 w-10 text-accent" />
         </div>
 
@@ -57,18 +64,19 @@ const Install = () => {
         </div>
 
         {installed ? (
-          <div className="flex items-center justify-center gap-2 text-green-500 font-medium">
+          <div className="flex items-center justify-center gap-2 font-medium" style={{ color: "hsl(var(--hud-success, 142 71% 45%))" }}>
             <CheckCircle className="h-5 w-5" />
             {t("page.install.installed") !== "page.install.installed" ? t("page.install.installed") : "App installed!"}
           </div>
         ) : deferredPrompt ? (
-          <button
+          <Button
             onClick={handleInstall}
-            className="w-full bg-accent text-accent-foreground py-3 rounded-xl font-semibold text-sm hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
+            className="w-full gap-2 min-h-[48px] text-sm font-semibold"
+            size="lg"
           >
             <Download className="h-5 w-5" />
             {t("page.install.install_btn") !== "page.install.install_btn" ? t("page.install.install_btn") : "Install the app"}
-          </button>
+          </Button>
         ) : isIOS ? (
           <div className="bg-card border border-border rounded-xl p-4 text-sm text-muted-foreground space-y-3">
             <p className="font-medium text-foreground">
@@ -91,22 +99,21 @@ const Install = () => {
           </p>
         )}
 
-        <div className="grid grid-cols-3 gap-4 text-xs text-muted-foreground pt-4">
-          <div className="space-y-1">
-            <div className="text-2xl">📱</div>
+        <div className="grid grid-cols-3 gap-4 text-xs text-muted-foreground pt-4" role="list">
+          <div className="space-y-1" role="listitem">
+            <div className="text-2xl" aria-hidden="true">📱</div>
             <p>{t("page.install.feature_offline") !== "page.install.feature_offline" ? t("page.install.feature_offline") : "Offline access"}</p>
           </div>
-          <div className="space-y-1">
-            <div className="text-2xl">⚡</div>
+          <div className="space-y-1" role="listitem">
+            <div className="text-2xl" aria-hidden="true">⚡</div>
             <p>{t("page.install.feature_fast") !== "page.install.feature_fast" ? t("page.install.feature_fast") : "Fast loading"}</p>
           </div>
-          <div className="space-y-1">
-            <div className="text-2xl">🔔</div>
+          <div className="space-y-1" role="listitem">
+            <div className="text-2xl" aria-hidden="true">🔔</div>
             <p>{t("page.install.feature_notif") !== "page.install.feature_notif" ? t("page.install.feature_notif") : "Notifications"}</p>
           </div>
         </div>
 
-        {/* Navigation options — never trap the user */}
         <div className="flex flex-col gap-2 pt-2">
           <Button variant="outline" onClick={handleGoBack} className="w-full gap-2 min-h-[44px]">
             <ArrowLeft className="h-4 w-4" />
