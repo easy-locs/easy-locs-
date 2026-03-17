@@ -7125,3 +7125,13 @@ export function useI18n() {
   if (!ctx) throw new Error("useI18n must be used within I18nProvider");
   return ctx;
 }
+
+/**
+ * tSafe — Safe translation with explicit fallback.
+ * Use when a visible default is required even if the key is missing.
+ */
+export function tSafe(t: (key: string, vars?: Record<string, any>) => string, key: string, fallback: string, vars?: Record<string, any>): string {
+  const result = t(key, vars);
+  // If t() returned the raw key (missing translation), use the fallback
+  return result === key ? fallback : result;
+}
