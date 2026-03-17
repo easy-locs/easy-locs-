@@ -442,6 +442,7 @@ const App = () => (
             <SmartInstallBanner />
           </Suspense>
            </AppLockGuard>
+          </UnifiedPaymentProvider>
           </CallProvider>
         </AuthProvider>
       </BrowserRouter>
