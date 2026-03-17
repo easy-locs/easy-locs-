@@ -1,11 +1,14 @@
 /**
- * LiveEcosystemMap — Premium Leaflet map rendering the living ecosystem.
+ * LiveEcosystemMap — Premium Leaflet map with MarkerCluster support.
  * Each entity category gets a unique animated marker.
- * Features: pulse animations, category-colored markers, popup cards, live updates.
+ * Features: clustering, radius overlay, pulse animations, popup cards, live updates.
  */
 import { useEffect, useRef, useCallback } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import "leaflet.markercluster";
+import "leaflet.markercluster/dist/MarkerCluster.css";
+import "leaflet.markercluster/dist/MarkerCluster.Default.css";
 import type { EcosystemEntity, EcosystemCategory } from "@/hooks/useEcosystemRadar";
 
 const CATEGORY_STYLE: Record<EcosystemCategory, { emoji: string; color: string; borderColor: string }> = {
@@ -35,7 +38,9 @@ interface Props {
 export default function LiveEcosystemMap({ lat, lng, radius, entities, onSelect }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
-  const markersRef = useRef<L.LayerGroup | null>(null);
+  const clusterRef = useRef<L.MarkerClusterGroup | null>(null);
+  const radiusRef = useRef<L.Circle | null>(null);
+  const userMarkerRef = useRef<L.Marker | null>(null);
 
   // Initialize map once
   useEffect(() => {
@@ -54,13 +59,39 @@ export default function LiveEcosystemMap({ lat, lng, radius, entities, onSelect 
 
     L.control.zoom({ position: "bottomright" }).addTo(map);
 
-    markersRef.current = L.layerGroup().addTo(map);
+    // Create cluster group with custom styling
+    const cluster = L.markerClusterGroup({
+      maxClusterRadius: 50,
+      spiderfyOnMaxZoom: true,
+      showCoverageOnHover: false,
+      zoomToBoundsOnClick: true,
+      iconCreateFunction: (clusterObj) => {
+        const count = clusterObj.getChildCount();
+        const size = count < 10 ? 36 : count < 50 ? 44 : 52;
+        return L.divIcon({
+          className: "",
+          html: `<div style="
+            width:${size}px;height:${size}px;border-radius:50%;
+            background:linear-gradient(135deg, #06b6d4, #8b5cf6);
+            display:flex;align-items:center;justify-content:center;
+            color:white;font-weight:700;font-size:${count < 10 ? 13 : 12}px;
+            box-shadow:0 4px 16px rgba(6,182,212,0.4);
+            border:2px solid rgba(255,255,255,0.2);
+          ">${count}</div>`,
+          iconSize: [size, size],
+          iconAnchor: [size / 2, size / 2],
+        });
+      },
+    });
+    cluster.addTo(map);
+
+    clusterRef.current = cluster;
     mapRef.current = map;
 
     return () => {
       map.remove();
       mapRef.current = null;
-      markersRef.current = null;
+      clusterRef.current = null;
     };
   }, []);
 
@@ -68,17 +99,25 @@ export default function LiveEcosystemMap({ lat, lng, radius, entities, onSelect 
   useEffect(() => {
     if (!mapRef.current) return;
     mapRef.current.setView([lat, lng], getZoomForRadius(radius), { animate: true });
-  }, [lat, lng, radius]);
 
-  // Render markers
-  const renderMarkers = useCallback(() => {
-    const map = mapRef.current;
-    const group = markersRef.current;
-    if (!map || !group) return;
+    // Update radius circle
+    if (radiusRef.current) {
+      mapRef.current.removeLayer(radiusRef.current);
+    }
+    radiusRef.current = L.circle([lat, lng], {
+      radius: radius * 1000,
+      color: "#06b6d4",
+      fillColor: "#06b6d4",
+      fillOpacity: 0.03,
+      weight: 1,
+      opacity: 0.2,
+      dashArray: "6 4",
+    }).addTo(mapRef.current);
 
-    group.clearLayers();
-
-    // User position (pulsing cyan dot)
+    // Update user marker
+    if (userMarkerRef.current) {
+      mapRef.current.removeLayer(userMarkerRef.current);
+    }
     const userIcon = L.divIcon({
       className: "",
       html: `
@@ -89,22 +128,18 @@ export default function LiveEcosystemMap({ lat, lng, radius, entities, onSelect 
       iconSize: [20, 20],
       iconAnchor: [10, 10],
     });
-    L.marker([lat, lng], { icon: userIcon, zIndexOffset: 2000 })
-      .addTo(group)
+    userMarkerRef.current = L.marker([lat, lng], { icon: userIcon, zIndexOffset: 2000 })
+      .addTo(mapRef.current)
       .bindPopup('<span style="font-weight:600;">📍 You are here</span>');
+  }, [lat, lng, radius]);
 
-    // Radius circle
-    L.circle([lat, lng], {
-      radius: radius * 1000,
-      color: "#06b6d4",
-      fillColor: "#06b6d4",
-      fillOpacity: 0.03,
-      weight: 1,
-      opacity: 0.2,
-      dashArray: "6 4",
-    }).addTo(group);
+  // Render entity markers into cluster group
+  const renderMarkers = useCallback(() => {
+    const cluster = clusterRef.current;
+    if (!cluster) return;
 
-    // Entity markers
+    cluster.clearLayers();
+
     entities.forEach((entity) => {
       if (!entity.lat || !entity.lng) return;
       const style = CATEGORY_STYLE[entity.category] || CATEGORY_STYLE.person;
@@ -139,7 +174,6 @@ export default function LiveEcosystemMap({ lat, lng, radius, entities, onSelect 
         : `${entity.distance_km.toFixed(1)}km`;
 
       const marker = L.marker([entity.lat, entity.lng], { icon })
-        .addTo(group)
         .bindPopup(`
           <div style="min-width:160px;">
             <div style="font-weight:700;font-size:13px;margin-bottom:2px;">${style.emoji} ${entity.title}</div>
@@ -152,8 +186,10 @@ export default function LiveEcosystemMap({ lat, lng, radius, entities, onSelect 
       if (onSelect) {
         marker.on("click", () => onSelect(entity));
       }
+
+      cluster.addLayer(marker);
     });
-  }, [lat, lng, radius, entities, onSelect]);
+  }, [entities, onSelect]);
 
   useEffect(() => {
     renderMarkers();
@@ -166,6 +202,12 @@ export default function LiveEcosystemMap({ lat, lng, radius, entities, onSelect 
         @keyframes ecosystemPulse {
           0% { transform: scale(1); opacity: 0.5; }
           100% { transform: scale(2.2); opacity: 0; }
+        }
+        .marker-cluster-small, .marker-cluster-medium, .marker-cluster-large {
+          background: transparent !important;
+        }
+        .marker-cluster-small div, .marker-cluster-medium div, .marker-cluster-large div {
+          background: transparent !important;
         }
       `}</style>
     </>

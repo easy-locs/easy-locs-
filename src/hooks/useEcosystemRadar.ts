@@ -303,13 +303,16 @@ export function useEcosystemRadar({
     return () => clearInterval(poll);
   }, [scan]);
 
-  // Realtime sync via Supabase channels
+  // Realtime sync via Supabase channels — live_trackings, user_presence, delivery_jobs, concierge_orders
   useEffect(() => {
     if (!lat || !lng) return;
     const channel = supabase
       .channel("ecosystem-live")
       .on("postgres_changes", { event: "*", schema: "public", table: "marketplace_services" }, () => scan())
       .on("postgres_changes", { event: "*", schema: "public", table: "user_presence" }, () => scan())
+      .on("postgres_changes", { event: "*", schema: "public", table: "live_trackings" }, () => scan())
+      .on("postgres_changes", { event: "*", schema: "public", table: "delivery_jobs" }, () => scan())
+      .on("postgres_changes", { event: "*", schema: "public", table: "concierge_orders" }, () => scan())
       .subscribe();
     return () => { supabase.removeChannel(channel); };
   }, [lat, lng, scan]);

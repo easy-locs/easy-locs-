@@ -1,10 +1,13 @@
 /**
- * NearbyLeafletMap — Real interactive Leaflet map for Nearby section.
- * Renders OpenStreetMap tiles with actual markers for users and items.
+ * NearbyLeafletMap — Interactive Leaflet map with MarkerCluster for Nearby section.
+ * Renders OpenStreetMap tiles with clustered markers for users and items.
  */
 import { useEffect, useRef } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import "leaflet.markercluster";
+import "leaflet.markercluster/dist/MarkerCluster.css";
+import "leaflet.markercluster/dist/MarkerCluster.Default.css";
 
 interface NearbyUser {
   user_id: string;
@@ -41,11 +44,11 @@ interface Props {
 export default function NearbyLeafletMap({ lat, lng, radius, users, items }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
+  const clusterRef = useRef<L.MarkerClusterGroup | null>(null);
 
   useEffect(() => {
     if (!containerRef.current) return;
 
-    // Initialize map
     if (!mapRef.current) {
       mapRef.current = L.map(containerRef.current, {
         center: [lat, lng],
@@ -58,19 +61,45 @@ export default function NearbyLeafletMap({ lat, lng, radius, users, items }: Pro
         maxZoom: 19,
       }).addTo(mapRef.current);
 
-      // Zoom control bottom-right
       L.control.zoom({ position: "bottomright" }).addTo(mapRef.current);
+
+      clusterRef.current = L.markerClusterGroup({
+        maxClusterRadius: 45,
+        showCoverageOnHover: false,
+        zoomToBoundsOnClick: true,
+        iconCreateFunction: (cluster) => {
+          const count = cluster.getChildCount();
+          const size = count < 10 ? 34 : count < 50 ? 42 : 50;
+          return L.divIcon({
+            className: "",
+            html: `<div style="
+              width:${size}px;height:${size}px;border-radius:50%;
+              background:linear-gradient(135deg, #06b6d4, #3b82f6);
+              display:flex;align-items:center;justify-content:center;
+              color:white;font-weight:700;font-size:${count < 10 ? 13 : 12}px;
+              box-shadow:0 3px 12px rgba(6,182,212,0.35);
+              border:2px solid rgba(255,255,255,0.25);
+            ">${count}</div>`,
+            iconSize: [size, size],
+            iconAnchor: [size / 2, size / 2],
+          });
+        },
+      }).addTo(mapRef.current);
     }
 
     const map = mapRef.current;
+    const cluster = clusterRef.current!;
     map.setView([lat, lng], getZoomForRadius(radius));
 
-    // Clear existing markers
+    // Clear existing non-cluster layers (user marker, radius circle)
     map.eachLayer((layer) => {
-      if (layer instanceof L.Marker || layer instanceof L.CircleMarker) {
-        map.removeLayer(layer);
+      if (layer instanceof L.Marker || layer instanceof L.CircleMarker || layer instanceof L.Circle) {
+        if (!(layer as any).__isClusterChild) {
+          map.removeLayer(layer);
+        }
       }
     });
+    cluster.clearLayers();
 
     // User position marker (cyan pulse)
     const userIcon = L.divIcon({
@@ -91,7 +120,7 @@ export default function NearbyLeafletMap({ lat, lng, radius, users, items }: Pro
       opacity: 0.3,
     }).addTo(map);
 
-    // Nearby user markers
+    // Nearby user markers → cluster
     users.forEach((u) => {
       if (!u.lat || !u.lng) return;
       const isOnline = u.status === "online";
@@ -102,12 +131,12 @@ export default function NearbyLeafletMap({ lat, lng, radius, users, items }: Pro
         iconSize: [32, 32],
         iconAnchor: [16, 16],
       });
-      L.marker([u.lat, u.lng], { icon })
-        .addTo(map)
+      const marker = L.marker([u.lat, u.lng], { icon })
         .bindPopup(`<strong>${u.display_name || "User"}</strong><br/>${u.distance_km.toFixed(1)} km`);
+      cluster.addLayer(marker);
     });
 
-    // Nearby item markers
+    // Nearby item markers → cluster
     items.forEach((item) => {
       if (!item.lat || !item.lng) return;
       const color = item.item_type === "real_estate" ? "#f59e0b" : item.item_type === "concierge" ? "#8b5cf6" : "#06b6d4";
@@ -119,9 +148,9 @@ export default function NearbyLeafletMap({ lat, lng, radius, users, items }: Pro
         iconAnchor: [14, 14],
       });
       const priceLabel = item.price > 0 ? `<br/>${item.price > 1000 ? `${(item.price / 1000).toFixed(0)}k` : item.price} ${item.currency}` : "";
-      L.marker([item.lat, item.lng], { icon })
-        .addTo(map)
+      const marker = L.marker([item.lat, item.lng], { icon })
         .bindPopup(`<strong>${item.title}</strong>${priceLabel}<br/>${item.distance_km.toFixed(1)} km`);
+      cluster.addLayer(marker);
     });
 
     return () => {};
@@ -133,6 +162,7 @@ export default function NearbyLeafletMap({ lat, lng, radius, users, items }: Pro
       if (mapRef.current) {
         mapRef.current.remove();
         mapRef.current = null;
+        clusterRef.current = null;
       }
     };
   }, []);
