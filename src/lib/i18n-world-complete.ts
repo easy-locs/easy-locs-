@@ -393,6 +393,9 @@ export const nbComplete: Record<string, string> = {
   "explore.radius.title": "Hvor leter du?", "explore.radius.worldwide": "Hele verden",
   "explore.radius.reset": "Tilbakestill", "explore.radius.apply": "Bruk", "explore.clear_all": "Fjern alt",
   "page.listing.contact_direct": "Kontakt direkte", "page.listing.call": "Ring", "page.listing.share": "Del",
+  "page.install.title": "Installer Easy-Locs", "page.install.install_btn": "Installer appen",
+  "page.install.back": "Tilbake", "page.install.continue_web": "Fortsett på nett",
+  "pwa.banner.title": "Installer Easy-Locs", "pwa.banner.install": "Installer", "pwa.banner.dismiss": "Lukk",
 };
 
 // ─── Finnish (FI) ───
