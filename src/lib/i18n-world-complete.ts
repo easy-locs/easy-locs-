@@ -207,7 +207,14 @@ export const thComplete: Record<string, string> = {
   "page.features.heading": "จัดการทุกอย่าง", "page.features.heading_highlight": "ในที่เดียว",
   "page.finances.title": "การเงิน", "page.finances.subtitle": "รายได้ค่าเช่า ค่าใช้จ่าย และกำไรสุทธิ",
   "page.listing.contact_direct": "ติดต่อโดยตรง", "page.listing.call": "โทร", "page.listing.share": "แชร์",
-};
+  "page.install.title": "ติดตั้ง Easy-Locs", "page.install.install_btn": "ติดตั้งแอป",
+  "page.install.desc": "เข้าถึง Easy-Locs จากหน้าจอหลักของคุณ", "page.install.installed": "ติดตั้งแอปแล้ว!",
+  "page.install.ios_title": "บน iPhone / iPad:", "page.install.ios_step": "แตะปุ่มแชร์ที่ด้านล่างของ Safari แล้วเลือก 'เพิ่มไปยังหน้าจอหลัก'",
+  "page.install.browser_hint": "เปิดหน้านี้ใน Chrome หรือ Edge เพื่อติดตั้งแอป",
+  "page.install.feature_offline": "เข้าถึงออฟไลน์", "page.install.feature_fast": "เปิดเร็ว", "page.install.feature_notif": "การแจ้งเตือน",
+  "page.install.back": "กลับ", "page.install.continue_web": "ใช้เว็บต่อ",
+  "pwa.banner.title": "ติดตั้ง Easy-Locs", "pwa.banner.hint": "เร็ว ใช้ออฟไลน์ได้",
+  "pwa.banner.ios_hint": "แชร์ → เพิ่มไปยังหน้าจอหลัก", "pwa.banner.install": "ติดตั้ง", "pwa.banner.dismiss": "ปิด",
 
 // ─── Vietnamese (VI) ───
 export const viComplete: Record<string, string> = {
