@@ -1,10 +1,13 @@
 /**
- * Performance utilities for Easy-Locs
+ * Performance utilities for Easy-Locs — PASS145-147
  * - Route prefetching on idle
- * - Image lazy loading helper
+ * - Image lazy loading / preloading
  * - Debounced/throttled callbacks
  * - Render performance monitoring
+ * - OptimizedImage component
  */
+import { useState, useCallback, useRef, memo, type ImgHTMLAttributes } from "react";
+import { cn } from "@/lib/utils";
 
 /** Prefetch a route's chunk during idle time */
 export function prefetchRoute(importFn: () => Promise<unknown>): void {
