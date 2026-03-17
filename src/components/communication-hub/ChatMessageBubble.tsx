@@ -250,7 +250,9 @@ function ChatMessageBubble({
           borderRadius: isMe
             ? (isConsecutive ? "16px 4px 4px 16px" : "16px 16px 4px 16px")
             : (isConsecutive ? "4px 16px 16px 4px" : "16px 16px 16px 4px"),
-          background: isPaymentRequest
+          background: isPaymentReceipt
+            ? "linear-gradient(135deg, hsl(var(--hud-success) / 0.08), hsl(var(--hud-success) / 0.03))"
+            : isPaymentRequest
             ? "linear-gradient(135deg, hsl(var(--hud-purple) / 0.08), hsl(var(--hud-purple) / 0.03))"
             : isPayment
             ? "linear-gradient(135deg, hsl(var(--hud-cyan) / 0.08), hsl(var(--hud-cyan) / 0.03))"
@@ -258,7 +260,9 @@ function ChatMessageBubble({
               ? "hsl(var(--hud-cyan) / 0.08)"
               : "hsl(var(--hud-surface))",
           border: `1px solid ${
-            isPayment
+            isPaymentReceipt
+              ? "hsl(var(--hud-success) / 0.12)"
+              : isPayment
               ? "hsl(var(--hud-cyan) / 0.12)"
               : isMe
                 ? "hsl(var(--hud-cyan) / 0.06)"
