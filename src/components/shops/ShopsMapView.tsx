@@ -23,8 +23,8 @@ interface Shop {
 
 interface Props {
   shops: Shop[];
-  radius: number;
-  onShopClick: (slug: string) => void;
+  radiusKm?: number;
+  onOpenShop?: (slug: string) => void;
 }
 
 export default function ShopsMapView({ shops, radius, onShopClick }: Props) {
