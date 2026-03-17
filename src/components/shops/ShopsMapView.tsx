@@ -96,9 +96,13 @@ export default function ShopsMapView({ shops, radius, onShopClick }: Props) {
     if (userLat && userLng) {
       const userIcon = L.divIcon({
         className: "",
-        html: `<div style="width:14px;height:14px;border-radius:50%;background:hsl(210 100% 50%);border:3px solid white;box-shadow:0 0 10px rgba(59,130,246,0.5);"></div>`,
-        iconSize: [14, 14],
-        iconAnchor: [7, 7],
+        html: `<div style="position:relative;width:20px;height:20px;">
+          <div style="position:absolute;inset:3px;border-radius:50%;background:radial-gradient(circle at 40% 40%,#93c5fd,#3b82f6);border:3px solid white;box-shadow:0 0 16px rgba(59,130,246,0.6);z-index:2;"></div>
+          <div style="position:absolute;inset:-4px;border-radius:50%;border:2px solid rgba(59,130,246,0.4);animation:shopPulse 2s ease-out infinite;"></div>
+          <div style="position:absolute;inset:-4px;border-radius:50%;border:2px solid rgba(59,130,246,0.4);animation:shopPulse 2s ease-out infinite;animation-delay:0.7s;"></div>
+        </div>`,
+        iconSize: [20, 20],
+        iconAnchor: [10, 10],
       });
       L.marker([userLat, userLng], { icon: userIcon, zIndexOffset: 1000 }).addTo(map).bindPopup("You");
 
