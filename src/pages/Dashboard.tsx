@@ -160,7 +160,12 @@ const Dashboard = () => {
           </div>
         </Suspense>
 
-        {/* Error state */}
+        {/* PASS130: Super-App Home — contextual quick actions */}
+        <Suspense fallback={null}>
+          <div className="mb-6 px-1">
+            <SuperAppHome />
+          </div>
+        </Suspense>
         {error && !loading && (
           <ErrorState message={error} onRetry={() => { setError(null); setLoading(true); }} className="mb-6" />
         )}
