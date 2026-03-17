@@ -40,9 +40,9 @@ const ORBIT_INFRA_CARDS = [
 
 /* ── Marketplace Commerce — Services, Bookings, Listings ── */
 const MARKETPLACE_CARDS = [
-  { icon: Store, label: "Annonces", desc: "Mes services", key: "activeListings" as const, to: "/dashboard/marketplace" },
-  { icon: ShoppingBag, label: "Bookings", desc: "Commandes", key: "pendingOrders" as const, to: "/dashboard/marketplace" },
-  { icon: Star, label: "Avis", desc: "Reviews", key: null, to: "/dashboard/marketplace" },
+  { icon: Store, label: "Annonces", desc: "Mes services", key: "activeListings" as const, to: "/dashboard/my-shop" },
+  { icon: ShoppingBag, label: "Bookings", desc: "Commandes", key: "pendingOrders" as const, to: "/dashboard/my-shop" },
+  { icon: Star, label: "Avis", desc: "Reviews", key: null, to: "/dashboard/my-shop" },
   { icon: TrendingUp, label: "Leads", desc: "Prospects", key: "newLeads" as const, to: "/dashboard/communication" },
 ];
 
