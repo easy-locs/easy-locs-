@@ -10,7 +10,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, MessageCircle, CreditCard, FileText, Wrench, CalendarCheck, Clock, User, Mail, Receipt } from "lucide-react";
 import { format, formatDistanceToNow } from "date-fns";
-import { fr } from "date-fns/locale";
+import { fr } from "@/lib/date-locales";
 
 export interface ActivityEvent {
   id: string;

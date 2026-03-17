@@ -27,10 +27,10 @@ export default function VoiceRecorder({ orgId, contextId, userId, userEmail, use
   const [waveAmplitude, setWaveAmplitude] = useState(0);
   const recorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
-  const timerRef = useRef<ReturnType<typeof setInterval>>();
+  const timerRef = useRef<ReturnType<typeof setInterval> | undefined>(undefined);
   const startXRef = useRef(0);
   const analyserRef = useRef<AnalyserNode | null>(null);
-  const animFrameRef = useRef<number>();
+  const animFrameRef = useRef<number | undefined>(undefined);
 
   useEffect(() => {
     return () => {
