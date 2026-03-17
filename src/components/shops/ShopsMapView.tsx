@@ -160,7 +160,19 @@ export default function ShopsMapView({ shops, radius, onShopClick }: Props) {
     };
   }, []);
 
-  return <div ref={containerRef} className="w-full h-full min-h-[400px]" style={{ zIndex: 1 }} />;
+  return (
+    <>
+      <div ref={containerRef} className="w-full h-full min-h-[400px]" style={{ zIndex: 1 }} />
+      <style>{`
+        @keyframes shopPulse { 0% { transform:scale(1);opacity:0.5; } 100% { transform:scale(2.2);opacity:0; } }
+        @keyframes shopGlow { 0% { opacity:0.25;transform:scale(0.95); } 100% { opacity:0.5;transform:scale(1.08); } }
+        .leaflet-popup-content-wrapper { background:rgba(10,18,35,0.94)!important;backdrop-filter:blur(16px) saturate(1.5);color:white!important;border:1px solid rgba(59,130,246,0.15)!important;border-radius:14px!important;box-shadow:0 10px 40px rgba(0,0,0,0.5)!important; }
+        .leaflet-popup-tip { background:rgba(10,18,35,0.94)!important; }
+        .marker-cluster-small,.marker-cluster-medium,.marker-cluster-large { background:transparent!important; }
+        .marker-cluster-small div,.marker-cluster-medium div,.marker-cluster-large div { background:transparent!important; }
+      `}</style>
+    </>
+  );
 }
 
 function getZoom(km: number): number {
