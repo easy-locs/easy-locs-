@@ -1,8 +1,8 @@
 /**
- * Install — PWA install page.
- * PASS 171-175: Animated, progressive disclosure, accessibility, design tokens.
+ * Install — PWA install page v1.
+ * Clean implementation with correct i18n keys, proper iOS coaching, and accessible layout.
  */
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useI18n } from "@/lib/i18n";
 import { useAppInstalled } from "@/hooks/useAppInstalled";
@@ -50,18 +50,18 @@ const Install = () => {
     };
   }, []);
 
-  const handleInstall = async () => {
+  const handleInstall = useCallback(async () => {
     if (!deferredPrompt) return;
     deferredPrompt.prompt();
     const { outcome } = await deferredPrompt.userChoice;
     if (outcome === "accepted") setJustInstalled(true);
     setDeferredPrompt(null);
-  };
+  }, [deferredPrompt]);
 
-  const handleGoBack = () => {
+  const handleGoBack = useCallback(() => {
     if (window.history.length > 1) navigate(-1);
     else navigate("/");
-  };
+  }, [navigate]);
 
   const installed = alreadyInstalled || justInstalled;
 
@@ -75,10 +75,7 @@ const Install = () => {
       >
         {/* Icon */}
         <motion.div variants={fadeUp}>
-          <div
-            className="w-20 h-20 rounded-2xl flex items-center justify-center mx-auto"
-            style={{ background: "hsl(var(--accent) / 0.15)" }}
-          >
+          <div className="w-20 h-20 rounded-2xl flex items-center justify-center mx-auto bg-accent/15">
             <AnimatePresence mode="wait">
               {installed ? (
                 <motion.div key="check" initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", damping: 12 }}>
@@ -158,10 +155,7 @@ const Install = () => {
         >
           {FEATURES.map(({ icon: Icon, labelKey, fallback }) => (
             <div key={labelKey} className="space-y-2 flex flex-col items-center" role="listitem">
-              <div
-                className="w-10 h-10 rounded-xl flex items-center justify-center"
-                style={{ background: "hsl(var(--accent) / 0.1)" }}
-              >
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-accent/10">
                 <Icon className="h-5 w-5 text-accent" aria-hidden="true" />
               </div>
               <p className="font-medium">{t(labelKey) !== labelKey ? t(labelKey) : fallback}</p>
