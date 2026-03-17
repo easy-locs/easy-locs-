@@ -425,7 +425,7 @@ function EntityRow({ entity, onSelect, onMessage }: {
 
   return (
     <button onClick={onSelect}
-      className="w-full flex items-center gap-2.5 p-2.5 rounded-xl text-left transition-colors"
+      className="w-full flex items-center gap-2.5 p-2.5 rounded-xl text-left transition-all active:scale-[0.98] active:bg-[hsl(var(--hud-surface)/0.25)]"
       style={{ background: "hsl(var(--hud-surface) / 0.12)" }}>
       {/* Icon */}
       {entity.photo ? (
