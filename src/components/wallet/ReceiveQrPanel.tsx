@@ -20,7 +20,7 @@ export default function ReceiveQrPanel() {
   const [currency, setCurrency] = useState("AED");
   const [copied, setCopied] = useState(false);
 
-  const displayName = profile?.name || user?.email?.split("@")[0] || "Me";
+  const displayName = user?.user_metadata?.name || user?.email?.split("@")[0] || "Me";
 
   const payload = useMemo(() => {
     const numAmount = parseFloat(amount);
