@@ -15,16 +15,16 @@ const MobileBottomNav = ({ onMenuOpen }: MobileBottomNavProps) => {
   const items = [
     { icon: Home, label: "Home", path: "/dashboard" },
     { icon: Search, label: "Search", path: "/discover" },
-    { icon: Store, label: "Shops", path: "/dashboard/my-shop" },
+    { icon: Store, label: "Shops", path: "/shops" },
     { icon: ShoppingBag, label: "Orders", path: "/my-orders" },
-    { icon: User, label: "Profile", path: "/dashboard/settings" },
+    { icon: User, label: "Me", path: "/dashboard/settings" },
   ];
 
   const isActive = (path: string) => {
     if (path === "/dashboard") return pathname === "/dashboard" || pathname === "/";
     if (path === "/my-orders") return pathname === "/my-orders";
-    if (path === "/discover") return pathname.startsWith("/discover") || pathname.startsWith("/s/");
-    if (path === "/dashboard/my-shop") return pathname === "/dashboard/my-shop";
+    if (path === "/discover") return pathname.startsWith("/discover") || pathname.startsWith("/search") || pathname.startsWith("/s/");
+    if (path === "/shops") return pathname === "/shops" || pathname === "/dashboard/my-shop";
     if (path === "/dashboard/settings") return pathname.startsWith("/dashboard/settings");
     return pathname.startsWith(path);
   };

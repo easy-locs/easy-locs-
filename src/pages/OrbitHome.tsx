@@ -40,9 +40,9 @@ const ORBIT_INFRA_CARDS = [
 
 /* ── Marketplace Commerce — Services, Bookings, Listings ── */
 const MARKETPLACE_CARDS = [
-  { icon: Store, label: "Annonces", desc: "Mes services", key: "activeListings" as const, to: "/dashboard/marketplace" },
-  { icon: ShoppingBag, label: "Bookings", desc: "Commandes", key: "pendingOrders" as const, to: "/dashboard/marketplace" },
-  { icon: Star, label: "Avis", desc: "Reviews", key: null, to: "/dashboard/marketplace" },
+  { icon: Store, label: "Annonces", desc: "Mes services", key: "activeListings" as const, to: "/dashboard/my-shop" },
+  { icon: ShoppingBag, label: "Bookings", desc: "Commandes", key: "pendingOrders" as const, to: "/dashboard/my-shop" },
+  { icon: Star, label: "Avis", desc: "Reviews", key: null, to: "/dashboard/my-shop" },
   { icon: TrendingUp, label: "Leads", desc: "Prospects", key: "newLeads" as const, to: "/dashboard/communication" },
 ];
 
@@ -90,7 +90,7 @@ export default function OrbitHome() {
     if (engine.pendingBookings > 0) items.push({ icon: "📩", label: "Réservations en attente", value: engine.pendingBookings, link: "/dashboard/seasonal" });
     if (engine.pendingOrders > 0) items.push({ icon: "🎯", label: "Commandes marketplace", value: engine.pendingOrders, link: "/dashboard/activities" });
     if (engine.newLeads > 0) items.push({ icon: "🔥", label: "Nouveaux prospects", value: engine.newLeads, link: "/dashboard/communication" });
-    if (engine.activeListings > 0) items.push({ icon: "📊", label: "Annonces actives", value: engine.activeListings, link: "/dashboard/marketplace" });
+    if (engine.activeListings > 0) items.push({ icon: "📊", label: "Annonces actives", value: engine.activeListings, link: "/dashboard/my-shop" });
     return items;
   }, [engine.pendingBookings, engine.pendingOrders, engine.newLeads, engine.activeListings]);
 

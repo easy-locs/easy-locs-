@@ -19,7 +19,7 @@ const MENU_ITEMS = [
   { icon: Phone, label: "Calls", path: "/dashboard/communication?section=calls" },
   { icon: Radar, label: "Nearby", path: "/dashboard/communication?section=nearby" },
   { icon: Users, label: "Contacts", path: "/dashboard/communication?section=contacts" },
-  { icon: Handshake, label: "Deals", path: "/dashboard/marketplace" },
+  { icon: Handshake, label: "Deals", path: "/dashboard/deals" },
   { icon: CreditCard, label: "Payments", path: "/dashboard/communication?section=payments" },
   { icon: Shield, label: "Security", path: "/dashboard/settings" },
   { icon: FolderOpen, label: "Files", path: "/dashboard/communication?section=files" },

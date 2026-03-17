@@ -252,7 +252,7 @@ const CreateListing = () => {
 
       if (error) throw error;
       toast({ title: "✅ Listing published!", description: "Your listing is now live for 30 days." });
-      navigate("/dashboard/marketplace");
+      navigate("/dashboard/my-shop");
     } catch (err: any) {
       toast({ title: "Error", description: err.message, variant: "destructive" });
     } finally {
@@ -298,8 +298,8 @@ const CreateListing = () => {
   return (
     <DashboardLayout>
       <div className="max-w-3xl mx-auto pb-12">
-        <button onClick={() => navigate("/dashboard/marketplace")} className="text-sm text-accent hover:underline mb-4 flex items-center gap-1">
-          <ArrowLeft className="h-3.5 w-3.5" /> Marketplace
+        <button onClick={() => navigate("/dashboard/my-shop")} className="text-sm text-accent hover:underline mb-4 flex items-center gap-1">
+          <ArrowLeft className="h-3.5 w-3.5" /> My Shop
         </button>
 
         <div className="flex items-center gap-4 mb-8">

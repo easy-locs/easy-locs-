@@ -333,7 +333,7 @@ export default function ContextPanel({ thread, orgId }: Props) {
               <div className="space-y-1">
                 {thread.bookingType === "marketplace" && (
                   <Button variant="ghost" size="sm" className="w-full justify-start text-xs h-7 gap-1.5" asChild>
-                    <a href={`/dashboard/marketplace?booking=${thread.bookingId}`}><ExternalLink className="h-3 w-3" /> View in Marketplace</a>
+                    <a href={`/dashboard/my-shop`}><ExternalLink className="h-3 w-3" /> View in Shop</a>
                   </Button>
                 )}
                 {thread.bookingType === "concierge" && (
