@@ -14,7 +14,8 @@ import ViewOnceMedia from "./ViewOnceMedia";
 import OrbitEncryptedIndicator from "@/components/orbit/OrbitEncryptedIndicator";
 import { haptic } from "@/lib/haptics";
 import { getMessagePolicy, shouldHideMessage, type SecurityLevel } from "@/lib/message-security";
-import { ChatPaymentRequestCard } from "@/components/chat/ChatPaymentWidgets";
+import { ChatPaymentRequestCard, ChatPaymentReceiptCard } from "@/components/chat/ChatPaymentRuntime";
+import { ChatPaymentRequestCard as LegacyPaymentRequestCard } from "@/components/chat/ChatPaymentWidgets";
 import type { ChatMessage } from "./types";
 import { MESSAGE_CATEGORIES } from "./types";
 
