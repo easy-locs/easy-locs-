@@ -222,6 +222,13 @@ const MP_KEYS_EN: Record<string, string> = {
   "explore.listings": "listings",
   "explore.show_more": "Show more",
   "explore.nights": "nights",
+  // SEO Footer
+  "explore.browse_country": "Browse by Country",
+  "explore.popular_cities": "Popular Cities",
+  "explore.categories": "Categories",
+  "explore.services_directory": "Services Directory",
+  "explore.quick_links": "Quick Links",
+  "explore.you_may_like": "You may also be interested in",
   // Category groups
   "explore.cat.property": "Real Estate",
   "explore.cat.home_services": "Home Services",
@@ -433,6 +440,9 @@ export const marketplaceI18n: Record<string, Record<string, string>> = {
     "explore.search": "Rechercher...", "explore.all": "Tout", "explore.clear_all": "Tout effacer",
     "explore.results": "résultats", "explore.result": "résultat", "explore.listings": "annonces",
     "explore.show_more": "Voir plus", "explore.nights": "nuits",
+    "explore.browse_country": "Explorer par pays", "explore.popular_cities": "Villes populaires",
+    "explore.categories": "Catégories", "explore.services_directory": "Annuaire des services",
+    "explore.quick_links": "Liens rapides", "explore.you_may_like": "Vous pourriez aussi aimer",
     "explore.cat.property": "Immobilier", "explore.cat.home_services": "Services à domicile",
     "explore.cat.concierge": "Conciergerie", "explore.cat.experiences": "Expériences",
     "explore.cat.food_work": "Restauration & Coworking", "explore.cat.professional": "Services pro",
