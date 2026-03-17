@@ -13,6 +13,7 @@ import React, {
 import { CheckCircle2, Wallet, X, AlertTriangle } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { walletTransfer } from "@/payments/wallet-hooks";
+import { formatMoney } from "@/lib/format";
 
 export type PaymentContextType =
   | "chat"
