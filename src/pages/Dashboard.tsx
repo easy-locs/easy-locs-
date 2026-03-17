@@ -161,7 +161,7 @@ const Dashboard = () => {
         </Suspense>
 
         {/* PASS130: Super-App Home — contextual quick actions */}
-        <Suspense fallback={null}>
+        <Suspense fallback={<div className="h-32 rounded-xl bg-muted/20 animate-pulse mb-6" />}>
           <div className="mb-6 px-1">
             <SuperAppHome />
           </div>
