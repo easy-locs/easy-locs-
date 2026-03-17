@@ -365,6 +365,9 @@ export const daComplete: Record<string, string> = {
   "explore.radius.title": "Hvor søger du?", "explore.radius.worldwide": "Hele verden",
   "explore.radius.reset": "Nulstil", "explore.radius.apply": "Anvend", "explore.clear_all": "Ryd alt",
   "page.listing.contact_direct": "Kontakt direkte", "page.listing.call": "Ring", "page.listing.share": "Del",
+  "page.install.title": "Installer Easy-Locs", "page.install.install_btn": "Installer appen",
+  "page.install.back": "Tilbage", "page.install.continue_web": "Fortsæt på web",
+  "pwa.banner.title": "Installer Easy-Locs", "pwa.banner.install": "Installer", "pwa.banner.dismiss": "Luk",
 };
 
 // ─── Norwegian (NB) ───
