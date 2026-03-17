@@ -163,10 +163,40 @@ export default function OrbitRadar() {
               )}
             </div>
             <div>
-              <h2 className="text-sm font-bold leading-tight" style={{ color: "hsl(var(--hud-text))" }}>Living Ecosystem</h2>
-              <p className="text-[9px]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
-                {entities.length} signaux · {radius}km
-              </p>
+              <div className="flex items-center gap-1.5">
+                <h2 className="text-sm font-bold leading-tight" style={{ color: "hsl(var(--hud-text))" }}>Living Ecosystem</h2>
+                {/* LIVE indicator */}
+                <div className="flex items-center gap-1 px-1.5 py-0.5 rounded-full"
+                  style={{ background: "hsl(var(--hud-danger) / 0.12)", border: "1px solid hsl(var(--hud-danger) / 0.25)" }}>
+                  <motion.div className="w-1.5 h-1.5 rounded-full" style={{ background: "hsl(var(--hud-danger))" }}
+                    animate={{ opacity: [1, 0.3, 1] }} transition={{ duration: 1.5, repeat: Infinity }} />
+                  <span className="text-[8px] font-bold uppercase tracking-wider" style={{ color: "hsl(var(--hud-danger))" }}>Live</span>
+                </div>
+              </div>
+              {/* Activity counts */}
+              <div className="flex items-center gap-2 mt-0.5">
+                <span className="text-[9px] flex items-center gap-0.5" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
+                  {entities.length} signaux · {radius}km
+                </span>
+                {(counts["person"] || 0) + (counts["agent"] || 0) > 0 && (
+                  <span className="text-[8px] flex items-center gap-0.5 px-1 py-0.5 rounded-full"
+                    style={{ background: "hsl(var(--hud-purple) / 0.1)", color: "hsl(var(--hud-purple))" }}>
+                    👤 {(counts["person"] || 0) + (counts["agent"] || 0)}
+                  </span>
+                )}
+                {(counts["delivery"] || 0) > 0 && (
+                  <span className="text-[8px] flex items-center gap-0.5 px-1 py-0.5 rounded-full"
+                    style={{ background: "hsl(var(--hud-success) / 0.1)", color: "hsl(var(--hud-success))" }}>
+                    📦 {counts["delivery"]}
+                  </span>
+                )}
+                {(counts["visit"] || 0) + (counts["intervention"] || 0) > 0 && (
+                  <span className="text-[8px] flex items-center gap-0.5 px-1 py-0.5 rounded-full"
+                    style={{ background: "hsl(var(--hud-cyan) / 0.1)", color: "hsl(var(--hud-cyan))" }}>
+                    🏠 {(counts["visit"] || 0) + (counts["intervention"] || 0)}
+                  </span>
+                )}
+              </div>
             </div>
           </div>
 
