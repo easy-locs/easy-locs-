@@ -4,7 +4,6 @@
  * Handles denied permission with clear user guidance.
  */
 import { useState, useEffect, useCallback, useRef } from "react";
-import { getAppPreferences } from "@/components/settings/AppPreferencesSection";
 
 interface GeoState {
   lat: number | null;
@@ -94,38 +93,19 @@ export function useGeolocation() {
     );
   }, []);
 
-  // Auto-request on mount if preference is enabled OR if entering Nearby section
+  // Always request location on mount — geolocation prompt is user-controlled by the browser
   useEffect(() => {
     if (requestedRef.current) return;
     requestedRef.current = true;
 
-    const prefs = getAppPreferences();
+    // Always attempt geolocation immediately
+    requestLocation();
 
-    // Always check permission state first
+    // Listen for permission changes if API available
     if ("permissions" in navigator) {
       navigator.permissions
         .query({ name: "geolocation" as PermissionName })
         .then((perm) => {
-          if (perm.state === "granted") {
-            // Already granted — fetch silently
-            requestLocation();
-          } else if (perm.state === "prompt") {
-            // Will prompt — only auto-request if pref enabled
-            if (prefs.autoLocation) requestLocation();
-          } else {
-            // Denied
-            const fallback = readCachedGeo();
-            setState((s) => ({
-              ...s,
-              lat: fallback.lat ?? s.lat,
-              lng: fallback.lng ?? s.lng,
-              error: "Location permission denied",
-              permissionDenied: true,
-              loading: false,
-            }));
-          }
-
-          // Listen for permission changes (user may toggle in browser settings)
           perm.addEventListener("change", () => {
             if (perm.state === "granted") {
               requestLocation();
@@ -135,12 +115,9 @@ export function useGeolocation() {
           });
         })
         .catch(() => {
-          if (prefs.autoLocation) requestLocation();
+          // permissions API not available, already requested above
         });
-      return;
     }
-
-    if (prefs.autoLocation) requestLocation();
   }, [requestLocation]);
 
   return { ...state, requestLocation };
