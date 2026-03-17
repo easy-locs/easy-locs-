@@ -180,6 +180,7 @@ export const hiComplete: Record<string, string> = {
   "page.install.back": "वापस", "page.install.continue_web": "वेब पर जारी रखें",
   "pwa.banner.title": "Easy-Locs इंस्टॉल करें", "pwa.banner.hint": "तेज़, ऑफ़लाइन तैयार",
   "pwa.banner.ios_hint": "शेयर → होम स्क्रीन पर जोड़ें", "pwa.banner.install": "इंस्टॉल", "pwa.banner.dismiss": "बंद करें",
+};
 
 // ─── Thai (TH) ───
 export const thComplete: Record<string, string> = {
