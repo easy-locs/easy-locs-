@@ -304,7 +304,7 @@ const App = () => (
               <Route path="/pay/:paymentId" element={<PayPage />} />
               <Route path="/discover" element={<DiscoverPage />} />
               <Route path="/shops" element={<ShopsPage />} />
-              <Route path="/radar" element={<SuperMapRadarPage />} />
+              <Route path="/super-map" element={<SuperMapRadarPage />} />
               <Route path="/business" element={<MyBusinessHub />} />
               <Route path="/business/my-shops" element={<MyShopsPage />} />
               
