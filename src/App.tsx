@@ -274,6 +274,7 @@ const App = () => (
               <Route path="/store/:storeSlug" element={<StorePage />} />
               <Route path="/s/:shopSlug" element={<ShopPage />} />
               <Route path="/discover" element={<DiscoverPage />} />
+              <Route path="/shops" element={<ShopsPage />} />
               <Route path="/search" element={<DiscoverPage />} />
               <Route path="/trending" element={<DiscoverPage />} />
               <Route path="/nearby" element={<DiscoverPage />} />
