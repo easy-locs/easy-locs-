@@ -24,10 +24,20 @@ interface Props {
 
 export default function AdvancedProductPage({ item, currency = "EUR", formatPrice, onAddToCart, onClose, editMode = false, onSave }: Props) {
   const [currentImage, setCurrentImage] = useState(0);
+
+  // Collect existing images for media uploader
+  const existingImages: string[] = [];
+  if (item.photo_url) existingImages.push(item.photo_url);
+  if (Array.isArray(item.photo_urls)) existingImages.push(...item.photo_urls);
+  if (Array.isArray(item.gallery_urls)) existingImages.push(...item.gallery_urls);
+  const dedupedImages = [...new Set(existingImages)].filter(Boolean);
+
+  const [editImages, setEditImages] = useState<string[]>(dedupedImages);
+  const [editVideoUrl, setEditVideoUrl] = useState(item.video_url || "");
+  const [editCoverIndex, setEditCoverIndex] = useState(0);
   const [editData, setEditData] = useState({
     seo_title: item.seo_title || "",
     seo_description: item.seo_description || "",
-    video_url: item.video_url || "",
     weight_grams: item.weight_grams || "",
     brand_name: item.brand_name || "",
     warranty_info: item.warranty_info || "",
