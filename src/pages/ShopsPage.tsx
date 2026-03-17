@@ -20,14 +20,17 @@ export default function ShopsPage() {
     queryFn: async () => {
       const { data } = await (supabase as any)
         .from("storefront_pages")
-        .select("id, name, slug, logo_url, description, vertical")
+        .select("id, name, slug, logo_url, description, vertical, boost_tier, boost_until, created_at")
         .eq("published", true)
         .order("created_at", { ascending: false })
         .limit(50);
-      return data || [];
+      return rankItems(data || []);
     },
     staleTime: 60_000,
   });
+
+  // First boosted shop for sponsored banner
+  const sponsoredShop = shops?.find((s: any) => s.boost_tier && s.boost_until && new Date(s.boost_until) > new Date());
 
   return (
     <div>
