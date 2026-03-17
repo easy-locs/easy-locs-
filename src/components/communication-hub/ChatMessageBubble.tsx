@@ -97,7 +97,8 @@ function ChatMessageBubble({
     if (!isPaymentReceipt) return null;
     try {
       const parsed = JSON.parse(msg.content);
-      return parsed?._type === "payment_receipt_card" ? parsed : null;
+      if (parsed?._type === "payment_receipt_card" || parsed?._type === "payment_receipt") return parsed;
+      return null;
     } catch { return null; }
   }, [isPaymentReceipt, msg.content]);
   const isVoice = !isDeleted && !!(msg as any).audio_url;
