@@ -4,7 +4,6 @@
  * Handles denied permission with clear user guidance.
  */
 import { useState, useEffect, useCallback, useRef } from "react";
-import { getAppPreferences } from "@/components/settings/AppPreferencesSection";
 
 interface GeoState {
   lat: number | null;
