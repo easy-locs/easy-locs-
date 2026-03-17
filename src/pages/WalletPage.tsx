@@ -85,7 +85,7 @@ export default function WalletPage() {
           {/* QR Actions */}
           {user?.id && (
             <QrActionRow
-              payload={{ type: "user_pay", userId: user.id }}
+              payload={{ action: "pay_user", v: 1, userId: user.id }}
               qrTitle="My payment QR"
             />
           )}
