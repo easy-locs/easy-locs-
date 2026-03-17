@@ -5,6 +5,7 @@ import { Search, Crosshair, Navigation, Store, Package, MapPin, Radar, X, Loader
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import UniversalActionButtons from "@/components/actions/UniversalActionButtons";
+import UniversalEntityCard from "@/components/actions/UniversalEntityCard";
 
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN || "pk.eyJ1IjoiZWFzeWxvY3MyMDI2IiwiYSI6ImNtbXY0em5lYTJpaHQycHF0c3hrMGh4eHkifQ.y2GKHz1tZ_ZA6sFrEAvz7w";
 
