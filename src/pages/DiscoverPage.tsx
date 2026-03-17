@@ -284,49 +284,66 @@ function SmartLocalSection({ icon: Icon, title, shops, onShopClick, emptyText }:
    ══════════════════════════════════════ */
 function ShopCard({ shop, index, rail, onClick }: { shop: any; index: number; rail?: string; onClick: () => void }) {
   return (
-    <motion.button
+    <motion.div
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.2, delay: index * 0.025 }}
-      onClick={() => { haptic("light"); onClick(); }}
-      className="w-full rounded-2xl border border-border/30 bg-card overflow-hidden text-left transition-all duration-150 active:scale-[0.97]"
+      className="w-full rounded-2xl border border-border/30 bg-card overflow-hidden text-left transition-all duration-150"
     >
-      {shop.banner_url && (
-        <div className="h-20 bg-muted overflow-hidden">
-          <img src={shop.banner_url} alt="" className="w-full h-full object-cover" loading="lazy" />
-        </div>
-      )}
-      <div className="p-3 space-y-1.5">
-        <div className="flex items-center gap-2">
-          {shop.logo_url ? (
-            <img src={shop.logo_url} alt="" className="w-9 h-9 rounded-xl object-cover shrink-0 ring-1 ring-border/20" />
-          ) : (
-            <div className="w-9 h-9 rounded-xl bg-primary/8 flex items-center justify-center shrink-0">
-              <Store className="h-4 w-4 text-primary" />
+      <button
+        onClick={() => { haptic("light"); onClick(); }}
+        className="w-full text-left active:scale-[0.97] transition-transform"
+      >
+        {shop.banner_url && (
+          <div className="h-20 bg-muted overflow-hidden">
+            <img src={shop.banner_url} alt="" className="w-full h-full object-cover" loading="lazy" />
+          </div>
+        )}
+        <div className="p-3 space-y-1.5">
+          <div className="flex items-center gap-2">
+            {shop.logo_url ? (
+              <img src={shop.logo_url} alt="" className="w-9 h-9 rounded-xl object-cover shrink-0 ring-1 ring-border/20" />
+            ) : (
+              <div className="w-9 h-9 rounded-xl bg-primary/8 flex items-center justify-center shrink-0">
+                <Store className="h-4 w-4 text-primary" />
+              </div>
+            )}
+            <div className="flex-1 min-w-0">
+              <p className="text-[12px] font-bold text-foreground truncate">{shop.name}</p>
+              {shop.city && <p className="text-[10px] text-muted-foreground truncate">{shop.city}</p>}
             </div>
-          )}
-          <div className="flex-1 min-w-0">
-            <p className="text-[12px] font-bold text-foreground truncate">{shop.name}</p>
-            {shop.city && <p className="text-[10px] text-muted-foreground truncate">{shop.city}</p>}
+          </div>
+          <div className="flex items-center gap-1 flex-wrap">
+            {shop.vertical && (
+              <span className="text-[8px] font-semibold bg-primary/8 text-primary px-2 py-0.5 rounded-full">{shop.vertical}</span>
+            )}
+            {shop.avg_rating > 0 && (
+              <span className="inline-flex items-center gap-0.5 text-[8px] font-semibold text-amber-500">
+                <Star className="h-2.5 w-2.5 fill-current" /> {Number(shop.avg_rating).toFixed(1)}
+              </span>
+            )}
+            {shop.boost_tier && (
+              <span className="inline-flex items-center gap-0.5 text-[8px] font-bold text-accent">
+                <Zap className="h-2.5 w-2.5" /> Featured
+              </span>
+            )}
           </div>
         </div>
-        <div className="flex items-center gap-1 flex-wrap">
-          {shop.vertical && (
-            <span className="text-[8px] font-semibold bg-primary/8 text-primary px-2 py-0.5 rounded-full">{shop.vertical}</span>
-          )}
-          {shop.avg_rating > 0 && (
-            <span className="inline-flex items-center gap-0.5 text-[8px] font-semibold text-amber-500">
-              <Star className="h-2.5 w-2.5 fill-current" /> {Number(shop.avg_rating).toFixed(1)}
-            </span>
-          )}
-          {shop.boost_tier && (
-            <span className="inline-flex items-center gap-0.5 text-[8px] font-bold text-accent">
-              <Zap className="h-2.5 w-2.5" /> Featured
-            </span>
-          )}
-        </div>
+      </button>
+      <div className="px-3 pb-3">
+        <UniversalActionButtons
+          entityType="shop"
+          entityId={shop.id}
+          slug={shop.slug}
+          title={shop.name}
+          recipientId={shop.user_id}
+          recipientName={shop.name}
+          compact
+          primaryOnly
+          metadata={{ source: "discover" }}
+        />
       </div>
-    </motion.button>
+    </motion.div>
   );
 }
 
