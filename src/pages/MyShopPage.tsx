@@ -58,6 +58,8 @@ const SellerAnalyticsV2 = lazy(() => import("@/components/storefront/SellerAnaly
 const TrustScoreBadge = lazy(() => import("@/components/storefront/TrustScoreBadge"));
 const RiskFlagsDashboard = lazy(() => import("@/components/storefront/RiskFlagsDashboard"));
 const GrowthDashboard = lazy(() => import("@/components/storefront/GrowthDashboard"));
+const NotificationBell = lazy(() => import("@/components/storefront/NotificationBell"));
+const InvoiceList = lazy(() => import("@/components/storefront/InvoiceList"));
 // Settings-only (loaded inline since settings tab is simple)
 const AICategorySuggest = lazy(() => import("@/components/storefront/AICategorySuggest"));
 const PrivateInviteManager = lazy(() => import("@/components/storefront/PrivateInviteManager"));
@@ -160,6 +162,7 @@ export default function MyShopPage() {
                   <ExternalLink className="h-3 w-3 inline" /> Preview
                 </a>
                 <ShopShareEngine shopName={shop.name} shopSlug={shop.slug} shopDescription={shop.description} shopImage={shop.logo_url} />
+                <Suspense fallback={null}><NotificationBell shopId={shop.id} onOpen={() => { setTab("analytics"); haptic("light"); }} /></Suspense>
               </div>
             </div>
           </div>
@@ -213,6 +216,7 @@ export default function MyShopPage() {
                 <MultiVendorDashboard shopId={shop.id} />
                 <AffiliateProgram shopId={shop.id} shopSlug={shop.slug} mode="seller" />
                 <MultiCurrencyTax shopId={shop.id} mode="seller" />
+                <InvoiceList shopId={shop.id} />
                 <SubscriptionManager shopId={shop.id} />
                 <GiftCardManager shopId={shop.id} mode="seller" />
                 <LoyaltyDashboard shopId={shop.id} mode="seller" />
