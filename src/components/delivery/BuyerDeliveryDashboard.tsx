@@ -1,6 +1,7 @@
 /**
  * BuyerDeliveryDashboard — Buyer dashboard to track orders and deliveries.
  * PASS83-Y: Buyer Dashboard
+ * HARDENED: Real escrow status from server, confirmation code display, dropoff coords for GPS check.
  */
 import { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
@@ -19,6 +20,8 @@ interface BuyerOrder {
   status: string;
   pickup_address: string;
   dropoff_address: string;
+  dropoff_lat: number | null;
+  dropoff_lng: number | null;
   package_description: string | null;
   delivery_fee: number | null;
   currency: string | null;
@@ -26,6 +29,7 @@ interface BuyerOrder {
   delivered_at: string | null;
   scheduled_at: string | null;
   confirmation_code: string | null;
+  escrow_status: string | null;
 }
 
 const STATUS_CONFIG: Record<string, { label: string; emoji: string; color: string }> = {
@@ -42,20 +46,38 @@ export default function BuyerDeliveryDashboard({ className }: Props) {
   const [orders, setOrders] = useState<BuyerOrder[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [escrowStatuses, setEscrowStatuses] = useState<Record<string, string>>({});
 
   const refresh = useCallback(async () => {
     if (!user) return;
     setLoading(true);
     try {
-      // Buyer sees orders where they are associated (via order_id or org membership)
       const { data } = await supabase
         .from("delivery_jobs")
-        .select("id, status, pickup_address, dropoff_address, package_description, delivery_fee, currency, created_at, delivered_at, scheduled_at, confirmation_code")
+        .select("id, status, pickup_address, dropoff_address, dropoff_lat, dropoff_lng, package_description, delivery_fee, currency, created_at, delivered_at, scheduled_at, confirmation_code")
         .or(`seller_id.eq.${user.id}`)
         .order("created_at", { ascending: false })
         .limit(50);
 
-      setOrders((data || []) as BuyerOrder[]);
+      const orderList = (data || []) as BuyerOrder[];
+      setOrders(orderList);
+
+      // Fetch real escrow statuses for active orders
+      const activeOrders = orderList.filter(o => ["assigned", "accepted", "in_progress"].includes(o.status));
+      const statuses: Record<string, string> = {};
+      await Promise.all(
+        activeOrders.map(async (o) => {
+          try {
+            const { data: escrowData } = await supabase.functions.invoke("dispatch-delivery", {
+              body: { action: "escrow_status", job_id: o.id },
+            });
+            if (escrowData?.escrow) {
+              statuses[o.id] = escrowData.escrow.status;
+            }
+          } catch { /* fallback: no escrow */ }
+        })
+      );
+      setEscrowStatuses(statuses);
     } catch (err) {
       console.error("[buyer-dashboard]", err);
     } finally {
@@ -118,6 +140,7 @@ export default function BuyerDeliveryDashboard({ className }: Props) {
           </p>
           {active.map(order => {
             const cfg = STATUS_CONFIG[order.status] || STATUS_CONFIG.pending;
+            const realEscrowStatus = escrowStatuses[order.id] || undefined;
             return (
               <motion.div key={order.id} layout
                 className="rounded-xl overflow-hidden"
@@ -163,15 +186,17 @@ export default function BuyerDeliveryDashboard({ className }: Props) {
                         </p>
                       </div>
                     )}
-                    {/* Escrow validator — PASS 182 */}
+                    {/* Escrow validator — real status from server */}
                     {["assigned", "accepted", "in_progress"].includes(order.status) && (
                       <EscrowDeliveryValidator
                         jobId={order.id}
                         jobStatus={order.status}
-                        escrowStatus="held"
+                        escrowStatus={realEscrowStatus}
                         escrowAmount={order.delivery_fee ?? undefined}
                         escrowCurrency={order.currency || "EUR"}
                         confirmationCode={order.confirmation_code ?? undefined}
+                        dropoffLat={order.dropoff_lat ?? undefined}
+                        dropoffLng={order.dropoff_lng ?? undefined}
                         role="buyer"
                         onStatusChange={refresh}
                       />
