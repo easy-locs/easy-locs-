@@ -55,6 +55,9 @@ const GamificationEngine = lazy(() => import("@/components/storefront/Gamificati
 const MultiStoreManager = lazy(() => import("@/components/storefront/MultiStoreManager"));
 const SmartCatalogBuilder = lazy(() => import("@/components/storefront/SmartCatalogBuilder"));
 const SellerAnalyticsV2 = lazy(() => import("@/components/storefront/SellerAnalyticsV2"));
+const TrustScoreBadge = lazy(() => import("@/components/storefront/TrustScoreBadge"));
+const RiskFlagsDashboard = lazy(() => import("@/components/storefront/RiskFlagsDashboard"));
+const GrowthDashboard = lazy(() => import("@/components/storefront/GrowthDashboard"));
 // Settings-only (loaded inline since settings tab is simple)
 const AICategorySuggest = lazy(() => import("@/components/storefront/AICategorySuggest"));
 const PrivateInviteManager = lazy(() => import("@/components/storefront/PrivateInviteManager"));
