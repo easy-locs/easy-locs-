@@ -39,19 +39,6 @@ const MobileBottomNav = ({ onMenuOpen }: MobileBottomNavProps) => {
     >
       <div className="flex items-stretch justify-around h-[60px]">
         {items.map((item) => {
-          if (item.path === "__menu__") {
-            return (
-              <button
-                key="menu"
-                onClick={onMenuOpen}
-                className="flex flex-col items-center justify-center flex-1 gap-1 text-muted-foreground active:bg-muted/50 transition-colors min-w-[44px] min-h-[44px] max-w-[72px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-lg relative"
-              >
-                <item.icon className="h-5 w-5 shrink-0" />
-                <span className="text-[10px] font-medium leading-tight">{item.label}</span>
-              </button>
-            );
-          }
-
           const active = isActive(item.path);
           return (
             <Link
