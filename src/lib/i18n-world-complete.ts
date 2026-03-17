@@ -137,7 +137,7 @@ export const zhComplete: Record<string, string> = {
   "page.listing.contact_direct": "直接联系", "page.listing.call": "电话", "page.listing.share": "分享",
   "page.install.title": "安装Easy-Locs", "page.install.install_btn": "安装应用",
   "page.install.desc": "从主屏幕直接访问Easy-Locs。", "page.install.installed": "应用已安装！",
-  "page.install.ios_title": "在iPhone / iPad上：", "page.install.ios_step": "点击Safari底部的分享按钮，然后选择"添加到主屏幕"。",
+  "page.install.ios_title": "在iPhone / iPad上：", "page.install.ios_step": "点击Safari底部的分享按钮，然后选择「添加到主屏幕」。",
   "page.install.browser_hint": "请在Chrome或Edge中打开此页面以安装应用。",
   "page.install.feature_offline": "离线访问", "page.install.feature_fast": "快速启动", "page.install.feature_notif": "通知",
   "page.install.back": "返回", "page.install.continue_web": "继续使用网页版",
