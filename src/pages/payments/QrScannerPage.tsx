@@ -1,23 +1,97 @@
 /**
  * QrScannerPage — Full-screen QR scanner using html5-qrcode.
- * Resolves scanned payloads into navigation: payment requests, user pay, shops, profiles.
+ * For user_pay/shop_pay: opens UnifiedPayment modal directly (no intermediate page).
+ * For other types: navigates to deep-link routes.
  */
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Camera, CameraOff } from "lucide-react";
+import { ArrowLeft, Camera, CameraOff, CheckCircle2 } from "lucide-react";
 import { Html5Qrcode } from "html5-qrcode";
 import { decodeQrPayload } from "@/payments/payment-request-hooks";
+import { useUnifiedPayment, type PaymentResult } from "@/payments/UnifiedPaymentSystem";
 
-type ScanState = "idle" | "starting" | "scanning" | "success" | "error";
+type ScanState = "idle" | "starting" | "scanning" | "success" | "paying" | "paid" | "error";
 
 export default function QrScannerPage() {
   const navigate = useNavigate();
+  const { openPayment } = useUnifiedPayment();
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const regionId = "qr-reader-region";
 
   const [state, setState] = useState<ScanState>("idle");
   const [error, setError] = useState("");
   const [lastText, setLastText] = useState("");
+  const [payResult, setPayResult] = useState<PaymentResult | null>(null);
+
+  const handleQrResult = useCallback(async (raw: string) => {
+    const payload = decodeQrPayload(raw);
+
+    if (payload) {
+      // Direct payment types → open unified payment modal immediately
+      if (payload.type === "user_pay") {
+        setState("paying");
+        const result = await openPayment({
+          amount: payload.amount || 0,
+          currency: payload.currency || "AED",
+          title: "QR Payment",
+          subtitle: `Scanned payment`,
+          recipientId: payload.userId,
+          contextType: "generic",
+          contextId: payload.userId,
+          metadata: { source: "qr_scan", qr_type: "user_pay" },
+        });
+        setPayResult(result);
+        setState(result.ok ? "paid" : "error");
+        if (!result.ok && result.error) setError(result.error);
+        return;
+      }
+
+      if (payload.type === "shop_pay") {
+        setState("paying");
+        const result = await openPayment({
+          amount: payload.amount || 0,
+          currency: payload.currency || "AED",
+          title: "Shop Payment",
+          subtitle: `QR shop payment`,
+          recipientId: undefined,
+          contextType: "shop",
+          contextId: payload.shopSlug,
+          metadata: { source: "qr_scan", qr_type: "shop_pay", shopSlug: payload.shopSlug },
+        });
+        setPayResult(result);
+        setState(result.ok ? "paid" : "error");
+        if (!result.ok && result.error) setError(result.error);
+        return;
+      }
+
+      // Navigation types → redirect
+      if (payload.type === "payment_request") {
+        navigate(`/pay/request/${payload.requestId}`, { replace: true });
+        return;
+      }
+      if (payload.type === "profile") {
+        navigate(`/u/${payload.userId}`, { replace: true });
+        return;
+      }
+      if (payload.type === "shop") {
+        navigate(`/s/${payload.shopSlug}`, { replace: true });
+        return;
+      }
+    }
+
+    // Fallback: support raw URLs
+    if (raw.startsWith("http://") || raw.startsWith("https://")) {
+      try {
+        const url = new URL(raw);
+        const internal = `${url.pathname}${url.search}${url.hash}`;
+        navigate(internal, { replace: true });
+        return;
+      } catch {}
+    }
+
+    setState("error");
+    setError("Unsupported QR format");
+  }, [navigate, openPayment]);
 
   useEffect(() => {
     let mounted = true;
@@ -49,9 +123,7 @@ export default function QrScannerPage() {
 
             handleQrResult(decodedText);
           },
-          () => {
-            // ignore scan frame errors
-          }
+          () => {}
         );
 
         if (mounted) setState("scanning");
@@ -75,47 +147,7 @@ export default function QrScannerPage() {
         });
       }
     };
-  }, []);
-
-  function handleQrResult(raw: string) {
-    const payload = decodeQrPayload(raw);
-
-    if (payload) {
-      if (payload.type === "payment_request") {
-        navigate(`/pay/request/${payload.requestId}`, { replace: true });
-        return;
-      }
-      if (payload.type === "user_pay") {
-        navigate(`/qr/resolve?data=${encodeURIComponent(raw)}`, { replace: true });
-        return;
-      }
-      if (payload.type === "shop_pay") {
-        navigate(`/qr/resolve?data=${encodeURIComponent(raw)}`, { replace: true });
-        return;
-      }
-      if (payload.type === "profile") {
-        navigate(`/u/${payload.userId}`, { replace: true });
-        return;
-      }
-      if (payload.type === "shop") {
-        navigate(`/s/${payload.shopSlug}`, { replace: true });
-        return;
-      }
-    }
-
-    // Fallback: support raw URLs
-    if (raw.startsWith("http://") || raw.startsWith("https://")) {
-      try {
-        const url = new URL(raw);
-        const internal = `${url.pathname}${url.search}${url.hash}`;
-        navigate(internal, { replace: true });
-        return;
-      } catch {}
-    }
-
-    setState("error");
-    setError("Unsupported QR format");
-  }
+  }, [handleQrResult]);
 
   return (
     <div className="fixed inset-0 z-[200] flex flex-col bg-background">
@@ -137,38 +169,65 @@ export default function QrScannerPage() {
         </div>
       </div>
 
-      {/* Scanner */}
+      {/* Scanner / Result */}
       <div className="flex-1 flex flex-col items-center justify-center p-6">
-        <div className="w-full max-w-[300px] aspect-square rounded-2xl overflow-hidden border-2 border-border/50 bg-black/5 relative">
-          <div id={regionId} className="w-full h-full" />
-
-          {/* Overlay status */}
-          <div className="absolute bottom-0 inset-x-0 flex items-center justify-center gap-2 py-3 bg-background/80 backdrop-blur-sm">
-            {state === "scanning" || state === "starting" ? (
-              <Camera className="h-4 w-4 text-primary animate-pulse" />
-            ) : (
-              <CameraOff className="h-4 w-4 text-muted-foreground" />
+        {state === "paid" && payResult?.ok ? (
+          /* Success state */
+          <div className="text-center space-y-4">
+            <div className="w-16 h-16 rounded-full bg-emerald-500/10 flex items-center justify-center mx-auto">
+              <CheckCircle2 className="h-8 w-8 text-emerald-500" />
+            </div>
+            <p className="text-lg font-bold text-foreground">Payment sent!</p>
+            {payResult.transactionId && (
+              <p className="text-[11px] text-muted-foreground">
+                TX: {payResult.transactionId.slice(0, 12)}…
+              </p>
             )}
-            <span className="text-xs font-medium text-foreground">
-              {state === "idle" && "Preparing camera"}
-              {state === "starting" && "Starting camera…"}
-              {state === "scanning" && "Point at a QR code"}
-              {state === "success" && "QR detected ✓"}
-              {state === "error" && "Scanner error"}
-            </span>
+            <button
+              type="button"
+              onClick={() => navigate(-1)}
+              className="rounded-2xl bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground transition hover:opacity-90"
+            >
+              Done
+            </button>
           </div>
-        </div>
+        ) : (
+          /* Scanner viewport */
+          <>
+            <div className="w-full max-w-[300px] aspect-square rounded-2xl overflow-hidden border-2 border-border/50 bg-black/5 relative">
+              <div id={regionId} className="w-full h-full" />
 
-        {error && (
-          <p className="mt-4 text-sm text-destructive text-center max-w-[280px]">
-            {error}
-          </p>
-        )}
+              <div className="absolute bottom-0 inset-x-0 flex items-center justify-center gap-2 py-3 bg-background/80 backdrop-blur-sm">
+                {state === "scanning" || state === "starting" ? (
+                  <Camera className="h-4 w-4 text-primary animate-pulse" />
+                ) : state === "paying" ? (
+                  <div className="h-4 w-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <CameraOff className="h-4 w-4 text-muted-foreground" />
+                )}
+                <span className="text-xs font-medium text-foreground">
+                  {state === "idle" && "Preparing camera"}
+                  {state === "starting" && "Starting camera…"}
+                  {state === "scanning" && "Point at a QR code"}
+                  {state === "success" && "QR detected ✓"}
+                  {state === "paying" && "Processing payment…"}
+                  {state === "error" && "Scanner error"}
+                </span>
+              </div>
+            </div>
 
-        {lastText && state === "success" && (
-          <p className="mt-3 text-[11px] text-muted-foreground text-center break-all max-w-[280px]">
-            {lastText}
-          </p>
+            {error && (
+              <p className="mt-4 text-sm text-destructive text-center max-w-[280px]">
+                {error}
+              </p>
+            )}
+
+            {lastText && (state === "success" || state === "paying") && (
+              <p className="mt-3 text-[11px] text-muted-foreground text-center break-all max-w-[280px]">
+                {lastText}
+              </p>
+            )}
+          </>
         )}
       </div>
     </div>
