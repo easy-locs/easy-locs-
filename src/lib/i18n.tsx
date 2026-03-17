@@ -1197,6 +1197,12 @@ const pageFr: Record<string, string> = {
   "explore.radius.suggestions": "Suggestions",
   "explore.radius.reset": "Réinitialiser",
   "explore.radius.apply": "Appliquer",
+  "explore.browse_country": "Explorer par pays",
+  "explore.popular_cities": "Villes populaires",
+  "explore.categories": "Catégories",
+  "explore.services_directory": "Annuaire des services",
+  "explore.quick_links": "Liens rapides",
+  "explore.you_may_like": "Vous pourriez aussi aimer",
 
   "page.fiscal.title": "Bilan fiscal — Revenus fonciers",
   "page.fiscal.subtitle": "Analysez vos revenus et dépenses pour votre déclaration fiscale.",
