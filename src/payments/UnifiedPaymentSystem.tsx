@@ -1,7 +1,7 @@
 /**
  * UnifiedPaymentSystem — Single payment context for the entire super app.
  * Triggered from chat, product pages, deep links, live streams, rides, etc.
- * Wired to the real LOCS wallet via transfer_locs RPC.
+ * Writes directly to unified_wallet_transactions with RLS protection.
  */
 import React, {
   createContext,
@@ -62,32 +62,34 @@ function formatMoney(amount: number, currency = "AED") {
   }
 }
 
-/** Execute real wallet transfer via server-side RPC */
+/** Insert into unified_wallet_transactions — RLS ensures sender_id = auth.uid() */
 async function runUnifiedPayment(
   senderId: string,
   req: PaymentRequest
 ): Promise<PaymentResult> {
-  if (!req.recipientId) {
-    return { ok: false, error: "No recipient specified" };
+  try {
+    const { data, error } = await (supabase as any)
+      .from("unified_wallet_transactions")
+      .insert({
+        sender_id: senderId,
+        recipient_id: req.recipientId || null,
+        amount: Number(req.amount),
+        currency: req.currency || "AED",
+        context_type: req.contextType || "generic",
+        context_id: req.contextId || null,
+        title: req.title || null,
+        subtitle: req.subtitle || null,
+        status: "completed",
+        metadata: req.metadata || {},
+      })
+      .select("id")
+      .single();
+
+    if (error) return { ok: false, error: error.message };
+    return { ok: true, transactionId: data?.id };
+  } catch (err: any) {
+    return { ok: false, error: err?.message || "Payment failed" };
   }
-
-  const { data, error } = await supabase.rpc("transfer_locs" as any, {
-    _sender_id: senderId,
-    _recipient_id: req.recipientId,
-    _amount: req.amount,
-    _description: req.title || "Unified Payment",
-    _thread_id: req.contextType === "chat" ? req.contextId : null,
-    _qr_nonce: null,
-    _reference_type: req.contextType || "generic",
-    _reference_id: req.contextId || null,
-  });
-
-  if (error) return { ok: false, error: error.message };
-  if (data && typeof data === "object" && "error" in (data as any)) {
-    return { ok: false, error: (data as any).error };
-  }
-
-  return { ok: true, transactionId: `txn_${Date.now()}` };
 }
 
 export function UnifiedPaymentProvider({ children }: { children: ReactNode }) {
@@ -122,7 +124,7 @@ export function UnifiedPaymentProvider({ children }: { children: ReactNode }) {
   const handleConfirm = useCallback(async () => {
     if (!request || loading) return;
     if (!user?.id) {
-      setError("Please sign in to continue");
+      setError("You must sign in to pay.");
       return;
     }
     setLoading(true);
@@ -160,7 +162,6 @@ export function UnifiedPaymentProvider({ children }: { children: ReactNode }) {
           <div className="absolute inset-x-0 bottom-0 mx-auto w-full max-w-md rounded-t-3xl border border-border/50 bg-background p-5 shadow-2xl animate-in slide-in-from-bottom duration-300">
             {!success ? (
               <>
-                {/* Header */}
                 <div className="mb-4 flex items-start justify-between gap-3">
                   <div>
                     <div className="text-sm font-medium text-muted-foreground">
@@ -185,7 +186,6 @@ export function UnifiedPaymentProvider({ children }: { children: ReactNode }) {
                   </button>
                 </div>
 
-                {/* Amount card */}
                 <div className="rounded-2xl border border-border/40 bg-card p-4">
                   <div className="flex items-center justify-between gap-3">
                     <div className="flex items-center gap-3">
@@ -209,7 +209,6 @@ export function UnifiedPaymentProvider({ children }: { children: ReactNode }) {
                   </div>
                 </div>
 
-                {/* Error */}
                 {error && (
                   <div className="mt-3 flex items-center gap-2 rounded-xl border border-destructive/20 bg-destructive/10 px-3 py-2 text-sm text-destructive">
                     <AlertTriangle className="h-4 w-4 shrink-0" />
@@ -217,7 +216,6 @@ export function UnifiedPaymentProvider({ children }: { children: ReactNode }) {
                   </div>
                 )}
 
-                {/* Actions */}
                 <div className="mt-5 grid grid-cols-2 gap-3">
                   <button
                     type="button"
@@ -240,7 +238,6 @@ export function UnifiedPaymentProvider({ children }: { children: ReactNode }) {
                 </div>
               </>
             ) : (
-              /* Success state */
               <div className="flex flex-col items-center justify-center py-6 text-center">
                 <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-600">
                   <CheckCircle2 className="h-8 w-8" />
