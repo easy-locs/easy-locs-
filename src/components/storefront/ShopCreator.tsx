@@ -26,9 +26,15 @@ export default function ShopCreator() {
   const [description, setDescription] = useState("");
   const [city, setCity] = useState("");
   const [country, setCountry] = useState("");
+  const [logoUrl, setLogoUrl] = useState("");
 
   const handleCreate = async () => {
-    if (!name.trim()) { toast.error("Shop name is required"); return; }
+    // V4: Validate shop with logo requirement
+    const validation = validateShop({ name, logo_url: logoUrl || null });
+    if (!validation.valid) {
+      validation.errors.forEach(e => toast.error(e));
+      return;
+    }
     if (!user) { toast.error("Please sign in first"); return; }
 
     setLoading(true);
