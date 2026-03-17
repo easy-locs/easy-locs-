@@ -14,6 +14,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Search, TrendingUp, MapPin, Star, Sparkles, Store, Package, Briefcase, Loader2, X } from "lucide-react";
 import { useGeolocation } from "@/hooks/useGeolocation";
+import GlobalSearch from "@/components/storefront/GlobalSearch";
 
 const VERTICALS = [
   { id: "all", label: "All", icon: Sparkles },
