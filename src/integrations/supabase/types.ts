@@ -9389,6 +9389,7 @@ export type Database = {
           delivery_lat: number | null
           delivery_lng: number | null
           delivery_requested: boolean | null
+          delivery_source: string | null
           delivery_status: string | null
           id: string
           notes: string | null
@@ -9412,6 +9413,7 @@ export type Database = {
           total: number | null
           tracking_number: string | null
           updated_at: string | null
+          wallet_reference_code: string | null
         }
         Insert: {
           buyer_email?: string | null
@@ -9427,6 +9429,7 @@ export type Database = {
           delivery_lat?: number | null
           delivery_lng?: number | null
           delivery_requested?: boolean | null
+          delivery_source?: string | null
           delivery_status?: string | null
           id?: string
           notes?: string | null
@@ -9450,6 +9453,7 @@ export type Database = {
           total?: number | null
           tracking_number?: string | null
           updated_at?: string | null
+          wallet_reference_code?: string | null
         }
         Update: {
           buyer_email?: string | null
@@ -9465,6 +9469,7 @@ export type Database = {
           delivery_lat?: number | null
           delivery_lng?: number | null
           delivery_requested?: boolean | null
+          delivery_source?: string | null
           delivery_status?: string | null
           id?: string
           notes?: string | null
@@ -9488,6 +9493,7 @@ export type Database = {
           total?: number | null
           tracking_number?: string | null
           updated_at?: string | null
+          wallet_reference_code?: string | null
         }
         Relationships: [
           {

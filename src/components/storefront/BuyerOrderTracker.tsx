@@ -46,7 +46,7 @@ export default function BuyerOrderTracker({ orderId, buyerEmail }: BuyerOrderTra
     queryFn: async () => {
       let query = (supabase as any)
         .from("storefront_orders")
-        .select("*, storefront_order_items(*), storefront_pages!storefront_orders_shop_id_fkey(name, slug, logo_url)")
+        .select("*, storefront_order_items(*), storefront_pages!storefront_orders_shop_id_fkey(name, slug, logo_url), delivery_job_id, wallet_reference_code, delivery_source, requires_delivery")
         .order("created_at", { ascending: false });
 
       if (orderId) {
@@ -141,7 +141,7 @@ export default function BuyerOrderTracker({ orderId, buyerEmail }: BuyerOrderTra
                     <XCircle className="h-3 w-3 mr-1" /> Cancelled
                   </Badge>
                 ) : order.status === "completed" ? (
-                  <Badge className="text-[10px] bg-emerald-500/10 text-emerald-600">
+                  <Badge className="text-[10px] bg-primary/10 text-primary">
                     <CheckCircle className="h-3 w-3 mr-1" /> Completed
                   </Badge>
                 ) : (
@@ -205,6 +205,29 @@ export default function BuyerOrderTracker({ orderId, buyerEmail }: BuyerOrderTra
                   </div>
                 ))}
               </div>
+
+              {/* V4: Delivery & transaction traceability */}
+              {order.delivery_job_id && (
+                <div className="flex items-center gap-2 bg-primary/5 rounded-lg px-3 py-2">
+                  <Truck className="h-3.5 w-3.5 text-primary" />
+                  <div className="flex-1">
+                    <p className="text-[10px] text-muted-foreground">Delivery Job</p>
+                    <p className="text-xs font-mono font-medium">{order.delivery_job_id.slice(0, 8).toUpperCase()}</p>
+                  </div>
+                  <Badge variant="outline" className="text-[8px]">
+                    {order.delivery_source || "trigger"}
+                  </Badge>
+                </div>
+              )}
+              {order.wallet_reference_code && (
+                <div className="flex items-center gap-2 bg-muted/30 rounded-lg px-3 py-2">
+                  <Hash className="h-3.5 w-3.5 text-muted-foreground" />
+                  <div>
+                    <p className="text-[10px] text-muted-foreground">Payment Reference</p>
+                    <p className="text-xs font-mono font-medium">{order.wallet_reference_code}</p>
+                  </div>
+                </div>
+              )}
 
               {/* Tracking & shipping info */}
               {order.tracking_number && (
