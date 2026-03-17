@@ -173,7 +173,7 @@ export default function ShopsPage() {
               <Store className="h-8 w-8 animate-pulse text-muted-foreground" />
             </div>
           }>
-            <ShopsMapView shops={filtered || []} radius={radius} onShopClick={(slug) => navigate(`/s/${slug}`)} />
+            <ShopsMapView shops={filtered || []} radiusKm={radius} onOpenShop={(slug) => navigate(`/s/${slug}`)} />
           </Suspense>
         </div>
       ) : (

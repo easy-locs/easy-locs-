@@ -148,7 +148,7 @@ export default function ShopsMapView({ shops, radiusKm = 25, onOpenShop }: Props
       marker.on("click", () => onOpenShop?.(shop.slug));
       cluster.addLayer(marker);
     });
-  }, [shops, radius, centerLat, centerLng, userLat, userLng, onShopClick]);
+  }, [shops, radiusKm, centerLat, centerLng, userLat, userLng, onOpenShop]);
 
   useEffect(() => {
     return () => {
