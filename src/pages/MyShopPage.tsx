@@ -249,7 +249,18 @@ export default function MyShopPage() {
                 <MultiStoreManager />
               </div>
             )}
-            {tab === "launch" && <LaunchAudit shopId={shop.id} />}
+            {tab === "launch" && (
+              <div className="space-y-4">
+                <LaunchAudit shopId={shop.id} />
+                <Card>
+                  <CardContent className="p-4">
+                    <Suspense fallback={<TabLoader />}>
+                      <BoostSelectorLazy targetType="shop" targetId={shop.id} shopId={shop.id} onSuccess={() => refetch()} />
+                    </Suspense>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
             {tab === "settings" && (
               <div className="space-y-4">
                 <Card>
