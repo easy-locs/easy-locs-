@@ -13,6 +13,7 @@ import SEOHead from "@/components/SEOHead";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Send, Shield, ArrowLeft, Receipt, CheckCircle2 } from "lucide-react";
+import { PaymentRequestQr } from "@/components/qr/UniversalQrWidgets";
 
 function formatMoney(amount: number, currency = "AED") {
   try {
