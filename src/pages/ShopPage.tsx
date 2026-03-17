@@ -346,6 +346,7 @@ export default function ShopPage() {
 
           {/* Secondary sections — lazy loaded */}
           <Suspense fallback={<SectionLoader />}>
+            <div className="mt-6">
               <BundleManager shopId={shop.id} mode="display" onAddBundle={(bundleId: string, price: number) => cart.addItem(bundleId, price)} />
             </div>
             <div className="mt-6">
