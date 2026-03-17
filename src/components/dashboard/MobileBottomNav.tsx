@@ -21,7 +21,11 @@ const MobileBottomNav = ({ onMenuOpen }: MobileBottomNavProps) => {
   ];
 
   const isActive = (path: string) => {
-    if (path === "/dashboard") return pathname === "/dashboard";
+    if (path === "/dashboard") return pathname === "/dashboard" || pathname === "/";
+    if (path === "/my-orders") return pathname === "/my-orders";
+    if (path === "/discover") return pathname.startsWith("/discover") || pathname.startsWith("/s/");
+    if (path === "/dashboard/my-shop") return pathname === "/dashboard/my-shop";
+    if (path === "/dashboard/settings") return pathname.startsWith("/dashboard/settings");
     return pathname.startsWith(path);
   };
 

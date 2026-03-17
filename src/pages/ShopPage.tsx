@@ -25,6 +25,8 @@ import { useState, useEffect, lazy, Suspense } from "react";
 import { toast } from "sonner";
 import { useStorefrontAnalytics } from "@/hooks/useStorefrontAnalytics";
 import { useShopTranslation } from "@/hooks/useShopTranslation";
+import { MobilePageHeader } from "@/components/ui/mobile-page-header";
+import { Link } from "react-router-dom";
 
 // Lazy-loaded secondary sections — only loaded when scrolled into view or needed
 const ShopReviews = lazy(() => import("@/components/storefront/ShopReviews"));
@@ -182,6 +184,20 @@ export default function ShopPage() {
       />
 
       <div className="min-h-screen bg-background pb-20">
+        {/* PASS137: Sticky header with back nav */}
+        <MobilePageHeader
+          title={shop.name}
+          subtitle={shop.city ? `${shop.city}${shop.country ? `, ${shop.country}` : ""}` : undefined}
+          backTo="/discover"
+          actions={
+            user?.id === shop.user_id ? (
+              <Link to="/dashboard/my-shop" className="text-[11px] text-primary font-medium hover:underline">
+                Manage →
+              </Link>
+            ) : undefined
+          }
+        />
+
         {/* Banner */}
         {shop.banner_url && (
           <div className="h-40 sm:h-56 bg-muted overflow-hidden">
