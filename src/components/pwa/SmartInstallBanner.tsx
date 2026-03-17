@@ -1,6 +1,6 @@
 /**
  * SmartInstallBanner — Non-intrusive bottom banner prompting PWA install.
- * PASS 176-178: Refined timing, accessibility, iOS coaching, useAppInstalled integration.
+ * v1: Clean implementation with proper i18n, accessibility, iOS coaching.
  */
 import { useState, useEffect, useCallback } from "react";
 import { useI18n } from "@/lib/i18n";
@@ -10,7 +10,7 @@ import { motion, AnimatePresence } from "framer-motion";
 
 const DISMISS_KEY = "pwa-banner-dismissed";
 const DISMISS_DURATION_MS = 7 * 24 * 60 * 60 * 1000;
-const SHOW_DELAY_MS = 20_000; // 20s — balanced: not intrusive, not too late
+const SHOW_DELAY_MS = 20_000;
 
 export default function SmartInstallBanner() {
   const { t } = useI18n();
@@ -20,13 +20,12 @@ export default function SmartInstallBanner() {
   const [isIOS, setIsIOS] = useState(false);
 
   useEffect(() => {
-    // Already installed — never show
     if (isInstalled) return;
 
-    // Desktop — skip
+    // Mobile only
     if (!/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) return;
 
-    // Dismissed recently
+    // Recently dismissed
     const dismissed = localStorage.getItem(DISMISS_KEY);
     if (dismissed && Date.now() - parseInt(dismissed) < DISMISS_DURATION_MS) return;
 
@@ -75,10 +74,7 @@ export default function SmartInstallBanner() {
           aria-live="polite"
         >
           <div className="mx-3 mb-3 bg-card border border-border rounded-2xl shadow-xl p-4 flex items-center gap-3">
-            <div
-              className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
-              style={{ background: "hsl(var(--accent) / 0.15)" }}
-            >
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 bg-accent/15">
               <Download className="h-5 w-5 text-accent" />
             </div>
 
