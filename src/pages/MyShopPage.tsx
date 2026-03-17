@@ -58,6 +58,8 @@ const SellerAnalyticsV2 = lazy(() => import("@/components/storefront/SellerAnaly
 const TrustScoreBadge = lazy(() => import("@/components/storefront/TrustScoreBadge"));
 const RiskFlagsDashboard = lazy(() => import("@/components/storefront/RiskFlagsDashboard"));
 const GrowthDashboard = lazy(() => import("@/components/storefront/GrowthDashboard"));
+const NotificationBell = lazy(() => import("@/components/storefront/NotificationBell"));
+const InvoiceList = lazy(() => import("@/components/storefront/InvoiceList"));
 // Settings-only (loaded inline since settings tab is simple)
 const AICategorySuggest = lazy(() => import("@/components/storefront/AICategorySuggest"));
 const PrivateInviteManager = lazy(() => import("@/components/storefront/PrivateInviteManager"));
