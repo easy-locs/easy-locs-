@@ -590,3 +590,153 @@ export default function QrScannerPage() {
     </div>
   );
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   QR Resolved Card — inline result for identity & commerce scans
+   ═══════════════════════════════════════════════════════════════ */
+
+function QrResolvedCard({
+  payload,
+  navigate,
+  openPayment,
+  onReset,
+}: {
+  payload: UniversalQrPayload;
+  navigate: ReturnType<typeof useNavigate>;
+  openPayment: ReturnType<typeof useUnifiedPayment>["openPayment"];
+  onReset: () => void;
+}) {
+  // ── User Profile / Add Contact ──
+  if (payload.action === "profile" || payload.action === "add_contact") {
+    const userId = payload.userId;
+    const name = payload.name || "User";
+    const isAddContact = payload.action === "add_contact";
+
+    return (
+      <div className="w-full max-w-[320px] space-y-4 text-center">
+        <div className="rounded-2xl border border-border bg-card p-6 space-y-3">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
+            <UserPlus className="h-7 w-7 text-primary" />
+          </div>
+          <p className="text-lg font-bold text-foreground">{name}</p>
+          <p className="text-xs text-muted-foreground">
+            {isAddContact ? "Add this person as a contact" : "User profile scanned"}
+          </p>
+        </div>
+
+        {/* Primary CTA */}
+        <Button
+          className="w-full h-12 text-base gap-2 font-semibold"
+          onClick={() => navigate(`/u/${userId}`)}
+        >
+          <UserPlus className="h-5 w-5" />
+          {isAddContact ? "Add Contact" : "View Profile"}
+        </Button>
+
+        {/* Secondary CTAs */}
+        <div className="grid grid-cols-2 gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-1.5"
+            onClick={() => navigate(`/u/${userId}`)}
+          >
+            <MessageCircle className="h-4 w-4" /> Chat
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-1.5"
+            onClick={async () => {
+              await openPayment({
+                amount: 0,
+                currency: "AED",
+                title: `Pay ${name}`,
+                recipientId: userId,
+                recipientName: name,
+                contextType: "generic",
+                contextId: userId,
+                metadata: { source: "qr_scan", qr_type: payload.action },
+              });
+            }}
+          >
+            <Send className="h-4 w-4" /> Pay
+          </Button>
+        </div>
+
+        <Button variant="ghost" size="sm" onClick={onReset} className="text-muted-foreground gap-1.5">
+          <RefreshCcw className="h-3.5 w-3.5" /> Scan again
+        </Button>
+      </div>
+    );
+  }
+
+  // ── Shop ──
+  if (payload.action === "shop") {
+    const slug = payload.shopSlug;
+
+    return (
+      <div className="w-full max-w-[320px] space-y-4 text-center">
+        <div className="rounded-2xl border border-border bg-card p-6 space-y-3">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-accent/20">
+            <Store className="h-7 w-7 text-accent-foreground" />
+          </div>
+          <p className="text-lg font-bold text-foreground capitalize">{slug.replace(/-/g, " ")}</p>
+          <p className="text-xs text-muted-foreground">Shop scanned via QR</p>
+        </div>
+
+        {/* Primary CTA */}
+        <Button
+          className="w-full h-12 text-base gap-2 font-semibold"
+          onClick={() => navigate(`/s/${slug}`)}
+        >
+          <ExternalLink className="h-5 w-5" /> Open Shop
+        </Button>
+
+        {/* Secondary CTAs */}
+        <div className="grid grid-cols-3 gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-1"
+            onClick={async () => {
+              await openPayment({
+                amount: 0,
+                currency: "AED",
+                title: "Shop Payment",
+                contextType: "shop",
+                contextId: slug,
+                metadata: { source: "qr_scan", qr_type: "shop_pay", shopSlug: slug },
+              });
+            }}
+          >
+            <Send className="h-3.5 w-3.5" /> Pay
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-1"
+            onClick={() => navigate(`/s/${slug}`)}
+          >
+            <Heart className="h-3.5 w-3.5" /> Follow
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-1"
+            onClick={() => navigate(`/s/${slug}`)}
+          >
+            <MessageCircle className="h-3.5 w-3.5" /> Message
+          </Button>
+        </div>
+
+        <Button variant="ghost" size="sm" onClick={onReset} className="text-muted-foreground gap-1.5">
+          <RefreshCcw className="h-3.5 w-3.5" /> Scan again
+        </Button>
+      </div>
+    );
+  }
+
+  // Fallback — should not reach here
+  return null;
+}
