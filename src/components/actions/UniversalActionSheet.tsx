@@ -207,7 +207,7 @@ function RequestMode() {
     setLoading(true);
     try {
       const req = await createPaymentRequest({
-        requester_id: user.id,
+        requesterId: user.id,
         amount: numAmount,
         currency,
         note: note.trim() || undefined,
