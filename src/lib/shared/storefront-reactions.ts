@@ -201,7 +201,7 @@ export function installStorefrontReactions(): () => void {
     })
   );
 
-  // ── Order completed → also refresh trust + growth + loyalty + invoices ──
+  // ── Order completed → also refresh trust + growth + loyalty + invoices + CRM ──
   unsubs.push(
     platformBus.on("storefront:order_completed", (event: PlatformEvent) => {
       const { shopId } = event.payload as any;
@@ -212,7 +212,16 @@ export function installStorefrontReactions(): () => void {
         ["risk-flags", shopId],
         ["shop-invoices", shopId],
         ["notif-log", shopId],
+        ["crm-customers", shopId],
       ]);
+    })
+  );
+
+  // ── PASS132: Order placed → refresh CRM ──
+  unsubs.push(
+    platformBus.on("storefront:order_placed", (event: PlatformEvent) => {
+      const { shopId } = event.payload as any;
+      invalidate([["crm-customers", shopId]]);
     })
   );
 
