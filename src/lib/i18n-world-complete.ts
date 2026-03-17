@@ -421,6 +421,9 @@ export const fiComplete: Record<string, string> = {
   "explore.radius.title": "Mistä etsit?", "explore.radius.worldwide": "Maailmanlaajuinen",
   "explore.radius.reset": "Nollaa", "explore.radius.apply": "Käytä", "explore.clear_all": "Tyhjennä kaikki",
   "page.listing.contact_direct": "Ota yhteyttä", "page.listing.call": "Soita", "page.listing.share": "Jaa",
+  "page.install.title": "Asenna Easy-Locs", "page.install.install_btn": "Asenna sovellus",
+  "page.install.back": "Takaisin", "page.install.continue_web": "Jatka selaimessa",
+  "pwa.banner.title": "Asenna Easy-Locs", "pwa.banner.install": "Asenna", "pwa.banner.dismiss": "Sulje",
 };
 
 // ─── Greek (EL) ───
