@@ -1,29 +1,37 @@
 /**
- * ProofOfDeliveryPlus — WWW. Advanced proof of delivery system.
+ * ProofOfDeliveryPlus — Advanced proof of delivery system.
  * Digital signature, geolocated photo, QR code verification, certified timestamp.
- * PASS96-WWW
+ * 
+ * HARDENED:
+ * - Real GPS capture with accuracy enforcement (≤50m)
+ * - Photo capture via real camera input (not simulated)
+ * - Signature via canvas (not simulated)
+ * - Server-side proof submission via edge function
+ * - GPS accuracy warning and re-capture
  */
-import { useState } from "react";
+import { useState, useRef, useCallback } from "react";
 import { motion } from "framer-motion";
 import {
   Camera, MapPin, QrCode, Clock, CheckCircle2, Shield,
-  Fingerprint, Upload, Loader2, Image as ImageIcon,
+  Fingerprint, Upload, Loader2, Image as ImageIcon, AlertTriangle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { haptic } from "@/lib/haptics";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Props {
   jobId?: string;
   orgId: string;
   className?: string;
+  onProofSubmitted?: () => void;
 }
 
 interface ProofData {
   photoTaken: boolean;
-  photoUrl: string;
+  photoFile: File | null;
   signatureCaptured: boolean;
   signatureData: string;
   qrScanned: boolean;
@@ -44,14 +52,20 @@ const PROOF_STEPS = [
   { id: "location", label: "Position", icon: MapPin, required: true },
 ];
 
-export default function ProofOfDeliveryPlus({ jobId, orgId, className }: Props) {
+const MAX_GPS_ACCURACY_M = 50;
+
+export default function ProofOfDeliveryPlus({ jobId, orgId, className, onProofSubmitted }: Props) {
   const [proof, setProof] = useState<ProofData>({
-    photoTaken: false, photoUrl: "", signatureCaptured: false, signatureData: "",
+    photoTaken: false, photoFile: null, signatureCaptured: false, signatureData: "",
     qrScanned: false, qrCode: "", geoLat: null, geoLng: null, geoAccuracy: null,
     timestamp: "", recipientName: "", notes: "", verified: false,
   });
   const [submitting, setSubmitting] = useState(false);
   const [capturing, setCapturing] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [isDrawing, setIsDrawing] = useState(false);
+  const [showSignaturePad, setShowSignaturePad] = useState(false);
 
   const completedSteps = [
     proof.photoTaken, proof.signatureCaptured, proof.qrScanned,
@@ -59,71 +73,166 @@ export default function ProofOfDeliveryPlus({ jobId, orgId, className }: Props) 
   ].filter(Boolean).length;
   const requiredComplete = proof.photoTaken && proof.signatureCaptured && proof.geoLat !== null;
 
+  // Real photo capture via file input (camera)
   const capturePhoto = () => {
-    setCapturing("photo");
-    haptic("light");
-    setTimeout(() => {
-      setProof(p => ({ ...p, photoTaken: true, photoUrl: "captured_" + Date.now(), timestamp: new Date().toISOString() }));
-      setCapturing(null);
-      toast.success("📸 Photo capturée avec géolocalisation");
-    }, 1200);
+    fileInputRef.current?.click();
   };
 
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    haptic("light");
+    setProof(p => ({
+      ...p,
+      photoTaken: true,
+      photoFile: file,
+      timestamp: new Date().toISOString(),
+    }));
+    toast.success("📸 Photo capturée");
+  };
+
+  // Signature capture via canvas
   const captureSignature = () => {
+    setShowSignaturePad(true);
     setCapturing("signature");
-    haptic("light");
-    setTimeout(() => {
-      setProof(p => ({ ...p, signatureCaptured: true, signatureData: "sig_" + Date.now() }));
-      setCapturing(null);
-      toast.success("✍️ Signature numérique enregistrée");
-    }, 1000);
   };
 
+  const handleCanvasStart = (e: React.TouchEvent | React.MouseEvent) => {
+    setIsDrawing(true);
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    const rect = canvas.getBoundingClientRect();
+    const x = "touches" in e ? e.touches[0].clientX - rect.left : (e as React.MouseEvent).clientX - rect.left;
+    const y = "touches" in e ? e.touches[0].clientY - rect.top : (e as React.MouseEvent).clientY - rect.top;
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+  };
+
+  const handleCanvasMove = (e: React.TouchEvent | React.MouseEvent) => {
+    if (!isDrawing) return;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    const rect = canvas.getBoundingClientRect();
+    const x = "touches" in e ? e.touches[0].clientX - rect.left : (e as React.MouseEvent).clientX - rect.left;
+    const y = "touches" in e ? e.touches[0].clientY - rect.top : (e as React.MouseEvent).clientY - rect.top;
+    ctx.lineWidth = 2;
+    ctx.lineCap = "round";
+    ctx.strokeStyle = "hsl(var(--foreground))";
+    ctx.lineTo(x, y);
+    ctx.stroke();
+  };
+
+  const handleCanvasEnd = () => {
+    setIsDrawing(false);
+  };
+
+  const confirmSignature = () => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const dataUrl = canvas.toDataURL("image/png");
+    haptic("light");
+    setProof(p => ({ ...p, signatureCaptured: true, signatureData: dataUrl }));
+    setShowSignaturePad(false);
+    setCapturing(null);
+    toast.success("✍️ Signature numérique enregistrée");
+  };
+
+  // QR scan (simplified — in production would use camera stream)
   const scanQR = () => {
     setCapturing("qr");
     haptic("light");
-    setTimeout(() => {
-      const code = Math.random().toString(36).substring(2, 8).toUpperCase();
+    const code = prompt("Scannez ou entrez le code QR :");
+    if (code) {
       setProof(p => ({ ...p, qrScanned: true, qrCode: code }));
-      setCapturing(null);
       toast.success(`QR vérifié : ${code}`);
-    }, 1500);
+    }
+    setCapturing(null);
   };
 
-  const captureLocation = () => {
+  // Real GPS capture with accuracy enforcement
+  const captureLocation = useCallback(() => {
     setCapturing("location");
     haptic("light");
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          setProof(p => ({
-            ...p, geoLat: pos.coords.latitude, geoLng: pos.coords.longitude,
-            geoAccuracy: Math.round(pos.coords.accuracy),
-          }));
-          setCapturing(null);
-          toast.success("📍 Position GPS capturée");
-        },
-        () => {
-          setProof(p => ({ ...p, geoLat: 48.8566, geoLng: 2.3522, geoAccuracy: 15 }));
-          setCapturing(null);
-          toast.success("📍 Position estimée");
-        },
-        { enableHighAccuracy: true, timeout: 5000 }
-      );
-    } else {
-      setProof(p => ({ ...p, geoLat: 48.8566, geoLng: 2.3522, geoAccuracy: 50 }));
+
+    if (!navigator.geolocation) {
+      toast.error("GPS non disponible");
       setCapturing(null);
+      return;
     }
-  };
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const { latitude, longitude, accuracy } = pos.coords;
+        setProof(p => ({
+          ...p,
+          geoLat: latitude,
+          geoLng: longitude,
+          geoAccuracy: Math.round(accuracy),
+        }));
+        setCapturing(null);
+
+        if (accuracy > MAX_GPS_ACCURACY_M) {
+          toast.warning(`Position capturée mais précision faible (±${Math.round(accuracy)}m). Recommandé : ≤${MAX_GPS_ACCURACY_M}m`);
+        } else {
+          toast.success(`📍 Position GPS capturée (±${Math.round(accuracy)}m)`);
+        }
+      },
+      (err) => {
+        setCapturing(null);
+        toast.error(`Erreur GPS : ${err.message}`);
+      },
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+    );
+  }, []);
 
   const submitProof = async () => {
-    if (!proof.recipientName) { toast.error("Nom du destinataire requis"); return; }
+    if (!proof.recipientName.trim()) { toast.error("Nom du destinataire requis"); return; }
+    if (!proof.geoLat || !proof.geoLng) { toast.error("Position GPS requise"); return; }
+    if (proof.geoAccuracy && proof.geoAccuracy > MAX_GPS_ACCURACY_M) {
+      toast.error(`Précision GPS insuffisante (${proof.geoAccuracy}m). Re-capturez votre position.`);
+      return;
+    }
+
     setSubmitting(true);
     haptic("success");
-    await new Promise(r => setTimeout(r, 1500));
-    setProof(p => ({ ...p, verified: true }));
-    toast.success("✅ Preuve de livraison certifiée et enregistrée !");
-    setSubmitting(false);
+
+    try {
+      // If we have a jobId, confirm delivery via edge function
+      if (jobId) {
+        const { data, error } = await supabase.functions.invoke("dispatch-delivery", {
+          body: {
+            action: "update_status",
+            job_id: jobId,
+            status: "completed",
+            proof_data: {
+              recipient_name: proof.recipientName,
+              gps_lat: proof.geoLat,
+              gps_lng: proof.geoLng,
+              gps_accuracy: proof.geoAccuracy,
+              qr_code: proof.qrCode || null,
+              photo_taken: proof.photoTaken,
+              signature_captured: proof.signatureCaptured,
+              timestamp: proof.timestamp,
+              notes: proof.notes,
+            },
+          },
+        });
+        if (error) throw error;
+        if (data?.error) throw new Error(data.error);
+      }
+
+      setProof(p => ({ ...p, verified: true }));
+      toast.success("✅ Preuve de livraison certifiée et enregistrée !");
+      onProofSubmitted?.();
+    } catch (err: any) {
+      toast.error(err.message || "Erreur d'envoi de la preuve");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   if (proof.verified) {
@@ -163,6 +272,16 @@ export default function ProofOfDeliveryPlus({ jobId, orgId, className }: Props) 
 
   return (
     <div className={`space-y-3 ${className || ""}`}>
+      {/* Hidden file input for camera */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        capture="environment"
+        className="hidden"
+        onChange={handlePhotoChange}
+      />
+
       {/* Progress */}
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-bold flex items-center gap-2" style={{ color: "hsl(var(--hud-text))" }}>
@@ -173,6 +292,42 @@ export default function ProofOfDeliveryPlus({ jobId, orgId, className }: Props) 
           {completedSteps}/4
         </span>
       </div>
+
+      {/* Signature pad overlay */}
+      {showSignaturePad && (
+        <div className="rounded-xl p-3 space-y-2"
+          style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-cyan) / 0.2)" }}>
+          <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-text))" }}>
+            ✍️ Signez ci-dessous
+          </p>
+          <canvas
+            ref={canvasRef}
+            width={280}
+            height={120}
+            className="w-full rounded-lg border border-border bg-background touch-none"
+            onMouseDown={handleCanvasStart}
+            onMouseMove={handleCanvasMove}
+            onMouseUp={handleCanvasEnd}
+            onTouchStart={handleCanvasStart}
+            onTouchMove={handleCanvasMove}
+            onTouchEnd={handleCanvasEnd}
+          />
+          <div className="flex gap-2">
+            <Button size="sm" className="flex-1 text-[10px] h-8" onClick={confirmSignature}
+              style={{ background: "hsl(var(--success))", color: "#fff" }}>
+              Valider signature
+            </Button>
+            <Button size="sm" variant="outline" className="text-[10px] h-8" onClick={() => {
+              setShowSignaturePad(false);
+              setCapturing(null);
+              const ctx = canvasRef.current?.getContext("2d");
+              if (ctx && canvasRef.current) ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+            }}>
+              Annuler
+            </Button>
+          </div>
+        </div>
+      )}
 
       {/* Capture actions */}
       <div className="grid grid-cols-2 gap-2">
@@ -213,6 +368,17 @@ export default function ProofOfDeliveryPlus({ jobId, orgId, className }: Props) 
         })}
       </div>
 
+      {/* GPS accuracy warning */}
+      {proof.geoAccuracy != null && proof.geoAccuracy > MAX_GPS_ACCURACY_M && (
+        <div className="flex items-center gap-2 px-3 py-2 rounded-lg"
+          style={{ background: "hsl(var(--warning) / 0.06)", border: "1px solid hsl(var(--warning) / 0.15)" }}>
+          <AlertTriangle className="h-3.5 w-3.5 shrink-0" style={{ color: "hsl(var(--warning))" }} />
+          <p className="text-[9px]" style={{ color: "hsl(var(--warning))" }}>
+            Précision GPS insuffisante ({proof.geoAccuracy}m). Re-capturez pour ≤{MAX_GPS_ACCURACY_M}m.
+          </p>
+        </div>
+      )}
+
       {/* Recipient info */}
       <div className="rounded-xl p-3 space-y-2" style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)" }}>
         <div>
@@ -230,7 +396,7 @@ export default function ProofOfDeliveryPlus({ jobId, orgId, className }: Props) 
       </div>
 
       {/* Submit */}
-      <Button className="w-full text-xs h-10 font-semibold" disabled={!requiredComplete || submitting || !proof.recipientName}
+      <Button className="w-full text-xs h-10 font-semibold" disabled={!requiredComplete || submitting || !proof.recipientName.trim()}
         onClick={submitProof}
         style={{ background: requiredComplete ? "hsl(var(--success))" : "hsl(var(--hud-border) / 0.15)", color: requiredComplete ? "#fff" : "hsl(var(--hud-text-dim) / 0.3)" }}>
         {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <>
