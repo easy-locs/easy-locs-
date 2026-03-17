@@ -210,7 +210,7 @@ function RequestMode() {
         requesterId: user.id,
         amount: numAmount,
         currency,
-        note: note.trim() || undefined,
+        title: note.trim() || undefined,
       });
 
       if (req?.id) {
