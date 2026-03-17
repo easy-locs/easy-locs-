@@ -1069,6 +1069,9 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
               <Button size="sm" variant="outline" className="text-[11px] h-7 min-h-[44px] sm:min-h-0 gap-1.5 rounded-full px-3 shrink-0" style={{ borderColor: "hsl(var(--hud-border) / 0.15)", color: "hsl(var(--hud-text))", background: "hsl(var(--hud-surface))" }} onClick={() => setPaymentLinkDialog(true)}>
                 <CreditCard className="h-3 w-3" /> {t("orbit.payment") || "Payment"}
               </Button>
+              <Button size="sm" variant="outline" className="text-[11px] h-7 min-h-[44px] sm:min-h-0 gap-1.5 rounded-full px-3 shrink-0" style={{ borderColor: "hsl(var(--hud-purple) / 0.2)", color: "hsl(var(--hud-purple))", background: "hsl(var(--hud-purple) / 0.06)" }} onClick={() => setRequestMoneyDialog(true)}>
+                <CreditCard className="h-3 w-3" /> Request
+              </Button>
               {thread.bookingStatus === "pending" && (
                 <Button size="sm" className="text-[11px] h-7 min-h-[44px] sm:min-h-0 gap-1.5 rounded-full px-3 shrink-0" style={{ background: "hsl(var(--hud-success) / 0.15)", color: "hsl(var(--hud-success))", border: "1px solid hsl(var(--hud-success) / 0.25)" }} onClick={() => handleBookingAction("confirm")}>
                   <CalendarCheck className="h-3 w-3" /> {t("orbit.confirm") || "Confirm"}
