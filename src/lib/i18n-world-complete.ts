@@ -608,6 +608,9 @@ export const skComplete: Record<string, string> = {
   "explore.radius.title": "Kde hľadáte?", "explore.radius.worldwide": "Celosvetovo",
   "explore.radius.reset": "Obnoviť", "explore.radius.apply": "Použiť", "explore.clear_all": "Vymazať",
   "page.listing.contact_direct": "Priamy kontakt", "page.listing.call": "Volať", "page.listing.share": "Zdieľať",
+  "page.install.title": "Nainštalovať Easy-Locs", "page.install.install_btn": "Nainštalovať",
+  "page.install.back": "Späť", "page.install.continue_web": "Pokračovať na webe",
+  "pwa.banner.title": "Nainštalovať Easy-Locs", "pwa.banner.install": "Nainštalovať", "pwa.banner.dismiss": "Zavrieť",
 };
 
 // ─── Hebrew (HE) ───
