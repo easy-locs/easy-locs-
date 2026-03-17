@@ -2,7 +2,7 @@
  * ChatMessageBubble — Premium Signal-grade message bubble.
  * Handles text, voice, media, payment, email, system, view-once messages with unified HUD design.
  */
-import { memo, useRef, useCallback, useEffect, useState } from "react";
+import { memo, useRef, useCallback, useEffect, useState, useMemo } from "react";
 import {
   Check, CheckCheck, Globe, Loader2, Mail, WifiOff, Lock,
   ShieldCheck, CreditCard, EyeOff, Timer, Shield, FileText, MapPin, ExternalLink,
@@ -14,6 +14,7 @@ import ViewOnceMedia from "./ViewOnceMedia";
 import OrbitEncryptedIndicator from "@/components/orbit/OrbitEncryptedIndicator";
 import { haptic } from "@/lib/haptics";
 import { getMessagePolicy, shouldHideMessage, type SecurityLevel } from "@/lib/message-security";
+import { ChatPaymentRequestCard } from "@/components/chat/ChatPaymentWidgets";
 import type { ChatMessage } from "./types";
 import { MESSAGE_CATEGORIES } from "./types";
 
