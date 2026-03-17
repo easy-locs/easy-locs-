@@ -1,62 +1,89 @@
 /**
- * QrScannerPage — Full-screen QR scanner using html5-qrcode.
- * For user_pay/shop_pay: opens UnifiedPayment modal directly (no intermediate page).
- * For other types: navigates to deep-link routes.
+ * QrScannerPage — Mobile-hardened QR scanner.
+ * Camera starts only on explicit user tap (required for iOS Safari).
+ * Robust lifecycle: no double-start, no race conditions, safe unmount.
  */
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Camera, CameraOff, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, Camera, CameraOff, RefreshCcw, CheckCircle2 } from "lucide-react";
 import { Html5Qrcode } from "html5-qrcode";
 import { decodeQrPayload } from "@/payments/payment-request-hooks";
 import { useUnifiedPayment, type PaymentResult } from "@/payments/UnifiedPaymentSystem";
 
-type ScanState = "idle" | "starting" | "scanning" | "success" | "paying" | "paid" | "error";
+type ScanState = "idle" | "starting" | "scanning" | "paying" | "paid" | "stopped" | "error";
 
 export default function QrScannerPage() {
   const navigate = useNavigate();
   const { openPayment } = useUnifiedPayment();
+
   const scannerRef = useRef<Html5Qrcode | null>(null);
-  const handledRef = useRef(false);
+  const startingRef = useRef(false);
+  const startedRef = useRef(false);
+  const mountedRef = useRef(true);
   const regionId = "qr-reader-region";
 
   const [state, setState] = useState<ScanState>("idle");
   const [error, setError] = useState("");
   const [lastText, setLastText] = useState("");
-  const [payResult, setPayResult] = useState<PaymentResult | null>(null);
+  const [txId, setTxId] = useState("");
 
-  // Use refs for callbacks to avoid re-creating the effect
+  // Stable refs for callbacks used inside scanner
   const navigateRef = useRef(navigate);
   const openPaymentRef = useRef(openPayment);
   navigateRef.current = navigate;
   openPaymentRef.current = openPayment;
 
-  const handleQrResult = useCallback(async (raw: string) => {
-    if (handledRef.current) return;
-    handledRef.current = true;
+  const stopScanner = useCallback(async () => {
+    const scanner = scannerRef.current;
+    if (!scanner) return;
 
+    try {
+      if (startedRef.current) {
+        await scanner.stop();
+      }
+    } catch {}
+
+    try {
+      scanner.clear();
+    } catch {}
+
+    startedRef.current = false;
+    startingRef.current = false;
+    scannerRef.current = null;
+    if (mountedRef.current) setState("stopped");
+  }, []);
+
+  const handleQrResult = useCallback(async (raw: string) => {
     const payload = decodeQrPayload(raw);
 
     if (payload) {
       if (payload.type === "user_pay") {
-        setState("paying");
+        if (mountedRef.current) setState("paying");
         const result = await openPaymentRef.current({
           amount: payload.amount || 0,
           currency: payload.currency || "AED",
           title: "QR Payment",
           subtitle: "Scanned payment",
           recipientId: payload.userId,
+          recipientName: "QR Recipient",
           contextType: "generic",
           contextId: payload.userId,
           metadata: { source: "qr_scan", qr_type: "user_pay" },
         });
-        setPayResult(result);
-        setState(result.ok ? "paid" : "error");
-        if (!result.ok && result.error) setError(result.error);
+        if (mountedRef.current) {
+          if (result.ok) {
+            setTxId(result.transactionId || "");
+            setState("paid");
+          } else {
+            setError(result.error || "Payment failed");
+            setState("error");
+          }
+        }
         return;
       }
 
       if (payload.type === "shop_pay") {
-        setState("paying");
+        if (mountedRef.current) setState("paying");
         const result = await openPaymentRef.current({
           amount: payload.amount || 0,
           currency: payload.currency || "AED",
@@ -67,9 +94,15 @@ export default function QrScannerPage() {
           contextId: payload.shopSlug,
           metadata: { source: "qr_scan", qr_type: "shop_pay", shopSlug: payload.shopSlug },
         });
-        setPayResult(result);
-        setState(result.ok ? "paid" : "error");
-        if (!result.ok && result.error) setError(result.error);
+        if (mountedRef.current) {
+          if (result.ok) {
+            setTxId(result.transactionId || "");
+            setState("paid");
+          } else {
+            setError(result.error || "Payment failed");
+            setState("error");
+          }
+        }
         return;
       }
 
@@ -87,80 +120,107 @@ export default function QrScannerPage() {
       }
     }
 
-    // Fallback: support raw URLs
+    // Fallback: raw URLs
     if (raw.startsWith("http://") || raw.startsWith("https://")) {
       try {
         const url = new URL(raw);
-        const internal = `${url.pathname}${url.search}${url.hash}`;
-        navigateRef.current(internal, { replace: true });
+        navigateRef.current(`${url.pathname}${url.search}${url.hash}`, { replace: true });
         return;
       } catch {}
     }
 
-    setState("error");
-    setError("Unsupported QR format");
+    if (mountedRef.current) {
+      setError("Unsupported QR format");
+      setState("error");
+    }
   }, []);
 
-  useEffect(() => {
-    let mounted = true;
-    handledRef.current = false;
+  const startScanner = useCallback(async () => {
+    if (startingRef.current || startedRef.current) return;
 
-    async function startScanner() {
-      try {
-        setState("starting");
-        setError("");
+    setError("");
+    setLastText("");
+    setTxId("");
+    setState("starting");
+    startingRef.current = true;
 
-        // Small delay to ensure DOM element is mounted
-        await new Promise(r => setTimeout(r, 300));
-        if (!mounted) return;
+    // Ensure DOM element exists
+    await new Promise(r => setTimeout(r, 100));
+    if (!mountedRef.current) return;
 
-        const el = document.getElementById(regionId);
-        if (!el) {
-          setState("error");
-          setError("Scanner container not found");
-          return;
-        }
-
-        const scanner = new Html5Qrcode(regionId);
-        scannerRef.current = scanner;
-
-        await scanner.start(
-          { facingMode: "environment" },
-          {
-            fps: 10,
-            qrbox: { width: 240, height: 240 },
-            aspectRatio: 1.0,
-          },
-          (decodedText) => {
-            if (!mounted || handledRef.current) return;
-            setLastText(decodedText);
-            setState("success");
-            try { scanner.stop(); } catch {}
-            handleQrResult(decodedText);
-          },
-          () => {}
-        );
-
-        if (mounted) setState("scanning");
-      } catch (err: any) {
-        if (!mounted) return;
-        setState("error");
-        setError(err?.message || "Unable to access camera");
-      }
+    const el = document.getElementById(regionId);
+    if (!el) {
+      startingRef.current = false;
+      setState("error");
+      setError("Scanner container not found. Please try again.");
+      return;
     }
 
-    startScanner();
+    try {
+      const scanner = new Html5Qrcode(regionId);
+      scannerRef.current = scanner;
 
+      await scanner.start(
+        { facingMode: "environment" },
+        {
+          fps: 10,
+          qrbox: { width: 240, height: 240 },
+          aspectRatio: 1,
+        },
+        async (decodedText) => {
+          if (!startedRef.current || !mountedRef.current) return;
+          setLastText(decodedText);
+          startedRef.current = false; // prevent double-handle
+
+          try { await scanner.stop(); } catch {}
+          try { scanner.clear(); } catch {}
+          scannerRef.current = null;
+          startingRef.current = false;
+
+          await handleQrResult(decodedText);
+        },
+        () => {} // ignore per-frame failures
+      );
+
+      startedRef.current = true;
+      startingRef.current = false;
+      if (mountedRef.current) setState("scanning");
+    } catch (err: any) {
+      startingRef.current = false;
+      startedRef.current = false;
+      if (mountedRef.current) {
+        setState("error");
+        const msg = err?.message || "";
+        if (msg.includes("NotAllowedError") || msg.includes("Permission")) {
+          setError("Camera permission denied. Please allow camera access in your browser settings.");
+        } else if (msg.includes("NotFoundError") || msg.includes("no camera")) {
+          setError("No camera found on this device.");
+        } else if (msg.includes("NotReadableError")) {
+          setError("Camera is in use by another app. Close other apps and try again.");
+        } else {
+          setError(msg || "Unable to access camera. Check permissions and HTTPS.");
+        }
+      }
+    }
+  }, [handleQrResult]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    mountedRef.current = true;
     return () => {
-      mounted = false;
+      mountedRef.current = false;
       const scanner = scannerRef.current;
       if (scanner) {
-        scanner.stop().catch(() => {});
+        try { scanner.stop(); } catch {}
         try { scanner.clear(); } catch {}
         scannerRef.current = null;
+        startedRef.current = false;
+        startingRef.current = false;
       }
     };
-  }, []); // stable — no deps
+  }, []);
+
+  const isSecure = typeof window !== "undefined" ? window.isSecureContext : true;
 
   return (
     <div className="fixed inset-0 z-[200] flex flex-col bg-background">
@@ -182,31 +242,34 @@ export default function QrScannerPage() {
         </div>
       </div>
 
-      {/* Scanner / Result */}
-      <div className="flex-1 flex flex-col items-center justify-center p-6">
-        {state === "paid" && payResult?.ok ? (
-          /* Success state */
+      {/* Body */}
+      <div className="flex-1 flex flex-col items-center justify-center p-6 overflow-auto">
+        {!isSecure && (
+          <p className="mb-4 text-xs text-destructive text-center px-4">
+            Camera scanning requires HTTPS or a secure app context.
+          </p>
+        )}
+
+        {state === "paid" ? (
           <div className="text-center space-y-4">
             <div className="w-16 h-16 rounded-full bg-emerald-500/10 flex items-center justify-center mx-auto">
               <CheckCircle2 className="h-8 w-8 text-emerald-500" />
             </div>
             <p className="text-lg font-bold text-foreground">Payment sent!</p>
-            {payResult.transactionId && (
-              <p className="text-[11px] text-muted-foreground">
-                TX: {payResult.transactionId.slice(0, 12)}…
-              </p>
+            {txId && (
+              <p className="text-[11px] text-muted-foreground">TX: {txId.slice(0, 16)}…</p>
             )}
             <button
               type="button"
               onClick={() => navigate(-1)}
-              className="rounded-2xl bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground transition hover:opacity-90"
+              className="mt-5 rounded-2xl bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground transition hover:opacity-90"
             >
               Done
             </button>
           </div>
         ) : (
-          /* Scanner viewport */
           <>
+            {/* Scanner viewport */}
             <div className="w-full max-w-[300px] aspect-square rounded-2xl overflow-hidden border-2 border-border/50 bg-black/5 relative">
               <div id={regionId} className="w-full h-full" />
 
@@ -219,26 +282,63 @@ export default function QrScannerPage() {
                   <CameraOff className="h-4 w-4 text-muted-foreground" />
                 )}
                 <span className="text-xs font-medium text-foreground">
-                  {state === "idle" && "Preparing camera"}
+                  {state === "idle" && "Tap Start to begin scanning"}
                   {state === "starting" && "Starting camera…"}
-                  {state === "scanning" && "Point at a QR code"}
-                  {state === "success" && "QR detected ✓"}
+                  {state === "scanning" && "Point camera at QR code"}
                   {state === "paying" && "Processing payment…"}
+                  {state === "stopped" && "Scanner stopped"}
                   {state === "error" && "Scanner error"}
                 </span>
               </div>
             </div>
 
             {error && (
-              <p className="mt-4 text-sm text-destructive text-center max-w-[280px]">
-                {error}
-              </p>
+              <p className="mt-4 text-sm text-destructive text-center max-w-[280px]">{error}</p>
             )}
 
-            {lastText && (state === "success" || state === "paying") && (
+            {lastText && (
               <p className="mt-3 text-[11px] text-muted-foreground text-center break-all max-w-[280px]">
                 {lastText}
               </p>
+            )}
+
+            {/* Action buttons */}
+            <div className="mt-6 flex gap-3 w-full max-w-[300px]">
+              <button
+                type="button"
+                disabled={state === "starting" || state === "scanning" || state === "paying"}
+                onClick={startScanner}
+                className="flex-1 flex items-center justify-center gap-2 rounded-2xl bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground transition hover:opacity-90 disabled:opacity-40"
+              >
+                <Camera className="h-4 w-4" />
+                Start Scanner
+              </button>
+              <button
+                type="button"
+                disabled={state !== "scanning" && state !== "starting"}
+                onClick={stopScanner}
+                className="flex-1 flex items-center justify-center gap-2 rounded-2xl border border-border px-4 py-3 text-sm font-semibold text-foreground transition hover:bg-muted disabled:opacity-40"
+              >
+                <CameraOff className="h-4 w-4" />
+                Stop
+              </button>
+            </div>
+
+            {/* Reset */}
+            {(state === "error" || state === "stopped") && (
+              <button
+                type="button"
+                onClick={() => {
+                  setError("");
+                  setLastText("");
+                  setTxId("");
+                  setState("idle");
+                }}
+                className="mt-3 flex items-center justify-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition"
+              >
+                <RefreshCcw className="h-3.5 w-3.5" />
+                Reset
+              </button>
             )}
           </>
         )}
