@@ -1,12 +1,16 @@
 /**
  * UniversalQrWidgets — Reusable QR display + scan entry point widgets.
- * Used across profile, wallet, shop, and chat for universal QR payment.
+ * Powered by the unified QR engine (src/lib/qr-engine.ts).
  */
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import QRCode from "react-qr-code";
 import { QrCode, ScanLine, Copy, Check } from "lucide-react";
-import { encodeQrPayload, type QrPayload } from "@/payments/payment-request-hooks";
+import {
+  type UniversalQrPayload,
+  toResolveUrl,
+  qr,
+} from "@/lib/qr-engine";
 import { Button } from "@/components/ui/button";
 
 /* ── Scan QR Button ──────────────────────────────────────────── */
@@ -46,14 +50,13 @@ export function MyQrCodeCard({
   size = 160,
   compact = false,
 }: {
-  payload: QrPayload;
+  payload: UniversalQrPayload;
   title: string;
   subtitle?: string;
   size?: number;
   compact?: boolean;
 }) {
-  const raw = encodeQrPayload(payload);
-  const link = `${window.location.origin}/qr/resolve?data=${encodeURIComponent(raw)}`;
+  const link = toResolveUrl(payload);
   const [copied, setCopied] = useState(false);
 
   const handleCopy = async () => {
@@ -100,7 +103,7 @@ export function UserProfileQr({
 }) {
   return (
     <MyQrCodeCard
-      payload={{ type: "user_pay", userId }}
+      payload={qr.payUser(userId, { name: displayName })}
       title={displayName ? `Pay ${displayName}` : "My payment QR"}
       subtitle="Scan to send payment"
       size={compact ? 120 : 160}
@@ -126,12 +129,7 @@ export function ShopQr({
 }) {
   return (
     <MyQrCodeCard
-      payload={{
-        type: "shop_pay",
-        shopSlug,
-        ...(amount ? { amount } : {}),
-        ...(currency ? { currency } : {}),
-      }}
+      payload={qr.payShop(shopSlug, { amount, currency, name: shopName })}
       title={shopName ? `Pay ${shopName}` : "Shop QR"}
       subtitle="Scan to pay this shop"
       size={compact ? 120 : 160}
@@ -153,7 +151,7 @@ export function PaymentRequestQr({
 }) {
   return (
     <MyQrCodeCard
-      payload={{ type: "payment_request", requestId }}
+      payload={qr.paymentRequest(requestId)}
       title={title || "Payment request"}
       subtitle="Scan to fulfill this request"
       size={compact ? 120 : 160}
@@ -169,7 +167,7 @@ export function QrActionRow({
   qrTitle,
   className,
 }: {
-  payload: QrPayload;
+  payload: UniversalQrPayload;
   qrTitle: string;
   className?: string;
 }) {

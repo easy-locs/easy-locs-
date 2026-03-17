@@ -9,7 +9,8 @@ import { useQuery } from "@tanstack/react-query";
 import QRCode from "react-qr-code";
 import { supabase } from "@/integrations/supabase/client";
 import { UnifiedPayButton } from "@/payments/UnifiedPaymentSystem";
-import { markPaymentRequestPaid, encodeQrPayload, type QrPayload } from "@/payments/payment-request-hooks";
+import { markPaymentRequestPaid } from "@/payments/payment-request-hooks";
+import { type UniversalQrPayload, toResolveUrl } from "@/lib/qr-engine";
 import { RequestMoneyModal } from "@/components/chat/RequestMoneyModal";
 import { sendPaymentRequestMessageToThread } from "@/components/chat/chat-payment-bridge";
 import { useAuth } from "@/contexts/AuthContext";
@@ -202,11 +203,10 @@ export function QrPayCard({
   payload,
   title,
 }: {
-  payload: QrPayload;
+  payload: UniversalQrPayload;
   title: string;
 }) {
-  const raw = encodeQrPayload(payload);
-  const link = `${window.location.origin}/qr/resolve?data=${encodeURIComponent(raw)}`;
+  const link = toResolveUrl(payload);
   const [copied, setCopied] = useState(false);
 
   const handleCopy = async () => {
