@@ -97,6 +97,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
   const [paymentLinkDialog, setPaymentLinkDialog] = useState(false);
   const [paymentAmount, setPaymentAmount] = useState("");
   const [paymentDescription, setPaymentDescription] = useState("");
+  const [requestMoneyDialog, setRequestMoneyDialog] = useState(false);
   const [sendingPaymentLink, setSendingPaymentLink] = useState(false);
   const [contextMessage, setContextMessage] = useState<{ msgId: string; content: string; isMe: boolean; createdAt: string; hasAudio?: boolean; hasAttachment?: boolean; senderId?: string; canModerate?: boolean; isStarred?: boolean } | null>(null);
   const [hiddenMsgIds, setHiddenMsgIds] = useState<Set<string>>(new Set());
