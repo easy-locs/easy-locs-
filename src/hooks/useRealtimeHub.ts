@@ -32,7 +32,8 @@ export function useRealtimeHub() {
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastMsgToast = useRef("");
 
-  // Stable refresh callback that doesn't change on every render
+  const refreshModuleRef = useRef(refreshModule);
+  refreshModuleRef.current = refreshModule;
   const refreshRef = useRef(refresh);
   refreshRef.current = refresh;
   const addAlertRef = useRef(addAlert);
