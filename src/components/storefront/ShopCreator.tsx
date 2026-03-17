@@ -115,6 +115,16 @@ export default function ShopCreator() {
             rows={3}
           />
         </div>
+        <div>
+          <Label className="text-xs">Shop Logo URL *</Label>
+          <Input
+            value={logoUrl}
+            onChange={e => setLogoUrl(e.target.value)}
+            placeholder="https://example.com/logo.png"
+            className="mt-1"
+          />
+          {!logoUrl && <p className="text-[10px] text-destructive mt-1">⚠️ Logo is required to create a shop</p>}
+        </div>
         <div className="grid grid-cols-2 gap-3">
           <div>
             <Label className="text-xs">City</Label>
