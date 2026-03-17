@@ -292,8 +292,6 @@ const App = () => (
                <Route path="/my-orders" element={<MyOrdersPage />} />
                <Route path="/pos" element={<POSPage />} />
                <Route path="/property-hub" element={<PropertyManagementHub />} />
-               <Route path="/business" element={<ProtectedRoute><MyBusinessHub /></ProtectedRoute>} />
-               <Route path="/business/my-shops" element={<ProtectedRoute><MyShopsPage /></ProtectedRoute>} />
 
               {/* SEO landing pages */}
               <Route path="/property-management" element={<PropertyManagement />} />
