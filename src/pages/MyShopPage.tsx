@@ -220,6 +220,7 @@ export default function MyShopPage() {
             )}
             {tab === "analytics" && (
               <div className="space-y-4">
+                <SellerAnalyticsV2 shopId={shop.id} />
                 <ShopAnalytics shopId={shop.id} />
                 <SmartNotifications shopId={shop.id} mode="seller" />
                 <CustomerSupport shopId={shop.id} mode="seller" />
