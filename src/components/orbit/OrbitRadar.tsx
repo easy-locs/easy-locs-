@@ -72,6 +72,7 @@ export default function OrbitRadar() {
   const [onlyVerified, setOnlyVerified] = useState(false);
   const [invisibleMode, setInvisibleMode] = useState(false);
   const [approxLocation, setApproxLocation] = useState(false);
+  const [showHeatmap, setShowHeatmap] = useState(false);
 
   const { entities, loading, scanning, scan, counts } = useEcosystemRadar({
     lat, lng, radius, userId: user?.id, filter, search, onlyAvailable, onlyVerified,
