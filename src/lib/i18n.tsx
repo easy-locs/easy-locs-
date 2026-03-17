@@ -714,6 +714,10 @@ const pageFr: Record<string, string> = {
   "pwa.banner.hint": "Rapide, hors-ligne, toujours accessible",
   "pwa.banner.ios_hint": "Partager → Sur l'écran d'accueil",
   "pwa.banner.install": "Installer",
+  "pwa.banner.dismiss": "Fermer",
+  "page.install.back": "Retour",
+  "page.install.continue_web": "Continuer sur le web",
+  "page.install.feature_notif": "Notifications",
 
   // Candidates
   "page.candidates.title": "Candidats",
@@ -3283,6 +3287,10 @@ const pageEn: Record<string, string> = {
   "pwa.banner.hint": "Fast, offline-ready, always accessible",
   "pwa.banner.ios_hint": "Tap Share → Add to Home Screen",
   "pwa.banner.install": "Install",
+  "pwa.banner.dismiss": "Close",
+  "page.install.back": "Go back",
+  "page.install.continue_web": "Continue on web",
+  "page.install.feature_notif": "Notifications",
   "page.candidates.title": "Candidates",
   "page.candidates.subtitle": "Tenant application management",
   "page.candidates.add": "Add",
