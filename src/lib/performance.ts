@@ -182,3 +182,71 @@ export function createLRUCache<K, V>(maxSize: number) {
     },
   };
 }
+
+// ── Optimized Image Component — PASS146 ──────────────────────────────
+
+interface OptimizedImageProps extends Omit<ImgHTMLAttributes<HTMLImageElement>, "onLoad" | "onError"> {
+  fallback?: string;
+  aspectRatio?: string;
+  priority?: boolean;
+}
+
+export const OptimizedImage = memo(function OptimizedImage({
+  src, alt, className, fallback, aspectRatio, priority = false, ...props
+}: OptimizedImageProps) {
+  const [loaded, setLoaded] = useState(false);
+  const [error, setError] = useState(false);
+  const imgSrc = error && fallback ? fallback : src;
+
+  return (
+    <div
+      className={cn("overflow-hidden bg-muted", !loaded && !priority && "animate-pulse", className)}
+      style={aspectRatio ? { aspectRatio } : undefined}
+    >
+      {imgSrc && (
+        <img
+          src={imgSrc}
+          alt={alt || ""}
+          loading={priority ? "eager" : "lazy"}
+          decoding={priority ? "sync" : "async"}
+          onLoad={() => setLoaded(true)}
+          onError={() => setError(true)}
+          className={cn(
+            "w-full h-full object-cover transition-opacity duration-200",
+            loaded || priority ? "opacity-100" : "opacity-0"
+          )}
+          {...props}
+        />
+      )}
+    </div>
+  );
+});
+
+// ── Preload critical images ──────────────────────────────────────────
+
+const preloadedUrls = new Set<string>();
+
+export function preloadImage(url: string) {
+  if (!url || preloadedUrls.has(url)) return;
+  preloadedUrls.add(url);
+  const link = document.createElement("link");
+  link.rel = "preload";
+  link.as = "image";
+  link.href = url;
+  document.head.appendChild(link);
+}
+
+export function preloadFeedImages(items: Array<{ photo_url?: string | null; logo_url?: string | null }>, count = 3) {
+  items.slice(0, count).forEach((item) => {
+    if (item.photo_url) preloadImage(item.photo_url);
+    if (item.logo_url) preloadImage(item.logo_url);
+  });
+}
+
+// ── Stable callback ref ─────────────────────────────────────────────
+
+export function useStableCallback<T extends (...args: any[]) => any>(fn: T): T {
+  const ref = useRef(fn);
+  ref.current = fn;
+  return useCallback((...args: any[]) => ref.current(...args), []) as T;
+}
