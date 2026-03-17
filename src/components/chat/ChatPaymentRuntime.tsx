@@ -187,11 +187,7 @@ export function ChatPaymentRequestCard({
             recipientName={request.title || "Payment request"}
             contextType="order"
             contextId={request.id}
-            className="rounded-xl px-3 py-1.5 text-xs font-semibold transition hover:opacity-90"
-            style={{
-              background: "hsl(var(--primary))",
-              color: "hsl(var(--primary-foreground))",
-            }}
+            className="rounded-xl bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground transition hover:opacity-90"
             onSuccess={async (result) => {
               if (!result.transactionId) return;
               await markPaymentRequestPaid(request.id, result.transactionId);
