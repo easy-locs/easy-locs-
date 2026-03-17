@@ -14,6 +14,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Search, TrendingUp, MapPin, Star, Sparkles, Store, Package, Briefcase, Loader2, X } from "lucide-react";
 import { useGeolocation } from "@/hooks/useGeolocation";
+import GlobalSearch from "@/components/storefront/GlobalSearch";
 
 const VERTICALS = [
   { id: "all", label: "All", icon: Sparkles },
@@ -103,21 +104,8 @@ export default function DiscoverPage() {
           <h1 className="text-2xl font-bold text-foreground mb-1">Discover</h1>
           <p className="text-sm text-muted-foreground mb-4">Shops, products & services</p>
 
-          {/* Search bar */}
-          <form onSubmit={handleSearch} className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              placeholder="Search shops, products, services..."
-              className="pl-10 pr-10 h-11 rounded-xl bg-card border-border"
-            />
-            {search && (
-              <button type="button" onClick={() => { setSearch(""); setSearchParams({}); }} className="absolute right-3 top-1/2 -translate-y-1/2">
-                <X className="h-4 w-4 text-muted-foreground" />
-              </button>
-            )}
-          </form>
+          {/* Search bar — V2: uses GlobalSearch with autocomplete */}
+          <GlobalSearch />
         </div>
 
         {/* Vertical filters */}

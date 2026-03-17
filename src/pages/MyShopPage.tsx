@@ -7,7 +7,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
-import ShopCreator from "@/components/storefront/ShopCreator";
+import SmartShopBuilder from "@/components/storefront/SmartShopBuilder";
 import ShopShareEngine from "@/components/storefront/ShopShareEngine";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -53,6 +53,7 @@ const MultiVendorDashboard = lazy(() => import("@/components/storefront/MultiVen
 const WarehouseManager = lazy(() => import("@/components/storefront/WarehouseManager"));
 const GamificationEngine = lazy(() => import("@/components/storefront/GamificationEngine"));
 const MultiStoreManager = lazy(() => import("@/components/storefront/MultiStoreManager"));
+const SmartCatalogBuilder = lazy(() => import("@/components/storefront/SmartCatalogBuilder"));
 
 // Settings-only (loaded inline since settings tab is simple)
 const AICategorySuggest = lazy(() => import("@/components/storefront/AICategorySuggest"));
@@ -123,7 +124,7 @@ export default function MyShopPage() {
   if (!shop) return (
     <DashboardLayout>
       <div className="max-w-2xl mx-auto px-4 py-8">
-        <ShopCreator />
+        <SmartShopBuilder />
       </div>
     </DashboardLayout>
   );

@@ -91,6 +91,25 @@ export function useStorefrontCart(shopId: string | undefined) {
       const cId = await ensureCart();
       if (!cId) return;
 
+      // PASS104: Stock validation before adding
+      const { data: stockInfo } = await (supabase as any)
+        .from("catalog_items")
+        .select("track_inventory, stock_quantity, available")
+        .eq("id", itemId)
+        .single();
+
+      if (stockInfo && !stockInfo.available) {
+        toast.error("This item is currently unavailable");
+        return;
+      }
+      if (stockInfo?.track_inventory && stockInfo.stock_quantity != null) {
+        const existingQty = items.find(i => i.item_id === itemId)?.quantity || 0;
+        if (existingQty + 1 > stockInfo.stock_quantity) {
+          toast.error(`Only ${stockInfo.stock_quantity} left in stock`);
+          return;
+        }
+      }
+
       // Check existing
       const existing = items.find(i => i.item_id === itemId && i.variant_id === (variantId || null));
       if (existing) {
@@ -111,6 +130,8 @@ export function useStorefrontCart(shopId: string | undefined) {
       }
       await loadItems(cId);
       toast.success("Added to cart");
+    } catch (e: any) {
+      toast.error(e.message || "Failed to add item");
     } finally {
       setLoading(false);
     }
