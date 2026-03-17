@@ -188,52 +188,53 @@ export default function LiveEcosystemMap({ lat, lng, radius, entities, onSelect 
       <div ref={containerRef} className="w-full h-full min-h-[400px]" style={{ zIndex: 1 }} />
       <style>{`
         /* ─── User Marker ─── */
-        .eco-user-marker { position:relative;width:28px;height:28px; }
+        .eco-user-marker { position:relative;width:28px;height:28px;will-change:transform; }
         .eco-user-dot {
           position:absolute;inset:6px;border-radius:50%;
-          background:radial-gradient(circle at 40% 40%, #67e8f9, #06b6d4);
+          background:#06b6d4;
           border:3px solid rgba(255,255,255,0.95);
-          box-shadow:0 0 24px rgba(6,182,212,0.8), 0 0 48px rgba(6,182,212,0.3);
+          box-shadow:0 0 16px rgba(6,182,212,0.6);
           z-index:2;
         }
         .eco-user-pulse {
           position:absolute;inset:-6px;border-radius:50%;
           border:2px solid rgba(6,182,212,0.5);
           animation:ecoPulse 2s ease-out infinite;
+          will-change:transform,opacity;
         }
         .eco-user-pulse-2 { animation-delay:0.7s; }
-        .eco-user-pulse-3 { animation-delay:1.4s; }
 
         /* ─── Entity Markers ─── */
-        .eco-marker { position:relative;width:42px;height:42px;cursor:pointer;filter:drop-shadow(0 2px 6px rgba(0,0,0,0.3)); }
+        .eco-marker { position:relative;width:42px;height:42px;cursor:pointer;will-change:transform; }
         .eco-marker-bg {
           width:42px;height:42px;border-radius:13px;
-          background:linear-gradient(145deg, var(--marker-color), color-mix(in srgb, var(--marker-color) 60%, #0f172a));
+          background:var(--marker-color);
           display:flex;align-items:center;justify-content:center;
-          box-shadow:0 6px 20px var(--marker-glow), inset 0 1px 0 rgba(255,255,255,0.2);
+          box-shadow:0 4px 14px var(--marker-glow), inset 0 1px 0 rgba(255,255,255,0.15);
           border:1.5px solid rgba(255,255,255,0.12);
-          transition:transform 0.2s cubic-bezier(0.34,1.56,0.64,1);
+          transition:transform 0.2s ease;
         }
-        .eco-marker:hover .eco-marker-bg { transform:scale(1.18) translateY(-2px); }
+        .eco-marker:hover .eco-marker-bg { transform:scale(1.12); }
         .eco-marker-glow {
-          position:absolute;inset:-6px;border-radius:18px;
+          position:absolute;inset:-5px;border-radius:18px;
           background:radial-gradient(circle, var(--marker-glow) 0%, transparent 65%);
-          opacity:0.35;animation:ecoGlow 2.5s ease-in-out infinite alternate;
+          opacity:0.3;animation:ecoGlow 3s ease-in-out infinite alternate;
           pointer-events:none;z-index:-1;
+          will-change:opacity,transform;
         }
         .eco-online-dot {
-          position:absolute;top:-2px;right:-2px;width:13px;height:13px;border-radius:50%;
-          background:radial-gradient(circle at 40% 40%, #4ade80, #22c55e);
+          position:absolute;top:-2px;right:-2px;width:12px;height:12px;border-radius:50%;
+          background:#22c55e;
           border:2.5px solid #0f172a;
-          box-shadow:0 0 10px rgba(34,197,94,0.7), 0 0 20px rgba(34,197,94,0.3);
+          box-shadow:0 0 8px rgba(34,197,94,0.5);
           z-index:3;
-          animation:ecoOnlinePulse 2s ease-in-out infinite;
         }
         .eco-active-ring {
           position:absolute;inset:-6px;border-radius:18px;
           border:2px solid var(--marker-color);
           animation:ecoPulse 1.8s ease-out infinite;
           pointer-events:none;
+          will-change:transform,opacity;
         }
         .eco-active-ring-2 { animation-delay:0.6s; }
 
@@ -241,25 +242,25 @@ export default function LiveEcosystemMap({ lat, lng, radius, entities, onSelect 
         .eco-cluster { position:relative;display:flex;align-items:center;justify-content:center; }
         .eco-cluster-inner {
           width:100%;height:100%;border-radius:50%;
-          background:linear-gradient(145deg, #06b6d4, #7c3aed, #8b5cf6);
+          background:linear-gradient(145deg, #06b6d4, #8b5cf6);
           display:flex;align-items:center;justify-content:center;
           color:white;font-weight:800;font-size:13px;letter-spacing:-0.5px;
-          box-shadow:0 6px 28px rgba(6,182,212,0.5), inset 0 1px 0 rgba(255,255,255,0.25), inset 0 -1px 0 rgba(0,0,0,0.2);
+          box-shadow:0 4px 20px rgba(6,182,212,0.45), inset 0 1px 0 rgba(255,255,255,0.2);
           border:2px solid rgba(255,255,255,0.18);
         }
         .eco-cluster-ring {
           position:absolute;inset:-5px;border-radius:50%;
-          border:2px solid rgba(6,182,212,0.35);
+          border:2px solid rgba(6,182,212,0.3);
           animation:ecoPulse 2.5s ease-out infinite;
+          will-change:transform,opacity;
         }
         .eco-cluster-ring-2 { animation-delay:0.8s; }
 
-        /* ─── Popup (glass) ─── */
-        .eco-popup { min-width:190px;font-family:system-ui,-apple-system,sans-serif; }
+        /* ─── Popup ─── */
+        .eco-popup { min-width:180px;font-family:system-ui,-apple-system,sans-serif; }
         .eco-popup-header { display:flex;align-items:center;gap:10px;margin-bottom:8px; }
         .eco-popup-icon {
           width:30px;height:30px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;
-          box-shadow:inset 0 1px 0 rgba(255,255,255,0.15);
         }
         .eco-popup-title { font-weight:700;font-size:13px;line-height:1.2;letter-spacing:-0.2px; }
         .eco-popup-sub { font-size:11px;opacity:0.55;margin-top:2px; }
@@ -269,28 +270,22 @@ export default function LiveEcosystemMap({ lat, lng, radius, entities, onSelect 
         .eco-popup-price { font-weight:800;font-size:15px;margin-top:6px;letter-spacing:-0.3px; }
 
         .leaflet-popup-content-wrapper {
-          background:rgba(10,18,35,0.94)!important;
-          backdrop-filter:blur(16px) saturate(1.5);
+          background:rgba(10,18,35,0.95)!important;
           color:white!important;
           border:1px solid rgba(6,182,212,0.18)!important;
           border-radius:16px!important;
-          box-shadow:0 12px 48px rgba(0,0,0,0.6), 0 0 24px rgba(6,182,212,0.08)!important;
+          box-shadow:0 10px 40px rgba(0,0,0,0.55)!important;
         }
-        .leaflet-popup-tip { background:rgba(10,18,35,0.94)!important; }
+        .leaflet-popup-tip { background:rgba(10,18,35,0.95)!important; }
 
-        /* ─── Animations ─── */
+        /* ─── Animations (transform/opacity only for GPU perf) ─── */
         @keyframes ecoPulse {
-          0% { transform:scale(1); opacity:0.55; }
-          100% { transform:scale(2.4); opacity:0; }
+          0% { transform:scale(1); opacity:0.5; }
+          100% { transform:scale(2.2); opacity:0; }
         }
         @keyframes ecoGlow {
-          0% { opacity:0.2;transform:scale(0.92); }
-          50% { opacity:0.5;transform:scale(1.08); }
-          100% { opacity:0.25;transform:scale(1.02); }
-        }
-        @keyframes ecoOnlinePulse {
-          0%, 100% { box-shadow:0 0 8px rgba(34,197,94,0.6), 0 0 16px rgba(34,197,94,0.2); }
-          50% { box-shadow:0 0 14px rgba(34,197,94,0.8), 0 0 28px rgba(34,197,94,0.4); }
+          0% { opacity:0.2;transform:scale(0.95); }
+          100% { opacity:0.4;transform:scale(1.08); }
         }
 
         .marker-cluster-small, .marker-cluster-medium, .marker-cluster-large { background:transparent!important; }
