@@ -47,6 +47,8 @@ type PlatformEventType =
   | "storefront:loyalty_earned"
   | "storefront:risk_flagged"
   | "storefront:growth_milestone"
+  | "storefront:return_requested"
+  | "storefront:return_processed"
   // Property Management
   | "pm:lease_created"
   | "pm:lease_activated"
