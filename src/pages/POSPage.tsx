@@ -52,6 +52,38 @@ export default function POSPage() {
   const [receiptData, setReceiptData] = useState<any>(null);
   const [searchQuery, setSearchQuery] = useState("");
 
+  /* ── Load seller's real catalog ── */
+  const { data: shopData } = useQuery({
+    queryKey: ["pos-shop", user?.id],
+    queryFn: async () => {
+      const { data } = await (supabase as any)
+        .from("storefront_pages").select("id").eq("user_id", user!.id).limit(1).maybeSingle();
+      return data;
+    },
+    enabled: !!user?.id,
+  });
+
+  const { data: catalogItems = [] } = useQuery({
+    queryKey: ["pos-catalog", shopData?.id],
+    queryFn: async () => {
+      const { data } = await (supabase as any)
+        .from("catalog_items")
+        .select("id, title, price, currency, photo_url, stock_quantity, available")
+        .eq("shop_id", shopData!.id)
+        .eq("available", true)
+        .order("sort_order", { ascending: true })
+        .limit(50);
+      return data || [];
+    },
+    enabled: !!shopData?.id,
+  });
+
+  const filteredCatalog = useMemo(() => {
+    if (!searchQuery.trim()) return catalogItems;
+    const q = searchQuery.toLowerCase();
+    return catalogItems.filter((i: any) => i.title?.toLowerCase().includes(q));
+  }, [catalogItems, searchQuery]);
+
   const total = useMemo(() => cart.reduce((s, i) => s + i.price * i.quantity, 0), [cart]);
 
   const addToCart = useCallback((title: string, price: number) => {
