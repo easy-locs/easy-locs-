@@ -397,14 +397,14 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
                   key={`${section.key}-${item.path}-${item.label}`}
                   to={item.path}
                   onClick={() => setSidebarOpen(false)}
-                  className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  className={`flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] font-medium transition-colors ${
                     active
                       ? "bg-sidebar-accent text-sidebar-primary"
                       : "text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent/50"
                   }`}
                 >
                   <item.icon className="h-4 w-4 shrink-0" />
-                  <span className="whitespace-normal leading-tight">{item.label}</span>
+                  <span className="truncate">{item.label}</span>
                 </Link>
               );
             };
