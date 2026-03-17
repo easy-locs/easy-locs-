@@ -196,7 +196,7 @@ export default function SuperAppHome() {
   /* Mini-apps grid — the core WeChat-style service launcher */
   const MINI_APPS = [
     { icon: MessageCircle, label: "Chat", to: "/dashboard/communication", color: "hsl(var(--hud-cyan))", badge: engine.unreadMessages },
-    { icon: Store, label: "Shops", to: "/discover", color: "hsl(var(--primary))" },
+    { icon: Store, label: "Shops", to: "/shops", color: "hsl(var(--primary))" },
     { icon: Wallet, label: "Pay", to: "/dashboard/wallet", color: "hsl(var(--success))" },
     { icon: ShoppingBag, label: "Orders", to: "/my-orders", color: "hsl(var(--warning))", badge: engine.pendingOrders },
     { icon: Truck, label: "Delivery", to: "/dashboard/driver", color: "hsl(var(--info))" },
