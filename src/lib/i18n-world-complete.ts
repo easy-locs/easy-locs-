@@ -503,6 +503,9 @@ export const huComplete: Record<string, string> = {
   "explore.radius.title": "Hol keres?", "explore.radius.worldwide": "Világszerte",
   "explore.radius.reset": "Visszaállítás", "explore.radius.apply": "Alkalmaz", "explore.clear_all": "Összes törlése",
   "page.listing.contact_direct": "Közvetlen kapcsolat", "page.listing.call": "Hívás", "page.listing.share": "Megosztás",
+  "page.install.title": "Easy-Locs telepítése", "page.install.install_btn": "Telepítés",
+  "page.install.back": "Vissza", "page.install.continue_web": "Folytatás a weben",
+  "pwa.banner.title": "Easy-Locs telepítése", "pwa.banner.install": "Telepítés", "pwa.banner.dismiss": "Bezárás",
 };
 
 // ─── Romanian (RO) ───
