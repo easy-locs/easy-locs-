@@ -307,6 +307,13 @@ const App = () => (
               <Route path="/search" element={<DiscoverPage />} />
               <Route path="/ride" element={<RidePage />} />
               <Route path="/send" element={<SendPage />} />
+              <Route path="/travel" element={<TravelHub />} />
+              <Route path="/travel/flights" element={<TravelFlights />} />
+              <Route path="/travel/stays" element={<TravelStays />} />
+              <Route path="/travel/hotels" element={<TravelHotels />} />
+              <Route path="/travel/hotel/:id" element={<TravelHotelDetail />} />
+              <Route path="/travel/stay/:id" element={<TravelStayDetail />} />
+              <Route path="/travel/flight/:id" element={<TravelFlightDetail />} />
               <Route path="/explore" element={<Explore />} />
               <Route path="/super-map" element={<SuperMapRadarPage />} />
               <Route path="/shops" element={<ShopsPage />} />
