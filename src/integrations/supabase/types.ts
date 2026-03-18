@@ -1546,11 +1546,13 @@ export type Database = {
           lng: number | null
           location: string | null
           max_capacity: number | null
+          mobility_type: string
           org_id: string
           payment_methods: Json | null
           paypal_email: string | null
           photo_url: string | null
           photo_urls: Json | null
+          presence_mode: string
           price: number
           property_id: string | null
           provider_name: string | null
@@ -1585,11 +1587,13 @@ export type Database = {
           lng?: number | null
           location?: string | null
           max_capacity?: number | null
+          mobility_type?: string
           org_id: string
           payment_methods?: Json | null
           paypal_email?: string | null
           photo_url?: string | null
           photo_urls?: Json | null
+          presence_mode?: string
           price?: number
           property_id?: string | null
           provider_name?: string | null
@@ -1624,11 +1628,13 @@ export type Database = {
           lng?: number | null
           location?: string | null
           max_capacity?: number | null
+          mobility_type?: string
           org_id?: string
           payment_methods?: Json | null
           paypal_email?: string | null
           photo_url?: string | null
           photo_urls?: Json | null
+          presence_mode?: string
           price?: number
           property_id?: string | null
           provider_name?: string | null
@@ -4320,6 +4326,7 @@ export type Database = {
           lng: number | null
           location: string | null
           max_capacity: number | null
+          mobility_type: string
           model: string | null
           org_id: string
           payment_bank_details: Json | null
@@ -4327,6 +4334,7 @@ export type Database = {
           payment_paypal_email: string | null
           payment_stripe_link: string | null
           photo_urls: Json | null
+          presence_mode: string
           price: number
           price_type: string
           provider_id: string
@@ -4377,6 +4385,7 @@ export type Database = {
           lng?: number | null
           location?: string | null
           max_capacity?: number | null
+          mobility_type?: string
           model?: string | null
           org_id: string
           payment_bank_details?: Json | null
@@ -4384,6 +4393,7 @@ export type Database = {
           payment_paypal_email?: string | null
           payment_stripe_link?: string | null
           photo_urls?: Json | null
+          presence_mode?: string
           price?: number
           price_type?: string
           provider_id: string
@@ -4434,6 +4444,7 @@ export type Database = {
           lng?: number | null
           location?: string | null
           max_capacity?: number | null
+          mobility_type?: string
           model?: string | null
           org_id?: string
           payment_bank_details?: Json | null
@@ -4441,6 +4452,7 @@ export type Database = {
           payment_paypal_email?: string | null
           payment_stripe_link?: string | null
           photo_urls?: Json | null
+          presence_mode?: string
           price?: number
           price_type?: string
           provider_id?: string
@@ -9723,11 +9735,13 @@ export type Database = {
           latitude: number | null
           logo_url: string | null
           longitude: number | null
+          mobility_type: string
           name: string
           og_image_url: string | null
           onboarding_completed: boolean | null
           onboarding_step: number | null
           org_id: string
+          presence_mode: string
           radius_km: number | null
           rating: number | null
           region: string | null
@@ -9766,11 +9780,13 @@ export type Database = {
           latitude?: number | null
           logo_url?: string | null
           longitude?: number | null
+          mobility_type?: string
           name: string
           og_image_url?: string | null
           onboarding_completed?: boolean | null
           onboarding_step?: number | null
           org_id: string
+          presence_mode?: string
           radius_km?: number | null
           rating?: number | null
           region?: string | null
@@ -9809,11 +9825,13 @@ export type Database = {
           latitude?: number | null
           logo_url?: string | null
           longitude?: number | null
+          mobility_type?: string
           name?: string
           og_image_url?: string | null
           onboarding_completed?: boolean | null
           onboarding_step?: number | null
           org_id?: string
+          presence_mode?: string
           radius_km?: number | null
           rating?: number | null
           region?: string | null
