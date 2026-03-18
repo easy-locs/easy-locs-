@@ -49,15 +49,14 @@ const ALL_LANGUAGES: { code: Locale; label: string; flag: string }[] = [
 
 const TenantLayout = ({ children }: { children: React.ReactNode }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  
+
   const location = useLocation();
   const navigate = useNavigate();
   const { user, signOut, activeRole, hasDualRole, switchRole } = useAuth();
-  const { locale, setLocale, t } = useI18n();
+  const { locale, t } = useI18n();
   const { L, tenantLanguages } = useTenantProperty();
   const exitToPropertyHub = usePropertyHubExit();
 
-  // Filter languages: only property country language + English
   const LANGUAGES = ALL_LANGUAGES.filter(
     l => tenantLanguages.includes(l.code) || l.code === "en"
   );
@@ -79,6 +78,7 @@ const TenantLayout = ({ children }: { children: React.ReactNode }) => {
   };
 
   const currentLang = LANGUAGES.find(l => l.code === locale) || LANGUAGES[0];
+  void currentLang;
 
   return (
     <div className="min-h-screen flex bg-background mobile-safe">
@@ -98,7 +98,7 @@ const TenantLayout = ({ children }: { children: React.ReactNode }) => {
             {hasDualRole ? (
               <div className="flex items-center bg-muted/50 rounded-lg p-0.5 w-fit">
                 <button
-                  onClick={() => { switchRole("landlord"); navigate("/property-hub"); }}
+                  onClick={() => { switchRole("landlord"); exitToPropertyHub(); }}
                   className={`text-[10px] font-bold tracking-wider uppercase px-2 py-0.5 rounded transition-colors ${activeRole === "landlord" ? "bg-accent text-accent-foreground" : "text-sidebar-foreground/50 hover:text-sidebar-foreground"}`}
                 >
                   {t("badge.landlord")}
@@ -125,7 +125,13 @@ const TenantLayout = ({ children }: { children: React.ReactNode }) => {
                 <Link
                   key={item.path}
                   to={item.path}
-                  onClick={() => setSidebarOpen(false)}
+                  onClick={(event) => {
+                    setSidebarOpen(false);
+                    if (item.path === "/property-hub") {
+                      event.preventDefault();
+                      exitToPropertyHub();
+                    }
+                  }}
                   className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                     active ? "bg-sidebar-accent text-sidebar-primary" : "text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent/50"
                   }`}
@@ -159,9 +165,13 @@ const TenantLayout = ({ children }: { children: React.ReactNode }) => {
           <button onClick={() => setSidebarOpen(true)} className="lg:hidden text-foreground p-2 -ml-1 rounded-lg hover:bg-muted transition-colors" aria-label="Menu">
             <Menu className="h-5 w-5" />
           </button>
-          <Link to="/property-hub" className="lg:hidden inline-flex items-center rounded-lg px-2.5 py-1.5 text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors">
+          <button
+            type="button"
+            onClick={exitToPropertyHub}
+            className="lg:hidden inline-flex items-center rounded-lg px-2.5 py-1.5 text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+          >
             Sortir
-          </Link>
+          </button>
           <div className="flex-1" />
           <ThemeSwitcher />
           <NotificationBell />
