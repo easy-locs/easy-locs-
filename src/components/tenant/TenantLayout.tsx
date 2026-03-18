@@ -96,7 +96,7 @@ const TenantLayout = ({ children }: { children: React.ReactNode }) => {
             {hasDualRole ? (
               <div className="flex items-center bg-muted/50 rounded-lg p-0.5 w-fit">
                 <button
-                  onClick={() => { switchRole("landlord"); navigate("/dashboard"); }}
+                  onClick={() => { switchRole("landlord"); navigate("/property-hub"); }}
                   className={`text-[10px] font-bold tracking-wider uppercase px-2 py-0.5 rounded transition-colors ${activeRole === "landlord" ? "bg-accent text-accent-foreground" : "text-sidebar-foreground/50 hover:text-sidebar-foreground"}`}
                 >
                   {t("badge.landlord")}
