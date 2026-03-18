@@ -34,9 +34,10 @@ const LISTING_CATEGORIES = [
 ];
 
 const LISTING_TYPES = [
-  { value: "sale", label: "Sale", icon: "💰" },
+  { value: "sale", label: "Sale (30 days)", icon: "💰" },
   { value: "rental", label: "Rental", icon: "🔑" },
   { value: "service", label: "Service", icon: "⚡" },
+  { value: "shop", label: "Shop / Business", icon: "🏪" },
 ];
 
 const PRICE_PERIODS = [
