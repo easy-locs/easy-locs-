@@ -122,7 +122,8 @@ export default function PropertyManagementHub() {
         <MobilePageHeader
           title={role ? (role === "landlord" ? "Landlord Hub" : "Tenant Hub") : "Property Management"}
           icon={<Building2 className="h-5 w-5 text-primary" />}
-          backTo="/dashboard"
+          backTo={role ? undefined : "/dashboard"}
+          onBack={role ? () => setRole(null) : undefined}
         />
 
         <div className="max-w-lg mx-auto px-4 py-4">
