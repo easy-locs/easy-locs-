@@ -348,7 +348,9 @@ const CreateListing = () => {
 
             <div>
               <Label className="text-xs font-semibold">Listing type *</Label>
-              <ChipSelector options={LISTING_TYPES} selected={form.listing_type} onToggle={v => set({ listing_type: v })} />
+              <ChipSelector options={getListingTypeOptions(form.category)} selected={form.listing_type} onToggle={v => {
+                set({ listing_type: v });
+              }} />
             </div>
 
             <div>
