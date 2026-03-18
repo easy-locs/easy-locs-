@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { Receipt, Download, Loader2 } from "lucide-react";
+import { Receipt, Download, Loader2, CheckCircle } from "lucide-react";
+import ReceiptStatusBadge from "@/components/rent/ReceiptStatusBadge";
 import TenantLayout from "@/components/tenant/TenantLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -112,6 +113,7 @@ const TenantReceipts = () => {
                       <span>=</span>
                       <strong className="currency-value whitespace-nowrap">{fmt(r.total_amount)}</strong>
                     </p>
+                    <ReceiptStatusBadge receiptUrl={r.receipt_pdf_url} validated={r.receipt_validated} paid={r.paid} />
                   </div>
                   {r.receipt_pdf_url && (
                     <button
