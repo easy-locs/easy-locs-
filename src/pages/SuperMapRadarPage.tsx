@@ -199,35 +199,26 @@ const FALLBACK_NEARBY = [
 
 /* ─── Legend ─── */
 function MapLegend() {
-  const items: [string, string, boolean][] = [
-    ["#D4A853", "Store", false],
-    ["#fbbf24", "Mobile Seller", true],
-    ["#F59E0B", "Mobile Service", true],
-    ["#22C55E", "Driver", true],
+  const items: { color: string; label: string }[] = [
+    { color: "#D4A853", label: "Store" },
+    { color: "#EAB308", label: "Seller" },
+    { color: "#F59E0B", label: "Service" },
+    { color: "#22C55E", label: "Driver" },
+    { color: "#06B6D4", label: "Live" },
   ];
   return (
-    <div className="absolute bottom-20 left-3 z-10 rounded-xl border border-border/20 bg-card/90 backdrop-blur-lg p-3 shadow-xl">
-      <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">Legend</span>
-      <div className="mt-2 space-y-1.5">
-        {items.map(([color, label, isLive]) => (
-          <div key={label} className="flex items-center gap-2.5">
-            <span className="relative flex items-center justify-center w-4 h-4">
-              <span className="w-3 h-3 rounded-full shrink-0" style={{ background: color, boxShadow: `0 0 6px ${color}44` }} />
-              {isLive && <span className="absolute inset-0 rounded-full border border-current opacity-30 animate-ping" style={{ color, animationDuration: "2.5s" }} />}
-            </span>
-            <span className="text-[11px] text-foreground/80 font-medium">{label}</span>
+    <div className="absolute bottom-20 left-3 z-10 rounded-2xl border border-border/20 bg-card/85 backdrop-blur-xl p-3 shadow-xl">
+      <div className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest mb-2">Radar legend</div>
+      <div className="flex flex-wrap gap-x-3 gap-y-1.5">
+        {items.map((item) => (
+          <div key={item.label} className="inline-flex items-center gap-1.5">
+            <span
+              className="w-2.5 h-2.5 rounded-full shrink-0"
+              style={{ background: item.color, boxShadow: `0 0 6px ${item.color}44` }}
+            />
+            <span className="text-[10px] font-medium text-foreground/75">{item.label}</span>
           </div>
         ))}
-        <div className="border-t border-border/20 pt-1.5 mt-1.5 space-y-1">
-          <div className="flex items-center gap-2.5">
-            <span className="w-4 h-4 rounded-full border border-primary/30 bg-primary/5 shrink-0" />
-            <span className="text-[10px] text-muted-foreground">Coverage</span>
-          </div>
-          <div className="flex items-center gap-2.5">
-            <span className="w-4 h-4 rounded-full border border-dashed border-[#06B6D4]/40 bg-[#06B6D4]/5 shrink-0" />
-            <span className="text-[10px] text-muted-foreground">Live radius</span>
-          </div>
-        </div>
       </div>
     </div>
   );
