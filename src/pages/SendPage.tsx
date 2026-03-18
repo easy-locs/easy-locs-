@@ -13,6 +13,7 @@ import { useSmartLocation, type SavedPlace } from "@/hooks/useSmartLocation";
 import SendMap from "@/components/send/SendMap";
 import DriverMatchingState, { type MatchState } from "@/components/ride/DriverMatchingState";
 import { calculateDeliveryFare, getFareRules, isNightHour, type FareEstimate } from "@/lib/fare-engine";
+import { useGeoDetect } from "@/hooks/useGeoDetect";
 import SEOHead from "@/components/SEOHead";
 
 /* ═══ Delivery speed tiers ═══ */
@@ -43,7 +44,7 @@ type Step = "addresses" | "details" | "confirm" | "matching";
 
 export default function SendPage() {
   const navigate = useNavigate();
-  const { geo, currentLocation, places, addRecent } = useSmartLocation();
+  const { geo, currentLocation, places, addRecent, savePlace, removePlace } = useSmartLocation();
   const [step, setStep] = useState<Step>("addresses");
   const [pickup, setPickup] = useState<SavedPlace | null>(currentLocation);
   const [dropoff, setDropoff] = useState<SavedPlace | null>(null);
@@ -52,7 +53,8 @@ export default function SendPage() {
   const [itemDesc, setItemDesc] = useState("");
   const [matchState, setMatchState] = useState<MatchState>("searching");
 
-  const rules = useMemo(() => getFareRules("FR"), []);
+  const { country: detectedCountry } = useGeoDetect();
+  const rules = useMemo(() => getFareRules(detectedCountry), [detectedCountry]);
   const night = useMemo(() => isNightHour(), []);
   const km = useMemo(() => mockDistanceKm(pickup, dropoff), [pickup, dropoff]);
 
@@ -120,8 +122,8 @@ export default function SendPage() {
         {/* Step 1: Addresses */}
         {step === "addresses" && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-2">
-            <SmartLocationPicker label="Pickup from" value={pickup?.address || ""} onSelect={handlePickup} currentLocation={currentLocation} savedPlaces={places} placeholder="Pickup address" />
-            <SmartLocationPicker label="Deliver to" value={dropoff?.address || ""} onSelect={handleDropoff} currentLocation={null} savedPlaces={places} placeholder="Delivery address" autoFocus={!!pickup && !dropoff} />
+            <SmartLocationPicker label="Pickup from" value={pickup?.address || ""} onSelect={handlePickup} currentLocation={currentLocation} savedPlaces={places} onSavePlace={savePlace} onRemovePlace={removePlace} placeholder="Pickup address" />
+            <SmartLocationPicker label="Deliver to" value={dropoff?.address || ""} onSelect={handleDropoff} currentLocation={null} savedPlaces={places} onSavePlace={savePlace} onRemovePlace={removePlace} placeholder="Delivery address" autoFocus={!!pickup && !dropoff} />
           </motion.div>
         )}
 

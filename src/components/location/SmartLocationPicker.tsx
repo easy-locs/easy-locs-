@@ -3,10 +3,11 @@
  * Used in /ride, /send, and delivery checkout.
  */
 import { useState } from "react";
-import { MapPin, Navigation, Home, Briefcase, Star, Clock, ChevronRight, Search, Plus } from "lucide-react";
+import { MapPin, Navigation, Home, Briefcase, Star, Clock, ChevronRight, Search, Plus, Settings2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { type SavedPlace } from "@/hooks/useSmartLocation";
 import AddressAutocomplete from "@/components/ui/AddressAutocomplete";
+import SavedPlaceEditor from "@/components/location/SavedPlaceEditor";
 
 interface SmartLocationPickerProps {
   label: string;
@@ -14,6 +15,8 @@ interface SmartLocationPickerProps {
   onSelect: (place: SavedPlace) => void;
   currentLocation: SavedPlace | null;
   savedPlaces: SavedPlace[];
+  onSavePlace?: (place: Omit<SavedPlace, "id"> & { id?: string }) => void;
+  onRemovePlace?: (id: string) => void;
   placeholder?: string;
   autoFocus?: boolean;
 }
@@ -31,11 +34,14 @@ export default function SmartLocationPicker({
   onSelect,
   currentLocation,
   savedPlaces,
+  onSavePlace,
+  onRemovePlace,
   placeholder = "Where to?",
   autoFocus = false,
 }: SmartLocationPickerProps) {
   const [expanded, setExpanded] = useState(autoFocus);
   const [searchMode, setSearchMode] = useState(false);
+  const [editMode, setEditMode] = useState(false);
 
   const handleQuickSelect = (place: SavedPlace) => {
     onSelect(place);
@@ -117,17 +123,35 @@ export default function SmartLocationPicker({
                     );
                   })}
 
-                  {/* Search button */}
-                  <button
-                    onClick={() => setSearchMode(true)}
-                    className="w-full flex items-center gap-3 p-2.5 rounded-xl hover:bg-muted/50 active:scale-[0.98] transition-all text-left border border-dashed border-border/30"
-                  >
-                    <div className="w-8 h-8 rounded-lg bg-primary/5 flex items-center justify-center shrink-0">
+                  {/* Actions row */}
+                  <div className="flex gap-1.5">
+                    <button
+                      onClick={() => setSearchMode(true)}
+                      className="flex-1 flex items-center gap-2 p-2.5 rounded-xl hover:bg-muted/50 active:scale-[0.98] transition-all text-left border border-dashed border-border/30"
+                    >
                       <Search className="h-3.5 w-3.5 text-primary/60" />
-                    </div>
-                    <p className="text-xs text-muted-foreground">Search an address…</p>
-                  </button>
+                      <p className="text-[10px] text-muted-foreground">Search address…</p>
+                    </button>
+                    {onSavePlace && (
+                      <button
+                        onClick={() => setEditMode(true)}
+                        className="flex items-center gap-1.5 p-2.5 rounded-xl hover:bg-muted/50 active:scale-[0.98] transition-all border border-dashed border-border/30"
+                      >
+                        <Settings2 className="h-3.5 w-3.5 text-muted-foreground" />
+                      </button>
+                    )}
+                  </div>
                 </div>
+              )}
+
+              {/* Edit mode */}
+              {editMode && onSavePlace && onRemovePlace && (
+                <SavedPlaceEditor
+                  places={savedPlaces}
+                  onSave={(p) => onSavePlace(p)}
+                  onRemove={onRemovePlace}
+                  onClose={() => setEditMode(false)}
+                />
               )}
 
               {/* Search mode — autocomplete */}
