@@ -2,7 +2,7 @@
  * expire-listings — Daily scheduled job
  * Marks sale listings as expired when listing_expires_at < now()
  */
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
