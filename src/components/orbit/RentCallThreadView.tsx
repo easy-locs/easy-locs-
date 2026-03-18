@@ -43,21 +43,25 @@ export default function RentCallThreadView({ rentCallId, onPayRent }: RentCallTh
 
   useEffect(() => {
     const load = async () => {
-      const [rcRes, msgRes] = await Promise.all([
-        supabase
-          .from("rent_calls")
-          .select("*, tenants(name, email), properties(label, city, country, address), leases(lease_type, start_date, end_date, payment_day, status)")
-          .eq("id", rentCallId)
-          .single(),
-        supabase
+      const rcRes = await supabase
+        .from("rent_calls")
+        .select("*, tenants(name, email), properties(label, city, country, address), leases(lease_type, start_date, end_date, payment_day, status)")
+        .eq("id", rentCallId)
+        .single();
+      
+      setRentCall(rcRes.data);
+      
+      // Load system messages for this rent_call context
+      if (rcRes.data?.org_id) {
+        const msgRes = await supabase
           .from("messages")
           .select("id, content, message_type, category, created_at, sender_id")
+          .eq("org_id", rcRes.data.org_id)
           .eq("context_id", rentCallId)
           .order("created_at", { ascending: true })
-          .limit(100),
-      ]);
-      setRentCall(rcRes.data);
-      setMessages(msgRes.data || []);
+          .limit(100);
+        setMessages(msgRes.data || []);
+      }
       setLoading(false);
     };
     load();
