@@ -436,12 +436,28 @@ const CreateListing = () => {
 
             <div>
               <Label className="text-xs">Title *</Label>
-              <Input value={form.title} onChange={e => set({ title: e.target.value })} placeholder="Ex: iPhone 15 Pro Max, 3-bedroom apartment..." maxLength={120} />
+              <Input value={form.title} onChange={e => {
+                const title = e.target.value;
+                set({ title });
+                runDetection(title, form.description);
+              }} placeholder="Ex: iPhone 15 Pro Max, 3-bedroom apartment..." maxLength={120} />
             </div>
+
+            {/* Smart Prefill Banner */}
+            <SmartPrefillBanner
+              detection={detection}
+              onAccept={acceptPrefill}
+              onDismiss={dismissPrefill}
+              visible={prefillVisible}
+            />
 
             <div>
               <Label className="text-xs">Description *</Label>
-              <Textarea value={form.description} onChange={e => set({ description: e.target.value })} rows={4} placeholder="Describe your listing in detail..." maxLength={2000} />
+              <Textarea value={form.description} onChange={e => {
+                const desc = e.target.value;
+                set({ description: desc });
+                runDetection(form.title, desc);
+              }} rows={4} placeholder="Describe your listing in detail..." maxLength={2000} />
               <p className="text-xs text-muted-foreground mt-1">{form.description.length}/2000</p>
             </div>
 
