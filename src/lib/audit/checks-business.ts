@@ -23,7 +23,6 @@ async function safeCount(table: string, workspaceId?: string | null) {
       return { count: 0, queryFailed: true, errorMsg: msg, errorType };
     }
     console.log(`[audit] safeCount("${table}") OK: count=${count ?? 0}, ws=${workspaceId ?? "none"}`);
-    }
     return { count: count ?? 0, queryFailed: false, errorMsg: null, errorType: null };
   } catch (e: any) {
     return { count: 0, queryFailed: true, errorMsg: e?.message ?? "Unknown error", errorType: "exception" };
