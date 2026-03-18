@@ -7001,58 +7001,82 @@ export type Database = {
         Row: {
           assigned_at: string | null
           assigned_ride_type: string | null
+          cancelled_at: string | null
+          completed_at: string | null
           created_at: string
           current_wave: number | null
+          driver_arrived_at: string | null
           dropoff_lat: number | null
           dropoff_lng: number | null
           expires_at: string
+          final_amount: number | null
           id: string
           offered_driver_ids: string[] | null
+          pickup_confirmed_at: string | null
           pickup_lat: number
           pickup_lng: number
           requested_ride_type: string | null
           rider_id: string
           search_radius_km: number | null
           selected_driver_id: string | null
+          settlement_status: string | null
           status: string
+          trip_ended_at: string | null
+          trip_started_at: string | null
           updated_at: string
         }
         Insert: {
           assigned_at?: string | null
           assigned_ride_type?: string | null
+          cancelled_at?: string | null
+          completed_at?: string | null
           created_at?: string
           current_wave?: number | null
+          driver_arrived_at?: string | null
           dropoff_lat?: number | null
           dropoff_lng?: number | null
           expires_at?: string
+          final_amount?: number | null
           id?: string
           offered_driver_ids?: string[] | null
+          pickup_confirmed_at?: string | null
           pickup_lat: number
           pickup_lng: number
           requested_ride_type?: string | null
           rider_id: string
           search_radius_km?: number | null
           selected_driver_id?: string | null
+          settlement_status?: string | null
           status?: string
+          trip_ended_at?: string | null
+          trip_started_at?: string | null
           updated_at?: string
         }
         Update: {
           assigned_at?: string | null
           assigned_ride_type?: string | null
+          cancelled_at?: string | null
+          completed_at?: string | null
           created_at?: string
           current_wave?: number | null
+          driver_arrived_at?: string | null
           dropoff_lat?: number | null
           dropoff_lng?: number | null
           expires_at?: string
+          final_amount?: number | null
           id?: string
           offered_driver_ids?: string[] | null
+          pickup_confirmed_at?: string | null
           pickup_lat?: number
           pickup_lng?: number
           requested_ride_type?: string | null
           rider_id?: string
           search_radius_km?: number | null
           selected_driver_id?: string | null
+          settlement_status?: string | null
           status?: string
+          trip_ended_at?: string | null
+          trip_started_at?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -14384,6 +14408,22 @@ export type Database = {
       }
       purge_expired_sessions: { Args: never; Returns: undefined }
       purge_old_login_events: { Args: never; Returns: undefined }
+      ride_complete: {
+        Args: {
+          p_driver_id: string
+          p_final_amount: number
+          p_ride_request_id: string
+        }
+        Returns: Json
+      }
+      ride_confirm_pickup: {
+        Args: { p_driver_id: string; p_ride_request_id: string }
+        Returns: Json
+      }
+      ride_mark_arrived: {
+        Args: { p_driver_id: string; p_ride_request_id: string }
+        Returns: Json
+      }
       search_nearby_items: {
         Args: {
           _category?: string
