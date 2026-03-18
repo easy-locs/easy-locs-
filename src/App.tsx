@@ -376,6 +376,7 @@ const App = () => (
               <Route path="/dispatch/predictive" element={<PredictiveDispatchPage />} />
               <Route path="/merchant/onboarding" element={<MerchantOnboardingPage />} />
               <Route path="/admin/merchant-onboarding" element={<MerchantOnboardingAdminPage />} />
+              <Route path="/admin/executive-dashboard" element={<ExecutiveDashboard />} />
               {/* Travel */}
               <Route path="/travel" element={<TravelHub />} />
               <Route path="/travel/flights" element={<TravelFlights />} />
