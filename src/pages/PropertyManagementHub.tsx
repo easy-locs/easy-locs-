@@ -3,6 +3,7 @@
  * Route: /property-hub
  */
 import { useState, useEffect } from "react";
+import SecurityGate from "@/components/security/SecurityGate";
 import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import SEOHead from "@/components/SEOHead";
