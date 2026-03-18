@@ -18,7 +18,7 @@ import { useWallet } from "@/hooks/useWallet";
 
 const OnboardingChecklist = lazy(() => import("@/components/onboarding/OnboardingChecklist"));
 const WelcomeTour = lazy(() => import("@/components/onboarding/WelcomeTour"));
-const SuperAppHome = lazy(() => import("@/components/storefront/SuperAppHome"));
+const SmartHome = lazy(() => import("@/components/storefront/SmartHome"));
 
 type CountryStat = {
   code: string;
