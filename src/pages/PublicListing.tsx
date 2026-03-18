@@ -5,8 +5,10 @@ import { useI18n } from "@/lib/i18n";
 import { usePublicLocale } from "@/hooks/usePublicLocale";
 import ListingPhotoGallery from "@/components/public/ListingPhotoGallery";
 import BookingForm from "@/components/public/BookingForm";
+import RentalCTAPanel from "@/components/public/RentalCTAPanel";
 import ListingContactButtons from "@/components/public/ListingContactButtons";
 import ShareButtons from "@/components/public/ShareButtons";
+import { RENTAL_TYPES, STAY_TYPES } from "@/lib/listing-types";
 
 import SEOHead from "@/components/SEOHead";
 import { MapPin, Users, Moon, Euro, Loader2, CheckCircle, Share2, ArrowLeft } from "lucide-react";
@@ -224,15 +226,21 @@ const PublicListing = () => {
               {listing.price_per_night > 0 && (
                 <span className="flex items-center gap-1.5 bg-accent/10 text-accent px-3 py-2 rounded-xl font-medium">
                   <Euro className="h-4 w-4" />
-                  <span className="whitespace-nowrap">{listing.price_per_night} € {t("page.listing.per_night")}</span>
+                  <span className="whitespace-nowrap">
+                    {listing.price_per_night} € / {RENTAL_TYPES.includes(listing.listing_type)
+                      ? (t("page.rental.per_month") || "month")
+                      : (t("page.listing.per_night") || "night")}
+                  </span>
                 </span>
               )}
               <span className="flex items-center gap-1.5 bg-muted text-muted-foreground px-3 py-2 rounded-xl">
                 <Users className="h-4 w-4" /> {listing.max_guests} {t("page.listing.guests_max")}
               </span>
-              <span className="flex items-center gap-1.5 bg-muted text-muted-foreground px-3 py-2 rounded-xl">
-                <Moon className="h-4 w-4" /> {t("page.listing.min_nights").replace("{n}", String(listing.min_nights))}
-              </span>
+              {!RENTAL_TYPES.includes(listing.listing_type) && (
+                <span className="flex items-center gap-1.5 bg-muted text-muted-foreground px-3 py-2 rounded-xl">
+                  <Moon className="h-4 w-4" /> {t("page.listing.min_nights").replace("{n}", String(listing.min_nights))}
+                </span>
+              )}
             </div>
 
             {listing.description && (
@@ -282,24 +290,46 @@ const PublicListing = () => {
 
           </div>
 
-          {/* Booking form */}
+          {/* CTA Panel — switches based on listing type */}
           <div className="lg:col-span-1">
             <div className="sticky top-16 bg-card border border-border rounded-2xl p-6 shadow-card space-y-5">
-              <BookingForm listing={listing} property={property} cleaningFee={cleaningFee} />
-              <ListingContactButtons
-                contactEmail={property?.contact_email}
-                hasPhone={property?.has_phone ?? !!property?.contact_phone}
-                hasWhatsapp={property?.has_whatsapp ?? false}
-                telegramUsername={property?.telegram_username}
-                listingTitle={listingTitle}
-                listingUrl={listingUrl}
-                listingPrice={`${listing.price_per_night} € / ${t("page.listing.per_night")}`}
-                listingCity={listingCity}
-                listingCountry={listingCountry}
-                listingId={listing?.id}
-                orgId={listing?.org_id}
-                source="seasonal"
-              />
+              {RENTAL_TYPES.includes(listing.listing_type) ? (
+                <>
+                  <RentalCTAPanel listing={listing} property={property} />
+                  <ListingContactButtons
+                    contactEmail={property?.contact_email}
+                    hasPhone={property?.has_phone ?? !!property?.contact_phone}
+                    hasWhatsapp={property?.has_whatsapp ?? false}
+                    telegramUsername={property?.telegram_username}
+                    listingTitle={listingTitle}
+                    listingUrl={listingUrl}
+                    listingPrice={`${listing.price_per_night} € / ${t("page.rental.per_month") || "month"}`}
+                    listingCity={listingCity}
+                    listingCountry={listingCountry}
+                    listingId={listing?.id}
+                    orgId={listing?.org_id}
+                    source="rental"
+                  />
+                </>
+              ) : (
+                <>
+                  <BookingForm listing={listing} property={property} cleaningFee={cleaningFee} />
+                  <ListingContactButtons
+                    contactEmail={property?.contact_email}
+                    hasPhone={property?.has_phone ?? !!property?.contact_phone}
+                    hasWhatsapp={property?.has_whatsapp ?? false}
+                    telegramUsername={property?.telegram_username}
+                    listingTitle={listingTitle}
+                    listingUrl={listingUrl}
+                    listingPrice={`${listing.price_per_night} € / ${t("page.listing.per_night")}`}
+                    listingCity={listingCity}
+                    listingCountry={listingCountry}
+                    listingId={listing?.id}
+                    orgId={listing?.org_id}
+                    source="seasonal"
+                  />
+                </>
+              )}
             </div>
           </div>
         </div>
