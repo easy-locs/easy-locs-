@@ -11,7 +11,14 @@ export type ConversationType =
   | "booking"    // Booking-linked conversation
   | "deal"       // Deal room negotiation
   | "property"   // Tenant ↔ Landlord
-  | "team";      // Internal team chat
+  | "team"       // Internal team chat
+  | "order"      // Marketplace order lifecycle
+  | "rent_call"  // Rent payment lifecycle
+  | "payment"    // Generic payment / transfer
+  | "travel"     // Travel booking lifecycle
+  | "service"    // Service booking lifecycle
+  | "delivery"   // Delivery mission lifecycle
+  | "support";   // Support ticket
 
 /** Source module for badge display */
 export type SourceModule =
@@ -116,13 +123,20 @@ export const CONV_STATUSES = [
 
 /** Conversation type configuration for display */
 export const CONV_TYPE_CONFIG: Record<ConversationType, { emoji: string; label: string; color: string; border: string; bg: string; text: string }> = {
-  direct:   { emoji: "💬", label: "Direct",   color: "text-accent",       border: "border-accent/20",       bg: "bg-accent/10",       text: "text-accent" },
-  business: { emoji: "🏢", label: "Business", color: "text-violet-600",   border: "border-violet-500/20",   bg: "bg-violet-500/10",   text: "text-violet-600" },
-  listing:  { emoji: "🏷️", label: "Listing",  color: "text-emerald-600",  border: "border-emerald-500/20",  bg: "bg-emerald-500/10",  text: "text-emerald-600" },
-  booking:  { emoji: "📅", label: "Booking",  color: "text-sky-600",      border: "border-sky-500/20",      bg: "bg-sky-500/10",      text: "text-sky-600" },
-  deal:     { emoji: "🤝", label: "Deal",     color: "text-amber-600",    border: "border-amber-500/20",    bg: "bg-amber-500/10",    text: "text-amber-600" },
-  property: { emoji: "🏠", label: "Property", color: "text-primary",      border: "border-primary/20",      bg: "bg-primary/10",      text: "text-primary" },
-  team:     { emoji: "👥", label: "Team",     color: "text-indigo-600",   border: "border-indigo-500/20",   bg: "bg-indigo-500/10",   text: "text-indigo-600" },
+  direct:    { emoji: "💬", label: "Direct",    color: "text-accent",       border: "border-accent/20",       bg: "bg-accent/10",       text: "text-accent" },
+  business:  { emoji: "🏢", label: "Business",  color: "text-violet-600",   border: "border-violet-500/20",   bg: "bg-violet-500/10",   text: "text-violet-600" },
+  listing:   { emoji: "🏷️", label: "Listing",   color: "text-emerald-600",  border: "border-emerald-500/20",  bg: "bg-emerald-500/10",  text: "text-emerald-600" },
+  booking:   { emoji: "📅", label: "Booking",   color: "text-sky-600",      border: "border-sky-500/20",      bg: "bg-sky-500/10",      text: "text-sky-600" },
+  deal:      { emoji: "🤝", label: "Deal",      color: "text-amber-600",    border: "border-amber-500/20",    bg: "bg-amber-500/10",    text: "text-amber-600" },
+  property:  { emoji: "🏠", label: "Property",  color: "text-primary",      border: "border-primary/20",      bg: "bg-primary/10",      text: "text-primary" },
+  team:      { emoji: "👥", label: "Team",      color: "text-indigo-600",   border: "border-indigo-500/20",   bg: "bg-indigo-500/10",   text: "text-indigo-600" },
+  order:     { emoji: "📦", label: "Order",     color: "text-violet-600",   border: "border-violet-500/20",   bg: "bg-violet-500/10",   text: "text-violet-600" },
+  rent_call: { emoji: "🏠", label: "Rent",      color: "text-primary",      border: "border-primary/20",      bg: "bg-primary/10",      text: "text-primary" },
+  payment:   { emoji: "💰", label: "Payment",   color: "text-emerald-600",  border: "border-emerald-500/20",  bg: "bg-emerald-500/10",  text: "text-emerald-600" },
+  travel:    { emoji: "✈️", label: "Travel",    color: "text-sky-600",      border: "border-sky-500/20",      bg: "bg-sky-500/10",      text: "text-sky-600" },
+  service:   { emoji: "🔧", label: "Service",   color: "text-amber-600",    border: "border-amber-500/20",    bg: "bg-amber-500/10",    text: "text-amber-600" },
+  delivery:  { emoji: "🚗", label: "Delivery",  color: "text-orange-600",   border: "border-orange-500/20",   bg: "bg-orange-500/10",   text: "text-orange-600" },
+  support:   { emoji: "🆘", label: "Support",   color: "text-rose-600",     border: "border-rose-500/20",     bg: "bg-rose-500/10",     text: "text-rose-600" },
 };
 
 /** Source module badge configuration */

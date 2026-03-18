@@ -32,6 +32,13 @@ const CONV_TYPE_ICONS: Record<ConversationType, any> = {
   deal: Handshake,
   property: User,
   team: Users,
+  order: Hash,
+  rent_call: Building,
+  payment: Hash,
+  travel: Hash,
+  service: Hash,
+  delivery: Hash,
+  support: MessageCircle,
 };
 
 export default function ConversationList({ threads, loading, selectedThread, onSelectThread, visible }: Props) {
