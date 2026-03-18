@@ -170,7 +170,7 @@ function MissionCard({
 function DriverCard({ driver, onAssign }: { driver: DriverWithDistance; onAssign: () => void }) {
   return (
     <div className="flex items-center gap-3 rounded-xl border border-border/20 bg-card/60 backdrop-blur-md p-3">
-      <div className="w-9 h-9 rounded-full bg-[#22C55E]/20 flex items-center justify-center text-sm">🚗</div>
+      <div className="w-9 h-9 rounded-full bg-success/20 flex items-center justify-center text-sm">🚗</div>
       <div className="flex-1 min-w-0">
         <p className="text-sm font-medium text-foreground truncate">{driver.user_id.slice(0, 8)}</p>
         <div className="flex gap-2 text-[10px] text-muted-foreground">
@@ -179,7 +179,7 @@ function DriverCard({ driver, onAssign }: { driver: DriverWithDistance; onAssign
           <span>{driver.vehicle_type}</span>
         </div>
       </div>
-      <Button size="sm" className="h-7 text-xs bg-[#4F46E5] hover:bg-[#4338CA]" onClick={onAssign}>
+      <Button size="sm" className="h-8 text-xs bg-primary hover:bg-primary/90" onClick={onAssign}>
         Assign
       </Button>
     </div>
