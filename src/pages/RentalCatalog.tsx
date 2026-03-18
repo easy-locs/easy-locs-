@@ -5,9 +5,10 @@ import { useI18n } from "@/lib/i18n";
 import { usePublicLocale } from "@/hooks/usePublicLocale";
 import PublicLanguageSwitcher from "@/components/public/PublicLanguageSwitcher";
 import SEOHead from "@/components/SEOHead";
-import { MapPin, Users, Euro, Loader2, Search, SlidersHorizontal } from "lucide-react";
+import { MapPin, Users, Euro, Loader2, Search, SlidersHorizontal, Key } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import AppLogo from "@/components/AppLogo";
+import { RENTAL_TYPES } from "@/lib/listing-types";
 
 const RentalCatalog = () => {
   const { country, city } = useParams<{ country?: string; city?: string }>();
