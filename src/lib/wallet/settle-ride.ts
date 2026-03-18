@@ -1,18 +1,18 @@
 /**
- * settleCompletedRide — Post-ride wallet settlement (debit rider, credit driver).
+ * settleRide — Post-ride wallet settlement (debit rider, credit driver) + mark settled.
  */
 import { supabase } from "@/integrations/supabase/client";
 
-export async function settleCompletedRide(params: {
+export async function settleRide(params: {
   rideRequestId: string;
-  threadId: string;
   riderId: string;
   driverId: string;
   amount: number;
+  threadId?: string | null;
 }) {
-  const { rideRequestId, threadId, riderId, driverId, amount } = params;
+  const { rideRequestId, riderId, driverId, amount, threadId } = params;
 
-  const txRows = [
+  const rows = [
     {
       user_id: riderId,
       direction: "debit",
@@ -20,7 +20,7 @@ export async function settleCompletedRide(params: {
       currency: "AED",
       context_type: "ride",
       context_id: rideRequestId,
-      reference_id: threadId,
+      reference_id: threadId ?? null,
       status: "completed",
     },
     {
@@ -30,18 +30,18 @@ export async function settleCompletedRide(params: {
       currency: "AED",
       context_type: "ride",
       context_id: rideRequestId,
-      reference_id: threadId,
+      reference_id: threadId ?? null,
       status: "completed",
     },
   ];
 
   const { error: txError } = await supabase
     .from("wallet_transactions" as any)
-    .insert(txRows as any);
+    .insert(rows as any);
 
   if (txError) throw txError;
 
-  const { error: rideError } = await supabase
+  const { error: updateError } = await supabase
     .from("ride_requests" as any)
     .update({
       settlement_status: "settled",
@@ -49,7 +49,7 @@ export async function settleCompletedRide(params: {
     } as any)
     .eq("id", rideRequestId);
 
-  if (rideError) throw rideError;
+  if (updateError) throw updateError;
 
   return { ok: true };
 }
