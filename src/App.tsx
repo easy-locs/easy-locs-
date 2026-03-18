@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { Routes, Route, useLocation } from "react-router-dom";
+import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { CallProvider } from "@/components/call/CallProvider";
 import { useOrbitSessionInit } from "@/hooks/useOrbitSessionInit";
@@ -200,10 +200,14 @@ const SendPage = safeLazy(() => import("./pages/SendPage"), "SendPage");
 const TravelHub = safeLazy(() => import("./pages/travel/TravelHub"), "TravelHub");
 const TravelFlights = safeLazy(() => import("./pages/travel/TravelFlights"), "TravelFlights");
 const TravelStays = safeLazy(() => import("./pages/travel/TravelStays"), "TravelStays");
-const TravelHotels = safeLazy(() => import("./pages/travel/TravelHotels"), "TravelHotels");
 const TravelHotelDetail = safeLazy(() => import("./pages/travel/TravelHotelDetail"), "TravelHotelDetail");
 const TravelStayDetail = safeLazy(() => import("./pages/travel/TravelStayDetail"), "TravelStayDetail");
 const TravelFlightDetail = safeLazy(() => import("./pages/travel/TravelFlightDetail"), "TravelFlightDetail");
+
+// Universe hubs
+const FoodHub = safeLazy(() => import("./pages/universe/FoodHub"), "FoodHub");
+const GroceryHub = safeLazy(() => import("./pages/universe/GroceryHub"), "GroceryHub");
+const ServicesHub = safeLazy(() => import("./pages/universe/ServicesHub"), "ServicesHub");
 
 // Deep-link public pages
 const UserProfilePage = safeLazy(() => import("./pages/deep-link/UserProfilePage"), "UserProfilePage");
@@ -303,17 +307,26 @@ const App = () => (
               <Route path="/qr/:code" element={<QrResolvePage />} />
 
               {/* V7 Public pillars */}
-              <Route path="/discover" element={<DiscoverPage />} />
+              {/* Redirects */}
+              <Route path="/discover" element={<Navigate to="/" replace />} />
               <Route path="/search" element={<DiscoverPage />} />
+
+              {/* Universe hubs */}
+              <Route path="/food" element={<FoodHub />} />
+              <Route path="/grocery" element={<GroceryHub />} />
+              <Route path="/services-hub" element={<ServicesHub />} />
               <Route path="/ride" element={<RidePage />} />
               <Route path="/send" element={<SendPage />} />
+
+              {/* Travel */}
               <Route path="/travel" element={<TravelHub />} />
               <Route path="/travel/flights" element={<TravelFlights />} />
               <Route path="/travel/stays" element={<TravelStays />} />
-              <Route path="/travel/hotels" element={<TravelHotels />} />
+              <Route path="/travel/hotels" element={<Navigate to="/travel/stays" replace />} />
               <Route path="/travel/hotel/:id" element={<TravelHotelDetail />} />
               <Route path="/travel/stay/:id" element={<TravelStayDetail />} />
               <Route path="/travel/flight/:id" element={<TravelFlightDetail />} />
+
               <Route path="/explore" element={<Explore />} />
               <Route path="/super-map" element={<SuperMapRadarPage />} />
               <Route path="/shops" element={<ShopsPage />} />
@@ -329,10 +342,10 @@ const App = () => (
               <Route path="/listing/:id" element={<PublicListing />} />
               <Route path="/book/:slug" element={<PublicServiceBooking />} />
               <Route path="/nearby" element={<LocalServices />} />
-              <Route path="/rentals" element={<RentalCatalog />} />
+              <Route path="/rentals" element={<Navigate to="/property/rent" replace />} />
               <Route path="/rentals/:country" element={<RentalCatalog />} />
               <Route path="/rentals/:country/:city" element={<RentalCatalog />} />
-              <Route path="/stays" element={<StaysCatalog />} />
+              <Route path="/stays" element={<Navigate to="/travel/stays" replace />} />
               <Route path="/stays/:country" element={<StaysCatalog />} />
               <Route path="/stays/:country/:city" element={<StaysCatalog />} />
               <Route path="/host/:orgId" element={<HostCatalog />} />
@@ -436,7 +449,8 @@ const App = () => (
               <Route path="/dashboard/collaboration" element={<ProtectedRoute><Collaboration /></ProtectedRoute>} />
               <Route path="/dashboard/developer" element={<ProtectedRoute><DeveloperPortal /></ProtectedRoute>} />
               <Route path="/dashboard/audit" element={<ProtectedRoute><AuditTrail /></ProtectedRoute>} />
-              <Route path="/dashboard/wallet" element={<ProtectedRoute><WalletHub /></ProtectedRoute>} />
+              <Route path="/dashboard/wallet" element={<Navigate to="/wallet" replace />} />
+              <Route path="/wallet" element={<ProtectedRoute><WalletHub /></ProtectedRoute>} />
               <Route path="/dashboard/deals" element={<ProtectedRoute><DealAnalyticsPage /></ProtectedRoute>} />
               <Route path="/dashboard/service-tracking" element={<ProtectedRoute><ServiceTrackingPage /></ProtectedRoute>} />
               <Route path="/dashboard/seller" element={<ProtectedRoute><SellerHubPage /></ProtectedRoute>} />
