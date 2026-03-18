@@ -74,15 +74,22 @@ export default function RideMap({ pickup, dropoff, userLat, userLng, drivers = [
     const bounds = new mapboxgl.LngLatBounds();
     let hasBounds = false;
 
+    // User position marker
+    if (userLat && userLng) {
+      markersRef.current.push(
+        new mapboxgl.Marker({ element: createUserMarkerElement() }).setLngLat([userLng, userLat]).addTo(map)
+      );
+    }
+
     if (pickup?.lat && pickup?.lng) {
-      const m = new mapboxgl.Marker({ element: createPin("hsl(142, 71%, 45%)", "A") })
+      const m = new mapboxgl.Marker({ element: createPickupMarkerElement() })
         .setLngLat([pickup.lng, pickup.lat]).addTo(map);
       markersRef.current.push(m);
       bounds.extend([pickup.lng, pickup.lat]);
       hasBounds = true;
     }
     if (dropoff?.lat && dropoff?.lng) {
-      const m = new mapboxgl.Marker({ element: createPin("hsl(262, 83%, 58%)", "B") })
+      const m = new mapboxgl.Marker({ element: createDropoffMarkerElement() })
         .setLngLat([dropoff.lng, dropoff.lat]).addTo(map);
       markersRef.current.push(m);
       bounds.extend([dropoff.lng, dropoff.lat]);

@@ -58,16 +58,23 @@ export default function SendMap({ pickup, dropoff, userLat, userLng, className =
     const bounds = new mapboxgl.LngLatBounds();
     let hasBounds = false;
 
+    // User position
+    if (userLat && userLng) {
+      markersRef.current.push(
+        new mapboxgl.Marker({ element: createUserMarkerElement() }).setLngLat([userLng, userLat]).addTo(map)
+      );
+    }
+
     if (pickup?.lat && pickup?.lng) {
       markersRef.current.push(
-        new mapboxgl.Marker({ element: createDot("#22C55E", "📦") }).setLngLat([pickup.lng, pickup.lat]).addTo(map)
+        new mapboxgl.Marker({ element: createPickupMarkerElement() }).setLngLat([pickup.lng, pickup.lat]).addTo(map)
       );
       bounds.extend([pickup.lng, pickup.lat]);
       hasBounds = true;
     }
     if (dropoff?.lat && dropoff?.lng) {
       markersRef.current.push(
-        new mapboxgl.Marker({ element: createDot("#8B5CF6", "📍") }).setLngLat([dropoff.lng, dropoff.lat]).addTo(map)
+        new mapboxgl.Marker({ element: createDropoffMarkerElement() }).setLngLat([dropoff.lng, dropoff.lat]).addTo(map)
       );
       bounds.extend([dropoff.lng, dropoff.lat]);
       hasBounds = true;
