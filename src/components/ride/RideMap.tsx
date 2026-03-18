@@ -50,6 +50,16 @@ export default function RideMap({ pickup, dropoff, userLat, userLng, drivers: ex
   const markersRef = useRef<mapboxgl.Marker[]>([]);
   const [ready, setReady] = useState(false);
 
+  // Live radar
+  const { drivers: radarDrivers, stats, connected, loading: radarLoading, formatEta } = useDriverRadar({
+    lat: userLat || null,
+    lng: userLng || null,
+    radiusKm: 5,
+    type: "ride",
+    enabled: true,
+  });
+
+  const drivers = externalDrivers.length > 0 ? externalDrivers : radarDrivers.map(d => ({ lat: d.lat, lng: d.lng, id: d.id }));
   // Init map
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
