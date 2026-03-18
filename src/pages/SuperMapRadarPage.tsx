@@ -510,8 +510,7 @@ export default function SuperMapRadarPage() {
           <>
             {/* Map container — always mounted when in map mode */}
             <div ref={mapContainerRef} className="absolute inset-0" />
-
-            {/* Fallback overlay while map loads */}
+            <EasyLocsRadarOverlay visible={mapReady} />
             {!mapReady && (
               <div className="absolute inset-0 z-10 overflow-y-auto p-3 pb-24 bg-background">
                 <MapFallback onRetry={() => window.location.reload()} />
