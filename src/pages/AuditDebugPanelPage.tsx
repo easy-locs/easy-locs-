@@ -2,6 +2,7 @@ import { useState } from "react";
 import { BackCard } from "@/components/ui/back-card";
 import { useActiveWorkspace } from "@/hooks/useActiveWorkspace";
 import { runMasterAudit } from "@/lib/audit/master-audit-engine";
+import { seedAuditDemoData } from "@/lib/audit/seed-demo-data";
 import { useAuditReport } from "@/hooks/useAuditReport";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -84,9 +85,22 @@ export default function AuditDebugPanelPage() {
   const { activeWorkspace } = useActiveWorkspace();
   const [reportId, setReportId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [seeding, setSeeding] = useState(false);
   const { report, findings, gates } = useAuditReport(reportId ?? undefined);
 
   const [error, setError] = useState<string | null>(null);
+
+  const seed = async () => {
+    setSeeding(true);
+    setError(null);
+    try {
+      await seedAuditDemoData(activeWorkspace?.id);
+    } catch (err: any) {
+      setError(err?.message || "Erreur lors du seed.");
+    } finally {
+      setSeeding(false);
+    }
+  };
 
   const run = async () => {
     setLoading(true);
@@ -160,6 +174,25 @@ export default function AuditDebugPanelPage() {
               <span className="flex items-center gap-2">
                 <Zap className="h-4 w-4" />
                 Lancer l'audit système
+              </span>
+            )}
+          </Button>
+
+          <Button
+            onClick={seed}
+            disabled={seeding || loading}
+            variant="outline"
+            className="w-full h-10 text-xs rounded-xl border-accent/30 text-accent hover:bg-accent/10"
+          >
+            {seeding ? (
+              <span className="flex items-center gap-2">
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                Seed en cours…
+              </span>
+            ) : (
+              <span className="flex items-center gap-2">
+                <Activity className="h-3.5 w-3.5" />
+                Injecter données démo
               </span>
             )}
           </Button>
