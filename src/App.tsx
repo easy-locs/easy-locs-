@@ -562,6 +562,7 @@ const App = () => (
               <Route path="/admin/driver-live" element={<ProtectedRoute><DriverLivePage /></ProtectedRoute>} />
               <Route path="/admin/driver-picker" element={<ProtectedRoute><DriverPickerPage /></ProtectedRoute>} />
               <Route path="/admin/food-checkout" element={<ProtectedRoute><FoodOrderCheckoutPage /></ProtectedRoute>} />
+              <Route path="/admin/delivery-proof/:orderId" element={<ProtectedRoute><DeliveryProofPage /></ProtectedRoute>} />
 
               <Route path="/app/orbit" element={<ProtectedRoute><OrbitAppShell><OrbitHome /></OrbitAppShell></ProtectedRoute>} />
               <Route path="/app/*" element={<ProtectedRoute><OrbitAppShell><OrbitHome /></OrbitAppShell></ProtectedRoute>} />
