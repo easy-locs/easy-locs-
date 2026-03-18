@@ -1,5 +1,6 @@
 /**
  * OrderCTABlock — Renders action buttons based on role and order status.
+ * Unified sizing: consistent with Delivery mission CTAs.
  */
 import { Button } from "@/components/ui/button";
 import type { OrderCTA } from "@/lib/order/unified-order-types";
@@ -20,7 +21,9 @@ export default function OrderCTABlock({ ctas, onAction, loading }: Props) {
           key={cta.action}
           size="sm"
           variant={cta.variant === "success" ? "default" : cta.variant}
-          className={cta.variant === "success" ? "bg-success text-success-foreground hover:bg-success/90" : undefined}
+          className={`flex-1 min-w-[120px] text-xs h-9 ${
+            cta.variant === "success" ? "bg-[#22C55E] text-white hover:bg-[#22C55E]/90" : ""
+          }`}
           onClick={() => onAction(cta.action)}
           disabled={loading}
         >

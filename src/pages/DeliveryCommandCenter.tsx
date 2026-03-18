@@ -102,7 +102,7 @@ function MissionCard({
       animate={{ opacity: 1, y: 0 }}
       className={`rounded-2xl border p-3 transition-all cursor-pointer ${
         selected
-          ? "border-[#4F46E5]/60 bg-[#4F46E5]/10 shadow-lg shadow-[#4F46E5]/10"
+          ? "border-primary/60 bg-primary/10 shadow-lg shadow-primary/10"
           : "border-border/20 bg-card/60 backdrop-blur-md"
       }`}
       onClick={onSelect}
@@ -116,7 +116,7 @@ function MissionCard({
           </Badge>
         </div>
         {mission.delivery_fee != null && (
-          <span className="text-xs font-bold text-[#22C55E]">
+          <span className="text-xs font-bold text-success">
             {mission.delivery_fee.toFixed(2)} {mission.currency || "EUR"}
           </span>
         )}
@@ -125,11 +125,11 @@ function MissionCard({
       {/* Addresses */}
       <div className="space-y-1 mb-2">
         <div className="flex items-start gap-2">
-          <div className="w-2 h-2 rounded-full bg-[#22C55E] mt-1.5 shrink-0" />
+          <div className="w-2 h-2 rounded-full bg-success mt-1.5 shrink-0" />
           <p className="text-xs text-foreground truncate">{mission.pickup_address || "Pickup"}</p>
         </div>
         <div className="flex items-start gap-2">
-          <div className="w-2 h-2 rounded-full bg-[#EF4444] mt-1.5 shrink-0" />
+          <div className="w-2 h-2 rounded-full bg-destructive mt-1.5 shrink-0" />
           <p className="text-xs text-foreground truncate">{mission.dropoff_address || "Dropoff"}</p>
         </div>
       </div>
@@ -170,7 +170,7 @@ function MissionCard({
 function DriverCard({ driver, onAssign }: { driver: DriverWithDistance; onAssign: () => void }) {
   return (
     <div className="flex items-center gap-3 rounded-xl border border-border/20 bg-card/60 backdrop-blur-md p-3">
-      <div className="w-9 h-9 rounded-full bg-[#22C55E]/20 flex items-center justify-center text-sm">🚗</div>
+      <div className="w-9 h-9 rounded-full bg-success/20 flex items-center justify-center text-sm">🚗</div>
       <div className="flex-1 min-w-0">
         <p className="text-sm font-medium text-foreground truncate">{driver.user_id.slice(0, 8)}</p>
         <div className="flex gap-2 text-[10px] text-muted-foreground">
@@ -179,7 +179,7 @@ function DriverCard({ driver, onAssign }: { driver: DriverWithDistance; onAssign
           <span>{driver.vehicle_type}</span>
         </div>
       </div>
-      <Button size="sm" className="h-7 text-xs bg-[#4F46E5] hover:bg-[#4338CA]" onClick={onAssign}>
+      <Button size="sm" className="h-8 text-xs bg-primary hover:bg-primary/90" onClick={onAssign}>
         Assign
       </Button>
     </div>
@@ -187,22 +187,21 @@ function DriverCard({ driver, onAssign }: { driver: DriverWithDistance; onAssign
 }
 
 /* ═══════════════════════════════════════════════
-   EMPTY STATE
+   EMPTY STATE — using shared component
    ═══════════════════════════════════════════════ */
+import MapEmptyState from "@/components/map/MapEmptyState";
+import MapLoadingSkeleton from "@/components/map/MapLoadingSkeleton";
+
 function EmptyState({ driversCount, onRefresh }: { driversCount: number; onRefresh: () => void }) {
   return (
-    <div className="flex flex-col items-center justify-center py-12 px-6 text-center">
-      <div className="w-16 h-16 rounded-full bg-[#4F46E5]/10 flex items-center justify-center mb-4">
-        <Truck className="h-7 w-7 text-[#4F46E5]" />
-      </div>
-      <h3 className="text-sm font-semibold text-foreground mb-1">No active deliveries</h3>
-      <p className="text-xs text-muted-foreground mb-2">
-        {driversCount} driver{driversCount !== 1 ? "s" : ""} online and ready
-      </p>
-      <Button size="sm" variant="outline" className="text-xs" onClick={onRefresh}>
-        <RotateCcw className="h-3 w-3 mr-1" /> Refresh
-      </Button>
-    </div>
+    <MapEmptyState
+      icon={<Truck className="h-6 w-6 text-primary/60" />}
+      title="No active deliveries"
+      subtitle="New missions will appear here in real time"
+      stat={`${driversCount} driver${driversCount !== 1 ? "s" : ""} online and ready`}
+      onRetry={onRefresh}
+      retryLabel="Refresh"
+    />
   );
 }
 
@@ -414,7 +413,7 @@ export default function DeliveryCommandCenter() {
         <CommandMap mission={selectedMission} drivers={drivers} userLat={userLat} userLng={userLng} onRecenter={requestLocation} />
       </div>
 
-      {/* Filters */}
+      {/* Filters — unified chip style */}
       <div className="px-3 mb-3">
         <ScrollArea className="w-full">
           <div className="flex gap-1.5 pb-1">
@@ -422,10 +421,10 @@ export default function DeliveryCommandCenter() {
               <button
                 key={f.key}
                 onClick={() => setFilter(f.key as MissionFilter)}
-                className={`px-3 py-1.5 rounded-full text-[11px] font-medium whitespace-nowrap transition-all ${
+                className={`px-3 py-1.5 rounded-full text-[11px] font-medium whitespace-nowrap transition-all active:scale-95 ${
                   filter === f.key
-                    ? "bg-[#4F46E5] text-white shadow-md shadow-[#4F46E5]/30"
-                    : "bg-card/60 text-muted-foreground border border-border/20"
+                    ? "bg-primary text-primary-foreground shadow-md shadow-primary/30"
+                    : "bg-card/60 text-muted-foreground border border-border/20 hover:border-border/40"
                 }`}
               >
                 {f.label}
@@ -438,9 +437,7 @@ export default function DeliveryCommandCenter() {
       {/* Mission List */}
       <div className="px-3 space-y-2">
         {loading ? (
-          Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="h-28 rounded-2xl bg-card/40 animate-pulse border border-border/10" />
-          ))
+          <MapLoadingSkeleton showMap={false} cardCount={3} />
         ) : missions.length === 0 ? (
           <EmptyState driversCount={stats.availableDrivers} onRefresh={refetch} />
         ) : (
