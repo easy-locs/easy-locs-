@@ -34,6 +34,16 @@ export interface ScorableItem {
   lastInteractionDays?: number | null;
   // Reliability
   reliabilityScore?: number | null; // 0-1
+  // Operational signals (Food/Grocery/Services)
+  acceptanceRate?: number | null;   // 0-1
+  cancelRate?: number | null;       // 0-1 (lower = better)
+  avgPrepMinutes?: number | null;   // real prep/fulfillment speed
+  deliveryRadiusKm?: number | null; // real delivery radius
+  // Intent signals (Travel/Property extended)
+  availabilityFreshness?: number | null; // 0-1 how recently updated
+  bookingConversionByZone?: number | null; // 0-1
+  contentCompleteness?: number | null;    // 0-1
+  priceCompetitiveness?: number | null;   // 0-1
   // Generic
   createdAt?: string | null;
   [key: string]: any;
