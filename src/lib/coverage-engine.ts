@@ -66,9 +66,10 @@ const CATEGORY_FAMILIES: Record<string, CoverageFamily> = {
 
 /* ═══ Family Default Radii ═══ */
 const FAMILY_DEFAULTS: Record<CoverageFamily, { default_radius_km: number; min_radius_km: number; max_radius_km: number }> = {
-  hyperlocal:   { default_radius_km: 3,  min_radius_km: 0.5, max_radius_km: 8 },
-  city_service: { default_radius_km: 15, min_radius_km: 3,   max_radius_km: 50 },
-  wide_search:  { default_radius_km: 50, min_radius_km: 5,   max_radius_km: 200 },
+  hyperlocal:    { default_radius_km: 3,   min_radius_km: 0.5, max_radius_km: 8 },
+  city_service:  { default_radius_km: 15,  min_radius_km: 3,   max_radius_km: 50 },
+  wide_search:   { default_radius_km: 50,  min_radius_km: 5,   max_radius_km: 200 },
+  unrestricted:  { default_radius_km: 500, min_radius_km: 10,  max_radius_km: 9999 },
 };
 
 /* ═══ Category-Specific Rules ═══ */
