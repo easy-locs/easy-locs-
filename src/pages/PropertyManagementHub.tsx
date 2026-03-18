@@ -3,6 +3,7 @@
  * Route: /property-hub
  */
 import { useState, useEffect } from "react";
+import SecurityGate from "@/components/security/SecurityGate";
 import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import SEOHead from "@/components/SEOHead";
@@ -42,7 +43,7 @@ const landlordNav = [
 const tenantNav = [
   { label: "My Property", desc: "Your current home", icon: Home, path: "/tenant" },
   { label: "My Rent", desc: "Receipts & history", icon: Receipt, path: "/tenant/receipts" },
-  { label: "Payments", desc: "Pay rent & bills", icon: Wallet, path: "/tenant/pay" },
+  { label: "Payments", desc: "Pay rent & bills", icon: Wallet, path: "/dashboard/wallet?context=rent" },
   { label: "Maintenance Requests", desc: "Report issues", icon: Wrench, path: "/tenant/requests" },
   { label: "Documents", desc: "Lease & shared files", icon: FileText, path: "/tenant/documents" },
 ];
@@ -114,6 +115,7 @@ export default function PropertyManagementHub() {
   ];
 
   return (
+    <SecurityGate label="Property Management" timeoutMinutes={10}>
     <>
       <SEOHead title="Property Management" description="Manage your properties and tenancies." />
       <div className="min-h-screen bg-background pb-20">
@@ -286,5 +288,6 @@ export default function PropertyManagementHub() {
         </div>
       </div>
     </>
+    </SecurityGate>
   );
 }

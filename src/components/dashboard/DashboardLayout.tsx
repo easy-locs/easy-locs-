@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { useI18n, type Locale } from "@/lib/i18n";
+import { useI18n } from "@/lib/i18n";
 import { useSubscriptionGating } from "@/hooks/useSubscriptionGating";
 import { useCountryContext, appendCountryToPath, isGlobalPage } from "@/hooks/useCountryContext";
 import { getCountryEntryOrDefault } from "@/lib/global-country-registry";
@@ -20,7 +20,7 @@ import {
   Shield, UsersRound, Banknote, BarChart3,
 } from "lucide-react";
 
-const LOCALE_FLAGS: Record<Locale, string> = { fr: "🇫🇷", en: "🇬🇧", es: "🇪🇸", de: "🇩🇪", it: "🇮🇹", pt: "🇵🇹", nl: "🇳🇱", pl: "🇵🇱", tr: "🇹🇷", ar: "🇸🇦", ja: "🇯🇵", ko: "🇰🇷", zh: "🇨🇳", hi: "🇮🇳", th: "🇹🇭", vi: "🇻🇳", id: "🇮🇩", ms: "🇲🇾", sv: "🇸🇪", da: "🇩🇰", nb: "🇳🇴", fi: "🇫🇮", el: "🇬🇷", cs: "🇨🇿", hu: "🇭🇺", ro: "🇷🇴", hr: "🇭🇷", bg: "🇧🇬", sk: "🇸🇰", he: "🇮🇱", uk: "🇺🇦" };
+
 
 interface NavItem {
   icon: React.ElementType;
@@ -45,11 +45,11 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [orgSelectorOpen, setOrgSelectorOpen] = useState(false);
 
-  const [langOpen, setLangOpen] = useState(false);
+  
   const location = useLocation();
   const navigate = useNavigate();
   const { user, signOut, subscription, activeRole, hasDualRole, switchRole, orgId, allOrgs, switchOrg } = useAuth();
-  const { locale, setLocale, t, availableLocales } = useI18n();
+  const { t } = useI18n();
   const { currentTier, isSubscribed } = useSubscriptionGating();
   const activeCountry = useCountryContext();
 
@@ -473,34 +473,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
           <div className="flex-1" />
           {/* Hub quick access — desktop topbar */}
           <HubQuickAccess variant="topbar" />
-          {/* Language selector */}
-          <div className="relative">
-            <button
-              onClick={() => setLangOpen(!langOpen)}
-              className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-            >
-              <span className="text-lg">{LOCALE_FLAGS[locale]}</span>
-            </button>
-            {langOpen && (
-              <>
-                <div className="fixed inset-0 z-40" onClick={() => setLangOpen(false)} />
-                <div className="absolute right-0 top-full mt-1 bg-card border border-border rounded-lg shadow-lg py-1 z-50 min-w-[140px] max-h-64 overflow-y-auto">
-                  {availableLocales.map((l) => (
-                    <button
-                      key={l.value}
-                      onClick={() => { setLocale(l.value); setLangOpen(false); }}
-                      className={`w-full flex items-center gap-2 px-3 py-1.5 text-sm hover:bg-muted transition-colors ${
-                        locale === l.value ? "text-accent font-medium" : "text-foreground"
-                      }`}
-                    >
-                      <span>{LOCALE_FLAGS[l.value]}</span>
-                      {l.label}
-                    </button>
-                  ))}
-                </div>
-              </>
-            )}
-          </div>
+          {/* Language auto-detected — manual change in Settings only */}
           <ThemeSwitcher />
           <NotificationBell />
         </header>
