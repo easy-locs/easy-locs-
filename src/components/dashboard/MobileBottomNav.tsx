@@ -8,6 +8,7 @@ import { useI18n } from "@/lib/i18n";
 
 const FALLBACKS: Record<string, string> = {
   "nav.marketplace": "Marketplace",
+  "nav.radar": "Radar",
   "nav.shops": "Shops",
   "nav.business": "Business",
   "nav.property": "Property",
