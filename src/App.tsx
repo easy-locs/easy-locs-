@@ -361,6 +361,10 @@ const App = () => (
               <Route path="/team/command-center" element={<TeamCommandCenterPage />} />
               <Route path="/admin/executive-kpi" element={<ExecutiveKPIBoardPage />} />
               <Route path="/team/permissions" element={<TeamPermissionsPage />} />
+              <Route path="/admin/ai-ops-chat" element={<AIOpsChatPage />} />
+              <Route path="/admin/financial-recon" element={<FinancialReconPage />} />
+              <Route path="/admin/recon-alerts" element={<ReconAlertsPage />} />
+              <Route path="/call/:callSessionId" element={<CallSessionPage />} />
 
               {/* Travel */}
               <Route path="/travel" element={<TravelHub />} />
