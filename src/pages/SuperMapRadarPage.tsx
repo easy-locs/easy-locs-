@@ -127,28 +127,73 @@ function NearbyCard({ listing, index }: { listing: MapListing; index: number }) 
   );
 }
 
-/* ─── Map Skeleton ─── */
-function MapSkeleton() {
+/* ─── Map Fallback ─── */
+function MapFallback({ onRetry }: { onRetry: () => void }) {
   return (
-    <div className="relative w-full h-full rounded-2xl bg-muted/30 overflow-hidden flex items-center justify-center">
-      {/* Fake map grid */}
-      <div className="absolute inset-0 opacity-[0.04]" style={{
-        backgroundImage: "linear-gradient(hsl(var(--foreground)) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--foreground)) 1px, transparent 1px)",
-        backgroundSize: "40px 40px",
-      }} />
-      {/* Animated radar sweep */}
-      <div className="relative">
-        <div className="w-20 h-20 rounded-full border-2 border-primary/20 flex items-center justify-center">
-          <div className="w-12 h-12 rounded-full border border-primary/30 flex items-center justify-center">
-            <div className="w-3 h-3 rounded-full bg-primary/60 animate-pulse" />
-          </div>
-        </div>
-        <div className="absolute inset-0 rounded-full border-2 border-primary/10 animate-ping" style={{ animationDuration: "2s" }} />
+    <div className="rounded-2xl bg-gradient-to-br from-[hsl(var(--card))] to-[hsl(var(--muted)/0.5)] p-4 h-[300px] flex flex-col justify-between">
+      {/* Top indicator */}
+      <div className="flex items-center gap-2">
+        <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
+        <span className="text-sm text-muted-foreground">Chargement de la carte…</span>
       </div>
-      <p className="absolute bottom-6 text-xs font-medium text-muted-foreground">Loading radar…</p>
+      {/* Fake map area */}
+      <div className="flex-1 flex items-center justify-center my-3">
+        <div className="w-full h-[180px] rounded-xl bg-muted/20 border border-border/20 flex flex-col items-center justify-center gap-3">
+          {/* Radar animation */}
+          <div className="relative">
+            <div className="w-16 h-16 rounded-full border-2 border-primary/20 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-full border border-primary/30 flex items-center justify-center">
+                <div className="w-3 h-3 rounded-full bg-primary/60 animate-pulse" />
+              </div>
+            </div>
+            <div className="absolute inset-0 rounded-full border-2 border-primary/10 animate-ping" style={{ animationDuration: "2s" }} />
+          </div>
+          <span className="text-[11px] text-muted-foreground font-medium">Map preview</span>
+        </div>
+      </div>
+      {/* Retry CTA */}
+      <button
+        onClick={onRetry}
+        className="w-full py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-semibold transition-opacity hover:opacity-90 active:scale-[0.97]"
+      >
+        Réessayer
+      </button>
     </div>
   );
 }
+
+/* ─── Nearby Preview (static fallback cards) ─── */
+function NearbyPreview({ items }: { items: { title: string; subtitle: string; distance: string }[] }) {
+  return (
+    <div className="mt-3 space-y-2">
+      <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-1">À proximité</p>
+      {items.map((item, i) => (
+        <motion.div
+          key={i}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.2, delay: i * 0.06 }}
+          className="flex items-center gap-3 p-3 rounded-xl bg-card border border-border/30"
+        >
+          <div className="w-10 h-10 rounded-lg bg-muted/40 flex items-center justify-center shrink-0">
+            <MapPin className="h-4 w-4 text-muted-foreground" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold text-foreground truncate">{item.title}</p>
+            <p className="text-[11px] text-muted-foreground">{item.subtitle}</p>
+          </div>
+          <span className="text-[11px] font-semibold text-primary shrink-0">{item.distance}</span>
+        </motion.div>
+      ))}
+    </div>
+  );
+}
+
+const FALLBACK_NEARBY = [
+  { title: "Pizza Dubai Marina", subtitle: "Livraison 20 min", distance: "1.2 km" },
+  { title: "Beauty Salon JLT", subtitle: "⭐ 4.8", distance: "800 m" },
+  { title: "Car Wash Mobile", subtitle: "Service à domicile", distance: "2.5 km" },
+];
 
 /* ─── Legend ─── */
 function MapLegend() {
@@ -464,29 +509,22 @@ export default function SuperMapRadarPage() {
             {/* Map container — always mounted when in map mode */}
             <div ref={mapContainerRef} className="absolute inset-0" />
 
-            {/* Skeleton overlay while map loads */}
+            {/* Fallback overlay while map loads */}
             {!mapReady && (
-              <div className="absolute inset-0 z-10">
-                <MapSkeleton />
+              <div className="absolute inset-0 z-10 overflow-y-auto p-3 pb-24 bg-background">
+                <MapFallback onRetry={() => window.location.reload()} />
+                {!loading && filtered.length > 0 ? (
+                  <div className="mt-3 space-y-2">
+                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-1">À proximité</p>
+                    {filtered.slice(0, 3).map((l, i) => (
+                      <NearbyCard key={l.id} listing={l} index={i} />
+                    ))}
+                  </div>
+                ) : (
+                  <NearbyPreview items={FALLBACK_NEARBY} />
+                )}
               </div>
             )}
-
-            {/* Nearby cards when map not ready or few results */}
-            <AnimatePresence>
-              {!mapReady && !loading && filtered.length > 0 && (
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 20 }}
-                  className="absolute bottom-20 left-3 right-3 z-20 space-y-2"
-                >
-                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-1">Nearby</p>
-                  {filtered.slice(0, 3).map((l, i) => (
-                    <NearbyCard key={l.id} listing={l} index={i} />
-                  ))}
-                </motion.div>
-              )}
-            </AnimatePresence>
 
             {/* Legend */}
             {mapReady && <MapLegend />}
