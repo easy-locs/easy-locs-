@@ -10,7 +10,7 @@ import { getCountryEntryOrDefault } from "@/lib/global-country-registry";
 import EntityActivityLog from "@/components/communication/EntityActivityLog";
 import { Button } from "@/components/ui/button";
 import {
-  ArrowLeft, Home, Users, FileText, Wallet, Wrench, ClipboardList,
+  Home, Users, FileText, Wallet, Wrench, ClipboardList,
   Calendar, MapPin, Ruler, Thermometer, Key, Building2,
   TrendingUp, AlertTriangle, CheckCircle, Eye, Sofa,
   CalendarRange, Store, ChevronRight, ExternalLink,
@@ -20,6 +20,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import PropertyHubBreadcrumb from "@/components/property/PropertyHubBreadcrumb";
 
 type PropertyDetail = {
   id: string;
