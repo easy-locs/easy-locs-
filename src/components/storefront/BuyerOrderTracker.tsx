@@ -272,6 +272,7 @@ export default function BuyerOrderTracker({ orderId, buyerEmail }: BuyerOrderTra
               </div>
             </CardContent>
           </Card>
+          </Link>
         );
       })}
     </div>
