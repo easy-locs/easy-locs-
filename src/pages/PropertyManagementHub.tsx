@@ -106,6 +106,13 @@ export default function PropertyManagementHub() {
     return () => clearTimeout(timeout);
   }, [orgId]);
 
+  useEffect(() => {
+    if ((location.state as { propertyHubExit?: boolean } | null)?.propertyHubExit) {
+      setRole(null);
+      window.scrollTo(0, 0);
+    }
+  }, [location.state]);
+
   const navItems = role === "landlord" ? landlordNav : role === "tenant" ? tenantNav : [];
 
   const kpis = [
