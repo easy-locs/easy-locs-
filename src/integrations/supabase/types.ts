@@ -2826,6 +2826,42 @@ export type Database = {
           },
         ]
       }
+      driver_clusters: {
+        Row: {
+          center_lat: number | null
+          center_lng: number | null
+          city: string | null
+          cluster_score: number | null
+          demand_score: number | null
+          driver_count: number | null
+          id: string
+          updated_at: string | null
+          zone_key: string
+        }
+        Insert: {
+          center_lat?: number | null
+          center_lng?: number | null
+          city?: string | null
+          cluster_score?: number | null
+          demand_score?: number | null
+          driver_count?: number | null
+          id?: string
+          updated_at?: string | null
+          zone_key: string
+        }
+        Update: {
+          center_lat?: number | null
+          center_lng?: number | null
+          city?: string | null
+          cluster_score?: number | null
+          demand_score?: number | null
+          driver_count?: number | null
+          id?: string
+          updated_at?: string | null
+          zone_key?: string
+        }
+        Relationships: []
+      }
       driver_earnings: {
         Row: {
           created_at: string
@@ -2901,6 +2937,36 @@ export type Database = {
           payout_status?: string | null
           processed_at?: string | null
           reference?: string | null
+        }
+        Relationships: []
+      }
+      driver_positioning: {
+        Row: {
+          created_at: string | null
+          demand_score: number | null
+          driver_id: string | null
+          id: string
+          reason: string | null
+          suggested_lat: number | null
+          suggested_lng: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          demand_score?: number | null
+          driver_id?: string | null
+          id?: string
+          reason?: string | null
+          suggested_lat?: number | null
+          suggested_lng?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          demand_score?: number | null
+          driver_id?: string | null
+          id?: string
+          reason?: string | null
+          suggested_lat?: number | null
+          suggested_lng?: number | null
         }
         Relationships: []
       }
@@ -3217,6 +3283,36 @@ export type Database = {
           reason?: string | null
           shop_id?: string
           tier?: string
+        }
+        Relationships: []
+      }
+      fraud_events: {
+        Row: {
+          created_at: string | null
+          event_type: string | null
+          id: string
+          metadata: Json | null
+          ride_request_id: string | null
+          severity: number | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          event_type?: string | null
+          id?: string
+          metadata?: Json | null
+          ride_request_id?: string | null
+          severity?: number | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          event_type?: string | null
+          id?: string
+          metadata?: Json | null
+          ride_request_id?: string | null
+          severity?: number | null
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -5326,6 +5422,30 @@ export type Database = {
         }
         Relationships: []
       }
+      ops_live_metrics: {
+        Row: {
+          context: Json | null
+          id: string
+          metric_key: string
+          metric_value: number | null
+          recorded_at: string | null
+        }
+        Insert: {
+          context?: Json | null
+          id?: string
+          metric_key: string
+          metric_value?: number | null
+          recorded_at?: string | null
+        }
+        Update: {
+          context?: Json | null
+          id?: string
+          metric_key?: string
+          metric_value?: number | null
+          recorded_at?: string | null
+        }
+        Relationships: []
+      }
       orbit_launch_audits: {
         Row: {
           analytics_ready: boolean | null
@@ -7184,6 +7304,36 @@ export type Database = {
           ride_request_id?: string
           status?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      ride_eta_snapshots: {
+        Row: {
+          distance_km: number | null
+          driver_id: string | null
+          eta_minutes: number | null
+          id: string
+          recorded_at: string | null
+          ride_request_id: string
+          traffic_factor: number | null
+        }
+        Insert: {
+          distance_km?: number | null
+          driver_id?: string | null
+          eta_minutes?: number | null
+          id?: string
+          recorded_at?: string | null
+          ride_request_id: string
+          traffic_factor?: number | null
+        }
+        Update: {
+          distance_km?: number | null
+          driver_id?: string | null
+          eta_minutes?: number | null
+          id?: string
+          recorded_at?: string | null
+          ride_request_id?: string
+          traffic_factor?: number | null
         }
         Relationships: []
       }
@@ -13515,6 +13665,27 @@ export type Database = {
           },
         ]
       }
+      user_risk_profiles: {
+        Row: {
+          fraud_flags: Json | null
+          last_updated: string | null
+          risk_score: number | null
+          user_id: string
+        }
+        Insert: {
+          fraud_flags?: Json | null
+          last_updated?: string | null
+          risk_score?: number | null
+          user_id: string
+        }
+        Update: {
+          fraud_flags?: Json | null
+          last_updated?: string | null
+          risk_score?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string
@@ -13565,6 +13736,30 @@ export type Database = {
           is_current?: boolean | null
           last_active_at?: string
           os?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_subscriptions: {
+        Row: {
+          expires_at: string | null
+          plan: string | null
+          started_at: string | null
+          status: string | null
+          user_id: string
+        }
+        Insert: {
+          expires_at?: string | null
+          plan?: string | null
+          started_at?: string | null
+          status?: string | null
+          user_id: string
+        }
+        Update: {
+          expires_at?: string | null
+          plan?: string | null
+          started_at?: string | null
+          status?: string | null
           user_id?: string
         }
         Relationships: []
