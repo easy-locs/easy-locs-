@@ -113,8 +113,8 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     return <Navigate to="/dashboard" replace />;
   }
 
-  // Subscription gate: redirect free landlord accounts away from pro pages
-  if (activeRole === "landlord" && !subscription.loading && !subscription.subscribed) {
+  // Subscription gate: redirect free accounts away from pro pages (applies to ALL roles)
+  if (!subscription.loading && !subscription.subscribed) {
     const isProPath = PRO_DASHBOARD_PREFIXES.some(prefix => location.pathname.startsWith(prefix));
     if (isProPath) {
       return <Navigate to="/dashboard/billing" replace />;
