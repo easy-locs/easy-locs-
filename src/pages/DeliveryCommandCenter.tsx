@@ -437,9 +437,7 @@ export default function DeliveryCommandCenter() {
       {/* Mission List */}
       <div className="px-3 space-y-2">
         {loading ? (
-          Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="h-28 rounded-2xl bg-card/40 animate-pulse border border-border/10" />
-          ))
+          <MapLoadingSkeleton showMap={false} cardCount={3} />
         ) : missions.length === 0 ? (
           <EmptyState driversCount={stats.availableDrivers} onRefresh={refetch} />
         ) : (
