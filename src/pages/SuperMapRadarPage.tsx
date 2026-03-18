@@ -197,22 +197,35 @@ const FALLBACK_NEARBY = [
 
 /* ─── Legend ─── */
 function MapLegend() {
-  const items: [string, string][] = [
-    ["hsl(40,58%,58%)", "Store"],
-    ["hsl(45,96%,56%)", "Mobile Seller"],
-    ["hsl(263,80%,75%)", "Mobile Service"],
-    ["hsl(160,65%,65%)", "Driver"],
+  const items: [string, string, boolean][] = [
+    ["#D4A853", "Store", false],
+    ["#fbbf24", "Mobile Seller", true],
+    ["#F59E0B", "Mobile Service", true],
+    ["#22C55E", "Driver", true],
   ];
   return (
-    <div className="absolute bottom-20 left-3 z-10 rounded-xl border border-border/30 bg-card/95 backdrop-blur-md p-2.5 shadow-lg">
+    <div className="absolute bottom-20 left-3 z-10 rounded-xl border border-border/20 bg-card/90 backdrop-blur-lg p-3 shadow-xl">
       <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">Legend</span>
-      <div className="mt-1.5 space-y-1">
-        {items.map(([color, label]) => (
-          <div key={label} className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: color }} />
-            <span className="text-[10px] text-foreground/80">{label}</span>
+      <div className="mt-2 space-y-1.5">
+        {items.map(([color, label, isLive]) => (
+          <div key={label} className="flex items-center gap-2.5">
+            <span className="relative flex items-center justify-center w-4 h-4">
+              <span className="w-3 h-3 rounded-full shrink-0" style={{ background: color, boxShadow: `0 0 6px ${color}44` }} />
+              {isLive && <span className="absolute inset-0 rounded-full border border-current opacity-30 animate-ping" style={{ color, animationDuration: "2.5s" }} />}
+            </span>
+            <span className="text-[11px] text-foreground/80 font-medium">{label}</span>
           </div>
         ))}
+        <div className="border-t border-border/20 pt-1.5 mt-1.5 space-y-1">
+          <div className="flex items-center gap-2.5">
+            <span className="w-4 h-4 rounded-full border border-primary/30 bg-primary/5 shrink-0" />
+            <span className="text-[10px] text-muted-foreground">Coverage</span>
+          </div>
+          <div className="flex items-center gap-2.5">
+            <span className="w-4 h-4 rounded-full border border-dashed border-[#06B6D4]/40 bg-[#06B6D4]/5 shrink-0" />
+            <span className="text-[10px] text-muted-foreground">Live radius</span>
+          </div>
+        </div>
       </div>
     </div>
   );
