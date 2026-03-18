@@ -230,6 +230,7 @@ const PaymentNotices = () => {
   return (
     <DashboardLayout>
       <FeatureGate feature="unlimited_tenants" featureLabel={t("page.notices.title")}>
+        <PropertyHubBreadcrumb currentPage={t("page.notices.title")} />
         <div className="max-w-5xl mx-auto">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
             <div className="page-header mb-0">

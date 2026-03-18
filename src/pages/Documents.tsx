@@ -99,6 +99,7 @@ const Documents = () => {
   return (
     <DashboardLayout>
       <FeatureGate feature="legal_documents" featureLabel={t("page.documents.title")}>
+      <PropertyHubBreadcrumb currentPage={t("page.documents.title")} />
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="max-w-4xl mx-auto">
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 sm:mb-6">
           <div className="min-w-0">
