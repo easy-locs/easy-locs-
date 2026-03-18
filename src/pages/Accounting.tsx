@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import PropertyHubBreadcrumb from "@/components/property/PropertyHubBreadcrumb";
 import { useCountryFilter } from "@/hooks/useCountryFilter";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { StatCard } from "@/components/ui/stat-card";
