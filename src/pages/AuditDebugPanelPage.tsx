@@ -85,9 +85,22 @@ export default function AuditDebugPanelPage() {
   const { activeWorkspace } = useActiveWorkspace();
   const [reportId, setReportId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [seeding, setSeeding] = useState(false);
   const { report, findings, gates } = useAuditReport(reportId ?? undefined);
 
   const [error, setError] = useState<string | null>(null);
+
+  const seed = async () => {
+    setSeeding(true);
+    setError(null);
+    try {
+      await seedAuditDemoData(activeWorkspace?.id);
+    } catch (err: any) {
+      setError(err?.message || "Erreur lors du seed.");
+    } finally {
+      setSeeding(false);
+    }
+  };
 
   const run = async () => {
     setLoading(true);
