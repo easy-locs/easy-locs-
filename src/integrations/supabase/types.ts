@@ -4322,6 +4322,7 @@ export type Database = {
           active: boolean | null
           anchor_lat: number | null
           anchor_lng: number | null
+          archived_at: string | null
           auto_expire: boolean
           badges: string[] | null
           bathrooms: number | null
@@ -4347,6 +4348,7 @@ export type Database = {
           entity_type: string
           features: Json | null
           id: string
+          is_live_online: boolean
           lat: number | null
           listing_expires_at: string | null
           listing_type: string | null
@@ -4355,6 +4357,7 @@ export type Database = {
           live_updated_at: string | null
           lng: number | null
           location: string | null
+          location_source: string | null
           max_capacity: number | null
           model: string | null
           org_id: string
@@ -4367,6 +4370,7 @@ export type Database = {
           price: number
           price_type: string
           provider_id: string
+          published_at: string | null
           quantity: number | null
           requires_id_document: boolean
           rooms: number | null
@@ -4389,6 +4393,7 @@ export type Database = {
           active?: boolean | null
           anchor_lat?: number | null
           anchor_lng?: number | null
+          archived_at?: string | null
           auto_expire?: boolean
           badges?: string[] | null
           bathrooms?: number | null
@@ -4414,6 +4419,7 @@ export type Database = {
           entity_type?: string
           features?: Json | null
           id?: string
+          is_live_online?: boolean
           lat?: number | null
           listing_expires_at?: string | null
           listing_type?: string | null
@@ -4422,6 +4428,7 @@ export type Database = {
           live_updated_at?: string | null
           lng?: number | null
           location?: string | null
+          location_source?: string | null
           max_capacity?: number | null
           model?: string | null
           org_id: string
@@ -4434,6 +4441,7 @@ export type Database = {
           price?: number
           price_type?: string
           provider_id: string
+          published_at?: string | null
           quantity?: number | null
           requires_id_document?: boolean
           rooms?: number | null
@@ -4456,6 +4464,7 @@ export type Database = {
           active?: boolean | null
           anchor_lat?: number | null
           anchor_lng?: number | null
+          archived_at?: string | null
           auto_expire?: boolean
           badges?: string[] | null
           bathrooms?: number | null
@@ -4481,6 +4490,7 @@ export type Database = {
           entity_type?: string
           features?: Json | null
           id?: string
+          is_live_online?: boolean
           lat?: number | null
           listing_expires_at?: string | null
           listing_type?: string | null
@@ -4489,6 +4499,7 @@ export type Database = {
           live_updated_at?: string | null
           lng?: number | null
           location?: string | null
+          location_source?: string | null
           max_capacity?: number | null
           model?: string | null
           org_id?: string
@@ -4501,6 +4512,7 @@ export type Database = {
           price?: number
           price_type?: string
           provider_id?: string
+          published_at?: string | null
           quantity?: number | null
           requires_id_document?: boolean
           rooms?: number | null

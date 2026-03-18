@@ -17,28 +17,20 @@ import {
   CreditCard, Camera, MapPin, Tag, DollarSign, CalendarDays, Package, Radar
 } from "lucide-react";
 import PresenceMobilitySelector, { type PresenceMode, type EntityType, type CoverageMode, type PresenceConfig } from "@/components/marketplace/PresenceMobilitySelector";
+import { getCategoryConfig, getCategoryOptions, getAllowedListingTypes, getAllowedPresenceModes, type ListingType } from "@/lib/category-config";
 
 /* ─── Constants ─── */
 const MAX_LISTINGS_FREE = 5;
 const MIN_PHOTOS = 2;
 const MAX_PHOTOS = 10;
 
-const LISTING_CATEGORIES = [
-  { value: "real_estate", label: "Real Estate", icon: "🏠" },
-  { value: "vehicles", label: "Vehicles", icon: "🚗" },
-  { value: "services", label: "Services", icon: "🔧" },
-  { value: "tourism", label: "Tourism Activities", icon: "🗺️" },
-  { value: "products", label: "Products", icon: "📦" },
-  { value: "freelance", label: "Freelance Services", icon: "💻" },
-  { value: "events", label: "Events", icon: "🎫" },
-];
+const LISTING_CATEGORIES = getCategoryOptions();
 
-const LISTING_TYPES = [
-  { value: "sale", label: "Sale (30 days)", icon: "💰" },
-  { value: "rental", label: "Rental", icon: "🔑" },
-  { value: "service", label: "Service", icon: "⚡" },
-  { value: "shop", label: "Shop / Business", icon: "🏪" },
-];
+const LISTING_TYPE_META: Record<string, { label: string; icon: string }> = {
+  sale: { label: "Sale (30 days)", icon: "💰" },
+  service: { label: "Service (permanent)", icon: "⚡" },
+  shop: { label: "Shop / Business (permanent)", icon: "🏪" },
+};
 
 const PRICE_PERIODS = [
   { value: "fixed", label: "Fixed price" },
@@ -128,6 +120,16 @@ const defaultForm: ListingForm = {
   presence_mode: "off", entity_type: "fixed_store", coverage_mode: "point", coverage_radius_m: null,
 };
 
+/** Derive listing type options from selected category config */
+function getListingTypeOptions(categoryId: string) {
+  const types = getAllowedListingTypes(categoryId);
+  return types.map(t => ({
+    value: t,
+    label: LISTING_TYPE_META[t]?.label || t,
+    icon: LISTING_TYPE_META[t]?.icon || "📦",
+  }));
+}
+
 /* ─── Component ─── */
 const CreateListing = () => {
   const { user, orgId, userCountry } = useAuth();
@@ -155,7 +157,23 @@ const CreateListing = () => {
     }
   }, []);
 
-  const set = (patch: Partial<ListingForm>) => setForm(prev => ({ ...prev, ...patch }));
+  const set = (patch: Partial<ListingForm>) => {
+    setForm(prev => {
+      const next = { ...prev, ...patch };
+      // When category changes, apply category-driven defaults
+      if (patch.category && patch.category !== prev.category) {
+        const cfg = getCategoryConfig(patch.category);
+        next.entity_type = cfg.entityTypeDefault;
+        next.presence_mode = cfg.defaultPresenceMode;
+        next.listing_type = cfg.defaultListingType;
+        if (!cfg.supportsRadius) {
+          next.coverage_mode = "point";
+          next.coverage_radius_m = null;
+        }
+      }
+      return next;
+    });
+  };
   const toggleSection = (k: string) => setOpenSections(prev => ({ ...prev, [k]: !prev[k] }));
 
   const toggleArrayItem = (field: keyof ListingForm, value: string) => {
@@ -165,10 +183,11 @@ const CreateListing = () => {
     });
   };
 
-  const showRealEstate = form.category === "real_estate";
-  const showVehicleProduct = form.category === "vehicles" || form.category === "products";
-  const showRental = form.listing_type === "rental";
-  const showService = form.listing_type === "service" || form.category === "services" || form.category === "freelance" || form.category === "tourism";
+  const catConfig = getCategoryConfig(form.category);
+  const showRealEstate = form.category === "property";
+  const showVehicleProduct = form.category === "automotive" || form.category === "electronics" || form.category === "fashion";
+  const showRental = form.listing_type === "rental" as any;
+  const showService = form.listing_type === "service" || catConfig.supportsBooking;
 
   const handleSave = async () => {
     // V4 Quality Gate: Validate listing before publish — BLOCKING
@@ -263,6 +282,8 @@ const CreateListing = () => {
         requires_id_document: form.verification_types.length > 0,
         active: true,
         status: 'published',
+        published_at: new Date().toISOString(),
+        location_source: geoLat ? 'gps_live' : null,
         lat: geoLat,
         lng: geoLng,
         presence_mode: form.presence_mode,
@@ -346,7 +367,9 @@ const CreateListing = () => {
 
             <div>
               <Label className="text-xs font-semibold">Listing type *</Label>
-              <ChipSelector options={LISTING_TYPES} selected={form.listing_type} onToggle={v => set({ listing_type: v })} />
+              <ChipSelector options={getListingTypeOptions(form.category)} selected={form.listing_type} onToggle={v => {
+                set({ listing_type: v });
+              }} />
             </div>
 
             <div>
