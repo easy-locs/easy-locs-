@@ -181,6 +181,16 @@ export function scoreItem(item: ScorableItem, model: ScoringModel): number {
     preference: (item.repeatCustomer || item.isFavorite) ? 0.8 : 0.3,
     boost: isBoostActive(item) ? (BOOST_SCORES[item.boostTier!] ?? 0.3) : 0,
     recency: recencySignal(item.createdAt),
+    // Operational signals
+    acceptance: item.acceptanceRate ?? 0.8,
+    cancelPenalty: 1 - (item.cancelRate ?? 0.05), // invert: lower cancel = higher score
+    prepSpeed: prepSpeedScore(item.avgPrepMinutes),
+    radiusRelevance: radiusRelevanceScore(item.distanceKm, item.deliveryRadiusKm),
+    // Intent extended signals
+    freshness: item.availabilityFreshness ?? 0.5,
+    zoneConversion: item.bookingConversionByZone ?? 0.5,
+    completeness: item.contentCompleteness ?? 0.5,
+    competitiveness: item.priceCompetitiveness ?? 0.5,
   };
 
   let score = 0;
