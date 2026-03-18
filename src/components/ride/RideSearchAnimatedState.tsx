@@ -59,8 +59,8 @@ export default function RideSearchAnimatedState({
             exit={{ opacity: 0 }}
             className="space-y-2"
           >
-            <div className="flex items-center gap-2 text-sm font-semibold text-green-500">
-              <span className="inline-flex h-2.5 w-2.5 rounded-full bg-green-500" />
+            <div className="flex items-center gap-2 text-sm font-semibold text-success">
+              <span className="inline-flex h-2.5 w-2.5 rounded-full bg-success" />
               Driver found
             </div>
             <div className="text-xs text-muted-foreground">
