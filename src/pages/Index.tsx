@@ -6,6 +6,7 @@ import { Loader2 } from "lucide-react";
 
 // Lazy load all below-the-fold sections
 const SocialProofStrip = lazy(() => import("@/components/landing/SocialProofStrip"));
+const UniverseShowcase = lazy(() => import("@/components/landing/UniverseShowcase"));
 const ExplorePreview = lazy(() => import("@/components/landing/ExplorePreview"));
 const BrowseByCountry = lazy(() => import("@/components/landing/BrowseByCountry"));
 const PopularCities = lazy(() => import("@/components/landing/PopularCities"));
