@@ -15,6 +15,7 @@ import OrbitEncryptedIndicator from "@/components/orbit/OrbitEncryptedIndicator"
 import { haptic } from "@/lib/haptics";
 import { getMessagePolicy, shouldHideMessage, type SecurityLevel } from "@/lib/message-security";
 import { ChatPaymentRequestCard, ChatPaymentReceiptCard } from "@/components/chat/ChatPaymentCards";
+import ThreadActionCard, { parseActionFromMessage } from "@/components/orbit/ThreadActionCard";
 import type { ChatMessage } from "./types";
 import { MESSAGE_CATEGORIES } from "./types";
 
@@ -190,6 +191,26 @@ function ChatMessageBubble({
   }
 
   if (isSystem) {
+    // Check for embedded action card
+    const actionData = parseActionFromMessage(msg.content);
+    
+    if (actionData) {
+      return (
+        <div className="flex justify-center my-3 px-4">
+          <div className="w-full max-w-[85%] space-y-1.5">
+            <p
+              className="text-[11px] text-center font-medium"
+              style={{ color: "hsl(var(--hud-text-dim))" }}
+            >
+              {actionData.text}
+              <span className="ml-2 opacity-50 text-[10px]">{format(new Date(msg.created_at), "HH:mm")}</span>
+            </p>
+            <ThreadActionCard payload={actionData.action} />
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div className="flex justify-center my-3">
         <div
