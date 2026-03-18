@@ -6,6 +6,7 @@ import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { Navigation } from "lucide-react";
 import type { SavedPlace } from "@/hooks/useSmartLocation";
+import { createUserMarkerElement, createPickupMarkerElement, createDropoffMarkerElement } from "@/lib/map/easy-locs-user-marker";
 
 const MAPBOX_TOKEN = "pk.eyJ1IjoiZWFzeWxvY3MyMDI2IiwiYSI6ImNtbXZiZ3h0cTF6ZHMycnIyOWw4NnJzZTIifQ.ElIj6bFQK_BpVm6suigHUQ";
 
