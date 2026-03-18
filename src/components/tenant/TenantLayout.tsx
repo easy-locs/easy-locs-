@@ -6,7 +6,7 @@ import { useTenantProperty } from "@/hooks/useTenantProperty";
 import AppLogo from "@/components/AppLogo";
 import {
   LayoutDashboard, Receipt, FileText, MessageCircle,
-  CreditCard, Settings, LogOut, Menu, X, Star, ClipboardList,
+  CreditCard, Settings, LogOut, Menu, X, Star, ClipboardList, Building2,
 } from "lucide-react";
 import NotificationBell from "@/components/notifications/NotificationBell";
 import ThemeSwitcher from "@/components/ThemeSwitcher";
@@ -61,6 +61,7 @@ const TenantLayout = ({ children }: { children: React.ReactNode }) => {
   );
 
   const navItems = [
+    { icon: Building2, label: "Property Hub", path: "/property-hub" },
     { icon: LayoutDashboard, label: t("badge.tenant") || L.tenantSpace, path: "/tenant" },
     { icon: Receipt, label: t("nav.receipts") || L.myReceipts, path: "/tenant/receipts" },
     { icon: FileText, label: t("nav.documents") || L.myDocuments, path: "/tenant/documents" },
@@ -95,7 +96,7 @@ const TenantLayout = ({ children }: { children: React.ReactNode }) => {
             {hasDualRole ? (
               <div className="flex items-center bg-muted/50 rounded-lg p-0.5 w-fit">
                 <button
-                  onClick={() => { switchRole("landlord"); navigate("/dashboard"); }}
+                  onClick={() => { switchRole("landlord"); navigate("/property-hub"); }}
                   className={`text-[10px] font-bold tracking-wider uppercase px-2 py-0.5 rounded transition-colors ${activeRole === "landlord" ? "bg-accent text-accent-foreground" : "text-sidebar-foreground/50 hover:text-sidebar-foreground"}`}
                 >
                   {t("badge.landlord")}
@@ -156,6 +157,9 @@ const TenantLayout = ({ children }: { children: React.ReactNode }) => {
           <button onClick={() => setSidebarOpen(true)} className="lg:hidden text-foreground p-2 -ml-1 rounded-lg hover:bg-muted transition-colors" aria-label="Menu">
             <Menu className="h-5 w-5" />
           </button>
+          <Link to="/property-hub" className="lg:hidden inline-flex items-center rounded-lg px-2.5 py-1.5 text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors">
+            Sortir
+          </Link>
           <div className="flex-1" />
           <ThemeSwitcher />
           <NotificationBell />
