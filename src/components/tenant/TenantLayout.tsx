@@ -61,6 +61,7 @@ const TenantLayout = ({ children }: { children: React.ReactNode }) => {
   );
 
   const navItems = [
+    { icon: Building2, label: "Property Hub", path: "/property-hub" },
     { icon: LayoutDashboard, label: t("badge.tenant") || L.tenantSpace, path: "/tenant" },
     { icon: Receipt, label: t("nav.receipts") || L.myReceipts, path: "/tenant/receipts" },
     { icon: FileText, label: t("nav.documents") || L.myDocuments, path: "/tenant/documents" },
