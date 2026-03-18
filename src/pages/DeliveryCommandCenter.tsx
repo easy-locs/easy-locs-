@@ -116,7 +116,7 @@ function MissionCard({
           </Badge>
         </div>
         {mission.delivery_fee != null && (
-          <span className="text-xs font-bold text-[#22C55E]">
+          <span className="text-xs font-bold text-success">
             {mission.delivery_fee.toFixed(2)} {mission.currency || "EUR"}
           </span>
         )}
