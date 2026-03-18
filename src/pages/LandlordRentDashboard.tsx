@@ -11,6 +11,7 @@ import { useCountryFilter } from "@/hooks/useCountryFilter";
 import { supabase } from "@/integrations/supabase/client";
 import { formatCurrency } from "@/lib/country-config";
 import RentStatusBadge from "@/components/rent/RentStatusBadge";
+import ReceiptStatusBadge from "@/components/rent/ReceiptStatusBadge";
 import PropertyHubBreadcrumb from "@/components/property/PropertyHubBreadcrumb";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
