@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { useAuth } from "@/contexts/AuthContext";
@@ -18,6 +18,8 @@ import {
 } from "lucide-react";
 import PresenceMobilitySelector, { type PresenceMode, type EntityType, type CoverageMode, type PresenceConfig } from "@/components/marketplace/PresenceMobilitySelector";
 import { getCategoryConfig, getCategoryOptions, getAllowedListingTypes, getAllowedPresenceModes, type ListingType } from "@/lib/category-config";
+import { detectListingContext, currencyFromCountry, detectLocationFromTimezone, type DetectedContext } from "@/lib/smart-prefill";
+import SmartPrefillBanner from "@/components/marketplace/SmartPrefillBanner";
 
 /* ─── Constants ─── */
 const MAX_LISTINGS_FREE = 5;
@@ -146,15 +148,75 @@ const CreateListing = () => {
     security: false, payment: false,
   });
 
-  // Auto-capture geolocation for Nearby discovery
+  // Smart prefill state
+  const [detection, setDetection] = useState<DetectedContext | null>(null);
+  const [prefillVisible, setPrefillVisible] = useState(false);
+  const [prefillApplied, setPrefillApplied] = useState(false);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Auto-capture geolocation + prefill country/currency
   useEffect(() => {
+    // GPS-based prefill
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
-        (pos) => { setGeoLat(pos.coords.latitude); setGeoLng(pos.coords.longitude); },
+        (pos) => {
+          setGeoLat(pos.coords.latitude);
+          setGeoLng(pos.coords.longitude);
+        },
         () => {},
         { enableHighAccuracy: false, timeout: 5000, maximumAge: 300000 }
       );
     }
+    // Timezone-based country/currency prefill
+    if (!userCountry || userCountry === "FR") {
+      const loc = detectLocationFromTimezone();
+      if (loc.country) {
+        setForm(prev => ({
+          ...prev,
+          country: loc.country!,
+          currency: loc.currency || currencyFromCountry(loc.country!),
+        }));
+      }
+    } else {
+      setForm(prev => ({ ...prev, currency: currencyFromCountry(userCountry) }));
+    }
+  }, [userCountry]);
+
+  // Smart context detection on title/description change (debounced)
+  const runDetection = useCallback((title: string, description: string) => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      if (title.length < 3) {
+        setDetection(null);
+        setPrefillVisible(false);
+        return;
+      }
+      const result = detectListingContext({ title, description });
+      if (result.confidence >= 0.25 && !prefillApplied) {
+        setDetection(result);
+        setPrefillVisible(true);
+      }
+    }, 500);
+  }, [prefillApplied]);
+
+  const acceptPrefill = useCallback(() => {
+    if (!detection) return;
+    setForm(prev => ({
+      ...prev,
+      category: detection.category,
+      listing_type: detection.listing_type,
+      entity_type: detection.entity_type,
+      presence_mode: detection.presence_mode,
+      coverage_mode: detection.coverage_mode,
+      coverage_radius_m: detection.coverage_radius_m,
+    }));
+    setPrefillVisible(false);
+    setPrefillApplied(true);
+  }, [detection]);
+
+  const dismissPrefill = useCallback(() => {
+    setPrefillVisible(false);
+    setPrefillApplied(true);
   }, []);
 
   const set = (patch: Partial<ListingForm>) => {
@@ -374,18 +436,36 @@ const CreateListing = () => {
 
             <div>
               <Label className="text-xs">Title *</Label>
-              <Input value={form.title} onChange={e => set({ title: e.target.value })} placeholder="Ex: iPhone 15 Pro Max, 3-bedroom apartment..." maxLength={120} />
+              <Input value={form.title} onChange={e => {
+                const title = e.target.value;
+                set({ title });
+                runDetection(title, form.description);
+              }} placeholder="Ex: iPhone 15 Pro Max, 3-bedroom apartment..." maxLength={120} />
             </div>
+
+            {/* Smart Prefill Banner */}
+            <SmartPrefillBanner
+              detection={detection}
+              onAccept={acceptPrefill}
+              onDismiss={dismissPrefill}
+              visible={prefillVisible}
+            />
 
             <div>
               <Label className="text-xs">Description *</Label>
-              <Textarea value={form.description} onChange={e => set({ description: e.target.value })} rows={4} placeholder="Describe your listing in detail..." maxLength={2000} />
+              <Textarea value={form.description} onChange={e => {
+                const desc = e.target.value;
+                set({ description: desc });
+                runDetection(form.title, desc);
+              }} rows={4} placeholder="Describe your listing in detail..." maxLength={2000} />
               <p className="text-xs text-muted-foreground mt-1">{form.description.length}/2000</p>
             </div>
 
             <div className="bg-accent/5 border border-accent/20 rounded-xl p-4">
               <Label className="text-xs font-semibold text-accent">Country *</Label>
-              <CountrySelect value={form.country} onChange={code => set({ country: code })} />
+              <CountrySelect value={form.country} onChange={code => {
+                set({ country: code, currency: currencyFromCountry(code) });
+              }} />
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
