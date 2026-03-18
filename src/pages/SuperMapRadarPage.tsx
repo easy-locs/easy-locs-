@@ -325,18 +325,8 @@ export default function SuperMapRadarPage() {
         const marker = new mapboxgl.Marker({ element: el })
           .setLngLat([listing.lng, listing.lat])
           .setPopup(
-            new mapboxgl.Popup({ offset: 20, closeButton: false }).setHTML(`
-              <div style="padding:8px;max-width:220px;font-family:system-ui;">
-                <div style="font-size:11px;color:${style.color};font-weight:700;margin-bottom:2px;">
-                  ${style.label}
-                  ${listing.coverage_mode !== "point" && listing.coverage_radius_m
-                    ? `<span style="opacity:0.7;font-weight:400;"> · ${listing.coverage_radius_m >= 1000 ? `${listing.coverage_radius_m / 1000}km` : `${listing.coverage_radius_m}m`} radius</span>`
-                    : ""}
-                </div>
-                <div style="font-size:13px;font-weight:600;color:#fff;">${listing.title}</div>
-                <div style="font-size:12px;color:#94a3b8;margin-top:2px;">${listing.price} ${listing.currency} · ${listing.category}</div>
-              </div>
-            `)
+            new mapboxgl.Popup({ offset: 24, closeButton: false, maxWidth: "260px" })
+              .setHTML(buildPopupHTML(listing, style))
           )
           .addTo(map);
         markersRef.current.push(marker);
@@ -344,17 +334,15 @@ export default function SuperMapRadarPage() {
         if (listing.coverage_mode !== "point" && listing.coverage_radius_m && listing.coverage_radius_m > 0) {
           const srcId = `coverage-src-${i}`;
           const circle = createCircleGeoJSON([listing.lng, listing.lat], listing.coverage_radius_m);
+          const cs = getCoverageStyle(listing.coverage_mode, style.color);
           map.addSource(srcId, { type: "geojson", data: circle as any });
           map.addLayer({
             id: `coverage-fill-${i}`, type: "fill", source: srcId,
-            paint: { "fill-color": style.color, "fill-opacity": listing.coverage_mode === "live_radius" ? 0.12 : 0.08 },
+            paint: cs.fill as any,
           });
           map.addLayer({
             id: `coverage-border-${i}`, type: "line", source: srcId,
-            paint: {
-              "line-color": style.color, "line-width": listing.coverage_mode === "live_radius" ? 2 : 1.5,
-              "line-opacity": 0.5, "line-dasharray": listing.coverage_mode === "live_radius" ? [2, 2] : [1, 0],
-            },
+            paint: cs.line as any,
           });
         }
       });
