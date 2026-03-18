@@ -1,6 +1,5 @@
 /**
- * WalletActionGrid — 3 primary actions (Pay, Receive, Request) + secondary row
- * Super-app style: direct, no intermediate screens.
+ * WalletActionGrid — Premium 3-action hero + secondary row
  */
 import { motion } from "framer-motion";
 import {
@@ -14,13 +13,19 @@ interface WalletActionGridProps {
   onAction: (view: WalletView) => void;
 }
 
+const GRADIENT_COLORS = [
+  "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary) / 0.7))",
+  "linear-gradient(135deg, hsl(var(--accent)), hsl(var(--accent) / 0.7))",
+  "linear-gradient(135deg, hsl(220 60% 50%), hsl(220 60% 40%))",
+];
+
 export default function WalletActionGrid({ onAction }: WalletActionGridProps) {
   const { t } = useI18n();
 
-  const PRIMARY_ACTIONS: { key: WalletView; icon: typeof Send; label: string; desc: string }[] = [
-    { key: "pay", icon: Send, label: t("orbit.pay") || "Pay", desc: t("orbit.send_money") || "Send money" },
-    { key: "receive", icon: ArrowDownLeft, label: t("orbit.receive") || "Receive", desc: t("orbit.my_qr_code") || "My QR code" },
-    { key: "request", icon: FileText, label: t("orbit.request") || "Request", desc: t("orbit.request_money") || "Request money" },
+  const PRIMARY_ACTIONS: { key: WalletView; icon: typeof Send; label: string; desc: string; gradient: string }[] = [
+    { key: "pay", icon: Send, label: t("orbit.pay") || "Pay", desc: t("orbit.send_money") || "Send money", gradient: GRADIENT_COLORS[0] },
+    { key: "receive", icon: ArrowDownLeft, label: t("orbit.receive") || "Receive", desc: t("orbit.my_qr_code") || "My QR code", gradient: GRADIENT_COLORS[1] },
+    { key: "request", icon: FileText, label: t("orbit.request") || "Request", desc: t("orbit.request_money") || "Request money", gradient: GRADIENT_COLORS[2] },
   ];
 
   const SECONDARY_ACTIONS: { key: WalletView; icon: typeof History; label: string }[] = [
@@ -30,9 +35,9 @@ export default function WalletActionGrid({ onAction }: WalletActionGridProps) {
   ];
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {/* Primary 3 actions */}
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-3 gap-2.5">
         {PRIMARY_ACTIONS.map((action, i) => {
           const Icon = action.icon;
           return (
@@ -40,16 +45,22 @@ export default function WalletActionGrid({ onAction }: WalletActionGridProps) {
               key={action.key}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.06 }}
-              whileTap={{ scale: 0.95 }}
+              transition={{ delay: i * 0.06, duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] }}
+              whileTap={{ scale: 0.94 }}
               onClick={() => onAction(action.key)}
-              className="flex flex-col items-center gap-2 rounded-2xl border border-border bg-card p-5 transition hover:border-accent/40 hover:shadow-md active:scale-[0.97]"
+              className="flex flex-col items-center gap-2.5 rounded-2xl border border-border bg-card p-4 transition-all hover:shadow-lg hover:border-accent/30 active:scale-[0.96]"
+              style={{ boxShadow: "0 4px 12px -4px hsl(0 0% 0% / 0.06)" }}
             >
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-sm">
+              <div
+                className="flex h-12 w-12 items-center justify-center rounded-2xl text-white shadow-md"
+                style={{ background: action.gradient, boxShadow: `0 6px 16px -4px hsl(var(--primary) / 0.25)` }}
+              >
                 <Icon className="h-5 w-5" />
               </div>
-              <span className="text-sm font-bold text-foreground">{action.label}</span>
-              <span className="text-[10px] text-muted-foreground leading-tight">{action.desc}</span>
+              <div className="text-center">
+                <span className="block text-xs font-bold text-foreground">{action.label}</span>
+                <span className="block text-[9px] text-muted-foreground leading-tight mt-0.5">{action.desc}</span>
+              </div>
             </motion.button>
           );
         })}
@@ -60,15 +71,16 @@ export default function WalletActionGrid({ onAction }: WalletActionGridProps) {
         {SECONDARY_ACTIONS.map((action) => {
           const Icon = action.icon;
           return (
-            <button
+            <motion.button
               key={action.key}
+              whileTap={{ scale: 0.96 }}
               type="button"
               onClick={() => onAction(action.key)}
-              className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-border bg-card px-3 py-2.5 text-xs font-semibold text-muted-foreground transition hover:text-foreground hover:bg-muted"
+              className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-border bg-card px-3 py-2.5 text-xs font-semibold text-muted-foreground transition-all hover:text-foreground hover:bg-muted hover:shadow-sm active:scale-[0.97]"
             >
               <Icon className="h-3.5 w-3.5" />
               {action.label}
-            </button>
+            </motion.button>
           );
         })}
       </div>

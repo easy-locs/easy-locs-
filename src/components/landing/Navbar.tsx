@@ -4,7 +4,11 @@ import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion"
 import { useI18n, type Locale } from "@/lib/i18n";
 import ThemeSwitcher from "@/components/ThemeSwitcher";
 import AppLogo from "@/components/AppLogo";
-import { Menu, X, Globe, ChevronDown } from "lucide-react";
+import {
+  Menu, X, Globe, ChevronDown, ChevronRight,
+  Store, Building2, UtensilsCrossed, Briefcase, MapPin,
+  Sparkles, Shield, Rocket, Crown,
+} from "lucide-react";
 
 const LANG_FLAGS: Record<string, string> = {
   fr: "🇫🇷", en: "🇬🇧", es: "🇪🇸", de: "🇩🇪", it: "🇮🇹", pt: "🇵🇹",
@@ -30,9 +34,9 @@ const Navbar = () => {
   const { t, locale, setLocale, availableLocales } = useI18n();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [langOpen, setLangOpen] = useState(false);
+  const [mobileLangOpen, setMobileLangOpen] = useState(false);
   const langRef = useRef<HTMLDivElement>(null);
 
-  // Progressive blur on scroll
   const { scrollY } = useScroll();
   const navBg = useTransform(scrollY, [0, 80], [0.6, 0.92]);
 
@@ -45,6 +49,17 @@ const Navbar = () => {
     return () => document.removeEventListener("pointerdown", handler);
   }, [langOpen]);
 
+  // Lock body scroll when mobile menu is open
+  useEffect(() => {
+    if (mobileOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+      setMobileLangOpen(false);
+    }
+    return () => { document.body.style.overflow = ""; };
+  }, [mobileOpen]);
+
   const navLinks = [
     { to: "/explore", label: t("landing.nav.explore") || "Explore", isRoute: true },
     { to: "/marketplace", label: t("landing.nav.marketplace") || "Marketplace", isRoute: true },
@@ -56,6 +71,13 @@ const Navbar = () => {
   const sortedLocales = [
     ...POPULAR_LOCALES.filter(l => availableLocales.some(a => a.value === l)),
     ...availableLocales.filter(a => !POPULAR_LOCALES.includes(a.value as Locale)).map(a => a.value as Locale),
+  ];
+
+  const joinOptions = [
+    { icon: Store, label: t("landing.join.shop") || "Open a Shop", desc: t("landing.join.shop_desc") || "Start selling online", to: "/signup?role=shop" },
+    { icon: UtensilsCrossed, label: t("landing.join.restaurant") || "Restaurant", desc: t("landing.join.restaurant_desc") || "List your restaurant", to: "/signup?role=restaurant" },
+    { icon: Building2, label: t("landing.join.agency") || "Real Estate Agency", desc: t("landing.join.agency_desc") || "Manage properties & teams", to: "/signup?role=agency" },
+    { icon: Briefcase, label: t("landing.join.provider") || "Service Provider", desc: t("landing.join.provider_desc") || "Offer your services", to: "/signup?role=provider" },
   ];
 
   return (
@@ -91,7 +113,7 @@ const Navbar = () => {
 
         {/* Right actions */}
         <div className="flex items-center gap-1 sm:gap-2 shrink-0 min-w-0">
-          {/* Language switcher */}
+          {/* Language switcher — desktop */}
           <div className="relative hidden sm:block" ref={langRef}>
             <button
               onClick={() => setLangOpen(!langOpen)}
@@ -177,7 +199,7 @@ const Navbar = () => {
 
           {/* Mobile hamburger */}
           <button
-            className="md:hidden flex items-center justify-center w-10 h-10 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 rounded-lg transition-colors text-white/80 hover:bg-white/10"
+            className="md:hidden flex items-center justify-center w-10 h-10 min-h-[44px] min-w-[44px] rounded-lg transition-colors text-white/80 hover:bg-white/10"
             onClick={() => setMobileOpen(!mobileOpen)}
             aria-label="Toggle menu"
           >
@@ -196,7 +218,7 @@ const Navbar = () => {
         </div>
       </div>
 
-      {/* Mobile menu */}
+      {/* ===== PREMIUM MOBILE MENU ===== */}
       <AnimatePresence>
         {mobileOpen && (
           <motion.div
@@ -204,75 +226,187 @@ const Navbar = () => {
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.25, ease: "easeInOut" }}
-            className="md:hidden overflow-hidden"
+            className="md:hidden overflow-y-auto"
             style={{
+              maxHeight: "calc(100dvh - 56px)",
               background: "hsl(var(--navy-deep) / 0.98)",
               borderTop: "1px solid hsl(220 15% 90% / 0.06)",
             }}
           >
-            <div className="container px-4 py-5 space-y-1">
-              {navLinks.map((link, i) => {
-                const inner = (
-                  <motion.span
-                    initial={{ opacity: 0, x: -12 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: i * 0.04 }}
-                    className="block"
-                  >
-                    {link.label}
-                  </motion.span>
-                );
-                const cls = "block w-full text-left px-4 py-3 rounded-xl text-sm font-medium transition-all hover:bg-white/5 text-white/80 active:bg-white/10";
-                return link.isRoute ? (
-                  <Link key={link.to} to={link.to} className={cls} onClick={() => setMobileOpen(false)}>{inner}</Link>
-                ) : (
-                  <a key={link.to} href={link.to} className={cls} onClick={() => setMobileOpen(false)}>{inner}</a>
-                );
-              })}
+            <div className="px-4 pt-4 pb-6 space-y-3">
 
-              {/* Mobile language grid */}
-              <div className="pt-3 border-t space-y-2" style={{ borderColor: "hsl(220 15% 90% / 0.06)" }}>
-                <p className="px-4 text-[10px] uppercase tracking-widest font-bold text-white/40">
-                  {t("landing.nav.language") || "Language"}
-                </p>
-                <div className="flex flex-wrap gap-1.5 px-4">
-                  {POPULAR_LOCALES.map(l => (
-                    <button
-                      key={l}
-                      onClick={() => { setLocale(l as Locale); }}
-                      className={`px-3 py-2 min-h-[44px] rounded-lg text-xs font-medium transition-all inline-flex items-center gap-1 ${
-                        l === locale
-                          ? "bg-accent text-accent-foreground shadow-md shadow-accent/20"
-                          : "text-white/60 hover:text-white hover:bg-white/5"
-                      }`}
-                    >
-                      {LANG_FLAGS[l]} {l.toUpperCase()}
-                    </button>
-                  ))}
+              {/* ── Branded header block ── */}
+              <motion.div
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.05 }}
+                className="rounded-2xl p-4 relative overflow-hidden"
+                style={{
+                  background: "linear-gradient(135deg, hsl(var(--primary) / 0.15), hsl(var(--accent) / 0.08))",
+                  border: "1px solid hsl(var(--accent) / 0.12)",
+                }}
+              >
+                <div className="absolute top-0 right-0 w-20 h-20 rounded-full -translate-y-6 translate-x-6" style={{ background: "hsl(var(--accent) / 0.06)" }} />
+                <div className="relative z-10 flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: "var(--gradient-gold)" }}>
+                    <Crown className="w-5 h-5 text-accent-foreground" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-white">Easy-Locs</p>
+                    <p className="text-[10px] text-white/50">{t("landing.menu.tagline") || "Your super-app for everything local"}</p>
+                  </div>
                 </div>
+              </motion.div>
+
+              {/* ── Navigation links ── */}
+              <div className="space-y-0.5">
+                <p className="px-3 pt-1 pb-1.5 text-[9px] uppercase tracking-[0.15em] font-bold text-white/30">
+                  {t("landing.menu.discover") || "Discover"}
+                </p>
+                {navLinks.map((link, i) => {
+                  const cls = `flex items-center justify-between w-full px-3 py-3 rounded-xl text-sm font-medium transition-all active:scale-[0.98] ${
+                    (link as any).accent 
+                      ? "text-accent hover:bg-accent/10" 
+                      : "text-white/80 hover:bg-white/5"
+                  }`;
+                  const inner = (
+                    <motion.div
+                      initial={{ opacity: 0, x: -8 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.06 + i * 0.03 }}
+                      className="flex items-center justify-between w-full"
+                    >
+                      <span>{link.label}</span>
+                      <ChevronRight className="w-3.5 h-3.5 opacity-30" />
+                    </motion.div>
+                  );
+                  return link.isRoute ? (
+                    <Link key={link.to} to={link.to} className={cls} onClick={() => setMobileOpen(false)}>{inner}</Link>
+                  ) : (
+                    <a key={link.to} href={link.to} className={cls} onClick={() => setMobileOpen(false)}>{inner}</a>
+                  );
+                })}
               </div>
 
-              <div className="pt-3 border-t space-y-2" style={{ borderColor: "hsl(220 15% 90% / 0.06)" }}>
-                  <Link
+              {/* ── Join / Sell Acquisition Block ── */}
+              <motion.div
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.15 }}
+                className="rounded-2xl overflow-hidden"
+                style={{
+                  background: "linear-gradient(135deg, hsl(var(--accent) / 0.08), hsl(var(--primary) / 0.06))",
+                  border: "1px solid hsl(var(--accent) / 0.12)",
+                }}
+              >
+                <div className="px-4 pt-3.5 pb-2 flex items-center gap-2">
+                  <Rocket className="w-3.5 h-3.5 text-accent" />
+                  <p className="text-[10px] uppercase tracking-[0.15em] font-bold text-accent">
+                    {t("landing.menu.join_platform") || "Join the platform"}
+                  </p>
+                </div>
+                <div className="px-3 pb-3 grid grid-cols-2 gap-2">
+                  {joinOptions.map((opt, i) => {
+                    const Icon = opt.icon;
+                    return (
+                      <Link
+                        key={i}
+                        to={opt.to}
+                        onClick={() => setMobileOpen(false)}
+                        className="flex flex-col gap-1.5 p-3 rounded-xl transition-all active:scale-[0.97] hover:bg-white/5"
+                        style={{ background: "hsl(0 0% 100% / 0.04)" }}
+                      >
+                        <Icon className="w-4 h-4 text-accent/80" />
+                        <span className="text-xs font-semibold text-white/90 leading-tight">{opt.label}</span>
+                        <span className="text-[10px] text-white/40 leading-tight">{opt.desc}</span>
+                      </Link>
+                    );
+                  })}
+                </div>
+              </motion.div>
+
+              {/* ── Promotional trust strip ── */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.2 }}
+                className="flex items-center gap-3 px-3 py-2.5 rounded-xl"
+                style={{ background: "hsl(0 0% 100% / 0.03)" }}
+              >
+                <Shield className="w-4 h-4 text-accent/60 shrink-0" />
+                <p className="text-[10px] text-white/40 leading-snug">
+                  {t("landing.menu.trust") || "Secure payments • Verified sellers • 24/7 support"}
+                </p>
+              </motion.div>
+
+              {/* ── Language — Compact row (expands to sub-panel) ── */}
+              <div>
+                <button
+                  onClick={() => setMobileLangOpen(!mobileLangOpen)}
+                  className="flex items-center justify-between w-full px-3 py-3 rounded-xl text-sm font-medium text-white/70 hover:bg-white/5 transition-all"
+                >
+                  <span className="flex items-center gap-2">
+                    <Globe className="w-4 h-4 text-white/40" />
+                    <span>{LANG_FLAGS[locale]} {LANG_NATIVE[locale] || locale.toUpperCase()}</span>
+                  </span>
+                  <ChevronDown className={`w-3.5 h-3.5 text-white/30 transition-transform ${mobileLangOpen ? "rotate-180" : ""}`} />
+                </button>
+
+                <AnimatePresence>
+                  {mobileLangOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      exit={{ opacity: 0, height: 0 }}
+                      transition={{ duration: 0.2 }}
+                      className="overflow-hidden"
+                    >
+                      <div className="flex flex-wrap gap-1.5 px-3 py-2">
+                        {sortedLocales.map(l => (
+                          <button
+                            key={l}
+                            onClick={() => { setLocale(l as Locale); setMobileLangOpen(false); }}
+                            className={`px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all inline-flex items-center gap-1.5 ${
+                              l === locale
+                                ? "bg-accent text-accent-foreground shadow-sm"
+                                : "text-white/50 hover:text-white hover:bg-white/5"
+                            }`}
+                          >
+                            {LANG_FLAGS[l]} {LANG_NATIVE[l] || l.toUpperCase()}
+                          </button>
+                        ))}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+
+              {/* ── Auth CTAs ── */}
+              <div className="space-y-2 pt-1">
+                <Link
                   to="/login"
-                  className="block w-full text-center py-3 min-h-[44px] rounded-xl text-sm font-medium border transition-all text-white/80 border-white/12 hover:border-white/25 flex items-center justify-center"
+                  className="flex items-center justify-center w-full py-3 min-h-[44px] rounded-xl text-sm font-medium border transition-all text-white/80 hover:text-white"
+                  style={{ borderColor: "hsl(0 0% 100% / 0.1)" }}
                   onClick={() => setMobileOpen(false)}
                 >
                   {t("landing.nav.login") || "Log in"}
                 </Link>
                 <Link
                   to="/signup"
-                  className="block w-full text-center py-3 min-h-[44px] rounded-xl text-sm font-bold relative overflow-hidden flex items-center justify-center"
+                  className="flex items-center justify-center w-full py-3 min-h-[44px] rounded-xl text-sm font-bold relative overflow-hidden group"
                   style={{
                     background: "var(--gradient-gold)",
                     color: "hsl(var(--accent-foreground))",
-                    boxShadow: "0 0 16px hsl(var(--accent) / 0.2)",
+                    boxShadow: "0 0 20px hsl(var(--accent) / 0.2)",
                   }}
                   onClick={() => setMobileOpen(false)}
                 >
-                  {t("landing.nav.pro_signup") || "Sign Up"}
+                  <Sparkles className="w-4 h-4 mr-2" />
+                  {t("landing.nav.pro_signup") || "Create your account"}
+                  <div className="absolute inset-0 bg-white/0 group-hover:bg-white/10 transition-colors" />
                 </Link>
               </div>
+
             </div>
           </motion.div>
         )}
