@@ -122,6 +122,7 @@ const defaultForm: ListingForm = {
   year_built: undefined, features: [],
   brand: "", model: "", condition: "good",
   duration_minutes: 0, max_capacity: 1,
+  presence_mode: "pin", mobility_type: "fixed_store",
 };
 
 /* ─── Component ─── */
