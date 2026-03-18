@@ -42,22 +42,30 @@ export default function SuperMapRadarPage() {
   const markersRef = useRef<mapboxgl.Marker[]>([]);
   const [listings, setListings] = useState<MapListing[]>([]);
 
-  // Fetch listings
+  // Fetch listings (exclude expired sale listings)
   useEffect(() => {
     (async () => {
+      const now = new Date().toISOString();
       const { data } = await (supabase as any)
         .from("marketplace_services")
-        .select("id, title, lat, lng, anchor_lat, anchor_lng, live_lat, live_lng, presence_mode, entity_type, coverage_mode, coverage_radius_m, category, price, currency")
+        .select("id, title, lat, lng, anchor_lat, anchor_lng, live_lat, live_lng, presence_mode, entity_type, coverage_mode, coverage_radius_m, category, price, currency, listing_type, auto_expire, listing_expires_at")
         .eq("active", true)
         .neq("presence_mode", "off")
         .limit(500);
       if (data) {
         setListings(
-          data.map((d: any) => ({
-            ...d,
-            lat: d.anchor_lat ?? d.live_lat ?? d.lat,
-            lng: d.anchor_lng ?? d.live_lng ?? d.lng,
-          })).filter((d: any) => d.lat && d.lng)
+          data
+            .filter((d: any) => {
+              // Filter out expired sale listings
+              if (d.auto_expire && d.listing_expires_at && d.listing_expires_at < now) return false;
+              return true;
+            })
+            .map((d: any) => ({
+              ...d,
+              lat: d.anchor_lat ?? d.live_lat ?? d.lat,
+              lng: d.anchor_lng ?? d.live_lng ?? d.lng,
+            }))
+            .filter((d: any) => d.lat && d.lng)
         );
       }
     })();
