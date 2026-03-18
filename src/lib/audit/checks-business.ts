@@ -6,33 +6,47 @@ import {
 } from "@/lib/qa/data-integrity";
 
 /* ── Helper: safe count query that distinguishes "empty table" from "query error" ── */
-async function safeCount(table: string, filters?: Record<string, any>) {
+async function safeCount(table: string, workspaceId?: string | null) {
   try {
     let q = (supabase as any).from(table).select("*", { head: true, count: "exact" });
-    if (filters) {
-      for (const [k, v] of Object.entries(filters)) {
-        q = q.eq(k, v);
-      }
+    if (workspaceId) {
+      q = q.eq("workspace_id", workspaceId);
     }
     const { count, error } = await q;
-    if (error) return { count: 0, queryFailed: true, errorMsg: error.message };
-    return { count: count ?? 0, queryFailed: false, errorMsg: null };
+    if (error) {
+      // Classify the error type
+      const msg = error.message ?? "";
+      let errorType = "query_failed";
+      if (msg.includes("does not exist") || msg.includes("relation")) errorType = "table_missing";
+      else if (msg.includes("column")) errorType = "column_missing";
+      else if (msg.includes("permission denied") || msg.includes("RLS")) errorType = "rls_denied";
+      return { count: 0, queryFailed: true, errorMsg: msg, errorType };
+    }
+    return { count: count ?? 0, queryFailed: false, errorMsg: null, errorType: null };
   } catch (e: any) {
-    return { count: 0, queryFailed: true, errorMsg: e?.message ?? "Unknown error" };
+    return { count: 0, queryFailed: true, errorMsg: e?.message ?? "Unknown error", errorType: "exception" };
   }
+}
+
+function diagLabel(r: { queryFailed: boolean; errorType: string | null; errorMsg: string | null; count: number }) {
+  if (!r.queryFailed) return r.count > 0 ? String(r.count) : "0 — no data yet";
+  const prefix = r.errorType === "table_missing" ? "⛔ Table missing"
+    : r.errorType === "column_missing" ? "⛔ Column missing"
+    : r.errorType === "rls_denied" ? "🔒 RLS denied"
+    : "❌ Query failed";
+  return `${prefix}: ${r.errorMsg}`;
 }
 
 /* ── Payment checks ── */
 export async function auditPaymentChecks(workspaceId?: string) {
-  const intents = await safeCount("payment_intents", { workspace_id: workspaceId ?? null });
+  const intents = await safeCount("payment_intents", workspaceId);
   const paidIntegrity = await checkCompletedOrdersWithoutPaymentIntent(workspaceId);
 
   return [
     {
-      ok: intents.count > 0,
+      ok: !intents.queryFailed && intents.count > 0,
       key: "payment.intents_exist",
       group: "payment",
-      // Query failure → critical; empty data → warning (no data yet)
       severity: intents.queryFailed ? "critical" : intents.count > 0 ? "info" : "warning",
       impact: intents.queryFailed ? 15 : intents.count > 0 ? 0 : 4,
       title: intents.queryFailed
@@ -41,7 +55,7 @@ export async function auditPaymentChecks(workspaceId?: string) {
         ? "Payment intents exist"
         : "No payment intents yet — no data yet",
       expected: "at least one payment intent",
-      actual: intents.queryFailed ? intents.errorMsg! : String(intents.count),
+      actual: diagLabel(intents),
       hint: intents.queryFailed
         ? "Check payment_intents table and RLS policies"
         : "Run payment flow at least once",
@@ -66,10 +80,8 @@ export async function auditPaymentChecks(workspaceId?: string) {
 export async function auditDispatchChecks(workspaceId?: string) {
   const integrity = await checkDispatchAssignedWithoutDriver(workspaceId);
 
-  const open = await safeCount("dispatch_jobs", { workspace_id: workspaceId ?? null });
-  const assigned = await safeCount("dispatch_jobs", { workspace_id: workspaceId ?? null });
+  const total = await safeCount("dispatch_jobs", workspaceId);
 
-  // For open/assigned we just show a snapshot, never critical
   return [
     {
       ok: integrity.ok,
@@ -90,7 +102,7 @@ export async function auditDispatchChecks(workspaceId?: string) {
       impact: 0,
       title: "Dispatch volume snapshot",
       expected: "visibility into queue",
-      actual: `total=${open.count}, assigned=${assigned.count}`,
+      actual: total.queryFailed ? diagLabel(total) : `total=${total.count}`,
       hint: "",
     },
   ];
@@ -98,12 +110,12 @@ export async function auditDispatchChecks(workspaceId?: string) {
 
 /* ── Tracking checks ── */
 export async function auditTrackingChecks(workspaceId?: string) {
-  const sessions = await safeCount("live_tracking_sessions", { workspace_id: workspaceId ?? null });
+  const sessions = await safeCount("live_tracking_sessions", workspaceId);
   const points = await safeCount("live_tracking_points");
 
   return [
     {
-      ok: sessions.count > 0,
+      ok: !sessions.queryFailed && sessions.count > 0,
       key: "tracking.sessions_exist",
       group: "tracking",
       severity: sessions.queryFailed ? "critical" : sessions.count > 0 ? "info" : "warning",
@@ -114,13 +126,13 @@ export async function auditTrackingChecks(workspaceId?: string) {
         ? "Tracking sessions exist"
         : "No tracking sessions yet — no data yet",
       expected: "at least one tracking session",
-      actual: sessions.queryFailed ? sessions.errorMsg! : String(sessions.count),
+      actual: diagLabel(sessions),
       hint: sessions.queryFailed
         ? "Check live_tracking_sessions table and RLS"
         : "Start a real delivery flow to test tracking bridge",
     },
     {
-      ok: points.count > 0,
+      ok: !points.queryFailed && points.count > 0,
       key: "tracking.points_exist",
       group: "tracking",
       severity: points.queryFailed ? "critical" : points.count > 0 ? "info" : "warning",
@@ -131,7 +143,7 @@ export async function auditTrackingChecks(workspaceId?: string) {
         ? "Tracking points exist"
         : "No tracking points yet — no data yet",
       expected: "at least one tracking point",
-      actual: points.queryFailed ? points.errorMsg! : String(points.count),
+      actual: diagLabel(points),
       hint: points.queryFailed
         ? "Check live_tracking_points table and RLS"
         : "Verify geolocation and point insert path",
@@ -161,21 +173,20 @@ export async function auditDataChecks(workspaceId?: string) {
 /* ── Business readiness checks (empty = warning, not critical) ── */
 export async function auditBusinessChecks(workspaceId?: string) {
   const [merchants, drivers, orders] = await Promise.all([
-    safeCount("merchant_onboarding_profiles", { workspace_id: workspaceId ?? null }),
-    safeCount("driver_profiles", { workspace_id: workspaceId ?? null }),
-    safeCount("orders", { workspace_id: workspaceId ?? null }),
+    safeCount("merchant_onboarding_profiles", workspaceId),
+    safeCount("driver_profiles", workspaceId),
+    safeCount("orders", workspaceId),
   ]);
 
   const makeCheck = (
     label: string,
     key: string,
-    result: { count: number; queryFailed: boolean; errorMsg: string | null },
+    result: { count: number; queryFailed: boolean; errorMsg: string | null; errorType: string | null },
     hint: string,
   ) => ({
-    ok: result.count > 0,
+    ok: !result.queryFailed && result.count > 0,
     key,
     group: "business",
-    // Query failure = critical (technical); empty = warning (no data yet)
     severity: result.queryFailed ? ("critical" as const) : result.count > 0 ? ("info" as const) : ("warning" as const),
     impact: result.queryFailed ? 12 : result.count > 0 ? 0 : 3,
     title: result.queryFailed
@@ -184,7 +195,7 @@ export async function auditBusinessChecks(workspaceId?: string) {
       ? `${label} exist`
       : `No ${label.toLowerCase()} yet — no data yet`,
     expected: `at least one ${label.toLowerCase()}`,
-    actual: result.queryFailed ? result.errorMsg! : String(result.count),
+    actual: diagLabel(result),
     hint: result.queryFailed ? `Check ${key.split(".")[1]} table and RLS policies` : hint,
   });
 
