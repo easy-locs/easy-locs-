@@ -1,11 +1,15 @@
 /**
- * Ride Orchestrator — Full ride lifecycle: pool discovery → price → wave dispatch → thread.
+ * Ride Orchestrator — Full ride lifecycle: pool discovery → AI ranking → dynamic pricing → wave dispatch → thread.
  */
 import { computeRadar } from "@/lib/radar/radar-engine";
-import { computeSurge, calculateFare, getFareRules, isNightHour, type FareEstimate } from "@/lib/fare-engine";
+import { calculateFare, getFareRules, isNightHour, type FareEstimate } from "@/lib/fare-engine";
 import { runWaveDispatch, type DispatchResult } from "@/lib/rides/retry-ride-request";
 import { findDriverPool } from "@/lib/rides/find-driver-pool";
 import { insertRideSystemMessage } from "@/lib/orbit/insert-ride-system-message";
+import { rankDriversAI } from "@/lib/rides/rank-drivers-ai";
+import { updateDemandZone } from "@/lib/rides/update-demand-zone";
+import { computeAISurge } from "@/lib/rides/ai-surge";
+import { toZoneKey } from "@/lib/geo/zone-utils";
 import { supabase } from "@/integrations/supabase/client";
 
 export interface RideFlowResult {
@@ -29,10 +33,12 @@ export async function startRideFlow(opts: {
   durationMin: number;
   countryCode?: string;
   requestedRideType?: "eco" | "standard" | "premium";
+  riderPriority?: "standard" | "priority" | "vip";
 }): Promise<RideFlowResult> {
   const {
     userId, userLat, userLng, drivers, distanceKm, durationMin, countryCode,
     requestedRideType = "standard",
+    riderPriority = "standard",
   } = opts;
 
   // 1. Pool discovery with radius expansion + ride type fallback
@@ -42,12 +48,38 @@ export async function startRideFlow(opts: {
     throw new Error("No drivers nearby");
   }
 
-  // 2. Radar stats for surge
-  const radar = computeRadar(userLat, userLng, poolResult.pool, poolResult.radiusKm ?? 10, "taxi");
-  const rankedDrivers = poolResult.pool.sort((a, b) => (b.score ?? 0) - (a.score ?? 0));
+  // 2. AI-powered driver ranking
+  const rankedDrivers = rankDriversAI({
+    userLat,
+    userLng,
+    drivers: poolResult.pool as any,
+    requestedRideType,
+    riderPriority,
+    radiusKm: poolResult.radiusKm ?? 10,
+    maxDrivers: 10,
+  });
 
-  // 3. Pricing
-  const surge = computeSurge(radar.totalCount, radar.availableCount);
+  // 3. Demand zone update + AI surge pricing
+  const zoneKey = toZoneKey(userLat, userLng, 2);
+
+  const zoneUpdate = await updateDemandZone({
+    lat: userLat,
+    lng: userLng,
+    activeRequests: Math.max(1, rankedDrivers.length - 1),
+    activeDrivers: rankedDrivers.length,
+  });
+
+  const surge = computeAISurge({
+    demand: Math.max(1, rankedDrivers.length - 1),
+    supply: rankedDrivers.length,
+    predictedDemand: zoneUpdate.predictedDemand,
+    riderPriority,
+    peakHour: (() => {
+      const h = new Date().getHours();
+      return (h >= 7 && h <= 9) || (h >= 17 && h <= 21);
+    })(),
+  });
+
   const rules = getFareRules(countryCode);
   const fare = calculateFare({
     distanceKm, durationMin, rules,
@@ -63,10 +95,14 @@ export async function startRideFlow(opts: {
       status: "searching",
       pickup_lat: userLat,
       pickup_lng: userLng,
-      offered_driver_ids: rankedDrivers.map((d) => d.id),
+      offered_driver_ids: rankedDrivers.map((d: any) => d.id),
       requested_ride_type: requestedRideType,
       assigned_ride_type: poolResult.rideTypeUsed,
       search_radius_km: poolResult.radiusKm,
+      rider_priority: riderPriority,
+      zone_key: zoneKey,
+      ai_dispatch_version: "v1-ai-rank",
+      predicted_wait_minutes: rankedDrivers[0]?.eta ?? null,
     } as any)
     .select("*")
     .single();
@@ -77,7 +113,7 @@ export async function startRideFlow(opts: {
 
   // 5. Insert offers
   await supabase.from("ride_offers" as any).insert(
-    rankedDrivers.map((d) => ({
+    rankedDrivers.map((d: any) => ({
       ride_request_id: (rideRequest as any).id,
       driver_id: d.id,
       score: d.score,
@@ -93,7 +129,7 @@ export async function startRideFlow(opts: {
     pickupLng: userLng,
   });
 
-  // 7. Thread + system message
+  // 7. Thread + system message + push notification
   let threadId: string | null = null;
   if (dispatch.assigned && dispatch.driverId) {
     try {
@@ -110,7 +146,7 @@ export async function startRideFlow(opts: {
       threadId = (data as any)?.id ?? null;
 
       const assignedEta =
-        rankedDrivers.find((d) => d.id === dispatch.driverId)?.eta ?? null;
+        rankedDrivers.find((d: any) => d.id === dispatch.driverId)?.eta ?? null;
 
       if (threadId) {
         await insertRideSystemMessage({
@@ -144,7 +180,7 @@ export async function startRideFlow(opts: {
     rideRequestId: (rideRequest as any).id,
     fare,
     surge,
-    nearbyCount: radar.availableCount,
+    nearbyCount: rankedDrivers.length,
     assigned: !!dispatch.assigned,
     driverId: dispatch.driverId ?? null,
     threadId,

@@ -2600,6 +2600,51 @@ export type Database = {
           },
         ]
       }
+      demand_zones: {
+        Row: {
+          active_drivers: number | null
+          active_requests: number | null
+          center_lat: number | null
+          center_lng: number | null
+          city: string | null
+          demand_score: number | null
+          id: string
+          predicted_demand: number | null
+          supply_score: number | null
+          surge_multiplier: number | null
+          updated_at: string | null
+          zone_key: string
+        }
+        Insert: {
+          active_drivers?: number | null
+          active_requests?: number | null
+          center_lat?: number | null
+          center_lng?: number | null
+          city?: string | null
+          demand_score?: number | null
+          id?: string
+          predicted_demand?: number | null
+          supply_score?: number | null
+          surge_multiplier?: number | null
+          updated_at?: string | null
+          zone_key: string
+        }
+        Update: {
+          active_drivers?: number | null
+          active_requests?: number | null
+          center_lat?: number | null
+          center_lng?: number | null
+          city?: string | null
+          demand_score?: number | null
+          id?: string
+          predicted_demand?: number | null
+          supply_score?: number | null
+          surge_multiplier?: number | null
+          updated_at?: string | null
+          zone_key?: string
+        }
+        Relationships: []
+      }
       document_requests: {
         Row: {
           created_at: string
@@ -7064,6 +7109,39 @@ export type Database = {
           },
         ]
       }
+      ride_dispatch_logs: {
+        Row: {
+          created_at: string | null
+          dispatch_reason: string | null
+          driver_id: string | null
+          id: string
+          response_status: string | null
+          ride_request_id: string
+          score: number | null
+          wave_index: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          dispatch_reason?: string | null
+          driver_id?: string | null
+          id?: string
+          response_status?: string | null
+          ride_request_id: string
+          score?: number | null
+          wave_index?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          dispatch_reason?: string | null
+          driver_id?: string | null
+          id?: string
+          response_status?: string | null
+          ride_request_id?: string
+          score?: number | null
+          wave_index?: number | null
+        }
+        Relationships: []
+      }
       ride_disputes: {
         Row: {
           admin_note: string | null
@@ -7149,6 +7227,7 @@ export type Database = {
       }
       ride_requests: {
         Row: {
+          ai_dispatch_version: string | null
           assigned_at: string | null
           assigned_ride_type: string | null
           cancellation_fee: number | null
@@ -7172,8 +7251,10 @@ export type Database = {
           pickup_lat: number
           pickup_lng: number
           platform_fee: number | null
+          predicted_wait_minutes: number | null
           requested_ride_type: string | null
           rider_id: string
+          rider_priority: string | null
           rider_rating: number | null
           rider_review: string | null
           search_radius_km: number | null
@@ -7186,8 +7267,10 @@ export type Database = {
           trip_ended_at: string | null
           trip_started_at: string | null
           updated_at: string
+          zone_key: string | null
         }
         Insert: {
+          ai_dispatch_version?: string | null
           assigned_at?: string | null
           assigned_ride_type?: string | null
           cancellation_fee?: number | null
@@ -7211,8 +7294,10 @@ export type Database = {
           pickup_lat: number
           pickup_lng: number
           platform_fee?: number | null
+          predicted_wait_minutes?: number | null
           requested_ride_type?: string | null
           rider_id: string
+          rider_priority?: string | null
           rider_rating?: number | null
           rider_review?: string | null
           search_radius_km?: number | null
@@ -7225,8 +7310,10 @@ export type Database = {
           trip_ended_at?: string | null
           trip_started_at?: string | null
           updated_at?: string
+          zone_key?: string | null
         }
         Update: {
+          ai_dispatch_version?: string | null
           assigned_at?: string | null
           assigned_ride_type?: string | null
           cancellation_fee?: number | null
@@ -7250,8 +7337,10 @@ export type Database = {
           pickup_lat?: number
           pickup_lng?: number
           platform_fee?: number | null
+          predicted_wait_minutes?: number | null
           requested_ride_type?: string | null
           rider_id?: string
+          rider_priority?: string | null
           rider_rating?: number | null
           rider_review?: string | null
           search_radius_km?: number | null
@@ -7264,6 +7353,7 @@ export type Database = {
           trip_ended_at?: string | null
           trip_started_at?: string | null
           updated_at?: string
+          zone_key?: string | null
         }
         Relationships: []
       }
