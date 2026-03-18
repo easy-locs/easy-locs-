@@ -104,6 +104,20 @@ export default function DriverTripLifecycleCard({
               if (riderId) {
                 await notifyRideCompleted(riderId, rideRequestId, finalAmount);
               }
+
+              // Award loyalty points
+              try {
+                const { addLoyaltyPoints } = await import("@/lib/loyalty/apply-loyalty");
+                if (riderId) {
+                  await addLoyaltyPoints({
+                    userId: riderId,
+                    points: Math.round(finalAmount / 2),
+                    referenceId: rideRequestId,
+                  });
+                }
+              } catch {
+                // Loyalty is non-blocking
+              }
             }, "completed")
           }
           className="w-full rounded-xl bg-success px-4 py-2.5 text-sm font-semibold text-success-foreground active:scale-[0.97] transition-transform"

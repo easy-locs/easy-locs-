@@ -200,6 +200,8 @@ const PayRidePage = safeLazy(() => import("./pages/PayRidePage"), "PayRidePage")
 const RideReceiptPage = safeLazy(() => import("./pages/RideReceiptPage"), "RideReceiptPage");
 const RideCompletePage = safeLazy(() => import("./pages/RideCompletePage"), "RideCompletePage");
 const CallDriverPage = safeLazy(() => import("./pages/CallDriverPage"), "CallDriverPage");
+const DriverPayoutPage = safeLazy(() => import("./pages/DriverPayoutPage"), "DriverPayoutPage");
+const AdminDisputesPage = safeLazy(() => import("./pages/AdminDisputesPage"), "AdminDisputesPage");
 
 // Travel universe
 const TravelHub = safeLazy(() => import("./pages/travel/TravelHub"), "TravelHub");
@@ -327,6 +329,8 @@ const App = () => (
               <Route path="/ride/receipt/:rideRequestId" element={<RideReceiptPage />} />
               <Route path="/ride/complete/:rideRequestId" element={<RideCompletePage />} />
               <Route path="/call/:threadId" element={<CallDriverPage />} />
+              <Route path="/driver/payout" element={<DriverPayoutPage />} />
+              <Route path="/admin/disputes" element={<AdminDisputesPage />} />
 
               {/* Travel */}
               <Route path="/travel" element={<TravelHub />} />
