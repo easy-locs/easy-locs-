@@ -46,6 +46,16 @@ const AddProperty = () => {
   const { toast } = useToast();
   const { t } = useI18n();
   const navigate = useNavigate();
+  const { requiresUpgrade, propertyCount, loading: paywallLoading } = usePropertyPaywall();
+
+  // Block adding if paywall applies
+  if (!paywallLoading && requiresUpgrade) {
+    return (
+      <DashboardLayout>
+        <PropertyPaywallBanner propertyCount={propertyCount} />
+      </DashboardLayout>
+    );
+  }
 
   const [form, setForm] = useState({ ...defaultForm, country: userCountry || "FR" });
   const [saving, setSaving] = useState(false);
