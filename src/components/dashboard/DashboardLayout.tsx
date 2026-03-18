@@ -12,11 +12,11 @@ import MobileBottomNav from "@/components/dashboard/MobileBottomNav";
 import HubQuickAccess from "@/components/communication-hub/HubQuickAccess";
 import {
   LayoutDashboard, Home, Users, KeyRound, FileText, Building,
-  Wallet, Wrench, CheckSquare, MessageCircle,
+  Wallet, Wrench, MessageCircle,
   BrainCircuit, Settings, LogOut, Menu, X, CreditCard, Bell,
-  Receipt, Calendar, CalendarRange, Compass,
-  Layers, BookOpen, Zap, Store, ChevronDown,
-  FileCheck, ArrowLeft, Globe, Clock,
+  Receipt, Compass,
+  Layers, Zap, Store, ChevronDown,
+  ArrowLeft, Globe, Clock,
   Shield, UsersRound, Banknote, BarChart3,
 } from "lucide-react";
 
