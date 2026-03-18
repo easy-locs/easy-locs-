@@ -161,6 +161,7 @@ const SuperMapRadarPage = safeLazy(() => import("./pages/SuperMapRadarPage"), "S
 const MyBusinessHub = safeLazy(() => import("./pages/MyBusinessHub"), "MyBusinessHub");
 const MyShopsPage = safeLazy(() => import("./pages/MyShopsPage"), "MyShopsPage");
 const MyOrdersPage = safeLazy(() => import("./pages/MyOrdersPage"), "MyOrdersPage");
+const UnifiedOrderDetailPage = safeLazy(() => import("./pages/UnifiedOrderDetailPage"), "UnifiedOrderDetailPage");
 const POSPage = safeLazy(() => import("./pages/POSPage"), "POSPage");
 const PropertyManagementHub = safeLazy(() => import("./pages/PropertyManagementHub"), "PropertyManagementHub");
 const ConciergeServicesPage = safeLazy(() => import("./pages/seo/ConciergeServicesPage"), "ConciergeServicesPage");
@@ -298,6 +299,7 @@ const App = () => (
               <Route path="/property-hub" element={<PropertyManagementHub />} />
               <Route path="/pos" element={<POSPage />} />
               <Route path="/my-orders" element={<MyOrdersPage />} />
+              <Route path="/order/:orderId" element={<UnifiedOrderDetailPage />} />
 
               {/* Marketplace & Listings */}
               <Route path="/listing/:id" element={<PublicListing />} />
