@@ -2963,6 +2963,98 @@ export type Database = {
         }
         Relationships: []
       }
+      dispatch_candidate_drivers: {
+        Row: {
+          created_at: string | null
+          distance_km: number | null
+          driver_id: string
+          eta_minutes: number | null
+          id: string
+          prediction_job_id: string
+          score: number | null
+          status: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          distance_km?: number | null
+          driver_id: string
+          eta_minutes?: number | null
+          id?: string
+          prediction_job_id: string
+          score?: number | null
+          status?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          distance_km?: number | null
+          driver_id?: string
+          eta_minutes?: number | null
+          id?: string
+          prediction_job_id?: string
+          score?: number | null
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dispatch_candidate_drivers_prediction_job_id_fkey"
+            columns: ["prediction_job_id"]
+            isOneToOne: false
+            referencedRelation: "dispatch_prediction_jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      dispatch_prediction_jobs: {
+        Row: {
+          buyer_id: string | null
+          confidence: number | null
+          context_id: string
+          context_type: string
+          created_at: string | null
+          id: string
+          metadata: Json | null
+          predicted_driver_count: number | null
+          predicted_eta_minutes: number | null
+          predicted_fee: number | null
+          seller_id: string | null
+          status: string | null
+          updated_at: string | null
+          workspace_id: string | null
+        }
+        Insert: {
+          buyer_id?: string | null
+          confidence?: number | null
+          context_id: string
+          context_type: string
+          created_at?: string | null
+          id?: string
+          metadata?: Json | null
+          predicted_driver_count?: number | null
+          predicted_eta_minutes?: number | null
+          predicted_fee?: number | null
+          seller_id?: string | null
+          status?: string | null
+          updated_at?: string | null
+          workspace_id?: string | null
+        }
+        Update: {
+          buyer_id?: string | null
+          confidence?: number | null
+          context_id?: string
+          context_type?: string
+          created_at?: string | null
+          id?: string
+          metadata?: Json | null
+          predicted_driver_count?: number | null
+          predicted_eta_minutes?: number | null
+          predicted_fee?: number | null
+          seller_id?: string | null
+          status?: string | null
+          updated_at?: string | null
+          workspace_id?: string | null
+        }
+        Relationships: []
+      }
       document_requests: {
         Row: {
           created_at: string
@@ -5468,6 +5560,192 @@ export type Database = {
           },
         ]
       }
+      merchant_activation_events: {
+        Row: {
+          created_at: string | null
+          event_type: string
+          id: string
+          payload: Json | null
+          profile_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          event_type: string
+          id?: string
+          payload?: Json | null
+          profile_id: string
+        }
+        Update: {
+          created_at?: string | null
+          event_type?: string
+          id?: string
+          payload?: Json | null
+          profile_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "merchant_activation_events_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "merchant_onboarding_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      merchant_menu_import_items: {
+        Row: {
+          category_name: string | null
+          created_at: string | null
+          currency: string | null
+          id: string
+          image_url: string | null
+          item_description: string | null
+          item_name: string
+          normalized: boolean | null
+          price: number | null
+          profile_id: string
+          published: boolean | null
+        }
+        Insert: {
+          category_name?: string | null
+          created_at?: string | null
+          currency?: string | null
+          id?: string
+          image_url?: string | null
+          item_description?: string | null
+          item_name: string
+          normalized?: boolean | null
+          price?: number | null
+          profile_id: string
+          published?: boolean | null
+        }
+        Update: {
+          category_name?: string | null
+          created_at?: string | null
+          currency?: string | null
+          id?: string
+          image_url?: string | null
+          item_description?: string | null
+          item_name?: string
+          normalized?: boolean | null
+          price?: number | null
+          profile_id?: string
+          published?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "merchant_menu_import_items_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "merchant_onboarding_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      merchant_onboarding_profiles: {
+        Row: {
+          activation_mode: string | null
+          area: string | null
+          city: string | null
+          contact_name: string | null
+          created_at: string | null
+          cuisine_type: string | null
+          delivery_radius_km: number | null
+          email: string | null
+          id: string
+          legal_name: string | null
+          merchant_name: string
+          metadata: Json | null
+          onboarding_status: string | null
+          phone: string | null
+          source_id: string | null
+          updated_at: string | null
+          workspace_id: string | null
+        }
+        Insert: {
+          activation_mode?: string | null
+          area?: string | null
+          city?: string | null
+          contact_name?: string | null
+          created_at?: string | null
+          cuisine_type?: string | null
+          delivery_radius_km?: number | null
+          email?: string | null
+          id?: string
+          legal_name?: string | null
+          merchant_name: string
+          metadata?: Json | null
+          onboarding_status?: string | null
+          phone?: string | null
+          source_id?: string | null
+          updated_at?: string | null
+          workspace_id?: string | null
+        }
+        Update: {
+          activation_mode?: string | null
+          area?: string | null
+          city?: string | null
+          contact_name?: string | null
+          created_at?: string | null
+          cuisine_type?: string | null
+          delivery_radius_km?: number | null
+          email?: string | null
+          id?: string
+          legal_name?: string | null
+          merchant_name?: string
+          metadata?: Json | null
+          onboarding_status?: string | null
+          phone?: string | null
+          source_id?: string | null
+          updated_at?: string | null
+          workspace_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "merchant_onboarding_profiles_source_id_fkey"
+            columns: ["source_id"]
+            isOneToOne: false
+            referencedRelation: "merchant_onboarding_sources"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      merchant_onboarding_sources: {
+        Row: {
+          created_at: string | null
+          id: string
+          payload: Json | null
+          source_external_id: string | null
+          source_name: string | null
+          source_type: string
+          status: string | null
+          updated_at: string | null
+          workspace_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          payload?: Json | null
+          source_external_id?: string | null
+          source_name?: string | null
+          source_type: string
+          status?: string | null
+          updated_at?: string | null
+          workspace_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          payload?: Json | null
+          source_external_id?: string | null
+          source_name?: string | null
+          source_type?: string
+          status?: string | null
+          updated_at?: string | null
+          workspace_id?: string | null
+        }
+        Relationships: []
+      }
       message_translations: {
         Row: {
           created_at: string | null
@@ -6034,6 +6312,89 @@ export type Database = {
         }
         Relationships: []
       }
+      orbit_device_keys: {
+        Row: {
+          created_at: string | null
+          device_label: string | null
+          id: string
+          identity_id: string
+          is_active: boolean | null
+          key_algo: string | null
+          public_key: string
+          revoked_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          device_label?: string | null
+          id?: string
+          identity_id: string
+          is_active?: boolean | null
+          key_algo?: string | null
+          public_key: string
+          revoked_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          device_label?: string | null
+          id?: string
+          identity_id?: string
+          is_active?: boolean | null
+          key_algo?: string | null
+          public_key?: string
+          revoked_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orbit_device_keys_identity_id_fkey"
+            columns: ["identity_id"]
+            isOneToOne: false
+            referencedRelation: "orbit_identity_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      orbit_identity_profiles: {
+        Row: {
+          anonymity_mode: boolean | null
+          avatar_url: string | null
+          created_at: string | null
+          discoverable: boolean | null
+          display_name: string | null
+          id: string
+          public_handle: string | null
+          updated_at: string | null
+          user_id: string | null
+          verification_level: string | null
+          workspace_id: string | null
+        }
+        Insert: {
+          anonymity_mode?: boolean | null
+          avatar_url?: string | null
+          created_at?: string | null
+          discoverable?: boolean | null
+          display_name?: string | null
+          id?: string
+          public_handle?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+          verification_level?: string | null
+          workspace_id?: string | null
+        }
+        Update: {
+          anonymity_mode?: boolean | null
+          avatar_url?: string | null
+          created_at?: string | null
+          discoverable?: boolean | null
+          display_name?: string | null
+          id?: string
+          public_handle?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+          verification_level?: string | null
+          workspace_id?: string | null
+        }
+        Relationships: []
+      }
       orbit_launch_audits: {
         Row: {
           analytics_ready: boolean | null
@@ -6080,6 +6441,41 @@ export type Database = {
             columns: ["shop_id"]
             isOneToOne: false
             referencedRelation: "storefront_pages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      orbit_session_tokens: {
+        Row: {
+          created_at: string | null
+          expires_at: string
+          id: string
+          identity_id: string
+          revoked_at: string | null
+          token_hash: string
+        }
+        Insert: {
+          created_at?: string | null
+          expires_at: string
+          id?: string
+          identity_id: string
+          revoked_at?: string | null
+          token_hash: string
+        }
+        Update: {
+          created_at?: string | null
+          expires_at?: string
+          id?: string
+          identity_id?: string
+          revoked_at?: string | null
+          token_hash?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orbit_session_tokens_identity_id_fkey"
+            columns: ["identity_id"]
+            isOneToOne: false
+            referencedRelation: "orbit_identity_profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -14829,6 +15225,54 @@ export type Database = {
         }
         Relationships: []
       }
+      wallet_accounts: {
+        Row: {
+          account_type: string | null
+          available_balance: number | null
+          balance: number | null
+          created_at: string | null
+          currency: string
+          external_ref: string | null
+          id: string
+          owner_type: string | null
+          owner_user_id: string | null
+          pending_balance: number | null
+          status: string | null
+          updated_at: string | null
+          workspace_id: string | null
+        }
+        Insert: {
+          account_type?: string | null
+          available_balance?: number | null
+          balance?: number | null
+          created_at?: string | null
+          currency: string
+          external_ref?: string | null
+          id?: string
+          owner_type?: string | null
+          owner_user_id?: string | null
+          pending_balance?: number | null
+          status?: string | null
+          updated_at?: string | null
+          workspace_id?: string | null
+        }
+        Update: {
+          account_type?: string | null
+          available_balance?: number | null
+          balance?: number | null
+          created_at?: string | null
+          currency?: string
+          external_ref?: string | null
+          id?: string
+          owner_type?: string | null
+          owner_user_id?: string | null
+          pending_balance?: number | null
+          status?: string | null
+          updated_at?: string | null
+          workspace_id?: string | null
+        }
+        Relationships: []
+      }
       wallet_balances: {
         Row: {
           balance: number
@@ -14919,6 +15363,62 @@ export type Database = {
         }
         Relationships: []
       }
+      wallet_ledger_entries: {
+        Row: {
+          amount: number
+          created_at: string | null
+          currency: string
+          direction: string
+          entry_type: string
+          external_txn_id: string | null
+          id: string
+          metadata: Json | null
+          reference_id: string | null
+          reference_type: string | null
+          status: string | null
+          wallet_account_id: string
+          workspace_id: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string | null
+          currency: string
+          direction: string
+          entry_type: string
+          external_txn_id?: string | null
+          id?: string
+          metadata?: Json | null
+          reference_id?: string | null
+          reference_type?: string | null
+          status?: string | null
+          wallet_account_id: string
+          workspace_id?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          currency?: string
+          direction?: string
+          entry_type?: string
+          external_txn_id?: string | null
+          id?: string
+          metadata?: Json | null
+          reference_id?: string | null
+          reference_type?: string | null
+          status?: string | null
+          wallet_account_id?: string
+          workspace_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wallet_ledger_entries_wallet_account_id_fkey"
+            columns: ["wallet_account_id"]
+            isOneToOne: false
+            referencedRelation: "wallet_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       wallet_transactions: {
         Row: {
           amount: number
@@ -14993,6 +15493,69 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      wallet_transfers: {
+        Row: {
+          amount: number
+          completed_at: string | null
+          created_at: string | null
+          currency: string
+          from_wallet_id: string | null
+          id: string
+          metadata: Json | null
+          reference_id: string | null
+          reference_type: string | null
+          status: string | null
+          to_wallet_id: string | null
+          transfer_type: string | null
+          workspace_id: string | null
+        }
+        Insert: {
+          amount: number
+          completed_at?: string | null
+          created_at?: string | null
+          currency: string
+          from_wallet_id?: string | null
+          id?: string
+          metadata?: Json | null
+          reference_id?: string | null
+          reference_type?: string | null
+          status?: string | null
+          to_wallet_id?: string | null
+          transfer_type?: string | null
+          workspace_id?: string | null
+        }
+        Update: {
+          amount?: number
+          completed_at?: string | null
+          created_at?: string | null
+          currency?: string
+          from_wallet_id?: string | null
+          id?: string
+          metadata?: Json | null
+          reference_id?: string | null
+          reference_type?: string | null
+          status?: string | null
+          to_wallet_id?: string | null
+          transfer_type?: string | null
+          workspace_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wallet_transfers_from_wallet_id_fkey"
+            columns: ["from_wallet_id"]
+            isOneToOne: false
+            referencedRelation: "wallet_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wallet_transfers_to_wallet_id_fkey"
+            columns: ["to_wallet_id"]
+            isOneToOne: false
+            referencedRelation: "wallet_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       webhook_deliveries: {
         Row: {
