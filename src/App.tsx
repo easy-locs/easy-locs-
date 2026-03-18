@@ -103,6 +103,8 @@ const CVGenerator = safeLazy(() => import("./pages/CVGenerator"), "CVGenerator")
 const CategorySubscriptions = safeLazy(() => import("./pages/CategorySubscriptions"), "CategorySubscriptions");
 const ChannelManager = safeLazy(() => import("./pages/ChannelManager"), "ChannelManager");
 const Accounting = safeLazy(() => import("./pages/Accounting"), "Accounting");
+const LandlordRentDashboard = safeLazy(() => import("./pages/LandlordRentDashboard"), "LandlordRentDashboard");
+const AccountingEntries = safeLazy(() => import("./pages/AccountingEntries"), "AccountingEntries");
 const ReportingDashboard = safeLazy(() => import("./pages/ReportingDashboard"), "ReportingDashboard");
 const DynamicPricing = safeLazy(() => import("./pages/DynamicPricing"), "DynamicPricing");
 const PropertyCalendar = safeLazy(() => import("./pages/PropertyCalendar"), "PropertyCalendar");
@@ -407,6 +409,8 @@ const App = () => (
               <Route path="/dashboard/subscriptions" element={<ProtectedRoute><CategorySubscriptions /></ProtectedRoute>} />
               <Route path="/dashboard/channels" element={<ProtectedRoute><ChannelManager /></ProtectedRoute>} />
               <Route path="/dashboard/accounting" element={<ProtectedRoute><Accounting /></ProtectedRoute>} />
+              <Route path="/dashboard/rent-cockpit" element={<ProtectedRoute><LandlordRentDashboard /></ProtectedRoute>} />
+              <Route path="/dashboard/accounting-entries" element={<ProtectedRoute><AccountingEntries /></ProtectedRoute>} />
               <Route path="/dashboard/reporting" element={<ProtectedRoute><ReportingDashboard /></ProtectedRoute>} />
               <Route path="/dashboard/dynamic-pricing" element={<ProtectedRoute><DynamicPricing /></ProtectedRoute>} />
               <Route path="/dashboard/calendar" element={<ProtectedRoute><PropertyCalendar /></ProtectedRoute>} />

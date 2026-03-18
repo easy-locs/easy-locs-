@@ -26,6 +26,7 @@ const TenantDashboard = () => {
   useEffect(() => {
     if (!user) return;
     const fetchData = async () => {
+      // Get tenant record
       const { data: tenant } = await supabase
         .from("tenants")
         .select("*, properties(label, address, city, photo_urls)")
@@ -35,6 +36,30 @@ const TenantDashboard = () => {
       setTenantInfo(tenant);
 
       if (tenant) {
+        // Try to get active lease for this tenant
+        const { data: lease } = await supabase
+          .from("leases")
+          .select("id, rent_amount, charges_amount, deposit_amount, start_date, end_date, lease_type, payment_day, status")
+          .eq("tenant_id", tenant.id)
+          .eq("status", "active")
+          .limit(1)
+          .maybeSingle();
+
+        // Override rent info from lease if available
+        if (lease) {
+          setTenantInfo((prev: any) => ({
+            ...prev,
+            rent_amount: lease.rent_amount,
+            charges_amount: lease.charges_amount,
+            deposit_amount: lease.deposit_amount,
+            lease_start: lease.start_date,
+            lease_end: lease.end_date,
+            lease_type: lease.lease_type,
+            _lease_id: lease.id,
+            _payment_day: lease.payment_day,
+          }));
+        }
+
         // Receipts count
         const { count } = await supabase
           .from("rent_calls")
@@ -52,14 +77,15 @@ const TenantDashboard = () => {
           .neq("sender_id", user.id);
         setUnreadMessages(msgCount || 0);
 
-        // Next unpaid rent
-        const { data: unpaid } = await supabase
+        // Next unpaid rent (prefer lease_id-linked rent_calls)
+        let unpaidQuery = supabase
           .from("rent_calls")
-          .select("id, month, total_amount")
+          .select("id, month, total_amount, payment_status")
           .eq("tenant_id", tenant.id)
           .eq("paid", false)
           .order("month", { ascending: true })
           .limit(1);
+        const { data: unpaid } = await unpaidQuery;
         setNextPayment(unpaid?.[0] || null);
 
         // Pending requests
