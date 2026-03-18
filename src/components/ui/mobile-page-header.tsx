@@ -7,11 +7,13 @@ import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
-interface MobilePageHeaderProps {
+export interface MobilePageHeaderProps {
   title: string;
   subtitle?: string;
   backTo?: string;
   showBack?: boolean;
+  /** Custom back handler — overrides default history/backTo behavior */
+  onBack?: () => void;
   actions?: React.ReactNode;
   icon?: React.ReactNode;
   className?: string;
@@ -22,6 +24,7 @@ export function MobilePageHeader({
   subtitle,
   backTo,
   showBack = true,
+  onBack,
   actions,
   icon,
   className,
@@ -29,7 +32,10 @@ export function MobilePageHeader({
   const navigate = useNavigate();
 
   const handleBack = () => {
-    // Use browser history if available, otherwise fall back to backTo route
+    if (onBack) {
+      onBack();
+      return;
+    }
     if (window.history.length > 1) {
       navigate(-1);
     } else if (backTo) {

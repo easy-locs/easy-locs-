@@ -33,7 +33,7 @@ const landlordNav = [
   { label: "Portfolio", desc: "All your properties", icon: Building2, path: "/dashboard/properties" },
   { label: "Buildings & Units", desc: "Units & floors", icon: Home, path: "/dashboard/buildings" },
   { label: "Tenants", desc: "Tenant directory", icon: Users, path: "/dashboard/tenants" },
-  { label: "Rent Tracking", desc: "Payments & notices", icon: Receipt, path: "/dashboard/notices" },
+  { label: "Rent Tracking", desc: "Payments & notices", icon: Receipt, path: "/dashboard/payment-notices" },
   { label: "Maintenance", desc: "Requests & interventions", icon: Wrench, path: "/dashboard/interventions" },
   { label: "Documents", desc: "Leases, contracts, files", icon: FileText, path: "/dashboard/documents" },
   { label: "Accounting", desc: "Revenue & expenses", icon: Calculator, path: "/dashboard/accounting" },
@@ -122,7 +122,8 @@ export default function PropertyManagementHub() {
         <MobilePageHeader
           title={role ? (role === "landlord" ? "Landlord Hub" : "Tenant Hub") : "Property Management"}
           icon={<Building2 className="h-5 w-5 text-primary" />}
-          backTo={role ? "/property-hub" : "/dashboard"}
+          backTo="/dashboard"
+          onBack={role ? () => { setRole(null); window.scrollTo(0, 0); } : undefined}
         />
 
         <div className="max-w-lg mx-auto px-4 py-4">
@@ -182,15 +183,6 @@ export default function PropertyManagementHub() {
           {/* ── Step 2: Role workspace ── */}
           {role && (
             <div className="space-y-4">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="gap-1.5 text-xs text-muted-foreground -ml-2 mb-1 hover:text-primary"
-                onClick={() => { setRole(null); window.scrollTo(0, 0); }}
-              >
-                <ArrowLeft className="h-3.5 w-3.5" />
-                Back to role selection
-              </Button>
 
               {/* ── Portfolio KPIs (landlord only) ── */}
               {role === "landlord" && (
@@ -247,7 +239,7 @@ export default function PropertyManagementHub() {
 
                   {/* Add property CTA */}
                   <Link
-                    to="/dashboard/add-property"
+                    to="/dashboard/property/add"
                     className="flex items-center justify-center gap-2 p-3 rounded-xl border-2 border-dashed border-border hover:border-primary/40 hover:bg-primary/5 transition-all mb-4"
                   >
                     <Plus className="h-4 w-4 text-primary" />
