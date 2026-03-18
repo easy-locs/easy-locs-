@@ -34,11 +34,14 @@ export default function SmartLocationPicker({
   onSelect,
   currentLocation,
   savedPlaces,
+  onSavePlace,
+  onRemovePlace,
   placeholder = "Where to?",
   autoFocus = false,
 }: SmartLocationPickerProps) {
   const [expanded, setExpanded] = useState(autoFocus);
   const [searchMode, setSearchMode] = useState(false);
+  const [editMode, setEditMode] = useState(false);
 
   const handleQuickSelect = (place: SavedPlace) => {
     onSelect(place);
