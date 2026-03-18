@@ -259,6 +259,8 @@ const CreateListing = () => {
         status: 'published',
         lat: geoLat,
         lng: geoLng,
+        presence_mode: form.presence_mode,
+        mobility_type: form.mobility_type,
       } as any);
 
       if (error) throw error;
