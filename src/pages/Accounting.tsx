@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import PropertyHubBreadcrumb from "@/components/property/PropertyHubBreadcrumb";
 import { useCountryFilter } from "@/hooks/useCountryFilter";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { StatCard } from "@/components/ui/stat-card";
@@ -196,6 +197,7 @@ const Accounting = () => {
 
   return (
     <DashboardLayout>
+      <PropertyHubBreadcrumb currentPage={t("page.accounting.title") || "Accounting"} />
       <div className="space-y-6">
         <div className="flex items-center justify-between flex-wrap gap-4">
           <div>

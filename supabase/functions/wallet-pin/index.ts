@@ -58,7 +58,7 @@ serve(async (req) => {
       }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
-    // ─── set_pin: hash with bcrypt and store ───
+    // ─── set_pin: hash with bcrypt and store (also used for change_pin after verification) ───
     if (action === "set_pin") {
       if (!pin || pin.length !== 6 || !/^\d{6}$/.test(pin)) {
         return new Response(JSON.stringify({ error: "PIN must be exactly 6 digits" }), {

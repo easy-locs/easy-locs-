@@ -16,6 +16,7 @@ import NotificationPreferences from "@/components/communication/NotificationPref
 import ProSettingsSection from "@/components/settings/ProSettingsSection";
 import OrbitSessionManager from "@/components/orbit/OrbitSessionManager";
 import AppSecuritySettings from "@/components/security/AppSecuritySettings";
+import PinManagement from "@/components/security/PinManagement";
 import WalletCurrencySettings from "@/components/settings/WalletCurrencySettings";
 
 const Settings = () => {
@@ -350,6 +351,11 @@ const Settings = () => {
           {user && (
             <OrbitSessionManager userId={user.id} />
           )}
+        </div>
+
+        {/* Security PIN Management */}
+        <div className="ui-card">
+          <PinManagement />
         </div>
 
         {/* App Security — PIN, Ghost, Panic */}
