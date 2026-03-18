@@ -1,9 +1,11 @@
 /**
  * WalletHub — Super-app wallet with direct Pay / Receive / Request flows.
  * Uses UniversalActionSheet for all payment entry points.
+ * Protected by SecurityGate (PIN/biometric).
  */
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import SecurityGate from "@/components/security/SecurityGate";
 import {
   Shield, ChevronRight, ArrowLeft,
   Building2, Link2, ExternalLink,
@@ -81,6 +83,7 @@ export default function WalletHub() {
   };
 
   return (
+    <SecurityGate label="Wallet" timeoutMinutes={10}>
     <DashboardLayout>
       <div className="max-w-lg mx-auto px-4 py-6 space-y-6">
         <AnimatePresence mode="wait">
@@ -192,5 +195,6 @@ export default function WalletHub() {
         </AnimatePresence>
       </div>
     </DashboardLayout>
+    </SecurityGate>
   );
 }

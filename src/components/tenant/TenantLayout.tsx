@@ -6,7 +6,7 @@ import { useTenantProperty } from "@/hooks/useTenantProperty";
 import AppLogo from "@/components/AppLogo";
 import {
   LayoutDashboard, Receipt, FileText, MessageCircle,
-  CreditCard, Settings, LogOut, Menu, X, Globe, Star, ClipboardList,
+  CreditCard, Settings, LogOut, Menu, X, Star, ClipboardList,
 } from "lucide-react";
 import NotificationBell from "@/components/notifications/NotificationBell";
 import ThemeSwitcher from "@/components/ThemeSwitcher";
@@ -48,7 +48,7 @@ const ALL_LANGUAGES: { code: Locale; label: string; flag: string }[] = [
 
 const TenantLayout = ({ children }: { children: React.ReactNode }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [langOpen, setLangOpen] = useState(false);
+  
   const location = useLocation();
   const navigate = useNavigate();
   const { user, signOut, activeRole, hasDualRole, switchRole } = useAuth();
@@ -65,7 +65,7 @@ const TenantLayout = ({ children }: { children: React.ReactNode }) => {
     { icon: Receipt, label: t("nav.receipts") || L.myReceipts, path: "/tenant/receipts" },
     { icon: FileText, label: t("nav.documents") || L.myDocuments, path: "/tenant/documents" },
     { icon: MessageCircle, label: t("nav.messages") || L.messagesNav, path: "/tenant/messages" },
-    { icon: CreditCard, label: t("nav.payments") || L.payRent, path: "/tenant/pay" },
+    { icon: CreditCard, label: t("nav.payments") || L.payRent, path: "/dashboard/wallet?context=rent" },
     { icon: Star, label: t("nav.reviews"), path: "/tenant/reviews" },
     { icon: ClipboardList, label: t("nav.requests"), path: "/tenant/requests" },
   ];
@@ -136,29 +136,6 @@ const TenantLayout = ({ children }: { children: React.ReactNode }) => {
         </nav>
 
         <div className="p-3 border-t border-sidebar-border space-y-0.5">
-          {/* Language selector */}
-          <div className="relative">
-            <button
-              onClick={() => setLangOpen(!langOpen)}
-              className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent/50 transition-colors"
-            >
-              <Globe className="h-4 w-4" />
-              <span>{currentLang.flag} {currentLang.label}</span>
-            </button>
-            {langOpen && (
-              <div className="absolute bottom-full left-0 w-full bg-sidebar border border-sidebar-border rounded-lg shadow-lg mb-1 py-1 z-50 max-h-64 overflow-y-auto">
-                {LANGUAGES.map(lang => (
-                  <button
-                    key={lang.code}
-                    onClick={() => { setLocale(lang.code); setLangOpen(false); }}
-                    className={`w-full text-left px-3 py-2 text-sm hover:bg-sidebar-accent/50 transition-colors ${locale === lang.code ? "text-accent font-medium" : "text-sidebar-foreground/60"}`}
-                  >
-                    {lang.flag} {lang.label}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
           <Link
             to="/tenant/settings"
             className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent/50 transition-colors"
