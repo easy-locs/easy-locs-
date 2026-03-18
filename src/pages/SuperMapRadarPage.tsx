@@ -188,14 +188,13 @@ export default function SuperMapRadarPage() {
           Legend
         </span>
         {([
-          ["🏪", "#38bdf8", "Fixed Store"],
-          ["🛒", "#fbbf24", "Mobile Seller"],
-          ["🔧", "#a78bfa", "Mobile Service"],
-          ["🚗", "#34d399", "Driver"],
-        ] as [string, string, string][]).map(([emoji, color, label]) => (
+          ["#D4A853", "Fixed Store"],
+          ["#fbbf24", "Mobile Seller"],
+          ["#a78bfa", "Mobile Service"],
+          ["#34d399", "Driver"],
+        ] as [string, string][]).map(([color, label]) => (
           <div key={label} style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <span style={{ fontSize: 14 }}>{emoji}</span>
-            <span style={{ width: 8, height: 8, borderRadius: "50%", background: color, display: "inline-block" }} />
+            <span style={{ width: 10, height: 10, borderRadius: "50%", background: color, border: `1.5px solid ${color}`, display: "inline-block" }} />
             <span style={{ fontSize: 11, color: "#e2e8f0" }}>{label}</span>
           </div>
         ))}
