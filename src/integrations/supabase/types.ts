@@ -5302,6 +5302,83 @@ export type Database = {
           },
         ]
       }
+      incident_case_events: {
+        Row: {
+          actor_user_id: string | null
+          body: string | null
+          created_at: string | null
+          event_type: string
+          id: string
+          incident_id: string
+          metadata_json: Json | null
+        }
+        Insert: {
+          actor_user_id?: string | null
+          body?: string | null
+          created_at?: string | null
+          event_type: string
+          id?: string
+          incident_id: string
+          metadata_json?: Json | null
+        }
+        Update: {
+          actor_user_id?: string | null
+          body?: string | null
+          created_at?: string | null
+          event_type?: string
+          id?: string
+          incident_id?: string
+          metadata_json?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "incident_case_events_incident_id_fkey"
+            columns: ["incident_id"]
+            isOneToOne: false
+            referencedRelation: "incident_cases"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      incident_cases: {
+        Row: {
+          created_at: string | null
+          id: string
+          incident_type: string
+          owner_user_id: string | null
+          resolved_at: string | null
+          severity: string | null
+          status: string | null
+          summary: string | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          incident_type: string
+          owner_user_id?: string | null
+          resolved_at?: string | null
+          severity?: string | null
+          status?: string | null
+          summary?: string | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          incident_type?: string
+          owner_user_id?: string | null
+          resolved_at?: string | null
+          severity?: string | null
+          status?: string | null
+          summary?: string | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       internal_config: {
         Row: {
           key: string
@@ -6085,6 +6162,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      log_export_jobs: {
+        Row: {
+          completed_at: string | null
+          created_at: string | null
+          created_by: string | null
+          error_message: string | null
+          export_type: string
+          filters: Json | null
+          id: string
+          output_url: string | null
+          status: string | null
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          error_message?: string | null
+          export_type: string
+          filters?: Json | null
+          id?: string
+          output_url?: string | null
+          status?: string | null
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          error_message?: string | null
+          export_type?: string
+          filters?: Json | null
+          id?: string
+          output_url?: string | null
+          status?: string | null
+        }
+        Relationships: []
       }
       login_events: {
         Row: {
@@ -7971,6 +8084,30 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      order_payout_locks: {
+        Row: {
+          beneficiary_type: string
+          id: string
+          locked_at: string | null
+          notes: string | null
+          order_id: string
+        }
+        Insert: {
+          beneficiary_type: string
+          id?: string
+          locked_at?: string | null
+          notes?: string | null
+          order_id: string
+        }
+        Update: {
+          beneficiary_type?: string
+          id?: string
+          locked_at?: string | null
+          notes?: string | null
+          order_id?: string
+        }
+        Relationships: []
       }
       orders: {
         Row: {
