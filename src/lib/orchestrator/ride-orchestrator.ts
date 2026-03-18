@@ -106,11 +106,14 @@ export async function startRideFlow(opts: {
     })(),
   });
 
+  // Apply subscription surge discount
+  const surgeAdjusted = Math.max(1, surge - benefits.surgeDiscount);
+
   const rules = getFareRules(countryCode);
   const fare = calculateFare({
     distanceKm, durationMin, rules,
     isNight: isNightHour(),
-    surgeFactor: surge,
+    surgeFactor: surgeAdjusted,
   });
 
   // 4. Create ride request
