@@ -29,7 +29,9 @@ export type Permission =
   // Leads
   | "leads:read" | "leads:write"
   // Interventions
-  | "interventions:read" | "interventions:write";
+  | "interventions:read" | "interventions:write"
+  // Shop-level
+  | "shop:manage" | "shop:catalog" | "shop:orders" | "shop:pos" | "shop:marketing" | "shop:support";
 
 /** Role hierarchy level (higher = more power) */
 const ROLE_LEVELS: Record<OrgRole, number> = {
