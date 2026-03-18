@@ -72,16 +72,38 @@ export function isNightHour(timezone?: string): boolean {
 /**
  * Calculate fare estimate.
  */
+/**
+ * Compute demand/supply surge multiplier.
+ * demandFactor > 2 → 2x, > 1.5 → 1.5x, > 1.2 → 1.2x
+ */
+export function computeSurge(demand: number, supply: number): number {
+  const ratio = demand / Math.max(supply, 1);
+  if (ratio > 2) return 2;
+  if (ratio > 1.5) return 1.5;
+  if (ratio > 1.2) return 1.2;
+  return 1;
+}
+
+/**
+ * Calculate fare estimate.
+ */
 export function calculateFare(opts: {
   distanceKm: number;
   durationMin: number;
   rules: FareRules;
   isNight?: boolean;
   surgeFactor?: number;
+  /** Live demand count — used with supply to auto-compute surge */
+  demand?: number;
+  /** Live supply count — used with demand to auto-compute surge */
+  supply?: number;
 }): FareEstimate {
   const { distanceKm, durationMin, rules } = opts;
   const night = opts.isNight ?? false;
-  const surge = opts.surgeFactor ?? rules.demandMultiplier;
+  const surge = opts.surgeFactor
+    ?? (opts.demand != null && opts.supply != null
+        ? computeSurge(opts.demand, opts.supply)
+        : rules.demandMultiplier);
 
   const distanceFee = distanceKm * rules.perKmRate;
   const timeFee = durationMin * rules.perMinRate;
