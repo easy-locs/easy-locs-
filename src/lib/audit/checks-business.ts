@@ -14,13 +14,15 @@ async function safeCount(table: string, workspaceId?: string | null) {
     }
     const { count, error } = await q;
     if (error) {
-      // Classify the error type
       const msg = error.message ?? "";
       let errorType = "query_failed";
       if (msg.includes("does not exist") || msg.includes("relation")) errorType = "table_missing";
       else if (msg.includes("column")) errorType = "column_missing";
       else if (msg.includes("permission denied") || msg.includes("RLS")) errorType = "rls_denied";
+      console.error(`[audit] safeCount("${table}") FAILED:`, { errorType, msg, workspaceId });
       return { count: 0, queryFailed: true, errorMsg: msg, errorType };
+    }
+    console.log(`[audit] safeCount("${table}") OK: count=${count ?? 0}, ws=${workspaceId ?? "none"}`);
     }
     return { count: count ?? 0, queryFailed: false, errorMsg: null, errorType: null };
   } catch (e: any) {
