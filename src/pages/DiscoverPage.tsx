@@ -318,7 +318,7 @@ function ShopCard({ shop, index, rail, onClick }: { shop: any; index: number; ra
               <span className="text-[8px] font-semibold bg-primary/8 text-primary px-2 py-0.5 rounded-full">{shop.vertical}</span>
             )}
             {shop.avg_rating > 0 && (
-              <span className="inline-flex items-center gap-0.5 text-[8px] font-semibold text-amber-500">
+              <span className="inline-flex items-center gap-0.5 text-[8px] font-semibold text-accent">
                 <Star className="h-2.5 w-2.5 fill-current" /> {Number(shop.avg_rating).toFixed(1)}
               </span>
             )}
