@@ -19,7 +19,7 @@ export default function DriverPositioningPage() {
   return (
     <div className="min-h-screen bg-background p-4">
       <div className="mx-auto max-w-md space-y-6">
-        <BackCard title="Smart Positioning" />
+        <BackCard label="Smart Positioning" />
 
         <p className="text-sm text-muted-foreground">
           AI suggests the best live zone to increase trips

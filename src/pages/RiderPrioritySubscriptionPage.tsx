@@ -33,7 +33,7 @@ export default function RiderPrioritySubscriptionPage() {
   return (
     <div className="min-h-screen bg-background p-4">
       <div className="mx-auto max-w-md space-y-6">
-        <BackCard title="Priority Subscription" />
+        <BackCard label="Priority Subscription" />
 
         <p className="text-sm text-muted-foreground">
           Upgrade for faster dispatch and premium ride priority

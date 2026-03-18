@@ -43,7 +43,7 @@ export default function AdminLiveOpsPage() {
   return (
     <div className="min-h-screen bg-background p-4">
       <div className="mx-auto max-w-2xl space-y-6">
-        <BackCard title="Live Operations" />
+        <BackCard label="Live Operations" />
 
         <div className="grid grid-cols-2 gap-3">
           {[

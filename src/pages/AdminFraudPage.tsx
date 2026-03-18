@@ -15,7 +15,7 @@ export default function AdminFraudPage() {
 
   return (
     <div className="min-h-screen bg-background p-4">
-      <BackCard title="Fraud Detection" />
+      <BackCard label="Fraud Detection" />
 
       <div className="mt-4 space-y-3">
         {rows.map((r: any) => (
