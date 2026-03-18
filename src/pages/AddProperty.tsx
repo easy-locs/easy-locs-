@@ -151,9 +151,7 @@ const AddProperty = () => {
   return (
     <DashboardLayout>
       <div className="max-w-3xl mx-auto pb-12">
-        <button onClick={() => navigate("/dashboard")} className="text-sm text-accent hover:underline mb-4 flex items-center gap-1">
-          <ArrowLeft className="h-3.5 w-3.5" /> {t("page.dashboard.world_map") || "Tableau de bord"}
-        </button>
+        <PropertyHubBreadcrumb currentPage={t("page.rental.add_property") || "Ajouter un bien"} />
 
         <div className="flex items-center gap-4 mb-8">
           <div className="w-12 h-12 rounded-xl bg-gradient-gold flex items-center justify-center shrink-0">
