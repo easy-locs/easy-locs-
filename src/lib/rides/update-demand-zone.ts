@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toZoneKey, roundCoord } from "@/lib/geo/zone-utils";
 import { predictDemand } from "@/lib/rides/predict-demand";
 import { computeAISurge } from "@/lib/rides/ai-surge";
+import { alertHotZone } from "@/lib/admin/alert-policies";
 
 export async function updateDemandZone(params: {
   lat: number;
@@ -51,6 +52,18 @@ export async function updateDemandZone(params: {
     .upsert(payload as any, { onConflict: "zone_key" } as any);
 
   if (error) throw error;
+
+  // Auto-alert on critical surge
+  try {
+    await alertHotZone({
+      zoneKey,
+      surgeMultiplier: surge,
+      activeRequests,
+      activeDrivers,
+    });
+  } catch (e) {
+    console.error("[update-demand-zone] alert failed", e);
+  }
 
   return { ok: true, zoneKey, predictedDemand, surge };
 }
