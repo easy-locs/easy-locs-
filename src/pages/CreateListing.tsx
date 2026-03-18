@@ -282,6 +282,8 @@ const CreateListing = () => {
         requires_id_document: form.verification_types.length > 0,
         active: true,
         status: 'published',
+        published_at: new Date().toISOString(),
+        location_source: geoLat ? 'gps_live' : null,
         lat: geoLat,
         lng: geoLng,
         presence_mode: form.presence_mode,
