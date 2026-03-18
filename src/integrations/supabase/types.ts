@@ -3097,6 +3097,39 @@ export type Database = {
         }
         Relationships: []
       }
+      device_fingerprints: {
+        Row: {
+          created_at: string | null
+          device_type: string | null
+          fingerprint_hash: string
+          id: string
+          ip_address: string | null
+          risk_score: number | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          device_type?: string | null
+          fingerprint_hash: string
+          id?: string
+          ip_address?: string | null
+          risk_score?: number | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          device_type?: string | null
+          fingerprint_hash?: string
+          id?: string
+          ip_address?: string | null
+          risk_score?: number | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       dispatch_candidate_drivers: {
         Row: {
           created_at: string | null
@@ -4103,6 +4136,87 @@ export type Database = {
           status?: string | null
           updated_at?: string | null
           workspace_id?: string | null
+        }
+        Relationships: []
+      }
+      fraud_edges: {
+        Row: {
+          created_at: string | null
+          edge_type: string
+          from_entity_id: string
+          id: string
+          metadata: Json | null
+          to_entity_id: string
+          weight: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          edge_type: string
+          from_entity_id: string
+          id?: string
+          metadata?: Json | null
+          to_entity_id: string
+          weight?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          edge_type?: string
+          from_entity_id?: string
+          id?: string
+          metadata?: Json | null
+          to_entity_id?: string
+          weight?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fraud_edges_from_entity_id_fkey"
+            columns: ["from_entity_id"]
+            isOneToOne: false
+            referencedRelation: "fraud_entities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fraud_edges_to_entity_id_fkey"
+            columns: ["to_entity_id"]
+            isOneToOne: false
+            referencedRelation: "fraud_entities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      fraud_entities: {
+        Row: {
+          created_at: string | null
+          entity_id: string
+          entity_type: string
+          id: string
+          metadata: Json | null
+          risk_band: string | null
+          risk_score: number | null
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          entity_id: string
+          entity_type: string
+          id?: string
+          metadata?: Json | null
+          risk_band?: string | null
+          risk_score?: number | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          entity_id?: string
+          entity_type?: string
+          id?: string
+          metadata?: Json | null
+          risk_band?: string | null
+          risk_score?: number | null
+          status?: string | null
+          updated_at?: string | null
         }
         Relationships: []
       }
