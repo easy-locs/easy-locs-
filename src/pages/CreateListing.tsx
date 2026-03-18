@@ -14,8 +14,9 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import CountrySelect from "@/components/ui/CountrySelect";
 import {
   ArrowLeft, Plus, ChevronDown, ShieldCheck, MessageSquare,
-  CreditCard, Camera, MapPin, Tag, DollarSign, CalendarDays, Package
+  CreditCard, Camera, MapPin, Tag, DollarSign, CalendarDays, Package, Radar
 } from "lucide-react";
+import PresenceMobilitySelector, { type PresenceMode, type MobilityType } from "@/components/marketplace/PresenceMobilitySelector";
 
 /* ─── Constants ─── */
 const MAX_LISTINGS_FREE = 5;
