@@ -307,17 +307,26 @@ const App = () => (
               <Route path="/qr/:code" element={<QrResolvePage />} />
 
               {/* V7 Public pillars */}
-              <Route path="/discover" element={<DiscoverPage />} />
+              {/* Redirects */}
+              <Route path="/discover" element={<Navigate to="/" replace />} />
               <Route path="/search" element={<DiscoverPage />} />
+
+              {/* Universe hubs */}
+              <Route path="/food" element={<FoodHub />} />
+              <Route path="/grocery" element={<GroceryHub />} />
+              <Route path="/services-hub" element={<ServicesHub />} />
               <Route path="/ride" element={<RidePage />} />
               <Route path="/send" element={<SendPage />} />
+
+              {/* Travel */}
               <Route path="/travel" element={<TravelHub />} />
               <Route path="/travel/flights" element={<TravelFlights />} />
               <Route path="/travel/stays" element={<TravelStays />} />
-              <Route path="/travel/hotels" element={<TravelHotels />} />
+              <Route path="/travel/hotels" element={<Navigate to="/travel/stays" replace />} />
               <Route path="/travel/hotel/:id" element={<TravelHotelDetail />} />
               <Route path="/travel/stay/:id" element={<TravelStayDetail />} />
               <Route path="/travel/flight/:id" element={<TravelFlightDetail />} />
+
               <Route path="/explore" element={<Explore />} />
               <Route path="/super-map" element={<SuperMapRadarPage />} />
               <Route path="/shops" element={<ShopsPage />} />
