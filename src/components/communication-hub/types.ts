@@ -11,7 +11,14 @@ export type ConversationType =
   | "booking"    // Booking-linked conversation
   | "deal"       // Deal room negotiation
   | "property"   // Tenant ↔ Landlord
-  | "team";      // Internal team chat
+  | "team"       // Internal team chat
+  | "order"      // Marketplace order lifecycle
+  | "rent_call"  // Rent payment lifecycle
+  | "payment"    // Generic payment / transfer
+  | "travel"     // Travel booking lifecycle
+  | "service"    // Service booking lifecycle
+  | "delivery"   // Delivery mission lifecycle
+  | "support";   // Support ticket
 
 /** Source module for badge display */
 export type SourceModule =
