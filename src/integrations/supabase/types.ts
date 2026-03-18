@@ -1962,6 +1962,45 @@ export type Database = {
           },
         ]
       }
+      competitor_price_snapshots: {
+        Row: {
+          area: string | null
+          competitor_name: string
+          currency: string | null
+          id: string
+          item_name: string
+          merchant_profile_id: string | null
+          metadata: Json | null
+          observed_at: string | null
+          observed_price: number
+          workspace_id: string | null
+        }
+        Insert: {
+          area?: string | null
+          competitor_name: string
+          currency?: string | null
+          id?: string
+          item_name: string
+          merchant_profile_id?: string | null
+          metadata?: Json | null
+          observed_at?: string | null
+          observed_price: number
+          workspace_id?: string | null
+        }
+        Update: {
+          area?: string | null
+          competitor_name?: string
+          currency?: string | null
+          id?: string
+          item_name?: string
+          merchant_profile_id?: string | null
+          metadata?: Json | null
+          observed_at?: string | null
+          observed_price?: number
+          workspace_id?: string | null
+        }
+        Relationships: []
+      }
       concierge_orders: {
         Row: {
           bank_transfer_reference: string | null
@@ -2523,6 +2562,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      customer_recommendations: {
+        Row: {
+          created_at: string | null
+          guest_id: string | null
+          id: string
+          menu_item_id: string | null
+          merchant_profile_id: string | null
+          reason: string | null
+          score: number | null
+          user_id: string | null
+          workspace_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          guest_id?: string | null
+          id?: string
+          menu_item_id?: string | null
+          merchant_profile_id?: string | null
+          reason?: string | null
+          score?: number | null
+          user_id?: string | null
+          workspace_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          guest_id?: string | null
+          id?: string
+          menu_item_id?: string | null
+          merchant_profile_id?: string | null
+          reason?: string | null
+          score?: number | null
+          user_id?: string | null
+          workspace_id?: string | null
+        }
+        Relationships: []
       }
       customer_relationships: {
         Row: {
@@ -9185,6 +9260,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      push_device_tokens: {
+        Row: {
+          created_at: string | null
+          device_token: string
+          guest_id: string | null
+          id: string
+          is_active: boolean | null
+          last_seen_at: string | null
+          platform: string
+          provider: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          device_token: string
+          guest_id?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_seen_at?: string | null
+          platform: string
+          provider?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          device_token?: string
+          guest_id?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_seen_at?: string | null
+          platform?: string
+          provider?: string
+          user_id?: string | null
+        }
+        Relationships: []
       }
       real_estate_leads: {
         Row: {
@@ -16400,6 +16511,36 @@ export type Database = {
           status?: string | null
           trigger_type?: string
           trigger_value?: number | null
+          updated_at?: string | null
+          workspace_id?: string | null
+        }
+        Relationships: []
+      }
+      system_feature_flags: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          flag_key: string
+          flag_value: Json | null
+          id: string
+          updated_at: string | null
+          workspace_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          flag_key: string
+          flag_value?: Json | null
+          id?: string
+          updated_at?: string | null
+          workspace_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          flag_key?: string
+          flag_value?: Json | null
+          id?: string
           updated_at?: string | null
           workspace_id?: string | null
         }
