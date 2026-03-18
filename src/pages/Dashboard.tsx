@@ -18,7 +18,7 @@ import { useWallet } from "@/hooks/useWallet";
 
 const OnboardingChecklist = lazy(() => import("@/components/onboarding/OnboardingChecklist"));
 const WelcomeTour = lazy(() => import("@/components/onboarding/WelcomeTour"));
-const SuperAppHome = lazy(() => import("@/components/storefront/SuperAppHome"));
+const SmartHome = lazy(() => import("@/components/storefront/SmartHome"));
 
 type CountryStat = {
   code: string;
@@ -160,10 +160,10 @@ const Dashboard = () => {
           </div>
         </Suspense>
 
-        {/* PASS130: Super-App Home — contextual quick actions */}
+        {/* Smart Home — time/location-aware super-app hub */}
         <Suspense fallback={<div className="h-32 rounded-xl bg-muted/20 animate-pulse mb-6" />}>
           <div className="mb-6 px-1">
-            <SuperAppHome />
+            <SmartHome />
           </div>
         </Suspense>
         {error && !loading && (
