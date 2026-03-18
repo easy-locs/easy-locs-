@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 
 export default function RiderPrioritySubscriptionPage() {
-  const { userId } = useAuth();
+  const { user } = useAuth();
   const [plan, setPlan] = useState<"free" | "pro" | "vip">("free");
   const [loading, setLoading] = useState(false);
 
