@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toZoneKey, roundCoord } from "@/lib/geo/zone-utils";
 import { predictDemand } from "@/lib/rides/predict-demand";
 import { computeAISurge } from "@/lib/rides/ai-surge";
+import { alertHotZone } from "@/lib/admin/alert-policies";
 
 export async function updateDemandZone(params: {
   lat: number;
