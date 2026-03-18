@@ -67,42 +67,72 @@ interface WeightProfile {
   preference: number;
   boost: number;
   recency: number;
+  // Operational
+  acceptance: number;
+  cancelPenalty: number;
+  prepSpeed: number;
+  radiusRelevance: number;
+  // Intent extended
+  freshness: number;
+  zoneConversion: number;
+  completeness: number;
+  competitiveness: number;
 }
 
 const PROXIMITY_WEIGHTS: WeightProfile = {
-  distance: 0.20,
-  eta: 0.12,
-  availability: 0.15,
-  rating: 0.12,
-  reliability: 0.08,
-  offers: 0.06,
-  repeat: 0.07,
+  distance: 0.15,
+  eta: 0.10,
+  availability: 0.12,
+  rating: 0.10,
+  reliability: 0.06,
+  offers: 0.04,
+  repeat: 0.05,
   intent: 0,
   zone: 0,
   price: 0.02,
-  quality: 0.03,
-  conversion: 0.03,
+  quality: 0.02,
+  conversion: 0.02,
   preference: 0.02,
-  boost: 0.06,
-  recency: 0.04,
+  boost: 0.05,
+  recency: 0.03,
+  // Operational — real-world signals
+  acceptance: 0.06,
+  cancelPenalty: 0.05,
+  prepSpeed: 0.06,
+  radiusRelevance: 0.05,
+  // Intent extended (zero for proximity)
+  freshness: 0,
+  zoneConversion: 0,
+  completeness: 0,
+  competitiveness: 0,
 };
 
 const INTENT_WEIGHTS: WeightProfile = {
   distance: 0.02,
   eta: 0,
-  availability: 0.10,
-  rating: 0.08,
-  reliability: 0.03,
-  offers: 0.04,
-  repeat: 0.05,
-  intent: 0.18,
-  zone: 0.12,
-  price: 0.13,
-  quality: 0.10,
-  conversion: 0.06,
-  preference: 0.05,
-  boost: 0.04,
+  availability: 0.08,
+  rating: 0.06,
+  reliability: 0.02,
+  offers: 0.03,
+  repeat: 0.04,
+  intent: 0.14,
+  zone: 0.10,
+  price: 0.10,
+  quality: 0.06,
+  conversion: 0.04,
+  preference: 0.04,
+  boost: 0.03,
   recency: 0,
+  // Operational (zero for intent)
+  acceptance: 0,
+  cancelPenalty: 0,
+  prepSpeed: 0,
+  radiusRelevance: 0,
+  // Intent extended — real-world signals
+  freshness: 0.08,
+  zoneConversion: 0.07,
+  completeness: 0.06,
+  competitiveness: 0.03,
 };
 
 const BOOST_SCORES: Record<string, number> = { featured: 1, premium: 0.7, basic: 0.4 };
