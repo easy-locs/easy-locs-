@@ -268,7 +268,7 @@ export default function RealEstateListings() {
               <TabsTrigger value="listings">Listings ({listings.length})</TabsTrigger>
               <TabsTrigger value="leads" className="relative">
                 Leads ({leads.length})
-                {newLeadsCount > 0 && <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[10px] rounded-full flex items-center justify-center">{newLeadsCount}</span>}
+                {newLeadsCount > 0 && <span className="absolute -top-1 -right-1 w-4 h-4 bg-destructive text-destructive-foreground text-[10px] rounded-full flex items-center justify-center">{newLeadsCount}</span>}
               </TabsTrigger>
             </TabsList>
 
