@@ -170,13 +170,41 @@ export function usesZone(rule: CoverageRule): boolean {
  * Get human label for coverage display.
  */
 export function getCoverageLabel(rule: CoverageRule): string {
+  if (rule.discovery_mode === "unrestricted") {
+    return rule.zone_mode === "country" ? "Nationwide" : rule.zone_mode === "region" ? "Your region" : "Everywhere";
+  }
   if (rule.discovery_mode === "zone") {
-    return rule.zone_mode === "district" ? "Your district" : rule.zone_mode === "metro" ? "Metro area" : "Your city";
+    const labels: Record<string, string> = { district: "Your district", city: "Your city", metro: "Metro area", region: "Your region", country: "Nationwide" };
+    return labels[rule.zone_mode || "city"] || "Your city";
   }
   if (rule.discovery_mode === "hybrid") {
     return `${rule.default_radius_km}km + ${rule.zone_mode || "city"}`;
   }
   return `Within ${rule.default_radius_km}km`;
+}
+
+/**
+ * Discovery Scope — determines if a category restricts results geographically.
+ */
+export function isGeographicallyRestricted(category: string): boolean {
+  const family = getCategoryFamily(category);
+  return family === "hyperlocal" || family === "city_service";
+}
+
+/**
+ * Should the UI show a radius slider for this category?
+ */
+export function showsRadiusControl(category: string): boolean {
+  const family = getCategoryFamily(category);
+  return family === "hyperlocal" || family === "city_service";
+}
+
+/**
+ * Should the UI show zone/region filters for this category?
+ */
+export function showsZoneFilter(category: string): boolean {
+  const family = getCategoryFamily(category);
+  return family === "wide_search" || family === "unrestricted";
 }
 
 /** Get all category families for reference */
