@@ -284,24 +284,46 @@ const PublicListing = () => {
 
           </div>
 
-          {/* Booking form */}
+          {/* CTA Panel — switches based on listing type */}
           <div className="lg:col-span-1">
             <div className="sticky top-16 bg-card border border-border rounded-2xl p-6 shadow-card space-y-5">
-              <BookingForm listing={listing} property={property} cleaningFee={cleaningFee} />
-              <ListingContactButtons
-                contactEmail={property?.contact_email}
-                hasPhone={property?.has_phone ?? !!property?.contact_phone}
-                hasWhatsapp={property?.has_whatsapp ?? false}
-                telegramUsername={property?.telegram_username}
-                listingTitle={listingTitle}
-                listingUrl={listingUrl}
-                listingPrice={`${listing.price_per_night} € / ${t("page.listing.per_night")}`}
-                listingCity={listingCity}
-                listingCountry={listingCountry}
-                listingId={listing?.id}
-                orgId={listing?.org_id}
-                source="seasonal"
-              />
+              {RENTAL_TYPES.includes(listing.listing_type) ? (
+                <>
+                  <RentalCTAPanel listing={listing} property={property} />
+                  <ListingContactButtons
+                    contactEmail={property?.contact_email}
+                    hasPhone={property?.has_phone ?? !!property?.contact_phone}
+                    hasWhatsapp={property?.has_whatsapp ?? false}
+                    telegramUsername={property?.telegram_username}
+                    listingTitle={listingTitle}
+                    listingUrl={listingUrl}
+                    listingPrice={`${listing.price_per_night} € / ${t("page.rental.per_month") || "month"}`}
+                    listingCity={listingCity}
+                    listingCountry={listingCountry}
+                    listingId={listing?.id}
+                    orgId={listing?.org_id}
+                    source="rental"
+                  />
+                </>
+              ) : (
+                <>
+                  <BookingForm listing={listing} property={property} cleaningFee={cleaningFee} />
+                  <ListingContactButtons
+                    contactEmail={property?.contact_email}
+                    hasPhone={property?.has_phone ?? !!property?.contact_phone}
+                    hasWhatsapp={property?.has_whatsapp ?? false}
+                    telegramUsername={property?.telegram_username}
+                    listingTitle={listingTitle}
+                    listingUrl={listingUrl}
+                    listingPrice={`${listing.price_per_night} € / ${t("page.listing.per_night")}`}
+                    listingCity={listingCity}
+                    listingCountry={listingCountry}
+                    listingId={listing?.id}
+                    orgId={listing?.org_id}
+                    source="seasonal"
+                  />
+                </>
+              )}
             </div>
           </div>
         </div>
