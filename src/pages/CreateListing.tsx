@@ -16,7 +16,7 @@ import {
   ArrowLeft, Plus, ChevronDown, ShieldCheck, MessageSquare,
   CreditCard, Camera, MapPin, Tag, DollarSign, CalendarDays, Package, Radar
 } from "lucide-react";
-import PresenceMobilitySelector, { type PresenceMode, type MobilityType } from "@/components/marketplace/PresenceMobilitySelector";
+import PresenceMobilitySelector, { type PresenceMode, type EntityType, type CoverageMode, type PresenceConfig } from "@/components/marketplace/PresenceMobilitySelector";
 
 /* ─── Constants ─── */
 const MAX_LISTINGS_FREE = 5;
@@ -105,9 +105,11 @@ interface ListingForm {
   // Duration
   duration_minutes: number;
   max_capacity: number;
-  // Presence & Mobility
+  // Presence & Coverage
   presence_mode: PresenceMode;
-  mobility_type: MobilityType;
+  entity_type: EntityType;
+  coverage_mode: CoverageMode;
+  coverage_radius_m: number | null;
 }
 
 const defaultForm: ListingForm = {
@@ -122,7 +124,7 @@ const defaultForm: ListingForm = {
   year_built: undefined, features: [],
   brand: "", model: "", condition: "good",
   duration_minutes: 0, max_capacity: 1,
-  presence_mode: "pin", mobility_type: "fixed_store",
+  presence_mode: "off", entity_type: "fixed_store", coverage_mode: "point", coverage_radius_m: null,
 };
 
 /* ─── Component ─── */
@@ -260,7 +262,11 @@ const CreateListing = () => {
         lat: geoLat,
         lng: geoLng,
         presence_mode: form.presence_mode,
-        mobility_type: form.mobility_type,
+        entity_type: form.entity_type,
+        coverage_mode: form.coverage_mode,
+        coverage_radius_m: form.coverage_radius_m,
+        anchor_lat: geoLat,
+        anchor_lng: geoLng,
       } as any);
 
       if (error) throw error;
@@ -361,13 +367,16 @@ const CreateListing = () => {
             </div>
           </Section>
 
-          {/* ── Presence & Mobility ── */}
-          <Section id="presence" icon={<Radar className="h-4 w-4 text-muted-foreground" />} title="Map Presence & Mobility" badge="Required">
+          {/* ── Presence & Coverage ── */}
+          <Section id="presence" icon={<Radar className="h-4 w-4 text-muted-foreground" />} title="Map Presence & Coverage" badge="New">
             <PresenceMobilitySelector
-              presenceMode={form.presence_mode}
-              mobilityType={form.mobility_type}
-              onPresenceModeChange={v => set({ presence_mode: v })}
-              onMobilityTypeChange={v => set({ mobility_type: v })}
+              config={{
+                presence_mode: form.presence_mode,
+                entity_type: form.entity_type,
+                coverage_mode: form.coverage_mode,
+                coverage_radius_m: form.coverage_radius_m,
+              }}
+              onChange={(cfg) => set(cfg)}
             />
           </Section>
 

@@ -1,68 +1,43 @@
 /**
- * Map rendering styles for presence_mode + mobility_type combinations.
- * Used by SuperMapRadar to decide icon, color, animation behavior.
+ * Map rendering styles for presence_mode + entity_type + coverage combinations.
  */
 
-export type PresenceMode = "pin" | "orbit";
-export type MobilityType = "fixed_store" | "mobile_seller" | "mobile_service" | "driver";
+export type PresenceMode = "off" | "pin" | "live";
+export type EntityType = "fixed_store" | "mobile_seller" | "mobile_service" | "driver";
+export type CoverageMode = "point" | "radius" | "live_radius";
 
 export interface MapMarkerStyle {
   emoji: string;
-  color: string;        // hex
-  pulseRing: boolean;   // orbit items get a pulse ring
+  color: string;
+  pulseRing: boolean;
   label: string;
 }
 
-const STYLES: Record<MobilityType, MapMarkerStyle> = {
-  fixed_store: {
-    emoji: "🏪",
-    color: "#38bdf8",    // sky-400
-    pulseRing: false,
-    label: "Store",
-  },
-  mobile_seller: {
-    emoji: "🛒",
-    color: "#fbbf24",    // amber-400
-    pulseRing: true,
-    label: "Mobile Seller",
-  },
-  mobile_service: {
-    emoji: "🔧",
-    color: "#a78bfa",    // violet-400
-    pulseRing: true,
-    label: "Mobile Service",
-  },
-  driver: {
-    emoji: "🚗",
-    color: "#34d399",    // emerald-400
-    pulseRing: true,
-    label: "Driver",
-  },
+const STYLES: Record<EntityType, MapMarkerStyle> = {
+  fixed_store: { emoji: "🏪", color: "#38bdf8", pulseRing: false, label: "Store" },
+  mobile_seller: { emoji: "🛒", color: "#fbbf24", pulseRing: true, label: "Mobile Seller" },
+  mobile_service: { emoji: "🔧", color: "#a78bfa", pulseRing: true, label: "Mobile Service" },
+  driver: { emoji: "🚗", color: "#34d399", pulseRing: true, label: "Driver" },
 };
 
 export function getMarkerStyle(
-  presenceMode: PresenceMode | string | null,
-  mobilityType: MobilityType | string | null
+  presenceMode: string | null,
+  entityType: string | null
 ): MapMarkerStyle {
   const mode = (presenceMode || "pin") as PresenceMode;
-  const mtype = (mobilityType || "fixed_store") as MobilityType;
-  const base = STYLES[mtype] || STYLES.fixed_store;
-
+  const etype = (entityType || "fixed_store") as EntityType;
+  const base = STYLES[etype] || STYLES.fixed_store;
   return {
     ...base,
-    // Override: pin mode never pulses
-    pulseRing: mode === "orbit" ? base.pulseRing : false,
+    pulseRing: mode === "live" ? base.pulseRing : false,
   };
 }
 
-/**
- * Creates an HTML element for a map marker with presence styling.
- */
 export function createMarkerElement(
-  presenceMode: PresenceMode | string | null,
-  mobilityType: MobilityType | string | null
+  presenceMode: string | null,
+  entityType: string | null
 ): HTMLDivElement {
-  const style = getMarkerStyle(presenceMode, mobilityType);
+  const style = getMarkerStyle(presenceMode, entityType);
   const el = document.createElement("div");
   el.style.cssText = `
     width: 36px; height: 36px;
@@ -86,20 +61,21 @@ export function createMarkerElement(
       pointer-events: none;
     `;
     el.appendChild(ring);
-
-    // Inject keyframes once
     if (!document.getElementById("radar-pulse-style")) {
-      const styleTag = document.createElement("style");
-      styleTag.id = "radar-pulse-style";
-      styleTag.textContent = `
-        @keyframes radar-pulse {
-          0% { transform: scale(1); opacity: 1; }
-          100% { transform: scale(2.2); opacity: 0; }
-        }
-      `;
-      document.head.appendChild(styleTag);
+      const s = document.createElement("style");
+      s.id = "radar-pulse-style";
+      s.textContent = `@keyframes radar-pulse { 0% { transform: scale(1); opacity: 1; } 100% { transform: scale(2.2); opacity: 0; } }`;
+      document.head.appendChild(s);
     }
   }
-
   return el;
+}
+
+/**
+ * Convert radius in meters to Mapbox circle-radius in pixels at a given zoom & lat.
+ * Uses the Mercator formula: metersPerPixel = 156543.03 * cos(lat) / 2^zoom
+ */
+export function metersToPixels(meters: number, lat: number, zoom: number): number {
+  const metersPerPx = (156543.03 * Math.cos((lat * Math.PI) / 180)) / Math.pow(2, zoom);
+  return meters / metersPerPx;
 }
