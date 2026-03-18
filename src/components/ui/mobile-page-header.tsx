@@ -32,7 +32,10 @@ export function MobilePageHeader({
   const navigate = useNavigate();
 
   const handleBack = () => {
-    // Use browser history if available, otherwise fall back to backTo route
+    if (onBack) {
+      onBack();
+      return;
+    }
     if (window.history.length > 1) {
       navigate(-1);
     } else if (backTo) {
