@@ -3,6 +3,7 @@
  */
 import { supabase } from "@/integrations/supabase/client";
 import { detectFraudSignals } from "@/lib/ai/fraud-detection";
+import { alertHighRiskUser } from "@/lib/admin/alert-policies";
 
 export async function updateRiskProfile(params: {
   userId: string;
