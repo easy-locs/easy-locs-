@@ -122,8 +122,8 @@ export default function SendPage() {
         {/* Step 1: Addresses */}
         {step === "addresses" && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-2">
-            <SmartLocationPicker label="Pickup from" value={pickup?.address || ""} onSelect={handlePickup} currentLocation={currentLocation} savedPlaces={places} placeholder="Pickup address" />
-            <SmartLocationPicker label="Deliver to" value={dropoff?.address || ""} onSelect={handleDropoff} currentLocation={null} savedPlaces={places} placeholder="Delivery address" autoFocus={!!pickup && !dropoff} />
+            <SmartLocationPicker label="Pickup from" value={pickup?.address || ""} onSelect={handlePickup} currentLocation={currentLocation} savedPlaces={places} onSavePlace={savePlace} onRemovePlace={removePlace} placeholder="Pickup address" />
+            <SmartLocationPicker label="Deliver to" value={dropoff?.address || ""} onSelect={handleDropoff} currentLocation={null} savedPlaces={places} onSavePlace={savePlace} onRemovePlace={removePlace} placeholder="Delivery address" autoFocus={!!pickup && !dropoff} />
           </motion.div>
         )}
 
