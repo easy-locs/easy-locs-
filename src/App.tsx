@@ -235,6 +235,7 @@ const AdminHomeV1Page = safeLazy(() => import("./pages/AdminHomeV1Page"), "Admin
 const DriverLivePage = safeLazy(() => import("./pages/DriverLivePage"), "DriverLivePage");
 const DriverPickerPage = safeLazy(() => import("./pages/DriverPickerPage"), "DriverPickerPage");
 const FoodOrderCheckoutPage = safeLazy(() => import("./pages/FoodOrderCheckoutPage"), "FoodOrderCheckoutPage");
+const DeliveryProofPage = safeLazy(() => import("./pages/DeliveryProofPage"), "DeliveryProofPage");
 
 // Travel universe
 const TravelHub = safeLazy(() => import("./pages/travel/TravelHub"), "TravelHub");
@@ -561,6 +562,7 @@ const App = () => (
               <Route path="/admin/driver-live" element={<ProtectedRoute><DriverLivePage /></ProtectedRoute>} />
               <Route path="/admin/driver-picker" element={<ProtectedRoute><DriverPickerPage /></ProtectedRoute>} />
               <Route path="/admin/food-checkout" element={<ProtectedRoute><FoodOrderCheckoutPage /></ProtectedRoute>} />
+              <Route path="/admin/delivery-proof/:orderId" element={<ProtectedRoute><DeliveryProofPage /></ProtectedRoute>} />
 
               <Route path="/app/orbit" element={<ProtectedRoute><OrbitAppShell><OrbitHome /></OrbitAppShell></ProtectedRoute>} />
               <Route path="/app/*" element={<ProtectedRoute><OrbitAppShell><OrbitHome /></OrbitAppShell></ProtectedRoute>} />
