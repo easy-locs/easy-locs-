@@ -1525,6 +1525,8 @@ export type Database = {
       concierge_services: {
         Row: {
           active: boolean
+          anchor_lat: number | null
+          anchor_lng: number | null
           bank_details: Json | null
           blocked_dates: Json | null
           booking_slug: string | null
@@ -1537,16 +1539,21 @@ export type Database = {
           commission_type: string
           conditions: string | null
           country: string
+          coverage_mode: string
+          coverage_radius_m: number | null
           created_at: string
           currency: string
           description: string | null
           duration_minutes: number | null
+          entity_type: string
           id: string
           lat: number | null
+          live_lat: number | null
+          live_lng: number | null
+          live_updated_at: string | null
           lng: number | null
           location: string | null
           max_capacity: number | null
-          mobility_type: string
           org_id: string
           payment_methods: Json | null
           paypal_email: string | null
@@ -1566,6 +1573,8 @@ export type Database = {
         }
         Insert: {
           active?: boolean
+          anchor_lat?: number | null
+          anchor_lng?: number | null
           bank_details?: Json | null
           blocked_dates?: Json | null
           booking_slug?: string | null
@@ -1578,16 +1587,21 @@ export type Database = {
           commission_type?: string
           conditions?: string | null
           country?: string
+          coverage_mode?: string
+          coverage_radius_m?: number | null
           created_at?: string
           currency?: string
           description?: string | null
           duration_minutes?: number | null
+          entity_type?: string
           id?: string
           lat?: number | null
+          live_lat?: number | null
+          live_lng?: number | null
+          live_updated_at?: string | null
           lng?: number | null
           location?: string | null
           max_capacity?: number | null
-          mobility_type?: string
           org_id: string
           payment_methods?: Json | null
           paypal_email?: string | null
@@ -1607,6 +1621,8 @@ export type Database = {
         }
         Update: {
           active?: boolean
+          anchor_lat?: number | null
+          anchor_lng?: number | null
           bank_details?: Json | null
           blocked_dates?: Json | null
           booking_slug?: string | null
@@ -1619,16 +1635,21 @@ export type Database = {
           commission_type?: string
           conditions?: string | null
           country?: string
+          coverage_mode?: string
+          coverage_radius_m?: number | null
           created_at?: string
           currency?: string
           description?: string | null
           duration_minutes?: number | null
+          entity_type?: string
           id?: string
           lat?: number | null
+          live_lat?: number | null
+          live_lng?: number | null
+          live_updated_at?: string | null
           lng?: number | null
           location?: string | null
           max_capacity?: number | null
-          mobility_type?: string
           org_id?: string
           payment_methods?: Json | null
           paypal_email?: string | null
@@ -4299,6 +4320,8 @@ export type Database = {
       marketplace_services: {
         Row: {
           active: boolean | null
+          anchor_lat: number | null
+          anchor_lng: number | null
           badges: string[] | null
           bathrooms: number | null
           bedrooms: number | null
@@ -4313,20 +4336,25 @@ export type Database = {
           contact_email: string | null
           contact_whatsapp: string | null
           country: string
+          coverage_mode: string
+          coverage_radius_m: number | null
           created_at: string
           currency: string
           deposit_amount: number | null
           description: string | null
           duration_minutes: number | null
+          entity_type: string
           features: Json | null
           id: string
           lat: number | null
           listing_expires_at: string | null
           listing_type: string | null
+          live_lat: number | null
+          live_lng: number | null
+          live_updated_at: string | null
           lng: number | null
           location: string | null
           max_capacity: number | null
-          mobility_type: string
           model: string | null
           org_id: string
           payment_bank_details: Json | null
@@ -4358,6 +4386,8 @@ export type Database = {
         }
         Insert: {
           active?: boolean | null
+          anchor_lat?: number | null
+          anchor_lng?: number | null
           badges?: string[] | null
           bathrooms?: number | null
           bedrooms?: number | null
@@ -4372,20 +4402,25 @@ export type Database = {
           contact_email?: string | null
           contact_whatsapp?: string | null
           country?: string
+          coverage_mode?: string
+          coverage_radius_m?: number | null
           created_at?: string
           currency?: string
           deposit_amount?: number | null
           description?: string | null
           duration_minutes?: number | null
+          entity_type?: string
           features?: Json | null
           id?: string
           lat?: number | null
           listing_expires_at?: string | null
           listing_type?: string | null
+          live_lat?: number | null
+          live_lng?: number | null
+          live_updated_at?: string | null
           lng?: number | null
           location?: string | null
           max_capacity?: number | null
-          mobility_type?: string
           model?: string | null
           org_id: string
           payment_bank_details?: Json | null
@@ -4417,6 +4452,8 @@ export type Database = {
         }
         Update: {
           active?: boolean | null
+          anchor_lat?: number | null
+          anchor_lng?: number | null
           badges?: string[] | null
           bathrooms?: number | null
           bedrooms?: number | null
@@ -4431,20 +4468,25 @@ export type Database = {
           contact_email?: string | null
           contact_whatsapp?: string | null
           country?: string
+          coverage_mode?: string
+          coverage_radius_m?: number | null
           created_at?: string
           currency?: string
           deposit_amount?: number | null
           description?: string | null
           duration_minutes?: number | null
+          entity_type?: string
           features?: Json | null
           id?: string
           lat?: number | null
           listing_expires_at?: string | null
           listing_type?: string | null
+          live_lat?: number | null
+          live_lng?: number | null
+          live_updated_at?: string | null
           lng?: number | null
           location?: string | null
           max_capacity?: number | null
-          mobility_type?: string
           model?: string | null
           org_id?: string
           payment_bank_details?: Json | null
@@ -9718,6 +9760,8 @@ export type Database = {
         Row: {
           active: boolean | null
           address: string | null
+          anchor_lat: number | null
+          anchor_lng: number | null
           banner_url: string | null
           city: string | null
           contact_email: string | null
@@ -9725,17 +9769,22 @@ export type Database = {
           contact_telegram: string | null
           contact_whatsapp: string | null
           country: string | null
+          coverage_mode: string
+          coverage_radius_m: number | null
           created_at: string | null
           currency: string | null
           default_currency: string | null
           description: string | null
+          entity_type: string
           geo_scope: string | null
           id: string
           is_verified: boolean | null
           latitude: number | null
+          live_lat: number | null
+          live_lng: number | null
+          live_updated_at: string | null
           logo_url: string | null
           longitude: number | null
-          mobility_type: string
           name: string
           og_image_url: string | null
           onboarding_completed: boolean | null
@@ -9763,6 +9812,8 @@ export type Database = {
         Insert: {
           active?: boolean | null
           address?: string | null
+          anchor_lat?: number | null
+          anchor_lng?: number | null
           banner_url?: string | null
           city?: string | null
           contact_email?: string | null
@@ -9770,17 +9821,22 @@ export type Database = {
           contact_telegram?: string | null
           contact_whatsapp?: string | null
           country?: string | null
+          coverage_mode?: string
+          coverage_radius_m?: number | null
           created_at?: string | null
           currency?: string | null
           default_currency?: string | null
           description?: string | null
+          entity_type?: string
           geo_scope?: string | null
           id?: string
           is_verified?: boolean | null
           latitude?: number | null
+          live_lat?: number | null
+          live_lng?: number | null
+          live_updated_at?: string | null
           logo_url?: string | null
           longitude?: number | null
-          mobility_type?: string
           name: string
           og_image_url?: string | null
           onboarding_completed?: boolean | null
@@ -9808,6 +9864,8 @@ export type Database = {
         Update: {
           active?: boolean | null
           address?: string | null
+          anchor_lat?: number | null
+          anchor_lng?: number | null
           banner_url?: string | null
           city?: string | null
           contact_email?: string | null
@@ -9815,17 +9873,22 @@ export type Database = {
           contact_telegram?: string | null
           contact_whatsapp?: string | null
           country?: string | null
+          coverage_mode?: string
+          coverage_radius_m?: number | null
           created_at?: string | null
           currency?: string | null
           default_currency?: string | null
           description?: string | null
+          entity_type?: string
           geo_scope?: string | null
           id?: string
           is_verified?: boolean | null
           latitude?: number | null
+          live_lat?: number | null
+          live_lng?: number | null
+          live_updated_at?: string | null
           logo_url?: string | null
           longitude?: number | null
-          mobility_type?: string
           name?: string
           og_image_url?: string | null
           onboarding_completed?: boolean | null
