@@ -7,7 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { Plane, ArrowLeftRight, SlidersHorizontal, ArrowUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import MobilePageHeader from "@/components/mobile/MobilePageHeader";
+import { MobilePageHeader } from "@/components/ui/mobile-page-header";
 
 export interface FlightSearchParams {
   originCountry?: string;
