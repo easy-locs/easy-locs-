@@ -55,6 +55,7 @@ const TenantLayout = ({ children }: { children: React.ReactNode }) => {
   const { user, signOut, activeRole, hasDualRole, switchRole } = useAuth();
   const { locale, setLocale, t } = useI18n();
   const { L, tenantLanguages } = useTenantProperty();
+  const exitToPropertyHub = usePropertyHubExit();
 
   // Filter languages: only property country language + English
   const LANGUAGES = ALL_LANGUAGES.filter(
