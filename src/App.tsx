@@ -370,7 +370,11 @@ const App = () => (
               <Route path="/admin/financial-recon" element={<FinancialReconPage />} />
               <Route path="/admin/recon-alerts" element={<ReconAlertsPage />} />
               <Route path="/call/:callSessionId" element={<CallSessionPage />} />
-
+              <Route path="/orbit/identity" element={<OrbitIdentityPage />} />
+              <Route path="/wallet/hub" element={<WalletHubPage />} />
+              <Route path="/dispatch/predictive" element={<PredictiveDispatchPage />} />
+              <Route path="/merchant/onboarding" element={<MerchantOnboardingPage />} />
+              <Route path="/admin/merchant-onboarding" element={<MerchantOnboardingAdminPage />} />
               {/* Travel */}
               <Route path="/travel" element={<TravelHub />} />
               <Route path="/travel/flights" element={<TravelFlights />} />
