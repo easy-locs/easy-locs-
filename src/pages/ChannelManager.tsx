@@ -497,7 +497,7 @@ const ChannelManager = () => {
                         <div className="flex items-center justify-between">
                           <span className={`text-xs font-medium ${isToday ? "text-accent" : "text-foreground"}`}>{day.getDate()}</span>
                           {pricing && (
-                            <span className={`text-[8px] font-bold px-1 rounded ${pricing.value > 0 ? "bg-emerald-500/10 text-emerald-600" : "bg-red-500/10 text-red-600"}`}>
+                            <span className={`text-[8px] font-bold px-1 rounded ${pricing.value > 0 ? "bg-success/10 text-success" : "bg-destructive/10 text-destructive"}`}>
                               {pricing.value > 0 ? "+" : ""}{pricing.value}{pricing.type === "percentage" ? "%" : "€"}
                             </span>
                           )}
