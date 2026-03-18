@@ -138,7 +138,7 @@ export default function WalletBalanceCard({
           </div>
           <div className="rounded-xl px-3 py-2.5" style={{ background: "hsl(0 0% 100% / 0.05)" }}>
             <div className="flex items-center gap-1.5 mb-0.5">
-              <TrendingDown className="w-3 h-3 text-rose-400/80" />
+              <TrendingDown className="w-3 h-3 text-destructive/80" />
               <span className="text-[8px] font-bold text-white/35 uppercase tracking-wider">
                 {t("orbit.spent") || "Spent"}
               </span>
