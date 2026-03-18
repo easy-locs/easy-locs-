@@ -113,6 +113,7 @@ const TenantReceipts = () => {
                       <span>=</span>
                       <strong className="currency-value whitespace-nowrap">{fmt(r.total_amount)}</strong>
                     </p>
+                    <ReceiptStatusBadge receiptUrl={r.receipt_pdf_url} validated={r.receipt_validated} paid={r.paid} />
                   </div>
                   {r.receipt_pdf_url && (
                     <button
