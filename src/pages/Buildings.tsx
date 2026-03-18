@@ -99,6 +99,7 @@ const Buildings = () => {
   return (
     <DashboardLayout>
       <div className="max-w-4xl mx-auto">
+        <PropertyHubBreadcrumb currentPage={t("page.buildings.title")} />
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-2xl font-bold text-foreground">{t("page.buildings.title")}</h1>
