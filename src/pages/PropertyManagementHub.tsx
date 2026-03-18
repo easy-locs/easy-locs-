@@ -123,6 +123,7 @@ export default function PropertyManagementHub() {
           title={role ? (role === "landlord" ? "Landlord Hub" : "Tenant Hub") : "Property Management"}
           icon={<Building2 className="h-5 w-5 text-primary" />}
           backTo="/dashboard"
+          onBack={role ? () => { setRole(null); window.scrollTo(0, 0); } : undefined}
         />
 
         <div className="max-w-lg mx-auto px-4 py-4">
