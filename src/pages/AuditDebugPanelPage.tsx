@@ -177,6 +177,25 @@ export default function AuditDebugPanelPage() {
               </span>
             )}
           </Button>
+
+          <Button
+            onClick={seed}
+            disabled={seeding || loading}
+            variant="outline"
+            className="w-full h-10 text-xs rounded-xl border-accent/30 text-accent hover:bg-accent/10"
+          >
+            {seeding ? (
+              <span className="flex items-center gap-2">
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                Seed en cours…
+              </span>
+            ) : (
+              <span className="flex items-center gap-2">
+                <Activity className="h-3.5 w-3.5" />
+                Injecter données démo
+              </span>
+            )}
+          </Button>
         </div>
       </div>
 
