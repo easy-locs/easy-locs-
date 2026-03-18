@@ -157,6 +157,9 @@ const TenantLayout = ({ children }: { children: React.ReactNode }) => {
           <button onClick={() => setSidebarOpen(true)} className="lg:hidden text-foreground p-2 -ml-1 rounded-lg hover:bg-muted transition-colors" aria-label="Menu">
             <Menu className="h-5 w-5" />
           </button>
+          <Link to="/property-hub" className="lg:hidden inline-flex items-center rounded-lg px-2.5 py-1.5 text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors">
+            Sortir
+          </Link>
           <div className="flex-1" />
           <ThemeSwitcher />
           <NotificationBell />
