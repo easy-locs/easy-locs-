@@ -115,6 +115,7 @@ export default function PropertyManagementHub() {
   ];
 
   return (
+    <SecurityGate label="Property Management" timeoutMinutes={10}>
     <>
       <SEOHead title="Property Management" description="Manage your properties and tenancies." />
       <div className="min-h-screen bg-background pb-20">
