@@ -2027,69 +2027,106 @@ export type Database = {
       }
       customer_relationships: {
         Row: {
+          bookings_count: number
+          churn_risk: number
           created_at: string
           currency: string
           customer_id: string
+          favorite_provider_id: string | null
+          favorite_store_id: string | null
+          favorite_universe: string | null
           first_interaction_at: string
+          first_order_at: string | null
           id: string
           is_favorite: boolean
+          is_vip: boolean
           last_booking_at: string | null
           last_order_at: string | null
+          last_seen_at: string | null
           lifetime_value: number
           loyalty_points: number
           loyalty_tier: string | null
           merchant_id: string
+          orders_count: number
           preferred_categories: string[] | null
           preferred_payment_method: string | null
           reactivation_eligible: boolean
+          reactivation_score: number
           shop_id: string | null
           total_bookings: number
           total_orders: number
           updated_at: string
         }
         Insert: {
+          bookings_count?: number
+          churn_risk?: number
           created_at?: string
           currency?: string
           customer_id: string
+          favorite_provider_id?: string | null
+          favorite_store_id?: string | null
+          favorite_universe?: string | null
           first_interaction_at?: string
+          first_order_at?: string | null
           id?: string
           is_favorite?: boolean
+          is_vip?: boolean
           last_booking_at?: string | null
           last_order_at?: string | null
+          last_seen_at?: string | null
           lifetime_value?: number
           loyalty_points?: number
           loyalty_tier?: string | null
           merchant_id: string
+          orders_count?: number
           preferred_categories?: string[] | null
           preferred_payment_method?: string | null
           reactivation_eligible?: boolean
+          reactivation_score?: number
           shop_id?: string | null
           total_bookings?: number
           total_orders?: number
           updated_at?: string
         }
         Update: {
+          bookings_count?: number
+          churn_risk?: number
           created_at?: string
           currency?: string
           customer_id?: string
+          favorite_provider_id?: string | null
+          favorite_store_id?: string | null
+          favorite_universe?: string | null
           first_interaction_at?: string
+          first_order_at?: string | null
           id?: string
           is_favorite?: boolean
+          is_vip?: boolean
           last_booking_at?: string | null
           last_order_at?: string | null
+          last_seen_at?: string | null
           lifetime_value?: number
           loyalty_points?: number
           loyalty_tier?: string | null
           merchant_id?: string
+          orders_count?: number
           preferred_categories?: string[] | null
           preferred_payment_method?: string | null
           reactivation_eligible?: boolean
+          reactivation_score?: number
           shop_id?: string | null
           total_bookings?: number
           total_orders?: number
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "customer_relationships_favorite_store_id_fkey"
+            columns: ["favorite_store_id"]
+            isOneToOne: false
+            referencedRelation: "storefront_pages"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "customer_relationships_shop_id_fkey"
             columns: ["shop_id"]
