@@ -206,12 +206,16 @@ function EmptyState({ driversCount, onRefresh }: { driversCount: number; onRefre
 }
 
 /* ═══════════════════════════════════════════════
-   COMMAND CENTER MAP
+   COMMAND CENTER MAP — Live driver map with recenter
    ═══════════════════════════════════════════════ */
 function CommandMap({
-  mission, drivers,
+  mission, drivers, userLat, userLng, onRecenter,
 }: {
-  mission: DeliveryJob | null; drivers: { lat: number | null; lng: number | null; user_id: string; status: string }[];
+  mission: DeliveryJob | null;
+  drivers: { lat: number | null; lng: number | null; user_id: string; status: string }[];
+  userLat: number | null;
+  userLng: number | null;
+  onRecenter: () => void;
 }) {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstance = useRef<mapboxgl.Map | null>(null);
@@ -220,10 +224,11 @@ function CommandMap({
   useEffect(() => {
     if (!mapRef.current || mapInstance.current) return;
     mapboxgl.accessToken = MAPBOX_TOKEN;
+    const center: [number, number] = userLng && userLat ? [userLng, userLat] : [3.06, 36.75];
     const map = new mapboxgl.Map({
       container: mapRef.current,
       style: "mapbox://styles/mapbox/dark-v11",
-      center: [3.06, 36.75],
+      center,
       zoom: 12,
     });
     mapInstance.current = map;
@@ -239,12 +244,27 @@ function CommandMap({
     const bounds = new mapboxgl.LngLatBounds();
     let hasPoints = false;
 
-    // Drivers
+    // User position
+    if (userLat && userLng) {
+      const el = document.createElement("div");
+      el.style.cssText = "width:16px;height:16px;border-radius:50%;background:hsl(var(--primary));border:3px solid white;box-shadow:0 0 12px hsl(var(--primary) / 0.5);";
+      const m = new mapboxgl.Marker({ element: el }).setLngLat([userLng, userLat]).addTo(map);
+      markersRef.current.push(m);
+      bounds.extend([userLng, userLat]);
+      hasPoints = true;
+    }
+
+    // Drivers with status colors
     drivers.forEach((d) => {
       if (d.lat == null || d.lng == null) return;
+      const isOnline = d.status === "online";
+      const isBusy = d.status === "on_delivery";
+      const bg = isOnline ? "#22C55E" : isBusy ? "#F59E0B" : "#64748B";
+      const label = isOnline ? "🟢" : isBusy ? "🔶" : "⚫";
       const el = document.createElement("div");
-      el.style.cssText = "width:28px;height:28px;border-radius:50%;background:#22C55E;border:2px solid #fff;display:flex;align-items:center;justify-content:center;font-size:13px;box-shadow:0 4px 12px #22C55E44;";
+      el.style.cssText = `width:32px;height:32px;border-radius:50%;background:${bg}22;border:2px solid ${bg};display:flex;align-items:center;justify-content:center;font-size:14px;box-shadow:0 4px 12px ${bg}44;`;
       el.textContent = "🚗";
+      el.title = `Driver ${d.user_id.slice(0,6)} — ${d.status}`;
       const marker = new mapboxgl.Marker({ element: el }).setLngLat([d.lng, d.lat]).addTo(map);
       markersRef.current.push(marker);
       bounds.extend([d.lng, d.lat]);
@@ -276,21 +296,42 @@ function CommandMap({
     if (hasPoints) {
       map.fitBounds(bounds, { padding: 60, maxZoom: 15 });
     }
-  }, [mission, drivers]);
+  }, [mission, drivers, userLat, userLng]);
+
+  // Recenter handler
+  const handleRecenter = useCallback(() => {
+    onRecenter();
+    if (mapInstance.current && userLat && userLng) {
+      mapInstance.current.flyTo({ center: [userLng, userLat], zoom: 13, duration: 800 });
+    }
+  }, [onRecenter, userLat, userLng]);
 
   return (
     <div className="relative rounded-2xl overflow-hidden border border-border/20">
-      <div ref={mapRef} className="h-[260px] w-full" />
+      <div ref={mapRef} className="h-[300px] w-full" />
+
+      {/* Recenter button */}
+      <div className="absolute bottom-3 left-3 z-10">
+        <button
+          onClick={handleRecenter}
+          className="w-9 h-9 rounded-full flex items-center justify-center bg-background/90 backdrop-blur-md border border-border/30 shadow-lg hover:bg-muted transition-colors"
+          title="Recenter on my position"
+        >
+          <Navigation className="h-4 w-4 text-primary" />
+        </button>
+      </div>
+
       {/* Map legend overlay */}
-      <div className="absolute bottom-2 left-2 flex gap-2">
+      <div className="absolute bottom-3 right-3 flex gap-1.5 z-10">
         {[
-          { color: "#22C55E", label: "Driver" },
+          { color: "#22C55E", label: "Online" },
+          { color: "#F59E0B", label: "Busy" },
           { color: "#4F46E5", label: "Pickup" },
           { color: "#EF4444", label: "Dropoff" },
         ].map((it) => (
-          <div key={it.label} className="flex items-center gap-1 px-2 py-1 rounded-lg bg-black/60 backdrop-blur-sm">
+          <div key={it.label} className="flex items-center gap-1 px-1.5 py-1 rounded-lg bg-black/60 backdrop-blur-sm">
             <span className="w-2 h-2 rounded-full" style={{ background: it.color }} />
-            <span className="text-[9px] text-white/80">{it.label}</span>
+            <span className="text-[8px] text-white/80">{it.label}</span>
           </div>
         ))}
       </div>
