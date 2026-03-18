@@ -246,6 +246,9 @@ const AdminRealtimeControlPage = safeLazy(() => import("./pages/AdminRealtimeCon
 const DeploymentChecklistPage = safeLazy(() => import("./pages/DeploymentChecklistPage"), "DeploymentChecklistPage");
 const LoyaltyRedeemPage = safeLazy(() => import("./pages/LoyaltyRedeemPage"), "LoyaltyRedeemPage");
 const AbandonedCartOpsPage = safeLazy(() => import("./pages/AbandonedCartOpsPage"), "AbandonedCartOpsPage");
+const AdminAlertCenterPage = safeLazy(() => import("./pages/AdminAlertCenterPage"), "AdminAlertCenterPage");
+const IncidentDashboardPage = safeLazy(() => import("./pages/IncidentDashboardPage"), "IncidentDashboardPage");
+const StripeElementsPage = safeLazy(() => import("./pages/StripeElementsPage"), "StripeElementsPage");
 
 // Travel universe
 const TravelHub = safeLazy(() => import("./pages/travel/TravelHub"), "TravelHub");
@@ -580,6 +583,9 @@ const App = () => (
               <Route path="/admin/deployment-checklist" element={<ProtectedRoute><DeploymentChecklistPage /></ProtectedRoute>} />
               <Route path="/admin/loyalty-redeem" element={<ProtectedRoute><LoyaltyRedeemPage /></ProtectedRoute>} />
               <Route path="/admin/abandoned-cart-ops" element={<ProtectedRoute><AbandonedCartOpsPage /></ProtectedRoute>} />
+              <Route path="/admin/alerts" element={<ProtectedRoute><AdminAlertCenterPage /></ProtectedRoute>} />
+              <Route path="/admin/incidents" element={<ProtectedRoute><IncidentDashboardPage /></ProtectedRoute>} />
+              <Route path="/payments/stripe-elements" element={<ProtectedRoute><StripeElementsPage /></ProtectedRoute>} />
 
               {/* Guest / Public */}
               <Route path="/guest/checkout/:cartId" element={<GuestCheckoutPage />} />
