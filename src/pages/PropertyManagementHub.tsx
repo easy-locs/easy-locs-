@@ -186,10 +186,10 @@ export default function PropertyManagementHub() {
                 variant="ghost"
                 size="sm"
                 className="gap-1.5 text-xs text-muted-foreground -ml-2 mb-1 hover:text-primary"
-                onClick={() => setRole(null)}
+                onClick={() => { setRole(null); window.scrollTo(0, 0); }}
               >
                 <ArrowLeft className="h-3.5 w-3.5" />
-                Change role
+                Back to role selection
               </Button>
 
               {/* ── Portfolio KPIs (landlord only) ── */}
