@@ -49,7 +49,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, signOut, subscription, activeRole, hasDualRole, switchRole, orgId, allOrgs, switchOrg } = useAuth();
-  const { locale, setLocale, t, availableLocales } = useI18n();
+  const { t } = useI18n();
   const { currentTier, isSubscribed } = useSubscriptionGating();
   const activeCountry = useCountryContext();
 
