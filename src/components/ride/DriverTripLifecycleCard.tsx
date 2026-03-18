@@ -1,15 +1,30 @@
 /**
  * DriverTripLifecycleCard — Driver-side UI to advance ride through lifecycle stages.
+ * Integrates Orbit notifications and wallet settlement at each transition.
  */
 import { useState } from "react";
-import { markDriverArrived, confirmRidePickup, completeRide } from "@/lib/rides/ride-lifecycle";
+import {
+  markDriverArrived,
+  confirmRidePickup,
+  completeRide,
+} from "@/lib/rides/ride-lifecycle";
+import {
+  orbitRideArrived,
+  orbitRideStarted,
+  orbitRideCompleted,
+} from "@/lib/orbit/orbit-ride-notifications";
+import { settleRide } from "@/lib/wallet/settle-ride";
 
 export default function DriverTripLifecycleCard({
   rideRequestId,
   driverId,
+  threadId,
+  riderId,
 }: {
   rideRequestId: string;
   driverId: string;
+  threadId?: string | null;
+  riderId?: string | null;
 }) {
   const [step, setStep] = useState<"assigned" | "arrived" | "started" | "completed">("assigned");
   const [loading, setLoading] = useState(false);
@@ -31,7 +46,12 @@ export default function DriverTripLifecycleCard({
 
       {step === "assigned" && (
         <button
-          onClick={() => act(() => markDriverArrived(rideRequestId, driverId), "arrived")}
+          onClick={() =>
+            act(async () => {
+              await markDriverArrived(rideRequestId, driverId);
+              if (threadId) await orbitRideArrived(threadId, rideRequestId);
+            }, "arrived")
+          }
           className="w-full rounded-xl bg-accent px-4 py-2.5 text-sm font-semibold text-accent-foreground active:scale-[0.97] transition-transform"
         >
           {loading ? "Updating…" : "Mark arrived"}
@@ -40,7 +60,12 @@ export default function DriverTripLifecycleCard({
 
       {step === "arrived" && (
         <button
-          onClick={() => act(() => confirmRidePickup(rideRequestId, driverId), "started")}
+          onClick={() =>
+            act(async () => {
+              await confirmRidePickup(rideRequestId, driverId);
+              if (threadId) await orbitRideStarted(threadId, rideRequestId);
+            }, "started")
+          }
           className="w-full rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground active:scale-[0.97] transition-transform"
         >
           {loading ? "Updating…" : "Confirm pickup"}
@@ -49,7 +74,26 @@ export default function DriverTripLifecycleCard({
 
       {step === "started" && (
         <button
-          onClick={() => act(() => completeRide(rideRequestId, driverId, 32), "completed")}
+          onClick={() =>
+            act(async () => {
+              const finalAmount = 32;
+              await completeRide(rideRequestId, driverId, finalAmount);
+
+              if (riderId) {
+                await settleRide({
+                  rideRequestId,
+                  riderId,
+                  driverId,
+                  amount: finalAmount,
+                  threadId,
+                });
+              }
+
+              if (threadId) {
+                await orbitRideCompleted(threadId, rideRequestId, finalAmount);
+              }
+            }, "completed")
+          }
           className="w-full rounded-xl bg-success px-4 py-2.5 text-sm font-semibold text-success-foreground active:scale-[0.97] transition-transform"
         >
           {loading ? "Completing…" : "Complete ride"}

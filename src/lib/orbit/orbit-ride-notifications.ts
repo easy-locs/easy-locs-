@@ -57,6 +57,7 @@ export async function orbitRideCompleted(
     actions: [
       { label: "💳 Pay ride", route: `/wallet/pay/${threadId}`, type: "pay" },
       { label: "🧾 View receipt", route: `/ride/receipt/${rideRequestId}`, type: "receipt" },
+      { label: "⭐ Rate trip", route: `/ride/complete/${rideRequestId}`, type: "rate" },
     ],
   });
 }
