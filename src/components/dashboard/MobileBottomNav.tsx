@@ -3,7 +3,7 @@
  */
 import { NavLink, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Compass, Store, Briefcase, Building2 } from "lucide-react";
+import { Compass, Store, Briefcase, Building2, Map } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 
 const FALLBACKS: Record<string, string> = {
