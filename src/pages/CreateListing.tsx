@@ -234,10 +234,13 @@ const CreateListing = () => {
       const autoExpire = isSale;
       const expiresAt = isSale ? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) : null;
 
+      const slug = form.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/-+$/, "");
+
       const { error } = await supabase.from("marketplace_services").insert({
         org_id: orgId, user_id: user.id, provider_id: provider!.id,
         title: form.title.trim(), category: form.category,
         listing_type: form.listing_type,
+        auto_expire: autoExpire,
         country: form.country, city: form.city,
         location: form.location, description: form.description,
         price: form.price, currency: form.currency, price_type: form.price_type,
@@ -248,7 +251,7 @@ const CreateListing = () => {
         booking_slug: slug,
         max_capacity: form.max_capacity,
         duration_minutes: form.duration_minutes || null,
-        listing_expires_at: expiresAt.toISOString(),
+        listing_expires_at: expiresAt ? expiresAt.toISOString() : null,
         surface_sqm: form.surface_sqm || null,
         rooms: form.rooms || null,
         bedrooms: form.bedrooms || null,
