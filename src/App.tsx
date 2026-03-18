@@ -103,6 +103,8 @@ const CVGenerator = safeLazy(() => import("./pages/CVGenerator"), "CVGenerator")
 const CategorySubscriptions = safeLazy(() => import("./pages/CategorySubscriptions"), "CategorySubscriptions");
 const ChannelManager = safeLazy(() => import("./pages/ChannelManager"), "ChannelManager");
 const Accounting = safeLazy(() => import("./pages/Accounting"), "Accounting");
+const LandlordRentDashboard = safeLazy(() => import("./pages/LandlordRentDashboard"), "LandlordRentDashboard");
+const AccountingEntries = safeLazy(() => import("./pages/AccountingEntries"), "AccountingEntries");
 const ReportingDashboard = safeLazy(() => import("./pages/ReportingDashboard"), "ReportingDashboard");
 const DynamicPricing = safeLazy(() => import("./pages/DynamicPricing"), "DynamicPricing");
 const PropertyCalendar = safeLazy(() => import("./pages/PropertyCalendar"), "PropertyCalendar");
