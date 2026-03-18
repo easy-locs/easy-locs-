@@ -4,8 +4,8 @@
  */
 import { EASYLOCS_RADAR_THEME } from "./easy-locs-radar-theme";
 
-export function getMarkerVisual(presence: string, entityType: string) {
-  let color = EASYLOCS_RADAR_THEME.store;
+export function getMarkerVisual(presence: string, entityType: string): { color: string; label: string } {
+  let color: string = EASYLOCS_RADAR_THEME.store;
   let label = "Pin";
 
   if (entityType === "fixed_store") {
