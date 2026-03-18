@@ -4,8 +4,11 @@ export async function checkOrdersWithoutItems(workspaceId?: string) {
   try {
     let query = (supabase as any)
       .from("orders")
-      .select("id, order_items(id)", { count: "exact" })
-      .eq("workspace_id", workspaceId ?? null);
+      .select("id, order_items(id)", { count: "exact" });
+
+    if (workspaceId) {
+      query = query.eq("workspace_id", workspaceId);
+    }
 
     const { data, error } = await query.limit(200);
     if (error) return { ok: true, broken: 0 };
@@ -22,12 +25,16 @@ export async function checkOrdersWithoutItems(workspaceId?: string) {
 
 export async function checkDispatchAssignedWithoutDriver(workspaceId?: string) {
   try {
-    const { data, error } = await (supabase as any)
+    let query = (supabase as any)
       .from("dispatch_jobs")
       .select("id, assigned_driver_id")
-      .eq("workspace_id", workspaceId ?? null)
       .eq("status", "assigned");
 
+    if (workspaceId) {
+      query = query.eq("workspace_id", workspaceId);
+    }
+
+    const { data, error } = await query;
     if (error) return { ok: true, broken: 0 };
 
     const broken = (data ?? []).filter(
@@ -42,12 +49,16 @@ export async function checkDispatchAssignedWithoutDriver(workspaceId?: string) {
 
 export async function checkCompletedOrdersWithoutPaymentIntent(workspaceId?: string) {
   try {
-    const { data: orders, error } = await (supabase as any)
+    let query = (supabase as any)
       .from("orders")
       .select("id")
-      .eq("workspace_id", workspaceId ?? null)
       .in("status", ["paid", "completed", "delivered"]);
 
+    if (workspaceId) {
+      query = query.eq("workspace_id", workspaceId);
+    }
+
+    const { data: orders, error } = await query;
     if (error || !orders?.length) return { ok: true, broken: 0 };
 
     const orderIds = orders.map((o: any) => o.id);
