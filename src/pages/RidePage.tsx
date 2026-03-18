@@ -13,6 +13,7 @@ import RideMap from "@/components/ride/RideMap";
 import RideTypeSelector, { RIDE_TYPES, type RideType } from "@/components/ride/RideTypeSelector";
 import DriverMatchingState, { type MatchState } from "@/components/ride/DriverMatchingState";
 import { calculateFare, getFareRules, isNightHour, type FareEstimate } from "@/lib/fare-engine";
+import { useGeoDetect } from "@/hooks/useGeoDetect";
 import SEOHead from "@/components/SEOHead";
 
 type Step = "location" | "ride-type" | "matching";
