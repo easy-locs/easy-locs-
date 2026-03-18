@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { BackCard } from "@/components/ui/back-card";
 import { suggestBestDriverZone } from "@/lib/ai/suggest-best-driver-zone";
+import { runCitySupplyBalancer } from "@/lib/ai/city-supply-balancer";
 
 export default function DriverPositioningPage() {
   const [zone, setZone] = useState<any>(null);
@@ -31,6 +32,13 @@ export default function DriverPositioningPage() {
           className="w-full rounded-2xl bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground"
         >
           {loading ? "Analyzing..." : "Find best zone"}
+        </button>
+
+        <button
+          onClick={() => runCitySupplyBalancer({ city: "Dubai" })}
+          className="w-full rounded-2xl border border-border bg-card px-4 py-3 text-sm font-semibold text-foreground"
+        >
+          Refresh city balance
         </button>
 
         {zone && (

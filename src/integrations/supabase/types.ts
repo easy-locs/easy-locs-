@@ -267,6 +267,48 @@ export type Database = {
           },
         ]
       }
+      admin_alerts: {
+        Row: {
+          alert_type: string
+          body: string | null
+          context_id: string | null
+          context_type: string | null
+          created_at: string | null
+          id: string
+          metadata_json: Json | null
+          resolved_at: string | null
+          severity: string
+          status: string
+          title: string
+        }
+        Insert: {
+          alert_type: string
+          body?: string | null
+          context_id?: string | null
+          context_type?: string | null
+          created_at?: string | null
+          id?: string
+          metadata_json?: Json | null
+          resolved_at?: string | null
+          severity?: string
+          status?: string
+          title: string
+        }
+        Update: {
+          alert_type?: string
+          body?: string | null
+          context_id?: string | null
+          context_type?: string | null
+          created_at?: string | null
+          id?: string
+          metadata_json?: Json | null
+          resolved_at?: string | null
+          severity?: string
+          status?: string
+          title?: string
+        }
+        Relationships: []
+      }
       ai_category_suggestions: {
         Row: {
           accepted: boolean | null
@@ -1349,6 +1391,42 @@ export type Database = {
           notify_email?: boolean | null
           notify_push?: boolean | null
           user_id?: string
+        }
+        Relationships: []
+      }
+      city_supply_balancer_logs: {
+        Row: {
+          action_type: string | null
+          city: string | null
+          created_at: string | null
+          current_driver_count: number | null
+          id: string
+          metadata_json: Json | null
+          suggested_driver_ids: string[] | null
+          target_driver_count: number | null
+          zone_key: string | null
+        }
+        Insert: {
+          action_type?: string | null
+          city?: string | null
+          created_at?: string | null
+          current_driver_count?: number | null
+          id?: string
+          metadata_json?: Json | null
+          suggested_driver_ids?: string[] | null
+          target_driver_count?: number | null
+          zone_key?: string | null
+        }
+        Update: {
+          action_type?: string | null
+          city?: string | null
+          created_at?: string | null
+          current_driver_count?: number | null
+          id?: string
+          metadata_json?: Json | null
+          suggested_driver_ids?: string[] | null
+          target_driver_count?: number | null
+          zone_key?: string | null
         }
         Relationships: []
       }
@@ -13764,6 +13842,27 @@ export type Database = {
         }
         Relationships: []
       }
+      user_wallet_credits: {
+        Row: {
+          credits_amount: number | null
+          currency: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          credits_amount?: number | null
+          currency?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          credits_amount?: number | null
+          currency?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       vault_files: {
         Row: {
           created_at: string
@@ -13940,6 +14039,39 @@ export type Database = {
           balance?: number
           currency?: string
           updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      wallet_credit_transactions: {
+        Row: {
+          amount: number
+          context_id: string | null
+          context_type: string | null
+          created_at: string | null
+          direction: string
+          id: string
+          reason: string | null
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          context_id?: string | null
+          context_type?: string | null
+          created_at?: string | null
+          direction: string
+          id?: string
+          reason?: string | null
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          context_id?: string | null
+          context_type?: string | null
+          created_at?: string | null
+          direction?: string
+          id?: string
+          reason?: string | null
           user_id?: string
         }
         Relationships: []

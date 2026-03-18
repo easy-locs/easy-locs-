@@ -207,6 +207,7 @@ const AdminFraudPage = safeLazy(() => import("./pages/AdminFraudPage"), "AdminFr
 const AdminLiveOpsPage = safeLazy(() => import("./pages/AdminLiveOpsPage"), "AdminLiveOpsPage");
 const DriverPositioningPage = safeLazy(() => import("./pages/DriverPositioningPage"), "DriverPositioningPage");
 const RiderPrioritySubscriptionPage = safeLazy(() => import("./pages/RiderPrioritySubscriptionPage"), "RiderPrioritySubscriptionPage");
+const AdminDispatchBoardPage = safeLazy(() => import("./pages/AdminDispatchBoardPage"), "AdminDispatchBoardPage");
 
 // Travel universe
 const TravelHub = safeLazy(() => import("./pages/travel/TravelHub"), "TravelHub");
@@ -341,6 +342,7 @@ const App = () => (
               <Route path="/admin/fraud" element={<AdminFraudPage />} />
               <Route path="/admin/live-ops" element={<AdminLiveOpsPage />} />
               <Route path="/subscription/priority" element={<RiderPrioritySubscriptionPage />} />
+              <Route path="/admin/dispatch-board" element={<AdminDispatchBoardPage />} />
 
               {/* Travel */}
               <Route path="/travel" element={<TravelHub />} />

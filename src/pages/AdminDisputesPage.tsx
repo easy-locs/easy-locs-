@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { BackCard } from "@/components/ui/back-card";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
+import { issueDisputeGoodwillCredit } from "@/lib/wallet/credit-policies";
 
 export default function AdminDisputesPage() {
   const [rows, setRows] = useState<any[]>([]);
@@ -75,6 +76,14 @@ export default function AdminDisputesPage() {
                   className="rounded-xl"
                 >
                   Refund
+                </Button>
+                <Button
+                  onClick={() => issueDisputeGoodwillCredit({ userId: d.opened_by, rideRequestId: d.ride_request_id, amount: 15 })}
+                  size="sm"
+                  variant="secondary"
+                  className="rounded-xl"
+                >
+                  Give 15 AED credit
                 </Button>
               </div>
             )}
