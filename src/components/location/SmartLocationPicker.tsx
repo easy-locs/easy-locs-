@@ -123,17 +123,35 @@ export default function SmartLocationPicker({
                     );
                   })}
 
-                  {/* Search button */}
-                  <button
-                    onClick={() => setSearchMode(true)}
-                    className="w-full flex items-center gap-3 p-2.5 rounded-xl hover:bg-muted/50 active:scale-[0.98] transition-all text-left border border-dashed border-border/30"
-                  >
-                    <div className="w-8 h-8 rounded-lg bg-primary/5 flex items-center justify-center shrink-0">
+                  {/* Actions row */}
+                  <div className="flex gap-1.5">
+                    <button
+                      onClick={() => setSearchMode(true)}
+                      className="flex-1 flex items-center gap-2 p-2.5 rounded-xl hover:bg-muted/50 active:scale-[0.98] transition-all text-left border border-dashed border-border/30"
+                    >
                       <Search className="h-3.5 w-3.5 text-primary/60" />
-                    </div>
-                    <p className="text-xs text-muted-foreground">Search an address…</p>
-                  </button>
+                      <p className="text-[10px] text-muted-foreground">Search address…</p>
+                    </button>
+                    {onSavePlace && (
+                      <button
+                        onClick={() => setEditMode(true)}
+                        className="flex items-center gap-1.5 p-2.5 rounded-xl hover:bg-muted/50 active:scale-[0.98] transition-all border border-dashed border-border/30"
+                      >
+                        <Settings2 className="h-3.5 w-3.5 text-muted-foreground" />
+                      </button>
+                    )}
+                  </div>
                 </div>
+              )}
+
+              {/* Edit mode */}
+              {editMode && onSavePlace && onRemovePlace && (
+                <SavedPlaceEditor
+                  places={savedPlaces}
+                  onSave={(p) => onSavePlace(p)}
+                  onRemove={onRemovePlace}
+                  onClose={() => setEditMode(false)}
+                />
               )}
 
               {/* Search mode — autocomplete */}
