@@ -235,6 +235,7 @@ const AdminHomeV1Page = safeLazy(() => import("./pages/AdminHomeV1Page"), "Admin
 const DriverLivePage = safeLazy(() => import("./pages/DriverLivePage"), "DriverLivePage");
 const DriverPickerPage = safeLazy(() => import("./pages/DriverPickerPage"), "DriverPickerPage");
 const FoodOrderCheckoutPage = safeLazy(() => import("./pages/FoodOrderCheckoutPage"), "FoodOrderCheckoutPage");
+const DeliveryProofPage = safeLazy(() => import("./pages/DeliveryProofPage"), "DeliveryProofPage");
 
 // Travel universe
 const TravelHub = safeLazy(() => import("./pages/travel/TravelHub"), "TravelHub");
