@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
+import PropertyHubBreadcrumb from "@/components/property/PropertyHubBreadcrumb";
 import { motion } from "framer-motion";
 import { dispatchSyncEvent } from "@/lib/shared/sync-engine";
 import { useCountryFilter } from "@/hooks/useCountryFilter";
@@ -193,6 +194,7 @@ const Interventions = () => {
   return (
     <DashboardLayout>
       <FeatureGate feature="unlimited_properties" featureLabel={t("page.interventions.title")}>
+        <PropertyHubBreadcrumb currentPage={t("page.interventions.title")} />
         <div className="space-y-6">
           <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="page-header mb-0">

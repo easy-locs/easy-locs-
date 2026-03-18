@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import PropertyHubBreadcrumb from "@/components/property/PropertyHubBreadcrumb";
 import { useCountryFilter } from "@/hooks/useCountryFilter";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { Building, Plus, X, Home, MapPin, Edit, Trash2, ChevronRight, Globe } from "lucide-react";
@@ -98,6 +99,7 @@ const Buildings = () => {
   return (
     <DashboardLayout>
       <div className="max-w-4xl mx-auto">
+        <PropertyHubBreadcrumb currentPage={t("page.buildings.title")} />
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-2xl font-bold text-foreground">{t("page.buildings.title")}</h1>
