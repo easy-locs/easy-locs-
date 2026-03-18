@@ -2,7 +2,7 @@
  * cleanup-expired-messages — Deletes expired ephemeral messages.
  * Called periodically (e.g. via cron or manual trigger).
  */
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
