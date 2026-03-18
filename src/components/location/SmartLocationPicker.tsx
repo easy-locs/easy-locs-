@@ -3,10 +3,11 @@
  * Used in /ride, /send, and delivery checkout.
  */
 import { useState } from "react";
-import { MapPin, Navigation, Home, Briefcase, Star, Clock, ChevronRight, Search, Plus } from "lucide-react";
+import { MapPin, Navigation, Home, Briefcase, Star, Clock, ChevronRight, Search, Plus, Settings2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { type SavedPlace } from "@/hooks/useSmartLocation";
 import AddressAutocomplete from "@/components/ui/AddressAutocomplete";
+import SavedPlaceEditor from "@/components/location/SavedPlaceEditor";
 
 interface SmartLocationPickerProps {
   label: string;
@@ -14,6 +15,8 @@ interface SmartLocationPickerProps {
   onSelect: (place: SavedPlace) => void;
   currentLocation: SavedPlace | null;
   savedPlaces: SavedPlace[];
+  onSavePlace?: (place: Omit<SavedPlace, "id"> & { id?: string }) => void;
+  onRemovePlace?: (id: string) => void;
   placeholder?: string;
   autoFocus?: boolean;
 }
