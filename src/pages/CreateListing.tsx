@@ -157,7 +157,23 @@ const CreateListing = () => {
     }
   }, []);
 
-  const set = (patch: Partial<ListingForm>) => setForm(prev => ({ ...prev, ...patch }));
+  const set = (patch: Partial<ListingForm>) => {
+    setForm(prev => {
+      const next = { ...prev, ...patch };
+      // When category changes, apply category-driven defaults
+      if (patch.category && patch.category !== prev.category) {
+        const cfg = getCategoryConfig(patch.category);
+        next.entity_type = cfg.entityTypeDefault;
+        next.presence_mode = cfg.defaultPresenceMode;
+        next.listing_type = cfg.defaultListingType;
+        if (!cfg.supportsRadius) {
+          next.coverage_mode = "point";
+          next.coverage_radius_m = null;
+        }
+      }
+      return next;
+    });
+  };
   const toggleSection = (k: string) => setOpenSections(prev => ({ ...prev, [k]: !prev[k] }));
 
   const toggleArrayItem = (field: keyof ListingForm, value: string) => {
@@ -167,10 +183,11 @@ const CreateListing = () => {
     });
   };
 
-  const showRealEstate = form.category === "real_estate";
-  const showVehicleProduct = form.category === "vehicles" || form.category === "products";
-  const showRental = form.listing_type === "rental";
-  const showService = form.listing_type === "service" || form.category === "services" || form.category === "freelance" || form.category === "tourism";
+  const catConfig = getCategoryConfig(form.category);
+  const showRealEstate = form.category === "property";
+  const showVehicleProduct = form.category === "automotive" || form.category === "electronics" || form.category === "fashion";
+  const showRental = form.listing_type === "rental" as any;
+  const showService = form.listing_type === "service" || catConfig.supportsBooking;
 
   const handleSave = async () => {
     // V4 Quality Gate: Validate listing before publish — BLOCKING
