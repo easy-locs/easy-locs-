@@ -9,7 +9,7 @@ export default function RiderPrioritySubscriptionPage() {
   const [loading, setLoading] = useState(false);
 
   const save = async (nextPlan: "free" | "pro" | "vip") => {
-    if (!userId) return;
+    if (!user?.id) return;
     setLoading(true);
     try {
       await supabase.from("user_subscriptions" as any).upsert({
