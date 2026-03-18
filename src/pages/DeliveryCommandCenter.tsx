@@ -413,7 +413,7 @@ export default function DeliveryCommandCenter() {
         <CommandMap mission={selectedMission} drivers={drivers} userLat={userLat} userLng={userLng} onRecenter={requestLocation} />
       </div>
 
-      {/* Filters */}
+      {/* Filters — unified chip style */}
       <div className="px-3 mb-3">
         <ScrollArea className="w-full">
           <div className="flex gap-1.5 pb-1">
@@ -421,10 +421,10 @@ export default function DeliveryCommandCenter() {
               <button
                 key={f.key}
                 onClick={() => setFilter(f.key as MissionFilter)}
-                className={`px-3 py-1.5 rounded-full text-[11px] font-medium whitespace-nowrap transition-all ${
+                className={`px-3 py-1.5 rounded-full text-[11px] font-medium whitespace-nowrap transition-all active:scale-95 ${
                   filter === f.key
-                    ? "bg-[#4F46E5] text-white shadow-md shadow-[#4F46E5]/30"
-                    : "bg-card/60 text-muted-foreground border border-border/20"
+                    ? "bg-primary text-primary-foreground shadow-md shadow-primary/30"
+                    : "bg-card/60 text-muted-foreground border border-border/20 hover:border-border/40"
                 }`}
               >
                 {f.label}
