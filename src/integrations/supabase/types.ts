@@ -4322,6 +4322,7 @@ export type Database = {
           active: boolean | null
           anchor_lat: number | null
           anchor_lng: number | null
+          auto_expire: boolean
           badges: string[] | null
           bathrooms: number | null
           bedrooms: number | null
@@ -4388,6 +4389,7 @@ export type Database = {
           active?: boolean | null
           anchor_lat?: number | null
           anchor_lng?: number | null
+          auto_expire?: boolean
           badges?: string[] | null
           bathrooms?: number | null
           bedrooms?: number | null
@@ -4454,6 +4456,7 @@ export type Database = {
           active?: boolean | null
           anchor_lat?: number | null
           anchor_lng?: number | null
+          auto_expire?: boolean
           badges?: string[] | null
           bathrooms?: number | null
           bedrooms?: number | null

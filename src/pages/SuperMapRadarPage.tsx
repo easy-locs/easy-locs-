@@ -42,22 +42,30 @@ export default function SuperMapRadarPage() {
   const markersRef = useRef<mapboxgl.Marker[]>([]);
   const [listings, setListings] = useState<MapListing[]>([]);
 
-  // Fetch listings
+  // Fetch listings (exclude expired sale listings)
   useEffect(() => {
     (async () => {
+      const now = new Date().toISOString();
       const { data } = await (supabase as any)
         .from("marketplace_services")
-        .select("id, title, lat, lng, anchor_lat, anchor_lng, live_lat, live_lng, presence_mode, entity_type, coverage_mode, coverage_radius_m, category, price, currency")
+        .select("id, title, lat, lng, anchor_lat, anchor_lng, live_lat, live_lng, presence_mode, entity_type, coverage_mode, coverage_radius_m, category, price, currency, listing_type, auto_expire, listing_expires_at")
         .eq("active", true)
         .neq("presence_mode", "off")
         .limit(500);
       if (data) {
         setListings(
-          data.map((d: any) => ({
-            ...d,
-            lat: d.anchor_lat ?? d.live_lat ?? d.lat,
-            lng: d.anchor_lng ?? d.live_lng ?? d.lng,
-          })).filter((d: any) => d.lat && d.lng)
+          data
+            .filter((d: any) => {
+              // Filter out expired sale listings
+              if (d.auto_expire && d.listing_expires_at && d.listing_expires_at < now) return false;
+              return true;
+            })
+            .map((d: any) => ({
+              ...d,
+              lat: d.anchor_lat ?? d.live_lat ?? d.lat,
+              lng: d.anchor_lng ?? d.live_lng ?? d.lng,
+            }))
+            .filter((d: any) => d.lat && d.lng)
         );
       }
     })();
@@ -116,7 +124,7 @@ export default function SuperMapRadarPage() {
             new mapboxgl.Popup({ offset: 20, closeButton: false }).setHTML(`
               <div style="padding:8px;max-width:220px;font-family:system-ui;">
                 <div style="font-size:11px;color:${style.color};font-weight:700;margin-bottom:2px;">
-                  ${style.emoji} ${style.label}
+                  ${style.label}
                   ${listing.coverage_mode !== "point" && listing.coverage_radius_m
                     ? `<span style="opacity:0.7;font-weight:400;"> · ${listing.coverage_radius_m >= 1000 ? `${listing.coverage_radius_m / 1000}km` : `${listing.coverage_radius_m}m`} radius</span>`
                     : ""}
@@ -188,14 +196,13 @@ export default function SuperMapRadarPage() {
           Legend
         </span>
         {([
-          ["🏪", "#38bdf8", "Fixed Store"],
-          ["🛒", "#fbbf24", "Mobile Seller"],
-          ["🔧", "#a78bfa", "Mobile Service"],
-          ["🚗", "#34d399", "Driver"],
-        ] as [string, string, string][]).map(([emoji, color, label]) => (
+          ["#D4A853", "Fixed Store"],
+          ["#fbbf24", "Mobile Seller"],
+          ["#a78bfa", "Mobile Service"],
+          ["#34d399", "Driver"],
+        ] as [string, string][]).map(([color, label]) => (
           <div key={label} style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <span style={{ fontSize: 14 }}>{emoji}</span>
-            <span style={{ width: 8, height: 8, borderRadius: "50%", background: color, display: "inline-block" }} />
+            <span style={{ width: 10, height: 10, borderRadius: "50%", background: color, border: `1.5px solid ${color}`, display: "inline-block" }} />
             <span style={{ fontSize: 11, color: "#e2e8f0" }}>{label}</span>
           </div>
         ))}

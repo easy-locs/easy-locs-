@@ -34,9 +34,10 @@ const LISTING_CATEGORIES = [
 ];
 
 const LISTING_TYPES = [
-  { value: "sale", label: "Sale", icon: "💰" },
+  { value: "sale", label: "Sale (30 days)", icon: "💰" },
   { value: "rental", label: "Rental", icon: "🔑" },
   { value: "service", label: "Service", icon: "⚡" },
+  { value: "shop", label: "Shop / Business", icon: "🏪" },
 ];
 
 const PRICE_PERIODS = [
@@ -229,14 +230,17 @@ const CreateListing = () => {
         provider = newProvider;
       }
 
+      const isSale = form.listing_type === "sale";
+      const autoExpire = isSale;
+      const expiresAt = isSale ? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) : null;
+
       const slug = form.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/-+$/, "");
-      const expiresAt = new Date();
-      expiresAt.setDate(expiresAt.getDate() + 30);
 
       const { error } = await supabase.from("marketplace_services").insert({
         org_id: orgId, user_id: user.id, provider_id: provider!.id,
         title: form.title.trim(), category: form.category,
         listing_type: form.listing_type,
+        auto_expire: autoExpire,
         country: form.country, city: form.city,
         location: form.location, description: form.description,
         price: form.price, currency: form.currency, price_type: form.price_type,
@@ -247,7 +251,7 @@ const CreateListing = () => {
         booking_slug: slug,
         max_capacity: form.max_capacity,
         duration_minutes: form.duration_minutes || null,
-        listing_expires_at: expiresAt.toISOString(),
+        listing_expires_at: expiresAt ? expiresAt.toISOString() : null,
         surface_sqm: form.surface_sqm || null,
         rooms: form.rooms || null,
         bedrooms: form.bedrooms || null,
@@ -270,7 +274,7 @@ const CreateListing = () => {
       } as any);
 
       if (error) throw error;
-      toast({ title: "✅ Listing published!", description: "Your listing is now live for 30 days." });
+      toast({ title: "✅ Listing published!", description: isSale ? "Your listing is live for 30 days." : "Your listing is live until you deactivate it." });
       navigate("/dashboard/my-shop");
     } catch (err: any) {
       toast({ title: "Error", description: err.message, variant: "destructive" });
@@ -327,7 +331,7 @@ const CreateListing = () => {
           </div>
           <div>
             <h1 className="text-xl font-bold text-foreground">Publier une annonce</h1>
-            <p className="text-sm text-muted-foreground">Publiez gratuitement dans le monde entier • Max {MAX_LISTINGS_FREE} annonces actives • Durée 30 jours</p>
+            <p className="text-sm text-muted-foreground">Publiez gratuitement dans le monde entier • Max {MAX_LISTINGS_FREE} annonces actives • Ventes : 30 jours</p>
           </div>
         </div>
 
