@@ -189,6 +189,9 @@ const ServiceCityPage = safeLazy(() => import("./pages/seo/ServiceHubPage").then
 const ProviderSEOPage = safeLazy(() => import("./pages/seo/ProviderSEOPage"), "ProviderSEOPage");
 const SlugResolver = safeLazy(() => import("./pages/seo/SEOShortUrlResolver").then(m => ({ default: m.SlugResolver })), "SlugResolver");
 const SlugCategoryResolver = safeLazy(() => import("./pages/seo/SEOShortUrlResolver").then(m => ({ default: m.SlugCategoryResolver })), "SlugCategoryResolver");
+// Ride & Send universes
+const RidePage = safeLazy(() => import("./pages/RidePage"), "RidePage");
+const SendPage = safeLazy(() => import("./pages/SendPage"), "SendPage");
 
 // Deep-link public pages
 const UserProfilePage = safeLazy(() => import("./pages/deep-link/UserProfilePage"), "UserProfilePage");
