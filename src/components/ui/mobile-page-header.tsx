@@ -1,6 +1,7 @@
 /**
- * MobilePageHeader — PASS137: Consistent back-nav header for sub-pages.
+ * MobilePageHeader — Consistent back-nav header for sub-pages.
  * Provides unified page header with optional back button, title, and actions.
+ * Uses browser history stack first, falls back to explicit backTo route.
  */
 import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -28,8 +29,14 @@ export function MobilePageHeader({
   const navigate = useNavigate();
 
   const handleBack = () => {
-    if (backTo) navigate(backTo);
-    else navigate(-1);
+    // Use browser history if available, otherwise fall back to backTo route
+    if (window.history.length > 1) {
+      navigate(-1);
+    } else if (backTo) {
+      navigate(backTo);
+    } else {
+      navigate("/");
+    }
   };
 
   return (
