@@ -86,11 +86,23 @@ export default function AuditDebugPanelPage() {
   const [loading, setLoading] = useState(false);
   const { report, findings, gates } = useAuditReport(reportId ?? undefined);
 
+  const [error, setError] = useState<string | null>(null);
+
   const run = async () => {
     setLoading(true);
+    setError(null);
     try {
+      const { data: { user } } = await (await import("@/integrations/supabase/client")).supabase.auth.getUser();
+      if (!user) {
+        setError("Vous devez être connecté pour lancer l'audit. Connectez-vous d'abord.");
+        setLoading(false);
+        return;
+      }
       const result = await runMasterAudit(activeWorkspace?.id);
       setReportId(result.id);
+    } catch (err: any) {
+      console.error("[audit] run failed:", err);
+      setError(err?.message || "Erreur lors de l'audit. Vérifiez votre connexion.");
     } finally {
       setLoading(false);
     }
