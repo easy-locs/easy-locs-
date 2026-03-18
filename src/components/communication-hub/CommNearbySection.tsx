@@ -216,6 +216,8 @@ export default function CommNearbySection() {
 
   // Filter
   const filteredItems = items.filter(item => {
+    // Subcategory filtering
+    if (subcategoryFilter !== "all" && item.category !== subcategoryFilter) return false;
     if (!search) return true;
     const q = search.toLowerCase();
     return item.title.toLowerCase().includes(q) || item.category.toLowerCase().includes(q) ||
