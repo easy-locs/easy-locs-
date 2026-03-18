@@ -227,6 +227,11 @@ const MerchantOnboardingAdminPage = safeLazy(() => import("./pages/MerchantOnboa
 const ExecutiveDashboard = safeLazy(() => import("./pages/ExecutiveDashboard"), "ExecutiveDashboard");
 const GhostCallPage = safeLazy(() => import("./pages/GhostCallPage"), "GhostCallPage");
 const SalesSequencePage = safeLazy(() => import("./pages/SalesSequencePage"), "SalesSequencePage");
+const WorkspaceBootstrapPage = safeLazy(() => import("./pages/WorkspaceBootstrapPage"), "WorkspaceBootstrapPage");
+const MenuAdminPage = safeLazy(() => import("./pages/MenuAdminPage"), "MenuAdminPage");
+const DispatchBoardPage = safeLazy(() => import("./pages/DispatchBoardPage"), "DispatchBoardPage");
+const SupportInboxPage = safeLazy(() => import("./pages/SupportInboxPage"), "SupportInboxPage");
+const AdminHomeV1Page = safeLazy(() => import("./pages/AdminHomeV1Page"), "AdminHomeV1Page");
 
 // Travel universe
 const TravelHub = safeLazy(() => import("./pages/travel/TravelHub"), "TravelHub");
