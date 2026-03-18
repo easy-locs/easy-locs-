@@ -22,6 +22,7 @@ import {
 import { formatDistance, formatETA, haversineDistance, estimateETA } from "@/lib/delivery/geo-utils";
 import type { DeliveryJob } from "@/hooks/useDriverMissions";
 import { toast } from "sonner";
+import { useGeolocation } from "@/hooks/useGeolocation";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 
