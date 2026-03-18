@@ -1,17 +1,31 @@
 /**
- * TrackRidePage — Live driver tracking for an active ride.
+ * TrackRidePage — /track/:rideRequestId — Live driver tracking with map.
  */
+import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { BackCard } from "@/components/ui/back-card";
+import DriverMap from "@/components/radar/DriverMap";
+import { supabase } from "@/integrations/supabase/client";
 import { useRideRequestController } from "@/hooks/useRideRequestController";
 
 export default function TrackRidePage() {
   const { rideRequestId } = useParams();
+  const [rideMeta, setRideMeta] = useState<any>(null);
+
+  useEffect(() => {
+    if (!rideRequestId) return;
+    supabase
+      .from("ride_requests" as any)
+      .select("pickup_lat, pickup_lng, dropoff_lat, dropoff_lng")
+      .eq("id", rideRequestId)
+      .single()
+      .then(({ data }) => setRideMeta(data ?? null));
+  }, [rideRequestId]);
 
   const controller = useRideRequestController({
     rideRequestId: rideRequestId ?? null,
-    pickupLat: null,
-    pickupLng: null,
+    pickupLat: rideMeta?.pickup_lat ?? null,
+    pickupLng: rideMeta?.pickup_lng ?? null,
   });
 
   return (
@@ -26,6 +40,16 @@ export default function TrackRidePage() {
               ? `Driver arriving in about ${controller.etaMin} min`
               : "Live driver tracking"}
           </p>
+        </div>
+
+        <div className="h-52 rounded-2xl overflow-hidden border border-border">
+          <DriverMap
+            driverId={controller.selectedDriverId ?? undefined}
+            pickupLat={rideMeta?.pickup_lat}
+            pickupLng={rideMeta?.pickup_lng}
+            dropoffLat={rideMeta?.dropoff_lat}
+            dropoffLng={rideMeta?.dropoff_lng}
+          />
         </div>
 
         <div className="rounded-2xl border border-border bg-card p-4 grid grid-cols-3 gap-3 text-center">

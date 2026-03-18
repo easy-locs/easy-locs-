@@ -12,7 +12,7 @@ export async function settleCompletedRide(params: {
 }) {
   const { rideRequestId, threadId, riderId, driverId, amount } = params;
 
-  await supabase.from("wallet_transactions" as any).insert([
+  const txRows = [
     {
       user_id: riderId,
       direction: "debit",
@@ -33,13 +33,23 @@ export async function settleCompletedRide(params: {
       reference_id: threadId,
       status: "completed",
     },
-  ] as any);
+  ];
 
-  await supabase
+  const { error: txError } = await supabase
+    .from("wallet_transactions" as any)
+    .insert(txRows as any);
+
+  if (txError) throw txError;
+
+  const { error: rideError } = await supabase
     .from("ride_requests" as any)
     .update({
       settlement_status: "settled",
       updated_at: new Date().toISOString(),
     } as any)
     .eq("id", rideRequestId);
+
+  if (rideError) throw rideError;
+
+  return { ok: true };
 }
