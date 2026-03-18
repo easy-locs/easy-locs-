@@ -14,8 +14,9 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import CountrySelect from "@/components/ui/CountrySelect";
 import {
   ArrowLeft, Plus, ChevronDown, ShieldCheck, MessageSquare,
-  CreditCard, Camera, MapPin, Tag, DollarSign, CalendarDays, Package
+  CreditCard, Camera, MapPin, Tag, DollarSign, CalendarDays, Package, Radar
 } from "lucide-react";
+import PresenceMobilitySelector, { type PresenceMode, type MobilityType } from "@/components/marketplace/PresenceMobilitySelector";
 
 /* ─── Constants ─── */
 const MAX_LISTINGS_FREE = 5;
@@ -104,6 +105,9 @@ interface ListingForm {
   // Duration
   duration_minutes: number;
   max_capacity: number;
+  // Presence & Mobility
+  presence_mode: PresenceMode;
+  mobility_type: MobilityType;
 }
 
 const defaultForm: ListingForm = {
@@ -118,6 +122,7 @@ const defaultForm: ListingForm = {
   year_built: undefined, features: [],
   brand: "", model: "", condition: "good",
   duration_minutes: 0, max_capacity: 1,
+  presence_mode: "pin", mobility_type: "fixed_store",
 };
 
 /* ─── Component ─── */
@@ -254,6 +259,8 @@ const CreateListing = () => {
         status: 'published',
         lat: geoLat,
         lng: geoLng,
+        presence_mode: form.presence_mode,
+        mobility_type: form.mobility_type,
       } as any);
 
       if (error) throw error;
@@ -352,6 +359,16 @@ const CreateListing = () => {
               <div><Label className="text-xs">City *</Label><Input value={form.city} onChange={e => set({ city: e.target.value })} placeholder="Paris, Dubai, NYC..." /></div>
               <div><Label className="text-xs">Location / Address</Label><Input value={form.location} onChange={e => set({ location: e.target.value })} placeholder="Street, neighborhood..." /></div>
             </div>
+          </Section>
+
+          {/* ── Presence & Mobility ── */}
+          <Section id="presence" icon={<Radar className="h-4 w-4 text-muted-foreground" />} title="Map Presence & Mobility" badge="Required">
+            <PresenceMobilitySelector
+              presenceMode={form.presence_mode}
+              mobilityType={form.mobility_type}
+              onPresenceModeChange={v => set({ presence_mode: v })}
+              onMobilityTypeChange={v => set({ mobility_type: v })}
+            />
           </Section>
 
           {/* ── Photos note ── */}
