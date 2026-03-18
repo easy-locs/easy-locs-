@@ -4,7 +4,7 @@
  */
 
 export type TimeSlot = "morning" | "lunch" | "afternoon" | "dinner" | "latenight";
-export type CategoryKey = "food" | "grocery" | "shops" | "services" | "taxi" | "delivery" | "property" | "wallet" | "coffee" | "bakery" | "dineout" | "beauty" | "concierge" | "mobility" | "rentals" | "stays";
+export type CategoryKey = "food" | "grocery" | "shops" | "services" | "taxi" | "delivery" | "property" | "wallet" | "coffee" | "bakery" | "dineout" | "beauty" | "concierge" | "mobility" | "rentals" | "stays" | "travel";
 
 export interface SmartCategory {
   key: CategoryKey;
@@ -49,7 +49,7 @@ const ALL_CATEGORIES: Record<CategoryKey, SmartCategory> = {
   services:  { key: "services",  label: "Services",    icon: "🔧", color: "hsl(var(--info))",     size: "normal", route: "/discover?rail=services",  subtitle: "Near you" },
   taxi:      { key: "taxi",      label: "Taxi",        icon: "🚕", color: "hsl(var(--accent))",   size: "normal", route: "/ride",                    subtitle: "Book a ride" },
   delivery:  { key: "delivery",  label: "Delivery",    icon: "🚚", color: "hsl(var(--info))",     size: "normal", route: "/send",                    subtitle: "Send & track" },
-  property:  { key: "property",  label: "Property",    icon: "🏠", color: "hsl(var(--primary))",  size: "normal", route: "/property-hub",            subtitle: "Manage & rent" },
+  property:  { key: "property",  label: "Property",    icon: "🏠", color: "hsl(var(--primary))",  size: "normal", route: "/property-hub",            subtitle: "Rent & buy" },
   wallet:    { key: "wallet",    label: "Wallet",      icon: "💳", color: "hsl(var(--success))",  size: "normal", route: "/dashboard/wallet",        subtitle: "Pay & send" },
   coffee:    { key: "coffee",    label: "Coffee",      icon: "☕", color: "hsl(var(--warning))",  size: "normal", route: "/discover?rail=coffee",    subtitle: "Wake up" },
   bakery:    { key: "bakery",    label: "Bakery",      icon: "🥐", color: "hsl(var(--warning))",  size: "normal", route: "/discover?rail=bakery" },
@@ -57,17 +57,18 @@ const ALL_CATEGORIES: Record<CategoryKey, SmartCategory> = {
   beauty:    { key: "beauty",    label: "Beauty",      icon: "💅", color: "hsl(var(--accent))",   size: "normal", route: "/discover?rail=beauty" },
   concierge: { key: "concierge", label: "Concierge",   icon: "🎯", color: "hsl(var(--primary))",  size: "normal", route: "/discover?rail=concierge" },
   mobility:  { key: "mobility",  label: "Rides",       icon: "🏍️", color: "hsl(var(--info))",     size: "normal", route: "/ride" },
-  rentals:   { key: "rentals",   label: "Rentals",     icon: "🔑", color: "hsl(var(--primary))",  size: "normal", route: "/rentals",  subtitle: "Long-term" },
-  stays:     { key: "stays",     label: "Stays",       icon: "🏨", color: "hsl(var(--accent))",   size: "normal", route: "/stays",    subtitle: "Short-term" },
+  rentals:   { key: "rentals",   label: "Rentals",     icon: "🔑", color: "hsl(var(--primary))",  size: "normal", route: "/property-hub",  subtitle: "Long-term" },
+  stays:     { key: "stays",     label: "Stays",       icon: "🏨", color: "hsl(var(--accent))",   size: "normal", route: "/travel/stays",    subtitle: "Short-term" },
+  travel:    { key: "travel",    label: "Travel",      icon: "✈️", color: "hsl(var(--info))",     size: "wide",   route: "/travel",          subtitle: "Flights, hotels & stays" },
 };
 
 /* ═══ Time-based priority ═══ */
 const TIME_PRIORITY: Record<TimeSlot, CategoryKey[]> = {
-  morning:   ["coffee", "bakery", "food", "grocery", "taxi", "services", "shops", "property"],
-  lunch:     ["food", "delivery", "coffee", "shops", "services", "grocery", "taxi", "property"],
-  afternoon: ["shops", "services", "grocery", "beauty", "delivery", "property", "food", "wallet"],
-  dinner:    ["food", "dineout", "grocery", "delivery", "taxi", "shops", "services", "property"],
-  latenight: ["food", "delivery", "taxi", "mobility", "shops", "wallet", "property", "services"],
+  morning:   ["coffee", "bakery", "food", "grocery", "taxi", "services", "travel", "shops", "property"],
+  lunch:     ["food", "delivery", "coffee", "shops", "services", "grocery", "travel", "taxi", "property"],
+  afternoon: ["shops", "services", "grocery", "beauty", "delivery", "travel", "property", "food", "wallet"],
+  dinner:    ["food", "dineout", "grocery", "delivery", "taxi", "travel", "shops", "services", "property"],
+  latenight: ["food", "delivery", "taxi", "mobility", "shops", "travel", "wallet", "property", "services"],
 };
 
 /* ═══ Country priority overrides ═══ */
