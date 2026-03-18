@@ -3576,6 +3576,50 @@ export type Database = {
         }
         Relationships: []
       }
+      driver_locations: {
+        Row: {
+          accuracy_m: number | null
+          driver_id: string
+          heading: number | null
+          id: string
+          lat: number
+          lng: number
+          recorded_at: string | null
+          service_mode: string | null
+          speed_kmh: number | null
+        }
+        Insert: {
+          accuracy_m?: number | null
+          driver_id: string
+          heading?: number | null
+          id?: string
+          lat: number
+          lng: number
+          recorded_at?: string | null
+          service_mode?: string | null
+          speed_kmh?: number | null
+        }
+        Update: {
+          accuracy_m?: number | null
+          driver_id?: string
+          heading?: number | null
+          id?: string
+          lat?: number
+          lng?: number
+          recorded_at?: string | null
+          service_mode?: string | null
+          speed_kmh?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "driver_locations_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: false
+            referencedRelation: "driver_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       driver_payouts: {
         Row: {
           amount: number
@@ -3639,6 +3683,60 @@ export type Database = {
           reason?: string | null
           suggested_lat?: number | null
           suggested_lng?: number | null
+        }
+        Relationships: []
+      }
+      driver_profiles: {
+        Row: {
+          created_at: string | null
+          current_status: string | null
+          id: string
+          is_available: boolean | null
+          is_online: boolean | null
+          is_verified: boolean | null
+          jobs_completed: number | null
+          last_seen_at: string | null
+          plate_number: string | null
+          rating: number | null
+          service_mode: string
+          updated_at: string | null
+          user_id: string
+          vehicle_type: string | null
+          workspace_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          current_status?: string | null
+          id?: string
+          is_available?: boolean | null
+          is_online?: boolean | null
+          is_verified?: boolean | null
+          jobs_completed?: number | null
+          last_seen_at?: string | null
+          plate_number?: string | null
+          rating?: number | null
+          service_mode?: string
+          updated_at?: string | null
+          user_id: string
+          vehicle_type?: string | null
+          workspace_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          current_status?: string | null
+          id?: string
+          is_available?: boolean | null
+          is_online?: boolean | null
+          is_verified?: boolean | null
+          jobs_completed?: number | null
+          last_seen_at?: string | null
+          plate_number?: string | null
+          rating?: number | null
+          service_mode?: string
+          updated_at?: string | null
+          user_id?: string
+          vehicle_type?: string | null
+          workspace_id?: string | null
         }
         Relationships: []
       }
@@ -5377,6 +5475,97 @@ export type Database = {
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      live_tracking_points: {
+        Row: {
+          accuracy_m: number | null
+          heading: number | null
+          id: string
+          lat: number
+          lng: number
+          recorded_at: string | null
+          session_id: string
+          source: string | null
+          speed_kmh: number | null
+        }
+        Insert: {
+          accuracy_m?: number | null
+          heading?: number | null
+          id?: string
+          lat: number
+          lng: number
+          recorded_at?: string | null
+          session_id: string
+          source?: string | null
+          speed_kmh?: number | null
+        }
+        Update: {
+          accuracy_m?: number | null
+          heading?: number | null
+          id?: string
+          lat?: number
+          lng?: number
+          recorded_at?: string | null
+          session_id?: string
+          source?: string | null
+          speed_kmh?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "live_tracking_points_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "live_tracking_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      live_tracking_sessions: {
+        Row: {
+          context_id: string
+          context_type: string
+          customer_user_id: string | null
+          driver_id: string | null
+          ended_at: string | null
+          id: string
+          merchant_profile_id: string | null
+          started_at: string | null
+          status: string | null
+          workspace_id: string | null
+        }
+        Insert: {
+          context_id: string
+          context_type: string
+          customer_user_id?: string | null
+          driver_id?: string | null
+          ended_at?: string | null
+          id?: string
+          merchant_profile_id?: string | null
+          started_at?: string | null
+          status?: string | null
+          workspace_id?: string | null
+        }
+        Update: {
+          context_id?: string
+          context_type?: string
+          customer_user_id?: string | null
+          driver_id?: string | null
+          ended_at?: string | null
+          id?: string
+          merchant_profile_id?: string | null
+          started_at?: string | null
+          status?: string | null
+          workspace_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "live_tracking_sessions_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: false
+            referencedRelation: "driver_profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -7303,6 +7492,131 @@ export type Database = {
             columns: ["identity_id"]
             isOneToOne: false
             referencedRelation: "orbit_identity_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      order_items: {
+        Row: {
+          created_at: string | null
+          id: string
+          item_name: string
+          menu_item_id: string | null
+          notes: string | null
+          order_id: string
+          quantity: number
+          total_price: number
+          unit_price: number
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          item_name: string
+          menu_item_id?: string | null
+          notes?: string | null
+          order_id: string
+          quantity?: number
+          total_price?: number
+          unit_price?: number
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          item_name?: string
+          menu_item_id?: string | null
+          notes?: string | null
+          order_id?: string
+          quantity?: number
+          total_price?: number
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_items_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      orders: {
+        Row: {
+          assigned_driver_user_id: string | null
+          completed_at: string | null
+          created_at: string | null
+          currency: string | null
+          customer_user_id: string
+          delivery_fee: number | null
+          dropoff_address_id: string | null
+          id: string
+          merchant_profile_id: string | null
+          notes: string | null
+          order_type: string
+          pickup_address_id: string | null
+          service_fee: number | null
+          service_mode: string
+          status: string | null
+          subtotal: number | null
+          total_amount: number | null
+          updated_at: string | null
+          workspace_id: string | null
+        }
+        Insert: {
+          assigned_driver_user_id?: string | null
+          completed_at?: string | null
+          created_at?: string | null
+          currency?: string | null
+          customer_user_id: string
+          delivery_fee?: number | null
+          dropoff_address_id?: string | null
+          id?: string
+          merchant_profile_id?: string | null
+          notes?: string | null
+          order_type?: string
+          pickup_address_id?: string | null
+          service_fee?: number | null
+          service_mode?: string
+          status?: string | null
+          subtotal?: number | null
+          total_amount?: number | null
+          updated_at?: string | null
+          workspace_id?: string | null
+        }
+        Update: {
+          assigned_driver_user_id?: string | null
+          completed_at?: string | null
+          created_at?: string | null
+          currency?: string | null
+          customer_user_id?: string
+          delivery_fee?: number | null
+          dropoff_address_id?: string | null
+          id?: string
+          merchant_profile_id?: string | null
+          notes?: string | null
+          order_type?: string
+          pickup_address_id?: string | null
+          service_fee?: number | null
+          service_mode?: string
+          status?: string | null
+          subtotal?: number | null
+          total_amount?: number | null
+          updated_at?: string | null
+          workspace_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orders_dropoff_address_id_fkey"
+            columns: ["dropoff_address_id"]
+            isOneToOne: false
+            referencedRelation: "saved_addresses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_pickup_address_id_fkey"
+            columns: ["pickup_address_id"]
+            isOneToOne: false
+            referencedRelation: "saved_addresses"
             referencedColumns: ["id"]
           },
         ]
@@ -9720,6 +10034,60 @@ export type Database = {
         }
         Relationships: []
       }
+      saved_addresses: {
+        Row: {
+          area: string | null
+          building: string | null
+          city: string | null
+          country_code: string | null
+          created_at: string | null
+          delivery_notes: string | null
+          full_address: string
+          id: string
+          is_default: boolean | null
+          label: string
+          lat: number | null
+          lng: number | null
+          unit_number: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          area?: string | null
+          building?: string | null
+          city?: string | null
+          country_code?: string | null
+          created_at?: string | null
+          delivery_notes?: string | null
+          full_address: string
+          id?: string
+          is_default?: boolean | null
+          label: string
+          lat?: number | null
+          lng?: number | null
+          unit_number?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          area?: string | null
+          building?: string | null
+          city?: string | null
+          country_code?: string | null
+          created_at?: string | null
+          delivery_notes?: string | null
+          full_address?: string
+          id?: string
+          is_default?: boolean | null
+          label?: string
+          lat?: number | null
+          lng?: number | null
+          unit_number?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       saved_listings: {
         Row: {
           created_at: string
@@ -9923,6 +10291,45 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      service_profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string | null
+          display_name: string | null
+          id: string
+          is_active: boolean | null
+          phone: string | null
+          profile_type: string
+          updated_at: string | null
+          user_id: string
+          workspace_id: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string | null
+          display_name?: string | null
+          id?: string
+          is_active?: boolean | null
+          phone?: string | null
+          profile_type: string
+          updated_at?: string | null
+          user_id: string
+          workspace_id?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string | null
+          display_name?: string | null
+          id?: string
+          is_active?: boolean | null
+          phone?: string | null
+          profile_type?: string
+          updated_at?: string | null
+          user_id?: string
+          workspace_id?: string | null
+        }
+        Relationships: []
       }
       service_providers: {
         Row: {
@@ -15559,6 +15966,68 @@ export type Database = {
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      taxi_ride_requests: {
+        Row: {
+          created_at: string | null
+          dropoff_label: string
+          dropoff_lat: number | null
+          dropoff_lng: number | null
+          estimated_distance_km: number | null
+          estimated_duration_min: number | null
+          id: string
+          order_id: string
+          pickup_label: string
+          pickup_lat: number | null
+          pickup_lng: number | null
+          rider_user_id: string
+          status: string | null
+          updated_at: string | null
+          vehicle_preference: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          dropoff_label: string
+          dropoff_lat?: number | null
+          dropoff_lng?: number | null
+          estimated_distance_km?: number | null
+          estimated_duration_min?: number | null
+          id?: string
+          order_id: string
+          pickup_label: string
+          pickup_lat?: number | null
+          pickup_lng?: number | null
+          rider_user_id: string
+          status?: string | null
+          updated_at?: string | null
+          vehicle_preference?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          dropoff_label?: string
+          dropoff_lat?: number | null
+          dropoff_lng?: number | null
+          estimated_distance_km?: number | null
+          estimated_duration_min?: number | null
+          id?: string
+          order_id?: string
+          pickup_label?: string
+          pickup_lat?: number | null
+          pickup_lng?: number | null
+          rider_user_id?: string
+          status?: string | null
+          updated_at?: string | null
+          vehicle_preference?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "taxi_ride_requests_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: true
+            referencedRelation: "orders"
             referencedColumns: ["id"]
           },
         ]
