@@ -136,29 +136,6 @@ const TenantLayout = ({ children }: { children: React.ReactNode }) => {
         </nav>
 
         <div className="p-3 border-t border-sidebar-border space-y-0.5">
-          {/* Language selector */}
-          <div className="relative">
-            <button
-              onClick={() => setLangOpen(!langOpen)}
-              className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent/50 transition-colors"
-            >
-              <Globe className="h-4 w-4" />
-              <span>{currentLang.flag} {currentLang.label}</span>
-            </button>
-            {langOpen && (
-              <div className="absolute bottom-full left-0 w-full bg-sidebar border border-sidebar-border rounded-lg shadow-lg mb-1 py-1 z-50 max-h-64 overflow-y-auto">
-                {LANGUAGES.map(lang => (
-                  <button
-                    key={lang.code}
-                    onClick={() => { setLocale(lang.code); setLangOpen(false); }}
-                    className={`w-full text-left px-3 py-2 text-sm hover:bg-sidebar-accent/50 transition-colors ${locale === lang.code ? "text-accent font-medium" : "text-sidebar-foreground/60"}`}
-                  >
-                    {lang.flag} {lang.label}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
           <Link
             to="/tenant/settings"
             className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent/50 transition-colors"
