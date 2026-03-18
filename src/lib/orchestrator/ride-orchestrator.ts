@@ -109,16 +109,34 @@ export async function startRideFlow(opts: {
         .single();
       threadId = (data as any)?.id ?? null;
 
+      const assignedEta =
+        rankedDrivers.find((d) => d.id === dispatch.driverId)?.eta ?? null;
+
       if (threadId) {
         await insertRideSystemMessage({
           threadId,
           rideRequestId: (rideRequest as any).id,
           driverId: dispatch.driverId,
-          etaMin: rankedDrivers.find((d) => d.id === dispatch.driverId)?.eta ?? null,
+          etaMin: assignedEta,
         });
       }
-    } catch {
-      // Thread creation is non-blocking
+
+      const { error: assignUpdateError } = await supabase
+        .from("ride_requests" as any)
+        .update({
+          thread_id: threadId,
+          updated_at: new Date().toISOString(),
+        } as any)
+        .eq("id", (rideRequest as any).id);
+
+      if (assignUpdateError) {
+        console.error("[ride-orchestrator] failed to persist thread_id", assignUpdateError);
+      }
+
+      const { notifyRideAssigned } = await import("@/lib/notifications/ride-push");
+      await notifyRideAssigned(userId, (rideRequest as any).id, assignedEta);
+    } catch (e) {
+      console.error("[ride-orchestrator] assignment side-effects failed", e);
     }
   }
 

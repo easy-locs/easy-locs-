@@ -45,6 +45,14 @@ export default function RideReceiptPage() {
               <span className="text-muted-foreground">Settlement</span>
               <span className="font-medium text-foreground">{ride?.settlement_status ?? "pending"}</span>
             </div>
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Started at</span>
+              <span className="font-medium text-foreground">{ride?.trip_started_at ?? "—"}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Completed at</span>
+              <span className="font-medium text-foreground">{ride?.completed_at ?? "—"}</span>
+            </div>
           </div>
         </div>
       </div>
