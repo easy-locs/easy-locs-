@@ -97,6 +97,7 @@ export default function CommNearbySection() {
   const [loading, setLoading] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [typeFilter, setTypeFilter] = useState<NearbyFilter>("all");
+  const [subcategoryFilter, setSubcategoryFilter] = useState<string>("all");
   const [radius, setRadius] = useState(25);
   const [search, setSearch] = useState("");
   const [showRadiusOptions, setShowRadiusOptions] = useState(false);
