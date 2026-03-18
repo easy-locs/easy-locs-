@@ -197,6 +197,7 @@ const RidePage = safeLazy(() => import("./pages/RidePage"), "RidePage");
 const SendPage = safeLazy(() => import("./pages/SendPage"), "SendPage");
 const TrackRidePage = safeLazy(() => import("./pages/TrackRidePage"), "TrackRidePage");
 const PayRidePage = safeLazy(() => import("./pages/PayRidePage"), "PayRidePage");
+const RideReceiptPage = safeLazy(() => import("./pages/RideReceiptPage"), "RideReceiptPage");
 
 // Travel universe
 const TravelHub = safeLazy(() => import("./pages/travel/TravelHub"), "TravelHub");
