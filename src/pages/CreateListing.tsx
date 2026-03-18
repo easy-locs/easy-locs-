@@ -262,7 +262,11 @@ const CreateListing = () => {
         lat: geoLat,
         lng: geoLng,
         presence_mode: form.presence_mode,
-        mobility_type: form.mobility_type,
+        entity_type: form.entity_type,
+        coverage_mode: form.coverage_mode,
+        coverage_radius_m: form.coverage_radius_m,
+        anchor_lat: geoLat,
+        anchor_lng: geoLng,
       } as any);
 
       if (error) throw error;
