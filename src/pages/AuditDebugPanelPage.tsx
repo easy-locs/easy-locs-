@@ -94,7 +94,18 @@ export default function AuditDebugPanelPage() {
     setSeeding(true);
     setError(null);
     try {
-      await seedAuditDemoData(activeWorkspace?.id);
+      const result = await seedAuditDemoData(activeWorkspace?.id);
+      if (result.errors && result.errors.length > 0) {
+        setError(`Seed partiel — ${result.errors.length} erreur(s): ${result.errors.join(" | ")}`);
+      }
+      // Auto-run audit after seed
+      try {
+        const { data: { user } } = await (await import("@/integrations/supabase/client")).supabase.auth.getUser();
+        if (user) {
+          const auditResult = await runMasterAudit(activeWorkspace?.id);
+          setReportId(auditResult.id);
+        }
+      } catch {}
     } catch (err: any) {
       setError(err?.message || "Erreur lors du seed.");
     } finally {

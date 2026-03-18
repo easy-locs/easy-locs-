@@ -3,6 +3,8 @@
  * can show realistic PASS/WARN states instead of empty-table failures.
  *
  * All table names and columns match the REAL Supabase schema.
+ * All rows set user-scoped columns (user_id, customer_user_id, buyer_id)
+ * to auth.uid() so RLS policies allow the current user to read them.
  */
 import { supabase } from "@/integrations/supabase/client";
 
@@ -13,16 +15,16 @@ export async function seedAuditDemoData(workspaceId?: string) {
 
   const ws = workspaceId ?? null;
   const now = new Date().toISOString();
+  const errors: string[] = [];
 
   // 1. User profile (upsert — may already exist)
-  // Schema: user_profiles(id, full_name, phone, avatar_url, locale, timezone, ...)
-  await (supabase as any)
+  const { error: profileErr } = await (supabase as any)
     .from("user_profiles")
     .upsert({ id: userId, full_name: "Demo User", updated_at: now }, { onConflict: "id" });
+  if (profileErr) errors.push(`user_profiles: ${profileErr.message}`);
 
   // 2. Merchant profile
-  // Schema: merchant_onboarding_profiles(id, workspace_id, merchant_name, contact_name, email, phone, city, cuisine_type, onboarding_status, ...)
-  const { data: merchant } = await (supabase as any)
+  const { data: merchant, error: merchantErr } = await (supabase as any)
     .from("merchant_onboarding_profiles")
     .insert({
       workspace_id: ws,
@@ -35,11 +37,11 @@ export async function seedAuditDemoData(workspaceId?: string) {
       onboarding_status: "approved",
     })
     .select("id")
-    .single();
+    .maybeSingle();
+  if (merchantErr) errors.push(`merchant_onboarding_profiles: ${merchantErr.message}`);
 
-  // 3. Driver profile
-  // Schema: driver_profiles(id, user_id, workspace_id, service_mode, vehicle_type, plate_number, is_online, is_available, is_verified, current_status, ...)
-  const { data: driver } = await (supabase as any)
+  // 3. Driver profile (user_id = auth.uid() required by RLS)
+  const { data: driver, error: driverErr } = await (supabase as any)
     .from("driver_profiles")
     .insert({
       workspace_id: ws,
@@ -53,11 +55,11 @@ export async function seedAuditDemoData(workspaceId?: string) {
       current_status: "idle",
     })
     .select("id")
-    .single();
+    .maybeSingle();
+  if (driverErr) errors.push(`driver_profiles: ${driverErr.message}`);
 
-  // 4. Order
-  // Schema: orders(id, workspace_id, customer_user_id, order_type, service_mode, status, currency, total_amount, ...)
-  const { data: order } = await (supabase as any)
+  // 4. Order (customer_user_id = auth.uid() required by RLS)
+  const { data: order, error: orderErr } = await (supabase as any)
     .from("orders")
     .insert({
       workspace_id: ws,
@@ -69,62 +71,65 @@ export async function seedAuditDemoData(workspaceId?: string) {
       currency: "EUR",
     })
     .select("id")
-    .single();
+    .maybeSingle();
+  if (orderErr) errors.push(`orders: ${orderErr.message}`);
 
   // 5. Order items
-  // Schema: order_items(id, order_id, item_name, quantity, unit_price, total_price, ...)
   if (order?.id) {
-    await (supabase as any)
+    const { error: itemsErr } = await (supabase as any)
       .from("order_items")
       .insert([
         { order_id: order.id, item_name: "Burger Classic", quantity: 2, unit_price: 850, total_price: 1700 },
         { order_id: order.id, item_name: "Frites", quantity: 1, unit_price: 400, total_price: 400 },
         { order_id: order.id, item_name: "Coca-Cola", quantity: 1, unit_price: 400, total_price: 400 },
       ]);
+    if (itemsErr) errors.push(`order_items: ${itemsErr.message}`);
   }
 
-  // 6. Payment intent
-  // Schema: payment_intents(id, workspace_id, order_id, amount, currency, status, provider, ...)
-  await (supabase as any)
+  // 6. Payment intent (user_id = auth.uid() required by RLS)
+  const { error: piErr } = await (supabase as any)
     .from("payment_intents")
     .insert({
       workspace_id: ws,
       order_id: order?.id ?? null,
+      user_id: userId,
       amount: 2500,
       currency: "EUR",
       status: "paid",
       provider: "demo",
     });
+  if (piErr) errors.push(`payment_intents: ${piErr.message}`);
 
-  // 7. Dispatch job
-  // Schema: dispatch_jobs(id, workspace_id, order_id, assigned_driver_id, status, pickup_label, dropoff_label, ...)
-  await (supabase as any)
+  // 7. Dispatch job (buyer_id = auth.uid() required by RLS insert policy)
+  const { error: dispatchErr } = await (supabase as any)
     .from("dispatch_jobs")
     .insert({
       workspace_id: ws,
       order_id: order?.id ?? null,
+      buyer_id: userId,
       assigned_driver_id: driver?.id ?? null,
       status: "assigned",
       pickup_label: "12 Rue Demo, Paris",
       dropoff_label: "45 Avenue Test, Paris",
     });
+  if (dispatchErr) errors.push(`dispatch_jobs: ${dispatchErr.message}`);
 
-  // 8. Tracking session
-  // Schema: live_tracking_sessions(id, workspace_id, context_type, context_id, driver_id, status, ...)
-  const { data: trackingSession } = await (supabase as any)
+  // 8. Tracking session (customer_user_id = auth.uid() required by RLS)
+  const { data: trackingSession, error: tsErr } = await (supabase as any)
     .from("live_tracking_sessions")
     .insert({
       workspace_id: ws,
       context_type: "order",
       context_id: order?.id ?? "00000000-0000-0000-0000-000000000000",
       driver_id: driver?.id ?? null,
+      customer_user_id: userId,
       status: "active",
     })
     .select("id")
-    .single();
+    .maybeSingle();
+  if (tsErr) errors.push(`live_tracking_sessions: ${tsErr.message}`);
 
   // 9. Tracking points (5 sample GPS points)
-  // Schema: live_tracking_points(id, session_id, lat, lng, recorded_at, ...)
   if (trackingSession?.id) {
     const baseLatParis = 48.8566;
     const baseLngParis = 2.3522;
@@ -134,7 +139,12 @@ export async function seedAuditDemoData(workspaceId?: string) {
       lng: baseLngParis + i * 0.0015,
       recorded_at: new Date(Date.now() - (5 - i) * 60_000).toISOString(),
     }));
-    await (supabase as any).from("live_tracking_points").insert(points);
+    const { error: ptErr } = await (supabase as any).from("live_tracking_points").insert(points);
+    if (ptErr) errors.push(`live_tracking_points: ${ptErr.message}`);
+  }
+
+  if (errors.length > 0) {
+    console.warn("[seed-demo] partial failures:", errors);
   }
 
   return {
@@ -143,5 +153,6 @@ export async function seedAuditDemoData(workspaceId?: string) {
     driverId: driver?.id ?? null,
     orderId: order?.id ?? null,
     trackingSessionId: trackingSession?.id ?? null,
+    errors,
   };
 }
