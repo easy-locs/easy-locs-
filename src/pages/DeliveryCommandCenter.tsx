@@ -125,7 +125,7 @@ function MissionCard({
       {/* Addresses */}
       <div className="space-y-1 mb-2">
         <div className="flex items-start gap-2">
-          <div className="w-2 h-2 rounded-full bg-[#22C55E] mt-1.5 shrink-0" />
+          <div className="w-2 h-2 rounded-full bg-success mt-1.5 shrink-0" />
           <p className="text-xs text-foreground truncate">{mission.pickup_address || "Pickup"}</p>
         </div>
         <div className="flex items-start gap-2">
