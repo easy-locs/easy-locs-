@@ -66,7 +66,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   const FREE_NAV_SECTIONS = new Set(["dashboard", "listings", "marketplace", "orbit", "settings"]);
 
   const navSections: NavSection[] = [
-    // ── Dashboard ──
+    // ── A. Dashboard ──
     {
       key: "dashboard",
       title: "Dashboard",
@@ -76,89 +76,77 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
       ],
     },
 
-    // ── Property Management (Gestion) ──
+    // ── B. Property Management (Gestion Immo) ──
     {
-      key: "properties",
-      title: t("nav.property_mgmt") || "Gestion",
+      key: "property",
+      title: t("nav.property_mgmt") || "Property Management",
       icon: Home,
       items: [
-        { icon: Home, label: t("nav.properties") || "Properties", path: cPath("/dashboard/rental") },
-        { icon: Users, label: t("nav.tenants") || "Tenants", path: cPath("/dashboard/tenants") },
-        { icon: KeyRound, label: t("nav.leases") || "Leases", path: cPath("/dashboard/leases") },
+        { icon: Home, label: t("nav.portfolio") || "Portfolio", path: cPath("/dashboard/rental") },
+        { icon: Building, label: t("nav.listings") || "Listings", path: cPath("/dashboard/real-estate") },
+        { icon: KeyRound, label: t("nav.rentals") || "Rentals", path: cPath("/dashboard/leases") },
+        { icon: Users, label: t("nav.tenants") || "Tenants / Clients", path: cPath("/dashboard/tenants") },
+        { icon: FileText, label: t("nav.documents") || "Documents", path: cPath("/dashboard/documents") },
+        { icon: Banknote, label: t("nav.accounting") || "Accounting", path: cPath("/dashboard/finances") },
         { icon: Wrench, label: t("nav.interventions") || "Interventions", path: cPath("/dashboard/interventions") },
+        { icon: UsersRound, label: t("nav.team") || "Team", path: "/dashboard/collaboration" },
       ],
     },
 
-    // ── Listings (Calendar / Seasonal / Sales) ──
+    // ── C. Shops / Commerce ──
     {
-      key: "listings",
-      title: t("nav.listings") || "Annonces",
-      icon: Building,
+      key: "shops",
+      title: t("nav.shops") || "Shops",
+      icon: Store,
       items: [
-        { icon: CalendarRange, label: t("nav.calendar") || "Calendar", path: "/dashboard/calendar" },
-        { icon: Calendar, label: t("nav.seasonal") || "Seasonal Rentals", path: "/dashboard/seasonal" },
-        { icon: Building, label: t("nav.sales") || "Sales / Listings", path: "/dashboard/real-estate" },
+        { icon: Store, label: t("nav.my_shops") || "My Shops", path: "/business/my-shops" },
+        { icon: Layers, label: t("nav.catalog") || "Catalog", path: "/dashboard/my-shop" },
+        { icon: Receipt, label: t("nav.orders") || "Orders", path: "/my-orders" },
+        { icon: UsersRound, label: t("nav.shop_team") || "Team", path: "/dashboard/shop-team" },
       ],
     },
 
-    // ── Marketplace ──
+    // ── D. Marketplace ──
     {
       key: "marketplace",
       title: "Marketplace",
-      icon: Store,
+      icon: Compass,
       items: [
-        { icon: Store, label: t("nav.marketplace") || "Services", path: "/dashboard/activities" },
+        { icon: Compass, label: t("nav.discover") || "Discover", path: "/discover" },
         { icon: Zap, label: t("nav.seller_hub") || "Seller Hub", path: "/dashboard/seller" },
-        { icon: Layers, label: "My Shop", path: "/dashboard/my-shop" },
       ],
     },
 
-    // ── Orbit ──
+    // ── E. Orbit ──
     {
       key: "orbit",
       title: "Orbit",
       icon: MessageCircle,
       items: [
-        { icon: MessageCircle, label: "Communication", path: "/dashboard/communication" },
-        { icon: Wallet, label: "Wallet", path: "/dashboard/wallet" },
+        { icon: MessageCircle, label: t("nav.messages") || "Messages", path: "/dashboard/communication" },
         { icon: BarChart3, label: t("nav.deals") || "Deals", path: "/dashboard/deals" },
-        { icon: Compass, label: t("nav.tracking") || "Tracking", path: "/dashboard/tracking" },
-        { icon: Globe, label: "Discover", path: "/discover" },
+        { icon: Clock, label: t("nav.tracking") || "Tracking", path: "/dashboard/tracking" },
       ],
     },
 
-    // ── Documents ──
+    // ── F. Wallet ──
     {
-      key: "documents",
-      title: t("nav.documents") || "Documents",
-      icon: FileText,
-      items: [
-        { icon: FileText, label: t("nav.documents") || "Documents", path: cPath("/dashboard/documents") },
-        { icon: CheckSquare, label: t("nav.tasks") || "Tasks", path: cPath("/dashboard/tasks") },
-      ],
-    },
-
-    // ── Accounting ──
-    {
-      key: "accounting",
-      title: t("nav.accounting") || "Accounting",
+      key: "wallet",
+      title: t("nav.wallet") || "Wallet",
       icon: Wallet,
       items: [
-        { icon: Banknote, label: t("nav.payments") || "Payments", path: cPath("/dashboard/finances") },
-        { icon: Wallet, label: t("nav.expenses") || "Expenses", path: cPath("/dashboard/expenses") },
-        { icon: BarChart3, label: t("nav.reporting") || "Reports", path: "/dashboard/reporting" },
-        { icon: CreditCard, label: t("nav.plan") || "Plan", path: "/dashboard/billing" },
+        { icon: Wallet, label: t("nav.wallet") || "Wallet", path: "/wallet" },
+        { icon: CreditCard, label: t("nav.plan") || "Plan & Billing", path: "/dashboard/billing" },
       ],
     },
 
-    // ── Settings ──
+    // ── G. Settings ──
     {
       key: "settings",
       title: t("nav.settings") || "Settings",
       icon: Settings,
       items: [
         { icon: Settings, label: t("nav.settings") || "Settings", path: "/dashboard/settings" },
-        { icon: UsersRound, label: t("settings.team") || "Team", path: "/dashboard/collaboration" },
         { icon: BrainCircuit, label: "AI Assistant", path: "/dashboard/assistant" },
       ],
     },
