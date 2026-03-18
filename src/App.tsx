@@ -203,6 +203,10 @@ const CallDriverPage = safeLazy(() => import("./pages/CallDriverPage"), "CallDri
 const DriverPayoutPage = safeLazy(() => import("./pages/DriverPayoutPage"), "DriverPayoutPage");
 const AdminDisputesPage = safeLazy(() => import("./pages/AdminDisputesPage"), "AdminDisputesPage");
 const DemandHeatmapPage = safeLazy(() => import("./pages/DemandHeatmapPage"), "DemandHeatmapPage");
+const AdminFraudPage = safeLazy(() => import("./pages/AdminFraudPage"), "AdminFraudPage");
+const AdminLiveOpsPage = safeLazy(() => import("./pages/AdminLiveOpsPage"), "AdminLiveOpsPage");
+const DriverPositioningPage = safeLazy(() => import("./pages/DriverPositioningPage"), "DriverPositioningPage");
+const RiderPrioritySubscriptionPage = safeLazy(() => import("./pages/RiderPrioritySubscriptionPage"), "RiderPrioritySubscriptionPage");
 
 // Travel universe
 const TravelHub = safeLazy(() => import("./pages/travel/TravelHub"), "TravelHub");
@@ -333,6 +337,10 @@ const App = () => (
               <Route path="/driver/payout" element={<DriverPayoutPage />} />
               <Route path="/admin/disputes" element={<AdminDisputesPage />} />
               <Route path="/driver/heatmap" element={<DemandHeatmapPage />} />
+              <Route path="/driver/positioning" element={<DriverPositioningPage />} />
+              <Route path="/admin/fraud" element={<AdminFraudPage />} />
+              <Route path="/admin/live-ops" element={<AdminLiveOpsPage />} />
+              <Route path="/subscription/priority" element={<RiderPrioritySubscriptionPage />} />
 
               {/* Travel */}
               <Route path="/travel" element={<TravelHub />} />

@@ -10,6 +10,7 @@ import { rankDriversAI } from "@/lib/rides/rank-drivers-ai";
 import { updateDemandZone } from "@/lib/rides/update-demand-zone";
 import { computeAISurge } from "@/lib/rides/ai-surge";
 import { toZoneKey } from "@/lib/geo/zone-utils";
+import { getSubscriptionBenefits } from "@/lib/subscription/get-benefits";
 import { supabase } from "@/integrations/supabase/client";
 
 export interface RideFlowResult {
@@ -38,8 +39,33 @@ export async function startRideFlow(opts: {
   const {
     userId, userLat, userLng, drivers, distanceKm, durationMin, countryCode,
     requestedRideType = "standard",
-    riderPriority = "standard",
+    riderPriority: inputPriority = "standard",
   } = opts;
+
+  // 0. Fraud risk check
+  const { data: risk } = await supabase
+    .from("user_risk_profiles" as any)
+    .select("risk_score")
+    .eq("user_id", userId)
+    .single();
+
+  if ((risk as any)?.risk_score > 80) {
+    throw new Error("High risk user blocked");
+  }
+
+  // 0b. Resolve subscription-based priority
+  const { data: sub } = await supabase
+    .from("user_subscriptions" as any)
+    .select("plan")
+    .eq("user_id", userId)
+    .single();
+
+  const riderPriority: "standard" | "priority" | "vip" =
+    (sub as any)?.plan === "vip" ? "vip" :
+    (sub as any)?.plan === "pro" ? "priority" :
+    inputPriority;
+
+  const benefits = getSubscriptionBenefits((sub as any)?.plan ?? "free");
 
   // 1. Pool discovery with radius expansion + ride type fallback
   const poolResult = findDriverPool({ userLat, userLng, drivers, requestedRideType });
@@ -80,11 +106,14 @@ export async function startRideFlow(opts: {
     })(),
   });
 
+  // Apply subscription surge discount
+  const surgeAdjusted = Math.max(1, surge - benefits.surgeDiscount);
+
   const rules = getFareRules(countryCode);
   const fare = calculateFare({
     distanceKm, durationMin, rules,
     isNight: isNightHour(),
-    surgeFactor: surge,
+    surgeFactor: surgeAdjusted,
   });
 
   // 4. Create ride request
@@ -179,7 +208,7 @@ export async function startRideFlow(opts: {
   return {
     rideRequestId: (rideRequest as any).id,
     fare,
-    surge,
+    surge: surgeAdjusted,
     nearbyCount: rankedDrivers.length,
     assigned: !!dispatch.assigned,
     driverId: dispatch.driverId ?? null,
