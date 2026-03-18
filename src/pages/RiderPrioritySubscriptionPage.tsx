@@ -13,7 +13,7 @@ export default function RiderPrioritySubscriptionPage() {
     setLoading(true);
     try {
       await supabase.from("user_subscriptions" as any).upsert({
-        user_id: userId,
+        user_id: user.id,
         plan: nextPlan,
         status: "active",
         started_at: new Date().toISOString(),
