@@ -319,6 +319,8 @@ const App = () => (
               <Route path="/services-hub" element={<ServicesHub />} />
               <Route path="/ride" element={<RidePage />} />
               <Route path="/send" element={<SendPage />} />
+              <Route path="/track/:rideRequestId" element={<TrackRidePage />} />
+              <Route path="/wallet/pay/:threadId" element={<PayRidePage />} />
 
               {/* Travel */}
               <Route path="/travel" element={<TravelHub />} />
