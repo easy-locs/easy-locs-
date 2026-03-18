@@ -249,6 +249,8 @@ const AbandonedCartOpsPage = safeLazy(() => import("./pages/AbandonedCartOpsPage
 const AdminAlertCenterPage = safeLazy(() => import("./pages/AdminAlertCenterPage"), "AdminAlertCenterPage");
 const IncidentDashboardPage = safeLazy(() => import("./pages/IncidentDashboardPage"), "IncidentDashboardPage");
 const StripeElementsPage = safeLazy(() => import("./pages/StripeElementsPage"), "StripeElementsPage");
+const AuditDebugPanelPage = safeLazy(() => import("./pages/AuditDebugPanelPage"), "AuditDebugPanelPage");
+const OpsWallboardPage = safeLazy(() => import("./pages/OpsWallboardPage"), "OpsWallboardPage");
 
 // Travel universe
 const TravelHub = safeLazy(() => import("./pages/travel/TravelHub"), "TravelHub");
@@ -586,6 +588,8 @@ const App = () => (
               <Route path="/admin/alerts" element={<ProtectedRoute><AdminAlertCenterPage /></ProtectedRoute>} />
               <Route path="/admin/incidents" element={<ProtectedRoute><IncidentDashboardPage /></ProtectedRoute>} />
               <Route path="/payments/stripe-elements" element={<ProtectedRoute><StripeElementsPage /></ProtectedRoute>} />
+              <Route path="/admin/audit-debug" element={<ProtectedRoute><AuditDebugPanelPage /></ProtectedRoute>} />
+              <Route path="/admin/ops-wallboard" element={<ProtectedRoute><OpsWallboardPage /></ProtectedRoute>} />
 
               {/* Guest / Public */}
               <Route path="/guest/checkout/:cartId" element={<GuestCheckoutPage />} />
