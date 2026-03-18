@@ -1,23 +1,25 @@
 /**
  * Map rendering styles for presence_mode + entity_type + coverage combinations.
+ * Now uses Easy-Locs branded SVG icons instead of emojis.
  */
+import { ENTITY_ICON_MAP, PRESENCE_ICON_MAP, iconPin } from "./easy-locs-icons";
 
 export type PresenceMode = "off" | "pin" | "live";
 export type EntityType = "fixed_store" | "mobile_seller" | "mobile_service" | "driver";
 export type CoverageMode = "point" | "radius" | "live_radius";
 
 export interface MapMarkerStyle {
-  emoji: string;
+  icon: string; // SVG string
   color: string;
   pulseRing: boolean;
   label: string;
 }
 
-const STYLES: Record<EntityType, MapMarkerStyle> = {
-  fixed_store: { emoji: "🏪", color: "#38bdf8", pulseRing: false, label: "Store" },
-  mobile_seller: { emoji: "🛒", color: "#fbbf24", pulseRing: true, label: "Mobile Seller" },
-  mobile_service: { emoji: "🔧", color: "#a78bfa", pulseRing: true, label: "Mobile Service" },
-  driver: { emoji: "🚗", color: "#34d399", pulseRing: true, label: "Driver" },
+const STYLE_META: Record<EntityType, { color: string; pulseRing: boolean; label: string }> = {
+  fixed_store: { color: "#D4A853", pulseRing: false, label: "Store" },
+  mobile_seller: { color: "#fbbf24", pulseRing: true, label: "Mobile Seller" },
+  mobile_service: { color: "#a78bfa", pulseRing: true, label: "Mobile Service" },
+  driver: { color: "#34d399", pulseRing: true, label: "Driver" },
 };
 
 export function getMarkerStyle(
@@ -26,10 +28,14 @@ export function getMarkerStyle(
 ): MapMarkerStyle {
   const mode = (presenceMode || "pin") as PresenceMode;
   const etype = (entityType || "fixed_store") as EntityType;
-  const base = STYLES[etype] || STYLES.fixed_store;
+  const meta = STYLE_META[etype] || STYLE_META.fixed_store;
+  const iconFn = ENTITY_ICON_MAP[etype] || iconPin;
+
   return {
-    ...base,
-    pulseRing: mode === "live" ? base.pulseRing : false,
+    icon: iconFn(36),
+    color: meta.color,
+    pulseRing: mode === "live" ? meta.pulseRing : false,
+    label: meta.label,
   };
 }
 
@@ -42,14 +48,11 @@ export function createMarkerElement(
   el.style.cssText = `
     width: 36px; height: 36px;
     display: flex; align-items: center; justify-content: center;
-    font-size: 20px;
-    border-radius: 50%;
-    background: ${style.color}22;
-    border: 2px solid ${style.color};
     cursor: pointer;
     position: relative;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
   `;
-  el.textContent = style.emoji;
+  el.innerHTML = style.icon;
 
   if (style.pulseRing) {
     const ring = document.createElement("div");
@@ -73,7 +76,6 @@ export function createMarkerElement(
 
 /**
  * Convert radius in meters to Mapbox circle-radius in pixels at a given zoom & lat.
- * Uses the Mercator formula: metersPerPixel = 156543.03 * cos(lat) / 2^zoom
  */
 export function metersToPixels(meters: number, lat: number, zoom: number): number {
   const metersPerPx = (156543.03 * Math.cos((lat * Math.PI) / 180)) / Math.pow(2, zoom);
