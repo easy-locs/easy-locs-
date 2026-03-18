@@ -83,6 +83,7 @@ export default function WalletHub() {
   };
 
   return (
+    <SecurityGate label="Wallet" timeoutMinutes={10}>
     <DashboardLayout>
       <div className="max-w-lg mx-auto px-4 py-6 space-y-6">
         <AnimatePresence mode="wait">
