@@ -509,29 +509,22 @@ export default function SuperMapRadarPage() {
             {/* Map container — always mounted when in map mode */}
             <div ref={mapContainerRef} className="absolute inset-0" />
 
-            {/* Skeleton overlay while map loads */}
+            {/* Fallback overlay while map loads */}
             {!mapReady && (
-              <div className="absolute inset-0 z-10">
-                <MapSkeleton />
+              <div className="absolute inset-0 z-10 overflow-y-auto p-3 pb-24 bg-background">
+                <MapFallback onRetry={() => window.location.reload()} />
+                {!loading && filtered.length > 0 ? (
+                  <div className="mt-3 space-y-2">
+                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-1">À proximité</p>
+                    {filtered.slice(0, 3).map((l, i) => (
+                      <NearbyCard key={l.id} listing={l} index={i} />
+                    ))}
+                  </div>
+                ) : (
+                  <NearbyPreview items={FALLBACK_NEARBY} />
+                )}
               </div>
             )}
-
-            {/* Nearby cards when map not ready or few results */}
-            <AnimatePresence>
-              {!mapReady && !loading && filtered.length > 0 && (
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 20 }}
-                  className="absolute bottom-20 left-3 right-3 z-20 space-y-2"
-                >
-                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-1">Nearby</p>
-                  {filtered.slice(0, 3).map((l, i) => (
-                    <NearbyCard key={l.id} listing={l} index={i} />
-                  ))}
-                </motion.div>
-              )}
-            </AnimatePresence>
 
             {/* Legend */}
             {mapReady && <MapLegend />}
