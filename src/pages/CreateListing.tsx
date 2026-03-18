@@ -17,28 +17,20 @@ import {
   CreditCard, Camera, MapPin, Tag, DollarSign, CalendarDays, Package, Radar
 } from "lucide-react";
 import PresenceMobilitySelector, { type PresenceMode, type EntityType, type CoverageMode, type PresenceConfig } from "@/components/marketplace/PresenceMobilitySelector";
+import { getCategoryConfig, getCategoryOptions, getAllowedListingTypes, getAllowedPresenceModes, type ListingType } from "@/lib/category-config";
 
 /* ─── Constants ─── */
 const MAX_LISTINGS_FREE = 5;
 const MIN_PHOTOS = 2;
 const MAX_PHOTOS = 10;
 
-const LISTING_CATEGORIES = [
-  { value: "real_estate", label: "Real Estate", icon: "🏠" },
-  { value: "vehicles", label: "Vehicles", icon: "🚗" },
-  { value: "services", label: "Services", icon: "🔧" },
-  { value: "tourism", label: "Tourism Activities", icon: "🗺️" },
-  { value: "products", label: "Products", icon: "📦" },
-  { value: "freelance", label: "Freelance Services", icon: "💻" },
-  { value: "events", label: "Events", icon: "🎫" },
-];
+const LISTING_CATEGORIES = getCategoryOptions();
 
-const LISTING_TYPES = [
-  { value: "sale", label: "Sale (30 days)", icon: "💰" },
-  { value: "rental", label: "Rental", icon: "🔑" },
-  { value: "service", label: "Service", icon: "⚡" },
-  { value: "shop", label: "Shop / Business", icon: "🏪" },
-];
+const LISTING_TYPE_META: Record<string, { label: string; icon: string }> = {
+  sale: { label: "Sale (30 days)", icon: "💰" },
+  service: { label: "Service (permanent)", icon: "⚡" },
+  shop: { label: "Shop / Business (permanent)", icon: "🏪" },
+};
 
 const PRICE_PERIODS = [
   { value: "fixed", label: "Fixed price" },
