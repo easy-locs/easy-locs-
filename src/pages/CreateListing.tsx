@@ -274,7 +274,7 @@ const CreateListing = () => {
       } as any);
 
       if (error) throw error;
-      toast({ title: "✅ Listing published!", description: "Your listing is now live for 30 days." });
+      toast({ title: "✅ Listing published!", description: isSale ? "Your listing is live for 30 days." : "Your listing is live until you deactivate it." });
       navigate("/dashboard/my-shop");
     } catch (err: any) {
       toast({ title: "Error", description: err.message, variant: "destructive" });
