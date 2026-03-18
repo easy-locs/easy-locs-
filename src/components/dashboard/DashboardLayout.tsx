@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { useI18n, type Locale } from "@/lib/i18n";
+import { useI18n } from "@/lib/i18n";
 import { useSubscriptionGating } from "@/hooks/useSubscriptionGating";
 import { useCountryContext, appendCountryToPath, isGlobalPage } from "@/hooks/useCountryContext";
 import { getCountryEntryOrDefault } from "@/lib/global-country-registry";
