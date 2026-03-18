@@ -272,6 +272,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       (_event, nextSession) => {
         if (_event === "SIGNED_IN" && nextSession?.user) {
           logAudit({ userId: nextSession.user.id, action: "user_login" });
+          // Ensure user_profiles row exists (no-op if already created)
+          void import("@/lib/auth/profile")
+            .then((m) => m.ensureUserProfile(nextSession.user.id, {
+              fullName: nextSession.user.user_metadata?.full_name,
+              phone: nextSession.user.phone ?? undefined,
+            }))
+            .catch(() => null);
           // Request notification permission after login (deferred, non-blocking)
           setTimeout(() => {
             void import("@/lib/notif-alert-prefs")

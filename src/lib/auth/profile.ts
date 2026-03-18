@@ -6,6 +6,28 @@ export async function getCurrentUser() {
   return data.user;
 }
 
+/**
+ * Ensures a user_profiles row exists for the given user id.
+ * Uses upsert with onConflict to avoid duplicates.
+ * Safe to call on every login — no-op if row already exists.
+ */
+export async function ensureUserProfile(userId: string, meta?: { fullName?: string; phone?: string }) {
+  const { error } = await (supabase as any)
+    .from("user_profiles")
+    .upsert(
+      {
+        id: userId,
+        full_name: meta?.fullName || null,
+        phone: meta?.phone || null,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "id", ignoreDuplicates: true }
+    );
+  if (error) {
+    console.warn("[ensureUserProfile] upsert failed:", error.message);
+  }
+}
+
 export async function getMyProfile() {
   const user = await getCurrentUser();
   if (!user) return null;
