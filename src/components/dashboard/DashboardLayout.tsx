@@ -148,6 +148,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
       items: [
         { icon: Settings, label: t("nav.settings") || "Settings", path: "/dashboard/settings" },
         { icon: BrainCircuit, label: "AI Assistant", path: "/dashboard/assistant" },
+        { icon: Shield, label: "System Audit", path: "/admin/audit-debug" },
       ],
     },
   ];
