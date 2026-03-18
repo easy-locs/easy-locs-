@@ -449,7 +449,8 @@ const App = () => (
               <Route path="/dashboard/collaboration" element={<ProtectedRoute><Collaboration /></ProtectedRoute>} />
               <Route path="/dashboard/developer" element={<ProtectedRoute><DeveloperPortal /></ProtectedRoute>} />
               <Route path="/dashboard/audit" element={<ProtectedRoute><AuditTrail /></ProtectedRoute>} />
-              <Route path="/dashboard/wallet" element={<ProtectedRoute><WalletHub /></ProtectedRoute>} />
+              <Route path="/dashboard/wallet" element={<Navigate to="/wallet" replace />} />
+              <Route path="/wallet" element={<ProtectedRoute><WalletHub /></ProtectedRoute>} />
               <Route path="/dashboard/deals" element={<ProtectedRoute><DealAnalyticsPage /></ProtectedRoute>} />
               <Route path="/dashboard/service-tracking" element={<ProtectedRoute><ServiceTrackingPage /></ProtectedRoute>} />
               <Route path="/dashboard/seller" element={<ProtectedRoute><SellerHubPage /></ProtectedRoute>} />
