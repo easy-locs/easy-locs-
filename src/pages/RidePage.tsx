@@ -40,7 +40,7 @@ function mockDrivers(lat: number, lng: number) {
 
 export default function RidePage() {
   const navigate = useNavigate();
-  const { geo, currentLocation, places, addRecent } = useSmartLocation();
+  const { geo, currentLocation, places, addRecent, savePlace, removePlace } = useSmartLocation();
   const [step, setStep] = useState<Step>("location");
   const [pickup, setPickup] = useState<SavedPlace | null>(currentLocation);
   const [dropoff, setDropoff] = useState<SavedPlace | null>(null);
