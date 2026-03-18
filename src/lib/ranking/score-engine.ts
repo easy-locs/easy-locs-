@@ -225,6 +225,21 @@ function recencySignal(createdAt: string | null | undefined): number {
   return 0.2;
 }
 
+function prepSpeedScore(minutes: number | null | undefined): number {
+  if (minutes == null) return 0.5;
+  if (minutes <= 10) return 1;
+  if (minutes <= 20) return 0.8;
+  if (minutes <= 35) return 0.5;
+  return 0.2;
+}
+
+function radiusRelevanceScore(userDistKm: number | null | undefined, radiusKm: number | null | undefined): number {
+  if (userDistKm == null || radiusKm == null) return 0.5;
+  if (userDistKm <= radiusKm) return 1;
+  if (userDistKm <= radiusKm * 1.5) return 0.5;
+  return 0.1;
+}
+
 /** Determine appropriate model for a universe */
 export function getModelForUniverse(universe: string): ScoringModel {
   const intentUniverses = ["travel", "property"];
