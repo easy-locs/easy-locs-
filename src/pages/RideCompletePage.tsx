@@ -2,12 +2,13 @@
  * RideCompletePage — /ride/complete/:rideRequestId — Post-ride rating & tip.
  */
 import { useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { BackCard } from "@/components/ui/back-card";
 import { Button } from "@/components/ui/button";
 
 export default function RideCompletePage() {
   const { rideRequestId } = useParams();
+  const navigate = useNavigate();
   const [rating, setRating] = useState(5);
   const [tip, setTip] = useState<number | null>(null);
 
@@ -62,7 +63,10 @@ export default function RideCompletePage() {
             </div>
           </div>
 
-          <Button className="w-full h-12 rounded-2xl text-sm font-bold">
+          <Button
+            onClick={() => navigate(`/ride/receipt/${rideRequestId}`)}
+            className="w-full h-12 rounded-2xl text-sm font-bold mt-6"
+          >
             Submit
           </Button>
 

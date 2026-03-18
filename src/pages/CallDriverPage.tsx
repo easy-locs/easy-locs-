@@ -20,15 +20,15 @@ export default function CallDriverPage() {
 
           <h1 className="text-lg font-bold text-foreground">Calling driver</h1>
           <p className="text-xs text-muted-foreground">
-            Thread: {threadId ?? "—"}
+            Secure Orbit call session · Thread: {threadId ?? "—"}
           </p>
 
           <div className="flex gap-3 w-full">
             <Button variant="outline" className="flex-1 rounded-xl">
-              Voice call
+              Voice
             </Button>
             <Button className="flex-1 rounded-xl">
-              In-app call
+              In-app
             </Button>
             <Button variant="destructive" className="flex-1 rounded-xl">
               End

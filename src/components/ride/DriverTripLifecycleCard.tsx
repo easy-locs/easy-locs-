@@ -1,6 +1,6 @@
 /**
  * DriverTripLifecycleCard — Driver-side UI to advance ride through lifecycle stages.
- * Integrates Orbit notifications and wallet settlement at each transition.
+ * Integrates Orbit notifications, push notifications, and wallet settlement.
  */
 import { useState } from "react";
 import {
@@ -13,6 +13,11 @@ import {
   orbitRideStarted,
   orbitRideCompleted,
 } from "@/lib/orbit/orbit-ride-notifications";
+import {
+  notifyRideArrived,
+  notifyRideStarted,
+  notifyRideCompleted,
+} from "@/lib/notifications/ride-push";
 import { settleRide } from "@/lib/wallet/settle-ride";
 
 export default function DriverTripLifecycleCard({
@@ -50,6 +55,7 @@ export default function DriverTripLifecycleCard({
             act(async () => {
               await markDriverArrived(rideRequestId, driverId);
               if (threadId) await orbitRideArrived(threadId, rideRequestId);
+              if (riderId) await notifyRideArrived(riderId, rideRequestId);
             }, "arrived")
           }
           className="w-full rounded-xl bg-accent px-4 py-2.5 text-sm font-semibold text-accent-foreground active:scale-[0.97] transition-transform"
@@ -64,6 +70,7 @@ export default function DriverTripLifecycleCard({
             act(async () => {
               await confirmRidePickup(rideRequestId, driverId);
               if (threadId) await orbitRideStarted(threadId, rideRequestId);
+              if (riderId) await notifyRideStarted(riderId, rideRequestId);
             }, "started")
           }
           className="w-full rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground active:scale-[0.97] transition-transform"
@@ -77,6 +84,7 @@ export default function DriverTripLifecycleCard({
           onClick={() =>
             act(async () => {
               const finalAmount = 32;
+
               await completeRide(rideRequestId, driverId, finalAmount);
 
               if (riderId) {
@@ -91,6 +99,10 @@ export default function DriverTripLifecycleCard({
 
               if (threadId) {
                 await orbitRideCompleted(threadId, rideRequestId, finalAmount);
+              }
+
+              if (riderId) {
+                await notifyRideCompleted(riderId, rideRequestId, finalAmount);
               }
             }, "completed")
           }
