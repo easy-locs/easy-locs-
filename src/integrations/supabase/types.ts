@@ -7017,10 +7017,15 @@ export type Database = {
           pickup_lng: number
           requested_ride_type: string | null
           rider_id: string
+          rider_rating: number | null
+          rider_review: string | null
           search_radius_km: number | null
           selected_driver_id: string | null
           settlement_status: string | null
           status: string
+          thread_id: string | null
+          tip_amount: number | null
+          tip_settled: boolean | null
           trip_ended_at: string | null
           trip_started_at: string | null
           updated_at: string
@@ -7044,10 +7049,15 @@ export type Database = {
           pickup_lng: number
           requested_ride_type?: string | null
           rider_id: string
+          rider_rating?: number | null
+          rider_review?: string | null
           search_radius_km?: number | null
           selected_driver_id?: string | null
           settlement_status?: string | null
           status?: string
+          thread_id?: string | null
+          tip_amount?: number | null
+          tip_settled?: boolean | null
           trip_ended_at?: string | null
           trip_started_at?: string | null
           updated_at?: string
@@ -7071,10 +7081,15 @@ export type Database = {
           pickup_lng?: number
           requested_ride_type?: string | null
           rider_id?: string
+          rider_rating?: number | null
+          rider_review?: string | null
           search_radius_km?: number | null
           selected_driver_id?: string | null
           settlement_status?: string | null
           status?: string
+          thread_id?: string | null
+          tip_amount?: number | null
+          tip_settled?: boolean | null
           trip_ended_at?: string | null
           trip_started_at?: string | null
           updated_at?: string
@@ -13144,6 +13159,36 @@ export type Database = {
           verified?: boolean
           visible_on_nearby?: boolean
           who_can_see?: string
+        }
+        Relationships: []
+      }
+      user_push_tokens: {
+        Row: {
+          created_at: string
+          device_name: string | null
+          id: string
+          platform: string
+          push_token: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          device_name?: string | null
+          id?: string
+          platform?: string
+          push_token: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          device_name?: string | null
+          id?: string
+          platform?: string
+          push_token?: string
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
