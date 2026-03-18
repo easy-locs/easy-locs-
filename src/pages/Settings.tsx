@@ -353,6 +353,11 @@ const Settings = () => {
           )}
         </div>
 
+        {/* Security PIN Management */}
+        <div className="ui-card">
+          <PinManagement />
+        </div>
+
         {/* App Security — PIN, Ghost, Panic */}
         <div className="ui-card">
           <AppSecuritySettings />
