@@ -14,6 +14,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { usePropertyPaywall } from "@/hooks/usePropertyPaywall";
+import PropertyPaywallBanner from "@/components/property/PropertyPaywallBanner";
 
 const SURFACE_UNITS = [
   { value: "sqm", label: "m²" },
