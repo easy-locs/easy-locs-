@@ -89,6 +89,7 @@ const ListingManager = ({ propertyId, propertyLabel }: ListingManagerProps) => {
       title: form.title || propertyLabel, description: form.description,
       price_per_night: form.price_per_night, min_nights: form.min_nights,
       max_guests: form.max_guests, amenities: amenities as any,
+      listing_type: "short_term_stay",
       contact_email: form.contact_email || null,
       contact_phone: form.contact_phone || null,
       whatsapp_number: form.whatsapp_number || null,

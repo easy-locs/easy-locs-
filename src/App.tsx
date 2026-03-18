@@ -132,6 +132,7 @@ const PropertyDetailHub = safeLazy(() => import("./pages/PropertyDetailHub"), "P
 const CreateListing = safeLazy(() => import("./pages/CreateListing"), "CreateListing");
 const LocalServices = safeLazy(() => import("./pages/LocalServices"), "LocalServices");
 const RentalCatalog = safeLazy(() => import("./pages/RentalCatalog"), "RentalCatalog");
+const StaysCatalog = safeLazy(() => import("./pages/StaysCatalog"), "StaysCatalog");
 const HostCatalog = safeLazy(() => import("./pages/HostCatalog"), "HostCatalog");
 const ActivitiesMarketplace = safeLazy(() => import("./pages/ActivitiesMarketplace"), "ActivitiesMarketplace");
 const GuestPortal = safeLazy(() => import("./pages/GuestPortal"), "GuestPortal");
@@ -311,6 +312,11 @@ const App = () => (
               <Route path="/book/:slug" element={<PublicServiceBooking />} />
               <Route path="/nearby" element={<LocalServices />} />
               <Route path="/rentals" element={<RentalCatalog />} />
+              <Route path="/rentals/:country" element={<RentalCatalog />} />
+              <Route path="/rentals/:country/:city" element={<RentalCatalog />} />
+              <Route path="/stays" element={<StaysCatalog />} />
+              <Route path="/stays/:country" element={<StaysCatalog />} />
+              <Route path="/stays/:country/:city" element={<StaysCatalog />} />
               <Route path="/host/:orgId" element={<HostCatalog />} />
               <Route path="/activities" element={<ActivitiesMarketplace />} />
               <Route path="/guest/:orgId" element={<GuestPortal />} />
