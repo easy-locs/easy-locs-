@@ -3130,6 +3130,47 @@ export type Database = {
         }
         Relationships: []
       }
+      dispatch_bids: {
+        Row: {
+          amount: number | null
+          bid_type: string | null
+          created_at: string | null
+          driver_id: string
+          eta_minutes: number | null
+          id: string
+          job_id: string
+          status: string | null
+        }
+        Insert: {
+          amount?: number | null
+          bid_type?: string | null
+          created_at?: string | null
+          driver_id: string
+          eta_minutes?: number | null
+          id?: string
+          job_id: string
+          status?: string | null
+        }
+        Update: {
+          amount?: number | null
+          bid_type?: string | null
+          created_at?: string | null
+          driver_id?: string
+          eta_minutes?: number | null
+          id?: string
+          job_id?: string
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dispatch_bids_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "dispatch_jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       dispatch_candidate_drivers: {
         Row: {
           created_at: string | null
@@ -3170,6 +3211,60 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      dispatch_jobs: {
+        Row: {
+          assigned_driver_id: string | null
+          buyer_id: string | null
+          completed_at: string | null
+          created_at: string | null
+          currency: string | null
+          dropoff_label: string | null
+          final_fee: number | null
+          id: string
+          order_id: string | null
+          pickup_label: string | null
+          quoted_fee: number | null
+          seller_id: string | null
+          status: string | null
+          updated_at: string | null
+          workspace_id: string | null
+        }
+        Insert: {
+          assigned_driver_id?: string | null
+          buyer_id?: string | null
+          completed_at?: string | null
+          created_at?: string | null
+          currency?: string | null
+          dropoff_label?: string | null
+          final_fee?: number | null
+          id?: string
+          order_id?: string | null
+          pickup_label?: string | null
+          quoted_fee?: number | null
+          seller_id?: string | null
+          status?: string | null
+          updated_at?: string | null
+          workspace_id?: string | null
+        }
+        Update: {
+          assigned_driver_id?: string | null
+          buyer_id?: string | null
+          completed_at?: string | null
+          created_at?: string | null
+          currency?: string | null
+          dropoff_label?: string | null
+          final_fee?: number | null
+          id?: string
+          order_id?: string | null
+          pickup_label?: string | null
+          quoted_fee?: number | null
+          seller_id?: string | null
+          status?: string | null
+          updated_at?: string | null
+          workspace_id?: string | null
+        }
+        Relationships: []
       }
       dispatch_prediction_jobs: {
         Row: {
@@ -6187,6 +6282,107 @@ export type Database = {
             columns: ["provider_id"]
             isOneToOne: false
             referencedRelation: "marketplace_providers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      menu_categories: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          merchant_profile_id: string | null
+          name: string
+          sort_order: number | null
+          workspace_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          merchant_profile_id?: string | null
+          name: string
+          sort_order?: number | null
+          workspace_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          merchant_profile_id?: string | null
+          name?: string
+          sort_order?: number | null
+          workspace_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "menu_categories_merchant_profile_id_fkey"
+            columns: ["merchant_profile_id"]
+            isOneToOne: false
+            referencedRelation: "merchant_onboarding_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      menu_items: {
+        Row: {
+          category_id: string | null
+          created_at: string | null
+          currency: string | null
+          description: string | null
+          id: string
+          image_url: string | null
+          is_available: boolean | null
+          merchant_profile_id: string | null
+          name: string
+          price: number
+          sort_order: number | null
+          updated_at: string | null
+          workspace_id: string | null
+        }
+        Insert: {
+          category_id?: string | null
+          created_at?: string | null
+          currency?: string | null
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_available?: boolean | null
+          merchant_profile_id?: string | null
+          name: string
+          price?: number
+          sort_order?: number | null
+          updated_at?: string | null
+          workspace_id?: string | null
+        }
+        Update: {
+          category_id?: string | null
+          created_at?: string | null
+          currency?: string | null
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_available?: boolean | null
+          merchant_profile_id?: string | null
+          name?: string
+          price?: number
+          sort_order?: number | null
+          updated_at?: string | null
+          workspace_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "menu_items_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "menu_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "menu_items_merchant_profile_id_fkey"
+            columns: ["merchant_profile_id"]
+            isOneToOne: false
+            referencedRelation: "merchant_onboarding_profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -9995,6 +10191,48 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      storage_assets: {
+        Row: {
+          asset_type: string
+          bucket: string
+          created_at: string | null
+          file_size: number | null
+          id: string
+          metadata: Json | null
+          mime_type: string | null
+          owner_user_id: string | null
+          path: string
+          status: string | null
+          workspace_id: string | null
+        }
+        Insert: {
+          asset_type: string
+          bucket: string
+          created_at?: string | null
+          file_size?: number | null
+          id?: string
+          metadata?: Json | null
+          mime_type?: string | null
+          owner_user_id?: string | null
+          path: string
+          status?: string | null
+          workspace_id?: string | null
+        }
+        Update: {
+          asset_type?: string
+          bucket?: string
+          created_at?: string | null
+          file_size?: number | null
+          id?: string
+          metadata?: Json | null
+          mime_type?: string | null
+          owner_user_id?: string | null
+          path?: string
+          status?: string | null
+          workspace_id?: string | null
+        }
+        Relationships: []
       }
       storefront_access_invites: {
         Row: {
@@ -15037,6 +15275,92 @@ export type Database = {
         }
         Relationships: []
       }
+      support_ticket_messages: {
+        Row: {
+          body: string
+          created_at: string | null
+          id: string
+          metadata: Json | null
+          sender_role: string | null
+          sender_user_id: string | null
+          ticket_id: string
+        }
+        Insert: {
+          body: string
+          created_at?: string | null
+          id?: string
+          metadata?: Json | null
+          sender_role?: string | null
+          sender_user_id?: string | null
+          ticket_id: string
+        }
+        Update: {
+          body?: string
+          created_at?: string | null
+          id?: string
+          metadata?: Json | null
+          sender_role?: string | null
+          sender_user_id?: string | null
+          ticket_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "support_ticket_messages_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "support_tickets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      support_tickets: {
+        Row: {
+          assigned_to: string | null
+          context_id: string | null
+          context_type: string | null
+          created_at: string | null
+          id: string
+          priority: string | null
+          requester_user_id: string | null
+          resolved_at: string | null
+          status: string | null
+          subject: string
+          ticket_type: string
+          updated_at: string | null
+          workspace_id: string | null
+        }
+        Insert: {
+          assigned_to?: string | null
+          context_id?: string | null
+          context_type?: string | null
+          created_at?: string | null
+          id?: string
+          priority?: string | null
+          requester_user_id?: string | null
+          resolved_at?: string | null
+          status?: string | null
+          subject: string
+          ticket_type: string
+          updated_at?: string | null
+          workspace_id?: string | null
+        }
+        Update: {
+          assigned_to?: string | null
+          context_id?: string | null
+          context_type?: string | null
+          created_at?: string | null
+          id?: string
+          priority?: string | null
+          requester_user_id?: string | null
+          resolved_at?: string | null
+          status?: string | null
+          subject?: string
+          ticket_type?: string
+          updated_at?: string | null
+          workspace_id?: string | null
+        }
+        Relationships: []
+      }
       surge_pricing_events: {
         Row: {
           applied_multiplier: number | null
@@ -15964,6 +16288,50 @@ export type Database = {
         }
         Relationships: []
       }
+      user_profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string | null
+          default_workspace_id: string | null
+          full_name: string | null
+          id: string
+          locale: string | null
+          phone: string | null
+          timezone: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string | null
+          default_workspace_id?: string | null
+          full_name?: string | null
+          id: string
+          locale?: string | null
+          phone?: string | null
+          timezone?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string | null
+          default_workspace_id?: string | null
+          full_name?: string | null
+          id?: string
+          locale?: string | null
+          phone?: string | null
+          timezone?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_profiles_default_workspace_id_fkey"
+            columns: ["default_workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_push_tokens: {
         Row: {
           created_at: string
@@ -16743,6 +17111,127 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      workspace_members: {
+        Row: {
+          created_at: string | null
+          id: string
+          role: string
+          status: string | null
+          updated_at: string | null
+          user_id: string
+          workspace_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          role?: string
+          status?: string | null
+          updated_at?: string | null
+          user_id: string
+          workspace_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          role?: string
+          status?: string | null
+          updated_at?: string | null
+          user_id?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workspace_members_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      workspace_settings: {
+        Row: {
+          city: string | null
+          country_code: string | null
+          created_at: string | null
+          currency: string | null
+          id: string
+          order_fee_pct: number | null
+          payout_cycle: string | null
+          support_email: string | null
+          support_phone: string | null
+          updated_at: string | null
+          workspace_id: string
+        }
+        Insert: {
+          city?: string | null
+          country_code?: string | null
+          created_at?: string | null
+          currency?: string | null
+          id?: string
+          order_fee_pct?: number | null
+          payout_cycle?: string | null
+          support_email?: string | null
+          support_phone?: string | null
+          updated_at?: string | null
+          workspace_id: string
+        }
+        Update: {
+          city?: string | null
+          country_code?: string | null
+          created_at?: string | null
+          currency?: string | null
+          id?: string
+          order_fee_pct?: number | null
+          payout_cycle?: string | null
+          support_email?: string | null
+          support_phone?: string | null
+          updated_at?: string | null
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workspace_settings_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: true
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      workspaces: {
+        Row: {
+          created_at: string | null
+          id: string
+          name: string
+          owner_user_id: string | null
+          slug: string | null
+          status: string | null
+          updated_at: string | null
+          workspace_type: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          name: string
+          owner_user_id?: string | null
+          slug?: string | null
+          status?: string | null
+          updated_at?: string | null
+          workspace_type?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          name?: string
+          owner_user_id?: string | null
+          slug?: string | null
+          status?: string | null
+          updated_at?: string | null
+          workspace_type?: string | null
+        }
+        Relationships: []
       }
     }
     Views: {
@@ -17531,6 +18020,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      has_workspace_role: {
+        Args: { _roles: string[]; _workspace_id: string }
+        Returns: boolean
+      }
       increment_listing_views: { Args: { p_slug: string }; Returns: undefined }
       is_group_admin: {
         Args: { _group_id: string; _user_id: string }
@@ -17544,6 +18037,7 @@ export type Database = {
         Args: { _org_id: string; _user_id: string }
         Returns: boolean
       }
+      is_workspace_member: { Args: { _workspace_id: string }; Returns: boolean }
       purchase_boost: {
         Args: {
           _duration_days?: number
