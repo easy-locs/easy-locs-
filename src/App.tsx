@@ -337,6 +337,10 @@ const App = () => (
               <Route path="/driver/payout" element={<DriverPayoutPage />} />
               <Route path="/admin/disputes" element={<AdminDisputesPage />} />
               <Route path="/driver/heatmap" element={<DemandHeatmapPage />} />
+              <Route path="/driver/positioning" element={<DriverPositioningPage />} />
+              <Route path="/admin/fraud" element={<AdminFraudPage />} />
+              <Route path="/admin/live-ops" element={<AdminLiveOpsPage />} />
+              <Route path="/subscription/priority" element={<RiderPrioritySubscriptionPage />} />
 
               {/* Travel */}
               <Route path="/travel" element={<TravelHub />} />
