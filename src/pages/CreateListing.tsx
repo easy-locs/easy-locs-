@@ -105,9 +105,11 @@ interface ListingForm {
   // Duration
   duration_minutes: number;
   max_capacity: number;
-  // Presence & Mobility
+  // Presence & Coverage
   presence_mode: PresenceMode;
-  mobility_type: MobilityType;
+  entity_type: EntityType;
+  coverage_mode: CoverageMode;
+  coverage_radius_m: number | null;
 }
 
 const defaultForm: ListingForm = {
