@@ -1,5 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import { getGuestId } from "@/lib/auth/guest-session";
+import { checkOtpAbuse } from "@/lib/security/fraud-otp";
 
 function generateOtpCode() {
   return String(Math.floor(100000 + Math.random() * 900000));
