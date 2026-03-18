@@ -30,3 +30,11 @@ export function radarLink(): string {
 export function walletLink(): string {
   return toAppPath("/dashboard/wallet");
 }
+
+export function rideLink(): string {
+  return toAppPath("/ride");
+}
+
+export function sendLink(): string {
+  return toAppPath("/send");
+}
