@@ -1,0 +1,1 @@
+ALTER TABLE public.ride_requests ADD COLUMN IF NOT EXISTS current_wave integer DEFAULT 0;

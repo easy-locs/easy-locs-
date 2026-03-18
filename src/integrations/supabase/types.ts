@@ -7001,6 +7001,7 @@ export type Database = {
         Row: {
           assigned_at: string | null
           created_at: string
+          current_wave: number | null
           dropoff_lat: number | null
           dropoff_lng: number | null
           expires_at: string
@@ -7016,6 +7017,7 @@ export type Database = {
         Insert: {
           assigned_at?: string | null
           created_at?: string
+          current_wave?: number | null
           dropoff_lat?: number | null
           dropoff_lng?: number | null
           expires_at?: string
@@ -7031,6 +7033,7 @@ export type Database = {
         Update: {
           assigned_at?: string | null
           created_at?: string
+          current_wave?: number | null
           dropoff_lat?: number | null
           dropoff_lng?: number | null
           expires_at?: string
