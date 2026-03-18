@@ -1,12 +1,47 @@
-import { useEffect, useRef, useState, useCallback } from "react";
+/**
+ * SuperMapRadarPage — Premium Nearby / Map discovery screen.
+ * Rebuilt with: control hierarchy, map/list toggle, category chips,
+ * skeleton fallback, nearby cards, and unified design tokens.
+ */
+import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { supabase } from "@/integrations/supabase/client";
 import { createMarkerElement, getMarkerStyle } from "@/lib/map/presence-styles";
 import { isLiveStale } from "@/hooks/useGPSTracking";
+import { motion, AnimatePresence } from "framer-motion";
+import { useNavigate } from "react-router-dom";
+import { haptic } from "@/lib/haptics";
+import {
+  Map as MapIcon, List, Search, X, SlidersHorizontal,
+  MapPin, Radar, Store, Truck, Wrench, ShoppingBag,
+  UtensilsCrossed, Building2, Car, Scissors, Hammer,
+  Package, Bike, ShoppingCart, Locate,
+} from "lucide-react";
 
+/* ─── Constants ─── */
 const MAPBOX_TOKEN = "pk.eyJ1IjoiZWFzeWxvY3MyMDI2IiwiYSI6ImNtbXZiZ3h0cTF6ZHMycnIyOWw4NnJzZTIifQ.ElIj6bFQK_BpVm6suigHUQ";
 const DUBAI_CENTER: [number, number] = [55.2708, 25.2048];
+
+const CATEGORIES = [
+  { key: "all", label: "All", icon: Radar },
+  { key: "food", label: "Food", icon: UtensilsCrossed },
+  { key: "property", label: "Property", icon: Building2 },
+  { key: "taxi", label: "Taxi", icon: Car },
+  { key: "beauty", label: "Beauty", icon: Scissors },
+  { key: "repair", label: "Repair", icon: Hammer },
+  { key: "delivery", label: "Delivery", icon: Bike },
+  { key: "grocery", label: "Grocery", icon: ShoppingCart },
+  { key: "electronics", label: "Electronics", icon: Package },
+];
+
+const RADIUS_OPTIONS = [
+  { value: 1000, label: "1 km" },
+  { value: 3000, label: "3 km" },
+  { value: 5000, label: "5 km" },
+  { value: 10000, label: "10 km" },
+  { value: 25000, label: "25 km" },
+];
 
 interface MapListing {
   id: string;
@@ -21,9 +56,11 @@ interface MapListing {
   price: number;
   currency: string;
   listing_type: string;
+  city?: string;
+  photo_urls?: any;
 }
 
-/** Create a GeoJSON circle polygon from center + radius in meters */
+/* ─── Circle GeoJSON helper ─── */
 function createCircleGeoJSON(center: [number, number], radiusM: number, points = 64): GeoJSON.Feature {
   const coords: [number, number][] = [];
   const km = radiusM / 1000;
@@ -38,19 +75,129 @@ function createCircleGeoJSON(center: [number, number], radiusM: number, points =
   return { type: "Feature", properties: {}, geometry: { type: "Polygon", coordinates: [coords] } };
 }
 
+/* ─── Entity icon for cards ─── */
+function EntityIcon({ type, className }: { type: string; className?: string }) {
+  const map: Record<string, typeof Store> = {
+    fixed_store: Store, mobile_seller: ShoppingBag, mobile_service: Wrench, driver: Truck,
+  };
+  const Icon = map[type] || MapPin;
+  return <Icon className={className} />;
+}
+
+/* ─── Nearby Card ─── */
+function NearbyCard({ listing, index }: { listing: MapListing; index: number }) {
+  const navigate = useNavigate();
+  const thumb = Array.isArray(listing.photo_urls) && listing.photo_urls.length > 0 ? listing.photo_urls[0] : null;
+
+  return (
+    <motion.button
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.2, delay: index * 0.04 }}
+      onClick={() => { haptic("light"); navigate(`/listing/${listing.id}`); }}
+      className="w-full rounded-2xl border border-border/40 bg-card p-3.5 text-left shadow-sm transition-all active:scale-[0.97] hover:border-primary/30"
+    >
+      <div className="flex items-center gap-3">
+        {thumb ? (
+          <img src={thumb} alt="" className="w-11 h-11 rounded-xl object-cover shrink-0 ring-1 ring-border/20" />
+        ) : (
+          <div className="w-11 h-11 rounded-xl bg-primary/8 flex items-center justify-center shrink-0">
+            <EntityIcon type={listing.entity_type} className="h-4.5 w-4.5 text-primary" />
+          </div>
+        )}
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-semibold text-foreground truncate">{listing.title}</p>
+          <div className="flex items-center gap-1.5 mt-0.5">
+            <span className="text-xs font-bold text-primary">{listing.price} {listing.currency}</span>
+            {listing.city && <span className="text-[10px] text-muted-foreground">· {listing.city}</span>}
+          </div>
+        </div>
+        <div className="shrink-0">
+          <span className={`inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider px-2 py-1 rounded-full ${
+            listing.presence_mode === "live"
+              ? "bg-emerald-500/15 text-emerald-500"
+              : "bg-muted text-muted-foreground"
+          }`}>
+            <span className={`w-1.5 h-1.5 rounded-full ${listing.presence_mode === "live" ? "bg-emerald-500 animate-pulse" : "bg-muted-foreground"}`} />
+            {listing.presence_mode === "live" ? "Live" : "Pin"}
+          </span>
+        </div>
+      </div>
+    </motion.button>
+  );
+}
+
+/* ─── Map Skeleton ─── */
+function MapSkeleton() {
+  return (
+    <div className="relative w-full h-full rounded-2xl bg-muted/30 overflow-hidden flex items-center justify-center">
+      {/* Fake map grid */}
+      <div className="absolute inset-0 opacity-[0.04]" style={{
+        backgroundImage: "linear-gradient(hsl(var(--foreground)) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--foreground)) 1px, transparent 1px)",
+        backgroundSize: "40px 40px",
+      }} />
+      {/* Animated radar sweep */}
+      <div className="relative">
+        <div className="w-20 h-20 rounded-full border-2 border-primary/20 flex items-center justify-center">
+          <div className="w-12 h-12 rounded-full border border-primary/30 flex items-center justify-center">
+            <div className="w-3 h-3 rounded-full bg-primary/60 animate-pulse" />
+          </div>
+        </div>
+        <div className="absolute inset-0 rounded-full border-2 border-primary/10 animate-ping" style={{ animationDuration: "2s" }} />
+      </div>
+      <p className="absolute bottom-6 text-xs font-medium text-muted-foreground">Loading radar…</p>
+    </div>
+  );
+}
+
+/* ─── Legend ─── */
+function MapLegend() {
+  const items: [string, string][] = [
+    ["hsl(40,58%,58%)", "Store"],
+    ["hsl(45,96%,56%)", "Mobile Seller"],
+    ["hsl(263,80%,75%)", "Mobile Service"],
+    ["hsl(160,65%,65%)", "Driver"],
+  ];
+  return (
+    <div className="absolute bottom-20 left-3 z-10 rounded-xl border border-border/30 bg-card/95 backdrop-blur-md p-2.5 shadow-lg">
+      <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">Legend</span>
+      <div className="mt-1.5 space-y-1">
+        {items.map(([color, label]) => (
+          <div key={label} className="flex items-center gap-2">
+            <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: color }} />
+            <span className="text-[10px] text-foreground/80">{label}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════
+   MAIN COMPONENT
+   ═══════════════════════════════════════════════ */
 export default function SuperMapRadarPage() {
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
   const markersRef = useRef<mapboxgl.Marker[]>([]);
   const [listings, setListings] = useState<MapListing[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [mapReady, setMapReady] = useState(false);
+  const [viewMode, setViewMode] = useState<"map" | "list">("map");
+  const [search, setSearch] = useState("");
+  const [activeCategory, setActiveCategory] = useState("all");
+  const [radius, setRadius] = useState(5000);
+  const [showRadiusPicker, setShowRadiusPicker] = useState(false);
+  const chipsRef = useRef<HTMLDivElement>(null);
 
-  // Fetch active listings — apply all business rules
+  /* ─── Fetch listings ─── */
   useEffect(() => {
     (async () => {
+      setLoading(true);
       const now = new Date().toISOString();
       const { data } = await (supabase as any)
         .from("marketplace_services")
-        .select("id, title, lat, lng, anchor_lat, anchor_lng, live_lat, live_lng, presence_mode, entity_type, coverage_mode, coverage_radius_m, category, price, currency, listing_type, auto_expire, listing_expires_at, is_live_online, live_updated_at")
+        .select("id, title, lat, lng, anchor_lat, anchor_lng, live_lat, live_lng, presence_mode, entity_type, coverage_mode, coverage_radius_m, category, price, currency, listing_type, auto_expire, listing_expires_at, is_live_online, live_updated_at, city, photo_urls")
         .eq("active", true)
         .neq("presence_mode", "off")
         .limit(500);
@@ -58,34 +205,42 @@ export default function SuperMapRadarPage() {
         setListings(
           data
             .filter((d: any) => {
-              // Rule: expired sale listings must not appear
               if (d.auto_expire && d.listing_expires_at && d.listing_expires_at < now) return false;
-              // Rule: live entities must be recently online
               if (d.presence_mode === "live" && d.is_live_online === false) {
-                // Allow live listings that just haven't pushed yet (grace period)
                 if (isLiveStale(d.live_updated_at)) return false;
               }
               return true;
             })
             .map((d: any) => ({
               ...d,
-              lat: d.presence_mode === "live"
-                ? (d.live_lat ?? d.anchor_lat ?? d.lat)
-                : (d.anchor_lat ?? d.lat),
-              lng: d.presence_mode === "live"
-                ? (d.live_lng ?? d.anchor_lng ?? d.lng)
-                : (d.anchor_lng ?? d.lng),
+              lat: d.presence_mode === "live" ? (d.live_lat ?? d.anchor_lat ?? d.lat) : (d.anchor_lat ?? d.lat),
+              lng: d.presence_mode === "live" ? (d.live_lng ?? d.anchor_lng ?? d.lng) : (d.anchor_lng ?? d.lng),
             }))
             .filter((d: any) => d.lat && d.lng)
         );
       }
+      setLoading(false);
     })();
   }, []);
 
-  // Init map
+  /* ─── Filtered listings ─── */
+  const filtered = useMemo(() => {
+    let result = listings;
+    if (activeCategory !== "all") {
+      result = result.filter(l => l.category?.toLowerCase() === activeCategory);
+    }
+    if (search.trim()) {
+      const q = search.toLowerCase();
+      result = result.filter(l => l.title.toLowerCase().includes(q) || l.category?.toLowerCase().includes(q));
+    }
+    return result;
+  }, [listings, activeCategory, search]);
+
+  /* ─── Init map ─── */
   useEffect(() => {
+    if (viewMode !== "map") return;
     const container = mapContainerRef.current;
-    if (!container || !MAPBOX_TOKEN.startsWith("pk.")) return;
+    if (!container || mapRef.current) return;
     mapboxgl.accessToken = MAPBOX_TOKEN;
     const map = new mapboxgl.Map({
       container,
@@ -93,39 +248,32 @@ export default function SuperMapRadarPage() {
       center: DUBAI_CENTER,
       zoom: 12,
     });
-    map.on("load", () => map.resize());
+    map.on("load", () => {
+      map.resize();
+      setMapReady(true);
+    });
     mapRef.current = map;
-    return () => { map.remove(); mapRef.current = null; };
-  }, []);
+    return () => { map.remove(); mapRef.current = null; setMapReady(false); };
+  }, [viewMode]);
 
-  // Render markers + coverage circles
+  /* ─── Render markers ─── */
   useEffect(() => {
     const map = mapRef.current;
-    if (!map || !map.isStyleLoaded()) {
-      // Wait for style to load
-      const handler = () => renderMarkers();
-      map?.on("style.load", handler);
-      return () => { map?.off("style.load", handler); };
-    }
-    renderMarkers();
+    if (!map || viewMode !== "map") return;
 
-    function renderMarkers() {
-      const map = mapRef.current;
-      if (!map) return;
-
-      // Clear old markers
-      markersRef.current.forEach((m) => m.remove());
+    const render = () => {
+      if (!map.isStyleLoaded()) return;
+      // Clear old
+      markersRef.current.forEach(m => m.remove());
       markersRef.current = [];
-
-      // Clear old circle layers/sources
-      listings.forEach((_, i) => {
+      filtered.forEach((_, i) => {
         const srcId = `coverage-src-${i}`;
         if (map.getLayer(`coverage-fill-${i}`)) map.removeLayer(`coverage-fill-${i}`);
         if (map.getLayer(`coverage-border-${i}`)) map.removeLayer(`coverage-border-${i}`);
         if (map.getSource(srcId)) map.removeSource(srcId);
       });
 
-      listings.forEach((listing, i) => {
+      filtered.forEach((listing, i) => {
         const el = createMarkerElement(listing.presence_mode, listing.entity_type);
         const style = getMarkerStyle(listing.presence_mode, listing.entity_type);
 
@@ -141,93 +289,236 @@ export default function SuperMapRadarPage() {
                     : ""}
                 </div>
                 <div style="font-size:13px;font-weight:600;color:#fff;">${listing.title}</div>
-                <div style="font-size:12px;color:#94a3b8;margin-top:2px;">
-                  ${listing.price} ${listing.currency} · ${listing.category}
-                </div>
+                <div style="font-size:12px;color:#94a3b8;margin-top:2px;">${listing.price} ${listing.currency} · ${listing.category}</div>
               </div>
             `)
           )
           .addTo(map);
         markersRef.current.push(marker);
 
-        // Draw coverage circle if radius mode
         if (listing.coverage_mode !== "point" && listing.coverage_radius_m && listing.coverage_radius_m > 0) {
           const srcId = `coverage-src-${i}`;
           const circle = createCircleGeoJSON([listing.lng, listing.lat], listing.coverage_radius_m);
-
           map.addSource(srcId, { type: "geojson", data: circle as any });
-
           map.addLayer({
-            id: `coverage-fill-${i}`,
-            type: "fill",
-            source: srcId,
-            paint: {
-              "fill-color": style.color,
-              "fill-opacity": listing.coverage_mode === "live_radius" ? 0.12 : 0.08,
-            },
+            id: `coverage-fill-${i}`, type: "fill", source: srcId,
+            paint: { "fill-color": style.color, "fill-opacity": listing.coverage_mode === "live_radius" ? 0.12 : 0.08 },
           });
-
           map.addLayer({
-            id: `coverage-border-${i}`,
-            type: "line",
-            source: srcId,
+            id: `coverage-border-${i}`, type: "line", source: srcId,
             paint: {
-              "line-color": style.color,
-              "line-width": listing.coverage_mode === "live_radius" ? 2 : 1.5,
-              "line-opacity": 0.5,
-              "line-dasharray": listing.coverage_mode === "live_radius" ? [2, 2] : [1, 0],
+              "line-color": style.color, "line-width": listing.coverage_mode === "live_radius" ? 2 : 1.5,
+              "line-opacity": 0.5, "line-dasharray": listing.coverage_mode === "live_radius" ? [2, 2] : [1, 0],
             },
           });
         }
       });
-    }
-  }, [listings]);
+    };
+
+    if (mapReady) render();
+    else map.on("style.load", render);
+    return () => { map.off("style.load", render); };
+  }, [filtered, mapReady, viewMode]);
 
   return (
-    <div style={{ width: "100%", height: "100vh", background: "hsl(var(--background))", position: "relative" }}>
-      <div ref={mapContainerRef} style={{ width: "100%", height: "100%" }} />
+    <div className="flex flex-col h-[100dvh] bg-background overflow-hidden">
 
-      {/* Legend */}
-      <div
-        style={{
-          position: "absolute",
-          bottom: 80,
-          left: 12,
-          background: "rgba(9,16,32,0.92)",
-          border: "1px solid rgba(255,255,255,0.1)",
-          borderRadius: 12,
-          padding: "10px 14px",
-          display: "flex",
-          flexDirection: "column",
-          gap: 6,
-          zIndex: 10,
-        }}
-      >
-        <span style={{ fontSize: 10, color: "#94a3b8", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>
-          Legend
-        </span>
-        {([
-          ["#D4A853", "Fixed Store"],
-          ["#fbbf24", "Mobile Seller"],
-          ["#a78bfa", "Mobile Service"],
-          ["#34d399", "Driver"],
-        ] as [string, string][]).map(([color, label]) => (
-          <div key={label} style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <span style={{ width: 10, height: 10, borderRadius: "50%", background: color, border: `1.5px solid ${color}`, display: "inline-block" }} />
-            <span style={{ fontSize: 11, color: "#e2e8f0" }}>{label}</span>
+      {/* ═══ HEADER CONTROLS ═══ */}
+      <div className="shrink-0 px-4 pt-3 pb-1 space-y-2.5 bg-background/95 backdrop-blur-md z-20 border-b border-border/30">
+
+        {/* Title row */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Radar className="h-5 w-5 text-primary" />
+            <h1 className="text-lg font-bold text-foreground">Nearby</h1>
           </div>
-        ))}
-        <div style={{ borderTop: "1px solid rgba(255,255,255,0.08)", paddingTop: 4, marginTop: 2 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <span style={{ width: 14, height: 14, borderRadius: "50%", border: "1.5px solid #38bdf844", background: "#38bdf811", display: "inline-block" }} />
-            <span style={{ fontSize: 10, color: "#94a3b8" }}>Coverage radius</span>
-          </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 3 }}>
-            <span style={{ width: 14, height: 14, borderRadius: "50%", border: "1.5px dashed #a78bfa66", background: "#a78bfa11", display: "inline-block" }} />
-            <span style={{ fontSize: 10, color: "#94a3b8" }}>Live radius</span>
+          <div className="flex items-center gap-1.5">
+            {/* Locate me */}
+            <button
+              onClick={() => haptic("light")}
+              className="h-9 w-9 rounded-xl bg-muted/50 flex items-center justify-center transition-colors hover:bg-muted"
+            >
+              <Locate className="h-4 w-4 text-muted-foreground" />
+            </button>
           </div>
         </div>
+
+        {/* Search bar */}
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+          <input
+            type="text"
+            placeholder="Search nearby…"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            className="w-full h-10 rounded-xl bg-muted/40 border border-border/30 pl-9 pr-9 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-all"
+          />
+          {search && (
+            <button onClick={() => setSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2">
+              <X className="h-4 w-4 text-muted-foreground" />
+            </button>
+          )}
+        </div>
+
+        {/* Category chips */}
+        <div ref={chipsRef} className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-none -mx-4 px-4 [-webkit-overflow-scrolling:touch]">
+          {CATEGORIES.map(cat => {
+            const active = activeCategory === cat.key;
+            return (
+              <button
+                key={cat.key}
+                onClick={() => { haptic("light"); setActiveCategory(cat.key); }}
+                className={`shrink-0 inline-flex items-center gap-1.5 h-8 rounded-lg px-3 text-xs font-semibold transition-all ${
+                  active
+                    ? "bg-primary text-primary-foreground shadow-sm"
+                    : "bg-muted/40 text-muted-foreground hover:bg-muted/60 border border-border/30"
+                }`}
+              >
+                <cat.icon className="h-3.5 w-3.5" />
+                {cat.label}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Compact control bar */}
+        <div className="flex items-center gap-2 pb-1.5">
+          {/* Map/List toggle */}
+          <div className="flex rounded-lg border border-border/30 bg-muted/30 p-0.5">
+            {(["map", "list"] as const).map(mode => (
+              <button
+                key={mode}
+                onClick={() => { haptic("light"); setViewMode(mode); }}
+                className={`flex items-center gap-1.5 h-8 px-3 rounded-md text-xs font-semibold transition-all ${
+                  viewMode === mode
+                    ? "bg-background text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {mode === "map" ? <MapIcon className="h-3.5 w-3.5" /> : <List className="h-3.5 w-3.5" />}
+                {mode === "map" ? "Map" : "List"}
+              </button>
+            ))}
+          </div>
+
+          {/* Radius selector */}
+          <div className="relative">
+            <button
+              onClick={() => { haptic("light"); setShowRadiusPicker(!showRadiusPicker); }}
+              className="flex items-center gap-1.5 h-8 rounded-lg border border-border/30 bg-muted/30 px-3 text-xs font-semibold text-muted-foreground hover:text-foreground transition-all"
+            >
+              <SlidersHorizontal className="h-3.5 w-3.5" />
+              {radius >= 1000 ? `${radius / 1000} km` : `${radius} m`}
+            </button>
+            <AnimatePresence>
+              {showRadiusPicker && (
+                <motion.div
+                  initial={{ opacity: 0, y: -4, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -4, scale: 0.95 }}
+                  transition={{ duration: 0.15 }}
+                  className="absolute top-10 left-0 z-30 rounded-xl border border-border/40 bg-card shadow-xl p-1.5 min-w-[120px]"
+                >
+                  {RADIUS_OPTIONS.map(opt => (
+                    <button
+                      key={opt.value}
+                      onClick={() => { setRadius(opt.value); setShowRadiusPicker(false); haptic("light"); }}
+                      className={`w-full text-left rounded-lg px-3 py-2 text-xs font-semibold transition-colors ${
+                        radius === opt.value
+                          ? "bg-primary/10 text-primary"
+                          : "text-foreground hover:bg-muted/50"
+                      }`}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
+          {/* Active filter badge */}
+          {activeCategory !== "all" && (
+            <motion.button
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              onClick={() => { setActiveCategory("all"); haptic("light"); }}
+              className="flex items-center gap-1 h-8 rounded-lg bg-primary/10 text-primary px-2.5 text-xs font-bold"
+            >
+              {activeCategory}
+              <X className="h-3 w-3" />
+            </motion.button>
+          )}
+
+          {/* Count badge */}
+          <span className="ml-auto text-[10px] font-bold text-muted-foreground tabular-nums">
+            {filtered.length} nearby
+          </span>
+        </div>
       </div>
+
+      {/* ═══ CONTENT AREA ═══ */}
+      <div className="flex-1 min-h-0 relative">
+        {viewMode === "map" ? (
+          <>
+            {/* Map container — always mounted when in map mode */}
+            <div ref={mapContainerRef} className="absolute inset-0" />
+
+            {/* Skeleton overlay while map loads */}
+            {!mapReady && (
+              <div className="absolute inset-0 z-10">
+                <MapSkeleton />
+              </div>
+            )}
+
+            {/* Nearby cards when map not ready or few results */}
+            <AnimatePresence>
+              {!mapReady && !loading && filtered.length > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 20 }}
+                  className="absolute bottom-20 left-3 right-3 z-20 space-y-2"
+                >
+                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-1">Nearby</p>
+                  {filtered.slice(0, 3).map((l, i) => (
+                    <NearbyCard key={l.id} listing={l} index={i} />
+                  ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Legend */}
+            {mapReady && <MapLegend />}
+          </>
+        ) : (
+          /* ─── LIST MODE ─── */
+          <div className="h-full overflow-y-auto px-4 py-3 space-y-2 pb-24">
+            {loading ? (
+              <div className="space-y-2.5">
+                {[1, 2, 3, 4, 5].map(i => (
+                  <div key={i} className="h-16 rounded-2xl bg-muted/30 animate-pulse" />
+                ))}
+              </div>
+            ) : filtered.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-20 text-center">
+                <div className="w-16 h-16 rounded-2xl bg-muted/40 flex items-center justify-center mb-4">
+                  <MapPin className="h-7 w-7 text-muted-foreground" />
+                </div>
+                <p className="text-sm font-semibold text-foreground">No listings nearby</p>
+                <p className="text-xs text-muted-foreground mt-1">Try adjusting your filters or radius.</p>
+              </div>
+            ) : (
+              filtered.map((l, i) => <NearbyCard key={l.id} listing={l} index={i} />)
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Close radius picker when clicking outside */}
+      {showRadiusPicker && (
+        <div className="fixed inset-0 z-20" onClick={() => setShowRadiusPicker(false)} />
+      )}
     </div>
   );
 }
