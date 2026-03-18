@@ -102,7 +102,7 @@ function MissionCard({
       animate={{ opacity: 1, y: 0 }}
       className={`rounded-2xl border p-3 transition-all cursor-pointer ${
         selected
-          ? "border-[#4F46E5]/60 bg-[#4F46E5]/10 shadow-lg shadow-[#4F46E5]/10"
+          ? "border-primary/60 bg-primary/10 shadow-lg shadow-primary/10"
           : "border-border/20 bg-card/60 backdrop-blur-md"
       }`}
       onClick={onSelect}
