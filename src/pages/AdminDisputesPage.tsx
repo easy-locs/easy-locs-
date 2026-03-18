@@ -1,5 +1,5 @@
 /**
- * AdminDisputesPage — /admin/disputes — View and resolve ride disputes.
+ * AdminDisputesPage — /admin/disputes — View, resolve, and refund ride disputes.
  */
 import { useEffect, useState } from "react";
 import { BackCard } from "@/components/ui/back-card";
@@ -28,6 +28,22 @@ export default function AdminDisputesPage() {
     );
   };
 
+  const refund = async (id: string, rideRequestId: string) => {
+    await supabase
+      .from("ride_disputes" as any)
+      .update({ status: "refunded", updated_at: new Date().toISOString() } as any)
+      .eq("id", id);
+
+    await supabase
+      .from("ride_requests" as any)
+      .update({ dispute_status: "refunded", updated_at: new Date().toISOString() } as any)
+      .eq("id", rideRequestId);
+
+    setRows((prev) =>
+      prev.map((r) => (r.id === id ? { ...r, status: "refunded" } : r)),
+    );
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-lg mx-auto px-4 py-6 space-y-5">
@@ -48,13 +64,19 @@ export default function AdminDisputesPage() {
             </p>
 
             {d.status === "open" && (
-              <Button
-                onClick={() => resolve(d.id)}
-                size="sm"
-                className="rounded-xl"
-              >
-                Resolve
-              </Button>
+              <div className="flex gap-2 pt-1">
+                <Button onClick={() => resolve(d.id)} size="sm" className="rounded-xl">
+                  Resolve
+                </Button>
+                <Button
+                  onClick={() => refund(d.id, d.ride_request_id)}
+                  size="sm"
+                  variant="outline"
+                  className="rounded-xl"
+                >
+                  Refund
+                </Button>
+              </div>
             )}
           </div>
         ))}
