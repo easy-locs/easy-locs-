@@ -48,7 +48,7 @@ const ALL_LANGUAGES: { code: Locale; label: string; flag: string }[] = [
 
 const TenantLayout = ({ children }: { children: React.ReactNode }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [langOpen, setLangOpen] = useState(false);
+  
   const location = useLocation();
   const navigate = useNavigate();
   const { user, signOut, activeRole, hasDualRole, switchRole } = useAuth();
