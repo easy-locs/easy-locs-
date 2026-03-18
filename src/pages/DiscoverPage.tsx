@@ -132,9 +132,9 @@ function HeroBannerCarousel({ onNavigate }: { onNavigate: (p: string) => void })
             <p className="text-[12px] text-white/75 mt-1.5 leading-relaxed max-w-[85%]">{b.subtitle}</p>
 
             {/* CTA */}
-            <div className="mt-4 inline-flex items-center gap-2 rounded-2xl bg-white px-5 py-2.5 shadow-lg">
-              <span className="text-[12px] font-extrabold text-gray-900">{b.cta}</span>
-              <ArrowRight className="h-3.5 w-3.5 text-gray-900" />
+            <div className="mt-4 inline-flex items-center gap-2 rounded-2xl bg-card px-5 py-2.5 shadow-lg">
+              <span className="text-[12px] font-extrabold text-foreground">{b.cta}</span>
+              <ArrowRight className="h-3.5 w-3.5 text-foreground" />
             </div>
           </div>
 
@@ -263,7 +263,7 @@ function SmartLocalSection({ icon: Icon, title, shops, onShopClick, emptyText }:
               {shop.city && <p className="text-[9px] text-muted-foreground truncate">{shop.city}</p>}
               <div className="flex items-center gap-1 mt-1">
                 {shop.avg_rating > 0 && (
-                  <span className="inline-flex items-center gap-0.5 text-[8px] font-semibold text-amber-500">
+                  <span className="inline-flex items-center gap-0.5 text-[8px] font-semibold text-accent">
                     <Star className="h-2 w-2 fill-current" /> {Number(shop.avg_rating).toFixed(1)}
                   </span>
                 )}
@@ -318,7 +318,7 @@ function ShopCard({ shop, index, rail, onClick }: { shop: any; index: number; ra
               <span className="text-[8px] font-semibold bg-primary/8 text-primary px-2 py-0.5 rounded-full">{shop.vertical}</span>
             )}
             {shop.avg_rating > 0 && (
-              <span className="inline-flex items-center gap-0.5 text-[8px] font-semibold text-amber-500">
+              <span className="inline-flex items-center gap-0.5 text-[8px] font-semibold text-accent">
                 <Star className="h-2.5 w-2.5 fill-current" /> {Number(shop.avg_rating).toFixed(1)}
               </span>
             )}
