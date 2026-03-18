@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import PropertyHubBreadcrumb from "@/components/property/PropertyHubBreadcrumb";
 import { motion } from "framer-motion";
 import { useCountryFilter } from "@/hooks/useCountryFilter";
 import FeatureGate from "@/components/subscription/FeatureGate";
