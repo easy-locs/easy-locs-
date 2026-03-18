@@ -197,6 +197,7 @@ const RidePage = safeLazy(() => import("./pages/RidePage"), "RidePage");
 const SendPage = safeLazy(() => import("./pages/SendPage"), "SendPage");
 const TrackRidePage = safeLazy(() => import("./pages/TrackRidePage"), "TrackRidePage");
 const PayRidePage = safeLazy(() => import("./pages/PayRidePage"), "PayRidePage");
+const RideReceiptPage = safeLazy(() => import("./pages/RideReceiptPage"), "RideReceiptPage");
 
 // Travel universe
 const TravelHub = safeLazy(() => import("./pages/travel/TravelHub"), "TravelHub");
@@ -321,6 +322,7 @@ const App = () => (
               <Route path="/send" element={<SendPage />} />
               <Route path="/track/:rideRequestId" element={<TrackRidePage />} />
               <Route path="/wallet/pay/:threadId" element={<PayRidePage />} />
+              <Route path="/ride/receipt/:rideRequestId" element={<RideReceiptPage />} />
 
               {/* Travel */}
               <Route path="/travel" element={<TravelHub />} />
