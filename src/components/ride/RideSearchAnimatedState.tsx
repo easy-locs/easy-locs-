@@ -1,5 +1,5 @@
 /**
- * RideSearchAnimatedState — Animated ride search status with wave progress.
+ * RideSearchAnimatedState — Animated ride search status with wave progress, radius & ride type.
  */
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -8,6 +8,8 @@ interface RideSearchAnimatedStateProps {
   nearbyCount?: number;
   currentWave?: number;
   etaMin?: number | null;
+  radiusKm?: number | null;
+  rideTypeUsed?: string | null;
 }
 
 export default function RideSearchAnimatedState({
@@ -15,6 +17,8 @@ export default function RideSearchAnimatedState({
   nearbyCount,
   currentWave,
   etaMin,
+  radiusKm,
+  rideTypeUsed,
 }: RideSearchAnimatedStateProps) {
   return (
     <div className="relative overflow-hidden rounded-3xl border border-border bg-card p-5">
@@ -32,7 +36,9 @@ export default function RideSearchAnimatedState({
               Finding the fastest driver
             </div>
             <div className="text-xs text-muted-foreground">
-              {nearbyCount ?? 0} nearby drivers · wave {(currentWave ?? 0) + 1}
+              {nearbyCount ?? 0} nearby · wave {(currentWave ?? 0) + 1}
+              {radiusKm ? ` · ${radiusKm} km radius` : ""}
+              {rideTypeUsed ? ` · ${rideTypeUsed}` : ""}
             </div>
             <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-muted">
               <motion.div
@@ -73,7 +79,7 @@ export default function RideSearchAnimatedState({
           >
             <div className="text-sm font-semibold">No driver accepted</div>
             <div className="text-xs text-muted-foreground">
-              We can retry with a wider search radius
+              Search can retry with expanded radius
             </div>
           </motion.div>
         )}
