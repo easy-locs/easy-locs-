@@ -329,6 +329,8 @@ const App = () => (
               <Route path="/ride/receipt/:rideRequestId" element={<RideReceiptPage />} />
               <Route path="/ride/complete/:rideRequestId" element={<RideCompletePage />} />
               <Route path="/call/:threadId" element={<CallDriverPage />} />
+              <Route path="/driver/payout" element={<DriverPayoutPage />} />
+              <Route path="/admin/disputes" element={<AdminDisputesPage />} />
 
               {/* Travel */}
               <Route path="/travel" element={<TravelHub />} />
