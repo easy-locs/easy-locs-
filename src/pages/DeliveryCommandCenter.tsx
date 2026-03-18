@@ -2,7 +2,7 @@
  * DeliveryCommandCenter — Full dispatcher UI for Easy-Locs delivery operations.
  * Branded premium dark UI with live map, mission cards, driver assignment, and real-time updates.
  */
-import { useState, useRef, useEffect, useMemo } from "react";
+import { useState, useRef, useEffect, useMemo, useCallback } from "react";
 import { MobilePageHeader } from "@/components/ui/mobile-page-header";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
