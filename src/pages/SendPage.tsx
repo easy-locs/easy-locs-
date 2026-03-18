@@ -13,6 +13,7 @@ import { useSmartLocation, type SavedPlace } from "@/hooks/useSmartLocation";
 import SendMap from "@/components/send/SendMap";
 import DriverMatchingState, { type MatchState } from "@/components/ride/DriverMatchingState";
 import { calculateDeliveryFare, getFareRules, isNightHour, type FareEstimate } from "@/lib/fare-engine";
+import { useGeoDetect } from "@/hooks/useGeoDetect";
 import SEOHead from "@/components/SEOHead";
 
 /* ═══ Delivery speed tiers ═══ */
