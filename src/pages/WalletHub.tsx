@@ -195,5 +195,6 @@ export default function WalletHub() {
         </AnimatePresence>
       </div>
     </DashboardLayout>
+    </SecurityGate>
   );
 }
