@@ -85,14 +85,14 @@ export default function RentPaymentSheet({ rentCallId, onClose, onSuccess }: Ren
       // Get org owner to send payment to
       const { data: org } = await supabase
         .from("orgs")
-        .select("owner_id")
+        .select("owner_user_id")
         .eq("id", rentCall.org_id)
         .single();
 
-      if (!org?.owner_id) throw new Error("Cannot resolve landlord");
+      if (!org?.owner_user_id) throw new Error("Cannot resolve landlord");
 
       const result = await sendMoney({
-        recipientUserId: org.owner_id,
+        recipientUserId: org.owner_user_id,
         amount: remaining,
         description: `Rent payment — ${(rentCall.properties as any)?.label || ""} — ${rentCall.month}`,
         referenceType: "rent_call",

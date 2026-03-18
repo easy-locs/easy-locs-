@@ -50,7 +50,7 @@ export default function RentCallThreadView({ rentCallId, onPayRent }: RentCallTh
           .eq("id", rentCallId)
           .single(),
         supabase
-          .from("conversation_messages")
+          .from("messages")
           .select("id, content, message_type, category, created_at, sender_id")
           .eq("context_id", rentCallId)
           .order("created_at", { ascending: true })
