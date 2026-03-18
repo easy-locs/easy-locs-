@@ -5,8 +5,10 @@ import { useI18n } from "@/lib/i18n";
 import { usePublicLocale } from "@/hooks/usePublicLocale";
 import ListingPhotoGallery from "@/components/public/ListingPhotoGallery";
 import BookingForm from "@/components/public/BookingForm";
+import RentalCTAPanel from "@/components/public/RentalCTAPanel";
 import ListingContactButtons from "@/components/public/ListingContactButtons";
 import ShareButtons from "@/components/public/ShareButtons";
+import { RENTAL_TYPES, STAY_TYPES } from "@/lib/listing-types";
 
 import SEOHead from "@/components/SEOHead";
 import { MapPin, Users, Moon, Euro, Loader2, CheckCircle, Share2, ArrowLeft } from "lucide-react";
