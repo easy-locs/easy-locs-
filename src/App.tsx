@@ -132,6 +132,7 @@ const PropertyDetailHub = safeLazy(() => import("./pages/PropertyDetailHub"), "P
 const CreateListing = safeLazy(() => import("./pages/CreateListing"), "CreateListing");
 const LocalServices = safeLazy(() => import("./pages/LocalServices"), "LocalServices");
 const RentalCatalog = safeLazy(() => import("./pages/RentalCatalog"), "RentalCatalog");
+const StaysCatalog = safeLazy(() => import("./pages/StaysCatalog"), "StaysCatalog");
 const HostCatalog = safeLazy(() => import("./pages/HostCatalog"), "HostCatalog");
 const ActivitiesMarketplace = safeLazy(() => import("./pages/ActivitiesMarketplace"), "ActivitiesMarketplace");
 const GuestPortal = safeLazy(() => import("./pages/GuestPortal"), "GuestPortal");
