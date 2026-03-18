@@ -167,8 +167,9 @@ const PropertyDetailHub = () => {
       <div className="space-y-6">
         {/* Breadcrumb + header */}
         <div>
-          <button onClick={() => navigate(-1)} className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground mb-3 transition-colors">
-            <ArrowLeft className="h-4 w-4" /> {t("page.property.back") || "Back"}
+          <PropertyHubBreadcrumb currentPage={property.label} />
+          <button onClick={() => navigate("/dashboard/properties")} className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground mb-3 transition-colors">
+            <ChevronRight className="h-4 w-4 rotate-180" /> {t("page.property.back_to_list") || "Back to properties"}
           </button>
 
           <div className="flex flex-col sm:flex-row sm:items-start gap-4">
