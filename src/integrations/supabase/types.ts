@@ -6959,6 +6959,92 @@ export type Database = {
           },
         ]
       }
+      ride_offers: {
+        Row: {
+          driver_id: string
+          id: string
+          offer_status: string
+          responded_at: string | null
+          ride_request_id: string
+          score: number | null
+          sent_at: string
+        }
+        Insert: {
+          driver_id: string
+          id?: string
+          offer_status?: string
+          responded_at?: string | null
+          ride_request_id: string
+          score?: number | null
+          sent_at?: string
+        }
+        Update: {
+          driver_id?: string
+          id?: string
+          offer_status?: string
+          responded_at?: string | null
+          ride_request_id?: string
+          score?: number | null
+          sent_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ride_offers_ride_request_id_fkey"
+            columns: ["ride_request_id"]
+            isOneToOne: false
+            referencedRelation: "ride_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ride_requests: {
+        Row: {
+          assigned_at: string | null
+          created_at: string
+          dropoff_lat: number | null
+          dropoff_lng: number | null
+          expires_at: string
+          id: string
+          offered_driver_ids: string[] | null
+          pickup_lat: number
+          pickup_lng: number
+          rider_id: string
+          selected_driver_id: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          assigned_at?: string | null
+          created_at?: string
+          dropoff_lat?: number | null
+          dropoff_lng?: number | null
+          expires_at?: string
+          id?: string
+          offered_driver_ids?: string[] | null
+          pickup_lat: number
+          pickup_lng: number
+          rider_id: string
+          selected_driver_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          assigned_at?: string | null
+          created_at?: string
+          dropoff_lat?: number | null
+          dropoff_lng?: number | null
+          expires_at?: string
+          id?: string
+          offered_driver_ids?: string[] | null
+          pickup_lat?: number
+          pickup_lng?: number
+          rider_id?: string
+          selected_driver_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       saved_listings: {
         Row: {
           created_at: string
@@ -13958,6 +14044,10 @@ export type Database = {
     Functions: {
       accept_collaboration_invitation: {
         Args: { _token: string; _user_id: string }
+        Returns: Json
+      }
+      accept_ride_offer: {
+        Args: { p_driver_id: string; p_ride_request_id: string }
         Returns: Json
       }
       accept_tenant_invitation: {
