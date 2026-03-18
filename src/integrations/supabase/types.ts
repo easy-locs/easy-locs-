@@ -5954,6 +5954,7 @@ export type Database = {
           description: string | null
           id: string
           lat: number | null
+          listing_type: Database["public"]["Enums"]["listing_type"]
           lng: number | null
           max_guests: number | null
           min_nights: number | null
@@ -5976,6 +5977,7 @@ export type Database = {
           description?: string | null
           id?: string
           lat?: number | null
+          listing_type?: Database["public"]["Enums"]["listing_type"]
           lng?: number | null
           max_guests?: number | null
           min_nights?: number | null
@@ -5998,6 +6000,7 @@ export type Database = {
           description?: string | null
           id?: string
           lat?: number | null
+          listing_type?: Database["public"]["Enums"]["listing_type"]
           lng?: number | null
           max_guests?: number | null
           min_nights?: number | null
@@ -14154,6 +14157,7 @@ export type Database = {
         | "rented"
         | "archived"
         | "deleted"
+      listing_type: "short_term_stay" | "long_term_rental" | "hotel" | "sale"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -14303,6 +14307,7 @@ export const Constants = {
         "archived",
         "deleted",
       ],
+      listing_type: ["short_term_stay", "long_term_rental", "hotel", "sale"],
     },
   },
 } as const
