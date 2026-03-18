@@ -78,21 +78,33 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     "/account-showcase",
   ];
 
+  // Property-management dashboard paths accessible from Property Hub regardless of role
+  const PROPERTY_MANAGEMENT_PREFIXES = [
+    "/dashboard/properties",
+    "/dashboard/buildings",
+    "/dashboard/tenants",
+    "/dashboard/payment-notices",
+    "/dashboard/interventions",
+    "/dashboard/documents",
+    "/dashboard/accounting",
+    "/dashboard/receipts",
+    "/dashboard/wallet",
+    "/dashboard/add-property",
+    "/dashboard/real-estate",
+  ];
+
   const isFreePath = FREE_ACCESS_PREFIXES.some(prefix => location.pathname.startsWith(prefix))
     || location.pathname === "/dashboard";
 
-  // Property Hub is a neutral universe selector and must remain reachable from any role.
-  if (isPropertyHubRoute) {
-    return <>{children}</>;
-  }
+  const isPropertyManagementPath = PROPERTY_MANAGEMENT_PREFIXES.some(prefix => location.pathname.startsWith(prefix));
 
-  // Client role: can access /client/*, /app/*, free publishing routes, and onboarding
-  if (activeRole === "client" && !isClientRoute && !isAppRoute && !isOnboarding && !isFreePath) {
+  // Client role: can access /client/*, /app/*, free publishing routes, property management, and onboarding
+  if (activeRole === "client" && !isClientRoute && !isAppRoute && !isOnboarding && !isFreePath && !isPropertyManagementPath) {
     return <Navigate to="/client" replace />;
   }
 
-  // Tenant role users should only access /tenant/* or /app/* routes
-  if (activeRole === "tenant" && !isTenantRoute && !isAppRoute && !isOnboarding) {
+  // Tenant role: can access /tenant/*, /app/*, and property management dashboard routes (navigated from Property Hub)
+  if (activeRole === "tenant" && !isTenantRoute && !isAppRoute && !isOnboarding && !isPropertyManagementPath && !isFreePath) {
     return <Navigate to="/tenant" replace />;
   }
 
