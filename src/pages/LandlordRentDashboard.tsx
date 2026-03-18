@@ -11,6 +11,7 @@ import { useCountryFilter } from "@/hooks/useCountryFilter";
 import { supabase } from "@/integrations/supabase/client";
 import { formatCurrency } from "@/lib/country-config";
 import RentStatusBadge from "@/components/rent/RentStatusBadge";
+import ReceiptStatusBadge from "@/components/rent/ReceiptStatusBadge";
 import PropertyHubBreadcrumb from "@/components/property/PropertyHubBreadcrumb";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -196,6 +197,12 @@ const LandlordRentDashboard = () => {
                         <span className="text-muted-foreground">{rc.paid_date}</span>
                       )}
                     </div>
+                    {/* Receipt status */}
+                    {rc.paid && (
+                      <div className="mt-1.5">
+                        <ReceiptStatusBadge receiptUrl={rc.receipt_pdf_url} validated={rc.receipt_validated} paid={rc.paid} />
+                      </div>
+                    )}
                   </div>
 
                   {/* Actions */}

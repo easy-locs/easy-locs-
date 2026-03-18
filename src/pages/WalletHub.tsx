@@ -22,13 +22,15 @@ import WalletBalanceCard from "@/components/wallet/WalletBalanceCard";
 import WalletSecurityPanel from "@/components/wallet/WalletSecurityPanel";
 import WalletActionGrid from "@/components/wallet/WalletActionGrid";
 import UniversalActionSheet from "@/components/actions/UniversalActionSheet";
+import RentPaymentSheet from "@/components/wallet/RentPaymentSheet";
 
-export type WalletView = "home" | "pay" | "receive" | "request" | "scan" | "history" | "settings";
+export type WalletView = "home" | "pay" | "receive" | "request" | "scan" | "history" | "settings" | "rent-pay";
 
 export default function WalletHub() {
   const [searchParams] = useSearchParams();
   const initialView = (searchParams.get("action") as WalletView) || "home";
-  const [view, setView] = useState<WalletView>(initialView);
+  const rentCallId = searchParams.get("rentCallId") || null;
+  const [view, setView] = useState<WalletView>(rentCallId ? "rent-pay" : initialView);
   const { balance, loading, loadWallet } = useWallet();
   const { code, symbol, fmtLocal } = usePlatformCurrency();
   const { t } = useI18n();
@@ -60,6 +62,7 @@ export default function WalletHub() {
     scan: t("orbit.scan_qr") || "Scan QR",
     history: t("orbit.history") || "History",
     settings: t("orbit.settings_label") || "Settings",
+    "rent-pay": "Rent Payment",
   };
 
   const renderSubView = () => {
@@ -77,6 +80,14 @@ export default function WalletHub() {
         return <OrbitTransactionHistory />;
       case "settings":
         return <WalletSecurityPanel />;
+      case "rent-pay":
+        return rentCallId ? (
+          <RentPaymentSheet
+            rentCallId={rentCallId}
+            onClose={() => setView("home")}
+            onSuccess={() => { /* stay on success screen */ }}
+          />
+        ) : null;
       default:
         return null;
     }
