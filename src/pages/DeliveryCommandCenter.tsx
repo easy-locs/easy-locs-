@@ -187,22 +187,21 @@ function DriverCard({ driver, onAssign }: { driver: DriverWithDistance; onAssign
 }
 
 /* ═══════════════════════════════════════════════
-   EMPTY STATE
+   EMPTY STATE — using shared component
    ═══════════════════════════════════════════════ */
+import MapEmptyState from "@/components/map/MapEmptyState";
+import MapLoadingSkeleton from "@/components/map/MapLoadingSkeleton";
+
 function EmptyState({ driversCount, onRefresh }: { driversCount: number; onRefresh: () => void }) {
   return (
-    <div className="flex flex-col items-center justify-center py-12 px-6 text-center">
-      <div className="w-16 h-16 rounded-full bg-[#4F46E5]/10 flex items-center justify-center mb-4">
-        <Truck className="h-7 w-7 text-[#4F46E5]" />
-      </div>
-      <h3 className="text-sm font-semibold text-foreground mb-1">No active deliveries</h3>
-      <p className="text-xs text-muted-foreground mb-2">
-        {driversCount} driver{driversCount !== 1 ? "s" : ""} online and ready
-      </p>
-      <Button size="sm" variant="outline" className="text-xs" onClick={onRefresh}>
-        <RotateCcw className="h-3 w-3 mr-1" /> Refresh
-      </Button>
-    </div>
+    <MapEmptyState
+      icon={<Truck className="h-6 w-6 text-primary/60" />}
+      title="No active deliveries"
+      subtitle="New missions will appear here in real time"
+      stat={`${driversCount} driver${driversCount !== 1 ? "s" : ""} online and ready`}
+      onRetry={onRefresh}
+      retryLabel="Refresh"
+    />
   );
 }
 
