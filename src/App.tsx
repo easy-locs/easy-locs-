@@ -567,6 +567,12 @@ const App = () => (
               <Route path="/admin/driver-picker" element={<ProtectedRoute><DriverPickerPage /></ProtectedRoute>} />
               <Route path="/admin/food-checkout" element={<ProtectedRoute><FoodOrderCheckoutPage /></ProtectedRoute>} />
               <Route path="/admin/delivery-proof/:orderId" element={<ProtectedRoute><DeliveryProofPage /></ProtectedRoute>} />
+              <Route path="/admin/kpi-charts" element={<ProtectedRoute><KpiChartsPage /></ProtectedRoute>} />
+
+              {/* Guest / Public */}
+              <Route path="/guest/checkout/:cartId" element={<GuestCheckoutPage />} />
+              <Route path="/payment/:orderId" element={<PaymentPage />} />
+              <Route path="/store/:publicSlug" element={<PublicStorefrontBySlugPage />} />
 
               <Route path="/app/orbit" element={<ProtectedRoute><OrbitAppShell><OrbitHome /></OrbitAppShell></ProtectedRoute>} />
               <Route path="/app/*" element={<ProtectedRoute><OrbitAppShell><OrbitHome /></OrbitAppShell></ProtectedRoute>} />
