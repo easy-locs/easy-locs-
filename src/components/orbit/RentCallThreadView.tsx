@@ -6,7 +6,7 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import {
-  Receipt, FileText, Home, CreditCard,
+  Receipt, FileText, Home, CreditCard, Calendar,
   CheckCircle, Clock, AlertTriangle, Loader2,
   Download, Bell, ExternalLink,
 } from "lucide-react";
