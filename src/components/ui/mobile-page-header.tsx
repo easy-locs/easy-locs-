@@ -24,6 +24,7 @@ export function MobilePageHeader({
   subtitle,
   backTo,
   showBack = true,
+  onBack,
   actions,
   icon,
   className,
