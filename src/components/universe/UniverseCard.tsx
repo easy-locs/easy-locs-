@@ -58,7 +58,7 @@ export default function UniverseCard({
           <div className="flex items-start justify-between gap-2">
             <h3 className="text-sm font-bold text-foreground line-clamp-1">{title}</h3>
             {rating != null && (
-              <span className="flex items-center gap-0.5 text-xs font-semibold text-amber-500 shrink-0">
+              <span className="flex items-center gap-0.5 text-xs font-semibold text-primary shrink-0">
                 <Star className="h-3 w-3 fill-current" /> {rating.toFixed(1)}
               </span>
             )}
