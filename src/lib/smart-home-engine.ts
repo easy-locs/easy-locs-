@@ -64,11 +64,11 @@ const ALL_CATEGORIES: Record<CategoryKey, SmartCategory> = {
 
 /* ═══ Time-based priority ═══ */
 const TIME_PRIORITY: Record<TimeSlot, CategoryKey[]> = {
-  morning:   ["coffee", "bakery", "food", "grocery", "taxi", "services", "shops", "property"],
-  lunch:     ["food", "delivery", "coffee", "shops", "services", "grocery", "taxi", "property"],
-  afternoon: ["shops", "services", "grocery", "beauty", "delivery", "property", "food", "wallet"],
-  dinner:    ["food", "dineout", "grocery", "delivery", "taxi", "shops", "services", "property"],
-  latenight: ["food", "delivery", "taxi", "mobility", "shops", "wallet", "property", "services"],
+  morning:   ["coffee", "bakery", "food", "grocery", "taxi", "services", "travel", "shops", "property"],
+  lunch:     ["food", "delivery", "coffee", "shops", "services", "grocery", "travel", "taxi", "property"],
+  afternoon: ["shops", "services", "grocery", "beauty", "delivery", "travel", "property", "food", "wallet"],
+  dinner:    ["food", "dineout", "grocery", "delivery", "taxi", "travel", "shops", "services", "property"],
+  latenight: ["food", "delivery", "taxi", "mobility", "shops", "travel", "wallet", "property", "services"],
 };
 
 /* ═══ Country priority overrides ═══ */
