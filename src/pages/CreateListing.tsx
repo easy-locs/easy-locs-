@@ -331,7 +331,7 @@ const CreateListing = () => {
           </div>
           <div>
             <h1 className="text-xl font-bold text-foreground">Publier une annonce</h1>
-            <p className="text-sm text-muted-foreground">Publiez gratuitement dans le monde entier • Max {MAX_LISTINGS_FREE} annonces actives • Durée 30 jours</p>
+            <p className="text-sm text-muted-foreground">Publiez gratuitement dans le monde entier • Max {MAX_LISTINGS_FREE} annonces actives • Ventes : 30 jours</p>
           </div>
         </div>
 
