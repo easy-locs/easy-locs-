@@ -25,10 +25,9 @@ export default function TeamPermissionsPage() {
 
   return (
     <div className="min-h-screen bg-background p-4">
-      <BackCard>
-        <h1 className="text-xl font-bold text-foreground">Team permissions</h1>
-        <p className="text-sm text-muted-foreground">Assign permission templates to workspace members</p>
-      </BackCard>
+      <BackCard />
+      <h1 className="mt-4 text-xl font-bold text-foreground">Team permissions</h1>
+      <p className="text-sm text-muted-foreground">Assign permission templates to workspace members</p>
 
       <div className="mt-4 space-y-3">
         {members.map((member) => (
