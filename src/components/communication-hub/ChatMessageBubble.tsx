@@ -15,6 +15,7 @@ import OrbitEncryptedIndicator from "@/components/orbit/OrbitEncryptedIndicator"
 import { haptic } from "@/lib/haptics";
 import { getMessagePolicy, shouldHideMessage, type SecurityLevel } from "@/lib/message-security";
 import { ChatPaymentRequestCard, ChatPaymentReceiptCard } from "@/components/chat/ChatPaymentCards";
+import ThreadActionCard, { parseActionFromMessage } from "@/components/orbit/ThreadActionCard";
 import type { ChatMessage } from "./types";
 import { MESSAGE_CATEGORIES } from "./types";
 
