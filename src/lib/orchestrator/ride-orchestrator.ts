@@ -10,6 +10,7 @@ import { rankDriversAI } from "@/lib/rides/rank-drivers-ai";
 import { updateDemandZone } from "@/lib/rides/update-demand-zone";
 import { computeAISurge } from "@/lib/rides/ai-surge";
 import { toZoneKey } from "@/lib/geo/zone-utils";
+import { getSubscriptionBenefits } from "@/lib/subscription/get-benefits";
 import { supabase } from "@/integrations/supabase/client";
 
 export interface RideFlowResult {
