@@ -548,6 +548,92 @@ export type Database = {
           },
         ]
       }
+      approval_actions: {
+        Row: {
+          action_type: string
+          actor_id: string | null
+          created_at: string | null
+          id: string
+          notes: string | null
+          queue_id: string
+        }
+        Insert: {
+          action_type: string
+          actor_id?: string | null
+          created_at?: string | null
+          id?: string
+          notes?: string | null
+          queue_id: string
+        }
+        Update: {
+          action_type?: string
+          actor_id?: string | null
+          created_at?: string | null
+          id?: string
+          notes?: string | null
+          queue_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "approval_actions_queue_id_fkey"
+            columns: ["queue_id"]
+            isOneToOne: false
+            referencedRelation: "approval_queues"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      approval_queues: {
+        Row: {
+          approval_type: string
+          created_at: string | null
+          entity_id: string
+          entity_type: string
+          id: string
+          payload: Json | null
+          priority: string | null
+          queue_name: string
+          requested_by: string | null
+          requested_reason: string | null
+          resolved_at: string | null
+          status: string | null
+          updated_at: string | null
+          workspace_id: string | null
+        }
+        Insert: {
+          approval_type: string
+          created_at?: string | null
+          entity_id: string
+          entity_type: string
+          id?: string
+          payload?: Json | null
+          priority?: string | null
+          queue_name: string
+          requested_by?: string | null
+          requested_reason?: string | null
+          resolved_at?: string | null
+          status?: string | null
+          updated_at?: string | null
+          workspace_id?: string | null
+        }
+        Update: {
+          approval_type?: string
+          created_at?: string | null
+          entity_id?: string
+          entity_type?: string
+          id?: string
+          payload?: Json | null
+          priority?: string | null
+          queue_name?: string
+          requested_by?: string | null
+          requested_reason?: string | null
+          resolved_at?: string | null
+          status?: string | null
+          updated_at?: string | null
+          workspace_id?: string | null
+        }
+        Relationships: []
+      }
       audit_logs: {
         Row: {
           action: string
@@ -1631,6 +1717,54 @@ export type Database = {
           notify_email?: boolean | null
           notify_push?: boolean | null
           user_id?: string
+        }
+        Relationships: []
+      }
+      churn_risk_profiles: {
+        Row: {
+          churn_score: number | null
+          created_at: string | null
+          drivers: Json | null
+          entity_id: string
+          entity_type: string
+          id: string
+          last_activity_at: string | null
+          last_order_at: string | null
+          prediction_window_days: number | null
+          risk_band: string | null
+          status: string | null
+          updated_at: string | null
+          workspace_id: string | null
+        }
+        Insert: {
+          churn_score?: number | null
+          created_at?: string | null
+          drivers?: Json | null
+          entity_id: string
+          entity_type: string
+          id?: string
+          last_activity_at?: string | null
+          last_order_at?: string | null
+          prediction_window_days?: number | null
+          risk_band?: string | null
+          status?: string | null
+          updated_at?: string | null
+          workspace_id?: string | null
+        }
+        Update: {
+          churn_score?: number | null
+          created_at?: string | null
+          drivers?: Json | null
+          entity_id?: string
+          entity_type?: string
+          id?: string
+          last_activity_at?: string | null
+          last_order_at?: string | null
+          prediction_window_days?: number | null
+          risk_band?: string | null
+          status?: string | null
+          updated_at?: string | null
+          workspace_id?: string | null
         }
         Relationships: []
       }
@@ -2963,6 +3097,39 @@ export type Database = {
         }
         Relationships: []
       }
+      device_fingerprints: {
+        Row: {
+          created_at: string | null
+          device_type: string | null
+          fingerprint_hash: string
+          id: string
+          ip_address: string | null
+          risk_score: number | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          device_type?: string | null
+          fingerprint_hash: string
+          id?: string
+          ip_address?: string | null
+          risk_score?: number | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          device_type?: string | null
+          fingerprint_hash?: string
+          id?: string
+          ip_address?: string | null
+          risk_score?: number | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       dispatch_candidate_drivers: {
         Row: {
           created_at: string | null
@@ -3602,6 +3769,189 @@ export type Database = {
           },
         ]
       }
+      exchange_connectors: {
+        Row: {
+          config: Json | null
+          connector_name: string
+          connector_type: string | null
+          created_at: string | null
+          id: string
+          status: string | null
+          supported_actions: string[] | null
+          supported_pairs: string[] | null
+          updated_at: string | null
+        }
+        Insert: {
+          config?: Json | null
+          connector_name: string
+          connector_type?: string | null
+          created_at?: string | null
+          id?: string
+          status?: string | null
+          supported_actions?: string[] | null
+          supported_pairs?: string[] | null
+          updated_at?: string | null
+        }
+        Update: {
+          config?: Json | null
+          connector_name?: string
+          connector_type?: string | null
+          created_at?: string | null
+          id?: string
+          status?: string | null
+          supported_actions?: string[] | null
+          supported_pairs?: string[] | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      exchange_orders: {
+        Row: {
+          base_amount: number | null
+          base_currency: string
+          completed_at: string | null
+          connector_id: string | null
+          created_at: string | null
+          executed_rate: number | null
+          external_order_id: string | null
+          fee_amount: number | null
+          id: string
+          metadata: Json | null
+          pair_code: string
+          quote_amount: number | null
+          quote_currency: string
+          quote_id: string | null
+          side: string
+          status: string | null
+          updated_at: string | null
+          user_id: string | null
+          wallet_account_id: string | null
+          workspace_id: string | null
+        }
+        Insert: {
+          base_amount?: number | null
+          base_currency: string
+          completed_at?: string | null
+          connector_id?: string | null
+          created_at?: string | null
+          executed_rate?: number | null
+          external_order_id?: string | null
+          fee_amount?: number | null
+          id?: string
+          metadata?: Json | null
+          pair_code: string
+          quote_amount?: number | null
+          quote_currency: string
+          quote_id?: string | null
+          side: string
+          status?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+          wallet_account_id?: string | null
+          workspace_id?: string | null
+        }
+        Update: {
+          base_amount?: number | null
+          base_currency?: string
+          completed_at?: string | null
+          connector_id?: string | null
+          created_at?: string | null
+          executed_rate?: number | null
+          external_order_id?: string | null
+          fee_amount?: number | null
+          id?: string
+          metadata?: Json | null
+          pair_code?: string
+          quote_amount?: number | null
+          quote_currency?: string
+          quote_id?: string | null
+          side?: string
+          status?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+          wallet_account_id?: string | null
+          workspace_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "exchange_orders_connector_id_fkey"
+            columns: ["connector_id"]
+            isOneToOne: false
+            referencedRelation: "exchange_connectors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "exchange_orders_quote_id_fkey"
+            columns: ["quote_id"]
+            isOneToOne: false
+            referencedRelation: "exchange_quotes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "exchange_orders_wallet_account_id_fkey"
+            columns: ["wallet_account_id"]
+            isOneToOne: false
+            referencedRelation: "wallet_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      exchange_quotes: {
+        Row: {
+          base_amount: number | null
+          base_currency: string
+          connector_id: string | null
+          created_at: string | null
+          expires_at: string | null
+          fee_amount: number | null
+          id: string
+          metadata: Json | null
+          pair_code: string
+          quote_amount: number | null
+          quote_currency: string
+          rate: number | null
+          side: string
+        }
+        Insert: {
+          base_amount?: number | null
+          base_currency: string
+          connector_id?: string | null
+          created_at?: string | null
+          expires_at?: string | null
+          fee_amount?: number | null
+          id?: string
+          metadata?: Json | null
+          pair_code: string
+          quote_amount?: number | null
+          quote_currency: string
+          rate?: number | null
+          side: string
+        }
+        Update: {
+          base_amount?: number | null
+          base_currency?: string
+          connector_id?: string | null
+          created_at?: string | null
+          expires_at?: string | null
+          fee_amount?: number | null
+          id?: string
+          metadata?: Json | null
+          pair_code?: string
+          quote_amount?: number | null
+          quote_currency?: string
+          rate?: number | null
+          side?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "exchange_quotes_connector_id_fkey"
+            columns: ["connector_id"]
+            isOneToOne: false
+            referencedRelation: "exchange_connectors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       executive_kpi_snapshots: {
         Row: {
           active_orders: number | null
@@ -3789,6 +4139,87 @@ export type Database = {
         }
         Relationships: []
       }
+      fraud_edges: {
+        Row: {
+          created_at: string | null
+          edge_type: string
+          from_entity_id: string
+          id: string
+          metadata: Json | null
+          to_entity_id: string
+          weight: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          edge_type: string
+          from_entity_id: string
+          id?: string
+          metadata?: Json | null
+          to_entity_id: string
+          weight?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          edge_type?: string
+          from_entity_id?: string
+          id?: string
+          metadata?: Json | null
+          to_entity_id?: string
+          weight?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fraud_edges_from_entity_id_fkey"
+            columns: ["from_entity_id"]
+            isOneToOne: false
+            referencedRelation: "fraud_entities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fraud_edges_to_entity_id_fkey"
+            columns: ["to_entity_id"]
+            isOneToOne: false
+            referencedRelation: "fraud_entities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      fraud_entities: {
+        Row: {
+          created_at: string | null
+          entity_id: string
+          entity_type: string
+          id: string
+          metadata: Json | null
+          risk_band: string | null
+          risk_score: number | null
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          entity_id: string
+          entity_type: string
+          id?: string
+          metadata?: Json | null
+          risk_band?: string | null
+          risk_score?: number | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          entity_id?: string
+          entity_type?: string
+          id?: string
+          metadata?: Json | null
+          risk_band?: string | null
+          risk_score?: number | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       fraud_events: {
         Row: {
           created_at: string | null
@@ -3904,6 +4335,206 @@ export type Database = {
           id?: string
           rates_json?: Json
           source?: string
+        }
+        Relationships: []
+      }
+      ghost_call_participants: {
+        Row: {
+          call_session_id: string
+          created_at: string | null
+          id: string
+          identity_id: string | null
+          joined_at: string | null
+          left_at: string | null
+          metadata: Json | null
+          mute_state: boolean | null
+          role: string | null
+          status: string | null
+          transport_identity: string | null
+          video_state: boolean | null
+        }
+        Insert: {
+          call_session_id: string
+          created_at?: string | null
+          id?: string
+          identity_id?: string | null
+          joined_at?: string | null
+          left_at?: string | null
+          metadata?: Json | null
+          mute_state?: boolean | null
+          role?: string | null
+          status?: string | null
+          transport_identity?: string | null
+          video_state?: boolean | null
+        }
+        Update: {
+          call_session_id?: string
+          created_at?: string | null
+          id?: string
+          identity_id?: string | null
+          joined_at?: string | null
+          left_at?: string | null
+          metadata?: Json | null
+          mute_state?: boolean | null
+          role?: string | null
+          status?: string | null
+          transport_identity?: string | null
+          video_state?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ghost_call_participants_call_session_id_fkey"
+            columns: ["call_session_id"]
+            isOneToOne: false
+            referencedRelation: "ghost_call_sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ghost_call_participants_identity_id_fkey"
+            columns: ["identity_id"]
+            isOneToOne: false
+            referencedRelation: "orbit_identity_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ghost_call_sessions: {
+        Row: {
+          anonymity_level: string | null
+          call_type: string | null
+          chat_session_id: string | null
+          created_at: string | null
+          created_by: string | null
+          ended_at: string | null
+          id: string
+          key_fingerprint: string | null
+          metadata: Json | null
+          relay_mode: string | null
+          started_at: string | null
+          status: string | null
+          updated_at: string | null
+          workspace_id: string | null
+        }
+        Insert: {
+          anonymity_level?: string | null
+          call_type?: string | null
+          chat_session_id?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          ended_at?: string | null
+          id?: string
+          key_fingerprint?: string | null
+          metadata?: Json | null
+          relay_mode?: string | null
+          started_at?: string | null
+          status?: string | null
+          updated_at?: string | null
+          workspace_id?: string | null
+        }
+        Update: {
+          anonymity_level?: string | null
+          call_type?: string | null
+          chat_session_id?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          ended_at?: string | null
+          id?: string
+          key_fingerprint?: string | null
+          metadata?: Json | null
+          relay_mode?: string | null
+          started_at?: string | null
+          status?: string | null
+          updated_at?: string | null
+          workspace_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ghost_call_sessions_chat_session_id_fkey"
+            columns: ["chat_session_id"]
+            isOneToOne: false
+            referencedRelation: "ghost_chat_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ghost_call_signals: {
+        Row: {
+          call_session_id: string
+          created_at: string | null
+          expires_at: string | null
+          id: string
+          payload: Json
+          sender_participant_id: string | null
+          signal_type: string
+        }
+        Insert: {
+          call_session_id: string
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          payload: Json
+          sender_participant_id?: string | null
+          signal_type: string
+        }
+        Update: {
+          call_session_id?: string
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          payload?: Json
+          sender_participant_id?: string | null
+          signal_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ghost_call_signals_call_session_id_fkey"
+            columns: ["call_session_id"]
+            isOneToOne: false
+            referencedRelation: "ghost_call_sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ghost_call_signals_sender_participant_id_fkey"
+            columns: ["sender_participant_id"]
+            isOneToOne: false
+            referencedRelation: "ghost_call_participants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ghost_chat_sessions: {
+        Row: {
+          anonymity_level: string | null
+          created_at: string | null
+          created_by: string | null
+          id: string
+          metadata: Json | null
+          session_type: string | null
+          status: string | null
+          updated_at: string | null
+          workspace_id: string | null
+        }
+        Insert: {
+          anonymity_level?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          metadata?: Json | null
+          session_type?: string | null
+          status?: string | null
+          updated_at?: string | null
+          workspace_id?: string | null
+        }
+        Update: {
+          anonymity_level?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          metadata?: Json | null
+          session_type?: string | null
+          status?: string | null
+          updated_at?: string | null
+          workspace_id?: string | null
         }
         Relationships: []
       }
@@ -8667,6 +9298,232 @@ export type Database = {
         }
         Relationships: []
       }
+      sales_ai_activities: {
+        Row: {
+          activity_type: string
+          content: string | null
+          created_at: string | null
+          direction: string | null
+          id: string
+          lead_id: string | null
+          metadata: Json | null
+          outcome: string | null
+        }
+        Insert: {
+          activity_type: string
+          content?: string | null
+          created_at?: string | null
+          direction?: string | null
+          id?: string
+          lead_id?: string | null
+          metadata?: Json | null
+          outcome?: string | null
+        }
+        Update: {
+          activity_type?: string
+          content?: string | null
+          created_at?: string | null
+          direction?: string | null
+          id?: string
+          lead_id?: string | null
+          metadata?: Json | null
+          outcome?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sales_ai_activities_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "sales_ai_leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sales_ai_leads: {
+        Row: {
+          area: string | null
+          city: string | null
+          company_name: string | null
+          contact_name: string | null
+          created_at: string | null
+          cuisine_type: string | null
+          email: string | null
+          id: string
+          metadata: Json | null
+          phone: string | null
+          score: number | null
+          source: string | null
+          status: string | null
+          updated_at: string | null
+          workspace_id: string | null
+        }
+        Insert: {
+          area?: string | null
+          city?: string | null
+          company_name?: string | null
+          contact_name?: string | null
+          created_at?: string | null
+          cuisine_type?: string | null
+          email?: string | null
+          id?: string
+          metadata?: Json | null
+          phone?: string | null
+          score?: number | null
+          source?: string | null
+          status?: string | null
+          updated_at?: string | null
+          workspace_id?: string | null
+        }
+        Update: {
+          area?: string | null
+          city?: string | null
+          company_name?: string | null
+          contact_name?: string | null
+          created_at?: string | null
+          cuisine_type?: string | null
+          email?: string | null
+          id?: string
+          metadata?: Json | null
+          phone?: string | null
+          score?: number | null
+          source?: string | null
+          status?: string | null
+          updated_at?: string | null
+          workspace_id?: string | null
+        }
+        Relationships: []
+      }
+      sales_ai_sequence_runs: {
+        Row: {
+          created_at: string | null
+          current_step_order: number | null
+          id: string
+          last_output: string | null
+          lead_id: string
+          metadata: Json | null
+          next_run_at: string | null
+          sequence_id: string
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          current_step_order?: number | null
+          id?: string
+          last_output?: string | null
+          lead_id: string
+          metadata?: Json | null
+          next_run_at?: string | null
+          sequence_id: string
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          current_step_order?: number | null
+          id?: string
+          last_output?: string | null
+          lead_id?: string
+          metadata?: Json | null
+          next_run_at?: string | null
+          sequence_id?: string
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sales_ai_sequence_runs_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "sales_ai_leads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sales_ai_sequence_runs_sequence_id_fkey"
+            columns: ["sequence_id"]
+            isOneToOne: false
+            referencedRelation: "sales_ai_sequences"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sales_ai_sequence_steps: {
+        Row: {
+          created_at: string | null
+          delay_hours: number | null
+          id: string
+          metadata: Json | null
+          sequence_id: string
+          step_order: number
+          step_type: string
+          template: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          delay_hours?: number | null
+          id?: string
+          metadata?: Json | null
+          sequence_id: string
+          step_order: number
+          step_type: string
+          template?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          delay_hours?: number | null
+          id?: string
+          metadata?: Json | null
+          sequence_id?: string
+          step_order?: number
+          step_type?: string
+          template?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sales_ai_sequence_steps_sequence_id_fkey"
+            columns: ["sequence_id"]
+            isOneToOne: false
+            referencedRelation: "sales_ai_sequences"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sales_ai_sequences: {
+        Row: {
+          audience_type: string | null
+          channel: string
+          created_at: string | null
+          id: string
+          is_personalized: boolean | null
+          sequence_name: string
+          status: string | null
+          updated_at: string | null
+          workspace_id: string | null
+        }
+        Insert: {
+          audience_type?: string | null
+          channel: string
+          created_at?: string | null
+          id?: string
+          is_personalized?: boolean | null
+          sequence_name: string
+          status?: string | null
+          updated_at?: string | null
+          workspace_id?: string | null
+        }
+        Update: {
+          audience_type?: string | null
+          channel?: string
+          created_at?: string | null
+          id?: string
+          is_personalized?: boolean | null
+          sequence_name?: string
+          status?: string | null
+          updated_at?: string | null
+          workspace_id?: string | null
+        }
+        Relationships: []
+      }
       saved_listings: {
         Row: {
           created_at: string
@@ -9019,6 +9876,122 @@ export type Database = {
             columns: ["shop_id"]
             isOneToOne: false
             referencedRelation: "storefront_pages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      stealth_notification_routes: {
+        Row: {
+          created_at: string | null
+          endpoint: string | null
+          endpoint_hash: string | null
+          id: string
+          identity_id: string | null
+          is_active: boolean | null
+          last_used_at: string | null
+          metadata: Json | null
+          route_type: string
+          stealth_level: string | null
+          workspace_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          endpoint?: string | null
+          endpoint_hash?: string | null
+          id?: string
+          identity_id?: string | null
+          is_active?: boolean | null
+          last_used_at?: string | null
+          metadata?: Json | null
+          route_type: string
+          stealth_level?: string | null
+          workspace_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          endpoint?: string | null
+          endpoint_hash?: string | null
+          id?: string
+          identity_id?: string | null
+          is_active?: boolean | null
+          last_used_at?: string | null
+          metadata?: Json | null
+          route_type?: string
+          stealth_level?: string | null
+          workspace_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stealth_notification_routes_identity_id_fkey"
+            columns: ["identity_id"]
+            isOneToOne: false
+            referencedRelation: "orbit_identity_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      stealth_notifications: {
+        Row: {
+          body: string | null
+          created_at: string | null
+          delivered_at: string | null
+          delivery_status: string | null
+          id: string
+          identity_id: string | null
+          masked_preview: string | null
+          metadata: Json | null
+          notification_type: string
+          opened_at: string | null
+          route_id: string | null
+          stealth_mode: string | null
+          title: string | null
+          workspace_id: string | null
+        }
+        Insert: {
+          body?: string | null
+          created_at?: string | null
+          delivered_at?: string | null
+          delivery_status?: string | null
+          id?: string
+          identity_id?: string | null
+          masked_preview?: string | null
+          metadata?: Json | null
+          notification_type: string
+          opened_at?: string | null
+          route_id?: string | null
+          stealth_mode?: string | null
+          title?: string | null
+          workspace_id?: string | null
+        }
+        Update: {
+          body?: string | null
+          created_at?: string | null
+          delivered_at?: string | null
+          delivery_status?: string | null
+          id?: string
+          identity_id?: string | null
+          masked_preview?: string | null
+          metadata?: Json | null
+          notification_type?: string
+          opened_at?: string | null
+          route_id?: string | null
+          stealth_mode?: string | null
+          title?: string | null
+          workspace_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stealth_notifications_identity_id_fkey"
+            columns: ["identity_id"]
+            isOneToOne: false
+            referencedRelation: "orbit_identity_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stealth_notifications_route_id_fkey"
+            columns: ["route_id"]
+            isOneToOne: false
+            referencedRelation: "stealth_notification_routes"
             referencedColumns: ["id"]
           },
         ]
@@ -14061,6 +15034,125 @@ export type Database = {
           trial_ends_at?: string | null
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      surge_pricing_events: {
+        Row: {
+          applied_multiplier: number | null
+          area: string | null
+          base_fee: number | null
+          city: string | null
+          context_type: string | null
+          created_at: string | null
+          demand_score: number | null
+          final_fee: number | null
+          id: string
+          reference_id: string | null
+          reference_type: string | null
+          rule_id: string | null
+          status: string | null
+          supply_score: number | null
+        }
+        Insert: {
+          applied_multiplier?: number | null
+          area?: string | null
+          base_fee?: number | null
+          city?: string | null
+          context_type?: string | null
+          created_at?: string | null
+          demand_score?: number | null
+          final_fee?: number | null
+          id?: string
+          reference_id?: string | null
+          reference_type?: string | null
+          rule_id?: string | null
+          status?: string | null
+          supply_score?: number | null
+        }
+        Update: {
+          applied_multiplier?: number | null
+          area?: string | null
+          base_fee?: number | null
+          city?: string | null
+          context_type?: string | null
+          created_at?: string | null
+          demand_score?: number | null
+          final_fee?: number | null
+          id?: string
+          reference_id?: string | null
+          reference_type?: string | null
+          rule_id?: string | null
+          status?: string | null
+          supply_score?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "surge_pricing_events_rule_id_fkey"
+            columns: ["rule_id"]
+            isOneToOne: false
+            referencedRelation: "surge_pricing_rules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      surge_pricing_rules: {
+        Row: {
+          area: string | null
+          city: string | null
+          context_type: string | null
+          created_at: string | null
+          ends_at: string | null
+          id: string
+          max_fee: number | null
+          metadata: Json | null
+          min_fee: number | null
+          multiplier: number | null
+          rule_name: string
+          starts_at: string | null
+          status: string | null
+          trigger_type: string
+          trigger_value: number | null
+          updated_at: string | null
+          workspace_id: string | null
+        }
+        Insert: {
+          area?: string | null
+          city?: string | null
+          context_type?: string | null
+          created_at?: string | null
+          ends_at?: string | null
+          id?: string
+          max_fee?: number | null
+          metadata?: Json | null
+          min_fee?: number | null
+          multiplier?: number | null
+          rule_name: string
+          starts_at?: string | null
+          status?: string | null
+          trigger_type: string
+          trigger_value?: number | null
+          updated_at?: string | null
+          workspace_id?: string | null
+        }
+        Update: {
+          area?: string | null
+          city?: string | null
+          context_type?: string | null
+          created_at?: string | null
+          ends_at?: string | null
+          id?: string
+          max_fee?: number | null
+          metadata?: Json | null
+          min_fee?: number | null
+          multiplier?: number | null
+          rule_name?: string
+          starts_at?: string | null
+          status?: string | null
+          trigger_type?: string
+          trigger_value?: number | null
+          updated_at?: string | null
+          workspace_id?: string | null
         }
         Relationships: []
       }
