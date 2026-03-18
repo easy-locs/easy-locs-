@@ -7,7 +7,7 @@ import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { supabase } from "@/integrations/supabase/client";
-import { createMarkerElement, getMarkerStyle } from "@/lib/map/presence-styles";
+import { createMarkerElement, getMarkerStyle, getCoverageStyle, buildPopupHTML } from "@/lib/map/presence-styles";
 import { isLiveStale } from "@/hooks/useGPSTracking";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
