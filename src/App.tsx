@@ -355,6 +355,8 @@ const App = () => (
               <Route path="/refund/:rideRequestId" element={<RefundRequestPage />} />
               <Route path="/orbit/call/:threadId" element={<OrbitLiveCallPage />} />
               <Route path="/team/command-center" element={<TeamCommandCenterPage />} />
+              <Route path="/admin/executive-kpi" element={<ExecutiveKPIBoardPage />} />
+              <Route path="/team/permissions" element={<TeamPermissionsPage />} />
 
               {/* Travel */}
               <Route path="/travel" element={<TravelHub />} />
