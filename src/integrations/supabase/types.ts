@@ -14,6 +14,53 @@ export type Database = {
   }
   public: {
     Tables: {
+      abandoned_cart_events: {
+        Row: {
+          cart_id: string
+          converted_at: string | null
+          created_at: string | null
+          customer_user_id: string | null
+          guest_id: string | null
+          id: string
+          item_count: number | null
+          status: string | null
+          subtotal: number | null
+          workspace_id: string | null
+        }
+        Insert: {
+          cart_id: string
+          converted_at?: string | null
+          created_at?: string | null
+          customer_user_id?: string | null
+          guest_id?: string | null
+          id?: string
+          item_count?: number | null
+          status?: string | null
+          subtotal?: number | null
+          workspace_id?: string | null
+        }
+        Update: {
+          cart_id?: string
+          converted_at?: string | null
+          created_at?: string | null
+          customer_user_id?: string | null
+          guest_id?: string | null
+          id?: string
+          item_count?: number | null
+          status?: string | null
+          subtotal?: number | null
+          workspace_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "abandoned_cart_events_cart_id_fkey"
+            columns: ["cart_id"]
+            isOneToOne: false
+            referencedRelation: "storefront_carts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       accounting_entries: {
         Row: {
           accounting_period: string
@@ -2812,6 +2859,76 @@ export type Database = {
           },
         ]
       }
+      delivery_eta_predictions: {
+        Row: {
+          area: string | null
+          confidence: number | null
+          created_at: string | null
+          dispatch_job_id: string | null
+          driver_user_id: string | null
+          id: string
+          merchant_profile_id: string | null
+          order_id: string | null
+          prep_time_min: number | null
+          queue_time_min: number | null
+          total_eta_min: number | null
+          travel_time_min: number | null
+          workspace_id: string | null
+        }
+        Insert: {
+          area?: string | null
+          confidence?: number | null
+          created_at?: string | null
+          dispatch_job_id?: string | null
+          driver_user_id?: string | null
+          id?: string
+          merchant_profile_id?: string | null
+          order_id?: string | null
+          prep_time_min?: number | null
+          queue_time_min?: number | null
+          total_eta_min?: number | null
+          travel_time_min?: number | null
+          workspace_id?: string | null
+        }
+        Update: {
+          area?: string | null
+          confidence?: number | null
+          created_at?: string | null
+          dispatch_job_id?: string | null
+          driver_user_id?: string | null
+          id?: string
+          merchant_profile_id?: string | null
+          order_id?: string | null
+          prep_time_min?: number | null
+          queue_time_min?: number | null
+          total_eta_min?: number | null
+          travel_time_min?: number | null
+          workspace_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "delivery_eta_predictions_dispatch_job_id_fkey"
+            columns: ["dispatch_job_id"]
+            isOneToOne: false
+            referencedRelation: "dispatch_jobs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "delivery_eta_predictions_merchant_profile_id_fkey"
+            columns: ["merchant_profile_id"]
+            isOneToOne: false
+            referencedRelation: "merchant_onboarding_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "delivery_eta_predictions_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       delivery_jobs: {
         Row: {
           accepted_at: string | null
@@ -5000,6 +5117,50 @@ export type Database = {
           },
         ]
       }
+      guest_checkout_sessions: {
+        Row: {
+          cart_id: string | null
+          created_at: string | null
+          expires_at: string | null
+          guest_id: string
+          id: string
+          phone: string | null
+          status: string | null
+          updated_at: string | null
+          workspace_id: string | null
+        }
+        Insert: {
+          cart_id?: string | null
+          created_at?: string | null
+          expires_at?: string | null
+          guest_id: string
+          id?: string
+          phone?: string | null
+          status?: string | null
+          updated_at?: string | null
+          workspace_id?: string | null
+        }
+        Update: {
+          cart_id?: string | null
+          created_at?: string | null
+          expires_at?: string | null
+          guest_id?: string
+          id?: string
+          phone?: string | null
+          status?: string | null
+          updated_at?: string | null
+          workspace_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "guest_checkout_sessions_cart_id_fkey"
+            columns: ["cart_id"]
+            isOneToOne: false
+            referencedRelation: "storefront_carts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       guest_sessions: {
         Row: {
           blocked: boolean
@@ -5880,6 +6041,89 @@ export type Database = {
         }
         Relationships: []
       }
+      loyalty_accounts: {
+        Row: {
+          created_at: string | null
+          guest_id: string | null
+          id: string
+          lifetime_points: number | null
+          points_balance: number | null
+          tier: string | null
+          total_cashback: number | null
+          updated_at: string | null
+          user_id: string | null
+          workspace_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          guest_id?: string | null
+          id?: string
+          lifetime_points?: number | null
+          points_balance?: number | null
+          tier?: string | null
+          total_cashback?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+          workspace_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          guest_id?: string | null
+          id?: string
+          lifetime_points?: number | null
+          points_balance?: number | null
+          tier?: string | null
+          total_cashback?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+          workspace_id?: string | null
+        }
+        Relationships: []
+      }
+      loyalty_ledger: {
+        Row: {
+          cashback_amount: number | null
+          created_at: string | null
+          entry_type: string
+          id: string
+          loyalty_account_id: string
+          metadata: Json | null
+          points: number | null
+          reference_id: string | null
+          reference_type: string | null
+        }
+        Insert: {
+          cashback_amount?: number | null
+          created_at?: string | null
+          entry_type: string
+          id?: string
+          loyalty_account_id: string
+          metadata?: Json | null
+          points?: number | null
+          reference_id?: string | null
+          reference_type?: string | null
+        }
+        Update: {
+          cashback_amount?: number | null
+          created_at?: string | null
+          entry_type?: string
+          id?: string
+          loyalty_account_id?: string
+          metadata?: Json | null
+          points?: number | null
+          reference_id?: string | null
+          reference_type?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "loyalty_ledger_loyalty_account_id_fkey"
+            columns: ["loyalty_account_id"]
+            isOneToOne: false
+            referencedRelation: "loyalty_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       loyalty_transactions: {
         Row: {
           created_at: string | null
@@ -6659,6 +6903,62 @@ export type Database = {
           {
             foreignKeyName: "merchant_activation_events_profile_id_fkey"
             columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "merchant_onboarding_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      merchant_coverage_areas: {
+        Row: {
+          area_name: string
+          city: string | null
+          created_at: string | null
+          delivery_fee: number | null
+          estimated_eta_min: number | null
+          id: string
+          is_active: boolean | null
+          kitchen_id: string | null
+          merchant_profile_id: string
+          min_order_amount: number | null
+          polygon: Json | null
+          updated_at: string | null
+          workspace_id: string | null
+        }
+        Insert: {
+          area_name: string
+          city?: string | null
+          created_at?: string | null
+          delivery_fee?: number | null
+          estimated_eta_min?: number | null
+          id?: string
+          is_active?: boolean | null
+          kitchen_id?: string | null
+          merchant_profile_id: string
+          min_order_amount?: number | null
+          polygon?: Json | null
+          updated_at?: string | null
+          workspace_id?: string | null
+        }
+        Update: {
+          area_name?: string
+          city?: string | null
+          created_at?: string | null
+          delivery_fee?: number | null
+          estimated_eta_min?: number | null
+          id?: string
+          is_active?: boolean | null
+          kitchen_id?: string | null
+          merchant_profile_id?: string
+          min_order_amount?: number | null
+          polygon?: Json | null
+          updated_at?: string | null
+          workspace_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "merchant_coverage_areas_merchant_profile_id_fkey"
+            columns: ["merchant_profile_id"]
             isOneToOne: false
             referencedRelation: "merchant_onboarding_profiles"
             referencedColumns: ["id"]
@@ -7996,6 +8296,78 @@ export type Database = {
           },
         ]
       }
+      payment_intents: {
+        Row: {
+          amount: number
+          cart_id: string | null
+          created_at: string | null
+          currency: string | null
+          external_intent_id: string | null
+          guest_id: string | null
+          id: string
+          metadata: Json | null
+          order_id: string | null
+          paid_at: string | null
+          payment_method_type: string | null
+          provider: string
+          status: string | null
+          updated_at: string | null
+          user_id: string | null
+          workspace_id: string | null
+        }
+        Insert: {
+          amount?: number
+          cart_id?: string | null
+          created_at?: string | null
+          currency?: string | null
+          external_intent_id?: string | null
+          guest_id?: string | null
+          id?: string
+          metadata?: Json | null
+          order_id?: string | null
+          paid_at?: string | null
+          payment_method_type?: string | null
+          provider?: string
+          status?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+          workspace_id?: string | null
+        }
+        Update: {
+          amount?: number
+          cart_id?: string | null
+          created_at?: string | null
+          currency?: string | null
+          external_intent_id?: string | null
+          guest_id?: string | null
+          id?: string
+          metadata?: Json | null
+          order_id?: string | null
+          paid_at?: string | null
+          payment_method_type?: string | null
+          provider?: string
+          status?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+          workspace_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_intents_cart_id_fkey"
+            columns: ["cart_id"]
+            isOneToOne: false
+            referencedRelation: "storefront_carts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payment_intents_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       payment_nonces: {
         Row: {
           nonce: string
@@ -8211,6 +8583,45 @@ export type Database = {
           label?: string
           permissions?: Json | null
           template_key?: string
+        }
+        Relationships: []
+      }
+      phone_otp_sessions: {
+        Row: {
+          attempts: number | null
+          created_at: string | null
+          expires_at: string
+          guest_id: string | null
+          id: string
+          otp_code: string
+          phone: string
+          status: string | null
+          user_id: string | null
+          verified_at: string | null
+        }
+        Insert: {
+          attempts?: number | null
+          created_at?: string | null
+          expires_at: string
+          guest_id?: string | null
+          id?: string
+          otp_code: string
+          phone: string
+          status?: string | null
+          user_id?: string | null
+          verified_at?: string | null
+        }
+        Update: {
+          attempts?: number | null
+          created_at?: string | null
+          expires_at?: string
+          guest_id?: string | null
+          id?: string
+          otp_code?: string
+          phone?: string
+          status?: string | null
+          user_id?: string | null
+          verified_at?: string | null
         }
         Relationships: []
       }
@@ -8724,6 +9135,53 @@ export type Database = {
             columns: ["property_id"]
             isOneToOne: false
             referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      public_storefront_settings: {
+        Row: {
+          cover_image_url: string | null
+          created_at: string | null
+          id: string
+          is_public: boolean | null
+          logo_url: string | null
+          merchant_profile_id: string
+          public_slug: string | null
+          seo_description: string | null
+          seo_title: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          cover_image_url?: string | null
+          created_at?: string | null
+          id?: string
+          is_public?: boolean | null
+          logo_url?: string | null
+          merchant_profile_id: string
+          public_slug?: string | null
+          seo_description?: string | null
+          seo_title?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          cover_image_url?: string | null
+          created_at?: string | null
+          id?: string
+          is_public?: boolean | null
+          logo_url?: string | null
+          merchant_profile_id?: string
+          public_slug?: string | null
+          seo_description?: string | null
+          seo_title?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "public_storefront_settings_merchant_profile_id_fkey"
+            columns: ["merchant_profile_id"]
+            isOneToOne: true
+            referencedRelation: "merchant_onboarding_profiles"
             referencedColumns: ["id"]
           },
         ]
