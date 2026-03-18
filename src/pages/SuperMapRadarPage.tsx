@@ -116,7 +116,7 @@ export default function SuperMapRadarPage() {
             new mapboxgl.Popup({ offset: 20, closeButton: false }).setHTML(`
               <div style="padding:8px;max-width:220px;font-family:system-ui;">
                 <div style="font-size:11px;color:${style.color};font-weight:700;margin-bottom:2px;">
-                  ${style.emoji} ${style.label}
+                  ${style.label}
                   ${listing.coverage_mode !== "point" && listing.coverage_radius_m
                     ? `<span style="opacity:0.7;font-weight:400;"> · ${listing.coverage_radius_m >= 1000 ? `${listing.coverage_radius_m / 1000}km` : `${listing.coverage_radius_m}m`} radius</span>`
                     : ""}
