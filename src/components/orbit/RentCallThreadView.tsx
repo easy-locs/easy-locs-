@@ -6,9 +6,9 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import {
-  Receipt, FileText, Home, CreditCard, MessageCircle,
-  Calendar, CheckCircle, Clock, AlertTriangle, Loader2,
-  Download, ChevronRight, Bell, Send, ExternalLink,
+  Receipt, FileText, Home, CreditCard,
+  CheckCircle, Clock, AlertTriangle, Loader2,
+  Download, Bell, ExternalLink,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";

@@ -6,9 +6,9 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  ArrowLeft, Home, FileText, Calendar, CheckCircle, Clock,
-  CreditCard, Receipt, MessageCircle, AlertTriangle, Loader2,
-  Building2, ChevronRight, Download, Shield,
+  ArrowLeft, Home, FileText, CheckCircle,
+  CreditCard, MessageCircle, AlertTriangle, Loader2,
+  Download, Shield,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
