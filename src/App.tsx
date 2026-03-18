@@ -332,6 +332,7 @@ const App = () => (
               <Route path="/call/:threadId" element={<CallDriverPage />} />
               <Route path="/driver/payout" element={<DriverPayoutPage />} />
               <Route path="/admin/disputes" element={<AdminDisputesPage />} />
+              <Route path="/driver/heatmap" element={<DemandHeatmapPage />} />
 
               {/* Travel */}
               <Route path="/travel" element={<TravelHub />} />
