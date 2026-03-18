@@ -2,6 +2,7 @@ import { useState } from "react";
 import { BackCard } from "@/components/ui/back-card";
 import { useActiveWorkspace } from "@/hooks/useActiveWorkspace";
 import { runMasterAudit } from "@/lib/audit/master-audit-engine";
+import { seedAuditDemoData } from "@/lib/audit/seed-demo-data";
 import { useAuditReport } from "@/hooks/useAuditReport";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
