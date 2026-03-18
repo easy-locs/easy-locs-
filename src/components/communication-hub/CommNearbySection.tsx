@@ -3,7 +3,7 @@
  * Shows listings, services, AND live professionals/users nearby.
  * Uber/Deliveroo-style discovery with presence + privacy controls.
  */
-import { useState, useEffect, useCallback, lazy, Suspense } from "react";
+import { useState, useEffect, useCallback, lazy, Suspense, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useGeolocation } from "@/hooks/useGeolocation";
