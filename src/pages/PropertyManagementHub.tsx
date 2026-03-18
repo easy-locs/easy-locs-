@@ -24,8 +24,8 @@ type PMRole = null | "landlord" | "tenant";
 /* ── Navigation items per role ── */
 const landlordNav = [
   { label: "Dashboard", desc: "Overview & KPIs", icon: LayoutDashboard, path: "/dashboard" },
-  { label: "Properties", desc: "Manage your properties", icon: Home, path: "/dashboard/properties" },
-  { label: "Buildings & Units", desc: "Units & floors", icon: Building2, path: "/dashboard/buildings" },
+  { label: "Portfolio", desc: "All your properties", icon: Building2, path: "/dashboard/properties" },
+  { label: "Buildings & Units", desc: "Units & floors", icon: Home, path: "/dashboard/buildings" },
   { label: "Tenants", desc: "Tenant directory", icon: Users, path: "/dashboard/tenants" },
   { label: "Rent Tracking", desc: "Payments & notices", icon: Receipt, path: "/dashboard/notices" },
   { label: "Maintenance", desc: "Requests & interventions", icon: Wrench, path: "/dashboard/interventions" },
