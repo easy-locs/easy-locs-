@@ -65,7 +65,7 @@ const TenantLayout = ({ children }: { children: React.ReactNode }) => {
     { icon: Receipt, label: t("nav.receipts") || L.myReceipts, path: "/tenant/receipts" },
     { icon: FileText, label: t("nav.documents") || L.myDocuments, path: "/tenant/documents" },
     { icon: MessageCircle, label: t("nav.messages") || L.messagesNav, path: "/tenant/messages" },
-    { icon: CreditCard, label: t("nav.payments") || L.payRent, path: "/tenant/pay" },
+    { icon: CreditCard, label: t("nav.payments") || L.payRent, path: "/dashboard/wallet?context=rent" },
     { icon: Star, label: t("nav.reviews"), path: "/tenant/reviews" },
     { icon: ClipboardList, label: t("nav.requests"), path: "/tenant/requests" },
   ];

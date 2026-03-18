@@ -42,7 +42,7 @@ const landlordNav = [
 const tenantNav = [
   { label: "My Property", desc: "Your current home", icon: Home, path: "/tenant" },
   { label: "My Rent", desc: "Receipts & history", icon: Receipt, path: "/tenant/receipts" },
-  { label: "Payments", desc: "Pay rent & bills", icon: Wallet, path: "/tenant/pay" },
+  { label: "Payments", desc: "Pay rent & bills", icon: Wallet, path: "/dashboard/wallet?context=rent" },
   { label: "Maintenance Requests", desc: "Report issues", icon: Wrench, path: "/tenant/requests" },
   { label: "Documents", desc: "Lease & shared files", icon: FileText, path: "/tenant/documents" },
 ];
