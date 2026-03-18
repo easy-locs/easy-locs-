@@ -5,7 +5,7 @@
  * - Logs every reveal in contact_reveals
  * - Returns real phone/whatsapp only after validation
  */
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
+import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
