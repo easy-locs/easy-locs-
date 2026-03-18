@@ -1,8 +1,8 @@
 /**
- * TrackRidePage — /track/:rideRequestId — Live driver tracking with map.
+ * TrackRidePage — /track/:rideRequestId — Live driver tracking with map + CTA footer.
  */
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { BackCard } from "@/components/ui/back-card";
 import DriverMap from "@/components/radar/DriverMap";
 import { supabase } from "@/integrations/supabase/client";
@@ -10,13 +10,14 @@ import { useRideRequestController } from "@/hooks/useRideRequestController";
 
 export default function TrackRidePage() {
   const { rideRequestId } = useParams();
+  const navigate = useNavigate();
   const [rideMeta, setRideMeta] = useState<any>(null);
 
   useEffect(() => {
     if (!rideRequestId) return;
     supabase
       .from("ride_requests" as any)
-      .select("pickup_lat, pickup_lng, dropoff_lat, dropoff_lng")
+      .select("pickup_lat, pickup_lng, dropoff_lat, dropoff_lng, thread_id, status")
       .eq("id", rideRequestId)
       .single()
       .then(({ data }) => setRideMeta(data ?? null));
@@ -69,6 +70,26 @@ export default function TrackRidePage() {
               {controller.distanceKm != null ? `${controller.distanceKm.toFixed(1)} km` : "—"}
             </p>
           </div>
+        </div>
+
+        <div className="flex gap-2">
+          {rideMeta?.thread_id && (
+            <button
+              onClick={() => navigate(`/call/${rideMeta.thread_id}`)}
+              className="rounded-2xl bg-accent px-4 py-3 text-sm font-semibold text-accent-foreground"
+            >
+              📞 Call driver
+            </button>
+          )}
+
+          {rideRequestId && (
+            <button
+              onClick={() => navigate(`/ride/receipt/${rideRequestId}`)}
+              className="rounded-2xl border border-border bg-card px-4 py-3 text-sm font-semibold text-foreground"
+            >
+              🧾 Receipt
+            </button>
+          )}
         </div>
       </div>
     </div>
