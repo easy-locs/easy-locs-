@@ -39,8 +39,33 @@ export async function startRideFlow(opts: {
   const {
     userId, userLat, userLng, drivers, distanceKm, durationMin, countryCode,
     requestedRideType = "standard",
-    riderPriority = "standard",
+    riderPriority: inputPriority = "standard",
   } = opts;
+
+  // 0. Fraud risk check
+  const { data: risk } = await supabase
+    .from("user_risk_profiles" as any)
+    .select("risk_score")
+    .eq("user_id", userId)
+    .single();
+
+  if ((risk as any)?.risk_score > 80) {
+    throw new Error("High risk user blocked");
+  }
+
+  // 0b. Resolve subscription-based priority
+  const { data: sub } = await supabase
+    .from("user_subscriptions" as any)
+    .select("plan")
+    .eq("user_id", userId)
+    .single();
+
+  const riderPriority: "standard" | "priority" | "vip" =
+    (sub as any)?.plan === "vip" ? "vip" :
+    (sub as any)?.plan === "pro" ? "priority" :
+    inputPriority;
+
+  const benefits = getSubscriptionBenefits((sub as any)?.plan ?? "free");
 
   // 1. Pool discovery with radius expansion + ride type fallback
   const poolResult = findDriverPool({ userLat, userLng, drivers, requestedRideType });
