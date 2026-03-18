@@ -367,13 +367,16 @@ const CreateListing = () => {
             </div>
           </Section>
 
-          {/* ── Presence & Mobility ── */}
-          <Section id="presence" icon={<Radar className="h-4 w-4 text-muted-foreground" />} title="Map Presence & Mobility" badge="Required">
+          {/* ── Presence & Coverage ── */}
+          <Section id="presence" icon={<Radar className="h-4 w-4 text-muted-foreground" />} title="Map Presence & Coverage" badge="New">
             <PresenceMobilitySelector
-              presenceMode={form.presence_mode}
-              mobilityType={form.mobility_type}
-              onPresenceModeChange={v => set({ presence_mode: v })}
-              onMobilityTypeChange={v => set({ mobility_type: v })}
+              config={{
+                presence_mode: form.presence_mode,
+                entity_type: form.entity_type,
+                coverage_mode: form.coverage_mode,
+                coverage_radius_m: form.coverage_radius_m,
+              }}
+              onChange={(cfg) => set(cfg)}
             />
           </Section>
 
