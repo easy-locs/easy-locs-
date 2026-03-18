@@ -77,6 +77,14 @@ export default function AdminDisputesPage() {
                 >
                   Refund
                 </Button>
+                <Button
+                  onClick={() => issueDisputeGoodwillCredit({ userId: d.opened_by, rideRequestId: d.ride_request_id, amount: 15 })}
+                  size="sm"
+                  variant="secondary"
+                  className="rounded-xl"
+                >
+                  Give 15 AED credit
+                </Button>
               </div>
             )}
           </div>

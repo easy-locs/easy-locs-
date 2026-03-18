@@ -19,5 +19,12 @@ export async function updateRiskProfile(params: {
     last_updated: new Date().toISOString(),
   } as any);
 
+  // Auto-alert on high risk
+  try {
+    await alertHighRiskUser({ userId: params.userId, riskScore: result.riskScore });
+  } catch (e) {
+    console.error("[update-risk-profile] alert failed", e);
+  }
+
   return result;
 }

@@ -34,6 +34,13 @@ export default function DriverPositioningPage() {
           {loading ? "Analyzing..." : "Find best zone"}
         </button>
 
+        <button
+          onClick={() => runCitySupplyBalancer({ city: "Dubai" })}
+          className="w-full rounded-2xl border border-border bg-card px-4 py-3 text-sm font-semibold text-foreground"
+        >
+          Refresh city balance
+        </button>
+
         {zone && (
           <div className="rounded-2xl border border-border bg-card p-4">
             <p className="font-semibold">{zone.zone_key}</p>

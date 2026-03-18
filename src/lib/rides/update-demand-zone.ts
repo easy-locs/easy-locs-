@@ -53,5 +53,17 @@ export async function updateDemandZone(params: {
 
   if (error) throw error;
 
+  // Auto-alert on critical surge
+  try {
+    await alertHotZone({
+      zoneKey,
+      surgeMultiplier: surge,
+      activeRequests,
+      activeDrivers,
+    });
+  } catch (e) {
+    console.error("[update-demand-zone] alert failed", e);
+  }
+
   return { ok: true, zoneKey, predictedDemand, surge };
 }
