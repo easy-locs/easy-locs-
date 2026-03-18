@@ -1,5 +1,5 @@
 /**
- * RideSearchAnimatedState — Animated ride search status with wave progress, radius & ride type.
+ * RideSearchAnimatedState — Animated ride search status with wave progress, radius, type & retry.
  */
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -10,6 +10,8 @@ interface RideSearchAnimatedStateProps {
   etaMin?: number | null;
   radiusKm?: number | null;
   rideTypeUsed?: string | null;
+  onRetry?: () => void;
+  autoRetrying?: boolean;
 }
 
 export default function RideSearchAnimatedState({
@@ -19,6 +21,8 @@ export default function RideSearchAnimatedState({
   etaMin,
   radiusKm,
   rideTypeUsed,
+  onRetry,
+  autoRetrying = false,
 }: RideSearchAnimatedStateProps) {
   return (
     <div className="relative overflow-hidden rounded-3xl border border-border bg-card p-5">
@@ -37,7 +41,7 @@ export default function RideSearchAnimatedState({
             </div>
             <div className="text-xs text-muted-foreground">
               {nearbyCount ?? 0} nearby · wave {(currentWave ?? 0) + 1}
-              {radiusKm ? ` · ${radiusKm} km radius` : ""}
+              {radiusKm ? ` · ${radiusKm} km` : ""}
               {rideTypeUsed ? ` · ${rideTypeUsed}` : ""}
             </div>
             <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-muted">
@@ -75,12 +79,20 @@ export default function RideSearchAnimatedState({
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0 }}
-            className="space-y-2"
+            className="space-y-3"
           >
             <div className="text-sm font-semibold">No driver accepted</div>
             <div className="text-xs text-muted-foreground">
-              Search can retry with expanded radius
+              {autoRetrying ? "Retrying with a wider search..." : "We can try again automatically"}
             </div>
+            {onRetry && !autoRetrying && (
+              <button
+                onClick={onRetry}
+                className="rounded-xl bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground"
+              >
+                Retry now
+              </button>
+            )}
           </motion.div>
         )}
 
