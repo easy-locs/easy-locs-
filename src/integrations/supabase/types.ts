@@ -2781,6 +2781,84 @@ export type Database = {
           },
         ]
       }
+      driver_earnings: {
+        Row: {
+          created_at: string
+          currency: string
+          driver_id: string
+          earning_status: string
+          gross_amount: number
+          id: string
+          net_amount: number
+          platform_fee: number
+          ride_request_id: string
+          tip_amount: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          currency?: string
+          driver_id: string
+          earning_status?: string
+          gross_amount?: number
+          id?: string
+          net_amount?: number
+          platform_fee?: number
+          ride_request_id: string
+          tip_amount?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          currency?: string
+          driver_id?: string
+          earning_status?: string
+          gross_amount?: number
+          id?: string
+          net_amount?: number
+          platform_fee?: number
+          ride_request_id?: string
+          tip_amount?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      driver_payouts: {
+        Row: {
+          amount: number
+          created_at: string | null
+          currency: string | null
+          driver_id: string
+          id: string
+          method: string | null
+          payout_status: string | null
+          processed_at: string | null
+          reference: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string | null
+          currency?: string | null
+          driver_id: string
+          id?: string
+          method?: string | null
+          payout_status?: string | null
+          processed_at?: string | null
+          reference?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          currency?: string | null
+          driver_id?: string
+          id?: string
+          method?: string | null
+          payout_status?: string | null
+          processed_at?: string | null
+          reference?: string | null
+        }
+        Relationships: []
+      }
       driver_sessions: {
         Row: {
           acceptance_rate: number | null
@@ -4141,6 +4219,33 @@ export type Database = {
           id?: string
           is_new_device?: boolean | null
           user_id?: string
+        }
+        Relationships: []
+      }
+      loyalty_transactions: {
+        Row: {
+          created_at: string | null
+          id: string
+          points: number | null
+          reference_id: string | null
+          type: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          points?: number | null
+          reference_id?: string | null
+          type?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          points?: number | null
+          reference_id?: string | null
+          type?: string | null
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -6959,6 +7064,51 @@ export type Database = {
           },
         ]
       }
+      ride_disputes: {
+        Row: {
+          admin_note: string | null
+          against_user_id: string | null
+          created_at: string
+          dispute_type: string
+          id: string
+          opened_by: string
+          reason: string | null
+          refund_amount: number | null
+          resolution: string | null
+          ride_request_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          admin_note?: string | null
+          against_user_id?: string | null
+          created_at?: string
+          dispute_type: string
+          id?: string
+          opened_by: string
+          reason?: string | null
+          refund_amount?: number | null
+          resolution?: string | null
+          ride_request_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          admin_note?: string | null
+          against_user_id?: string | null
+          created_at?: string
+          dispute_type?: string
+          id?: string
+          opened_by?: string
+          reason?: string | null
+          refund_amount?: number | null
+          resolution?: string | null
+          ride_request_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       ride_offers: {
         Row: {
           driver_id: string
@@ -7001,20 +7151,27 @@ export type Database = {
         Row: {
           assigned_at: string | null
           assigned_ride_type: string | null
+          cancellation_fee: number | null
+          cancellation_reason: string | null
           cancelled_at: string | null
+          cancelled_by: string | null
           completed_at: string | null
           created_at: string
           current_wave: number | null
+          dispute_status: string | null
           driver_arrived_at: string | null
+          driver_net_amount: number | null
           dropoff_lat: number | null
           dropoff_lng: number | null
           expires_at: string
           final_amount: number | null
+          gross_amount: number | null
           id: string
           offered_driver_ids: string[] | null
           pickup_confirmed_at: string | null
           pickup_lat: number
           pickup_lng: number
+          platform_fee: number | null
           requested_ride_type: string | null
           rider_id: string
           rider_rating: number | null
@@ -7033,20 +7190,27 @@ export type Database = {
         Insert: {
           assigned_at?: string | null
           assigned_ride_type?: string | null
+          cancellation_fee?: number | null
+          cancellation_reason?: string | null
           cancelled_at?: string | null
+          cancelled_by?: string | null
           completed_at?: string | null
           created_at?: string
           current_wave?: number | null
+          dispute_status?: string | null
           driver_arrived_at?: string | null
+          driver_net_amount?: number | null
           dropoff_lat?: number | null
           dropoff_lng?: number | null
           expires_at?: string
           final_amount?: number | null
+          gross_amount?: number | null
           id?: string
           offered_driver_ids?: string[] | null
           pickup_confirmed_at?: string | null
           pickup_lat: number
           pickup_lng: number
+          platform_fee?: number | null
           requested_ride_type?: string | null
           rider_id: string
           rider_rating?: number | null
@@ -7065,20 +7229,27 @@ export type Database = {
         Update: {
           assigned_at?: string | null
           assigned_ride_type?: string | null
+          cancellation_fee?: number | null
+          cancellation_reason?: string | null
           cancelled_at?: string | null
+          cancelled_by?: string | null
           completed_at?: string | null
           created_at?: string
           current_wave?: number | null
+          dispute_status?: string | null
           driver_arrived_at?: string | null
+          driver_net_amount?: number | null
           dropoff_lat?: number | null
           dropoff_lng?: number | null
           expires_at?: string
           final_amount?: number | null
+          gross_amount?: number | null
           id?: string
           offered_driver_ids?: string[] | null
           pickup_confirmed_at?: string | null
           pickup_lat?: number
           pickup_lng?: number
+          platform_fee?: number | null
           requested_ride_type?: string | null
           rider_id?: string
           rider_rating?: number | null
@@ -13095,6 +13266,27 @@ export type Database = {
           one_time_pre_keys?: Json | null
           signed_pre_key?: string | null
           updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_loyalty: {
+        Row: {
+          points: number | null
+          tier: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          points?: number | null
+          tier?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          points?: number | null
+          tier?: string | null
+          updated_at?: string | null
           user_id?: string
         }
         Relationships: []
