@@ -215,6 +215,10 @@ const TeamCommandCenterPage = safeLazy(() => import("./pages/TeamCommandCenterPa
 const AdminTrustGraphPage = safeLazy(() => import("./pages/AdminTrustGraphPage"), "AdminTrustGraphPage");
 const ExecutiveKPIBoardPage = safeLazy(() => import("./pages/ExecutiveKPIBoardPage"), "ExecutiveKPIBoardPage");
 const TeamPermissionsPage = safeLazy(() => import("./pages/TeamPermissionsPage"), "TeamPermissionsPage");
+const AIOpsChatPage = safeLazy(() => import("./pages/AIOpsChatPage"), "AIOpsChatPage");
+const FinancialReconPage = safeLazy(() => import("./pages/FinancialReconPage"), "FinancialReconPage");
+const ReconAlertsPage = safeLazy(() => import("./pages/ReconAlertsPage"), "ReconAlertsPage");
+const CallSessionPage = safeLazy(() => import("./pages/CallSessionPage"), "CallSessionPage");
 
 // Travel universe
 const TravelHub = safeLazy(() => import("./pages/travel/TravelHub"), "TravelHub");
@@ -357,6 +361,10 @@ const App = () => (
               <Route path="/team/command-center" element={<TeamCommandCenterPage />} />
               <Route path="/admin/executive-kpi" element={<ExecutiveKPIBoardPage />} />
               <Route path="/team/permissions" element={<TeamPermissionsPage />} />
+              <Route path="/admin/ai-ops-chat" element={<AIOpsChatPage />} />
+              <Route path="/admin/financial-recon" element={<FinancialReconPage />} />
+              <Route path="/admin/recon-alerts" element={<ReconAlertsPage />} />
+              <Route path="/call/:callSessionId" element={<CallSessionPage />} />
 
               {/* Travel */}
               <Route path="/travel" element={<TravelHub />} />
