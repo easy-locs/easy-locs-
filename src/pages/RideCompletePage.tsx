@@ -1,16 +1,53 @@
 /**
- * RideCompletePage — /ride/complete/:rideRequestId — Post-ride rating & tip.
+ * RideCompletePage — /ride/complete/:rideRequestId — Post-ride rating, tip & review.
  */
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { BackCard } from "@/components/ui/back-card";
 import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
+import { submitRideReview } from "@/lib/rides/submit-ride-review";
 
 export default function RideCompletePage() {
   const { rideRequestId } = useParams();
   const navigate = useNavigate();
+
   const [rating, setRating] = useState(5);
   const [tip, setTip] = useState<number | null>(null);
+  const [review, setReview] = useState("");
+  const [ride, setRide] = useState<any>(null);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!rideRequestId) return;
+    supabase
+      .from("ride_requests" as any)
+      .select("*")
+      .eq("id", rideRequestId)
+      .single()
+      .then(({ data }) => setRide(data ?? null));
+  }, [rideRequestId]);
+
+  const handleSubmit = async () => {
+    if (!rideRequestId || !ride?.rider_id || !ride?.selected_driver_id) return;
+
+    setLoading(true);
+    try {
+      await submitRideReview({
+        rideRequestId,
+        riderId: ride.rider_id,
+        driverId: ride.selected_driver_id,
+        rating,
+        review,
+        tipAmount: tip ?? 0,
+        threadId: ride.thread_id ?? null,
+      });
+
+      navigate(`/ride/receipt/${rideRequestId}`);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -63,11 +100,24 @@ export default function RideCompletePage() {
             </div>
           </div>
 
+          {/* Review */}
+          <div className="space-y-2">
+            <p className="text-xs font-semibold text-muted-foreground uppercase">Review</p>
+            <textarea
+              value={review}
+              onChange={(e) => setReview(e.target.value)}
+              rows={4}
+              placeholder="Tell us about the trip"
+              className="w-full rounded-2xl border border-border bg-background px-4 py-3 text-sm outline-none resize-none"
+            />
+          </div>
+
           <Button
-            onClick={() => navigate(`/ride/receipt/${rideRequestId}`)}
+            onClick={handleSubmit}
+            disabled={loading}
             className="w-full h-12 rounded-2xl text-sm font-bold mt-6"
           >
-            Submit
+            {loading ? "Submitting…" : "Submit"}
           </Button>
 
           <p className="text-[10px] text-muted-foreground text-center">

@@ -20,6 +20,8 @@ async function createRideNotification(params: {
     metadata_json: {
       ride_request_id: params.rideRequestId,
       level: params.level,
+      premium: true,
+      created_from: "ride-lifecycle",
     },
   } as any);
 }
@@ -78,6 +80,21 @@ export async function notifyRideCompleted(
     userId: riderUserId,
     title: "Trip completed",
     message: `Your ride is complete · ${amount.toFixed(2)} AED`,
+    link: `/ride/receipt/${rideRequestId}`,
+    rideRequestId,
+    level: "success",
+  });
+}
+
+export async function notifyTipReceived(
+  driverUserId: string,
+  rideRequestId: string,
+  amount: number,
+) {
+  await createRideNotification({
+    userId: driverUserId,
+    title: "Tip received",
+    message: `You received a ${amount.toFixed(2)} AED tip`,
     link: `/ride/receipt/${rideRequestId}`,
     rideRequestId,
     level: "success",
