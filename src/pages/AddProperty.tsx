@@ -53,11 +53,7 @@ const AddProperty = () => {
   const [postalSuggestions, setPostalSuggestions] = useState<{ city: string; code: string }[]>([]);
   const [showPostalSuggestions, setShowPostalSuggestions] = useState(false);
 
-  // Collapsible sections state
-  const [openSections, setOpenSections] = useState<Record<string, boolean>>({
-    identification: true, location: true, characteristics: false,
-    amenities: false, financial: false, description: false,
-  });
+  const cc = useMemo(() => getCountryConfig(form.country), [form.country]);
 
   // Block adding if paywall applies
   if (!paywallLoading && requiresUpgrade) {
@@ -68,7 +64,7 @@ const AddProperty = () => {
     );
   }
 
-  const cc = useMemo(() => getCountryConfig(form.country), [form.country]);
+  const L = cc.labels;
   const L = cc.labels;
   const set = (patch: Partial<typeof form>) => setForm(prev => ({ ...prev, ...patch }));
   const toggleSection = (key: string) => setOpenSections(prev => ({ ...prev, [key]: !prev[key] }));
