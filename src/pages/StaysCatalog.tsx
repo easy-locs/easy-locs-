@@ -28,7 +28,7 @@ const StaysCatalog = () => {
         .from("public_listings")
         .select("*")
         .eq("active", true)
-        .in("listing_type", STAY_TYPES as unknown as string[])
+        .in("listing_type", STAY_TYPES as any)
         .order("created_at", { ascending: false });
       setListings(data || []);
       setLoading(false);

@@ -29,7 +29,7 @@ const RentalCatalog = () => {
         .from("public_listings")
         .select("*")
         .eq("active", true)
-        .in("listing_type", RENTAL_TYPES as unknown as string[])
+        .in("listing_type", RENTAL_TYPES as any)
         .order("created_at", { ascending: false });
 
       setListings(data || []);
