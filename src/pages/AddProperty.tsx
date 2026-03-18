@@ -6,7 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useI18n } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
 import { getCountryConfig } from "@/lib/country-config";
-import { Home, ArrowLeft, Building2, Ruler, Thermometer, Car, Trees, Sun, Zap, Waves, DoorOpen, ChevronDown } from "lucide-react";
+import { Home, Building2, Ruler, Thermometer, Car, Trees, Sun, Zap, Waves, DoorOpen, ChevronDown } from "lucide-react";
 import AddressAutocomplete, { type AddressResult } from "@/components/ui/AddressAutocomplete";
 import CountrySelect from "@/components/ui/CountrySelect";
 import { Input } from "@/components/ui/input";
@@ -16,6 +16,7 @@ import { Label } from "@/components/ui/label";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { usePropertyPaywall } from "@/hooks/usePropertyPaywall";
 import PropertyPaywallBanner from "@/components/property/PropertyPaywallBanner";
+import PropertyHubBreadcrumb from "@/components/property/PropertyHubBreadcrumb";
 
 const SURFACE_UNITS = [
   { value: "sqm", label: "m²" },
@@ -150,9 +151,7 @@ const AddProperty = () => {
   return (
     <DashboardLayout>
       <div className="max-w-3xl mx-auto pb-12">
-        <button onClick={() => navigate("/dashboard")} className="text-sm text-accent hover:underline mb-4 flex items-center gap-1">
-          <ArrowLeft className="h-3.5 w-3.5" /> {t("page.dashboard.world_map") || "Tableau de bord"}
-        </button>
+        <PropertyHubBreadcrumb currentPage={t("page.rental.add_property") || "Ajouter un bien"} />
 
         <div className="flex items-center gap-4 mb-8">
           <div className="w-12 h-12 rounded-xl bg-gradient-gold flex items-center justify-center shrink-0">

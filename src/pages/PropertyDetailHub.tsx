@@ -10,7 +10,7 @@ import { getCountryEntryOrDefault } from "@/lib/global-country-registry";
 import EntityActivityLog from "@/components/communication/EntityActivityLog";
 import { Button } from "@/components/ui/button";
 import {
-  ArrowLeft, Home, Users, FileText, Wallet, Wrench, ClipboardList,
+  Home, Users, FileText, Wallet, Wrench, ClipboardList,
   Calendar, MapPin, Ruler, Thermometer, Key, Building2,
   TrendingUp, AlertTriangle, CheckCircle, Eye, Sofa,
   CalendarRange, Store, ChevronRight, ExternalLink,
@@ -20,6 +20,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import PropertyHubBreadcrumb from "@/components/property/PropertyHubBreadcrumb";
 
 type PropertyDetail = {
   id: string;
@@ -166,8 +167,9 @@ const PropertyDetailHub = () => {
       <div className="space-y-6">
         {/* Breadcrumb + header */}
         <div>
-          <button onClick={() => navigate(-1)} className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground mb-3 transition-colors">
-            <ArrowLeft className="h-4 w-4" /> {t("page.property.back") || "Back"}
+          <PropertyHubBreadcrumb currentPage={property.label} />
+          <button onClick={() => navigate("/dashboard/properties")} className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground mb-3 transition-colors">
+            <ChevronRight className="h-4 w-4 rotate-180" /> {t("page.property.back_to_list") || "Back to properties"}
           </button>
 
           <div className="flex flex-col sm:flex-row sm:items-start gap-4">

@@ -48,6 +48,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const isTenantRoute = location.pathname.startsWith("/tenant");
   const isClientRoute = location.pathname.startsWith("/client");
   const isAppRoute = location.pathname.startsWith("/app");
+  const isPropertyHubRoute = location.pathname.startsWith("/property-hub");
 
   // Keep onboarding accessible for brand-new users, but never force-redirect existing sessions to it.
   if (isOnboarding && onboardingCompleted) {
@@ -79,6 +80,11 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
   const isFreePath = FREE_ACCESS_PREFIXES.some(prefix => location.pathname.startsWith(prefix))
     || location.pathname === "/dashboard";
+
+  // Property Hub is a neutral universe selector and must remain reachable from any role.
+  if (isPropertyHubRoute) {
+    return <>{children}</>;
+  }
 
   // Client role: can access /client/*, /app/*, free publishing routes, and onboarding
   if (activeRole === "client" && !isClientRoute && !isAppRoute && !isOnboarding && !isFreePath) {
