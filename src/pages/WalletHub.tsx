@@ -22,8 +22,9 @@ import WalletBalanceCard from "@/components/wallet/WalletBalanceCard";
 import WalletSecurityPanel from "@/components/wallet/WalletSecurityPanel";
 import WalletActionGrid from "@/components/wallet/WalletActionGrid";
 import UniversalActionSheet from "@/components/actions/UniversalActionSheet";
+import RentPaymentSheet from "@/components/wallet/RentPaymentSheet";
 
-export type WalletView = "home" | "pay" | "receive" | "request" | "scan" | "history" | "settings";
+export type WalletView = "home" | "pay" | "receive" | "request" | "scan" | "history" | "settings" | "rent-pay";
 
 export default function WalletHub() {
   const [searchParams] = useSearchParams();
