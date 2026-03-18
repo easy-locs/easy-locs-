@@ -227,6 +227,11 @@ const MerchantOnboardingAdminPage = safeLazy(() => import("./pages/MerchantOnboa
 const ExecutiveDashboard = safeLazy(() => import("./pages/ExecutiveDashboard"), "ExecutiveDashboard");
 const GhostCallPage = safeLazy(() => import("./pages/GhostCallPage"), "GhostCallPage");
 const SalesSequencePage = safeLazy(() => import("./pages/SalesSequencePage"), "SalesSequencePage");
+const WorkspaceBootstrapPage = safeLazy(() => import("./pages/WorkspaceBootstrapPage"), "WorkspaceBootstrapPage");
+const MenuAdminPage = safeLazy(() => import("./pages/MenuAdminPage"), "MenuAdminPage");
+const DispatchBoardPage = safeLazy(() => import("./pages/DispatchBoardPage"), "DispatchBoardPage");
+const SupportInboxPage = safeLazy(() => import("./pages/SupportInboxPage"), "SupportInboxPage");
+const AdminHomeV1Page = safeLazy(() => import("./pages/AdminHomeV1Page"), "AdminHomeV1Page");
 
 // Travel universe
 const TravelHub = safeLazy(() => import("./pages/travel/TravelHub"), "TravelHub");
@@ -545,8 +550,12 @@ const App = () => (
               <Route path="/admin/ai-quality" element={<ProtectedRoute><AIQualityDashboard /></ProtectedRoute>} />
               <Route path="/admin/ghost-call" element={<ProtectedRoute><GhostCallPage /></ProtectedRoute>} />
               <Route path="/admin/sales-sequences" element={<ProtectedRoute><SalesSequencePage /></ProtectedRoute>} />
+              <Route path="/admin/workspace-bootstrap" element={<ProtectedRoute><WorkspaceBootstrapPage /></ProtectedRoute>} />
+              <Route path="/admin/menu" element={<ProtectedRoute><MenuAdminPage /></ProtectedRoute>} />
+              <Route path="/admin/dispatch-board" element={<ProtectedRoute><DispatchBoardPage /></ProtectedRoute>} />
+              <Route path="/admin/support-inbox" element={<ProtectedRoute><SupportInboxPage /></ProtectedRoute>} />
+              <Route path="/admin/home-v1" element={<ProtectedRoute><AdminHomeV1Page /></ProtectedRoute>} />
 
-              {/* Orbit (Super-App Shell) */}
               <Route path="/app/orbit" element={<ProtectedRoute><OrbitAppShell><OrbitHome /></OrbitAppShell></ProtectedRoute>} />
               <Route path="/app/*" element={<ProtectedRoute><OrbitAppShell><OrbitHome /></OrbitAppShell></ProtectedRoute>} />
 
