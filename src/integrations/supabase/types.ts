@@ -356,6 +356,105 @@ export type Database = {
           },
         ]
       }
+      ai_chat_messages: {
+        Row: {
+          content: string
+          created_at: string | null
+          id: string
+          metadata: Json | null
+          role: string
+          thread_id: string
+          token_estimate: number | null
+          workspace_id: string | null
+        }
+        Insert: {
+          content: string
+          created_at?: string | null
+          id?: string
+          metadata?: Json | null
+          role: string
+          thread_id: string
+          token_estimate?: number | null
+          workspace_id?: string | null
+        }
+        Update: {
+          content?: string
+          created_at?: string | null
+          id?: string
+          metadata?: Json | null
+          role?: string
+          thread_id?: string
+          token_estimate?: number | null
+          workspace_id?: string | null
+        }
+        Relationships: []
+      }
+      ai_chat_threads: {
+        Row: {
+          context_id: string | null
+          context_type: string | null
+          created_at: string | null
+          created_by: string | null
+          id: string
+          title: string | null
+          workspace_id: string | null
+        }
+        Insert: {
+          context_id?: string | null
+          context_type?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          title?: string | null
+          workspace_id?: string | null
+        }
+        Update: {
+          context_id?: string | null
+          context_type?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          title?: string | null
+          workspace_id?: string | null
+        }
+        Relationships: []
+      }
+      ai_chat_usage: {
+        Row: {
+          completion_tokens: number | null
+          created_at: string | null
+          id: string
+          model: string | null
+          prompt_tokens: number | null
+          thread_id: string | null
+          total_tokens: number | null
+          user_id: string | null
+          workspace_id: string | null
+        }
+        Insert: {
+          completion_tokens?: number | null
+          created_at?: string | null
+          id?: string
+          model?: string | null
+          prompt_tokens?: number | null
+          thread_id?: string | null
+          total_tokens?: number | null
+          user_id?: string | null
+          workspace_id?: string | null
+        }
+        Update: {
+          completion_tokens?: number | null
+          created_at?: string | null
+          id?: string
+          model?: string | null
+          prompt_tokens?: number | null
+          thread_id?: string | null
+          total_tokens?: number | null
+          user_id?: string | null
+          workspace_id?: string | null
+        }
+        Relationships: []
+      }
       ai_ops_suggestions: {
         Row: {
           context_id: string | null
@@ -1070,6 +1169,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      call_participants: {
+        Row: {
+          call_session_id: string
+          id: string
+          joined_at: string | null
+          left_at: string | null
+          role: string | null
+          status: string | null
+          user_id: string | null
+        }
+        Insert: {
+          call_session_id: string
+          id?: string
+          joined_at?: string | null
+          left_at?: string | null
+          role?: string | null
+          status?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          call_session_id?: string
+          id?: string
+          joined_at?: string | null
+          left_at?: string | null
+          role?: string | null
+          status?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
       }
       call_sessions: {
         Row: {
@@ -3517,6 +3646,57 @@ export type Database = {
         }
         Relationships: []
       }
+      financial_reconciliation: {
+        Row: {
+          actual_amount: number | null
+          created_at: string | null
+          currency: string | null
+          delta: number | null
+          entity_id: string | null
+          entity_type: string | null
+          expected_amount: number | null
+          id: string
+          notes: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          status: string | null
+          updated_at: string | null
+          workspace_id: string | null
+        }
+        Insert: {
+          actual_amount?: number | null
+          created_at?: string | null
+          currency?: string | null
+          delta?: number | null
+          entity_id?: string | null
+          entity_type?: string | null
+          expected_amount?: number | null
+          id?: string
+          notes?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: string | null
+          updated_at?: string | null
+          workspace_id?: string | null
+        }
+        Update: {
+          actual_amount?: number | null
+          created_at?: string | null
+          currency?: string | null
+          delta?: number | null
+          entity_id?: string | null
+          entity_type?: string | null
+          expected_amount?: number | null
+          id?: string
+          notes?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: string | null
+          updated_at?: string | null
+          workspace_id?: string | null
+        }
+        Relationships: []
+      }
       fraud_events: {
         Row: {
           created_at: string | null
@@ -4478,6 +4658,48 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      live_translation_stream: {
+        Row: {
+          call_session_id: string
+          confidence: number | null
+          created_at: string | null
+          id: string
+          segment_index: number | null
+          source_lang: string | null
+          source_text: string | null
+          speaker_id: string | null
+          target_lang: string | null
+          translated_text: string | null
+          workspace_id: string | null
+        }
+        Insert: {
+          call_session_id: string
+          confidence?: number | null
+          created_at?: string | null
+          id?: string
+          segment_index?: number | null
+          source_lang?: string | null
+          source_text?: string | null
+          speaker_id?: string | null
+          target_lang?: string | null
+          translated_text?: string | null
+          workspace_id?: string | null
+        }
+        Update: {
+          call_session_id?: string
+          confidence?: number | null
+          created_at?: string | null
+          id?: string
+          segment_index?: number | null
+          source_lang?: string | null
+          source_text?: string | null
+          speaker_id?: string | null
+          target_lang?: string | null
+          translated_text?: string | null
+          workspace_id?: string | null
+        }
+        Relationships: []
       }
       local_services: {
         Row: {
@@ -7154,6 +7376,47 @@ export type Database = {
           },
         ]
       }
+      recon_alerts: {
+        Row: {
+          acknowledged_at: string | null
+          acknowledged_by: string | null
+          body: string | null
+          created_at: string | null
+          id: string
+          recon_id: string
+          severity: string
+          title: string
+        }
+        Insert: {
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
+          body?: string | null
+          created_at?: string | null
+          id?: string
+          recon_id: string
+          severity?: string
+          title: string
+        }
+        Update: {
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
+          body?: string | null
+          created_at?: string | null
+          id?: string
+          recon_id?: string
+          severity?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recon_alerts_recon_id_fkey"
+            columns: ["recon_id"]
+            isOneToOne: false
+            referencedRelation: "financial_reconciliation"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       referrals: {
         Row: {
           converted_at: string | null
@@ -7972,6 +8235,39 @@ export type Database = {
           turn_urls?: string[] | null
           turn_username?: string | null
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      rtc_signaling_messages: {
+        Row: {
+          call_session_id: string
+          created_at: string | null
+          expires_at: string | null
+          id: string
+          message_type: string
+          payload: Json
+          sender_id: string | null
+          workspace_id: string | null
+        }
+        Insert: {
+          call_session_id: string
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          message_type: string
+          payload: Json
+          sender_id?: string | null
+          workspace_id?: string | null
+        }
+        Update: {
+          call_session_id?: string
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          message_type?: string
+          payload?: Json
+          sender_id?: string | null
+          workspace_id?: string | null
         }
         Relationships: []
       }
