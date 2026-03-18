@@ -2,7 +2,7 @@
  * Demo seed for the System Audit — inserts minimal data so the audit
  * can show realistic PASS/WARN states instead of empty-table failures.
  *
- * Run from the Audit page via a "Seed demo data" button, or call directly.
+ * All table names and columns match the REAL Supabase schema.
  */
 import { supabase } from "@/integrations/supabase/client";
 
@@ -15,11 +15,13 @@ export async function seedAuditDemoData(workspaceId?: string) {
   const now = new Date().toISOString();
 
   // 1. User profile (upsert — may already exist)
+  // Schema: user_profiles(id, full_name, phone, avatar_url, locale, timezone, ...)
   await (supabase as any)
     .from("user_profiles")
     .upsert({ id: userId, full_name: "Demo User", updated_at: now }, { onConflict: "id" });
 
   // 2. Merchant profile
+  // Schema: merchant_onboarding_profiles(id, workspace_id, merchant_name, contact_name, email, phone, city, cuisine_type, onboarding_status, ...)
   const { data: merchant } = await (supabase as any)
     .from("merchant_onboarding_profiles")
     .insert({
@@ -36,6 +38,7 @@ export async function seedAuditDemoData(workspaceId?: string) {
     .single();
 
   // 3. Driver profile
+  // Schema: driver_profiles(id, user_id, workspace_id, service_mode, vehicle_type, plate_number, is_online, is_available, is_verified, current_status, ...)
   const { data: driver } = await (supabase as any)
     .from("driver_profiles")
     .insert({
@@ -53,31 +56,35 @@ export async function seedAuditDemoData(workspaceId?: string) {
     .single();
 
   // 4. Order
+  // Schema: orders(id, workspace_id, customer_user_id, order_type, service_mode, status, currency, total_amount, ...)
   const { data: order } = await (supabase as any)
     .from("orders")
     .insert({
       workspace_id: ws,
       customer_user_id: userId,
+      order_type: "delivery",
+      service_mode: "delivery",
       status: "paid",
       total_amount: 2500,
       currency: "EUR",
-      payment_method: "card",
     })
     .select("id")
     .single();
 
   // 5. Order items
+  // Schema: order_items(id, order_id, item_name, quantity, unit_price, total_price, ...)
   if (order?.id) {
     await (supabase as any)
       .from("order_items")
       .insert([
-        { order_id: order.id, item_name: "Burger Classic", quantity: 2, unit_price: 850 },
-        { order_id: order.id, item_name: "Frites", quantity: 1, unit_price: 400 },
-        { order_id: order.id, item_name: "Coca-Cola", quantity: 1, unit_price: 400 },
+        { order_id: order.id, item_name: "Burger Classic", quantity: 2, unit_price: 850, total_price: 1700 },
+        { order_id: order.id, item_name: "Frites", quantity: 1, unit_price: 400, total_price: 400 },
+        { order_id: order.id, item_name: "Coca-Cola", quantity: 1, unit_price: 400, total_price: 400 },
       ]);
   }
 
   // 6. Payment intent
+  // Schema: payment_intents(id, workspace_id, order_id, amount, currency, status, provider, ...)
   await (supabase as any)
     .from("payment_intents")
     .insert({
@@ -90,6 +97,7 @@ export async function seedAuditDemoData(workspaceId?: string) {
     });
 
   // 7. Dispatch job
+  // Schema: dispatch_jobs(id, workspace_id, order_id, assigned_driver_id, status, pickup_label, dropoff_label, ...)
   await (supabase as any)
     .from("dispatch_jobs")
     .insert({
@@ -97,16 +105,18 @@ export async function seedAuditDemoData(workspaceId?: string) {
       order_id: order?.id ?? null,
       assigned_driver_id: driver?.id ?? null,
       status: "assigned",
-      pickup_address: "12 Rue Demo, Paris",
-      delivery_address: "45 Avenue Test, Paris",
+      pickup_label: "12 Rue Demo, Paris",
+      dropoff_label: "45 Avenue Test, Paris",
     });
 
   // 8. Tracking session
+  // Schema: live_tracking_sessions(id, workspace_id, context_type, context_id, driver_id, status, ...)
   const { data: trackingSession } = await (supabase as any)
     .from("live_tracking_sessions")
     .insert({
       workspace_id: ws,
-      order_id: order?.id ?? null,
+      context_type: "order",
+      context_id: order?.id ?? "00000000-0000-0000-0000-000000000000",
       driver_id: driver?.id ?? null,
       status: "active",
     })
@@ -114,6 +124,7 @@ export async function seedAuditDemoData(workspaceId?: string) {
     .single();
 
   // 9. Tracking points (5 sample GPS points)
+  // Schema: live_tracking_points(id, session_id, lat, lng, recorded_at, ...)
   if (trackingSession?.id) {
     const baseLatParis = 48.8566;
     const baseLngParis = 2.3522;
