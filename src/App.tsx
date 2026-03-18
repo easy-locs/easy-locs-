@@ -342,6 +342,7 @@ const App = () => (
               <Route path="/admin/fraud" element={<AdminFraudPage />} />
               <Route path="/admin/live-ops" element={<AdminLiveOpsPage />} />
               <Route path="/subscription/priority" element={<RiderPrioritySubscriptionPage />} />
+              <Route path="/admin/dispatch-board" element={<AdminDispatchBoardPage />} />
 
               {/* Travel */}
               <Route path="/travel" element={<TravelHub />} />
