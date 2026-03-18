@@ -197,6 +197,12 @@ const LandlordRentDashboard = () => {
                         <span className="text-muted-foreground">{rc.paid_date}</span>
                       )}
                     </div>
+                    {/* Receipt status */}
+                    {rc.paid && (
+                      <div className="mt-1.5">
+                        <ReceiptStatusBadge receiptUrl={rc.receipt_pdf_url} validated={rc.receipt_validated} paid={rc.paid} />
+                      </div>
+                    )}
                   </div>
 
                   {/* Actions */}
