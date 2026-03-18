@@ -1,5 +1,5 @@
 /**
- * RideMap — Mapbox-powered map for /ride with pickup/dropoff pins + recenter.
+ * RideMap — Mapbox-powered map for /ride with live radar + branded markers.
  */
 import { useEffect, useRef, useCallback, useState } from "react";
 import mapboxgl from "mapbox-gl";
@@ -7,6 +7,8 @@ import "mapbox-gl/dist/mapbox-gl.css";
 import { Navigation } from "lucide-react";
 import type { SavedPlace } from "@/hooks/useSmartLocation";
 import { createUserMarkerElement, createPickupMarkerElement, createDropoffMarkerElement } from "@/lib/map/easy-locs-user-marker";
+import { useDriverRadar } from "@/hooks/useDriverRadar";
+import RadarOverlay from "./RadarOverlay";
 
 const MAPBOX_TOKEN = "pk.eyJ1IjoiZWFzeWxvY3MyMDI2IiwiYSI6ImNtbXZiZ3h0cTF6ZHMycnIyOWw4NnJzZTIifQ.ElIj6bFQK_BpVm6suigHUQ";
 
@@ -42,12 +44,22 @@ function createDriverPin(): HTMLDivElement {
   return el;
 }
 
-export default function RideMap({ pickup, dropoff, userLat, userLng, drivers = [], className = "" }: RideMapProps) {
+export default function RideMap({ pickup, dropoff, userLat, userLng, drivers: externalDrivers = [], className = "" }: RideMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
   const markersRef = useRef<mapboxgl.Marker[]>([]);
   const [ready, setReady] = useState(false);
 
+  // Live radar
+  const { drivers: radarDrivers, stats, connected, loading: radarLoading, formatEta } = useDriverRadar({
+    lat: userLat || null,
+    lng: userLng || null,
+    radiusKm: 5,
+    type: "ride",
+    enabled: true,
+  });
+
+  const drivers = externalDrivers.length > 0 ? externalDrivers : radarDrivers.map(d => ({ lat: d.lat, lng: d.lng, id: d.id }));
   // Init map
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
@@ -119,6 +131,10 @@ export default function RideMap({ pickup, dropoff, userLat, userLng, drivers = [
   return (
     <div className={`relative rounded-2xl overflow-hidden border border-border/10 ${className}`}>
       <div ref={containerRef} className="w-full h-full min-h-[180px]" />
+      {/* Radar overlay */}
+      <div className="absolute top-3 left-3 z-10">
+        <RadarOverlay stats={stats} connected={connected} loading={radarLoading} formatEta={formatEta} />
+      </div>
       <button
         onClick={recenter}
         className="absolute bottom-3 right-3 w-10 h-10 rounded-full bg-card/95 backdrop-blur-md border border-border/20 flex items-center justify-center shadow-lg active:scale-90 transition-transform z-10"
