@@ -1,6 +1,7 @@
 /**
  * UniversalQrWidgets — Reusable QR display + scan entry point widgets.
  * Powered by the unified QR engine (src/lib/qr-engine.ts).
+ * All QR codes render with the Easy-Locs branded logo overlay in the center.
  */
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -12,6 +13,39 @@ import {
   qr,
 } from "@/lib/qr-engine";
 import { Button } from "@/components/ui/button";
+
+/* ── Branded QR Logo Overlay ─────────────────────────────────── */
+
+function BrandedQrLogo({ size = 36 }: { size?: number }) {
+  return (
+    <div
+      className="absolute inset-0 flex items-center justify-center pointer-events-none"
+      style={{ zIndex: 2 }}
+    >
+      <div
+        className="rounded-lg bg-white flex items-center justify-center shadow-sm"
+        style={{ width: size + 8, height: size + 8, padding: 4 }}
+      >
+        <div className="flex items-baseline gap-0.5 select-none">
+          <span className="font-black tracking-tight text-[10px]" style={{ color: "hsl(220 20% 15%)" }}>
+            Easy
+          </span>
+          <span
+            className="font-black tracking-tight text-[10px]"
+            style={{
+              background: "linear-gradient(135deg, hsl(45 90% 48%), hsl(35 90% 42%))",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              backgroundClip: "text",
+            }}
+          >
+            -Locs
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 /* ── Scan QR Button ──────────────────────────────────────────── */
 
@@ -74,8 +108,10 @@ export function MyQrCodeCard({
         )}
       </div>
 
-      <div className="p-3 bg-white rounded-xl">
-        <QRCode value={link} size={size} level="M" />
+      {/* QR with branded logo overlay */}
+      <div className="relative p-3 bg-white rounded-xl">
+        <QRCode value={link} size={size} level="H" />
+        <BrandedQrLogo size={Math.round(size * 0.22)} />
       </div>
 
       <button
