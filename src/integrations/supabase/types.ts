@@ -7000,6 +7000,7 @@ export type Database = {
       ride_requests: {
         Row: {
           assigned_at: string | null
+          assigned_ride_type: string | null
           created_at: string
           current_wave: number | null
           dropoff_lat: number | null
@@ -7009,13 +7010,16 @@ export type Database = {
           offered_driver_ids: string[] | null
           pickup_lat: number
           pickup_lng: number
+          requested_ride_type: string | null
           rider_id: string
+          search_radius_km: number | null
           selected_driver_id: string | null
           status: string
           updated_at: string
         }
         Insert: {
           assigned_at?: string | null
+          assigned_ride_type?: string | null
           created_at?: string
           current_wave?: number | null
           dropoff_lat?: number | null
@@ -7025,13 +7029,16 @@ export type Database = {
           offered_driver_ids?: string[] | null
           pickup_lat: number
           pickup_lng: number
+          requested_ride_type?: string | null
           rider_id: string
+          search_radius_km?: number | null
           selected_driver_id?: string | null
           status?: string
           updated_at?: string
         }
         Update: {
           assigned_at?: string | null
+          assigned_ride_type?: string | null
           created_at?: string
           current_wave?: number | null
           dropoff_lat?: number | null
@@ -7041,7 +7048,9 @@ export type Database = {
           offered_driver_ids?: string[] | null
           pickup_lat?: number
           pickup_lng?: number
+          requested_ride_type?: string | null
           rider_id?: string
+          search_radius_km?: number | null
           selected_driver_id?: string | null
           status?: string
           updated_at?: string
