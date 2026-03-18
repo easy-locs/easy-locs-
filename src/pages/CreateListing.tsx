@@ -120,6 +120,16 @@ const defaultForm: ListingForm = {
   presence_mode: "off", entity_type: "fixed_store", coverage_mode: "point", coverage_radius_m: null,
 };
 
+/** Derive listing type options from selected category config */
+function getListingTypeOptions(categoryId: string) {
+  const types = getAllowedListingTypes(categoryId);
+  return types.map(t => ({
+    value: t,
+    label: LISTING_TYPE_META[t]?.label || t,
+    icon: LISTING_TYPE_META[t]?.icon || "📦",
+  }));
+}
+
 /* ─── Component ─── */
 const CreateListing = () => {
   const { user, orgId, userCountry } = useAuth();
