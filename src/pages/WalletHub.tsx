@@ -62,6 +62,7 @@ export default function WalletHub() {
     scan: t("orbit.scan_qr") || "Scan QR",
     history: t("orbit.history") || "History",
     settings: t("orbit.settings_label") || "Settings",
+    "rent-pay": "Rent Payment",
   };
 
   const renderSubView = () => {
