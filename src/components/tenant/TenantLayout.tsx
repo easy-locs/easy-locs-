@@ -6,7 +6,7 @@ import { useTenantProperty } from "@/hooks/useTenantProperty";
 import AppLogo from "@/components/AppLogo";
 import {
   LayoutDashboard, Receipt, FileText, MessageCircle,
-  CreditCard, Settings, LogOut, Menu, X, Globe, Star, ClipboardList,
+  CreditCard, Settings, LogOut, Menu, X, Star, ClipboardList,
 } from "lucide-react";
 import NotificationBell from "@/components/notifications/NotificationBell";
 import ThemeSwitcher from "@/components/ThemeSwitcher";
