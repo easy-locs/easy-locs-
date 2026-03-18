@@ -44,7 +44,7 @@ type Step = "addresses" | "details" | "confirm" | "matching";
 
 export default function SendPage() {
   const navigate = useNavigate();
-  const { geo, currentLocation, places, addRecent } = useSmartLocation();
+  const { geo, currentLocation, places, addRecent, savePlace, removePlace } = useSmartLocation();
   const [step, setStep] = useState<Step>("addresses");
   const [pickup, setPickup] = useState<SavedPlace | null>(currentLocation);
   const [dropoff, setDropoff] = useState<SavedPlace | null>(null);

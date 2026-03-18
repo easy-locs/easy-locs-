@@ -127,8 +127,8 @@ export default function RidePage() {
         {/* Location pickers (always visible unless matching) */}
         {step !== "matching" && (
           <div className="space-y-2">
-            <SmartLocationPicker label="Pickup" value={pickup?.address || ""} onSelect={handlePickup} currentLocation={currentLocation} savedPlaces={places} placeholder="Your location" />
-            <SmartLocationPicker label="Destination" value={dropoff?.address || ""} onSelect={handleDropoff} currentLocation={null} savedPlaces={places} placeholder="Where to?" autoFocus={!!pickup && !dropoff} />
+            <SmartLocationPicker label="Pickup" value={pickup?.address || ""} onSelect={handlePickup} currentLocation={currentLocation} savedPlaces={places} onSavePlace={savePlace} onRemovePlace={removePlace} placeholder="Your location" />
+            <SmartLocationPicker label="Destination" value={dropoff?.address || ""} onSelect={handleDropoff} currentLocation={null} savedPlaces={places} onSavePlace={savePlace} onRemovePlace={removePlace} placeholder="Where to?" autoFocus={!!pickup && !dropoff} />
           </div>
         )}
 
