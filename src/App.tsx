@@ -224,6 +224,7 @@ const WalletHubPage = safeLazy(() => import("./pages/WalletHubPage"), "WalletHub
 const PredictiveDispatchPage = safeLazy(() => import("./pages/PredictiveDispatchPage"), "PredictiveDispatchPage");
 const MerchantOnboardingPage = safeLazy(() => import("./pages/MerchantOnboardingPage"), "MerchantOnboardingPage");
 const MerchantOnboardingAdminPage = safeLazy(() => import("./pages/MerchantOnboardingAdminPage"), "MerchantOnboardingAdminPage");
+const ExecutiveDashboard = safeLazy(() => import("./pages/ExecutiveDashboard"), "ExecutiveDashboard");
 
 // Travel universe
 const TravelHub = safeLazy(() => import("./pages/travel/TravelHub"), "TravelHub");
@@ -375,6 +376,7 @@ const App = () => (
               <Route path="/dispatch/predictive" element={<PredictiveDispatchPage />} />
               <Route path="/merchant/onboarding" element={<MerchantOnboardingPage />} />
               <Route path="/admin/merchant-onboarding" element={<MerchantOnboardingAdminPage />} />
+              <Route path="/admin/executive-dashboard" element={<ExecutiveDashboard />} />
               {/* Travel */}
               <Route path="/travel" element={<TravelHub />} />
               <Route path="/travel/flights" element={<TravelFlights />} />
