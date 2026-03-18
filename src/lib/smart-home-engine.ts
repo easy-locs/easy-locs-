@@ -57,8 +57,8 @@ const ALL_CATEGORIES: Record<CategoryKey, SmartCategory> = {
   beauty:    { key: "beauty",    label: "Beauty",      icon: "💅", color: "hsl(var(--accent))",   size: "normal", route: "/discover?rail=beauty" },
   concierge: { key: "concierge", label: "Concierge",   icon: "🎯", color: "hsl(var(--primary))",  size: "normal", route: "/discover?rail=concierge" },
   mobility:  { key: "mobility",  label: "Rides",       icon: "🏍️", color: "hsl(var(--info))",     size: "normal", route: "/ride" },
-  rentals:   { key: "rentals",   label: "Rentals",     icon: "🔑", color: "hsl(var(--primary))",  size: "normal", route: "/discover?rail=rentals",  subtitle: "Long-term" },
-  stays:     { key: "stays",     label: "Stays",       icon: "🏨", color: "hsl(var(--accent))",   size: "normal", route: "/discover?rail=stays",    subtitle: "Short-term" },
+  rentals:   { key: "rentals",   label: "Rentals",     icon: "🔑", color: "hsl(var(--primary))",  size: "normal", route: "/rentals",  subtitle: "Long-term" },
+  stays:     { key: "stays",     label: "Stays",       icon: "🏨", color: "hsl(var(--accent))",   size: "normal", route: "/stays",    subtitle: "Short-term" },
 };
 
 /* ═══ Time-based priority ═══ */
