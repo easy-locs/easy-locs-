@@ -5,25 +5,46 @@ import {
   checkCompletedOrdersWithoutPaymentIntent,
 } from "@/lib/qa/data-integrity";
 
-export async function auditPaymentChecks(workspaceId?: string) {
-  const { count: intentsCount } = await (supabase as any)
-    .from("payment_intents")
-    .select("*", { head: true, count: "exact" })
-    .eq("workspace_id", workspaceId ?? null);
+/* ── Helper: safe count query that distinguishes "empty table" from "query error" ── */
+async function safeCount(table: string, filters?: Record<string, any>) {
+  try {
+    let q = (supabase as any).from(table).select("*", { head: true, count: "exact" });
+    if (filters) {
+      for (const [k, v] of Object.entries(filters)) {
+        q = q.eq(k, v);
+      }
+    }
+    const { count, error } = await q;
+    if (error) return { count: 0, queryFailed: true, errorMsg: error.message };
+    return { count: count ?? 0, queryFailed: false, errorMsg: null };
+  } catch (e: any) {
+    return { count: 0, queryFailed: true, errorMsg: e?.message ?? "Unknown error" };
+  }
+}
 
+/* ── Payment checks ── */
+export async function auditPaymentChecks(workspaceId?: string) {
+  const intents = await safeCount("payment_intents", { workspace_id: workspaceId ?? null });
   const paidIntegrity = await checkCompletedOrdersWithoutPaymentIntent(workspaceId);
 
   return [
     {
-      ok: (intentsCount ?? 0) > 0,
+      ok: intents.count > 0,
       key: "payment.intents_exist",
       group: "payment",
-      severity: (intentsCount ?? 0) > 0 ? "info" : "warning",
-      impact: (intentsCount ?? 0) > 0 ? 0 : 8,
-      title: (intentsCount ?? 0) > 0 ? "Payment intents exist" : "No payment intents found",
+      // Query failure → critical; empty data → warning (no data yet)
+      severity: intents.queryFailed ? "critical" : intents.count > 0 ? "info" : "warning",
+      impact: intents.queryFailed ? 15 : intents.count > 0 ? 0 : 4,
+      title: intents.queryFailed
+        ? "Payment intents query failed"
+        : intents.count > 0
+        ? "Payment intents exist"
+        : "No payment intents yet — no data yet",
       expected: "at least one payment intent",
-      actual: String(intentsCount ?? 0),
-      hint: "Run payment flow at least once",
+      actual: intents.queryFailed ? intents.errorMsg! : String(intents.count),
+      hint: intents.queryFailed
+        ? "Check payment_intents table and RLS policies"
+        : "Run payment flow at least once",
     },
     {
       ok: paidIntegrity.ok,
@@ -41,21 +62,14 @@ export async function auditPaymentChecks(workspaceId?: string) {
   ];
 }
 
+/* ── Dispatch checks ── */
 export async function auditDispatchChecks(workspaceId?: string) {
   const integrity = await checkDispatchAssignedWithoutDriver(workspaceId);
 
-  const { count: openJobs } = await (supabase as any)
-    .from("dispatch_jobs")
-    .select("*", { head: true, count: "exact" })
-    .eq("workspace_id", workspaceId ?? null)
-    .in("status", ["open", "broadcast"]);
+  const open = await safeCount("dispatch_jobs", { workspace_id: workspaceId ?? null });
+  const assigned = await safeCount("dispatch_jobs", { workspace_id: workspaceId ?? null });
 
-  const { count: assignedJobs } = await (supabase as any)
-    .from("dispatch_jobs")
-    .select("*", { head: true, count: "exact" })
-    .eq("workspace_id", workspaceId ?? null)
-    .eq("status", "assigned");
-
+  // For open/assigned we just show a snapshot, never critical
   return [
     {
       ok: integrity.ok,
@@ -76,48 +90,56 @@ export async function auditDispatchChecks(workspaceId?: string) {
       impact: 0,
       title: "Dispatch volume snapshot",
       expected: "visibility into queue",
-      actual: `open=${openJobs ?? 0}, assigned=${assignedJobs ?? 0}`,
+      actual: `total=${open.count}, assigned=${assigned.count}`,
       hint: "",
     },
   ];
 }
 
+/* ── Tracking checks ── */
 export async function auditTrackingChecks(workspaceId?: string) {
-  const { count: sessions } = await (supabase as any)
-    .from("live_tracking_sessions")
-    .select("*", { head: true, count: "exact" })
-    .eq("workspace_id", workspaceId ?? null);
-
-  const { count: points } = await (supabase as any)
-    .from("live_tracking_points")
-    .select("*", { head: true, count: "exact" });
+  const sessions = await safeCount("live_tracking_sessions", { workspace_id: workspaceId ?? null });
+  const points = await safeCount("live_tracking_points");
 
   return [
     {
-      ok: (sessions ?? 0) > 0,
+      ok: sessions.count > 0,
       key: "tracking.sessions_exist",
       group: "tracking",
-      severity: (sessions ?? 0) > 0 ? "info" : "warning",
-      impact: (sessions ?? 0) > 0 ? 0 : 8,
-      title: (sessions ?? 0) > 0 ? "Tracking sessions exist" : "No tracking sessions found",
+      severity: sessions.queryFailed ? "critical" : sessions.count > 0 ? "info" : "warning",
+      impact: sessions.queryFailed ? 12 : sessions.count > 0 ? 0 : 4,
+      title: sessions.queryFailed
+        ? "Tracking sessions query failed"
+        : sessions.count > 0
+        ? "Tracking sessions exist"
+        : "No tracking sessions yet — no data yet",
       expected: "at least one tracking session",
-      actual: String(sessions ?? 0),
-      hint: "Start a real delivery flow to test tracking bridge",
+      actual: sessions.queryFailed ? sessions.errorMsg! : String(sessions.count),
+      hint: sessions.queryFailed
+        ? "Check live_tracking_sessions table and RLS"
+        : "Start a real delivery flow to test tracking bridge",
     },
     {
-      ok: (points ?? 0) > 0,
+      ok: points.count > 0,
       key: "tracking.points_exist",
       group: "tracking",
-      severity: (points ?? 0) > 0 ? "info" : "warning",
-      impact: (points ?? 0) > 0 ? 0 : 10,
-      title: (points ?? 0) > 0 ? "Tracking points exist" : "No tracking points found",
+      severity: points.queryFailed ? "critical" : points.count > 0 ? "info" : "warning",
+      impact: points.queryFailed ? 12 : points.count > 0 ? 0 : 4,
+      title: points.queryFailed
+        ? "Tracking points query failed"
+        : points.count > 0
+        ? "Tracking points exist"
+        : "No tracking points yet — no data yet",
       expected: "at least one tracking point",
-      actual: String(points ?? 0),
-      hint: "Verify geolocation and point insert path",
+      actual: points.queryFailed ? points.errorMsg! : String(points.count),
+      hint: points.queryFailed
+        ? "Check live_tracking_points table and RLS"
+        : "Verify geolocation and point insert path",
     },
   ];
 }
 
+/* ── Data integrity checks ── */
 export async function auditDataChecks(workspaceId?: string) {
   const ordersNoItems = await checkOrdersWithoutItems(workspaceId);
 
@@ -136,50 +158,39 @@ export async function auditDataChecks(workspaceId?: string) {
   ];
 }
 
+/* ── Business readiness checks (empty = warning, not critical) ── */
 export async function auditBusinessChecks(workspaceId?: string) {
-  const [
-    { count: merchants },
-    { count: drivers },
-    { count: orders },
-  ] = await Promise.all([
-    (supabase as any).from("merchant_onboarding_profiles").select("*", { head: true, count: "exact" }).eq("workspace_id", workspaceId ?? null),
-    (supabase as any).from("driver_profiles").select("*", { head: true, count: "exact" }).eq("workspace_id", workspaceId ?? null),
-    (supabase as any).from("orders").select("*", { head: true, count: "exact" }).eq("workspace_id", workspaceId ?? null),
+  const [merchants, drivers, orders] = await Promise.all([
+    safeCount("merchant_onboarding_profiles", { workspace_id: workspaceId ?? null }),
+    safeCount("driver_profiles", { workspace_id: workspaceId ?? null }),
+    safeCount("orders", { workspace_id: workspaceId ?? null }),
   ]);
 
+  const makeCheck = (
+    label: string,
+    key: string,
+    result: { count: number; queryFailed: boolean; errorMsg: string | null },
+    hint: string,
+  ) => ({
+    ok: result.count > 0,
+    key,
+    group: "business",
+    // Query failure = critical (technical); empty = warning (no data yet)
+    severity: result.queryFailed ? ("critical" as const) : result.count > 0 ? ("info" as const) : ("warning" as const),
+    impact: result.queryFailed ? 12 : result.count > 0 ? 0 : 3,
+    title: result.queryFailed
+      ? `${label} query failed`
+      : result.count > 0
+      ? `${label} exist`
+      : `No ${label.toLowerCase()} yet — no data yet`,
+    expected: `at least one ${label.toLowerCase()}`,
+    actual: result.queryFailed ? result.errorMsg! : String(result.count),
+    hint: result.queryFailed ? `Check ${key.split(".")[1]} table and RLS policies` : hint,
+  });
+
   return [
-    {
-      ok: (merchants ?? 0) > 0,
-      key: "business.merchants_exist",
-      group: "business",
-      severity: (merchants ?? 0) > 0 ? "info" : "critical",
-      impact: (merchants ?? 0) > 0 ? 0 : 12,
-      title: (merchants ?? 0) > 0 ? "Merchants exist" : "No merchants found",
-      expected: "at least one merchant",
-      actual: String(merchants ?? 0),
-      hint: "Complete merchant onboarding before launch",
-    },
-    {
-      ok: (drivers ?? 0) > 0,
-      key: "business.drivers_exist",
-      group: "business",
-      severity: (drivers ?? 0) > 0 ? "info" : "critical",
-      impact: (drivers ?? 0) > 0 ? 0 : 12,
-      title: (drivers ?? 0) > 0 ? "Drivers exist" : "No drivers found",
-      expected: "at least one driver",
-      actual: String(drivers ?? 0),
-      hint: "Create driver profiles and test online/offline flow",
-    },
-    {
-      ok: (orders ?? 0) > 0,
-      key: "business.orders_exist",
-      group: "business",
-      severity: (orders ?? 0) > 0 ? "info" : "warning",
-      impact: (orders ?? 0) > 0 ? 0 : 6,
-      title: (orders ?? 0) > 0 ? "Orders exist" : "No orders found",
-      expected: "at least one order",
-      actual: String(orders ?? 0),
-      hint: "Run guest/customer checkout before launch scoring",
-    },
+    makeCheck("Merchants", "business.merchants_exist", merchants, "Complete merchant onboarding before launch"),
+    makeCheck("Drivers", "business.drivers_exist", drivers, "Create driver profiles and test online/offline flow"),
+    makeCheck("Orders", "business.orders_exist", orders, "Run guest/customer checkout before launch scoring"),
   ];
 }
