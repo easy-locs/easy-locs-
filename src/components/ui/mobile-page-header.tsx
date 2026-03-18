@@ -7,11 +7,13 @@ import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
-interface MobilePageHeaderProps {
+export interface MobilePageHeaderProps {
   title: string;
   subtitle?: string;
   backTo?: string;
   showBack?: boolean;
+  /** Custom back handler — overrides default history/backTo behavior */
+  onBack?: () => void;
   actions?: React.ReactNode;
   icon?: React.ReactNode;
   className?: string;
