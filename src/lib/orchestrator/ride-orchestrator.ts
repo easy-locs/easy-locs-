@@ -1,10 +1,11 @@
 /**
- * Ride Orchestrator — Full ride lifecycle: radar → rank → price → wave dispatch → thread.
- * Single entry point for the ride flow with progressive driver matching.
+ * Ride Orchestrator — Full ride lifecycle: pool discovery → price → wave dispatch → thread.
  */
-import { computeRadar, type DriverWithDistance } from "@/lib/radar/radar-engine";
+import { computeRadar } from "@/lib/radar/radar-engine";
 import { computeSurge, calculateFare, getFareRules, isNightHour, type FareEstimate } from "@/lib/fare-engine";
 import { runWaveDispatch, type DispatchResult } from "@/lib/rides/retry-ride-request";
+import { findDriverPool } from "@/lib/rides/find-driver-pool";
+import { insertRideSystemMessage } from "@/lib/orbit/insert-ride-system-message";
 import { supabase } from "@/integrations/supabase/client";
 
 export interface RideFlowResult {
@@ -15,45 +16,41 @@ export interface RideFlowResult {
   assigned: boolean;
   driverId: string | null;
   threadId: string | null;
+  radiusKm: number | null;
+  rideTypeUsed: string;
 }
 
 export async function startRideFlow(opts: {
   userId: string;
   userLat: number;
   userLng: number;
-  drivers: Array<{ id: string; lat: number; lng: number; status: "available" | "busy"; type: "taxi" | "delivery"; rating: number; acceptance_rate?: number }>;
+  drivers: any[];
   distanceKm: number;
   durationMin: number;
   countryCode?: string;
+  requestedRideType?: "eco" | "standard" | "premium";
 }): Promise<RideFlowResult> {
-  const { userId, userLat, userLng, drivers, distanceKm, durationMin, countryCode } = opts;
+  const {
+    userId, userLat, userLng, drivers, distanceKm, durationMin, countryCode,
+    requestedRideType = "standard",
+  } = opts;
 
-  // 1. Radar
-  const radar = computeRadar(userLat, userLng, drivers, 10, "taxi");
-  if (!radar.nearbyDrivers.length) {
+  // 1. Pool discovery with radius expansion + ride type fallback
+  const poolResult = findDriverPool({ userLat, userLng, drivers, requestedRideType });
+
+  if (!poolResult.pool.length) {
     throw new Error("No drivers nearby");
   }
 
-  // 2. Rank drivers with composite score
-  const rankedDrivers = radar.nearbyDrivers
-    .map((d) => {
-      const distanceScore = 1 / Math.max(d.distance, 0.1);
-      const ratingScore = (d.rating ?? 4) / 5;
-      const acceptanceScore = (d as any).acceptance_rate ?? 0.85;
-      return {
-        ...d,
-        score: distanceScore * 0.55 + ratingScore * 0.25 + acceptanceScore * 0.20,
-      };
-    })
-    .sort((a, b) => b.score - a.score);
+  // 2. Radar stats for surge
+  const radar = computeRadar(userLat, userLng, poolResult.pool, poolResult.radiusKm ?? 10, "taxi");
+  const rankedDrivers = poolResult.pool.sort((a, b) => (b.score ?? 0) - (a.score ?? 0));
 
-  // 3. Pricing with demand/supply surge
+  // 3. Pricing
   const surge = computeSurge(radar.totalCount, radar.availableCount);
   const rules = getFareRules(countryCode);
   const fare = calculateFare({
-    distanceKm,
-    durationMin,
-    rules,
+    distanceKm, durationMin, rules,
     isNight: isNightHour(),
     surgeFactor: surge,
   });
@@ -67,6 +64,9 @@ export async function startRideFlow(opts: {
       pickup_lat: userLat,
       pickup_lng: userLng,
       offered_driver_ids: rankedDrivers.map((d) => d.id),
+      requested_ride_type: requestedRideType,
+      assigned_ride_type: poolResult.rideTypeUsed,
+      search_radius_km: poolResult.radiusKm,
     } as any)
     .select("*")
     .single();
@@ -75,7 +75,7 @@ export async function startRideFlow(opts: {
     throw rideError ?? new Error("Failed to create ride request");
   }
 
-  // 5. Insert all offers
+  // 5. Insert offers
   await supabase.from("ride_offers" as any).insert(
     rankedDrivers.map((d) => ({
       ride_request_id: (rideRequest as any).id,
@@ -85,7 +85,7 @@ export async function startRideFlow(opts: {
     })) as any,
   );
 
-  // 6. Wave dispatch (progressive 3-3-4 with 4s timeout per wave)
+  // 6. Wave dispatch
   const dispatch: DispatchResult = await runWaveDispatch({
     rideRequestId: (rideRequest as any).id,
     rankedDrivers,
@@ -93,7 +93,7 @@ export async function startRideFlow(opts: {
     pickupLng: userLng,
   });
 
-  // 7. Create Orbit thread if assigned
+  // 7. Thread + system message
   let threadId: string | null = null;
   if (dispatch.assigned && dispatch.driverId) {
     try {
@@ -108,6 +108,15 @@ export async function startRideFlow(opts: {
         .select("id")
         .single();
       threadId = (data as any)?.id ?? null;
+
+      if (threadId) {
+        await insertRideSystemMessage({
+          threadId,
+          rideRequestId: (rideRequest as any).id,
+          driverId: dispatch.driverId,
+          etaMin: rankedDrivers.find((d) => d.id === dispatch.driverId)?.eta ?? null,
+        });
+      }
     } catch {
       // Thread creation is non-blocking
     }
@@ -121,6 +130,8 @@ export async function startRideFlow(opts: {
     assigned: !!dispatch.assigned,
     driverId: dispatch.driverId ?? null,
     threadId,
+    radiusKm: poolResult.radiusKm,
+    rideTypeUsed: poolResult.rideTypeUsed,
   };
 }
 
