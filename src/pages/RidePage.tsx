@@ -47,7 +47,8 @@ export default function RidePage() {
   const [selectedType, setSelectedType] = useState<RideType>(RIDE_TYPES[0]);
   const [matchState, setMatchState] = useState<MatchState>("searching");
 
-  const rules = useMemo(() => getFareRules("FR"), []);
+  const { country: detectedCountry } = useGeoDetect();
+  const rules = useMemo(() => getFareRules(detectedCountry), [detectedCountry]);
   const night = useMemo(() => isNightHour(), []);
   const { km, min } = useMemo(() => mockDistance(pickup, dropoff), [pickup, dropoff]);
 

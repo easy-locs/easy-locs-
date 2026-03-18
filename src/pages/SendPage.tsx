@@ -53,7 +53,8 @@ export default function SendPage() {
   const [itemDesc, setItemDesc] = useState("");
   const [matchState, setMatchState] = useState<MatchState>("searching");
 
-  const rules = useMemo(() => getFareRules("FR"), []);
+  const { country: detectedCountry } = useGeoDetect();
+  const rules = useMemo(() => getFareRules(detectedCountry), [detectedCountry]);
   const night = useMemo(() => isNightHour(), []);
   const km = useMemo(() => mockDistanceKm(pickup, dropoff), [pickup, dropoff]);
 
