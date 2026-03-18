@@ -4,7 +4,7 @@
  */
 
 export type TimeSlot = "morning" | "lunch" | "afternoon" | "dinner" | "latenight";
-export type CategoryKey = "food" | "grocery" | "shops" | "services" | "taxi" | "delivery" | "property" | "wallet" | "coffee" | "bakery" | "dineout" | "beauty" | "concierge" | "mobility";
+export type CategoryKey = "food" | "grocery" | "shops" | "services" | "taxi" | "delivery" | "property" | "wallet" | "coffee" | "bakery" | "dineout" | "beauty" | "concierge" | "mobility" | "rentals" | "stays";
 
 export interface SmartCategory {
   key: CategoryKey;
@@ -47,8 +47,8 @@ const ALL_CATEGORIES: Record<CategoryKey, SmartCategory> = {
   grocery:   { key: "grocery",   label: "Grocery",     icon: "🛒", color: "hsl(var(--success))",  size: "normal", route: "/discover?rail=grocery",   subtitle: "Fresh & fast" },
   shops:     { key: "shops",     label: "Shops",       icon: "🏪", color: "hsl(var(--primary))",  size: "normal", route: "/shops",                   subtitle: "Browse stores" },
   services:  { key: "services",  label: "Services",    icon: "🔧", color: "hsl(var(--info))",     size: "normal", route: "/discover?rail=services",  subtitle: "Near you" },
-  taxi:      { key: "taxi",      label: "Taxi",        icon: "🚕", color: "hsl(var(--accent))",   size: "normal", route: "/discover?rail=taxi",      subtitle: "Book a ride" },
-  delivery:  { key: "delivery",  label: "Delivery",    icon: "🚚", color: "hsl(var(--info))",     size: "normal", route: "/dashboard/driver",        subtitle: "Send & track" },
+  taxi:      { key: "taxi",      label: "Taxi",        icon: "🚕", color: "hsl(var(--accent))",   size: "normal", route: "/ride",                    subtitle: "Book a ride" },
+  delivery:  { key: "delivery",  label: "Delivery",    icon: "🚚", color: "hsl(var(--info))",     size: "normal", route: "/send",                    subtitle: "Send & track" },
   property:  { key: "property",  label: "Property",    icon: "🏠", color: "hsl(var(--primary))",  size: "normal", route: "/property-hub",            subtitle: "Manage & rent" },
   wallet:    { key: "wallet",    label: "Wallet",      icon: "💳", color: "hsl(var(--success))",  size: "normal", route: "/dashboard/wallet",        subtitle: "Pay & send" },
   coffee:    { key: "coffee",    label: "Coffee",      icon: "☕", color: "hsl(var(--warning))",  size: "normal", route: "/discover?rail=coffee",    subtitle: "Wake up" },
@@ -56,7 +56,9 @@ const ALL_CATEGORIES: Record<CategoryKey, SmartCategory> = {
   dineout:   { key: "dineout",   label: "Dine Out",    icon: "🍽️", color: "hsl(var(--accent))",   size: "wide",   route: "/discover?rail=dineout",   subtitle: "Restaurants" },
   beauty:    { key: "beauty",    label: "Beauty",      icon: "💅", color: "hsl(var(--accent))",   size: "normal", route: "/discover?rail=beauty" },
   concierge: { key: "concierge", label: "Concierge",   icon: "🎯", color: "hsl(var(--primary))",  size: "normal", route: "/discover?rail=concierge" },
-  mobility:  { key: "mobility",  label: "Rides",       icon: "🏍️", color: "hsl(var(--info))",     size: "normal", route: "/discover?rail=mobility" },
+  mobility:  { key: "mobility",  label: "Rides",       icon: "🏍️", color: "hsl(var(--info))",     size: "normal", route: "/ride" },
+  rentals:   { key: "rentals",   label: "Rentals",     icon: "🔑", color: "hsl(var(--primary))",  size: "normal", route: "/discover?rail=rentals",  subtitle: "Long-term" },
+  stays:     { key: "stays",     label: "Stays",       icon: "🏨", color: "hsl(var(--accent))",   size: "normal", route: "/discover?rail=stays",    subtitle: "Short-term" },
 };
 
 /* ═══ Time-based priority ═══ */

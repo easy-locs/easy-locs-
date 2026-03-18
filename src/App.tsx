@@ -189,6 +189,9 @@ const ServiceCityPage = safeLazy(() => import("./pages/seo/ServiceHubPage").then
 const ProviderSEOPage = safeLazy(() => import("./pages/seo/ProviderSEOPage"), "ProviderSEOPage");
 const SlugResolver = safeLazy(() => import("./pages/seo/SEOShortUrlResolver").then(m => ({ default: m.SlugResolver })), "SlugResolver");
 const SlugCategoryResolver = safeLazy(() => import("./pages/seo/SEOShortUrlResolver").then(m => ({ default: m.SlugCategoryResolver })), "SlugCategoryResolver");
+// Ride & Send universes
+const RidePage = safeLazy(() => import("./pages/RidePage"), "RidePage");
+const SendPage = safeLazy(() => import("./pages/SendPage"), "SendPage");
 
 // Deep-link public pages
 const UserProfilePage = safeLazy(() => import("./pages/deep-link/UserProfilePage"), "UserProfilePage");
@@ -290,6 +293,8 @@ const App = () => (
               {/* V7 Public pillars */}
               <Route path="/discover" element={<DiscoverPage />} />
               <Route path="/search" element={<DiscoverPage />} />
+              <Route path="/ride" element={<RidePage />} />
+              <Route path="/send" element={<SendPage />} />
               <Route path="/explore" element={<Explore />} />
               <Route path="/super-map" element={<SuperMapRadarPage />} />
               <Route path="/shops" element={<ShopsPage />} />
