@@ -6,7 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useI18n } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
 import { getCountryConfig } from "@/lib/country-config";
-import { Home, ArrowLeft, Building2, Ruler, Thermometer, Car, Trees, Sun, Zap, Waves, DoorOpen, ChevronDown } from "lucide-react";
+import { Home, Building2, Ruler, Thermometer, Car, Trees, Sun, Zap, Waves, DoorOpen, ChevronDown } from "lucide-react";
 import AddressAutocomplete, { type AddressResult } from "@/components/ui/AddressAutocomplete";
 import CountrySelect from "@/components/ui/CountrySelect";
 import { Input } from "@/components/ui/input";
@@ -16,6 +16,7 @@ import { Label } from "@/components/ui/label";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { usePropertyPaywall } from "@/hooks/usePropertyPaywall";
 import PropertyPaywallBanner from "@/components/property/PropertyPaywallBanner";
+import PropertyHubBreadcrumb from "@/components/property/PropertyHubBreadcrumb";
 
 const SURFACE_UNITS = [
   { value: "sqm", label: "m²" },
