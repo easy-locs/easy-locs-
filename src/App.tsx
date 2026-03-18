@@ -312,6 +312,11 @@ const App = () => (
               <Route path="/book/:slug" element={<PublicServiceBooking />} />
               <Route path="/nearby" element={<LocalServices />} />
               <Route path="/rentals" element={<RentalCatalog />} />
+              <Route path="/rentals/:country" element={<RentalCatalog />} />
+              <Route path="/rentals/:country/:city" element={<RentalCatalog />} />
+              <Route path="/stays" element={<StaysCatalog />} />
+              <Route path="/stays/:country" element={<StaysCatalog />} />
+              <Route path="/stays/:country/:city" element={<StaysCatalog />} />
               <Route path="/host/:orgId" element={<HostCatalog />} />
               <Route path="/activities" element={<ActivitiesMarketplace />} />
               <Route path="/guest/:orgId" element={<GuestPortal />} />
