@@ -150,7 +150,7 @@ const TenantDashboard = () => {
                       </div>
                     )}
 
-                    <div className="mt-3 grid grid-cols-3 gap-3">
+                    <div className="mt-3 grid grid-cols-2 sm:grid-cols-3 gap-3">
                       <div>
                         <p className="text-[10px] text-muted-foreground uppercase tracking-wide">{L.myRent}</p>
                         <p className="text-sm font-bold text-foreground">{fmt(tenantInfo.rent_amount)}</p>

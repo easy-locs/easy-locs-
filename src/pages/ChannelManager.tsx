@@ -364,10 +364,10 @@ const ChannelManager = () => {
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case "confirmed": case "paid": return <Badge className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20">✅ {t("page.common.confirmed") || "Confirmed"}</Badge>;
-      case "approved": return <Badge className="bg-blue-500/10 text-blue-600 border-blue-500/20">📧 {t("page.common.approved") || "Approved"}</Badge>;
-      case "pending": return <Badge className="bg-amber-500/10 text-amber-600 border-amber-500/20">🔔 {t("page.common.pending") || "Pending"}</Badge>;
-      case "payment_pending": return <Badge className="bg-orange-500/10 text-orange-600 border-orange-500/20">⏳ {t("page.common.payment") || "Payment"}</Badge>;
+      case "confirmed": case "paid": return <Badge className="bg-success/10 text-success border-success/20">✅ {t("page.common.confirmed") || "Confirmed"}</Badge>;
+      case "approved": return <Badge className="bg-info/10 text-info border-info/20">📧 {t("page.common.approved") || "Approved"}</Badge>;
+      case "pending": return <Badge className="bg-warning/10 text-warning border-warning/20">🔔 {t("page.common.pending") || "Pending"}</Badge>;
+      case "payment_pending": return <Badge className="bg-accent/10 text-accent border-accent/20">⏳ {t("page.common.payment") || "Payment"}</Badge>;
       case "cancelled": return <Badge className="bg-destructive/10 text-destructive border-destructive/20">🚫 {t("page.common.cancelled") || "Cancelled"}</Badge>;
       default: return <Badge variant="secondary">{status}</Badge>;
     }
@@ -497,7 +497,7 @@ const ChannelManager = () => {
                         <div className="flex items-center justify-between">
                           <span className={`text-xs font-medium ${isToday ? "text-accent" : "text-foreground"}`}>{day.getDate()}</span>
                           {pricing && (
-                            <span className={`text-[8px] font-bold px-1 rounded ${pricing.value > 0 ? "bg-emerald-500/10 text-emerald-600" : "bg-red-500/10 text-red-600"}`}>
+                            <span className={`text-[8px] font-bold px-1 rounded ${pricing.value > 0 ? "bg-success/10 text-success" : "bg-destructive/10 text-destructive"}`}>
                               {pricing.value > 0 ? "+" : ""}{pricing.value}{pricing.type === "percentage" ? "%" : "€"}
                             </span>
                           )}
