@@ -33,7 +33,7 @@ const landlordNav = [
   { label: "Portfolio", desc: "All your properties", icon: Building2, path: "/dashboard/properties" },
   { label: "Buildings & Units", desc: "Units & floors", icon: Home, path: "/dashboard/buildings" },
   { label: "Tenants", desc: "Tenant directory", icon: Users, path: "/dashboard/tenants" },
-  { label: "Rent Tracking", desc: "Payments & notices", icon: Receipt, path: "/dashboard/notices" },
+  { label: "Rent Tracking", desc: "Payments & notices", icon: Receipt, path: "/dashboard/payment-notices" },
   { label: "Maintenance", desc: "Requests & interventions", icon: Wrench, path: "/dashboard/interventions" },
   { label: "Documents", desc: "Leases, contracts, files", icon: FileText, path: "/dashboard/documents" },
   { label: "Accounting", desc: "Revenue & expenses", icon: Calculator, path: "/dashboard/accounting" },
