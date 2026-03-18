@@ -98,6 +98,11 @@ const CATEGORY_RULES: Record<string, Partial<CoverageRule>> = {
   stays:        { discovery_mode: "zone", zone_mode: "city" },
   hotels:       { discovery_mode: "zone", zone_mode: "city" },
   marketplace:  { discovery_mode: "zone", zone_mode: "metro" },
+
+  activities:   { discovery_mode: "unrestricted", zone_mode: "region" },
+  transport:    { discovery_mode: "unrestricted", zone_mode: "country" },
+  events:       { discovery_mode: "unrestricted", zone_mode: "region" },
+  travel:       { discovery_mode: "unrestricted", zone_mode: "country" },
 };
 
 /* ═══ Country Overrides ═══ */
