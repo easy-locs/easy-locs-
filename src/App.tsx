@@ -322,6 +322,7 @@ const App = () => (
               <Route path="/send" element={<SendPage />} />
               <Route path="/track/:rideRequestId" element={<TrackRidePage />} />
               <Route path="/wallet/pay/:threadId" element={<PayRidePage />} />
+              <Route path="/ride/receipt/:rideRequestId" element={<RideReceiptPage />} />
 
               {/* Travel */}
               <Route path="/travel" element={<TravelHub />} />
