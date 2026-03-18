@@ -3011,6 +3011,63 @@ export type Database = {
           },
         ]
       }
+      delivery_proofs: {
+        Row: {
+          created_at: string | null
+          dispatch_job_id: string | null
+          driver_user_id: string | null
+          geo_lat: number | null
+          geo_lng: number | null
+          id: string
+          notes: string | null
+          order_id: string | null
+          photo_url: string | null
+          proof_type: string | null
+          signature_data: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          dispatch_job_id?: string | null
+          driver_user_id?: string | null
+          geo_lat?: number | null
+          geo_lng?: number | null
+          id?: string
+          notes?: string | null
+          order_id?: string | null
+          photo_url?: string | null
+          proof_type?: string | null
+          signature_data?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          dispatch_job_id?: string | null
+          driver_user_id?: string | null
+          geo_lat?: number | null
+          geo_lng?: number | null
+          id?: string
+          notes?: string | null
+          order_id?: string | null
+          photo_url?: string | null
+          proof_type?: string | null
+          signature_data?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "delivery_proofs_dispatch_job_id_fkey"
+            columns: ["dispatch_job_id"]
+            isOneToOne: false
+            referencedRelation: "dispatch_jobs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "delivery_proofs_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       delivery_ratings: {
         Row: {
           categories: string[] | null
@@ -11368,6 +11425,7 @@ export type Database = {
         Row: {
           created_at: string | null
           currency: string | null
+          guest_id: string | null
           id: string
           session_id: string | null
           shop_id: string
@@ -11378,6 +11436,7 @@ export type Database = {
         Insert: {
           created_at?: string | null
           currency?: string | null
+          guest_id?: string | null
           id?: string
           session_id?: string | null
           shop_id: string
@@ -11388,6 +11447,7 @@ export type Database = {
         Update: {
           created_at?: string | null
           currency?: string | null
+          guest_id?: string | null
           id?: string
           session_id?: string | null
           shop_id?: string
