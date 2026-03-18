@@ -132,9 +132,9 @@ function HeroBannerCarousel({ onNavigate }: { onNavigate: (p: string) => void })
             <p className="text-[12px] text-white/75 mt-1.5 leading-relaxed max-w-[85%]">{b.subtitle}</p>
 
             {/* CTA */}
-            <div className="mt-4 inline-flex items-center gap-2 rounded-2xl bg-white px-5 py-2.5 shadow-lg">
-              <span className="text-[12px] font-extrabold text-gray-900">{b.cta}</span>
-              <ArrowRight className="h-3.5 w-3.5 text-gray-900" />
+            <div className="mt-4 inline-flex items-center gap-2 rounded-2xl bg-card px-5 py-2.5 shadow-lg">
+              <span className="text-[12px] font-extrabold text-foreground">{b.cta}</span>
+              <ArrowRight className="h-3.5 w-3.5 text-foreground" />
             </div>
           </div>
 
