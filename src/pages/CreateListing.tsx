@@ -105,6 +105,9 @@ interface ListingForm {
   // Duration
   duration_minutes: number;
   max_capacity: number;
+  // Presence & Mobility
+  presence_mode: PresenceMode;
+  mobility_type: MobilityType;
 }
 
 const defaultForm: ListingForm = {
