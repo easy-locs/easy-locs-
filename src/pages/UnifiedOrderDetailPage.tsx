@@ -9,6 +9,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ShoppingBag, ArrowLeft, CreditCard, Truck, AlertTriangle, Package, User, Store } from "lucide-react";
+import MapEmptyState from "@/components/map/MapEmptyState";
 import { useUnifiedOrder } from "@/hooks/useUnifiedOrder";
 import UnifiedTimeline from "@/components/order/UnifiedTimeline";
 import OrderCTABlock from "@/components/order/OrderCTABlock";
