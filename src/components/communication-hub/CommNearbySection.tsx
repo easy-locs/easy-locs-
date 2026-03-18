@@ -353,8 +353,97 @@ export default function CommNearbySection() {
         <ScrollableFilterBar<NearbyFilter>
           options={TYPE_FILTERS.map(f => ({ id: f.id, label: f.label, icon: f.icon }))}
           value={typeFilter}
-          onChange={setTypeFilter}
+          onChange={(v) => { setTypeFilter(v); setSubcategoryFilter("all"); }}
         />
+
+        {/* Second-level subcategory filtering */}
+        {typeFilter === "service" && (
+          <div className="flex gap-1.5 overflow-x-auto scrollbar-none mt-2 pb-1">
+            <button
+              onClick={() => { setSubcategoryFilter("all"); haptic("light"); }}
+              className="shrink-0 px-2.5 py-1 rounded-full text-[10px] font-medium whitespace-nowrap transition-all"
+              style={{
+                background: subcategoryFilter === "all" ? "hsl(var(--hud-cyan) / 0.15)" : "hsl(var(--hud-surface) / 0.3)",
+                color: subcategoryFilter === "all" ? "hsl(var(--hud-cyan))" : "hsl(var(--hud-text-dim) / 0.5)",
+                border: `1px solid ${subcategoryFilter === "all" ? "hsl(var(--hud-cyan) / 0.25)" : "hsl(var(--hud-border) / 0.1)"}`,
+              }}
+            >
+              All Services
+            </button>
+            {CATEGORY_HIERARCHY.find(g => g.value === "home_services")?.subcategories.map(sub => (
+              <button
+                key={sub.value}
+                onClick={() => { setSubcategoryFilter(sub.value); haptic("light"); }}
+                className="shrink-0 px-2.5 py-1 rounded-full text-[10px] font-medium whitespace-nowrap transition-all"
+                style={{
+                  background: subcategoryFilter === sub.value ? "hsl(var(--hud-cyan) / 0.15)" : "hsl(var(--hud-surface) / 0.3)",
+                  color: subcategoryFilter === sub.value ? "hsl(var(--hud-cyan))" : "hsl(var(--hud-text-dim) / 0.5)",
+                  border: `1px solid ${subcategoryFilter === sub.value ? "hsl(var(--hud-cyan) / 0.25)" : "hsl(var(--hud-border) / 0.1)"}`,
+                }}
+              >
+                {sub.emoji} {sub.label}
+              </button>
+            ))}
+          </div>
+        )}
+        {typeFilter === "real_estate" && (
+          <div className="flex gap-1.5 overflow-x-auto scrollbar-none mt-2 pb-1">
+            <button
+              onClick={() => { setSubcategoryFilter("all"); haptic("light"); }}
+              className="shrink-0 px-2.5 py-1 rounded-full text-[10px] font-medium whitespace-nowrap transition-all"
+              style={{
+                background: subcategoryFilter === "all" ? "hsl(var(--hud-cyan) / 0.15)" : "hsl(var(--hud-surface) / 0.3)",
+                color: subcategoryFilter === "all" ? "hsl(var(--hud-cyan))" : "hsl(var(--hud-text-dim) / 0.5)",
+                border: `1px solid ${subcategoryFilter === "all" ? "hsl(var(--hud-cyan) / 0.25)" : "hsl(var(--hud-border) / 0.1)"}`,
+              }}
+            >
+              All Real Estate
+            </button>
+            {CATEGORY_HIERARCHY.find(g => g.value === "real_estate")?.subcategories.map(sub => (
+              <button
+                key={sub.value}
+                onClick={() => { setSubcategoryFilter(sub.value); haptic("light"); }}
+                className="shrink-0 px-2.5 py-1 rounded-full text-[10px] font-medium whitespace-nowrap transition-all"
+                style={{
+                  background: subcategoryFilter === sub.value ? "hsl(var(--hud-cyan) / 0.15)" : "hsl(var(--hud-surface) / 0.3)",
+                  color: subcategoryFilter === sub.value ? "hsl(var(--hud-cyan))" : "hsl(var(--hud-text-dim) / 0.5)",
+                  border: `1px solid ${subcategoryFilter === sub.value ? "hsl(var(--hud-cyan) / 0.25)" : "hsl(var(--hud-border) / 0.1)"}`,
+                }}
+              >
+                {sub.emoji} {sub.label}
+              </button>
+            ))}
+          </div>
+        )}
+        {typeFilter === "concierge" && (
+          <div className="flex gap-1.5 overflow-x-auto scrollbar-none mt-2 pb-1">
+            <button
+              onClick={() => { setSubcategoryFilter("all"); haptic("light"); }}
+              className="shrink-0 px-2.5 py-1 rounded-full text-[10px] font-medium whitespace-nowrap transition-all"
+              style={{
+                background: subcategoryFilter === "all" ? "hsl(var(--hud-cyan) / 0.15)" : "hsl(var(--hud-surface) / 0.3)",
+                color: subcategoryFilter === "all" ? "hsl(var(--hud-cyan))" : "hsl(var(--hud-text-dim) / 0.5)",
+                border: `1px solid ${subcategoryFilter === "all" ? "hsl(var(--hud-cyan) / 0.25)" : "hsl(var(--hud-border) / 0.1)"}`,
+              }}
+            >
+              All Concierge
+            </button>
+            {CATEGORY_HIERARCHY.find(g => g.value === "concierge")?.subcategories.map(sub => (
+              <button
+                key={sub.value}
+                onClick={() => { setSubcategoryFilter(sub.value); haptic("light"); }}
+                className="shrink-0 px-2.5 py-1 rounded-full text-[10px] font-medium whitespace-nowrap transition-all"
+                style={{
+                  background: subcategoryFilter === sub.value ? "hsl(var(--hud-cyan) / 0.15)" : "hsl(var(--hud-surface) / 0.3)",
+                  color: subcategoryFilter === sub.value ? "hsl(var(--hud-cyan))" : "hsl(var(--hud-text-dim) / 0.5)",
+                  border: `1px solid ${subcategoryFilter === sub.value ? "hsl(var(--hud-cyan) / 0.25)" : "hsl(var(--hud-border) / 0.1)"}`,
+                }}
+              >
+                {sub.emoji} {sub.label}
+              </button>
+            ))}
+          </div>
+        )}
 
         {/* Quick toggles */}
         {(typeFilter === "professionals" || typeFilter === "people" || typeFilter === "all") && (
