@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useI18n, type Locale } from "@/lib/i18n";
 import { useTenantProperty } from "@/hooks/useTenantProperty";
+import { usePropertyHubExit } from "@/hooks/usePropertyHubExit";
 import AppLogo from "@/components/AppLogo";
 import {
   LayoutDashboard, Receipt, FileText, MessageCircle,

@@ -51,6 +51,7 @@ const tenantNav = [
 export default function PropertyManagementHub() {
   const [role, setRole] = useState<PMRole>(null);
   const navigate = useNavigate();
+  const location = useLocation();
   const { orgId } = useAuth();
   const { t } = useI18n();
   const { fmtLocal, code: userCurrencyCode } = usePlatformCurrency();
