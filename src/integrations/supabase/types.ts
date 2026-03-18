@@ -316,43 +316,58 @@ export type Database = {
       }
       admin_alerts: {
         Row: {
+          acknowledged_at: string | null
           alert_type: string
           body: string | null
           context_id: string | null
           context_type: string | null
           created_at: string | null
+          entity_id: string | null
+          entity_type: string | null
           id: string
+          metadata: Json | null
           metadata_json: Json | null
           resolved_at: string | null
           severity: string
           status: string
           title: string
+          workspace_id: string | null
         }
         Insert: {
+          acknowledged_at?: string | null
           alert_type: string
           body?: string | null
           context_id?: string | null
           context_type?: string | null
           created_at?: string | null
+          entity_id?: string | null
+          entity_type?: string | null
           id?: string
+          metadata?: Json | null
           metadata_json?: Json | null
           resolved_at?: string | null
           severity?: string
           status?: string
           title: string
+          workspace_id?: string | null
         }
         Update: {
+          acknowledged_at?: string | null
           alert_type?: string
           body?: string | null
           context_id?: string | null
           context_type?: string | null
           created_at?: string | null
+          entity_id?: string | null
+          entity_type?: string | null
           id?: string
+          metadata?: Json | null
           metadata_json?: Json | null
           resolved_at?: string | null
           severity?: string
           status?: string
           title?: string
+          workspace_id?: string | null
         }
         Relationships: []
       }
@@ -681,6 +696,59 @@ export type Database = {
         }
         Relationships: []
       }
+      audit_findings: {
+        Row: {
+          action_hint: string | null
+          actual_state: string | null
+          created_at: string | null
+          details: string | null
+          expected_state: string | null
+          finding_group: string
+          finding_key: string
+          id: string
+          report_id: string
+          score_impact: number | null
+          severity: string
+          title: string
+        }
+        Insert: {
+          action_hint?: string | null
+          actual_state?: string | null
+          created_at?: string | null
+          details?: string | null
+          expected_state?: string | null
+          finding_group: string
+          finding_key: string
+          id?: string
+          report_id: string
+          score_impact?: number | null
+          severity?: string
+          title: string
+        }
+        Update: {
+          action_hint?: string | null
+          actual_state?: string | null
+          created_at?: string | null
+          details?: string | null
+          expected_state?: string | null
+          finding_group?: string
+          finding_key?: string
+          id?: string
+          report_id?: string
+          score_impact?: number | null
+          severity?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "audit_findings_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "audit_reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       audit_logs: {
         Row: {
           action: string
@@ -710,40 +778,70 @@ export type Database = {
       }
       audit_reports: {
         Row: {
+          completed_at: string | null
           created_at: string
+          created_by: string | null
+          critical_count: number | null
           critical_issues: number
           global_score: number
           id: string
+          info_count: number | null
           issues_json: Json
           modules_json: Json
           org_id: string | null
+          report_type: string | null
           scan_type: string
           source: string
+          status: string | null
+          summary: string | null
           total_issues: number
+          total_score: number | null
+          warning_count: number | null
+          workspace_id: string | null
         }
         Insert: {
+          completed_at?: string | null
           created_at?: string
+          created_by?: string | null
+          critical_count?: number | null
           critical_issues?: number
           global_score?: number
           id?: string
+          info_count?: number | null
           issues_json?: Json
           modules_json?: Json
           org_id?: string | null
+          report_type?: string | null
           scan_type?: string
           source?: string
+          status?: string | null
+          summary?: string | null
           total_issues?: number
+          total_score?: number | null
+          warning_count?: number | null
+          workspace_id?: string | null
         }
         Update: {
+          completed_at?: string | null
           created_at?: string
+          created_by?: string | null
+          critical_count?: number | null
           critical_issues?: number
           global_score?: number
           id?: string
+          info_count?: number | null
           issues_json?: Json
           modules_json?: Json
           org_id?: string | null
+          report_type?: string | null
           scan_type?: string
           source?: string
+          status?: string | null
+          summary?: string | null
           total_issues?: number
+          total_score?: number | null
+          warning_count?: number | null
+          workspace_id?: string | null
         }
         Relationships: [
           {
@@ -5716,6 +5814,44 @@ export type Database = {
             columns: ["org_id"]
             isOneToOne: false
             referencedRelation: "orgs_tenant_view"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      launch_gate_results: {
+        Row: {
+          created_at: string | null
+          details: Json | null
+          gate_key: string
+          id: string
+          report_id: string | null
+          status: string
+          workspace_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          details?: Json | null
+          gate_key: string
+          id?: string
+          report_id?: string | null
+          status?: string
+          workspace_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          details?: Json | null
+          gate_key?: string
+          id?: string
+          report_id?: string | null
+          status?: string
+          workspace_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "launch_gate_results_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "audit_reports"
             referencedColumns: ["id"]
           },
         ]
