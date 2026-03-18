@@ -18,12 +18,12 @@ export async function verifyCurrentUserProfile() {
     const { data: profile, error } = await (supabase as any)
       .from("user_profiles")
       .select("id")
-      .eq("user_id", userData.user.id)
+      .eq("id", userData.user.id)
       .maybeSingle();
 
     if (error) return { ok: false, reason: error.message };
     if (profile) return { ok: true, reason: "Profile found" };
-    return { ok: false, reason: "Profile row missing" };
+    return { ok: false, reason: "User profile record missing" };
   } catch (e: any) {
     return { ok: false, reason: e.message ?? "Profile check failed" };
   }
