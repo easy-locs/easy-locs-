@@ -44,7 +44,7 @@ function createDriverPin(): HTMLDivElement {
   return el;
 }
 
-export default function RideMap({ pickup, dropoff, userLat, userLng, drivers = [], className = "" }: RideMapProps) {
+export default function RideMap({ pickup, dropoff, userLat, userLng, drivers: externalDrivers = [], className = "" }: RideMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
   const markersRef = useRef<mapboxgl.Marker[]>([]);
