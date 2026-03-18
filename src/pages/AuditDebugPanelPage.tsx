@@ -166,6 +166,21 @@ export default function AuditDebugPanelPage() {
         </div>
       </div>
 
+      {/* ── Error ── */}
+      {error && (
+        <div className="max-w-2xl mx-auto px-4 -mt-1">
+          <Card className="border-destructive/40 bg-destructive/5">
+            <CardContent className="p-4 flex items-start gap-3">
+              <XCircle className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
+              <div className="space-y-1">
+                <p className="text-sm font-semibold text-destructive">Erreur de connexion</p>
+                <p className="text-xs text-muted-foreground">{error}</p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
       {/* ── Results ── */}
       <AnimatePresence>
         {!!report && (
