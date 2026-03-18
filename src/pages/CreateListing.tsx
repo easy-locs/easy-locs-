@@ -16,7 +16,7 @@ import {
   ArrowLeft, Plus, ChevronDown, ShieldCheck, MessageSquare,
   CreditCard, Camera, MapPin, Tag, DollarSign, CalendarDays, Package, Radar
 } from "lucide-react";
-import PresenceMobilitySelector, { type PresenceMode, type MobilityType } from "@/components/marketplace/PresenceMobilitySelector";
+import PresenceMobilitySelector, { type PresenceMode, type EntityType, type CoverageMode, type PresenceConfig } from "@/components/marketplace/PresenceMobilitySelector";
 
 /* ─── Constants ─── */
 const MAX_LISTINGS_FREE = 5;
