@@ -334,14 +334,13 @@ export default function SuperMapRadarPage() {
       });
 
       filtered.forEach((listing, i) => {
-        const el = createMarkerElement(listing.presence_mode, listing.entity_type);
-        const style = getMarkerStyle(listing.presence_mode, listing.entity_type);
+        const el = createEasyLocsMarkerElement(listing.presence_mode, listing.entity_type);
 
         const marker = new mapboxgl.Marker({ element: el })
           .setLngLat([listing.lng, listing.lat])
           .setPopup(
-            new mapboxgl.Popup({ offset: 24, closeButton: false, maxWidth: "260px" })
-              .setHTML(buildPopupHTML(listing, style))
+            new mapboxgl.Popup({ offset: 26, closeButton: false, maxWidth: "270px" })
+              .setHTML(buildEasyLocsPopupHTML(listing))
           )
           .addTo(map);
         markersRef.current.push(marker);
@@ -349,15 +348,15 @@ export default function SuperMapRadarPage() {
         if (listing.coverage_mode !== "point" && listing.coverage_radius_m && listing.coverage_radius_m > 0) {
           const srcId = `coverage-src-${i}`;
           const circle = createCircleGeoJSON([listing.lng, listing.lat], listing.coverage_radius_m);
-          const cs = getCoverageStyle(listing.coverage_mode, style.color);
+          const paints = getEasyLocsRadiusPaint(listing.presence_mode, listing.entity_type, listing.coverage_mode);
           map.addSource(srcId, { type: "geojson", data: circle as any });
           map.addLayer({
             id: `coverage-fill-${i}`, type: "fill", source: srcId,
-            paint: cs.fill as any,
+            paint: paints.fill as any,
           });
           map.addLayer({
             id: `coverage-border-${i}`, type: "line", source: srcId,
-            paint: cs.line as any,
+            paint: paints.border as any,
           });
         }
       });
