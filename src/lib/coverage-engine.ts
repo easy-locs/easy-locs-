@@ -56,6 +56,12 @@ const CATEGORY_FAMILIES: Record<string, CoverageFamily> = {
   jobs: "wide_search",
   marketplace: "wide_search",
   shops: "wide_search",
+
+  // Unrestricted — no geographic constraint, country/region-wide
+  activities: "unrestricted",
+  transport: "unrestricted",
+  events: "unrestricted",
+  travel: "unrestricted",
 };
 
 /* ═══ Family Default Radii ═══ */
