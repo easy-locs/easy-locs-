@@ -115,7 +115,8 @@ export default function BuyerOrderTracker({ orderId, buyerEmail }: BuyerOrderTra
         const items = order.storefront_order_items || [];
 
         return (
-          <Card key={order.id} className="overflow-hidden">
+          <Link key={order.id} to={`/order/${order.id}`} className="block">
+          <Card className="overflow-hidden hover:shadow-md transition-shadow cursor-pointer">
             <CardContent className="p-4 space-y-4">
               {/* Shop header */}
               <div className="flex items-center justify-between">
