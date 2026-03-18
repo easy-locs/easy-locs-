@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { Receipt, Download, Loader2 } from "lucide-react";
+import { Receipt, Download, Loader2, CheckCircle } from "lucide-react";
+import ReceiptStatusBadge from "@/components/rent/ReceiptStatusBadge";
 import TenantLayout from "@/components/tenant/TenantLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
