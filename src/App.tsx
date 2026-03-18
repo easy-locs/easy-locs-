@@ -208,6 +208,11 @@ const AdminLiveOpsPage = safeLazy(() => import("./pages/AdminLiveOpsPage"), "Adm
 const DriverPositioningPage = safeLazy(() => import("./pages/DriverPositioningPage"), "DriverPositioningPage");
 const RiderPrioritySubscriptionPage = safeLazy(() => import("./pages/RiderPrioritySubscriptionPage"), "RiderPrioritySubscriptionPage");
 const AdminDispatchBoardPage = safeLazy(() => import("./pages/AdminDispatchBoardPage"), "AdminDispatchBoardPage");
+const AdminSLAPage = safeLazy(() => import("./pages/AdminSLAPage"), "AdminSLAPage");
+const RefundRequestPage = safeLazy(() => import("./pages/RefundRequestPage"), "RefundRequestPage");
+const OrbitLiveCallPage = safeLazy(() => import("./pages/OrbitLiveCallPage"), "OrbitLiveCallPage");
+const TeamCommandCenterPage = safeLazy(() => import("./pages/TeamCommandCenterPage"), "TeamCommandCenterPage");
+const AdminTrustGraphPage = safeLazy(() => import("./pages/AdminTrustGraphPage"), "AdminTrustGraphPage");
 
 // Travel universe
 const TravelHub = safeLazy(() => import("./pages/travel/TravelHub"), "TravelHub");
@@ -343,6 +348,11 @@ const App = () => (
               <Route path="/admin/live-ops" element={<AdminLiveOpsPage />} />
               <Route path="/subscription/priority" element={<RiderPrioritySubscriptionPage />} />
               <Route path="/admin/dispatch-board" element={<AdminDispatchBoardPage />} />
+              <Route path="/admin/sla" element={<AdminSLAPage />} />
+              <Route path="/admin/trust-graph" element={<AdminTrustGraphPage />} />
+              <Route path="/refund/:rideRequestId" element={<RefundRequestPage />} />
+              <Route path="/orbit/call/:threadId" element={<OrbitLiveCallPage />} />
+              <Route path="/team/command-center" element={<TeamCommandCenterPage />} />
 
               {/* Travel */}
               <Route path="/travel" element={<TravelHub />} />
