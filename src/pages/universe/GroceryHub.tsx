@@ -7,6 +7,7 @@ import UniversePageShell from "@/components/universe/UniversePageShell";
 import UniverseSearch from "@/components/universe/UniverseSearch";
 import CategoryCard from "@/components/universe/CategoryCard";
 import UniverseCard from "@/components/universe/UniverseCard";
+import FilterChip from "@/components/universe/FilterChip";
 import { ShoppingCart } from "lucide-react";
 
 const FAMILIES = [
@@ -20,34 +21,47 @@ const FAMILIES = [
   { label: "Baby", icon: "🍼", to: "/grocery/baby" },
 ];
 
+const FILTERS = ["All", "Open now", "Free delivery", "Organic", "Express"];
+
 const MOCK_STORES = [
-  { id: "1", title: "FreshMart Express", subtitle: "Supermarket · 10 min · 0.5km", rating: 4.6, badge: "Free delivery", image: "" },
-  { id: "2", title: "Africa Grocers", subtitle: "Local market · 15 min · 1km", rating: 4.4, image: "" },
-  { id: "3", title: "Bio & Natural", subtitle: "Organic · 20 min · 2km", rating: 4.8, badge: "New", image: "" },
+  { id: "1", title: "FreshMart Express", subtitle: "Supermarket · Full range", rating: 4.6, badge: "Free delivery", eta: "10 min", distance: "0.5km" },
+  { id: "2", title: "Africa Grocers", subtitle: "Local market · Fresh produce", rating: 4.4, eta: "15 min", distance: "1km" },
+  { id: "3", title: "Bio & Natural", subtitle: "Organic store", rating: 4.8, badge: "New", eta: "20 min", distance: "2km" },
+  { id: "4", title: "QuickShop 24h", subtitle: "Convenience · Open 24/7", rating: 4.2, eta: "8 min", distance: "0.3km" },
 ];
 
 export default function GroceryHub() {
   const [search, setSearch] = useState("");
+  const [activeFilter, setActiveFilter] = useState("All");
+  const filtered = MOCK_STORES.filter(s => !search || s.title.toLowerCase().includes(search.toLowerCase()));
 
   return (
     <UniversePageShell
       title="Grocery"
       subtitle="Fresh groceries delivered fast"
-      icon={<ShoppingCart className="h-6 w-6 text-primary-foreground" />}
-      gradient="linear-gradient(135deg, hsl(142 60% 40%), hsl(142 60% 55%))"
+      icon={<ShoppingCart className="h-5 w-5 text-primary-foreground" />}
+      gradient="linear-gradient(135deg, hsl(142 60% 38%), hsl(142 50% 50%))"
+      seoTitle="Grocery Delivery — Fresh Food & Essentials | Easy-Locs"
+      seoDescription="Get fresh groceries, organic produce, and household essentials delivered to your door from local stores and supermarkets."
       search={<UniverseSearch placeholder="Search products, stores…" value={search} onChange={setSearch} />}
+      filters={FILTERS.map(f => (
+        <FilterChip key={f} label={f} active={activeFilter === f} onClick={() => setActiveFilter(f)} />
+      ))}
+      isEmpty={filtered.length === 0}
+      emptyMessage="No stores found"
     >
       {/* Product families */}
+      <h2 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">Categories</h2>
       <div className="grid grid-cols-4 gap-2 mb-6">
         {FAMILIES.map((f, i) => (
           <CategoryCard key={f.label} to={f.to} icon={f.icon} label={f.label} index={i} />
         ))}
       </div>
 
-      {/* Nearby stores */}
-      <h2 className="text-sm font-bold text-foreground mb-3">Stores near you</h2>
-      <div className="space-y-3">
-        {MOCK_STORES.filter(s => !search || s.title.toLowerCase().includes(search.toLowerCase())).map((s, i) => (
+      {/* Store list */}
+      <h2 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">Stores near you</h2>
+      <div className="space-y-2">
+        {filtered.map((s, i) => (
           <UniverseCard
             key={s.id}
             to={`/grocery/store/${s.id}`}
@@ -55,7 +69,8 @@ export default function GroceryHub() {
             subtitle={s.subtitle}
             rating={s.rating}
             badge={s.badge}
-            image={s.image || undefined}
+            eta={s.eta}
+            distance={s.distance}
             index={i}
           />
         ))}

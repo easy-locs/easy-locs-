@@ -1,5 +1,5 @@
 /**
- * CategoryCard — Compact category entry point used in universe hub grids.
+ * CategoryCard — Compact category chip for universe hub grids.
  */
 import { cn } from "@/lib/utils";
 import { Link } from "react-router-dom";
@@ -12,6 +12,8 @@ interface CategoryCardProps {
   count?: number;
   className?: string;
   index?: number;
+  /** Active/selected state */
+  active?: boolean;
 }
 
 export default function CategoryCard({
@@ -21,24 +23,28 @@ export default function CategoryCard({
   count,
   className,
   index = 0,
+  active,
 }: CategoryCardProps) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.03 }}
+      initial={{ opacity: 0, scale: 0.92 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ delay: index * 0.03, duration: 0.25 }}
     >
       <Link
         to={to}
         className={cn(
-          "flex flex-col items-center gap-1.5 p-3 rounded-2xl border border-border/20 bg-card/50 active:scale-95 transition-transform text-center",
+          "flex flex-col items-center gap-1.5 p-2.5 rounded-2xl border transition-all active:scale-95 text-center",
+          active
+            ? "bg-primary/10 border-primary/30 shadow-sm"
+            : "bg-card/60 border-border/20 hover:border-border/40",
           className,
         )}
       >
-        <span className="text-xl">{icon}</span>
-        <span className="text-2xs font-bold text-foreground leading-tight">{label}</span>
+        <span className="text-xl leading-none">{icon}</span>
+        <span className="text-2xs font-bold text-foreground leading-tight line-clamp-1">{label}</span>
         {count != null && (
-          <span className="text-2xs text-muted-foreground">{count}+</span>
+          <span className="text-[9px] text-muted-foreground font-medium">{count}+</span>
         )}
       </Link>
     </motion.div>
