@@ -230,9 +230,9 @@ const CreateListing = () => {
         provider = newProvider;
       }
 
-      const slug = form.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/-+$/, "");
-      const expiresAt = new Date();
-      expiresAt.setDate(expiresAt.getDate() + 30);
+      const isSale = form.listing_type === "sale";
+      const autoExpire = isSale;
+      const expiresAt = isSale ? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) : null;
 
       const { error } = await supabase.from("marketplace_services").insert({
         org_id: orgId, user_id: user.id, provider_id: provider!.id,
