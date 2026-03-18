@@ -2025,6 +2025,80 @@ export type Database = {
           },
         ]
       }
+      customer_relationships: {
+        Row: {
+          created_at: string
+          currency: string
+          customer_id: string
+          first_interaction_at: string
+          id: string
+          is_favorite: boolean
+          last_booking_at: string | null
+          last_order_at: string | null
+          lifetime_value: number
+          loyalty_points: number
+          loyalty_tier: string | null
+          merchant_id: string
+          preferred_categories: string[] | null
+          preferred_payment_method: string | null
+          reactivation_eligible: boolean
+          shop_id: string | null
+          total_bookings: number
+          total_orders: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          currency?: string
+          customer_id: string
+          first_interaction_at?: string
+          id?: string
+          is_favorite?: boolean
+          last_booking_at?: string | null
+          last_order_at?: string | null
+          lifetime_value?: number
+          loyalty_points?: number
+          loyalty_tier?: string | null
+          merchant_id: string
+          preferred_categories?: string[] | null
+          preferred_payment_method?: string | null
+          reactivation_eligible?: boolean
+          shop_id?: string | null
+          total_bookings?: number
+          total_orders?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          currency?: string
+          customer_id?: string
+          first_interaction_at?: string
+          id?: string
+          is_favorite?: boolean
+          last_booking_at?: string | null
+          last_order_at?: string | null
+          lifetime_value?: number
+          loyalty_points?: number
+          loyalty_tier?: string | null
+          merchant_id?: string
+          preferred_categories?: string[] | null
+          preferred_payment_method?: string | null
+          reactivation_eligible?: boolean
+          shop_id?: string | null
+          total_bookings?: number
+          total_orders?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_relationships_shop_id_fkey"
+            columns: ["shop_id"]
+            isOneToOne: false
+            referencedRelation: "storefront_pages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       deal_events: {
         Row: {
           actor_id: string | null
