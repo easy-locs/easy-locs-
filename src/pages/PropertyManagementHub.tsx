@@ -288,5 +288,6 @@ export default function PropertyManagementHub() {
         </div>
       </div>
     </>
+    </SecurityGate>
   );
 }
