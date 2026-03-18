@@ -80,6 +80,14 @@ export default function WalletHub() {
         return <OrbitTransactionHistory />;
       case "settings":
         return <WalletSecurityPanel />;
+      case "rent-pay":
+        return rentCallId ? (
+          <RentPaymentSheet
+            rentCallId={rentCallId}
+            onClose={() => setView("home")}
+            onSuccess={() => { /* stay on success screen */ }}
+          />
+        ) : null;
       default:
         return null;
     }
