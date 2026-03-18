@@ -463,7 +463,9 @@ const CreateListing = () => {
 
             <div className="bg-accent/5 border border-accent/20 rounded-xl p-4">
               <Label className="text-xs font-semibold text-accent">Country *</Label>
-              <CountrySelect value={form.country} onChange={code => set({ country: code })} />
+              <CountrySelect value={form.country} onChange={code => {
+                set({ country: code, currency: currencyFromCountry(code) });
+              }} />
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
