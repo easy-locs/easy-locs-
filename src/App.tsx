@@ -196,6 +196,15 @@ const SlugCategoryResolver = safeLazy(() => import("./pages/seo/SEOShortUrlResol
 const RidePage = safeLazy(() => import("./pages/RidePage"), "RidePage");
 const SendPage = safeLazy(() => import("./pages/SendPage"), "SendPage");
 
+// Travel universe
+const TravelHub = safeLazy(() => import("./pages/travel/TravelHub"), "TravelHub");
+const TravelFlights = safeLazy(() => import("./pages/travel/TravelFlights"), "TravelFlights");
+const TravelStays = safeLazy(() => import("./pages/travel/TravelStays"), "TravelStays");
+const TravelHotels = safeLazy(() => import("./pages/travel/TravelHotels"), "TravelHotels");
+const TravelHotelDetail = safeLazy(() => import("./pages/travel/TravelHotelDetail"), "TravelHotelDetail");
+const TravelStayDetail = safeLazy(() => import("./pages/travel/TravelStayDetail"), "TravelStayDetail");
+const TravelFlightDetail = safeLazy(() => import("./pages/travel/TravelFlightDetail"), "TravelFlightDetail");
+
 // Deep-link public pages
 const UserProfilePage = safeLazy(() => import("./pages/deep-link/UserProfilePage"), "UserProfilePage");
 const ProductPage = safeLazy(() => import("./pages/deep-link/ProductPage"), "ProductPage");
@@ -298,6 +307,13 @@ const App = () => (
               <Route path="/search" element={<DiscoverPage />} />
               <Route path="/ride" element={<RidePage />} />
               <Route path="/send" element={<SendPage />} />
+              <Route path="/travel" element={<TravelHub />} />
+              <Route path="/travel/flights" element={<TravelFlights />} />
+              <Route path="/travel/stays" element={<TravelStays />} />
+              <Route path="/travel/hotels" element={<TravelHotels />} />
+              <Route path="/travel/hotel/:id" element={<TravelHotelDetail />} />
+              <Route path="/travel/stay/:id" element={<TravelStayDetail />} />
+              <Route path="/travel/flight/:id" element={<TravelFlightDetail />} />
               <Route path="/explore" element={<Explore />} />
               <Route path="/super-map" element={<SuperMapRadarPage />} />
               <Route path="/shops" element={<ShopsPage />} />
