@@ -7,7 +7,9 @@ import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { supabase } from "@/integrations/supabase/client";
-import { createMarkerElement, getMarkerStyle, getCoverageStyle, buildPopupHTML } from "@/lib/map/presence-styles";
+import { createEasyLocsMarkerElement, buildEasyLocsPopupHTML } from "@/lib/map/easy-locs-markers";
+import { getEasyLocsRadiusPaint } from "@/lib/map/easy-locs-radius-style";
+import EasyLocsRadarOverlay from "@/components/map/EasyLocsRadarOverlay";
 import { isLiveStale } from "@/hooks/useGPSTracking";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
@@ -197,35 +199,26 @@ const FALLBACK_NEARBY = [
 
 /* ─── Legend ─── */
 function MapLegend() {
-  const items: [string, string, boolean][] = [
-    ["#D4A853", "Store", false],
-    ["#fbbf24", "Mobile Seller", true],
-    ["#F59E0B", "Mobile Service", true],
-    ["#22C55E", "Driver", true],
+  const items: { color: string; label: string }[] = [
+    { color: "#D4A853", label: "Store" },
+    { color: "#EAB308", label: "Seller" },
+    { color: "#F59E0B", label: "Service" },
+    { color: "#22C55E", label: "Driver" },
+    { color: "#06B6D4", label: "Live" },
   ];
   return (
-    <div className="absolute bottom-20 left-3 z-10 rounded-xl border border-border/20 bg-card/90 backdrop-blur-lg p-3 shadow-xl">
-      <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">Legend</span>
-      <div className="mt-2 space-y-1.5">
-        {items.map(([color, label, isLive]) => (
-          <div key={label} className="flex items-center gap-2.5">
-            <span className="relative flex items-center justify-center w-4 h-4">
-              <span className="w-3 h-3 rounded-full shrink-0" style={{ background: color, boxShadow: `0 0 6px ${color}44` }} />
-              {isLive && <span className="absolute inset-0 rounded-full border border-current opacity-30 animate-ping" style={{ color, animationDuration: "2.5s" }} />}
-            </span>
-            <span className="text-[11px] text-foreground/80 font-medium">{label}</span>
+    <div className="absolute bottom-20 left-3 z-10 rounded-2xl border border-border/20 bg-card/85 backdrop-blur-xl p-3 shadow-xl">
+      <div className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest mb-2">Radar legend</div>
+      <div className="flex flex-wrap gap-x-3 gap-y-1.5">
+        {items.map((item) => (
+          <div key={item.label} className="inline-flex items-center gap-1.5">
+            <span
+              className="w-2.5 h-2.5 rounded-full shrink-0"
+              style={{ background: item.color, boxShadow: `0 0 6px ${item.color}44` }}
+            />
+            <span className="text-[10px] font-medium text-foreground/75">{item.label}</span>
           </div>
         ))}
-        <div className="border-t border-border/20 pt-1.5 mt-1.5 space-y-1">
-          <div className="flex items-center gap-2.5">
-            <span className="w-4 h-4 rounded-full border border-primary/30 bg-primary/5 shrink-0" />
-            <span className="text-[10px] text-muted-foreground">Coverage</span>
-          </div>
-          <div className="flex items-center gap-2.5">
-            <span className="w-4 h-4 rounded-full border border-dashed border-[#06B6D4]/40 bg-[#06B6D4]/5 shrink-0" />
-            <span className="text-[10px] text-muted-foreground">Live radius</span>
-          </div>
-        </div>
       </div>
     </div>
   );
@@ -332,14 +325,13 @@ export default function SuperMapRadarPage() {
       });
 
       filtered.forEach((listing, i) => {
-        const el = createMarkerElement(listing.presence_mode, listing.entity_type);
-        const style = getMarkerStyle(listing.presence_mode, listing.entity_type);
+        const el = createEasyLocsMarkerElement(listing.presence_mode, listing.entity_type);
 
         const marker = new mapboxgl.Marker({ element: el })
           .setLngLat([listing.lng, listing.lat])
           .setPopup(
-            new mapboxgl.Popup({ offset: 24, closeButton: false, maxWidth: "260px" })
-              .setHTML(buildPopupHTML(listing, style))
+            new mapboxgl.Popup({ offset: 26, closeButton: false, maxWidth: "270px" })
+              .setHTML(buildEasyLocsPopupHTML(listing))
           )
           .addTo(map);
         markersRef.current.push(marker);
@@ -347,15 +339,15 @@ export default function SuperMapRadarPage() {
         if (listing.coverage_mode !== "point" && listing.coverage_radius_m && listing.coverage_radius_m > 0) {
           const srcId = `coverage-src-${i}`;
           const circle = createCircleGeoJSON([listing.lng, listing.lat], listing.coverage_radius_m);
-          const cs = getCoverageStyle(listing.coverage_mode, style.color);
+          const paints = getEasyLocsRadiusPaint(listing.presence_mode, listing.entity_type, listing.coverage_mode);
           map.addSource(srcId, { type: "geojson", data: circle as any });
           map.addLayer({
             id: `coverage-fill-${i}`, type: "fill", source: srcId,
-            paint: cs.fill as any,
+            paint: paints.fill as any,
           });
           map.addLayer({
             id: `coverage-border-${i}`, type: "line", source: srcId,
-            paint: cs.line as any,
+            paint: paints.border as any,
           });
         }
       });
@@ -509,8 +501,7 @@ export default function SuperMapRadarPage() {
           <>
             {/* Map container — always mounted when in map mode */}
             <div ref={mapContainerRef} className="absolute inset-0" />
-
-            {/* Fallback overlay while map loads */}
+            <EasyLocsRadarOverlay visible={mapReady} />
             {!mapReady && (
               <div className="absolute inset-0 z-10 overflow-y-auto p-3 pb-24 bg-background">
                 <MapFallback onRetry={() => window.location.reload()} />
