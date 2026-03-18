@@ -5,7 +5,7 @@
 import { useParams } from "react-router-dom";
 import { Star, MapPin, Wifi, Car, Coffee, Shield, Clock, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import MobilePageHeader from "@/components/mobile/MobilePageHeader";
+import { MobilePageHeader } from "@/components/ui/mobile-page-header";
 
 export default function TravelHotelDetail() {
   const { id } = useParams<{ id: string }>();
