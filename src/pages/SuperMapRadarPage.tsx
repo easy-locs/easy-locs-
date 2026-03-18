@@ -3,6 +3,7 @@ import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { supabase } from "@/integrations/supabase/client";
 import { createMarkerElement, getMarkerStyle } from "@/lib/map/presence-styles";
+import { isLiveStale } from "@/hooks/useGPSTracking";
 
 const MAPBOX_TOKEN = "pk.eyJ1IjoiZWFzeWxvY3MyMDI2IiwiYSI6ImNtbXZiZ3h0cTF6ZHMycnIyOWw4NnJzZTIifQ.ElIj6bFQK_BpVm6suigHUQ";
 const DUBAI_CENTER: [number, number] = [55.2708, 25.2048];
@@ -19,6 +20,7 @@ interface MapListing {
   category: string;
   price: number;
   currency: string;
+  listing_type: string;
 }
 
 /** Create a GeoJSON circle polygon from center + radius in meters */
@@ -42,13 +44,13 @@ export default function SuperMapRadarPage() {
   const markersRef = useRef<mapboxgl.Marker[]>([]);
   const [listings, setListings] = useState<MapListing[]>([]);
 
-  // Fetch listings (exclude expired sale listings)
+  // Fetch active listings — apply all business rules
   useEffect(() => {
     (async () => {
       const now = new Date().toISOString();
       const { data } = await (supabase as any)
         .from("marketplace_services")
-        .select("id, title, lat, lng, anchor_lat, anchor_lng, live_lat, live_lng, presence_mode, entity_type, coverage_mode, coverage_radius_m, category, price, currency, listing_type, auto_expire, listing_expires_at")
+        .select("id, title, lat, lng, anchor_lat, anchor_lng, live_lat, live_lng, presence_mode, entity_type, coverage_mode, coverage_radius_m, category, price, currency, listing_type, auto_expire, listing_expires_at, is_live_online, live_updated_at")
         .eq("active", true)
         .neq("presence_mode", "off")
         .limit(500);
@@ -56,14 +58,23 @@ export default function SuperMapRadarPage() {
         setListings(
           data
             .filter((d: any) => {
-              // Filter out expired sale listings
+              // Rule: expired sale listings must not appear
               if (d.auto_expire && d.listing_expires_at && d.listing_expires_at < now) return false;
+              // Rule: live entities must be recently online
+              if (d.presence_mode === "live" && d.is_live_online === false) {
+                // Allow live listings that just haven't pushed yet (grace period)
+                if (isLiveStale(d.live_updated_at)) return false;
+              }
               return true;
             })
             .map((d: any) => ({
               ...d,
-              lat: d.anchor_lat ?? d.live_lat ?? d.lat,
-              lng: d.anchor_lng ?? d.live_lng ?? d.lng,
+              lat: d.presence_mode === "live"
+                ? (d.live_lat ?? d.anchor_lat ?? d.lat)
+                : (d.anchor_lat ?? d.lat),
+              lng: d.presence_mode === "live"
+                ? (d.live_lng ?? d.anchor_lng ?? d.lng)
+                : (d.anchor_lng ?? d.lng),
             }))
             .filter((d: any) => d.lat && d.lng)
         );
