@@ -45,7 +45,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [orgSelectorOpen, setOrgSelectorOpen] = useState(false);
 
-  const [langOpen, setLangOpen] = useState(false);
+  
   const location = useLocation();
   const navigate = useNavigate();
   const { user, signOut, subscription, activeRole, hasDualRole, switchRole, orgId, allOrgs, switchOrg } = useAuth();
