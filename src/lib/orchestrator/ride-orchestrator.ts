@@ -208,7 +208,7 @@ export async function startRideFlow(opts: {
   return {
     rideRequestId: (rideRequest as any).id,
     fare,
-    surge,
+    surge: surgeAdjusted,
     nearbyCount: rankedDrivers.length,
     assigned: !!dispatch.assigned,
     driverId: dispatch.driverId ?? null,
