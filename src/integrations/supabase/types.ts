@@ -14,6 +14,109 @@ export type Database = {
   }
   public: {
     Tables: {
+      accounting_entries: {
+        Row: {
+          accounting_period: string
+          amount: number
+          country_code: string
+          created_at: string | null
+          currency: string
+          description: string | null
+          entry_type: string
+          external_reference: string | null
+          id: string
+          lease_id: string | null
+          org_id: string
+          payment_method: string | null
+          property_id: string | null
+          rent_call_id: string | null
+          tenant_id: string | null
+          updated_at: string | null
+          wallet_transaction_id: string | null
+        }
+        Insert: {
+          accounting_period: string
+          amount: number
+          country_code: string
+          created_at?: string | null
+          currency?: string
+          description?: string | null
+          entry_type: string
+          external_reference?: string | null
+          id?: string
+          lease_id?: string | null
+          org_id: string
+          payment_method?: string | null
+          property_id?: string | null
+          rent_call_id?: string | null
+          tenant_id?: string | null
+          updated_at?: string | null
+          wallet_transaction_id?: string | null
+        }
+        Update: {
+          accounting_period?: string
+          amount?: number
+          country_code?: string
+          created_at?: string | null
+          currency?: string
+          description?: string | null
+          entry_type?: string
+          external_reference?: string | null
+          id?: string
+          lease_id?: string | null
+          org_id?: string
+          payment_method?: string | null
+          property_id?: string | null
+          rent_call_id?: string | null
+          tenant_id?: string | null
+          updated_at?: string | null
+          wallet_transaction_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "accounting_entries_lease_id_fkey"
+            columns: ["lease_id"]
+            isOneToOne: false
+            referencedRelation: "leases"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "accounting_entries_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "accounting_entries_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs_tenant_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "accounting_entries_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "accounting_entries_rent_call_id_fkey"
+            columns: ["rent_call_id"]
+            isOneToOne: false
+            referencedRelation: "rent_calls"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "accounting_entries_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       activities: {
         Row: {
           active: boolean
@@ -6392,6 +6495,7 @@ export type Database = {
           due_date: string | null
           id: string
           last_reminder_at: string | null
+          lease_id: string | null
           month: string
           org_id: string
           paid: boolean | null
@@ -6409,6 +6513,7 @@ export type Database = {
           tenant_id: string
           total_amount: number
           updated_at: string
+          wallet_transaction_id: string | null
         }
         Insert: {
           charges_amount?: number
@@ -6416,6 +6521,7 @@ export type Database = {
           due_date?: string | null
           id?: string
           last_reminder_at?: string | null
+          lease_id?: string | null
           month: string
           org_id: string
           paid?: boolean | null
@@ -6433,6 +6539,7 @@ export type Database = {
           tenant_id: string
           total_amount?: number
           updated_at?: string
+          wallet_transaction_id?: string | null
         }
         Update: {
           charges_amount?: number
@@ -6440,6 +6547,7 @@ export type Database = {
           due_date?: string | null
           id?: string
           last_reminder_at?: string | null
+          lease_id?: string | null
           month?: string
           org_id?: string
           paid?: boolean | null
@@ -6457,8 +6565,16 @@ export type Database = {
           tenant_id?: string
           total_amount?: number
           updated_at?: string
+          wallet_transaction_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "rent_calls_lease_id_fkey"
+            columns: ["lease_id"]
+            isOneToOne: false
+            referencedRelation: "leases"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "rent_calls_org_id_fkey"
             columns: ["org_id"]
