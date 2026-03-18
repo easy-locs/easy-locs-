@@ -226,15 +226,21 @@ const PublicListing = () => {
               {listing.price_per_night > 0 && (
                 <span className="flex items-center gap-1.5 bg-accent/10 text-accent px-3 py-2 rounded-xl font-medium">
                   <Euro className="h-4 w-4" />
-                  <span className="whitespace-nowrap">{listing.price_per_night} € {t("page.listing.per_night")}</span>
+                  <span className="whitespace-nowrap">
+                    {listing.price_per_night} € / {RENTAL_TYPES.includes(listing.listing_type)
+                      ? (t("page.rental.per_month") || "month")
+                      : (t("page.listing.per_night") || "night")}
+                  </span>
                 </span>
               )}
               <span className="flex items-center gap-1.5 bg-muted text-muted-foreground px-3 py-2 rounded-xl">
                 <Users className="h-4 w-4" /> {listing.max_guests} {t("page.listing.guests_max")}
               </span>
-              <span className="flex items-center gap-1.5 bg-muted text-muted-foreground px-3 py-2 rounded-xl">
-                <Moon className="h-4 w-4" /> {t("page.listing.min_nights").replace("{n}", String(listing.min_nights))}
-              </span>
+              {!RENTAL_TYPES.includes(listing.listing_type) && (
+                <span className="flex items-center gap-1.5 bg-muted text-muted-foreground px-3 py-2 rounded-xl">
+                  <Moon className="h-4 w-4" /> {t("page.listing.min_nights").replace("{n}", String(listing.min_nights))}
+                </span>
+              )}
             </div>
 
             {listing.description && (
