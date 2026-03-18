@@ -86,11 +86,23 @@ export default function AuditDebugPanelPage() {
   const [loading, setLoading] = useState(false);
   const { report, findings, gates } = useAuditReport(reportId ?? undefined);
 
+  const [error, setError] = useState<string | null>(null);
+
   const run = async () => {
     setLoading(true);
+    setError(null);
     try {
+      const { data: { user } } = await (await import("@/integrations/supabase/client")).supabase.auth.getUser();
+      if (!user) {
+        setError("Vous devez être connecté pour lancer l'audit. Connectez-vous d'abord.");
+        setLoading(false);
+        return;
+      }
       const result = await runMasterAudit(activeWorkspace?.id);
       setReportId(result.id);
+    } catch (err: any) {
+      console.error("[audit] run failed:", err);
+      setError(err?.message || "Erreur lors de l'audit. Vérifiez votre connexion.");
     } finally {
       setLoading(false);
     }
@@ -153,6 +165,21 @@ export default function AuditDebugPanelPage() {
           </Button>
         </div>
       </div>
+
+      {/* ── Error ── */}
+      {error && (
+        <div className="max-w-2xl mx-auto px-4 -mt-1">
+          <Card className="border-destructive/40 bg-destructive/5">
+            <CardContent className="p-4 flex items-start gap-3">
+              <XCircle className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
+              <div className="space-y-1">
+                <p className="text-sm font-semibold text-destructive">Erreur de connexion</p>
+                <p className="text-xs text-muted-foreground">{error}</p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
       {/* ── Results ── */}
       <AnimatePresence>
