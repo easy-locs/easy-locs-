@@ -14,6 +14,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { usePropertyPaywall } from "@/hooks/usePropertyPaywall";
+import PropertyPaywallBanner from "@/components/property/PropertyPaywallBanner";
 
 const SURFACE_UNITS = [
   { value: "sqm", label: "m²" },
@@ -44,6 +46,7 @@ const AddProperty = () => {
   const { toast } = useToast();
   const { t } = useI18n();
   const navigate = useNavigate();
+  const { requiresUpgrade, propertyCount, loading: paywallLoading } = usePropertyPaywall();
 
   const [form, setForm] = useState({ ...defaultForm, country: userCountry || "FR" });
   const [saving, setSaving] = useState(false);
@@ -60,6 +63,15 @@ const AddProperty = () => {
   const L = cc.labels;
   const set = (patch: Partial<typeof form>) => setForm(prev => ({ ...prev, ...patch }));
   const toggleSection = (key: string) => setOpenSections(prev => ({ ...prev, [key]: !prev[key] }));
+
+  // Block adding if paywall applies
+  if (!paywallLoading && requiresUpgrade) {
+    return (
+      <DashboardLayout>
+        <PropertyPaywallBanner propertyCount={propertyCount} />
+      </DashboardLayout>
+    );
+  }
 
   const handlePostalCodeChange = async (value: string) => {
     set({ postal_code: value });
