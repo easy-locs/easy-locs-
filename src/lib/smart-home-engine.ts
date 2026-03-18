@@ -4,7 +4,7 @@
  */
 
 export type TimeSlot = "morning" | "lunch" | "afternoon" | "dinner" | "latenight";
-export type CategoryKey = "food" | "grocery" | "shops" | "services" | "taxi" | "delivery" | "property" | "wallet" | "coffee" | "bakery" | "dineout" | "beauty" | "concierge" | "mobility";
+export type CategoryKey = "food" | "grocery" | "shops" | "services" | "taxi" | "delivery" | "property" | "wallet" | "coffee" | "bakery" | "dineout" | "beauty" | "concierge" | "mobility" | "rentals" | "stays";
 
 export interface SmartCategory {
   key: CategoryKey;
