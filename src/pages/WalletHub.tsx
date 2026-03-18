@@ -29,7 +29,8 @@ export type WalletView = "home" | "pay" | "receive" | "request" | "scan" | "hist
 export default function WalletHub() {
   const [searchParams] = useSearchParams();
   const initialView = (searchParams.get("action") as WalletView) || "home";
-  const [view, setView] = useState<WalletView>(initialView);
+  const rentCallId = searchParams.get("rentCallId") || null;
+  const [view, setView] = useState<WalletView>(rentCallId ? "rent-pay" : initialView);
   const { balance, loading, loadWallet } = useWallet();
   const { code, symbol, fmtLocal } = usePlatformCurrency();
   const { t } = useI18n();
