@@ -151,6 +151,10 @@ const Index = () => {
       </Suspense>
 
       <Suspense fallback={<SectionLoader />}>
+        <UniverseShowcase />
+      </Suspense>
+
+      <Suspense fallback={<SectionLoader />}>
         <ExplorePreview />
       </Suspense>
 
