@@ -48,15 +48,6 @@ const AddProperty = () => {
   const navigate = useNavigate();
   const { requiresUpgrade, propertyCount, loading: paywallLoading } = usePropertyPaywall();
 
-  // Block adding if paywall applies
-  if (!paywallLoading && requiresUpgrade) {
-    return (
-      <DashboardLayout>
-        <PropertyPaywallBanner propertyCount={propertyCount} />
-      </DashboardLayout>
-    );
-  }
-
   const [form, setForm] = useState({ ...defaultForm, country: userCountry || "FR" });
   const [saving, setSaving] = useState(false);
   const [postalSuggestions, setPostalSuggestions] = useState<{ city: string; code: string }[]>([]);
@@ -67,6 +58,15 @@ const AddProperty = () => {
     identification: true, location: true, characteristics: false,
     amenities: false, financial: false, description: false,
   });
+
+  // Block adding if paywall applies
+  if (!paywallLoading && requiresUpgrade) {
+    return (
+      <DashboardLayout>
+        <PropertyPaywallBanner propertyCount={propertyCount} />
+      </DashboardLayout>
+    );
+  }
 
   const cc = useMemo(() => getCountryConfig(form.country), [form.country]);
   const L = cc.labels;
