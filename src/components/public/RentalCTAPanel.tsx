@@ -63,7 +63,7 @@ const RentalCTAPanel = ({ listing, property }: Props) => {
   if (submitted) {
     return (
       <div className="text-center py-6 space-y-3">
-        <CheckCircle className="h-10 w-10 text-emerald-500 mx-auto" />
+        <CheckCircle className="h-10 w-10 text-accent mx-auto" />
         <p className="font-semibold text-foreground">{t("page.rental.request_received") || "Request received!"}</p>
         <p className="text-xs text-muted-foreground">{t("page.rental.owner_will_contact") || "The owner will contact you shortly."}</p>
       </div>
