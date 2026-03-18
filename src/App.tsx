@@ -293,6 +293,8 @@ const App = () => (
               {/* V7 Public pillars */}
               <Route path="/discover" element={<DiscoverPage />} />
               <Route path="/search" element={<DiscoverPage />} />
+              <Route path="/ride" element={<RidePage />} />
+              <Route path="/send" element={<SendPage />} />
               <Route path="/explore" element={<Explore />} />
               <Route path="/super-map" element={<SuperMapRadarPage />} />
               <Route path="/shops" element={<ShopsPage />} />
