@@ -18,6 +18,8 @@ import {
 } from "lucide-react";
 import PresenceMobilitySelector, { type PresenceMode, type EntityType, type CoverageMode, type PresenceConfig } from "@/components/marketplace/PresenceMobilitySelector";
 import { getCategoryConfig, getCategoryOptions, getAllowedListingTypes, getAllowedPresenceModes, type ListingType } from "@/lib/category-config";
+import { detectListingContext, currencyFromCountry, detectLocationFromTimezone, type DetectedContext } from "@/lib/smart-prefill";
+import SmartPrefillBanner from "@/components/marketplace/SmartPrefillBanner";
 
 /* ─── Constants ─── */
 const MAX_LISTINGS_FREE = 5;
