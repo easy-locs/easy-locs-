@@ -350,6 +350,8 @@ export default function DeliveryCommandCenter() {
     updateMissionStatus, cancelMission, refetch,
   } = useDeliveryCommandCenter();
 
+  const { lat: userLat, lng: userLng, requestLocation } = useGeolocation();
+
   const [assignDrawerOpen, setAssignDrawerOpen] = useState(false);
   const [assigningJobId, setAssigningJobId] = useState<string | null>(null);
 
