@@ -12,10 +12,10 @@ export const LISTING_TYPES = {
 export type ListingType = typeof LISTING_TYPES[keyof typeof LISTING_TYPES];
 
 /** Types considered "stays" (short-term, nightly) */
-export const STAY_TYPES: ListingType[] = ["short_term_stay", "hotel"];
+export const STAY_TYPES: string[] = ["short_term_stay", "hotel"];
 
 /** Types considered "rentals" (long-term, monthly) */
-export const RENTAL_TYPES: ListingType[] = ["long_term_rental"];
+export const RENTAL_TYPES: string[] = ["long_term_rental"];
 
 /** Human-readable labels */
 export const LISTING_TYPE_LABELS: Record<ListingType, string> = {
