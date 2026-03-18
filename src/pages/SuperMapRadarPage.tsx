@@ -11,33 +11,21 @@ export default function SuperMapRadarPage() {
   const mapRef = useRef<mapboxgl.Map | null>(null);
 
   useEffect(() => {
-    console.log("[super-map] page mounted");
     const container = mapContainerRef.current;
-    if (!container) {
-      console.error("[super-map] missing container");
-      return;
-    }
-    if (!MAPBOX_TOKEN) {
-      console.error("[super-map] missing Mapbox token");
-      return;
-    }
+    if (!container) return;
+    if (!MAPBOX_TOKEN || !MAPBOX_TOKEN.startsWith("pk.")) return;
 
     mapboxgl.accessToken = MAPBOX_TOKEN;
 
     const map = new mapboxgl.Map({
       container,
-      style: "mapbox://styles/mapbox/streets-v11",
+      style: "mapbox://styles/mapbox/streets-v12",
       center: DUBAI_CENTER,
       zoom: 12,
     });
 
     map.on("load", () => {
-      console.log("[super-map] map load fired");
       map.resize();
-    });
-
-    map.on("error", (e) => {
-      console.error("[super-map] map error", e);
     });
 
     mapRef.current = map;
@@ -50,10 +38,7 @@ export default function SuperMapRadarPage() {
 
   return (
     <div style={{ width: "100%", height: "100vh", background: "#0b1220" }}>
-      <div
-        ref={mapContainerRef}
-        style={{ width: "100%", height: "100%" }}
-      />
+      <div ref={mapContainerRef} style={{ width: "100%", height: "100%" }} />
     </div>
   );
 }
