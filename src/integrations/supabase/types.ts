@@ -356,6 +356,42 @@ export type Database = {
           },
         ]
       }
+      ai_ops_suggestions: {
+        Row: {
+          context_id: string | null
+          context_type: string | null
+          created_at: string | null
+          id: string
+          status: string | null
+          suggestion_text: string
+          suggestion_type: string
+          title: string
+          workspace_id: string | null
+        }
+        Insert: {
+          context_id?: string | null
+          context_type?: string | null
+          created_at?: string | null
+          id?: string
+          status?: string | null
+          suggestion_text: string
+          suggestion_type: string
+          title: string
+          workspace_id?: string | null
+        }
+        Update: {
+          context_id?: string | null
+          context_type?: string | null
+          created_at?: string | null
+          id?: string
+          status?: string | null
+          suggestion_text?: string
+          suggestion_type?: string
+          title?: string
+          workspace_id?: string | null
+        }
+        Relationships: []
+      }
       api_keys: {
         Row: {
           active: boolean
@@ -1074,6 +1110,39 @@ export type Database = {
           started_at?: string | null
           status?: string
           thread_id?: string | null
+        }
+        Relationships: []
+      }
+      call_transcripts: {
+        Row: {
+          call_session_id: string
+          created_at: string | null
+          id: string
+          source_locale: string | null
+          speaker_user_id: string | null
+          transcript_text: string
+          translated_locale: string | null
+          translated_text: string | null
+        }
+        Insert: {
+          call_session_id: string
+          created_at?: string | null
+          id?: string
+          source_locale?: string | null
+          speaker_user_id?: string | null
+          transcript_text: string
+          translated_locale?: string | null
+          translated_text?: string | null
+        }
+        Update: {
+          call_session_id?: string
+          created_at?: string | null
+          id?: string
+          source_locale?: string | null
+          speaker_user_id?: string | null
+          transcript_text?: string
+          translated_locale?: string | null
+          translated_text?: string | null
         }
         Relationships: []
       }
@@ -3311,6 +3380,48 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      executive_kpi_snapshots: {
+        Row: {
+          active_orders: number | null
+          active_rides: number | null
+          conversion_rate: number | null
+          created_at: string | null
+          disputes_open: number | null
+          gross_volume: number | null
+          hot_zones: number | null
+          id: string
+          payouts_pending: number | null
+          refunds_volume: number | null
+          snapshot_date: string
+        }
+        Insert: {
+          active_orders?: number | null
+          active_rides?: number | null
+          conversion_rate?: number | null
+          created_at?: string | null
+          disputes_open?: number | null
+          gross_volume?: number | null
+          hot_zones?: number | null
+          id?: string
+          payouts_pending?: number | null
+          refunds_volume?: number | null
+          snapshot_date: string
+        }
+        Update: {
+          active_orders?: number | null
+          active_rides?: number | null
+          conversion_rate?: number | null
+          created_at?: string | null
+          disputes_open?: number | null
+          gross_volume?: number | null
+          hot_zones?: number | null
+          id?: string
+          payouts_pending?: number | null
+          refunds_volume?: number | null
+          snapshot_date?: string
+        }
+        Relationships: []
       }
       expenses: {
         Row: {
@@ -6263,6 +6374,30 @@ export type Database = {
           },
         ]
       }
+      permission_templates: {
+        Row: {
+          created_at: string | null
+          id: string
+          label: string
+          permissions: Json | null
+          template_key: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          label: string
+          permissions?: Json | null
+          template_key: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          label?: string
+          permissions?: Json | null
+          template_key?: string
+        }
+        Relationships: []
+      }
       pricing_rules: {
         Row: {
           active: boolean | null
@@ -7801,6 +7936,42 @@ export type Database = {
           trip_started_at?: string | null
           updated_at?: string
           zone_key?: string | null
+        }
+        Relationships: []
+      }
+      rtc_config: {
+        Row: {
+          created_at: string | null
+          enabled: boolean | null
+          id: string
+          provider: string | null
+          stun_urls: string[] | null
+          turn_password: string | null
+          turn_urls: string[] | null
+          turn_username: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          enabled?: boolean | null
+          id?: string
+          provider?: string | null
+          stun_urls?: string[] | null
+          turn_password?: string | null
+          turn_urls?: string[] | null
+          turn_username?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          enabled?: boolean | null
+          id?: string
+          provider?: string | null
+          stun_urls?: string[] | null
+          turn_password?: string | null
+          turn_urls?: string[] | null
+          turn_username?: string | null
+          updated_at?: string | null
         }
         Relationships: []
       }
