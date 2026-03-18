@@ -1,9 +1,12 @@
 /**
- * UniversePageShell — Shared page wrapper for all universe hubs.
- * Hero gradient + title + subtitle + optional search + children.
+ * UniversePageShell — Premium shared page wrapper for all universe hubs.
+ * Back button + hero gradient + title + subtitle + search + content.
  */
 import { cn } from "@/lib/utils";
+import { useNavigate } from "react-router-dom";
+import { ArrowLeft } from "lucide-react";
 import { motion } from "framer-motion";
+import SEOHead from "@/components/SEOHead";
 
 interface UniversePageShellProps {
   title: string;
@@ -12,8 +15,17 @@ interface UniversePageShellProps {
   gradient?: string;
   children: React.ReactNode;
   className?: string;
-  /** Optional search bar below hero */
   search?: React.ReactNode;
+  /** SEO meta */
+  seoTitle?: string;
+  seoDescription?: string;
+  /** Filter chips below search */
+  filters?: React.ReactNode;
+  /** Loading state */
+  loading?: boolean;
+  /** Empty state message */
+  emptyMessage?: string;
+  isEmpty?: boolean;
 }
 
 export default function UniversePageShell({
@@ -24,18 +36,39 @@ export default function UniversePageShell({
   children,
   className,
   search,
+  seoTitle,
+  seoDescription,
+  filters,
+  loading,
+  emptyMessage = "Nothing here yet",
+  isEmpty,
 }: UniversePageShellProps) {
+  const navigate = useNavigate();
+
   return (
     <div className={cn("min-h-screen bg-background pb-24", className)}>
-      {/* Hero */}
+      {seoTitle && (
+        <SEOHead title={seoTitle} description={seoDescription || subtitle || ""} />
+      )}
+
+      {/* Hero header */}
       <div className="relative overflow-hidden rounded-b-3xl" style={{ background: gradient }}>
-        <div className="px-4 pt-12 pb-8 relative z-10">
-          <div className="flex items-center gap-2 mb-1">
+        <div className="px-4 pt-11 pb-7 relative z-10">
+          {/* Back + title row */}
+          <div className="flex items-center gap-3 mb-1">
+            <button
+              onClick={() => navigate(-1)}
+              className="w-8 h-8 rounded-full flex items-center justify-center backdrop-blur-xl transition-transform active:scale-90"
+              style={{ background: "hsl(0 0% 100% / 0.12)" }}
+              aria-label="Go back"
+            >
+              <ArrowLeft className="h-4 w-4 text-primary-foreground" />
+            </button>
             {icon}
-            <h1 className="text-2xl font-black text-primary-foreground">{title}</h1>
+            <h1 className="text-xl font-black text-primary-foreground tracking-tight">{title}</h1>
           </div>
           {subtitle && (
-            <p className="text-sm text-primary-foreground/70">{subtitle}</p>
+            <p className="text-xs text-primary-foreground/60 ml-11">{subtitle}</p>
           )}
         </div>
         <div
@@ -47,8 +80,29 @@ export default function UniversePageShell({
       {/* Search slot */}
       {search && <div className="px-4 -mt-5 relative z-20">{search}</div>}
 
+      {/* Filter chips */}
+      {filters && <div className="px-4 mt-3 flex gap-2 overflow-x-auto no-scrollbar">{filters}</div>}
+
       {/* Content */}
-      <div className="px-4 mt-5">{children}</div>
+      <div className="px-4 mt-5">
+        {loading ? (
+          <div className="flex flex-col items-center justify-center py-16 gap-3">
+            <motion.div
+              className="w-8 h-8 rounded-full border-2 border-primary border-t-transparent"
+              animate={{ rotate: 360 }}
+              transition={{ duration: 0.8, repeat: Infinity, ease: "linear" }}
+            />
+            <p className="text-xs text-muted-foreground">Loading…</p>
+          </div>
+        ) : isEmpty ? (
+          <div className="flex flex-col items-center justify-center py-16 gap-3">
+            <span className="text-4xl">🔍</span>
+            <p className="text-sm text-muted-foreground font-medium">{emptyMessage}</p>
+          </div>
+        ) : (
+          children
+        )}
+      </div>
     </div>
   );
 }
