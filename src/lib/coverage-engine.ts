@@ -3,9 +3,9 @@
  * Supports radius, zone, and hybrid modes per country/city/category.
  */
 
-export type DiscoveryMode = "radius" | "zone" | "hybrid";
-export type ZoneMode = "district" | "city" | "metro";
-export type CoverageFamily = "hyperlocal" | "city_service" | "wide_search";
+export type DiscoveryMode = "radius" | "zone" | "hybrid" | "unrestricted";
+export type ZoneMode = "district" | "city" | "metro" | "region" | "country";
+export type CoverageFamily = "hyperlocal" | "city_service" | "wide_search" | "unrestricted";
 
 export interface CoverageRule {
   country_code: string;
@@ -56,13 +56,20 @@ const CATEGORY_FAMILIES: Record<string, CoverageFamily> = {
   jobs: "wide_search",
   marketplace: "wide_search",
   shops: "wide_search",
+
+  // Unrestricted — no geographic constraint, country/region-wide
+  activities: "unrestricted",
+  transport: "unrestricted",
+  events: "unrestricted",
+  travel: "unrestricted",
 };
 
 /* ═══ Family Default Radii ═══ */
 const FAMILY_DEFAULTS: Record<CoverageFamily, { default_radius_km: number; min_radius_km: number; max_radius_km: number }> = {
-  hyperlocal:   { default_radius_km: 3,  min_radius_km: 0.5, max_radius_km: 8 },
-  city_service: { default_radius_km: 15, min_radius_km: 3,   max_radius_km: 50 },
-  wide_search:  { default_radius_km: 50, min_radius_km: 5,   max_radius_km: 200 },
+  hyperlocal:    { default_radius_km: 3,   min_radius_km: 0.5, max_radius_km: 8 },
+  city_service:  { default_radius_km: 15,  min_radius_km: 3,   max_radius_km: 50 },
+  wide_search:   { default_radius_km: 50,  min_radius_km: 5,   max_radius_km: 200 },
+  unrestricted:  { default_radius_km: 500, min_radius_km: 10,  max_radius_km: 9999 },
 };
 
 /* ═══ Category-Specific Rules ═══ */
@@ -91,6 +98,11 @@ const CATEGORY_RULES: Record<string, Partial<CoverageRule>> = {
   stays:        { discovery_mode: "zone", zone_mode: "city" },
   hotels:       { discovery_mode: "zone", zone_mode: "city" },
   marketplace:  { discovery_mode: "zone", zone_mode: "metro" },
+
+  activities:   { discovery_mode: "unrestricted", zone_mode: "region" },
+  transport:    { discovery_mode: "unrestricted", zone_mode: "country" },
+  events:       { discovery_mode: "unrestricted", zone_mode: "region" },
+  travel:       { discovery_mode: "unrestricted", zone_mode: "country" },
 };
 
 /* ═══ Country Overrides ═══ */
@@ -158,13 +170,41 @@ export function usesZone(rule: CoverageRule): boolean {
  * Get human label for coverage display.
  */
 export function getCoverageLabel(rule: CoverageRule): string {
+  if (rule.discovery_mode === "unrestricted") {
+    return rule.zone_mode === "country" ? "Nationwide" : rule.zone_mode === "region" ? "Your region" : "Everywhere";
+  }
   if (rule.discovery_mode === "zone") {
-    return rule.zone_mode === "district" ? "Your district" : rule.zone_mode === "metro" ? "Metro area" : "Your city";
+    const labels: Record<string, string> = { district: "Your district", city: "Your city", metro: "Metro area", region: "Your region", country: "Nationwide" };
+    return labels[rule.zone_mode || "city"] || "Your city";
   }
   if (rule.discovery_mode === "hybrid") {
     return `${rule.default_radius_km}km + ${rule.zone_mode || "city"}`;
   }
   return `Within ${rule.default_radius_km}km`;
+}
+
+/**
+ * Discovery Scope — determines if a category restricts results geographically.
+ */
+export function isGeographicallyRestricted(category: string): boolean {
+  const family = getCategoryFamily(category);
+  return family === "hyperlocal" || family === "city_service";
+}
+
+/**
+ * Should the UI show a radius slider for this category?
+ */
+export function showsRadiusControl(category: string): boolean {
+  const family = getCategoryFamily(category);
+  return family === "hyperlocal" || family === "city_service";
+}
+
+/**
+ * Should the UI show zone/region filters for this category?
+ */
+export function showsZoneFilter(category: string): boolean {
+  const family = getCategoryFamily(category);
+  return family === "wide_search" || family === "unrestricted";
 }
 
 /** Get all category families for reference */
