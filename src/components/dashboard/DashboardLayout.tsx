@@ -473,34 +473,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
           <div className="flex-1" />
           {/* Hub quick access — desktop topbar */}
           <HubQuickAccess variant="topbar" />
-          {/* Language selector */}
-          <div className="relative">
-            <button
-              onClick={() => setLangOpen(!langOpen)}
-              className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-            >
-              <span className="text-lg">{LOCALE_FLAGS[locale]}</span>
-            </button>
-            {langOpen && (
-              <>
-                <div className="fixed inset-0 z-40" onClick={() => setLangOpen(false)} />
-                <div className="absolute right-0 top-full mt-1 bg-card border border-border rounded-lg shadow-lg py-1 z-50 min-w-[140px] max-h-64 overflow-y-auto">
-                  {availableLocales.map((l) => (
-                    <button
-                      key={l.value}
-                      onClick={() => { setLocale(l.value); setLangOpen(false); }}
-                      className={`w-full flex items-center gap-2 px-3 py-1.5 text-sm hover:bg-muted transition-colors ${
-                        locale === l.value ? "text-accent font-medium" : "text-foreground"
-                      }`}
-                    >
-                      <span>{LOCALE_FLAGS[l.value]}</span>
-                      {l.label}
-                    </button>
-                  ))}
-                </div>
-              </>
-            )}
-          </div>
+          {/* Language auto-detected — manual change in Settings only */}
           <ThemeSwitcher />
           <NotificationBell />
         </header>
