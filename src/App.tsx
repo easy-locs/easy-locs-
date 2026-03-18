@@ -348,6 +348,11 @@ const App = () => (
               <Route path="/admin/live-ops" element={<AdminLiveOpsPage />} />
               <Route path="/subscription/priority" element={<RiderPrioritySubscriptionPage />} />
               <Route path="/admin/dispatch-board" element={<AdminDispatchBoardPage />} />
+              <Route path="/admin/sla" element={<AdminSLAPage />} />
+              <Route path="/admin/trust-graph" element={<AdminTrustGraphPage />} />
+              <Route path="/refund/:rideRequestId" element={<RefundRequestPage />} />
+              <Route path="/orbit/call/:threadId" element={<OrbitLiveCallPage />} />
+              <Route path="/team/command-center" element={<TeamCommandCenterPage />} />
 
               {/* Travel */}
               <Route path="/travel" element={<TravelHub />} />
