@@ -148,15 +148,75 @@ const CreateListing = () => {
     security: false, payment: false,
   });
 
-  // Auto-capture geolocation for Nearby discovery
+  // Smart prefill state
+  const [detection, setDetection] = useState<DetectedContext | null>(null);
+  const [prefillVisible, setPrefillVisible] = useState(false);
+  const [prefillApplied, setPrefillApplied] = useState(false);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Auto-capture geolocation + prefill country/currency
   useEffect(() => {
+    // GPS-based prefill
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
-        (pos) => { setGeoLat(pos.coords.latitude); setGeoLng(pos.coords.longitude); },
+        (pos) => {
+          setGeoLat(pos.coords.latitude);
+          setGeoLng(pos.coords.longitude);
+        },
         () => {},
         { enableHighAccuracy: false, timeout: 5000, maximumAge: 300000 }
       );
     }
+    // Timezone-based country/currency prefill
+    if (!userCountry || userCountry === "FR") {
+      const loc = detectLocationFromTimezone();
+      if (loc.country) {
+        setForm(prev => ({
+          ...prev,
+          country: loc.country!,
+          currency: loc.currency || currencyFromCountry(loc.country!),
+        }));
+      }
+    } else {
+      setForm(prev => ({ ...prev, currency: currencyFromCountry(userCountry) }));
+    }
+  }, [userCountry]);
+
+  // Smart context detection on title/description change (debounced)
+  const runDetection = useCallback((title: string, description: string) => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      if (title.length < 3) {
+        setDetection(null);
+        setPrefillVisible(false);
+        return;
+      }
+      const result = detectListingContext({ title, description });
+      if (result.confidence >= 0.25 && !prefillApplied) {
+        setDetection(result);
+        setPrefillVisible(true);
+      }
+    }, 500);
+  }, [prefillApplied]);
+
+  const acceptPrefill = useCallback(() => {
+    if (!detection) return;
+    setForm(prev => ({
+      ...prev,
+      category: detection.category,
+      listing_type: detection.listing_type,
+      entity_type: detection.entity_type,
+      presence_mode: detection.presence_mode,
+      coverage_mode: detection.coverage_mode,
+      coverage_radius_m: detection.coverage_radius_m,
+    }));
+    setPrefillVisible(false);
+    setPrefillApplied(true);
+  }, [detection]);
+
+  const dismissPrefill = useCallback(() => {
+    setPrefillVisible(false);
+    setPrefillApplied(true);
   }, []);
 
   const set = (patch: Partial<ListingForm>) => {
