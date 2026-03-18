@@ -1,5 +1,5 @@
 /**
- * DriverMap — Leaflet map showing live driver position, pickup, and dropoff markers.
+ * DriverMap — Leaflet map showing live driver position, pickup, dropoff markers + route polylines.
  */
 import { useEffect, useRef } from "react";
 import L from "leaflet";
@@ -38,6 +38,8 @@ export default function DriverMap({
   const driverMarkerRef = useRef<L.Marker | null>(null);
   const pickupMarkerRef = useRef<L.Marker | null>(null);
   const dropoffMarkerRef = useRef<L.Marker | null>(null);
+  const routeLineRef = useRef<L.Polyline | null>(null);
+  const completedLineRef = useRef<L.Polyline | null>(null);
 
   const { position } = useDriverTracking(driverId ?? null);
 
@@ -88,23 +90,57 @@ export default function DriverMap({
     }
   }, [pickupLat, pickupLng, dropoffLat, dropoffLng]);
 
-  // Driver marker + auto-fit bounds
+  // Driver marker + route polylines + auto-fit bounds
   useEffect(() => {
     const map = leafletRef.current;
     if (!map || !position) return;
 
-    const latlng: L.LatLngExpression = [position.lat, position.lng];
+    const driverLatLng: L.LatLngExpression = [position.lat, position.lng];
 
     if (!driverMarkerRef.current) {
-      driverMarkerRef.current = L.marker(latlng, {
+      driverMarkerRef.current = L.marker(driverLatLng, {
         icon: createDotIcon("#2563eb", "Driver"),
       }).addTo(map);
     } else {
-      driverMarkerRef.current.setLatLng(latlng);
+      driverMarkerRef.current.setLatLng(driverLatLng);
     }
 
-    const bounds: L.LatLngExpression[] = [latlng];
-    if (pickupLat != null && pickupLng != null) bounds.push([pickupLat, pickupLng]);
+    // Remaining route (dashed blue)
+    const remainingPath: L.LatLngExpression[] = [driverLatLng];
+    if (pickupLat != null && pickupLng != null) remainingPath.push([pickupLat, pickupLng]);
+    if (dropoffLat != null && dropoffLng != null) remainingPath.push([dropoffLat, dropoffLng]);
+
+    if (!routeLineRef.current) {
+      routeLineRef.current = L.polyline(remainingPath, {
+        color: "#2563eb",
+        weight: 5,
+        opacity: 0.9,
+        dashArray: "10 10",
+      }).addTo(map);
+    } else {
+      routeLineRef.current.setLatLngs(remainingPath);
+    }
+
+    // Completed segment (solid green, pickup→dropoff)
+    const completedPath: L.LatLngExpression[] = [];
+    if (pickupLat != null && pickupLng != null && dropoffLat != null && dropoffLng != null) {
+      completedPath.push([pickupLat, pickupLng], [dropoffLat, dropoffLng]);
+    }
+
+    if (completedPath.length === 2) {
+      if (!completedLineRef.current) {
+        completedLineRef.current = L.polyline(completedPath, {
+          color: "#10b981",
+          weight: 4,
+          opacity: 0.4,
+        }).addTo(map);
+      } else {
+        completedLineRef.current.setLatLngs(completedPath);
+      }
+    }
+
+    // Fit bounds
+    const bounds: L.LatLngExpression[] = [...remainingPath];
     if (dropoffLat != null && dropoffLng != null) bounds.push([dropoffLat, dropoffLng]);
 
     if (bounds.length > 1) {
