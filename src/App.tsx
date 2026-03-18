@@ -1,7 +1,7 @@
 import React, { Suspense, lazy } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 
-const HomePage = lazy(() => import("./pages/HomePage"));
+const HomePage = lazy(() => import("./pages/Index"));
 const DiscoverPage = lazy(() => import("./pages/DiscoverPage"));
 const SuperMapRadarPage = lazy(() => import("./pages/SuperMapRadarPage"));
 const WalletHub = lazy(() => import("./pages/WalletHub"));
@@ -10,7 +10,7 @@ const ProductPage = lazy(() => import("./pages/deep-link/ProductPage"));
 const PayRequestPage = lazy(() => import("./pages/deep-link/PayRequestPage"));
 const QrScannerPage = lazy(() => import("./pages/payments/QrScannerPage"));
 const ShopPage = lazy(() => import("./pages/ShopPage"));
-const NotFoundPage = lazy(() => import("./pages/NotFoundPage"));
+const NotFoundPage = lazy(() => import("./pages/NotFound"));
 
 function Loader() {
   return (
