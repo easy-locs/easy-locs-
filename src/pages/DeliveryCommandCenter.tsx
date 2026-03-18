@@ -410,7 +410,7 @@ export default function DeliveryCommandCenter() {
 
       {/* Map */}
       <div className="px-3 mb-3">
-        <CommandMap mission={selectedMission} drivers={drivers} />
+        <CommandMap mission={selectedMission} drivers={drivers} userLat={userLat} userLng={userLng} onRecenter={requestLocation} />
       </div>
 
       {/* Filters */}
