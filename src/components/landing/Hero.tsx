@@ -1,9 +1,9 @@
-import { motion } from "framer-motion";
-import { ArrowRight, Zap, UtensilsCrossed, ShoppingCart, Wrench, Car, Send, Plane, Building2, Wallet, MessageCircle, Globe, Shield, CreditCard, Users, Activity, MapPin } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { ArrowRight, Zap, UtensilsCrossed, ShoppingCart, Wrench, Car, Send, Plane, Building2, Wallet, MessageCircle, Globe, Shield, CreditCard, Users, Activity, MapPin, Star, TrendingUp } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useState, useEffect } from "react";
-import type { Transition } from "framer-motion";
+import { useRadar } from "@/hooks/useRadar";
 
 const UNIVERSES = [
   { icon: UtensilsCrossed, label: "Food", color: "hsl(15 80% 55%)", bg: "hsl(15 80% 55% / 0.12)" },
@@ -18,30 +18,36 @@ const UNIVERSES = [
 ];
 
 const FLOATING_CARDS = [
-  { title: "Order Food", sub: "African · 25 min", emoji: "🍛", accent: "hsl(15 80% 55%)" },
-  { title: "Book a Stay", sub: "Paris · 3 nights", emoji: "🏨", accent: "hsl(250 65% 55%)" },
-  { title: "Get a Ride", sub: "Pickup in 4 min", emoji: "🚗", accent: "hsl(270 60% 55%)" },
-  { title: "Send Money", sub: "Instant · 0 fees", emoji: "💸", accent: "hsl(152 60% 42%)" },
-  { title: "Rent Property", sub: "Dakar · 450€/mo", emoji: "🏠", accent: "hsl(38 65% 50%)" },
-  { title: "Find Services", sub: "Plumber · 1.2km", emoji: "🔧", accent: "hsl(220 70% 55%)" },
+  { title: "Pizza Napoli", sub: "⭐ 4.8 · Marina · 1.8 km · 7 min", emoji: "🍕", accent: "hsl(15 80% 55%)", badge: "🔥 Nearby" },
+  { title: "Book a Stay", sub: "Dubai · 3 nights · from 89$/night", emoji: "🏨", accent: "hsl(250 65% 55%)" },
+  { title: "Get a Ride", sub: "Pickup in 3 min", emoji: "🚗", accent: "hsl(270 60% 55%)", badge: "⚡ Fast" },
+  { title: "+ 45 AED received", sub: "Wallet · Instant transfer", emoji: "💸", accent: "hsl(152 60% 42%)", badge: "✅ Done" },
+  { title: "Rent Property", sub: "Dakar · 450€/mo · 24h approval", emoji: "🏠", accent: "hsl(38 65% 50%)" },
+  { title: "Plumber Pro", sub: "⭐ 4.9 · 1.2km · Available now", emoji: "🔧", accent: "hsl(220 70% 55%)", badge: "Nearby" },
 ];
 
 const INTENTS = [
-  { key: "consumer", headline: "One platform. Everything around you.", sub: "Order, ride, send, pay — instantly.", cta: "Start now — free" },
-  { key: "business", headline: "Build. Sell. Deliver. Manage.", sub: "Launch your business in minutes.", cta: "Launch your business" },
+  { key: "consumer", headline: "One platform. Everything around you. Instantly.", sub: "Order, ride, send, pay — all in one app.", cta: "Start now — free" },
+  { key: "business", headline: "Earn money with your city.", sub: "Open a shop, get customers instantly, accept payments.", cta: "Launch your business" },
   { key: "property", headline: "Rent. Manage. Grow.", sub: "The smartest property management platform.", cta: "List your property" },
   { key: "services", headline: "Your skills. Clients nearby.", sub: "Get discovered by thousands of users.", cta: "Offer your services" },
 ];
 
+const SPEED_STATS = [
+  { emoji: "⚡", label: "Taxi in 3 min", color: "hsl(var(--hud-primary))" },
+  { emoji: "🍕", label: "Food in 12 min", color: "hsl(15 80% 55%)" },
+  { emoji: "🏠", label: "Rent in 24h", color: "hsl(38 65% 50%)" },
+];
+
 /** Simulated live stats with gentle increments */
 function useLiveStats() {
-  const [stats, setStats] = useState({ users: 12847, orders: 3291, cities: 194 });
+  const [stats, setStats] = useState({ users: 120_000, processed: 2.4, txPerMin: 12 });
   useEffect(() => {
     const iv = setInterval(() => {
       setStats(s => ({
-        users: s.users + Math.floor(Math.random() * 3),
-        orders: s.orders + Math.floor(Math.random() * 2),
-        cities: s.cities,
+        users: s.users + Math.floor(Math.random() * 5),
+        processed: +(s.processed + Math.random() * 0.001).toFixed(1),
+        txPerMin: 8 + Math.floor(Math.random() * 12),
       }));
     }, 4000);
     return () => clearInterval(iv);
@@ -54,6 +60,7 @@ const Hero = () => {
   const [intentIdx, setIntentIdx] = useState(0);
   const intent = INTENTS[intentIdx];
   const liveStats = useLiveStats();
+  const { radar, formatETA } = useRadar({ type: "taxi" });
 
   // Rotate intent every 6s
   useEffect(() => {
@@ -71,11 +78,9 @@ const Hero = () => {
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         <div className="absolute top-[5%] left-[15%] w-[500px] h-[500px] lg:w-[900px] lg:h-[900px] rounded-full" style={{ background: "radial-gradient(circle, hsl(var(--accent) / 0.08) 0%, transparent 55%)" }} />
         <div className="absolute bottom-[5%] right-[5%] w-[400px] h-[400px] lg:w-[700px] lg:h-[700px] rounded-full" style={{ background: "radial-gradient(circle, hsl(var(--info) / 0.05) 0%, transparent 55%)" }} />
-        {/* Radar lines (desktop) */}
         {!isMobile && (
           <div className="absolute inset-0 opacity-[0.015]" style={{ backgroundImage: `linear-gradient(hsl(var(--accent) / 0.5) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--accent) / 0.5) 1px, transparent 1px)`, backgroundSize: "80px 80px" }} />
         )}
-        {/* Radar sweep on desktop */}
         {!isMobile && (
           <motion.div
             className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full"
@@ -88,40 +93,29 @@ const Hero = () => {
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-16 lg:py-20 xl:py-28">
 
-        {/* Live stats bar */}
+        {/* Trust bar */}
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="flex items-center justify-center gap-4 sm:gap-6 mb-6 sm:mb-8"
+          className="flex items-center justify-center gap-3 sm:gap-5 mb-6 sm:mb-8 flex-wrap"
         >
-          {[
-            { icon: Users, val: liveStats.users.toLocaleString(), label: "Active users" },
-            { icon: Activity, val: liveStats.orders.toLocaleString(), label: "Orders today" },
-            { icon: MapPin, val: `${liveStats.cities}+`, label: "Cities" },
-          ].map((s, i) => (
-            <motion.div
-              key={s.label}
-              className="flex items-center gap-1.5 px-2.5 py-1 rounded-full border"
-              style={{ background: "hsl(220 40% 8% / 0.6)", borderColor: "hsl(220 15% 90% / 0.06)" }}
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.2 + i * 0.08 }}
-            >
-              <s.icon className="h-3 w-3" style={{ color: "hsl(var(--accent) / 0.6)" }} />
-              <span className="text-[10px] sm:text-[11px] font-bold tabular-nums" style={{ color: "hsl(var(--accent))" }}>
-                {s.val}
-              </span>
-              <span className="text-[9px] sm:text-[10px] font-medium hidden sm:inline" style={{ color: "hsl(220 15% 45%)" }}>
-                {s.label}
-              </span>
-            </motion.div>
-          ))}
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border" style={{ background: "hsl(220 40% 8% / 0.6)", borderColor: "hsl(220 15% 90% / 0.06)" }}>
+            <Users className="h-3 w-3" style={{ color: "hsl(var(--accent) / 0.6)" }} />
+            <span className="text-[10px] sm:text-[11px] font-bold" style={{ color: "hsl(var(--accent))" }}>
+              Trusted by {liveStats.users.toLocaleString()}+ users
+            </span>
+          </div>
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border" style={{ background: "hsl(220 40% 8% / 0.6)", borderColor: "hsl(var(--success) / 0.1)" }}>
+            <TrendingUp className="h-3 w-3" style={{ color: "hsl(var(--success))" }} />
+            <span className="text-[10px] sm:text-[11px] font-bold" style={{ color: "hsl(var(--success))" }}>
+              ${liveStats.processed}M processed this month
+            </span>
+          </div>
         </motion.div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 xl:gap-16 items-center">
-
-          {/* LEFT — 7 cols */}
+          {/* LEFT */}
           <div className="lg:col-span-7 space-y-5 lg:space-y-7 text-center lg:text-left">
             {/* Badge */}
             <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.15 }} className="flex justify-center lg:justify-start">
@@ -134,33 +128,59 @@ const Hero = () => {
               </span>
             </motion.div>
 
-            {/* Headline — rotates by intent */}
-            <motion.h1
-              key={intent.key}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.6 }}
-              className="text-[1.7rem] sm:text-4xl lg:text-[2.8rem] xl:text-5xl font-extrabold tracking-tight leading-[1.08]"
-              style={{ color: "hsl(40 50% 97%)" }}
+            {/* Headline */}
+            <AnimatePresence mode="wait">
+              <motion.h1
+                key={intent.key}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.6 }}
+                className="text-[1.7rem] sm:text-4xl lg:text-[2.8rem] xl:text-5xl font-extrabold tracking-tight leading-[1.08]"
+                style={{ color: "hsl(40 50% 97%)" }}
+              >
+                {intent.headline.split(".").filter(Boolean).map((seg, i, arr) => (
+                  <span key={i}>
+                    {i === 0 ? (
+                      <span className="text-gradient-gold">{seg.trim()}</span>
+                    ) : (
+                      <span>{seg.trim()}</span>
+                    )}
+                    {i < arr.length - 1 && ". "}
+                  </span>
+                ))}
+                <br />
+                <span style={{ color: "hsl(220 15% 65%)" }} className="text-xl sm:text-2xl lg:text-3xl xl:text-[2.2rem] font-bold">
+                  {intent.sub}
+                </span>
+              </motion.h1>
+            </AnimatePresence>
+
+            {/* Speed stats strip */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.35 }}
+              className="flex items-center justify-center lg:justify-start gap-3 flex-wrap"
             >
-              {intent.headline.split(".").map((seg, i, arr) => (
-                <span key={i}>
-                  {i === 0 ? (
-                    <motion.span className="text-gradient-gold" animate={{ backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"] }} transition={{ duration: 6, repeat: Infinity, ease: "linear" }} style={{ backgroundSize: "200% 200%" }}>
-                      {seg.trim()}
-                    </motion.span>
-                  ) : (
-                    <span>{seg.trim()}</span>
-                  )}
-                  {i < arr.length - 1 && ". "}
+              {SPEED_STATS.map((s) => (
+                <span key={s.label} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-semibold"
+                  style={{ background: "hsl(220 40% 8% / 0.5)", borderColor: "hsl(220 15% 90% / 0.06)", color: s.color }}>
+                  {s.emoji} {s.label}
                 </span>
               ))}
-              <br />
-              <span style={{ color: "hsl(220 15% 65%)" }} className="text-xl sm:text-2xl lg:text-3xl xl:text-[2.2rem] font-bold">
-                {intent.sub}
-              </span>
-            </motion.h1>
+              {/* Live radar stat */}
+              {radar && radar.availableCount > 0 && (
+                <motion.span
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-semibold"
+                  style={{ background: "hsl(var(--success) / 0.08)", borderColor: "hsl(var(--success) / 0.15)", color: "hsl(var(--success))" }}
+                >
+                  🚕 {radar.availableCount} taxis nearby · ⚡ fastest: {formatETA(radar.etaMinutes)}
+                </motion.span>
+              )}
+            </motion.div>
 
             {/* Universe chips */}
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }} className="flex flex-wrap justify-center lg:justify-start gap-1.5">
@@ -220,7 +240,7 @@ const Hero = () => {
             </motion.div>
           </div>
 
-          {/* RIGHT — 5 cols — Floating cards */}
+          {/* RIGHT — Floating cards */}
           <motion.div
             initial={{ opacity: 0, x: 30 }}
             animate={{ opacity: 1, x: 0 }}
@@ -232,7 +252,7 @@ const Hero = () => {
                 {FLOATING_CARDS.map((card, i) => (
                   <motion.div
                     key={card.title}
-                    className="rounded-2xl border backdrop-blur-xl p-3.5 cursor-default"
+                    className="rounded-2xl border backdrop-blur-xl p-3.5 cursor-default relative"
                     style={{
                       background: "linear-gradient(145deg, hsl(222 42% 13% / 0.9), hsl(222 42% 9% / 0.95))",
                       borderColor: "hsl(220 20% 90% / 0.06)",
@@ -243,6 +263,15 @@ const Hero = () => {
                     transition={{ delay: 0.4 + i * 0.08, duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
                     whileHover={{ scale: 1.03, y: -2 }}
                   >
+                    {card.badge && (
+                      <span className="absolute -top-1.5 right-2 text-[8px] font-bold px-1.5 py-0.5 rounded-full" style={{
+                        background: `${card.accent}20`,
+                        color: card.accent,
+                        border: `1px solid ${card.accent}30`,
+                      }}>
+                        {card.badge}
+                      </span>
+                    )}
                     <div className="flex items-center gap-2.5">
                       <span className="text-xl">{card.emoji}</span>
                       <div className="min-w-0">
@@ -255,7 +284,7 @@ const Hero = () => {
                 ))}
               </div>
 
-              {/* Radar glow center */}
+              {/* Radar glow */}
               <motion.div
                 className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 rounded-full -z-10"
                 style={{ background: "radial-gradient(circle, hsl(var(--accent) / 0.12), transparent 70%)" }}
@@ -263,7 +292,7 @@ const Hero = () => {
                 transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
               />
 
-              {/* Transaction pulse badge */}
+              {/* Transaction pulse */}
               <motion.div
                 className="absolute -bottom-3 left-1/2 -translate-x-1/2 px-3 py-1.5 rounded-full border"
                 style={{ background: "hsl(222 42% 10% / 0.95)", borderColor: "hsl(var(--success) / 0.2)" }}
@@ -272,7 +301,7 @@ const Hero = () => {
               >
                 <span className="flex items-center gap-1.5 text-[10px] font-semibold" style={{ color: "hsl(var(--success))" }}>
                   <span className="w-1.5 h-1.5 rounded-full animate-ping" style={{ background: "hsl(var(--success))" }} />
-                  12 transactions in the last minute
+                  {liveStats.txPerMin} transactions in the last minute
                 </span>
               </motion.div>
             </div>
