@@ -3,9 +3,9 @@
  * Supports radius, zone, and hybrid modes per country/city/category.
  */
 
-export type DiscoveryMode = "radius" | "zone" | "hybrid";
-export type ZoneMode = "district" | "city" | "metro";
-export type CoverageFamily = "hyperlocal" | "city_service" | "wide_search";
+export type DiscoveryMode = "radius" | "zone" | "hybrid" | "unrestricted";
+export type ZoneMode = "district" | "city" | "metro" | "region" | "country";
+export type CoverageFamily = "hyperlocal" | "city_service" | "wide_search" | "unrestricted";
 
 export interface CoverageRule {
   country_code: string;
