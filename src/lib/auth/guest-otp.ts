@@ -1,5 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import { getGuestId } from "@/lib/auth/guest-session";
+import { checkOtpAbuse } from "@/lib/security/fraud-otp";
 
 function generateOtpCode() {
   return String(Math.floor(100000 + Math.random() * 900000));
@@ -30,6 +31,9 @@ export async function startGuestCheckoutSession(params: {
 }
 
 export async function sendPhoneOtp(params: { phone: string }) {
+  // Fraud guard: rate-limit OTP requests
+  await checkOtpAbuse(params.phone);
+
   const guestId = getGuestId();
   const otpCode = generateOtpCode();
 
@@ -47,6 +51,16 @@ export async function sendPhoneOtp(params: { phone: string }) {
     .single();
 
   if (error) throw error;
+
+  // Send via edge function (dev: logs to console, prod: Twilio/SMS)
+  try {
+    await supabase.functions.invoke("send-otp", {
+      body: { phone: params.phone, otp: otpCode },
+    });
+  } catch (e) {
+    console.warn("[OTP] Edge function call failed, OTP still stored:", e);
+  }
+
   console.log("[OTP DEV ONLY]", params.phone, otpCode);
   return data;
 }

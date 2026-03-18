@@ -63,6 +63,9 @@ export default function PaymentPage() {
         </div>
       ) : (
         <PaymentMethodSelector
+          amount={Number(order?.total_amount ?? 0)}
+          currency={order?.currency ?? "AED"}
+          orderId={orderId}
           onWalletSelect={(walletId) => handlePay(`wallet:${walletId}`)}
           onCashSelect={() => handlePay("cash")}
           onCardSelect={() => handlePay("card")}
