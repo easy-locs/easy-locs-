@@ -13,6 +13,7 @@ import RideMap from "@/components/ride/RideMap";
 import RideTypeSelector, { RIDE_TYPES, type RideType } from "@/components/ride/RideTypeSelector";
 import DriverMatchingState, { type MatchState } from "@/components/ride/DriverMatchingState";
 import { calculateFare, getFareRules, isNightHour, type FareEstimate } from "@/lib/fare-engine";
+import { useGeoDetect } from "@/hooks/useGeoDetect";
 import SEOHead from "@/components/SEOHead";
 
 type Step = "location" | "ride-type" | "matching";
@@ -39,14 +40,15 @@ function mockDrivers(lat: number, lng: number) {
 
 export default function RidePage() {
   const navigate = useNavigate();
-  const { geo, currentLocation, places, addRecent } = useSmartLocation();
+  const { geo, currentLocation, places, addRecent, savePlace, removePlace } = useSmartLocation();
   const [step, setStep] = useState<Step>("location");
   const [pickup, setPickup] = useState<SavedPlace | null>(currentLocation);
   const [dropoff, setDropoff] = useState<SavedPlace | null>(null);
   const [selectedType, setSelectedType] = useState<RideType>(RIDE_TYPES[0]);
   const [matchState, setMatchState] = useState<MatchState>("searching");
 
-  const rules = useMemo(() => getFareRules("FR"), []);
+  const { country: detectedCountry } = useGeoDetect();
+  const rules = useMemo(() => getFareRules(detectedCountry), [detectedCountry]);
   const night = useMemo(() => isNightHour(), []);
   const { km, min } = useMemo(() => mockDistance(pickup, dropoff), [pickup, dropoff]);
 
@@ -125,8 +127,8 @@ export default function RidePage() {
         {/* Location pickers (always visible unless matching) */}
         {step !== "matching" && (
           <div className="space-y-2">
-            <SmartLocationPicker label="Pickup" value={pickup?.address || ""} onSelect={handlePickup} currentLocation={currentLocation} savedPlaces={places} placeholder="Your location" />
-            <SmartLocationPicker label="Destination" value={dropoff?.address || ""} onSelect={handleDropoff} currentLocation={null} savedPlaces={places} placeholder="Where to?" autoFocus={!!pickup && !dropoff} />
+            <SmartLocationPicker label="Pickup" value={pickup?.address || ""} onSelect={handlePickup} currentLocation={currentLocation} savedPlaces={places} onSavePlace={savePlace} onRemovePlace={removePlace} placeholder="Your location" />
+            <SmartLocationPicker label="Destination" value={dropoff?.address || ""} onSelect={handleDropoff} currentLocation={null} savedPlaces={places} onSavePlace={savePlace} onRemovePlace={removePlace} placeholder="Where to?" autoFocus={!!pickup && !dropoff} />
           </div>
         )}
 

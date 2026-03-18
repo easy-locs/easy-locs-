@@ -53,7 +53,7 @@ const FALLBACK: FareRules = {
 };
 
 export function getFareRules(countryCode?: string, overrides?: Partial<FareRules>): FareRules {
-  const country = countryCode?.toUpperCase() || "FR";
+  const country = countryCode?.toUpperCase() || "";
   const countryRules = DEFAULT_RULES[country] || {};
   return { ...FALLBACK, ...countryRules, ...overrides };
 }

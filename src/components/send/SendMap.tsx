@@ -85,10 +85,11 @@ export default function SendMap({ pickup, dropoff, userLat, userLng, className =
 
   return (
     <div className={`relative rounded-2xl overflow-hidden border border-border/10 ${className}`}>
-      <div ref={containerRef} className="w-full h-full min-h-[180px]" />
+      <div ref={containerRef} className="w-full h-full min-h-[160px]" />
       <button
         onClick={recenter}
-        className="absolute bottom-3 right-3 w-9 h-9 rounded-full bg-card/90 backdrop-blur-md border border-border/20 flex items-center justify-center shadow-lg active:scale-90 transition-transform z-10"
+        className="absolute bottom-3 right-3 w-10 h-10 rounded-full bg-card/95 backdrop-blur-md border border-border/20 flex items-center justify-center shadow-lg active:scale-90 transition-transform z-10"
+        aria-label="Recenter map"
       >
         <Navigation className="h-4 w-4 text-primary" />
       </button>
