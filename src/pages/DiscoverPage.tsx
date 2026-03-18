@@ -263,7 +263,7 @@ function SmartLocalSection({ icon: Icon, title, shops, onShopClick, emptyText }:
               {shop.city && <p className="text-[9px] text-muted-foreground truncate">{shop.city}</p>}
               <div className="flex items-center gap-1 mt-1">
                 {shop.avg_rating > 0 && (
-                  <span className="inline-flex items-center gap-0.5 text-[8px] font-semibold text-amber-500">
+                  <span className="inline-flex items-center gap-0.5 text-[8px] font-semibold text-accent">
                     <Star className="h-2 w-2 fill-current" /> {Number(shop.avg_rating).toFixed(1)}
                   </span>
                 )}
