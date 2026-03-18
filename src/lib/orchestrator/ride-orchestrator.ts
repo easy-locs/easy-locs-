@@ -24,7 +24,7 @@ export async function startRideFlow(opts: {
   userId: string;
   userLat: number;
   userLng: number;
-  drivers: Array<{ id: string; lat: number; lng: number; status: "available" | "busy"; type: "taxi" | "delivery"; rating: number; acceptance_rate?: number; vehicle_class?: "eco" | "standard" | "premium" }>;
+  drivers: any[];
   distanceKm: number;
   durationMin: number;
   countryCode?: string;
