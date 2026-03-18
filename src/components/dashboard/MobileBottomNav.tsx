@@ -34,6 +34,10 @@ const MobileBottomNav = () => {
         p.startsWith("/top-rated") || p.startsWith("/rentals") || p.startsWith("/book/"),
     },
     {
+      icon: Map, labelKey: "nav.radar", path: "/super-map",
+      match: (p: string) => p.startsWith("/super-map"),
+    },
+    {
       icon: Store, labelKey: "nav.shops", path: "/shops",
       match: (p: string) => p === "/shops" || p.startsWith("/shops/") || p.startsWith("/s/"),
     },
