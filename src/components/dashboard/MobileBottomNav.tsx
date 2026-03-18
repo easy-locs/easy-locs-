@@ -3,11 +3,12 @@
  */
 import { NavLink, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Compass, Store, Briefcase, Building2 } from "lucide-react";
+import { Compass, Store, Briefcase, Building2, Map } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 
 const FALLBACKS: Record<string, string> = {
   "nav.marketplace": "Marketplace",
+  "nav.radar": "Radar",
   "nav.shops": "Shops",
   "nav.business": "Business",
   "nav.property": "Property",
@@ -31,6 +32,10 @@ const MobileBottomNav = () => {
         p.startsWith("/discover") || p.startsWith("/search") || p.startsWith("/explore") ||
         p.startsWith("/listing/") || p.startsWith("/trending") || p.startsWith("/nearby") ||
         p.startsWith("/top-rated") || p.startsWith("/rentals") || p.startsWith("/book/"),
+    },
+    {
+      icon: Map, labelKey: "nav.radar", path: "/super-map",
+      match: (p: string) => p.startsWith("/super-map"),
     },
     {
       icon: Store, labelKey: "nav.shops", path: "/shops",
