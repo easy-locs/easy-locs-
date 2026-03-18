@@ -558,6 +558,9 @@ const App = () => (
               <Route path="/admin/dispatch-board" element={<ProtectedRoute><DispatchBoardPage /></ProtectedRoute>} />
               <Route path="/admin/support-inbox" element={<ProtectedRoute><SupportInboxPage /></ProtectedRoute>} />
               <Route path="/admin/home-v1" element={<ProtectedRoute><AdminHomeV1Page /></ProtectedRoute>} />
+              <Route path="/admin/driver-live" element={<ProtectedRoute><DriverLivePage /></ProtectedRoute>} />
+              <Route path="/admin/driver-picker" element={<ProtectedRoute><DriverPickerPage /></ProtectedRoute>} />
+              <Route path="/admin/food-checkout" element={<ProtectedRoute><FoodOrderCheckoutPage /></ProtectedRoute>} />
 
               <Route path="/app/orbit" element={<ProtectedRoute><OrbitAppShell><OrbitHome /></OrbitAppShell></ProtectedRoute>} />
               <Route path="/app/*" element={<ProtectedRoute><OrbitAppShell><OrbitHome /></OrbitAppShell></ProtectedRoute>} />
