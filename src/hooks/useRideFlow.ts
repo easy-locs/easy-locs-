@@ -9,7 +9,7 @@ interface UseRideFlowOpts {
   userId: string | undefined;
   userLat: number | null;
   userLng: number | null;
-  drivers: Array<{ id: string; lat: number; lng: number; status: "available" | "busy"; type: "taxi" | "delivery"; rating: number }>;
+  drivers: Array<{ id: string; lat: number; lng: number; status: "available" | "busy"; type: "taxi" | "delivery"; rating: number; acceptance_rate?: number }>;
   distanceKm: number;
   durationMin: number;
   countryCode?: string;
