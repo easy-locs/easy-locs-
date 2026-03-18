@@ -247,7 +247,7 @@ export default function PropertyManagementHub() {
 
                   {/* Add property CTA */}
                   <Link
-                    to="/dashboard/add-property"
+                    to="/dashboard/property/add"
                     className="flex items-center justify-center gap-2 p-3 rounded-xl border-2 border-dashed border-border hover:border-primary/40 hover:bg-primary/5 transition-all mb-4"
                   >
                     <Plus className="h-4 w-4 text-primary" />
