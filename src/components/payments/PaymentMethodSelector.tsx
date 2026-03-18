@@ -1,12 +1,19 @@
 import { useState } from "react";
+import CardPayment from "@/components/payments/CardPayment";
 
 interface PaymentMethodSelectorProps {
+  amount?: number;
+  currency?: string;
+  orderId?: string;
   onWalletSelect: (walletId: string) => void;
   onCashSelect: () => void;
   onCardSelect: () => void;
 }
 
 export default function PaymentMethodSelector({
+  amount,
+  currency = "AED",
+  orderId,
   onWalletSelect,
   onCashSelect,
   onCardSelect,
@@ -45,14 +52,21 @@ export default function PaymentMethodSelector({
       {method === "wallet" && (
         <p className="text-sm text-muted-foreground">Wallet selector coming soon</p>
       )}
-      {method === "card" && (
+      {method === "card" && amount ? (
+        <CardPayment
+          amount={amount}
+          currency={currency}
+          orderId={orderId}
+          onSuccess={onCardSelect}
+        />
+      ) : method === "card" ? (
         <button
           onClick={onCardSelect}
           className="w-full bg-primary text-primary-foreground rounded-xl p-3 text-sm font-medium"
         >
           Continue with card
         </button>
-      )}
+      ) : null}
       {method === "cash" && (
         <button
           onClick={onCashSelect}
