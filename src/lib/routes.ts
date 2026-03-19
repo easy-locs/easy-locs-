@@ -23,4 +23,6 @@ export const routes = {
   cityMarket: (citySlug: string) => `/city-market/${encodeURIComponent(citySlug)}`,
   cityVertical: (countryCode: string, city: string, vertical: string, locale: string) =>
     `/city/${encodeURIComponent(countryCode)}/${encodeURIComponent(city)}/${encodeURIComponent(vertical)}/${encodeURIComponent(locale)}`,
+  importTestBatches: () => `/admin/import-test-batches`,
+  qrEntry: (targetCode: string) => `/qr/entry/${encodeURIComponent(targetCode)}`,
 };
