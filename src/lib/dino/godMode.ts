@@ -4,6 +4,7 @@
  * One brain, one system, one product.
  */
 import { supabase } from "@/integrations/supabase/client";
+import type { Json } from "@/integrations/supabase/types";
 import { resolveUniversalIdentity, type UniversalIdentity } from "./universalIdentity";
 import { recomputeReputation, applyReputationEffects } from "./reputationEngine";
 import { generateRecommendations, type Recommendation } from "./recommendationBrain";
@@ -34,7 +35,7 @@ export async function buildGodModeSnapshot(userId: string): Promise<GodModeSnaps
   const [identity, walletRes, loyaltyRes, journeys, tickets] = await Promise.all([
     resolveUniversalIdentity(userId),
     supabase.from("wallet_accounts").select("balance, currency, account_type").eq("owner_user_id", userId),
-    (supabase as any).from("loyalty_accounts").select("points_balance, tier").eq("user_id", userId).maybeSingle(),
+    supabase.from("loyalty_accounts").select("points_balance, tier").eq("user_id", userId).maybeSingle(),
     getActiveJourneys(userId),
     getUserTickets(userId),
   ]);
@@ -52,15 +53,15 @@ export async function buildGodModeSnapshot(userId: string): Promise<GodModeSnaps
   // Wallet summary
   const walletAccounts = walletRes.data ?? [];
   const walletSummary = {
-    totalBalance: walletAccounts.reduce((s: number, a: any) => s + Number(a.balance ?? 0), 0),
+    totalBalance: walletAccounts.reduce((s, a) => s + Number(a.balance ?? 0), 0),
     accountCount: walletAccounts.length,
-    currencies: [...new Set(walletAccounts.map((a: any) => a.currency))],
+    currencies: [...new Set(walletAccounts.map(a => a.currency))],
   };
 
   // Loyalty summary
   const loyaltySummary = {
-    points: loyaltyRes?.data?.points_balance ?? 0,
-    tier: loyaltyRes?.data?.tier ?? "bronze",
+    points: loyaltyRes.data?.points_balance ?? 0,
+    tier: loyaltyRes.data?.tier ?? "bronze",
   };
 
   // Open tickets
@@ -86,7 +87,7 @@ export async function runGodModeCycle(userId: string) {
   const snapshot = await buildGodModeSnapshot(userId);
 
   // Log the cycle
-  await (supabase as any).from("dino_learning_events").insert({
+  await supabase.from("dino_learning_events").insert({
     event_type: "god_mode_cycle",
     entity_id: userId,
     entity_type: "user",
@@ -100,7 +101,7 @@ export async function runGodModeCycle(userId: string) {
       openTickets: snapshot.openTickets,
       activeJourneys: snapshot.activeJourneys.length,
       recommendationCount: snapshot.recommendations.length,
-    },
+    } as unknown as Json,
   });
 
   return snapshot;
@@ -124,7 +125,7 @@ export async function runGodModeBatch(limit = 50) {
   }
 
   // Log batch run
-  await (supabase as any).from("dino_learning_events").insert({
+  await supabase.from("dino_learning_events").insert({
     event_type: "god_mode_batch",
     entity_id: "system",
     entity_type: "platform",

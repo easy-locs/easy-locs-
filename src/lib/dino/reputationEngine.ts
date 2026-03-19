@@ -1,8 +1,14 @@
 /**
  * DINO V20 — Universal Reputation Engine
  * Cross-service trust scoring: fulfillment, disputes, speed, consistency, feedback.
+ * 
+ * SCHEMA NOTES:
+ *  - reviews: has `reviewer_user_id` (NOT `user_id`)
+ *  - support_tickets: has `requester_user_id` (NOT `user_id`)
+ *  - orders: has `customer_user_id`
  */
 import { supabase } from "@/integrations/supabase/client";
+import type { Json } from "@/integrations/supabase/types";
 
 export interface ReputationFactors {
   fulfillmentQuality: number;
@@ -37,15 +43,15 @@ export function computeOverallScore(f: ReputationFactors): number {
 /** Gather reputation signals from all services for a user */
 export async function gatherReputationFactors(userId: string): Promise<ReputationFactors> {
   const [ordersRes, disputesRes, reviewsRes, driverRes] = await Promise.all([
-    (supabase as any).from("orders").select("id, status").eq("customer_user_id", userId).limit(500),
-    (supabase as any).from("support_tickets").select("id").eq("user_id", userId).eq("ticket_type", "dispute"),
-    (supabase as any).from("reviews").select("rating").eq("user_id", userId).limit(200),
-    (supabase as any).from("driver_profiles").select("acceptance_rate, completed_deliveries, cancelled_deliveries").eq("user_id", userId).maybeSingle(),
+    supabase.from("orders").select("id, status").eq("customer_user_id", userId).limit(500),
+    supabase.from("support_tickets").select("id").eq("requester_user_id", userId).eq("ticket_type", "dispute"),
+    supabase.from("reviews").select("rating").eq("reviewer_user_id", userId).limit(200),
+    supabase.from("driver_profiles").select("acceptance_rate, completed_deliveries, cancelled_deliveries").eq("user_id", userId).maybeSingle(),
   ]);
 
   const orders = ordersRes.data ?? [];
   const totalOrders = orders.length || 1;
-  const completedOrders = orders.filter((o: any) => o.status === "delivered" || o.status === "completed").length;
+  const completedOrders = orders.filter(o => o.status === "delivered" || o.status === "completed").length;
   const disputes = disputesRes.data?.length ?? 0;
   const reviews = reviewsRes.data ?? [];
 
@@ -67,7 +73,7 @@ export async function gatherReputationFactors(userId: string): Promise<Reputatio
 
   // Feedback: average review rating normalized to 0-100
   const avgRating = reviews.length > 0
-    ? reviews.reduce((s: number, r: any) => s + (r.rating ?? 3), 0) / reviews.length
+    ? reviews.reduce((s, r) => s + (r.rating ?? 3), 0) / reviews.length
     : 3;
   const feedbackScore = (avgRating / 5) * 100;
 
@@ -99,7 +105,7 @@ export async function recomputeReputation(userId: string) {
     updated_at: new Date().toISOString(),
   };
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from("universal_reputation_scores")
     .upsert(payload, { onConflict: "user_id" })
     .select("*")
@@ -108,7 +114,7 @@ export async function recomputeReputation(userId: string) {
   if (error) throw error;
 
   // Log learning event
-  await (supabase as any).from("dino_learning_events").insert({
+  await supabase.from("dino_learning_events").insert({
     event_type: "reputation_recomputed",
     entity_id: userId,
     entity_type: "user",
@@ -123,8 +129,7 @@ export async function recomputeReputation(userId: string) {
 /** Apply reputation effects: downgrade bad actors, boost top performers */
 export async function applyReputationEffects(userId: string, score: number) {
   if (score < 25) {
-    // Flag for review
-    await (supabase as any).from("admin_alerts").insert({
+    await supabase.from("admin_alerts").insert({
       alert_type: "low_reputation",
       severity: "high",
       status: "open",
@@ -135,8 +140,7 @@ export async function applyReputationEffects(userId: string, score: number) {
   }
 
   if (score >= 85) {
-    // Boost visibility for high-reputation actors
-    await (supabase as any).from("dino_learning_events").insert({
+    await supabase.from("dino_learning_events").insert({
       event_type: "reputation_boost",
       entity_id: userId,
       entity_type: "user",

@@ -50,7 +50,7 @@ export async function recordSignal(params: {
   entityId?: string;
   entityType?: string;
 }) {
-  await (supabase as any).from("recommendation_signals").insert({
+  await supabase.from("recommendation_signals").insert({
     user_id: params.userId,
     signal_type: params.signalType,
     service_vertical: params.vertical,
@@ -62,7 +62,7 @@ export async function recordSignal(params: {
 
 /** Analyze user intent from recent signals */
 export async function analyzeIntent(userId: string): Promise<UserIntent> {
-  const { data: signals } = await (supabase as any)
+  const { data: signals } = await supabase
     .from("recommendation_signals")
     .select("signal_type, service_vertical, weight")
     .eq("user_id", userId)
@@ -88,7 +88,7 @@ export async function analyzeIntent(userId: string): Promise<UserIntent> {
   return {
     primaryVertical: sorted[0] ?? "food",
     secondaryVerticals: sorted.slice(1, 3),
-    recentActivity: (signals ?? []).slice(0, 5).map((s: any) => s.signal_type),
+    recentActivity: (signals ?? []).slice(0, 5).map(s => s.signal_type),
     intentStrength,
   };
 }
@@ -141,7 +141,7 @@ export async function generateRecommendations(userId: string): Promise<Recommend
   }
 
   // 4. Role-based opportunities
-  const { data: driverProfile } = await (supabase as any)
+  const { data: driverProfile } = await supabase
     .from("driver_profiles")
     .select("id")
     .eq("user_id", userId)

@@ -53,7 +53,7 @@ export async function applyBoostOverride(params: {
 }) {
   const expiresAt = new Date(Date.now() + (params.durationMs ?? 3_600_000)).toISOString();
 
-  const { error } = await (supabase as any)
+  const { error } = await supabase
     .from("dino_visibility_overrides")
     .insert({
       entity_id: params.entityId,
@@ -74,7 +74,7 @@ export async function getActiveBoosts(): Promise<Array<{
   reason: string | null;
   expires_at: string | null;
 }>> {
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from("dino_visibility_overrides")
     .select("entity_id, entity_type, boost_multiplier, reason, expires_at")
     .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`);
