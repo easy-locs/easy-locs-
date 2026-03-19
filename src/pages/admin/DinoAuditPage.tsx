@@ -153,7 +153,7 @@ function SummaryCard({ label, value, icon, variant }: { label: string; value: nu
   return (
     <Card>
       <CardContent className="py-3 px-4 flex items-center gap-3">
-        <div className={`p-2 rounded-lg ${variant === "warning" ? "bg-orange-500/10 text-orange-500" : variant === "success" ? "bg-green-500/10 text-green-500" : "bg-muted text-muted-foreground"}`}>
+        <div className={`p-2 rounded-lg ${variant === "warning" ? "bg-destructive/10 text-destructive" : variant === "success" ? "bg-success/10 text-success" : "bg-muted text-muted-foreground"}`}>
           {icon}
         </div>
         <div>
