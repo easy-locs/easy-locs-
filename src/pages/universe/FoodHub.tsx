@@ -43,7 +43,7 @@ export default function FoodHub() {
         id: r.id,
         title: r.name || "Restaurant",
         subtitle: r.subcategory || r.city || "",
-        rating: 4.0 + Math.random() * 0.9,
+        rating: r.rating ?? 4.2,
         slug: r.slug,
       }));
     },
