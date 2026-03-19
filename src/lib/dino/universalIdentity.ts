@@ -111,14 +111,14 @@ export async function ensureRole(userId: string, role: UniversalRole): Promise<v
   }
 
   if (role === "merchant" || role === "merchant_operator" || role === "service_provider") {
-    const { data } = await (supabase as any)
+    const { data } = await supabase
       .from("service_profiles")
       .select("id")
       .eq("user_id", userId)
       .maybeSingle();
 
     if (!data) {
-      await (supabase as any).from("service_profiles").insert({
+      await supabase.from("service_profiles").insert({
         user_id: userId,
         profile_type: role,
         display_name: "New Pro",
