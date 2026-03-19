@@ -14,9 +14,11 @@ import { Store, Utensils, Zap, Eye, Plus, Trash2, Edit2, Check, Loader2, Externa
 interface MenuItem {
   id: string;
   name: string;
-  price: number;
+  name_ar?: string | null;
+  price: number | null;
   is_available: boolean;
   description?: string;
+  description_ar?: string | null;
   isNew?: boolean;
 }
 
@@ -30,9 +32,11 @@ export default function MerchantDashboardPage() {
   const [saving, setSaving] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [storefrontSlug, setStorefrontSlug] = useState<string | null>(null);
+  const [showPrices, setShowPrices] = useState(true);
 
   // Editable fields
   const [name, setName] = useState("");
+  const [nameAr, setNameAr] = useState("");
   const [phone, setPhone] = useState("");
   const [area, setArea] = useState("");
   const [cuisine, setCuisine] = useState("");
@@ -49,6 +53,7 @@ export default function MerchantDashboardPage() {
       if (m) {
         setMerchant(m);
         setName(m.merchant_name || "");
+        setNameAr(m.name_ar || "");
         setPhone(m.phone || "");
         setArea(m.area || "");
         setCuisine(m.cuisine_type || "");
@@ -56,10 +61,14 @@ export default function MerchantDashboardPage() {
 
       const { data: items } = await (supabase as any)
         .from("menu_items")
-        .select("id, name, price, is_available, description")
+        .select("id, name, name_ar, price, is_available, description, description_ar")
         .eq("merchant_profile_id", profileId)
         .order("sort_order");
-      if (items) setMenuItems(items);
+      if (items) {
+        setMenuItems(items);
+        // Check if any items have prices
+        setShowPrices(items.some((i: any) => i.price != null));
+      }
 
       // Get storefront slug
       const { data: shop } = await (supabase as any)
@@ -82,6 +91,7 @@ export default function MerchantDashboardPage() {
     try {
       await updateMerchantInfo(profileId, {
         merchant_name: name,
+        name_ar: nameAr || undefined,
         phone,
         area,
         cuisine_type: cuisine,
@@ -89,7 +99,22 @@ export default function MerchantDashboardPage() {
       toast.success("Info saved");
     } catch { toast.error("Save failed"); }
     setSaving(false);
-  }, [profileId, name, phone, area, cuisine]);
+  }, [profileId, name, nameAr, phone, area, cuisine]);
+
+  const triggerAutoTranslate = async () => {
+    if (!name) return;
+    setSaving(true);
+    try {
+      const { data } = await supabase.functions.invoke("translate-message", {
+        body: { text: name, from_locale: "en", to_locale: "ar" },
+      });
+      if (data?.translated) {
+        setNameAr(data.translated);
+        toast.success("Arabic name generated");
+      }
+    } catch { toast.error("Translation failed"); }
+    setSaving(false);
+  };
 
   const toggleOpen = async (val: boolean) => {
     if (!profileId) return;
@@ -111,7 +136,13 @@ export default function MerchantDashboardPage() {
   };
 
   const addItem = () => {
-    setMenuItems((prev) => [...prev, { id: `new-${Date.now()}`, name: "New Item", price: 20, is_available: true, isNew: true }]);
+    setMenuItems((prev) => [...prev, {
+      id: `new-${Date.now()}`,
+      name: "New Item",
+      price: showPrices ? 20 : null,
+      is_available: true,
+      isNew: true,
+    }]);
   };
 
   const removeItem = async (id: string) => {
@@ -130,25 +161,41 @@ export default function MerchantDashboardPage() {
     setSaving(true);
     try {
       for (const item of menuItems) {
+        const payload = {
+          merchant_profile_id: profileId,
+          name: item.name,
+          name_ar: item.name_ar ?? null,
+          price: showPrices ? item.price : null,
+          is_available: item.is_available,
+          sort_order: menuItems.indexOf(item),
+        };
         if (item.isNew) {
-          await (supabase as any).from("menu_items").insert({
-            merchant_profile_id: profileId,
-            name: item.name,
-            price: item.price,
-            is_available: item.is_available,
-            sort_order: menuItems.indexOf(item),
-          });
+          await (supabase as any).from("menu_items").insert(payload);
         } else {
-          await (supabase as any).from("menu_items").update({
-            name: item.name,
-            price: item.price,
-            is_available: item.is_available,
-          }).eq("id", item.id);
+          await (supabase as any).from("menu_items").update(payload).eq("id", item.id);
         }
       }
       toast.success("Menu saved");
     } catch { toast.error("Menu save failed"); }
     setSaving(false);
+  };
+
+  const autoTranslateMenu = async () => {
+    setSaving(true);
+    for (const item of menuItems) {
+      if (item.name && !item.name_ar) {
+        try {
+          const { data } = await supabase.functions.invoke("translate-message", {
+            body: { text: item.name, from_locale: "en", to_locale: "ar" },
+          });
+          if (data?.translated) {
+            updateItem(item.id, "name_ar", data.translated);
+          }
+        } catch { /* skip */ }
+      }
+    }
+    setSaving(false);
+    toast.success("Arabic translations generated");
   };
 
   if (loading) {
@@ -181,6 +228,7 @@ export default function MerchantDashboardPage() {
         <div className="max-w-2xl mx-auto flex items-center justify-between">
           <div className="min-w-0">
             <h1 className="text-lg font-bold text-foreground truncate">{merchant.merchant_name}</h1>
+            {merchant.name_ar && <p className="text-xs text-muted-foreground truncate" dir="rtl">{merchant.name_ar}</p>}
             <Badge variant={statusColor} className="text-[10px]">{merchant.onboarding_status}</Badge>
           </div>
           <div className="flex items-center gap-3">
@@ -228,7 +276,15 @@ export default function MerchantDashboardPage() {
             <Card>
               <CardHeader><CardTitle className="text-base">Restaurant Details</CardTitle></CardHeader>
               <CardContent className="space-y-3">
-                <Field label="Name"><Input value={name} onChange={(e) => setName(e.target.value)} className="h-10" /></Field>
+                <Field label="Name (English)"><Input value={name} onChange={(e) => setName(e.target.value)} className="h-10" /></Field>
+                <Field label="Name (Arabic)">
+                  <div className="flex gap-2">
+                    <Input value={nameAr} onChange={(e) => setNameAr(e.target.value)} className="h-10 flex-1" dir="rtl" placeholder="الاسم بالعربية" />
+                    <Button variant="outline" size="sm" onClick={triggerAutoTranslate} disabled={saving} className="shrink-0">
+                      Auto ✨
+                    </Button>
+                  </div>
+                </Field>
                 <Field label="Phone"><Input value={phone} onChange={(e) => setPhone(e.target.value)} type="tel" className="h-10" /></Field>
                 <Field label="Area"><Input value={area} onChange={(e) => setArea(e.target.value)} className="h-10" /></Field>
                 <Field label="Cuisine"><Input value={cuisine} onChange={(e) => setCuisine(e.target.value)} className="h-10" /></Field>
@@ -245,7 +301,17 @@ export default function MerchantDashboardPage() {
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-base">Menu Items ({menuItems.length})</CardTitle>
-                  <Button variant="outline" size="sm" onClick={addItem}><Plus className="h-3.5 w-3.5 mr-1" /> Add</Button>
+                  <div className="flex items-center gap-2">
+                    <Button variant="ghost" size="sm" onClick={autoTranslateMenu} disabled={saving}>🌐 AR</Button>
+                    <Button variant="outline" size="sm" onClick={addItem}><Plus className="h-3.5 w-3.5 mr-1" /> Add</Button>
+                  </div>
+                </div>
+                {/* Price toggle */}
+                <div className="flex items-center gap-2 mt-2">
+                  <Switch checked={showPrices} onCheckedChange={setShowPrices} />
+                  <span className="text-xs text-muted-foreground">
+                    {showPrices ? "Show prices" : "Add prices later"}
+                  </span>
                 </div>
               </CardHeader>
               <CardContent className="space-y-2 max-h-[50vh] overflow-auto">
@@ -254,13 +320,22 @@ export default function MerchantDashboardPage() {
                     <div className="flex-1 min-w-0">
                       {editId === item.id ? (
                         <div className="space-y-1.5">
-                          <Input value={item.name} onChange={(e) => updateItem(item.id, "name", e.target.value)} className="h-8 text-sm" />
-                          <Input type="number" value={item.price} onChange={(e) => updateItem(item.id, "price", Number(e.target.value))} className="h-8 text-sm w-24" />
+                          <Input value={item.name} onChange={(e) => updateItem(item.id, "name", e.target.value)} className="h-8 text-sm" placeholder="Name (EN)" />
+                          <Input value={item.name_ar || ""} onChange={(e) => updateItem(item.id, "name_ar", e.target.value)} className="h-8 text-sm" dir="rtl" placeholder="الاسم بالعربية" />
+                          {showPrices && (
+                            <Input type="number" value={item.price ?? ""} onChange={(e) => updateItem(item.id, "price", e.target.value ? Number(e.target.value) : null)} className="h-8 text-sm w-24" placeholder="Price" />
+                          )}
                         </div>
                       ) : (
                         <div>
                           <span className="text-sm font-medium text-foreground">{item.name}</span>
-                          <span className="text-xs text-primary font-semibold ml-2">{item.price} AED</span>
+                          {item.name_ar && <span className="text-xs text-muted-foreground ml-2" dir="rtl">{item.name_ar}</span>}
+                          {showPrices && item.price != null && (
+                            <span className="text-xs text-primary font-semibold ml-2">{item.price} AED</span>
+                          )}
+                          {showPrices && item.price == null && (
+                            <span className="text-xs text-muted-foreground ml-2">No price</span>
+                          )}
                         </div>
                       )}
                     </div>
@@ -312,14 +387,18 @@ export default function MerchantDashboardPage() {
                   <div className="space-y-3">
                     <div className="rounded-xl border border-border p-4 space-y-2">
                       <h3 className="text-lg font-bold text-foreground">{name}</h3>
+                      {nameAr && <p className="text-sm text-muted-foreground" dir="rtl">{nameAr}</p>}
                       <Badge variant="secondary">{cuisine}</Badge>
                       <p className="text-sm text-muted-foreground">{area}</p>
                     </div>
                     <div className="space-y-1.5">
                       {menuItems.slice(0, 5).map((item) => (
                         <div key={item.id} className="flex justify-between text-sm border-b border-border pb-1.5">
-                          <span className="text-foreground">{item.name}</span>
-                          <span className="text-primary font-semibold">{item.price} AED</span>
+                          <div>
+                            <span className="text-foreground">{item.name}</span>
+                            {item.name_ar && <span className="text-xs text-muted-foreground ml-2" dir="rtl">{item.name_ar}</span>}
+                          </div>
+                          {item.price != null && <span className="text-primary font-semibold">{item.price} AED</span>}
                         </div>
                       ))}
                       {menuItems.length > 5 && <p className="text-xs text-muted-foreground">+{menuItems.length - 5} more items</p>}

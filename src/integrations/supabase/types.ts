@@ -1949,6 +1949,50 @@ export type Database = {
         }
         Relationships: []
       }
+      claim_attempts: {
+        Row: {
+          created_at: string | null
+          flagged: boolean | null
+          id: string
+          ip_address: string | null
+          merchant_profile_id: string | null
+          status: string | null
+          user_id: string | null
+          verification_method: string | null
+          verification_value: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          flagged?: boolean | null
+          id?: string
+          ip_address?: string | null
+          merchant_profile_id?: string | null
+          status?: string | null
+          user_id?: string | null
+          verification_method?: string | null
+          verification_value?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          flagged?: boolean | null
+          id?: string
+          ip_address?: string | null
+          merchant_profile_id?: string | null
+          status?: string | null
+          user_id?: string | null
+          verification_method?: string | null
+          verification_value?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "claim_attempts_merchant_profile_id_fkey"
+            columns: ["merchant_profile_id"]
+            isOneToOne: false
+            referencedRelation: "merchant_onboarding_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       collaboration_invitations: {
         Row: {
           accepted_at: string | null
@@ -7144,12 +7188,14 @@ export type Database = {
           created_at: string | null
           currency: string | null
           description: string | null
+          description_ar: string | null
           id: string
           image_url: string | null
           is_available: boolean | null
           merchant_profile_id: string | null
           name: string
-          price: number
+          name_ar: string | null
+          price: number | null
           sort_order: number | null
           updated_at: string | null
           workspace_id: string | null
@@ -7159,12 +7205,14 @@ export type Database = {
           created_at?: string | null
           currency?: string | null
           description?: string | null
+          description_ar?: string | null
           id?: string
           image_url?: string | null
           is_available?: boolean | null
           merchant_profile_id?: string | null
           name: string
-          price?: number
+          name_ar?: string | null
+          price?: number | null
           sort_order?: number | null
           updated_at?: string | null
           workspace_id?: string | null
@@ -7174,12 +7222,14 @@ export type Database = {
           created_at?: string | null
           currency?: string | null
           description?: string | null
+          description_ar?: string | null
           id?: string
           image_url?: string | null
           is_available?: boolean | null
           merchant_profile_id?: string | null
           name?: string
-          price?: number
+          name_ar?: string | null
+          price?: number | null
           sort_order?: number | null
           updated_at?: string | null
           workspace_id?: string | null
@@ -7351,15 +7401,19 @@ export type Database = {
           created_at: string | null
           cuisine_type: string | null
           delivery_radius_km: number | null
+          description_ar: string | null
           email: string | null
           id: string
           legal_name: string | null
           merchant_name: string
           metadata: Json | null
+          name_ar: string | null
           onboarding_status: string | null
           phone: string | null
           source_id: string | null
           updated_at: string | null
+          verification_status: string | null
+          verified_at: string | null
           workspace_id: string | null
         }
         Insert: {
@@ -7373,15 +7427,19 @@ export type Database = {
           created_at?: string | null
           cuisine_type?: string | null
           delivery_radius_km?: number | null
+          description_ar?: string | null
           email?: string | null
           id?: string
           legal_name?: string | null
           merchant_name: string
           metadata?: Json | null
+          name_ar?: string | null
           onboarding_status?: string | null
           phone?: string | null
           source_id?: string | null
           updated_at?: string | null
+          verification_status?: string | null
+          verified_at?: string | null
           workspace_id?: string | null
         }
         Update: {
@@ -7395,15 +7453,19 @@ export type Database = {
           created_at?: string | null
           cuisine_type?: string | null
           delivery_radius_km?: number | null
+          description_ar?: string | null
           email?: string | null
           id?: string
           legal_name?: string | null
           merchant_name?: string
           metadata?: Json | null
+          name_ar?: string | null
           onboarding_status?: string | null
           phone?: string | null
           source_id?: string | null
           updated_at?: string | null
+          verification_status?: string | null
+          verified_at?: string | null
           workspace_id?: string | null
         }
         Relationships: [
@@ -14329,6 +14391,7 @@ export type Database = {
           live_updated_at: string | null
           logo_url: string | null
           longitude: number | null
+          merchant_profile_id: string | null
           name: string
           og_image_url: string | null
           onboarding_completed: boolean | null
@@ -14381,6 +14444,7 @@ export type Database = {
           live_updated_at?: string | null
           logo_url?: string | null
           longitude?: number | null
+          merchant_profile_id?: string | null
           name: string
           og_image_url?: string | null
           onboarding_completed?: boolean | null
@@ -14433,6 +14497,7 @@ export type Database = {
           live_updated_at?: string | null
           logo_url?: string | null
           longitude?: number | null
+          merchant_profile_id?: string | null
           name?: string
           og_image_url?: string | null
           onboarding_completed?: boolean | null
@@ -14458,6 +14523,13 @@ export type Database = {
           views_count?: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "storefront_pages_merchant_profile_id_fkey"
+            columns: ["merchant_profile_id"]
+            isOneToOne: false
+            referencedRelation: "merchant_onboarding_profiles"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "storefront_pages_org_id_fkey"
             columns: ["org_id"]
