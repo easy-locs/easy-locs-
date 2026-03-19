@@ -39,7 +39,7 @@ export default function LeaseDetailPage() {
   return (
     <ProtectedRoute>
       <DashboardLayout>
-        <MobilePageHeader title="Lease Details" backPath="/real-estate/leases" />
+        <MobilePageHeader title="Lease Details" backTo="/real-estate/leases" />
 
         {isLoading && <div className="space-y-4"><Skeleton className="h-40 rounded-xl" /><Skeleton className="h-32 rounded-xl" /></div>}
 
