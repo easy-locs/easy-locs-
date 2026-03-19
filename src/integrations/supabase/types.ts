@@ -3656,6 +3656,36 @@ export type Database = {
         }
         Relationships: []
       }
+      device_attestations: {
+        Row: {
+          device_fingerprint: string
+          device_id: string
+          first_seen_at: string
+          last_seen_at: string
+          public_key_fingerprint: string
+          revoked_at: string | null
+          trust_state: string
+        }
+        Insert: {
+          device_fingerprint: string
+          device_id: string
+          first_seen_at?: string
+          last_seen_at?: string
+          public_key_fingerprint: string
+          revoked_at?: string | null
+          trust_state?: string
+        }
+        Update: {
+          device_fingerprint?: string
+          device_id?: string
+          first_seen_at?: string
+          last_seen_at?: string
+          public_key_fingerprint?: string
+          revoked_at?: string | null
+          trust_state?: string
+        }
+        Relationships: []
+      }
       device_fingerprints: {
         Row: {
           created_at: string | null
@@ -12241,6 +12271,60 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      security_nonces: {
+        Row: {
+          created_at: string
+          domain: string
+          expires_at: string
+          id: string
+          nonce: string
+        }
+        Insert: {
+          created_at?: string
+          domain: string
+          expires_at: string
+          id?: string
+          nonce: string
+        }
+        Update: {
+          created_at?: string
+          domain?: string
+          expires_at?: string
+          id?: string
+          nonce?: string
+        }
+        Relationships: []
+      }
+      security_reviews: {
+        Row: {
+          audit_level: string
+          created_at: string
+          created_by: string
+          findings: Json | null
+          id: string
+          scope: string
+          status: string
+        }
+        Insert: {
+          audit_level?: string
+          created_at?: string
+          created_by: string
+          findings?: Json | null
+          id?: string
+          scope: string
+          status?: string
+        }
+        Update: {
+          audit_level?: string
+          created_at?: string
+          created_by?: string
+          findings?: Json | null
+          id?: string
+          scope?: string
+          status?: string
+        }
+        Relationships: []
       }
       service_bookings: {
         Row: {
