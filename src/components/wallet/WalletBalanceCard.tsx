@@ -1,10 +1,6 @@
 /**
- * WalletBalanceCard — Premium financial cockpit hero card v2
- * Harmonized with platform design tokens + Orbit Ghost centrality
- */
-/**
- * WalletBalanceCard — Premium financial cockpit hero card v3
- * Luxury dark glass with gold star accent, dominant balance display
+ * WalletBalanceCard — Premium balance hero card
+ * Balance always stays on ONE line with responsive font scaling
  */
 import { useState } from "react";
 import { motion } from "framer-motion";
@@ -54,12 +50,12 @@ export default function WalletBalanceCard({
         boxShadow: "var(--shadow-elevated)",
       }}
     >
-      {/* Premium gold star accent — left side */}
+      {/* Gold star accent */}
       <div className="absolute top-4 left-4 opacity-20">
         <Star className="w-7 h-7" style={{ color: "hsl(45 90% 65%)", fill: "hsl(45 90% 65%)" }} />
       </div>
 
-      {/* Ambient orbs — GPU-friendly */}
+      {/* Ambient orbs */}
       <div className="absolute top-0 right-0 w-36 h-36 rounded-full -translate-y-14 translate-x-14 opacity-40" style={{ background: "radial-gradient(circle, hsl(var(--accent) / 0.18), transparent 70%)" }} />
       <div className="absolute bottom-0 left-0 w-28 h-28 rounded-full translate-y-10 -translate-x-10 opacity-30" style={{ background: "radial-gradient(circle, hsl(45 90% 65% / 0.08), transparent 70%)" }} />
 
@@ -68,15 +64,15 @@ export default function WalletBalanceCard({
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2.5">
             <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: "hsl(var(--accent) / 0.15)" }}>
-              <Wallet className="w-4.5 h-4.5" style={{ color: "hsl(var(--accent))" }} />
+              <Wallet className="w-4 h-4" style={{ color: "hsl(var(--accent))" }} />
             </div>
             <div>
               <span className="text-[11px] font-bold text-white/90 tracking-wide uppercase">
-                {t("orbit.wallet_title") || "Orbit Wallet"}
+                Orbit Wallet
               </span>
               <div className="flex items-center gap-1.5 mt-0.5">
                 <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: "hsl(var(--success))" }} />
-                <span className="text-[9px] text-white/40 font-medium">{t("orbit.active") || "Active"}</span>
+                <span className="text-[9px] text-white/40 font-medium">Active</span>
                 {isGhost && (
                   <span className="flex items-center gap-1 ml-1 px-1.5 py-0.5 rounded-full" style={{ background: "hsl(0 0% 100% / 0.06)" }}>
                     <Ghost className="w-2.5 h-2.5 text-white/30" />
@@ -106,22 +102,29 @@ export default function WalletBalanceCard({
           </div>
         </div>
 
-        {/* Balance hero */}
+        {/* Balance hero — ALWAYS ONE LINE */}
         <div className="mb-1.5">
           <p className="text-[9px] font-bold text-white/35 uppercase tracking-[0.15em] mb-1.5">
-            {t("orbit.total_balance") || "Total Balance"}
+            Total Balance
           </p>
-          <p className="text-[2.75rem] font-black text-white tracking-tight leading-none">
+          <div className="flex items-baseline gap-2 overflow-hidden">
             {loading ? (
               <span className="inline-flex gap-1.5">
-                <span className="w-5 h-11 rounded-md bg-white/8 animate-pulse" />
-                <span className="w-24 h-11 rounded-md bg-white/8 animate-pulse" />
+                <span className="w-5 h-10 rounded-md bg-white/8 animate-pulse" />
+                <span className="w-24 h-10 rounded-md bg-white/8 animate-pulse" />
               </span>
-            ) : isGhost ? "••••••" : displayBalance}
-          </p>
+            ) : (
+              <p
+                className="font-black text-white tracking-tight leading-none whitespace-nowrap overflow-hidden text-ellipsis"
+                style={{ fontSize: "clamp(1.5rem, 8vw, 2.75rem)" }}
+              >
+                {isGhost ? "••••••" : displayBalance}
+              </p>
+            )}
+          </div>
         </div>
 
-        {/* Currency — secondary metadata */}
+        {/* Currency toggle — secondary */}
         <div className="flex items-center gap-2 mb-4">
           <button
             onClick={onToggle}
@@ -139,28 +142,24 @@ export default function WalletBalanceCard({
           <div className="rounded-xl px-3 py-2.5" style={{ background: "hsl(0 0% 100% / 0.05)" }}>
             <div className="flex items-center gap-1.5 mb-0.5">
               <TrendingUp className="w-3 h-3" style={{ color: "hsl(var(--success))" }} />
-              <span className="text-[8px] font-bold text-white/35 uppercase tracking-wider">
-                {t("orbit.purchased") || "Purchased"}
-              </span>
+              <span className="text-[8px] font-bold text-white/35 uppercase tracking-wider">Purchased</span>
             </div>
-            <p className="text-[13px] font-bold text-white/75">{isGhost ? "••••" : displayPurchased}</p>
+            <p className="text-[13px] font-bold text-white/75 truncate">{isGhost ? "••••" : displayPurchased}</p>
           </div>
           <div className="rounded-xl px-3 py-2.5" style={{ background: "hsl(0 0% 100% / 0.05)" }}>
             <div className="flex items-center gap-1.5 mb-0.5">
               <TrendingDown className="w-3 h-3 text-destructive/80" />
-              <span className="text-[8px] font-bold text-white/35 uppercase tracking-wider">
-                {t("orbit.spent") || "Spent"}
-              </span>
+              <span className="text-[8px] font-bold text-white/35 uppercase tracking-wider">Spent</span>
             </div>
-            <p className="text-[13px] font-bold text-white/75">{isGhost ? "••••" : displaySpent}</p>
+            <p className="text-[13px] font-bold text-white/75 truncate">{isGhost ? "••••" : displaySpent}</p>
           </div>
         </div>
 
         {frozenBalance > 0 && !isGhost && (
           <div className="flex items-center gap-2 mt-2 px-3 py-2 rounded-lg" style={{ background: "hsl(0 0% 100% / 0.04)" }}>
             <Lock className="w-3 h-3 text-white/25" />
-            <span className="text-[10px] text-white/35 font-medium">
-              {t("orbit.frozen") || "Frozen"}: {displayFrozen}
+            <span className="text-[10px] text-white/35 font-medium truncate">
+              Frozen: {displayFrozen}
             </span>
           </div>
         )}
