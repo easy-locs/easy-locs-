@@ -1,6 +1,5 @@
 /**
  * DINO Full Audit — Runs a complete sync audit cycle.
- * Scans routes, detects issues, scores quality, enqueues fix jobs.
  */
 
 import { supabase } from "@/integrations/supabase/client";
@@ -10,43 +9,36 @@ import { classifyFindings } from "./dinoIssueClassifier";
 import { applyAutoFixes } from "./dinoAutoFix";
 import { saveQualityScore } from "./saveQualityScore";
 import { enqueueDinoJob } from "./jobQueue";
+import type { Json } from "@/integrations/supabase/types";
 
 export async function runFullSyncAudit() {
-  // 1. Insert run record
   const { data: run, error: runError } = await supabase
     .from("dino_runs")
-    .insert({ run_type: "full_sync_audit", status: "running" })
+    .insert([{ run_type: "full_sync_audit", status: "running" }])
     .select()
     .single();
 
   if (runError) throw runError;
 
   try {
-    // 2. Scan
     const scan = runFullScan();
 
-    // 3. Detect issues via label audit
     const findings = [];
     for (const page of scan.pages) {
       findings.push(...auditLabels([page.label, page.group], page.path));
     }
 
-    // 4. Classify
     const classified = classifyFindings(findings);
-
-    // 5. Auto-fix safe issues
     const fixes = applyAutoFixes(classified);
 
-    // 6. Persist issues
     if (classified.length > 0) {
       await supabase.from("dino_issues").insert(
         classified.map((c) => ({
           severity: c.finding.severity,
           issue_type: c.finding.type,
-          route: c.finding.route,
-          component: c.finding.component ?? null,
+          route: c.finding.page,
           summary: c.finding.description,
-          details_json: { actual: c.finding.actual, expected: c.finding.expected },
+          details_json: { actual: c.finding.actual, expected: c.finding.expected } as Json,
           auto_fixable: c.autoFixSafe,
           fixability: c.finding.fixability,
           status: c.autoFixSafe ? "fixed" : "open",
@@ -54,23 +46,21 @@ export async function runFullSyncAudit() {
       );
     }
 
-    // 7. Enqueue label sanitize jobs for unfixed issues
     for (const c of classified) {
       if (!c.autoFixSafe) {
         await enqueueDinoJob({
           jobType: "sanitize_labels",
           entityType: "route",
-          entityId: c.finding.route,
+          entityId: c.finding.page,
           payload: { description: c.finding.description },
           priority: 10,
         });
       }
     }
 
-    // 8. Save quality scores per route group
     const routeGroups = Object.entries(scan.routeGroups);
     for (const [group] of routeGroups) {
-      const groupIssues = classified.filter((c) => c.finding.route.includes(group));
+      const groupIssues = classified.filter((c) => c.finding.page.includes(group));
       const issueCount = groupIssues.length;
       await saveQualityScore({
         route: `/${group}`,
@@ -84,7 +74,6 @@ export async function runFullSyncAudit() {
       });
     }
 
-    // 9. Complete run
     const fixedCount = fixes.filter((f) => f.applied).length;
     await supabase
       .from("dino_runs")
