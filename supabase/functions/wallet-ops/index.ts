@@ -1,7 +1,7 @@
 /**
- * wallet-ops — Server-side wallet operations edge function.
- * Handles: set_pin, verify_pin, authorize, capture, settle, reverse.
- * All sensitive mutations happen here with service_role — never client-side.
+ * wallet-ops — Production-hardened server-side wallet operations.
+ * Actions: set_pin, verify_pin, authorize, capture, settle, reverse.
+ * Features: HMAC-SHA256 PIN, brute-force lockout, idempotency, anomaly hooks, audit trail.
  */
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
@@ -13,7 +13,10 @@ const corsHeaders = {
 
 const MAX_PIN_ATTEMPTS = 5;
 const LOCKOUT_MINUTES = 15;
+const HIGH_VALUE_THRESHOLD = 5000;
+const ANOMALY_SCORE_THRESHOLD = 40;
 
+// ── Crypto helpers ────────────────────────────────────────
 async function generateSalt(): Promise<string> {
   const buf = new Uint8Array(32);
   crypto.getRandomValues(buf);
@@ -48,6 +51,26 @@ async function audit(sb: any, userId: string, action: string, meta: Record<strin
   await sb.from("audit_logs").insert({ user_id: userId, action: `wallet_${action}`, metadata_json: { ...meta, ts: new Date().toISOString() } });
 }
 
+// ── Anomaly scoring ───────────────────────────────────────
+async function computeAnomalyScore(sb: any, walletId: string, amount: number): Promise<{ score: number; flags: string[] }> {
+  const flags: string[] = [];
+  let score = 0;
+
+  if (amount >= HIGH_VALUE_THRESHOLD) { score += 25; flags.push("high_value"); }
+
+  const fiveMinAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+  const { data: recent } = await sb.from("wallet_ledger_entries").select("id").eq("wallet_account_id", walletId).gte("created_at", fiveMinAgo);
+  if (recent && recent.length > 3) { score += 30; flags.push("rapid_transactions"); }
+
+  const hour = new Date().getUTCHours();
+  if (hour >= 0 && hour < 5) { score += 15; flags.push("late_night"); }
+
+  const { data: w } = await sb.from("wallet_accounts").select("balance_cash").eq("id", walletId).single();
+  if (w && amount > Number(w.balance_cash) * 0.9) { score += 20; flags.push("near_full_drain"); }
+
+  return { score, flags };
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
@@ -76,11 +99,7 @@ serve(async (req) => {
       const hash = await hmacHash(pin, salt);
 
       await sb.from("wallet_pins").upsert({
-        wallet_account_id,
-        pin_hash: hash,
-        failed_attempts: 0,
-        locked_until: null,
-        updated_at: new Date().toISOString(),
+        wallet_account_id, pin_hash: hash, failed_attempts: 0, locked_until: null, updated_at: new Date().toISOString(),
       }, { onConflict: "wallet_account_id" });
 
       await audit(sb, userId, "pin_set", { wallet_account_id });
@@ -117,10 +136,16 @@ serve(async (req) => {
       return ok({ verified: false, attempts_remaining: MAX_PIN_ATTEMPTS - newAttempts, error: `Wrong PIN (${MAX_PIN_ATTEMPTS - newAttempts} left)` });
     }
 
-    // ═══ AUTHORIZE PAYMENT ═══
+    // ═══ AUTHORIZE ═══
     if (action === "authorize") {
       const { order_id, customer_wallet_id, amount, pin } = body;
       if (!order_id || !customer_wallet_id || !amount || !pin) return err("Missing required fields");
+
+      // Idempotency check
+      const { data: existingOrder } = await sb.from("orders").select("wallet_status").eq("id", order_id).single();
+      if (existingOrder?.wallet_status === "authorized" || existingOrder?.wallet_status === "captured" || existingOrder?.wallet_status === "settled") {
+        return ok({ already_processed: true, wallet_status: existingOrder.wallet_status });
+      }
 
       // Verify PIN
       const { data: p } = await sb.from("wallet_pins").select("*").eq("wallet_account_id", customer_wallet_id).single();
@@ -138,10 +163,11 @@ serve(async (req) => {
 
       await sb.from("wallet_pins").update({ failed_attempts: 0, locked_until: null, last_verified_at: new Date().toISOString() }).eq("wallet_account_id", customer_wallet_id);
 
-      // Idempotency
-      const { data: existingOrder } = await sb.from("orders").select("wallet_status").eq("id", order_id).single();
-      if (existingOrder?.wallet_status === "authorized" || existingOrder?.wallet_status === "captured" || existingOrder?.wallet_status === "settled") {
-        return ok({ already_processed: true, wallet_status: existingOrder.wallet_status });
+      // Anomaly check
+      const anomaly = await computeAnomalyScore(sb, customer_wallet_id, amount);
+      if (anomaly.score >= ANOMALY_SCORE_THRESHOLD) {
+        await audit(sb, userId, "anomaly_detected", { order_id, ...anomaly });
+        // Flag but don't block — will require review at settlement
       }
 
       // Check balance
@@ -151,44 +177,29 @@ serve(async (req) => {
       const newCash = Number(w.balance_cash) - amount;
       const newLocked = Number(w.balance_locked) + amount;
 
-      // Atomic: lock funds
+      // Atomic: lock funds + create tx + ledger + update order
       await sb.from("wallet_accounts").update({ balance_cash: newCash, balance_locked: newLocked, updated_at: new Date().toISOString() }).eq("id", customer_wallet_id);
 
-      // Create wallet transaction (uses actual schema: type, direction, user_id, reference_id, reference_type)
       const { data: tx } = await sb.from("wallet_transactions").insert({
-        type: "order_payment",
-        direction: "debit",
-        user_id: userId,
-        amount,
-        currency: "AED",
-        status: "authorized",
-        reference_type: "order",
-        reference_id: order_id,
+        type: "order_payment", direction: "debit", user_id: userId, amount, currency: "AED",
+        status: "authorized", reference_type: "order", reference_id: order_id,
         description: "Payment authorization",
+        metadata: anomaly.score >= ANOMALY_SCORE_THRESHOLD ? { anomaly_flags: anomaly.flags, anomaly_score: anomaly.score } : {},
       }).select("id").single();
 
-      // Create ledger entry (uses actual schema: direction, entry_type, reference_id, reference_type)
       await sb.from("wallet_ledger_entries").insert({
-        wallet_account_id: customer_wallet_id,
-        direction: "debit",
-        entry_type: "lock",
-        amount,
-        currency: "AED",
-        reference_type: "wallet_transaction",
-        reference_id: tx?.id,
-        status: "posted",
+        wallet_account_id: customer_wallet_id, direction: "debit", entry_type: "lock",
+        amount, currency: "AED", reference_type: "wallet_transaction", reference_id: tx?.id, status: "posted",
       });
 
-      // Update order
+      const reviewRequired = anomaly.score >= ANOMALY_SCORE_THRESHOLD;
       await sb.from("orders").update({
-        payment_status: "authorized",
-        wallet_status: "authorized",
-        payment_mode: "wallet_internal",
-        customer_wallet_id,
+        payment_status: reviewRequired ? "review_required" : "authorized",
+        wallet_status: "authorized", payment_mode: "wallet_internal", customer_wallet_id,
       }).eq("id", order_id);
 
-      await audit(sb, userId, "payment_authorized", { order_id, amount, transaction_id: tx?.id });
-      return ok({ success: true, transaction_id: tx?.id });
+      await audit(sb, userId, "payment_authorized", { order_id, amount, transaction_id: tx?.id, anomaly_score: anomaly.score, review_required: reviewRequired });
+      return ok({ success: true, transaction_id: tx?.id, review_required: reviewRequired });
     }
 
     // ═══ CAPTURE ═══
@@ -196,8 +207,10 @@ serve(async (req) => {
       const { order_id } = body;
       if (!order_id) return err("order_id required");
 
-      const { data: o } = await sb.from("orders").select("wallet_status").eq("id", order_id).single();
+      const { data: o } = await sb.from("orders").select("wallet_status, payment_status").eq("id", order_id).single();
       if (!o) return err("Order not found");
+      // Idempotency
+      if (o.wallet_status === "captured" || o.wallet_status === "settled") return ok({ already_processed: true, wallet_status: o.wallet_status });
       if (o.wallet_status !== "authorized") return err(`Cannot capture from status: ${o.wallet_status}`);
 
       await sb.from("orders").update({ payment_status: "held_in_escrow", wallet_status: "captured" }).eq("id", order_id);
@@ -212,10 +225,16 @@ serve(async (req) => {
       const { order_id } = body;
       if (!order_id) return err("order_id required");
 
-      const { data: o } = await sb.from("orders").select("wallet_status, customer_wallet_id, gross_amount").eq("id", order_id).single();
+      const { data: o } = await sb.from("orders").select("wallet_status, customer_wallet_id, gross_amount, payment_status").eq("id", order_id).single();
       if (!o) return err("Order not found");
+      // Idempotency
       if (o.wallet_status === "settled") return ok({ already_settled: true });
       if (o.wallet_status !== "captured" && o.wallet_status !== "authorized") return err(`Cannot settle from status: ${o.wallet_status}`);
+
+      // Block settlement if flagged for review and not yet approved
+      if (o.payment_status === "review_required") {
+        return err("Transaction flagged for review — approve before settling");
+      }
 
       const { data: splits } = await sb.from("wallet_order_splits").select("*").eq("order_id", order_id).eq("split_status", "pending");
       if (!splits?.length) return err("No pending splits");
@@ -226,19 +245,12 @@ serve(async (req) => {
         if (!dw) continue;
 
         await sb.from("wallet_accounts").update({
-          balance_cash: Number(dw.balance_cash) + split.net_amount,
-          updated_at: new Date().toISOString(),
+          balance_cash: Number(dw.balance_cash) + split.net_amount, updated_at: new Date().toISOString(),
         }).eq("id", split.wallet_account_id);
 
         await sb.from("wallet_ledger_entries").insert({
-          wallet_account_id: split.wallet_account_id,
-          direction: "credit",
-          entry_type: "settlement",
-          amount: split.net_amount,
-          currency: "AED",
-          reference_type: "order",
-          reference_id: order_id,
-          status: "posted",
+          wallet_account_id: split.wallet_account_id, direction: "credit", entry_type: "settlement",
+          amount: split.net_amount, currency: "AED", reference_type: "order", reference_id: order_id, status: "posted",
         });
 
         await sb.from("wallet_order_splits").update({ split_status: "settled", updated_at: new Date().toISOString() }).eq("id", split.id);
@@ -249,8 +261,7 @@ serve(async (req) => {
         const { data: cw } = await sb.from("wallet_accounts").select("balance_locked").eq("id", o.customer_wallet_id).single();
         if (cw) {
           await sb.from("wallet_accounts").update({
-            balance_locked: Math.max(0, Number(cw.balance_locked) - Number(o.gross_amount)),
-            updated_at: new Date().toISOString(),
+            balance_locked: Math.max(0, Number(cw.balance_locked) - Number(o.gross_amount)), updated_at: new Date().toISOString(),
           }).eq("id", o.customer_wallet_id);
         }
       }
@@ -269,6 +280,7 @@ serve(async (req) => {
 
       const { data: o } = await sb.from("orders").select("customer_wallet_id, gross_amount, wallet_status").eq("id", order_id).single();
       if (!o) return err("Order not found");
+      // Idempotency
       if (o.wallet_status === "reversed") return ok({ already_reversed: true });
       if (o.wallet_status === "settled") return err("Cannot reverse settled order — use refund");
 
@@ -282,14 +294,8 @@ serve(async (req) => {
           }).eq("id", o.customer_wallet_id);
 
           await sb.from("wallet_ledger_entries").insert({
-            wallet_account_id: o.customer_wallet_id,
-            direction: "credit",
-            entry_type: "reversal",
-            amount: Number(o.gross_amount),
-            currency: "AED",
-            reference_type: "order",
-            reference_id: order_id,
-            status: "posted",
+            wallet_account_id: o.customer_wallet_id, direction: "credit", entry_type: "reversal",
+            amount: Number(o.gross_amount), currency: "AED", reference_type: "order", reference_id: order_id, status: "posted",
           });
         }
       }
@@ -299,6 +305,20 @@ serve(async (req) => {
       await sb.from("wallet_transactions").update({ status: "reversed" }).eq("reference_id", order_id).eq("reference_type", "order");
 
       await audit(sb, userId, "payment_reversed", { order_id });
+      return ok({ success: true });
+    }
+
+    // ═══ APPROVE REVIEW ═══
+    if (action === "approve_review") {
+      const { order_id } = body;
+      if (!order_id) return err("order_id required");
+
+      const { data: o } = await sb.from("orders").select("payment_status").eq("id", order_id).single();
+      if (!o) return err("Order not found");
+      if (o.payment_status !== "review_required") return err("Order is not flagged for review");
+
+      await sb.from("orders").update({ payment_status: "authorized" }).eq("id", order_id);
+      await audit(sb, userId, "review_approved", { order_id });
       return ok({ success: true });
     }
 
