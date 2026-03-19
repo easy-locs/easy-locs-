@@ -3845,6 +3845,51 @@ export type Database = {
         }
         Relationships: []
       }
+      dino_campaigns: {
+        Row: {
+          campaign_type: string
+          channels: Json
+          content_json: Json | null
+          created_at: string
+          estimated_reach: number | null
+          id: string
+          name: string
+          scheduled_at: string | null
+          sent_at: string | null
+          status: string
+          targets_json: Json
+          template_key: string | null
+        }
+        Insert: {
+          campaign_type: string
+          channels?: Json
+          content_json?: Json | null
+          created_at?: string
+          estimated_reach?: number | null
+          id?: string
+          name: string
+          scheduled_at?: string | null
+          sent_at?: string | null
+          status?: string
+          targets_json?: Json
+          template_key?: string | null
+        }
+        Update: {
+          campaign_type?: string
+          channels?: Json
+          content_json?: Json | null
+          created_at?: string
+          estimated_reach?: number | null
+          id?: string
+          name?: string
+          scheduled_at?: string | null
+          sent_at?: string | null
+          status?: string
+          targets_json?: Json
+          template_key?: string | null
+        }
+        Relationships: []
+      }
       dino_conversion_funnels: {
         Row: {
           conversion_rate: number
@@ -3878,6 +3923,57 @@ export type Database = {
         }
         Relationships: []
       }
+      dino_draft_profiles: {
+        Row: {
+          activated_at: string | null
+          auto_generated_fields: Json | null
+          category: string
+          city: string
+          completeness: number | null
+          country: string
+          created_at: string
+          external_id: string | null
+          id: string
+          invitation_sent_at: string | null
+          name: string
+          profile_data: Json | null
+          source: string
+          status: string
+        }
+        Insert: {
+          activated_at?: string | null
+          auto_generated_fields?: Json | null
+          category: string
+          city: string
+          completeness?: number | null
+          country: string
+          created_at?: string
+          external_id?: string | null
+          id?: string
+          invitation_sent_at?: string | null
+          name: string
+          profile_data?: Json | null
+          source: string
+          status?: string
+        }
+        Update: {
+          activated_at?: string | null
+          auto_generated_fields?: Json | null
+          category?: string
+          city?: string
+          completeness?: number | null
+          country?: string
+          created_at?: string
+          external_id?: string | null
+          id?: string
+          invitation_sent_at?: string | null
+          name?: string
+          profile_data?: Json | null
+          source?: string
+          status?: string
+        }
+        Relationships: []
+      }
       dino_entity_state: {
         Row: {
           entity_id: string
@@ -3902,6 +3998,51 @@ export type Database = {
           state_key?: string
           state_value?: Json
           updated_at?: string
+        }
+        Relationships: []
+      }
+      dino_expansion_opportunities: {
+        Row: {
+          action: string | null
+          category: string
+          city: string
+          country: string
+          created_at: string
+          current_supply: number | null
+          district: string | null
+          estimated_demand: number | null
+          gap_score: number
+          id: string
+          priority: string
+          status: string
+        }
+        Insert: {
+          action?: string | null
+          category: string
+          city: string
+          country: string
+          created_at?: string
+          current_supply?: number | null
+          district?: string | null
+          estimated_demand?: number | null
+          gap_score?: number
+          id?: string
+          priority?: string
+          status?: string
+        }
+        Update: {
+          action?: string | null
+          category?: string
+          city?: string
+          country?: string
+          created_at?: string
+          current_supply?: number | null
+          district?: string | null
+          estimated_demand?: number | null
+          gap_score?: number
+          id?: string
+          priority?: string
+          status?: string
         }
         Relationships: []
       }
@@ -4147,6 +4288,39 @@ export type Database = {
         }
         Relationships: []
       }
+      dino_predictions: {
+        Row: {
+          created_at: string
+          id: string
+          predicted_issues: Json
+          recommended_actions: Json
+          resolved: boolean
+          risk_level: string
+          risk_score: number
+          route: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          predicted_issues?: Json
+          recommended_actions?: Json
+          resolved?: boolean
+          risk_level?: string
+          risk_score?: number
+          route: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          predicted_issues?: Json
+          recommended_actions?: Json
+          resolved?: boolean
+          risk_level?: string
+          risk_score?: number
+          route?: string
+        }
+        Relationships: []
+      }
       dino_pro_performance: {
         Row: {
           completion_rate: number | null
@@ -4192,6 +4366,48 @@ export type Database = {
           tier?: string
           updated_at?: string
           visibility_penalty?: boolean
+        }
+        Relationships: []
+      }
+      dino_promotion_slots: {
+        Row: {
+          active: boolean
+          city: string | null
+          country: string | null
+          created_at: string
+          expires_at: string | null
+          id: string
+          priority: number
+          route: string
+          slot_type: string
+          subtitle: string | null
+          title: string
+        }
+        Insert: {
+          active?: boolean
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          priority?: number
+          route: string
+          slot_type: string
+          subtitle?: string | null
+          title: string
+        }
+        Update: {
+          active?: boolean
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          priority?: number
+          route?: string
+          slot_type?: string
+          subtitle?: string | null
+          title?: string
         }
         Relationships: []
       }
