@@ -302,6 +302,8 @@ const QrScannerPage = safeLazy(() => import("./pages/payments/QrScannerPage"), "
 const GuestPaymentSuccess = safeLazy(() => import("./pages/deep-link/GuestPaymentSuccess"), "GuestPaymentSuccess");
 const DubaiRestaurantImportPage = safeLazy(() => import("./pages/DubaiRestaurantImportPage"), "DubaiRestaurantImportPage");
 const QrEntryPage = safeLazy(() => import("./pages/QrEntryPage"), "QrEntryPage");
+const AppNotFoundPage = safeLazy(() => import("./pages/AppNotFoundPage"), "AppNotFoundPage");
+const AdminImportTestBatchesPage = safeLazy(() => import("./pages/AdminImportTestBatchesPage"), "AdminImportTestBatchesPage");
 
 // City sub-page wrappers
 const CityServicesPage = () => <CityHubPage subPage="services" />;
