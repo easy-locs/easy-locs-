@@ -160,11 +160,23 @@ export default function ChatPanel({ thread, onBack, onToggleContext, showContext
     setUploading(false);
   };
 
-  // Send message
+  // Send message — dedup-protected
+  const sendNonceRef = useRef<string | null>(null);
   const handleSend = async () => {
     if (!newMessage.trim() || !thread || !orgId || !user) return;
+    if (sending) return; // Block double-tap
     const content = newMessage.trim();
+    const nonce = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    
+    // Prevent duplicate sends
+    if (sendNonceRef.current) {
+      console.debug("[msg-dedup] message_send_duplicate_blocked");
+      return;
+    }
+    sendNonceRef.current = nonce;
     setSending(true);
+    setNewMessage(""); // Clear immediately for UX
+    
     try {
       let tenantLocale = "en";
       if (thread.tenantId) {
@@ -200,9 +212,11 @@ export default function ChatPanel({ thread, onBack, onToggleContext, showContext
         context_type: thread.contextType, context_id: thread.contextId,
       };
       if (thread.threadId) msgPayload.thread_id = thread.threadId;
+      
+      console.debug("[msg-dedup] message_send_start", { nonce });
       await supabase.from("messages").insert(msgPayload);
+      console.debug("[msg-dedup] message_send_acked", { nonce });
 
-      setNewMessage("");
       setConvStatus("waiting_tenant");
 
       // Email notification
@@ -239,7 +253,13 @@ export default function ChatPanel({ thread, onBack, onToggleContext, showContext
           });
         }
       }
-    } finally { setSending(false); }
+    } catch (err) {
+      console.error("[msg-dedup] message_send_failed", err);
+      setNewMessage(content); // Restore on failure
+    } finally {
+      setSending(false);
+      sendNonceRef.current = null;
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
