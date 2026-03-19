@@ -64,12 +64,11 @@ export async function gatherReputationFactors(userId: string): Promise<Reputatio
   // Response speed proxy: driver acceptance rate or default
   const responseSpeed = driverRes.data?.acceptance_rate ?? 70;
 
-  // Consistency: ratio of completed vs cancelled (driver context)
-  const completed = driverRes.data?.completed_deliveries ?? completedOrders;
-  const cancelled = driverRes.data?.cancelled_deliveries ?? 0;
-  const consistency = completed + cancelled > 0
-    ? (completed / (completed + cancelled)) * 100
-    : 70;
+  // Consistency: driver reliability score or derived from orders
+  const driverJobs = driverRes.data?.jobs_completed ?? 0;
+  const consistency = driverRes.data?.reliability_score
+    ? driverRes.data.reliability_score
+    : (completedOrders > 0 ? (completedOrders / totalOrders) * 100 : 70);
 
   // Feedback: average review rating normalized to 0-100
   const avgRating = reviews.length > 0
