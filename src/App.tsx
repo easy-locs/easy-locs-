@@ -351,6 +351,15 @@ const OrbitSessionGuard = () => { useOrbitSessionInit(); return null; };
 /** Centralized realtime: replaces usePresence, useOrbitCallSync, RealtimeMessageToast */
 const RealtimeHubGuard = () => { useRealtimeHub(); return null; };
 
+// Apply lightweight mode class on slow devices
+if (typeof window !== "undefined") {
+  import("@/lib/performance").then(({ isLightweightMode }) => {
+    if (isLightweightMode()) {
+      document.documentElement.classList.add("lightweight-mode");
+    }
+  });
+}
+
 const App = () => (
   <ChunkRecoveryBoundary>
   <ErrorBoundary>
