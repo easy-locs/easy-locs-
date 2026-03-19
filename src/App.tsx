@@ -359,6 +359,8 @@ const AdminRuntimeAuditPage = safeLazy(() => import("./pages/AdminRuntimeAuditPa
 const AdminRuntimeQuickLinksPage = safeLazy(() => import("./pages/AdminRuntimeQuickLinksPage"), "AdminRuntimeQuickLinksPage");
 const AdminMasterDebugPage = safeLazy(() => import("./pages/AdminMasterDebugPage"), "AdminMasterDebugPage");
 const AdminDinoControlPanel = safeLazy(() => import("./pages/admin/AdminDinoControlPanel"), "AdminDinoControlPanel");
+const AdminMarketplaceOpsPage = safeLazy(() => import("./pages/admin/AdminMarketplaceOpsPage"), "AdminMarketplaceOpsPage");
+const SettingsPaymentMethodsPage = safeLazy(() => import("./pages/settings/SettingsPaymentMethods"), "SettingsPaymentMethods");
 
 // City sub-page wrappers
 const CityServicesPage = () => <CityHubPage subPage="services" />;
