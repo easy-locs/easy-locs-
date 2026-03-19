@@ -645,6 +645,8 @@ const App = () => (
               <Route path="/city-market/:citySlug" element={<CityMarketplacePage />} />
               <Route path="/admin/growth-engine" element={<ProtectedRoute><AdminGrowthEnginePage /></ProtectedRoute>} />
               <Route path="/admin/import-test-batches" element={<ProtectedRoute><AdminImportTestBatchesPage /></ProtectedRoute>} />
+              <Route path="/admin/qr-generate" element={<ProtectedRoute><QrGeneratePage /></ProtectedRoute>} />
+              <Route path="/admin/route-audit" element={<ProtectedRoute><RouteAuditPage /></ProtectedRoute>} />
               <Route path="/city/:countryCode/:city/:vertical/:locale" element={<CityVerticalPage />} />
 
               {/* Guest / Public */}
