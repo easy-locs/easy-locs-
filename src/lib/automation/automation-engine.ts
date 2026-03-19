@@ -235,7 +235,7 @@ async function handleAction(action: string, workflow: any) {
 
     case "allow_self_delivery":
       // Mark dispatch job for self-delivery fallback
-      await (supabase as any).from("dispatch_jobs").update({
+      await (supabase as any).from("dispatch_jobs_v2").update({
         ranking_snapshot: { self_delivery_suggested: true },
       } as any).eq("id", workflow.entity_id);
       break;

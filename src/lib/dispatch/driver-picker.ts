@@ -52,8 +52,13 @@ export async function assignDriverDirectly(params: {
 
   if (params.dispatchJobId) {
     const { data, error } = await (supabase as any)
-      .from("dispatch_jobs")
-      .update({ assigned_driver_id: params.driverUserId, final_fee: params.finalFee ?? null, status: "assigned" } as any)
+      .from("dispatch_jobs_v2")
+      .update({
+        assigned_driver_id: params.driverUserId,
+        delivery_fee: params.finalFee ?? 0,
+        dispatch_status: "assigned",
+        assigned_at: new Date().toISOString(),
+      } as any)
       .eq("id", params.dispatchJobId)
       .select("*")
       .single();
