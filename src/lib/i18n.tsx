@@ -3769,6 +3769,7 @@ const pageEn: Record<string, string> = {
   "page.settings.connect_stripe": "Connect Stripe",
   "page.settings.default_provider": "Default provider",
   "page.settings.bank_transfer": "Bank transfer",
+  "page.settings.bank_transfer_desc": "Clients pay directly via wire transfer",
   "page.settings.saas_disclaimer": "Easy-Locs does not hold, block, or transfer any funds. Payments go directly from your tenant to your account.",
   "page.settings.sepa_desc": "Automatic SEPA Direct Debit (SEPA zone only)",
   "page.settings.sepa_eligible": "SEPA zone eligible",
