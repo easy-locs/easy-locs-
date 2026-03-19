@@ -7,6 +7,7 @@ export async function applyWalletCredit(params: {
   userId: string;
   amount: number;
   direction: "credit" | "debit";
+  currency?: string;
   reason: string;
   contextType?: string;
   contextId?: string | null;
