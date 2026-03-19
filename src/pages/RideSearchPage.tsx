@@ -75,9 +75,10 @@ export default function RideSearchPage() {
   const [matchState, setMatchState] = useState<MatchState>("searching");
 
   // If dropoff pre-filled, go to vehicle step
-  useState(() => {
-    if (locationState?.dropoffLat) setStep("vehicle");
-  });
+  const initialStep = locationState?.dropoffLat ? "vehicle" : "search";
+  if (step === "search" && initialStep === "vehicle" && dropoff) {
+    // handled by initial state
+  }
 
   const rules = useMemo(() => getFareRules(detectedCountry), [detectedCountry]);
   const night = useMemo(() => isNightHour(), []);
