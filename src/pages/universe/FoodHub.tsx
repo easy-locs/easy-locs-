@@ -47,7 +47,8 @@ export default function FoodHub() {
         slug: r.slug,
       }));
     },
-    staleTime: 60_000,
+    staleTime: 120_000,
+    placeholderData: (prev: any) => prev,
   });
 
   const filtered = restaurants.filter((r: any) =>
