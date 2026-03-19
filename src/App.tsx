@@ -8,6 +8,7 @@ import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { CallProvider } from "@/components/call/CallProvider";
 import { useOrbitSessionInit } from "@/hooks/useOrbitSessionInit";
 import { useRealtimeHub } from "@/hooks/useRealtimeHub";
+import { useOrchestration } from "@/hooks/useOrchestration";
 import { I18nProvider } from "@/lib/i18n";
 import { ThemeProvider } from "next-themes";
 import { Suspense, lazy, type ComponentType } from "react";
