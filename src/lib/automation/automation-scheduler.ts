@@ -81,7 +81,7 @@ export function startScheduler() {
   _state.completedToday = 0;
   _state.failedCount = 0;
 
-  platformBus.emit("automation:scheduler_started", {});
+  platformBus.emit("automation:scheduler_started" as any, {}, "system");
   _intervalId = setInterval(() => {
     runSchedulerCycle().catch(console.error);
   }, POLL_INTERVAL_MS);
