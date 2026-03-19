@@ -50,6 +50,20 @@ export const routes = {
   orbitCallTest: () => `/orbit/call-test`,
   orbitIdentity: () => `/orbit/identity`,
 
+  // Food flow
+  food: () => `/food`,
+  foodType: (type: string) => `/food/${encodeURIComponent(type)}`,
+  foodCuisine: (type: string, cuisine: string) => `/food/${encodeURIComponent(type)}/${encodeURIComponent(cuisine)}`,
+  foodRestaurant: (id: string) => `/food/restaurant/${encodeURIComponent(id)}`,
+
+  // Settings
+  settings: () => `/settings`,
+  settingsAccount: () => `/settings/account`,
+  settingsBusiness: () => `/settings/business`,
+  settingsWallet: () => `/settings/wallet`,
+  settingsSecurity: () => `/settings/security`,
+  settingsPreferences: () => `/settings/preferences`,
+
   // Ghost V2/V3
   ghost: () => `/ghost`,
   ghostInbox: () => `/ghost/inbox`,
