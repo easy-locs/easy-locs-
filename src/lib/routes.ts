@@ -27,4 +27,6 @@ export const routes = {
   qrEntry: (targetCode: string) => `/qr/entry/${encodeURIComponent(targetCode)}`,
   qrGenerate: () => `/admin/qr-generate`,
   routeAudit: () => `/admin/route-audit`,
+  orbitCallTest: () => `/orbit/call-test`,
+  restaurantSeedTest: () => `/admin/test-restaurants`,
 };
