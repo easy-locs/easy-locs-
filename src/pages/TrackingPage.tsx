@@ -45,14 +45,14 @@ export default function TrackingPage() {
   const currentStep = getStepIndex(order?.status || "pending");
 
   return (
-    <div className="min-h-[100dvh] flex flex-col" style={{ background: "hsl(var(--background))" }}>
+    <div className="min-h-[100dvh] flex flex-col bg-background">
       {/* Header */}
-      <div className="flex items-center gap-3 px-4 pt-safe pb-3" style={{ paddingTop: "max(env(safe-area-inset-top, 12px), 12px)" }}>
-        <button onClick={() => navigate(-1)} className="w-9 h-9 rounded-full flex items-center justify-center active:scale-90 transition-transform" style={{ background: "hsl(var(--muted))" }}>
+      <header className="flex items-center gap-3 px-4 pt-4 pb-3">
+        <button onClick={() => navigate(-1)} className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-95 transition-transform" style={{ background: "hsl(var(--muted))" }}>
           <ArrowLeft className="w-4.5 h-4.5" />
         </button>
-        <h1 className="text-lg font-black tracking-tight">Order Tracking</h1>
-      </div>
+        <h1 className="text-lg font-bold text-foreground">Order Tracking</h1>
+      </header>
 
       {/* Map placeholder */}
       <div className="mx-4 rounded-2xl overflow-hidden" style={{ height: 180, background: "hsl(var(--muted))" }}>
