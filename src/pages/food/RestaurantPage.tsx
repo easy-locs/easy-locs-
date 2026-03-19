@@ -29,12 +29,11 @@ export default function RestaurantPage() {
     placeholderData: (prev: any) => prev,
   });
 
-  // Fetch menu items
+  // Fetch menu items — stable with placeholderData
   const { data: menuItems = [] } = useQuery({
     queryKey: ["restaurant-menu", shop?.id],
     queryFn: async () => {
       if (!shop?.id) return [];
-      // Try merchant_profile_id first, fallback to shop id
       const merchantId = shop.merchant_profile_id || shop.id;
       const { data } = await (supabase as any)
         .from("menu_items")
@@ -45,6 +44,8 @@ export default function RestaurantPage() {
       return data || [];
     },
     enabled: !!shop?.id,
+    staleTime: 60_000,
+    placeholderData: (prev: any) => prev,
   });
 
   // Group menu items by category
