@@ -5,7 +5,8 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import QRCode from "react-qr-code";
-import { buildQrEntryUrl } from "@/lib/qr/qr-link";
+import { buildAppLink } from "@/lib/link/build-link";
+import { shareLink } from "@/lib/link/build-link";
 
 interface GeneratedQr {
   targetCode: string;
