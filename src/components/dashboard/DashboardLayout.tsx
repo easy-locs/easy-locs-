@@ -17,7 +17,7 @@ import {
   Receipt, Compass,
   Layers, Zap, Store, ChevronDown,
   ArrowLeft, Globe, Clock,
-  Shield, UsersRound, Banknote, BarChart3,
+  Shield, UsersRound, Banknote, BarChart3, Activity, Bug,
 } from "lucide-react";
 
 
