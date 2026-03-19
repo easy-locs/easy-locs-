@@ -1,8 +1,9 @@
 /**
  * RidePage — /ride — Full taxi universe.
  * Map-first → Pickup → Destination → Fare → Confirm → Driver match → Track.
+ * GPS fallback: Dubai center if geolocation fails.
  */
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Car, Shield, Star, Zap, Info } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -16,9 +17,12 @@ import { calculateFare, getFareRules, isNightHour, type FareEstimate } from "@/l
 import { useGeoDetect } from "@/hooks/useGeoDetect";
 import SEOHead from "@/components/SEOHead";
 
+// Dubai fallback coordinates
+const DUBAI_CENTER = { lat: 25.2048, lng: 55.2708 };
+
 type Step = "location" | "ride-type" | "matching";
 
-/* Fake distance from pickup/dropoff */
+/* Haversine distance from pickup/dropoff */
 function mockDistance(a: SavedPlace | null, b: SavedPlace | null): { km: number; min: number } {
   if (!a?.lat || !b?.lat) return { km: 0, min: 0 };
   const R = 6371;
@@ -42,10 +46,32 @@ export default function RidePage() {
   const navigate = useNavigate();
   const { geo, currentLocation, places, addRecent, savePlace, removePlace } = useSmartLocation();
   const [step, setStep] = useState<Step>("location");
-  const [pickup, setPickup] = useState<SavedPlace | null>(currentLocation);
+  const [pickup, setPickup] = useState<SavedPlace | null>(null);
   const [dropoff, setDropoff] = useState<SavedPlace | null>(null);
   const [selectedType, setSelectedType] = useState<RideType>(RIDE_TYPES[0]);
   const [matchState, setMatchState] = useState<MatchState>("searching");
+
+  // Auto-set pickup from current location or Dubai fallback
+  useEffect(() => {
+    if (pickup) return; // Already set
+    if (currentLocation) {
+      setPickup(currentLocation);
+      console.debug("[ride] pickup_set", { source: "gps", lat: currentLocation.lat, lng: currentLocation.lng });
+    } else if (!geo.loading && !geo.lat) {
+      // GPS failed — use Dubai fallback
+      setPickup({
+        id: "fallback",
+        label: "Dubai",
+        type: "recent",
+        address: "Dubai, UAE",
+        city: "Dubai",
+        lat: DUBAI_CENTER.lat,
+        lng: DUBAI_CENTER.lng,
+        icon: "📍",
+      });
+      console.debug("[ride] pickup_set", { source: "dubai_fallback" });
+    }
+  }, [currentLocation, geo.loading, geo.lat, pickup]);
 
   const { country: detectedCountry } = useGeoDetect();
   const rules = useMemo(() => getFareRules(detectedCountry), [detectedCountry]);
