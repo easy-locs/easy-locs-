@@ -2,6 +2,8 @@
  * DINO Engine — Core type definitions for the autonomous experience engine.
  */
 
+export type DinoMode = "manual" | "semi_auto" | "full_auto";
+
 export type DinoSeverity = "critical" | "major" | "medium" | "low";
 
 export type DinoIssueType =

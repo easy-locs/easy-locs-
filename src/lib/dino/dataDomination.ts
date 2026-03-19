@@ -80,9 +80,13 @@ export function removeDuplicates(listings: NormalizedListing[]): NormalizedListi
 // 3) IMPORT INTO SYSTEM
 // =============================
 
+/** Minimum quality score to allow import */
+const MIN_QUALITY_SCORE = 60;
+
 export async function importListings(listings: NormalizedListing[]): Promise<number> {
   let imported = 0;
   for (const l of listings) {
+    if (l.qualityScore < MIN_QUALITY_SCORE) continue; // quality gate
     const { error } = await supabase.from("dino_draft_profiles").insert({
       name: l.name,
       category: l.category,
@@ -105,7 +109,13 @@ export async function importListings(listings: NormalizedListing[]): Promise<num
 export function generateActivationMessages(listings: NormalizedListing[]) {
   return listings.map(l => ({
     name: l.name,
-    message: `Your business "${l.name}" is now visible on Easy Locs. Activate your profile to receive customers.`,
+    message: [
+      `🔥 ${l.name},`,
+      `You are now visible on Easy Locs.`,
+      `🚀 Customers are already searching for "${l.category}" in ${l.city}`,
+      `👉 Activate now to receive orders.`,
+      `⚡ Priority placement available today only.`,
+    ].join("\n"),
     priority: l.qualityScore > 80 ? ("high" as const) : ("medium" as const),
   }));
 }
