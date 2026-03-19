@@ -75,9 +75,18 @@ type PlatformEventType =
   | "delivery:failed"
   // Automation
   | "automation:workflow_created"
+  | "automation:workflow_started"
   | "automation:step_executed"
+  | "automation:step_failed"
   | "automation:workflow_completed"
+  | "automation:workflow_stopped"
+  | "automation:workflow_cancelled"
   | "automation:workflow_failed"
+  | "automation:priority_escalated"
+  | "automation:exception_created"
+  | "automation:exception_resolved"
+  | "automation:scheduler_started"
+  | "automation:scheduler_stopped"
   // Property Management
   | "pm:lease_created"
   | "pm:lease_activated"

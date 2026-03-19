@@ -14,7 +14,7 @@ export async function createOnboardingWorkflow(params: {
   priority?: number;
 }) {
   const config = getCountryAutomationConfig(params.countryCode);
-  const steps = adjustStepDelays(WORKFLOW_TEMPLATES.merchant_onboarding, params.countryCode);
+  const steps = adjustStepDelays(WORKFLOW_TEMPLATES.merchant_onboarding as any, params.countryCode);
 
   return createWorkflowFromTemplate("merchant_onboarding", "merchant_onboarding_profiles", params.merchantProfileId, "claim_completed", {
     countryCode: params.countryCode,

@@ -97,7 +97,7 @@ export function stopScheduler() {
   if (_intervalId) clearInterval(_intervalId);
   _intervalId = null;
   _state.running = false;
-  platformBus.emit("automation:scheduler_stopped", {});
+  platformBus.emit("automation:scheduler_stopped" as any, {}, "system");
 }
 
 /**
