@@ -1661,11 +1661,13 @@ export type Database = {
           category_id: string | null
           compare_at_price: number | null
           created_at: string | null
+          created_by_test: boolean
           currency: string | null
           description: string | null
           dimensions_json: Json | null
           gallery_urls: Json | null
           id: string
+          is_test: boolean
           item_type: string | null
           metadata_json: Json | null
           photo_url: string | null
@@ -1679,6 +1681,7 @@ export type Database = {
           specifications: Json | null
           stock_quantity: number | null
           tags: string[] | null
+          test_batch_id: string | null
           title: string
           track_inventory: boolean | null
           updated_at: string | null
@@ -1693,11 +1696,13 @@ export type Database = {
           category_id?: string | null
           compare_at_price?: number | null
           created_at?: string | null
+          created_by_test?: boolean
           currency?: string | null
           description?: string | null
           dimensions_json?: Json | null
           gallery_urls?: Json | null
           id?: string
+          is_test?: boolean
           item_type?: string | null
           metadata_json?: Json | null
           photo_url?: string | null
@@ -1711,6 +1716,7 @@ export type Database = {
           specifications?: Json | null
           stock_quantity?: number | null
           tags?: string[] | null
+          test_batch_id?: string | null
           title: string
           track_inventory?: boolean | null
           updated_at?: string | null
@@ -1725,11 +1731,13 @@ export type Database = {
           category_id?: string | null
           compare_at_price?: number | null
           created_at?: string | null
+          created_by_test?: boolean
           currency?: string | null
           description?: string | null
           dimensions_json?: Json | null
           gallery_urls?: Json | null
           id?: string
+          is_test?: boolean
           item_type?: string | null
           metadata_json?: Json | null
           photo_url?: string | null
@@ -1743,6 +1751,7 @@ export type Database = {
           specifications?: Json | null
           stock_quantity?: number | null
           tags?: string[] | null
+          test_batch_id?: string | null
           title?: string
           track_inventory?: boolean | null
           updated_at?: string | null
@@ -6033,6 +6042,48 @@ export type Database = {
           },
         ]
       }
+      import_test_batches: {
+        Row: {
+          batch_name: string
+          batch_type: string
+          completed_at: string | null
+          created_at: string
+          created_by: string | null
+          failed_records: number
+          id: string
+          imported_records: number
+          metadata_json: Json
+          status: string
+          total_records: number
+        }
+        Insert: {
+          batch_name: string
+          batch_type?: string
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          failed_records?: number
+          id?: string
+          imported_records?: number
+          metadata_json?: Json
+          status?: string
+          total_records?: number
+        }
+        Update: {
+          batch_name?: string
+          batch_type?: string
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          failed_records?: number
+          id?: string
+          imported_records?: number
+          metadata_json?: Json
+          status?: string
+          total_records?: number
+        }
+        Relationships: []
+      }
       incident_case_events: {
         Row: {
           actor_user_id: string | null
@@ -7775,51 +7826,60 @@ export type Database = {
         Row: {
           category_id: string | null
           created_at: string | null
+          created_by_test: boolean
           currency: string | null
           description: string | null
           description_ar: string | null
           id: string
           image_url: string | null
           is_available: boolean | null
+          is_test: boolean
           merchant_profile_id: string | null
           name: string
           name_ar: string | null
           price: number | null
           sort_order: number | null
+          test_batch_id: string | null
           updated_at: string | null
           workspace_id: string | null
         }
         Insert: {
           category_id?: string | null
           created_at?: string | null
+          created_by_test?: boolean
           currency?: string | null
           description?: string | null
           description_ar?: string | null
           id?: string
           image_url?: string | null
           is_available?: boolean | null
+          is_test?: boolean
           merchant_profile_id?: string | null
           name: string
           name_ar?: string | null
           price?: number | null
           sort_order?: number | null
+          test_batch_id?: string | null
           updated_at?: string | null
           workspace_id?: string | null
         }
         Update: {
           category_id?: string | null
           created_at?: string | null
+          created_by_test?: boolean
           currency?: string | null
           description?: string | null
           description_ar?: string | null
           id?: string
           image_url?: string | null
           is_available?: boolean | null
+          is_test?: boolean
           merchant_profile_id?: string | null
           name?: string
           name_ar?: string | null
           price?: number | null
           sort_order?: number | null
+          test_batch_id?: string | null
           updated_at?: string | null
           workspace_id?: string | null
         }
@@ -7993,6 +8053,7 @@ export type Database = {
           country: string | null
           cover_image_url: string | null
           created_at: string | null
+          created_by_test: boolean
           cuisine_type: string | null
           dedupe_key: string | null
           delivery_radius_km: number | null
@@ -8000,6 +8061,7 @@ export type Database = {
           description_ar: string | null
           email: string | null
           id: string
+          is_test: boolean
           latitude: number | null
           legal_name: string | null
           logo_image_url: string | null
@@ -8014,6 +8076,7 @@ export type Database = {
           source_id: string | null
           source_status: string | null
           tags: string[] | null
+          test_batch_id: string | null
           updated_at: string | null
           verification_status: string | null
           verified_at: string | null
@@ -8035,6 +8098,7 @@ export type Database = {
           country?: string | null
           cover_image_url?: string | null
           created_at?: string | null
+          created_by_test?: boolean
           cuisine_type?: string | null
           dedupe_key?: string | null
           delivery_radius_km?: number | null
@@ -8042,6 +8106,7 @@ export type Database = {
           description_ar?: string | null
           email?: string | null
           id?: string
+          is_test?: boolean
           latitude?: number | null
           legal_name?: string | null
           logo_image_url?: string | null
@@ -8056,6 +8121,7 @@ export type Database = {
           source_id?: string | null
           source_status?: string | null
           tags?: string[] | null
+          test_batch_id?: string | null
           updated_at?: string | null
           verification_status?: string | null
           verified_at?: string | null
@@ -8077,6 +8143,7 @@ export type Database = {
           country?: string | null
           cover_image_url?: string | null
           created_at?: string | null
+          created_by_test?: boolean
           cuisine_type?: string | null
           dedupe_key?: string | null
           delivery_radius_km?: number | null
@@ -8084,6 +8151,7 @@ export type Database = {
           description_ar?: string | null
           email?: string | null
           id?: string
+          is_test?: boolean
           latitude?: number | null
           legal_name?: string | null
           logo_image_url?: string | null
@@ -8098,6 +8166,7 @@ export type Database = {
           source_id?: string | null
           source_status?: string | null
           tags?: string[] | null
+          test_batch_id?: string | null
           updated_at?: string | null
           verification_status?: string | null
           verified_at?: string | null
@@ -15218,12 +15287,14 @@ export type Database = {
           coverage_mode: string
           coverage_radius_m: number | null
           created_at: string | null
+          created_by_test: boolean
           currency: string | null
           default_currency: string | null
           description: string | null
           entity_type: string
           geo_scope: string | null
           id: string
+          is_test: boolean
           is_verified: boolean | null
           latitude: number | null
           live_lat: number | null
@@ -15250,6 +15321,7 @@ export type Database = {
           subcategory: string | null
           tagline: string | null
           tags: string[] | null
+          test_batch_id: string | null
           theme_color: string | null
           updated_at: string | null
           user_id: string
@@ -15271,12 +15343,14 @@ export type Database = {
           coverage_mode?: string
           coverage_radius_m?: number | null
           created_at?: string | null
+          created_by_test?: boolean
           currency?: string | null
           default_currency?: string | null
           description?: string | null
           entity_type?: string
           geo_scope?: string | null
           id?: string
+          is_test?: boolean
           is_verified?: boolean | null
           latitude?: number | null
           live_lat?: number | null
@@ -15303,6 +15377,7 @@ export type Database = {
           subcategory?: string | null
           tagline?: string | null
           tags?: string[] | null
+          test_batch_id?: string | null
           theme_color?: string | null
           updated_at?: string | null
           user_id: string
@@ -15324,12 +15399,14 @@ export type Database = {
           coverage_mode?: string
           coverage_radius_m?: number | null
           created_at?: string | null
+          created_by_test?: boolean
           currency?: string | null
           default_currency?: string | null
           description?: string | null
           entity_type?: string
           geo_scope?: string | null
           id?: string
+          is_test?: boolean
           is_verified?: boolean | null
           latitude?: number | null
           live_lat?: number | null
@@ -15356,6 +15433,7 @@ export type Database = {
           subcategory?: string | null
           tagline?: string | null
           tags?: string[] | null
+          test_batch_id?: string | null
           theme_color?: string | null
           updated_at?: string | null
           user_id?: string

@@ -302,6 +302,8 @@ const QrScannerPage = safeLazy(() => import("./pages/payments/QrScannerPage"), "
 const GuestPaymentSuccess = safeLazy(() => import("./pages/deep-link/GuestPaymentSuccess"), "GuestPaymentSuccess");
 const DubaiRestaurantImportPage = safeLazy(() => import("./pages/DubaiRestaurantImportPage"), "DubaiRestaurantImportPage");
 const QrEntryPage = safeLazy(() => import("./pages/QrEntryPage"), "QrEntryPage");
+const AppNotFoundPage = safeLazy(() => import("./pages/AppNotFoundPage"), "AppNotFoundPage");
+const AdminImportTestBatchesPage = safeLazy(() => import("./pages/AdminImportTestBatchesPage"), "AdminImportTestBatchesPage");
 
 // City sub-page wrappers
 const CityServicesPage = () => <CityHubPage subPage="services" />;
@@ -640,6 +642,7 @@ const App = () => (
               <Route path="/coming-soon/:slug" element={<ComingSoonMerchantPage />} />
               <Route path="/city-market/:citySlug" element={<CityMarketplacePage />} />
               <Route path="/admin/growth-engine" element={<ProtectedRoute><AdminGrowthEnginePage /></ProtectedRoute>} />
+              <Route path="/admin/import-test-batches" element={<ProtectedRoute><AdminImportTestBatchesPage /></ProtectedRoute>} />
               <Route path="/city/:countryCode/:city/:vertical/:locale" element={<CityVerticalPage />} />
 
               {/* Guest / Public */}
@@ -655,7 +658,7 @@ const App = () => (
 
               {/* Fallback */}
               <Route path="/index" element={<Index />} />
-              <Route path="*" element={<NotFound />} />
+              <Route path="*" element={<AppNotFoundPage />} />
             </Routes>
             </main>
            </Suspense>
