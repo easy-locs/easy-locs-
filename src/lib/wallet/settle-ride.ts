@@ -8,6 +8,7 @@ export async function settleRide(params: {
   riderId: string;
   driverId: string;
   amount: number;
+  currency?: string;
   threadId?: string | null;
 }) {
   const { rideRequestId, riderId, driverId, amount, threadId } = params;
