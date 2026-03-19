@@ -3845,6 +3845,33 @@ export type Database = {
         }
         Relationships: []
       }
+      dino_entity_state: {
+        Row: {
+          entity_id: string
+          entity_type: string
+          id: string
+          state_key: string
+          state_value: Json
+          updated_at: string
+        }
+        Insert: {
+          entity_id: string
+          entity_type: string
+          id?: string
+          state_key: string
+          state_value?: Json
+          updated_at?: string
+        }
+        Update: {
+          entity_id?: string
+          entity_type?: string
+          id?: string
+          state_key?: string
+          state_value?: Json
+          updated_at?: string
+        }
+        Relationships: []
+      }
       dino_issues: {
         Row: {
           auto_fixable: boolean | null
@@ -3901,6 +3928,96 @@ export type Database = {
           },
         ]
       }
+      dino_notifications: {
+        Row: {
+          actor_id: string | null
+          actor_type: string
+          channel: string
+          created_at: string
+          error_message: string | null
+          id: string
+          payload_json: Json
+          provider_message_id: string | null
+          sent_at: string | null
+          status: string
+          template_key: string
+        }
+        Insert: {
+          actor_id?: string | null
+          actor_type: string
+          channel: string
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          payload_json?: Json
+          provider_message_id?: string | null
+          sent_at?: string | null
+          status?: string
+          template_key: string
+        }
+        Update: {
+          actor_id?: string | null
+          actor_type?: string
+          channel?: string
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          payload_json?: Json
+          provider_message_id?: string | null
+          sent_at?: string | null
+          status?: string
+          template_key?: string
+        }
+        Relationships: []
+      }
+      dino_quality_scores: {
+        Row: {
+          category_score: number
+          entity_id: string | null
+          entity_type: string | null
+          i18n_score: number
+          id: string
+          media_score: number
+          route: string
+          score_details: Json
+          stability_score: number
+          total_score: number
+          ui_score: number
+          updated_at: string
+          ux_score: number
+        }
+        Insert: {
+          category_score?: number
+          entity_id?: string | null
+          entity_type?: string | null
+          i18n_score?: number
+          id?: string
+          media_score?: number
+          route: string
+          score_details?: Json
+          stability_score?: number
+          total_score?: number
+          ui_score?: number
+          updated_at?: string
+          ux_score?: number
+        }
+        Update: {
+          category_score?: number
+          entity_id?: string | null
+          entity_type?: string | null
+          i18n_score?: number
+          id?: string
+          media_score?: number
+          route?: string
+          score_details?: Json
+          stability_score?: number
+          total_score?: number
+          ui_score?: number
+          updated_at?: string
+          ux_score?: number
+        }
+        Relationships: []
+      }
       dino_runs: {
         Row: {
           created_by: string | null
@@ -3937,6 +4054,54 @@ export type Database = {
           started_at?: string
           status?: string
           summary_json?: Json | null
+        }
+        Relationships: []
+      }
+      dino_sync_jobs: {
+        Row: {
+          attempts: number
+          created_at: string
+          entity_id: string
+          entity_type: string
+          finished_at: string | null
+          id: string
+          job_type: string
+          last_error: string | null
+          payload_json: Json
+          priority: number
+          scheduled_at: string
+          started_at: string | null
+          status: string
+        }
+        Insert: {
+          attempts?: number
+          created_at?: string
+          entity_id: string
+          entity_type: string
+          finished_at?: string | null
+          id?: string
+          job_type: string
+          last_error?: string | null
+          payload_json?: Json
+          priority?: number
+          scheduled_at?: string
+          started_at?: string | null
+          status?: string
+        }
+        Update: {
+          attempts?: number
+          created_at?: string
+          entity_id?: string
+          entity_type?: string
+          finished_at?: string | null
+          id?: string
+          job_type?: string
+          last_error?: string | null
+          payload_json?: Json
+          priority?: number
+          scheduled_at?: string
+          started_at?: string | null
+          status?: string
         }
         Relationships: []
       }
