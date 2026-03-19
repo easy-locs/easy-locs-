@@ -2,6 +2,7 @@
  * Country-aware currency resolution for Easy-Locs.
  * Single source of truth for country→currency mapping.
  */
+import { supabase } from "@/integrations/supabase/client";
 
 export interface CountryConfig {
   currency: string;
@@ -22,7 +23,6 @@ export const COUNTRY_CONFIG: Record<string, CountryConfig> = {
   TR: { currency: "TRY", symbol: "₺", locale: "tr-TR" },
 };
 
-const DEFAULT_COUNTRY = "AE";
 const DEFAULT_CURRENCY = "AED";
 
 /** Resolve currency from country code. Falls back to AED. */
@@ -38,12 +38,15 @@ export function getCurrencySymbol(currency?: string | null): string {
   return entry?.symbol ?? currency;
 }
 
-/** Format a price with its currency. */
+/** Format a price with its currency symbol. */
 export function formatPrice(amount: number, currency?: string | null): string {
   const cur = currency || DEFAULT_CURRENCY;
   const sym = getCurrencySymbol(cur);
   return `${amount.toFixed(2)} ${sym}`;
 }
+
+/** Alias for formatPrice — used across commerce engine. */
+export const formatMoney = formatPrice;
 
 /** Format using Intl for locale-aware display. */
 export function formatPriceIntl(amount: number, currency?: string | null, locale?: string): string {
@@ -73,4 +76,26 @@ export function resolveTransactionCurrency(params: {
     getCurrencyFromCountry(params.countryCode) ||
     DEFAULT_CURRENCY
   );
+}
+
+/** Resolve currency from a merchant profile (async DB lookup). */
+export async function resolveMerchantCurrency(merchantProfileId: string): Promise<string> {
+  const { data } = await (supabase as any)
+    .from("merchant_onboarding_profiles")
+    .select("currency, country")
+    .eq("id", merchantProfileId)
+    .maybeSingle();
+  if (data?.currency) return data.currency;
+  if (data?.country) return getCurrencyFromCountry(data.country);
+  return DEFAULT_CURRENCY;
+}
+
+/** Resolve currency from an existing order (async DB lookup). */
+export async function resolveOrderCurrency(orderId: string): Promise<string> {
+  const { data } = await (supabase as any)
+    .from("orders")
+    .select("currency")
+    .eq("id", orderId)
+    .maybeSingle();
+  return data?.currency || DEFAULT_CURRENCY;
 }

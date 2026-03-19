@@ -28,7 +28,7 @@ export async function createRefundRequest(params: {
       context_type: params.contextType,
       context_id: params.contextId ?? null,
       amount: params.amount,
-      currency: params.currency ?? "AED",
+      currency: params.currency ?? null,
       reason: params.reason ?? null,
       refund_status: autoApprove ? "approved" : "pending",
       auto_approved: autoApprove,

@@ -50,6 +50,16 @@ type PlatformEventType =
   | "storefront:return_requested"
   | "storefront:return_processed"
   | "storefront:crm_updated"
+  // Commerce Lifecycle (Orbit orchestration)
+  | "commerce:order_created"
+  | "commerce:intent_prepared"
+  | "commerce:payment_authorized"
+  | "commerce:payment_captured"
+  | "commerce:payment_settled"
+  | "commerce:payment_reversed"
+  | "commerce:driver_assigned"
+  | "commerce:order_validated"
+  | "commerce:order_cancelled"
   // Property Management
   | "pm:lease_created"
   | "pm:lease_activated"

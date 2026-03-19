@@ -194,7 +194,7 @@ export async function prepareOrderSplit(params: {
     driver_amount: driverAmount,
   }).eq("id", params.orderId);
 
-  platformBus.emit("wallet:payment_completed", { orderId: params.orderId, stage: "split_prepared" }, "wallet");
+  platformBus.emit("commerce:intent_prepared", { orderId: params.orderId, stage: "split_prepared" }, "wallet");
   return { merchantAmount: splits[0].net_amount, driverAmount, platformAmount };
 }
 
@@ -213,32 +213,32 @@ export async function authorizeWalletPayment(params: {
     pin: params.pin,
     currency: params.currency,
   });
-  platformBus.emit("wallet:payment_completed", { orderId: params.orderId, amount: params.amount, stage: "authorized" }, "wallet");
+  platformBus.emit("commerce:payment_authorized", { orderId: params.orderId, amount: params.amount, stage: "authorized" }, "wallet");
   return result;
 }
 
 export async function captureWalletPayment(params: { orderId: string }) {
   const result = await walletOps("capture", { order_id: params.orderId });
-  platformBus.emit("wallet:payment_completed", { orderId: params.orderId, stage: "captured" }, "wallet");
+  platformBus.emit("commerce:payment_captured", { orderId: params.orderId, stage: "captured" }, "wallet");
   return result;
 }
 
 export async function settleOrderPaymentV2(params: { orderId: string }) {
   const result = await walletOps("settle", { order_id: params.orderId });
-  platformBus.emit("wallet:payment_completed", { orderId: params.orderId, stage: "settled" }, "wallet");
+  platformBus.emit("commerce:payment_settled", { orderId: params.orderId, stage: "settled" }, "wallet");
   return result;
 }
 
 export async function reverseOrderPayment(params: { orderId: string }) {
   const result = await walletOps("reverse", { order_id: params.orderId });
-  platformBus.emit("wallet:payment_completed", { orderId: params.orderId, stage: "reversed" }, "wallet");
+  platformBus.emit("commerce:payment_reversed", { orderId: params.orderId, stage: "reversed" }, "wallet");
   return result;
 }
 
 // ── Approve flagged review ────────────────────────────────
 export async function approveWalletReview(params: { orderId: string }) {
   const result = await walletOps("approve_review", { order_id: params.orderId });
-  platformBus.emit("wallet:payment_completed", { orderId: params.orderId, stage: "review_approved" }, "wallet");
+  platformBus.emit("commerce:payment_authorized", { orderId: params.orderId, stage: "review_approved" }, "wallet");
   return result;
 }
 

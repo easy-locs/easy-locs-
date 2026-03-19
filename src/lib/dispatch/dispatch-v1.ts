@@ -20,7 +20,7 @@ export async function createDispatchJob(params: {
       pickup_label: params.pickupLabel,
       dropoff_label: params.dropoffLabel,
       quoted_fee: params.quotedFee ?? null,
-      currency: params.currency ?? "AED",
+      currency: params.currency ?? null,
       status: "open",
     } as any)
     .select("*")
