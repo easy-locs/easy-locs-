@@ -2,6 +2,7 @@
  * SettingsAccount — Standalone account settings page
  */
 import { useState, useEffect } from "react";
+import { useDinoPageAudit } from "@/hooks/useDinoPageAudit";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, User } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
