@@ -4,22 +4,24 @@
 import { getRtcConfiguration } from "@/lib/calls/call-config";
 
 export class WebRtcCallManager {
-  private pc!: RTCPeerConnection;
-  private localStream: MediaStream | null = null;
-  private remoteStream: MediaStream = new MediaStream();
+  private pc: RTCPeerConnection | null = null;
   private initialized = false;
+  private localStream: MediaStream | null = null;
+  private remoteStream = new MediaStream();
 
   private async ensurePc() {
-    if (this.initialized) return;
+    if (this.initialized && this.pc) return;
+
     const config = await getRtcConfiguration();
     this.pc = new RTCPeerConnection(config);
-    this.initialized = true;
 
     this.pc.ontrack = (event) => {
       for (const track of event.streams[0].getTracks()) {
         this.remoteStream.addTrack(track);
       }
     };
+
+    this.initialized = true;
   }
 
   async startLocalMedia(video = false) {
@@ -31,7 +33,7 @@ export class WebRtcCallManager {
     });
 
     for (const track of this.localStream.getTracks()) {
-      this.pc.addTrack(track, this.localStream);
+      this.pc!.addTrack(track, this.localStream);
     }
 
     return this.localStream;
@@ -47,34 +49,34 @@ export class WebRtcCallManager {
 
   async onIceCandidate(handler: (candidate: RTCIceCandidate) => void) {
     await this.ensurePc();
-    this.pc.onicecandidate = (event) => {
+    this.pc!.onicecandidate = (event) => {
       if (event.candidate) handler(event.candidate);
     };
   }
 
   async createOffer() {
     await this.ensurePc();
-    const offer = await this.pc.createOffer();
-    await this.pc.setLocalDescription(offer);
+    const offer = await this.pc!.createOffer();
+    await this.pc!.setLocalDescription(offer);
     return offer;
   }
 
   async createAnswer(remoteOffer: RTCSessionDescriptionInit) {
     await this.ensurePc();
-    await this.pc.setRemoteDescription(remoteOffer);
-    const answer = await this.pc.createAnswer();
-    await this.pc.setLocalDescription(answer);
+    await this.pc!.setRemoteDescription(remoteOffer);
+    const answer = await this.pc!.createAnswer();
+    await this.pc!.setLocalDescription(answer);
     return answer;
   }
 
   async applyAnswer(answer: RTCSessionDescriptionInit) {
     await this.ensurePc();
-    await this.pc.setRemoteDescription(answer);
+    await this.pc!.setRemoteDescription(answer);
   }
 
   async addIceCandidate(candidate: RTCIceCandidateInit) {
     await this.ensurePc();
-    await this.pc.addIceCandidate(candidate);
+    await this.pc!.addIceCandidate(candidate);
   }
 
   setMuted(muted: boolean) {
@@ -92,7 +94,8 @@ export class WebRtcCallManager {
   destroy() {
     this.localStream?.getTracks().forEach((t) => t.stop());
     this.remoteStream.getTracks().forEach((t) => t.stop());
-    if (this.pc) this.pc.close();
+    this.pc?.close();
+    this.pc = null;
     this.localStream = null;
     this.remoteStream = new MediaStream();
     this.initialized = false;
