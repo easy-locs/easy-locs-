@@ -50,7 +50,7 @@ export async function encryptText(text: string, key: CryptoKey): Promise<Encrypt
   const iv = crypto.getRandomValues(new Uint8Array(12));
   const encoded = new TextEncoder().encode(text);
   const ciphertext = await crypto.subtle.encrypt(
-    { name: "AES-GCM", iv },
+    { name: "AES-GCM", iv: iv.buffer as ArrayBuffer },
     key,
     encoded
   );
