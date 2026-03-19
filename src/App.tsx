@@ -435,7 +435,8 @@ const App = () => (
            <AppLockGuard>
            <SplashScreen>
            <BrandSuccessFlash />
-           <OrbitSessionGuard />
+            <OrchestrationGuard />
+            <OrbitSessionGuard />
            <RealtimeHubGuard />
            <UpdateNotification />
            <OrbitCallRoot />
