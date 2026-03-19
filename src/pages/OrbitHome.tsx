@@ -10,6 +10,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useOrbitEngine } from "@/stores/orbit-engine";
 import { useI18n } from "@/lib/i18n";
 import { trackMount } from "@/lib/orbit-perf";
+import { useGodModeSnapshot } from "@/hooks/useGodModeSnapshot";
+import GodModeInsightsBar from "@/components/orbit/GodModeInsightsBar";
 import OrbitWalletCard from "@/components/orbit/OrbitWalletCard";
 import {
   ChevronRight, MessageCircle, MapPin, Car, Building2, Star, Send,
@@ -223,6 +225,7 @@ export default function OrbitHome() {
   const engine = useOrbitEngine();
   const navigate = useNavigate();
   const { t } = useI18n();
+  const { data: godSnapshot } = useGodModeSnapshot(user?.id);
 
   useEffect(() => { trackMount("OrbitHome", mountStart); }, [mountStart]);
   useDinoPageAudit({ actorType: user ? "user" : "anonymous", actorId: user?.id, pageKey: "home" });
@@ -333,6 +336,9 @@ export default function OrbitHome() {
               <ServiceTile key={svc.id} service={svc} index={i} onNavigate={handleNavigate} />
             ))}
           </div>
+
+          {/* God Mode Insights */}
+          {godSnapshot && <GodModeInsightsBar snapshot={godSnapshot} />}
 
           {/* 2. Promo Banners */}
           <PromoBannerCarousel onNavigate={handleNavigate} />

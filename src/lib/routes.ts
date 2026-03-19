@@ -46,6 +46,7 @@ export const routes = {
   opsWallboard: () => `/admin/ops-wallboard`,
   outreach: () => `/admin/outreach`,
   dinoAudit: () => `/admin/dino`,
+  dinoControl: () => `/admin/dino-control`,
 
   // Orbit
   orbitCallTest: () => `/orbit/call-test`,
