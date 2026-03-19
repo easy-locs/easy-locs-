@@ -51,9 +51,10 @@ export default function QrEntryPage() {
   if (error) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background p-6">
-        <div className="text-center space-y-2">
-          <h1 className="text-xl font-bold text-destructive">QR Error</h1>
+        <div className="text-center space-y-3">
+          <h1 className="text-xl font-bold text-destructive">QR expiré ou invalide</h1>
           <p className="text-sm text-muted-foreground">{error}</p>
+          <a href="/#/discover" className="inline-block mt-2 text-sm text-primary underline">Retour</a>
         </div>
       </div>
     );

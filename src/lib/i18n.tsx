@@ -6363,7 +6363,7 @@ const translations: Record<Locale, Record<string, string>> = {
     "nav.local_services": "Activities & Services", "nav.accounting": "Accounting", "nav.marketplace": "Marketplace", "nav.collaboration": "Collaboration", "nav.pricing": "Pricing", "nav.concierge": "Concierge", "nav.listings": "Listings",
     "nav.property_mgmt": "Property Management", "nav.sales": "Sales / Listings", "nav.deals": "Deals", "nav.tracking": "Tracking", "nav.plan": "Plan",
     "page.communication.filter_seasonal": "Seasonal", "page.communication.filter_market": "Marketplace", "page.communication.filter_concierge": "Concierge", "page.communication.all_properties": "All properties",
-     "nav.explore": "Explore", "nav.more": "More",
+     "nav.explore": "Explore", "nav.more": "More", "nav.portfolio": "Portfolio", "nav.rentals": "Rentals", "nav.team": "Team",
      "nav.dashboard_short": "Home", "nav.properties_short": "Props", "nav.market_short": "Market", "nav.messages_short": "Chat",
     "badge.landlord": "Landlord area", "badge.tenant": "Tenant area",
     "sidebar.workspace": "Workspace", "sidebar.select_country": "Select a country to start",

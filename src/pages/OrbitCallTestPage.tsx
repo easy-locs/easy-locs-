@@ -2,6 +2,7 @@
  * OrbitCallTestPage — Full WebRTC call test with realtime signaling.
  */
 import { useEffect, useRef, useState } from "react";
+import { debugLog } from "@/lib/debug/runtime-debug-bus";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCallSignals } from "@/hooks/useCallSignals";
 import { useIncomingCalls } from "@/hooks/useIncomingCalls";
