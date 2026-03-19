@@ -474,8 +474,11 @@ const App = () => (
               {/* Settings sub-pages */}
               <Route path="/settings" element={<SettingsHomePage />} />
               <Route path="/settings/account" element={<SettingsAccountPage />} />
+              <Route path="/settings/orbit" element={<SettingsOrbitPage />} />
               <Route path="/settings/business" element={<SettingsBusinessPage />} />
               <Route path="/settings/wallet" element={<SettingsWalletPage />} />
+              <Route path="/settings/addresses" element={<SettingsAddressesPage />} />
+              <Route path="/settings/notifications" element={<SettingsNotificationsPage />} />
               <Route path="/settings/security" element={<SettingsSecurityPage />} />
               <Route path="/settings/preferences" element={<SettingsPreferencesPage />} />
               <Route path="/ride" element={<RidePage />} />
