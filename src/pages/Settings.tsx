@@ -2,9 +2,9 @@ import { useState, useEffect, useRef } from "react";
 import { useSearchParams, Link } from "react-router-dom";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import {
-  User, Shield, Building2, Upload, Loader2, PenTool,
-  FileSpreadsheet, CreditCard, Palette, Globe, Eye, EyeOff,
-  Smartphone, Wallet, Bell, ChevronRight,
+  User, Shield, Building2, Upload, Loader2,
+  FileSpreadsheet, Palette, Globe,
+  Wallet, Bell, ChevronRight, MapPin, Store,
 } from "lucide-react";
 import MFASettings from "@/components/settings/MFASettings";
 import { useAuth } from "@/contexts/AuthContext";
@@ -23,19 +23,19 @@ import PinManagement from "@/components/security/PinManagement";
 import WalletCurrencySettings from "@/components/settings/WalletCurrencySettings";
 
 /* ────────────────────────────────────────────
-   Settings groups — clean, scannable sections
+   Clean settings categories
    ──────────────────────────────────────────── */
-type SettingsGroup = "profile" | "security" | "wallet" | "notifications" | "org" | "branding" | "data" | "privacy";
+type SettingsGroup = "account" | "orbit" | "wallet" | "addresses" | "notifications" | "security" | "business" | "preferences";
 
-const GROUP_META: { key: SettingsGroup; icon: React.ElementType; labelKey: string; fallback: string }[] = [
-  { key: "profile",       icon: User,         labelKey: "page.settings.profile",         fallback: "Profile" },
-  { key: "security",      icon: Shield,       labelKey: "page.settings.security",        fallback: "Security" },
-  { key: "wallet",        icon: Wallet,       labelKey: "page.settings.wallet_title",    fallback: "Wallet & Payouts" },
-  { key: "notifications", icon: Bell,         labelKey: "page.settings.notifications",   fallback: "Notifications" },
-  { key: "org",           icon: Building2,    labelKey: "page.settings.org_title",       fallback: "Organization" },
-  { key: "branding",      icon: Palette,      labelKey: "page.settings.branding_title",  fallback: "Branding" },
-  { key: "data",          icon: FileSpreadsheet, labelKey: "page.settings.import_title", fallback: "Data & Import" },
-  { key: "privacy",       icon: Shield,       labelKey: "page.settings.gdpr_title",      fallback: "Privacy & GDPR" },
+const GROUP_META: { key: SettingsGroup; icon: React.ElementType; label: string; labelFr: string }[] = [
+  { key: "account",       icon: User,            label: "Account",       labelFr: "Compte" },
+  { key: "orbit",         icon: Globe,           label: "Orbit",         labelFr: "Orbit" },
+  { key: "wallet",        icon: Wallet,          label: "Wallet",        labelFr: "Portefeuille" },
+  { key: "addresses",     icon: MapPin,          label: "Addresses",     labelFr: "Adresses" },
+  { key: "notifications", icon: Bell,            label: "Notifications", labelFr: "Notifications" },
+  { key: "security",      icon: Shield,          label: "Security",      labelFr: "Sécurité" },
+  { key: "business",      icon: Store,           label: "Business",      labelFr: "Entreprise" },
+  { key: "preferences",   icon: Palette,         label: "Preferences",   labelFr: "Préférences" },
 ];
 
 const Settings = () => {
@@ -44,16 +44,12 @@ const Settings = () => {
   const { t } = useI18n();
   const [searchParams] = useSearchParams();
   const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const [activeSection, setActiveSection] = useState<SettingsGroup | null>(null);
   const [profile, setProfile] = useState({ name: "", email: "", country: "FR", locale: "fr", signature_url: "" });
   const [org, setOrg] = useState({ name: "", address: "", postal_code: "", city: "", phone: "", siret: "", email: "", logo_url: "", stamp_url: "", brand_name: "", brand_primary_color: "", brand_accent_color: "" });
   const [saving, setSaving] = useState(false);
   const [savingBrand, setSavingBrand] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [uploadingStamp, setUploadingStamp] = useState(false);
-  const [showcaseEnabled, setShowcaseEnabled] = useState(true);
-  const [savingShowcase, setSavingShowcase] = useState(false);
-  const [landlordProfileId, setLandlordProfileId] = useState<string | null>(null);
-  const [landlordSlug, setLandlordSlug] = useState<string | null>(null);
 
   useEffect(() => {
     if (!user) return;
@@ -73,20 +69,18 @@ const Settings = () => {
         brand_accent_color: (data as any).brand_accent_color || "",
       });
     });
-    supabase.from("landlord_profiles").select("id, slug, showcase_enabled").eq("org_id", orgId).limit(1).maybeSingle().then(({ data }) => {
-      if (data) {
-        setLandlordProfileId(data.id);
-        setLandlordSlug((data as any).slug || null);
-        setShowcaseEnabled((data as any).showcase_enabled !== false);
-      }
-    });
   }, [orgId]);
+
+  useEffect(() => {
+    const section = searchParams.get("section") as SettingsGroup | null;
+    if (section) setActiveSection(section);
+  }, [searchParams]);
 
   const saveProfile = async () => {
     if (!user) return;
     setSaving(true);
     await supabase.from("profiles").update({ name: profile.name, country: profile.country, locale: profile.locale, signature_url: profile.signature_url } as any).eq("id", user.id);
-    toast({ title: t("page.settings.profile_updated") });
+    toast({ title: t("page.settings.profile_updated") || "Profile updated" });
     setSaving(false);
   };
 
@@ -97,7 +91,7 @@ const Settings = () => {
       name: org.name, address: org.address, postal_code: org.postal_code,
       city: org.city, phone: org.phone, siret: org.siret, email: org.email,
     } as any).eq("id", orgId);
-    toast({ title: t("page.settings.org_updated") });
+    toast({ title: t("page.settings.org_updated") || "Organization updated" });
     setSaving(false);
   };
 
@@ -108,377 +102,313 @@ const Settings = () => {
     const path = `${orgId}/logo-${Date.now()}.${file.name.split(".").pop()}`;
     const { error } = await supabase.storage.from("rental-docs").upload(path, file, { upsert: true });
     if (error) {
-      toast({ title: t("page.settings.upload_error"), description: error.message, variant: "destructive" });
+      toast({ title: t("page.settings.upload_error") || "Upload error", description: error.message, variant: "destructive" });
     } else {
       const { data: signedData } = await supabase.storage.from("rental-docs").createSignedUrl(path, 60 * 60 * 24 * 365);
       const logoUrl = signedData?.signedUrl || path;
       await supabase.from("orgs").update({ logo_url: logoUrl } as any).eq("id", orgId);
       setOrg(prev => ({ ...prev, logo_url: logoUrl }));
-      toast({ title: t("page.settings.logo_updated") });
+      toast({ title: t("page.settings.logo_updated") || "Logo updated" });
     }
     setUploading(false);
   };
 
-  useEffect(() => {
-    const section = searchParams.get("section");
-    if (section && sectionRefs.current[section]) {
-      setTimeout(() => {
-        sectionRefs.current[section]?.scrollIntoView({ behavior: "smooth", block: "start" });
-      }, 200);
+  const scrollToSection = (key: SettingsGroup) => {
+    setActiveSection(key);
+    setTimeout(() => {
+      sectionRefs.current[key]?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 100);
+  };
+
+  const renderSection = (key: SettingsGroup) => {
+    switch (key) {
+      case "account":
+        return (
+          <SettingsCard ref={el => { sectionRefs.current["account"] = el; }} icon={User} title={t("page.settings.profile") || "Account"}>
+            <div className="space-y-4">
+              <Field label={t("page.settings.full_name") || "Full name"}>
+                <input type="text" value={profile.name} onChange={e => setProfile(p => ({ ...p, name: e.target.value }))} className="form-input" />
+              </Field>
+              <Field label={t("page.settings.email") || "Email"}>
+                <input type="email" value={profile.email} disabled className="form-input bg-muted text-muted-foreground" />
+              </Field>
+              <Field label={t("page.settings.country") || "Country"}>
+                <CountrySelect value={profile.country} onChange={(code) => setProfile(p => ({ ...p, country: code }))} />
+              </Field>
+              <Field label={t("page.settings.signature") || "Signature"}>
+                <SignaturePad label={t("page.settings.saved_signature") || "Saved signature"} value={profile.signature_url} onChange={(v) => setProfile(p => ({ ...p, signature_url: v }))} />
+              </Field>
+              <button onClick={saveProfile} disabled={saving} className="btn-primary w-full">
+                {saving ? (t("page.settings.saving") || "Saving...") : (t("page.settings.save_profile") || "Save")}
+              </button>
+            </div>
+          </SettingsCard>
+        );
+
+      case "orbit":
+        return (
+          <SettingsCard ref={el => { sectionRefs.current["orbit"] = el; }} icon={Globe} title="Orbit">
+            {user && <OrbitSessionManager userId={user.id} />}
+          </SettingsCard>
+        );
+
+      case "wallet":
+        return (
+          <div ref={el => { sectionRefs.current["wallet"] = el; }} className="space-y-3">
+            <SettingsCard icon={Wallet} title={t("page.settings.wallet_title") || "Wallet & Payouts"}>
+              <WalletCurrencySettings />
+            </SettingsCard>
+            <PaymentProvidersSettings />
+          </div>
+        );
+
+      case "addresses":
+        return (
+          <SettingsCard ref={el => { sectionRefs.current["addresses"] = el; }} icon={MapPin} title={t("page.settings.address") || "Addresses"}>
+            <p className="text-xs text-muted-foreground mb-3">
+              {t("page.settings.address_desc") || "Manage your saved delivery and billing addresses"}
+            </p>
+            <Link to="/dashboard/settings?section=addresses" className="btn-secondary inline-flex text-sm">
+              {t("page.settings.manage_addresses") || "Manage Addresses"}
+            </Link>
+          </SettingsCard>
+        );
+
+      case "notifications":
+        return (
+          <div ref={el => { sectionRefs.current["notifications"] = el; }}>
+            <NotificationPreferences />
+          </div>
+        );
+
+      case "security":
+        return (
+          <div ref={el => { sectionRefs.current["security"] = el; }} className="space-y-3">
+            <SettingsCard icon={Shield} title={t("page.settings.security") || "Security"}>
+              <MFASettings />
+            </SettingsCard>
+            <SettingsCard icon={Shield} title="PIN">
+              <PinManagement />
+            </SettingsCard>
+            <SettingsCard icon={Shield} title={t("page.settings.app_security") || "App Security"}>
+              <AppSecuritySettings />
+            </SettingsCard>
+          </div>
+        );
+
+      case "business":
+        return (
+          <div ref={el => { sectionRefs.current["business"] = el; }} className="space-y-3">
+            <SettingsCard icon={Building2} title={t("page.settings.org_title") || "Organization"}>
+              <div className="space-y-4">
+                <Field label={t("page.settings.logo") || "Logo"}>
+                  <div className="flex items-center gap-4">
+                    {org.logo_url ? (
+                      <img src={org.logo_url} alt="Logo" className="h-14 w-14 object-contain rounded-xl border border-border" />
+                    ) : (
+                      <div className="h-14 w-14 rounded-xl border border-dashed border-border flex items-center justify-center">
+                        <Upload className="h-4 w-4 text-muted-foreground" />
+                      </div>
+                    )}
+                    <label className="btn-secondary btn-sm cursor-pointer text-xs">
+                      {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : (t("page.settings.change_logo") || "Change")}
+                      <input type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" />
+                    </label>
+                  </div>
+                </Field>
+                <Field label={t("page.settings.org_name") || "Name"}>
+                  <input type="text" value={org.name} onChange={e => setOrg(o => ({ ...o, name: e.target.value }))} className="form-input" />
+                </Field>
+                <Field label={t("page.settings.address") || "Address"}>
+                  <AddressAutocomplete
+                    value={org.address}
+                    onChange={(val) => setOrg(o => ({ ...o, address: val }))}
+                    onSelect={(result: AddressResult) => setOrg(o => ({
+                      ...o, address: result.label || "", postal_code: result.postcode || o.postal_code, city: result.city || o.city,
+                    }))}
+                  />
+                </Field>
+                <div className="grid grid-cols-2 gap-3">
+                  <Field label={t("page.settings.postal_code") || "Postal code"}>
+                    <input type="text" value={org.postal_code} onChange={e => setOrg(o => ({ ...o, postal_code: e.target.value }))} className="form-input" />
+                  </Field>
+                  <Field label={t("page.settings.city") || "City"}>
+                    <input type="text" value={org.city} onChange={e => setOrg(o => ({ ...o, city: e.target.value }))} className="form-input" />
+                  </Field>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <Field label={t("page.settings.phone") || "Phone"}>
+                    <input type="tel" value={org.phone} onChange={e => setOrg(o => ({ ...o, phone: e.target.value }))} className="form-input" />
+                  </Field>
+                  <Field label={t("page.settings.contact_email") || "Email"}>
+                    <input type="email" value={org.email} onChange={e => setOrg(o => ({ ...o, email: e.target.value }))} className="form-input" />
+                  </Field>
+                </div>
+                <Field label={t("page.settings.siret") || "Tax ID"}>
+                  <input type="text" value={org.siret} onChange={e => setOrg(o => ({ ...o, siret: e.target.value }))} className="form-input" />
+                </Field>
+                <button onClick={saveOrg} disabled={saving} className="btn-primary w-full">
+                  {saving ? (t("page.settings.saving") || "Saving...") : (t("page.settings.save_org") || "Save")}
+                </button>
+              </div>
+            </SettingsCard>
+            <ProSettingsSection />
+          </div>
+        );
+
+      case "preferences":
+        return (
+          <div ref={el => { sectionRefs.current["preferences"] = el; }} className="space-y-3">
+            <SettingsCard icon={Palette} title={t("page.settings.branding_title") || "Branding"}>
+              <div className="space-y-4">
+                <Field label={t("page.settings.brand_name") || "Brand Name"}>
+                  <input type="text" value={org.brand_name} onChange={e => setOrg(o => ({ ...o, brand_name: e.target.value }))} className="form-input" placeholder="e.g. My Brand" />
+                </Field>
+                <div className="grid grid-cols-2 gap-3">
+                  <Field label={t("page.settings.primary_color") || "Primary"}>
+                    <div className="flex items-center gap-2">
+                      <input type="color" value={org.brand_primary_color || "#1a1a2e"} onChange={e => setOrg(o => ({ ...o, brand_primary_color: e.target.value }))} className="w-8 h-8 rounded-lg border border-border cursor-pointer shrink-0" />
+                      <input type="text" value={org.brand_primary_color} onChange={e => setOrg(o => ({ ...o, brand_primary_color: e.target.value }))} placeholder="#1a1a2e" className="form-input font-mono text-xs" />
+                    </div>
+                  </Field>
+                  <Field label={t("page.settings.accent_color") || "Accent"}>
+                    <div className="flex items-center gap-2">
+                      <input type="color" value={org.brand_accent_color || "#c9a227"} onChange={e => setOrg(o => ({ ...o, brand_accent_color: e.target.value }))} className="w-8 h-8 rounded-lg border border-border cursor-pointer shrink-0" />
+                      <input type="text" value={org.brand_accent_color} onChange={e => setOrg(o => ({ ...o, brand_accent_color: e.target.value }))} placeholder="#c9a227" className="form-input font-mono text-xs" />
+                    </div>
+                  </Field>
+                </div>
+                <button onClick={async () => {
+                  if (!orgId) return;
+                  setSavingBrand(true);
+                  await supabase.from("orgs").update({ brand_name: org.brand_name || null, brand_primary_color: org.brand_primary_color || null, brand_accent_color: org.brand_accent_color || null } as any).eq("id", orgId);
+                  toast({ title: t("page.settings.branding_updated") || "Branding updated" });
+                  setSavingBrand(false);
+                }} disabled={savingBrand} className="btn-primary w-full">
+                  {savingBrand ? (t("page.settings.saving") || "Saving...") : (t("page.settings.save_branding") || "Save Branding")}
+                </button>
+              </div>
+            </SettingsCard>
+
+            {/* Data & Privacy */}
+            <SettingsCard icon={FileSpreadsheet} title={t("page.settings.import_title") || "Data & Import"}>
+              <p className="text-xs text-muted-foreground mb-3">{t("page.settings.import_desc") || "Import your data from CSV or other formats"}</p>
+              <Link to="/dashboard/import" className="btn-primary inline-flex text-sm">
+                <Upload className="h-4 w-4" /> {t("page.settings.import_cta") || "Import Data"}
+              </Link>
+            </SettingsCard>
+
+            <SettingsCard icon={Shield} title={t("page.settings.gdpr_title") || "Privacy & Data"}>
+              <div className="space-y-2">
+                <button onClick={async () => {
+                  if (!user) return;
+                  toast({ title: t("page.settings.export_started") || "Export started..." });
+                  try {
+                    const tables = ["profiles", "wallet_transactions", "documents", "leases", "tenants", "properties"];
+                    const allData: Record<string, unknown[]> = {};
+                    for (const table of tables) {
+                      const { data } = await supabase.from(table as any).select("*").or(`user_id.eq.${user.id},owner_user_id.eq.${user.id}`).limit(1000);
+                      if (data?.length) allData[table] = data;
+                    }
+                    const blob = new Blob([JSON.stringify(allData, null, 2)], { type: "application/json" });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement("a");
+                    a.href = url; a.download = `easylocs-data-${new Date().toISOString().slice(0, 10)}.json`;
+                    a.click(); URL.revokeObjectURL(url);
+                    toast({ title: t("page.settings.export_done") || "Data exported" });
+                  } catch (err: any) {
+                    toast({ title: t("page.settings.export_error") || "Export failed", description: err.message, variant: "destructive" });
+                  }
+                }} className="w-full text-left px-4 py-3 rounded-xl border border-border hover:bg-muted/50 transition-colors">
+                  <p className="text-sm font-medium text-foreground">{t("page.settings.export_data") || "Export my data"}</p>
+                  <p className="text-xs text-muted-foreground">{t("page.settings.export_desc") || "Download all your data"}</p>
+                </button>
+                <button onClick={async () => {
+                  if (!user) return;
+                  if (!window.confirm(t("page.settings.delete_confirm") || "Are you sure?")) return;
+                  if (!window.confirm(t("page.settings.delete_confirm2") || "This is irreversible.")) return;
+                  try {
+                    toast({ title: t("page.settings.delete_requested") || "Deletion requested" });
+                    await supabase.from("audit_logs").insert({
+                      user_id: user.id, action: "account_deletion_requested",
+                      metadata_json: { email: user.email, requested_at: new Date().toISOString() },
+                    });
+                  } catch (err: any) {
+                    toast({ title: t("page.settings.delete_error") || "Request failed", description: err.message, variant: "destructive" });
+                  }
+                }} className="w-full text-left px-4 py-3 rounded-xl border border-destructive/30 hover:bg-destructive/5 transition-colors">
+                  <p className="text-sm font-medium text-destructive">{t("page.settings.delete_account") || "Delete account"}</p>
+                  <p className="text-xs text-muted-foreground">{t("page.settings.delete_desc") || "Permanently delete your account and data"}</p>
+                </button>
+              </div>
+            </SettingsCard>
+          </div>
+        );
+
+      default: return null;
     }
-  }, [searchParams]);
+  };
 
   return (
     <DashboardLayout>
-      <div className="max-w-2xl mx-auto space-y-8">
+      <div className="max-w-lg mx-auto px-4 py-5 space-y-5">
         {/* Header */}
-        <div className="page-header">
-          <h1>{t("page.settings.title")}</h1>
-          <p className="text-muted-foreground text-sm">{t("page.settings.subtitle")}</p>
+        <div>
+          <h1 className="text-lg font-black text-foreground">{t("page.settings.title") || "Settings"}</h1>
+          <p className="text-xs text-muted-foreground mt-0.5">{t("page.settings.subtitle") || "Manage your account and preferences"}</p>
         </div>
 
-        {/* ═══ Quick Nav ═══ */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-          {GROUP_META.map(g => (
-            <button
-              key={g.key}
-              onClick={() => sectionRefs.current[g.key]?.scrollIntoView({ behavior: "smooth", block: "start" })}
-              className="flex items-center gap-2 px-3 py-2.5 rounded-xl border border-border/40 bg-card hover:bg-muted/50 transition-colors text-left"
-            >
-              <g.icon className="h-4 w-4 text-muted-foreground shrink-0" />
-              <span className="text-xs font-medium text-foreground truncate">{t(g.labelKey) || g.fallback}</span>
-            </button>
-          ))}
+        {/* Category grid */}
+        <div className="grid grid-cols-4 gap-2">
+          {GROUP_META.map(g => {
+            const isActive = activeSection === g.key;
+            return (
+              <button
+                key={g.key}
+                onClick={() => scrollToSection(g.key)}
+                className={`flex flex-col items-center gap-1.5 py-3 px-1 rounded-xl border transition-all active:scale-95 min-h-[64px] ${
+                  isActive ? "bg-primary/10 border-primary/30" : "bg-card border-border/30 hover:bg-muted/50"
+                }`}
+              >
+                <g.icon className={`h-4 w-4 ${isActive ? "text-primary" : "text-muted-foreground"}`} />
+                <span className={`text-[10px] font-semibold text-center leading-tight ${isActive ? "text-primary" : "text-muted-foreground"}`}>{g.label}</span>
+              </button>
+            );
+          })}
         </div>
 
-        {/* ═══ 1. Profile ═══ */}
-        <div ref={el => { sectionRefs.current["profile"] = el; }} className="ui-card">
-          <div className="flex items-center gap-3 mb-5">
-            <User className="h-5 w-5 text-muted-foreground" />
-            <h2 className="font-semibold text-foreground">{t("page.settings.profile") || "Profile"}</h2>
-          </div>
-          <div className="space-y-4">
-            <div>
-              <label className="form-label">{t("page.settings.full_name")}</label>
-              <input type="text" value={profile.name} onChange={e => setProfile(p => ({ ...p, name: e.target.value }))} className="form-input" />
-            </div>
-            <div>
-              <label className="form-label">{t("page.settings.email")}</label>
-              <input type="email" value={profile.email} disabled className="form-input bg-muted text-muted-foreground" />
-            </div>
-            <div>
-              <label className="form-label">{t("page.settings.country")}</label>
-              <CountrySelect value={profile.country} onChange={(code) => setProfile(p => ({ ...p, country: code }))} />
-            </div>
-            <div>
-              <label className="form-label">{t("page.settings.signature")}</label>
-              <SignaturePad label={t("page.settings.saved_signature")} value={profile.signature_url} onChange={(v) => setProfile(p => ({ ...p, signature_url: v }))} />
-            </div>
-            <button onClick={saveProfile} disabled={saving} className="btn-primary">
-              {saving ? t("page.settings.saving") : t("page.settings.save_profile")}
-            </button>
-          </div>
-        </div>
-
-        {/* ═══ 2. Security ═══ */}
-        <div ref={el => { sectionRefs.current["security"] = el; }} className="space-y-4">
-          <div className="flex items-center gap-3 px-1">
-            <Shield className="h-5 w-5 text-muted-foreground" />
-            <h2 className="font-semibold text-foreground">{t("page.settings.security") || "Security"}</h2>
-          </div>
-          <div className="ui-card"><MFASettings /></div>
-          <div className="ui-card"><PinManagement /></div>
-          <div className="ui-card"><AppSecuritySettings /></div>
-          {user && (
-            <div className="ui-card">
-              <div className="flex items-center gap-3 mb-4">
-                <Smartphone className="h-5 w-5 text-muted-foreground" />
-                <h3 className="font-semibold text-foreground text-sm">{t("page.settings.sessions_title") || "Active Sessions"}</h3>
-              </div>
-              <OrbitSessionManager userId={user.id} />
-            </div>
-          )}
-        </div>
-
-        {/* ═══ 3. Wallet & Payouts ═══ */}
-        <div ref={el => { sectionRefs.current["wallet"] = el; }} className="space-y-4">
-          <div className="flex items-center gap-3 px-1">
-            <Wallet className="h-5 w-5 text-muted-foreground" />
-            <h2 className="font-semibold text-foreground">{t("page.settings.wallet_title") || "Wallet & Payouts"}</h2>
-          </div>
-          <div className="ui-card"><WalletCurrencySettings /></div>
-          {/* Stripe Connect + Payment Providers live here — NOT in accounting */}
-          <PaymentProvidersSettings />
-        </div>
-
-        {/* ═══ 4. Notifications ═══ */}
-        <div ref={el => { sectionRefs.current["notifications"] = el; }}>
-          <NotificationPreferences />
-        </div>
-
-        {/* ═══ 5. Organization ═══ */}
-        <div ref={el => { sectionRefs.current["org"] = el; }} className="ui-card">
-          <div className="flex items-center gap-3 mb-5">
-            <Building2 className="h-5 w-5 text-muted-foreground" />
-            <h2 className="font-semibold text-foreground">{t("page.settings.org_title")}</h2>
-          </div>
-          <div className="space-y-4">
-            <div>
-              <label className="form-label">{t("page.settings.logo")}</label>
-              <div className="flex items-center gap-4">
-                {org.logo_url ? (
-                  <img src={org.logo_url} alt="Logo" className="h-16 w-16 object-contain rounded-lg border border-border" />
-                ) : (
-                  <div className="h-16 w-16 rounded-lg border border-dashed border-border flex items-center justify-center">
-                    <Upload className="h-5 w-5 text-muted-foreground" />
-                  </div>
-                )}
-                <label className="btn-secondary btn-sm cursor-pointer">
-                  {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : t("page.settings.change_logo")}
-                  <input type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" />
-                </label>
-              </div>
-            </div>
-            <div>
-              <label className="form-label">{t("page.settings.stamp")}</label>
-              <p className="text-xs text-muted-foreground mb-2">{t("page.settings.stamp_desc")}</p>
-              <div className="flex items-center gap-4">
-                {org.stamp_url ? (
-                  <img src={org.stamp_url} alt="Stamp" className="h-16 w-16 object-contain rounded-lg border border-border" />
-                ) : (
-                  <div className="h-16 w-16 rounded-lg border border-dashed border-border flex items-center justify-center">
-                    <Upload className="h-5 w-5 text-muted-foreground" />
-                  </div>
-                )}
-                <label className="btn-secondary btn-sm cursor-pointer">
-                  {uploadingStamp ? <Loader2 className="h-4 w-4 animate-spin" /> : t("page.settings.add_stamp")}
-                  <input type="file" accept="image/*" onChange={async (e) => {
-                    const file = e.target.files?.[0];
-                    if (!file || !orgId) return;
-                    setUploadingStamp(true);
-                    const path = `${orgId}/stamp-${Date.now()}.${file.name.split(".").pop()}`;
-                    const { error } = await supabase.storage.from("rental-docs").upload(path, file, { upsert: true });
-                    if (error) {
-                      toast({ title: t("page.settings.upload_error"), description: error.message, variant: "destructive" });
-                    } else {
-                      const { data: signedData } = await supabase.storage.from("rental-docs").createSignedUrl(path, 60 * 60 * 24 * 365);
-                      const stampUrl = signedData?.signedUrl || path;
-                      await supabase.from("orgs").update({ stamp_url: stampUrl } as any).eq("id", orgId);
-                      setOrg(prev => ({ ...prev, stamp_url: stampUrl }));
-                      toast({ title: t("page.settings.stamp_updated") });
-                    }
-                    setUploadingStamp(false);
-                  }} className="hidden" />
-                </label>
-                {org.stamp_url && (
-                  <button onClick={async () => {
-                    if (!orgId) return;
-                    await supabase.from("orgs").update({ stamp_url: null } as any).eq("id", orgId);
-                    setOrg(prev => ({ ...prev, stamp_url: "" }));
-                    toast({ title: t("page.settings.stamp_deleted") });
-                  }} className="text-xs text-destructive hover:underline">{t("page.settings.remove_stamp")}</button>
-                )}
-              </div>
-            </div>
-            <div>
-              <label className="form-label">{t("page.settings.org_name")}</label>
-              <input type="text" value={org.name} onChange={e => setOrg(o => ({ ...o, name: e.target.value }))} className="form-input" />
-            </div>
-            <div>
-              <label className="form-label">{t("page.settings.address")}</label>
-              <AddressAutocomplete
-                value={org.address}
-                onChange={(val) => setOrg(o => ({ ...o, address: val }))}
-                onSelect={(result: AddressResult) => setOrg(o => ({
-                  ...o, address: result.label || "", postal_code: result.postcode || o.postal_code, city: result.city || o.city,
-                }))}
-              />
-            </div>
-            <div className="form-grid">
-              <div>
-                <label className="form-label">{t("page.settings.postal_code")}</label>
-                <input type="text" value={org.postal_code} onChange={e => setOrg(o => ({ ...o, postal_code: e.target.value }))} className="form-input" />
-              </div>
-              <div>
-                <label className="form-label">{t("page.settings.city")}</label>
-                <input type="text" value={org.city} onChange={e => setOrg(o => ({ ...o, city: e.target.value }))} className="form-input" />
-              </div>
-            </div>
-            <div className="form-grid">
-              <div>
-                <label className="form-label">{t("page.settings.phone")}</label>
-                <input type="tel" value={org.phone} onChange={e => setOrg(o => ({ ...o, phone: e.target.value }))} className="form-input" />
-              </div>
-              <div>
-                <label className="form-label">{t("page.settings.contact_email")}</label>
-                <input type="email" value={org.email} onChange={e => setOrg(o => ({ ...o, email: e.target.value }))} className="form-input" />
-              </div>
-            </div>
-            <div>
-              <label className="form-label">{t("page.settings.siret")}</label>
-              <input type="text" value={org.siret} onChange={e => setOrg(o => ({ ...o, siret: e.target.value }))} className="form-input" />
-            </div>
-            <button onClick={saveOrg} disabled={saving} className="btn-primary">
-              {saving ? t("page.settings.saving") : t("page.settings.save_org")}
-            </button>
-          </div>
-
-          {/* Public Showcase toggle */}
-          {landlordProfileId && (
-            <div className="mt-6 pt-6 border-t border-border">
-              <div className="flex items-center justify-between p-4 rounded-xl border border-border bg-muted/30">
-                <div className="flex items-center gap-3">
-                  {showcaseEnabled ? <Eye className="h-5 w-5 text-emerald-500" /> : <EyeOff className="h-5 w-5 text-muted-foreground" />}
-                  <div>
-                    <div className="font-medium text-sm text-foreground">
-                      {showcaseEnabled ? (t("page.settings.showcase_on") || "Showcase Enabled") : (t("page.settings.showcase_off") || "Showcase Disabled")}
-                    </div>
-                    <div className="text-xs text-muted-foreground">
-                      {showcaseEnabled && landlordSlug ? `${t("page.settings.visible_at") || "Visible at"} /agency/${landlordSlug}` : (t("page.settings.showcase_hidden") || "Not publicly accessible")}
-                    </div>
-                  </div>
-                </div>
-                <button
-                  disabled={savingShowcase}
-                  onClick={async () => {
-                    if (!landlordProfileId) return;
-                    setSavingShowcase(true);
-                    const newVal = !showcaseEnabled;
-                    await supabase.from("landlord_profiles").update({ showcase_enabled: newVal } as any).eq("id", landlordProfileId);
-                    setShowcaseEnabled(newVal);
-                    toast({ title: newVal ? (t("page.settings.showcase_on") || "Showcase enabled") : (t("page.settings.showcase_off") || "Showcase disabled") });
-                    setSavingShowcase(false);
-                  }}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${showcaseEnabled ? "bg-destructive/10 text-destructive hover:bg-destructive/20" : "bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20"}`}
-                >
-                  {savingShowcase ? "…" : showcaseEnabled ? (t("page.common.disable") || "Disable") : (t("page.common.enable") || "Enable")}
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* ═══ 6. Branding ═══ */}
-        <div ref={el => { sectionRefs.current["branding"] = el; }} className="ui-card">
-          <div className="flex items-center gap-3 mb-5">
-            <Palette className="h-5 w-5 text-muted-foreground" />
-            <h2 className="font-semibold text-foreground">{t("page.settings.branding_title") || "Branding"}</h2>
-          </div>
-          <div className="space-y-4">
-            <div>
-              <label className="form-label">{t("page.settings.brand_name") || "Brand Name"}</label>
-              <input type="text" value={org.brand_name} onChange={e => setOrg(o => ({ ...o, brand_name: e.target.value }))} placeholder={t("page.settings.brand_name_placeholder") || "e.g. My Agency"} className="form-input" />
-            </div>
-            <div className="form-grid">
-              <div>
-                <label className="form-label">{t("page.settings.primary_color") || "Primary Color"}</label>
-                <div className="flex items-center gap-2">
-                  <input type="color" value={org.brand_primary_color || "#1a1a2e"} onChange={e => setOrg(o => ({ ...o, brand_primary_color: e.target.value }))} className="w-10 h-10 rounded-lg border border-border cursor-pointer shrink-0" />
-                  <input type="text" value={org.brand_primary_color} onChange={e => setOrg(o => ({ ...o, brand_primary_color: e.target.value }))} placeholder="#1a1a2e" className="form-input font-mono" />
-                </div>
-              </div>
-              <div>
-                <label className="form-label">{t("page.settings.accent_color") || "Accent Color"}</label>
-                <div className="flex items-center gap-2">
-                  <input type="color" value={org.brand_accent_color || "#c9a227"} onChange={e => setOrg(o => ({ ...o, brand_accent_color: e.target.value }))} className="w-10 h-10 rounded-lg border border-border cursor-pointer shrink-0" />
-                  <input type="text" value={org.brand_accent_color} onChange={e => setOrg(o => ({ ...o, brand_accent_color: e.target.value }))} placeholder="#c9a227" className="form-input font-mono" />
-                </div>
-              </div>
-            </div>
-            {(org.brand_name || org.brand_primary_color) && (
-              <div className="p-4 rounded-xl border border-border" style={{ backgroundColor: org.brand_primary_color || undefined }}>
-                <p className="text-sm font-bold" style={{ color: org.brand_accent_color || "#c9a227" }}>{org.brand_name || org.name}</p>
-                <p className="text-xs mt-1" style={{ color: org.brand_primary_color ? "#ffffff" : undefined }}>{t("page.settings.branding_preview") || "Preview"}</p>
-              </div>
-            )}
-            <button onClick={async () => {
-              if (!orgId) return;
-              setSavingBrand(true);
-              await supabase.from("orgs").update({ brand_name: org.brand_name || null, brand_primary_color: org.brand_primary_color || null, brand_accent_color: org.brand_accent_color || null } as any).eq("id", orgId);
-              toast({ title: t("page.settings.branding_updated") || "Branding updated" });
-              setSavingBrand(false);
-            }} disabled={savingBrand} className="btn-primary">
-              {savingBrand ? t("page.settings.saving") : t("page.settings.save_branding") || "Save Branding"}
-            </button>
-          </div>
-        </div>
-
-        {/* ═══ 7. Pro Settings ═══ */}
-        <ProSettingsSection />
-
-        {/* ═══ 8. Data & Import ═══ */}
-        <div ref={el => { sectionRefs.current["data"] = el; }} className="ui-card">
-          <div className="flex items-center gap-3 mb-5">
-            <FileSpreadsheet className="h-5 w-5 text-muted-foreground" />
-            <h2 className="font-semibold text-foreground">{t("page.settings.import_title")}</h2>
-          </div>
-          <p className="text-sm text-muted-foreground mb-4">{t("page.settings.import_desc")}</p>
-          <Link to="/dashboard/import" className="btn-primary inline-flex">
-            <Upload className="h-4 w-4" /> {t("page.settings.import_cta")}
-          </Link>
-        </div>
-
-        {/* ═══ 9. Privacy & GDPR ═══ */}
-        <div ref={el => { sectionRefs.current["privacy"] = el; }} className="ui-card">
-          <div className="flex items-center gap-3 mb-5">
-            <Shield className="h-5 w-5 text-muted-foreground" />
-            <h2 className="font-semibold text-foreground">{t("page.settings.gdpr_title")}</h2>
-          </div>
-          <div className="space-y-3">
-            <button
-              onClick={async () => {
-                if (!user) return;
-                toast({ title: t("page.settings.export_started") || "Export started…" });
-                try {
-                  const tables = ["profiles", "wallet_transactions", "documents", "leases", "tenants", "properties"];
-                  const allData: Record<string, unknown[]> = {};
-                  for (const table of tables) {
-                    const { data } = await supabase.from(table as any).select("*").or(`user_id.eq.${user.id},owner_user_id.eq.${user.id}`).limit(1000);
-                    if (data?.length) allData[table] = data;
-                  }
-                  const blob = new Blob([JSON.stringify(allData, null, 2)], { type: "application/json" });
-                  const url = URL.createObjectURL(blob);
-                  const a = document.createElement("a");
-                  a.href = url;
-                  a.download = `easylocs-data-${new Date().toISOString().slice(0, 10)}.json`;
-                  a.click();
-                  URL.revokeObjectURL(url);
-                  toast({ title: t("page.settings.export_done") || "Data exported successfully" });
-                } catch (err: any) {
-                  toast({ title: t("page.settings.export_error") || "Export failed", description: err.message, variant: "destructive" });
-                }
-              }}
-              className="w-full text-left px-4 py-3 rounded-xl border border-border hover:bg-muted/50 transition-colors"
-            >
-              <p className="text-sm font-medium text-foreground">{t("page.settings.export_data")}</p>
-              <p className="text-xs text-muted-foreground">{t("page.settings.export_desc")}</p>
-            </button>
-            <button
-              onClick={async () => {
-                if (!user) return;
-                if (!window.confirm(t("page.settings.delete_confirm") || "⚠️ Are you sure?")) return;
-                if (!window.confirm(t("page.settings.delete_confirm2") || "This is irreversible.")) return;
-                try {
-                  toast({ title: t("page.settings.delete_requested") || "Account deletion requested." });
-                  await supabase.from("audit_logs").insert({
-                    user_id: user.id,
-                    action: "account_deletion_requested",
-                    metadata_json: { email: user.email, requested_at: new Date().toISOString() },
-                  });
-                } catch (err: any) {
-                  toast({ title: t("page.settings.delete_error") || "Request failed", description: err.message, variant: "destructive" });
-                }
-              }}
-              className="w-full text-left px-4 py-3 rounded-xl border border-destructive/30 hover:bg-destructive/5 transition-colors"
-            >
-              <p className="text-sm font-medium text-destructive">{t("page.settings.delete_account")}</p>
-              <p className="text-xs text-muted-foreground">{t("page.settings.delete_desc")}</p>
-            </button>
-          </div>
-        </div>
+        {/* Sections */}
+        {GROUP_META.map(g => (
+          <div key={g.key}>{renderSection(g.key)}</div>
+        ))}
       </div>
     </DashboardLayout>
   );
 };
+
+/* ─── Reusable card wrapper ─── */
+const SettingsCard = ({ icon: Icon, title, children, ref: _ref }: {
+  icon: React.ElementType; title: string; children: React.ReactNode; ref?: any;
+}) => {
+  return (
+    <div ref={_ref} className="rounded-2xl border border-border bg-card p-4">
+      <div className="flex items-center gap-2.5 mb-4">
+        <Icon className="h-4 w-4 text-muted-foreground shrink-0" />
+        <h2 className="text-sm font-bold text-foreground">{title}</h2>
+      </div>
+      {children}
+    </div>
+  );
+};
+
+/* ─── Field wrapper ─── */
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <label className="text-xs font-medium text-muted-foreground mb-1.5 block">{label}</label>
+      {children}
+    </div>
+  );
+}
 
 export default Settings;
