@@ -54,9 +54,14 @@ export default function WalletBalanceCard({
         boxShadow: "var(--shadow-elevated)",
       }}
     >
+      {/* Premium gold star accent — left side */}
+      <div className="absolute top-4 left-4 opacity-20">
+        <Star className="w-7 h-7" style={{ color: "hsl(45 90% 65%)", fill: "hsl(45 90% 65%)" }} />
+      </div>
+
       {/* Ambient orbs — GPU-friendly */}
       <div className="absolute top-0 right-0 w-36 h-36 rounded-full -translate-y-14 translate-x-14 opacity-40" style={{ background: "radial-gradient(circle, hsl(var(--accent) / 0.18), transparent 70%)" }} />
-      <div className="absolute bottom-0 left-0 w-28 h-28 rounded-full translate-y-10 -translate-x-10 opacity-30" style={{ background: "radial-gradient(circle, hsl(var(--accent) / 0.1), transparent 70%)" }} />
+      <div className="absolute bottom-0 left-0 w-28 h-28 rounded-full translate-y-10 -translate-x-10 opacity-30" style={{ background: "radial-gradient(circle, hsl(45 90% 65% / 0.08), transparent 70%)" }} />
 
       <div className="relative z-10 p-5">
         {/* Header row */}
