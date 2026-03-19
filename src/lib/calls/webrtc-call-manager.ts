@@ -1,5 +1,6 @@
 /**
  * WebRTC Call Manager — Manages peer connections for voice/video calls.
+ * Includes proper remote audio element for playback.
  */
 import { getRtcConfiguration } from "@/lib/calls/call-config";
 
@@ -8,6 +9,7 @@ export class WebRtcCallManager {
   private initialized = false;
   private localStream: MediaStream | null = null;
   private remoteStream = new MediaStream();
+  private remoteAudioEl: HTMLAudioElement | null = null;
 
   private async ensurePc() {
     if (this.initialized && this.pc) return;
@@ -19,9 +21,30 @@ export class WebRtcCallManager {
       for (const track of event.streams[0].getTracks()) {
         this.remoteStream.addTrack(track);
       }
+      // Auto-attach remote stream to audio element for playback
+      this.attachRemoteAudio();
     };
 
     this.initialized = true;
+  }
+
+  /**
+   * Creates a hidden audio element and attaches the remote stream
+   * so the user can hear the other party.
+   */
+  private attachRemoteAudio() {
+    if (!this.remoteAudioEl) {
+      this.remoteAudioEl = document.createElement("audio");
+      this.remoteAudioEl.autoplay = true;
+      this.remoteAudioEl.playsInline = true;
+      // Keep it in the DOM so browsers don't garbage-collect it
+      this.remoteAudioEl.style.display = "none";
+      document.body.appendChild(this.remoteAudioEl);
+    }
+    this.remoteAudioEl.srcObject = this.remoteStream;
+    this.remoteAudioEl.play().catch((err) => {
+      console.warn("[WebRtcCallManager] Remote audio autoplay blocked:", err);
+    });
   }
 
   async startLocalMedia(video = false) {
@@ -99,5 +122,12 @@ export class WebRtcCallManager {
     this.localStream = null;
     this.remoteStream = new MediaStream();
     this.initialized = false;
+
+    // Clean up remote audio element
+    if (this.remoteAudioEl) {
+      this.remoteAudioEl.srcObject = null;
+      this.remoteAudioEl.remove();
+      this.remoteAudioEl = null;
+    }
   }
 }
