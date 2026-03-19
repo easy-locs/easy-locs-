@@ -1,0 +1,50 @@
+/**
+ * Order Actions — Status transitions with orchestration bus integration.
+ */
+
+import { supabase } from "@/integrations/supabase/client";
+import { canTransition, type OrderStatus } from "./order-status";
+import { platformBus } from "@/lib/orchestration/platformBus";
+
+export async function setOrderStatus(params: {
+  orderId: string;
+  currentStatus: OrderStatus;
+  nextStatus: OrderStatus;
+  merchantId?: string;
+  city?: string;
+  pickupLat?: number | null;
+  pickupLng?: number | null;
+  zone?: string | null;
+}) {
+  if (!canTransition(params.currentStatus, params.nextStatus)) {
+    throw new Error(`Invalid status transition: ${params.currentStatus} → ${params.nextStatus}`);
+  }
+
+  const { error } = await supabase
+    .from("orders")
+    .update({
+      status: params.nextStatus,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", params.orderId);
+
+  if (error) throw error;
+
+  if (params.nextStatus === "confirmed") {
+    await platformBus.emit("ORDER_CONFIRMED", {
+      orderId: params.orderId,
+      merchantId: params.merchantId ?? "",
+    }, { source: "orderActions" });
+  }
+
+  if (params.nextStatus === "ready_for_pickup") {
+    await platformBus.emit("ORDER_READY", {
+      orderId: params.orderId,
+      merchantId: params.merchantId ?? "",
+      city: params.city ?? "Dubai",
+      pickupLat: params.pickupLat ?? 0,
+      pickupLng: params.pickupLng ?? 0,
+      zone: params.zone ?? "",
+    }, { source: "orderActions" });
+  }
+}
