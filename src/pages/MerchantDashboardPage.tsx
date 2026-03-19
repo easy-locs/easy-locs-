@@ -9,7 +9,9 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { Store, Utensils, Zap, Eye, Plus, Trash2, Edit2, Check, Loader2, ExternalLink } from "lucide-react";
+import { Store, Utensils, Zap, Eye, Plus, Trash2, Edit2, Check, Loader2, ExternalLink, ScanLine, ShoppingCart, CreditCard, QrCode } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { routes } from "@/lib/routes";
 
 interface MenuItem {
   id: string;
@@ -20,6 +22,32 @@ interface MenuItem {
   description?: string;
   description_ar?: string | null;
   isNew?: boolean;
+}
+
+/* ═══ Merchant Operations Hub ═══ */
+function MerchantOpsHub({ profileId }: { profileId: string | null }) {
+  const nav = useNavigate();
+  const OPS = [
+    { icon: ScanLine, label: "POS / Cashier", desc: "Tactile point of sale", onClick: () => nav(routes.merchantPos() + (profileId ? `?id=${profileId}` : "")) },
+    { icon: QrCode, label: "QR Menu", desc: "Dynamic menu QR codes", onClick: () => nav(`/qr/entry/create?context=merchant&merchant_id=${profileId || ""}`) },
+    { icon: ShoppingCart, label: "Online Orders", desc: "Incoming orders", onClick: () => nav(routes.merchantKitchen() + (profileId ? `?id=${profileId}` : "")) },
+    { icon: CreditCard, label: "Payments", desc: "Transaction history", onClick: () => nav("/wallet/hub") },
+  ];
+  return (
+    <div className="grid grid-cols-2 gap-2 mb-4">
+      {OPS.map((op) => (
+        <button key={op.label} onClick={op.onClick} className="flex items-center gap-3 rounded-xl border border-border bg-card p-3 text-left active:scale-[0.97] transition-transform min-h-[56px]">
+          <div className="w-9 h-9 rounded-lg flex items-center justify-center bg-primary/10">
+            <op.icon className="w-4.5 h-4.5 text-primary" />
+          </div>
+          <div className="min-w-0">
+            <p className="text-xs font-bold text-foreground truncate">{op.label}</p>
+            <p className="text-[10px] text-muted-foreground truncate">{op.desc}</p>
+          </div>
+        </button>
+      ))}
+    </div>
+  );
 }
 
 export default function MerchantDashboardPage() {
@@ -262,6 +290,9 @@ export default function MerchantDashboardPage() {
             </CardContent>
           </Card>
         )}
+
+        {/* ═══ Merchant Operations Hub ═══ */}
+        <MerchantOpsHub profileId={profileId} />
 
         <Tabs defaultValue="details" className="space-y-4">
           <TabsList className="grid grid-cols-4 w-full">
