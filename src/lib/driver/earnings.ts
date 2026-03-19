@@ -42,6 +42,6 @@ export async function getDriverEarnings(driverUserId: string): Promise<DriverEar
     totalEarned: Number(total.toFixed(2)),
     completedJobs: count,
     avgPerJob: count > 0 ? Number((total / count).toFixed(2)) : 0,
-    currency: orders?.[0]?.currency || jobs?.[0]?.currency || "AED",
+    currency: orders?.[0]?.currency || jobs?.[0]?.currency || "",
   };
 }
