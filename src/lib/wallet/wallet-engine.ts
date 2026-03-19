@@ -213,7 +213,7 @@ export async function authorizeWalletPayment(params: {
     pin: params.pin,
     currency: params.currency,
   });
-  platformBus.emit("wallet:payment_completed", { orderId: params.orderId, amount: params.amount, stage: "authorized" }, "wallet");
+  platformBus.emit("commerce:payment_authorized", { orderId: params.orderId, amount: params.amount, stage: "authorized" }, "wallet");
   return result;
 }
 
