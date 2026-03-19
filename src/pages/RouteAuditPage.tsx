@@ -1,42 +1,8 @@
 /**
  * Route Audit Page — Lists all registered routes and their health status.
  */
-import { routes } from "@/lib/routes";
+import { ROUTE_REGISTRY } from "@/lib/routes";
 import { CheckCircle } from "lucide-react";
-
-interface RouteEntry {
-  label: string;
-  path: string;
-  group: "merchant" | "driver" | "admin" | "public" | "qr";
-}
-
-const ROUTE_REGISTRY: RouteEntry[] = [
-  { label: "QR Entry", path: routes.qrEntry("TEST"), group: "qr" },
-  { label: "QR Generate", path: routes.qrGenerate(), group: "admin" },
-  { label: "Order Tracking", path: routes.tracking("TEST"), group: "public" },
-  { label: "Merchant POS", path: routes.merchantPos(), group: "merchant" },
-  { label: "Merchant Kitchen", path: routes.merchantKitchen(), group: "merchant" },
-  { label: "Delivery Monitor", path: routes.merchantDelivery(), group: "merchant" },
-  { label: "Merchant Dashboard", path: routes.merchantDashboard(), group: "merchant" },
-  { label: "Driver Missions", path: routes.driverMissions(), group: "driver" },
-  { label: "Driver Earnings", path: routes.driverEarnings(), group: "driver" },
-  { label: "Driver Mission Detail", path: routes.driverMission("TEST"), group: "driver" },
-  { label: "Wallet Diagnostics", path: routes.walletDiagnostics(), group: "admin" },
-  { label: "Dispatch Diagnostics", path: routes.dispatchDiagnostics(), group: "admin" },
-  { label: "Automations", path: routes.automations(), group: "admin" },
-  { label: "Automation Health", path: routes.automationHealth(), group: "admin" },
-  { label: "Ops Exceptions", path: routes.opsExceptions(), group: "admin" },
-  { label: "Review Queue", path: routes.reviewQueue(), group: "admin" },
-  { label: "Growth Dashboard", path: routes.growthDashboard(), group: "admin" },
-  { label: "Growth Engine", path: routes.growthEngine(), group: "admin" },
-  { label: "Import Test Batches", path: routes.importTestBatches(), group: "admin" },
-  { label: "Restaurant Seeder", path: routes.restaurantSeedTest(), group: "admin" },
-  { label: "Route Audit", path: routes.routeAudit(), group: "admin" },
-  { label: "Alert Center", path: routes.alertCenter(), group: "admin" },
-  { label: "Orbit Call Test", path: routes.orbitCallTest(), group: "admin" },
-  { label: "Coming Soon", path: routes.comingSoon("test-slug"), group: "public" },
-  { label: "City Market", path: routes.cityMarket("dubai"), group: "public" },
-];
 
 const GROUP_LABELS: Record<string, string> = {
   merchant: "🏪 Merchant",
@@ -60,7 +26,7 @@ export default function RouteAuditPage() {
       <div>
         <h1 className="text-2xl font-bold">Route Audit</h1>
         <p className="text-muted-foreground text-sm mt-1">
-          {ROUTE_REGISTRY.length} routes enregistrées dans le système.
+          {ROUTE_REGISTRY.length} routes registered in the system.
         </p>
       </div>
 

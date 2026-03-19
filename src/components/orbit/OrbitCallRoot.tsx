@@ -39,7 +39,6 @@ export default function OrbitCallRoot() {
       const service = serviceRef.current;
 
       if (signal.signal_type === "offer") {
-        // Offer triggers ringing — handled by useIncomingCalls already
         return;
       }
 
