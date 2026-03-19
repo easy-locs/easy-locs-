@@ -2,9 +2,13 @@
  * WalletBalanceCard — Premium financial cockpit hero card v2
  * Harmonized with platform design tokens + Orbit Ghost centrality
  */
+/**
+ * WalletBalanceCard — Premium financial cockpit hero card v3
+ * Luxury dark glass with gold star accent, dominant balance display
+ */
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Wallet, Settings, TrendingUp, TrendingDown, RefreshCw, Loader2, Ghost, Lock, QrCode } from "lucide-react";
+import { Wallet, Settings, TrendingUp, TrendingDown, RefreshCw, Loader2, Ghost, Lock, Star } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { useGhostMask } from "@/hooks/useGhostMask";
 
@@ -50,9 +54,14 @@ export default function WalletBalanceCard({
         boxShadow: "var(--shadow-elevated)",
       }}
     >
+      {/* Premium gold star accent — left side */}
+      <div className="absolute top-4 left-4 opacity-20">
+        <Star className="w-7 h-7" style={{ color: "hsl(45 90% 65%)", fill: "hsl(45 90% 65%)" }} />
+      </div>
+
       {/* Ambient orbs — GPU-friendly */}
       <div className="absolute top-0 right-0 w-36 h-36 rounded-full -translate-y-14 translate-x-14 opacity-40" style={{ background: "radial-gradient(circle, hsl(var(--accent) / 0.18), transparent 70%)" }} />
-      <div className="absolute bottom-0 left-0 w-28 h-28 rounded-full translate-y-10 -translate-x-10 opacity-30" style={{ background: "radial-gradient(circle, hsl(var(--accent) / 0.1), transparent 70%)" }} />
+      <div className="absolute bottom-0 left-0 w-28 h-28 rounded-full translate-y-10 -translate-x-10 opacity-30" style={{ background: "radial-gradient(circle, hsl(45 90% 65% / 0.08), transparent 70%)" }} />
 
       <div className="relative z-10 p-5">
         {/* Header row */}
@@ -102,27 +111,27 @@ export default function WalletBalanceCard({
           <p className="text-[9px] font-bold text-white/35 uppercase tracking-[0.15em] mb-1.5">
             {t("orbit.total_balance") || "Total Balance"}
           </p>
-          <p className="text-[2.25rem] font-black text-white tracking-tight leading-none">
+          <p className="text-[2.75rem] font-black text-white tracking-tight leading-none">
             {loading ? (
               <span className="inline-flex gap-1.5">
-                <span className="w-4 h-9 rounded-md bg-white/8 animate-pulse" />
-                <span className="w-20 h-9 rounded-md bg-white/8 animate-pulse" />
+                <span className="w-5 h-11 rounded-md bg-white/8 animate-pulse" />
+                <span className="w-24 h-11 rounded-md bg-white/8 animate-pulse" />
               </span>
             ) : isGhost ? "••••••" : displayBalance}
           </p>
         </div>
 
-        {/* Currency toggle */}
-        <div className="flex items-center gap-2.5 mb-4">
+        {/* Currency — secondary metadata */}
+        <div className="flex items-center gap-2 mb-4">
           <button
             onClick={onToggle}
-            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-white/60 hover:text-white/90 transition-all active:scale-95"
-            style={{ background: "hsl(0 0% 100% / 0.08)" }}
+            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-white/45 hover:text-white/70 transition-all active:scale-95"
+            style={{ background: "hsl(0 0% 100% / 0.06)", fontSize: "9px" }}
           >
-            <RefreshCw className="w-2.5 h-2.5" />
-            <span className="text-[10px] font-bold">{showLocs ? currencyCode : "LOCS"}</span>
+            <RefreshCw className="w-2 h-2" />
+            <span className="font-bold">{showLocs ? currencyCode : "LOCS"}</span>
           </button>
-          <span className="text-[9px] text-white/25 font-medium">1 LOCS = 1 EUR</span>
+          <span className="text-[8px] text-white/20 font-medium">1 LOCS = 1 EUR</span>
         </div>
 
         {/* Stats grid */}

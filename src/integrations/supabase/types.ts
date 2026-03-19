@@ -20181,6 +20181,57 @@ export type Database = {
           },
         ]
       }
+      wallet_payment_intents: {
+        Row: {
+          amount: number
+          country_code: string | null
+          created_at: string
+          currency: string
+          expires_at: string
+          id: string
+          merchant_id: string | null
+          metadata_json: Json | null
+          nonce: string
+          recipient_user_id: string | null
+          risk_level: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          country_code?: string | null
+          created_at?: string
+          currency?: string
+          expires_at: string
+          id?: string
+          merchant_id?: string | null
+          metadata_json?: Json | null
+          nonce: string
+          recipient_user_id?: string | null
+          risk_level?: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          country_code?: string | null
+          created_at?: string
+          currency?: string
+          expires_at?: string
+          id?: string
+          merchant_id?: string | null
+          metadata_json?: Json | null
+          nonce?: string
+          recipient_user_id?: string | null
+          risk_level?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       wallet_pins: {
         Row: {
           created_at: string
