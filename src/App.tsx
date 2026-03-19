@@ -213,6 +213,7 @@ const SlugResolver = safeLazy(() => import("./pages/seo/SEOShortUrlResolver").th
 const SlugCategoryResolver = safeLazy(() => import("./pages/seo/SEOShortUrlResolver").then(m => ({ default: m.SlugCategoryResolver })), "SlugCategoryResolver");
 // Ride & Send universes
 const RidePage = safeLazy(() => import("./pages/RidePage"), "RidePage");
+const RideSearchPage = safeLazy(() => import("./pages/RideSearchPage"), "RideSearchPage");
 const SendPage = safeLazy(() => import("./pages/SendPage"), "SendPage");
 const TrackRidePage = safeLazy(() => import("./pages/TrackRidePage"), "TrackRidePage");
 const PayRidePage = safeLazy(() => import("./pages/PayRidePage"), "PayRidePage");
@@ -487,6 +488,7 @@ const App = () => (
               <Route path="/settings/security" element={<SettingsSecurityPage />} />
               <Route path="/settings/preferences" element={<SettingsPreferencesPage />} />
               <Route path="/ride" element={<RidePage />} />
+              <Route path="/ride/search" element={<RideSearchPage />} />
               <Route path="/send" element={<SendPage />} />
               <Route path="/track/:rideRequestId" element={<TrackRidePage />} />
               <Route path="/wallet/pay/:threadId" element={<PayRidePage />} />
