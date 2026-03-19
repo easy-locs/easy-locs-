@@ -462,8 +462,19 @@ const App = () => (
 
               {/* Universe hubs */}
               <Route path="/food" element={<FoodHub />} />
+              <Route path="/food/restaurant/:restaurantId" element={<FoodRestaurantPage />} />
+              <Route path="/food/:type" element={<FoodTypePage />} />
+              <Route path="/food/:type/:cuisine" element={<CuisineListPage />} />
               <Route path="/grocery" element={<GroceryHub />} />
               <Route path="/services-hub" element={<ServicesHub />} />
+
+              {/* Settings sub-pages */}
+              <Route path="/settings" element={<SettingsHomePage />} />
+              <Route path="/settings/account" element={<SettingsAccountPage />} />
+              <Route path="/settings/business" element={<SettingsBusinessPage />} />
+              <Route path="/settings/wallet" element={<SettingsWalletPage />} />
+              <Route path="/settings/security" element={<SettingsSecurityPage />} />
+              <Route path="/settings/preferences" element={<SettingsPreferencesPage />} />
               <Route path="/ride" element={<RidePage />} />
               <Route path="/send" element={<SendPage />} />
               <Route path="/track/:rideRequestId" element={<TrackRidePage />} />
