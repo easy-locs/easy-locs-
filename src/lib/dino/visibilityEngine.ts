@@ -35,6 +35,14 @@ export function rankListings<T extends Record<string, any>>(listings: T[]): (T &
     .sort((a, b) => b.visibilityScore - a.visibilityScore);
 }
 
+/** Compute smart boost multiplier based on score and trend */
+export function computeSmartBoost(score: number, trend: string): number {
+  if (trend === "rising" && score > 80) return 1.7;
+  if (score > 70) return 1.4;
+  if (score > 60) return 1.2;
+  return 1;
+}
+
 /** Apply a temporary boost override for a category or entity */
 export async function applyBoostOverride(params: {
   entityId: string;
