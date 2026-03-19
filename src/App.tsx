@@ -375,6 +375,9 @@ const App = () => (
            <Suspense fallback={<PageLoader />}>
             <main id="main-content">
             <Routes>
+              {/* Emergency render test — no wrappers */}
+              <Route path="/emergency-test" element={<EmergencyRenderTestPage />} />
+
               {/* ══════ PUBLIC WEBSITE ══════ */}
               {/* Homepage */}
               <Route path="/" element={<Index />} />
