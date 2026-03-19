@@ -112,7 +112,7 @@ export default function WalletSecurityPanel() {
         <div className="space-y-2">
           <div className="flex items-center justify-between text-xs">
             <span className="text-muted-foreground">{t("orbit.used_today") || "Used today"}</span>
-            <span className="font-semibold text-foreground">{todaySpent.toLocaleString()} LOCS</span>
+            <span className="font-semibold text-foreground">{todaySpent.toLocaleString()}</span>
           </div>
           {/* Progress bar */}
           <div className="h-2 rounded-full bg-muted overflow-hidden">
