@@ -3,6 +3,7 @@
  * Real DB data for nearby restaurants.
  */
 import { useState } from "react";
+import { useDinoPageAudit } from "@/hooks/useDinoPageAudit";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -30,6 +31,7 @@ export default function FoodHub() {
   const [search, setSearch] = useState("");
   const [activeFilter, setActiveFilter] = useState("All");
   const navigate = useNavigate();
+  useDinoPageAudit({ actorType: "anonymous", pageKey: "food_home" });
 
   const { data: restaurants = [] } = useQuery({
     queryKey: ["food-hub-restaurants"],
