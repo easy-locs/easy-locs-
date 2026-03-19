@@ -23,7 +23,11 @@ export async function evaluateExpansionOpportunities(countryCode: string): Promi
     .eq("country_code", countryCode)
     .not("city", "is", null);
 
-  const uniqueCities: string[] = [...new Set((cities ?? []).map((c: any) => c.city as string).filter(Boolean))];
+  const citySet = new Set<string>();
+  for (const c of (cities ?? []) as any[]) {
+    if (c?.city) citySet.add(c.city as string);
+  }
+  const uniqueCities = Array.from(citySet);
 
   const opportunities: ExpansionOpportunity[] = [];
 
