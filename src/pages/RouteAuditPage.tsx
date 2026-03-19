@@ -67,7 +67,7 @@ export default function RouteAuditPage() {
                 key={r.path}
                 className="flex items-center gap-2 border border-border rounded-lg px-3 py-2"
               >
-                <CheckCircle className="w-4 h-4 text-green-500 shrink-0" />
+                <CheckCircle className="w-4 h-4 text-primary shrink-0" />
                 <span className="text-sm font-medium text-foreground">{r.label}</span>
                 <code className="text-xs text-muted-foreground ml-auto truncate max-w-[200px]">
                   {r.path}
