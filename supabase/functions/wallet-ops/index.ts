@@ -14,7 +14,6 @@ const corsHeaders = {
 const MAX_PIN_ATTEMPTS = 5;
 const LOCKOUT_MINUTES = 15;
 
-// ── Crypto: HMAC-SHA256 with salt ─────────────────────────
 async function generateSalt(): Promise<string> {
   const buf = new Uint8Array(32);
   crypto.getRandomValues(buf);
@@ -38,7 +37,6 @@ async function verifyHash(pin: string, stored: string): Promise<boolean> {
   return diff === 0;
 }
 
-// ── Helpers ───────────────────────────────────────────────
 function ok(data: unknown) {
   return new Response(JSON.stringify(data), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
 }
@@ -56,7 +54,6 @@ serve(async (req) => {
   const sb = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, { auth: { persistSession: false } });
 
   try {
-    // Auth
     const token = req.headers.get("Authorization")?.replace("Bearer ", "");
     if (!token) return err("Unauthorized", 401);
     const { data: ud, error: ue } = await sb.auth.getUser(token);
@@ -66,15 +63,12 @@ serve(async (req) => {
     const body = await req.json();
     const { action } = body;
 
-    // ═══════════════════════════════════════════════════════
-    // SET PIN
-    // ═══════════════════════════════════════════════════════
+    // ═══ SET PIN ═══
     if (action === "set_pin") {
       const { wallet_account_id, pin } = body;
       if (!pin || !/^\d{6}$/.test(pin)) return err("PIN must be exactly 6 digits");
       if (!wallet_account_id) return err("wallet_account_id required");
 
-      // Verify ownership
       const { data: w } = await sb.from("wallet_accounts").select("owner_user_id").eq("id", wallet_account_id).single();
       if (!w || w.owner_user_id !== userId) return err("Not your wallet", 403);
 
@@ -93,9 +87,7 @@ serve(async (req) => {
       return ok({ success: true });
     }
 
-    // ═══════════════════════════════════════════════════════
-    // VERIFY PIN
-    // ═══════════════════════════════════════════════════════
+    // ═══ VERIFY PIN ═══
     if (action === "verify_pin") {
       const { wallet_account_id, pin } = body;
       if (!pin || !wallet_account_id) return err("wallet_account_id and pin required");
@@ -103,10 +95,9 @@ serve(async (req) => {
       const { data: p } = await sb.from("wallet_pins").select("*").eq("wallet_account_id", wallet_account_id).single();
       if (!p) return err("No PIN set");
 
-      // Lockout check
       if (p.locked_until && new Date(p.locked_until) > new Date()) {
         const mins = Math.ceil((new Date(p.locked_until).getTime() - Date.now()) / 60000);
-        await audit(sb, userId, "pin_attempt_locked", { wallet_account_id, mins_remaining: mins });
+        await audit(sb, userId, "pin_attempt_locked", { wallet_account_id });
         return ok({ verified: false, locked: true, locked_until: p.locked_until, error: `Locked for ${mins} min` });
       }
 
@@ -126,14 +117,12 @@ serve(async (req) => {
       return ok({ verified: false, attempts_remaining: MAX_PIN_ATTEMPTS - newAttempts, error: `Wrong PIN (${MAX_PIN_ATTEMPTS - newAttempts} left)` });
     }
 
-    // ═══════════════════════════════════════════════════════
-    // AUTHORIZE PAYMENT
-    // ═══════════════════════════════════════════════════════
+    // ═══ AUTHORIZE PAYMENT ═══
     if (action === "authorize") {
       const { order_id, customer_wallet_id, amount, pin } = body;
       if (!order_id || !customer_wallet_id || !amount || !pin) return err("Missing required fields");
 
-      // Verify PIN first
+      // Verify PIN
       const { data: p } = await sb.from("wallet_pins").select("*").eq("wallet_account_id", customer_wallet_id).single();
       if (!p) return err("No PIN set on wallet");
       if (p.locked_until && new Date(p.locked_until) > new Date()) return err("Wallet locked");
@@ -147,10 +136,9 @@ serve(async (req) => {
         return err("Invalid PIN");
       }
 
-      // Reset PIN failures on success
       await sb.from("wallet_pins").update({ failed_attempts: 0, locked_until: null, last_verified_at: new Date().toISOString() }).eq("wallet_account_id", customer_wallet_id);
 
-      // Idempotency: check if already authorized
+      // Idempotency
       const { data: existingOrder } = await sb.from("orders").select("wallet_status").eq("id", order_id).single();
       if (existingOrder?.wallet_status === "authorized" || existingOrder?.wallet_status === "captured" || existingOrder?.wallet_status === "settled") {
         return ok({ already_processed: true, wallet_status: existingOrder.wallet_status });
@@ -160,33 +148,38 @@ serve(async (req) => {
       const { data: w } = await sb.from("wallet_accounts").select("balance_cash, balance_locked").eq("id", customer_wallet_id).single();
       if (!w || Number(w.balance_cash) < amount) return err("Insufficient balance");
 
-      // ATOMIC: lock funds + create transaction + create ledger + update order
       const newCash = Number(w.balance_cash) - amount;
       const newLocked = Number(w.balance_locked) + amount;
 
+      // Atomic: lock funds
       await sb.from("wallet_accounts").update({ balance_cash: newCash, balance_locked: newLocked, updated_at: new Date().toISOString() }).eq("id", customer_wallet_id);
 
+      // Create wallet transaction (uses actual schema: type, direction, user_id, reference_id, reference_type)
       const { data: tx } = await sb.from("wallet_transactions").insert({
-        transaction_type: "order_authorization",
-        source_wallet_id: customer_wallet_id,
-        order_id,
-        status: "authorized",
+        type: "order_payment",
+        direction: "debit",
+        user_id: userId,
         amount,
         currency: "AED",
-        metadata: { user_id: userId },
+        status: "authorized",
+        reference_type: "order",
+        reference_id: order_id,
+        description: "Payment authorization",
       }).select("id").single();
 
+      // Create ledger entry (uses actual schema: direction, entry_type, reference_id, reference_type)
       await sb.from("wallet_ledger_entries").insert({
-        transaction_id: tx?.id,
         wallet_account_id: customer_wallet_id,
+        direction: "debit",
         entry_type: "lock",
         amount,
         currency: "AED",
-        balance_before: Number(w.balance_cash),
-        balance_after: newCash,
-        value_type: "cash",
+        reference_type: "wallet_transaction",
+        reference_id: tx?.id,
+        status: "posted",
       });
 
+      // Update order
       await sb.from("orders").update({
         payment_status: "authorized",
         wallet_status: "authorized",
@@ -198,43 +191,35 @@ serve(async (req) => {
       return ok({ success: true, transaction_id: tx?.id });
     }
 
-    // ═══════════════════════════════════════════════════════
-    // CAPTURE PAYMENT
-    // ═══════════════════════════════════════════════════════
+    // ═══ CAPTURE ═══
     if (action === "capture") {
       const { order_id } = body;
       if (!order_id) return err("order_id required");
 
-      const { data: o } = await sb.from("orders").select("wallet_status, payment_status").eq("id", order_id).single();
+      const { data: o } = await sb.from("orders").select("wallet_status").eq("id", order_id).single();
       if (!o) return err("Order not found");
       if (o.wallet_status !== "authorized") return err(`Cannot capture from status: ${o.wallet_status}`);
 
       await sb.from("orders").update({ payment_status: "held_in_escrow", wallet_status: "captured" }).eq("id", order_id);
-      await sb.from("wallet_transactions").update({ status: "captured" }).eq("order_id", order_id).eq("transaction_type", "order_authorization");
+      await sb.from("wallet_transactions").update({ status: "captured" }).eq("reference_id", order_id).eq("reference_type", "order");
 
       await audit(sb, userId, "payment_captured", { order_id });
       return ok({ success: true });
     }
 
-    // ═══════════════════════════════════════════════════════
-    // SETTLE PAYMENT
-    // ═══════════════════════════════════════════════════════
+    // ═══ SETTLE ═══
     if (action === "settle") {
       const { order_id } = body;
       if (!order_id) return err("order_id required");
 
       const { data: o } = await sb.from("orders").select("wallet_status, customer_wallet_id, gross_amount").eq("id", order_id).single();
       if (!o) return err("Order not found");
+      if (o.wallet_status === "settled") return ok({ already_settled: true });
       if (o.wallet_status !== "captured" && o.wallet_status !== "authorized") return err(`Cannot settle from status: ${o.wallet_status}`);
 
-      // Idempotency
-      if (o.wallet_status === "settled") return ok({ already_settled: true });
-
-      // Get splits
       const { data: splits } = await sb.from("wallet_order_splits").select("*").eq("order_id", order_id).eq("split_status", "pending");
       if (!splits?.length) return err("No pending splits");
 
-      // Credit each party
       for (const split of splits) {
         if (split.net_amount <= 0) continue;
         const { data: dw } = await sb.from("wallet_accounts").select("balance_cash").eq("id", split.wallet_account_id).single();
@@ -247,12 +232,13 @@ serve(async (req) => {
 
         await sb.from("wallet_ledger_entries").insert({
           wallet_account_id: split.wallet_account_id,
-          entry_type: "credit",
+          direction: "credit",
+          entry_type: "settlement",
           amount: split.net_amount,
           currency: "AED",
-          balance_before: Number(dw.balance_cash),
-          balance_after: Number(dw.balance_cash) + split.net_amount,
-          value_type: "cash",
+          reference_type: "order",
+          reference_id: order_id,
+          status: "posted",
         });
 
         await sb.from("wallet_order_splits").update({ split_status: "settled", updated_at: new Date().toISOString() }).eq("id", split.id);
@@ -270,15 +256,13 @@ serve(async (req) => {
       }
 
       await sb.from("orders").update({ payment_status: "settled", wallet_status: "settled", settlement_status: "settled" }).eq("id", order_id);
-      await sb.from("wallet_transactions").update({ status: "settled" }).eq("order_id", order_id);
+      await sb.from("wallet_transactions").update({ status: "settled" }).eq("reference_id", order_id).eq("reference_type", "order");
 
       await audit(sb, userId, "payment_settled", { order_id, splits_count: splits.length });
       return ok({ success: true });
     }
 
-    // ═══════════════════════════════════════════════════════
-    // REVERSE PAYMENT
-    // ═══════════════════════════════════════════════════════
+    // ═══ REVERSE ═══
     if (action === "reverse") {
       const { order_id } = body;
       if (!order_id) return err("order_id required");
@@ -288,7 +272,6 @@ serve(async (req) => {
       if (o.wallet_status === "reversed") return ok({ already_reversed: true });
       if (o.wallet_status === "settled") return err("Cannot reverse settled order — use refund");
 
-      // Refund customer
       if (o.customer_wallet_id) {
         const { data: cw } = await sb.from("wallet_accounts").select("balance_cash, balance_locked").eq("id", o.customer_wallet_id).single();
         if (cw) {
@@ -300,19 +283,20 @@ serve(async (req) => {
 
           await sb.from("wallet_ledger_entries").insert({
             wallet_account_id: o.customer_wallet_id,
-            entry_type: "unlock",
+            direction: "credit",
+            entry_type: "reversal",
             amount: Number(o.gross_amount),
             currency: "AED",
-            balance_before: Number(cw.balance_cash),
-            balance_after: Number(cw.balance_cash) + Number(o.gross_amount),
-            value_type: "cash",
+            reference_type: "order",
+            reference_id: order_id,
+            status: "posted",
           });
         }
       }
 
       await sb.from("wallet_order_splits").update({ split_status: "reversed", updated_at: new Date().toISOString() }).eq("order_id", order_id);
       await sb.from("orders").update({ payment_status: "reversed", wallet_status: "reversed", settlement_status: "reversed", status: "cancelled" }).eq("id", order_id);
-      await sb.from("wallet_transactions").update({ status: "reversed" }).eq("order_id", order_id);
+      await sb.from("wallet_transactions").update({ status: "reversed" }).eq("reference_id", order_id).eq("reference_type", "order");
 
       await audit(sb, userId, "payment_reversed", { order_id });
       return ok({ success: true });
