@@ -7,24 +7,26 @@ export default function AppNotFoundPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-6">
       <div className="max-w-md w-full text-center space-y-6">
-        <h1 className="text-4xl font-bold text-foreground">404</h1>
-        <p className="text-lg text-muted-foreground">Page introuvable</p>
-        <p className="text-sm text-muted-foreground/70">
-          Route demandée : <code className="bg-muted px-2 py-0.5 rounded">{location.pathname}</code>
-        </p>
+        <div className="space-y-2">
+          <h1 className="text-5xl font-bold text-foreground">404</h1>
+          <p className="text-lg text-muted-foreground">Page introuvable</p>
+          <p className="text-sm text-muted-foreground/70">
+            Route demandée : <code className="bg-muted px-2 py-0.5 rounded">{location.pathname}</code>
+          </p>
+        </div>
 
         <div className="grid grid-cols-2 gap-3 pt-4">
           <Link to={routes.merchantPos()} className="bg-primary text-primary-foreground rounded-lg px-4 py-3 text-sm font-medium hover:opacity-90">
-            POS Marchand
+            Merchant POS
           </Link>
           <Link to={routes.merchantKitchen()} className="bg-primary text-primary-foreground rounded-lg px-4 py-3 text-sm font-medium hover:opacity-90">
-            Cuisine
+            Merchant Kitchen
           </Link>
           <Link to={routes.merchantDelivery()} className="bg-secondary text-secondary-foreground rounded-lg px-4 py-3 text-sm font-medium hover:opacity-90">
-            Monitor Livraison
+            Delivery Monitor
           </Link>
           <Link to={routes.driverMissions()} className="bg-secondary text-secondary-foreground rounded-lg px-4 py-3 text-sm font-medium hover:opacity-90">
-            Missions livreur
+            Driver Missions
           </Link>
           <Link to={routes.walletDiagnostics()} className="bg-muted text-muted-foreground rounded-lg px-4 py-3 text-sm font-medium hover:opacity-90">
             Wallet Diagnostics

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { resolveQrTarget } from "@/lib/qr/qr-resolver";
+import { PageErrorState, PageLoadingState } from "@/components/page-states";
 
 export default function QrEntryPage() {
   const { targetCode } = useParams<{ targetCode: string }>();
@@ -8,13 +9,22 @@ export default function QrEntryPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!targetCode) return;
+    if (!targetCode) {
+      setError("QR code missing");
+      return;
+    }
 
     (async () => {
       try {
         const target = await resolveQrTarget(targetCode);
+
+        if (!target?.merchantProfileId) {
+          throw new Error("QR target missing merchant");
+        }
+
         navigate(
-          `/merchant/pos?merchant=${target.merchantProfileId}&target=${target.targetCode}`
+          `/merchant/pos?merchant=${encodeURIComponent(target.merchantProfileId)}&target=${encodeURIComponent(target.targetCode)}`,
+          { replace: true }
         );
       } catch (e: any) {
         setError(e.message ?? "QR invalid");
@@ -23,16 +33,8 @@ export default function QrEntryPage() {
   }, [targetCode, navigate]);
 
   if (error) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background text-foreground">
-        <p className="text-destructive text-lg">{error}</p>
-      </div>
-    );
+    return <PageErrorState title="QR error" message={error} />;
   }
 
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-background text-foreground">
-      <p className="text-muted-foreground">Opening menu…</p>
-    </div>
-  );
+  return <PageLoadingState title="Opening menu..." />;
 }
