@@ -7,10 +7,14 @@ export class WebRtcCallManager {
   private localStream: MediaStream | null = null;
   private remoteStream: MediaStream = new MediaStream();
 
-  constructor(
-    iceServers: RTCIceServer[] = [{ urls: "stun:stun.l.google.com:19302" }]
-  ) {
-    this.pc = new RTCPeerConnection({ iceServers });
+  constructor() {
+    this.pc = new RTCPeerConnection({
+      iceServers: [
+        { urls: "stun:stun.l.google.com:19302" },
+        { urls: "stun:stun1.l.google.com:19302" },
+      ],
+    });
+
     this.pc.ontrack = (event) => {
       for (const track of event.streams[0].getTracks()) {
         this.remoteStream.addTrack(track);
@@ -23,9 +27,11 @@ export class WebRtcCallManager {
       audio: true,
       video,
     });
+
     for (const track of this.localStream.getTracks()) {
       this.pc.addTrack(track, this.localStream);
     }
+
     return this.localStream;
   }
 
@@ -61,11 +67,15 @@ export class WebRtcCallManager {
   }
 
   setMuted(muted: boolean) {
-    this.localStream?.getAudioTracks().forEach((t) => (t.enabled = !muted));
+    this.localStream?.getAudioTracks().forEach((t) => {
+      t.enabled = !muted;
+    });
   }
 
-  stopVideo(disabled: boolean) {
-    this.localStream?.getVideoTracks().forEach((t) => (t.enabled = !disabled));
+  setVideoEnabled(enabled: boolean) {
+    this.localStream?.getVideoTracks().forEach((t) => {
+      t.enabled = enabled;
+    });
   }
 
   destroy() {
