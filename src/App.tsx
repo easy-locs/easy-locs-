@@ -356,6 +356,7 @@ const AdminRestaurantTestSeederPage = safeLazy(() => import("./pages/AdminRestau
 const AdminRuntimeAuditPage = safeLazy(() => import("./pages/AdminRuntimeAuditPage"), "AdminRuntimeAuditPage");
 const AdminRuntimeQuickLinksPage = safeLazy(() => import("./pages/AdminRuntimeQuickLinksPage"), "AdminRuntimeQuickLinksPage");
 const AdminMasterDebugPage = safeLazy(() => import("./pages/AdminMasterDebugPage"), "AdminMasterDebugPage");
+const AdminDinoControlPanel = safeLazy(() => import("./pages/admin/AdminDinoControlPanel"), "AdminDinoControlPanel");
 
 // City sub-page wrappers
 const CityServicesPage = () => <CityHubPage subPage="services" />;
