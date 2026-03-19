@@ -359,6 +359,8 @@ const AdminRuntimeAuditPage = safeLazy(() => import("./pages/AdminRuntimeAuditPa
 const AdminRuntimeQuickLinksPage = safeLazy(() => import("./pages/AdminRuntimeQuickLinksPage"), "AdminRuntimeQuickLinksPage");
 const AdminMasterDebugPage = safeLazy(() => import("./pages/AdminMasterDebugPage"), "AdminMasterDebugPage");
 const AdminDinoControlPanel = safeLazy(() => import("./pages/admin/AdminDinoControlPanel"), "AdminDinoControlPanel");
+const AdminMarketplaceOpsPage = safeLazy(() => import("./pages/admin/AdminMarketplaceOpsPage"), "AdminMarketplaceOpsPage");
+const SettingsPaymentMethodsPage = safeLazy(() => import("./pages/settings/SettingsPaymentMethods"), "SettingsPaymentMethods");
 
 // City sub-page wrappers
 const CityServicesPage = () => <CityHubPage subPage="services" />;
@@ -775,6 +777,8 @@ const App = () => (
                <Route path="/admin/master-debug" element={<ProtectedRoute><AdminMasterDebugPage /></ProtectedRoute>} />
                <Route path="/admin/dino-control" element={<ProtectedRoute><AdminDinoControlPanel /></ProtectedRoute>} />
                <Route path="/admin/ui-engine" element={<ProtectedRoute><AdminUiEnginePage /></ProtectedRoute>} />
+               <Route path="/admin/marketplace-ops" element={<ProtectedRoute><AdminMarketplaceOpsPage /></ProtectedRoute>} />
+               <Route path="/settings/payment-methods" element={<ProtectedRoute><SettingsPaymentMethodsPage /></ProtectedRoute>} />
               <Route path="/city/:countryCode/:city/:vertical/:locale" element={<CityVerticalPage />} />
 
               {/* Guest / Public */}
