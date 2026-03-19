@@ -401,6 +401,8 @@ const seoPublicPrefixes = [
 const OrbitSessionGuard = () => { useOrbitSessionInit(); return null; };
 /** Centralized realtime: replaces usePresence, useOrbitCallSync, RealtimeMessageToast */
 const RealtimeHubGuard = () => { useRealtimeHub(); return null; };
+/** Install orchestration engine */
+const OrchestrationGuard = () => { useOrchestration(); return null; };
 
 // Apply lightweight mode class on slow devices
 if (typeof window !== "undefined") {
