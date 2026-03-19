@@ -122,7 +122,7 @@ export async function cancelBeforePickup(orderId: string) {
 
   // Reverse payment
   try {
-    await reverseOrderPayment({ orderId, reason: "cancelled_before_pickup" });
+    await reverseOrderPayment({ orderId });
   } catch (e) {
     console.warn("[delivery-settlement] Reverse on cancel skipped:", e);
   }
