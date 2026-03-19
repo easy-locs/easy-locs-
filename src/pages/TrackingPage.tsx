@@ -1,37 +1,48 @@
 /**
- * TrackingPage — Live order status timeline.
+ * TrackingPage — Live order status timeline with support ticket integration.
  * Route: /tracking/:orderId
  */
+import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowLeft, CheckCircle2, Clock, Package, Truck, MapPin, Headphones } from "lucide-react";
+import { ArrowLeft, CheckCircle2, Clock, Package, Truck, MapPin, Headphones, ChefHat, Search, CreditCard } from "lucide-react";
 import { motion } from "framer-motion";
+import { OrderStatusChip } from "@/components/orders/OrderStatusChip";
+import { getStatusMeta, normalizeStatus } from "@/lib/orders/order-status";
+import SupportTicketForm from "@/components/support/SupportTicketForm";
 
 const STEPS = [
-  { key: "pending", label: "Order placed", icon: Clock },
+  { key: "pending_payment", label: "Order placed", icon: CreditCard },
+  { key: "paid", label: "Payment received", icon: CheckCircle2 },
   { key: "confirmed", label: "Confirmed", icon: CheckCircle2 },
-  { key: "preparing", label: "Preparing", icon: Package },
-  { key: "ready", label: "Ready", icon: Package },
+  { key: "preparing", label: "Preparing", icon: ChefHat },
+  { key: "ready_for_pickup", label: "Ready", icon: Package },
+  { key: "driver_search", label: "Finding driver", icon: Search },
+  { key: "driver_assigned", label: "Driver assigned", icon: Truck },
+  { key: "picked_up", label: "Picked up", icon: Package },
   { key: "on_the_way", label: "On the way", icon: Truck },
   { key: "delivered", label: "Delivered", icon: MapPin },
+  { key: "completed", label: "Completed", icon: CheckCircle2 },
 ];
 
 function getStepIndex(status: string) {
-  const idx = STEPS.findIndex((s) => s.key === status);
+  const normalized = normalizeStatus(status);
+  const idx = STEPS.findIndex((s) => s.key === normalized);
   return idx >= 0 ? idx : 0;
 }
 
 export default function TrackingPage() {
   const { orderId } = useParams<{ orderId: string }>();
   const navigate = useNavigate();
+  const [showSupport, setShowSupport] = useState(false);
 
   const { data: order, isLoading } = useQuery({
     queryKey: ["tracking-order", orderId],
     queryFn: async () => {
       const { data } = await (supabase as any)
         .from("orders")
-        .select("id, status, order_type, created_at, notes")
+        .select("id, status, order_type, created_at, notes, total_amount, currency")
         .eq("id", orderId)
         .maybeSingle();
       return data;
@@ -42,20 +53,23 @@ export default function TrackingPage() {
     placeholderData: (prev: any) => prev,
   });
 
-  const currentStep = getStepIndex(order?.status || "pending");
+  const normalizedStatus = normalizeStatus(order?.status || "pending_payment");
+  const currentStep = getStepIndex(normalizedStatus);
+  const statusMeta = getStatusMeta(normalizedStatus);
+  const isTerminal = statusMeta.isTerminal;
 
   return (
     <div className="min-h-[100dvh] flex flex-col bg-background">
-      {/* Header */}
       <header className="flex items-center gap-3 px-4 pt-4 pb-3">
         <button onClick={() => navigate(-1)} className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-95 transition-transform" style={{ background: "hsl(var(--muted))" }}>
           <ArrowLeft className="w-4.5 h-4.5" />
         </button>
         <h1 className="text-lg font-bold text-foreground">Order Tracking</h1>
+        {order && <OrderStatusChip status={normalizedStatus} variant="customer" />}
       </header>
 
       {/* Map placeholder */}
-      <div className="mx-4 rounded-2xl overflow-hidden" style={{ height: 180, background: "hsl(var(--muted))" }}>
+      <div className="mx-4 rounded-2xl overflow-hidden" style={{ height: 160, background: "hsl(var(--muted))" }}>
         <div className="w-full h-full flex items-center justify-center">
           <div className="text-center">
             <MapPin className="w-8 h-8 mx-auto text-muted-foreground/40" />
@@ -65,7 +79,7 @@ export default function TrackingPage() {
       </div>
 
       {/* ETA banner */}
-      {!isLoading && order && currentStep < STEPS.length - 1 && (
+      {!isLoading && order && !isTerminal && (
         <div className="mx-4 mt-3 rounded-2xl p-4 flex items-center gap-3" style={{ background: "hsl(var(--primary) / 0.08)" }}>
           <Clock className="w-5 h-5 shrink-0" style={{ color: "hsl(var(--primary))" }} />
           <div>
@@ -82,13 +96,23 @@ export default function TrackingPage() {
         </div>
       )}
 
+      {/* Not found */}
+      {!isLoading && !order && (
+        <div className="flex-1 flex flex-col items-center justify-center gap-3 px-4">
+          <Package className="w-12 h-12 text-muted-foreground" />
+          <p className="text-sm font-semibold text-muted-foreground">Order not found</p>
+          <button onClick={() => navigate("/my-orders")} className="text-xs font-bold text-primary">View all orders</button>
+        </div>
+      )}
+
       {/* Timeline */}
       {!isLoading && order && (
-        <div className="px-6 mt-4 pb-24">
+        <div className="px-6 mt-4 pb-24 space-y-6">
           <div className="space-y-0">
             {STEPS.map((step, i) => {
               const done = i <= currentStep;
               const active = i === currentStep;
+              if (!done && i > currentStep + 2) return null; // hide far future steps
               return (
                 <div key={step.key} className="flex gap-4">
                   <div className="flex flex-col items-center">
@@ -101,37 +125,42 @@ export default function TrackingPage() {
                     >
                       <step.icon className="w-4 h-4" style={{ color: done ? "hsl(var(--primary-foreground))" : "hsl(var(--muted-foreground))" }} />
                     </div>
-                    {i < STEPS.length - 1 && (
+                    {i < STEPS.length - 1 && i <= currentStep + 1 && (
                       <div className="w-0.5 h-8 my-1" style={{ background: i < currentStep ? "hsl(var(--primary))" : "hsl(var(--border))" }} />
                     )}
                   </div>
                   <div className="pt-1.5">
-                    <p className={`text-sm font-semibold ${done ? "text-foreground" : "text-muted-foreground"}`}>
-                      {step.label}
-                    </p>
-                    {active && (
-                      <p className="text-xs text-muted-foreground mt-0.5">In progress…</p>
-                    )}
+                    <p className={`text-sm font-semibold ${done ? "text-foreground" : "text-muted-foreground"}`}>{step.label}</p>
+                    {active && <p className="text-xs text-muted-foreground mt-0.5">In progress…</p>}
                   </div>
                 </div>
               );
             })}
           </div>
 
-          {/* Support shortcut */}
-          <button
-            onClick={() => navigate("/settings/support")}
-            className="w-full mt-6 flex items-center gap-3 p-3.5 rounded-2xl active:scale-[0.98] transition-transform"
-            style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border) / 0.12)" }}
-          >
-            <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: "hsl(var(--primary) / 0.08)" }}>
-              <Headphones className="w-4.5 h-4.5" style={{ color: "hsl(var(--primary))" }} />
-            </div>
-            <div className="flex-1 text-left">
-              <p className="text-sm font-semibold text-foreground">Need help?</p>
-              <p className="text-[11px] text-muted-foreground">Contact support about this order</p>
-            </div>
-          </button>
+          {/* Support ticket form */}
+          {showSupport ? (
+            <SupportTicketForm
+              orderId={orderId}
+              defaultType="order_issue"
+              onClose={() => setShowSupport(false)}
+              onSuccess={() => setShowSupport(false)}
+            />
+          ) : (
+            <button
+              onClick={() => setShowSupport(true)}
+              className="w-full flex items-center gap-3 p-3.5 rounded-2xl active:scale-[0.98] transition-transform"
+              style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border) / 0.12)" }}
+            >
+              <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: "hsl(var(--primary) / 0.08)" }}>
+                <Headphones className="w-4.5 h-4.5" style={{ color: "hsl(var(--primary))" }} />
+              </div>
+              <div className="flex-1 text-left">
+                <p className="text-sm font-semibold text-foreground">Need help?</p>
+                <p className="text-[11px] text-muted-foreground">Report an issue with this order</p>
+              </div>
+            </button>
+          )}
         </div>
       )}
     </div>
