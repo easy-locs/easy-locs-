@@ -35,3 +35,28 @@ export function emitPaymentCompleted(orderId: string, amount: number) {
 export function emitDriverAssigned(orderId: string, driverId: string) {
   platformBus.emit("tracking:started", { orderId, driverId }, "tracking");
 }
+
+// Wallet commerce events
+export function emitWalletIntentPrepared(orderId: string, amount: number) {
+  platformBus.emit("wallet:payment_completed", { orderId, amount, stage: "intent_prepared" }, "wallet");
+}
+
+export function emitWalletAuthorized(orderId: string, amount: number) {
+  platformBus.emit("wallet:payment_completed", { orderId, amount, stage: "authorized" }, "wallet");
+}
+
+export function emitWalletCaptured(orderId: string) {
+  platformBus.emit("wallet:payment_completed", { orderId, stage: "captured" }, "wallet");
+}
+
+export function emitWalletSettled(orderId: string) {
+  platformBus.emit("wallet:payment_completed", { orderId, stage: "settled" }, "wallet");
+}
+
+export function emitWalletReversed(orderId: string) {
+  platformBus.emit("wallet:payment_completed", { orderId, stage: "reversed" }, "wallet");
+}
+
+export function emitOrderValidated(orderId: string) {
+  platformBus.emit("storefront:order_placed", { orderId, action: "validated" }, "marketplace");
+}
