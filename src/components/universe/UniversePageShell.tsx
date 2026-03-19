@@ -83,8 +83,8 @@ export default function UniversePageShell({
       {/* Filter chips */}
       {filters && <div className="px-4 mt-3 flex gap-2 overflow-x-auto no-scrollbar">{filters}</div>}
 
-      {/* Content */}
-      <div className="px-4 mt-5">
+      {/* Content — stable layout: keep structure identical between states */}
+      <div className="px-4 mt-5" style={{ minHeight: 200 }}>
         {loading ? (
           <div className="flex flex-col items-center justify-center py-16 gap-3">
             <motion.div
