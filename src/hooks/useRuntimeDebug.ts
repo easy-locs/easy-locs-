@@ -10,8 +10,8 @@ export function useRuntimeDebug() {
   const [events, setEvents] = useState<DebugEventItem[]>([]);
 
   useEffect(() => {
-    setEvents(loadDebugEvents());
-    return subscribeDebugEvents(setEvents);
+    const unsub = subscribeDebugEvents(setEvents);
+    return () => { unsub(); };
   }, []);
 
   return {
