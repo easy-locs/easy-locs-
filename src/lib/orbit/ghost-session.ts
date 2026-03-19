@@ -3,47 +3,65 @@
  */
 
 export interface GhostSession {
-  id: string;
+  sessionId: string;
   alias: string;
   createdAt: string;
   expiresAt: string;
-  active: boolean;
 }
 
-function randomId(len = 24) {
+const GHOST_SESSION_KEY = "el_ghost_session_v1";
+const DEFAULT_TTL_MS = 24 * 60 * 60 * 1000;
+
+function rand(size = 10) {
   const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
+  const bytes = crypto.getRandomValues(new Uint8Array(size));
   let out = "";
-  const bytes = crypto.getRandomValues(new Uint8Array(len));
-  for (let i = 0; i < len; i++) out += chars[bytes[i] % chars.length];
+  for (let i = 0; i < size; i++) out += chars[bytes[i] % chars.length];
   return out;
 }
 
-export function createGhostSession(ttlMinutes = 60): GhostSession {
+export function createGhostSession(ttlMs = DEFAULT_TTL_MS): GhostSession {
   const now = Date.now();
-  return {
-    id: `ghost_${randomId(20)}`,
-    alias: `anon_${randomId(8)}`,
+  const session: GhostSession = {
+    sessionId: `ghost_${rand(18)}`,
+    alias: `ghost-${rand(6)}`,
     createdAt: new Date(now).toISOString(),
-    expiresAt: new Date(now + ttlMinutes * 60_000).toISOString(),
-    active: true,
+    expiresAt: new Date(now + ttlMs).toISOString(),
   };
+
+  localStorage.setItem(GHOST_SESSION_KEY, JSON.stringify(session));
+  return session;
 }
 
-export function isGhostSessionExpired(session: GhostSession) {
-  return new Date(session.expiresAt).getTime() <= Date.now();
+export function getGhostSession(): GhostSession | null {
+  const raw = localStorage.getItem(GHOST_SESSION_KEY);
+  if (!raw) return null;
+
+  try {
+    const parsed = JSON.parse(raw) as GhostSession;
+    if (new Date(parsed.expiresAt).getTime() < Date.now()) {
+      localStorage.removeItem(GHOST_SESSION_KEY);
+      return null;
+    }
+    return parsed;
+  } catch {
+    return null;
+  }
 }
 
-export function rotateGhostAlias(session: GhostSession): GhostSession {
-  return {
-    ...session,
-    alias: `anon_${randomId(8)}`,
+export function rotateGhostAlias(): GhostSession | null {
+  const current = getGhostSession();
+  if (!current) return null;
+
+  const updated: GhostSession = {
+    ...current,
+    alias: `ghost-${rand(6)}`,
   };
+
+  localStorage.setItem(GHOST_SESSION_KEY, JSON.stringify(updated));
+  return updated;
 }
 
-export function closeGhostSession(session: GhostSession): GhostSession {
-  return {
-    ...session,
-    active: false,
-    expiresAt: new Date().toISOString(),
-  };
+export function clearGhostSession() {
+  localStorage.removeItem(GHOST_SESSION_KEY);
 }
