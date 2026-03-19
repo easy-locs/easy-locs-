@@ -212,3 +212,36 @@ export function useStableCallback<T extends (...args: any[]) => any>(fn: T): T {
   ref.current = fn;
   return useCallback((...args: any[]) => ref.current(...args), []) as T;
 }
+
+// ── Lightweight mode ────────────────────────────────────────────────
+
+/**
+ * Detect if device benefits from reduced visual effects.
+ */
+export function isLightweightMode(): boolean {
+  if (typeof window === "undefined") return false;
+  if (window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches) return true;
+  if ((navigator as any).deviceMemory && (navigator as any).deviceMemory < 4) return true;
+  if (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4) return true;
+  const ua = navigator.userAgent;
+  if (/iPhone|iPad/.test(ua) && /Safari/.test(ua)) return true;
+  return false;
+}
+
+/** Performance timing mark */
+export function perfMark(label: string) {
+  if (typeof performance !== "undefined") performance.mark(label);
+}
+
+/** Performance timing measure — warns if > 100ms */
+export function perfMeasure(label: string, startMark: string) {
+  if (typeof performance !== "undefined") {
+    try {
+      performance.measure(label, startMark);
+      const entry = performance.getEntriesByName(label).pop();
+      if (entry && entry.duration > 100) {
+        console.warn(`[perf] ${label}: ${Math.round(entry.duration)}ms`);
+      }
+    } catch {}
+  }
+}
