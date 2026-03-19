@@ -72,6 +72,17 @@ const RentalManagement = safeLazy(() => import("./pages/RentalManagement"), "Ren
 const Finances = safeLazy(() => import("./pages/Finances"), "Finances");
 const Interventions = safeLazy(() => import("./pages/Interventions"), "Interventions");
 
+// Real Estate Module
+const RealEstateModulePage = safeLazy(() => import("./pages/real-estate/RealEstateModule"), "RealEstateModule");
+const REPropertiesPage = safeLazy(() => import("./pages/real-estate/PropertiesPage"), "REProperties");
+const REUnitsPage = safeLazy(() => import("./pages/real-estate/UnitsPage"), "REUnits");
+const RETenantsPage = safeLazy(() => import("./pages/real-estate/TenantsPage"), "RETenants");
+const RELeasesPage = safeLazy(() => import("./pages/real-estate/LeasesPage"), "RELeases");
+const REPaymentsPage = safeLazy(() => import("./pages/real-estate/PaymentsPage"), "REPayments");
+const REDocumentsPage = safeLazy(() => import("./pages/real-estate/DocumentsPage"), "REDocuments");
+const REPropertyDetailPage = safeLazy(() => import("./pages/real-estate/PropertyDetailPage"), "REPropertyDetail");
+const RELeaseDetailPage = safeLazy(() => import("./pages/real-estate/LeaseDetailPage"), "RELeaseDetail");
+
 const Tasks = safeLazy(() => import("./pages/Tasks"), "Tasks");
 const Messages = safeLazy(() => import("./pages/Messages"), "Messages");
 const CommunicationCenter = safeLazy(() => import("./pages/CommunicationCenter"), "CommunicationCenter");
@@ -501,10 +512,22 @@ const App = () => (
               <Route path="/account/:orgId" element={<AccountShowcase />} />
               <Route path="/properties" element={<PropertiesShowcase />} />
 
-              {/* Real Estate */}
+              {/* Real Estate Module */}
+              <Route path="/real-estate" element={<RealEstateModulePage />}>
+                <Route index element={<REPropertiesPage />} />
+                <Route path="units" element={<REUnitsPage />} />
+                <Route path="tenants" element={<RETenantsPage />} />
+                <Route path="leases" element={<RELeasesPage />} />
+                <Route path="payments" element={<REPaymentsPage />} />
+                <Route path="documents" element={<REDocumentsPage />} />
+              </Route>
+              <Route path="/real-estate/property/:propertyId" element={<REPropertyDetailPage />} />
+              <Route path="/real-estate/lease/:leaseId" element={<RELeaseDetailPage />} />
+
+              {/* Real Estate Public */}
               <Route path="/top-rated" element={<RealEstateListings />} />
               <Route path="/trending" element={<RealEstateListings />} />
-              <Route path="/real-estate/:id" element={<PublicRealEstateListing />} />
+              <Route path="/real-estate-listing/:id" element={<PublicRealEstateListing />} />
 
               {/* SEO Layer pages */}
               <Route path="/concierge-services" element={<ConciergeServicesPage />} />
