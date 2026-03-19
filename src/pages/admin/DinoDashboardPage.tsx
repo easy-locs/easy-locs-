@@ -82,14 +82,17 @@ export default function DinoDashboardPage() {
 
         {report && (
           <Tabs defaultValue="quality" className="w-full">
-            <TabsList className="w-full grid grid-cols-6 mx-4 mt-3">
-              <TabsTrigger value="quality" className="text-xs gap-1"><Eye className="h-3 w-3" /> Quality</TabsTrigger>
-              <TabsTrigger value="domains" className="text-xs gap-1"><Globe className="h-3 w-3" /> Domains</TabsTrigger>
-              <TabsTrigger value="business" className="text-xs gap-1"><TrendingUp className="h-3 w-3" /> Business</TabsTrigger>
-              <TabsTrigger value="intelligence" className="text-xs gap-1"><Brain className="h-3 w-3" /> Intel</TabsTrigger>
-              <TabsTrigger value="journey" className="text-xs gap-1"><BarChart3 className="h-3 w-3" /> Journey</TabsTrigger>
-              <TabsTrigger value="automation" className="text-xs gap-1"><Zap className="h-3 w-3" /> Sync</TabsTrigger>
-            </TabsList>
+            <div className="px-4 mt-3 overflow-x-auto">
+              <TabsList className="inline-flex w-auto min-w-full">
+                <TabsTrigger value="quality" className="text-xs gap-1"><Eye className="h-3 w-3" /> Quality</TabsTrigger>
+                <TabsTrigger value="domains" className="text-xs gap-1"><Globe className="h-3 w-3" /> Domains</TabsTrigger>
+                <TabsTrigger value="business" className="text-xs gap-1"><TrendingUp className="h-3 w-3" /> Business</TabsTrigger>
+                <TabsTrigger value="intelligence" className="text-xs gap-1"><Brain className="h-3 w-3" /> Intel</TabsTrigger>
+                <TabsTrigger value="growth" className="text-xs gap-1"><Target className="h-3 w-3" /> Growth</TabsTrigger>
+                <TabsTrigger value="journey" className="text-xs gap-1"><BarChart3 className="h-3 w-3" /> Journey</TabsTrigger>
+                <TabsTrigger value="automation" className="text-xs gap-1"><Zap className="h-3 w-3" /> Sync</TabsTrigger>
+              </TabsList>
+            </div>
 
             <TabsContent value="quality" className="p-4 space-y-4">
               <QualityTab report={report} />
@@ -105,6 +108,10 @@ export default function DinoDashboardPage() {
 
             <TabsContent value="intelligence" className="p-4 space-y-4">
               <IntelligenceTab />
+            </TabsContent>
+
+            <TabsContent value="growth" className="p-4 space-y-4">
+              <GrowthTab />
             </TabsContent>
 
             <TabsContent value="journey" className="p-4 space-y-4">
@@ -468,6 +475,82 @@ function IntelligenceTab() {
           </CardContent>
         </Card>
       )}
+    </>
+  );
+}
+
+/* ─── Growth Tab (V8) ─── */
+function GrowthTab() {
+  const { data: opportunities } = useQuery({
+    queryKey: ["dino-expansion"],
+    queryFn: async () => {
+      const { data } = await supabase.from("dino_expansion_opportunities").select("*").order("gap_score", { ascending: false }).limit(20);
+      return data ?? [];
+    },
+    staleTime: 30_000,
+  });
+
+  const { data: drafts } = useQuery({
+    queryKey: ["dino-drafts"],
+    queryFn: async () => {
+      const { data } = await supabase.from("dino_draft_profiles").select("*").order("created_at", { ascending: false }).limit(20);
+      return data ?? [];
+    },
+    staleTime: 30_000,
+  });
+
+  const { data: campaigns } = useQuery({
+    queryKey: ["dino-campaigns"],
+    queryFn: async () => {
+      const { data } = await supabase.from("dino_campaigns").select("*").order("created_at", { ascending: false }).limit(10);
+      return data ?? [];
+    },
+    staleTime: 30_000,
+  });
+
+  const { data: promos } = useQuery({
+    queryKey: ["dino-promos"],
+    queryFn: async () => {
+      const { data } = await supabase.from("dino_promotion_slots").select("*").eq("active", true).order("priority", { ascending: true }).limit(10);
+      return data ?? [];
+    },
+    staleTime: 30_000,
+  });
+
+  return (
+    <>
+      <div className="grid grid-cols-2 gap-3">
+        <StatCard label="Opportunities" value={(opportunities ?? []).length} icon={<Target className="h-4 w-4" />} />
+        <StatCard label="Draft Profiles" value={(drafts ?? []).length} icon={<Users className="h-4 w-4" />} />
+        <StatCard label="Campaigns" value={(campaigns ?? []).length} icon={<Zap className="h-4 w-4" />} />
+        <StatCard label="Promo Slots" value={(promos ?? []).length} icon={<TrendingUp className="h-4 w-4" />} variant="success" />
+      </div>
+
+      <Card>
+        <CardHeader><CardTitle className="text-sm flex items-center gap-2"><Target className="h-4 w-4" /> Expansion Opportunities</CardTitle></CardHeader>
+        <CardContent className="space-y-2 max-h-48 overflow-y-auto">
+          {(opportunities ?? []).slice(0, 8).map((o: any) => (
+            <div key={o.id} className="flex items-center justify-between text-sm border-b border-border/30 pb-1 last:border-0">
+              <span className="truncate">{o.city} — {o.category}</span>
+              <Badge variant={o.priority === "critical" ? "destructive" : "secondary"} className="text-[10px]">{o.priority} · gap {o.gap_score}</Badge>
+            </div>
+          ))}
+          {(!opportunities || opportunities.length === 0) && <p className="text-sm text-muted-foreground">No expansion opportunities yet.</p>}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader><CardTitle className="text-sm">Draft Profiles Pipeline</CardTitle></CardHeader>
+        <CardContent className="space-y-2 max-h-48 overflow-y-auto">
+          {(drafts ?? []).slice(0, 8).map((d: any) => (
+            <div key={d.id} className="flex items-center justify-between text-sm border-b border-border/30 pb-1 last:border-0">
+              <span className="truncate">{d.name} · {d.city}</span>
+              <Badge variant={d.status === "active" ? "default" : "secondary"} className="text-[10px]">{d.status} · {Math.round((d.completeness ?? 0) * 100)}%</Badge>
+            </div>
+          ))}
+          {(!drafts || drafts.length === 0) && <p className="text-sm text-muted-foreground">No draft profiles yet.</p>}
+        </CardContent>
+      </Card>
     </>
   );
 }
