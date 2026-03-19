@@ -1,70 +1,85 @@
+/**
+ * QrEntryPage — Guaranteed visible debug-safe UI.
+ */
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { resolveQrTarget } from "@/lib/qr/qr-resolver";
 import { routes } from "@/lib/routes";
-import { debugLog } from "@/lib/debug/runtime-debug-bus";
-import { safeErrorMessage } from "@/lib/debug/debug-helpers";
 
 export default function QrEntryPage() {
   const { targetCode } = useParams<{ targetCode: string }>();
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [target, setTarget] = useState<any>(null);
 
   useEffect(() => {
+    console.log("[qr-entry] mounted", targetCode);
+
     if (!targetCode) {
       setError("QR code missing");
-      debugLog.error("qr", "qr_entry_missing_code", "No targetCode in route");
+      setLoading(false);
       return;
     }
 
-    debugLog.info("router", "qr_entry_opened", window.location.href);
-
     (async () => {
       try {
-        const target = await resolveQrTarget(targetCode);
-
-        if (!target.active) {
-          debugLog.warn("qr", "qr_inactive", targetCode);
-          setError("QR inactive");
-          return;
-        }
-
-        const qs = new URLSearchParams({
-          merchant: target.merchantProfileId,
-          target: target.targetCode,
-        });
-
-        if (target.tableNumber) qs.set("table", target.tableNumber);
-
-        const finalUrl = `${routes.merchantPos()}?${qs.toString()}`;
-        debugLog.success("router", "qr_redirect_ready", finalUrl, target);
-
-        navigate(finalUrl, { replace: true });
+        const resolved = await resolveQrTarget(targetCode);
+        console.log("[qr-entry] resolved", resolved);
+        setTarget(resolved);
       } catch (e: any) {
-        const msg = safeErrorMessage(e);
-        setError(msg);
-        debugLog.error("qr", "qr_entry_failed", msg);
+        console.error("[qr-entry] error", e);
+        setError(e?.message ?? "QR expiré ou invalide");
+      } finally {
+        setLoading(false);
       }
     })();
-  }, [targetCode, navigate]);
-
-  if (error) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background p-6">
-        <div className="text-center space-y-3">
-          <h1 className="text-xl font-bold text-destructive">QR expiré ou invalide</h1>
-          <p className="text-sm text-muted-foreground">{error}</p>
-          <a href="/#/discover" className="inline-block mt-2 text-sm text-primary underline">Retour</a>
-        </div>
-      </div>
-    );
-  }
+  }, [targetCode]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-6">
-      <div className="text-center space-y-2">
-        <h1 className="text-xl font-bold text-foreground">Opening QR target…</h1>
-      </div>
+    <div style={{ minHeight: "100vh", background: "#020b2d", color: "#fff", padding: 24 }}>
+      <h1 style={{ fontSize: 24, fontWeight: 700 }}>QR Entry</h1>
+      <p style={{ marginTop: 8, fontSize: 13, opacity: 0.6 }}>
+        Target code: {targetCode || "missing"}
+      </p>
+
+      {loading && <p style={{ marginTop: 12 }}>Loading QR...</p>}
+
+      {error && (
+        <div style={{ marginTop: 12 }}>
+          <p style={{ color: "#ff5c5c", fontWeight: 600 }}>QR expiré ou invalide</p>
+          <p style={{ color: "#ff5c5c", fontSize: 13, marginTop: 4 }}>{error}</p>
+          <a href="/#/discover" style={{ display: "inline-block", marginTop: 12, color: "#d6a84f", textDecoration: "underline", fontSize: 14 }}>
+            Retour
+          </a>
+        </div>
+      )}
+
+      {target && (
+        <div style={{ marginTop: 12 }}>
+          <p style={{ color: "#4ade80", fontWeight: 600 }}>QR loaded successfully ✓</p>
+          <pre style={{ whiteSpace: "pre-wrap", fontSize: 12, marginTop: 8, background: "#0a1640", padding: 12, borderRadius: 8 }}>
+            {JSON.stringify(target, null, 2)}
+          </pre>
+          <button
+            onClick={() => {
+              const qs = new URLSearchParams({
+                merchant: target.merchantProfileId,
+                target: target.targetCode,
+              });
+              if (target.tableNumber) qs.set("table", target.tableNumber);
+              navigate(`${routes.merchantPos()}?${qs.toString()}`, { replace: true });
+            }}
+            style={{ marginTop: 12, padding: "10px 20px", background: "#d6a84f", color: "#000", fontWeight: 600, fontSize: 14, borderRadius: 8, border: "none" }}
+          >
+            Continue to merchant POS
+          </button>
+        </div>
+      )}
+
+      <p style={{ marginTop: 24, fontSize: 12, opacity: 0.5 }}>
+        If you can see this, the page is rendering correctly.
+      </p>
     </div>
   );
 }
