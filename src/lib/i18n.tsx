@@ -5533,6 +5533,7 @@ const pageEn: Record<string, string> = {
   "nav.communication": "Communication",
   "nav.orbit": "Orbit",
   "nav.profile": "Profile",
+  "nav.achille": "Achille",
   "nav.radar": "Radar",
   "nav.shop_team": "Team",
   "nav.catalog": "Catalog",
