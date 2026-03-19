@@ -64,7 +64,7 @@ export default function GhostSettingsPage() {
     navigate("/ghost/inbox");
   };
 
-  if (loading) return <PageLoadingState message="Loading ghost settings..." />;
+  if (loading) return <PageLoadingState title="Loading ghost settings..." />;
 
   const policy = profile ? getGhostPolicy(profile.tier as GhostTier) : null;
 

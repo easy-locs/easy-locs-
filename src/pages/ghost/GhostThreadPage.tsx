@@ -111,7 +111,7 @@ export default function GhostThreadPage() {
     }
   }, [input, profile, threadId, threadKey, sending]);
 
-  if (loading) return <PageLoadingState message="Loading thread..." />;
+  if (loading) return <PageLoadingState title="Loading thread..." />;
 
   return (
     <div className="flex flex-col h-screen bg-background">
