@@ -61,8 +61,8 @@ export async function createSecureCallSession(params: {
     .from("orbit_call_sessions")
     .insert({
       room_id: roomId,
-      caller_id: params.callerId,
-      callee_id: params.calleeId,
+      caller_user_id: params.callerId,
+      callee_user_id: params.calleeId,
       call_type: params.callType,
       status: "created",
       security_tier: tier,
