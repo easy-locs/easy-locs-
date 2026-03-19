@@ -1400,6 +1400,72 @@ export type Database = {
           },
         ]
       }
+      call_auth_tokens: {
+        Row: {
+          created_at: string
+          expires_at: string
+          id: string
+          room_id: string
+          scope: string
+          token_hash: string
+          used_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at: string
+          id?: string
+          room_id: string
+          scope?: string
+          token_hash: string
+          used_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          room_id?: string
+          scope?: string
+          token_hash?: string
+          used_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      call_device_identities: {
+        Row: {
+          created_at: string
+          device_id: string
+          id: string
+          key_version: number
+          last_seen_at: string | null
+          public_key_jwk: Json
+          trusted: boolean
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          device_id: string
+          id?: string
+          key_version?: number
+          last_seen_at?: string | null
+          public_key_jwk: Json
+          trusted?: boolean
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          device_id?: string
+          id?: string
+          key_version?: number
+          last_seen_at?: string | null
+          public_key_jwk?: Json
+          trusted?: boolean
+          user_id?: string
+        }
+        Relationships: []
+      }
       call_logs: {
         Row: {
           callee_org_id: string
@@ -1499,6 +1565,36 @@ export type Database = {
           left_at?: string | null
           role?: string | null
           status?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      call_security_events: {
+        Row: {
+          created_at: string
+          detail_minimal: string | null
+          event_type: string
+          id: string
+          room_id: string | null
+          severity: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          detail_minimal?: string | null
+          event_type: string
+          id?: string
+          room_id?: string | null
+          severity?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          detail_minimal?: string | null
+          event_type?: string
+          id?: string
+          room_id?: string | null
+          severity?: string
           user_id?: string | null
         }
         Relationships: []
@@ -9344,6 +9440,7 @@ export type Database = {
       orbit_call_sessions: {
         Row: {
           answered_at: string | null
+          auth_context_hash: string | null
           call_scope: string
           call_type: string
           callee_user_id: string
@@ -9351,9 +9448,11 @@ export type Database = {
           created_at: string
           e2ee_key_hint: string | null
           ended_at: string | null
+          expires_at: string | null
           id: string
           metadata_json: Json
           room_id: string
+          security_tier: string | null
           started_at: string | null
           status: string
           timeout_at: string
@@ -9361,6 +9460,7 @@ export type Database = {
         }
         Insert: {
           answered_at?: string | null
+          auth_context_hash?: string | null
           call_scope?: string
           call_type: string
           callee_user_id: string
@@ -9368,9 +9468,11 @@ export type Database = {
           created_at?: string
           e2ee_key_hint?: string | null
           ended_at?: string | null
+          expires_at?: string | null
           id?: string
           metadata_json?: Json
           room_id: string
+          security_tier?: string | null
           started_at?: string | null
           status?: string
           timeout_at?: string
@@ -9378,6 +9480,7 @@ export type Database = {
         }
         Update: {
           answered_at?: string | null
+          auth_context_hash?: string | null
           call_scope?: string
           call_type?: string
           callee_user_id?: string
@@ -9385,9 +9488,11 @@ export type Database = {
           created_at?: string
           e2ee_key_hint?: string | null
           ended_at?: string | null
+          expires_at?: string | null
           id?: string
           metadata_json?: Json
           room_id?: string
+          security_tier?: string | null
           started_at?: string | null
           status?: string
           timeout_at?: string
@@ -9399,9 +9504,12 @@ export type Database = {
         Row: {
           consumed: boolean
           created_at: string
+          expires_at: string | null
           id: string
+          nonce: string | null
           payload: Json
           receiver_user_id: string
+          replay_guard_hash: string | null
           sender_user_id: string
           session_id: string
           signal_type: string
@@ -9409,9 +9517,12 @@ export type Database = {
         Insert: {
           consumed?: boolean
           created_at?: string
+          expires_at?: string | null
           id?: string
+          nonce?: string | null
           payload?: Json
           receiver_user_id: string
+          replay_guard_hash?: string | null
           sender_user_id: string
           session_id: string
           signal_type: string
@@ -9419,9 +9530,12 @@ export type Database = {
         Update: {
           consumed?: boolean
           created_at?: string
+          expires_at?: string | null
           id?: string
+          nonce?: string | null
           payload?: Json
           receiver_user_id?: string
+          replay_guard_hash?: string | null
           sender_user_id?: string
           session_id?: string
           signal_type?: string
