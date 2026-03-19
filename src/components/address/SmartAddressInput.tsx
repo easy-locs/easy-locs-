@@ -143,14 +143,14 @@ function SmartAddressInput({ onSelect, placeholder = "Where to?", label, showSav
           {home && home.fullAddress && (
             <AddressRow
               address={home}
-              icon={<Home className="h-4 w-4 text-emerald-500" />}
+              icon={<Home className="h-4 w-4 text-primary" />}
               onSelect={handleSelect}
             />
           )}
           {work && work.fullAddress && (
             <AddressRow
               address={work}
-              icon={<Briefcase className="h-4 w-4 text-blue-500" />}
+              icon={<Briefcase className="h-4 w-4 text-primary" />}
               onSelect={handleSelect}
             />
           )}
