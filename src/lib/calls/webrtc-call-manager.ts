@@ -1,6 +1,8 @@
 import { getRtcConfiguration } from "@/lib/calls/call-config";
 import { debugLog } from "@/lib/debug/runtime-debug-bus";
 import { safeErrorMessage } from "@/lib/debug/debug-helpers";
+import { clearFrameEncryptionKey } from "@/lib/calls/call-media-key";
+import { resetReplayGuard } from "@/lib/calls/call-replay-guard";
 
 export interface MediaStatus {
   cameraReady: boolean;
