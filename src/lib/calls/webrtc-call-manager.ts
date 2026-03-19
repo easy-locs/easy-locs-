@@ -1,6 +1,8 @@
 import { getRtcConfiguration } from "@/lib/calls/call-config";
 import { debugLog } from "@/lib/debug/runtime-debug-bus";
 import { safeErrorMessage } from "@/lib/debug/debug-helpers";
+import { clearFrameEncryptionKey } from "@/lib/calls/call-media-key";
+import { resetReplayGuard } from "@/lib/calls/call-replay-guard";
 
 export interface MediaStatus {
   cameraReady: boolean;
@@ -331,19 +333,23 @@ export class WebRtcCallManager {
   }
 
   destroy() {
-    debugLog.warn("call", "pc_destroy", "Destroying call manager");
+    debugLog.warn("call", "media_cleanup_start", "Destroying call manager");
 
     // Stop all local tracks
     this.localStream?.getTracks().forEach((t) => {
       t.stop();
-      debugLog.info("call", "camera_stopped", `${t.kind} track stopped`);
+      debugLog.info("call", `${t.kind}_stopped`, `${t.kind} track stopped`);
     });
 
     // Stop all remote tracks
-    this.remoteStream.getTracks().forEach((t) => t.stop());
+    this.remoteStream.getTracks().forEach((t) => {
+      t.stop();
+    });
+    debugLog.info("call", "remote_tracks_stopped", "All remote tracks stopped");
 
     // Close peer connection
     this.pc?.close();
+    debugLog.info("call", "pc_closed", "PeerConnection closed");
     this.pc = null;
     this.localStream = null;
     this.remoteStream = new MediaStream();
@@ -364,6 +370,11 @@ export class WebRtcCallManager {
       this.remoteVideoEl.srcObject = null;
       this.remoteVideoEl = null;
     }
+
+    // Destroy call vault key material
+    clearFrameEncryptionKey();
+    resetReplayGuard();
+    debugLog.info("call", "media_cleanup_complete", "All call resources released");
   }
 }
 
