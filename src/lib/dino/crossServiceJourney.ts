@@ -53,13 +53,13 @@ export async function startJourney(userId: string, journeyType: JourneyType): Pr
   const steps = JOURNEY_TEMPLATES[journeyType].map(s => ({ ...s }));
   steps[0].status = "active";
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from("cross_service_journeys")
     .insert({
       user_id: userId,
       journey_type: journeyType,
       status: "active",
-      steps: steps,
+      steps: steps as unknown as import("@/integrations/supabase/types").Json,
       current_step: 0,
     })
     .select("id")
@@ -81,7 +81,7 @@ export async function startJourney(userId: string, journeyType: JourneyType): Pr
 
 /** Advance a journey to the next step */
 export async function advanceJourney(journeyId: string, entityId?: string) {
-  const { data: journey } = await (supabase as any)
+  const { data: journey } = await supabase
     .from("cross_service_journeys")
     .select("*")
     .eq("id", journeyId)
@@ -89,7 +89,7 @@ export async function advanceJourney(journeyId: string, entityId?: string) {
 
   if (!journey || journey.status !== "active") return null;
 
-  const steps = journey.steps as JourneyStep[];
+  const steps = journey.steps as unknown as JourneyStep[];
   const current = journey.current_step as number;
 
   // Complete current step
@@ -104,10 +104,10 @@ export async function advanceJourney(journeyId: string, entityId?: string) {
     steps[nextStep].status = "active";
   }
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from("cross_service_journeys")
     .update({
-      steps,
+      steps: steps as unknown as import("@/integrations/supabase/types").Json,
       current_step: isComplete ? current : nextStep,
       status: isComplete ? "completed" : "active",
       completed_at: isComplete ? new Date().toISOString() : null,
@@ -134,7 +134,7 @@ export async function advanceJourney(journeyId: string, entityId?: string) {
 
 /** Get active journeys for a user */
 export async function getActiveJourneys(userId: string) {
-  const { data } = await (supabase as any)
+  const { data } = await supabase
     .from("cross_service_journeys")
     .select("*")
     .eq("user_id", userId)
