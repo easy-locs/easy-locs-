@@ -9,14 +9,14 @@ import MerchantCard from "@/components/marketplace/MerchantCard";
 import { ShoppingCart } from "lucide-react";
 
 const FAMILIES = [
-  { label: "Fruits & Veg", icon: "🥬", to: "/grocery/fruits-vegetables" },
-  { label: "Meat & Fish", icon: "🥩", to: "/grocery/meat-fish" },
-  { label: "Dairy", icon: "🧀", to: "/grocery/dairy" },
-  { label: "Bakery", icon: "🍞", to: "/grocery/bakery" },
-  { label: "Drinks", icon: "🥤", to: "/grocery/drinks" },
-  { label: "Snacks", icon: "🍿", to: "/grocery/snacks" },
-  { label: "Household", icon: "🧴", to: "/grocery/household" },
-  { label: "Baby", icon: "🍼", to: "/grocery/baby" },
+  { label: "Fruits & Veg", icon: "🥬" },
+  { label: "Meat & Fish", icon: "🥩" },
+  { label: "Dairy", icon: "🧀" },
+  { label: "Bakery", icon: "🍞" },
+  { label: "Drinks", icon: "🥤" },
+  { label: "Snacks", icon: "🍿" },
+  { label: "Household", icon: "🧴" },
+  { label: "Baby", icon: "🍼" },
 ];
 
 const FILTERS = ["All", "Open now", "Free delivery", "Organic", "Express"];
@@ -51,7 +51,7 @@ export default function GroceryHub() {
       <h2 className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider mb-2">Categories</h2>
       <div className="grid grid-cols-4 gap-3 mb-6">
         {FAMILIES.map((f) => (
-          <button key={f.label} onClick={() => {}} className="flex flex-col items-center gap-1.5 active:scale-90 transition-transform">
+          <button key={f.label} className="flex flex-col items-center gap-1.5 active:scale-90 transition-transform">
             <div className="w-14 h-14 rounded-2xl flex items-center justify-center" style={{ background: "hsl(var(--muted))" }}>
               <span className="text-2xl">{f.icon}</span>
             </div>
