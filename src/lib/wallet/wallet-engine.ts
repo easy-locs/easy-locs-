@@ -231,7 +231,7 @@ export async function settleOrderPaymentV2(params: { orderId: string }) {
 
 export async function reverseOrderPayment(params: { orderId: string }) {
   const result = await walletOps("reverse", { order_id: params.orderId });
-  platformBus.emit("wallet:payment_completed", { orderId: params.orderId, stage: "reversed" }, "wallet");
+  platformBus.emit("commerce:payment_reversed", { orderId: params.orderId, stage: "reversed" }, "wallet");
   return result;
 }
 
