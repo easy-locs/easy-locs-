@@ -149,29 +149,37 @@ export async function runPartnerEngine(): Promise<{
   rewarded: number;
   categoriesBoosted: number;
 }> {
-  // 1) Reward top performers
-  const rewarded = await rewardTopPros();
-
-  // 2) Boost strategic categories
+  let rewarded = 0;
   let categoriesBoosted = 0;
-  for (const cat of STRATEGIC_CATEGORIES.slice(0, MAX_CATEGORY_BOOSTS)) {
-    await dominateCategory(cat);
-    categoriesBoosted++;
-  }
+  try {
+    console.log("partnerEngine: start");
+    rewarded = await rewardTopPros();
+    console.log("partnerEngine: rewardTopPros ok", rewarded);
 
-  // 3) Record learning
-  const { error: learnErr } = await supabase.from("dino_learning_events").insert([{
-    event_type: "v18_partner_cycle",
-    entity_id: "system",
-    entity_type: "partner",
-    metric: "rewarded",
-    metadata_json: { rewarded, categoriesBoosted } as unknown as Json,
-    new_value: rewarded,
-    previous_value: 0,
-  }]);
-  if (learnErr) {
-    console.error("[PartnerEngine] learning event insert failed:", learnErr);
-  }
+    for (const cat of STRATEGIC_CATEGORIES.slice(0, MAX_CATEGORY_BOOSTS)) {
+      await dominateCategory(cat);
+      categoriesBoosted++;
+      console.log("partnerEngine: category boosted", cat);
+    }
 
-  return { rewarded, categoriesBoosted };
+    const { error: learnErr } = await supabase.from("dino_learning_events").insert([{
+      event_type: "v18_partner_cycle",
+      entity_id: "system",
+      entity_type: "partner",
+      metric: "rewarded",
+      metadata_json: { rewarded, categoriesBoosted } as unknown as Json,
+      new_value: rewarded,
+      previous_value: 0,
+    }]);
+    if (learnErr) {
+      console.error("partnerEngine: learning log failed", learnErr);
+      throw learnErr;
+    }
+
+    console.log("partnerEngine: success");
+    return { rewarded, categoriesBoosted };
+  } catch (error) {
+    console.error("partnerEngine: failed", error);
+    throw error;
+  }
 }

@@ -108,16 +108,15 @@ export default function AdminDinoControlPanel() {
       }
       setResult(key, result);
       setStatus(key, "success");
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(`[DINO] Engine "${key}" error:`, err);
-      const message = err instanceof Error
-        ? err.message
-        : (typeof err === "object" && err !== null)
-          ? JSON.stringify(err, null, 2)
-          : String(err);
-      const code = err?.code ?? err?.statusCode ?? undefined;
-      const details = err?.details ?? err?.hint ?? undefined;
-      setResult(key, { error: message, ...(code ? { code } : {}), ...(details ? { details } : {}) });
+      const normalizedError =
+        err instanceof Error
+          ? { message: err.message, stack: err.stack }
+          : (typeof err === "object" && err !== null)
+            ? (() => { try { return JSON.parse(JSON.stringify(err)); } catch { return { message: String(err) }; } })()
+            : { message: String(err) };
+      setResult(key, { error: normalizedError, _serializer: "V2" });
       setStatus(key, "error");
     }
   }, [user?.id]);
@@ -173,7 +172,7 @@ export default function AdminDinoControlPanel() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-xl font-black text-foreground">DINO Control Panel</h1>
-            <p className="text-xs text-muted-foreground mt-0.5">Execute & monitor all engines</p>
+            <p className="text-xs text-muted-foreground mt-0.5">Execute & monitor all engines — <span className="text-primary font-bold">ERROR SERIALIZER V2</span></p>
           </div>
           <div className="flex items-center gap-2">
             {healthScore !== null && (
