@@ -25,14 +25,10 @@ export async function checkOrdersWithoutItems(workspaceId?: string) {
 
 export async function checkDispatchAssignedWithoutDriver(workspaceId?: string) {
   try {
-    let query = (supabase as any)
-      .from("dispatch_jobs")
+    const query = (supabase as any)
+      .from("dispatch_jobs_v2")
       .select("id, assigned_driver_id")
-      .eq("status", "assigned");
-
-    if (workspaceId) {
-      query = query.eq("workspace_id", workspaceId);
-    }
+      .eq("dispatch_status", "assigned");
 
     const { data, error } = await query;
     if (error) return { ok: true, broken: 0 };
