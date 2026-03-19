@@ -2983,6 +2983,7 @@ const pageFr: Record<string, string> = {
   "nav.communication": "Communication",
   "nav.orbit": "Orbit",
   "nav.explore": "Explorer",
+  "nav.achille": "Achille",
   "nav.profile": "Profil",
   "nav.radar": "Radar",
   "nav.shop_team": "Équipe",
