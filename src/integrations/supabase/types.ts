@@ -5748,6 +5748,99 @@ export type Database = {
           },
         ]
       }
+      growth_city_pages: {
+        Row: {
+          city: string
+          country_code: string
+          created_at: string
+          description: string | null
+          h1: string | null
+          id: string
+          intro_text: string | null
+          is_published: boolean
+          locale: string
+          page_type: string
+          slug: string
+          title: string | null
+          updated_at: string
+          vertical: string
+        }
+        Insert: {
+          city: string
+          country_code: string
+          created_at?: string
+          description?: string | null
+          h1?: string | null
+          id?: string
+          intro_text?: string | null
+          is_published?: boolean
+          locale?: string
+          page_type: string
+          slug: string
+          title?: string | null
+          updated_at?: string
+          vertical: string
+        }
+        Update: {
+          city?: string
+          country_code?: string
+          created_at?: string
+          description?: string | null
+          h1?: string | null
+          id?: string
+          intro_text?: string | null
+          is_published?: boolean
+          locale?: string
+          page_type?: string
+          slug?: string
+          title?: string | null
+          updated_at?: string
+          vertical?: string
+        }
+        Relationships: []
+      }
+      growth_demand_events: {
+        Row: {
+          city: string | null
+          country_code: string | null
+          created_at: string
+          event_type: string
+          id: string
+          merchant_profile_id: string | null
+          metadata_json: Json
+          session_id: string | null
+          storefront_page_id: string | null
+          user_id: string | null
+          vertical: string | null
+        }
+        Insert: {
+          city?: string | null
+          country_code?: string | null
+          created_at?: string
+          event_type: string
+          id?: string
+          merchant_profile_id?: string | null
+          metadata_json?: Json
+          session_id?: string | null
+          storefront_page_id?: string | null
+          user_id?: string | null
+          vertical?: string | null
+        }
+        Update: {
+          city?: string | null
+          country_code?: string | null
+          created_at?: string
+          event_type?: string
+          id?: string
+          merchant_profile_id?: string | null
+          metadata_json?: Json
+          session_id?: string | null
+          storefront_page_id?: string | null
+          user_id?: string | null
+          vertical?: string | null
+        }
+        Relationships: []
+      }
       guest_call_signals: {
         Row: {
           call_id: string
@@ -7887,81 +7980,129 @@ export type Database = {
       }
       merchant_onboarding_profiles: {
         Row: {
+          activation_band: string | null
           activation_mode: string | null
+          activation_reasons: Json
+          activation_score: number | null
           area: string | null
           city: string | null
           claim_verification_method: string | null
           claimed_at: string | null
           claimed_by: string | null
           contact_name: string | null
+          country: string | null
+          cover_image_url: string | null
           created_at: string | null
           cuisine_type: string | null
+          dedupe_key: string | null
           delivery_radius_km: number | null
+          description: string | null
           description_ar: string | null
           email: string | null
           id: string
+          latitude: number | null
           legal_name: string | null
+          logo_image_url: string | null
+          longitude: number | null
           merchant_name: string
           metadata: Json | null
           name_ar: string | null
           onboarding_status: string | null
           phone: string | null
+          rating: number | null
+          review_count: number | null
           source_id: string | null
+          source_status: string | null
+          tags: string[] | null
           updated_at: string | null
           verification_status: string | null
           verified_at: string | null
+          vertical: string | null
+          website: string | null
           workspace_id: string | null
         }
         Insert: {
+          activation_band?: string | null
           activation_mode?: string | null
+          activation_reasons?: Json
+          activation_score?: number | null
           area?: string | null
           city?: string | null
           claim_verification_method?: string | null
           claimed_at?: string | null
           claimed_by?: string | null
           contact_name?: string | null
+          country?: string | null
+          cover_image_url?: string | null
           created_at?: string | null
           cuisine_type?: string | null
+          dedupe_key?: string | null
           delivery_radius_km?: number | null
+          description?: string | null
           description_ar?: string | null
           email?: string | null
           id?: string
+          latitude?: number | null
           legal_name?: string | null
+          logo_image_url?: string | null
+          longitude?: number | null
           merchant_name: string
           metadata?: Json | null
           name_ar?: string | null
           onboarding_status?: string | null
           phone?: string | null
+          rating?: number | null
+          review_count?: number | null
           source_id?: string | null
+          source_status?: string | null
+          tags?: string[] | null
           updated_at?: string | null
           verification_status?: string | null
           verified_at?: string | null
+          vertical?: string | null
+          website?: string | null
           workspace_id?: string | null
         }
         Update: {
+          activation_band?: string | null
           activation_mode?: string | null
+          activation_reasons?: Json
+          activation_score?: number | null
           area?: string | null
           city?: string | null
           claim_verification_method?: string | null
           claimed_at?: string | null
           claimed_by?: string | null
           contact_name?: string | null
+          country?: string | null
+          cover_image_url?: string | null
           created_at?: string | null
           cuisine_type?: string | null
+          dedupe_key?: string | null
           delivery_radius_km?: number | null
+          description?: string | null
           description_ar?: string | null
           email?: string | null
           id?: string
+          latitude?: number | null
           legal_name?: string | null
+          logo_image_url?: string | null
+          longitude?: number | null
           merchant_name?: string
           metadata?: Json | null
           name_ar?: string | null
           onboarding_status?: string | null
           phone?: string | null
+          rating?: number | null
+          review_count?: number | null
           source_id?: string | null
+          source_status?: string | null
+          tags?: string[] | null
           updated_at?: string | null
           verification_status?: string | null
           verified_at?: string | null
+          vertical?: string | null
+          website?: string | null
           workspace_id?: string | null
         }
         Relationships: [
