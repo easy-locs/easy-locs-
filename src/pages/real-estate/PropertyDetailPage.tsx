@@ -13,6 +13,7 @@ import { Building2, MapPin, BedDouble, Bath, Ruler, Home, FileText, ExternalLink
 export default function PropertyDetailPage() {
   const { propertyId } = useParams<{ propertyId: string }>();
   const { data: property, isLoading } = usePropertyById(propertyId);
+  useDinoPageAudit({ actorType: "anonymous", pageKey: "property_public" });
   const { data: units } = usePropertyUnits(propertyId);
   const { data: docs } = usePropertyDocuments(propertyId);
 

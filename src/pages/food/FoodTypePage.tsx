@@ -27,6 +27,7 @@ export default function FoodTypePage() {
   const { type } = useParams<{ type: string }>();
   const navigate = useNavigate();
   const mode = type === "pickup" ? "Pickup" : "Delivery";
+  useDinoPageAudit({ actorType: "anonymous", pageKey: "food_type" });
 
   return (
     <UniversePageShell
