@@ -157,8 +157,14 @@ export default function OrbitContactsDirectory() {
       return;
     }
     try {
-      const thread = await getOrCreateDirectThread(user.id, contact.contact_user_id, orgId);
-      navigate(`/dashboard/communication?thread=${thread.id}`);
+      const result = await getOrCreateDirectThread({
+        currentUserId: user.id,
+        targetUserId: contact.contact_user_id,
+        targetName: contact.name,
+      });
+      if (result) {
+        navigate(`/dashboard/communication?thread=${result.contextId}`);
+      }
     } catch {
       toast.error("Failed to open conversation");
     }
