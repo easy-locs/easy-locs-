@@ -108,7 +108,7 @@ export default memo(function GodModeInsightsBar({ snapshot }: Props) {
               key={i}
               className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-accent/40 text-[10px] font-medium text-foreground whitespace-nowrap shrink-0"
             >
-              {rec.targetVertical}
+              {rec.vertical}
             </span>
           ))}
         </div>
