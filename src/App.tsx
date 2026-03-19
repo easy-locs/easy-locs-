@@ -21,6 +21,7 @@ import SmartInstallBanner from "@/components/pwa/SmartInstallBanner";
 import OrbitCallRoot from "@/components/orbit/OrbitCallRoot";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import ChunkRecoveryBoundary from "@/components/system/ChunkRecoveryBoundary";
 import CountryGuard from "@/components/dashboard/CountryGuard";
 import { UnifiedPaymentProvider } from "@/payments/UnifiedPaymentSystem";
 
@@ -350,6 +351,7 @@ const OrbitSessionGuard = () => { useOrbitSessionInit(); return null; };
 const RealtimeHubGuard = () => { useRealtimeHub(); return null; };
 
 const App = () => (
+  <ChunkRecoveryBoundary>
   <ErrorBoundary>
   <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange={false} storageKey="easylocs-theme">
   <QueryClientProvider client={queryClient}>
@@ -689,6 +691,7 @@ const App = () => (
   </QueryClientProvider>
   </ThemeProvider>
   </ErrorBoundary>
+  </ChunkRecoveryBoundary>
 );
 
 export default App;
