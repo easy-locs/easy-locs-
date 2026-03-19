@@ -3,6 +3,7 @@
  * Route: /food/:type (delivery | pickup)
  */
 import { useParams, useNavigate } from "react-router-dom";
+import { useDinoPageAudit } from "@/hooks/useDinoPageAudit";
 import UniversePageShell from "@/components/universe/UniversePageShell";
 import CategoryCard from "@/components/universe/CategoryCard";
 import { UtensilsCrossed } from "lucide-react";
