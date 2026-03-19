@@ -46,7 +46,7 @@ export async function gatherReputationFactors(userId: string): Promise<Reputatio
     supabase.from("orders").select("id, status").eq("customer_user_id", userId).limit(500),
     supabase.from("support_tickets").select("id").eq("requester_user_id", userId).eq("ticket_type", "dispute"),
     supabase.from("reviews").select("rating").eq("reviewer_user_id", userId).limit(200),
-    supabase.from("driver_profiles").select("acceptance_rate, completed_deliveries, cancelled_deliveries").eq("user_id", userId).maybeSingle(),
+    supabase.from("driver_profiles").select("acceptance_rate, jobs_completed, reliability_score").eq("user_id", userId).maybeSingle(),
   ]);
 
   const orders = ordersRes.data ?? [];
