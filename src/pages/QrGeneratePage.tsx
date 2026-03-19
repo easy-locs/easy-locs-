@@ -53,7 +53,7 @@ export default function QrGeneratePage() {
         targetCode: r.target_code,
         targetType: r.target_type,
         tableNumber: r.table_number,
-        url: buildQrEntryUrl(r.target_code),
+        url: buildAppLink(`/qr/entry/${encodeURIComponent(r.target_code)}`),
       }));
 
       setCodes(generated);
