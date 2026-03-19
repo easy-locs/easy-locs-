@@ -18,7 +18,7 @@ export async function exportCallMediaKey(key: CryptoKey): Promise<Uint8Array> {
 }
 
 export async function importCallMediaKey(raw: Uint8Array): Promise<CryptoKey> {
-  return crypto.subtle.importKey("raw", raw.buffer, { name: "AES-GCM", length: 256 }, true, ["encrypt", "decrypt"]);
+  return crypto.subtle.importKey("raw", raw as unknown as ArrayBuffer, { name: "AES-GCM", length: 256 }, true, ["encrypt", "decrypt"]);
 }
 
 export async function derivePeerMediaContext(
