@@ -3,6 +3,7 @@
  * Route: /radar
  */
 import { useNavigate } from "react-router-dom";
+import { useDinoPageAudit } from "@/hooks/useDinoPageAudit";
 import { ArrowLeft, Map } from "lucide-react";
 import RadarView from "@/components/radar/RadarView";
 
