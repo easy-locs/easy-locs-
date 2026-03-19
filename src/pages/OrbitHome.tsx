@@ -143,7 +143,7 @@ const HomeCarousel = memo(function HomeCarousel({ title, items, onSeeAll }: { ti
       <SectionLabel title={title} action="See all" onAction={onSeeAll} />
       <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide -mx-1 px-1">
         {items.map((shop) => (
-          <ShopCard key={shop.id} shop={shop} onClick={() => navigate(`/explore?shop=${shop.id}`)} />
+          <ShopCard key={shop.id} shop={shop} onClick={() => navigate(`/food/restaurant/${shop.slug || shop.id}`)} />
         ))}
       </div>
     </div>
