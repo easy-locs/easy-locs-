@@ -2978,6 +2978,10 @@ const pageFr: Record<string, string> = {
   "nav.wallet": "Wallet",
   "nav.communication": "Communication",
   "nav.profile": "Profil",
+  "nav.radar": "Radar",
+  "nav.shop_team": "Équipe",
+  "nav.catalog": "Catalogue",
+  "nav.my_shops": "Mes boutiques",
   // Business hub
   "business.hub_title": "Mon Business",
   "business.hub_subtitle": "Gérez toutes vos opérations commerciales.",
