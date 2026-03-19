@@ -1,54 +1,56 @@
-import React from "react";
+/**
+ * AppBottomNav — 5-pillar Careem-style bottom navigation.
+ * Home | Explore | Orbit | Wallet | Profile
+ */
 import { useLocation, useNavigate } from "react-router-dom";
+import { Home, Compass, Globe, Wallet, User } from "lucide-react";
+
+const TABS = [
+  { label: "Home", path: "/home", icon: Home },
+  { label: "Explore", path: "/explore", icon: Compass },
+  { label: "Orbit", path: "/dashboard/communication", icon: Globe },
+  { label: "Wallet", path: "/wallet/hub", icon: Wallet },
+  { label: "Me", path: "/settings", icon: User },
+] as const;
 
 export default function AppBottomNav() {
   const navigate = useNavigate();
-  const location = useLocation();
-
-  const items = [
-    { label: "Home", path: "/" },
-    { label: "Discover", path: "/discover" },
-    { label: "Radar", path: "/super-map" },
-    { label: "Wallet", path: "/dashboard/wallet" },
-  ];
+  const { pathname } = useLocation();
 
   return (
-    <div
+    <nav
+      className="fixed left-0 right-0 bottom-0 z-50"
       style={{
-        position: "fixed",
-        left: 12,
-        right: 12,
-        bottom: 12,
-        zIndex: 100,
-        display: "grid",
-        gridTemplateColumns: "repeat(4, 1fr)",
-        gap: 8,
-        padding: 8,
-        borderRadius: 18,
-        background: "rgba(9,16,32,0.92)",
-        border: "1px solid rgba(255,255,255,0.08)",
-        backdropFilter: "blur(12px)",
+        paddingBottom: "env(safe-area-inset-bottom, 0px)",
+        background: "hsl(var(--card))",
+        borderTop: "1px solid hsl(var(--border) / 0.12)",
+        backdropFilter: "blur(20px)",
       }}
     >
-      {items.map((item) => {
-        const active = location.pathname === item.path;
-        return (
-          <button
-            key={item.path}
-            onClick={() => navigate(item.path)}
-            style={{
-              border: 0,
-              borderRadius: 14,
-              padding: "12px 10px",
-              fontWeight: 700,
-              background: active ? "#38bdf8" : "transparent",
-              color: active ? "#04152f" : "white",
-            }}
-          >
-            {item.label}
-          </button>
-        );
-      })}
-    </div>
+      <div className="grid grid-cols-5 max-w-md mx-auto">
+        {TABS.map((tab) => {
+          const active = pathname === tab.path || (tab.path === "/home" && pathname === "/");
+          return (
+            <button
+              key={tab.path}
+              onClick={() => navigate(tab.path)}
+              className="flex flex-col items-center gap-0.5 py-2.5 active:scale-90 transition-transform"
+            >
+              <tab.icon
+                className="w-5 h-5 transition-colors"
+                style={{ color: active ? "hsl(var(--primary))" : "hsl(var(--muted-foreground) / 0.5)" }}
+                strokeWidth={active ? 2.5 : 1.8}
+              />
+              <span
+                className="text-[10px] font-semibold transition-colors"
+                style={{ color: active ? "hsl(var(--primary))" : "hsl(var(--muted-foreground) / 0.5)" }}
+              >
+                {tab.label}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+    </nav>
   );
 }
