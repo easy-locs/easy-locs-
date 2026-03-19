@@ -2,6 +2,7 @@
  * SettingsOrbit — Language & Region settings page
  * Route: /settings/orbit
  */
+import type { Locale } from "@/lib/i18n";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Globe, Check } from "lucide-react";
