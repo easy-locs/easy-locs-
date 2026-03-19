@@ -306,6 +306,8 @@ const AppNotFoundPage = safeLazy(() => import("./pages/AppNotFoundPage"), "AppNo
 const AdminImportTestBatchesPage = safeLazy(() => import("./pages/AdminImportTestBatchesPage"), "AdminImportTestBatchesPage");
 const QrGeneratePage = safeLazy(() => import("./pages/QrGeneratePage"), "QrGeneratePage");
 const RouteAuditPage = safeLazy(() => import("./pages/RouteAuditPage"), "RouteAuditPage");
+const OrbitCallTestPage = safeLazy(() => import("./pages/OrbitCallTestPage"), "OrbitCallTestPage");
+const AdminRestaurantTestSeederPage = safeLazy(() => import("./pages/AdminRestaurantTestSeederPage"), "AdminRestaurantTestSeederPage");
 
 // City sub-page wrappers
 const CityServicesPage = () => <CityHubPage subPage="services" />;
