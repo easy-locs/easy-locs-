@@ -93,6 +93,12 @@ export const routes = {
   map: () => `/map`,
   superMap: () => `/super-map`,
   radar: () => `/radar`,
+
+  // Cart / Checkout / Orders / Tracking
+  checkout: () => `/checkout`,
+  orders: () => `/orders`,
+  orderDetail: (id: string) => `/order/${encodeURIComponent(id)}`,
+  trackingOrder: (id: string) => `/tracking/${encodeURIComponent(id)}`,
 };
 
 export type AppRouteKey = keyof typeof routes;
