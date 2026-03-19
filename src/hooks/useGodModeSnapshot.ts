@@ -37,15 +37,14 @@ export function useGodModeSnapshot(userId: string | undefined) {
     try { localStorage.setItem(ACTIVE_ROLE_KEY, role); } catch {}
   }, []);
 
-  // Keep snapshot identity in sync with role override
-  useEffect(() => {
-    if (roleOverride && query.data?.identity && query.data.identity.activeRole !== roleOverride) {
-      if (query.data.identity.roles.includes(roleOverride)) {
-        // Trigger refetch to apply role
-        query.refetch();
-      }
+  // Derive snapshot with role override applied locally (no refetch needed)
+  const snapshotWithRole = useMemo(() => {
+    if (!query.data) return null;
+    if (roleOverride && query.data.identity.roles.includes(roleOverride) && query.data.identity.activeRole !== roleOverride) {
+      return { ...query.data, identity: switchRole(query.data.identity, roleOverride) };
     }
-  }, [roleOverride]);
+    return query.data;
+  }, [query.data, roleOverride]);
 
   return {
     ...query,
