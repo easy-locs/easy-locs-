@@ -177,7 +177,8 @@ const MyShopPage = safeLazy(() => import("./pages/MyShopPage"), "MyShopPage");
 const DiscoverPage = safeLazy(() => import("./pages/DiscoverPage"), "DiscoverPage");
 const OpsCenter = safeLazy(() => import("./pages/OpsCenter"), "OpsCenter");
 const ShopsPage = safeLazy(() => import("./pages/ShopsPage"), "ShopsPage");
-const SuperMapRadarPage = safeLazy(() => import("./pages/SuperMapRadarPage"), "SuperMapRadarPage");
+const SuperMapRadarPage = safeLazy(() => import("./pages/GlobalMapPage"), "GlobalMapPage");
+const GlobalRadarPage = safeLazy(() => import("./pages/GlobalRadarPage"), "GlobalRadarPage");
 const MyBusinessHub = safeLazy(() => import("./pages/MyBusinessHub"), "MyBusinessHub");
 const MyShopsPage = safeLazy(() => import("./pages/MyShopsPage"), "MyShopsPage");
 const MyOrdersPage = safeLazy(() => import("./pages/MyOrdersPage"), "MyOrdersPage");
@@ -525,6 +526,8 @@ const App = () => (
 
               <Route path="/explore" element={<Explore />} />
               <Route path="/super-map" element={<SuperMapRadarPage />} />
+              <Route path="/map" element={<SuperMapRadarPage />} />
+              <Route path="/radar" element={<GlobalRadarPage />} />
               <Route path="/shops" element={<ShopsPage />} />
               <Route path="/s/:slug" element={<ShopPage />} />
               <Route path="/s/:slug/:categorySlug" element={<ShopCategoryPage />} />
