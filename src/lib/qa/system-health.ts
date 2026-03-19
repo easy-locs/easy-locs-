@@ -8,10 +8,10 @@ export async function collectOpsHealthSnapshot(workspaceId?: string) {
       { count: driversOnline },
       { count: alertsOpen },
     ] = await Promise.all([
-      (supabase as any).from("orders").select("*", { head: true, count: "exact" }).eq("workspace_id", workspaceId ?? null).in("status", ["paid", "preparing", "ready_for_dispatch", "assigned", "in_progress"]),
-      (supabase as any).from("dispatch_jobs").select("*", { head: true, count: "exact" }).eq("workspace_id", workspaceId ?? null).in("status", ["open", "broadcast", "assigned", "picked_up"]),
-      (supabase as any).from("driver_profiles").select("*", { head: true, count: "exact" }).eq("workspace_id", workspaceId ?? null).eq("is_online", true),
-      (supabase as any).from("admin_alerts").select("*", { head: true, count: "exact" }).eq("workspace_id", workspaceId ?? null).eq("status", "open"),
+      (supabase as any).from("orders").select("*", { head: true, count: "exact" }).in("status", ["paid", "preparing", "ready_for_dispatch", "assigned", "in_progress"]),
+      (supabase as any).from("dispatch_jobs_v2").select("*", { head: true, count: "exact" }).in("dispatch_status", ["open", "broadcasted", "assigned", "picked_up", "in_progress"]),
+      (supabase as any).from("driver_profiles").select("*", { head: true, count: "exact" }).eq("is_online", true),
+      (supabase as any).from("admin_alerts").select("*", { head: true, count: "exact" }).eq("status", "open"),
     ]);
 
     const healthy = (alertsOpen ?? 0) < 5 && (driversOnline ?? 0) > 0;

@@ -81,7 +81,7 @@ export async function auditPaymentChecks(workspaceId?: string) {
 export async function auditDispatchChecks(workspaceId?: string) {
   const integrity = await checkDispatchAssignedWithoutDriver(workspaceId);
 
-  const total = await safeCount("dispatch_jobs", workspaceId);
+  const total = await safeCount("dispatch_jobs_v2", workspaceId);
 
   return [
     {

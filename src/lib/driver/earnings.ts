@@ -1,5 +1,5 @@
 /**
- * Driver earnings — calculate earnings from completed orders and dispatch jobs.
+ * Driver earnings — calculate earnings from completed orders and canonical dispatch_jobs_v2.
  */
 import { supabase } from "@/integrations/supabase/client";
 
@@ -18,12 +18,12 @@ export async function getDriverEarnings(driverUserId: string): Promise<DriverEar
     .eq("assigned_driver_user_id", driverUserId)
     .eq("status", "completed");
 
-  // From completed dispatch jobs
+  // From completed dispatch jobs (canonical schema)
   const { data: jobs } = await (supabase as any)
-    .from("dispatch_jobs")
-    .select("final_fee, quoted_fee, currency")
+    .from("dispatch_jobs_v2")
+    .select("delivery_fee, currency")
     .eq("assigned_driver_id", driverUserId)
-    .eq("status", "delivered");
+    .in("dispatch_status", ["delivered", "validated"]);
 
   const orderEarnings = (orders ?? []).reduce(
     (sum: number, o: any) => sum + Number(o.delivery_fee || 0),
@@ -31,7 +31,7 @@ export async function getDriverEarnings(driverUserId: string): Promise<DriverEar
   );
 
   const jobEarnings = (jobs ?? []).reduce(
-    (sum: number, j: any) => sum + Number(j.final_fee || j.quoted_fee || 0),
+    (sum: number, j: any) => sum + Number(j.delivery_fee || 0),
     0
   );
 

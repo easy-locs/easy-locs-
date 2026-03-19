@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 const TABLES_TO_CHECK = [
   "workspaces",
   "orders",
-  "dispatch_jobs",
+  "dispatch_jobs_v2",
   "wallet_balances",
   "user_profiles",
 ] as const;

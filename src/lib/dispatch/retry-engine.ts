@@ -1,14 +1,13 @@
 /**
- * Dispatch retry engine — re-broadcast failed/expired jobs with configurable retry logic.
+ * Dispatch retry engine — re-broadcast failed/expired jobs via canonical dispatch_jobs_v2.
  */
 import { supabase } from "@/integrations/supabase/client";
 
 const MAX_RETRIES = 3;
-const RETRY_DELAY_MS = 30_000; // 30 seconds
 
 export async function retryDispatchJob(jobId: string): Promise<any> {
   const { data: job, error } = await (supabase as any)
-    .from("dispatch_jobs")
+    .from("dispatch_jobs_v2")
     .select("*")
     .eq("id", jobId)
     .single();
@@ -16,15 +15,12 @@ export async function retryDispatchJob(jobId: string): Promise<any> {
   if (error) throw error;
   if (!job) throw new Error("Job not found");
 
-  // Check retry count from metadata
-  const metadata = (job.metadata as any) ?? {};
-  const retryCount = metadata.retry_count ?? 0;
+  const retryCount = job.retry_count ?? 0;
 
   if (retryCount >= MAX_RETRIES) {
-    // Mark as failed after max retries
     const { data, error: updateError } = await (supabase as any)
-      .from("dispatch_jobs")
-      .update({ status: "failed" })
+      .from("dispatch_jobs_v2")
+      .update({ dispatch_status: "failed" } as any)
       .eq("id", jobId)
       .select("*")
       .single();
@@ -32,14 +28,15 @@ export async function retryDispatchJob(jobId: string): Promise<any> {
     return data;
   }
 
-  // Reset to broadcast status for re-matching
   const { data: updated, error: updateError } = await (supabase as any)
-    .from("dispatch_jobs")
+    .from("dispatch_jobs_v2")
     .update({
-      status: "broadcast",
+      dispatch_status: "open",
       assigned_driver_id: null,
-      final_fee: null,
-    })
+      assigned_driver_wallet_id: null,
+      retry_count: retryCount + 1,
+      updated_at: new Date().toISOString(),
+    } as any)
     .eq("id", jobId)
     .select("*")
     .single();
@@ -48,19 +45,14 @@ export async function retryDispatchJob(jobId: string): Promise<any> {
   return updated;
 }
 
-export async function getRetryableJobs(workspaceId?: string) {
-  let query = (supabase as any)
-    .from("dispatch_jobs")
+export async function getRetryableJobs() {
+  const { data, error } = await (supabase as any)
+    .from("dispatch_jobs_v2")
     .select("*")
-    .in("status", ["failed", "open"])
+    .in("dispatch_status", ["failed", "open", "expired"])
     .order("created_at", { ascending: false })
     .limit(50);
 
-  if (workspaceId) {
-    query = query.eq("workspace_id", workspaceId);
-  }
-
-  const { data, error } = await query;
   if (error) throw error;
   return data ?? [];
 }

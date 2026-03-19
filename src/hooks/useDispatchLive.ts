@@ -3,42 +3,42 @@ import { supabase } from "@/integrations/supabase/client";
 
 export function useDispatchJob(jobId?: string) {
   const [job, setJob] = useState<any | null>(null);
-  const [bids, setBids] = useState<any[]>([]);
+  const [offers, setOffers] = useState<any[]>([]);
 
   useEffect(() => {
     if (!jobId) return;
     let mounted = true;
 
     const load = async () => {
-      const [{ data: jobData }, { data: bidsData }] = await Promise.all([
-        (supabase as any).from("dispatch_jobs").select("*").eq("id", jobId).maybeSingle(),
-        (supabase as any).from("dispatch_bids").select("*").eq("job_id", jobId).order("created_at", { ascending: false }),
+      const [{ data: jobData }, { data: offersData }] = await Promise.all([
+        (supabase as any).from("dispatch_jobs_v2").select("*").eq("id", jobId).maybeSingle(),
+        (supabase as any).from("driver_mission_offers").select("*").eq("dispatch_job_id", jobId).order("created_at", { ascending: false }),
       ]);
       if (!mounted) return;
       setJob(jobData ?? null);
-      setBids(bidsData ?? []);
+      setOffers(offersData ?? []);
     };
 
     load();
 
     const jobsSub = supabase
-      .channel(`dispatch-job:${jobId}`)
-      .on("postgres_changes", { event: "*", schema: "public", table: "dispatch_jobs", filter: `id=eq.${jobId}` }, load)
+      .channel(`dispatch-job-v2:${jobId}`)
+      .on("postgres_changes", { event: "*", schema: "public", table: "dispatch_jobs_v2", filter: `id=eq.${jobId}` }, load)
       .subscribe();
 
-    const bidsSub = supabase
-      .channel(`dispatch-bids:${jobId}`)
-      .on("postgres_changes", { event: "*", schema: "public", table: "dispatch_bids", filter: `job_id=eq.${jobId}` }, load)
+    const offersSub = supabase
+      .channel(`dispatch-offers:${jobId}`)
+      .on("postgres_changes", { event: "*", schema: "public", table: "driver_mission_offers", filter: `dispatch_job_id=eq.${jobId}` }, load)
       .subscribe();
 
     return () => {
       mounted = false;
       jobsSub.unsubscribe();
-      bidsSub.unsubscribe();
+      offersSub.unsubscribe();
     };
   }, [jobId]);
 
-  return { job, bids };
+  return { job, offers };
 }
 
 export function useOrderLive(orderId?: string) {

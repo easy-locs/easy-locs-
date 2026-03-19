@@ -15,7 +15,7 @@ export default function AdminRealtimeControlPage() {
   const load = useCallback(async () => {
     const [ordersRes, dispatchRes, driversRes, supportRes] = await Promise.all([
       (supabase as any).from("orders").select("*", { count: "exact", head: true }).in("status", ["paid", "preparing", "ready_for_dispatch", "assigned", "in_progress"]),
-      (supabase as any).from("dispatch_jobs").select("*", { count: "exact", head: true }).in("status", ["open", "broadcast", "assigned", "picked_up"]),
+      (supabase as any).from("dispatch_jobs_v2").select("*", { count: "exact", head: true }).in("dispatch_status", ["open", "broadcasted", "assigned", "picked_up", "in_progress"]),
       (supabase as any).from("driver_profiles").select("*", { count: "exact", head: true }).eq("is_online", true),
       (supabase as any).from("support_tickets").select("*", { count: "exact", head: true }).in("status", ["open", "in_progress", "waiting_user"]),
     ]);
@@ -34,7 +34,7 @@ export default function AdminRealtimeControlPage() {
     const channel = supabase
       .channel("admin-realtime-control")
       .on("postgres_changes", { event: "*", schema: "public", table: "orders" }, load)
-      .on("postgres_changes", { event: "*", schema: "public", table: "dispatch_jobs" }, load)
+      .on("postgres_changes", { event: "*", schema: "public", table: "dispatch_jobs_v2" }, load)
       .on("postgres_changes", { event: "*", schema: "public", table: "driver_profiles" }, load)
       .subscribe();
 
