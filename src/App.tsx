@@ -261,6 +261,9 @@ const MerchantPosPage = safeLazy(() => import("./pages/MerchantPosPage"), "Merch
 const MerchantKitchenPage = safeLazy(() => import("./pages/MerchantKitchenPage"), "MerchantKitchenPage");
 const WalletCommerceTestPage = safeLazy(() => import("./pages/WalletCommerceTestPage"), "WalletCommerceTestPage");
 const AdminWalletDiagnosticsPage = safeLazy(() => import("./pages/AdminWalletDiagnosticsPage"), "AdminWalletDiagnosticsPage");
+const AdminDispatchDiagnosticsPage = safeLazy(() => import("./pages/AdminDispatchDiagnosticsPage"), "AdminDispatchDiagnosticsPage");
+const AdminAutomationsPage = safeLazy(() => import("./pages/AdminAutomationsPage"), "AdminAutomationsPage");
+const DriverEarningsPage = safeLazy(() => import("./pages/DriverEarningsPage"), "DriverEarningsPage");
 
 // Travel universe
 const TravelHub = safeLazy(() => import("./pages/travel/TravelHub"), "TravelHub");
