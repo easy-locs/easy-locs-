@@ -3,6 +3,7 @@
  * Route: /food/:type/:cuisine
  */
 import { useParams } from "react-router-dom";
+import { useDinoPageAudit } from "@/hooks/useDinoPageAudit";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import UniversePageShell from "@/components/universe/UniversePageShell";
