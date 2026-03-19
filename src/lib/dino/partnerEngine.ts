@@ -90,11 +90,16 @@ export async function dominateCategory(category: string): Promise<void> {
 // =============================
 
 export async function rewardTopPros(): Promise<number> {
-  const { data } = await supabase
+  const { data, error: fetchErr } = await supabase
     .from("dino_pro_performance")
     .select("pro_id, overall_score, tier")
     .order("overall_score", { ascending: false })
     .limit(MAX_REWARDS_PER_CYCLE);
+
+  if (fetchErr) {
+    console.error("[PartnerEngine] rewardTopPros fetch failed:", fetchErr);
+    throw new Error(`rewardTopPros: ${fetchErr.message} (code: ${fetchErr.code}, details: ${fetchErr.details})`);
+  }
 
   if (!data?.length) return 0;
 
@@ -106,12 +111,11 @@ export async function rewardTopPros(): Promise<number> {
 
     if (newTier === "standard") continue;
 
-    // Only upgrade if not already at this tier
     if (p.tier !== newTier) {
       await upgradeToPriorityPro(p.pro_id, newTier);
     }
 
-    await supabase.from("dino_notifications").insert({
+    const { error: notifErr } = await supabase.from("dino_notifications").insert({
       actor_type: "pro",
       actor_id: p.pro_id,
       channel: "push",
@@ -124,6 +128,10 @@ export async function rewardTopPros(): Promise<number> {
       } as Json,
       status: "pending",
     });
+
+    if (notifErr) {
+      console.error("[PartnerEngine] reward notification failed:", notifErr);
+    }
 
     rewarded++;
   }
