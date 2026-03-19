@@ -31,7 +31,7 @@ export default function RealEstateModule() {
     <ProtectedRoute>
       <DashboardLayout>
         <div className="space-y-4">
-          <MobilePageHeader title="Real Estate" backPath="/property-hub" />
+          <MobilePageHeader title="Real Estate" backTo="/property-hub" />
 
           {/* Tab navigation */}
           <div className="flex gap-1 overflow-x-auto pb-1 scrollbar-hide">

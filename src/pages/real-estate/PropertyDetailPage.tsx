@@ -34,7 +34,7 @@ export default function PropertyDetailPage() {
   return (
     <ProtectedRoute>
       <DashboardLayout>
-        <MobilePageHeader title={property?.label || "Property"} backPath="/real-estate" />
+        <MobilePageHeader title={property?.label || "Property"} backTo="/real-estate" />
 
         {isLoading && <div className="space-y-4 mt-4"><Skeleton className="h-40 rounded-xl" /></div>}
 
