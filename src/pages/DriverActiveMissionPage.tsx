@@ -155,5 +155,6 @@ export default function DriverActiveMissionPage() {
         </Card>
       )}
     </div>
+    </LocationPermissionGate>
   );
 }
