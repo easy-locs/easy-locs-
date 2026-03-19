@@ -691,6 +691,7 @@ const App = () => (
   </QueryClientProvider>
   </ThemeProvider>
   </ErrorBoundary>
+  </ChunkRecoveryBoundary>
 );
 
 export default App;
