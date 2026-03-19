@@ -8,6 +8,7 @@ export async function settleRideTip(params: {
   riderId: string;
   driverId: string;
   tipAmount: number;
+  currency?: string;
   threadId?: string | null;
 }) {
   const { rideRequestId, riderId, driverId, tipAmount, threadId } = params;
