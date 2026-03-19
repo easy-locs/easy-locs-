@@ -18,6 +18,7 @@ import EasyLocsLogo from "@/components/brand/EasyLocsLogo";
 import UpdateNotification from "@/components/UpdateNotification";
 import { SkipLink } from "@/components/ui/a11y";
 import SmartInstallBanner from "@/components/pwa/SmartInstallBanner";
+import OrbitCallRoot from "@/components/orbit/OrbitCallRoot";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import CountryGuard from "@/components/dashboard/CountryGuard";
