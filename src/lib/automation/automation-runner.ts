@@ -115,7 +115,7 @@ export async function runWorkflowStep(workflowId: string): Promise<RunResult> {
       completed_at: isLast ? new Date().toISOString() : null,
     } as any).eq("id", workflowId);
 
-    if (isLast) platformBus.emit("automation:workflow_completed", { workflowId });
+    if (isLast) platformBus.emit("automation:workflow_completed", { workflowId }, "system");
     return { workflowId, action: currentStep.action, completed: isLast };
 
   } catch (err: any) {
