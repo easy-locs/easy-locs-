@@ -260,6 +260,9 @@ const AdminHomeV1Page = safeLazy(() => import("./pages/AdminHomeV1Page"), "Admin
 const DriverLivePage = safeLazy(() => import("./pages/DriverLivePage"), "DriverLivePage");
 const DriverPickerPage = safeLazy(() => import("./pages/DriverPickerPage"), "DriverPickerPage");
 const FoodOrderCheckoutPage = safeLazy(() => import("./pages/FoodOrderCheckoutPage"), "FoodOrderCheckoutPage");
+const CheckoutPage = safeLazy(() => import("./pages/CheckoutPage"), "CheckoutPage");
+const OrdersPage = safeLazy(() => import("./pages/OrdersPage"), "OrdersPage");
+const TrackingPage = safeLazy(() => import("./pages/TrackingPage"), "TrackingPage");
 const DeliveryProofPage = safeLazy(() => import("./pages/DeliveryProofPage"), "DeliveryProofPage");
 const GuestCheckoutPage = safeLazy(() => import("./pages/GuestCheckoutPage"), "GuestCheckoutPage");
 const PaymentPage = safeLazy(() => import("./pages/PaymentPage"), "PaymentPage");
@@ -535,7 +538,10 @@ const App = () => (
               <Route path="/property-hub" element={<PropertyManagementHub />} />
               <Route path="/pos" element={<POSPage />} />
               <Route path="/my-orders" element={<MyOrdersPage />} />
+              <Route path="/orders" element={<OrdersPage />} />
               <Route path="/order/:orderId" element={<UnifiedOrderDetailPage />} />
+              <Route path="/checkout" element={<CheckoutPage />} />
+              <Route path="/tracking/:orderId" element={<TrackingPage />} />
 
               {/* Marketplace & Listings */}
               <Route path="/listing/:id" element={<PublicListing />} />
