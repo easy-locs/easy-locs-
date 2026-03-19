@@ -658,7 +658,7 @@ const App = () => (
 
               {/* Fallback */}
               <Route path="/index" element={<Index />} />
-              <Route path="*" element={<NotFound />} />
+              <Route path="*" element={<AppNotFoundPage />} />
             </Routes>
             </main>
            </Suspense>
