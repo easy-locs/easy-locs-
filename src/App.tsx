@@ -501,10 +501,22 @@ const App = () => (
               <Route path="/account/:orgId" element={<AccountShowcase />} />
               <Route path="/properties" element={<PropertiesShowcase />} />
 
-              {/* Real Estate */}
+              {/* Real Estate Module */}
+              <Route path="/real-estate" element={<RealEstateModulePage />}>
+                <Route index element={<REPropertiesPage />} />
+                <Route path="units" element={<REUnitsPage />} />
+                <Route path="tenants" element={<RETenantsPage />} />
+                <Route path="leases" element={<RELeasesPage />} />
+                <Route path="payments" element={<REPaymentsPage />} />
+                <Route path="documents" element={<REDocumentsPage />} />
+              </Route>
+              <Route path="/real-estate/property/:propertyId" element={<REPropertyDetailPage />} />
+              <Route path="/real-estate/lease/:leaseId" element={<RELeaseDetailPage />} />
+
+              {/* Real Estate Public */}
               <Route path="/top-rated" element={<RealEstateListings />} />
               <Route path="/trending" element={<RealEstateListings />} />
-              <Route path="/real-estate/:id" element={<PublicRealEstateListing />} />
+              <Route path="/real-estate-listing/:id" element={<PublicRealEstateListing />} />
 
               {/* SEO Layer pages */}
               <Route path="/concierge-services" element={<ConciergeServicesPage />} />
