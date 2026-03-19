@@ -28,8 +28,8 @@ export interface UniversalIdentity {
 export async function resolveUniversalIdentity(userId: string): Promise<UniversalIdentity> {
   const [profileRes, serviceRes, driverRes, orgRes, orbitRes] = await Promise.all([
     supabase.from("user_profiles").select("full_name, avatar_url").eq("id", userId).maybeSingle(),
-    (supabase as any).from("service_profiles").select("profile_type").eq("user_id", userId),
-    (supabase as any).from("driver_profiles").select("service_mode").eq("user_id", userId),
+    supabase.from("service_profiles").select("profile_type").eq("user_id", userId),
+    supabase.from("driver_profiles").select("service_mode").eq("user_id", userId),
     supabase.from("org_members").select("role, org_id").eq("user_id", userId),
     supabase.from("orbit_identity_profiles").select("public_handle").eq("user_id", userId).maybeSingle(),
   ]);
@@ -38,8 +38,9 @@ export async function resolveUniversalIdentity(userId: string): Promise<Universa
 
   // Service profile roles
   for (const sp of serviceRes.data ?? []) {
-    if (sp.profile_type && !roles.includes(sp.profile_type)) {
-      roles.push(sp.profile_type as UniversalRole);
+    const pt = sp.profile_type as UniversalRole | null;
+    if (pt && !roles.includes(pt)) {
+      roles.push(pt);
     }
   }
 
@@ -59,7 +60,7 @@ export async function resolveUniversalIdentity(userId: string): Promise<Universa
   }
 
   // Trust level from reputation
-  const { data: rep } = await (supabase as any)
+  const { data: rep } = await supabase
     .from("universal_reputation_scores")
     .select("overall_score")
     .eq("user_id", userId)
@@ -90,14 +91,14 @@ export async function ensureRole(userId: string, role: UniversalRole): Promise<v
   if (role === "customer") return; // implicit
 
   if (role === "driver" || role === "rider" || role === "taxi_driver") {
-    const { data } = await (supabase as any)
+    const { data } = await supabase
       .from("driver_profiles")
       .select("id")
       .eq("user_id", userId)
       .maybeSingle();
 
     if (!data) {
-      await (supabase as any).from("driver_profiles").insert({
+      await supabase.from("driver_profiles").insert({
         user_id: userId,
         service_mode: role === "taxi_driver" ? "taxi" : "delivery",
         vehicle_type: "bike",
@@ -110,14 +111,14 @@ export async function ensureRole(userId: string, role: UniversalRole): Promise<v
   }
 
   if (role === "merchant" || role === "merchant_operator" || role === "service_provider") {
-    const { data } = await (supabase as any)
+    const { data } = await supabase
       .from("service_profiles")
       .select("id")
       .eq("user_id", userId)
       .maybeSingle();
 
     if (!data) {
-      await (supabase as any).from("service_profiles").insert({
+      await supabase.from("service_profiles").insert({
         user_id: userId,
         profile_type: role,
         display_name: "New Pro",
@@ -128,7 +129,7 @@ export async function ensureRole(userId: string, role: UniversalRole): Promise<v
 
 /** Get trust level that follows the user across all services */
 export async function getUniversalTrustLevel(userId: string): Promise<number> {
-  const { data } = await (supabase as any)
+  const { data } = await supabase
     .from("universal_reputation_scores")
     .select("overall_score")
     .eq("user_id", userId)
