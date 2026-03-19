@@ -538,7 +538,10 @@ const App = () => (
               <Route path="/property-hub" element={<PropertyManagementHub />} />
               <Route path="/pos" element={<POSPage />} />
               <Route path="/my-orders" element={<MyOrdersPage />} />
+              <Route path="/orders" element={<OrdersPage />} />
               <Route path="/order/:orderId" element={<UnifiedOrderDetailPage />} />
+              <Route path="/checkout" element={<CheckoutPage />} />
+              <Route path="/tracking/:orderId" element={<TrackingPage />} />
 
               {/* Marketplace & Listings */}
               <Route path="/listing/:id" element={<PublicListing />} />
