@@ -68,7 +68,7 @@ export async function registerGhostDevice(ghostProfileId: string, tier: GhostTie
     .insert({
       ghost_profile_id: ghostProfileId,
       device_id: deviceId,
-      public_key_jwk: publicJwk,
+      public_key_jwk: publicJwk as unknown as import("@/integrations/supabase/types").Json,
       key_version: 1,
       trusted: !policy.deviceTrustRequired, // V2: auto-trust, V3: pending
       last_seen_at: new Date().toISOString(),
