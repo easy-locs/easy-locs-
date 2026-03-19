@@ -110,6 +110,12 @@ export default function DeliveryInvoicePanel({ orgId, className }: Props) {
     toast.success("Facture CSV téléchargée");
   };
 
+  const escHtml = (s: unknown) =>
+    String(s ?? '')
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+
   const printInvoice = () => {
     const printWindow = window.open("", "_blank");
     if (!printWindow || !summary) return;
@@ -121,11 +127,11 @@ th{background:#f8f9fa}
 .total{font-size:18px;font-weight:bold;text-align:right;margin-top:20px}
 h1{font-size:20px}h2{font-size:14px;color:#666}</style></head>
 <body><h1>📄 Facture Livraisons</h1>
-<h2>Période: ${summary.periodStart} → ${summary.periodEnd}</h2>
+<h2>Période: ${escHtml(summary.periodStart)} → ${escHtml(summary.periodEnd)}</h2>
 <table><thead><tr><th>Réf.</th><th>Livreur</th><th>Collecte</th><th>Livraison</th><th>Montant</th><th>Date</th></tr></thead>
-<tbody>${rows.map(r => `<tr><td>${r.id}</td><td>${r.driverName}</td><td>${r.pickupAddress}</td><td>${r.dropoffAddress}</td><td>${r.fee.toFixed(2)} ${r.currency}</td><td>${r.deliveredAt.slice(0, 10)}</td></tr>`).join("")}</tbody></table>
-<div class="total">Total: ${summary.totalAmount.toFixed(2)} ${summary.currency}</div>
-<p style="color:#999;font-size:10px;margin-top:40px">Généré par EASY-LOCS® le ${new Date().toLocaleDateString("fr")}</p>
+<tbody>${rows.map(r => `<tr><td>${escHtml(r.id)}</td><td>${escHtml(r.driverName)}</td><td>${escHtml(r.pickupAddress)}</td><td>${escHtml(r.dropoffAddress)}</td><td>${r.fee.toFixed(2)} ${escHtml(r.currency)}</td><td>${escHtml(r.deliveredAt.slice(0, 10))}</td></tr>`).join("")}</tbody></table>
+<div class="total">Total: ${summary.totalAmount.toFixed(2)} ${escHtml(summary.currency)}</div>
+<p style="color:#999;font-size:10px;margin-top:40px">Généré par EASY-LOCS® le ${escHtml(new Date().toLocaleDateString("fr"))}</p>
 </body></html>`;
     printWindow.document.write(html);
     printWindow.document.close();
