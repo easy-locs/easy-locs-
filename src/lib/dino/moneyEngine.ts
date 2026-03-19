@@ -186,10 +186,16 @@ async function recordOrderSplits(
 }
 
 // =============================
-// 5) ORDER PROCESSOR
+// 5) ORDER PROCESSOR (ESCROW-FIRST)
 // =============================
 
-export async function processOrder(order: DinoOrder): Promise<CommissionResult> {
+/**
+ * Processes an order using escrow-first flow:
+ * 1) Debit buyer → escrow wallet (hold)
+ * 2) On delivery confirmation → release escrow → credit merchant
+ * Falls back to direct settlement if no escrow wallet is provided.
+ */
+export async function processOrder(order: DinoOrder & { escrowWalletId?: string }): Promise<CommissionResult> {
   // 1) Resolve commission rule
   const rule = await resolveCommissionRate(order.category, order.city, order.country);
 
@@ -207,34 +213,100 @@ export async function processOrder(order: DinoOrder): Promise<CommissionResult> 
   // 3) Compute commission with surge
   const result = computeCommission(order.amount, rule.rate, rule.discount, surgeMultiplier);
 
-  // 4) Debit customer wallet
-  await recordLedgerEntry({
-    walletAccountId: order.customerWalletId,
-    amount: order.amount,
-    currency: order.currency,
-    direction: "debit",
-    entryType: "order_payment",
-    referenceId: order.id,
-    referenceType: "order",
-    metadata: { category: order.category, city: order.city },
-  });
+  if (order.escrowWalletId) {
+    // --- ESCROW FLOW ---
+    // 4a) Debit customer → escrow hold
+    await recordLedgerEntry({
+      walletAccountId: order.customerWalletId,
+      amount: order.amount,
+      currency: order.currency,
+      direction: "debit",
+      entryType: "escrow_hold",
+      referenceId: order.id,
+      referenceType: "order",
+      metadata: { category: order.category, city: order.city, escrow: true },
+    });
 
-  // 5) Credit merchant wallet (net amount)
-  await recordLedgerEntry({
-    walletAccountId: order.merchantWalletId,
-    amount: result.netToPro,
-    currency: order.currency,
-    direction: "credit",
-    entryType: "order_revenue",
-    referenceId: order.id,
-    referenceType: "order",
-    metadata: { commission: result.commission, rate: result.rate },
-  });
+    // 4b) Credit escrow wallet (hold)
+    await recordLedgerEntry({
+      walletAccountId: order.escrowWalletId,
+      amount: order.amount,
+      currency: order.currency,
+      direction: "credit",
+      entryType: "escrow_hold",
+      referenceId: order.id,
+      referenceType: "order",
+      metadata: { merchantWallet: order.merchantWalletId, netToPro: result.netToPro, commission: result.commission },
+    });
+  } else {
+    // --- DIRECT SETTLEMENT ---
+    // 4) Debit customer wallet
+    await recordLedgerEntry({
+      walletAccountId: order.customerWalletId,
+      amount: order.amount,
+      currency: order.currency,
+      direction: "debit",
+      entryType: "order_payment",
+      referenceId: order.id,
+      referenceType: "order",
+      metadata: { category: order.category, city: order.city },
+    });
+
+    // 5) Credit merchant wallet (net amount)
+    await recordLedgerEntry({
+      walletAccountId: order.merchantWalletId,
+      amount: result.netToPro,
+      currency: order.currency,
+      direction: "credit",
+      entryType: "order_revenue",
+      referenceId: order.id,
+      referenceType: "order",
+      metadata: { commission: result.commission, rate: result.rate },
+    });
+  }
 
   // 6) Record order splits
   await recordOrderSplits(order.id, order.merchantWalletId, result);
 
   return result;
+}
+
+/**
+ * Release escrow funds after delivery confirmation.
+ * Debits escrow wallet → credits merchant with net amount.
+ */
+export async function releaseEscrowToMerchant(params: {
+  orderId: string;
+  escrowWalletId: string;
+  merchantWalletId: string;
+  grossAmount: number;
+  netToPro: number;
+  commission: number;
+  currency: string;
+}): Promise<void> {
+  // Debit escrow wallet
+  await recordLedgerEntry({
+    walletAccountId: params.escrowWalletId,
+    amount: params.grossAmount,
+    currency: params.currency,
+    direction: "debit",
+    entryType: "escrow_release",
+    referenceId: params.orderId,
+    referenceType: "order",
+    metadata: { release: true },
+  });
+
+  // Credit merchant (net)
+  await recordLedgerEntry({
+    walletAccountId: params.merchantWalletId,
+    amount: params.netToPro,
+    currency: params.currency,
+    direction: "credit",
+    entryType: "escrow_release",
+    referenceId: params.orderId,
+    referenceType: "order",
+    metadata: { commission: params.commission },
+  });
 }
 
 // =============================
