@@ -1,8 +1,10 @@
 /**
- * IncomingCallModal — Displays incoming call with accept/reject buttons.
+ * IncomingCallModal — Displays incoming call with accept/reject buttons + ringtone.
  */
+import { useEffect } from "react";
 import { Phone, PhoneOff, Video } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { startRingtone, stopRingtone } from "@/lib/calls/call-ringtone";
 import type { CallSessionRecord } from "@/lib/calls/call-types";
 
 interface Props {
@@ -13,13 +15,23 @@ interface Props {
 }
 
 export default function IncomingCallModal({ open, session, onAccept, onReject }: Props) {
+  // Play ringtone while modal is open
+  useEffect(() => {
+    if (open && session) {
+      startRingtone();
+    } else {
+      stopRingtone();
+    }
+    return () => stopRingtone();
+  }, [open, session]);
+
   if (!open || !session) return null;
 
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm animate-in fade-in">
       <div className="bg-card border border-border rounded-2xl p-8 max-w-sm w-full mx-4 shadow-2xl space-y-6">
         <div className="flex flex-col items-center gap-4">
-          <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
+          <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center animate-pulse">
             {session.call_type === "video" ? (
               <Video className="w-8 h-8 text-primary" />
             ) : (
@@ -40,7 +52,10 @@ export default function IncomingCallModal({ open, session, onAccept, onReject }:
             <Button
               variant="destructive"
               className="flex-1 gap-2"
-              onClick={onReject}
+              onClick={() => {
+                stopRingtone();
+                onReject();
+              }}
             >
               <PhoneOff className="w-4 h-4" />
               Reject
@@ -48,7 +63,10 @@ export default function IncomingCallModal({ open, session, onAccept, onReject }:
 
             <Button
               className="flex-1 gap-2 bg-green-600 hover:bg-green-700 text-white"
-              onClick={onAccept}
+              onClick={() => {
+                stopRingtone();
+                onAccept();
+              }}
             >
               <Phone className="w-4 h-4" />
               Accept

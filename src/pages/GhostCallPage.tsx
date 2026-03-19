@@ -1,3 +1,6 @@
+/**
+ * GhostCallPage — Anonymous WebRTC call with media tracks.
+ */
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,41 +13,77 @@ import { startGhostOffer, useGhostRTC } from "@/hooks/useGhostRTC";
 
 export default function GhostCallPage() {
   const pcRef = useRef<RTCPeerConnection | null>(null);
+  const localStreamRef = useRef<MediaStream | null>(null);
+  const remoteAudioRef = useRef<HTMLAudioElement>(null);
   const [callId, setCallId] = useState<string | null>(null);
   const [participantId, setParticipantId] = useState<string | null>(null);
+  const [status, setStatus] = useState<string>("initializing");
 
   useEffect(() => {
     let mounted = true;
 
     (async () => {
-      pcRef.current = new RTCPeerConnection({
-        iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
-      });
+      try {
+        const pc = new RTCPeerConnection({
+          iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
+        });
+        pcRef.current = pc;
 
-      const call = await createGhostCallSession({
-        callType: "audio",
-        anonymityLevel: "ghost",
-        relayMode: "sealed",
-      });
-      if (!mounted) return;
-      setCallId(call.id);
+        // Set up remote audio playback
+        const remoteStream = new MediaStream();
+        pc.ontrack = (event) => {
+          for (const track of event.streams[0].getTracks()) {
+            remoteStream.addTrack(track);
+          }
+          if (remoteAudioRef.current) {
+            remoteAudioRef.current.srcObject = remoteStream;
+            remoteAudioRef.current.play().catch(() => {});
+          }
+        };
 
-      const participant = await addGhostCallParticipant({
-        callSessionId: call.id,
-        role: "caller",
-        transportIdentity: crypto.randomUUID(),
-      });
-      if (!mounted) return;
-      setParticipantId(participant.id);
+        // Get local media BEFORE creating offer
+        const localStream = await navigator.mediaDevices.getUserMedia({
+          audio: true,
+          video: false,
+        });
+        localStreamRef.current = localStream;
 
-      await updateGhostCallParticipant(participant.id, {
-        status: "joined",
-        joinedAt: new Date().toISOString(),
-      });
+        // Add tracks to peer connection
+        for (const track of localStream.getTracks()) {
+          pc.addTrack(track, localStream);
+        }
+
+        const call = await createGhostCallSession({
+          callType: "audio",
+          anonymityLevel: "ghost",
+          relayMode: "sealed",
+        });
+        if (!mounted) return;
+        setCallId(call.id);
+
+        const participant = await addGhostCallParticipant({
+          callSessionId: call.id,
+          role: "caller",
+          transportIdentity: crypto.randomUUID(),
+        });
+        if (!mounted) return;
+        setParticipantId(participant.id);
+
+        await updateGhostCallParticipant(participant.id, {
+          status: "joined",
+          joinedAt: new Date().toISOString(),
+        });
+
+        if (mounted) setStatus("ready");
+      } catch (err: any) {
+        console.error("[GhostCallPage] init error:", err);
+        if (mounted) setStatus(`error: ${err?.message ?? "unknown"}`);
+      }
     })();
 
     return () => {
       mounted = false;
+      localStreamRef.current?.getTracks().forEach((t) => t.stop());
       pcRef.current?.close();
     };
   }, []);
@@ -58,11 +97,13 @@ export default function GhostCallPage() {
 
   const startCall = async () => {
     if (!callId || !participantId || !pcRef.current) return;
+    setStatus("calling...");
     await startGhostOffer({
       callSessionId: callId,
       participantId,
       pc: pcRef.current,
     });
+    setStatus("offer sent — waiting for answer");
   };
 
   return (
@@ -70,13 +111,24 @@ export default function GhostCallPage() {
       <Card>
         <CardHeader>
           <CardTitle>Ghost Call</CardTitle>
-          <p className="text-sm text-muted-foreground">Sealed signaling · anonymous transport · stealth routing</p>
+          <p className="text-sm text-muted-foreground">
+            Sealed signaling · anonymous transport · stealth routing
+          </p>
         </CardHeader>
         <CardContent className="space-y-4">
-          <Button onClick={startCall} className="w-full">Start ghost call</Button>
+          <Button
+            onClick={startCall}
+            className="w-full"
+            disabled={status !== "ready"}
+          >
+            {status === "ready" ? "Start ghost call" : status}
+          </Button>
           <p className="text-xs text-muted-foreground">
-            call: {callId ?? "creating..."} · participant: {participantId ?? "joining..."}
+            call: {callId ?? "creating..."} · participant:{" "}
+            {participantId ?? "joining..."}
           </p>
+          {/* Hidden audio element for remote playback */}
+          <audio ref={remoteAudioRef} autoPlay playsInline className="hidden" />
         </CardContent>
       </Card>
     </div>
