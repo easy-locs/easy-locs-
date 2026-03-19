@@ -6,6 +6,7 @@
  *   - menu_items
  *   - storefront_pages
  * All marked as unclaimed / coming_soon.
+ * Now properly links storefront_pages.merchant_profile_id.
  */
 import { supabase } from "@/integrations/supabase/client";
 import { generateDubaiRestaurants, type GeneratedRestaurant } from "./dubai-restaurant-generator";
@@ -29,7 +30,6 @@ export async function importDubaiRestaurantsV2(
   const userId = authData.user?.id;
   if (!userId) throw new Error("Must be authenticated to import");
 
-  // We need an org_id for storefront_pages — get the user's first org
   const { data: memberRow } = await (supabase as any)
     .from("org_members")
     .select("org_id")
@@ -50,7 +50,6 @@ export async function importDubaiRestaurantsV2(
     done: false,
   };
 
-  // Process in batches of 10 for speed
   const BATCH = 10;
   for (let i = 0; i < restaurants.length; i += BATCH) {
     const batch = restaurants.slice(i, i + BATCH);
@@ -81,7 +80,7 @@ async function importSingleRestaurant(
   userId: string,
   orgId: string
 ): Promise<"imported" | "skipped"> {
-  // Check duplicates by source_external_id
+  // Check duplicates
   const { data: existing } = await (supabase as any)
     .from("merchant_onboarding_sources")
     .select("id")
@@ -123,12 +122,12 @@ async function importSingleRestaurant(
     .single();
   if (mErr) throw new Error(`merchant: ${mErr.message}`);
 
-  // 3. Menu items
+  // 3. Menu items (price can be null)
   if (r.menu_items.length > 0) {
     const rows = r.menu_items.map((item, idx) => ({
       merchant_profile_id: merchant.id,
       name: item.name,
-      price: item.price,
+      price: item.price ?? null,
       currency: "AED",
       description: item.description,
       is_available: true,
@@ -138,7 +137,7 @@ async function importSingleRestaurant(
     if (menuErr) throw new Error(`menu: ${menuErr.message}`);
   }
 
-  // 4. Storefront page (coming_soon)
+  // 4. Storefront page — NOW with merchant_profile_id linkage
   const { error: shopErr } = await (supabase as any)
     .from("storefront_pages")
     .insert({
@@ -146,6 +145,7 @@ async function importSingleRestaurant(
       slug: r.slug,
       org_id: orgId,
       user_id: userId,
+      merchant_profile_id: merchant.id, // ← Critical linkage
       entity_type: "fixed_store",
       presence_mode: "pin",
       coverage_mode: "radius",
