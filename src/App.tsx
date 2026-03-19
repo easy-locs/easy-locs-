@@ -1,3 +1,4 @@
+import EmergencyRenderTestPage from "@/pages/EmergencyRenderTestPage";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -375,6 +376,9 @@ const App = () => (
            <Suspense fallback={<PageLoader />}>
             <main id="main-content">
             <Routes>
+              {/* Emergency render test — no wrappers */}
+              <Route path="/emergency-test" element={<EmergencyRenderTestPage />} />
+
               {/* ══════ PUBLIC WEBSITE ══════ */}
               {/* Homepage */}
               <Route path="/" element={<Index />} />
