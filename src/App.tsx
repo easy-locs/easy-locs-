@@ -228,6 +228,7 @@ const AdminDispatchBoardPage = safeLazy(() => import("./pages/AdminDispatchBoard
 const AdminSLAPage = safeLazy(() => import("./pages/AdminSLAPage"), "AdminSLAPage");
 const RefundRequestPage = safeLazy(() => import("./pages/RefundRequestPage"), "RefundRequestPage");
 const OrbitLiveCallPage = safeLazy(() => import("./pages/OrbitLiveCallPage"), "OrbitLiveCallPage");
+const OrbitContactsPage = safeLazy(() => import("./components/orbit/OrbitContactsDirectory"), "OrbitContactsPage");
 const TeamCommandCenterPage = safeLazy(() => import("./pages/TeamCommandCenterPage"), "TeamCommandCenterPage");
 const AdminTrustGraphPage = safeLazy(() => import("./pages/AdminTrustGraphPage"), "AdminTrustGraphPage");
 const ExecutiveKPIBoardPage = safeLazy(() => import("./pages/ExecutiveKPIBoardPage"), "ExecutiveKPIBoardPage");
@@ -468,6 +469,7 @@ const App = () => (
               <Route path="/admin/trust-graph" element={<AdminTrustGraphPage />} />
               <Route path="/refund/:rideRequestId" element={<RefundRequestPage />} />
               <Route path="/orbit/call/:threadId" element={<OrbitLiveCallPage />} />
+              <Route path="/orbit/contacts" element={<OrbitContactsPage />} />
               <Route path="/team/command-center" element={<TeamCommandCenterPage />} />
               <Route path="/admin/executive-kpi" element={<ExecutiveKPIBoardPage />} />
               <Route path="/team/permissions" element={<TeamPermissionsPage />} />
