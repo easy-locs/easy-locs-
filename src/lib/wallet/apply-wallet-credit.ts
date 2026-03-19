@@ -29,7 +29,7 @@ export async function applyWalletCredit(params: {
   await supabase.from("user_wallet_credits" as any).upsert({
     user_id: userId,
     credits_amount: next,
-    currency: "AED",
+    currency: params.currency ?? "AED",
     updated_at: new Date().toISOString(),
   } as any);
 
