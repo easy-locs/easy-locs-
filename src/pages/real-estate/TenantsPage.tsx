@@ -4,7 +4,8 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Search, Users, Mail, Phone, MapPin } from "lucide-react";
+import { Search, Users, Mail, Phone, MapPin, MessageCircle } from "lucide-react";
+import { Link } from "react-router-dom";
 
 export default function TenantsPage() {
   const [search, setSearch] = useState("");
@@ -14,7 +15,7 @@ export default function TenantsPage() {
     <div className="space-y-4">
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-        <Input placeholder="Search tenants…" value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
+        <Input placeholder="Search tenants…" value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9 bg-card border-border/50" />
       </div>
 
       {isLoading && <div className="space-y-3">{[1, 2, 3].map((i) => <Skeleton key={i} className="h-20 rounded-xl" />)}</div>}
@@ -33,8 +34,8 @@ export default function TenantsPage() {
       )}
 
       <div className="grid gap-3">
-        {tenants?.map((t: any) => (
-          <Card key={t.id} className="hover:shadow-sm transition-shadow">
+        {tenants?.map((t) => (
+          <Card key={t.id} className="hover:shadow-sm transition-all border-border/50">
             <CardContent className="p-4">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0 flex-1">
@@ -50,13 +51,13 @@ export default function TenantsPage() {
                     </div>
                   )}
                 </div>
-                <div className="shrink-0">
-                  {t.rent_amount && (
+                <div className="shrink-0 flex flex-col items-end gap-1.5">
+                  {t.rent_amount != null && (
                     <Badge variant="secondary" className="text-[10px]">{t.rent_amount}€/mo</Badge>
                   )}
-                  {t.nationality && (
-                    <Badge variant="outline" className="text-[10px] ml-1">{t.nationality}</Badge>
-                  )}
+                  <Link to="/orbit" className="text-primary hover:text-primary/80">
+                    <MessageCircle className="w-4 h-4" />
+                  </Link>
                 </div>
               </div>
             </CardContent>
