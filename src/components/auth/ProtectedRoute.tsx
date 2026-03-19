@@ -49,6 +49,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const isClientRoute = location.pathname.startsWith("/client");
   const isAppRoute = location.pathname.startsWith("/app");
   const isPropertyHubRoute = location.pathname.startsWith("/property-hub");
+  const isAdminRoute = location.pathname.startsWith("/admin");
 
   // Keep onboarding accessible for brand-new users, but never force-redirect existing sessions to it.
   if (isOnboarding && onboardingCompleted) {
