@@ -5521,6 +5521,10 @@ const pageEn: Record<string, string> = {
   "nav.wallet": "Wallet",
   "nav.communication": "Communication",
   "nav.profile": "Profile",
+  "nav.radar": "Radar",
+  "nav.shop_team": "Team",
+  "nav.catalog": "Catalog",
+  "nav.my_shops": "My Shops",
   // Business hub
   "business.hub_title": "My Business",
   "business.hub_subtitle": "Manage all your business operations.",
