@@ -14,6 +14,7 @@ import AppLockGuard from "@/components/security/AppLockGuard";
 import SplashScreen from "@/components/brand/SplashScreen";
 import BrandSuccessFlash from "@/components/brand/BrandSuccessFlash";
 import BrandLoadingSpinner from "@/components/brand/BrandLoadingSpinner";
+import EasyLocsLogo from "@/components/brand/EasyLocsLogo";
 import UpdateNotification from "@/components/UpdateNotification";
 import { SkipLink } from "@/components/ui/a11y";
 import SmartInstallBanner from "@/components/pwa/SmartInstallBanner";
@@ -305,8 +306,8 @@ const queryClient = new QueryClient({
 (window as any).__REACT_QUERY_CLIENT__ = queryClient;
 
 const PageLoader = () => (
-  <div className="min-h-screen flex items-center justify-center" style={{ background: "hsl(220 45% 8%)" }}>
-    <BrandLoadingSpinner size={36} label="Loading..." />
+  <div className="min-h-screen flex flex-col items-center justify-center gap-6" style={{ background: "hsl(220 45% 8%)" }}>
+    <EasyLocsLogo variant="splash" size="md" animate />
   </div>
 );
 
