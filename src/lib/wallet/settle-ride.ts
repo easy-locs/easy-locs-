@@ -17,7 +17,7 @@ export async function settleRide(params: {
       user_id: riderId,
       direction: "debit",
       amount,
-      currency: "AED",
+      currency: params.currency ?? "AED",
       context_type: "ride",
       context_id: rideRequestId,
       reference_id: threadId ?? null,
