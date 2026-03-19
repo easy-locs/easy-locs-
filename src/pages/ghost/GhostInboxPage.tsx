@@ -41,7 +41,7 @@ export default function GhostInboxPage() {
     })();
   }, [user?.id]);
 
-  if (loading) return <PageLoadingState message="Loading Ghost inbox..." />;
+  if (loading) return <PageLoadingState title="Loading Ghost inbox..." />;
 
   return (
     <div className="min-h-screen bg-background">
