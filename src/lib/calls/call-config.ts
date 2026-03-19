@@ -1,28 +1,32 @@
 /**
- * WebRTC ICE configuration with STUN + TURN fallback.
+ * WebRTC ICE configuration — fetches from rtc_config table with STUN fallback.
  */
+import { supabase } from "@/integrations/supabase/client";
 
-export function getRtcConfiguration(): RTCConfiguration {
-  return {
+export async function getRtcConfiguration(): Promise<RTCConfiguration> {
+  const fallback: RTCConfiguration = {
     iceServers: [
-      {
-        urls: [
-          "stun:stun.l.google.com:19302",
-          "stun:stun1.l.google.com:19302",
-          "stun:global.stun.twilio.com:3478",
-        ],
-      },
-      // TURN servers — replace with production credentials
-      // {
-      //   urls: [
-      //     "turn:YOUR_TURN_HOST:3478?transport=udp",
-      //     "turn:YOUR_TURN_HOST:3478?transport=tcp",
-      //     "turns:YOUR_TURN_HOST:5349?transport=tcp",
-      //   ],
-      //   username: "YOUR_TURN_USERNAME",
-      //   credential: "YOUR_TURN_PASSWORD",
-      // },
+      { urls: "stun:stun.l.google.com:19302" },
+      { urls: "stun:stun1.l.google.com:19302" },
     ],
-    iceTransportPolicy: "all",
   };
+
+  try {
+    const { data } = await (supabase as any)
+      .from("rtc_config")
+      .select("*")
+      .eq("active", true)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (!data?.ice_servers) return fallback;
+
+    return {
+      iceServers: data.ice_servers,
+      iceTransportPolicy: data.ice_transport_policy ?? "all",
+    };
+  } catch {
+    return fallback;
+  }
 }

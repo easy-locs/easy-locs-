@@ -8,31 +8,26 @@ export type CallSessionStatus =
   | "ringing"
   | "accepted"
   | "rejected"
-  | "missed"
   | "ended"
-  | "failed";
+  | "missed";
 
 export type SignalType =
   | "offer"
   | "answer"
   | "ice"
-  | "hangup"
+  | "accept"
   | "reject"
-  | "accept";
+  | "hangup";
 
 export interface CallSessionRecord {
   id: string;
-  room_id: string;
-  call_type: CallType;
   caller_user_id: string;
   callee_user_id: string;
+  call_type: CallType;
   status: CallSessionStatus;
-  e2ee_key_hint?: string | null;
-  started_at?: string | null;
-  answered_at?: string | null;
-  ended_at?: string | null;
-  timeout_at: string;
-  metadata_json?: Record<string, unknown>;
+  started_at: string | null;
+  answered_at: string | null;
+  ended_at: string | null;
   created_at: string;
   updated_at: string;
 }
