@@ -5,6 +5,7 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import QRCode from "react-qr-code";
+import { buildQrEntryUrl } from "@/lib/qr/qr-link";
 
 interface GeneratedQr {
   targetCode: string;
@@ -19,7 +20,7 @@ export default function QrGeneratePage() {
   const [loading, setLoading] = useState(false);
   const [codes, setCodes] = useState<GeneratedQr[]>([]);
 
-  const baseUrl = window.location.origin + "/#/qr/entry/";
+  const baseUrl = ""; // using buildQrEntryUrl instead
 
   async function handleGenerate() {
     if (!merchantId.trim()) {
@@ -51,7 +52,7 @@ export default function QrGeneratePage() {
         targetCode: r.target_code,
         targetType: r.target_type,
         tableNumber: r.table_number,
-        url: `${baseUrl}${encodeURIComponent(r.target_code)}`,
+        url: buildQrEntryUrl(r.target_code),
       }));
 
       setCodes(generated);

@@ -99,6 +99,8 @@ export const ROUTE_REGISTRY = [
   { group: "admin", label: "Restaurant Seed Test", path: "/admin/test-restaurants" },
   { group: "admin", label: "Alert Center", path: "/admin/alerts" },
   { group: "admin", label: "Orbit Call Test", path: "/orbit/call-test" },
+  { group: "admin", label: "Runtime Audit", path: "/admin/runtime-audit" },
+  { group: "admin", label: "Runtime Quick Links", path: "/admin/runtime-links" },
 
   { group: "public", label: "Coming Soon", path: "/coming-soon/:slug" },
   { group: "public", label: "City Market", path: "/city-market/:citySlug" },
