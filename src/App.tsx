@@ -407,7 +407,7 @@ const App = () => (
 
               {/* ══════ PUBLIC WEBSITE ══════ */}
               {/* Homepage */}
-              <Route path="/" element={<ProtectedRoute fallback={<Index />}><OrbitAppShell><OrbitHome /></OrbitAppShell></ProtectedRoute>} />
+              <Route path="/" element={<HomeRouter />} />
               <Route path="/home" element={<Index />} />
 
               {/* Auth */}
