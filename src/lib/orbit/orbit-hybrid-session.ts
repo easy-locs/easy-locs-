@@ -68,7 +68,7 @@ export async function deriveOrbitSessionKeys(
   sharedSecret: Uint8Array,
   salt: string
 ): Promise<HybridSessionKeys> {
-  const baseKey = await crypto.subtle.importKey("raw", sharedSecret, "HKDF", false, ["deriveKey"]);
+  const baseKey = await crypto.subtle.importKey("raw", sharedSecret as unknown as ArrayBuffer, "HKDF", false, ["deriveKey"]);
   const saltBytes = new TextEncoder().encode(salt);
 
   const derive = (info: string) =>

@@ -69,7 +69,7 @@ export async function validateSecureShareToken(
   try {
     const iv = b64ToUint8(token.nonce);
     const cipher = b64ToUint8(token.encryptedPayload);
-    const decrypted = await crypto.subtle.decrypt({ name: "AES-GCM", iv }, key, cipher);
+    const decrypted = await crypto.subtle.decrypt({ name: "AES-GCM", iv: iv as unknown as ArrayBuffer }, key, cipher as unknown as ArrayBuffer);
     const payload = JSON.parse(new TextDecoder().decode(decrypted));
     return { valid: true, payload };
   } catch {
