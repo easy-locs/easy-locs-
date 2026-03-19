@@ -62,7 +62,7 @@ export default function IncomingCallModal({ open, session, onAccept, onReject }:
             </Button>
 
             <Button
-              className="flex-1 gap-2 bg-green-600 hover:bg-green-700 text-white"
+              className="flex-1 gap-2 bg-emerald-600 hover:bg-emerald-700 text-primary-foreground"
               onClick={() => {
                 stopRingtone();
                 onAccept();

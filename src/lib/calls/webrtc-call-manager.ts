@@ -36,7 +36,7 @@ export class WebRtcCallManager {
     if (!this.remoteAudioEl) {
       this.remoteAudioEl = document.createElement("audio");
       this.remoteAudioEl.autoplay = true;
-      this.remoteAudioEl.playsInline = true;
+      (this.remoteAudioEl as any).playsInline = true;
       // Keep it in the DOM so browsers don't garbage-collect it
       this.remoteAudioEl.style.display = "none";
       document.body.appendChild(this.remoteAudioEl);
