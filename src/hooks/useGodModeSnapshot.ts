@@ -48,7 +48,8 @@ export function useGodModeSnapshot(userId: string | undefined) {
 
   return {
     ...query,
+    data: snapshotWithRole,
     setActiveRole,
-    activeRole: query.data?.identity?.activeRole ?? roleOverride ?? "customer",
+    activeRole: snapshotWithRole?.identity?.activeRole ?? roleOverride ?? "customer",
   };
 }
