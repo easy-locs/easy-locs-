@@ -7,6 +7,7 @@ import { useCallSignals } from "@/hooks/useCallSignals";
 import { useIncomingCalls } from "@/hooks/useIncomingCalls";
 import IncomingCallModal from "@/components/calls/IncomingCallModal";
 import { OrbitCallService } from "@/lib/calls/call-service";
+import { assertCallReady } from "@/lib/calls/call-guards";
 import { supabase } from "@/integrations/supabase/client";
 import type { CallSessionRecord, CallSignalRecord, CallType } from "@/lib/calls/call-types";
 
@@ -52,24 +53,31 @@ export default function OrbitCallTestPage() {
   const startCall = async () => {
     if (!user?.id || !peerUserId) return;
 
-    const { session, manager } = await serviceRef.current.startOutgoingCall({
-      callerUserId: user.id,
-      calleeUserId: peerUserId,
-      callType,
-    });
+    try {
+      assertCallReady({ video: callType === "video" });
 
-    setCurrentSession(session);
+      const { session, manager } = await serviceRef.current.startOutgoingCall({
+        callerUserId: user.id,
+        calleeUserId: peerUserId,
+        callType,
+      });
 
-    if (localVideoRef.current) {
-      localVideoRef.current.srcObject = manager.getLocalStream();
-      localVideoRef.current.muted = true;
-      localVideoRef.current.playsInline = true;
-      await localVideoRef.current.play().catch(() => {});
-    }
+      setCurrentSession(session);
 
-    if (remoteVideoRef.current) {
-      remoteVideoRef.current.srcObject = manager.getRemoteStream();
-      remoteVideoRef.current.playsInline = true;
+      if (localVideoRef.current) {
+        localVideoRef.current.srcObject = manager.getLocalStream();
+        localVideoRef.current.muted = true;
+        localVideoRef.current.playsInline = true;
+        await localVideoRef.current.play().catch(() => {});
+      }
+
+      if (remoteVideoRef.current) {
+        remoteVideoRef.current.srcObject = manager.getRemoteStream();
+        remoteVideoRef.current.playsInline = true;
+      }
+    } catch (e: any) {
+      console.error("[startCall]", e);
+      alert(e?.message ?? "Call start failed");
     }
   };
 
@@ -92,27 +100,34 @@ export default function OrbitCallTestPage() {
         ? openIncoming.callee_user_id
         : offerSignal.sender_user_id;
 
-    const manager = await serviceRef.current.acceptIncomingCall({
-      sessionId: openIncoming.id,
-      myUserId: user.id,
-      peerUserId: peerUserIdResolved,
-      callType: openIncoming.call_type,
-      remoteOffer: offerSignal.payload,
-    });
+    try {
+      assertCallReady({ video: openIncoming.call_type === "video" });
 
-    if (localVideoRef.current) {
-      localVideoRef.current.srcObject = manager.getLocalStream();
-      localVideoRef.current.muted = true;
-      localVideoRef.current.playsInline = true;
-      await localVideoRef.current.play().catch(() => {});
+      const manager = await serviceRef.current.acceptIncomingCall({
+        sessionId: openIncoming.id,
+        myUserId: user.id,
+        peerUserId: peerUserIdResolved,
+        callType: openIncoming.call_type,
+        remoteOffer: offerSignal.payload,
+      });
+
+      if (localVideoRef.current) {
+        localVideoRef.current.srcObject = manager.getLocalStream();
+        localVideoRef.current.muted = true;
+        localVideoRef.current.playsInline = true;
+        await localVideoRef.current.play().catch(() => {});
+      }
+
+      if (remoteVideoRef.current) {
+        remoteVideoRef.current.srcObject = manager.getRemoteStream();
+        remoteVideoRef.current.playsInline = true;
+      }
+
+      setCurrentSession(openIncoming);
+    } catch (e: any) {
+      console.error("[acceptCall]", e);
+      alert(e?.message ?? "Call accept failed");
     }
-
-    if (remoteVideoRef.current) {
-      remoteVideoRef.current.srcObject = manager.getRemoteStream();
-      remoteVideoRef.current.playsInline = true;
-    }
-
-    setCurrentSession(openIncoming);
   };
 
   const rejectCall = async () => {
