@@ -1,5 +1,6 @@
 /**
  * OrbitCallService — orchestrates WebRTC lifecycle with signaling.
+ * Includes ringtone and connection tone management.
  */
 import { WebRtcCallManager } from "@/lib/calls/webrtc-call-manager";
 import {
@@ -9,6 +10,12 @@ import {
   rejectCallSession,
   sendCallSignal,
 } from "@/lib/calls/call-session-service";
+import {
+  startRingtone,
+  stopRingtone,
+  playCallConnectedTone,
+  playCallEndedTone,
+} from "@/lib/calls/call-ringtone";
 import type {
   CallSignalRecord,
   CallType,
@@ -27,6 +34,9 @@ export class OrbitCallService {
 
     this.manager = new WebRtcCallManager();
     this.currentSessionId = session.id;
+
+    // Start ringing tone for caller while waiting
+    startRingtone();
 
     await this.manager.startLocalMedia(params.callType === "video");
 
@@ -60,6 +70,10 @@ export class OrbitCallService {
     callType: CallType;
     remoteOffer: RTCSessionDescriptionInit;
   }) {
+    // Stop ringtone and play connected tone
+    stopRingtone();
+    playCallConnectedTone();
+
     this.manager = new WebRtcCallManager();
     this.currentSessionId = params.sessionId;
 
@@ -102,6 +116,8 @@ export class OrbitCallService {
     myUserId: string;
     peerUserId: string;
   }) {
+    stopRingtone();
+
     await rejectCallSession(params.sessionId);
 
     await sendCallSignal({
@@ -118,6 +134,9 @@ export class OrbitCallService {
     myUserId: string;
     peerUserId: string;
   }) {
+    stopRingtone();
+    playCallEndedTone();
+
     await endOrbitCallSession(params.sessionId);
 
     await sendCallSignal({
@@ -137,9 +156,17 @@ export class OrbitCallService {
     if (!this.manager) return;
 
     if (signal.signal_type === "answer") {
+      // Caller receives answer — stop ringing, play connected tone
+      stopRingtone();
+      playCallConnectedTone();
       await this.manager.applyAnswer(
         signal.payload as unknown as RTCSessionDescriptionInit
       );
+    }
+
+    if (signal.signal_type === "accept") {
+      // Callee accepted — stop ringtone on caller side
+      stopRingtone();
     }
 
     if (signal.signal_type === "ice") {
@@ -149,6 +176,8 @@ export class OrbitCallService {
     }
 
     if (signal.signal_type === "hangup" || signal.signal_type === "reject") {
+      stopRingtone();
+      playCallEndedTone();
       this.manager.destroy();
       this.manager = null;
       this.currentSessionId = null;
