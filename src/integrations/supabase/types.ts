@@ -4615,6 +4615,36 @@ export type Database = {
         }
         Relationships: []
       }
+      dino_visibility_overrides: {
+        Row: {
+          boost_multiplier: number
+          created_at: string
+          entity_id: string
+          entity_type: string
+          expires_at: string | null
+          id: string
+          reason: string | null
+        }
+        Insert: {
+          boost_multiplier?: number
+          created_at?: string
+          entity_id: string
+          entity_type?: string
+          expires_at?: string | null
+          id?: string
+          reason?: string | null
+        }
+        Update: {
+          boost_multiplier?: number
+          created_at?: string
+          entity_id?: string
+          entity_type?: string
+          expires_at?: string | null
+          id?: string
+          reason?: string | null
+        }
+        Relationships: []
+      }
       dispatch_bids: {
         Row: {
           amount: number | null
