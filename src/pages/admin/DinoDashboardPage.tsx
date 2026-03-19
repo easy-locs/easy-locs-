@@ -254,7 +254,7 @@ function StatCard({ label, value, icon, variant }: { label: string; value: numbe
   return (
     <Card>
       <CardContent className="py-3 px-4 flex items-center gap-3">
-        <div className={`p-2 rounded-lg ${variant === "warning" ? "bg-destructive/10 text-destructive" : variant === "success" ? "bg-green-500/10 text-green-500" : "bg-muted text-muted-foreground"}`}>
+        <div className={`p-2 rounded-lg ${variant === "warning" ? "bg-destructive/10 text-destructive" : variant === "success" ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"}`}>
           {icon}
         </div>
         <div>
