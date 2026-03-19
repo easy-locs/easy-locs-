@@ -173,7 +173,7 @@ export default function OrbitHome() {
     queryKey: ["home-shops"],
     queryFn: async () => {
       const { data } = await supabase
-        .from("storefront_pages")
+        .from("storefront_pages" as any)
         .select("id, shop_name, vertical, city, logo_url, latitude, longitude")
         .eq("published", true)
         .limit(20);
