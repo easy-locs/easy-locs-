@@ -51,6 +51,21 @@ export default function PublicStorefrontBySlugPage() {
         </p>
       </div>
 
+      {/* Claim Banner for unclaimed restaurants */}
+      {merchantProfile?.onboarding_status === "imported_not_claimed" && (
+        <div className="rounded-xl border-2 border-dashed border-primary/30 bg-primary/5 p-4 text-center space-y-2">
+          <Store className="h-6 w-6 mx-auto text-primary" />
+          <p className="text-sm font-semibold text-foreground">Is this your restaurant?</p>
+          <p className="text-xs text-muted-foreground">Claim it for free and start receiving orders</p>
+          <Button
+            size="sm"
+            onClick={() => navigate(`/merchant/claim?id=${merchantProfile.id}`)}
+          >
+            Claim this restaurant
+          </Button>
+        </div>
+      )}
+
       <div className="space-y-6">
         {categories.map((cat) => {
           const filtered = items.filter((item: any) => item.category_id === cat.id);
