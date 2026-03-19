@@ -1,6 +1,6 @@
 /**
- * FoodHub — Careem-style food entry: Delivery / Pickup → Cuisine → Restaurant
- * Real DB data for nearby restaurants.
+ * FoodHub — Careem-style food entry with categories, filters, and real merchant data.
+ * Route: /food
  */
 import { useState } from "react";
 import { useDinoPageAudit } from "@/hooks/useDinoPageAudit";
@@ -9,9 +9,8 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import UniversePageShell from "@/components/universe/UniversePageShell";
 import UniverseSearch from "@/components/universe/UniverseSearch";
-import CategoryCard from "@/components/universe/CategoryCard";
-import UniverseCard from "@/components/universe/UniverseCard";
 import FilterChip from "@/components/universe/FilterChip";
+import MerchantCard from "@/components/marketplace/MerchantCard";
 import { UtensilsCrossed } from "lucide-react";
 
 const CUISINES = [
@@ -38,15 +37,16 @@ export default function FoodHub() {
     queryFn: async () => {
       const { data } = await (supabase as any)
         .from("storefront_pages")
-        .select("id, name, slug, city, vertical, subcategory, description, rating")
+        .select("id, name, slug, city, vertical, subcategory, description, rating, logo_url, cover_url")
         .eq("active", true)
         .limit(20);
       return (data || []).map((r: any) => ({
         id: r.id,
-        title: r.name || "Restaurant",
-        subtitle: r.subcategory || r.city || "",
+        name: r.name || "Restaurant",
+        category: r.subcategory || r.city || "",
         rating: r.rating ?? 4.2,
         slug: r.slug,
+        image: r.cover_url || r.logo_url,
       }));
     },
     staleTime: 120_000,
@@ -54,7 +54,7 @@ export default function FoodHub() {
   });
 
   const filtered = restaurants.filter((r: any) =>
-    !search || r.title.toLowerCase().includes(search.toLowerCase())
+    !search || r.name.toLowerCase().includes(search.toLowerCase())
   );
 
   return (
@@ -71,7 +71,7 @@ export default function FoodHub() {
       isEmpty={filtered.length === 0}
       emptyMessage="No restaurants found"
     >
-      {/* Mode selection — Careem style */}
+      {/* Mode selection */}
       <div className="grid grid-cols-2 gap-3 mb-6">
         <button
           onClick={() => navigate("/food/delivery")}
@@ -84,32 +84,44 @@ export default function FoodHub() {
         <button
           onClick={() => navigate("/food/pickup")}
           className="rounded-2xl p-4 flex flex-col items-center gap-2 active:scale-95 transition-transform"
-          style={{ background: "hsl(var(--muted))", border: "1px solid hsl(var(--border) / 0.3)" }}
+          style={{ background: "hsl(var(--muted))", border: "1px solid hsl(var(--border) / 0.2)" }}
         >
           <span className="text-2xl">🏪</span>
-          <span className="text-sm font-bold">Pickup</span>
+          <span className="text-sm font-bold text-foreground">Pickup</span>
         </button>
       </div>
 
       {/* Cuisine grid */}
-      <h2 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">Cuisines</h2>
-      <div className="grid grid-cols-4 gap-2 mb-6">
-        {CUISINES.map((c, i) => (
-          <CategoryCard key={c.slug} to={`/food/delivery/${c.slug}`} icon={c.icon} label={c.label} index={i} />
+      <h2 className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider mb-2">Cuisines</h2>
+      <div className="grid grid-cols-4 gap-3 mb-6">
+        {CUISINES.map((c) => (
+          <button
+            key={c.slug}
+            onClick={() => navigate(`/food/delivery/${c.slug}`)}
+            className="flex flex-col items-center gap-1.5 active:scale-90 transition-transform"
+          >
+            <div className="w-14 h-14 rounded-2xl flex items-center justify-center" style={{ background: "hsl(var(--muted))" }}>
+              <span className="text-2xl">{c.icon}</span>
+            </div>
+            <span className="text-[11px] font-semibold text-foreground leading-tight">{c.label}</span>
+          </button>
         ))}
       </div>
 
-      {/* Restaurant list — real data */}
-      <h2 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">Nearby restaurants</h2>
+      {/* Restaurant list */}
+      <h2 className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider mb-2">Nearby restaurants</h2>
       <div className="space-y-2">
         {filtered.map((r: any, i: number) => (
-          <UniverseCard
+          <MerchantCard
             key={r.id}
             to={`/food/restaurant/${r.slug || r.id}`}
-            title={r.title}
-            subtitle={r.subtitle}
+            image={r.image}
+            name={r.name}
+            category={r.category}
             rating={r.rating}
+            eta="15–30 min"
             index={i}
+            variant="horizontal"
           />
         ))}
       </div>
