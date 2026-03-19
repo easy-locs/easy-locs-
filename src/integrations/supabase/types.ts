@@ -14164,6 +14164,126 @@ export type Database = {
         }
         Relationships: []
       }
+      seed_merchants: {
+        Row: {
+          area: string
+          category: string
+          city: string
+          cover_image: string | null
+          created_at: string
+          delivery_time_max: number
+          delivery_time_min: number
+          id: string
+          is_active: boolean
+          is_featured: boolean
+          is_open: boolean
+          logo_image: string | null
+          name: string
+          price_level: number
+          rating: number
+          review_count: number
+          subcategory: string
+          tier: string
+          visibility_score: number
+        }
+        Insert: {
+          area: string
+          category: string
+          city?: string
+          cover_image?: string | null
+          created_at?: string
+          delivery_time_max?: number
+          delivery_time_min?: number
+          id?: string
+          is_active?: boolean
+          is_featured?: boolean
+          is_open?: boolean
+          logo_image?: string | null
+          name: string
+          price_level?: number
+          rating?: number
+          review_count?: number
+          subcategory: string
+          tier?: string
+          visibility_score?: number
+        }
+        Update: {
+          area?: string
+          category?: string
+          city?: string
+          cover_image?: string | null
+          created_at?: string
+          delivery_time_max?: number
+          delivery_time_min?: number
+          id?: string
+          is_active?: boolean
+          is_featured?: boolean
+          is_open?: boolean
+          logo_image?: string | null
+          name?: string
+          price_level?: number
+          rating?: number
+          review_count?: number
+          subcategory?: string
+          tier?: string
+          visibility_score?: number
+        }
+        Relationships: []
+      }
+      seed_products: {
+        Row: {
+          category: string
+          created_at: string
+          description: string | null
+          id: string
+          image: string | null
+          is_available: boolean
+          merchant_id: string
+          name: string
+          price: number
+          sort_order: number
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          image?: string | null
+          is_available?: boolean
+          merchant_id: string
+          name: string
+          price: number
+          sort_order?: number
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          image?: string | null
+          is_available?: boolean
+          merchant_id?: string
+          name?: string
+          price?: number
+          sort_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "seed_products_merchant_id_fkey"
+            columns: ["merchant_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "seed_products_merchant_id_fkey"
+            columns: ["merchant_id"]
+            isOneToOne: false
+            referencedRelation: "seed_merchants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       service_bookings: {
         Row: {
           amount: number
@@ -22119,6 +22239,72 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      marketplace_listings: {
+        Row: {
+          area: string | null
+          category: string | null
+          city: string | null
+          cover_image: string | null
+          created_at: string | null
+          delivery_time_max: number | null
+          delivery_time_min: number | null
+          id: string | null
+          is_active: boolean | null
+          is_featured: boolean | null
+          is_open: boolean | null
+          logo_image: string | null
+          name: string | null
+          price_level: number | null
+          rating: number | null
+          review_count: number | null
+          subcategory: string | null
+          tier: string | null
+          visibility_score: number | null
+        }
+        Insert: {
+          area?: string | null
+          category?: string | null
+          city?: string | null
+          cover_image?: string | null
+          created_at?: string | null
+          delivery_time_max?: number | null
+          delivery_time_min?: number | null
+          id?: string | null
+          is_active?: boolean | null
+          is_featured?: boolean | null
+          is_open?: boolean | null
+          logo_image?: string | null
+          name?: string | null
+          price_level?: number | null
+          rating?: number | null
+          review_count?: number | null
+          subcategory?: string | null
+          tier?: string | null
+          visibility_score?: number | null
+        }
+        Update: {
+          area?: string | null
+          category?: string | null
+          city?: string | null
+          cover_image?: string | null
+          created_at?: string | null
+          delivery_time_max?: number | null
+          delivery_time_min?: number | null
+          id?: string | null
+          is_active?: boolean | null
+          is_featured?: boolean | null
+          is_open?: boolean | null
+          logo_image?: string | null
+          name?: string | null
+          price_level?: number | null
+          rating?: number | null
+          review_count?: number | null
+          subcategory?: string | null
+          tier?: string | null
+          visibility_score?: number | null
+        }
+        Relationships: []
       }
       marketplace_reviews_public: {
         Row: {
