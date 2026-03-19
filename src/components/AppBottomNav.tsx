@@ -3,12 +3,12 @@
  * Home | Explore | Orbit | Wallet | Profile
  */
 import { useLocation, useNavigate } from "react-router-dom";
-import { Home, Compass, Globe, Wallet, User } from "lucide-react";
+import { Home, Compass, ShoppingBag, Wallet, User } from "lucide-react";
 
 const TABS = [
   { label: "Home", path: "/home", icon: Home },
   { label: "Explore", path: "/explore", icon: Compass },
-  { label: "Orbit", path: "/dashboard/communication", icon: Globe },
+  { label: "Orders", path: "/my-orders", icon: ShoppingBag },
   { label: "Wallet", path: "/wallet/hub", icon: Wallet },
   { label: "Me", path: "/settings", icon: User },
 ] as const;
@@ -29,7 +29,11 @@ export default function AppBottomNav() {
     >
       <div className="grid grid-cols-5 max-w-md mx-auto">
         {TABS.map((tab) => {
-          const active = pathname === tab.path || (tab.path === "/home" && pathname === "/");
+          const active = pathname === tab.path
+            || (tab.path === "/home" && pathname === "/")
+            || (tab.path === "/settings" && pathname.startsWith("/settings"))
+            || (tab.path === "/wallet/hub" && pathname.startsWith("/wallet"))
+            || (tab.path === "/my-orders" && (pathname.startsWith("/my-orders") || pathname.startsWith("/order/")));
           return (
             <button
               key={tab.path}
