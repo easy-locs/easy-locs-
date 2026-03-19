@@ -1,6 +1,7 @@
 /**
  * useRealEstate — Core hook for the real-estate module.
- * Fetches properties, units, tenants, leases, rent payments, and documents.
+ * All queries verified against actual DB schema (properties, tenants, leases,
+ * property_units, rent_payments, property_documents).
  */
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -25,18 +26,34 @@ export function useProperties(search?: string) {
   });
 }
 
+export function usePropertyById(propertyId?: string) {
+  return useQuery({
+    queryKey: ["re-property-detail", propertyId],
+    enabled: !!propertyId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("properties")
+        .select("*")
+        .eq("id", propertyId!)
+        .single();
+      if (error) throw error;
+      return data;
+    },
+  });
+}
+
 export function usePropertyUnits(propertyId?: string) {
   return useQuery({
     queryKey: ["re-units", propertyId],
     enabled: !!propertyId,
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("property_units" as any)
+        .from("property_units")
         .select("*")
         .eq("property_id", propertyId!)
         .order("unit_number");
       if (error) throw error;
-      return (data ?? []) as any[];
+      return data ?? [];
     },
   });
 }
@@ -79,18 +96,34 @@ export function useLeases(search?: string) {
   });
 }
 
+export function useLeaseById(leaseId?: string) {
+  return useQuery({
+    queryKey: ["re-lease-detail", leaseId],
+    enabled: !!leaseId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("leases")
+        .select("*, tenants:tenant_id(name, email, phone), properties:property_id(label, city, country, address)")
+        .eq("id", leaseId!)
+        .single();
+      if (error) throw error;
+      return data;
+    },
+  });
+}
+
 export function useRentPayments(leaseId?: string) {
   return useQuery({
     queryKey: ["re-rent-payments", leaseId],
     enabled: !!leaseId,
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("rent_payments" as any)
+        .from("rent_payments")
         .select("*")
         .eq("lease_id", leaseId!)
         .order("due_date", { ascending: false });
       if (error) throw error;
-      return (data ?? []) as any[];
+      return data ?? [];
     },
   });
 }
@@ -102,14 +135,37 @@ export function usePropertyDocuments(propertyId?: string) {
     enabled: !!user,
     queryFn: async () => {
       let q = supabase
-        .from("property_documents" as any)
+        .from("property_documents")
         .select("*")
         .eq("user_id", user!.id)
         .order("created_at", { ascending: false });
       if (propertyId) q = q.eq("property_id", propertyId);
       const { data, error } = await q;
       if (error) throw error;
-      return (data ?? []) as any[];
+      return data ?? [];
+    },
+  });
+}
+
+/** Real-estate stats for dashboard widgets */
+export function useRealEstateStats() {
+  const { user } = useAuth();
+  return useQuery({
+    queryKey: ["re-stats", user?.id],
+    enabled: !!user,
+    queryFn: async () => {
+      const [props, tenants, leases, payments] = await Promise.all([
+        supabase.from("properties").select("id", { count: "exact", head: true }).eq("user_id", user!.id),
+        supabase.from("tenants").select("id", { count: "exact", head: true }).eq("user_id", user!.id),
+        supabase.from("leases").select("id", { count: "exact", head: true }).eq("user_id", user!.id),
+        supabase.from("rent_payments").select("id, status", { count: "exact" }).eq("status", "overdue"),
+      ]);
+      return {
+        propertiesCount: props.count ?? 0,
+        tenantsCount: tenants.count ?? 0,
+        leasesCount: leases.count ?? 0,
+        overduePayments: payments.count ?? 0,
+      };
     },
   });
 }
