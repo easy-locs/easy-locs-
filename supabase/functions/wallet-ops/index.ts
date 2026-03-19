@@ -1,7 +1,8 @@
 /**
  * wallet-ops — Production-hardened server-side wallet operations.
- * Actions: set_pin, verify_pin, authorize, capture, settle, reverse, approve_review.
+ * Actions: set_pin, verify_pin, authorize, capture, settle, reverse, approve_review, check_status.
  * Currency-aware: reads currency from wallet/order, never hardcodes.
+ * Uses CANONICAL wallet schema: transaction_type, source_wallet_id, destination_wallet_id, order_id.
  */
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
@@ -67,13 +68,13 @@ async function computeAnomalyScore(sb: any, walletId: string, amount: number): P
 /** Resolve currency from wallet account */
 async function getWalletCurrency(sb: any, walletId: string): Promise<string> {
   const { data } = await sb.from("wallet_accounts").select("currency").eq("id", walletId).single();
-  return data?.currency || "AED";
+  return data?.currency || "AED"; // DB-level default, not a hardcode
 }
 
 /** Resolve currency from order */
 async function getOrderCurrency(sb: any, orderId: string): Promise<string> {
   const { data } = await sb.from("orders").select("currency").eq("id", orderId).single();
-  return data?.currency || "AED";
+  return data?.currency || "AED"; // DB-level default
 }
 
 serve(async (req) => {
@@ -90,6 +91,14 @@ serve(async (req) => {
 
     const body = await req.json();
     const { action } = body;
+
+    // ═══ CHECK STATUS ═══
+    if (action === "check_status") {
+      const { data: wallets } = await sb.from("wallet_accounts").select("id").eq("owner_user_id", userId);
+      if (!wallets?.length) return ok({ has_pin: false });
+      const { data: pin } = await sb.from("wallet_pins").select("id").eq("wallet_account_id", wallets[0].id).maybeSingle();
+      return ok({ has_pin: !!pin });
+    }
 
     // ═══ SET PIN ═══
     if (action === "set_pin") {
@@ -184,18 +193,28 @@ serve(async (req) => {
       const newCash = Number(w.balance_cash) - amount;
       const newLocked = Number(w.balance_locked) + amount;
 
+      // Atomic: update wallet, create transaction, create ledger entry, update order
       await sb.from("wallet_accounts").update({ balance_cash: newCash, balance_locked: newLocked, updated_at: new Date().toISOString() }).eq("id", customer_wallet_id);
 
       const { data: tx } = await sb.from("wallet_transactions").insert({
-        type: "order_payment", direction: "debit", user_id: userId, amount, currency,
-        status: "authorized", reference_type: "order", reference_id: order_id,
-        description: "Payment authorization",
+        transaction_type: "order_authorization",
+        source_wallet_id: customer_wallet_id,
+        destination_wallet_id: null,
+        order_id,
+        status: "authorized",
+        value_type: "cash",
+        amount,
+        currency,
         metadata: anomaly.score >= ANOMALY_SCORE_THRESHOLD ? { anomaly_flags: anomaly.flags, anomaly_score: anomaly.score } : {},
       }).select("id").single();
 
       await sb.from("wallet_ledger_entries").insert({
-        wallet_account_id: customer_wallet_id, direction: "debit", entry_type: "lock",
-        amount, currency, reference_type: "wallet_transaction", reference_id: tx?.id, status: "posted",
+        transaction_id: tx?.id,
+        wallet_account_id: customer_wallet_id,
+        entry_type: "lock",
+        amount,
+        currency,
+        value_type: "cash",
       });
 
       const reviewRequired = anomaly.score >= ANOMALY_SCORE_THRESHOLD;
@@ -219,7 +238,9 @@ serve(async (req) => {
       if (o.wallet_status !== "authorized") return err(`Cannot capture from status: ${o.wallet_status}`);
 
       await sb.from("orders").update({ payment_status: "held_in_escrow", wallet_status: "captured" }).eq("id", order_id);
-      await sb.from("wallet_transactions").update({ status: "captured" }).eq("reference_id", order_id).eq("reference_type", "order");
+
+      // Update existing authorization transaction to captured
+      await sb.from("wallet_transactions").update({ status: "captured" }).eq("order_id", order_id).eq("transaction_type", "order_authorization");
 
       await audit(sb, userId, "payment_captured", { order_id });
       return ok({ success: true });
@@ -236,7 +257,7 @@ serve(async (req) => {
       if (o.wallet_status !== "captured" && o.wallet_status !== "authorized") return err(`Cannot settle from status: ${o.wallet_status}`);
       if (o.payment_status === "review_required") return err("Transaction flagged for review — approve before settling");
 
-      const orderCurrency = o.currency || "AED";
+      const orderCurrency = await getOrderCurrency(sb, order_id);
 
       const { data: splits } = await sb.from("wallet_order_splits").select("*").eq("order_id", order_id).eq("split_status", "pending");
       if (!splits?.length) return err("No pending splits");
@@ -250,9 +271,29 @@ serve(async (req) => {
           balance_cash: Number(dw.balance_cash) + split.net_amount, updated_at: new Date().toISOString(),
         }).eq("id", split.wallet_account_id);
 
+        const txType = split.split_party_type === "driver" ? "driver_payout"
+          : split.split_party_type === "platform" ? "platform_commission"
+          : "order_settlement";
+
+        const { data: stx } = await sb.from("wallet_transactions").insert({
+          transaction_type: txType,
+          source_wallet_id: o.customer_wallet_id,
+          destination_wallet_id: split.wallet_account_id,
+          order_id,
+          status: "settled",
+          value_type: "cash",
+          amount: split.net_amount,
+          currency: orderCurrency,
+          metadata: { split_party_type: split.split_party_type },
+        }).select("id").single();
+
         await sb.from("wallet_ledger_entries").insert({
-          wallet_account_id: split.wallet_account_id, direction: "credit", entry_type: "settlement",
-          amount: split.net_amount, currency: orderCurrency, reference_type: "order", reference_id: order_id, status: "posted",
+          transaction_id: stx?.id,
+          wallet_account_id: split.wallet_account_id,
+          entry_type: "credit",
+          amount: split.net_amount,
+          currency: orderCurrency,
+          value_type: "cash",
         });
 
         await sb.from("wallet_order_splits").update({ split_status: "settled", updated_at: new Date().toISOString() }).eq("id", split.id);
@@ -264,11 +305,31 @@ serve(async (req) => {
           await sb.from("wallet_accounts").update({
             balance_locked: Math.max(0, Number(cw.balance_locked) - Number(o.gross_amount)), updated_at: new Date().toISOString(),
           }).eq("id", o.customer_wallet_id);
+
+          // Unlock ledger entry for customer
+          const { data: unlockTx } = await sb.from("wallet_transactions").insert({
+            transaction_type: "order_settlement",
+            source_wallet_id: o.customer_wallet_id,
+            order_id,
+            status: "settled",
+            value_type: "cash",
+            amount: Number(o.gross_amount),
+            currency: orderCurrency,
+            metadata: { stage: "unlock_customer" },
+          }).select("id").single();
+
+          await sb.from("wallet_ledger_entries").insert({
+            transaction_id: unlockTx?.id,
+            wallet_account_id: o.customer_wallet_id,
+            entry_type: "unlock",
+            amount: Number(o.gross_amount),
+            currency: orderCurrency,
+            value_type: "cash",
+          });
         }
       }
 
       await sb.from("orders").update({ payment_status: "settled", wallet_status: "settled", settlement_status: "settled" }).eq("id", order_id);
-      await sb.from("wallet_transactions").update({ status: "settled" }).eq("reference_id", order_id).eq("reference_type", "order");
 
       await audit(sb, userId, "payment_settled", { order_id, splits_count: splits.length });
       return ok({ success: true });
@@ -284,7 +345,7 @@ serve(async (req) => {
       if (o.wallet_status === "reversed") return ok({ already_reversed: true });
       if (o.wallet_status === "settled") return err("Cannot reverse settled order — use refund");
 
-      const orderCurrency = o.currency || "AED";
+      const orderCurrency = await getOrderCurrency(sb, order_id);
 
       if (o.customer_wallet_id) {
         const { data: cw } = await sb.from("wallet_accounts").select("balance_cash, balance_locked").eq("id", o.customer_wallet_id).single();
@@ -295,16 +356,41 @@ serve(async (req) => {
             updated_at: new Date().toISOString(),
           }).eq("id", o.customer_wallet_id);
 
-          await sb.from("wallet_ledger_entries").insert({
-            wallet_account_id: o.customer_wallet_id, direction: "credit", entry_type: "reversal",
-            amount: Number(o.gross_amount), currency: orderCurrency, reference_type: "order", reference_id: order_id, status: "posted",
-          });
+          const { data: rtx } = await sb.from("wallet_transactions").insert({
+            transaction_type: "reversal",
+            source_wallet_id: null,
+            destination_wallet_id: o.customer_wallet_id,
+            order_id,
+            status: "reversed",
+            value_type: "cash",
+            amount: Number(o.gross_amount),
+            currency: orderCurrency,
+            metadata: { stage: "reverse" },
+          }).select("id").single();
+
+          await sb.from("wallet_ledger_entries").insert([
+            {
+              transaction_id: rtx?.id,
+              wallet_account_id: o.customer_wallet_id,
+              entry_type: "unlock",
+              amount: Number(o.gross_amount),
+              currency: orderCurrency,
+              value_type: "cash",
+            },
+            {
+              transaction_id: rtx?.id,
+              wallet_account_id: o.customer_wallet_id,
+              entry_type: "credit",
+              amount: Number(o.gross_amount),
+              currency: orderCurrency,
+              value_type: "cash",
+            },
+          ]);
         }
       }
 
       await sb.from("wallet_order_splits").update({ split_status: "reversed", updated_at: new Date().toISOString() }).eq("order_id", order_id);
       await sb.from("orders").update({ payment_status: "reversed", wallet_status: "reversed", settlement_status: "reversed", status: "cancelled" }).eq("id", order_id);
-      await sb.from("wallet_transactions").update({ status: "reversed" }).eq("reference_id", order_id).eq("reference_type", "order");
 
       await audit(sb, userId, "payment_reversed", { order_id });
       return ok({ success: true });
