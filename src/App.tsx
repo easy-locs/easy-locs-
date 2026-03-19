@@ -371,7 +371,7 @@ const queryClient = new QueryClient({
 (window as any).__REACT_QUERY_CLIENT__ = queryClient;
 
 const PageLoader = () => (
-  <div className="min-h-screen flex flex-col items-center justify-center gap-6" style={{ background: "hsl(220 45% 8%)" }}>
+  <div className="min-h-[100dvh] flex flex-col items-center justify-center gap-6" style={{ background: "hsl(var(--background, 220 45% 8%))" }}>
     <EasyLocsLogo variant="splash" size="md" animate />
   </div>
 );
