@@ -19,42 +19,31 @@ export default function QrEntryPage() {
       try {
         const target = await resolveQrTarget(targetCode);
 
+        if (!target) {
+          setError("QR invalid");
+          return;
+        }
+
         if (!target.active) {
           setError("QR target is inactive.");
           return;
         }
 
-        // dine_in / table -> merchant POS with table param
-        if (target.targetType === "dine_in" || target.targetType === "table") {
-          navigate(
-            `${routes.merchantPos()}?merchant=${encodeURIComponent(
-              target.merchantProfileId
-            )}&target=${encodeURIComponent(target.targetCode)}&table=${encodeURIComponent(
-              target.tableNumber ?? ""
-            )}`,
-            { replace: true }
-          );
-          return;
+        // Build safe redirect to merchant POS
+        const params = new URLSearchParams({
+          merchant: target.merchantProfileId,
+          target: target.targetCode,
+        });
+
+        // Add table param for dine-in / table types
+        if (
+          (target.targetType === "dine_in" || target.targetType === "table") &&
+          target.tableNumber
+        ) {
+          params.set("table", target.tableNumber);
         }
 
-        // global_menu / takeaway -> storefront-like flow
-        if (target.targetType === "global_menu" || target.targetType === "takeaway") {
-          navigate(
-            `${routes.merchantPos()}?merchant=${encodeURIComponent(
-              target.merchantProfileId
-            )}&target=${encodeURIComponent(target.targetCode)}`,
-            { replace: true }
-          );
-          return;
-        }
-
-        // fallback: basic redirect
-        navigate(
-          `${routes.merchantPos()}?merchant=${encodeURIComponent(
-            target.merchantProfileId
-          )}&target=${encodeURIComponent(target.targetCode)}`,
-          { replace: true }
-        );
+        navigate(`${routes.merchantPos()}?${params.toString()}`, { replace: true });
       } catch (e: any) {
         setError(e.message ?? "QR invalid");
       }

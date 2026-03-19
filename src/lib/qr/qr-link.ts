@@ -1,10 +1,8 @@
 /**
- * Build QR entry URLs — single source of truth for hash/non-hash routing.
+ * Build QR entry URLs — delegates to central buildAppLink.
  */
+import { buildAppLink } from "@/lib/link/build-link";
+
 export function buildQrEntryUrl(targetCode: string): string {
-  const base = window.location.origin;
-  const isHash = window.location.href.includes("/#/");
-  return isHash
-    ? `${base}/#/qr/entry/${encodeURIComponent(targetCode)}`
-    : `${base}/qr/entry/${encodeURIComponent(targetCode)}`;
+  return buildAppLink(`/qr/entry/${encodeURIComponent(targetCode)}`);
 }
