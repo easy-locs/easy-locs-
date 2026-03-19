@@ -491,6 +491,7 @@ const App = () => (
               <Route path="/settings/notifications" element={<SettingsNotificationsPage />} />
               <Route path="/settings/security" element={<SettingsSecurityPage />} />
               <Route path="/settings/preferences" element={<SettingsPreferencesPage />} />
+              <Route path="/settings/support" element={<SettingsSupportPage />} />
               <Route path="/ride" element={<RidePage />} />
               <Route path="/ride/search" element={<RideSearchPage />} />
               <Route path="/send" element={<SendPage />} />
