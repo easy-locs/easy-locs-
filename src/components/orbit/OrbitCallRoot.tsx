@@ -68,6 +68,14 @@ const OrbitCallRootInner = memo(function OrbitCallRootInner({ userId }: { userId
     };
   }, [userId]);
 
+  // Visibility change cleanup for stale calls
+  useEffect(() => {
+    return setupVisibilityCleanup(
+      () => getManager() as any,
+      () => callState?.state ?? null
+    );
+  }, [getManager, callState]);
+
   // Attach remote audio when call becomes active
   useEffect(() => {
     const manager = getManager();
