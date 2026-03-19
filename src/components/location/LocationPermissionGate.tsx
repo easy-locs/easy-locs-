@@ -3,6 +3,7 @@
  */
 import { useState, useEffect, useCallback, type ReactNode } from "react";
 import { MapPin, ShieldAlert } from "lucide-react";
+import { PageLoadingState } from "@/components/page-states";
 
 type PermissionStatus = "prompt" | "granted" | "denied" | "checking" | "error";
 
@@ -19,12 +20,12 @@ export default function LocationPermissionGate({ children, fallbackMessage, onGr
   useEffect(() => {
     if (!navigator.geolocation) {
       setStatus("error");
-      setErrorMsg("La géolocalisation n'est pas supportée sur cet appareil.");
+      setErrorMsg("Geolocation is not supported on this device.");
       return;
     }
 
     if (navigator.permissions) {
-      navigator.permissions.query({ name: "geolocation" }).then((result) => {
+      navigator.permissions.query({ name: "geolocation" as PermissionName }).then((result) => {
         setStatus(result.state as PermissionStatus);
         result.onchange = () => setStatus(result.state as PermissionStatus);
       }).catch(() => setStatus("prompt"));
@@ -43,10 +44,10 @@ export default function LocationPermissionGate({ children, fallbackMessage, onGr
       (err) => {
         if (err.code === err.PERMISSION_DENIED) {
           setStatus("denied");
-          setErrorMsg("Vous avez refusé l'accès à la localisation.");
+          setErrorMsg("Location access was denied.");
         } else {
           setStatus("error");
-          setErrorMsg(err.message || "Impossible d'obtenir la position.");
+          setErrorMsg(err.message || "Unable to get your location.");
         }
       },
       { enableHighAccuracy: true, timeout: 10000 }
@@ -56,12 +57,7 @@ export default function LocationPermissionGate({ children, fallbackMessage, onGr
   if (status === "granted") return <>{children}</>;
 
   if (status === "checking") {
-    return (
-      <div className="flex flex-col items-center justify-center gap-3 p-8 min-h-[200px]">
-        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-        <p className="text-sm text-muted-foreground">Vérification de la localisation…</p>
-      </div>
-    );
+    return <PageLoadingState title="Checking location…" />;
   }
 
   if (status === "denied" || status === "error") {
@@ -69,16 +65,16 @@ export default function LocationPermissionGate({ children, fallbackMessage, onGr
       <div className="flex flex-col items-center justify-center gap-4 p-8 min-h-[200px] text-center">
         <ShieldAlert className="w-10 h-10 text-destructive" />
         <p className="text-sm font-medium text-foreground">
-          {errorMsg || fallbackMessage || "Accès à la localisation refusé."}
+          {errorMsg || fallbackMessage || "Location access denied."}
         </p>
         <p className="text-xs text-muted-foreground max-w-xs">
-          Activez la localisation dans les paramètres de votre navigateur puis rechargez la page.
+          Enable location in your browser settings then reload the page.
         </p>
         <button
           onClick={() => window.location.reload()}
           className="bg-primary text-primary-foreground rounded-lg px-4 py-2 text-sm font-medium"
         >
-          Recharger
+          Reload
         </button>
       </div>
     );
@@ -88,17 +84,15 @@ export default function LocationPermissionGate({ children, fallbackMessage, onGr
   return (
     <div className="flex flex-col items-center justify-center gap-4 p-8 min-h-[200px] text-center">
       <MapPin className="w-10 h-10 text-primary" />
-      <p className="text-sm font-medium text-foreground">
-        {fallbackMessage || "Cette fonctionnalité nécessite votre position."}
-      </p>
+      <p className="text-sm font-medium text-foreground">Allow location</p>
       <p className="text-xs text-muted-foreground max-w-xs">
-        Nous utilisons votre position uniquement pour améliorer votre expérience.
+        {fallbackMessage || "This feature requires your location."}
       </p>
       <button
         onClick={requestPermission}
         className="bg-primary text-primary-foreground rounded-lg px-5 py-2.5 text-sm font-medium"
       >
-        Autoriser la localisation
+        Allow Location
       </button>
     </div>
   );

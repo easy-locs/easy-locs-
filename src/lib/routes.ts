@@ -3,6 +3,9 @@
  * Use these instead of hardcoding paths in components.
  */
 export const routes = {
+  home: () => `/`,
+  notFound: () => `/404`,
+
   // QR
   qr: (code: string) => `/qr/entry/${encodeURIComponent(code)}`,
   qrEntry: (targetCode: string) => `/qr/entry/${encodeURIComponent(targetCode)}`,
@@ -61,3 +64,43 @@ export const routes = {
   wallet: () => `/wallet`,
   walletHub: () => `/wallet/hub`,
 };
+
+export type AppRouteKey = keyof typeof routes;
+
+export const ROUTE_REGISTRY = [
+  { group: "public", label: "Home", path: "/" },
+  { group: "public", label: "404", path: "/404" },
+
+  { group: "qr", label: "QR Entry", path: "/qr/entry/:targetCode" },
+  { group: "admin", label: "QR Generate", path: "/admin/qr-generate" },
+
+  { group: "public", label: "Tracking", path: "/tracking/order/:orderId" },
+
+  { group: "driver", label: "Driver Missions", path: "/driver/missions" },
+  { group: "driver", label: "Driver Mission", path: "/driver/mission/:dispatchJobId" },
+  { group: "driver", label: "Driver Earnings", path: "/driver/earnings" },
+
+  { group: "merchant", label: "Merchant POS", path: "/merchant/pos" },
+  { group: "merchant", label: "Merchant Kitchen", path: "/merchant/kitchen" },
+  { group: "merchant", label: "Merchant Delivery Monitor", path: "/merchant/delivery-monitor" },
+  { group: "merchant", label: "Merchant Dashboard", path: "/merchant/dashboard" },
+  { group: "merchant", label: "Merchant Claim", path: "/merchant/claim" },
+  { group: "merchant", label: "Merchant Onboarding", path: "/merchant/onboarding" },
+
+  { group: "admin", label: "Wallet Diagnostics", path: "/admin/wallet-diagnostics" },
+  { group: "admin", label: "Dispatch Diagnostics", path: "/admin/dispatch-diagnostics" },
+  { group: "admin", label: "Automations", path: "/admin/automations" },
+  { group: "admin", label: "Automation Health", path: "/admin/automation-health" },
+  { group: "admin", label: "Ops Exceptions", path: "/admin/ops-exceptions" },
+  { group: "admin", label: "Review Queue", path: "/admin/review-queue" },
+  { group: "admin", label: "Growth Dashboard", path: "/admin/growth" },
+  { group: "admin", label: "Growth Engine", path: "/admin/growth-engine" },
+  { group: "admin", label: "Route Audit", path: "/admin/route-audit" },
+  { group: "admin", label: "Restaurant Seed Test", path: "/admin/test-restaurants" },
+  { group: "admin", label: "Alert Center", path: "/admin/alerts" },
+  { group: "admin", label: "Orbit Call Test", path: "/orbit/call-test" },
+
+  { group: "public", label: "Coming Soon", path: "/coming-soon/:slug" },
+  { group: "public", label: "City Market", path: "/city-market/:citySlug" },
+  { group: "public", label: "City Vertical", path: "/city/:countryCode/:city/:vertical/:locale" },
+] as const;
