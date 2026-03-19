@@ -860,6 +860,78 @@ export type Database = {
           },
         ]
       }
+      automation_workflows: {
+        Row: {
+          city: string | null
+          completed_at: string | null
+          country_code: string | null
+          created_at: string
+          current_step: number
+          entity_id: string
+          entity_type: string
+          executed_at: string | null
+          failed_at: string | null
+          id: string
+          metadata_json: Json
+          priority: number
+          retry_count: number
+          scheduled_at: string | null
+          status: string
+          steps_json: Json
+          stop_reason: string | null
+          trigger_source: string | null
+          updated_at: string
+          vertical: string | null
+          workflow_type: string
+        }
+        Insert: {
+          city?: string | null
+          completed_at?: string | null
+          country_code?: string | null
+          created_at?: string
+          current_step?: number
+          entity_id: string
+          entity_type: string
+          executed_at?: string | null
+          failed_at?: string | null
+          id?: string
+          metadata_json?: Json
+          priority?: number
+          retry_count?: number
+          scheduled_at?: string | null
+          status?: string
+          steps_json?: Json
+          stop_reason?: string | null
+          trigger_source?: string | null
+          updated_at?: string
+          vertical?: string | null
+          workflow_type: string
+        }
+        Update: {
+          city?: string | null
+          completed_at?: string | null
+          country_code?: string | null
+          created_at?: string
+          current_step?: number
+          entity_id?: string
+          entity_type?: string
+          executed_at?: string | null
+          failed_at?: string | null
+          id?: string
+          metadata_json?: Json
+          priority?: number
+          retry_count?: number
+          scheduled_at?: string | null
+          status?: string
+          steps_json?: Json
+          stop_reason?: string | null
+          trigger_source?: string | null
+          updated_at?: string
+          vertical?: string | null
+          workflow_type?: string
+        }
+        Relationships: []
+      }
       blocked_users: {
         Row: {
           blocked_id: string
@@ -3693,16 +3765,29 @@ export type Database = {
       dispatch_jobs: {
         Row: {
           assigned_driver_id: string | null
+          assigned_driver_wallet_id: string | null
           buyer_id: string | null
+          city: string | null
           completed_at: string | null
+          country_code: string | null
           created_at: string | null
           currency: string | null
+          distance_km: number | null
+          driver_arriving_at: string | null
           dropoff_label: string | null
+          dropoff_lat: number | null
+          dropoff_lng: number | null
+          estimated_duration_min: number | null
           final_fee: number | null
           id: string
           order_id: string | null
+          picked_up_at: string | null
           pickup_label: string | null
+          pickup_lat: number | null
+          pickup_lng: number | null
           quoted_fee: number | null
+          ranking_snapshot: Json | null
+          retry_count: number | null
           seller_id: string | null
           status: string | null
           updated_at: string | null
@@ -3710,16 +3795,29 @@ export type Database = {
         }
         Insert: {
           assigned_driver_id?: string | null
+          assigned_driver_wallet_id?: string | null
           buyer_id?: string | null
+          city?: string | null
           completed_at?: string | null
+          country_code?: string | null
           created_at?: string | null
           currency?: string | null
+          distance_km?: number | null
+          driver_arriving_at?: string | null
           dropoff_label?: string | null
+          dropoff_lat?: number | null
+          dropoff_lng?: number | null
+          estimated_duration_min?: number | null
           final_fee?: number | null
           id?: string
           order_id?: string | null
+          picked_up_at?: string | null
           pickup_label?: string | null
+          pickup_lat?: number | null
+          pickup_lng?: number | null
           quoted_fee?: number | null
+          ranking_snapshot?: Json | null
+          retry_count?: number | null
           seller_id?: string | null
           status?: string | null
           updated_at?: string | null
@@ -3727,20 +3825,72 @@ export type Database = {
         }
         Update: {
           assigned_driver_id?: string | null
+          assigned_driver_wallet_id?: string | null
           buyer_id?: string | null
+          city?: string | null
           completed_at?: string | null
+          country_code?: string | null
           created_at?: string | null
           currency?: string | null
+          distance_km?: number | null
+          driver_arriving_at?: string | null
           dropoff_label?: string | null
+          dropoff_lat?: number | null
+          dropoff_lng?: number | null
+          estimated_duration_min?: number | null
           final_fee?: number | null
           id?: string
           order_id?: string | null
+          picked_up_at?: string | null
           pickup_label?: string | null
+          pickup_lat?: number | null
+          pickup_lng?: number | null
           quoted_fee?: number | null
+          ranking_snapshot?: Json | null
+          retry_count?: number | null
           seller_id?: string | null
           status?: string | null
           updated_at?: string | null
           workspace_id?: string | null
+        }
+        Relationships: []
+      }
+      dispatch_offers: {
+        Row: {
+          created_at: string
+          distance_km: number | null
+          driver_profile_id: string
+          driver_user_id: string
+          eta_minutes: number | null
+          expires_at: string | null
+          id: string
+          job_id: string
+          offer_status: string
+          score: number | null
+        }
+        Insert: {
+          created_at?: string
+          distance_km?: number | null
+          driver_profile_id: string
+          driver_user_id: string
+          eta_minutes?: number | null
+          expires_at?: string | null
+          id?: string
+          job_id: string
+          offer_status?: string
+          score?: number | null
+        }
+        Update: {
+          created_at?: string
+          distance_km?: number | null
+          driver_profile_id?: string
+          driver_user_id?: string
+          eta_minutes?: number | null
+          expires_at?: string | null
+          id?: string
+          job_id?: string
+          offer_status?: string
+          score?: number | null
         }
         Relationships: []
       }
@@ -4166,51 +4316,84 @@ export type Database = {
       }
       driver_profiles: {
         Row: {
+          acceptance_rate: number | null
+          active_jobs: number | null
+          city: string | null
+          country_code: string | null
           created_at: string | null
+          current_lat: number | null
+          current_lng: number | null
           current_status: string | null
+          heading: number | null
           id: string
           is_available: boolean | null
           is_online: boolean | null
           is_verified: boolean | null
           jobs_completed: number | null
+          last_location_at: string | null
           last_seen_at: string | null
+          max_active_jobs: number | null
           plate_number: string | null
           rating: number | null
+          reliability_score: number | null
           service_mode: string
+          service_radius_km: number | null
           updated_at: string | null
           user_id: string
           vehicle_type: string | null
           workspace_id: string | null
         }
         Insert: {
+          acceptance_rate?: number | null
+          active_jobs?: number | null
+          city?: string | null
+          country_code?: string | null
           created_at?: string | null
+          current_lat?: number | null
+          current_lng?: number | null
           current_status?: string | null
+          heading?: number | null
           id?: string
           is_available?: boolean | null
           is_online?: boolean | null
           is_verified?: boolean | null
           jobs_completed?: number | null
+          last_location_at?: string | null
           last_seen_at?: string | null
+          max_active_jobs?: number | null
           plate_number?: string | null
           rating?: number | null
+          reliability_score?: number | null
           service_mode?: string
+          service_radius_km?: number | null
           updated_at?: string | null
           user_id: string
           vehicle_type?: string | null
           workspace_id?: string | null
         }
         Update: {
+          acceptance_rate?: number | null
+          active_jobs?: number | null
+          city?: string | null
+          country_code?: string | null
           created_at?: string | null
+          current_lat?: number | null
+          current_lng?: number | null
           current_status?: string | null
+          heading?: number | null
           id?: string
           is_available?: boolean | null
           is_online?: boolean | null
           is_verified?: boolean | null
           jobs_completed?: number | null
+          last_location_at?: string | null
           last_seen_at?: string | null
+          max_active_jobs?: number | null
           plate_number?: string | null
           rating?: number | null
+          reliability_score?: number | null
           service_mode?: string
+          service_radius_km?: number | null
           updated_at?: string | null
           user_id?: string
           vehicle_type?: string | null

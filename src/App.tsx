@@ -261,6 +261,9 @@ const MerchantPosPage = safeLazy(() => import("./pages/MerchantPosPage"), "Merch
 const MerchantKitchenPage = safeLazy(() => import("./pages/MerchantKitchenPage"), "MerchantKitchenPage");
 const WalletCommerceTestPage = safeLazy(() => import("./pages/WalletCommerceTestPage"), "WalletCommerceTestPage");
 const AdminWalletDiagnosticsPage = safeLazy(() => import("./pages/AdminWalletDiagnosticsPage"), "AdminWalletDiagnosticsPage");
+const AdminDispatchDiagnosticsPage = safeLazy(() => import("./pages/AdminDispatchDiagnosticsPage"), "AdminDispatchDiagnosticsPage");
+const AdminAutomationsPage = safeLazy(() => import("./pages/AdminAutomationsPage"), "AdminAutomationsPage");
+const DriverEarningsPage = safeLazy(() => import("./pages/DriverEarningsPage"), "DriverEarningsPage");
 
 // Travel universe
 const TravelHub = safeLazy(() => import("./pages/travel/TravelHub"), "TravelHub");
@@ -609,6 +612,9 @@ const App = () => (
               <Route path="/merchant/kitchen" element={<ProtectedRoute><MerchantKitchenPage /></ProtectedRoute>} />
               <Route path="/admin/wallet-test" element={<ProtectedRoute><WalletCommerceTestPage /></ProtectedRoute>} />
               <Route path="/admin/wallet-diagnostics" element={<ProtectedRoute><AdminWalletDiagnosticsPage /></ProtectedRoute>} />
+              <Route path="/admin/dispatch-diagnostics" element={<ProtectedRoute><AdminDispatchDiagnosticsPage /></ProtectedRoute>} />
+              <Route path="/admin/automations" element={<ProtectedRoute><AdminAutomationsPage /></ProtectedRoute>} />
+              <Route path="/driver/earnings" element={<ProtectedRoute><DriverEarningsPage /></ProtectedRoute>} />
 
               {/* Guest / Public */}
               <Route path="/guest/checkout/:cartId" element={<GuestCheckoutPage />} />
