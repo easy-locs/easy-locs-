@@ -1,6 +1,5 @@
 /**
- * OrbitHome — Smart dynamic home with ranked blocks, video hero, and real DB data.
- * Orbit-first, then dynamically ordered marketplace/wallet/activity blocks.
+ * OrbitHome — Smart dynamic home. Orbit-first, ranked blocks, real DB data.
  */
 import { useEffect, useMemo, memo, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
@@ -9,67 +8,73 @@ import { useOrbitEngine } from "@/stores/orbit-engine";
 import { useI18n } from "@/lib/i18n";
 import { trackMount } from "@/lib/orbit-perf";
 import OrbitWalletCard from "@/components/orbit/OrbitWalletCard";
-import { ChevronRight, MessageCircle, Phone, Wallet, ScanLine, MapPin, Car, Home as HomeIcon, Building2, Star } from "lucide-react";
+import { ChevronRight, MessageCircle, Phone, Wallet, ScanLine, MapPin, Car, Building2, Star, Send, Plane } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { useSmartHomeFeed } from "@/hooks/useSmartHomeFeed";
 import type { UserSignals, ShopSignal, RankedBlock } from "@/lib/home/home-ranking";
 
-/* ═══ Video Hero ═══ */
-const VideoHero = memo(function VideoHero() {
-  const [loaded, setLoaded] = useState(false);
+/* ═══ Orbit Hero Block — strongest visual ═══ */
+const OrbitHero = memo(function OrbitHero({ convRows, onNavigate }: {
+  convRows: Array<{ name: string; message: string; time: string; unread: number }>;
+  onNavigate: (path: string) => void;
+}) {
   return (
-    <div className="w-full max-w-md rounded-2xl overflow-hidden relative" style={{ aspectRatio: "16/7" }}>
-      {/* Poster skeleton */}
-      {!loaded && (
-        <div className="absolute inset-0 animate-pulse" style={{ background: "hsl(var(--hud-surface-2))" }} />
-      )}
-      <video
-        autoPlay muted loop playsInline
-        preload="metadata"
-        onLoadedData={() => setLoaded(true)}
-        className={`w-full h-full object-cover transition-opacity duration-500 ${loaded ? "opacity-100" : "opacity-0"}`}
-        poster="/placeholder.svg"
-      >
-        <source src="https://assets.mixkit.co/videos/preview/mixkit-city-traffic-on-a-bridge-at-night-4222-large.mp4" type="video/mp4" />
-      </video>
-      {/* Gradient overlay */}
-      <div className="absolute inset-0" style={{ background: "linear-gradient(to top, hsl(var(--hud-bg)) 0%, transparent 50%)" }} />
-      <div className="absolute bottom-3 left-4 right-4">
-        <p className="text-[13px] font-bold" style={{ color: "hsl(var(--hud-text))" }}>Easy-Locs</p>
-        <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.6)" }}>Your world, one tap away</p>
+    <div className="w-full max-w-md">
+      {/* Orbit branded header */}
+      <div className="flex items-center justify-between mb-3 px-1">
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: "hsl(var(--hud-cyan))", boxShadow: "0 0 16px hsl(var(--hud-cyan) / 0.4)" }}>
+            <MessageCircle className="w-4 h-4 text-white" />
+          </div>
+          <div>
+            <h1 className="text-sm font-black tracking-tight" style={{ color: "hsl(var(--hud-text))" }}>Orbit</h1>
+            <p className="text-[9px] uppercase tracking-[0.15em] font-semibold" style={{ color: "hsl(var(--hud-cyan) / 0.7)" }}>Communication Hub</p>
+          </div>
+        </div>
+        <button onClick={() => onNavigate("/dashboard/communication")} className="text-[10px] font-semibold flex items-center gap-0.5 active:opacity-70 px-2 py-1 rounded-lg" style={{ color: "hsl(var(--hud-cyan))", background: "hsl(var(--hud-cyan) / 0.08)" }}>
+          View all<ChevronRight className="w-3 h-3" />
+        </button>
+      </div>
+      {/* Conversation list */}
+      <div className="rounded-2xl overflow-hidden" style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-cyan) / 0.12)", boxShadow: "0 0 24px hsl(var(--hud-cyan) / 0.06)" }}>
+        {convRows.map((conv, i) => (
+          <ConversationRow key={conv.name + i} {...conv} onClick={() => onNavigate("/dashboard/communication")}
+            isLast={i === convRows.length - 1} />
+        ))}
+      </div>
+      {/* Quick action pills */}
+      <div className="flex gap-2 mt-3">
+        {[
+          { icon: MessageCircle, label: "Message", path: "/dashboard/communication", color: "hsl(var(--hud-cyan))" },
+          { icon: Phone, label: "Call", path: "/dashboard/communication?section=calls", color: "hsl(var(--hud-success))" },
+          { icon: Wallet, label: "Pay", path: "/wallet/hub", color: "hsl(var(--hud-warning))" },
+          { icon: ScanLine, label: "Scan", path: "/qr/entry/scan", color: "hsl(var(--hud-purple))" },
+        ].map((a) => (
+          <button key={a.label} onClick={() => onNavigate(a.path)} className="flex-1 flex flex-col items-center gap-1 py-2.5 rounded-xl active:scale-95 transition-transform min-h-[52px]" style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.06)" }}>
+            <a.icon className="w-4.5 h-4.5" style={{ color: a.color }} />
+            <span className="text-[9px] font-semibold" style={{ color: "hsl(var(--hud-text-dim) / 0.6)" }}>{a.label}</span>
+          </button>
+        ))}
       </div>
     </div>
   );
 });
 
-/* ═══ Section header ═══ */
-const SectionLabel = memo(function SectionLabel({ title, action, onAction }: { title: string; action?: string; onAction?: () => void }) {
-  return (
-    <div className="flex items-center justify-between mb-2 px-0.5">
-      <h2 className="text-[11px] font-bold uppercase tracking-[0.12em]" style={{ color: "hsl(var(--hud-text-dim) / 0.55)" }}>{title}</h2>
-      {action && (
-        <button onClick={onAction} className="text-[10px] font-semibold flex items-center gap-0.5 active:opacity-70" style={{ color: "hsl(var(--hud-cyan))" }}>
-          {action}<ChevronRight className="w-3 h-3" />
-        </button>
-      )}
-    </div>
-  );
-});
-
 /* ═══ Conversation row ═══ */
-const ConversationRow = memo(function ConversationRow({ name, message, time, unread, onClick }: {
-  name: string; message: string; time: string; unread?: number; onClick: () => void;
+const ConversationRow = memo(function ConversationRow({ name, message, time, unread, onClick, isLast }: {
+  name: string; message: string; time: string; unread?: number; onClick: () => void; isLast?: boolean;
 }) {
   const initials = name.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase();
   const colors = ["hsl(var(--hud-cyan) / 0.2)", "hsl(210 60% 25%)", "hsl(260 40% 25%)", "hsl(340 40% 25%)"];
   const bg = colors[name.charCodeAt(0) % colors.length];
   return (
-    <button onClick={onClick} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all active:scale-[0.98] min-h-[56px]">
+    <button onClick={onClick} className="w-full flex items-center gap-3 px-3.5 py-3 transition-all active:scale-[0.98] min-h-[56px]"
+      style={{ borderBottom: isLast ? "none" : "1px solid hsl(var(--hud-border) / 0.06)" }}>
       <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 text-xs font-bold" style={{ background: bg, color: "hsl(var(--hud-text))" }}>{initials}</div>
       <div className="flex-1 min-w-0 text-left">
         <p className="text-[13px] font-semibold truncate leading-tight" style={{ color: "hsl(var(--hud-text))" }}>{name}</p>
-        <p className="text-[11px] truncate leading-snug mt-0.5" style={{ color: "hsl(var(--hud-text-dim) / 0.55)" }}>{message}</p>
+        <p className="text-[11px] truncate leading-snug mt-0.5 max-w-[200px]" style={{ color: "hsl(var(--hud-text-dim) / 0.55)" }}>{message}</p>
       </div>
       <div className="flex flex-col items-end gap-1 shrink-0 ml-2">
         <span className="text-[10px] font-medium" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{time}</span>
@@ -81,40 +86,46 @@ const ConversationRow = memo(function ConversationRow({ name, message, time, unr
   );
 });
 
-/* ═══ Quick actions ═══ */
-const QUICK_ACTIONS = [
-  { icon: MessageCircle, label: "Message", path: "/dashboard/communication", color: "hsl(var(--hud-cyan))" },
-  { icon: Phone, label: "Call", path: "/dashboard/communication?section=calls", color: "hsl(var(--hud-success))" },
-  { icon: Wallet, label: "Pay", path: "/wallet/hub", color: "hsl(var(--hud-warning))" },
-  { icon: ScanLine, label: "Scan", path: "/qr/entry/scan", color: "hsl(var(--hud-purple))" },
-] as const;
+/* ═══ Section header ═══ */
+const SectionLabel = memo(function SectionLabel({ title, action, onAction }: { title: string; action?: string; onAction?: () => void }) {
+  return (
+    <div className="flex items-center justify-between mb-2 px-0.5">
+      <h2 className="text-[10px] font-bold uppercase tracking-[0.12em]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>{title}</h2>
+      {action && (
+        <button onClick={onAction} className="text-[10px] font-semibold flex items-center gap-0.5 active:opacity-70" style={{ color: "hsl(var(--hud-cyan))" }}>
+          {action}<ChevronRight className="w-3 h-3" />
+        </button>
+      )}
+    </div>
+  );
+});
 
 /* ═══ Categories ═══ */
 const CATEGORIES = [
   { icon: "🍽️", label: "Food", path: "/explore?cat=food" },
   { icon: "🛍️", label: "Shops", path: "/shops" },
   { icon: "🏠", label: "Property", path: "/real-estate" },
-  { icon: "🚗", label: "Ride", path: "/ride" },
-  { icon: "📦", label: "Delivery", path: "/send" },
+  { icon: "🚕", label: "Taxi", path: "/ride" },
+  { icon: "📦", label: "Send", path: "/send" },
   { icon: "✈️", label: "Travel", path: "/travel" },
 ] as const;
 
 /* ═══ Shop card for carousels ═══ */
 const ShopCard = memo(function ShopCard({ shop, onClick }: { shop: ShopSignal; onClick: () => void }) {
   return (
-    <button onClick={onClick} className="flex flex-col min-w-[140px] max-w-[140px] rounded-xl overflow-hidden active:scale-[0.97] transition-transform" style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)" }}>
-      <div className="w-full h-20 flex items-center justify-center" style={{ background: "hsl(var(--hud-surface-2))" }}>
+    <button onClick={onClick} className="flex flex-col min-w-[130px] max-w-[130px] rounded-xl overflow-hidden active:scale-[0.97] transition-transform" style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)" }}>
+      <div className="w-full h-[72px] flex items-center justify-center" style={{ background: "hsl(var(--hud-surface-2))" }}>
         {shop.photo_url ? (
           <img src={shop.photo_url} alt={shop.title} className="w-full h-full object-cover" loading="lazy" />
         ) : (
           <span className="text-2xl">🏪</span>
         )}
       </div>
-      <div className="p-2.5">
-        <p className="text-[12px] font-semibold truncate text-left" style={{ color: "hsl(var(--hud-text))" }}>{shop.title}</p>
+      <div className="p-2">
+        <p className="text-[11px] font-semibold truncate text-left" style={{ color: "hsl(var(--hud-text))" }}>{shop.title}</p>
         <div className="flex items-center gap-1 mt-0.5">
-          <Star className="w-3 h-3" style={{ color: "hsl(45 90% 55%)", fill: "hsl(45 90% 55%)" }} />
-          <span className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>{shop.rating.toFixed(1)} · {shop.category}</span>
+          <Star className="w-2.5 h-2.5" style={{ color: "hsl(45 90% 55%)", fill: "hsl(45 90% 55%)" }} />
+          <span className="text-[9px] truncate" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>{shop.rating.toFixed(1)}</span>
         </div>
       </div>
     </button>
@@ -128,12 +139,31 @@ const HomeCarousel = memo(function HomeCarousel({ title, items, onSeeAll }: { ti
   return (
     <div className="w-full max-w-md">
       <SectionLabel title={title} action="See all" onAction={onSeeAll} />
-      <div className="flex gap-2.5 overflow-x-auto pb-1 scrollbar-hide -mx-1 px-1">
+      <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide -mx-1 px-1">
         {items.map((shop) => (
           <ShopCard key={shop.id} shop={shop} onClick={() => navigate(`/explore?shop=${shop.id}`)} />
         ))}
       </div>
     </div>
+  );
+});
+
+/* ═══ Link card ═══ */
+const LinkCard = memo(function LinkCard({ icon: Icon, title, subtitle, path, color }: {
+  icon: React.ElementType; title: string; subtitle: string; path: string; color: string;
+}) {
+  const navigate = useNavigate();
+  return (
+    <button onClick={() => navigate(path)} className="w-full rounded-2xl p-3.5 flex items-center gap-3 active:scale-[0.98] transition-transform" style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)" }}>
+      <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: `${color.replace(")", " / 0.12)")}` }}>
+        <Icon className="w-4.5 h-4.5" style={{ color }} />
+      </div>
+      <div className="flex-1 min-w-0 text-left">
+        <p className="text-[12px] font-semibold" style={{ color: "hsl(var(--hud-text))" }}>{title}</p>
+        <p className="text-[10px] truncate" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>{subtitle}</p>
+      </div>
+      <ChevronRight className="w-4 h-4 shrink-0" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }} />
+    </button>
   );
 });
 
@@ -168,7 +198,7 @@ export default function OrbitHome() {
     enabled: !!user?.id,
   });
 
-  // Fetch real shops for marketplace
+  // Fetch real shops
   const { data: dbShops } = useQuery({
     queryKey: ["home-shops"],
     queryFn: async () => {
@@ -194,24 +224,18 @@ export default function OrbitHome() {
     staleTime: 120_000,
   });
 
-  // Build user signals
   const userSignals = useMemo<UserSignals>(() => ({
     userId: user?.id || "",
-    lat: null,
-    lng: null,
-    recentCategories: [],
-    recentSearches: [],
-    recentOrdersCount: 0,
-    recentRideCount: 0,
-    recentWalletActions: 0,
-    recentRealEstateActions: 0,
+    lat: null, lng: null,
+    recentCategories: [], recentSearches: [],
+    recentOrdersCount: 0, recentRideCount: 0,
+    recentWalletActions: 0, recentRealEstateActions: 0,
     merchantMode: false,
   }), [user?.id]);
 
   const shops = dbShops || [];
   const { rankedBlocks, nearbyTop, trending, topCuisine } = useSmartHomeFeed(userSignals, shops);
 
-  // Format conversations for display
   const convRows = useMemo(() => {
     if (conversations && conversations.length > 0) {
       return conversations.map((c: any) => ({
@@ -221,139 +245,52 @@ export default function OrbitHome() {
         unread: c.unread_count || 0,
       }));
     }
-    return [
-      { name: "Welcome", message: "Start a conversation", time: "now", unread: 0 },
-    ];
+    return [{ name: "Welcome", message: "Start a conversation", time: "now", unread: 0 }];
   }, [conversations]);
 
-  // Block renderer
   const renderBlock = useCallback((block: RankedBlock) => {
     switch (block.type) {
-      case "orbit":
-        return (
-          <div key="orbit" className="w-full max-w-md">
-            <SectionLabel title="ORBIT" action={t("nav.orbit") || "All"} onAction={() => navigate("/dashboard/communication")} />
-            <div className="rounded-2xl overflow-hidden" style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)" }}>
-              {convRows.map((conv, i) => (
-                <div key={conv.name + i} style={{ borderBottom: i < convRows.length - 1 ? "1px solid hsl(var(--hud-border) / 0.06)" : "none" }}>
-                  <ConversationRow {...conv} onClick={() => navigate("/dashboard/communication")} />
-                </div>
-              ))}
-            </div>
-          </div>
-        );
-
+      case "orbit": return null; // Rendered separately above
       case "nearby_food":
-        return topCuisine.length > 0 ? (
-          <HomeCarousel key="nearby_food" title="NEARBY CUISINE" items={topCuisine} onSeeAll={() => navigate("/explore?cat=food")} />
-        ) : null;
-
+        return topCuisine.length > 0 ? <HomeCarousel key="nearby_food" title="NEARBY CUISINE" items={topCuisine} onSeeAll={() => navigate("/explore?cat=food")} /> : null;
       case "nearby_shops":
-        return nearbyTop.length > 0 ? (
-          <HomeCarousel key="nearby_shops" title="NEARBY SHOPS" items={nearbyTop} onSeeAll={() => navigate("/shops")} />
-        ) : null;
-
+        return nearbyTop.length > 0 ? <HomeCarousel key="nearby_shops" title="NEARBY SHOPS" items={nearbyTop} onSeeAll={() => navigate("/shops")} /> : null;
       case "trending_shops":
-        return trending.length > 0 ? (
-          <HomeCarousel key="trending_shops" title="TRENDING NOW" items={trending} onSeeAll={() => navigate("/explore")} />
-        ) : null;
-
+        return trending.length > 0 ? <HomeCarousel key="trending_shops" title="TRENDING NOW" items={trending} onSeeAll={() => navigate("/explore")} /> : null;
       case "wallet":
-        return (
-          <div key="wallet" className="w-full max-w-md">
-            <SectionLabel title="WALLET" />
-            <OrbitWalletCard />
-          </div>
-        );
-
+        return <div key="wallet" className="w-full max-w-md"><SectionLabel title="WALLET" /><OrbitWalletCard /></div>;
       case "ride":
-        return (
-          <div key="ride" className="w-full max-w-md">
-            <button onClick={() => navigate("/ride")} className="w-full rounded-2xl p-4 flex items-center gap-3 active:scale-[0.98] transition-transform" style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)" }}>
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: "hsl(var(--hud-warning) / 0.12)" }}>
-                <Car className="w-5 h-5" style={{ color: "hsl(var(--hud-warning))" }} />
-              </div>
-              <div className="flex-1 min-w-0 text-left">
-                <p className="text-[13px] font-semibold" style={{ color: "hsl(var(--hud-text))" }}>Book a Ride</p>
-                <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>Taxi & transport</p>
-              </div>
-              <ChevronRight className="w-4 h-4 shrink-0" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }} />
-            </button>
-          </div>
-        );
-
+        return <div key="ride" className="w-full max-w-md"><LinkCard icon={Car} title="Book a Ride" subtitle="Taxi & transport" path="/ride" color="hsl(var(--hud-warning))" /></div>;
       case "real_estate":
-        return (
-          <div key="real_estate" className="w-full max-w-md">
-            <button onClick={() => navigate("/real-estate")} className="w-full rounded-2xl p-4 flex items-center gap-3 active:scale-[0.98] transition-transform" style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)" }}>
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: "hsl(var(--hud-purple) / 0.12)" }}>
-                <Building2 className="w-5 h-5" style={{ color: "hsl(var(--hud-purple))" }} />
-              </div>
-              <div className="flex-1 min-w-0 text-left">
-                <p className="text-[13px] font-semibold" style={{ color: "hsl(var(--hud-text))" }}>Property</p>
-                <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>Real estate & rentals</p>
-              </div>
-              <ChevronRight className="w-4 h-4 shrink-0" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }} />
-            </button>
-          </div>
-        );
-
-      case "recent_activity":
-        return null; // Will render when activity feed is available
-
-      case "featured_ad":
-        return null; // Reserved, sleeping
-
-      default:
-        return null;
+        return <div key="real_estate" className="w-full max-w-md"><LinkCard icon={Building2} title="Property" subtitle="Real estate & rentals" path="/real-estate" color="hsl(var(--hud-purple))" /></div>;
+      default: return null;
     }
-  }, [convRows, topCuisine, nearbyTop, trending, navigate, t]);
+  }, [topCuisine, nearbyTop, trending, navigate]);
 
   return (
-    <div className="flex flex-col items-center px-4 pt-3 pb-24 gap-5 min-h-full">
-      {/* 1. Video Hero */}
-      <VideoHero />
+    <div className="flex flex-col items-center px-4 pt-3 pb-24 gap-4 min-h-full">
+      {/* 1. ORBIT — strongest block, first position */}
+      <OrbitHero convRows={convRows} onNavigate={navigate} />
 
-      {/* 2. Quick Actions */}
-      <div className="w-full max-w-md">
-        <div className="flex gap-2">
-          {QUICK_ACTIONS.map((a) => (
-            <button key={a.label} onClick={() => navigate(a.path)} className="flex-1 flex flex-col items-center gap-1.5 py-3 rounded-xl active:scale-95 transition-transform min-h-[60px]" style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.06)" }}>
-              <a.icon className="w-5 h-5" style={{ color: a.color }} />
-              <span className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-text-dim) / 0.65)" }}>{a.label}</span>
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* 3. Categories */}
+      {/* 2. Categories */}
       <div className="w-full max-w-md">
         <SectionLabel title="CATEGORIES" />
         <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide -mx-1 px-1">
           {CATEGORIES.map((cat) => (
-            <button key={cat.label} onClick={() => navigate(cat.path)} className="flex flex-col items-center gap-1.5 min-w-[58px] py-2.5 px-1.5 rounded-xl active:scale-95 transition-transform" style={{ background: "hsl(var(--hud-surface))" }}>
-              <span className="text-lg leading-none">{cat.icon}</span>
-              <span className="text-[10px] font-semibold truncate w-full text-center" style={{ color: "hsl(var(--hud-text-dim) / 0.65)" }}>{cat.label}</span>
+            <button key={cat.label} onClick={() => navigate(cat.path)} className="flex flex-col items-center gap-1 min-w-[54px] py-2 px-1 rounded-xl active:scale-95 transition-transform" style={{ background: "hsl(var(--hud-surface))" }}>
+              <span className="text-base leading-none">{cat.icon}</span>
+              <span className="text-[9px] font-semibold truncate w-full text-center" style={{ color: "hsl(var(--hud-text-dim) / 0.6)" }}>{cat.label}</span>
             </button>
           ))}
         </div>
       </div>
 
-      {/* 4. Dynamic ranked blocks */}
-      {rankedBlocks.map(renderBlock)}
+      {/* 3. Dynamic ranked blocks (excluding orbit which is already rendered) */}
+      {rankedBlocks.filter(b => b.type !== "orbit").map(renderBlock)}
 
-      {/* 5. Nearby Places — always at bottom */}
+      {/* 4. Nearby Places */}
       <div className="w-full max-w-md">
-        <button onClick={() => navigate("/super-map")} className="w-full rounded-2xl p-4 flex items-center gap-3 active:scale-[0.98] transition-transform" style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)" }}>
-          <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: "hsl(var(--hud-cyan) / 0.12)" }}>
-            <MapPin className="w-5 h-5" style={{ color: "hsl(var(--hud-cyan))" }} />
-          </div>
-          <div className="flex-1 min-w-0 text-left">
-            <p className="text-[13px] font-semibold" style={{ color: "hsl(var(--hud-text))" }}>Nearby Places</p>
-            <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>Shops, restaurants & services on map</p>
-          </div>
-          <ChevronRight className="w-4 h-4 shrink-0" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }} />
-        </button>
+        <LinkCard icon={MapPin} title="Nearby Places" subtitle="Shops, restaurants & services" path="/super-map" color="hsl(var(--hud-cyan))" />
       </div>
     </div>
   );
