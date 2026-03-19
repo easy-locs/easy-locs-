@@ -1,5 +1,5 @@
 /**
- * SettingsHome — Clean category navigation for settings
+ * SettingsHome — Clean category navigation hub for settings
  * Route: /settings
  */
 import { useNavigate } from "react-router-dom";
