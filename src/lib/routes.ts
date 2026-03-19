@@ -3,7 +3,7 @@
  * Use these instead of hardcoding paths in components.
  */
 export const routes = {
-  qr: (code: string) => `/qr/${encodeURIComponent(code)}`,
+  qr: (code: string) => `/qr/entry/${encodeURIComponent(code)}`,
   tracking: (orderId: string) => `/tracking/order/${encodeURIComponent(orderId)}`,
   driverMission: (id: string) => `/driver/mission/${encodeURIComponent(id)}`,
   merchantDelivery: () => `/merchant/delivery-monitor`,
