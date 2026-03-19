@@ -8,6 +8,7 @@ import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { CallProvider } from "@/components/call/CallProvider";
 import { useOrbitSessionInit } from "@/hooks/useOrbitSessionInit";
 import { useRealtimeHub } from "@/hooks/useRealtimeHub";
+import { useOrchestration } from "@/hooks/useOrchestration";
 import { I18nProvider } from "@/lib/i18n";
 import { ThemeProvider } from "next-themes";
 import { Suspense, lazy, type ComponentType } from "react";
@@ -361,6 +362,10 @@ const AdminMasterDebugPage = safeLazy(() => import("./pages/AdminMasterDebugPage
 const AdminDinoControlPanel = safeLazy(() => import("./pages/admin/AdminDinoControlPanel"), "AdminDinoControlPanel");
 const AdminMarketplaceOpsPage = safeLazy(() => import("./pages/admin/AdminMarketplaceOpsPage"), "AdminMarketplaceOpsPage");
 const SettingsPaymentMethodsPage = safeLazy(() => import("./pages/settings/SettingsPaymentMethods"), "SettingsPaymentMethods");
+const MerchantMenuPageNew = safeLazy(() => import("./pages/merchant/MerchantMenuPage"), "MerchantMenuPageNew");
+const DriverDashboardPageNew = safeLazy(() => import("./pages/driver/DriverDashboardPage"), "DriverDashboardPageNew");
+const AdminOpsDashboardPage = safeLazy(() => import("./pages/admin/AdminOpsDashboardPage"), "AdminOpsDashboardPage");
+const AdminOrchestrationPage = safeLazy(() => import("./pages/admin/AdminOrchestrationPage"), "AdminOrchestrationPage");
 
 // City sub-page wrappers
 const CityServicesPage = () => <CityHubPage subPage="services" />;
@@ -397,6 +402,8 @@ const seoPublicPrefixes = [
 const OrbitSessionGuard = () => { useOrbitSessionInit(); return null; };
 /** Centralized realtime: replaces usePresence, useOrbitCallSync, RealtimeMessageToast */
 const RealtimeHubGuard = () => { useRealtimeHub(); return null; };
+/** Install orchestration engine */
+const OrchestrationGuard = () => { useOrchestration(); return null; };
 
 // Apply lightweight mode class on slow devices
 if (typeof window !== "undefined") {
@@ -431,7 +438,8 @@ const App = () => (
            <AppLockGuard>
            <SplashScreen>
            <BrandSuccessFlash />
-           <OrbitSessionGuard />
+            <OrchestrationGuard />
+            <OrbitSessionGuard />
            <RealtimeHubGuard />
            <UpdateNotification />
            <OrbitCallRoot />
@@ -779,6 +787,11 @@ const App = () => (
                <Route path="/admin/ui-engine" element={<ProtectedRoute><AdminUiEnginePage /></ProtectedRoute>} />
                <Route path="/admin/marketplace-ops" element={<ProtectedRoute><AdminMarketplaceOpsPage /></ProtectedRoute>} />
                <Route path="/settings/payment-methods" element={<ProtectedRoute><SettingsPaymentMethodsPage /></ProtectedRoute>} />
+               <Route path="/merchant/menu" element={<ProtectedRoute><MerchantMenuPageNew /></ProtectedRoute>} />
+               <Route path="/merchant/menu/:merchantId" element={<ProtectedRoute><MerchantMenuPageNew /></ProtectedRoute>} />
+               <Route path="/driver/dashboard" element={<ProtectedRoute><DriverDashboardPageNew /></ProtectedRoute>} />
+               <Route path="/admin/ops-dashboard" element={<ProtectedRoute><AdminOpsDashboardPage /></ProtectedRoute>} />
+               <Route path="/admin/orchestration" element={<ProtectedRoute><AdminOrchestrationPage /></ProtectedRoute>} />
               <Route path="/city/:countryCode/:city/:vertical/:locale" element={<CityVerticalPage />} />
 
               {/* Guest / Public */}
