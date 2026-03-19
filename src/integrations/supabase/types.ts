@@ -2015,6 +2015,36 @@ export type Database = {
           },
         ]
       }
+      category_cleanup_tasks: {
+        Row: {
+          applied: boolean | null
+          created_at: string
+          entity_id: string
+          entity_type: string
+          id: string
+          old_value: string
+          proposed_value: string
+        }
+        Insert: {
+          applied?: boolean | null
+          created_at?: string
+          entity_id: string
+          entity_type: string
+          id?: string
+          old_value: string
+          proposed_value: string
+        }
+        Update: {
+          applied?: boolean | null
+          created_at?: string
+          entity_id?: string
+          entity_type?: string
+          id?: string
+          old_value?: string
+          proposed_value?: string
+        }
+        Relationships: []
+      }
       category_subscriptions: {
         Row: {
           category: string
@@ -3812,6 +3842,101 @@ export type Database = {
           risk_score?: number | null
           user_agent?: string | null
           user_id?: string | null
+        }
+        Relationships: []
+      }
+      dino_issues: {
+        Row: {
+          auto_fixable: boolean | null
+          component: string | null
+          created_at: string
+          details_json: Json | null
+          fixability: string
+          id: string
+          issue_type: string
+          resolved_at: string | null
+          route: string
+          run_id: string | null
+          severity: string
+          status: string
+          summary: string
+        }
+        Insert: {
+          auto_fixable?: boolean | null
+          component?: string | null
+          created_at?: string
+          details_json?: Json | null
+          fixability?: string
+          id?: string
+          issue_type: string
+          resolved_at?: string | null
+          route: string
+          run_id?: string | null
+          severity?: string
+          status?: string
+          summary: string
+        }
+        Update: {
+          auto_fixable?: boolean | null
+          component?: string | null
+          created_at?: string
+          details_json?: Json | null
+          fixability?: string
+          id?: string
+          issue_type?: string
+          resolved_at?: string | null
+          route?: string
+          run_id?: string | null
+          severity?: string
+          status?: string
+          summary?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dino_issues_run_id_fkey"
+            columns: ["run_id"]
+            isOneToOne: false
+            referencedRelation: "dino_runs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      dino_runs: {
+        Row: {
+          created_by: string | null
+          ended_at: string | null
+          id: string
+          issues_fixed: number
+          issues_found: number
+          run_type: string
+          scanned_pages: number
+          started_at: string
+          status: string
+          summary_json: Json | null
+        }
+        Insert: {
+          created_by?: string | null
+          ended_at?: string | null
+          id?: string
+          issues_fixed?: number
+          issues_found?: number
+          run_type?: string
+          scanned_pages?: number
+          started_at?: string
+          status?: string
+          summary_json?: Json | null
+        }
+        Update: {
+          created_by?: string | null
+          ended_at?: string | null
+          id?: string
+          issues_fixed?: number
+          issues_found?: number
+          run_type?: string
+          scanned_pages?: number
+          started_at?: string
+          status?: string
+          summary_json?: Json | null
         }
         Relationships: []
       }
@@ -7019,6 +7144,45 @@ export type Database = {
           },
         ]
       }
+      journey_events: {
+        Row: {
+          actor_id: string | null
+          actor_type: string
+          context_json: Json | null
+          country: string | null
+          created_at: string
+          device_type: string | null
+          event_name: string
+          id: string
+          language: string | null
+          route: string
+        }
+        Insert: {
+          actor_id?: string | null
+          actor_type?: string
+          context_json?: Json | null
+          country?: string | null
+          created_at?: string
+          device_type?: string | null
+          event_name: string
+          id?: string
+          language?: string | null
+          route: string
+        }
+        Update: {
+          actor_id?: string | null
+          actor_type?: string
+          context_json?: Json | null
+          country?: string | null
+          created_at?: string
+          device_type?: string | null
+          event_name?: string
+          id?: string
+          language?: string | null
+          route?: string
+        }
+        Relationships: []
+      }
       landlord_profiles: {
         Row: {
           active: boolean | null
@@ -8383,6 +8547,48 @@ export type Database = {
           },
         ]
       }
+      media_assets: {
+        Row: {
+          asset_type: string
+          created_at: string
+          height: number | null
+          id: string
+          normalized_url: string | null
+          original_url: string
+          owner_id: string
+          owner_type: string
+          profile_name: string | null
+          status: string
+          width: number | null
+        }
+        Insert: {
+          asset_type: string
+          created_at?: string
+          height?: number | null
+          id?: string
+          normalized_url?: string | null
+          original_url: string
+          owner_id: string
+          owner_type: string
+          profile_name?: string | null
+          status?: string
+          width?: number | null
+        }
+        Update: {
+          asset_type?: string
+          created_at?: string
+          height?: number | null
+          id?: string
+          normalized_url?: string | null
+          original_url?: string
+          owner_id?: string
+          owner_type?: string
+          profile_name?: string | null
+          status?: string
+          width?: number | null
+        }
+        Relationships: []
+      }
       menu_categories: {
         Row: {
           created_at: string | null
@@ -9351,6 +9557,39 @@ export type Database = {
           title?: string
           type?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      onboarding_audit: {
+        Row: {
+          flow_key: string
+          id: string
+          issue_count: number | null
+          notes_json: Json | null
+          recoverable: boolean | null
+          status: string
+          step_key: string | null
+          updated_at: string
+        }
+        Insert: {
+          flow_key: string
+          id?: string
+          issue_count?: number | null
+          notes_json?: Json | null
+          recoverable?: boolean | null
+          status?: string
+          step_key?: string | null
+          updated_at?: string
+        }
+        Update: {
+          flow_key?: string
+          id?: string
+          issue_count?: number | null
+          notes_json?: Json | null
+          recoverable?: boolean | null
+          status?: string
+          step_key?: string | null
+          updated_at?: string
         }
         Relationships: []
       }
