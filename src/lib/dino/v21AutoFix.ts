@@ -272,12 +272,15 @@ async function logAutoFixRun(userId: string, issues: AutoFixIssue[], results: Au
 // =============================
 
 export async function quickFixAndRecheck(userId: string) {
+  // Run debug BEFORE fix for comparison
+  const beforeDebug = await runV20Debug(userId);
   const firstPass = await runV21AutoFix(userId);
-  const secondPass = await runV20Debug(userId);
+  const afterDebug = await runV20Debug(userId);
 
   return {
     firstPass,
-    secondPass,
-    healthy: secondPass.overallOk,
+    beforeDebug,
+    afterDebug,
+    healthy: afterDebug.overallOk,
   };
 }

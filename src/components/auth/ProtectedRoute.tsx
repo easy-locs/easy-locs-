@@ -49,6 +49,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const isClientRoute = location.pathname.startsWith("/client");
   const isAppRoute = location.pathname.startsWith("/app");
   const isPropertyHubRoute = location.pathname.startsWith("/property-hub");
+  const isAdminRoute = location.pathname.startsWith("/admin");
 
   // Keep onboarding accessible for brand-new users, but never force-redirect existing sessions to it.
   if (isOnboarding && onboardingCompleted) {
@@ -98,13 +99,13 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
   const isPropertyManagementPath = PROPERTY_MANAGEMENT_PREFIXES.some(prefix => location.pathname.startsWith(prefix));
 
-  // Client role: can access /client/*, /app/*, free publishing routes, property management, and onboarding
-  if (activeRole === "client" && !isClientRoute && !isAppRoute && !isOnboarding && !isFreePath && !isPropertyManagementPath) {
+  // Client role: can access /client/*, /app/*, admin/*, free publishing routes, property management, and onboarding
+  if (activeRole === "client" && !isClientRoute && !isAppRoute && !isOnboarding && !isFreePath && !isPropertyManagementPath && !isAdminRoute) {
     return <Navigate to="/client" replace />;
   }
 
-  // Tenant role: can access /tenant/*, /app/*, and property management dashboard routes (navigated from Property Hub)
-  if (activeRole === "tenant" && !isTenantRoute && !isAppRoute && !isOnboarding && !isPropertyManagementPath && !isFreePath) {
+  // Tenant role: can access /tenant/*, /app/*, admin/*, and property management dashboard routes
+  if (activeRole === "tenant" && !isTenantRoute && !isAppRoute && !isOnboarding && !isPropertyManagementPath && !isFreePath && !isAdminRoute) {
     return <Navigate to="/tenant" replace />;
   }
 
