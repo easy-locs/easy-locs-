@@ -34,7 +34,7 @@ export default function SettingsOrbit() {
   const { user } = useAuth();
   const { t, setLocale, locale } = useI18n();
   const { toast } = useToast();
-  const [selectedLang, setSelectedLang] = useState(locale || "en");
+  const [selectedLang, setSelectedLang] = useState<Locale>((locale || "en") as Locale);
   const [selectedCurrency, setSelectedCurrency] = useState("USD");
 
   useEffect(() => {
