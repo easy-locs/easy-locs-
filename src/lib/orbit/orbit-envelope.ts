@@ -57,9 +57,9 @@ export async function createOrbitEnvelope(opts: {
   const aadBytes = new TextEncoder().encode(opts.aad ?? "orbit-envelope");
 
   const cipherBuf = await crypto.subtle.encrypt(
-    { name: "AES-GCM", iv, additionalData: aadBytes },
+    { name: "AES-GCM", iv: iv as unknown as ArrayBuffer, additionalData: aadBytes as unknown as ArrayBuffer },
     opts.key,
-    padded
+    padded as unknown as ArrayBuffer
   );
 
   return {
