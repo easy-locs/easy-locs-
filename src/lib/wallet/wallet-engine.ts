@@ -219,7 +219,7 @@ export async function authorizeWalletPayment(params: {
 
 export async function captureWalletPayment(params: { orderId: string }) {
   const result = await walletOps("capture", { order_id: params.orderId });
-  platformBus.emit("wallet:payment_completed", { orderId: params.orderId, stage: "captured" }, "wallet");
+  platformBus.emit("commerce:payment_captured", { orderId: params.orderId, stage: "captured" }, "wallet");
   return result;
 }
 
