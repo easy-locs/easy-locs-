@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { resolveQrTarget } from "@/lib/qr/qr-resolver";
+import { routes } from "@/lib/routes";
 import { PageErrorState, PageLoadingState } from "@/components/page-states";
 
 export default function QrEntryPage() {
@@ -18,12 +19,40 @@ export default function QrEntryPage() {
       try {
         const target = await resolveQrTarget(targetCode);
 
-        if (!target?.merchantProfileId) {
-          throw new Error("QR target missing merchant");
+        if (!target.active) {
+          setError("QR target is inactive.");
+          return;
         }
 
+        // dine_in / table -> merchant POS with table param
+        if (target.targetType === "dine_in" || target.targetType === "table") {
+          navigate(
+            `${routes.merchantPos()}?merchant=${encodeURIComponent(
+              target.merchantProfileId
+            )}&target=${encodeURIComponent(target.targetCode)}&table=${encodeURIComponent(
+              target.tableNumber ?? ""
+            )}`,
+            { replace: true }
+          );
+          return;
+        }
+
+        // global_menu / takeaway -> storefront-like flow
+        if (target.targetType === "global_menu" || target.targetType === "takeaway") {
+          navigate(
+            `${routes.merchantPos()}?merchant=${encodeURIComponent(
+              target.merchantProfileId
+            )}&target=${encodeURIComponent(target.targetCode)}`,
+            { replace: true }
+          );
+          return;
+        }
+
+        // fallback: basic redirect
         navigate(
-          `/merchant/pos?merchant=${encodeURIComponent(target.merchantProfileId)}&target=${encodeURIComponent(target.targetCode)}`,
+          `${routes.merchantPos()}?merchant=${encodeURIComponent(
+            target.merchantProfileId
+          )}&target=${encodeURIComponent(target.targetCode)}`,
           { replace: true }
         );
       } catch (e: any) {
@@ -32,9 +61,6 @@ export default function QrEntryPage() {
     })();
   }, [targetCode, navigate]);
 
-  if (error) {
-    return <PageErrorState title="QR error" message={error} />;
-  }
-
-  return <PageLoadingState title="Opening menu..." />;
+  if (error) return <PageErrorState title="QR Error" description={error} />;
+  return <PageLoadingState title="Opening menu…" />;
 }
