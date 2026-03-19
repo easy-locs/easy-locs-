@@ -1,11 +1,13 @@
 /**
- * DINO Control Tower Dashboard — Quality, Journey, Automation, Domain overview.
- * V4: Connected to real DB data + local audit engine.
+ * DINO Control Tower Dashboard — V6: Global Intelligence + Business Engine.
  */
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { runDinoAudit, type DinoReport } from "@/lib/dino/dinoEngine";
+import { buildMarketProfile, computeDesignAdaptation } from "@/lib/dino/designAdaptation";
+import { analyzeUxSignals, getSignalStats } from "@/lib/dino/uxAdaptationEngine";
+import { analyzeLearningTrends, getLearningStats } from "@/lib/dino/learningLoop";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -13,7 +15,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   ArrowLeft, Play, Shield, AlertTriangle, CheckCircle2, XCircle,
   Wrench, FileText, Eye, BarChart3, Zap, Image, Tag, Activity,
-  Database, Globe,
+  Database, Globe, TrendingUp, Users, Brain, Target,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
