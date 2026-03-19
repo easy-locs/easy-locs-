@@ -79,7 +79,7 @@ export async function failDelivery(orderId: string, reason: string) {
 
   // If payment was captured, reverse it
   try {
-    await reverseOrderPayment({ orderId, reason: `delivery_failed: ${reason}` });
+    await reverseOrderPayment({ orderId });
   } catch (e) {
     console.warn("[delivery-settlement] Reverse after failure skipped:", e);
   }
