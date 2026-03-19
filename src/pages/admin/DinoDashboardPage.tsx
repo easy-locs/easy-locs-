@@ -80,14 +80,19 @@ export default function DinoDashboardPage() {
 
         {report && (
           <Tabs defaultValue="quality" className="w-full">
-            <TabsList className="w-full grid grid-cols-3 mx-4 mt-3">
+            <TabsList className="w-full grid grid-cols-4 mx-4 mt-3">
               <TabsTrigger value="quality" className="text-xs gap-1"><Eye className="h-3 w-3" /> Quality</TabsTrigger>
+              <TabsTrigger value="domains" className="text-xs gap-1"><Globe className="h-3 w-3" /> Domains</TabsTrigger>
               <TabsTrigger value="journey" className="text-xs gap-1"><BarChart3 className="h-3 w-3" /> Journey</TabsTrigger>
-              <TabsTrigger value="automation" className="text-xs gap-1"><Zap className="h-3 w-3" /> Automation</TabsTrigger>
+              <TabsTrigger value="automation" className="text-xs gap-1"><Zap className="h-3 w-3" /> Sync</TabsTrigger>
             </TabsList>
 
             <TabsContent value="quality" className="p-4 space-y-4">
               <QualityTab report={report} />
+            </TabsContent>
+
+            <TabsContent value="domains" className="p-4 space-y-4">
+              <DomainsTab />
             </TabsContent>
 
             <TabsContent value="journey" className="p-4 space-y-4">
@@ -95,7 +100,7 @@ export default function DinoDashboardPage() {
             </TabsContent>
 
             <TabsContent value="automation" className="p-4 space-y-4">
-              <AutomationTab report={report} />
+              <SyncTab />
             </TabsContent>
           </Tabs>
         )}
