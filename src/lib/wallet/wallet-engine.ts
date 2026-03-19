@@ -225,7 +225,7 @@ export async function captureWalletPayment(params: { orderId: string }) {
 
 export async function settleOrderPaymentV2(params: { orderId: string }) {
   const result = await walletOps("settle", { order_id: params.orderId });
-  platformBus.emit("wallet:payment_completed", { orderId: params.orderId, stage: "settled" }, "wallet");
+  platformBus.emit("commerce:payment_settled", { orderId: params.orderId, stage: "settled" }, "wallet");
   return result;
 }
 
