@@ -1,19 +1,25 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { BackCard } from "@/components/ui/back-card";
 import { getPublicStorefrontBySlug } from "@/lib/storefront/public-access";
 import { getStorefrontCategories, getStorefrontItems } from "@/lib/storefront/public-storefront";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Store } from "lucide-react";
 
 export default function PublicStorefrontBySlugPage() {
   const { publicSlug } = useParams();
+  const navigate = useNavigate();
   const [storefront, setStorefront] = useState<any>(null);
   const [categories, setCategories] = useState<any[]>([]);
   const [items, setItems] = useState<any[]>([]);
+  const [merchantProfile, setMerchantProfile] = useState<any>(null);
 
   useEffect(() => {
     if (!publicSlug) return;
     getPublicStorefrontBySlug(publicSlug).then(async (row) => {
       setStorefront(row);
+      setMerchantProfile(row?.merchant_onboarding_profiles ?? null);
       const merchantId = row?.merchant_profile_id;
       if (!merchantId) return;
       const [cats, menu] = await Promise.all([
@@ -44,6 +50,21 @@ export default function PublicStorefrontBySlugPage() {
           {storefront?.seo_description ?? storefront?.merchant_onboarding_profiles?.cuisine_type ?? ""}
         </p>
       </div>
+
+      {/* Claim Banner for unclaimed restaurants */}
+      {merchantProfile?.onboarding_status === "imported_not_claimed" && (
+        <div className="rounded-xl border-2 border-dashed border-primary/30 bg-primary/5 p-4 text-center space-y-2">
+          <Store className="h-6 w-6 mx-auto text-primary" />
+          <p className="text-sm font-semibold text-foreground">Is this your restaurant?</p>
+          <p className="text-xs text-muted-foreground">Claim it for free and start receiving orders</p>
+          <Button
+            size="sm"
+            onClick={() => navigate(`/merchant/claim?id=${merchantProfile.id}`)}
+          >
+            Claim this restaurant
+          </Button>
+        </div>
+      )}
 
       <div className="space-y-6">
         {categories.map((cat) => {
