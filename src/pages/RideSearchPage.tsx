@@ -55,7 +55,8 @@ export default function RideSearchPage() {
   const userLat = geo.lat || DUBAI_CENTER.lat;
   const userLng = geo.lng || DUBAI_CENTER.lng;
 
-  const [step, setStep] = useState<Step>("search");
+  const hasPrefilledDropoff = !!(locationState?.dropoffLat);
+  const [step, setStep] = useState<Step>(hasPrefilledDropoff ? "vehicle" : "search");
   const [pickupLabel, setPickupLabel] = useState(currentLocation?.address || "Current Location");
   const [pickup, setPickup] = useState<SavedPlace | null>(currentLocation || {
     id: "current", label: "Current Location", type: "recent", address: "Current Location",
