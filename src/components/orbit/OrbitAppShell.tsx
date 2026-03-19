@@ -56,6 +56,9 @@ export default function OrbitAppShell() {
       <Suspense fallback={null}>
         <OrbitFAB />
       </Suspense>
+      <Suspense fallback={null}>
+        <CartSheet />
+      </Suspense>
     </div>
   );
 }
