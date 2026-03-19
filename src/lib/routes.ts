@@ -45,6 +45,7 @@ export const routes = {
   auditDebug: () => `/admin/audit-debug`,
   opsWallboard: () => `/admin/ops-wallboard`,
   outreach: () => `/admin/outreach`,
+  dinoAudit: () => `/admin/dino`,
 
   // Orbit
   orbitCallTest: () => `/orbit/call-test`,
