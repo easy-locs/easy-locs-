@@ -1,15 +1,18 @@
 /**
  * OrbitCallService — orchestrates WebRTC lifecycle with signaling.
  */
-import { WebRtcCallManager } from "./webrtc-call-manager";
+import { WebRtcCallManager } from "@/lib/calls/webrtc-call-manager";
 import {
   acceptCallSession,
-  createOutgoingCallSession,
+  createCallSession,
   endOrbitCallSession,
   rejectCallSession,
   sendCallSignal,
-} from "./call-session-service";
-import type { CallSignalRecord, CallType } from "./call-types";
+} from "@/lib/calls/call-session-service";
+import type {
+  CallSignalRecord,
+  CallType,
+} from "@/lib/calls/call-types";
 
 export class OrbitCallService {
   private manager: WebRtcCallManager | null = null;
@@ -20,19 +23,14 @@ export class OrbitCallService {
     calleeUserId: string;
     callType: CallType;
   }) {
+    const session = await createCallSession(params);
+
     this.manager = new WebRtcCallManager();
-
-    const session = await createOutgoingCallSession({
-      callerUserId: params.callerUserId,
-      calleeUserId: params.calleeUserId,
-      callType: params.callType,
-    });
-
     this.currentSessionId = session.id;
 
     await this.manager.startLocalMedia(params.callType === "video");
 
-    this.manager.onIceCandidate(async (candidate) => {
+    await this.manager.onIceCandidate(async (candidate) => {
       await sendCallSignal({
         sessionId: session.id,
         senderUserId: params.callerUserId,
@@ -66,10 +64,9 @@ export class OrbitCallService {
     this.currentSessionId = params.sessionId;
 
     await acceptCallSession(params.sessionId);
-
     await this.manager.startLocalMedia(params.callType === "video");
 
-    this.manager.onIceCandidate(async (candidate) => {
+    await this.manager.onIceCandidate(async (candidate) => {
       await sendCallSignal({
         sessionId: params.sessionId,
         senderUserId: params.myUserId,
@@ -140,11 +137,15 @@ export class OrbitCallService {
     if (!this.manager) return;
 
     if (signal.signal_type === "answer") {
-      await this.manager.applyAnswer(signal.payload as unknown as RTCSessionDescriptionInit);
+      await this.manager.applyAnswer(
+        signal.payload as unknown as RTCSessionDescriptionInit
+      );
     }
 
     if (signal.signal_type === "ice") {
-      await this.manager.addIceCandidate(signal.payload as unknown as RTCIceCandidateInit);
+      await this.manager.addIceCandidate(
+        signal.payload as unknown as RTCIceCandidateInit
+      );
     }
 
     if (signal.signal_type === "hangup" || signal.signal_type === "reject") {

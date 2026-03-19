@@ -4,28 +4,19 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { CallSessionRecord, CallType, SignalType } from "./call-types";
 
-function randomRoomId(): string {
-  return `room_${crypto.randomUUID().replace(/-/g, "")}`;
-}
-
-export async function createOutgoingCallSession(params: {
+export async function createCallSession(params: {
   callerUserId: string;
   calleeUserId: string;
   callType: CallType;
-  e2eeKeyHint?: string;
-}) {
-  const roomId = randomRoomId();
-
+}): Promise<CallSessionRecord> {
   const { data, error } = await (supabase as any)
     .from("orbit_call_sessions")
     .insert({
-      room_id: roomId,
-      call_type: params.callType,
       caller_user_id: params.callerUserId,
       callee_user_id: params.calleeUserId,
+      call_type: params.callType,
       status: "ringing",
-      e2ee_key_hint: params.e2eeKeyHint ?? null,
-      metadata_json: {},
+      started_at: new Date().toISOString(),
     })
     .select("*")
     .single();

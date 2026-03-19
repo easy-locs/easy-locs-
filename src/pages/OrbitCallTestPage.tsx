@@ -8,8 +8,6 @@ import { useIncomingCalls } from "@/hooks/useIncomingCalls";
 import IncomingCallModal from "@/components/calls/IncomingCallModal";
 import { OrbitCallService } from "@/lib/calls/call-service";
 import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import type { CallSessionRecord, CallSignalRecord, CallType } from "@/lib/calls/call-types";
 
 export default function OrbitCallTestPage() {
@@ -63,7 +61,15 @@ export default function OrbitCallTestPage() {
     setCurrentSession(session);
 
     if (localVideoRef.current) {
-      localVideoRef.current.srcObject = manager.getRemoteStream();
+      localVideoRef.current.srcObject = manager.getLocalStream();
+      localVideoRef.current.muted = true;
+      localVideoRef.current.playsInline = true;
+      await localVideoRef.current.play().catch(() => {});
+    }
+
+    if (remoteVideoRef.current) {
+      remoteVideoRef.current.srcObject = manager.getRemoteStream();
+      remoteVideoRef.current.playsInline = true;
     }
   };
 
@@ -94,8 +100,16 @@ export default function OrbitCallTestPage() {
       remoteOffer: offerSignal.payload,
     });
 
+    if (localVideoRef.current) {
+      localVideoRef.current.srcObject = manager.getLocalStream();
+      localVideoRef.current.muted = true;
+      localVideoRef.current.playsInline = true;
+      await localVideoRef.current.play().catch(() => {});
+    }
+
     if (remoteVideoRef.current) {
       remoteVideoRef.current.srcObject = manager.getRemoteStream();
+      remoteVideoRef.current.playsInline = true;
     }
 
     setCurrentSession(openIncoming);
@@ -133,6 +147,9 @@ export default function OrbitCallTestPage() {
     });
 
     setCurrentSession(null);
+
+    if (localVideoRef.current) localVideoRef.current.srcObject = null;
+    if (remoteVideoRef.current) remoteVideoRef.current.srcObject = null;
   };
 
   useEffect(() => {
@@ -156,51 +173,48 @@ export default function OrbitCallTestPage() {
       </div>
 
       <div className="flex flex-wrap gap-3 items-center">
-        <Input
-          placeholder="Peer user ID"
+        <input
           value={peerUserId}
           onChange={(e) => setPeerUserId(e.target.value)}
-          className="max-w-xs"
+          placeholder="Peer user ID"
+          className="max-w-xs border border-border bg-background rounded-lg px-3 py-2 text-sm"
         />
-        <Button
-          variant={callType === "audio" ? "default" : "outline"}
-          size="sm"
+
+        <button
           onClick={() => setCallType("audio")}
+          className={`rounded-lg px-4 py-2 text-sm border ${
+            callType === "audio" ? "bg-primary text-primary-foreground" : "bg-background"
+          }`}
         >
           Audio
-        </Button>
-        <Button
-          variant={callType === "video" ? "default" : "outline"}
-          size="sm"
+        </button>
+
+        <button
           onClick={() => setCallType("video")}
+          className={`rounded-lg px-4 py-2 text-sm border ${
+            callType === "video" ? "bg-primary text-primary-foreground" : "bg-background"
+          }`}
         >
           Video
-        </Button>
-        <Button onClick={startCall}>Start Call</Button>
-        <Button variant="destructive" onClick={hangup}>
+        </button>
+
+        <button onClick={startCall} className="rounded-lg bg-primary text-primary-foreground px-4 py-2 text-sm font-medium">
+          Start Call
+        </button>
+
+        <button onClick={hangup} className="rounded-lg bg-destructive text-destructive-foreground px-4 py-2 text-sm font-medium">
           Hangup
-        </Button>
+        </button>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="space-y-2">
           <p className="text-sm font-medium text-foreground">Local</p>
-          <video
-            ref={localVideoRef}
-            autoPlay
-            muted
-            playsInline
-            className="w-full aspect-video bg-muted rounded-xl"
-          />
+          <video ref={localVideoRef} autoPlay muted playsInline className="w-full aspect-video bg-muted rounded-xl" />
         </div>
         <div className="space-y-2">
           <p className="text-sm font-medium text-foreground">Remote</p>
-          <video
-            ref={remoteVideoRef}
-            autoPlay
-            playsInline
-            className="w-full aspect-video bg-muted rounded-xl"
-          />
+          <video ref={remoteVideoRef} autoPlay playsInline className="w-full aspect-video bg-muted rounded-xl" />
         </div>
       </div>
 
