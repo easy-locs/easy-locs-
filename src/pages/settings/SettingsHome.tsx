@@ -38,7 +38,7 @@ const SETTINGS_GROUPS = [
   {
     title: "Support",
     items: [
-      { key: "support", icon: Headphones, label: "Help & Support", desc: "Contact us, FAQ", path: "/settings/business" },
+      { key: "support", icon: Headphones, label: "Help & Support", desc: "Contact us, FAQ", path: "/settings/support" },
       { key: "legal", icon: FileText, label: "Legal", desc: "Terms, privacy, licenses", path: "/legal" },
     ],
   },
