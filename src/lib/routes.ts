@@ -59,8 +59,11 @@ export const routes = {
   // Settings
   settings: () => `/settings`,
   settingsAccount: () => `/settings/account`,
+  settingsOrbit: () => `/settings/orbit`,
   settingsBusiness: () => `/settings/business`,
   settingsWallet: () => `/settings/wallet`,
+  settingsAddresses: () => `/settings/addresses`,
+  settingsNotifications: () => `/settings/notifications`,
   settingsSecurity: () => `/settings/security`,
   settingsPreferences: () => `/settings/preferences`,
 
