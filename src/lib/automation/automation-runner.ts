@@ -53,7 +53,7 @@ export async function runWorkflowStep(workflowId: string): Promise<RunResult> {
       status: "completed",
       completed_at: new Date().toISOString(),
     } as any).eq("id", workflowId);
-    platformBus.emit("automation:workflow_completed", { workflowId });
+    platformBus.emit("automation:workflow_completed", { workflowId }, "system");
     return { workflowId, completed: true };
   }
 
