@@ -232,6 +232,12 @@ const MerchantOnboardingPage = safeLazy(() => import("./pages/MerchantOnboarding
 const MerchantOnboardingAdminPage = safeLazy(() => import("./pages/MerchantOnboardingAdminPage"), "MerchantOnboardingAdminPage");
 const ExecutiveDashboard = safeLazy(() => import("./pages/ExecutiveDashboard"), "ExecutiveDashboard");
 const GhostCallPage = safeLazy(() => import("./pages/GhostCallPage"), "GhostCallPage");
+// Ghost V2/V3 pages
+const GhostInboxPage = safeLazy(() => import("./pages/ghost/GhostInboxPage"), "GhostInboxPage");
+const GhostThreadPage = safeLazy(() => import("./pages/ghost/GhostThreadPage"), "GhostThreadPage");
+const GhostCallPageV2 = safeLazy(() => import("./pages/ghost/GhostCallPageV2"), "GhostCallPageV2");
+const GhostSettingsPage = safeLazy(() => import("./pages/ghost/GhostSettingsPage"), "GhostSettingsPage");
+const GhostContactsPage = safeLazy(() => import("./pages/ghost/GhostContactsPage"), "GhostContactsPage");
 const SalesSequencePage = safeLazy(() => import("./pages/SalesSequencePage"), "SalesSequencePage");
 const WorkspaceBootstrapPage = safeLazy(() => import("./pages/WorkspaceBootstrapPage"), "WorkspaceBootstrapPage");
 const MenuAdminPage = safeLazy(() => import("./pages/MenuAdminPage"), "MenuAdminPage");
@@ -620,6 +626,14 @@ const App = () => (
               <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
               <Route path="/admin/ai-quality" element={<ProtectedRoute><AIQualityDashboard /></ProtectedRoute>} />
               <Route path="/admin/ghost-call" element={<ProtectedRoute><GhostCallPage /></ProtectedRoute>} />
+
+              {/* ══════ GHOST V2/V3 ══════ */}
+              <Route path="/ghost" element={<Navigate to="/ghost/inbox" replace />} />
+              <Route path="/ghost/inbox" element={<ProtectedRoute><GhostInboxPage /></ProtectedRoute>} />
+              <Route path="/ghost/thread/:threadId" element={<ProtectedRoute><GhostThreadPage /></ProtectedRoute>} />
+              <Route path="/ghost/call/:callId" element={<ProtectedRoute><GhostCallPageV2 /></ProtectedRoute>} />
+              <Route path="/ghost/settings" element={<ProtectedRoute><GhostSettingsPage /></ProtectedRoute>} />
+              <Route path="/ghost/contacts" element={<ProtectedRoute><GhostContactsPage /></ProtectedRoute>} />
               <Route path="/admin/sales-sequences" element={<ProtectedRoute><SalesSequencePage /></ProtectedRoute>} />
               <Route path="/admin/workspace-bootstrap" element={<ProtectedRoute><WorkspaceBootstrapPage /></ProtectedRoute>} />
               <Route path="/admin/menu" element={<ProtectedRoute><MenuAdminPage /></ProtectedRoute>} />

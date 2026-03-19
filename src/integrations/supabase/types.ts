@@ -5457,6 +5457,41 @@ export type Database = {
         }
         Relationships: []
       }
+      ghost_audit_minimal: {
+        Row: {
+          created_at: string
+          event_type: string
+          ghost_profile_id: string
+          id: string
+          minimal_detail: string | null
+          severity: string
+        }
+        Insert: {
+          created_at?: string
+          event_type: string
+          ghost_profile_id: string
+          id?: string
+          minimal_detail?: string | null
+          severity?: string
+        }
+        Update: {
+          created_at?: string
+          event_type?: string
+          ghost_profile_id?: string
+          id?: string
+          minimal_detail?: string | null
+          severity?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ghost_audit_minimal_ghost_profile_id_fkey"
+            columns: ["ghost_profile_id"]
+            isOneToOne: false
+            referencedRelation: "ghost_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ghost_call_participants: {
         Row: {
           call_session_id: string
@@ -5576,6 +5611,82 @@ export type Database = {
           },
         ]
       }
+      ghost_call_sessions_v2: {
+        Row: {
+          answered_at: string | null
+          callee_alias: string | null
+          callee_ghost_profile_id: string | null
+          caller_alias: string
+          caller_ghost_profile_id: string
+          created_at: string
+          ended_at: string | null
+          expires_at: string | null
+          id: string
+          room_id: string
+          started_at: string | null
+          status: string
+          thread_id: string | null
+          tier: string
+          updated_at: string
+        }
+        Insert: {
+          answered_at?: string | null
+          callee_alias?: string | null
+          callee_ghost_profile_id?: string | null
+          caller_alias: string
+          caller_ghost_profile_id: string
+          created_at?: string
+          ended_at?: string | null
+          expires_at?: string | null
+          id?: string
+          room_id?: string
+          started_at?: string | null
+          status?: string
+          thread_id?: string | null
+          tier?: string
+          updated_at?: string
+        }
+        Update: {
+          answered_at?: string | null
+          callee_alias?: string | null
+          callee_ghost_profile_id?: string | null
+          caller_alias?: string
+          caller_ghost_profile_id?: string
+          created_at?: string
+          ended_at?: string | null
+          expires_at?: string | null
+          id?: string
+          room_id?: string
+          started_at?: string | null
+          status?: string
+          thread_id?: string | null
+          tier?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ghost_call_sessions_v2_callee_ghost_profile_id_fkey"
+            columns: ["callee_ghost_profile_id"]
+            isOneToOne: false
+            referencedRelation: "ghost_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ghost_call_sessions_v2_caller_ghost_profile_id_fkey"
+            columns: ["caller_ghost_profile_id"]
+            isOneToOne: false
+            referencedRelation: "ghost_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ghost_call_sessions_v2_thread_id_fkey"
+            columns: ["thread_id"]
+            isOneToOne: false
+            referencedRelation: "ghost_threads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ghost_call_signals: {
         Row: {
           call_session_id: string
@@ -5621,6 +5732,64 @@ export type Database = {
           },
         ]
       }
+      ghost_call_signals_v2: {
+        Row: {
+          call_session_id: string
+          consumed: boolean
+          created_at: string
+          encrypted_payload: string
+          expires_at: string | null
+          id: string
+          receiver_ghost_profile_id: string | null
+          sender_ghost_profile_id: string
+          signal_type: string
+        }
+        Insert: {
+          call_session_id: string
+          consumed?: boolean
+          created_at?: string
+          encrypted_payload: string
+          expires_at?: string | null
+          id?: string
+          receiver_ghost_profile_id?: string | null
+          sender_ghost_profile_id: string
+          signal_type: string
+        }
+        Update: {
+          call_session_id?: string
+          consumed?: boolean
+          created_at?: string
+          encrypted_payload?: string
+          expires_at?: string | null
+          id?: string
+          receiver_ghost_profile_id?: string | null
+          sender_ghost_profile_id?: string
+          signal_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ghost_call_signals_v2_call_session_id_fkey"
+            columns: ["call_session_id"]
+            isOneToOne: false
+            referencedRelation: "ghost_call_sessions_v2"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ghost_call_signals_v2_receiver_ghost_profile_id_fkey"
+            columns: ["receiver_ghost_profile_id"]
+            isOneToOne: false
+            referencedRelation: "ghost_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ghost_call_signals_v2_sender_ghost_profile_id_fkey"
+            columns: ["sender_ghost_profile_id"]
+            isOneToOne: false
+            referencedRelation: "ghost_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ghost_chat_sessions: {
         Row: {
           anonymity_level: string | null
@@ -5654,6 +5823,300 @@ export type Database = {
           status?: string | null
           updated_at?: string | null
           workspace_id?: string | null
+        }
+        Relationships: []
+      }
+      ghost_device_identities: {
+        Row: {
+          created_at: string
+          device_id: string
+          ghost_profile_id: string
+          id: string
+          key_version: number
+          last_seen_at: string | null
+          public_key_jwk: Json
+          trusted: boolean
+        }
+        Insert: {
+          created_at?: string
+          device_id: string
+          ghost_profile_id: string
+          id?: string
+          key_version?: number
+          last_seen_at?: string | null
+          public_key_jwk: Json
+          trusted?: boolean
+        }
+        Update: {
+          created_at?: string
+          device_id?: string
+          ghost_profile_id?: string
+          id?: string
+          key_version?: number
+          last_seen_at?: string | null
+          public_key_jwk?: Json
+          trusted?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ghost_device_identities_ghost_profile_id_fkey"
+            columns: ["ghost_profile_id"]
+            isOneToOne: false
+            referencedRelation: "ghost_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ghost_messages: {
+        Row: {
+          aad: string | null
+          burned_at: string | null
+          created_at: string
+          encrypted_payload: string
+          expires_at: string | null
+          id: string
+          key_version: number
+          nonce: string
+          sender_alias: string
+          sender_ghost_profile_id: string
+          thread_id: string
+        }
+        Insert: {
+          aad?: string | null
+          burned_at?: string | null
+          created_at?: string
+          encrypted_payload: string
+          expires_at?: string | null
+          id?: string
+          key_version?: number
+          nonce: string
+          sender_alias: string
+          sender_ghost_profile_id: string
+          thread_id: string
+        }
+        Update: {
+          aad?: string | null
+          burned_at?: string | null
+          created_at?: string
+          encrypted_payload?: string
+          expires_at?: string | null
+          id?: string
+          key_version?: number
+          nonce?: string
+          sender_alias?: string
+          sender_ghost_profile_id?: string
+          thread_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ghost_messages_sender_ghost_profile_id_fkey"
+            columns: ["sender_ghost_profile_id"]
+            isOneToOne: false
+            referencedRelation: "ghost_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ghost_messages_thread_id_fkey"
+            columns: ["thread_id"]
+            isOneToOne: false
+            referencedRelation: "ghost_threads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ghost_profiles: {
+        Row: {
+          alias_version: number
+          created_at: string
+          current_alias: string
+          ghost_id: string
+          id: string
+          is_enabled: boolean
+          tier: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          alias_version?: number
+          created_at?: string
+          current_alias: string
+          ghost_id: string
+          id?: string
+          is_enabled?: boolean
+          tier?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          alias_version?: number
+          created_at?: string
+          current_alias?: string
+          ghost_id?: string
+          id?: string
+          is_enabled?: boolean
+          tier?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      ghost_qr_targets: {
+        Row: {
+          active: boolean
+          created_at: string
+          encrypted_payload: string | null
+          expires_at: string | null
+          ghost_profile_id: string
+          id: string
+          max_uses: number
+          target_code: string
+          target_type: string
+          use_count: number
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          encrypted_payload?: string | null
+          expires_at?: string | null
+          ghost_profile_id: string
+          id?: string
+          max_uses?: number
+          target_code?: string
+          target_type: string
+          use_count?: number
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          encrypted_payload?: string | null
+          expires_at?: string | null
+          ghost_profile_id?: string
+          id?: string
+          max_uses?: number
+          target_code?: string
+          target_type?: string
+          use_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ghost_qr_targets_ghost_profile_id_fkey"
+            columns: ["ghost_profile_id"]
+            isOneToOne: false
+            referencedRelation: "ghost_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ghost_sessions: {
+        Row: {
+          created_at: string
+          expires_at: string
+          ghost_profile_id: string
+          id: string
+          session_token_hash: string
+          status: string
+          tier: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at: string
+          ghost_profile_id: string
+          id?: string
+          session_token_hash: string
+          status?: string
+          tier?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          ghost_profile_id?: string
+          id?: string
+          session_token_hash?: string
+          status?: string
+          tier?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ghost_sessions_ghost_profile_id_fkey"
+            columns: ["ghost_profile_id"]
+            isOneToOne: false
+            referencedRelation: "ghost_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ghost_thread_members: {
+        Row: {
+          alias_at_join: string
+          ghost_profile_id: string
+          id: string
+          joined_at: string
+          thread_id: string
+        }
+        Insert: {
+          alias_at_join: string
+          ghost_profile_id: string
+          id?: string
+          joined_at?: string
+          thread_id: string
+        }
+        Update: {
+          alias_at_join?: string
+          ghost_profile_id?: string
+          id?: string
+          joined_at?: string
+          thread_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ghost_thread_members_ghost_profile_id_fkey"
+            columns: ["ghost_profile_id"]
+            isOneToOne: false
+            referencedRelation: "ghost_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ghost_thread_members_thread_id_fkey"
+            columns: ["thread_id"]
+            isOneToOne: false
+            referencedRelation: "ghost_threads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ghost_threads: {
+        Row: {
+          burn_after_read: boolean
+          created_at: string
+          id: string
+          is_ephemeral: boolean
+          message_ttl_seconds: number | null
+          thread_code: string
+          tier: string
+          updated_at: string
+        }
+        Insert: {
+          burn_after_read?: boolean
+          created_at?: string
+          id?: string
+          is_ephemeral?: boolean
+          message_ttl_seconds?: number | null
+          thread_code?: string
+          tier?: string
+          updated_at?: string
+        }
+        Update: {
+          burn_after_read?: boolean
+          created_at?: string
+          id?: string
+          is_ephemeral?: boolean
+          message_ttl_seconds?: number | null
+          thread_code?: string
+          tier?: string
+          updated_at?: string
         }
         Relationships: []
       }
