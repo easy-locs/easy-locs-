@@ -301,8 +301,8 @@ export default function RideSearchPage() {
                   <span className="text-[10px] text-muted-foreground">{v.desc}</span>
                 </div>
                 <div className="flex items-center gap-1 mt-0.5">
-                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                  <span className="text-[10px] text-emerald-600">{v.eta}</span>
+                  <div className="w-1.5 h-1.5 rounded-full bg-success" />
+                  <span className="text-[10px] text-success">{v.eta}</span>
                 </div>
               </div>
               <p className="text-sm font-bold text-foreground shrink-0">{fareForVehicle(v.multiplier)}</p>
