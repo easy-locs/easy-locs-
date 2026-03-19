@@ -777,6 +777,8 @@ const App = () => (
                <Route path="/admin/master-debug" element={<ProtectedRoute><AdminMasterDebugPage /></ProtectedRoute>} />
                <Route path="/admin/dino-control" element={<ProtectedRoute><AdminDinoControlPanel /></ProtectedRoute>} />
                <Route path="/admin/ui-engine" element={<ProtectedRoute><AdminUiEnginePage /></ProtectedRoute>} />
+               <Route path="/admin/marketplace-ops" element={<ProtectedRoute><AdminMarketplaceOpsPage /></ProtectedRoute>} />
+               <Route path="/settings/payment-methods" element={<ProtectedRoute><SettingsPaymentMethodsPage /></ProtectedRoute>} />
               <Route path="/city/:countryCode/:city/:vertical/:locale" element={<CityVerticalPage />} />
 
               {/* Guest / Public */}
