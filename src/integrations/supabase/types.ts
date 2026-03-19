@@ -8848,6 +8848,101 @@ export type Database = {
         }
         Relationships: []
       }
+      orbit_call_sessions: {
+        Row: {
+          answered_at: string | null
+          call_scope: string
+          call_type: string
+          callee_user_id: string
+          caller_user_id: string
+          created_at: string
+          e2ee_key_hint: string | null
+          ended_at: string | null
+          id: string
+          metadata_json: Json
+          room_id: string
+          started_at: string | null
+          status: string
+          timeout_at: string
+          updated_at: string
+        }
+        Insert: {
+          answered_at?: string | null
+          call_scope?: string
+          call_type: string
+          callee_user_id: string
+          caller_user_id: string
+          created_at?: string
+          e2ee_key_hint?: string | null
+          ended_at?: string | null
+          id?: string
+          metadata_json?: Json
+          room_id: string
+          started_at?: string | null
+          status?: string
+          timeout_at?: string
+          updated_at?: string
+        }
+        Update: {
+          answered_at?: string | null
+          call_scope?: string
+          call_type?: string
+          callee_user_id?: string
+          caller_user_id?: string
+          created_at?: string
+          e2ee_key_hint?: string | null
+          ended_at?: string | null
+          id?: string
+          metadata_json?: Json
+          room_id?: string
+          started_at?: string | null
+          status?: string
+          timeout_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      orbit_call_signals: {
+        Row: {
+          consumed: boolean
+          created_at: string
+          id: string
+          payload: Json
+          receiver_user_id: string
+          sender_user_id: string
+          session_id: string
+          signal_type: string
+        }
+        Insert: {
+          consumed?: boolean
+          created_at?: string
+          id?: string
+          payload?: Json
+          receiver_user_id: string
+          sender_user_id: string
+          session_id: string
+          signal_type: string
+        }
+        Update: {
+          consumed?: boolean
+          created_at?: string
+          id?: string
+          payload?: Json
+          receiver_user_id?: string
+          sender_user_id?: string
+          session_id?: string
+          signal_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orbit_call_signals_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "orbit_call_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       orbit_device_keys: {
         Row: {
           created_at: string | null
