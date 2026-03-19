@@ -179,6 +179,7 @@ const OpsCenter = safeLazy(() => import("./pages/OpsCenter"), "OpsCenter");
 const ShopsPage = safeLazy(() => import("./pages/ShopsPage"), "ShopsPage");
 const SuperMapRadarPage = safeLazy(() => import("./pages/GlobalMapPage"), "GlobalMapPage");
 const DinoAuditPage = safeLazy(() => import("./pages/admin/DinoAuditPage"), "DinoAuditPage");
+const DinoDashboardPage = safeLazy(() => import("./pages/admin/DinoDashboardPage"), "DinoDashboardPage");
 const GlobalRadarPage = safeLazy(() => import("./pages/GlobalRadarPage"), "GlobalRadarPage");
 const MyBusinessHub = safeLazy(() => import("./pages/MyBusinessHub"), "MyBusinessHub");
 const MyShopsPage = safeLazy(() => import("./pages/MyShopsPage"), "MyShopsPage");
@@ -762,6 +763,7 @@ const App = () => (
               <Route path="/admin/qr-generate" element={<ProtectedRoute><QrGeneratePage /></ProtectedRoute>} />
               <Route path="/admin/route-audit" element={<ProtectedRoute><RouteAuditPage /></ProtectedRoute>} />
               <Route path="/admin/dino" element={<ProtectedRoute><DinoAuditPage /></ProtectedRoute>} />
+              <Route path="/admin/dino-dashboard" element={<ProtectedRoute><DinoDashboardPage /></ProtectedRoute>} />
               <Route path="/orbit/call-test" element={<ProtectedRoute><OrbitCallTestPage /></ProtectedRoute>} />
               <Route path="/admin/test-restaurants" element={<ProtectedRoute><AdminRestaurantTestSeederPage /></ProtectedRoute>} />
               <Route path="/admin/runtime-audit" element={<ProtectedRoute><AdminRuntimeAuditPage /></ProtectedRoute>} />
