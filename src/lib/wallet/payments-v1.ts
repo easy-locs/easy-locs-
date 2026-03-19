@@ -1,7 +1,6 @@
 /**
  * payments-v1.ts — Universal multi-vertical settlement engine for Easy-Locs.
- * Supports: onsite QR, takeaway, delivery, self-delivery, late driver, cancellation,
- * hospitality, property, retail, and multi-vendor (future).
+ * Currency-aware: resolves currency from country/merchant, never hardcodes.
  */
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -15,6 +14,7 @@ import {
   attachDriverToSplit,
 } from "@/lib/wallet/wallet-engine";
 import { calculateDynamicDeliveryPrice, type AISignals } from "@/lib/wallet/delivery-pricing-engine";
+import { getCurrencyFromCountry } from "@/lib/currency";
 
 // ── Types ─────────────────────────────────────────────────
 export type OrderMode =
@@ -36,7 +36,6 @@ export interface SettlementInput {
   customerWalletId: string;
   merchantProfileId: string;
   pin: string;
-  // Delivery-specific
   distanceKm?: number;
   isPeak?: boolean;
   isNight?: boolean;
@@ -45,7 +44,6 @@ export interface SettlementInput {
   weightKg?: number;
   volumeL?: number;
   aiSignals?: AISignals;
-  // Driver
   driverProfileId?: string;
   isSelfDelivery?: boolean;
 }
@@ -59,9 +57,9 @@ export interface SettlementResult {
   deliveryFee: number;
   commissionAmount: number;
   walletStatus: string;
+  currency: string;
 }
 
-// ── Helpers ───────────────────────────────────────────────
 function needsDelivery(mode: OrderMode): boolean {
   return ["delivery_food", "delivery_retail"].includes(mode);
 }
@@ -81,20 +79,20 @@ export async function settleOrderPayment(params: {
   currency?: string;
   orderId: string;
 }) {
-  // Delegate to v2 server-side settlement
   return settleOrderPaymentV2({ orderId: params.orderId });
 }
 
 // ── Universal Order Payment Flow ──────────────────────────
 export async function processUniversalPayment(input: SettlementInput): Promise<SettlementResult> {
-  // 1. Get/create wallets
+  const currency = getCurrencyFromCountry(input.countryCode);
+
   const merchantWallet = await getOrCreateWalletAccount({
     ownerType: "merchant",
     ownerProfileId: input.merchantProfileId,
+    countryCode: input.countryCode,
   });
-  const platformWallet = await getOrCreateWalletAccount({ ownerType: "platform" });
+  const platformWallet = await getOrCreateWalletAccount({ ownerType: "platform", countryCode: input.countryCode });
 
-  // 2. Calculate commission
   const commission = await calculateCommission({
     vertical: input.vertical,
     countryCode: input.countryCode,
@@ -102,7 +100,6 @@ export async function processUniversalPayment(input: SettlementInput): Promise<S
     grossAmount: input.grossAmount,
   });
 
-  // 3. Calculate delivery fee (only for delivery modes)
   let deliveryFee = 0;
   if (needsDelivery(input.orderMode) && input.distanceKm) {
     const pricing = await calculateDynamicDeliveryPrice(
@@ -122,17 +119,16 @@ export async function processUniversalPayment(input: SettlementInput): Promise<S
     deliveryFee = pricing.finalFee;
   }
 
-  // 4. Get driver wallet if needed
   let driverWalletId: string | undefined;
   if (needsDriver(input.orderMode, input.isSelfDelivery) && input.driverProfileId) {
     const driverWallet = await getOrCreateWalletAccount({
       ownerType: "driver",
       ownerProfileId: input.driverProfileId,
+      countryCode: input.countryCode,
     });
     driverWalletId = driverWallet.id;
   }
 
-  // 5. Prepare order split
   const totalAmount = input.grossAmount + deliveryFee;
   const split = await prepareOrderSplit({
     orderId: input.orderId,
@@ -143,23 +139,23 @@ export async function processUniversalPayment(input: SettlementInput): Promise<S
     platformWalletId: platformWallet.id,
     driverWalletId,
     isSelfDelivery: input.isSelfDelivery,
+    currency,
   });
 
-  // 6. Update order with delivery fee
   await (supabase as any).from("orders").update({
     gross_amount: totalAmount,
     delivery_fee: deliveryFee,
+    currency,
   }).eq("id", input.orderId);
 
-  // 7. Authorize payment
   const auth = await authorizeWalletPayment({
     orderId: input.orderId,
     customerWalletId: input.customerWalletId,
     amount: totalAmount,
     pin: input.pin,
+    currency,
   });
 
-  // 8. Capture immediately
   await captureWalletPayment({ orderId: input.orderId });
 
   return {
@@ -171,6 +167,7 @@ export async function processUniversalPayment(input: SettlementInput): Promise<S
     deliveryFee,
     commissionAmount: commission.finalCommissionAmount,
     walletStatus: "captured",
+    currency,
   };
 }
 
@@ -179,10 +176,12 @@ export async function assignDriverLate(params: {
   orderId: string;
   driverProfileId: string;
   deliveryFee: number;
+  countryCode?: string;
 }) {
   const driverWallet = await getOrCreateWalletAccount({
     ownerType: "driver",
     ownerProfileId: params.driverProfileId,
+    countryCode: params.countryCode,
   });
 
   await attachDriverToSplit({
@@ -208,8 +207,6 @@ export async function cancelOrderBeforeCompletion(orderId: string) {
     .single();
 
   if (!order) throw new Error("Order not found");
-
-  // Can only cancel if not yet settled
   if (order.settlement_status === "settled") {
     throw new Error("Cannot cancel a settled order — use refund flow");
   }
@@ -228,6 +225,5 @@ export async function processPartialRefund(_params: {
   refundAmount: number;
   reason: string;
 }) {
-  // Future: will create a partial reversal + adjustment entries
   throw new Error("Partial refunds not yet implemented — coming soon");
 }
