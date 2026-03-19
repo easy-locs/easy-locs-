@@ -603,6 +603,9 @@ const App = () => (
               {/* Merchant claim & dashboard */}
               <Route path="/merchant/claim" element={<MerchantClaimPage />} />
               <Route path="/merchant/dashboard" element={<ProtectedRoute><MerchantDashboardPage /></ProtectedRoute>} />
+              <Route path="/merchant/pos" element={<ProtectedRoute><MerchantPosPage /></ProtectedRoute>} />
+              <Route path="/merchant/kitchen" element={<ProtectedRoute><MerchantKitchenPage /></ProtectedRoute>} />
+              <Route path="/admin/wallet-test" element={<ProtectedRoute><WalletCommerceTestPage /></ProtectedRoute>} />
 
               {/* Guest / Public */}
               <Route path="/guest/checkout/:cartId" element={<GuestCheckoutPage />} />
