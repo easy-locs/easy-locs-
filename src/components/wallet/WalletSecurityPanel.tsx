@@ -129,8 +129,8 @@ export default function WalletSecurityPanel() {
             />
           </div>
           <div className="flex items-center justify-between text-[10px] text-muted-foreground">
-            <span>{t("orbit.remaining") || "Remaining"}: {remaining.toLocaleString()} LOCS</span>
-            <span>{t("orbit.limit") || "Limit"}: {limit.toLocaleString()} LOCS/day</span>
+            <span>{t("orbit.remaining") || "Remaining"}: {remaining.toLocaleString()}</span>
+            <span>{t("orbit.limit") || "Limit"}: {limit.toLocaleString()}/day</span>
           </div>
         </div>
       </div>
