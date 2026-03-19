@@ -18,6 +18,12 @@ export default function DriverEarningsPage() {
 
   useEffect(() => {
     if (user?.id) loadData();
+    // Realtime refresh on wallet/dispatch changes
+    const ch = supabase.channel("driver-earnings-live")
+      .on("postgres_changes", { event: "*", schema: "public", table: "wallet_order_splits" }, () => { if (user?.id) loadData(); })
+      .on("postgres_changes", { event: "*", schema: "public", table: "dispatch_jobs_v2" }, () => { if (user?.id) loadData(); })
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
   }, [user?.id]);
 
   const loadData = async () => {
