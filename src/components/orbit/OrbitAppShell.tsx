@@ -11,6 +11,7 @@ import OrbitBottomNav from "./OrbitBottomNav";
 import { startNotificationDispatcher, stopNotificationDispatcher } from "@/lib/orbit/notification-dispatcher";
 
 const OrbitFAB = lazy(() => import("./OrbitFAB"));
+const CartSheet = lazy(() => import("@/components/cart/CartSheet"));
 
 export default function OrbitAppShell() {
   const { user, orgId } = useAuth();
