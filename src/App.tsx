@@ -351,6 +351,7 @@ const OrbitSessionGuard = () => { useOrbitSessionInit(); return null; };
 const RealtimeHubGuard = () => { useRealtimeHub(); return null; };
 
 const App = () => (
+  <ChunkRecoveryBoundary>
   <ErrorBoundary>
   <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange={false} storageKey="easylocs-theme">
   <QueryClientProvider client={queryClient}>
