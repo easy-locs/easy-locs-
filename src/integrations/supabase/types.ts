@@ -3845,6 +3845,39 @@ export type Database = {
         }
         Relationships: []
       }
+      dino_conversion_funnels: {
+        Row: {
+          conversion_rate: number
+          created_at: string
+          drops_json: Json
+          funnel_type: string
+          id: string
+          steps_json: Json
+          total_completions: number
+          total_entries: number
+        }
+        Insert: {
+          conversion_rate?: number
+          created_at?: string
+          drops_json?: Json
+          funnel_type: string
+          id?: string
+          steps_json?: Json
+          total_completions?: number
+          total_entries?: number
+        }
+        Update: {
+          conversion_rate?: number
+          created_at?: string
+          drops_json?: Json
+          funnel_type?: string
+          id?: string
+          steps_json?: Json
+          total_completions?: number
+          total_entries?: number
+        }
+        Relationships: []
+      }
       dino_entity_state: {
         Row: {
           entity_id: string
@@ -3927,6 +3960,81 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      dino_learning_events: {
+        Row: {
+          created_at: string
+          entity_id: string
+          entity_type: string
+          event_type: string
+          id: string
+          metadata_json: Json
+          metric: string
+          new_value: number
+          previous_value: number
+        }
+        Insert: {
+          created_at?: string
+          entity_id: string
+          entity_type: string
+          event_type: string
+          id?: string
+          metadata_json?: Json
+          metric: string
+          new_value?: number
+          previous_value?: number
+        }
+        Update: {
+          created_at?: string
+          entity_id?: string
+          entity_type?: string
+          event_type?: string
+          id?: string
+          metadata_json?: Json
+          metric?: string
+          new_value?: number
+          previous_value?: number
+        }
+        Relationships: []
+      }
+      dino_market_balance: {
+        Row: {
+          actions_json: Json
+          active_listings: number
+          avg_quality: number
+          category_id: string
+          category_name: string
+          created_at: string
+          demand_signal: number
+          id: string
+          listing_count: number
+          location_key: string | null
+        }
+        Insert: {
+          actions_json?: Json
+          active_listings?: number
+          avg_quality?: number
+          category_id: string
+          category_name: string
+          created_at?: string
+          demand_signal?: number
+          id?: string
+          listing_count?: number
+          location_key?: string | null
+        }
+        Update: {
+          actions_json?: Json
+          active_listings?: number
+          avg_quality?: number
+          category_id?: string
+          category_name?: string
+          created_at?: string
+          demand_signal?: number
+          id?: string
+          listing_count?: number
+          location_key?: string | null
+        }
+        Relationships: []
       }
       dino_media_rules: {
         Row: {
@@ -4036,6 +4144,54 @@ export type Database = {
           language?: string | null
           page_key?: string | null
           route?: string
+        }
+        Relationships: []
+      }
+      dino_pro_performance: {
+        Row: {
+          completion_rate: number | null
+          conversion_rate: number | null
+          id: string
+          improvements_json: Json
+          media_quality: number | null
+          overall_score: number
+          pro_id: string
+          pro_type: string
+          profile_quality: number | null
+          response_rate: number | null
+          tier: string
+          updated_at: string
+          visibility_penalty: boolean
+        }
+        Insert: {
+          completion_rate?: number | null
+          conversion_rate?: number | null
+          id?: string
+          improvements_json?: Json
+          media_quality?: number | null
+          overall_score?: number
+          pro_id: string
+          pro_type: string
+          profile_quality?: number | null
+          response_rate?: number | null
+          tier?: string
+          updated_at?: string
+          visibility_penalty?: boolean
+        }
+        Update: {
+          completion_rate?: number | null
+          conversion_rate?: number | null
+          id?: string
+          improvements_json?: Json
+          media_quality?: number | null
+          overall_score?: number
+          pro_id?: string
+          pro_type?: string
+          profile_quality?: number | null
+          response_rate?: number | null
+          tier?: string
+          updated_at?: string
+          visibility_penalty?: boolean
         }
         Relationships: []
       }
@@ -4201,6 +4357,45 @@ export type Database = {
           scheduled_at?: string
           started_at?: string | null
           status?: string
+        }
+        Relationships: []
+      }
+      dino_ux_adaptations: {
+        Row: {
+          action: string
+          confidence: number
+          created_at: string
+          current_value: string | null
+          id: string
+          parameter: string
+          reason: string | null
+          route: string
+          status: string
+          suggested_value: string | null
+        }
+        Insert: {
+          action: string
+          confidence?: number
+          created_at?: string
+          current_value?: string | null
+          id?: string
+          parameter: string
+          reason?: string | null
+          route: string
+          status?: string
+          suggested_value?: string | null
+        }
+        Update: {
+          action?: string
+          confidence?: number
+          created_at?: string
+          current_value?: string | null
+          id?: string
+          parameter?: string
+          reason?: string | null
+          route?: string
+          status?: string
+          suggested_value?: string | null
         }
         Relationships: []
       }
