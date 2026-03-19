@@ -100,19 +100,24 @@ export async function seedAuditDemoData(workspaceId?: string) {
     });
   if (piErr) errors.push(`payment_intents: ${piErr.message}`);
 
-  // 7. Dispatch job (buyer_id = auth.uid() required by RLS insert policy)
+  // 7. Dispatch job (canonical dispatch_jobs_v2)
   const { error: dispatchErr } = await (supabase as any)
-    .from("dispatch_jobs")
+    .from("dispatch_jobs_v2")
     .insert({
-      workspace_id: ws,
       order_id: order?.id ?? null,
-      buyer_id: userId,
+      merchant_profile_id: merchant?.id ?? "unknown",
+      customer_user_id: userId,
       assigned_driver_id: driver?.id ?? null,
-      status: "assigned",
-      pickup_label: "12 Rue Demo, Paris",
-      dropoff_label: "45 Avenue Test, Paris",
+      dispatch_status: "assigned",
+      country_code: "AE",
+      delivery_fee: 10,
+      currency: "AED",
+      pickup_lat: 0,
+      pickup_lng: 0,
+      dropoff_lat: 0,
+      dropoff_lng: 0,
     });
-  if (dispatchErr) errors.push(`dispatch_jobs: ${dispatchErr.message}`);
+  if (dispatchErr) errors.push(`dispatch_jobs_v2: ${dispatchErr.message}`);
 
   // 8. Tracking session (customer_user_id = auth.uid() required by RLS)
   const { data: trackingSession, error: tsErr } = await (supabase as any)
