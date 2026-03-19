@@ -4,6 +4,7 @@
  * Route: /food/restaurant/:restaurantId
  */
 import { useParams, useNavigate } from "react-router-dom";
+import { useDinoPageAudit } from "@/hooks/useDinoPageAudit";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { ArrowLeft, Star, MapPin, Clock, Plus } from "lucide-react";
