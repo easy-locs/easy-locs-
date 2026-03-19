@@ -121,17 +121,17 @@ export default function WalletBalanceCard({
           </p>
         </div>
 
-        {/* Currency toggle */}
-        <div className="flex items-center gap-2.5 mb-4">
+        {/* Currency — secondary metadata */}
+        <div className="flex items-center gap-2 mb-4">
           <button
             onClick={onToggle}
-            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-white/60 hover:text-white/90 transition-all active:scale-95"
-            style={{ background: "hsl(0 0% 100% / 0.08)" }}
+            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-white/45 hover:text-white/70 transition-all active:scale-95"
+            style={{ background: "hsl(0 0% 100% / 0.06)", fontSize: "9px" }}
           >
-            <RefreshCw className="w-2.5 h-2.5" />
-            <span className="text-[10px] font-bold">{showLocs ? currencyCode : "LOCS"}</span>
+            <RefreshCw className="w-2 h-2" />
+            <span className="font-bold">{showLocs ? currencyCode : "LOCS"}</span>
           </button>
-          <span className="text-[9px] text-white/25 font-medium">1 LOCS = 1 EUR</span>
+          <span className="text-[8px] text-white/20 font-medium">1 LOCS = 1 EUR</span>
         </div>
 
         {/* Stats grid */}
