@@ -69,7 +69,7 @@ export async function resolveUniversalIdentity(userId: string): Promise<Universa
     userId,
     activeRole: roles[0],
     roles,
-    displayName: profileRes.data?.display_name ?? "User",
+    displayName: profileRes.data?.full_name ?? "User",
     avatarUrl: profileRes.data?.avatar_url ?? null,
     trustLevel: rep?.overall_score ?? 50,
     orbitHandle: orbitRes.data?.public_handle ?? null,
