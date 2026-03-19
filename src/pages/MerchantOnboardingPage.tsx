@@ -8,7 +8,6 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
-import { Switch } from "@/components/ui/switch";
 import { Trash2, Plus, Edit2, Check, ArrowRight, ArrowLeft, Rocket, Store, Utensils, CreditCard, Zap, DollarSign } from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
