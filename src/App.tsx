@@ -312,6 +312,19 @@ const FoodHub = safeLazy(() => import("./pages/universe/FoodHub"), "FoodHub");
 const GroceryHub = safeLazy(() => import("./pages/universe/GroceryHub"), "GroceryHub");
 const ServicesHub = safeLazy(() => import("./pages/universe/ServicesHub"), "ServicesHub");
 
+// Food sub-pages (Careem-style drill-down)
+const FoodTypePage = safeLazy(() => import("./pages/food/FoodTypePage"), "FoodTypePage");
+const CuisineListPage = safeLazy(() => import("./pages/food/CuisineListPage"), "CuisineListPage");
+const FoodRestaurantPage = safeLazy(() => import("./pages/food/RestaurantPage"), "FoodRestaurantPage");
+
+// Settings sub-pages
+const SettingsHomePage = safeLazy(() => import("./pages/settings/SettingsHome"), "SettingsHome");
+const SettingsAccountPage = safeLazy(() => import("./pages/settings/SettingsAccount"), "SettingsAccount");
+const SettingsBusinessPage = safeLazy(() => import("./pages/settings/SettingsBusiness"), "SettingsBusiness");
+const SettingsWalletPage = safeLazy(() => import("./pages/settings/SettingsWallet"), "SettingsWallet");
+const SettingsSecurityPage = safeLazy(() => import("./pages/settings/SettingsSecurity"), "SettingsSecurity");
+const SettingsPreferencesPage = safeLazy(() => import("./pages/settings/SettingsPreferences"), "SettingsPreferences");
+
 // Deep-link public pages
 const UserProfilePage = safeLazy(() => import("./pages/deep-link/UserProfilePage"), "UserProfilePage");
 const ProductPage = safeLazy(() => import("./pages/deep-link/ProductPage"), "ProductPage");
@@ -449,8 +462,19 @@ const App = () => (
 
               {/* Universe hubs */}
               <Route path="/food" element={<FoodHub />} />
+              <Route path="/food/restaurant/:restaurantId" element={<FoodRestaurantPage />} />
+              <Route path="/food/:type" element={<FoodTypePage />} />
+              <Route path="/food/:type/:cuisine" element={<CuisineListPage />} />
               <Route path="/grocery" element={<GroceryHub />} />
               <Route path="/services-hub" element={<ServicesHub />} />
+
+              {/* Settings sub-pages */}
+              <Route path="/settings" element={<SettingsHomePage />} />
+              <Route path="/settings/account" element={<SettingsAccountPage />} />
+              <Route path="/settings/business" element={<SettingsBusinessPage />} />
+              <Route path="/settings/wallet" element={<SettingsWalletPage />} />
+              <Route path="/settings/security" element={<SettingsSecurityPage />} />
+              <Route path="/settings/preferences" element={<SettingsPreferencesPage />} />
               <Route path="/ride" element={<RidePage />} />
               <Route path="/send" element={<SendPage />} />
               <Route path="/track/:rideRequestId" element={<TrackRidePage />} />
