@@ -2,13 +2,16 @@
  * OrbitAppShell — Persistent shell for /app/* routes.
  * PASS 164-166: Refactored — header & nav extracted to separate files.
  * Realtime subscriptions and polling centralized here.
+ * Added: OrbitFAB smart floating action button.
  */
 import { Outlet } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useOrbitEngine } from "@/stores/orbit-engine";
-import { useEffect } from "react";
+import { useEffect, lazy, Suspense } from "react";
 import OrbitHeader from "./OrbitHeader";
 import OrbitBottomNav from "./OrbitBottomNav";
+
+const OrbitFAB = lazy(() => import("./OrbitFAB"));
 
 export default function OrbitAppShell() {
   const { user, orgId } = useAuth();
@@ -43,6 +46,9 @@ export default function OrbitAppShell() {
         <Outlet />
       </main>
       <OrbitBottomNav />
+      <Suspense fallback={null}>
+        <OrbitFAB />
+      </Suspense>
     </div>
   );
 }
