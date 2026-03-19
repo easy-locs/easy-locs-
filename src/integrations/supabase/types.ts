@@ -9069,7 +9069,9 @@ export type Database = {
       }
       phone_otp_sessions: {
         Row: {
+          attempt_count: number | null
           attempts: number | null
+          channel: string | null
           created_at: string | null
           expires_at: string
           guest_id: string | null
@@ -9081,7 +9083,9 @@ export type Database = {
           verified_at: string | null
         }
         Insert: {
+          attempt_count?: number | null
           attempts?: number | null
+          channel?: string | null
           created_at?: string | null
           expires_at: string
           guest_id?: string | null
@@ -9093,7 +9097,9 @@ export type Database = {
           verified_at?: string | null
         }
         Update: {
+          attempt_count?: number | null
           attempts?: number | null
+          channel?: string | null
           created_at?: string | null
           expires_at?: string
           guest_id?: string | null

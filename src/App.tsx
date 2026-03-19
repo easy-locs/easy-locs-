@@ -10,8 +10,10 @@ import { useRealtimeHub } from "@/hooks/useRealtimeHub";
 import { I18nProvider } from "@/lib/i18n";
 import { ThemeProvider } from "next-themes";
 import { Suspense, lazy, type ComponentType } from "react";
-import { Loader2 } from "lucide-react";
 import AppLockGuard from "@/components/security/AppLockGuard";
+import SplashScreen from "@/components/brand/SplashScreen";
+import BrandSuccessFlash from "@/components/brand/BrandSuccessFlash";
+import BrandLoadingSpinner from "@/components/brand/BrandLoadingSpinner";
 import UpdateNotification from "@/components/UpdateNotification";
 import { SkipLink } from "@/components/ui/a11y";
 import SmartInstallBanner from "@/components/pwa/SmartInstallBanner";
@@ -300,12 +302,8 @@ const queryClient = new QueryClient({
 (window as any).__REACT_QUERY_CLIENT__ = queryClient;
 
 const PageLoader = () => (
-  <div className="min-h-screen bg-background flex items-center justify-center">
-    <div className="fixed top-0 left-0 right-0 z-[9999] h-0.5 bg-primary/20 overflow-hidden">
-      <div className="h-full bg-primary animate-[loader-slide_0.8s_ease-in-out_infinite]" />
-    </div>
-    <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-    <style>{`@keyframes loader-slide{0%{width:0;margin-left:0}50%{width:50%;margin-left:25%}100%{width:0;margin-left:100%}}`}</style>
+  <div className="min-h-screen flex items-center justify-center" style={{ background: "hsl(220 45% 8%)" }}>
+    <BrandLoadingSpinner size={36} label="Loading..." />
   </div>
 );
 
@@ -333,6 +331,8 @@ const App = () => (
            <CallProvider>
           <UnifiedPaymentProvider>
            <AppLockGuard>
+           <SplashScreen>
+           <BrandSuccessFlash />
            <OrbitSessionGuard />
            <RealtimeHubGuard />
            <UpdateNotification />
@@ -619,6 +619,7 @@ const App = () => (
             </main>
            </Suspense>
            <SmartInstallBanner />
+           </SplashScreen>
            </AppLockGuard>
           </UnifiedPaymentProvider>
            </CallProvider>

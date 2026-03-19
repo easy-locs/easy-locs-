@@ -1,4 +1,8 @@
+/**
+ * AppLogo — unified brand component, delegates to EasyLocsLogo.
+ */
 import { Link } from "react-router-dom";
+import EasyLocsLogo, { EasyLocsIcon } from "@/components/brand/EasyLocsLogo";
 
 interface AppLogoProps {
   linkTo?: string;
@@ -6,6 +10,14 @@ interface AppLogoProps {
   variant?: "sidebar" | "header" | "landing" | "footer" | "auth";
   className?: string;
 }
+
+const sizeMap: Record<string, "xs" | "sm" | "md" | "lg"> = {
+  sidebar: "sm",
+  header: "sm",
+  landing: "md",
+  footer: "sm",
+  auth: "md",
+};
 
 const AppLogo = ({
   linkTo = "/dashboard",
@@ -17,43 +29,30 @@ const AppLogo = ({
   const isAuth = variant === "auth";
   const href = isLanding || isAuth ? "/" : linkTo;
 
-  const sizeMap: Record<string, string> = {
-    sidebar: "text-lg",
-    header: "text-xl",
-    landing: "text-2xl",
-    footer: "text-xl",
-    auth: "text-xl sm:text-2xl",
-  };
-
   return (
     <Link
       to={href}
-      className={`flex items-center gap-2 shrink-0 select-none group ${variant === "auth" ? "max-w-[200px]" : "max-w-[140px]"} ${className}`}
+      className={`flex items-center gap-2 shrink-0 select-none group ${className}`}
     >
-      <div className="flex items-baseline gap-0.5">
-        <span
-          className={`${sizeMap[variant]} font-black tracking-tight`}
-          style={{ color: "hsl(0 0% 100%)" }}
-        >
-          Easy
-        </span>
-        <span
-          className={`${sizeMap[variant]} font-black tracking-tight`}
-          style={{
-            background: "var(--gradient-gold, linear-gradient(135deg, hsl(45 90% 48%), hsl(35 90% 42%)))",
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
-            backgroundClip: "text",
-          }}
-        >
-          -Locs
-        </span>
-        <span
-          className="text-[8px] font-bold align-super ml-0.5 text-accent"
-        >
-          ®
-        </span>
+      {/* Mobile: icon only for header/sidebar. Full for landing/auth/footer */}
+      <div className="hidden sm:block">
+        <EasyLocsLogo variant="full" size={sizeMap[variant]} />
       </div>
+      <div className="block sm:hidden">
+        {variant === "landing" || variant === "auth" || variant === "footer" ? (
+          <EasyLocsLogo variant="full" size="sm" />
+        ) : (
+          <EasyLocsIcon size={28} />
+        )}
+      </div>
+      {variant === "footer" && (
+        <span
+          className="text-[9px] tracking-[0.2em] uppercase font-medium hidden sm:block"
+          style={{ color: "hsl(38 65% 56% / 0.6)" }}
+        >
+          Connect • Locate • Grow
+        </span>
+      )}
     </Link>
   );
 };
