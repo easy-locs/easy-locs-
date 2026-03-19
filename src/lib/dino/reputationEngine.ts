@@ -82,7 +82,7 @@ export async function gatherReputationFactors(userId: string): Promise<Reputatio
     responseSpeed,
     consistency,
     feedbackScore,
-    totalInteractions: totalOrders + (driverRes.data?.completed_deliveries ?? 0),
+    totalInteractions: totalOrders + (driverRes.data?.jobs_completed ?? 0),
   };
 }
 
