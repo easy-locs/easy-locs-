@@ -15,7 +15,7 @@ export async function getRtcConfiguration(): Promise<RTCConfiguration> {
     const { data } = await (supabase as any)
       .from("rtc_config")
       .select("*")
-      .eq("active", true)
+      .eq("enabled", true)
       .order("created_at", { ascending: false })
       .limit(1)
       .maybeSingle();

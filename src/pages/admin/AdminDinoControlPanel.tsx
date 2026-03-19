@@ -5,6 +5,7 @@
  */
 import { useState, useCallback, useMemo } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useOrgRole } from "@/hooks/useOrgRole";
 import { runGrowthEngine } from "@/lib/dino/growthEngine";
 import { runGlobalExpansion } from "@/lib/dino/globalEngine";
 import { runPartnerEngine } from "@/lib/dino/partnerEngine";
@@ -67,11 +68,14 @@ function computeWeightedHealth(sections: DebugSection[]): number {
 
 export default function AdminDinoControlPanel() {
   const { user } = useAuth();
+  const { role, loading: roleLoading } = useOrgRole();
   const [statuses, setStatuses] = useState<Record<string, EngineStatus>>({});
   const [results, setResults] = useState<Record<string, unknown>>({});
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [fixAndRecheckResult, setFixAndRecheckResult] = useState<unknown>(null);
   const [fixAndRecheckStatus, setFixAndRecheckStatus] = useState<EngineStatus>("idle");
+
+  const isAdmin = role === "owner" || role === "admin";
 
   // Compute health from debug result if available
   const healthScore = useMemo(() => {
@@ -133,10 +137,22 @@ export default function AdminDinoControlPanel() {
   };
 
   // Admin access guard
-  if (!user) {
+  if (!user || roleLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <p className="text-sm text-muted-foreground">Authentication required</p>
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  if (!isAdmin) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center space-y-2">
+          <ShieldCheck className="w-10 h-10 text-destructive mx-auto" />
+          <p className="text-sm font-bold text-foreground">Access Denied</p>
+          <p className="text-xs text-muted-foreground">Admin or Owner role required</p>
+        </div>
       </div>
     );
   }
@@ -274,8 +290,24 @@ function FixRecheckSummary({ data }: { data: unknown }) {
   const fp = d?.firstPass;
   const healthy = d?.healthy;
 
+  // Compute before/after weighted health
+  const beforeSections = d?.beforeDebug?.sections ?? [];
+  const afterSections = d?.afterDebug?.sections ?? [];
+  const beforeHealth = computeWeightedHealth(beforeSections);
+  const afterHealth = computeWeightedHealth(afterSections);
+  const delta = afterHealth - beforeHealth;
+
   return (
     <div className="space-y-2">
+      {/* Health delta */}
+      <div className="flex items-center gap-4 text-xs">
+        <span className="text-muted-foreground">Before: <b className="text-foreground">{beforeHealth}%</b></span>
+        <span className="text-muted-foreground">After: <b className={afterHealth >= 80 ? "text-emerald-400" : "text-foreground"}>{afterHealth}%</b></span>
+        <span className={`font-bold ${delta > 0 ? "text-emerald-400" : delta < 0 ? "text-destructive" : "text-muted-foreground"}`}>
+          {delta > 0 ? `+${delta}%` : delta < 0 ? `${delta}%` : "—"}
+        </span>
+      </div>
+      {/* Fix counts */}
       <div className="flex items-center gap-3 text-xs">
         <span className="text-muted-foreground">Detected: <b className="text-foreground">{fp?.detected ?? 0}</b></span>
         <span className="text-muted-foreground">Patched: <b className="text-emerald-400">{fp?.patched ?? 0}</b></span>
