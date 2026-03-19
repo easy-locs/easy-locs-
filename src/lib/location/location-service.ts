@@ -1,17 +1,25 @@
 /**
- * Location Service — High-accuracy geolocation for driver tracking.
+ * Location Service — High-accuracy geolocation with safety checks.
  */
 
-export interface LiveLocationPoint {
+export interface LiveLocation {
   lat: number;
   lng: number;
-  accuracy?: number;
+  accuracy: number;
   heading?: number;
   speed?: number;
   recordedAt: string;
 }
 
-export function getCurrentPosition(): Promise<GeolocationPosition> {
+function assertGeolocationSupport() {
+  if (typeof navigator === "undefined" || !navigator.geolocation) {
+    throw new Error("Geolocation is not supported on this device");
+  }
+}
+
+function getCurrentPosition(): Promise<GeolocationPosition> {
+  assertGeolocationSupport();
+
   return new Promise((resolve, reject) => {
     navigator.geolocation.getCurrentPosition(resolve, reject, {
       enableHighAccuracy: true,
@@ -21,8 +29,9 @@ export function getCurrentPosition(): Promise<GeolocationPosition> {
   });
 }
 
-export async function readLiveLocation(): Promise<LiveLocationPoint> {
+export async function readLiveLocation(): Promise<LiveLocation> {
   const pos = await getCurrentPosition();
+
   return {
     lat: pos.coords.latitude,
     lng: pos.coords.longitude,

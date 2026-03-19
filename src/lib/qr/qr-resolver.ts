@@ -3,7 +3,7 @@
  */
 import { supabase } from "@/integrations/supabase/client";
 
-export interface QrResolvedTarget {
+export interface ResolvedQrTarget {
   targetCode: string;
   merchantProfileId: string;
   storefrontPageId: string | null;
@@ -12,7 +12,9 @@ export interface QrResolvedTarget {
   active: boolean;
 }
 
-export async function resolveQrTarget(targetCode: string): Promise<QrResolvedTarget> {
+export async function resolveQrTarget(targetCode: string): Promise<ResolvedQrTarget> {
+  if (!targetCode?.trim()) throw new Error("QR target code missing");
+
   const { data, error } = await (supabase as any)
     .from("qr_order_targets")
     .select("*")
