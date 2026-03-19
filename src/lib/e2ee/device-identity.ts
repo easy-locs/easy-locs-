@@ -2,6 +2,9 @@
  * Device Identity — ECDH P-256 keypair bound to device via localStorage.
  */
 
+const DEVICE_META_STORAGE = "el_device_meta_v1";
+const DEVICE_KEY_STORAGE = "el_device_key_v1";
+
 export interface DeviceIdentity {
   deviceId: string;
   publicKeyJwk: JsonWebKey;
@@ -9,13 +12,10 @@ export interface DeviceIdentity {
   createdAt: string;
 }
 
-const DEVICE_KEY_STORAGE = "orbit_device_private_key";
-const DEVICE_META_STORAGE = "orbit_device_identity";
-
-function randomId(len = 20) {
+function randomId(len = 16) {
   const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
-  const bytes = crypto.getRandomValues(new Uint8Array(len));
   let out = "";
+  const bytes = crypto.getRandomValues(new Uint8Array(len));
   for (let i = 0; i < len; i++) out += chars[bytes[i] % chars.length];
   return out;
 }
@@ -56,6 +56,7 @@ export function getStoredDeviceIdentity(): DeviceIdentity | null {
 export async function getStoredPrivateKey(): Promise<CryptoKey | null> {
   const raw = localStorage.getItem(DEVICE_KEY_STORAGE);
   if (!raw) return null;
+
   try {
     const jwk = JSON.parse(raw) as JsonWebKey;
     return crypto.subtle.importKey(
