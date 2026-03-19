@@ -1,17 +1,18 @@
 /**
- * MobileBottomNav — V7 Bottom navigation with 4 strict pillars.
+ * MobileBottomNav — V7 Bottom navigation with 5 pillars.
+ * Home · Explore · Orbit (center) · Wallet · Me
  */
 import { NavLink, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Compass, Store, Briefcase, Building2, Map } from "lucide-react";
+import { Home, Compass, MessageCircle, Wallet, User } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 
 const FALLBACKS: Record<string, string> = {
-  "nav.marketplace": "Marketplace",
-  "nav.radar": "Radar",
-  "nav.shops": "Shops",
-  "nav.business": "Business",
-  "nav.property": "Property",
+  "nav.home": "Home",
+  "nav.explore": "Explore",
+  "nav.orbit": "Orbit",
+  "nav.wallet": "Wallet",
+  "nav.me": "Me",
 };
 
 const MobileBottomNav = () => {
@@ -27,37 +28,35 @@ const MobileBottomNav = () => {
 
   const items = [
     {
-      icon: Compass, labelKey: "nav.marketplace", path: "/discover",
+      icon: Home, labelKey: "nav.home", path: "/",
+      match: (p: string) => p === "/",
+    },
+    {
+      icon: Compass, labelKey: "nav.explore", path: "/explore",
       match: (p: string) =>
-        p.startsWith("/discover") || p.startsWith("/search") || p.startsWith("/explore") ||
+        p.startsWith("/explore") || p.startsWith("/search") || p.startsWith("/discover") ||
         p.startsWith("/listing/") || p.startsWith("/trending") || p.startsWith("/nearby") ||
-        p.startsWith("/top-rated") || p.startsWith("/rentals") || p.startsWith("/book/"),
+        p.startsWith("/top-rated") || p.startsWith("/shops") || p.startsWith("/s/") ||
+        p.startsWith("/super-map") || p.startsWith("/food") || p.startsWith("/grocery"),
     },
     {
-      icon: Map, labelKey: "nav.radar", path: "/super-map",
-      match: (p: string) => p.startsWith("/super-map"),
-    },
-    {
-      icon: Store, labelKey: "nav.shops", path: "/shops",
-      match: (p: string) => p === "/shops" || p.startsWith("/shops/") || p.startsWith("/s/"),
-    },
-    {
-      icon: Briefcase, labelKey: "nav.business", path: "/business",
+      icon: MessageCircle, labelKey: "nav.orbit", path: "/dashboard/communication",
       match: (p: string) =>
-        p.startsWith("/business") || p === "/pos" || p === "/my-orders" ||
+        p.startsWith("/dashboard/communication") || p.startsWith("/ghost") || p.startsWith("/orbit"),
+      isCenter: true,
+    },
+    {
+      icon: Wallet, labelKey: "nav.wallet", path: "/wallet/hub",
+      match: (p: string) =>
+        p.startsWith("/wallet") || p === "/pos" || p === "/my-orders" ||
+        p.startsWith("/dashboard/wallet"),
+    },
+    {
+      icon: User, labelKey: "nav.me", path: "/dashboard/settings",
+      match: (p: string) =>
+        p.startsWith("/dashboard/settings") || p.startsWith("/business") ||
         p.startsWith("/dashboard/my-shop") || p.startsWith("/dashboard/seller") ||
-        p.startsWith("/dashboard/wallet") || p.startsWith("/dashboard/driver") ||
-        p.startsWith("/dashboard/reporting") || p.startsWith("/dashboard/communication") ||
-        p.startsWith("/dashboard/deals") || p.startsWith("/dashboard/ops"),
-    },
-    {
-      icon: Building2, labelKey: "nav.property", path: "/property-hub",
-      match: (p: string) =>
-        p.startsWith("/property-hub") || p.startsWith("/dashboard/properties") ||
-        p.startsWith("/dashboard/property/") || p.startsWith("/dashboard/tenants") ||
-        p.startsWith("/dashboard/leases") || p.startsWith("/dashboard/finances") ||
-        p.startsWith("/dashboard/buildings") || p.startsWith("/dashboard/accounting") ||
-        p.startsWith("/dashboard/real-estate") || p.startsWith("/tenant"),
+        p.startsWith("/dashboard/driver") || p.startsWith("/property-hub"),
     },
   ];
 
@@ -79,6 +78,7 @@ const MobileBottomNav = () => {
         {items.map((item) => {
           const active = item.match(pathname);
           const label = tr(item.labelKey);
+          const isCenter = (item as any).isCenter;
           return (
             <NavLink
               key={item.path}
@@ -90,14 +90,20 @@ const MobileBottomNav = () => {
                 active ? "text-accent" : "text-muted-foreground"
               }`}
             >
-              {active && (
+              {active && !isCenter && (
                 <motion.div
                   layoutId="v7-tab-indicator"
                   className="absolute top-0 left-3 right-3 h-[2.5px] rounded-full bg-accent"
                   transition={{ type: "spring", stiffness: 400, damping: 30 }}
                 />
               )}
-              <item.icon className={`h-5 w-5 shrink-0 transition-colors ${active ? "text-accent" : ""}`} />
+              {isCenter ? (
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center -mt-3 ${active ? "bg-accent" : "bg-accent/15"}`}>
+                  <item.icon className={`h-5 w-5 shrink-0 ${active ? "text-accent-foreground" : "text-accent"}`} />
+                </div>
+              ) : (
+                <item.icon className={`h-5 w-5 shrink-0 transition-colors ${active ? "text-accent" : ""}`} />
+              )}
               <span className={`text-[10px] leading-tight transition-colors ${active ? "text-accent font-bold" : "font-medium"}`}>
                 {label}
               </span>
