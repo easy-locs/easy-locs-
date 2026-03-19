@@ -12,7 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { CallSessionRecord, CallSignalRecord, CallType } from "@/lib/calls/call-types";
 
 export default function OrbitCallTestPage() {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const [peerUserId, setPeerUserId] = useState("");
   const [callType, setCallType] = useState<CallType>("audio");
   const [currentSession, setCurrentSession] = useState<CallSessionRecord | null>(null);
