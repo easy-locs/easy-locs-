@@ -108,16 +108,15 @@ export default function AdminDinoControlPanel() {
       }
       setResult(key, result);
       setStatus(key, "success");
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(`[DINO] Engine "${key}" error:`, err);
-      const message = err instanceof Error
-        ? err.message
-        : (typeof err === "object" && err !== null)
-          ? JSON.stringify(err, null, 2)
-          : String(err);
-      const code = err?.code ?? err?.statusCode ?? undefined;
-      const details = err?.details ?? err?.hint ?? undefined;
-      setResult(key, { error: message, ...(code ? { code } : {}), ...(details ? { details } : {}) });
+      const normalizedError =
+        err instanceof Error
+          ? { message: err.message, stack: err.stack }
+          : (typeof err === "object" && err !== null)
+            ? (() => { try { return JSON.parse(JSON.stringify(err)); } catch { return { message: String(err) }; } })()
+            : { message: String(err) };
+      setResult(key, { error: normalizedError, _serializer: "V2" });
       setStatus(key, "error");
     }
   }, [user?.id]);
