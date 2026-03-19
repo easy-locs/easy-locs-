@@ -66,6 +66,14 @@ export function getCurrentPosition(): Promise<GeolocationPosition> {
 }
 
 export async function readLiveLocation(): Promise<LiveLocation> {
+  // Pre-check permission
+  const perm = await checkGeolocationPermission();
+  if (perm === "denied") {
+    const err = new Error("Location permission denied. Enable in browser settings.");
+    debugLog.error("geo", "geo_permission_denied", err.message);
+    throw err;
+  }
+
   try {
     const pos = await getCurrentPosition();
     return {

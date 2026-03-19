@@ -2,18 +2,46 @@ import { supabase } from "@/integrations/supabase/client";
 import { debugLog } from "@/lib/debug/runtime-debug-bus";
 import type { CallSessionRecord, CallType, SignalType } from "./call-types";
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+async function resolveUserId(input: string): Promise<string> {
+  if (UUID_RE.test(input)) return input;
+
+  // Treat as email — look up profile
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("id")
+    .eq("email", input)
+    .maybeSingle();
+
+  if (error || !data?.id) {
+    throw new Error(`Cannot resolve user for "${input}". No matching profile found.`);
+  }
+
+  debugLog.info("call", "resolved_email_to_uuid", `${input} → ${data.id}`);
+  return data.id;
+}
+
 export async function createCallSession(params: {
   callerUserId: string;
   calleeUserId: string;
   callType: CallType;
 }): Promise<CallSessionRecord> {
-  debugLog.info("call", "create_call_session_start", `${params.callerUserId} -> ${params.calleeUserId}`, params);
+  // Resolve callee — may be email or UUID
+  const calleeUuid = await resolveUserId(params.calleeUserId);
+  const callerUuid = await resolveUserId(params.callerUserId);
+
+  debugLog.info("call", "create_call_session_start", `${callerUuid} -> ${calleeUuid}`, {
+    ...params,
+    callerUuid,
+    calleeUuid,
+  });
 
   const { data, error } = await (supabase as any)
     .from("orbit_call_sessions")
     .insert({
-      caller_user_id: params.callerUserId,
-      callee_user_id: params.calleeUserId,
+      caller_user_id: callerUuid,
+      callee_user_id: calleeUuid,
       call_type: params.callType,
       status: "ringing",
       started_at: new Date().toISOString(),
