@@ -5,71 +5,69 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import QRCode from "react-qr-code";
-import { buildAppLink } from "@/lib/link/build-link";
-import { shareLink } from "@/lib/link/build-link";
+import { buildQrEntryUrl } from "@/lib/qr/qr-link";
 
 interface GeneratedQr {
   targetCode: string;
   targetType: string;
-  tableNumber: string | null;
+  tableNumber: string;
   url: string;
 }
 
 export default function QrGeneratePage() {
   const [merchantId, setMerchantId] = useState("");
-  const [tableCount, setTableCount] = useState(5);
+  const [tableCount, setTableCount] = useState(10);
   const [loading, setLoading] = useState(false);
   const [codes, setCodes] = useState<GeneratedQr[]>([]);
 
-  
-
   async function handleGenerate() {
     if (!merchantId.trim()) {
-      toast.error("Merchant profile ID requis");
+      toast.error("Merchant profile ID required");
       return;
     }
 
     setLoading(true);
     try {
-      const records = Array.from({ length: tableCount }, (_, i) => {
-        const code = `${merchantId.slice(0, 8)}-T${String(i + 1).padStart(2, "0")}-${Date.now().toString(36)}`;
-        return {
-          target_code: code,
-          merchant_profile_id: merchantId,
-          target_type: "dine_in",
-          table_number: String(i + 1),
-          active: true,
-        };
-      });
+      const stamp = Date.now().toString(36);
+
+      const rows = Array.from({ length: tableCount }, (_, i) => ({
+        target_code: `${merchantId.slice(0, 8)}-T${String(i + 1).padStart(2, "0")}-${stamp}`,
+        merchant_profile_id: merchantId,
+        target_type: "table",
+        table_number: String(i + 1),
+        active: true,
+      }));
 
       const { data, error } = await (supabase as any)
         .from("qr_order_targets")
-        .insert(records)
+        .insert(rows)
         .select("*");
 
       if (error) throw error;
 
-      const generated: GeneratedQr[] = (data ?? []).map((r: any) => ({
-        targetCode: r.target_code,
-        targetType: r.target_type,
-        tableNumber: r.table_number,
-        url: buildAppLink(`/qr/entry/${encodeURIComponent(r.target_code)}`),
-      }));
+      setCodes(
+        (data ?? []).map((r: any) => ({
+          targetCode: r.target_code,
+          targetType: r.target_type,
+          tableNumber: r.table_number,
+          url: buildQrEntryUrl(r.target_code),
+        }))
+      );
 
-      setCodes(generated);
-      toast.success(`${generated.length} QR codes créés`);
+      toast.success(`${(data ?? []).length} QR codes created`);
     } catch (e: any) {
-      toast.error(e.message ?? "Échec de la génération");
+      toast.error(e?.message ?? "Generation failed");
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   }
 
   return (
     <div className="min-h-screen bg-background text-foreground p-6 max-w-4xl mx-auto space-y-8">
       <div>
-        <h1 className="text-2xl font-bold">Générateur de QR Codes</h1>
+        <h1 className="text-2xl font-bold">QR Generator</h1>
         <p className="text-muted-foreground text-sm mt-1">
-          Créez des QR codes pour les tables d'un restaurant.
+          Create QR codes for restaurant tables.
         </p>
       </div>
 
@@ -82,13 +80,13 @@ export default function QrGeneratePage() {
             type="text"
             value={merchantId}
             onChange={(e) => setMerchantId(e.target.value)}
-            placeholder="uuid du merchant_onboarding_profiles"
+            placeholder="merchant_onboarding_profiles uuid"
             className="w-full bg-muted border border-border rounded-lg px-3 py-2 text-sm"
           />
         </div>
         <div>
           <label className="text-sm font-medium text-foreground block mb-1">
-            Nombre de tables
+            Number of tables
           </label>
           <input
             type="number"
@@ -104,14 +102,14 @@ export default function QrGeneratePage() {
           disabled={loading}
           className="bg-primary text-primary-foreground rounded-lg px-5 py-2.5 text-sm font-medium disabled:opacity-50"
         >
-          {loading ? "Génération…" : "Générer les QR codes"}
+          {loading ? "Generating…" : "Generate QR codes"}
         </button>
       </div>
 
       {codes.length > 0 && (
         <div className="space-y-6">
           <h2 className="text-lg font-semibold">
-            {codes.length} QR Codes générés
+            {codes.length} QR Codes generated
           </h2>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
             {codes.map((qr) => (
