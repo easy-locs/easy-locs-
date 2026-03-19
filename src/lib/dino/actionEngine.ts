@@ -5,6 +5,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import type { Json } from "@/integrations/supabase/types";
+import type { DinoMode } from "./types";
 
 export type DinoActionType =
   | "fix_ui"
@@ -24,6 +25,17 @@ export interface DinoAction {
   autoExecute: boolean;
   payload: Record<string, unknown>;
   result?: { success: boolean; message: string };
+}
+
+// --- Rate limits ---
+const MAX_UI_FIX_PER_CYCLE = 20;
+const MAX_BOOSTS_PER_CYCLE = 20;
+
+// --- Mode gate ---
+export function shouldExecute(action: DinoAction, mode: DinoMode): boolean {
+  if (mode === "manual") return false;
+  if (mode === "semi_auto") return action.priority === "critical";
+  return true;
 }
 
 // --- Sub-executors ---
