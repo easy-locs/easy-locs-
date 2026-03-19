@@ -331,6 +331,8 @@ const App = () => (
            <CallProvider>
           <UnifiedPaymentProvider>
            <AppLockGuard>
+           <SplashScreen>
+           <BrandSuccessFlash />
            <OrbitSessionGuard />
            <RealtimeHubGuard />
            <UpdateNotification />
