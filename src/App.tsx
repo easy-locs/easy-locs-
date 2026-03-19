@@ -377,6 +377,14 @@ if (typeof window !== "undefined") {
   });
 }
 
+/** Route "/" → OrbitHome (authenticated) or Index (guest) */
+function HomeRouter() {
+  const { user, loading } = useAuth();
+  if (loading) return <PageLoader />;
+  if (!user) return <Suspense fallback={<PageLoader />}><Index /></Suspense>;
+  return <Suspense fallback={<PageLoader />}><OrbitAppShell><OrbitHome /></OrbitAppShell></Suspense>;
+}
+
 const App = () => (
   <ChunkRecoveryBoundary>
   <ErrorBoundary>
