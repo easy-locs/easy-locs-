@@ -125,11 +125,11 @@ export async function searchEligibleDrivers(params: RadarSearchParams): Promise<
     const serviceRadius = d.service_radius_km ?? 15;
     if (dist > Math.min(radius, serviceRadius)) continue;
 
-    const m = metricsMap.get(d.id);
+    const m = metricsMap.get(d.id) as Record<string, any> | undefined;
     const etaMin = Math.ceil((dist / 30) * 60); // ~30km/h city avg
 
     // Capacity check
-    const activeJobs = m?.active_jobs_count ?? 0;
+    const activeJobs = (m?.active_jobs_count ?? 0) as number;
     const maxJobs = d.max_active_jobs ?? 1;
     if (activeJobs >= maxJobs) continue;
 
@@ -138,9 +138,9 @@ export async function searchEligibleDrivers(params: RadarSearchParams): Promise<
       userId: d.user_id,
       distanceKm: Number(dist.toFixed(2)),
       etaMinutes: etaMin,
-      rating: m?.rating ?? d.rating ?? 4.5,
-      acceptanceRate: m?.acceptance_rate ?? 0.8,
-      reliabilityScore: m?.reliability_score ?? 0.8,
+      rating: (m?.rating ?? d.rating ?? 4.5) as number,
+      acceptanceRate: (m?.acceptance_rate ?? 0.8) as number,
+      reliabilityScore: (m?.reliability_score ?? 0.8) as number,
       activeJobs,
       maxActiveJobs: maxJobs,
       vehicleType: d.vehicle_type ?? null,
