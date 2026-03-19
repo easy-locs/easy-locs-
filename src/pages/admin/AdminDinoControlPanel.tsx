@@ -68,11 +68,14 @@ function computeWeightedHealth(sections: DebugSection[]): number {
 
 export default function AdminDinoControlPanel() {
   const { user } = useAuth();
+  const { role, loading: roleLoading } = useOrgRole();
   const [statuses, setStatuses] = useState<Record<string, EngineStatus>>({});
   const [results, setResults] = useState<Record<string, unknown>>({});
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [fixAndRecheckResult, setFixAndRecheckResult] = useState<unknown>(null);
   const [fixAndRecheckStatus, setFixAndRecheckStatus] = useState<EngineStatus>("idle");
+
+  const isAdmin = role === "owner" || role === "admin";
 
   // Compute health from debug result if available
   const healthScore = useMemo(() => {
