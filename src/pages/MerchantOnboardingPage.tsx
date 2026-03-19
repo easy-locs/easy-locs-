@@ -387,6 +387,7 @@ function StepMenu({
   onUpdate: (id: string, field: string, value: any) => void;
 }) {
   const [editId, setEditId] = useState<string | null>(null);
+  const [showPrices, setShowPrices] = useState(items.some((i) => i.price != null));
 
   return (
     <div className="space-y-4">
@@ -398,6 +399,13 @@ function StepMenu({
         <Button variant="outline" size="sm" onClick={onAdd}>
           <Plus className="h-3.5 w-3.5 mr-1" /> Ajouter
         </Button>
+      </div>
+      {/* Price toggle */}
+      <div className="flex items-center gap-2 rounded-lg bg-muted/50 p-2">
+        <Switch checked={showPrices} onCheckedChange={setShowPrices} />
+        <span className="text-xs text-muted-foreground">
+          {showPrices ? "Afficher les prix" : "Ajouter les prix plus tard"}
+        </span>
       </div>
       <div className="space-y-2 max-h-[50vh] overflow-auto">
         {items.map((item) => (
@@ -412,18 +420,32 @@ function StepMenu({
                     value={item.name}
                     onChange={(e) => onUpdate(item.id, "name", e.target.value)}
                     className="h-8 text-sm"
+                    placeholder="Name (EN)"
                   />
                   <Input
-                    type="number"
-                    value={item.price}
-                    onChange={(e) => onUpdate(item.id, "price", Number(e.target.value))}
-                    className="h-8 text-sm w-24"
+                    value={item.name_ar || ""}
+                    onChange={(e) => onUpdate(item.id, "name_ar", e.target.value)}
+                    className="h-8 text-sm"
+                    dir="rtl"
+                    placeholder="الاسم بالعربية"
                   />
+                  {showPrices && (
+                    <Input
+                      type="number"
+                      value={item.price ?? ""}
+                      onChange={(e) => onUpdate(item.id, "price", e.target.value ? Number(e.target.value) : null)}
+                      className="h-8 text-sm w-24"
+                      placeholder="Prix"
+                    />
+                  )}
                 </div>
               ) : (
                 <div>
                   <span className="text-sm font-medium text-foreground">{item.name}</span>
-                  <span className="text-xs text-primary font-semibold ml-2">{item.price} AED</span>
+                  {item.name_ar && <span className="text-xs text-muted-foreground ml-2" dir="rtl">{item.name_ar}</span>}
+                  {showPrices && item.price != null && (
+                    <span className="text-xs text-primary font-semibold ml-2">{item.price} AED</span>
+                  )}
                 </div>
               )}
             </div>
