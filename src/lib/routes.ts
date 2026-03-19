@@ -95,6 +95,10 @@ export const routes = {
   superMap: () => `/super-map`,
   radar: () => `/radar`,
 
+  // Ride
+  ride: () => `/ride`,
+  rideSearch: () => `/ride/search`,
+
   // Cart / Checkout / Orders / Tracking
   checkout: () => `/checkout`,
   orders: () => `/orders`,
