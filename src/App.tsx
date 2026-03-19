@@ -301,6 +301,7 @@ const PayRequestPage = safeLazy(() => import("./pages/deep-link/PayRequestPage")
 const QrScannerPage = safeLazy(() => import("./pages/payments/QrScannerPage"), "QrScannerPage");
 const GuestPaymentSuccess = safeLazy(() => import("./pages/deep-link/GuestPaymentSuccess"), "GuestPaymentSuccess");
 const DubaiRestaurantImportPage = safeLazy(() => import("./pages/DubaiRestaurantImportPage"), "DubaiRestaurantImportPage");
+const QrEntryPage = safeLazy(() => import("./pages/QrEntryPage"), "QrEntryPage");
 
 // City sub-page wrappers
 const CityServicesPage = () => <CityHubPage subPage="services" />;
@@ -385,6 +386,7 @@ const App = () => (
               <Route path="/pay/success" element={<GuestPaymentSuccess />} />
               <Route path="/qr/pay/:code" element={<QrPayResolver />} />
               <Route path="/qr/:code" element={<QrResolvePage />} />
+              <Route path="/qr/entry/:targetCode" element={<QrEntryPage />} />
 
               {/* V7 Public pillars */}
               {/* Redirects */}
