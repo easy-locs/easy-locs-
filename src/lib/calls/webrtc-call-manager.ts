@@ -1,6 +1,7 @@
 /**
  * WebRTC Call Manager — Manages peer connections for voice/video calls.
  */
+import { getRtcConfiguration } from "./call-config";
 
 export class WebRtcCallManager {
   private pc: RTCPeerConnection;
