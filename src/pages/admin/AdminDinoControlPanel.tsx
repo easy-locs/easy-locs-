@@ -137,10 +137,22 @@ export default function AdminDinoControlPanel() {
   };
 
   // Admin access guard
-  if (!user) {
+  if (!user || roleLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <p className="text-sm text-muted-foreground">Authentication required</p>
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  if (!isAdmin) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center space-y-2">
+          <ShieldCheck className="w-10 h-10 text-destructive mx-auto" />
+          <p className="text-sm font-bold text-foreground">Access Denied</p>
+          <p className="text-xs text-muted-foreground">Admin or Owner role required</p>
+        </div>
       </div>
     );
   }
