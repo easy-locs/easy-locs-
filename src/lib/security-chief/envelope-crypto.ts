@@ -55,7 +55,7 @@ export async function decryptEnvelope(envelope: SecureEnvelopeV2): Promise<strin
   const plain = await crypto.subtle.decrypt(
     {
       name: "AES-GCM",
-      iv: fromBase64(envelope.iv),
+      iv: fromBase64(envelope.iv).buffer as ArrayBuffer,
       additionalData: envelope.aad ? new TextEncoder().encode(envelope.aad) : undefined,
     },
     key,
