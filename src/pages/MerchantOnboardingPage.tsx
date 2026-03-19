@@ -28,7 +28,8 @@ interface MerchantData {
 interface MenuItem {
   id: string;
   name: string;
-  price: number;
+  name_ar?: string | null;
+  price: number | null;
   category: string;
   is_available: boolean;
   isNew?: boolean;
