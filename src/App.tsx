@@ -629,6 +629,12 @@ const App = () => (
               <Route path="/driver/mission/:dispatchJobId" element={<ProtectedRoute><DriverActiveMissionPage /></ProtectedRoute>} />
               <Route path="/tracking/order/:orderId" element={<CustomerDeliveryTrackingPage />} />
               <Route path="/merchant/delivery-monitor" element={<ProtectedRoute><MerchantDeliveryMonitorPage /></ProtectedRoute>} />
+              <Route path="/admin/ops-exceptions" element={<ProtectedRoute><AdminOpsExceptionsPage /></ProtectedRoute>} />
+              <Route path="/admin/automation-health" element={<ProtectedRoute><AdminAutomationHealthPage /></ProtectedRoute>} />
+              <Route path="/admin/review-queue" element={<ProtectedRoute><AdminReviewQueuePage /></ProtectedRoute>} />
+              <Route path="/admin/growth" element={<ProtectedRoute><AdminGrowthDashboard /></ProtectedRoute>} />
+              <Route path="/coming-soon/:slug" element={<ComingSoonMerchantPage />} />
+              <Route path="/city-market/:citySlug" element={<CityMarketplacePage />} />
 
               {/* Guest / Public */}
               <Route path="/guest/checkout/:cartId" element={<GuestCheckoutPage />} />
