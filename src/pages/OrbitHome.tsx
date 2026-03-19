@@ -225,6 +225,7 @@ export default function OrbitHome() {
   const engine = useOrbitEngine();
   const navigate = useNavigate();
   const { t } = useI18n();
+  const { data: godSnapshot } = useGodModeSnapshot(user?.id);
 
   useEffect(() => { trackMount("OrbitHome", mountStart); }, [mountStart]);
   useDinoPageAudit({ actorType: user ? "user" : "anonymous", actorId: user?.id, pageKey: "home" });
