@@ -21,7 +21,7 @@ export default function QrGeneratePage() {
   const [loading, setLoading] = useState(false);
   const [codes, setCodes] = useState<GeneratedQr[]>([]);
 
-  const baseUrl = ""; // using buildQrEntryUrl instead
+  
 
   async function handleGenerate() {
     if (!merchantId.trim()) {
