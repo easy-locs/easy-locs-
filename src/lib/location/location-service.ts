@@ -1,6 +1,5 @@
-/**
- * Location Service — High-accuracy geolocation with safety checks.
- */
+import { debugLog } from "@/lib/debug/runtime-debug-bus";
+import { safeErrorMessage, serializeForDebug } from "@/lib/debug/debug-helpers";
 
 export interface LiveLocation {
   lat: number;
@@ -17,27 +16,46 @@ function assertGeolocationSupport() {
   }
 }
 
-function getCurrentPosition(): Promise<GeolocationPosition> {
+export function getCurrentPosition(): Promise<GeolocationPosition> {
   assertGeolocationSupport();
+  debugLog.info("geo", "geo_request_start", "Requesting geolocation");
 
   return new Promise((resolve, reject) => {
-    navigator.geolocation.getCurrentPosition(resolve, reject, {
-      enableHighAccuracy: true,
-      timeout: 10000,
-      maximumAge: 3000,
-    });
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        debugLog.success("geo", "geo_request_success", "Position received", {
+          lat: pos.coords.latitude,
+          lng: pos.coords.longitude,
+          accuracy: pos.coords.accuracy,
+        });
+        resolve(pos);
+      },
+      (err) => {
+        debugLog.error("geo", "geo_request_error", err.message, serializeForDebug(err));
+        reject(err);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 3000,
+      }
+    );
   });
 }
 
 export async function readLiveLocation(): Promise<LiveLocation> {
-  const pos = await getCurrentPosition();
-
-  return {
-    lat: pos.coords.latitude,
-    lng: pos.coords.longitude,
-    accuracy: pos.coords.accuracy,
-    heading: pos.coords.heading ?? undefined,
-    speed: pos.coords.speed ?? undefined,
-    recordedAt: new Date().toISOString(),
-  };
+  try {
+    const pos = await getCurrentPosition();
+    return {
+      lat: pos.coords.latitude,
+      lng: pos.coords.longitude,
+      accuracy: pos.coords.accuracy,
+      heading: pos.coords.heading ?? undefined,
+      speed: pos.coords.speed ?? undefined,
+      recordedAt: new Date().toISOString(),
+    };
+  } catch (e) {
+    debugLog.error("geo", "geo_read_failed", safeErrorMessage(e));
+    throw e;
+  }
 }
