@@ -9,9 +9,11 @@ import { Store } from "lucide-react";
 
 export default function PublicStorefrontBySlugPage() {
   const { publicSlug } = useParams();
+  const navigate = useNavigate();
   const [storefront, setStorefront] = useState<any>(null);
   const [categories, setCategories] = useState<any[]>([]);
   const [items, setItems] = useState<any[]>([]);
+  const [merchantProfile, setMerchantProfile] = useState<any>(null);
 
   useEffect(() => {
     if (!publicSlug) return;
