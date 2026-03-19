@@ -54,39 +54,39 @@ async function triggerCampaign(payload: Record<string, unknown>): Promise<string
   return data ? `Campaign queued: ${data.id}` : "Campaign queue failed";
 }
 
+async function recordLearningEvent(eventType: string, entityId: string, entityType: string, metric: string, context: Record<string, unknown> = {}) {
+  await supabase.from("dino_learning_events").insert([{
+    event_type: eventType,
+    entity_id: entityId,
+    entity_type: entityType,
+    metric,
+    metadata_json: context as Json,
+    new_value: 0,
+    previous_value: 0,
+  }]);
+}
+
 async function boostCategory(payload: Record<string, unknown>): Promise<string> {
   const categories = (payload.categories as string[]) ?? [];
   if (!categories.length) return "No categories to boost";
-  // Record boost intent in learning events
-  await supabase.from("dino_learning_events").insert(
-    categories.map(cat => ({
-      event_type: "boost_applied",
-      source_module: "action_engine",
-      context_json: { category: cat, action: "boost" } as unknown as Json,
-      outcome: "pending",
-    }))
-  );
+  for (const cat of categories) {
+    await recordLearningEvent("boost_applied", cat, "category", "visibility", { action: "boost" });
+  }
   return `Boosted ${categories.length} categories`;
 }
 
 async function reduceVisibility(payload: Record<string, unknown>): Promise<string> {
   const entityIds = (payload.entityIds as string[]) ?? [];
   if (!entityIds.length) return "No entities to reduce";
-  await supabase.from("dino_learning_events").insert(
-    entityIds.map(id => ({
-      event_type: "visibility_reduced",
-      source_module: "action_engine",
-      context_json: { entityId: id } as unknown as Json,
-      outcome: "pending",
-    }))
-  );
+  for (const id of entityIds) {
+    await recordLearningEvent("visibility_reduced", id, "listing", "visibility");
+  }
   return `Reduced visibility for ${entityIds.length} entities`;
 }
 
 async function triggerActivation(payload: Record<string, unknown>): Promise<string> {
   const proIds = (payload.proIds as string[]) ?? [];
   if (!proIds.length) return "No pros to activate";
-  // Queue activation reminders
   await supabase.from("dino_notifications").insert(
     proIds.slice(0, 20).map(pid => ({
       actor_type: "pro",
@@ -104,23 +104,13 @@ async function createDraftListing(payload: Record<string, unknown>): Promise<str
   const name = (payload.name as string) ?? "New Business";
   const category = (payload.category as string) ?? "general";
   const city = (payload.city as string) ?? "unknown";
-  await supabase.from("dino_learning_events").insert([{
-    event_type: "draft_listing_created",
-    source_module: "action_engine",
-    context_json: { name, category, city } as unknown as Json,
-    outcome: "created",
-  }]);
+  await recordLearningEvent("draft_listing_created", name, "listing", "creation", { category, city });
   return `Draft listing created: ${name}`;
 }
 
 async function optimizeFunnel(payload: Record<string, unknown>): Promise<string> {
   const flowId = (payload.flowId as string) ?? "unknown";
-  await supabase.from("dino_learning_events").insert([{
-    event_type: "funnel_optimized",
-    source_module: "action_engine",
-    context_json: { flowId, suggestion: payload.suggestion } as unknown as Json,
-    outcome: "applied",
-  }]);
+  await recordLearningEvent("funnel_optimized", flowId, "funnel", "conversion", { suggestion: payload.suggestion });
   return `Funnel optimized: ${flowId}`;
 }
 

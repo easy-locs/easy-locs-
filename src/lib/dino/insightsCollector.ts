@@ -43,23 +43,23 @@ export async function collectPlatformInsights(): Promise<PlatformInsights> {
     }));
   }
 
-  // 3) Market balance → gaps
+  // 3) Market balance → gaps (uses actual columns: category_name, listing_count, demand_signal)
   const { data: balanceData } = await supabase
     .from("dino_market_balance")
-    .select("category, city, supply_count, demand_score")
-    .order("demand_score", { ascending: false })
+    .select("category_name, location_key, listing_count, demand_signal")
+    .order("demand_signal", { ascending: false })
     .limit(20);
 
   if (balanceData) {
     for (const row of balanceData) {
-      if ((row.supply_count ?? 0) < 3 && (row.demand_score ?? 0) > 50) {
-        insights.marketGap.push({ category: row.category, city: row.city });
+      if ((row.listing_count ?? 0) < 3 && (row.demand_signal ?? 0) > 50) {
+        insights.marketGap.push({ category: row.category_name, city: row.location_key ?? "unknown" });
       }
-      if ((row.supply_count ?? 0) > 30 && (row.demand_score ?? 0) < 20) {
+      if ((row.listing_count ?? 0) > 30 && (row.demand_signal ?? 0) < 20) {
         insights.saturatedCategories.push({
-          category: row.category,
-          city: row.city,
-          entityIds: [], // would need sub-query in production
+          category: row.category_name,
+          city: row.location_key ?? "unknown",
+          entityIds: [],
         });
       }
     }
@@ -76,25 +76,25 @@ export async function collectPlatformInsights(): Promise<PlatformInsights> {
     insights.inactivePros = proPerfData.map(p => p.pro_id);
   }
 
-  // 5) Conversion funnels with high drop
+  // 5) Conversion funnels with low conversion (uses actual columns: funnel_type, conversion_rate)
   const { data: funnelData } = await supabase
     .from("dino_conversion_funnels")
-    .select("funnel_name, drop_rate")
-    .gt("drop_rate", 0.5)
+    .select("funnel_type, conversion_rate")
+    .lt("conversion_rate", 0.5)
     .limit(10);
 
   if (funnelData) {
     insights.lowConversionFlows = funnelData.map(f => ({
-      flowId: f.funnel_name,
-      dropRate: f.drop_rate ?? 0,
-      suggestion: (f.drop_rate ?? 0) > 0.7 ? "Simplify flow" : "Improve CTA",
+      flowId: f.funnel_type,
+      dropRate: 1 - (f.conversion_rate ?? 0),
+      suggestion: (f.conversion_rate ?? 0) < 0.3 ? "Simplify flow" : "Improve CTA",
     }));
   }
 
-  // 6) Expansion opportunities
+  // 6) Expansion opportunities (uses actual columns: category, city, status)
   const { data: expansionData } = await supabase
     .from("dino_expansion_opportunities")
-    .select("city, category, opportunity_type")
+    .select("city, category, status")
     .eq("status", "identified")
     .limit(10);
 
