@@ -1,25 +1,27 @@
 /**
- * OrbitHome — V7 Command Center.
- * Unified hub with all modules: Communication, Wallet, Business, POS, Live, AI, Property, Delivery.
+ * OrbitHome — Premium performance-first command center.
+ * Fast search, recent conversations, quick actions, category shortcuts, FAB.
  */
-import { useEffect, useMemo, memo } from "react";
+import { useEffect, useMemo, memo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useOrbitEngine } from "@/stores/orbit-engine";
 import { useOrbitDashboard } from "@/hooks/useOrbitDashboard";
 import { useI18n } from "@/lib/i18n";
+import { trackMount } from "@/lib/orbit-perf";
 import OrbitOrb from "@/components/orbit/OrbitOrb";
 import OrbitQuickCard from "@/components/orbit/OrbitQuickCard";
 import OrbitSmartActions from "@/components/orbit/OrbitSmartActions";
-import OrbitPermissionsDiag from "@/components/orbit/OrbitPermissionsDiag";
 import OrbitWalletCard from "@/components/orbit/OrbitWalletCard";
+import OrbitGlobalSearch from "@/components/orbit/OrbitGlobalSearch";
+import { OrbitCardSkeleton } from "@/components/orbit/OrbitPremiumCard";
 import {
-  MessageCircle, Phone, Users, Store, Radar, Wallet,
-  Bell, Shield, Lock, Palette,
+  MessageCircle, Phone, Users, Store, Wallet,
+  Bell, Shield, Lock,
   ChevronRight, CalendarCheck, ShoppingBag, Building2,
-  TrendingUp, CreditCard, Fingerprint, History, Star,
-  Scan, Package, Truck, Video, Sparkles, BarChart3,
-  Globe, Layers, KeyRound, User, MapPin, Zap,
+  TrendingUp, CreditCard, Fingerprint, History,
+  Scan, Package, Truck, Sparkles, BarChart3,
+  Globe, Layers, KeyRound, User, MapPin, Zap, Palette, Video,
 } from "lucide-react";
 
 /* ══════ Section Header ══════ */
@@ -44,12 +46,48 @@ const SectionLabel = memo(function SectionLabel({ title, badge }: { title: strin
   );
 });
 
+/* ══════ Category shortcut row ══════ */
+const CATEGORIES = [
+  { icon: "🍽️", label: "Food", path: "/explore?cat=food" },
+  { icon: "🏠", label: "Real Estate", path: "/real-estate" },
+  { icon: "🚗", label: "Ride", path: "/ride" },
+  { icon: "🛍️", label: "Shops", path: "/shops" },
+  { icon: "📦", label: "Delivery", path: "/send" },
+  { icon: "✈️", label: "Travel", path: "/travel" },
+] as const;
+
+const CategoryRow = memo(function CategoryRow() {
+  const navigate = useNavigate();
+  return (
+    <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide -mx-1 px-1">
+      {CATEGORIES.map((cat) => (
+        <button
+          key={cat.label}
+          onClick={() => navigate(cat.path)}
+          className="flex flex-col items-center gap-1 min-w-[56px] py-2 px-1 rounded-xl active:scale-95 transition-transform"
+          style={{ background: "hsl(var(--hud-surface))" }}
+        >
+          <span className="text-lg">{cat.icon}</span>
+          <span className="text-[10px] font-medium truncate w-full text-center" style={{ color: "hsl(var(--hud-text-dim) / 0.7)" }}>
+            {cat.label}
+          </span>
+        </button>
+      ))}
+    </div>
+  );
+});
+
 export default function OrbitHome() {
+  const mountStart = useMemo(() => performance.now(), []);
   const { user, orgId } = useAuth();
   const engine = useOrbitEngine();
   const { smartActions, loading: dashLoading } = useOrbitDashboard();
   const navigate = useNavigate();
   const { t } = useI18n();
+
+  useEffect(() => {
+    trackMount("OrbitHome", mountStart);
+  }, [mountStart]);
 
   useEffect(() => {
     if (!user?.id) return;
@@ -76,36 +114,25 @@ export default function OrbitHome() {
   const MARKETPLACE_CARDS = useMemo(() => [
     { icon: Store, label: t("orbit.card.listings"), desc: t("orbit.card.desc_services"), key: "activeListings" as const, to: "/dashboard/my-shop" },
     { icon: ShoppingBag, label: t("orbit.card.bookings"), desc: t("orbit.card.desc_orders"), key: "pendingOrders" as const, to: "/my-orders" },
-    { icon: Star, label: t("orbit.card.reviews"), desc: t("orbit.card.desc_reviews"), key: null, to: "/dashboard/my-shop" },
     { icon: TrendingUp, label: t("orbit.card.leads"), desc: t("orbit.card.desc_prospects"), key: "newLeads" as const, to: "/dashboard/communication" },
   ], [t]);
 
-  /* ── V6: Commerce & POS ── */
   const V6_CARDS = useMemo(() => [
     { icon: Scan, label: "POS", desc: "Point of Sale", key: null, to: "/pos" },
-    { icon: Package, label: "Inventory", desc: "Stock management", key: null, to: "/dashboard/my-shop" },
-    { icon: BarChart3, label: "Analytics", desc: "Sales reports", key: null, to: "/dashboard/seller" },
-    { icon: Truck, label: "Delivery", desc: "Fleet & logistics", key: null, to: "/dashboard/driver" },
-  ], []);
-
-  /* ── V7: Live Commerce + AI + Multi-branch + Property ── */
-  const V7_CARDS = useMemo(() => [
-    { icon: Video, label: "Live", desc: "Live shopping", key: null, to: "/dashboard/my-shop" },
-    { icon: Sparkles, label: "AI Assistant", desc: "Smart automation", key: null, to: "/dashboard/assistant" },
-    { icon: Globe, label: "Multi-Store", desc: "Branch network", key: null, to: "/dashboard/my-shop" },
-    { icon: Layers, label: "Franchise", desc: "Expand & scale", key: null, to: "/dashboard/ops" },
+    { icon: Package, label: "Inventory", desc: "Stock mgmt", key: null, to: "/dashboard/my-shop" },
+    { icon: BarChart3, label: "Analytics", desc: "Reports", key: null, to: "/dashboard/seller" },
+    { icon: Truck, label: "Delivery", desc: "Logistics", key: null, to: "/dashboard/driver" },
   ], []);
 
   const PROPERTY_CARDS = useMemo(() => [
-    { icon: Building2, label: "Properties", desc: "Manage assets", key: null, to: "/property-hub" },
-    { icon: KeyRound, label: "Landlord", desc: "Owner dashboard", key: null, to: "/dashboard" },
-    { icon: User, label: "Tenant", desc: "Tenant portal", key: null, to: "/tenant" },
+    { icon: Building2, label: "Properties", desc: "Manage assets", key: null, to: "/real-estate" },
+    { icon: KeyRound, label: "Landlord", desc: "Owner hub", key: null, to: "/dashboard" },
+    { icon: User, label: "Tenant", desc: "Portal", key: null, to: "/tenant" },
     { icon: CalendarCheck, label: "Seasonal", desc: "Short-term", key: "pendingBookings" as const, to: "/dashboard/seasonal" },
   ], []);
 
   const MODULE_CARDS = useMemo(() => [
-    { icon: Radar, label: t("orbit.card.radar"), desc: t("orbit.card.desc_nearby"), key: "radarNearby" as const, to: "/dashboard/communication?section=nearby" },
-    { icon: MapPin, label: "Explore", desc: "Nearby services", key: null, to: "/explore" },
+    { icon: MapPin, label: "Explore", desc: "Nearby", key: null, to: "/explore" },
     { icon: Zap, label: "Deals", desc: "Negotiations", key: null, to: "/dashboard/deals" },
     { icon: Palette, label: t("orbit.card.settings"), desc: t("orbit.card.desc_config"), key: null, to: "/dashboard/settings" },
   ], [t]);
@@ -137,9 +164,23 @@ export default function OrbitHome() {
     { label: engine.networkStatus === "online" ? t("orbit.home.online") : t("orbit.home.offline_short"), ok: engine.networkStatus === "online" },
   ], [engine.encryptionStatus, engine.syncStatus, engine.networkStatus, t]);
 
+  const handleActivityClick = useCallback((link: string) => navigate(link), [navigate]);
+
   return (
-    <div className="flex flex-col items-center px-4 pt-3 pb-10 gap-6 min-h-full">
+    <div className="flex flex-col items-center px-4 pt-3 pb-10 gap-5 min-h-full">
+      {/* Search */}
+      <div className="w-full max-w-md">
+        <OrbitGlobalSearch />
+      </div>
+
+      {/* Orb */}
       <OrbitOrb contextMessage={orbMessage} />
+
+      {/* Category shortcuts */}
+      <div className="w-full max-w-md">
+        <SectionLabel title="SHORTCUTS" />
+        <CategoryRow />
+      </div>
 
       {/* Alert Banner */}
       {engine.alerts.length > 0 && (
@@ -154,10 +195,10 @@ export default function OrbitHome() {
         >
           <span className="text-xl shrink-0">{engine.alerts[0].icon}</span>
           <div className="flex-1 min-w-0 text-left">
-            <p className="text-xs font-bold leading-snug" style={{ color: "hsl(var(--hud-text))" }}>
+            <p className="text-xs font-bold leading-snug truncate" style={{ color: "hsl(var(--hud-text))" }}>
               {engine.alerts[0].title}
             </p>
-            <p className="text-[11px] line-clamp-2" style={{ color: "hsl(var(--hud-text-dim))" }}>
+            <p className="text-[11px] truncate" style={{ color: "hsl(var(--hud-text-dim))" }}>
               {engine.alerts[0].message}
             </p>
           </div>
@@ -199,21 +240,19 @@ export default function OrbitHome() {
         <div className="w-full max-w-md">
           <SectionLabel title={t("orbit.home.section_activity")} />
           <div
-            className="rounded-2xl overflow-hidden divide-y"
-            style={{
-              background: "hsl(var(--hud-surface))",
-              border: "1px solid hsl(var(--hud-border) / 0.1)",
-            }}
+            className="rounded-2xl overflow-hidden"
+            style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.1)" }}
           >
-            {activityItems.slice(0, 4).map((item) => (
+            {activityItems.slice(0, 4).map((item, i) => (
               <button
                 key={item.label}
-                onClick={() => navigate(item.link)}
+                onClick={() => handleActivityClick(item.link)}
                 aria-label={`${item.label}: ${item.value}`}
                 className="w-full flex items-center gap-3 px-4 py-3 transition-all active:scale-[0.98] min-h-[44px]"
+                style={{ borderBottom: i < activityItems.length - 1 ? "1px solid hsl(var(--hud-border) / 0.06)" : "none" }}
               >
                 <span className="text-base shrink-0">{item.icon}</span>
-                <span className="flex-1 text-left text-[12px] font-medium" style={{ color: "hsl(var(--hud-text))" }}>
+                <span className="flex-1 text-left text-[12px] font-medium truncate" style={{ color: "hsl(var(--hud-text))" }}>
                   {item.label}
                 </span>
                 <span
@@ -229,9 +268,9 @@ export default function OrbitHome() {
         </div>
       )}
 
-      {/* V6: Commerce & POS */}
+      {/* Commerce */}
       <div className="w-full max-w-md">
-        <SectionLabel title="COMMERCE · V6" />
+        <SectionLabel title="COMMERCE" />
         <div className="grid grid-cols-4 gap-2.5">
           {V6_CARDS.map((card) => (
             <OrbitQuickCard key={card.label} icon={card.icon} label={card.label} description={card.desc} to={card.to} />
@@ -239,19 +278,9 @@ export default function OrbitHome() {
         </div>
       </div>
 
-      {/* V7: Advanced */}
-      <div className="w-full max-w-md">
-        <SectionLabel title="ORBIT · V7" />
-        <div className="grid grid-cols-4 gap-2.5">
-          {V7_CARDS.map((card) => (
-            <OrbitQuickCard key={card.label} icon={card.icon} label={card.label} description={card.desc} to={card.to} />
-          ))}
-        </div>
-      </div>
-
       {/* Property Management */}
       <div className="w-full max-w-md">
-        <SectionLabel title="PROPERTY MANAGEMENT" />
+        <SectionLabel title="PROPERTY" />
         <div className="grid grid-cols-4 gap-2.5">
           {PROPERTY_CARDS.map((card) => (
             <OrbitQuickCard
@@ -280,7 +309,7 @@ export default function OrbitHome() {
       {/* Marketplace */}
       <div className="w-full max-w-md">
         <SectionLabel title={t("orbit.home.section_marketplace")} />
-        <div className="grid grid-cols-4 gap-2.5">
+        <div className="grid grid-cols-3 gap-2.5">
           {MARKETPLACE_CARDS.map((card) => (
             <OrbitQuickCard
               key={card.label}
@@ -298,7 +327,7 @@ export default function OrbitHome() {
       {/* Modules */}
       <div className="w-full max-w-md">
         <SectionLabel title={t("orbit.home.section_modules")} />
-        <div className="grid grid-cols-4 gap-2.5">
+        <div className="grid grid-cols-3 gap-2.5">
           {MODULE_CARDS.map((card) => (
             <OrbitQuickCard
               key={card.label}
@@ -313,14 +342,9 @@ export default function OrbitHome() {
         </div>
       </div>
 
-      {/* Permissions */}
-      <div className="w-full max-w-md">
-        <OrbitPermissionsDiag />
-      </div>
-
       {/* System Status */}
       <div
-        className="w-full max-w-md flex items-center justify-center gap-6 py-3.5 px-4 rounded-2xl"
+        className="w-full max-w-md flex items-center justify-center gap-6 py-3 px-4 rounded-2xl"
         role="status"
         style={{
           background: "hsl(var(--hud-surface) / 0.5)",
