@@ -71,7 +71,7 @@ export async function runWorkflowStep(workflowId: string): Promise<RunResult> {
       completed_at: new Date().toISOString(),
       stop_reason: `condition_not_met:${currentStep.condition}`,
     } as any).eq("id", workflowId);
-    platformBus.emit("automation:workflow_completed", { workflowId, reason: "condition_false" });
+    platformBus.emit("automation:workflow_completed", { workflowId, reason: "condition_false" }, "system");
     return { workflowId, completed: true, skipped: true };
   }
 
