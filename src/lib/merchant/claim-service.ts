@@ -82,64 +82,32 @@ export async function logClaimAttempt(params: {
     });
 }
 
-/** Send OTP for phone verification */
+/** Send OTP for phone verification (hardened) */
 export async function sendClaimOtp(phone: string): Promise<string> {
-  const otp = String(Math.floor(100000 + Math.random() * 900000));
-  
-  // Store OTP session
-  await (supabase as any)
-    .from("phone_otp_sessions")
-    .insert({ phone, otp_hash: otp, status: "pending" });
-
-  // Send via edge function
-  await supabase.functions.invoke("send-otp", {
-    body: { phone, otp },
-  });
-
+  const { createOtpSession } = await import("@/lib/security/otp-hardened");
+  const { otp } = await createOtpSession("phone", phone);
   return otp; // In production, don't return OTP — it's sent via SMS only
 }
 
-/** Verify OTP code */
+/** Verify OTP code (hardened — hash comparison, expiry, attempt limits) */
 export async function verifyClaimOtp(phone: string, code: string): Promise<boolean> {
-  const { data } = await (supabase as any)
-    .from("phone_otp_sessions")
-    .select("id, otp_hash")
-    .eq("phone", phone)
-    .eq("status", "pending")
-    .order("created_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
-
-  if (!data) return false;
-
-  const isValid = data.otp_hash === code;
-
-  await (supabase as any)
-    .from("phone_otp_sessions")
-    .update({ status: isValid ? "verified" : "failed" })
-    .eq("id", data.id);
-
-  return isValid;
+  const { verifyOtp } = await import("@/lib/security/otp-hardened");
+  const result = await verifyOtp(phone, code);
+  return result.valid;
 }
 
-/** Send email verification code */
+/** Send email verification code (hardened) */
 export async function sendClaimEmailCode(email: string): Promise<string> {
-  const code = String(Math.floor(100000 + Math.random() * 900000));
-
-  // Store the code
-  await (supabase as any)
-    .from("phone_otp_sessions")
-    .insert({ phone: email, otp_hash: code, status: "pending" });
-
-  // In production, send via email edge function
-  console.log(`[EMAIL VERIFY] Code ${code} sent to ${email}`);
-  
-  return code;
+  const { createOtpSession } = await import("@/lib/security/otp-hardened");
+  const { otp } = await createOtpSession("email", email);
+  return otp;
 }
 
-/** Verify email code */
+/** Verify email code (hardened) */
 export async function verifyClaimEmailCode(email: string, code: string): Promise<boolean> {
-  return verifyClaimOtp(email, code); // Same logic, reuse phone_otp_sessions
+  const { verifyOtp } = await import("@/lib/security/otp-hardened");
+  const result = await verifyOtp(email, code);
+  return result.valid;
 }
 
 /** Claim a restaurant — attach it to the authenticated user (requires prior verification) */
