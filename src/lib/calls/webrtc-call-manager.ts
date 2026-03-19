@@ -9,12 +9,7 @@ export class WebRtcCallManager {
   private remoteStream: MediaStream = new MediaStream();
 
   constructor() {
-    this.pc = new RTCPeerConnection({
-      iceServers: [
-        { urls: "stun:stun.l.google.com:19302" },
-        { urls: "stun:stun1.l.google.com:19302" },
-      ],
-    });
+    this.pc = new RTCPeerConnection(getRtcConfiguration());
 
     this.pc.ontrack = (event) => {
       for (const track of event.streams[0].getTracks()) {
