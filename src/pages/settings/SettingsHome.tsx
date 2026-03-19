@@ -3,6 +3,7 @@
  * Route: /settings
  */
 import { useNavigate } from "react-router-dom";
+import { useDinoPageAudit } from "@/hooks/useDinoPageAudit";
 import { ArrowLeft, User, Globe, Wallet, MapPin, Bell, Shield, Store, Palette, ChevronRight } from "lucide-react";
 
 const SECTIONS = [
@@ -18,6 +19,7 @@ const SECTIONS = [
 
 export default function SettingsHome() {
   const navigate = useNavigate();
+  useDinoPageAudit({ actorType: "user", pageKey: "settings_home" });
 
   return (
     <div className="min-h-[100dvh] flex flex-col" style={{ background: "hsl(var(--background))" }}>

@@ -4,6 +4,7 @@
  * Each vertical = mini app experience.
  */
 import { useEffect, useMemo, memo, useState, useCallback, useRef } from "react";
+import { useDinoPageAudit } from "@/hooks/useDinoPageAudit";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useOrbitEngine } from "@/stores/orbit-engine";
@@ -224,6 +225,7 @@ export default function OrbitHome() {
   const { t } = useI18n();
 
   useEffect(() => { trackMount("OrbitHome", mountStart); }, [mountStart]);
+  useDinoPageAudit({ actorType: user ? "user" : "anonymous", actorId: user?.id, pageKey: "home" });
   useEffect(() => {
     if (!user?.id) return;
     engine.refresh(user.id, orgId || undefined);

@@ -1,4 +1,5 @@
 import { useParams, Link } from "react-router-dom";
+import { useDinoPageAudit } from "@/hooks/useDinoPageAudit";
 import { usePropertyById, usePropertyUnits, usePropertyDocuments } from "@/hooks/useRealEstate";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
@@ -12,6 +13,7 @@ import { Building2, MapPin, BedDouble, Bath, Ruler, Home, FileText, ExternalLink
 export default function PropertyDetailPage() {
   const { propertyId } = useParams<{ propertyId: string }>();
   const { data: property, isLoading } = usePropertyById(propertyId);
+  useDinoPageAudit({ actorType: "anonymous", pageKey: "property_public" });
   const { data: units } = usePropertyUnits(propertyId);
   const { data: docs } = usePropertyDocuments(propertyId);
 

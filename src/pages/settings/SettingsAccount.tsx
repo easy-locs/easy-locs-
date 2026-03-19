@@ -2,6 +2,7 @@
  * SettingsAccount — Standalone account settings page
  */
 import { useState, useEffect } from "react";
+import { useDinoPageAudit } from "@/hooks/useDinoPageAudit";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, User } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
@@ -14,6 +15,7 @@ import CountrySelect from "@/components/ui/CountrySelect";
 export default function SettingsAccount() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  useDinoPageAudit({ actorType: "user", actorId: user?.id, pageKey: "settings_account" });
   const { toast } = useToast();
   const { t } = useI18n();
   const [profile, setProfile] = useState({ name: "", email: "", country: "FR", locale: "fr", signature_url: "" });
