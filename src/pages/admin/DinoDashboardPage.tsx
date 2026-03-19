@@ -124,8 +124,8 @@ function QualityTab({ report }: { report: DinoReport }) {
       <Card>
         <CardHeader><CardTitle className="text-sm flex items-center gap-2"><Activity className="h-4 w-4" /> Onboarding Health</CardTitle></CardHeader>
         <CardContent className="space-y-2">
-          <div className="flex items-center gap-2 text-sm"><CheckCircle2 className="h-4 w-4 text-green-500" /><span>{report.onboardingHealth.healthy} Healthy</span></div>
-          <div className="flex items-center gap-2 text-sm"><AlertTriangle className="h-4 w-4 text-yellow-500" /><span>{report.onboardingHealth.partial} Partial</span></div>
+          <div className="flex items-center gap-2 text-sm"><CheckCircle2 className="h-4 w-4 text-primary" /><span>{report.onboardingHealth.healthy} Healthy</span></div>
+          <div className="flex items-center gap-2 text-sm"><AlertTriangle className="h-4 w-4 text-accent-foreground" /><span>{report.onboardingHealth.partial} Partial</span></div>
           <div className="flex items-center gap-2 text-sm"><XCircle className="h-4 w-4 text-destructive" /><span>{report.onboardingHealth.broken} Broken</span></div>
           <p className="text-xs text-muted-foreground pt-2">
             {report.onboardingHealth.totalFlows} flows • {report.onboardingHealth.recoveryPlan.length} recovery actions
