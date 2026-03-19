@@ -8,18 +8,18 @@ export interface EncryptedPayload {
   algorithm: "AES-GCM";
 }
 
-function toBase64(buf: ArrayBuffer | Uint8Array): string {
-  const bytes = buf instanceof Uint8Array ? buf : new Uint8Array(buf);
-  let binary = "";
-  for (const b of bytes) binary += String.fromCharCode(b);
-  return btoa(binary);
+function toBase64(input: ArrayBuffer | Uint8Array) {
+  const bytes = input instanceof Uint8Array ? input : new Uint8Array(input);
+  let str = "";
+  for (let i = 0; i < bytes.length; i++) str += String.fromCharCode(bytes[i]);
+  return btoa(str);
 }
 
-function fromBase64(b64: string): Uint8Array {
-  const binary = atob(b64);
-  const bytes = new Uint8Array(binary.length);
-  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-  return bytes;
+function fromBase64(base64: string) {
+  const bin = atob(base64);
+  const out = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+  return out;
 }
 
 export async function generateAesKey(): Promise<CryptoKey> {
@@ -54,6 +54,7 @@ export async function encryptText(text: string, key: CryptoKey): Promise<Encrypt
     key,
     encoded
   );
+
   return {
     ciphertext: toBase64(ciphertext),
     iv: toBase64(iv),
