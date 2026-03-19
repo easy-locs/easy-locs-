@@ -55,7 +55,7 @@ export async function upgradeToPriorityPro(proId: string, tier: PartnerTier = "p
 // =============================
 
 export async function offerExclusivity(proId: string): Promise<void> {
-  await supabase.from("dino_notifications").insert({
+  const { error } = await supabase.from("dino_notifications").insert({
     actor_type: "pro",
     actor_id: proId,
     channel: "push",
@@ -65,6 +65,10 @@ export async function offerExclusivity(proId: string): Promise<void> {
     } as Json,
     status: "pending",
   });
+  if (error) {
+    console.error("[PartnerEngine] offerExclusivity failed:", error);
+    throw new Error(`offerExclusivity: ${error.message} (code: ${error.code})`);
+  }
 }
 
 // =============================
