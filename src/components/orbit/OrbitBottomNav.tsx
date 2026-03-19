@@ -1,5 +1,5 @@
 /**
- * OrbitBottomNav — 5-tab: Home · Orbit · Explore · Wallet · Profile
+ * OrbitBottomNav — 5 clear tabs: Home · Orbit · Achille · Wallet · Me
  */
 import { useNavigate, useLocation } from "react-router-dom";
 import { Compass, Wallet, User, CircleDot, Home } from "lucide-react";
@@ -28,11 +28,11 @@ const NAV_ITEMS = [
   },
   {
     icon: Compass,
-    labelKey: "nav.explore",
-    fallback: "Explore",
+    labelKey: "nav.achille",
+    fallback: "Achille",
     path: "/explore",
     match: (p: string) =>
-      ["/explore", "/search", "/discover", "/food", "/grocery", "/services-hub", "/ride", "/send", "/travel", "/shops", "/super-map", "/real-estate"].some(
+      ["/explore", "/search", "/discover", "/food", "/grocery", "/services-hub", "/shops", "/super-map", "/real-estate"].some(
         (prefix) => p === prefix || p.startsWith(prefix + "/")
       ),
   },
@@ -45,11 +45,11 @@ const NAV_ITEMS = [
   },
   {
     icon: User,
-    labelKey: "nav.profile",
-    fallback: "Profile",
+    labelKey: "nav.me",
+    fallback: "Me",
     path: "/dashboard/settings",
     match: (p: string) =>
-      ["/dashboard/settings", "/dashboard/my-shop", "/dashboard/seller", "/dashboard/driver", "/business", "/property-hub"].some(
+      ["/dashboard/settings", "/dashboard/my-shop", "/dashboard/seller", "/dashboard/driver", "/business", "/property-hub", "/merchant", "/ride", "/send", "/travel"].some(
         (prefix) => p === prefix || p.startsWith(prefix + "/")
       ),
   },
