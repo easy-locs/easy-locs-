@@ -1,7 +1,10 @@
 /**
- * DINO Control Tower Dashboard — Quality, Journey, Automation overview.
+ * DINO Control Tower Dashboard — Quality, Journey, Automation, Domain overview.
+ * V4: Connected to real DB data + local audit engine.
  */
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { runDinoAudit, type DinoReport } from "@/lib/dino/dinoEngine";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -10,6 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   ArrowLeft, Play, Shield, AlertTriangle, CheckCircle2, XCircle,
   Wrench, FileText, Eye, BarChart3, Zap, Image, Tag, Activity,
+  Database, Globe,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
