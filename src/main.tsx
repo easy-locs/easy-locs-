@@ -10,6 +10,15 @@ if (!rootElement) {
   throw new Error("Root element #root not found");
 }
 
+if (typeof window !== "undefined") {
+  const { pathname, hash } = window.location;
+  const isDirectDeepLink = pathname !== "/" && pathname !== "/index.html";
+
+  if (isDirectDeepLink && !hash) {
+    window.location.hash = pathname;
+  }
+}
+
 // Remove the static loading fallback as soon as the app bundle starts executing.
 // This prevents the 12s crash-recovery timer in index.html from showing a false
 // network/cache error while React is still bootstrapping on slower preview loads.
