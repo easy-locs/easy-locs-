@@ -1,35 +1,37 @@
 /**
- * MyOrdersPage — PASS136/137: Buyer orders with consistent header and empty state.
+ * MyOrdersPage — Customer order history with clean mobile layout.
  * Route: /my-orders
  */
 import SEOHead from "@/components/SEOHead";
 import BuyerOrderTracker from "@/components/storefront/BuyerOrderTracker";
 import BuyerDashboard from "@/components/storefront/BuyerDashboard";
-import { MobilePageHeader } from "@/components/ui/mobile-page-header";
 import { useAuth } from "@/contexts/AuthContext";
 import { useStorefrontRealtime } from "@/hooks/useStorefrontRealtime";
-import { ShoppingBag } from "lucide-react";
+import { ArrowLeft, ShoppingBag } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 export default function MyOrdersPage() {
   const { user } = useAuth();
-
-  // PASS123: Realtime order updates for buyer
+  const navigate = useNavigate();
   useStorefrontRealtime({ buyerId: user?.id });
 
   return (
     <>
-      <SEOHead title="My Orders" description="Track your storefront orders in real time." />
-      <div className="min-h-screen bg-background pb-20">
-        <MobilePageHeader
-          title="My Orders"
-          icon={<ShoppingBag className="h-5 w-5 text-primary" />}
-          backTo="/dashboard"
-        />
-        <div className="max-w-lg mx-auto px-4 py-4 space-y-4">
-          {/* PASS115: Buyer dashboard with stats */}
-          <BuyerDashboard />
+      <SEOHead title="My Orders" description="Track your orders in real time." />
+      <div className="min-h-[100dvh] flex flex-col bg-background">
+        <header className="flex items-center gap-3 px-4 pt-4 pb-3">
+          <button
+            onClick={() => navigate(-1)}
+            className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-95 transition-transform"
+            style={{ background: "hsl(var(--muted))" }}
+          >
+            <ArrowLeft className="w-4.5 h-4.5" />
+          </button>
+          <h1 className="text-lg font-bold text-foreground">My Orders</h1>
+        </header>
 
-          {/* Order tracker with timeline */}
+        <div className="flex-1 px-4 pb-24 space-y-4">
+          <BuyerDashboard />
           <BuyerOrderTracker />
         </div>
       </div>
