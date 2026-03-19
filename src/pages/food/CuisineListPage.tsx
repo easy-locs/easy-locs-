@@ -17,7 +17,7 @@ export default function CuisineListPage() {
     queryFn: async () => {
       const { data } = await (supabase as any)
         .from("storefront_pages")
-        .select("id, name, slug, city, vertical, subcategory, description, latitude, longitude")
+        .select("id, name, slug, city, vertical, subcategory, description, latitude, longitude, rating")
         .eq("active", true)
         .limit(30);
       // Filter by cuisine tag if possible
@@ -51,7 +51,7 @@ export default function CuisineListPage() {
             to={`/food/restaurant/${r.slug || r.id}`}
             title={r.name || "Restaurant"}
             subtitle={r.city || r.subcategory || ""}
-            rating={4.0 + Math.random() * 0.9}
+            rating={r.rating ?? 4.2}
             index={i}
           />
         ))}
