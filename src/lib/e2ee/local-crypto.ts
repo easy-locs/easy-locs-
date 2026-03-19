@@ -39,7 +39,7 @@ export async function importRawKey(rawBase64: string): Promise<CryptoKey> {
   const raw = fromBase64(rawBase64);
   return crypto.subtle.importKey(
     "raw",
-    raw,
+    raw.buffer as ArrayBuffer,
     { name: "AES-GCM" },
     false,
     ["encrypt", "decrypt"]
