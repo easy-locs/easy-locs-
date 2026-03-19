@@ -238,7 +238,7 @@ export async function reverseOrderPayment(params: { orderId: string }) {
 // ── Approve flagged review ────────────────────────────────
 export async function approveWalletReview(params: { orderId: string }) {
   const result = await walletOps("approve_review", { order_id: params.orderId });
-  platformBus.emit("wallet:payment_completed", { orderId: params.orderId, stage: "review_approved" }, "wallet");
+  platformBus.emit("commerce:payment_authorized", { orderId: params.orderId, stage: "review_approved" }, "wallet");
   return result;
 }
 
