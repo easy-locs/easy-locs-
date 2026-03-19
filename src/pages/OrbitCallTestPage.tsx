@@ -168,10 +168,27 @@ export default function OrbitCallTestPage() {
   };
 
   useEffect(() => {
+    debugLog.info("call", "call_test_page_loaded", "OrbitCallTestPage mounted");
     return () => {
       serviceRef.current.getManager()?.destroy();
     };
   }, []);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <p className="text-sm text-muted-foreground">Loading call test...</p>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <p className="text-sm text-destructive">Authentication required to test calls.</p>
+      </div>
+    );
+  }
 
   const showIncomingModal =
     !!openIncoming &&
