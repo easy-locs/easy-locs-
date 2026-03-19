@@ -12108,12 +12108,18 @@ export type Database = {
           country_code: string | null
           created_at: string | null
           delivery_notes: string | null
+          floor: string | null
           full_address: string
           id: string
           is_default: boolean | null
           label: string
+          landmark: string | null
+          last_used_at: string | null
           lat: number | null
           lng: number | null
+          street_name: string | null
+          street_number: string | null
+          title: string | null
           unit_number: string | null
           updated_at: string | null
           user_id: string
@@ -12125,12 +12131,18 @@ export type Database = {
           country_code?: string | null
           created_at?: string | null
           delivery_notes?: string | null
+          floor?: string | null
           full_address: string
           id?: string
           is_default?: boolean | null
           label: string
+          landmark?: string | null
+          last_used_at?: string | null
           lat?: number | null
           lng?: number | null
+          street_name?: string | null
+          street_number?: string | null
+          title?: string | null
           unit_number?: string | null
           updated_at?: string | null
           user_id: string
@@ -12142,12 +12154,18 @@ export type Database = {
           country_code?: string | null
           created_at?: string | null
           delivery_notes?: string | null
+          floor?: string | null
           full_address?: string
           id?: string
           is_default?: boolean | null
           label?: string
+          landmark?: string | null
+          last_used_at?: string | null
           lat?: number | null
           lng?: number | null
+          street_name?: string | null
+          street_number?: string | null
+          title?: string | null
           unit_number?: string | null
           updated_at?: string | null
           user_id?: string

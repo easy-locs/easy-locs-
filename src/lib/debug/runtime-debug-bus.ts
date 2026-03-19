@@ -6,7 +6,8 @@ export type DebugDomain =
   | "realtime"
   | "router"
   | "wallet"
-  | "system";
+  | "system"
+  | "address";
 
 export type DebugLevel = "info" | "warn" | "error" | "success";
 
