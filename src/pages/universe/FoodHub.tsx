@@ -3,6 +3,7 @@
  * Real DB data for nearby restaurants.
  */
 import { useState } from "react";
+import { useDinoPageAudit } from "@/hooks/useDinoPageAudit";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
