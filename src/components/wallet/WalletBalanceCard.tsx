@@ -111,11 +111,11 @@ export default function WalletBalanceCard({
           <p className="text-[9px] font-bold text-white/35 uppercase tracking-[0.15em] mb-1.5">
             {t("orbit.total_balance") || "Total Balance"}
           </p>
-          <p className="text-[2.25rem] font-black text-white tracking-tight leading-none">
+          <p className="text-[2.75rem] font-black text-white tracking-tight leading-none">
             {loading ? (
               <span className="inline-flex gap-1.5">
-                <span className="w-4 h-9 rounded-md bg-white/8 animate-pulse" />
-                <span className="w-20 h-9 rounded-md bg-white/8 animate-pulse" />
+                <span className="w-5 h-11 rounded-md bg-white/8 animate-pulse" />
+                <span className="w-24 h-11 rounded-md bg-white/8 animate-pulse" />
               </span>
             ) : isGhost ? "••••••" : displayBalance}
           </p>
