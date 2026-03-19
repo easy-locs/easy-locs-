@@ -172,7 +172,7 @@ export default function AdminDinoControlPanel() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-xl font-black text-foreground">DINO Control Panel</h1>
-            <p className="text-xs text-muted-foreground mt-0.5">Execute & monitor all engines</p>
+            <p className="text-xs text-muted-foreground mt-0.5">Execute & monitor all engines — <span className="text-primary font-bold">ERROR SERIALIZER V2</span></p>
           </div>
           <div className="flex items-center gap-2">
             {healthScore !== null && (
