@@ -4,6 +4,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import type { DinoJobType, DinoEntityType } from "./jobTypes";
+import type { Json } from "@/integrations/supabase/types";
 
 export async function enqueueDinoJob(input: {
   jobType: DinoJobType;
@@ -15,14 +16,14 @@ export async function enqueueDinoJob(input: {
 }) {
   const { data, error } = await supabase
     .from("dino_sync_jobs")
-    .insert({
+    .insert([{
       job_type: input.jobType,
       entity_type: input.entityType,
       entity_id: input.entityId,
-      payload_json: input.payload ?? {},
+      payload_json: (input.payload ?? {}) as Json,
       priority: input.priority ?? 100,
       scheduled_at: input.scheduledAt ?? new Date().toISOString(),
-    })
+    }])
     .select()
     .single();
 

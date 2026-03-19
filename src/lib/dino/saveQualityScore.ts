@@ -4,6 +4,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { computeQualityScore, type QualityInput } from "./qualityScore";
+import type { Json } from "@/integrations/supabase/types";
 
 export async function saveQualityScore(input: QualityInput & {
   route: string;
@@ -15,14 +16,14 @@ export async function saveQualityScore(input: QualityInput & {
 
   const { data, error } = await supabase
     .from("dino_quality_scores")
-    .insert({
+    .insert([{
       route: input.route,
       entity_type: input.entityType ?? null,
       entity_id: input.entityId ?? null,
       ...score,
-      score_details: input.details ?? {},
+      score_details: (input.details ?? {}) as Json,
       updated_at: new Date().toISOString(),
-    })
+    }])
     .select()
     .single();
 
