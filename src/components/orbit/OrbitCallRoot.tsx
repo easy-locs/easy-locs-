@@ -2,15 +2,25 @@
  * OrbitCallRoot — Global Orbit call wiring.
  * Uses the unified coordinator + call-store for state management.
  * Mounts at app root so incoming calls ring on every page.
+ * Defers heavy controller init until user is authenticated.
  */
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState, useCallback, memo } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useGlobalCallController } from "@/hooks/useGlobalCallController";
 import { supabase } from "@/integrations/supabase/client";
 import IncomingCallModal from "@/components/calls/IncomingCallModal";
+import CallMediaStatus from "@/components/calls/CallMediaStatus";
 
-export default function OrbitCallRoot() {
+function OrbitCallRoot() {
   const { user } = useAuth();
+
+  // Don't initialize anything until user is authenticated
+  if (!user?.id) return null;
+
+  return <OrbitCallRootInner userId={user.id} />;
+}
+
+const OrbitCallRootInner = memo(function OrbitCallRootInner({ userId }: { userId: string }) {
   const {
     callState,
     acceptIncomingCall,
@@ -23,13 +33,11 @@ export default function OrbitCallRoot() {
 
   // Poll for ringing sessions targeting this user
   useEffect(() => {
-    if (!user?.id) return;
-
     const loadIncoming = async () => {
       const { data } = await (supabase as any)
         .from("orbit_call_sessions")
         .select("*")
-        .eq("callee_user_id", user.id)
+        .eq("callee_user_id", userId)
         .eq("status", "ringing")
         .order("created_at", { ascending: false })
         .limit(1)
@@ -41,14 +49,14 @@ export default function OrbitCallRoot() {
     loadIncoming();
 
     const channel = supabase
-      .channel(`incoming-sessions:${user.id}`)
+      .channel(`incoming-sessions:${userId}`)
       .on(
         "postgres_changes",
         {
           event: "*",
           schema: "public",
           table: "orbit_call_sessions",
-          filter: `callee_user_id=eq.${user.id}`,
+          filter: `callee_user_id=eq.${userId}`,
         },
         loadIncoming
       )
@@ -57,7 +65,7 @@ export default function OrbitCallRoot() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [user?.id]);
+  }, [userId]);
 
   // Attach remote audio when call becomes active
   useEffect(() => {
@@ -72,7 +80,7 @@ export default function OrbitCallRoot() {
   }, [callState, getManager]);
 
   const handleAccept = useCallback(async () => {
-    if (!user?.id || !incomingSession) return;
+    if (!incomingSession) return;
 
     const { data: offerSignal } = await (supabase as any)
       .from("orbit_call_signals")
@@ -87,35 +95,42 @@ export default function OrbitCallRoot() {
 
     await acceptIncomingCall({
       sessionId: incomingSession.id,
-      myUserId: user.id,
+      myUserId: userId,
       peerUserId: incomingSession.caller_user_id,
       callType: incomingSession.call_type,
       remoteOffer: offerSignal.payload,
     });
 
     setIncomingSession(null);
-  }, [user?.id, incomingSession, acceptIncomingCall]);
+  }, [userId, incomingSession, acceptIncomingCall]);
 
   const handleReject = useCallback(async () => {
-    if (!user?.id || !incomingSession) return;
+    if (!incomingSession) return;
 
     await rejectIncomingCall({
       sessionId: incomingSession.id,
-      myUserId: user.id,
+      myUserId: userId,
       peerUserId: incomingSession.caller_user_id,
     });
 
     setIncomingSession(null);
-  }, [user?.id, incomingSession, rejectIncomingCall]);
+  }, [userId, incomingSession, rejectIncomingCall]);
 
   const showIncoming =
     !!incomingSession &&
     incomingSession.status === "ringing" &&
-    incomingSession.callee_user_id === user?.id;
+    incomingSession.callee_user_id === userId;
+
+  const isInCall = callState?.state === "active" || callState?.state === "connecting";
 
   return (
     <>
       <audio ref={remoteAudioRef} hidden />
+      {isInCall && (
+        <div className="fixed top-2 right-2 z-50 rounded-xl border border-border bg-card/95 backdrop-blur-sm px-3 py-2 shadow-lg">
+          <CallMediaStatus />
+        </div>
+      )}
       <IncomingCallModal
         open={showIncoming}
         session={incomingSession}
@@ -124,4 +139,6 @@ export default function OrbitCallRoot() {
       />
     </>
   );
-}
+});
+
+export default OrbitCallRoot;

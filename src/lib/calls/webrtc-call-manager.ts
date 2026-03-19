@@ -2,11 +2,42 @@ import { getRtcConfiguration } from "@/lib/calls/call-config";
 import { debugLog } from "@/lib/debug/runtime-debug-bus";
 import { safeErrorMessage } from "@/lib/debug/debug-helpers";
 
+export interface MediaStatus {
+  cameraReady: boolean;
+  audioReady: boolean;
+  fallbackActive: boolean;
+  error: string | null;
+}
+
+const mediaStatusListeners = new Set<(s: MediaStatus) => void>();
+let currentMediaStatus: MediaStatus = {
+  cameraReady: false,
+  audioReady: false,
+  fallbackActive: false,
+  error: null,
+};
+
+function setMediaStatus(patch: Partial<MediaStatus>) {
+  currentMediaStatus = { ...currentMediaStatus, ...patch };
+  mediaStatusListeners.forEach((fn) => fn(currentMediaStatus));
+}
+
+export function subscribeMediaStatus(fn: (s: MediaStatus) => void) {
+  mediaStatusListeners.add(fn);
+  fn(currentMediaStatus);
+  return () => { mediaStatusListeners.delete(fn); };
+}
+
+export function getMediaStatus() {
+  return currentMediaStatus;
+}
+
 export class WebRtcCallManager {
   private pc: RTCPeerConnection | null = null;
   private localStream: MediaStream | null = null;
   private remoteStream: MediaStream = new MediaStream();
   private remoteAudioEl: HTMLAudioElement | null = null;
+  private remoteVideoEl: HTMLVideoElement | null = null;
   private initialized = false;
 
   private async ensurePc() {
@@ -24,7 +55,7 @@ export class WebRtcCallManager {
       for (const track of event.streams[0].getTracks()) {
         this.remoteStream.addTrack(track);
       }
-      this.attachRemoteAudio();
+      this.attachRemoteMedia();
     };
 
     this.pc.oniceconnectionstatechange = () => {
@@ -39,7 +70,8 @@ export class WebRtcCallManager {
     debugLog.success("call", "pc_init_success", "RTCPeerConnection ready");
   }
 
-  private attachRemoteAudio() {
+  private attachRemoteMedia() {
+    // Audio
     if (!this.remoteAudioEl) {
       this.remoteAudioEl = document.createElement("audio");
       this.remoteAudioEl.autoplay = true;
@@ -51,23 +83,62 @@ export class WebRtcCallManager {
     this.remoteAudioEl.play().catch((err) => {
       debugLog.warn("call", "remote_audio_autoplay_blocked", safeErrorMessage(err));
     });
+
+    // Video — attach to any registered video element
+    if (this.remoteVideoEl) {
+      this.remoteVideoEl.srcObject = this.remoteStream;
+      this.remoteVideoEl.autoplay = true;
+      (this.remoteVideoEl as any).playsInline = true;
+      this.remoteVideoEl.play().catch(() => {});
+      debugLog.success("call", "remote_video_attached", "Remote video stream attached");
+    }
   }
 
-  async startLocalMedia(video = false) {
+  /**
+   * Start local media with progressive fallback for mobile Safari.
+   * 1. Try optimal constraints (echoCancellation, facingMode, 1280x720)
+   * 2. Fallback to simple { audio: true, video: true }
+   * 3. Fallback to audio-only
+   */
+  async startLocalMedia(video = false): Promise<MediaStream> {
     try {
       await this.ensurePc();
-      debugLog.info("call", "local_media_start", `video=${video}`);
 
-      this.localStream = await navigator.mediaDevices.getUserMedia({
-        audio: true,
-        video,
-      });
+      setMediaStatus({ cameraReady: false, audioReady: false, fallbackActive: false, error: null });
+      debugLog.info("call", "camera_request_start", `video=${video}`);
+
+      let stream: MediaStream;
+
+      if (video) {
+        stream = await this.tryVideoWithFallback();
+      } else {
+        stream = await navigator.mediaDevices.getUserMedia({
+          audio: {
+            echoCancellation: true,
+            noiseSuppression: true,
+            autoGainControl: true,
+          },
+          video: false,
+        });
+        setMediaStatus({ audioReady: true });
+      }
+
+      this.localStream = stream;
 
       for (const track of this.localStream.getTracks()) {
         this.pc!.addTrack(track, this.localStream);
       }
 
-      debugLog.success("call", "local_media_success", "Local stream ready", {
+      const hasVideo = this.localStream.getVideoTracks().length > 0;
+      const hasAudio = this.localStream.getAudioTracks().length > 0;
+
+      setMediaStatus({
+        cameraReady: hasVideo,
+        audioReady: hasAudio,
+        error: null,
+      });
+
+      debugLog.success("call", "camera_request_success", "Local stream ready", {
         tracks: this.localStream.getTracks().map((t) => ({
           kind: t.kind,
           enabled: t.enabled,
@@ -77,9 +148,117 @@ export class WebRtcCallManager {
 
       return this.localStream;
     } catch (e) {
-      debugLog.error("call", "local_media_error", safeErrorMessage(e));
+      const msg = safeErrorMessage(e);
+      debugLog.error("call", "camera_request_failed", msg);
+      setMediaStatus({ error: msg, cameraReady: false, audioReady: false });
       throw e;
     }
+  }
+
+  private async tryVideoWithFallback(): Promise<MediaStream> {
+    // Step 1: Optimal constraints
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true,
+        },
+        video: {
+          facingMode: "user",
+          width: { ideal: 1280 },
+          height: { ideal: 720 },
+        },
+      });
+      debugLog.success("call", "camera_request_success", "Optimal video constraints OK");
+      return stream;
+    } catch (err1) {
+      debugLog.warn("call", "camera_request_fallback", `Optimal failed: ${safeErrorMessage(err1)}, trying simple`);
+    }
+
+    // Step 2: Simple constraints
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: true,
+        video: true,
+      });
+      debugLog.success("call", "camera_request_success", "Simple video constraints OK");
+      return stream;
+    } catch (err2) {
+      debugLog.warn("call", "camera_request_fallback", `Simple video failed: ${safeErrorMessage(err2)}, falling back to audio-only`);
+    }
+
+    // Step 3: Audio-only fallback
+    setMediaStatus({ fallbackActive: true, error: "Camera unavailable, continuing with audio only" });
+    debugLog.warn("call", "camera_request_fallback", "Audio-only fallback active");
+
+    return navigator.mediaDevices.getUserMedia({
+      audio: {
+        echoCancellation: true,
+        noiseSuppression: true,
+        autoGainControl: true,
+      },
+      video: false,
+    });
+  }
+
+  /** Register a video element for local preview */
+  attachLocalVideo(el: HTMLVideoElement | null) {
+    if (!el || !this.localStream) return;
+    el.srcObject = this.localStream;
+    el.muted = true;
+    el.autoplay = true;
+    (el as any).playsInline = true;
+    el.play().catch(() => {});
+    debugLog.success("call", "local_video_attached", "Local video element attached");
+  }
+
+  /** Register a video element for remote video */
+  attachRemoteVideo(el: HTMLVideoElement | null) {
+    this.remoteVideoEl = el;
+    if (el && this.remoteStream.getTracks().length > 0) {
+      el.srcObject = this.remoteStream;
+      el.autoplay = true;
+      (el as any).playsInline = true;
+      el.play().catch(() => {});
+      debugLog.success("call", "remote_video_attached", "Remote video element attached");
+    }
+  }
+
+  /** Dynamically add video track to an active call */
+  async addVideoTrack(): Promise<boolean> {
+    if (!this.pc) return false;
+    try {
+      debugLog.info("call", "camera_request_start", "Adding video track dynamically");
+      const videoStream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: "user", width: { ideal: 640 }, height: { ideal: 480 } },
+      });
+      const videoTrack = videoStream.getVideoTracks()[0];
+      if (!videoTrack) return false;
+
+      this.pc.addTrack(videoTrack, this.localStream ?? videoStream);
+      if (this.localStream) {
+        this.localStream.addTrack(videoTrack);
+      }
+      setMediaStatus({ cameraReady: true, fallbackActive: false, error: null });
+      debugLog.success("call", "camera_request_success", "Video track added dynamically");
+      return true;
+    } catch (e) {
+      const msg = safeErrorMessage(e);
+      debugLog.error("call", "camera_request_failed", `Dynamic video add failed: ${msg}`);
+      setMediaStatus({ error: `Camera toggle failed: ${msg}` });
+      return false;
+    }
+  }
+
+  /** Remove video tracks */
+  removeVideoTracks() {
+    this.localStream?.getVideoTracks().forEach((t) => {
+      t.stop();
+      this.localStream?.removeTrack(t);
+    });
+    setMediaStatus({ cameraReady: false });
+    debugLog.info("call", "local_video_toggle", "Video tracks removed");
   }
 
   getLocalStream() {
@@ -161,10 +340,16 @@ export class WebRtcCallManager {
     this.remoteStream = new MediaStream();
     this.initialized = false;
 
+    setMediaStatus({ cameraReady: false, audioReady: false, fallbackActive: false, error: null });
+
     if (this.remoteAudioEl) {
       this.remoteAudioEl.srcObject = null;
       this.remoteAudioEl.remove();
       this.remoteAudioEl = null;
+    }
+    if (this.remoteVideoEl) {
+      this.remoteVideoEl.srcObject = null;
+      this.remoteVideoEl = null;
     }
   }
 }
