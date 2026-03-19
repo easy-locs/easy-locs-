@@ -3,6 +3,7 @@
  * Route: /settings
  */
 import { useNavigate } from "react-router-dom";
+import { useDinoPageAudit } from "@/hooks/useDinoPageAudit";
 import { ArrowLeft, User, Globe, Wallet, MapPin, Bell, Shield, Store, Palette, ChevronRight } from "lucide-react";
 
 const SECTIONS = [
