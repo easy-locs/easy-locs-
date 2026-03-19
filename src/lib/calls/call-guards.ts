@@ -10,3 +10,10 @@ export function assertMediaSupport() {
     throw new Error("WebRTC is not supported on this browser");
   }
 }
+
+/** Quick check that media devices are available before call UI */
+export function assertCallReady() {
+  if (!navigator.mediaDevices) {
+    throw new Error("Media devices not available");
+  }
+}
