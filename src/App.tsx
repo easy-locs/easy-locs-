@@ -726,7 +726,7 @@ const App = () => (
               <Route path="/seo/*" element={<SEOCatchAll />} />
 
               {/* Fallback */}
-              <Route path="/index" element={<Index />} />
+              <Route path="/index" element={<Navigate to="/" replace />} />
               <Route path="*" element={<AppNotFoundPage />} />
             </Routes>
             </main>
