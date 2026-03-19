@@ -10,6 +10,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useOrbitEngine } from "@/stores/orbit-engine";
 import { useI18n } from "@/lib/i18n";
 import { trackMount } from "@/lib/orbit-perf";
+import { useGodModeSnapshot } from "@/hooks/useGodModeSnapshot";
+import GodModeInsightsBar from "@/components/orbit/GodModeInsightsBar";
 import OrbitWalletCard from "@/components/orbit/OrbitWalletCard";
 import {
   ChevronRight, MessageCircle, MapPin, Car, Building2, Star, Send,
