@@ -4,7 +4,7 @@
  */
 import { useNavigate } from "react-router-dom";
 import { useDinoPageAudit } from "@/hooks/useDinoPageAudit";
-import { ArrowLeft, User, CreditCard, MapPin, Bell, Shield, Store, Palette, Globe, ChevronRight, HelpCircle, FileText, Headphones } from "lucide-react";
+import { ArrowLeft, User, CreditCard, MapPin, Bell, Shield, Store, Palette, Globe, ChevronRight, FileText, Headphones } from "lucide-react";
 
 const SETTINGS_GROUPS = [
   {
@@ -19,7 +19,7 @@ const SETTINGS_GROUPS = [
     title: "Preferences",
     items: [
       { key: "orbit", icon: Globe, label: "Language & Region", desc: "Language, currency, format", path: "/settings/orbit" },
-      { key: "preferences", icon: Palette, label: "Appearance", desc: "Theme, dark mode, branding", path: "/settings/preferences" },
+      { key: "preferences", icon: Palette, label: "Appearance", desc: "Theme, dark mode", path: "/settings/preferences" },
     ],
   },
   {
@@ -49,11 +49,11 @@ export default function SettingsHome() {
   useDinoPageAudit({ actorType: "user", pageKey: "settings_home" });
 
   return (
-    <div className="min-h-[100dvh] flex flex-col bg-background">
+    <div className="min-h-[100dvh] flex flex-col bg-background" data-settings-page>
       {/* Header */}
       <header className="flex items-center gap-3 px-4 pt-4 pb-3">
         <button
-          onClick={() => navigate(-1)}
+          onClick={() => navigate("/home")}
           className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-95 transition-transform"
           style={{ background: "hsl(var(--muted))" }}
         >
@@ -62,7 +62,7 @@ export default function SettingsHome() {
         <h1 className="text-lg font-bold text-foreground">Settings</h1>
       </header>
 
-      <div className="flex-1 px-4 pb-24 space-y-6 mt-1">
+      <div className="flex-1 px-4 pb-24 space-y-5 mt-1">
         {SETTINGS_GROUPS.map((group) => (
           <section key={group.title} className="space-y-1.5">
             <h2 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground px-1 mb-1">{group.title}</h2>
@@ -73,6 +73,7 @@ export default function SettingsHome() {
               {group.items.map((item, idx) => (
                 <button
                   key={item.key}
+                  data-setting-row
                   onClick={() => navigate(item.path)}
                   className="w-full px-4 py-3.5 flex items-center gap-3 active:bg-muted/30 transition-colors text-left"
                   style={idx < group.items.length - 1 ? { borderBottom: "1px solid hsl(var(--border) / 0.08)" } : undefined}

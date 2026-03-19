@@ -38,12 +38,12 @@ export default function WalletHubPage() {
   };
 
   return (
-    <div className="min-h-[100dvh] flex flex-col bg-background">
+    <div className="min-h-[100dvh] flex flex-col bg-background" data-wallet-page>
       {/* Header */}
       <header className="flex items-center justify-between px-4 pt-4 pb-3">
         <div className="flex items-center gap-3">
           <button
-            onClick={() => navigate(-1)}
+            onClick={() => navigate("/home")}
             className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-95 transition-transform"
             style={{ background: "hsl(var(--muted))" }}
           >
@@ -66,13 +66,9 @@ export default function WalletHubPage() {
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           className="rounded-2xl p-5"
-          style={{
-            background: "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary) / 0.8))",
-          }}
+          style={{ background: "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary) / 0.8))" }}
         >
-          <p className="text-xs font-medium" style={{ color: "hsl(var(--primary-foreground) / 0.7)" }}>
-            Total Balance
-          </p>
+          <p className="text-xs font-medium" style={{ color: "hsl(var(--primary-foreground) / 0.7)" }}>Total Balance</p>
           <p className="text-3xl font-black mt-1" style={{ color: "hsl(var(--primary-foreground))" }}>
             {showBalance ? `${totalBalance.toFixed(2)} ${mainCurrency}` : "••••••"}
           </p>
@@ -89,10 +85,7 @@ export default function WalletHubPage() {
               onClick={a.action}
               className="flex flex-col items-center gap-1.5 active:scale-90 transition-transform"
             >
-              <div
-                className="w-12 h-12 rounded-2xl flex items-center justify-center"
-                style={{ background: "hsl(var(--primary) / 0.08)" }}
-              >
+              <div className="w-12 h-12 rounded-2xl flex items-center justify-center" style={{ background: "hsl(var(--primary) / 0.08)" }}>
                 <a.icon className="w-5 h-5" style={{ color: "hsl(var(--primary))" }} />
               </div>
               <span className="text-[11px] font-semibold text-foreground">{a.label}</span>
@@ -104,11 +97,7 @@ export default function WalletHubPage() {
         <section>
           <div className="flex items-center justify-between mb-2">
             <h2 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Accounts</h2>
-            <button
-              onClick={createDefaultWallet}
-              className="text-[11px] font-bold uppercase tracking-wider"
-              style={{ color: "hsl(var(--primary))" }}
-            >
+            <button onClick={createDefaultWallet} className="text-[11px] font-bold uppercase tracking-wider" style={{ color: "hsl(var(--primary))" }}>
               + Add
             </button>
           </div>
@@ -120,15 +109,13 @@ export default function WalletHubPage() {
           )}
 
           {!loading && rows.length === 0 && (
-            <div
-              className="rounded-2xl p-6 text-center"
-              style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border) / 0.12)" }}
-            >
+            <div className="rounded-2xl p-6 text-center" style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border) / 0.12)" }} data-empty-state>
               <CreditCard className="w-8 h-8 mx-auto text-muted-foreground/40 mb-2" />
               <p className="text-sm font-medium text-muted-foreground">No wallet yet</p>
               <p className="text-xs text-muted-foreground/60 mt-0.5">Create your first wallet to get started</p>
               <button
                 onClick={createDefaultWallet}
+                data-primary-cta
                 className="mt-3 px-4 py-2 rounded-xl text-xs font-bold"
                 style={{ background: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}
               >
@@ -139,38 +126,24 @@ export default function WalletHubPage() {
 
           <div className="space-y-2">
             {rows.map((row: any) => (
-              <div
-                key={row.id}
-                className="rounded-2xl p-4 flex items-center gap-3"
-                style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border) / 0.12)" }}
-              >
-                <div
-                  className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
-                  style={{ background: "hsl(var(--primary) / 0.08)" }}
-                >
+              <div key={row.id} className="rounded-2xl p-4 flex items-center gap-3" style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border) / 0.12)" }}>
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: "hsl(var(--primary) / 0.08)" }}>
                   <CreditCard className="w-4.5 h-4.5" style={{ color: "hsl(var(--primary))" }} />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold text-foreground">{row.currency} · {row.account_type}</p>
-                  <p className="text-xs text-muted-foreground">
-                    Available: {showBalance ? row.available_balance : "••••"}
-                  </p>
+                  <p className="text-xs text-muted-foreground">Available: {showBalance ? row.available_balance : "••••"}</p>
                 </div>
-                <p className="text-sm font-bold text-foreground">
-                  {showBalance ? row.balance : "••••"}
-                </p>
+                <p className="text-sm font-bold text-foreground">{showBalance ? row.balance : "••••"}</p>
               </div>
             ))}
           </div>
         </section>
 
-        {/* Recent transactions placeholder */}
+        {/* Recent transactions */}
         <section>
           <h2 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-2">Recent Activity</h2>
-          <div
-            className="rounded-2xl p-6 text-center"
-            style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border) / 0.12)" }}
-          >
+          <div className="rounded-2xl p-6 text-center" style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border) / 0.12)" }}>
             <p className="text-sm text-muted-foreground">No recent transactions</p>
           </div>
         </section>

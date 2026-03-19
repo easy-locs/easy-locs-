@@ -1,14 +1,13 @@
 /**
  * CheckoutPage — Review cart, select delivery/pickup, choose payment, place order.
  * Route: /checkout
- * Business model: prices exist internally (hidden on restaurant page, visible here).
  */
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "@/hooks/useCart";
 import { useAuth } from "@/contexts/AuthContext";
 import { createOrder, addOrderItem, updateOrderStatus } from "@/lib/orders/orders-core";
-import { ArrowLeft, MapPin, CreditCard, Wallet, Banknote, Loader2 } from "lucide-react";
+import { ArrowLeft, MapPin, CreditCard, Wallet, Banknote, Loader2, Plus, Minus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
@@ -18,7 +17,7 @@ type DeliveryMode = "delivery" | "pickup";
 export default function CheckoutPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { cart, total, itemCount, clearCart } = useCart();
+  const { cart, total, itemCount, clearCart, updateQuantity, removeItem } = useCart();
   const [mode, setMode] = useState<DeliveryMode>("delivery");
   const [payment, setPayment] = useState<PaymentMethod>("wallet");
   const [notes, setNotes] = useState("");
@@ -26,7 +25,7 @@ export default function CheckoutPage() {
 
   if (itemCount === 0) {
     return (
-      <div className="min-h-[100dvh] flex flex-col items-center justify-center gap-4 px-4" style={{ background: "hsl(var(--background))" }}>
+      <div className="min-h-[100dvh] flex flex-col items-center justify-center gap-4 px-4 bg-background" data-empty-state>
         <span className="text-5xl">🛒</span>
         <p className="text-sm font-medium text-muted-foreground">Your cart is empty</p>
         <Button variant="outline" onClick={() => navigate("/food")} className="rounded-2xl">Browse food</Button>
@@ -77,25 +76,25 @@ export default function CheckoutPage() {
   ];
 
   return (
-    <div className="min-h-[100dvh] flex flex-col" style={{ background: "hsl(var(--background))" }}>
+    <div className="min-h-[100dvh] flex flex-col bg-background" data-checkout-form>
       {/* Header */}
-      <div className="flex items-center gap-3 px-4 pt-safe pb-3" style={{ paddingTop: "max(env(safe-area-inset-top, 12px), 12px)" }}>
-        <button onClick={() => navigate(-1)} className="w-9 h-9 rounded-full flex items-center justify-center active:scale-90 transition-transform" style={{ background: "hsl(var(--muted))" }}>
+      <header className="flex items-center gap-3 px-4 pt-4 pb-3">
+        <button onClick={() => navigate(-1)} className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-95 transition-transform" style={{ background: "hsl(var(--muted))" }}>
           <ArrowLeft className="w-4.5 h-4.5" />
         </button>
-        <h1 className="text-lg font-black tracking-tight">Checkout</h1>
-      </div>
+        <h1 className="text-lg font-bold text-foreground">Checkout</h1>
+      </header>
 
-      <div className="flex-1 overflow-y-auto px-4 pb-32 space-y-5">
+      <div className="flex-1 overflow-y-auto px-4 pb-32 space-y-4">
         {/* Restaurant */}
-        <div className="rounded-2xl p-4" style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border) / 0.15)" }}>
-          <p className="text-xs text-muted-foreground font-medium">Restaurant</p>
-          <p className="text-sm font-bold mt-0.5">{cart.restaurantName}</p>
+        <div className="rounded-2xl p-4" style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border) / 0.12)" }}>
+          <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Restaurant</p>
+          <p className="text-sm font-bold mt-0.5 text-foreground">{cart.restaurantName}</p>
         </div>
 
         {/* Delivery mode */}
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-wider mb-2 text-muted-foreground">Delivery mode</p>
+        <section>
+          <p className="text-[11px] font-bold uppercase tracking-wider mb-2 text-muted-foreground">Delivery mode</p>
           <div className="flex gap-2">
             {(["delivery", "pickup"] as DeliveryMode[]).map((m) => (
               <button
@@ -111,100 +110,121 @@ export default function CheckoutPage() {
               </button>
             ))}
           </div>
-        </div>
+        </section>
 
         {/* Address */}
         {mode === "delivery" && (
-          <button className="w-full rounded-2xl p-4 flex items-center gap-3 active:scale-[0.98] transition-transform" style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border) / 0.15)" }}>
-            <MapPin className="w-5 h-5 text-primary shrink-0" />
+          <button
+            onClick={() => navigate("/settings/addresses")}
+            className="w-full rounded-2xl p-4 flex items-center gap-3 active:scale-[0.98] transition-transform"
+            style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border) / 0.12)" }}
+          >
+            <MapPin className="w-5 h-5 shrink-0" style={{ color: "hsl(var(--primary))" }} />
             <div className="flex-1 text-left">
-              <p className="text-xs text-muted-foreground font-medium">Deliver to</p>
-              <p className="text-sm font-semibold">Select address</p>
+              <p className="text-[11px] text-muted-foreground font-medium">Deliver to</p>
+              <p className="text-sm font-semibold text-foreground">Select address</p>
             </div>
           </button>
         )}
 
-        {/* Items summary */}
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-wider mb-2 text-muted-foreground">Items ({itemCount})</p>
-          <div className="rounded-2xl overflow-hidden" style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border) / 0.15)" }}>
+        {/* Items */}
+        <section>
+          <p className="text-[11px] font-bold uppercase tracking-wider mb-2 text-muted-foreground">Items ({itemCount})</p>
+          <div className="rounded-2xl overflow-hidden" style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border) / 0.12)" }}>
             {cart.items.map((item, idx) => (
               <div
                 key={item.id}
-                className="flex items-center justify-between py-3 px-4"
+                data-cart-item
+                className="flex items-center gap-3 py-3 px-4"
                 style={idx < cart.items.length - 1 ? { borderBottom: "1px solid hsl(var(--border) / 0.08)" } : undefined}
               >
-                <div className="flex items-center gap-2 min-w-0">
-                  <span className="text-xs font-bold text-muted-foreground w-5">{item.quantity}×</span>
-                  <span className="text-sm font-medium truncate">{item.name}</span>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-foreground truncate">{item.name}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">{(item.unitPrice * item.quantity).toFixed(2)}</p>
                 </div>
-                <span className="text-sm font-semibold text-foreground shrink-0">
-                  {(item.unitPrice * item.quantity).toFixed(2)}
-                </span>
+                <div className="flex items-center gap-1.5">
+                  <button
+                    onClick={() => item.quantity <= 1 ? removeItem(item.id) : updateQuantity(item.id, item.quantity - 1)}
+                    className="w-7 h-7 rounded-lg flex items-center justify-center active:scale-90 transition-transform"
+                    style={{ background: "hsl(var(--muted))" }}
+                  >
+                    {item.quantity <= 1 ? <Trash2 className="w-3 h-3 text-destructive" /> : <Minus className="w-3 h-3" />}
+                  </button>
+                  <span className="text-xs font-bold w-5 text-center">{item.quantity}</span>
+                  <button
+                    onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                    className="w-7 h-7 rounded-lg flex items-center justify-center active:scale-90 transition-transform"
+                    style={{ background: "hsl(var(--primary) / 0.1)" }}
+                  >
+                    <Plus className="w-3 h-3" style={{ color: "hsl(var(--primary))" }} />
+                  </button>
+                </div>
               </div>
             ))}
           </div>
-        </div>
+        </section>
 
-        {/* Order total */}
-        <div className="rounded-2xl p-4" style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border) / 0.15)" }}>
+        {/* Pricing summary */}
+        <div className="rounded-2xl p-4 space-y-2" style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border) / 0.12)" }}>
           <div className="flex justify-between text-sm">
             <span className="text-muted-foreground">Subtotal</span>
-            <span className="font-semibold">{total.toFixed(2)}</span>
+            <span className="font-semibold text-foreground">{total.toFixed(2)}</span>
           </div>
-          <div className="flex justify-between text-sm mt-1.5">
+          <div className="flex justify-between text-sm">
             <span className="text-muted-foreground">Delivery fee</span>
-            <span className="font-semibold">{deliveryFee === 0 ? "Free" : deliveryFee.toFixed(2)}</span>
+            <span className="font-semibold text-foreground">{deliveryFee === 0 ? "Free" : deliveryFee.toFixed(2)}</span>
           </div>
-          <div className="flex justify-between text-sm font-bold mt-3 pt-3" style={{ borderTop: "1px solid hsl(var(--border) / 0.15)" }}>
-            <span>Total</span>
-            <span>{grandTotal.toFixed(2)}</span>
+          <div className="flex justify-between text-sm font-bold pt-2" style={{ borderTop: "1px solid hsl(var(--border) / 0.12)" }}>
+            <span className="text-foreground">Total</span>
+            <span className="text-foreground">{grandTotal.toFixed(2)}</span>
           </div>
         </div>
 
         {/* Notes */}
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-wider mb-2 text-muted-foreground">Notes</p>
+        <section>
+          <p className="text-[11px] font-bold uppercase tracking-wider mb-2 text-muted-foreground">Notes</p>
           <textarea
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             placeholder="Special instructions..."
-            className="w-full rounded-2xl p-3 text-sm resize-none h-20"
-            style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border) / 0.15)" }}
+            className="w-full rounded-2xl p-3 text-sm resize-none h-20 bg-card"
+            style={{ border: "1px solid hsl(var(--border) / 0.12)" }}
           />
-        </div>
+        </section>
 
         {/* Payment method */}
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-wider mb-2 text-muted-foreground">Payment</p>
+        <section>
+          <p className="text-[11px] font-bold uppercase tracking-wider mb-2 text-muted-foreground">Payment</p>
           <div className="space-y-2">
             {paymentMethods.map((pm) => (
               <button
                 key={pm.key}
                 onClick={() => setPayment(pm.key)}
-                className="w-full flex items-center gap-3 p-3 rounded-2xl active:scale-[0.98] transition-all"
+                className="w-full flex items-center gap-3 p-3.5 rounded-2xl active:scale-[0.98] transition-all"
                 style={{
                   background: payment === pm.key ? "hsl(var(--primary) / 0.08)" : "hsl(var(--card))",
-                  border: `1px solid ${payment === pm.key ? "hsl(var(--primary) / 0.3)" : "hsl(var(--border) / 0.15)"}`,
+                  border: `1px solid ${payment === pm.key ? "hsl(var(--primary) / 0.3)" : "hsl(var(--border) / 0.12)"}`,
                 }}
               >
                 <pm.icon className="w-5 h-5" style={{ color: payment === pm.key ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))" }} />
-                <span className="text-sm font-semibold">{pm.label}</span>
+                <span className="text-sm font-semibold text-foreground">{pm.label}</span>
               </button>
             ))}
           </div>
-        </div>
+        </section>
       </div>
 
       {/* Bottom CTA */}
-      <div className="fixed bottom-0 left-0 right-0 px-4 pb-safe pt-3" style={{ background: "hsl(var(--background))", borderTop: "1px solid hsl(var(--border) / 0.1)", paddingBottom: "max(env(safe-area-inset-bottom, 16px), 16px)" }}>
+      <div className="fixed bottom-0 left-0 right-0 px-4 pt-3 z-40" style={{ background: "hsl(var(--background))", borderTop: "1px solid hsl(var(--border) / 0.08)", paddingBottom: "max(env(safe-area-inset-bottom, 16px), 16px)" }}>
         <Button
+          data-submit-order
+          data-primary-cta
           onClick={placeOrder}
           disabled={placing}
           className="w-full rounded-2xl h-13 text-sm font-bold"
         >
           {placing ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
-          Place Order
+          Place Order · {grandTotal.toFixed(2)}
         </Button>
       </div>
     </div>
