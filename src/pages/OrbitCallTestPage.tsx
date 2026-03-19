@@ -2,6 +2,7 @@
  * OrbitCallTestPage — Full WebRTC call test with realtime signaling.
  */
 import { useEffect, useRef, useState } from "react";
+import { debugLog } from "@/lib/debug/runtime-debug-bus";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCallSignals } from "@/hooks/useCallSignals";
 import { useIncomingCalls } from "@/hooks/useIncomingCalls";
@@ -12,7 +13,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { CallSessionRecord, CallSignalRecord, CallType } from "@/lib/calls/call-types";
 
 export default function OrbitCallTestPage() {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const [peerUserId, setPeerUserId] = useState("");
   const [callType, setCallType] = useState<CallType>("audio");
   const [currentSession, setCurrentSession] = useState<CallSessionRecord | null>(null);
@@ -168,10 +169,27 @@ export default function OrbitCallTestPage() {
   };
 
   useEffect(() => {
+    debugLog.info("call", "call_test_page_loaded", "OrbitCallTestPage mounted");
     return () => {
       serviceRef.current.getManager()?.destroy();
     };
   }, []);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <p className="text-sm text-muted-foreground">Loading call test...</p>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <p className="text-sm text-destructive">Authentication required to test calls.</p>
+      </div>
+    );
+  }
 
   const showIncomingModal =
     !!openIncoming &&
