@@ -1,0 +1,73 @@
+/**
+ * Local Crypto — AES-256-GCM encrypt/decrypt for client-side E2EE.
+ */
+
+export interface EncryptedPayload {
+  ciphertext: string;
+  iv: string;
+  algorithm: "AES-GCM";
+}
+
+function toBase64(buf: ArrayBuffer | Uint8Array): string {
+  const bytes = buf instanceof Uint8Array ? buf : new Uint8Array(buf);
+  let binary = "";
+  for (const b of bytes) binary += String.fromCharCode(b);
+  return btoa(binary);
+}
+
+function fromBase64(b64: string): Uint8Array {
+  const binary = atob(b64);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+  return bytes;
+}
+
+export async function generateAesKey(): Promise<CryptoKey> {
+  return crypto.subtle.generateKey(
+    { name: "AES-GCM", length: 256 },
+    true,
+    ["encrypt", "decrypt"]
+  );
+}
+
+export async function exportRawKey(key: CryptoKey): Promise<string> {
+  const raw = await crypto.subtle.exportKey("raw", key);
+  return toBase64(raw);
+}
+
+export async function importRawKey(rawBase64: string): Promise<CryptoKey> {
+  const raw = fromBase64(rawBase64);
+  return crypto.subtle.importKey(
+    "raw",
+    raw.buffer as ArrayBuffer,
+    { name: "AES-GCM" },
+    false,
+    ["encrypt", "decrypt"]
+  );
+}
+
+export async function encryptText(text: string, key: CryptoKey): Promise<EncryptedPayload> {
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const encoded = new TextEncoder().encode(text);
+  const ciphertext = await crypto.subtle.encrypt(
+    { name: "AES-GCM", iv: iv.buffer as ArrayBuffer },
+    key,
+    encoded
+  );
+  return {
+    ciphertext: toBase64(ciphertext),
+    iv: toBase64(iv),
+    algorithm: "AES-GCM",
+  };
+}
+
+export async function decryptText(payload: EncryptedPayload, key: CryptoKey): Promise<string> {
+  const iv = fromBase64(payload.iv);
+  const ciphertext = fromBase64(payload.ciphertext);
+  const plain = await crypto.subtle.decrypt(
+    { name: "AES-GCM", iv: iv.buffer as ArrayBuffer },
+    key,
+    ciphertext.buffer as ArrayBuffer
+  );
+  return new TextDecoder().decode(plain);
+}
