@@ -3855,6 +3855,99 @@ export type Database = {
         }
         Relationships: []
       }
+      dispatch_jobs_v2: {
+        Row: {
+          ai_dispatch_metadata: Json
+          assigned_at: string | null
+          assigned_driver_id: string | null
+          assigned_driver_wallet_id: string | null
+          city: string | null
+          country_code: string
+          created_at: string
+          currency: string
+          customer_user_id: string | null
+          delivered_at: string | null
+          delivery_fee: number
+          dispatch_status: string
+          distance_km: number | null
+          dropoff_lat: number | null
+          dropoff_lng: number | null
+          estimated_duration_min: number | null
+          expires_at: string | null
+          id: string
+          merchant_profile_id: string
+          order_id: string
+          picked_up_at: string | null
+          pickup_lat: number | null
+          pickup_lng: number | null
+          pricing_snapshot: Json
+          ranking_snapshot: Json
+          retry_count: number
+          updated_at: string
+          validated_at: string | null
+        }
+        Insert: {
+          ai_dispatch_metadata?: Json
+          assigned_at?: string | null
+          assigned_driver_id?: string | null
+          assigned_driver_wallet_id?: string | null
+          city?: string | null
+          country_code?: string
+          created_at?: string
+          currency?: string
+          customer_user_id?: string | null
+          delivered_at?: string | null
+          delivery_fee?: number
+          dispatch_status?: string
+          distance_km?: number | null
+          dropoff_lat?: number | null
+          dropoff_lng?: number | null
+          estimated_duration_min?: number | null
+          expires_at?: string | null
+          id?: string
+          merchant_profile_id: string
+          order_id: string
+          picked_up_at?: string | null
+          pickup_lat?: number | null
+          pickup_lng?: number | null
+          pricing_snapshot?: Json
+          ranking_snapshot?: Json
+          retry_count?: number
+          updated_at?: string
+          validated_at?: string | null
+        }
+        Update: {
+          ai_dispatch_metadata?: Json
+          assigned_at?: string | null
+          assigned_driver_id?: string | null
+          assigned_driver_wallet_id?: string | null
+          city?: string | null
+          country_code?: string
+          created_at?: string
+          currency?: string
+          customer_user_id?: string | null
+          delivered_at?: string | null
+          delivery_fee?: number
+          dispatch_status?: string
+          distance_km?: number | null
+          dropoff_lat?: number | null
+          dropoff_lng?: number | null
+          estimated_duration_min?: number | null
+          expires_at?: string | null
+          id?: string
+          merchant_profile_id?: string
+          order_id?: string
+          picked_up_at?: string | null
+          pickup_lat?: number | null
+          pickup_lng?: number | null
+          pricing_snapshot?: Json
+          ranking_snapshot?: Json
+          retry_count?: number
+          updated_at?: string
+          validated_at?: string | null
+        }
+        Relationships: []
+      }
       dispatch_offers: {
         Row: {
           created_at: string
@@ -4204,6 +4297,56 @@ export type Database = {
         }
         Relationships: []
       }
+      driver_live_locations: {
+        Row: {
+          accuracy_m: number | null
+          created_at: string
+          dispatch_job_id: string | null
+          driver_profile_id: string
+          heading: number | null
+          id: string
+          lat: number
+          lng: number
+          order_id: string | null
+          recorded_at: string
+          speed_kmh: number | null
+        }
+        Insert: {
+          accuracy_m?: number | null
+          created_at?: string
+          dispatch_job_id?: string | null
+          driver_profile_id: string
+          heading?: number | null
+          id?: string
+          lat: number
+          lng: number
+          order_id?: string | null
+          recorded_at?: string
+          speed_kmh?: number | null
+        }
+        Update: {
+          accuracy_m?: number | null
+          created_at?: string
+          dispatch_job_id?: string | null
+          driver_profile_id?: string
+          heading?: number | null
+          id?: string
+          lat?: number
+          lng?: number
+          order_id?: string | null
+          recorded_at?: string
+          speed_kmh?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "driver_live_locations_dispatch_job_id_fkey"
+            columns: ["dispatch_job_id"]
+            isOneToOne: false
+            referencedRelation: "dispatch_jobs_v2"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       driver_locations: {
         Row: {
           accuracy_m: number | null
@@ -4244,6 +4387,89 @@ export type Database = {
             columns: ["driver_id"]
             isOneToOne: false
             referencedRelation: "driver_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      driver_metrics: {
+        Row: {
+          acceptance_rate: number
+          active_jobs_count: number
+          avg_eta_score: number
+          cancelled_jobs_count: number
+          completed_jobs_count: number
+          driver_profile_id: string
+          id: string
+          rating: number
+          reliability_score: number
+          updated_at: string
+        }
+        Insert: {
+          acceptance_rate?: number
+          active_jobs_count?: number
+          avg_eta_score?: number
+          cancelled_jobs_count?: number
+          completed_jobs_count?: number
+          driver_profile_id: string
+          id?: string
+          rating?: number
+          reliability_score?: number
+          updated_at?: string
+        }
+        Update: {
+          acceptance_rate?: number
+          active_jobs_count?: number
+          avg_eta_score?: number
+          cancelled_jobs_count?: number
+          completed_jobs_count?: number
+          driver_profile_id?: string
+          id?: string
+          rating?: number
+          reliability_score?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      driver_mission_offers: {
+        Row: {
+          created_at: string
+          dispatch_job_id: string
+          driver_profile_id: string
+          expires_at: string | null
+          id: string
+          offer_status: string
+          ranking_reason: Json
+          ranking_score: number | null
+          responded_at: string | null
+        }
+        Insert: {
+          created_at?: string
+          dispatch_job_id: string
+          driver_profile_id: string
+          expires_at?: string | null
+          id?: string
+          offer_status?: string
+          ranking_reason?: Json
+          ranking_score?: number | null
+          responded_at?: string | null
+        }
+        Update: {
+          created_at?: string
+          dispatch_job_id?: string
+          driver_profile_id?: string
+          expires_at?: string | null
+          id?: string
+          offer_status?: string
+          ranking_reason?: Json
+          ranking_score?: number | null
+          responded_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "driver_mission_offers_dispatch_job_id_fkey"
+            columns: ["dispatch_job_id"]
+            isOneToOne: false
+            referencedRelation: "dispatch_jobs_v2"
             referencedColumns: ["id"]
           },
         ]
@@ -8657,6 +8883,10 @@ export type Database = {
           customer_user_id: string
           customer_wallet_id: string | null
           delivery_fee: number | null
+          delivery_status: string | null
+          delivery_validated_at: string | null
+          delivery_validation_method: string | null
+          dispatch_job_id: string | null
           driver_amount: number | null
           driver_wallet_id: string | null
           dropoff_address_id: string | null
@@ -8690,6 +8920,10 @@ export type Database = {
           customer_user_id: string
           customer_wallet_id?: string | null
           delivery_fee?: number | null
+          delivery_status?: string | null
+          delivery_validated_at?: string | null
+          delivery_validation_method?: string | null
+          dispatch_job_id?: string | null
           driver_amount?: number | null
           driver_wallet_id?: string | null
           dropoff_address_id?: string | null
@@ -8723,6 +8957,10 @@ export type Database = {
           customer_user_id?: string
           customer_wallet_id?: string | null
           delivery_fee?: number | null
+          delivery_status?: string | null
+          delivery_validated_at?: string | null
+          delivery_validation_method?: string | null
+          dispatch_job_id?: string | null
           driver_amount?: number | null
           driver_wallet_id?: string | null
           dropoff_address_id?: string | null
