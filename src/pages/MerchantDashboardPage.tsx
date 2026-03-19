@@ -265,6 +265,9 @@ export default function MerchantDashboardPage() {
           </Card>
         )}
 
+        {/* ═══ Merchant Operations Hub ═══ */}
+        <MerchantOpsHub profileId={profileId} />
+
         <Tabs defaultValue="details" className="space-y-4">
           <TabsList className="grid grid-cols-4 w-full">
             <TabsTrigger value="details" className="text-xs"><Store className="h-3.5 w-3.5 mr-1" /> Details</TabsTrigger>
