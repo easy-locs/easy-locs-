@@ -129,7 +129,7 @@ export async function ensureRole(userId: string, role: UniversalRole): Promise<v
 
 /** Get trust level that follows the user across all services */
 export async function getUniversalTrustLevel(userId: string): Promise<number> {
-  const { data } = await (supabase as any)
+  const { data } = await supabase
     .from("universal_reputation_scores")
     .select("overall_score")
     .eq("user_id", userId)
