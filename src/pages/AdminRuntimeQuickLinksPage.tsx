@@ -6,6 +6,7 @@ const LINKS = [
   { label: "QR Generate", to: routes.qrGenerate() },
   { label: "Route Audit", to: routes.routeAudit() },
   { label: "Runtime Audit", to: "/admin/runtime-audit" },
+  { label: "Master Debug", to: "/admin/master-debug" },
   { label: "Restaurant Seeder", to: routes.restaurantSeedTest() },
   { label: "Dispatch Diagnostics", to: routes.dispatchDiagnostics() },
   { label: "Automations", to: routes.automations() },
