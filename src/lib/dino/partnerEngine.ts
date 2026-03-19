@@ -160,7 +160,7 @@ export async function runPartnerEngine(): Promise<{
   }
 
   // 3) Record learning
-  await supabase.from("dino_learning_events").insert([{
+  const { error: learnErr } = await supabase.from("dino_learning_events").insert([{
     event_type: "v18_partner_cycle",
     entity_id: "system",
     entity_type: "partner",
@@ -169,6 +169,9 @@ export async function runPartnerEngine(): Promise<{
     new_value: rewarded,
     previous_value: 0,
   }]);
+  if (learnErr) {
+    console.error("[PartnerEngine] learning event insert failed:", learnErr);
+  }
 
   return { rewarded, categoriesBoosted };
 }
