@@ -2,18 +2,15 @@
  * Call Guards — Browser capability checks before starting calls.
  */
 
-export function assertMediaSupport() {
-  if (typeof navigator === "undefined" || !navigator.mediaDevices?.getUserMedia) {
-    throw new Error("Media devices are not supported on this browser");
+export async function assertMediaSupport(video = false) {
+  if (!window.RTCPeerConnection) {
+    throw new Error("WebRTC unsupported");
   }
-  if (typeof RTCPeerConnection === "undefined") {
-    throw new Error("WebRTC is not supported on this browser");
+  if (!navigator.mediaDevices?.getUserMedia) {
+    throw new Error("Media devices unavailable");
   }
-}
-
-/** Quick check that media devices are available before call UI */
-export function assertCallReady() {
-  if (!navigator.mediaDevices) {
-    throw new Error("Media devices not available");
-  }
+  await navigator.mediaDevices.getUserMedia({
+    audio: true,
+    video,
+  });
 }
