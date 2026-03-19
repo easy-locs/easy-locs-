@@ -19,6 +19,7 @@ const SECTIONS = [
 
 export default function SettingsHome() {
   const navigate = useNavigate();
+  useDinoPageAudit({ actorType: "user", pageKey: "settings_home" });
 
   return (
     <div className="min-h-[100dvh] flex flex-col" style={{ background: "hsl(var(--background))" }}>

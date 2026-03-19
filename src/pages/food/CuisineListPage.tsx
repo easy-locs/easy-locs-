@@ -12,6 +12,7 @@ import { UtensilsCrossed } from "lucide-react";
 
 export default function CuisineListPage() {
   const { type, cuisine } = useParams<{ type: string; cuisine: string }>();
+  useDinoPageAudit({ actorType: "anonymous", pageKey: "cuisine_list" });
 
   const { data: restaurants = [], isLoading } = useQuery({
     queryKey: ["cuisine-restaurants", cuisine],

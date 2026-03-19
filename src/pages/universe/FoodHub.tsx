@@ -31,6 +31,7 @@ export default function FoodHub() {
   const [search, setSearch] = useState("");
   const [activeFilter, setActiveFilter] = useState("All");
   const navigate = useNavigate();
+  useDinoPageAudit({ actorType: "anonymous", pageKey: "food_home" });
 
   const { data: restaurants = [] } = useQuery({
     queryKey: ["food-hub-restaurants"],

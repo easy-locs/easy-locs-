@@ -9,6 +9,7 @@ import RadarView from "@/components/radar/RadarView";
 
 export default function GlobalRadarPage() {
   const navigate = useNavigate();
+  useDinoPageAudit({ actorType: "anonymous", pageKey: "global_radar" });
 
   return (
     <div className="h-[100dvh] flex flex-col" style={{ background: "hsl(var(--background))" }}>

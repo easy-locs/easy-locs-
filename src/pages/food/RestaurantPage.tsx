@@ -17,6 +17,7 @@ export default function RestaurantPage() {
   const { restaurantId } = useParams<{ restaurantId: string }>();
   const navigate = useNavigate();
   const { addItem, itemCount } = useCart();
+  useDinoPageAudit({ actorType: "anonymous", pageKey: "restaurant_page" });
 
   const { data: shop, isLoading } = useQuery({
     queryKey: ["restaurant-detail", restaurantId],
