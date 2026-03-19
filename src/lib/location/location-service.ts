@@ -16,8 +16,30 @@ function assertGeolocationSupport() {
   }
 }
 
+function isSecureContext(): boolean {
+  if (typeof window === "undefined") return false;
+  return window.isSecureContext || window.location.protocol === "https:";
+}
+
+export async function checkGeolocationPermission(): Promise<"granted" | "denied" | "prompt"> {
+  if (!navigator.permissions) return "prompt";
+  try {
+    const status = await navigator.permissions.query({ name: "geolocation" as PermissionName });
+    return status.state as "granted" | "denied" | "prompt";
+  } catch {
+    return "prompt";
+  }
+}
+
 export function getCurrentPosition(): Promise<GeolocationPosition> {
   assertGeolocationSupport();
+
+  if (!isSecureContext()) {
+    const err = new Error("Geolocation requires a secure context (HTTPS)");
+    debugLog.error("geo", "geo_insecure_context", err.message);
+    return Promise.reject(err);
+  }
+
   debugLog.info("geo", "geo_request_start", "Requesting geolocation");
 
   return new Promise((resolve, reject) => {
@@ -37,13 +59,21 @@ export function getCurrentPosition(): Promise<GeolocationPosition> {
       {
         enableHighAccuracy: true,
         timeout: 10000,
-        maximumAge: 3000,
+        maximumAge: 0,
       }
     );
   });
 }
 
 export async function readLiveLocation(): Promise<LiveLocation> {
+  // Pre-check permission
+  const perm = await checkGeolocationPermission();
+  if (perm === "denied") {
+    const err = new Error("Location permission denied. Enable in browser settings.");
+    debugLog.error("geo", "geo_permission_denied", err.message);
+    throw err;
+  }
+
   try {
     const pos = await getCurrentPosition();
     return {
