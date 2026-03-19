@@ -3,6 +3,7 @@
  * Route: /map or /super-map
  */
 import { useNavigate } from "react-router-dom";
+import { useDinoPageAudit } from "@/hooks/useDinoPageAudit";
 import { ArrowLeft, Radar } from "lucide-react";
 import RadarView from "@/components/radar/RadarView";
 
