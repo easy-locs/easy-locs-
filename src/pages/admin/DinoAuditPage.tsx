@@ -1,7 +1,7 @@
 /**
  * DINO Audit Dashboard — Internal admin page for DINO engine results.
  */
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { runDinoAudit, type DinoReport } from "@/lib/dino/dinoEngine";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
