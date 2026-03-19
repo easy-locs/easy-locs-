@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatMoney } from "@/lib/currency";
 import { MapPin, Navigation, Package, CheckCircle, Loader2, AlertTriangle, Clock } from "lucide-react";
+import LocationPermissionGate from "@/components/location/LocationPermissionGate";
 import { toast } from "sonner";
 
 const MILESTONES: { key: DeliveryMilestone; label: string; icon: any }[] = [
