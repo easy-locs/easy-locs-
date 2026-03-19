@@ -80,9 +80,13 @@ export function removeDuplicates(listings: NormalizedListing[]): NormalizedListi
 // 3) IMPORT INTO SYSTEM
 // =============================
 
+/** Minimum quality score to allow import */
+const MIN_QUALITY_SCORE = 60;
+
 export async function importListings(listings: NormalizedListing[]): Promise<number> {
   let imported = 0;
   for (const l of listings) {
+    if (l.qualityScore < MIN_QUALITY_SCORE) continue; // quality gate
     const { error } = await supabase.from("dino_draft_profiles").insert({
       name: l.name,
       category: l.category,
