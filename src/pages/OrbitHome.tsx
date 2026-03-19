@@ -157,7 +157,7 @@ export default function OrbitHome() {
     queryFn: async () => {
       if (!user?.id) return [];
       const { data } = await supabase
-        .from("conversation_threads")
+        .from("conversation_threads" as any)
         .select("id, title, last_message_preview, updated_at, unread_count")
         .or(`participant_a.eq.${user.id},participant_b.eq.${user.id}`)
         .order("updated_at", { ascending: false })
