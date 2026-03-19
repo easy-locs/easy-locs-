@@ -20,7 +20,6 @@ export default function CuisineListPage() {
         .select("id, name, slug, city, vertical, subcategory, description, latitude, longitude, rating")
         .eq("active", true)
         .limit(30);
-      // Filter by cuisine tag if possible
       const all = (data || []) as any[];
       if (!cuisine) return all;
       const filtered = all.filter((r: any) =>
@@ -30,7 +29,8 @@ export default function CuisineListPage() {
       );
       return filtered.length > 0 ? filtered : all.slice(0, 10);
     },
-    staleTime: 60_000,
+    staleTime: 120_000,
+    placeholderData: (prev: any) => prev,
   });
 
   const label = cuisine ? cuisine.charAt(0).toUpperCase() + cuisine.slice(1) : "All";
