@@ -1,0 +1,326 @@
+/**
+ * wallet-ops — Server-side wallet operations edge function.
+ * Handles: set_pin, verify_pin, authorize, capture, settle, reverse.
+ * All sensitive mutations happen here with service_role — never client-side.
+ */
+import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { createClient } from "npm:@supabase/supabase-js@2.57.2";
+
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
+};
+
+const MAX_PIN_ATTEMPTS = 5;
+const LOCKOUT_MINUTES = 15;
+
+// ── Crypto: HMAC-SHA256 with salt ─────────────────────────
+async function generateSalt(): Promise<string> {
+  const buf = new Uint8Array(32);
+  crypto.getRandomValues(buf);
+  return Array.from(buf).map(b => b.toString(16).padStart(2, "0")).join("");
+}
+
+async function hmacHash(pin: string, salt: string): Promise<string> {
+  const enc = new TextEncoder();
+  const key = await crypto.subtle.importKey("raw", enc.encode(salt), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+  const sig = await crypto.subtle.sign("HMAC", key, enc.encode(pin));
+  return `${salt}:${Array.from(new Uint8Array(sig)).map(b => b.toString(16).padStart(2, "0")).join("")}`;
+}
+
+async function verifyHash(pin: string, stored: string): Promise<boolean> {
+  const [salt] = stored.split(":");
+  if (!salt) return false;
+  const computed = await hmacHash(pin, salt);
+  if (computed.length !== stored.length) return false;
+  let diff = 0;
+  for (let i = 0; i < computed.length; i++) diff |= computed.charCodeAt(i) ^ stored.charCodeAt(i);
+  return diff === 0;
+}
+
+// ── Helpers ───────────────────────────────────────────────
+function ok(data: unknown) {
+  return new Response(JSON.stringify(data), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+}
+function err(msg: string, status = 400) {
+  return new Response(JSON.stringify({ error: msg }), { status, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+}
+
+async function audit(sb: any, userId: string, action: string, meta: Record<string, unknown> = {}) {
+  await sb.from("audit_logs").insert({ user_id: userId, action: `wallet_${action}`, metadata_json: { ...meta, ts: new Date().toISOString() } });
+}
+
+serve(async (req) => {
+  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+
+  const sb = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, { auth: { persistSession: false } });
+
+  try {
+    // Auth
+    const token = req.headers.get("Authorization")?.replace("Bearer ", "");
+    if (!token) return err("Unauthorized", 401);
+    const { data: ud, error: ue } = await sb.auth.getUser(token);
+    if (ue || !ud.user) return err("Not authenticated", 401);
+    const userId = ud.user.id;
+
+    const body = await req.json();
+    const { action } = body;
+
+    // ═══════════════════════════════════════════════════════
+    // SET PIN
+    // ═══════════════════════════════════════════════════════
+    if (action === "set_pin") {
+      const { wallet_account_id, pin } = body;
+      if (!pin || !/^\d{6}$/.test(pin)) return err("PIN must be exactly 6 digits");
+      if (!wallet_account_id) return err("wallet_account_id required");
+
+      // Verify ownership
+      const { data: w } = await sb.from("wallet_accounts").select("owner_user_id").eq("id", wallet_account_id).single();
+      if (!w || w.owner_user_id !== userId) return err("Not your wallet", 403);
+
+      const salt = await generateSalt();
+      const hash = await hmacHash(pin, salt);
+
+      await sb.from("wallet_pins").upsert({
+        wallet_account_id,
+        pin_hash: hash,
+        failed_attempts: 0,
+        locked_until: null,
+        updated_at: new Date().toISOString(),
+      }, { onConflict: "wallet_account_id" });
+
+      await audit(sb, userId, "pin_set", { wallet_account_id });
+      return ok({ success: true });
+    }
+
+    // ═══════════════════════════════════════════════════════
+    // VERIFY PIN
+    // ═══════════════════════════════════════════════════════
+    if (action === "verify_pin") {
+      const { wallet_account_id, pin } = body;
+      if (!pin || !wallet_account_id) return err("wallet_account_id and pin required");
+
+      const { data: p } = await sb.from("wallet_pins").select("*").eq("wallet_account_id", wallet_account_id).single();
+      if (!p) return err("No PIN set");
+
+      // Lockout check
+      if (p.locked_until && new Date(p.locked_until) > new Date()) {
+        const mins = Math.ceil((new Date(p.locked_until).getTime() - Date.now()) / 60000);
+        await audit(sb, userId, "pin_attempt_locked", { wallet_account_id, mins_remaining: mins });
+        return ok({ verified: false, locked: true, locked_until: p.locked_until, error: `Locked for ${mins} min` });
+      }
+
+      const matches = await verifyHash(pin, p.pin_hash);
+      if (matches) {
+        await sb.from("wallet_pins").update({ failed_attempts: 0, locked_until: null, last_verified_at: new Date().toISOString(), updated_at: new Date().toISOString() }).eq("wallet_account_id", wallet_account_id);
+        await audit(sb, userId, "pin_verified", { wallet_account_id });
+        return ok({ verified: true });
+      }
+
+      const newAttempts = (p.failed_attempts ?? 0) + 1;
+      const lockUntil = newAttempts >= MAX_PIN_ATTEMPTS ? new Date(Date.now() + LOCKOUT_MINUTES * 60000).toISOString() : null;
+      await sb.from("wallet_pins").update({ failed_attempts: newAttempts, locked_until: lockUntil, updated_at: new Date().toISOString() }).eq("wallet_account_id", wallet_account_id);
+      await audit(sb, userId, "pin_failed", { wallet_account_id, attempts: newAttempts, locked: !!lockUntil });
+
+      if (lockUntil) return ok({ verified: false, locked: true, locked_until: lockUntil, error: `Locked for ${LOCKOUT_MINUTES} min` });
+      return ok({ verified: false, attempts_remaining: MAX_PIN_ATTEMPTS - newAttempts, error: `Wrong PIN (${MAX_PIN_ATTEMPTS - newAttempts} left)` });
+    }
+
+    // ═══════════════════════════════════════════════════════
+    // AUTHORIZE PAYMENT
+    // ═══════════════════════════════════════════════════════
+    if (action === "authorize") {
+      const { order_id, customer_wallet_id, amount, pin } = body;
+      if (!order_id || !customer_wallet_id || !amount || !pin) return err("Missing required fields");
+
+      // Verify PIN first
+      const { data: p } = await sb.from("wallet_pins").select("*").eq("wallet_account_id", customer_wallet_id).single();
+      if (!p) return err("No PIN set on wallet");
+      if (p.locked_until && new Date(p.locked_until) > new Date()) return err("Wallet locked");
+
+      const pinOk = await verifyHash(pin, p.pin_hash);
+      if (!pinOk) {
+        const na = (p.failed_attempts ?? 0) + 1;
+        const lock = na >= MAX_PIN_ATTEMPTS ? new Date(Date.now() + LOCKOUT_MINUTES * 60000).toISOString() : null;
+        await sb.from("wallet_pins").update({ failed_attempts: na, locked_until: lock, updated_at: new Date().toISOString() }).eq("wallet_account_id", customer_wallet_id);
+        await audit(sb, userId, "authorize_pin_failed", { order_id, attempts: na });
+        return err("Invalid PIN");
+      }
+
+      // Reset PIN failures on success
+      await sb.from("wallet_pins").update({ failed_attempts: 0, locked_until: null, last_verified_at: new Date().toISOString() }).eq("wallet_account_id", customer_wallet_id);
+
+      // Idempotency: check if already authorized
+      const { data: existingOrder } = await sb.from("orders").select("wallet_status").eq("id", order_id).single();
+      if (existingOrder?.wallet_status === "authorized" || existingOrder?.wallet_status === "captured" || existingOrder?.wallet_status === "settled") {
+        return ok({ already_processed: true, wallet_status: existingOrder.wallet_status });
+      }
+
+      // Check balance
+      const { data: w } = await sb.from("wallet_accounts").select("balance_cash, balance_locked").eq("id", customer_wallet_id).single();
+      if (!w || Number(w.balance_cash) < amount) return err("Insufficient balance");
+
+      // ATOMIC: lock funds + create transaction + create ledger + update order
+      const newCash = Number(w.balance_cash) - amount;
+      const newLocked = Number(w.balance_locked) + amount;
+
+      await sb.from("wallet_accounts").update({ balance_cash: newCash, balance_locked: newLocked, updated_at: new Date().toISOString() }).eq("id", customer_wallet_id);
+
+      const { data: tx } = await sb.from("wallet_transactions").insert({
+        transaction_type: "order_authorization",
+        source_wallet_id: customer_wallet_id,
+        order_id,
+        status: "authorized",
+        amount,
+        currency: "AED",
+        metadata: { user_id: userId },
+      }).select("id").single();
+
+      await sb.from("wallet_ledger_entries").insert({
+        transaction_id: tx?.id,
+        wallet_account_id: customer_wallet_id,
+        entry_type: "lock",
+        amount,
+        currency: "AED",
+        balance_before: Number(w.balance_cash),
+        balance_after: newCash,
+        value_type: "cash",
+      });
+
+      await sb.from("orders").update({
+        payment_status: "authorized",
+        wallet_status: "authorized",
+        payment_mode: "wallet_internal",
+        customer_wallet_id,
+      }).eq("id", order_id);
+
+      await audit(sb, userId, "payment_authorized", { order_id, amount, transaction_id: tx?.id });
+      return ok({ success: true, transaction_id: tx?.id });
+    }
+
+    // ═══════════════════════════════════════════════════════
+    // CAPTURE PAYMENT
+    // ═══════════════════════════════════════════════════════
+    if (action === "capture") {
+      const { order_id } = body;
+      if (!order_id) return err("order_id required");
+
+      const { data: o } = await sb.from("orders").select("wallet_status, payment_status").eq("id", order_id).single();
+      if (!o) return err("Order not found");
+      if (o.wallet_status !== "authorized") return err(`Cannot capture from status: ${o.wallet_status}`);
+
+      await sb.from("orders").update({ payment_status: "held_in_escrow", wallet_status: "captured" }).eq("id", order_id);
+      await sb.from("wallet_transactions").update({ status: "captured" }).eq("order_id", order_id).eq("transaction_type", "order_authorization");
+
+      await audit(sb, userId, "payment_captured", { order_id });
+      return ok({ success: true });
+    }
+
+    // ═══════════════════════════════════════════════════════
+    // SETTLE PAYMENT
+    // ═══════════════════════════════════════════════════════
+    if (action === "settle") {
+      const { order_id } = body;
+      if (!order_id) return err("order_id required");
+
+      const { data: o } = await sb.from("orders").select("wallet_status, customer_wallet_id, gross_amount").eq("id", order_id).single();
+      if (!o) return err("Order not found");
+      if (o.wallet_status !== "captured" && o.wallet_status !== "authorized") return err(`Cannot settle from status: ${o.wallet_status}`);
+
+      // Idempotency
+      if (o.wallet_status === "settled") return ok({ already_settled: true });
+
+      // Get splits
+      const { data: splits } = await sb.from("wallet_order_splits").select("*").eq("order_id", order_id).eq("split_status", "pending");
+      if (!splits?.length) return err("No pending splits");
+
+      // Credit each party
+      for (const split of splits) {
+        if (split.net_amount <= 0) continue;
+        const { data: dw } = await sb.from("wallet_accounts").select("balance_cash").eq("id", split.wallet_account_id).single();
+        if (!dw) continue;
+
+        await sb.from("wallet_accounts").update({
+          balance_cash: Number(dw.balance_cash) + split.net_amount,
+          updated_at: new Date().toISOString(),
+        }).eq("id", split.wallet_account_id);
+
+        await sb.from("wallet_ledger_entries").insert({
+          wallet_account_id: split.wallet_account_id,
+          entry_type: "credit",
+          amount: split.net_amount,
+          currency: "AED",
+          balance_before: Number(dw.balance_cash),
+          balance_after: Number(dw.balance_cash) + split.net_amount,
+          value_type: "cash",
+        });
+
+        await sb.from("wallet_order_splits").update({ split_status: "settled", updated_at: new Date().toISOString() }).eq("id", split.id);
+      }
+
+      // Unlock customer balance_locked
+      if (o.customer_wallet_id) {
+        const { data: cw } = await sb.from("wallet_accounts").select("balance_locked").eq("id", o.customer_wallet_id).single();
+        if (cw) {
+          await sb.from("wallet_accounts").update({
+            balance_locked: Math.max(0, Number(cw.balance_locked) - Number(o.gross_amount)),
+            updated_at: new Date().toISOString(),
+          }).eq("id", o.customer_wallet_id);
+        }
+      }
+
+      await sb.from("orders").update({ payment_status: "settled", wallet_status: "settled", settlement_status: "settled" }).eq("id", order_id);
+      await sb.from("wallet_transactions").update({ status: "settled" }).eq("order_id", order_id);
+
+      await audit(sb, userId, "payment_settled", { order_id, splits_count: splits.length });
+      return ok({ success: true });
+    }
+
+    // ═══════════════════════════════════════════════════════
+    // REVERSE PAYMENT
+    // ═══════════════════════════════════════════════════════
+    if (action === "reverse") {
+      const { order_id } = body;
+      if (!order_id) return err("order_id required");
+
+      const { data: o } = await sb.from("orders").select("customer_wallet_id, gross_amount, wallet_status").eq("id", order_id).single();
+      if (!o) return err("Order not found");
+      if (o.wallet_status === "reversed") return ok({ already_reversed: true });
+      if (o.wallet_status === "settled") return err("Cannot reverse settled order — use refund");
+
+      // Refund customer
+      if (o.customer_wallet_id) {
+        const { data: cw } = await sb.from("wallet_accounts").select("balance_cash, balance_locked").eq("id", o.customer_wallet_id).single();
+        if (cw) {
+          await sb.from("wallet_accounts").update({
+            balance_cash: Number(cw.balance_cash) + Number(o.gross_amount),
+            balance_locked: Math.max(0, Number(cw.balance_locked) - Number(o.gross_amount)),
+            updated_at: new Date().toISOString(),
+          }).eq("id", o.customer_wallet_id);
+
+          await sb.from("wallet_ledger_entries").insert({
+            wallet_account_id: o.customer_wallet_id,
+            entry_type: "unlock",
+            amount: Number(o.gross_amount),
+            currency: "AED",
+            balance_before: Number(cw.balance_cash),
+            balance_after: Number(cw.balance_cash) + Number(o.gross_amount),
+            value_type: "cash",
+          });
+        }
+      }
+
+      await sb.from("wallet_order_splits").update({ split_status: "reversed", updated_at: new Date().toISOString() }).eq("order_id", order_id);
+      await sb.from("orders").update({ payment_status: "reversed", wallet_status: "reversed", settlement_status: "reversed", status: "cancelled" }).eq("id", order_id);
+      await sb.from("wallet_transactions").update({ status: "reversed" }).eq("order_id", order_id);
+
+      await audit(sb, userId, "payment_reversed", { order_id });
+      return ok({ success: true });
+    }
+
+    return err("Unknown action");
+  } catch (e) {
+    console.error("[wallet-ops]", e);
+    return err(e instanceof Error ? e.message : "Internal error", 500);
+  }
+});
