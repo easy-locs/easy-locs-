@@ -67,7 +67,7 @@ function computeWeightedHealth(sections: DebugSection[]): number {
 }
 
 export default function AdminDinoControlPanel() {
-  const { user } = useAuth();
+  const { user, orgId } = useAuth();
   const { role, loading: roleLoading } = useOrgRole();
   const [statuses, setStatuses] = useState<Record<string, EngineStatus>>({});
   const [results, setResults] = useState<Record<string, unknown>>({});
@@ -75,7 +75,8 @@ export default function AdminDinoControlPanel() {
   const [fixAndRecheckResult, setFixAndRecheckResult] = useState<unknown>(null);
   const [fixAndRecheckStatus, setFixAndRecheckStatus] = useState<EngineStatus>("idle");
 
-  const isAdmin = role === "owner" || role === "admin";
+  // If no org is set yet, the user is a solo account — treat as admin for DINO control
+  const isAdmin = !orgId || role === "owner" || role === "admin";
 
   // Compute health from debug result if available
   const healthScore = useMemo(() => {
