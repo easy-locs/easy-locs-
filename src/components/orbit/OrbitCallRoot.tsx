@@ -8,6 +8,7 @@ import { useEffect, useRef, useState, useCallback, memo } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useGlobalCallController } from "@/hooks/useGlobalCallController";
 import { supabase } from "@/integrations/supabase/client";
+import { setupVisibilityCleanup } from "@/lib/calls/webrtc-call-manager";
 import IncomingCallModal from "@/components/calls/IncomingCallModal";
 import CallMediaStatus from "@/components/calls/CallMediaStatus";
 
