@@ -91,9 +91,9 @@ export async function parseOrbitEnvelope(
   const aadBytes = new TextEncoder().encode(envelope.aad);
 
   const decrypted = await crypto.subtle.decrypt(
-    { name: "AES-GCM", iv, additionalData: aadBytes },
+    { name: "AES-GCM", iv: iv as unknown as ArrayBuffer, additionalData: aadBytes as unknown as ArrayBuffer },
     key,
-    cipher
+    cipher as unknown as ArrayBuffer
   );
 
   return { payload: unpadPayload(new Uint8Array(decrypted)), expired: false };

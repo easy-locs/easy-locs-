@@ -55,8 +55,8 @@ export function orbitStoreClearAll(): void {
 /** Zero out a Uint8Array before dropping reference (best-effort secure wipe) */
 export function secureWipeUint8Array(buf?: Uint8Array | null): void {
   if (!buf) return;
-  crypto.getRandomValues(buf); // overwrite with random first
-  buf.fill(0); // then zero
+  crypto.getRandomValues(buf as unknown as Uint8Array<ArrayBuffer>);
+  buf.fill(0);
 }
 
 /** Wipe an ArrayBuffer */
