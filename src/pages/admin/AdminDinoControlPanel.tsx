@@ -290,8 +290,24 @@ function FixRecheckSummary({ data }: { data: unknown }) {
   const fp = d?.firstPass;
   const healthy = d?.healthy;
 
+  // Compute before/after weighted health
+  const beforeSections = d?.beforeDebug?.sections ?? [];
+  const afterSections = d?.afterDebug?.sections ?? [];
+  const beforeHealth = computeWeightedHealth(beforeSections);
+  const afterHealth = computeWeightedHealth(afterSections);
+  const delta = afterHealth - beforeHealth;
+
   return (
     <div className="space-y-2">
+      {/* Health delta */}
+      <div className="flex items-center gap-4 text-xs">
+        <span className="text-muted-foreground">Before: <b className="text-foreground">{beforeHealth}%</b></span>
+        <span className="text-muted-foreground">After: <b className={afterHealth >= 80 ? "text-emerald-400" : "text-foreground"}>{afterHealth}%</b></span>
+        <span className={`font-bold ${delta > 0 ? "text-emerald-400" : delta < 0 ? "text-destructive" : "text-muted-foreground"}`}>
+          {delta > 0 ? `+${delta}%` : delta < 0 ? `${delta}%` : "—"}
+        </span>
+      </div>
+      {/* Fix counts */}
       <div className="flex items-center gap-3 text-xs">
         <span className="text-muted-foreground">Detected: <b className="text-foreground">{fp?.detected ?? 0}</b></span>
         <span className="text-muted-foreground">Patched: <b className="text-emerald-400">{fp?.patched ?? 0}</b></span>
