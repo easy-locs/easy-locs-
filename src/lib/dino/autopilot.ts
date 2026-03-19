@@ -1,7 +1,6 @@
 /**
  * DINO V9 — Autopilot Runner
  * Orchestrates insights → decisions → actions → learning in a single cycle.
- * Can be called from the dashboard or from the dino-autopilot edge function.
  */
 
 import { collectPlatformInsights } from "./insightsCollector";
@@ -19,16 +18,10 @@ export interface AutopilotResult {
 }
 
 export async function runAutopilotCycle(): Promise<AutopilotResult> {
-  // 1) Collect
   const insights = await collectPlatformInsights();
-
-  // 2) Decide
   const actions = generateActionsFromInsights(insights);
-
-  // 3) Execute
   const executed = await executeDinoActions(actions);
 
-  // 4) Learn
   await recordLearning(executed);
 
   const succeeded = executed.filter(a => a.result?.success).length;
@@ -42,15 +35,17 @@ async function recordLearning(actions: DinoAction[]) {
   const events = actions
     .filter(a => a.result)
     .map(a => ({
-      event_type: `autopilot_${a.type}` as string,
-      source_module: "autopilot",
-      context_json: {
-        actionId: a.id,
+      event_type: `autopilot_${a.type}`,
+      entity_id: a.id,
+      entity_type: "action",
+      metric: a.type,
+      metadata_json: {
         priority: a.priority,
         success: a.result?.success,
         message: a.result?.message,
       } as unknown as Json,
-      outcome: a.result?.success ? "success" : "failure",
+      new_value: a.result?.success ? 1 : 0,
+      previous_value: 0,
     }));
 
   if (events.length > 0) {
