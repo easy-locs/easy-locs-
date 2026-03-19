@@ -386,6 +386,7 @@ const App = () => (
               <Route path="/pay/success" element={<GuestPaymentSuccess />} />
               <Route path="/qr/pay/:code" element={<QrPayResolver />} />
               <Route path="/qr/:code" element={<QrResolvePage />} />
+              <Route path="/qr/entry/:targetCode" element={<QrEntryPage />} />
 
               {/* V7 Public pillars */}
               {/* Redirects */}
