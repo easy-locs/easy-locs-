@@ -8,6 +8,7 @@ import { useEffect, useRef, useState, useCallback, memo } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useGlobalCallController } from "@/hooks/useGlobalCallController";
 import { supabase } from "@/integrations/supabase/client";
+import { setupVisibilityCleanup } from "@/lib/calls/webrtc-call-manager";
 import IncomingCallModal from "@/components/calls/IncomingCallModal";
 import CallMediaStatus from "@/components/calls/CallMediaStatus";
 
@@ -66,6 +67,14 @@ const OrbitCallRootInner = memo(function OrbitCallRootInner({ userId }: { userId
       supabase.removeChannel(channel);
     };
   }, [userId]);
+
+  // Visibility change cleanup for stale calls
+  useEffect(() => {
+    return setupVisibilityCleanup(
+      () => getManager() as any,
+      () => callState?.state ?? null
+    );
+  }, [getManager, callState]);
 
   // Attach remote audio when call becomes active
   useEffect(() => {
