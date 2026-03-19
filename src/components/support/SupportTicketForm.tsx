@@ -40,10 +40,9 @@ export default function SupportTicketForm({ orderId, onClose, onSuccess, default
     setSubmitting(true);
     try {
       const { error } = await (supabase as any).from("support_tickets").insert({
-        user_id: user.id,
+        requester_user_id: user.id,
         ticket_type: ticketType,
         subject: subject.trim(),
-        description: description.trim() || null,
         context_id: orderId || null,
         context_type: orderId ? "order" : "general",
         status: "open",
