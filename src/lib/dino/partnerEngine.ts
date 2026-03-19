@@ -27,8 +27,7 @@ export async function upgradeToPriorityPro(proId: string, tier: PartnerTier = "p
   const boostMultiplier = tier === "elite" ? 2.0 : 1.5;
   const badge = tier === "elite" ? "ELITE PARTNER" : "TOP PARTNER";
 
-  // Update tier in performance table
-  await supabase
+  const { error: updateErr } = await supabase
     .from("dino_pro_performance")
     .update({
       tier,
@@ -37,13 +36,17 @@ export async function upgradeToPriorityPro(proId: string, tier: PartnerTier = "p
     })
     .eq("pro_id", proId);
 
-  // Apply visibility boost
+  if (updateErr) {
+    console.error("[PartnerEngine] upgradeToPriorityPro failed:", updateErr);
+    throw new Error(`upgradeToPriorityPro: ${updateErr.message} (code: ${updateErr.code}, details: ${updateErr.details})`);
+  }
+
   await applyBoostOverride({
     entityId: proId,
     entityType: "pro",
     multiplier: boostMultiplier,
     reason: `partner_${tier}`,
-    durationMs: 7 * 24 * 3600 * 1000, // 7 days
+    durationMs: 7 * 24 * 3600 * 1000,
   });
 }
 
@@ -52,7 +55,7 @@ export async function upgradeToPriorityPro(proId: string, tier: PartnerTier = "p
 // =============================
 
 export async function offerExclusivity(proId: string): Promise<void> {
-  await supabase.from("dino_notifications").insert({
+  const { error } = await supabase.from("dino_notifications").insert({
     actor_type: "pro",
     actor_id: proId,
     channel: "push",
@@ -62,6 +65,10 @@ export async function offerExclusivity(proId: string): Promise<void> {
     } as Json,
     status: "pending",
   });
+  if (error) {
+    console.error("[PartnerEngine] offerExclusivity failed:", error);
+    throw new Error(`offerExclusivity: ${error.message} (code: ${error.code})`);
+  }
 }
 
 // =============================
@@ -83,11 +90,16 @@ export async function dominateCategory(category: string): Promise<void> {
 // =============================
 
 export async function rewardTopPros(): Promise<number> {
-  const { data } = await supabase
+  const { data, error: fetchErr } = await supabase
     .from("dino_pro_performance")
     .select("pro_id, overall_score, tier")
     .order("overall_score", { ascending: false })
     .limit(MAX_REWARDS_PER_CYCLE);
+
+  if (fetchErr) {
+    console.error("[PartnerEngine] rewardTopPros fetch failed:", fetchErr);
+    throw new Error(`rewardTopPros: ${fetchErr.message} (code: ${fetchErr.code}, details: ${fetchErr.details})`);
+  }
 
   if (!data?.length) return 0;
 
@@ -99,12 +111,11 @@ export async function rewardTopPros(): Promise<number> {
 
     if (newTier === "standard") continue;
 
-    // Only upgrade if not already at this tier
     if (p.tier !== newTier) {
       await upgradeToPriorityPro(p.pro_id, newTier);
     }
 
-    await supabase.from("dino_notifications").insert({
+    const { error: notifErr } = await supabase.from("dino_notifications").insert({
       actor_type: "pro",
       actor_id: p.pro_id,
       channel: "push",
@@ -117,6 +128,10 @@ export async function rewardTopPros(): Promise<number> {
       } as Json,
       status: "pending",
     });
+
+    if (notifErr) {
+      console.error("[PartnerEngine] reward notification failed:", notifErr);
+    }
 
     rewarded++;
   }
@@ -145,7 +160,7 @@ export async function runPartnerEngine(): Promise<{
   }
 
   // 3) Record learning
-  await supabase.from("dino_learning_events").insert([{
+  const { error: learnErr } = await supabase.from("dino_learning_events").insert([{
     event_type: "v18_partner_cycle",
     entity_id: "system",
     entity_type: "partner",
@@ -154,6 +169,9 @@ export async function runPartnerEngine(): Promise<{
     new_value: rewarded,
     previous_value: 0,
   }]);
+  if (learnErr) {
+    console.error("[PartnerEngine] learning event insert failed:", learnErr);
+  }
 
   return { rewarded, categoriesBoosted };
 }
