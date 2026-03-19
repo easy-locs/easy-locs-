@@ -7157,6 +7157,7 @@ export type Database = {
           status: string
           tenant_id: string
           tenant_signed_at: string | null
+          unit_id: string | null
           updated_at: string
           user_id: string
         }
@@ -7187,6 +7188,7 @@ export type Database = {
           status?: string
           tenant_id: string
           tenant_signed_at?: string | null
+          unit_id?: string | null
           updated_at?: string
           user_id: string
         }
@@ -7217,6 +7219,7 @@ export type Database = {
           status?: string
           tenant_id?: string
           tenant_signed_at?: string | null
+          unit_id?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -7254,6 +7257,13 @@ export type Database = {
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "leases_unit_id_fkey"
+            columns: ["unit_id"]
+            isOneToOne: false
+            referencedRelation: "property_units"
             referencedColumns: ["id"]
           },
         ]
@@ -11083,6 +11093,147 @@ export type Database = {
           },
         ]
       }
+      property_documents: {
+        Row: {
+          created_at: string
+          doc_type: string
+          file_url: string
+          id: string
+          lease_id: string | null
+          org_id: string | null
+          property_id: string | null
+          tenant_id: string | null
+          title: string | null
+          unit_id: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          doc_type?: string
+          file_url: string
+          id?: string
+          lease_id?: string | null
+          org_id?: string | null
+          property_id?: string | null
+          tenant_id?: string | null
+          title?: string | null
+          unit_id?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          doc_type?: string
+          file_url?: string
+          id?: string
+          lease_id?: string | null
+          org_id?: string | null
+          property_id?: string | null
+          tenant_id?: string | null
+          title?: string | null
+          unit_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "property_documents_lease_id_fkey"
+            columns: ["lease_id"]
+            isOneToOne: false
+            referencedRelation: "leases"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "property_documents_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "property_documents_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs_tenant_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "property_documents_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "property_documents_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "property_documents_unit_id_fkey"
+            columns: ["unit_id"]
+            isOneToOne: false
+            referencedRelation: "property_units"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      property_units: {
+        Row: {
+          bathrooms: number | null
+          bedrooms: number | null
+          created_at: string
+          currency: string | null
+          floor: number | null
+          id: string
+          notes: string | null
+          property_id: string
+          rent_amount: number | null
+          size_sqm: number | null
+          status: string | null
+          unit_number: string
+          updated_at: string
+        }
+        Insert: {
+          bathrooms?: number | null
+          bedrooms?: number | null
+          created_at?: string
+          currency?: string | null
+          floor?: number | null
+          id?: string
+          notes?: string | null
+          property_id: string
+          rent_amount?: number | null
+          size_sqm?: number | null
+          status?: string | null
+          unit_number?: string
+          updated_at?: string
+        }
+        Update: {
+          bathrooms?: number | null
+          bedrooms?: number | null
+          created_at?: string
+          currency?: string | null
+          floor?: number | null
+          id?: string
+          notes?: string | null
+          property_id?: string
+          rent_amount?: number | null
+          size_sqm?: number | null
+          status?: string | null
+          unit_number?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "property_units_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       public_listings: {
         Row: {
           active: boolean | null
@@ -11854,6 +12005,79 @@ export type Database = {
           },
           {
             foreignKeyName: "rent_calls_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      rent_payments: {
+        Row: {
+          amount: number
+          created_at: string
+          currency: string | null
+          due_date: string
+          id: string
+          lease_id: string
+          notes: string | null
+          paid_at: string | null
+          payment_method: string | null
+          property_id: string | null
+          reference: string | null
+          status: string | null
+          tenant_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          amount?: number
+          created_at?: string
+          currency?: string | null
+          due_date: string
+          id?: string
+          lease_id: string
+          notes?: string | null
+          paid_at?: string | null
+          payment_method?: string | null
+          property_id?: string | null
+          reference?: string | null
+          status?: string | null
+          tenant_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          currency?: string | null
+          due_date?: string
+          id?: string
+          lease_id?: string
+          notes?: string | null
+          paid_at?: string | null
+          payment_method?: string | null
+          property_id?: string | null
+          reference?: string | null
+          status?: string | null
+          tenant_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rent_payments_lease_id_fkey"
+            columns: ["lease_id"]
+            isOneToOne: false
+            referencedRelation: "leases"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rent_payments_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rent_payments_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants"
