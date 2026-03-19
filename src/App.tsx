@@ -179,6 +179,7 @@ const OpsCenter = safeLazy(() => import("./pages/OpsCenter"), "OpsCenter");
 const ShopsPage = safeLazy(() => import("./pages/ShopsPage"), "ShopsPage");
 const SuperMapRadarPage = safeLazy(() => import("./pages/GlobalMapPage"), "GlobalMapPage");
 const DinoAuditPage = safeLazy(() => import("./pages/admin/DinoAuditPage"), "DinoAuditPage");
+const DinoDashboardPage = safeLazy(() => import("./pages/admin/DinoDashboardPage"), "DinoDashboardPage");
 const GlobalRadarPage = safeLazy(() => import("./pages/GlobalRadarPage"), "GlobalRadarPage");
 const MyBusinessHub = safeLazy(() => import("./pages/MyBusinessHub"), "MyBusinessHub");
 const MyShopsPage = safeLazy(() => import("./pages/MyShopsPage"), "MyShopsPage");
