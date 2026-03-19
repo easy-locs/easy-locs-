@@ -50,6 +50,14 @@ export const routes = {
   orbitCallTest: () => `/orbit/call-test`,
   orbitIdentity: () => `/orbit/identity`,
 
+  // Ghost V2/V3
+  ghost: () => `/ghost`,
+  ghostInbox: () => `/ghost/inbox`,
+  ghostThread: (threadId: string) => `/ghost/thread/${encodeURIComponent(threadId)}`,
+  ghostCall: (callId: string) => `/ghost/call/${encodeURIComponent(callId)}`,
+  ghostSettings: () => `/ghost/settings`,
+  ghostContacts: () => `/ghost/contacts`,
+
   // Public
   comingSoon: (slug: string) => `/coming-soon/${encodeURIComponent(slug)}`,
   cityMarket: (citySlug: string) => `/city-market/${encodeURIComponent(citySlug)}`,
