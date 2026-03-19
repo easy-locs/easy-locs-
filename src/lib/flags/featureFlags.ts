@@ -34,8 +34,8 @@ export async function initFeatureFlags(user?: {
   if (!clientId || !user) return;
 
   try {
-    // Dynamic import — LD SDK is optional, not bundled if unused
-    const ldModule = await import(/* @vite-ignore */ "launchdarkly-js-client-sdk");
+    // @ts-ignore — LD SDK is optional, loaded dynamically only when configured
+    const ldModule = await import("launchdarkly-js-client-sdk");
     const initFn = ldModule.initialize || ldModule.default?.initialize;
     if (!initFn) return;
     ldClient = initFn(clientId, {
