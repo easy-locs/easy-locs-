@@ -60,7 +60,7 @@ export async function resolveUniversalIdentity(userId: string): Promise<Universa
   }
 
   // Trust level from reputation
-  const { data: rep } = await (supabase as any)
+  const { data: rep } = await supabase
     .from("universal_reputation_scores")
     .select("overall_score")
     .eq("user_id", userId)
