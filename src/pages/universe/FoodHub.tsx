@@ -1,6 +1,5 @@
 /**
- * FoodHub — Careem-style food entry with categories, filters, and real merchant data.
- * Route: /food
+ * FoodHub — Food category page connected to seed data.
  */
 import { useState } from "react";
 import { useDinoPageAudit } from "@/hooks/useDinoPageAudit";
@@ -14,43 +13,53 @@ import MerchantCard from "@/components/marketplace/MerchantCard";
 import { UtensilsCrossed } from "lucide-react";
 
 const CUISINES = [
-  { label: "African", icon: "🍛", slug: "african" },
-  { label: "Fast Food", icon: "🍔", slug: "fast-food" },
-  { label: "Asian", icon: "🍜", slug: "asian" },
-  { label: "Italian", icon: "🍕", slug: "italian" },
+  { label: "Pizza", icon: "🍕", slug: "pizza" },
+  { label: "Burger", icon: "🍔", slug: "burger" },
+  { label: "Shawarma", icon: "🥙", slug: "shawarma" },
+  { label: "Indian", icon: "🍛", slug: "indian" },
+  { label: "Chinese", icon: "🥡", slug: "chinese" },
   { label: "Healthy", icon: "🥗", slug: "healthy" },
-  { label: "Bakery", icon: "🥐", slug: "bakery" },
-  { label: "Seafood", icon: "🦐", slug: "seafood" },
-  { label: "Grill", icon: "🥩", slug: "grill" },
+  { label: "Pasta", icon: "🍝", slug: "pasta" },
+  { label: "Desserts", icon: "🍰", slug: "desserts" },
 ];
 
-const FILTERS = ["All", "Open now", "Free delivery", "Top rated", "Promos"];
+const FILTERS = ["All", "Open now", "Featured", "Top rated"];
 
 export default function FoodHub() {
   const [search, setSearch] = useState("");
   const [activeFilter, setActiveFilter] = useState("All");
+  const [activeCuisine, setActiveCuisine] = useState<string | null>(null);
   const navigate = useNavigate();
   useDinoPageAudit({ actorType: "anonymous", pageKey: "food_home" });
 
-  const { data: restaurants = [] } = useQuery({
-    queryKey: ["food-hub-restaurants"],
+  const { data: restaurants = [], isLoading } = useQuery({
+    queryKey: ["food-hub-seed", activeCuisine],
     queryFn: async () => {
-      const { data } = await (supabase as any)
-        .from("storefront_pages")
-        .select("id, name, slug, city, vertical, subcategory, description, rating, logo_url, cover_url")
-        .eq("active", true)
-        .limit(20);
+      let query = (supabase as any)
+        .from("marketplace_listings")
+        .select("*")
+        .eq("category", "food")
+        .eq("is_open", true)
+        .order("is_featured", { ascending: false })
+        .order("visibility_score", { ascending: false })
+        .limit(50);
+
+      if (activeCuisine) {
+        query = query.eq("subcategory", activeCuisine);
+      }
+
+      const { data } = await query;
       return (data || []).map((r: any) => ({
         id: r.id,
-        name: r.name || "Restaurant",
-        category: r.subcategory || r.city || "",
-        rating: r.rating ?? 4.2,
-        slug: r.slug,
-        image: r.cover_url || r.logo_url,
+        name: r.name,
+        category: `${r.subcategory} · ${r.area}`,
+        rating: Number(r.rating),
+        image: r.cover_image,
+        eta: `${r.delivery_time_min}–${r.delivery_time_max} min`,
+        badge: r.is_featured ? "Featured" : undefined,
       }));
     },
-    staleTime: 120_000,
-    placeholderData: (prev: any) => prev,
+    staleTime: 60_000,
   });
 
   const filtered = restaurants.filter((r: any) =>
@@ -68,63 +77,65 @@ export default function FoodHub() {
       filters={FILTERS.map(f => (
         <FilterChip key={f} label={f} active={activeFilter === f} onClick={() => setActiveFilter(f)} />
       ))}
-      isEmpty={filtered.length === 0}
+      isEmpty={filtered.length === 0 && !isLoading}
       emptyMessage="No restaurants found"
     >
-      {/* Mode selection */}
-      <div className="grid grid-cols-2 gap-3 mb-6">
-        <button
-          onClick={() => navigate("/food/delivery")}
-          className="rounded-2xl p-4 flex flex-col items-center gap-2 active:scale-95 transition-transform"
-          style={{ background: "hsl(var(--primary) / 0.1)", border: "1px solid hsl(var(--primary) / 0.2)" }}
-        >
-          <span className="text-2xl">🛵</span>
-          <span className="text-sm font-bold" style={{ color: "hsl(var(--primary))" }}>Delivery</span>
-        </button>
-        <button
-          onClick={() => navigate("/food/pickup")}
-          className="rounded-2xl p-4 flex flex-col items-center gap-2 active:scale-95 transition-transform"
-          style={{ background: "hsl(var(--muted))", border: "1px solid hsl(var(--border) / 0.2)" }}
-        >
-          <span className="text-2xl">🏪</span>
-          <span className="text-sm font-bold text-foreground">Pickup</span>
-        </button>
-      </div>
-
       {/* Cuisine grid */}
       <h2 className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider mb-2">Cuisines</h2>
       <div className="grid grid-cols-4 gap-3 mb-6">
         {CUISINES.map((c) => (
           <button
             key={c.slug}
-            onClick={() => navigate(`/food/delivery/${c.slug}`)}
+            onClick={() => setActiveCuisine(activeCuisine === c.slug ? null : c.slug)}
             className="flex flex-col items-center gap-1.5 active:scale-90 transition-transform"
           >
-            <div className="w-14 h-14 rounded-2xl flex items-center justify-center" style={{ background: "hsl(var(--muted))" }}>
+            <div
+              className="w-14 h-14 rounded-2xl flex items-center justify-center transition-all"
+              style={{
+                background: activeCuisine === c.slug ? "hsl(var(--primary) / 0.15)" : "hsl(var(--muted))",
+                border: activeCuisine === c.slug ? "2px solid hsl(var(--primary))" : "2px solid transparent",
+              }}
+            >
               <span className="text-2xl">{c.icon}</span>
             </div>
-            <span className="text-[11px] font-semibold text-foreground leading-tight">{c.label}</span>
+            <span className={`text-[11px] font-semibold leading-tight ${activeCuisine === c.slug ? "text-primary" : "text-foreground"}`}>{c.label}</span>
           </button>
         ))}
       </div>
 
+      {/* Loading skeleton */}
+      {isLoading && (
+        <div className="space-y-2">
+          {[1, 2, 3].map(i => (
+            <div key={i} className="h-24 rounded-2xl animate-pulse" style={{ background: "hsl(var(--muted))" }} />
+          ))}
+        </div>
+      )}
+
       {/* Restaurant list */}
-      <h2 className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider mb-2">Nearby restaurants</h2>
-      <div className="space-y-2">
-        {filtered.map((r: any, i: number) => (
-          <MerchantCard
-            key={r.id}
-            to={`/food/restaurant/${r.slug || r.id}`}
-            image={r.image}
-            name={r.name}
-            category={r.category}
-            rating={r.rating}
-            eta="15–30 min"
-            index={i}
-            variant="horizontal"
-          />
-        ))}
-      </div>
+      {!isLoading && filtered.length > 0 && (
+        <>
+          <h2 className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider mb-2">
+            {activeCuisine ? `${activeCuisine.charAt(0).toUpperCase() + activeCuisine.slice(1)} restaurants` : "Nearby restaurants"}
+          </h2>
+          <div className="space-y-2">
+            {filtered.map((r: any, i: number) => (
+              <MerchantCard
+                key={r.id}
+                to={`/food/restaurant/${r.id}`}
+                image={r.image}
+                name={r.name}
+                category={r.category}
+                rating={r.rating}
+                eta={r.eta}
+                badge={r.badge}
+                index={i}
+                variant="horizontal"
+              />
+            ))}
+          </div>
+        </>
+      )}
     </UniversePageShell>
   );
 }
