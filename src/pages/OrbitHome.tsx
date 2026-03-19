@@ -206,21 +206,22 @@ export default function OrbitHome() {
     queryFn: async () => {
       const { data } = await supabase
         .from("storefront_pages" as any)
-        .select("id, shop_name, vertical, city, logo_url, latitude, longitude")
-        .eq("published", true)
+        .select("id, name, vertical, city, logo_url, latitude, longitude, rating, slug, subcategory")
+        .eq("active", true)
         .limit(20);
       return (data || []).map((s: any) => ({
         id: s.id,
-        title: s.shop_name || "Shop",
+        title: s.name || "Shop",
         category: s.vertical || "shop",
         lat: s.latitude,
         lng: s.longitude,
         orderCount7d: 0,
         revenue7d: 0,
         conversionRate: 0,
-        rating: 4.0 + Math.random() * 0.9,
+        rating: s.rating ?? 4.2,
         photo_url: s.logo_url,
         city: s.city,
+        slug: s.slug,
       })) as ShopSignal[];
     },
     staleTime: 120_000,
