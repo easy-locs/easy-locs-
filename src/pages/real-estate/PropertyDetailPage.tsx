@@ -1,4 +1,5 @@
 import { useParams, Link } from "react-router-dom";
+import { useDinoPageAudit } from "@/hooks/useDinoPageAudit";
 import { usePropertyById, usePropertyUnits, usePropertyDocuments } from "@/hooks/useRealEstate";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
