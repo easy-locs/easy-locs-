@@ -29,7 +29,11 @@ export default function AppBottomNav() {
     >
       <div className="grid grid-cols-5 max-w-md mx-auto">
         {TABS.map((tab) => {
-          const active = pathname === tab.path || (tab.path === "/home" && pathname === "/");
+          const active = pathname === tab.path
+            || (tab.path === "/home" && pathname === "/")
+            || (tab.path === "/settings" && pathname.startsWith("/settings"))
+            || (tab.path === "/wallet/hub" && pathname.startsWith("/wallet"))
+            || (tab.path === "/my-orders" && (pathname.startsWith("/my-orders") || pathname.startsWith("/order/")));
           return (
             <button
               key={tab.path}
