@@ -1,21 +1,35 @@
 /**
- * OrbitBottomNav — 5-tab navigation: Orbit · Explore · Wallet · Activity · Profile
+ * OrbitBottomNav — 5-tab: Home · Orbit · Explore · Wallet · Profile
  */
 import { useNavigate, useLocation } from "react-router-dom";
-import { Compass, Wallet, Bell, User, CircleDot } from "lucide-react";
+import { Compass, Wallet, User, CircleDot, Home } from "lucide-react";
 import { useOrbitEngine } from "@/stores/orbit-engine";
 import { memo } from "react";
+import { useI18n } from "@/lib/i18n";
 
 const NAV_ITEMS = [
   {
-    icon: CircleDot,
-    label: "Orbit",
+    icon: Home,
+    labelKey: "nav.home",
+    fallback: "Home",
     path: "/",
     match: (p: string) => p === "/",
   },
   {
+    icon: CircleDot,
+    labelKey: "nav.orbit",
+    fallback: "Orbit",
+    path: "/dashboard/communication",
+    match: (p: string) =>
+      ["/dashboard/communication", "/orbit"].some(
+        (prefix) => p === prefix || p.startsWith(prefix + "/")
+      ),
+    isOrbit: true,
+  },
+  {
     icon: Compass,
-    label: "Explore",
+    labelKey: "nav.explore",
+    fallback: "Explore",
     path: "/explore",
     match: (p: string) =>
       ["/explore", "/search", "/discover", "/food", "/grocery", "/services-hub", "/ride", "/send", "/travel", "/shops", "/super-map", "/real-estate"].some(
@@ -24,22 +38,15 @@ const NAV_ITEMS = [
   },
   {
     icon: Wallet,
-    label: "Wallet",
+    labelKey: "nav.wallet",
+    fallback: "Wallet",
     path: "/wallet/hub",
     match: (p: string) => p.startsWith("/wallet") || p.startsWith("/pos"),
   },
   {
-    icon: Bell,
-    label: "Activity",
-    path: "/dashboard/communication",
-    match: (p: string) =>
-      ["/dashboard/communication", "/my-orders", "/ghost", "/orbit"].some(
-        (prefix) => p === prefix || p.startsWith(prefix + "/")
-      ),
-  },
-  {
     icon: User,
-    label: "Profile",
+    labelKey: "nav.profile",
+    fallback: "Profile",
     path: "/dashboard/settings",
     match: (p: string) =>
       ["/dashboard/settings", "/dashboard/my-shop", "/dashboard/seller", "/dashboard/driver", "/business", "/property-hub"].some(
@@ -52,9 +59,10 @@ function OrbitBottomNav() {
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const { unreadMessages, pendingOrders } = useOrbitEngine();
+  const { t } = useI18n();
 
-  const getBadge = (label: string) => {
-    if (label === "Activity") return unreadMessages + pendingOrders;
+  const getBadge = (labelKey: string) => {
+    if (labelKey === "nav.orbit") return unreadMessages + pendingOrders;
     return 0;
   };
 
@@ -70,18 +78,19 @@ function OrbitBottomNav() {
         height: "calc(56px + env(safe-area-inset-bottom, 8px))",
       }}
     >
-      {NAV_ITEMS.map(({ icon: Icon, label, path, match }) => {
-        const isActive = match(pathname);
-        const badge = getBadge(label);
-        const isOrbit = label === "Orbit";
+      {NAV_ITEMS.map((item) => {
+        const isActive = item.match(pathname);
+        const badge = getBadge(item.labelKey);
+        const isOrbit = "isOrbit" in item && item.isOrbit;
+        const label = t(item.labelKey) || item.fallback;
 
         return (
           <button
-            key={label}
+            key={item.labelKey}
             role="tab"
             aria-selected={isActive}
             aria-label={`${label}${badge > 0 ? ` (${badge})` : ""}`}
-            onClick={() => navigate(path)}
+            onClick={() => navigate(item.path)}
             className={`relative flex flex-col items-center justify-center gap-0.5 pt-2 pb-1 px-3 min-w-[56px] min-h-[44px] active:scale-90 transition-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-lg ${isOrbit ? "-mt-2" : ""}`}
           >
             {badge > 0 && (
@@ -104,7 +113,7 @@ function OrbitBottomNav() {
                   : {}
               }
             >
-              <Icon
+              <item.icon
                 className="w-5 h-5 transition-colors duration-150"
                 strokeWidth={isActive ? 2.5 : 1.8}
                 style={{
