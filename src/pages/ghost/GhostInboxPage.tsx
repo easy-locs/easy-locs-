@@ -7,7 +7,7 @@ import { Shield, Plus, RotateCw, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { getOrCreateGhostProfile, getGhostThreads, createGhostSession, getLocalGhostSession, type GhostTier } from "@/lib/ghost";
-import PageLoadingState from "@/components/dashboard/PageLoadingState";
+import { PageLoadingState } from "@/components/page-states";
 
 export default function GhostInboxPage() {
   const { user } = useAuth();

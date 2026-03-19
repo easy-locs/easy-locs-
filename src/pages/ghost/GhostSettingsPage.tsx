@@ -16,7 +16,7 @@ import {
   type GhostTier,
 } from "@/lib/ghost";
 import { getGhostPolicy } from "@/lib/ghost/ghost-policy";
-import PageLoadingState from "@/components/dashboard/PageLoadingState";
+import { PageLoadingState } from "@/components/page-states";
 
 export default function GhostSettingsPage() {
   const { user } = useAuth();

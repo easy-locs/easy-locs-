@@ -21,7 +21,7 @@ import {
   importGhostKey,
   type GhostTier,
 } from "@/lib/ghost";
-import PageLoadingState from "@/components/dashboard/PageLoadingState";
+import { PageLoadingState } from "@/components/page-states";
 
 export default function GhostThreadPage() {
   const { threadId } = useParams<{ threadId: string }>();
