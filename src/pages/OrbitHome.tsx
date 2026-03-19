@@ -337,6 +337,9 @@ export default function OrbitHome() {
             ))}
           </div>
 
+          {/* God Mode Insights */}
+          {godSnapshot && <GodModeInsightsBar snapshot={godSnapshot} />}
+
           {/* 2. Promo Banners */}
           <PromoBannerCarousel onNavigate={handleNavigate} />
 
