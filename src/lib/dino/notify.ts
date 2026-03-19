@@ -1,8 +1,9 @@
 /**
- * DINO Notify — Queue notifications for async delivery via edge function worker.
+ * DINO Notify — Queue notifications for async delivery.
  */
 
 import { supabase } from "@/integrations/supabase/client";
+import type { Json } from "@/integrations/supabase/types";
 
 export type NotificationChannel = "email" | "sms" | "whatsapp";
 
@@ -15,14 +16,14 @@ export async function queueNotification(input: {
 }) {
   const { data, error } = await supabase
     .from("dino_notifications")
-    .insert({
+    .insert([{
       actor_type: input.actorType,
       actor_id: input.actorId ?? null,
       channel: input.channel,
       template_key: input.templateKey,
-      payload_json: input.payload ?? {},
+      payload_json: (input.payload ?? {}) as Json,
       status: "pending",
-    })
+    }])
     .select()
     .single();
 

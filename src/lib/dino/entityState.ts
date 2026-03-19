@@ -3,6 +3,7 @@
  */
 
 import { supabase } from "@/integrations/supabase/client";
+import type { Json } from "@/integrations/supabase/types";
 
 export async function setEntityState(
   entityType: string,
@@ -16,7 +17,7 @@ export async function setEntityState(
     const { error } = await supabase
       .from("dino_entity_state")
       .update({
-        state_value: stateValue,
+        state_value: stateValue as Json,
         updated_at: new Date().toISOString(),
       })
       .eq("id", existing.id);
@@ -24,13 +25,13 @@ export async function setEntityState(
   } else {
     const { error } = await supabase
       .from("dino_entity_state")
-      .insert({
+      .insert([{
         entity_type: entityType,
         entity_id: entityId,
         state_key: stateKey,
-        state_value: stateValue,
+        state_value: stateValue as Json,
         updated_at: new Date().toISOString(),
-      });
+      }]);
     if (error) throw error;
   }
 }
