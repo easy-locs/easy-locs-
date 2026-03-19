@@ -619,6 +619,7 @@ const App = () => (
             </main>
            </Suspense>
            <SmartInstallBanner />
+           </SplashScreen>
            </AppLockGuard>
           </UnifiedPaymentProvider>
            </CallProvider>
