@@ -37,6 +37,9 @@ export async function createCallSession(params: {
     calleeUuid,
   });
 
+  const roomId = crypto.randomUUID();
+  debugLog.info("call", "room_created", roomId);
+
   const { data, error } = await (supabase as any)
     .from("orbit_call_sessions")
     .insert({
@@ -44,6 +47,7 @@ export async function createCallSession(params: {
       callee_user_id: calleeUuid,
       call_type: params.callType,
       status: "ringing",
+      room_id: roomId,
       started_at: new Date().toISOString(),
     })
     .select("*")
