@@ -312,6 +312,19 @@ const FoodHub = safeLazy(() => import("./pages/universe/FoodHub"), "FoodHub");
 const GroceryHub = safeLazy(() => import("./pages/universe/GroceryHub"), "GroceryHub");
 const ServicesHub = safeLazy(() => import("./pages/universe/ServicesHub"), "ServicesHub");
 
+// Food sub-pages (Careem-style drill-down)
+const FoodTypePage = safeLazy(() => import("./pages/food/FoodTypePage"), "FoodTypePage");
+const CuisineListPage = safeLazy(() => import("./pages/food/CuisineListPage"), "CuisineListPage");
+const FoodRestaurantPage = safeLazy(() => import("./pages/food/RestaurantPage"), "FoodRestaurantPage");
+
+// Settings sub-pages
+const SettingsHomePage = safeLazy(() => import("./pages/settings/SettingsHome"), "SettingsHome");
+const SettingsAccountPage = safeLazy(() => import("./pages/settings/SettingsAccount"), "SettingsAccount");
+const SettingsBusinessPage = safeLazy(() => import("./pages/settings/SettingsBusiness"), "SettingsBusiness");
+const SettingsWalletPage = safeLazy(() => import("./pages/settings/SettingsWallet"), "SettingsWallet");
+const SettingsSecurityPage = safeLazy(() => import("./pages/settings/SettingsSecurity"), "SettingsSecurity");
+const SettingsPreferencesPage = safeLazy(() => import("./pages/settings/SettingsPreferences"), "SettingsPreferences");
+
 // Deep-link public pages
 const UserProfilePage = safeLazy(() => import("./pages/deep-link/UserProfilePage"), "UserProfilePage");
 const ProductPage = safeLazy(() => import("./pages/deep-link/ProductPage"), "ProductPage");
