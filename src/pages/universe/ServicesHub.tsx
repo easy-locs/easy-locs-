@@ -1,7 +1,9 @@
 /**
- * ServicesHub — Services universe entry.
+ * ServicesHub — Services category page connected to seed data.
  */
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import UniversePageShell from "@/components/universe/UniversePageShell";
 import UniverseSearch from "@/components/universe/UniverseSearch";
 import FilterChip from "@/components/universe/FilterChip";
@@ -21,17 +23,37 @@ const SERVICE_GROUPS = [
 
 const FILTERS = ["All", "Available now", "Top rated", "Verified", "Promos"];
 
-const MOCK_PROVIDERS = [
-  { id: "1", name: "CleanPro Services", category: "Home cleaning specialist", rating: 4.9, badge: "Top rated", distance: "1.2km" },
-  { id: "2", name: "Fast Fix Plumbing", category: "Emergency plumbing 24/7", rating: 4.5, distance: "2km", eta: "Available now" },
-  { id: "3", name: "Glow Beauty Studio", category: "Hair, nails & skincare", rating: 4.7, badge: "Promo -20%", distance: "0.8km" },
-  { id: "4", name: "MoveEasy", category: "Moving & logistics", rating: 4.4, distance: "3km" },
-];
-
 export default function ServicesHub() {
   const [search, setSearch] = useState("");
   const [activeFilter, setActiveFilter] = useState("All");
-  const filtered = MOCK_PROVIDERS.filter(p => !search || p.name.toLowerCase().includes(search.toLowerCase()));
+
+  const { data: providers = [], isLoading } = useQuery({
+    queryKey: ["services-hub-seed"],
+    queryFn: async () => {
+      const { data } = await (supabase as any)
+        .from("marketplace_listings")
+        .select("*")
+        .eq("category", "services")
+        .eq("is_open", true)
+        .order("is_featured", { ascending: false })
+        .order("visibility_score", { ascending: false })
+        .limit(20);
+      return (data || []).map((r: any) => ({
+        id: r.id,
+        name: r.name,
+        category: `${r.subcategory} · ${r.area}`,
+        rating: Number(r.rating),
+        image: r.cover_image,
+        eta: `${r.delivery_time_min}–${r.delivery_time_max} min`,
+        badge: r.is_featured ? "Top rated" : undefined,
+      }));
+    },
+    staleTime: 60_000,
+  });
+
+  const filtered = providers.filter((p: any) =>
+    !search || p.name.toLowerCase().includes(search.toLowerCase())
+  );
 
   return (
     <UniversePageShell
@@ -45,7 +67,7 @@ export default function ServicesHub() {
       filters={FILTERS.map(f => (
         <FilterChip key={f} label={f} active={activeFilter === f} onClick={() => setActiveFilter(f)} />
       ))}
-      isEmpty={filtered.length === 0}
+      isEmpty={filtered.length === 0 && !isLoading}
       emptyMessage="No providers found"
     >
       <h2 className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider mb-2">Categories</h2>
@@ -60,23 +82,35 @@ export default function ServicesHub() {
         ))}
       </div>
 
-      <h2 className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider mb-2">Top providers</h2>
-      <div className="space-y-2">
-        {filtered.map((p, i) => (
-          <MerchantCard
-            key={p.id}
-            to={`/services/provider/${p.id}`}
-            name={p.name}
-            category={p.category}
-            rating={p.rating}
-            badge={p.badge}
-            distance={p.distance}
-            eta={p.eta}
-            index={i}
-            variant="horizontal"
-          />
-        ))}
-      </div>
+      {isLoading && (
+        <div className="space-y-2">
+          {[1, 2, 3].map(i => (
+            <div key={i} className="h-24 rounded-2xl animate-pulse" style={{ background: "hsl(var(--muted))" }} />
+          ))}
+        </div>
+      )}
+
+      {!isLoading && (
+        <>
+          <h2 className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider mb-2">Top providers</h2>
+          <div className="space-y-2">
+            {filtered.map((p: any, i: number) => (
+              <MerchantCard
+                key={p.id}
+                to={`/services/provider/${p.id}`}
+                name={p.name}
+                category={p.category}
+                rating={p.rating}
+                image={p.image}
+                badge={p.badge}
+                eta={p.eta}
+                index={i}
+                variant="horizontal"
+              />
+            ))}
+          </div>
+        </>
+      )}
     </UniversePageShell>
   );
 }
