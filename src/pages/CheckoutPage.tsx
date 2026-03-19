@@ -127,15 +127,38 @@ export default function CheckoutPage() {
         {/* Items summary */}
         <div>
           <p className="text-xs font-semibold uppercase tracking-wider mb-2 text-muted-foreground">Items ({itemCount})</p>
-          <div className="space-y-2">
-            {cart.items.map((item) => (
-              <div key={item.id} className="flex items-center justify-between py-2 px-1">
+          <div className="rounded-2xl overflow-hidden" style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border) / 0.15)" }}>
+            {cart.items.map((item, idx) => (
+              <div
+                key={item.id}
+                className="flex items-center justify-between py-3 px-4"
+                style={idx < cart.items.length - 1 ? { borderBottom: "1px solid hsl(var(--border) / 0.08)" } : undefined}
+              >
                 <div className="flex items-center gap-2 min-w-0">
                   <span className="text-xs font-bold text-muted-foreground w-5">{item.quantity}×</span>
                   <span className="text-sm font-medium truncate">{item.name}</span>
                 </div>
+                <span className="text-sm font-semibold text-foreground shrink-0">
+                  {(item.unitPrice * item.quantity).toFixed(2)}
+                </span>
               </div>
             ))}
+          </div>
+        </div>
+
+        {/* Order total */}
+        <div className="rounded-2xl p-4" style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border) / 0.15)" }}>
+          <div className="flex justify-between text-sm">
+            <span className="text-muted-foreground">Subtotal</span>
+            <span className="font-semibold">{total.toFixed(2)}</span>
+          </div>
+          <div className="flex justify-between text-sm mt-1.5">
+            <span className="text-muted-foreground">Delivery fee</span>
+            <span className="font-semibold">{deliveryFee === 0 ? "Free" : deliveryFee.toFixed(2)}</span>
+          </div>
+          <div className="flex justify-between text-sm font-bold mt-3 pt-3" style={{ borderTop: "1px solid hsl(var(--border) / 0.15)" }}>
+            <span>Total</span>
+            <span>{grandTotal.toFixed(2)}</span>
           </div>
         </div>
 
