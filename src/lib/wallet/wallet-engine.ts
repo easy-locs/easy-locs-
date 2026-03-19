@@ -194,7 +194,7 @@ export async function prepareOrderSplit(params: {
     driver_amount: driverAmount,
   }).eq("id", params.orderId);
 
-  platformBus.emit("wallet:payment_completed", { orderId: params.orderId, stage: "split_prepared" }, "wallet");
+  platformBus.emit("commerce:intent_prepared", { orderId: params.orderId, stage: "split_prepared" }, "wallet");
   return { merchantAmount: splits[0].net_amount, driverAmount, platformAmount };
 }
 
