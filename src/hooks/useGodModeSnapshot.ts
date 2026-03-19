@@ -3,7 +3,7 @@
  * Persists activeRole across sessions via localStorage.
  */
 import { useQuery } from "@tanstack/react-query";
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { buildGodModeSnapshot, type GodModeSnapshot } from "@/lib/dino/godMode";
 import { switchRole, type UniversalRole } from "@/lib/dino/universalIdentity";
 
