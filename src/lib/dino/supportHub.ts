@@ -1,6 +1,11 @@
 /**
  * DINO V20 — Global Support & Dispute Hub
  * Unified ticket center, dispute flow, evidence store, resolution engine.
+ * 
+ * SCHEMA: support_tickets has: id, subject, ticket_type, status, priority,
+ *   requester_user_id, assigned_to, context_id, context_type,
+ *   workspace_id, resolved_at, created_at, updated_at.
+ *   NO: description, category, service_vertical, reference_id, metadata_json, resolution.
  */
 import { supabase } from "@/integrations/supabase/client";
 
@@ -32,22 +37,24 @@ export interface CreateTicketParams {
 export async function createSupportTicket(params: CreateTicketParams) {
   const priority = params.priority ?? inferPriority(params.category);
 
-  const { data, error } = await (supabase as any)
+  // Map category to ticket_type
+  const ticketType = params.category.includes("dispute") ? "dispute" : "support";
+
+  // Build subject with description embedded since table has no description column
+  const fullSubject = params.description
+    ? `[${params.category}] ${params.subject}: ${params.description}`
+    : `[${params.category}] ${params.subject}`;
+
+  const { data, error } = await supabase
     .from("support_tickets")
     .insert({
-      user_id: params.userId,
-      ticket_type: params.category.includes("dispute") ? "dispute" : "support",
-      category: params.category,
-      subject: params.subject,
-      description: params.description,
+      requester_user_id: params.userId,
+      ticket_type: ticketType,
+      subject: fullSubject,
       priority,
       status: "open",
-      service_vertical: params.serviceVertical ?? null,
-      reference_id: params.referenceId ?? null,
-      reference_type: params.referenceType ?? null,
-      metadata_json: {
-        evidence_urls: params.evidenceUrls ?? [],
-      },
+      context_id: params.referenceId ?? null,
+      context_type: params.referenceType ?? params.serviceVertical ?? null,
     })
     .select("*")
     .single();
@@ -56,7 +63,7 @@ export async function createSupportTicket(params: CreateTicketParams) {
 
   // Auto-alert for critical/high priority
   if (priority === "critical" || priority === "high") {
-    await (supabase as any).from("admin_alerts").insert({
+    await supabase.from("admin_alerts").insert({
       alert_type: "support_ticket_urgent",
       severity: priority,
       status: "open",
@@ -69,7 +76,7 @@ export async function createSupportTicket(params: CreateTicketParams) {
   return data;
 }
 
-/** Resolve a ticket and optionally apply reputation impact */
+/** Resolve a ticket */
 export async function resolveTicket(params: {
   ticketId: string;
   resolution: string;
@@ -77,11 +84,10 @@ export async function resolveTicket(params: {
   reputationImpactUserId?: string;
   reputationDelta?: number;
 }) {
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from("support_tickets")
     .update({
       status: params.resolutionType === "escalated" ? "escalated" : "resolved",
-      resolution: params.resolution,
       resolved_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     })
@@ -93,7 +99,7 @@ export async function resolveTicket(params: {
 
   // If dispute resolved against a user, impact their reputation
   if (params.reputationImpactUserId && params.reputationDelta) {
-    await (supabase as any).from("dino_learning_events").insert({
+    await supabase.from("dino_learning_events").insert({
       event_type: "dispute_reputation_impact",
       entity_id: params.reputationImpactUserId,
       entity_type: "user",
@@ -108,10 +114,10 @@ export async function resolveTicket(params: {
 
 /** Get all tickets for a user across all services */
 export async function getUserTickets(userId: string) {
-  const { data } = await (supabase as any)
+  const { data } = await supabase
     .from("support_tickets")
     .select("*")
-    .eq("user_id", userId)
+    .eq("requester_user_id", userId)
     .order("created_at", { ascending: false })
     .limit(50);
 
@@ -131,24 +137,4 @@ export function inferPriority(category: TicketCategory): TicketPriority {
     other: "low",
   };
   return priorityMap[category] ?? "medium";
-}
-
-/** Add evidence (photo/doc URL) to an existing ticket */
-export async function addTicketEvidence(ticketId: string, evidenceUrl: string) {
-  const { data: ticket } = await (supabase as any)
-    .from("support_tickets")
-    .select("metadata_json")
-    .eq("id", ticketId)
-    .single();
-
-  const existing = (ticket?.metadata_json as any)?.evidence_urls ?? [];
-  existing.push(evidenceUrl);
-
-  await (supabase as any)
-    .from("support_tickets")
-    .update({
-      metadata_json: { ...(ticket?.metadata_json ?? {}), evidence_urls: existing },
-      updated_at: new Date().toISOString(),
-    })
-    .eq("id", ticketId);
 }
