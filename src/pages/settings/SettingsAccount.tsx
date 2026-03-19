@@ -14,8 +14,8 @@ import CountrySelect from "@/components/ui/CountrySelect";
 
 export default function SettingsAccount() {
   const navigate = useNavigate();
-  useDinoPageAudit({ actorType: "user", actorId: user?.id, pageKey: "settings_account" });
   const { user } = useAuth();
+  useDinoPageAudit({ actorType: "user", actorId: user?.id, pageKey: "settings_account" });
   const { toast } = useToast();
   const { t } = useI18n();
   const [profile, setProfile] = useState({ name: "", email: "", country: "FR", locale: "fr", signature_url: "" });
