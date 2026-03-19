@@ -59,7 +59,7 @@ export async function decryptEnvelope(envelope: SecureEnvelopeV2): Promise<strin
       additionalData: envelope.aad ? new TextEncoder().encode(envelope.aad) : undefined,
     },
     key,
-    fromBase64(envelope.ciphertext)
+    fromBase64(envelope.ciphertext).buffer as ArrayBuffer
   );
 
   return new TextDecoder().decode(plain);
