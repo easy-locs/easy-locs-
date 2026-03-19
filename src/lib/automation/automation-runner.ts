@@ -132,7 +132,7 @@ export async function runWorkflowStep(workflowId: string): Promise<RunResult> {
     } as any).eq("id", workflowId);
 
     if (isFatal) {
-      platformBus.emit("automation:step_failed", { workflowId, error: err.message });
+      platformBus.emit("automation:step_failed", { workflowId, error: err.message }, "system");
     }
 
     return { workflowId, action: currentStep.action, completed: false, error: err.message };
