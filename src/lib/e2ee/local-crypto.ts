@@ -65,9 +65,9 @@ export async function decryptText(payload: EncryptedPayload, key: CryptoKey): Pr
   const iv = fromBase64(payload.iv);
   const ciphertext = fromBase64(payload.ciphertext);
   const plain = await crypto.subtle.decrypt(
-    { name: "AES-GCM", iv },
+    { name: "AES-GCM", iv: iv.buffer as ArrayBuffer },
     key,
-    ciphertext
+    ciphertext.buffer as ArrayBuffer
   );
   return new TextDecoder().decode(plain);
 }
