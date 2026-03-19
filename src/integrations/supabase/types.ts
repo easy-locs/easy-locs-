@@ -3928,6 +3928,39 @@ export type Database = {
           },
         ]
       }
+      dino_media_rules: {
+        Row: {
+          active: boolean
+          asset_type: string
+          created_at: string
+          crop: string
+          height: number
+          id: string
+          quality: string
+          width: number
+        }
+        Insert: {
+          active?: boolean
+          asset_type: string
+          created_at?: string
+          crop?: string
+          height: number
+          id?: string
+          quality?: string
+          width: number
+        }
+        Update: {
+          active?: boolean
+          asset_type?: string
+          created_at?: string
+          crop?: string
+          height?: number
+          id?: string
+          quality?: string
+          width?: number
+        }
+        Relationships: []
+      }
       dino_notifications: {
         Row: {
           actor_id: string | null
@@ -3967,6 +4000,42 @@ export type Database = {
           sent_at?: string | null
           status?: string
           template_key?: string
+        }
+        Relationships: []
+      }
+      dino_page_audits: {
+        Row: {
+          actor_id: string | null
+          actor_type: string
+          audit_json: Json
+          country: string | null
+          created_at: string
+          id: string
+          language: string | null
+          page_key: string | null
+          route: string
+        }
+        Insert: {
+          actor_id?: string | null
+          actor_type?: string
+          audit_json?: Json
+          country?: string | null
+          created_at?: string
+          id?: string
+          language?: string | null
+          page_key?: string | null
+          route: string
+        }
+        Update: {
+          actor_id?: string | null
+          actor_type?: string
+          audit_json?: Json
+          country?: string | null
+          created_at?: string
+          id?: string
+          language?: string | null
+          page_key?: string | null
+          route?: string
         }
         Relationships: []
       }
@@ -4015,6 +4084,36 @@ export type Database = {
           ui_score?: number
           updated_at?: string
           ux_score?: number
+        }
+        Relationships: []
+      }
+      dino_route_registry: {
+        Row: {
+          active: boolean
+          created_at: string
+          id: string
+          page_key: string
+          requires_auth: boolean
+          route: string
+          service_key: string | null
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          page_key: string
+          requires_auth?: boolean
+          route: string
+          service_key?: string | null
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          page_key?: string
+          requires_auth?: boolean
+          route?: string
+          service_key?: string | null
         }
         Relationships: []
       }
