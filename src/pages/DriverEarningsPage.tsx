@@ -3,22 +3,26 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { formatMoney } from "@/lib/currency";
-import { Wallet, Truck, Clock, TrendingUp } from "lucide-react";
+import { Wallet, Truck, Clock, TrendingUp, CheckCircle, XCircle, RefreshCw } from "lucide-react";
 
 export default function DriverEarningsPage() {
   const { user } = useAuth();
-  const [stats, setStats] = useState({ available: 0, pending: 0, today: 0, completed: 0, cancelled: 0, currency: "" });
+  const [stats, setStats] = useState({
+    available: 0, pending: 0, today: 0, completed: 0, cancelled: 0, active: 0, currency: "",
+  });
   const [recentPayouts, setRecentPayouts] = useState<any[]>([]);
   const [activeJobs, setActiveJobs] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!user?.id) return;
-    loadData();
+    if (user?.id) loadData();
   }, [user?.id]);
 
   const loadData = async () => {
     if (!user?.id) return;
+    setLoading(true);
 
     // Get driver wallet
     const { data: wallet } = await (supabase as any)
@@ -31,50 +35,71 @@ export default function DriverEarningsPage() {
 
     const currency = wallet?.currency ?? "";
 
-    // Get completed splits (settled payouts)
-    const { data: settledSplits } = await (supabase as any)
+    // Get splits (payouts)
+    const { data: allSplits } = await (supabase as any)
       .from("wallet_order_splits")
       .select("net_amount, split_status, created_at")
       .eq("split_party_type", "driver")
       .eq("wallet_account_id", wallet?.id ?? "none")
       .order("created_at", { ascending: false })
-      .limit(20);
+      .limit(50);
 
-    const settled = (settledSplits ?? []).filter((s: any) => s.split_status === "settled");
-    const pending = (settledSplits ?? []).filter((s: any) => s.split_status === "pending");
+    const settled = (allSplits ?? []).filter((s: any) => s.split_status === "settled");
+    const pending = (allSplits ?? []).filter((s: any) => s.split_status === "pending");
 
     const today = new Date().toISOString().split("T")[0];
-    const todayEarnings = settled.filter((s: any) => s.created_at?.startsWith(today)).reduce((sum: number, s: any) => sum + Number(s.net_amount ?? 0), 0);
+    const todayEarnings = settled
+      .filter((s: any) => s.created_at?.startsWith(today))
+      .reduce((sum: number, s: any) => sum + Number(s.net_amount ?? 0), 0);
+
+    // Active dispatch jobs
+    const { data: jobs } = await (supabase as any)
+      .from("dispatch_jobs_v2")
+      .select("*")
+      .eq("assigned_driver_id", user.id)
+      .in("dispatch_status", ["assigned", "accepted", "driver_arriving_pickup", "picked_up", "in_progress"])
+      .order("created_at", { ascending: false });
+
+    // Completed + cancelled counts
+    const { count: completedCount } = await (supabase as any)
+      .from("dispatch_jobs_v2")
+      .select("id", { count: "exact", head: true })
+      .eq("assigned_driver_id", user.id)
+      .in("dispatch_status", ["delivered", "validated"]);
+
+    const { count: cancelledCount } = await (supabase as any)
+      .from("dispatch_jobs_v2")
+      .select("id", { count: "exact", head: true })
+      .eq("assigned_driver_id", user.id)
+      .eq("dispatch_status", "cancelled");
 
     setStats({
       available: Number(wallet?.balance_cash ?? 0),
       pending: pending.reduce((sum: number, s: any) => sum + Number(s.net_amount ?? 0), 0),
       today: todayEarnings,
-      completed: settled.length,
-      cancelled: 0,
+      completed: completedCount ?? 0,
+      cancelled: cancelledCount ?? 0,
+      active: (jobs ?? []).length,
       currency,
     });
 
     setRecentPayouts(settled.slice(0, 10));
-
-    // Active dispatch jobs
-    const { data: jobs } = await (supabase as any)
-      .from("dispatch_jobs")
-      .select("*")
-      .eq("assigned_driver_id", user.id)
-      .in("status", ["assigned", "accepted", "picked_up", "in_progress"])
-      .order("created_at", { ascending: false });
-
     setActiveJobs(jobs ?? []);
+    setLoading(false);
   };
 
   const c = stats.currency;
 
   return (
     <div className="min-h-screen bg-background p-4 md:p-6 space-y-6">
-      <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
-        <Wallet className="w-6 h-6" /> Driver Earnings
-      </h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
+          <Wallet className="w-6 h-6" /> Driver Earnings
+        </h1>
+        <Button variant="outline" size="sm" onClick={loadData} disabled={loading}>
+          <RefreshCw className={`w-4 h-4 mr-1 ${loading ? "animate-spin" : ""}`} /> Refresh
+        </Button>
+      </div>
 
       {/* Summary cards */}
       <div className="grid grid-cols-2 gap-3">
@@ -100,8 +125,20 @@ export default function DriverEarningsPage() {
         </Card>
         <Card>
           <CardContent className="p-4 text-center">
-            <p className="text-xl font-bold text-foreground">{stats.completed}</p>
-            <p className="text-xs text-muted-foreground">Completed</p>
+            <div className="flex justify-center gap-3">
+              <div className="text-center">
+                <p className="text-lg font-bold text-foreground flex items-center gap-1">
+                  <CheckCircle className="w-4 h-4 text-green-500" /> {stats.completed}
+                </p>
+                <p className="text-xs text-muted-foreground">Done</p>
+              </div>
+              <div className="text-center">
+                <p className="text-lg font-bold text-foreground flex items-center gap-1">
+                  <XCircle className="w-4 h-4 text-red-400" /> {stats.cancelled}
+                </p>
+                <p className="text-xs text-muted-foreground">Cancelled</p>
+              </div>
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -109,15 +146,24 @@ export default function DriverEarningsPage() {
       {/* Active jobs */}
       {activeJobs.length > 0 && (
         <Card>
-          <CardHeader><CardTitle className="text-lg flex items-center gap-2"><Truck className="w-5 h-5" /> Active Jobs</CardTitle></CardHeader>
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Truck className="w-5 h-5" /> Active Jobs ({activeJobs.length})
+            </CardTitle>
+          </CardHeader>
           <CardContent className="space-y-2">
             {activeJobs.map(job => (
-              <div key={job.id} className="flex items-center justify-between p-2 border rounded text-sm">
-                <div>
-                  <Badge variant="secondary">{job.status}</Badge>
-                  <span className="ml-2 text-xs text-muted-foreground font-mono">{job.id?.slice(0, 8)}</span>
+              <div key={job.id} className="flex items-center justify-between p-3 border rounded-lg text-sm">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <Badge variant="secondary">{job.dispatch_status}</Badge>
+                    <span className="text-xs text-muted-foreground font-mono">{job.id?.slice(0, 8)}</span>
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    {Number(job.distance_km ?? 0).toFixed(1)} km • ~{job.estimated_duration_min} min
+                  </div>
                 </div>
-                <span>{formatMoney(job.quoted_fee ?? 0, job.currency)}</span>
+                <span className="font-medium">{formatMoney(Number(job.delivery_fee ?? 0), job.currency)}</span>
               </div>
             ))}
           </CardContent>
@@ -130,11 +176,15 @@ export default function DriverEarningsPage() {
         <CardContent className="space-y-2">
           {recentPayouts.map((p, i) => (
             <div key={i} className="flex items-center justify-between p-2 border rounded text-sm">
-              <span className="text-xs text-muted-foreground">{new Date(p.created_at).toLocaleDateString()}</span>
+              <span className="text-xs text-muted-foreground">
+                {new Date(p.created_at).toLocaleDateString()}
+              </span>
               <span className="font-medium text-green-600">+{formatMoney(Number(p.net_amount), c)}</span>
             </div>
           ))}
-          {!recentPayouts.length && <p className="text-muted-foreground text-sm">No payouts yet</p>}
+          {!recentPayouts.length && (
+            <p className="text-muted-foreground text-sm text-center py-4">No payouts yet</p>
+          )}
         </CardContent>
       </Card>
     </div>
