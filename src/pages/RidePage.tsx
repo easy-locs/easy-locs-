@@ -97,7 +97,7 @@ export default function RidePage() {
   const drivers = useMemo(() => {
     if (pickup?.lat && pickup?.lng) return mockDrivers(pickup.lat, pickup.lng);
     if (geo.lat && geo.lng) return mockDrivers(geo.lat, geo.lng);
-    return [];
+    return mockDrivers(DUBAI_CENTER.lat, DUBAI_CENTER.lng);
   }, [pickup, geo.lat, geo.lng]);
 
   const handlePickup = (place: SavedPlace) => {
