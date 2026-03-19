@@ -19,6 +19,7 @@ export default function PublicStorefrontBySlugPage() {
     if (!publicSlug) return;
     getPublicStorefrontBySlug(publicSlug).then(async (row) => {
       setStorefront(row);
+      setMerchantProfile(row?.merchant_onboarding_profiles ?? null);
       const merchantId = row?.merchant_profile_id;
       if (!merchantId) return;
       const [cats, menu] = await Promise.all([
