@@ -1,9 +1,11 @@
 /**
  * Wallet Engine v2 — Client-side layer that delegates sensitive ops to wallet-ops edge function.
  * Handles non-sensitive reads + orchestrates server-side calls.
+ * Currency-aware: never hardcodes AED.
  */
 import { supabase } from "@/integrations/supabase/client";
 import { platformBus } from "@/lib/shared/platform-bus";
+import { getCurrencyFromCountry } from "@/lib/currency";
 
 // ── Server-side wallet call ───────────────────────────────
 async function walletOps(action: string, payload: Record<string, unknown> = {}) {
@@ -15,14 +17,15 @@ async function walletOps(action: string, payload: Record<string, unknown> = {}) 
   return data;
 }
 
-// ── 1. getOrCreateWalletAccount (read + create — safe client-side) ──
+// ── 1. getOrCreateWalletAccount ───────────────────────────
 export async function getOrCreateWalletAccount(params: {
   ownerType: string;
   ownerUserId?: string;
   ownerProfileId?: string;
   currency?: string;
+  countryCode?: string;
 }) {
-  const currency = params.currency ?? "AED";
+  const currency = params.currency ?? getCurrencyFromCountry(params.countryCode);
   let query = (supabase as any).from("wallet_accounts").select("*").eq("owner_type", params.ownerType).eq("currency", currency);
   if (params.ownerUserId) query = query.eq("owner_user_id", params.ownerUserId);
   if (params.ownerProfileId) query = query.eq("owner_profile_id", params.ownerProfileId);
@@ -59,7 +62,7 @@ export async function verifyWalletPin(walletAccountId: string, rawPin: string) {
   return result?.verified === true;
 }
 
-// ── 4. calculateCommission (read-only, safe client-side) ─
+// ── 4. calculateCommission (read-only) ────────────────────
 export async function calculateCommission(params: {
   vertical: string;
   countryCode: string;
@@ -104,7 +107,7 @@ export async function calculateCommission(params: {
   };
 }
 
-// ── 5. calculateDeliveryPrice (read-only, safe client-side) ──
+// ── 5. calculateDeliveryPrice (read-only) ─────────────────
 export async function calculateDeliveryPrice(params: {
   countryCode: string;
   city?: string;
@@ -113,6 +116,8 @@ export async function calculateDeliveryPrice(params: {
   isNight?: boolean;
   isPremiumZone?: boolean;
 }) {
+  const currency = getCurrencyFromCountry(params.countryCode);
+
   let query = (supabase as any)
     .from("delivery_pricing_rules")
     .select("*")
@@ -134,7 +139,7 @@ export async function calculateDeliveryPrice(params: {
     rule = fb;
   }
 
-  if (!rule) return { deliveryFee: 5, breakdown: { base: 5, distance: 0, multipliers: 1 } };
+  if (!rule) return { deliveryFee: 5, currency, breakdown: { base: 5, distance: 0, multipliers: 1 } };
 
   let fee = Number(rule.base_fee) + params.distanceKm * Number(rule.per_km_rate);
   let multiplier = 1;
@@ -146,7 +151,7 @@ export async function calculateDeliveryPrice(params: {
   fee = Math.max(fee, Number(rule.min_fee));
   if (rule.max_fee != null) fee = Math.min(fee, Number(rule.max_fee));
 
-  return { deliveryFee: Number(fee.toFixed(2)), breakdown: { base: Number(rule.base_fee), distance: params.distanceKm * Number(rule.per_km_rate), multipliers: multiplier } };
+  return { deliveryFee: Number(fee.toFixed(2)), currency, breakdown: { base: Number(rule.base_fee), distance: params.distanceKm * Number(rule.per_km_rate), multipliers: multiplier } };
 }
 
 // ── 6. prepareOrderSplit (universal 3-party engine) ───────
@@ -159,6 +164,7 @@ export async function prepareOrderSplit(params: {
   driverWalletId?: string;
   platformWalletId: string;
   isSelfDelivery?: boolean;
+  currency?: string;
 }) {
   const driverAmount = params.driverWalletId && !params.isSelfDelivery ? params.deliveryFee : 0;
   const merchantAmount = Number((params.grossAmount - params.commissionAmount - driverAmount).toFixed(2));
@@ -173,7 +179,6 @@ export async function prepareOrderSplit(params: {
     splits.push({ order_id: params.orderId, split_party_type: "driver", wallet_account_id: params.driverWalletId, gross_amount: params.deliveryFee, net_amount: driverAmount, split_status: "pending" });
   }
 
-  // Self-delivery: merchant gets delivery fee
   if (params.isSelfDelivery && params.deliveryFee > 0) {
     splits[0].net_amount = Number((merchantAmount + params.deliveryFee).toFixed(2));
   }
@@ -199,12 +204,14 @@ export async function authorizeWalletPayment(params: {
   customerWalletId: string;
   amount: number;
   pin: string;
+  currency?: string;
 }) {
   const result = await walletOps("authorize", {
     order_id: params.orderId,
     customer_wallet_id: params.customerWalletId,
     amount: params.amount,
     pin: params.pin,
+    currency: params.currency,
   });
   platformBus.emit("wallet:payment_completed", { orderId: params.orderId, amount: params.amount, stage: "authorized" }, "wallet");
   return result;
@@ -241,7 +248,6 @@ export async function attachDriverToSplit(params: {
   driverWalletId: string;
   deliveryFee: number;
 }) {
-  // Check if driver split already exists
   const { data: existing } = await (supabase as any)
     .from("wallet_order_splits")
     .select("id")
@@ -266,7 +272,6 @@ export async function attachDriverToSplit(params: {
     });
   }
 
-  // Reduce merchant share by driver amount
   const { data: merchantSplit } = await (supabase as any)
     .from("wallet_order_splits")
     .select("id, net_amount")
