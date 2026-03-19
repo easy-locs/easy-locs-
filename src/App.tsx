@@ -260,6 +260,7 @@ const AdminOutreachPage = safeLazy(() => import("./pages/AdminOutreachPage"), "A
 const MerchantPosPage = safeLazy(() => import("./pages/MerchantPosPage"), "MerchantPosPage");
 const MerchantKitchenPage = safeLazy(() => import("./pages/MerchantKitchenPage"), "MerchantKitchenPage");
 const WalletCommerceTestPage = safeLazy(() => import("./pages/WalletCommerceTestPage"), "WalletCommerceTestPage");
+const AdminWalletDiagnosticsPage = safeLazy(() => import("./pages/AdminWalletDiagnosticsPage"), "AdminWalletDiagnosticsPage");
 
 // Travel universe
 const TravelHub = safeLazy(() => import("./pages/travel/TravelHub"), "TravelHub");
@@ -607,6 +608,7 @@ const App = () => (
               <Route path="/merchant/pos" element={<ProtectedRoute><MerchantPosPage /></ProtectedRoute>} />
               <Route path="/merchant/kitchen" element={<ProtectedRoute><MerchantKitchenPage /></ProtectedRoute>} />
               <Route path="/admin/wallet-test" element={<ProtectedRoute><WalletCommerceTestPage /></ProtectedRoute>} />
+              <Route path="/admin/wallet-diagnostics" element={<ProtectedRoute><AdminWalletDiagnosticsPage /></ProtectedRoute>} />
 
               {/* Guest / Public */}
               <Route path="/guest/checkout/:cartId" element={<GuestCheckoutPage />} />
