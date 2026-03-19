@@ -332,24 +332,58 @@ export class WebRtcCallManager {
 
   destroy() {
     debugLog.warn("call", "pc_destroy", "Destroying call manager");
-    this.localStream?.getTracks().forEach((t) => t.stop());
+
+    // Stop all local tracks
+    this.localStream?.getTracks().forEach((t) => {
+      t.stop();
+      debugLog.info("call", "camera_stopped", `${t.kind} track stopped`);
+    });
+
+    // Stop all remote tracks
     this.remoteStream.getTracks().forEach((t) => t.stop());
+
+    // Close peer connection
     this.pc?.close();
     this.pc = null;
     this.localStream = null;
     this.remoteStream = new MediaStream();
     this.initialized = false;
 
+    // Reset media status
     setMediaStatus({ cameraReady: false, audioReady: false, fallbackActive: false, error: null });
 
+    // Cleanup audio element
     if (this.remoteAudioEl) {
       this.remoteAudioEl.srcObject = null;
       this.remoteAudioEl.remove();
       this.remoteAudioEl = null;
     }
+
+    // Cleanup video element
     if (this.remoteVideoEl) {
       this.remoteVideoEl.srcObject = null;
       this.remoteVideoEl = null;
     }
   }
+}
+
+/**
+ * Setup visibility change listener to cleanup stale calls on background.
+ */
+export function setupVisibilityCleanup(getManager: () => WebRtcCallManager | null, getCallState: () => string | null) {
+  const handler = () => {
+    if (document.visibilityState === "hidden") {
+      const state = getCallState();
+      // If call already ended/rejected/failed, cleanup immediately
+      if (state && ["ended", "rejected", "failed"].includes(state)) {
+        const mgr = getManager();
+        if (mgr) {
+          debugLog.warn("call", "visibility_cleanup", "Cleaning up ended call on background");
+          mgr.destroy();
+        }
+      }
+    }
+  };
+  document.addEventListener("visibilitychange", handler);
+  return () => document.removeEventListener("visibilitychange", handler);
 }
