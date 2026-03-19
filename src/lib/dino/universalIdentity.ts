@@ -28,8 +28,8 @@ export interface UniversalIdentity {
 export async function resolveUniversalIdentity(userId: string): Promise<UniversalIdentity> {
   const [profileRes, serviceRes, driverRes, orgRes, orbitRes] = await Promise.all([
     supabase.from("user_profiles").select("full_name, avatar_url").eq("id", userId).maybeSingle(),
-    (supabase as any).from("service_profiles").select("profile_type").eq("user_id", userId),
-    (supabase as any).from("driver_profiles").select("service_mode").eq("user_id", userId),
+    supabase.from("service_profiles").select("profile_type").eq("user_id", userId),
+    supabase.from("driver_profiles").select("service_mode").eq("user_id", userId),
     supabase.from("org_members").select("role, org_id").eq("user_id", userId),
     supabase.from("orbit_identity_profiles").select("public_handle").eq("user_id", userId).maybeSingle(),
   ]);
