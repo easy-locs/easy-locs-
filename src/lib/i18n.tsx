@@ -1101,6 +1101,7 @@ const pageFr: Record<string, string> = {
   "page.settings.connect_stripe": "Connecter Stripe",
   "page.settings.default_provider": "Fournisseur par défaut",
   "page.settings.bank_transfer": "Virement bancaire",
+  "page.settings.bank_transfer_desc": "Les clients paient directement par virement bancaire",
   "page.settings.saas_disclaimer": "Easy-Locs ne transite, n'encaisse, ni ne bloque aucun fonds. Les paiements s'effectuent directement du locataire vers votre compte.",
   "page.settings.sepa_desc": "Prélèvement SEPA automatique (zone SEPA uniquement)",
   "page.settings.sepa_eligible": "Zone SEPA éligible",
