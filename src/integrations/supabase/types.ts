@@ -2047,6 +2047,45 @@ export type Database = {
           },
         ]
       }
+      commission_rules: {
+        Row: {
+          active: boolean
+          city: string | null
+          commission_discount: number
+          commission_mode: string
+          commission_rate: number
+          country_code: string
+          created_at: string
+          id: string
+          updated_at: string
+          vertical: string
+        }
+        Insert: {
+          active?: boolean
+          city?: string | null
+          commission_discount?: number
+          commission_mode?: string
+          commission_rate?: number
+          country_code: string
+          created_at?: string
+          id?: string
+          updated_at?: string
+          vertical: string
+        }
+        Update: {
+          active?: boolean
+          city?: string | null
+          commission_discount?: number
+          commission_mode?: string
+          commission_rate?: number
+          country_code?: string
+          created_at?: string
+          id?: string
+          updated_at?: string
+          vertical?: string
+        }
+        Relationships: []
+      }
       companies: {
         Row: {
           city: string | null
@@ -3344,6 +3383,54 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      delivery_pricing_rules: {
+        Row: {
+          active: boolean
+          base_fee: number
+          city: string | null
+          country_code: string
+          created_at: string
+          id: string
+          max_fee: number | null
+          min_fee: number
+          night_multiplier: number
+          peak_multiplier: number
+          per_km_rate: number
+          premium_zone_multiplier: number
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          base_fee?: number
+          city?: string | null
+          country_code: string
+          created_at?: string
+          id?: string
+          max_fee?: number | null
+          min_fee?: number
+          night_multiplier?: number
+          peak_multiplier?: number
+          per_km_rate?: number
+          premium_zone_multiplier?: number
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          base_fee?: number
+          city?: string | null
+          country_code?: string
+          created_at?: string
+          id?: string
+          max_fee?: number | null
+          min_fee?: number
+          night_multiplier?: number
+          peak_multiplier?: number
+          per_km_rate?: number
+          premium_zone_multiplier?: number
+          updated_at?: string
+        }
+        Relationships: []
       }
       delivery_proofs: {
         Row: {
@@ -8385,19 +8472,31 @@ export type Database = {
           created_at: string | null
           currency: string | null
           customer_user_id: string
+          customer_wallet_id: string | null
           delivery_fee: number | null
+          driver_amount: number | null
+          driver_wallet_id: string | null
           dropoff_address_id: string | null
+          gross_amount: number | null
           id: string
+          merchant_net_amount: number | null
           merchant_profile_id: string | null
+          merchant_wallet_id: string | null
           notes: string | null
+          order_mode: string | null
           order_type: string
+          payment_mode: string | null
+          payment_status: string | null
           pickup_address_id: string | null
+          platform_commission_amount: number | null
           service_fee: number | null
           service_mode: string
+          settlement_status: string | null
           status: string | null
           subtotal: number | null
           total_amount: number | null
           updated_at: string | null
+          wallet_status: string | null
           workspace_id: string | null
         }
         Insert: {
@@ -8406,19 +8505,31 @@ export type Database = {
           created_at?: string | null
           currency?: string | null
           customer_user_id: string
+          customer_wallet_id?: string | null
           delivery_fee?: number | null
+          driver_amount?: number | null
+          driver_wallet_id?: string | null
           dropoff_address_id?: string | null
+          gross_amount?: number | null
           id?: string
+          merchant_net_amount?: number | null
           merchant_profile_id?: string | null
+          merchant_wallet_id?: string | null
           notes?: string | null
+          order_mode?: string | null
           order_type?: string
+          payment_mode?: string | null
+          payment_status?: string | null
           pickup_address_id?: string | null
+          platform_commission_amount?: number | null
           service_fee?: number | null
           service_mode?: string
+          settlement_status?: string | null
           status?: string | null
           subtotal?: number | null
           total_amount?: number | null
           updated_at?: string | null
+          wallet_status?: string | null
           workspace_id?: string | null
         }
         Update: {
@@ -8427,27 +8538,60 @@ export type Database = {
           created_at?: string | null
           currency?: string | null
           customer_user_id?: string
+          customer_wallet_id?: string | null
           delivery_fee?: number | null
+          driver_amount?: number | null
+          driver_wallet_id?: string | null
           dropoff_address_id?: string | null
+          gross_amount?: number | null
           id?: string
+          merchant_net_amount?: number | null
           merchant_profile_id?: string | null
+          merchant_wallet_id?: string | null
           notes?: string | null
+          order_mode?: string | null
           order_type?: string
+          payment_mode?: string | null
+          payment_status?: string | null
           pickup_address_id?: string | null
+          platform_commission_amount?: number | null
           service_fee?: number | null
           service_mode?: string
+          settlement_status?: string | null
           status?: string | null
           subtotal?: number | null
           total_amount?: number | null
           updated_at?: string | null
+          wallet_status?: string | null
           workspace_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "orders_customer_wallet_id_fkey"
+            columns: ["customer_wallet_id"]
+            isOneToOne: false
+            referencedRelation: "wallet_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_driver_wallet_id_fkey"
+            columns: ["driver_wallet_id"]
+            isOneToOne: false
+            referencedRelation: "wallet_accounts"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "orders_dropoff_address_id_fkey"
             columns: ["dropoff_address_id"]
             isOneToOne: false
             referencedRelation: "saved_addresses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_merchant_wallet_id_fkey"
+            columns: ["merchant_wallet_id"]
+            isOneToOne: false
+            referencedRelation: "wallet_accounts"
             referencedColumns: ["id"]
           },
           {
@@ -9043,6 +9187,36 @@ export type Database = {
           },
         ]
       }
+      payout_profiles: {
+        Row: {
+          created_at: string
+          id: string
+          owner_profile_id: string
+          owner_type: string
+          payout_mode: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          owner_profile_id: string
+          owner_type: string
+          payout_mode?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          owner_profile_id?: string
+          owner_type?: string
+          payout_mode?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       permission_templates: {
         Row: {
           created_at: string | null
@@ -9111,6 +9285,50 @@ export type Database = {
           verified_at?: string | null
         }
         Relationships: []
+      }
+      pos_orders: {
+        Row: {
+          created_at: string
+          id: string
+          kitchen_status: string
+          notes: string | null
+          order_id: string
+          order_type: string
+          source_type: string
+          table_number: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          kitchen_status?: string
+          notes?: string | null
+          order_id: string
+          order_type: string
+          source_type: string
+          table_number?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          kitchen_status?: string
+          notes?: string | null
+          order_id?: string
+          order_type?: string
+          source_type?: string
+          table_number?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pos_orders_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: true
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       pricing_rules: {
         Row: {
@@ -9708,6 +9926,60 @@ export type Database = {
           user_id?: string | null
         }
         Relationships: []
+      }
+      qr_order_targets: {
+        Row: {
+          active: boolean
+          created_at: string
+          id: string
+          merchant_profile_id: string
+          storefront_page_id: string
+          table_number: string | null
+          target_code: string
+          target_label: string
+          target_type: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          merchant_profile_id: string
+          storefront_page_id: string
+          table_number?: string | null
+          target_code: string
+          target_label: string
+          target_type: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          merchant_profile_id?: string
+          storefront_page_id?: string
+          table_number?: string | null
+          target_code?: string
+          target_label?: string
+          target_type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "qr_order_targets_merchant_profile_id_fkey"
+            columns: ["merchant_profile_id"]
+            isOneToOne: false
+            referencedRelation: "merchant_onboarding_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "qr_order_targets_storefront_page_id_fkey"
+            columns: ["storefront_page_id"]
+            isOneToOne: false
+            referencedRelation: "storefront_pages"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       real_estate_leads: {
         Row: {
@@ -18240,10 +18512,14 @@ export type Database = {
           account_type: string | null
           available_balance: number | null
           balance: number | null
+          balance_bonus: number
+          balance_cash: number
+          balance_locked: number
           created_at: string | null
           currency: string
           external_ref: string | null
           id: string
+          owner_profile_id: string | null
           owner_type: string | null
           owner_user_id: string | null
           pending_balance: number | null
@@ -18255,10 +18531,14 @@ export type Database = {
           account_type?: string | null
           available_balance?: number | null
           balance?: number | null
+          balance_bonus?: number
+          balance_cash?: number
+          balance_locked?: number
           created_at?: string | null
           currency: string
           external_ref?: string | null
           id?: string
+          owner_profile_id?: string | null
           owner_type?: string | null
           owner_user_id?: string | null
           pending_balance?: number | null
@@ -18270,10 +18550,14 @@ export type Database = {
           account_type?: string | null
           available_balance?: number | null
           balance?: number | null
+          balance_bonus?: number
+          balance_cash?: number
+          balance_locked?: number
           created_at?: string | null
           currency?: string
           external_ref?: string | null
           id?: string
+          owner_profile_id?: string | null
           owner_type?: string | null
           owner_user_id?: string | null
           pending_balance?: number | null
@@ -18424,6 +18708,101 @@ export type Database = {
             foreignKeyName: "wallet_ledger_entries_wallet_account_id_fkey"
             columns: ["wallet_account_id"]
             isOneToOne: false
+            referencedRelation: "wallet_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      wallet_order_splits: {
+        Row: {
+          created_at: string
+          gross_amount: number
+          id: string
+          metadata: Json
+          net_amount: number
+          order_id: string
+          split_party_type: string
+          split_status: string
+          updated_at: string
+          wallet_account_id: string
+        }
+        Insert: {
+          created_at?: string
+          gross_amount?: number
+          id?: string
+          metadata?: Json
+          net_amount?: number
+          order_id: string
+          split_party_type: string
+          split_status?: string
+          updated_at?: string
+          wallet_account_id: string
+        }
+        Update: {
+          created_at?: string
+          gross_amount?: number
+          id?: string
+          metadata?: Json
+          net_amount?: number
+          order_id?: string
+          split_party_type?: string
+          split_status?: string
+          updated_at?: string
+          wallet_account_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wallet_order_splits_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wallet_order_splits_wallet_account_id_fkey"
+            columns: ["wallet_account_id"]
+            isOneToOne: false
+            referencedRelation: "wallet_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      wallet_pins: {
+        Row: {
+          created_at: string
+          failed_attempts: number
+          id: string
+          last_verified_at: string | null
+          locked_until: string | null
+          pin_hash: string
+          updated_at: string
+          wallet_account_id: string
+        }
+        Insert: {
+          created_at?: string
+          failed_attempts?: number
+          id?: string
+          last_verified_at?: string | null
+          locked_until?: string | null
+          pin_hash: string
+          updated_at?: string
+          wallet_account_id: string
+        }
+        Update: {
+          created_at?: string
+          failed_attempts?: number
+          id?: string
+          last_verified_at?: string | null
+          locked_until?: string | null
+          pin_hash?: string
+          updated_at?: string
+          wallet_account_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wallet_pins_wallet_account_id_fkey"
+            columns: ["wallet_account_id"]
+            isOneToOne: true
             referencedRelation: "wallet_accounts"
             referencedColumns: ["id"]
           },
