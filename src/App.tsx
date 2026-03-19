@@ -335,6 +335,7 @@ const SettingsAddressesPage = safeLazy(() => import("./pages/settings/SettingsAd
 const SettingsNotificationsPage = safeLazy(() => import("./pages/settings/SettingsNotifications"), "SettingsNotifications");
 const SettingsSecurityPage = safeLazy(() => import("./pages/settings/SettingsSecurity"), "SettingsSecurity");
 const SettingsPreferencesPage = safeLazy(() => import("./pages/settings/SettingsPreferences"), "SettingsPreferences");
+const SettingsSupportPage = safeLazy(() => import("./pages/settings/SettingsSupport"), "SettingsSupport");
 
 // Deep-link public pages
 const UserProfilePage = safeLazy(() => import("./pages/deep-link/UserProfilePage"), "UserProfilePage");
