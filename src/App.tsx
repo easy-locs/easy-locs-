@@ -264,6 +264,10 @@ const AdminWalletDiagnosticsPage = safeLazy(() => import("./pages/AdminWalletDia
 const AdminDispatchDiagnosticsPage = safeLazy(() => import("./pages/AdminDispatchDiagnosticsPage"), "AdminDispatchDiagnosticsPage");
 const AdminAutomationsPage = safeLazy(() => import("./pages/AdminAutomationsPage"), "AdminAutomationsPage");
 const DriverEarningsPage = safeLazy(() => import("./pages/DriverEarningsPage"), "DriverEarningsPage");
+const DriverMissionInboxPage = safeLazy(() => import("./pages/DriverMissionInboxPage"), "DriverMissionInboxPage");
+const DriverActiveMissionPage = safeLazy(() => import("./pages/DriverActiveMissionPage"), "DriverActiveMissionPage");
+const CustomerDeliveryTrackingPage = safeLazy(() => import("./pages/CustomerDeliveryTrackingPage"), "CustomerDeliveryTrackingPage");
+const MerchantDeliveryMonitorPage = safeLazy(() => import("./pages/MerchantDeliveryMonitorPage"), "MerchantDeliveryMonitorPage");
 
 // Travel universe
 const TravelHub = safeLazy(() => import("./pages/travel/TravelHub"), "TravelHub");
@@ -615,6 +619,10 @@ const App = () => (
               <Route path="/admin/dispatch-diagnostics" element={<ProtectedRoute><AdminDispatchDiagnosticsPage /></ProtectedRoute>} />
               <Route path="/admin/automations" element={<ProtectedRoute><AdminAutomationsPage /></ProtectedRoute>} />
               <Route path="/driver/earnings" element={<ProtectedRoute><DriverEarningsPage /></ProtectedRoute>} />
+              <Route path="/driver/missions" element={<ProtectedRoute><DriverMissionInboxPage /></ProtectedRoute>} />
+              <Route path="/driver/mission/:dispatchJobId" element={<ProtectedRoute><DriverActiveMissionPage /></ProtectedRoute>} />
+              <Route path="/tracking/order/:orderId" element={<CustomerDeliveryTrackingPage />} />
+              <Route path="/merchant/delivery-monitor" element={<ProtectedRoute><MerchantDeliveryMonitorPage /></ProtectedRoute>} />
 
               {/* Guest / Public */}
               <Route path="/guest/checkout/:cartId" element={<GuestCheckoutPage />} />
