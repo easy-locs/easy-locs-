@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatMoney } from "@/lib/currency";
 import { MapPin, Navigation, Package, CheckCircle, Loader2, AlertTriangle, Clock } from "lucide-react";
+import LocationPermissionGate from "@/components/location/LocationPermissionGate";
 import { toast } from "sonner";
 
 const MILESTONES: { key: DeliveryMilestone; label: string; icon: any }[] = [
@@ -68,6 +69,7 @@ export default function DriverActiveMissionPage() {
   const terminal = isTerminalStatus(job.dispatch_status);
 
   return (
+    <LocationPermissionGate fallbackMessage="Location is required for active delivery tracking.">
     <div className="min-h-screen bg-background p-4 space-y-4">
       <h1 className="text-xl font-bold text-foreground flex items-center gap-2">
         <Package className="w-5 h-5" /> Active Mission
@@ -153,5 +155,6 @@ export default function DriverActiveMissionPage() {
         </Card>
       )}
     </div>
+    </LocationPermissionGate>
   );
 }

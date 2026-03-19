@@ -12,10 +12,12 @@ interface RouteEntry {
 
 const ROUTE_REGISTRY: RouteEntry[] = [
   { label: "QR Entry", path: routes.qrEntry("TEST"), group: "qr" },
+  { label: "QR Generate", path: routes.qrGenerate(), group: "admin" },
   { label: "Order Tracking", path: routes.tracking("TEST"), group: "public" },
   { label: "Merchant POS", path: routes.merchantPos(), group: "merchant" },
   { label: "Merchant Kitchen", path: routes.merchantKitchen(), group: "merchant" },
   { label: "Delivery Monitor", path: routes.merchantDelivery(), group: "merchant" },
+  { label: "Merchant Dashboard", path: routes.merchantDashboard(), group: "merchant" },
   { label: "Driver Missions", path: routes.driverMissions(), group: "driver" },
   { label: "Driver Earnings", path: routes.driverEarnings(), group: "driver" },
   { label: "Driver Mission Detail", path: routes.driverMission("TEST"), group: "driver" },
@@ -28,6 +30,10 @@ const ROUTE_REGISTRY: RouteEntry[] = [
   { label: "Growth Dashboard", path: routes.growthDashboard(), group: "admin" },
   { label: "Growth Engine", path: routes.growthEngine(), group: "admin" },
   { label: "Import Test Batches", path: routes.importTestBatches(), group: "admin" },
+  { label: "Restaurant Seeder", path: routes.restaurantSeedTest(), group: "admin" },
+  { label: "Route Audit", path: routes.routeAudit(), group: "admin" },
+  { label: "Alert Center", path: routes.alertCenter(), group: "admin" },
+  { label: "Orbit Call Test", path: routes.orbitCallTest(), group: "admin" },
   { label: "Coming Soon", path: routes.comingSoon("test-slug"), group: "public" },
   { label: "City Market", path: routes.cityMarket("dubai"), group: "public" },
 ];
