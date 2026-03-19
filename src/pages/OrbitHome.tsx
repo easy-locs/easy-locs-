@@ -102,12 +102,14 @@ const SectionLabel = memo(function SectionLabel({ title, action, onAction }: { t
 
 /* ═══ Categories ═══ */
 const CATEGORIES = [
-  { icon: "🍽️", label: "Food", path: "/explore?cat=food" },
+  { icon: "🍽️", label: "Food", path: "/food" },
   { icon: "🛍️", label: "Shops", path: "/shops" },
   { icon: "🏠", label: "Property", path: "/real-estate" },
   { icon: "🚕", label: "Taxi", path: "/ride" },
   { icon: "📦", label: "Send", path: "/send" },
   { icon: "✈️", label: "Travel", path: "/travel" },
+  { icon: "🛒", label: "Grocery", path: "/grocery" },
+  { icon: "🔧", label: "Services", path: "/services-hub" },
 ] as const;
 
 /* ═══ Shop card for carousels ═══ */
