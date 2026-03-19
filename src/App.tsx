@@ -14,6 +14,7 @@ import AppLockGuard from "@/components/security/AppLockGuard";
 import SplashScreen from "@/components/brand/SplashScreen";
 import BrandSuccessFlash from "@/components/brand/BrandSuccessFlash";
 import BrandLoadingSpinner from "@/components/brand/BrandLoadingSpinner";
+import EasyLocsLogo from "@/components/brand/EasyLocsLogo";
 import UpdateNotification from "@/components/UpdateNotification";
 import { SkipLink } from "@/components/ui/a11y";
 import SmartInstallBanner from "@/components/pwa/SmartInstallBanner";
