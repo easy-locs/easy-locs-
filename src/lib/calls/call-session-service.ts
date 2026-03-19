@@ -1,7 +1,5 @@
-/**
- * Call Session Service — CRUD for orbit_call_sessions + orbit_call_signals.
- */
 import { supabase } from "@/integrations/supabase/client";
+import { debugLog } from "@/lib/debug/runtime-debug-bus";
 import type { CallSessionRecord, CallType, SignalType } from "./call-types";
 
 export async function createCallSession(params: {
@@ -9,6 +7,8 @@ export async function createCallSession(params: {
   calleeUserId: string;
   callType: CallType;
 }): Promise<CallSessionRecord> {
+  debugLog.info("call", "create_call_session_start", `${params.callerUserId} -> ${params.calleeUserId}`, params);
+
   const { data, error } = await (supabase as any)
     .from("orbit_call_sessions")
     .insert({
@@ -21,7 +21,12 @@ export async function createCallSession(params: {
     .select("*")
     .single();
 
-  if (error) throw error;
+  if (error) {
+    debugLog.error("call", "create_call_session_error", error.message);
+    throw error;
+  }
+
+  debugLog.success("call", "create_call_session_success", data.id, data);
   return data as CallSessionRecord;
 }
 
@@ -32,6 +37,12 @@ export async function sendCallSignal(params: {
   signalType: SignalType;
   payload: Record<string, unknown>;
 }) {
+  debugLog.info("call", "send_signal_start", params.signalType, {
+    sessionId: params.sessionId,
+    senderUserId: params.senderUserId,
+    receiverUserId: params.receiverUserId,
+  });
+
   const { error } = await (supabase as any)
     .from("orbit_call_signals")
     .insert({
@@ -42,7 +53,15 @@ export async function sendCallSignal(params: {
       payload: params.payload,
     });
 
-  if (error) throw error;
+  if (error) {
+    debugLog.error("call", "send_signal_error", error.message, params);
+    throw error;
+  }
+
+  debugLog.success("call", "send_signal_success", params.signalType, {
+    sessionId: params.sessionId,
+  });
+
   return { ok: true };
 }
 
