@@ -27,8 +27,7 @@ export async function upgradeToPriorityPro(proId: string, tier: PartnerTier = "p
   const boostMultiplier = tier === "elite" ? 2.0 : 1.5;
   const badge = tier === "elite" ? "ELITE PARTNER" : "TOP PARTNER";
 
-  // Update tier in performance table
-  await supabase
+  const { error: updateErr } = await supabase
     .from("dino_pro_performance")
     .update({
       tier,
@@ -37,13 +36,17 @@ export async function upgradeToPriorityPro(proId: string, tier: PartnerTier = "p
     })
     .eq("pro_id", proId);
 
-  // Apply visibility boost
+  if (updateErr) {
+    console.error("[PartnerEngine] upgradeToPriorityPro failed:", updateErr);
+    throw new Error(`upgradeToPriorityPro: ${updateErr.message} (code: ${updateErr.code}, details: ${updateErr.details})`);
+  }
+
   await applyBoostOverride({
     entityId: proId,
     entityType: "pro",
     multiplier: boostMultiplier,
     reason: `partner_${tier}`,
-    durationMs: 7 * 24 * 3600 * 1000, // 7 days
+    durationMs: 7 * 24 * 3600 * 1000,
   });
 }
 
