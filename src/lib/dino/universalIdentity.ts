@@ -38,8 +38,9 @@ export async function resolveUniversalIdentity(userId: string): Promise<Universa
 
   // Service profile roles
   for (const sp of serviceRes.data ?? []) {
-    if (sp.profile_type && !roles.includes(sp.profile_type)) {
-      roles.push(sp.profile_type as UniversalRole);
+    const pt = sp.profile_type as UniversalRole | null;
+    if (pt && !roles.includes(pt)) {
+      roles.push(pt);
     }
   }
 
