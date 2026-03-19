@@ -1,8 +1,11 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { BackCard } from "@/components/ui/back-card";
 import { getPublicStorefrontBySlug } from "@/lib/storefront/public-access";
 import { getStorefrontCategories, getStorefrontItems } from "@/lib/storefront/public-storefront";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Store } from "lucide-react";
 
 export default function PublicStorefrontBySlugPage() {
   const { publicSlug } = useParams();
