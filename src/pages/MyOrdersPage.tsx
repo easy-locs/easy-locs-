@@ -7,7 +7,7 @@ import BuyerOrderTracker from "@/components/storefront/BuyerOrderTracker";
 import BuyerDashboard from "@/components/storefront/BuyerDashboard";
 import { useAuth } from "@/contexts/AuthContext";
 import { useStorefrontRealtime } from "@/hooks/useStorefrontRealtime";
-import { ArrowLeft, ShoppingBag } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 export default function MyOrdersPage() {
@@ -18,10 +18,10 @@ export default function MyOrdersPage() {
   return (
     <>
       <SEOHead title="My Orders" description="Track your orders in real time." />
-      <div className="min-h-[100dvh] flex flex-col bg-background">
+      <div className="min-h-[100dvh] flex flex-col bg-background" data-orders-page>
         <header className="flex items-center gap-3 px-4 pt-4 pb-3">
           <button
-            onClick={() => navigate(-1)}
+            onClick={() => navigate("/home")}
             className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-95 transition-transform"
             style={{ background: "hsl(var(--muted))" }}
           >

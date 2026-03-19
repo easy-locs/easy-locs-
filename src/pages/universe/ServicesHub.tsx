@@ -51,7 +51,7 @@ export default function ServicesHub() {
       <h2 className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider mb-2">Categories</h2>
       <div className="grid grid-cols-4 gap-3 mb-6">
         {SERVICE_GROUPS.map((g) => (
-          <button key={g.label} onClick={() => {}} className="flex flex-col items-center gap-1.5 active:scale-90 transition-transform">
+          <button key={g.label} className="flex flex-col items-center gap-1.5 active:scale-90 transition-transform">
             <div className="w-14 h-14 rounded-2xl flex items-center justify-center" style={{ background: "hsl(var(--muted))" }}>
               <span className="text-2xl">{g.icon}</span>
             </div>

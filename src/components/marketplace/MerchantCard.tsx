@@ -39,11 +39,12 @@ export default function MerchantCard({
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: index * 0.04 }}
+        data-card="merchant"
       >
         <Link
           to={to}
           className="block rounded-2xl overflow-hidden active:scale-[0.97] transition-transform"
-          style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border) / 0.12)", boxShadow: "var(--shadow-card)" }}
+          style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border) / 0.12)" }}
         >
           <div className="aspect-[16/10] relative overflow-hidden">
             <Img className="w-full h-full" />
@@ -92,11 +93,12 @@ export default function MerchantCard({
       initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.04 }}
+      data-card="merchant"
     >
       <Link
         to={to}
         className="flex gap-3 p-3 rounded-2xl active:scale-[0.98] transition-transform"
-        style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border) / 0.12)", boxShadow: "var(--shadow-card)" }}
+        style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border) / 0.12)" }}
       >
         <div className="w-20 h-20 rounded-xl overflow-hidden shrink-0 relative">
           <Img className="w-full h-full" />

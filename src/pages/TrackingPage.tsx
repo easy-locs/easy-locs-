@@ -1,11 +1,11 @@
 /**
- * TrackingPage — Live order status timeline + map placeholder.
+ * TrackingPage — Live order status timeline.
  * Route: /tracking/:orderId
  */
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowLeft, CheckCircle2, Clock, Package, Truck, MapPin } from "lucide-react";
+import { ArrowLeft, CheckCircle2, Clock, Package, Truck, MapPin, Headphones } from "lucide-react";
 import { motion } from "framer-motion";
 
 const STEPS = [
@@ -64,6 +64,17 @@ export default function TrackingPage() {
         </div>
       </div>
 
+      {/* ETA banner */}
+      {!isLoading && order && currentStep < STEPS.length - 1 && (
+        <div className="mx-4 mt-3 rounded-2xl p-4 flex items-center gap-3" style={{ background: "hsl(var(--primary) / 0.08)" }}>
+          <Clock className="w-5 h-5 shrink-0" style={{ color: "hsl(var(--primary))" }} />
+          <div>
+            <p className="text-sm font-bold text-foreground">Estimated delivery</p>
+            <p className="text-xs text-muted-foreground">25–35 min</p>
+          </div>
+        </div>
+      )}
+
       {/* Loading */}
       {isLoading && (
         <div className="flex items-center justify-center py-12">
@@ -73,14 +84,13 @@ export default function TrackingPage() {
 
       {/* Timeline */}
       {!isLoading && order && (
-        <div className="px-6 mt-6 pb-24">
+        <div className="px-6 mt-4 pb-24">
           <div className="space-y-0">
             {STEPS.map((step, i) => {
               const done = i <= currentStep;
               const active = i === currentStep;
               return (
                 <div key={step.key} className="flex gap-4">
-                  {/* Line + dot */}
                   <div className="flex flex-col items-center">
                     <div
                       className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 transition-colors"
@@ -95,9 +105,8 @@ export default function TrackingPage() {
                       <div className="w-0.5 h-8 my-1" style={{ background: i < currentStep ? "hsl(var(--primary))" : "hsl(var(--border))" }} />
                     )}
                   </div>
-                  {/* Label */}
                   <div className="pt-1.5">
-                    <p className={`text-sm font-semibold ${done ? "" : "text-muted-foreground"}`} style={done ? { color: "hsl(var(--foreground))" } : {}}>
+                    <p className={`text-sm font-semibold ${done ? "text-foreground" : "text-muted-foreground"}`}>
                       {step.label}
                     </p>
                     {active && (
@@ -108,6 +117,21 @@ export default function TrackingPage() {
               );
             })}
           </div>
+
+          {/* Support shortcut */}
+          <button
+            onClick={() => navigate("/settings/support")}
+            className="w-full mt-6 flex items-center gap-3 p-3.5 rounded-2xl active:scale-[0.98] transition-transform"
+            style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border) / 0.12)" }}
+          >
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: "hsl(var(--primary) / 0.08)" }}>
+              <Headphones className="w-4.5 h-4.5" style={{ color: "hsl(var(--primary))" }} />
+            </div>
+            <div className="flex-1 text-left">
+              <p className="text-sm font-semibold text-foreground">Need help?</p>
+              <p className="text-[11px] text-muted-foreground">Contact support about this order</p>
+            </div>
+          </button>
         </div>
       )}
     </div>

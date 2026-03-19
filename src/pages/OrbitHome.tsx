@@ -188,7 +188,7 @@ export default function OrbitHome() {
   [conversations]);
 
   return (
-    <div className="flex flex-col min-h-[100dvh] bg-background">
+    <div className="flex flex-col min-h-[100dvh] bg-background" data-marketplace-home>
       <SEOHead title="Easy-Locs — Your Super App" description="Food, Ride, Property, Shops & more." />
 
       {/* ── Top Bar ── */}
@@ -223,6 +223,8 @@ export default function OrbitHome() {
         {/* Search bar */}
         <div className="px-4 pb-3 max-w-md mx-auto">
           <button
+            data-search
+            data-primary-cta
             onClick={() => handleNav("/explore")}
             className="w-full flex items-center gap-2.5 px-4 py-2.5 rounded-xl active:scale-[0.98] transition-transform"
             style={{ background: "hsl(var(--muted))" }}
@@ -251,20 +253,24 @@ export default function OrbitHome() {
           <PromoBanner onNav={handleNav} />
 
           {/* 3. Trending Near You */}
-          <MarketplaceSection
-            title="🔥 Trending near you"
-            seeAllPath="/explore"
-            items={toItems(trending)}
-            variant="horizontal-scroll"
-          />
+          {trending.length > 0 && (
+            <MarketplaceSection
+              title="🔥 Trending near you"
+              seeAllPath="/explore"
+              items={toItems(trending)}
+              variant="horizontal-scroll"
+            />
+          )}
 
           {/* 4. Fast Delivery */}
-          <MarketplaceSection
-            title="⚡ Fast delivery"
-            seeAllPath="/food"
-            items={toItems(nearbyTop.slice(0, 6))}
-            variant="horizontal-scroll"
-          />
+          {nearbyTop.length > 0 && (
+            <MarketplaceSection
+              title="⚡ Fast delivery"
+              seeAllPath="/food"
+              items={toItems(nearbyTop.slice(0, 6))}
+              variant="horizontal-scroll"
+            />
+          )}
 
           {/* 5. Wallet Preview */}
           <div className="px-4 space-y-2">
@@ -281,12 +287,14 @@ export default function OrbitHome() {
           </div>
 
           {/* 6. Nearby Shops */}
-          <MarketplaceSection
-            title="📍 Near you"
-            seeAllPath="/super-map"
-            items={toItems(nearbyTop)}
-            variant="list"
-          />
+          {nearbyTop.length > 0 && (
+            <MarketplaceSection
+              title="📍 Near you"
+              seeAllPath="/super-map"
+              items={toItems(nearbyTop)}
+              variant="list"
+            />
+          )}
 
           {/* 7. New on Platform */}
           {shops.length > 4 && (
@@ -310,6 +318,7 @@ export default function OrbitHome() {
                 <button
                   key={svc.path}
                   onClick={() => handleNav(svc.path)}
+                  data-card="listing"
                   className="w-full flex items-center gap-3 p-3.5 rounded-2xl active:scale-[0.98] transition-transform"
                   style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border) / 0.1)" }}
                 >
