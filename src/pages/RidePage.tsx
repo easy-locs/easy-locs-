@@ -144,8 +144,8 @@ export default function RidePage() {
                 <p className="text-sm font-bold text-foreground">{vehicle.label}</p>
                 <p className="text-[10px] text-muted-foreground">{vehicle.desc}</p>
                 <div className="mt-1.5 flex items-center gap-1">
-                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                  <span className="text-[10px] font-medium text-emerald-600">{vehicle.eta}</span>
+                  <div className="w-1.5 h-1.5 rounded-full bg-success" />
+                  <span className="text-[10px] font-medium text-success">{vehicle.eta}</span>
                 </div>
               </motion.button>
             ))}
