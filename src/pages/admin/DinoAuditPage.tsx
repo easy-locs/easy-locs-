@@ -82,7 +82,7 @@ export default function DinoAuditPage() {
               <CardHeader><CardTitle className="text-sm">Onboarding Flows</CardTitle></CardHeader>
               <CardContent className="space-y-2">
                 <div className="flex items-center gap-2 text-sm">
-                  <CheckCircle2 className="h-4 w-4 text-green-500" />
+                  <CheckCircle2 className="h-4 w-4 text-success" />
                   <span>{report.onboardingHealth.healthy} Healthy</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm">
