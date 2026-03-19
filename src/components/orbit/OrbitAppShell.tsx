@@ -1,8 +1,6 @@
 /**
  * OrbitAppShell — Persistent shell for /app/* routes.
- * PASS 164-166: Refactored — header & nav extracted to separate files.
- * Realtime subscriptions and polling centralized here.
- * Added: OrbitFAB smart floating action button.
+ * Centralizes realtime polling, notification dispatcher, and OrbitFAB.
  */
 import { Outlet } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -10,6 +8,7 @@ import { useOrbitEngine } from "@/stores/orbit-engine";
 import { useEffect, lazy, Suspense } from "react";
 import OrbitHeader from "./OrbitHeader";
 import OrbitBottomNav from "./OrbitBottomNav";
+import { startNotificationDispatcher, stopNotificationDispatcher } from "@/lib/orbit/notification-dispatcher";
 
 const OrbitFAB = lazy(() => import("./OrbitFAB"));
 
@@ -24,6 +23,13 @@ export default function OrbitAppShell() {
     const interval = setInterval(() => refreshModule("all", user.id, orgId || undefined), 60_000);
     return () => clearInterval(interval);
   }, [user?.id, orgId]);
+
+  // Notification dispatcher — listens for real-time DB notifications
+  useEffect(() => {
+    if (!user?.id) return;
+    startNotificationDispatcher({ userId: user.id });
+    return () => stopNotificationDispatcher();
+  }, [user?.id]);
 
   // Network status
   useEffect(() => {
