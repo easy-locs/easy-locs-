@@ -434,7 +434,7 @@ const App = () => (
 
               {/* V7 Public pillars */}
               {/* Redirects */}
-              <Route path="/discover" element={<Navigate to="/" replace />} />
+              <Route path="/discover" element={<Navigate to="/explore" replace />} />
               <Route path="/search" element={<DiscoverPage />} />
 
               {/* Universe hubs */}
