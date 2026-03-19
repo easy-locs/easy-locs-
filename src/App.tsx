@@ -320,8 +320,11 @@ const FoodRestaurantPage = safeLazy(() => import("./pages/food/RestaurantPage"),
 // Settings sub-pages
 const SettingsHomePage = safeLazy(() => import("./pages/settings/SettingsHome"), "SettingsHome");
 const SettingsAccountPage = safeLazy(() => import("./pages/settings/SettingsAccount"), "SettingsAccount");
+const SettingsOrbitPage = safeLazy(() => import("./pages/settings/SettingsOrbit"), "SettingsOrbit");
 const SettingsBusinessPage = safeLazy(() => import("./pages/settings/SettingsBusiness"), "SettingsBusiness");
 const SettingsWalletPage = safeLazy(() => import("./pages/settings/SettingsWallet"), "SettingsWallet");
+const SettingsAddressesPage = safeLazy(() => import("./pages/settings/SettingsAddresses"), "SettingsAddresses");
+const SettingsNotificationsPage = safeLazy(() => import("./pages/settings/SettingsNotifications"), "SettingsNotifications");
 const SettingsSecurityPage = safeLazy(() => import("./pages/settings/SettingsSecurity"), "SettingsSecurity");
 const SettingsPreferencesPage = safeLazy(() => import("./pages/settings/SettingsPreferences"), "SettingsPreferences");
 
