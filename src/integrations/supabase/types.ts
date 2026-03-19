@@ -7344,6 +7344,9 @@ export type Database = {
           activation_mode: string | null
           area: string | null
           city: string | null
+          claim_verification_method: string | null
+          claimed_at: string | null
+          claimed_by: string | null
           contact_name: string | null
           created_at: string | null
           cuisine_type: string | null
@@ -7363,6 +7366,9 @@ export type Database = {
           activation_mode?: string | null
           area?: string | null
           city?: string | null
+          claim_verification_method?: string | null
+          claimed_at?: string | null
+          claimed_by?: string | null
           contact_name?: string | null
           created_at?: string | null
           cuisine_type?: string | null
@@ -7382,6 +7388,9 @@ export type Database = {
           activation_mode?: string | null
           area?: string | null
           city?: string | null
+          claim_verification_method?: string | null
+          claimed_at?: string | null
+          claimed_by?: string | null
           contact_name?: string | null
           created_at?: string | null
           cuisine_type?: string | null
@@ -7442,6 +7451,68 @@ export type Database = {
           workspace_id?: string | null
         }
         Relationships: []
+      }
+      merchant_outreach_campaigns: {
+        Row: {
+          activated_at: string | null
+          activation_link: string | null
+          activation_token: string
+          channel: string
+          claimed_at: string | null
+          clicked_at: string | null
+          created_at: string
+          delivered_at: string | null
+          id: string
+          merchant_profile_id: string
+          metadata: Json | null
+          opened_at: string | null
+          sent_at: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          activated_at?: string | null
+          activation_link?: string | null
+          activation_token?: string
+          channel?: string
+          claimed_at?: string | null
+          clicked_at?: string | null
+          created_at?: string
+          delivered_at?: string | null
+          id?: string
+          merchant_profile_id: string
+          metadata?: Json | null
+          opened_at?: string | null
+          sent_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          activated_at?: string | null
+          activation_link?: string | null
+          activation_token?: string
+          channel?: string
+          claimed_at?: string | null
+          clicked_at?: string | null
+          created_at?: string
+          delivered_at?: string | null
+          id?: string
+          merchant_profile_id?: string
+          metadata?: Json | null
+          opened_at?: string | null
+          sent_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "merchant_outreach_campaigns_merchant_profile_id_fkey"
+            columns: ["merchant_profile_id"]
+            isOneToOne: false
+            referencedRelation: "merchant_onboarding_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       message_translations: {
         Row: {
