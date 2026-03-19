@@ -128,12 +128,24 @@ async function optimizeFunnel(payload: Record<string, unknown>): Promise<string>
 
 // --- Main executor ---
 
-export async function executeDinoActions(actions: DinoAction[]): Promise<DinoAction[]> {
+export async function executeDinoActions(actions: DinoAction[], mode: DinoMode = "full_auto"): Promise<DinoAction[]> {
   const results: DinoAction[] = [];
+  let uiFixCount = 0;
+  let boostCount = 0;
 
   for (const action of actions) {
-    if (!action.autoExecute) {
-      results.push({ ...action, result: { success: false, message: "Skipped (manual)" } });
+    if (!shouldExecute(action, mode) || !action.autoExecute) {
+      results.push({ ...action, result: { success: false, message: "Skipped (mode/manual)" } });
+      continue;
+    }
+
+    // Rate limiting
+    if (action.type === "fix_ui" && uiFixCount >= MAX_UI_FIX_PER_CYCLE) {
+      results.push({ ...action, result: { success: false, message: "blocked: UI fix limit reached" } });
+      continue;
+    }
+    if (action.type === "boost_category" && boostCount >= MAX_BOOSTS_PER_CYCLE) {
+      results.push({ ...action, result: { success: false, message: "blocked: boost limit reached" } });
       continue;
     }
 
@@ -142,12 +154,14 @@ export async function executeDinoActions(actions: DinoAction[]): Promise<DinoAct
       switch (action.type) {
         case "fix_ui":
           message = applySafeTextFixes(action.payload);
+          uiFixCount++;
           break;
         case "send_campaign":
           message = await triggerCampaign(action.payload);
           break;
         case "boost_category":
           message = await boostCategory(action.payload);
+          boostCount++;
           break;
         case "reduce_visibility":
           message = await reduceVisibility(action.payload);

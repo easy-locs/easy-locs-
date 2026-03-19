@@ -8,6 +8,7 @@ import { generateActionsFromInsights } from "./decisionEngine";
 import { executeDinoActions, type DinoAction } from "./actionEngine";
 import { supabase } from "@/integrations/supabase/client";
 import type { Json } from "@/integrations/supabase/types";
+import type { DinoMode } from "./types";
 
 export interface AutopilotResult {
   totalActions: number;
@@ -17,10 +18,10 @@ export interface AutopilotResult {
   actions: DinoAction[];
 }
 
-export async function runAutopilotCycle(): Promise<AutopilotResult> {
+export async function runAutopilotCycle(mode: DinoMode = "full_auto"): Promise<AutopilotResult> {
   const insights = await collectPlatformInsights();
   const actions = generateActionsFromInsights(insights);
-  const executed = await executeDinoActions(actions);
+  const executed = await executeDinoActions(actions, mode);
 
   await recordLearning(executed);
 

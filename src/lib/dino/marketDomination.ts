@@ -152,8 +152,21 @@ export async function runV10Domination() {
   await executeExpansion(expansion);
   await triggerOpportunities(opportunities);
 
+  // Apply smart boosts via visibility engine
+  const { applyBoostOverride, computeSmartBoost } = await import("./visibilityEngine");
+  for (const p of predictions.filter(p => p.score > 60).slice(0, MAX_BOOSTS_PER_CYCLE)) {
+    await applyBoostOverride({
+      entityId: p.category,
+      multiplier: computeSmartBoost(p.score, p.trend),
+      durationMs: 2 * 3600 * 1000,
+      reason: `v10_surge_${p.trend}`,
+    });
+  }
+
   return { predictions, surgeRules, expansion, opportunities };
 }
+
+const MAX_BOOSTS_PER_CYCLE = 20;
 
 // =============================
 // 7) REAL CONNECTORS

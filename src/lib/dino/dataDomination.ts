@@ -109,7 +109,13 @@ export async function importListings(listings: NormalizedListing[]): Promise<num
 export function generateActivationMessages(listings: NormalizedListing[]) {
   return listings.map(l => ({
     name: l.name,
-    message: `Your business "${l.name}" is now visible on Easy Locs. Activate your profile to receive customers.`,
+    message: [
+      `🔥 ${l.name},`,
+      `You are now visible on Easy Locs.`,
+      `🚀 Customers are already searching for "${l.category}" in ${l.city}`,
+      `👉 Activate now to receive orders.`,
+      `⚡ Priority placement available today only.`,
+    ].join("\n"),
     priority: l.qualityScore > 80 ? ("high" as const) : ("medium" as const),
   }));
 }
