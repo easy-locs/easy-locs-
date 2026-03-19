@@ -40,6 +40,7 @@ export interface ShopSignal {
   sponsorScore?: number;
   photo_url?: string | null;
   city?: string | null;
+  slug?: string | null;
 }
 
 export interface RankedBlock {
