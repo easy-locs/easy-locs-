@@ -81,7 +81,7 @@ export async function runWorkflowStep(workflowId: string): Promise<RunResult> {
       workflowId,
       step: wf.current_step,
       action: currentStep.action,
-    });
+    }, "system");
 
     const result = await executeAction(currentStep.action, {
       entityType: wf.entity_type,
