@@ -91,7 +91,7 @@ export default function RestaurantPage() {
   return (
     <div className="min-h-[100dvh] flex flex-col bg-background">
       {/* ── Cover Image ── */}
-      <div className="relative w-full h-52 shrink-0">
+      <div className="relative w-full h-52 shrink-0" data-cover-image>
         {coverImage ? (
           <img src={coverImage} alt={shop?.name || ""} className="w-full h-full object-cover" />
         ) : (
@@ -102,7 +102,7 @@ export default function RestaurantPage() {
         <div className="absolute inset-0" style={{ background: "linear-gradient(to top, hsl(var(--background)), transparent 50%)" }} />
         <button
           onClick={() => navigate(-1)}
-          className="absolute top-4 left-4 w-10 h-10 rounded-full flex items-center justify-center active:scale-90 transition-transform z-10"
+          className="absolute top-4 left-4 w-10 h-10 rounded-xl flex items-center justify-center active:scale-90 transition-transform z-10"
           style={{ background: "hsl(0 0% 0% / 0.35)", backdropFilter: "blur(8px)" }}
           aria-label="Go back"
         >
@@ -176,7 +176,7 @@ export default function RestaurantPage() {
       {!isLoading && (
         <div className="flex-1 px-4 mt-4 pb-32 space-y-6">
           {categories.length === 0 && (
-            <div className="text-center py-16">
+            <div className="text-center py-16" data-empty-state>
               <span className="text-4xl">🍽️</span>
               <p className="text-sm text-muted-foreground mt-3 font-medium">Menu coming soon</p>
             </div>
@@ -191,6 +191,7 @@ export default function RestaurantPage() {
                   return (
                     <div
                       key={item.id}
+                      data-product-row
                       className="rounded-2xl p-3 flex gap-3"
                       style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border) / 0.1)" }}
                     >
@@ -208,10 +209,13 @@ export default function RestaurantPage() {
                             <p className="text-[11px] text-muted-foreground line-clamp-2 mt-0.5 leading-relaxed">{item.description}</p>
                           )}
                         </div>
-                        {/* Add / quantity control */}
-                        <div className="self-end mt-1">
+                        <div className="flex items-center justify-between mt-1">
+                          <span className="text-sm font-bold text-foreground">
+                            {Number(item.price) > 0 ? `${Number(item.price).toFixed(2)}` : ""}
+                          </span>
                           {qty === 0 ? (
                             <button
+                              data-add-to-cart
                               onClick={() => handleAdd(item)}
                               className="h-8 px-4 rounded-full flex items-center gap-1.5 active:scale-90 transition-transform text-xs font-bold"
                               style={{ background: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}
@@ -232,6 +236,7 @@ export default function RestaurantPage() {
                               </button>
                               <span className="text-sm font-bold w-5 text-center">{qty}</span>
                               <button
+                                data-add-to-cart
                                 onClick={() => handleAdd(item)}
                                 className="w-8 h-8 rounded-full flex items-center justify-center active:scale-90 transition-transform"
                                 style={{ background: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}
@@ -260,6 +265,7 @@ export default function RestaurantPage() {
           style={{ paddingBottom: "max(env(safe-area-inset-bottom, 12px), 12px)" }}
         >
           <button
+            data-primary-cta
             onClick={() => navigate("/checkout")}
             className="w-full max-w-md mx-auto flex items-center justify-between px-5 py-3.5 rounded-2xl active:scale-[0.98] transition-transform"
             style={{ background: "hsl(var(--primary))", boxShadow: "0 8px 32px hsl(var(--primary) / 0.35)", display: "flex" }}
@@ -270,7 +276,7 @@ export default function RestaurantPage() {
               </div>
               <span className="text-sm font-bold text-primary-foreground">{itemCount} item{itemCount > 1 ? "s" : ""}</span>
             </div>
-            <span className="text-sm font-bold text-primary-foreground">View Cart →</span>
+            <span className="text-sm font-bold text-primary-foreground">View Cart · {total.toFixed(2)}</span>
           </button>
         </motion.div>
       )}
