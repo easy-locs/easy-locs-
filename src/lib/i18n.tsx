@@ -2973,6 +2973,10 @@ const pageFr: Record<string, string> = {
   "nav.property": "Immobilier",
   "nav.orders": "Commandes",
   "nav.me": "Moi",
+  "nav.discover": "Découvrir",
+  "nav.wallet": "Wallet",
+  "nav.communication": "Communication",
+  "nav.profile": "Profil",
   // Business hub
   "business.hub_title": "Mon Business",
   "business.hub_subtitle": "Gérez toutes vos opérations commerciales.",
