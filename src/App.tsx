@@ -719,8 +719,8 @@ const App = () => (
               <Route path="/payment/:orderId" element={<PaymentPage />} />
               <Route path="/store/:publicSlug" element={<PublicStorefrontBySlugPage />} />
 
-              <Route path="/app/orbit" element={<ProtectedRoute><OrbitAppShell><OrbitHome /></OrbitAppShell></ProtectedRoute>} />
-              <Route path="/app/*" element={<ProtectedRoute><OrbitAppShell><OrbitHome /></OrbitAppShell></ProtectedRoute>} />
+              <Route path="/app/orbit" element={<Navigate to="/" replace />} />
+              <Route path="/app/*" element={<Navigate to="/" replace />} />
 
               {/* SEO catch-all */}
               <Route path="/seo/*" element={<SEOCatchAll />} />
