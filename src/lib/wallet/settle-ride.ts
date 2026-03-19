@@ -8,6 +8,7 @@ export async function settleRide(params: {
   riderId: string;
   driverId: string;
   amount: number;
+  currency?: string;
   threadId?: string | null;
 }) {
   const { rideRequestId, riderId, driverId, amount, threadId } = params;
@@ -17,7 +18,7 @@ export async function settleRide(params: {
       user_id: riderId,
       direction: "debit",
       amount,
-      currency: "AED",
+      currency: params.currency ?? "AED",
       context_type: "ride",
       context_id: rideRequestId,
       reference_id: threadId ?? null,
@@ -27,7 +28,7 @@ export async function settleRide(params: {
       user_id: driverId,
       direction: "credit",
       amount,
-      currency: "AED",
+      currency: params.currency ?? "AED",
       context_type: "ride",
       context_id: rideRequestId,
       reference_id: threadId ?? null,

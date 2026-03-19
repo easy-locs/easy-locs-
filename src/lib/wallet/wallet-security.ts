@@ -1,15 +1,15 @@
 /**
  * Bank-grade wallet security layer for Easy-Locs.
  * Server-side-first design: all sensitive mutations go through edge functions.
- * Client-side guards, anomaly detection hooks, idempotency, and audit trail.
+ * Currency-aware: never hardcodes AED.
  */
 import { supabase } from "@/integrations/supabase/client";
 
 // ── Constants ─────────────────────────────────────────────
 const PIN_LOCKOUT_MINUTES = 15;
 const MAX_PIN_ATTEMPTS = 5;
-const PAYMENT_SESSION_TIMEOUT_MS = 5 * 60 * 1000; // 5 min
-const HIGH_VALUE_THRESHOLD = 5000; // AED — triggers step-up verification
+const PAYMENT_SESSION_TIMEOUT_MS = 5 * 60 * 1000;
+const HIGH_VALUE_THRESHOLD = 5000;
 
 // ── Secure PIN Hashing (HMAC-SHA256) ──────────────────────
 export async function hashPinSecure(pin: string, salt?: string): Promise<{ hash: string; salt: string }> {
@@ -27,7 +27,6 @@ export async function verifyPinSecure(pin: string, storedHash: string): Promise<
   const [salt] = storedHash.split(":");
   if (!salt) return false;
   const { hash: computed } = await hashPinSecure(pin, salt);
-  // Constant-time comparison
   if (computed.length !== storedHash.length) return false;
   let diff = 0;
   for (let i = 0; i < computed.length; i++) {
@@ -53,14 +52,8 @@ export async function verifyWalletPinSecure(walletAccountId: string, rawPin: str
 
   if (!pin) return { verified: false, locked: false, attemptsRemaining: 0 };
 
-  // Check lockout
   if (pin.locked_until && new Date(pin.locked_until) > new Date()) {
-    return {
-      verified: false,
-      locked: true,
-      attemptsRemaining: 0,
-      lockedUntil: pin.locked_until,
-    };
+    return { verified: false, locked: true, attemptsRemaining: 0, lockedUntil: pin.locked_until };
   }
 
   const matches = await verifyPinSecure(rawPin, pin.pin_hash);
@@ -68,36 +61,25 @@ export async function verifyWalletPinSecure(walletAccountId: string, rawPin: str
 
   if (matches) {
     await (supabase as any).from("wallet_pins").update({
-      failed_attempts: 0,
-      locked_until: null,
-      last_verified_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
+      failed_attempts: 0, locked_until: null,
+      last_verified_at: new Date().toISOString(), updated_at: new Date().toISOString(),
     }).eq("wallet_account_id", walletAccountId);
-
     return { verified: true, locked: false, attemptsRemaining: MAX_PIN_ATTEMPTS };
   }
 
-  // Failed
   const newAttempts = attempts + 1;
   const lockUntil = newAttempts >= MAX_PIN_ATTEMPTS
     ? new Date(Date.now() + PIN_LOCKOUT_MINUTES * 60 * 1000).toISOString()
     : null;
 
   await (supabase as any).from("wallet_pins").update({
-    failed_attempts: newAttempts,
-    locked_until: lockUntil,
-    updated_at: new Date().toISOString(),
+    failed_attempts: newAttempts, locked_until: lockUntil, updated_at: new Date().toISOString(),
   }).eq("wallet_account_id", walletAccountId);
 
-  // Audit log
   await (supabase as any).from("audit_logs").insert({
     user_id: (await supabase.auth.getUser()).data.user?.id ?? null,
     action: "wallet_pin_failed",
-    metadata_json: {
-      wallet_account_id: walletAccountId,
-      attempts: newAttempts,
-      locked: newAttempts >= MAX_PIN_ATTEMPTS,
-    },
+    metadata_json: { wallet_account_id: walletAccountId, attempts: newAttempts, locked: newAttempts >= MAX_PIN_ATTEMPTS },
   });
 
   return {
@@ -109,21 +91,14 @@ export async function verifyWalletPinSecure(walletAccountId: string, rawPin: str
 }
 
 // ── Payment Session Guard ─────────────────────────────────
-// Prevents stale/abandoned payment sessions from being captured
 let _paymentSessionStart: number | null = null;
 
-export function startPaymentSession() {
-  _paymentSessionStart = Date.now();
-}
-
+export function startPaymentSession() { _paymentSessionStart = Date.now(); }
 export function isPaymentSessionValid(): boolean {
   if (!_paymentSessionStart) return false;
   return Date.now() - _paymentSessionStart < PAYMENT_SESSION_TIMEOUT_MS;
 }
-
-export function clearPaymentSession() {
-  _paymentSessionStart = null;
-}
+export function clearPaymentSession() { _paymentSessionStart = null; }
 
 // ── Idempotency Key Generator ─────────────────────────────
 export function generateIdempotencyKey(orderId: string, action: string): string {
@@ -151,13 +126,8 @@ export async function checkTransactionAnomaly(params: {
   const flags: string[] = [];
   let score = 0;
 
-  // 1. High amount
-  if (params.amount >= HIGH_VALUE_THRESHOLD) {
-    score += 25;
-    flags.push("high_value");
-  }
+  if (params.amount >= HIGH_VALUE_THRESHOLD) { score += 25; flags.push("high_value"); }
 
-  // 2. Rapid-fire transactions (>3 in last 5 min)
   const fiveMinAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
   const { data: recent } = await (supabase as any)
     .from("wallet_ledger_entries")
@@ -165,33 +135,21 @@ export async function checkTransactionAnomaly(params: {
     .eq("wallet_account_id", params.walletAccountId)
     .gte("created_at", fiveMinAgo);
 
-  if (recent && recent.length > 3) {
-    score += 30;
-    flags.push("rapid_transactions");
-  }
+  if (recent && recent.length > 3) { score += 30; flags.push("rapid_transactions"); }
 
-  // 3. Late night transactions (00:00–05:00 local)
   const hour = new Date().getHours();
-  if (hour >= 0 && hour < 5) {
-    score += 15;
-    flags.push("late_night");
-  }
+  if (hour >= 0 && hour < 5) { score += 15; flags.push("late_night"); }
 
-  // 4. Nearly full balance drain
   const { data: wallet } = await (supabase as any)
     .from("wallet_accounts")
     .select("balance_cash")
     .eq("id", params.walletAccountId)
     .single();
 
-  if (wallet && params.amount > Number(wallet.balance_cash) * 0.9) {
-    score += 20;
-    flags.push("near_full_drain");
-  }
+  if (wallet && params.amount > Number(wallet.balance_cash) * 0.9) { score += 20; flags.push("near_full_drain"); }
 
   const suspicious = score >= 40;
 
-  // Log if suspicious
   if (suspicious) {
     await (supabase as any).from("audit_logs").insert({
       user_id: params.userId,
@@ -224,26 +182,9 @@ export async function auditWalletAction(params: {
 }
 
 // ── Future Readiness Stubs ────────────────────────────────
-export interface DeviceBinding {
-  deviceId: string;
-  fingerprint: string;
-  boundAt: string;
-}
+export interface DeviceBinding { deviceId: string; fingerprint: string; boundAt: string; }
+export interface BiometricConfirmation { supported: boolean; type: "fingerprint" | "face" | "none"; }
 
-export interface BiometricConfirmation {
-  supported: boolean;
-  type: "fingerprint" | "face" | "none";
-}
-
-// Stub: will be implemented when native bridge is ready
-export function isDeviceBound(_walletId: string): boolean {
-  return false; // Not yet enforced
-}
-
-export function isBiometricAvailable(): BiometricConfirmation {
-  return { supported: false, type: "none" };
-}
-
-export function requiresSuspiciousReview(anomaly: AnomalyCheckResult): boolean {
-  return anomaly.score >= 60;
-}
+export function isDeviceBound(_walletId: string): boolean { return false; }
+export function isBiometricAvailable(): BiometricConfirmation { return { supported: false, type: "none" }; }
+export function requiresSuspiciousReview(anomaly: AnomalyCheckResult): boolean { return anomaly.score >= 60; }
