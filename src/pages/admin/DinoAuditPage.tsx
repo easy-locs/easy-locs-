@@ -72,7 +72,7 @@ export default function DinoAuditPage() {
               <CardHeader><CardTitle className="text-sm">Issue Severity</CardTitle></CardHeader>
               <CardContent className="flex gap-3 flex-wrap">
                 <Badge variant="destructive">{report.summary.critical} Critical</Badge>
-                <Badge variant="secondary" className="bg-orange-500/10 text-orange-600">{report.summary.major} Major</Badge>
+                <Badge variant="secondary" className="bg-accent/10 text-accent-foreground">{report.summary.major} Major</Badge>
                 <Badge variant="secondary">{report.summary.minor} Minor</Badge>
               </CardContent>
             </Card>
