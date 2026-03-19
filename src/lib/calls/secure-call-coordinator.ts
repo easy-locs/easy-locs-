@@ -123,8 +123,8 @@ export async function sendSecureSignal(params: {
     .from("orbit_call_signals")
     .insert({
       session_id: params.sessionId,
-      sender_id: params.senderId,
-      receiver_id: params.receiverId,
+      sender_user_id: params.senderId,
+      receiver_user_id: params.receiverId,
       signal_type: params.signalType,
       payload: params.payload,
       nonce,
