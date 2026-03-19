@@ -1,15 +1,19 @@
 /**
  * WebRTC Call Manager — Manages peer connections for voice/video calls.
  */
-import { getRtcConfiguration } from "./call-config";
+import { getRtcConfiguration } from "@/lib/calls/call-config";
 
 export class WebRtcCallManager {
-  private pc: RTCPeerConnection;
+  private pc!: RTCPeerConnection;
   private localStream: MediaStream | null = null;
   private remoteStream: MediaStream = new MediaStream();
+  private initialized = false;
 
-  constructor() {
-    this.pc = new RTCPeerConnection(getRtcConfiguration());
+  private async ensurePc() {
+    if (this.initialized) return;
+    const config = await getRtcConfiguration();
+    this.pc = new RTCPeerConnection(config);
+    this.initialized = true;
 
     this.pc.ontrack = (event) => {
       for (const track of event.streams[0].getTracks()) {
@@ -19,6 +23,8 @@ export class WebRtcCallManager {
   }
 
   async startLocalMedia(video = false) {
+    await this.ensurePc();
+
     this.localStream = await navigator.mediaDevices.getUserMedia({
       audio: true,
       video,
@@ -31,23 +37,30 @@ export class WebRtcCallManager {
     return this.localStream;
   }
 
+  getLocalStream() {
+    return this.localStream;
+  }
+
   getRemoteStream() {
     return this.remoteStream;
   }
 
-  onIceCandidate(handler: (candidate: RTCIceCandidate) => void) {
+  async onIceCandidate(handler: (candidate: RTCIceCandidate) => void) {
+    await this.ensurePc();
     this.pc.onicecandidate = (event) => {
       if (event.candidate) handler(event.candidate);
     };
   }
 
   async createOffer() {
+    await this.ensurePc();
     const offer = await this.pc.createOffer();
     await this.pc.setLocalDescription(offer);
     return offer;
   }
 
   async createAnswer(remoteOffer: RTCSessionDescriptionInit) {
+    await this.ensurePc();
     await this.pc.setRemoteDescription(remoteOffer);
     const answer = await this.pc.createAnswer();
     await this.pc.setLocalDescription(answer);
@@ -55,10 +68,12 @@ export class WebRtcCallManager {
   }
 
   async applyAnswer(answer: RTCSessionDescriptionInit) {
+    await this.ensurePc();
     await this.pc.setRemoteDescription(answer);
   }
 
   async addIceCandidate(candidate: RTCIceCandidateInit) {
+    await this.ensurePc();
     await this.pc.addIceCandidate(candidate);
   }
 
@@ -77,6 +92,9 @@ export class WebRtcCallManager {
   destroy() {
     this.localStream?.getTracks().forEach((t) => t.stop());
     this.remoteStream.getTracks().forEach((t) => t.stop());
-    this.pc.close();
+    if (this.pc) this.pc.close();
+    this.localStream = null;
+    this.remoteStream = new MediaStream();
+    this.initialized = false;
   }
 }
