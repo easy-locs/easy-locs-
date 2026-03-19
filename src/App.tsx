@@ -21,6 +21,7 @@ import SmartInstallBanner from "@/components/pwa/SmartInstallBanner";
 import OrbitCallRoot from "@/components/orbit/OrbitCallRoot";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import ChunkRecoveryBoundary from "@/components/system/ChunkRecoveryBoundary";
 import CountryGuard from "@/components/dashboard/CountryGuard";
 import { UnifiedPaymentProvider } from "@/payments/UnifiedPaymentSystem";
 
