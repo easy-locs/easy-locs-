@@ -36,14 +36,14 @@ export default function FoodHub() {
     queryFn: async () => {
       const { data } = await (supabase as any)
         .from("storefront_pages")
-        .select("id, name, slug, city, vertical, subcategory, description")
+        .select("id, name, slug, city, vertical, subcategory, description, rating")
         .eq("active", true)
         .limit(20);
       return (data || []).map((r: any) => ({
         id: r.id,
         title: r.name || "Restaurant",
         subtitle: r.subcategory || r.city || "",
-        rating: 4.0 + Math.random() * 0.9,
+        rating: r.rating ?? 4.2,
         slug: r.slug,
       }));
     },

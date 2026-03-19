@@ -320,8 +320,11 @@ const FoodRestaurantPage = safeLazy(() => import("./pages/food/RestaurantPage"),
 // Settings sub-pages
 const SettingsHomePage = safeLazy(() => import("./pages/settings/SettingsHome"), "SettingsHome");
 const SettingsAccountPage = safeLazy(() => import("./pages/settings/SettingsAccount"), "SettingsAccount");
+const SettingsOrbitPage = safeLazy(() => import("./pages/settings/SettingsOrbit"), "SettingsOrbit");
 const SettingsBusinessPage = safeLazy(() => import("./pages/settings/SettingsBusiness"), "SettingsBusiness");
 const SettingsWalletPage = safeLazy(() => import("./pages/settings/SettingsWallet"), "SettingsWallet");
+const SettingsAddressesPage = safeLazy(() => import("./pages/settings/SettingsAddresses"), "SettingsAddresses");
+const SettingsNotificationsPage = safeLazy(() => import("./pages/settings/SettingsNotifications"), "SettingsNotifications");
 const SettingsSecurityPage = safeLazy(() => import("./pages/settings/SettingsSecurity"), "SettingsSecurity");
 const SettingsPreferencesPage = safeLazy(() => import("./pages/settings/SettingsPreferences"), "SettingsPreferences");
 
@@ -471,8 +474,11 @@ const App = () => (
               {/* Settings sub-pages */}
               <Route path="/settings" element={<SettingsHomePage />} />
               <Route path="/settings/account" element={<SettingsAccountPage />} />
+              <Route path="/settings/orbit" element={<SettingsOrbitPage />} />
               <Route path="/settings/business" element={<SettingsBusinessPage />} />
               <Route path="/settings/wallet" element={<SettingsWalletPage />} />
+              <Route path="/settings/addresses" element={<SettingsAddressesPage />} />
+              <Route path="/settings/notifications" element={<SettingsNotificationsPage />} />
               <Route path="/settings/security" element={<SettingsSecurityPage />} />
               <Route path="/settings/preferences" element={<SettingsPreferencesPage />} />
               <Route path="/ride" element={<RidePage />} />
