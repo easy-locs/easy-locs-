@@ -221,7 +221,16 @@ export default function RidePage() {
         {/* Driver matching & tracking */}
         <AnimatePresence>
           {step === "matching" && (
-            <DriverMatchingState state={matchState} onStateChange={setMatchState} />
+            <DriverMatchingState
+              state={matchState}
+              onStateChange={setMatchState}
+              fareTotal={fareEstimate?.total}
+              fareCurrency={fareEstimate?.currency}
+              pickupLabel={pickup?.address || pickup?.label}
+              dropoffLabel={dropoff?.address || dropoff?.label}
+              distanceLabel={km ? `${km.toFixed(1)} km` : undefined}
+              durationLabel={min ? `${min} min` : undefined}
+            />
           )}
         </AnimatePresence>
       </div>
