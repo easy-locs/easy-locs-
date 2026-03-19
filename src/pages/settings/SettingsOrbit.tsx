@@ -48,7 +48,7 @@ export default function SettingsOrbit() {
 
   const saveLang = async (code: string) => {
     setSelectedLang(code);
-    setLocale(code);
+    setLocale(code as any);
     if (user) {
       await supabase.from("profiles").update({ locale: code } as any).eq("id", user.id);
     }
