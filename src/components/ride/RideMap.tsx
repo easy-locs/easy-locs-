@@ -60,11 +60,13 @@ export default function RideMap({ pickup, dropoff, userLat, userLng, drivers: ex
   });
 
   const drivers = externalDrivers.length > 0 ? externalDrivers : radarDrivers.map(d => ({ lat: d.lat, lng: d.lng, id: d.id }));
-  // Init map
+  // Init map — always show Dubai fallback if no coords
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
     mapboxgl.accessToken = MAPBOX_TOKEN;
-    const center: [number, number] = [userLng || 2.35, userLat || 48.86];
+    const centerLng = userLng || pickup?.lng || 55.2708;
+    const centerLat = userLat || pickup?.lat || 25.2048;
+    const center: [number, number] = [centerLng, centerLat];
     const map = new mapboxgl.Map({
       container: containerRef.current,
       style: "mapbox://styles/mapbox/dark-v11",
@@ -72,7 +74,10 @@ export default function RideMap({ pickup, dropoff, userLat, userLng, drivers: ex
       zoom: 13,
       attributionControl: false,
     });
-    map.on("load", () => setReady(true));
+    map.on("load", () => {
+      setReady(true);
+      console.debug("[ride] ride_map_loaded", { center });
+    });
     mapRef.current = map;
     return () => { map.remove(); mapRef.current = null; };
   }, []);
