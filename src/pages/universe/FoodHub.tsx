@@ -36,7 +36,7 @@ export default function FoodHub() {
     queryFn: async () => {
       const { data } = await (supabase as any)
         .from("storefront_pages")
-        .select("id, name, slug, city, vertical, subcategory, description")
+        .select("id, name, slug, city, vertical, subcategory, description, rating")
         .eq("active", true)
         .limit(20);
       return (data || []).map((r: any) => ({
