@@ -2951,6 +2951,45 @@ export type Database = {
           },
         ]
       }
+      cross_service_journeys: {
+        Row: {
+          completed_at: string | null
+          created_at: string | null
+          current_step: number | null
+          id: string
+          journey_type: string
+          metadata: Json | null
+          started_at: string | null
+          status: string | null
+          steps: Json | null
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string | null
+          current_step?: number | null
+          id?: string
+          journey_type: string
+          metadata?: Json | null
+          started_at?: string | null
+          status?: string | null
+          steps?: Json | null
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string | null
+          current_step?: number | null
+          id?: string
+          journey_type?: string
+          metadata?: Json | null
+          started_at?: string | null
+          status?: string | null
+          steps?: Json | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       customer_recommendations: {
         Row: {
           created_at: string | null
@@ -12651,6 +12690,42 @@ export type Database = {
           },
         ]
       }
+      recommendation_signals: {
+        Row: {
+          context: Json | null
+          created_at: string | null
+          entity_id: string | null
+          entity_type: string | null
+          id: string
+          service_vertical: string
+          signal_type: string
+          user_id: string
+          weight: number | null
+        }
+        Insert: {
+          context?: Json | null
+          created_at?: string | null
+          entity_id?: string | null
+          entity_type?: string | null
+          id?: string
+          service_vertical: string
+          signal_type: string
+          user_id: string
+          weight?: number | null
+        }
+        Update: {
+          context?: Json | null
+          created_at?: string | null
+          entity_id?: string | null
+          entity_type?: string | null
+          id?: string
+          service_vertical?: string
+          signal_type?: string
+          user_id?: string
+          weight?: number | null
+        }
+        Relationships: []
+      }
       recon_alerts: {
         Row: {
           acknowledged_at: string | null
@@ -20575,6 +20650,54 @@ export type Database = {
           subtitle?: string | null
           title?: string | null
           updated_at?: string
+        }
+        Relationships: []
+      }
+      universal_reputation_scores: {
+        Row: {
+          consistency: number | null
+          created_at: string | null
+          dispute_rate: number | null
+          feedback_score: number | null
+          fulfillment_quality: number | null
+          id: string
+          last_computed_at: string | null
+          overall_score: number | null
+          response_speed: number | null
+          service_breakdown: Json | null
+          total_interactions: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          consistency?: number | null
+          created_at?: string | null
+          dispute_rate?: number | null
+          feedback_score?: number | null
+          fulfillment_quality?: number | null
+          id?: string
+          last_computed_at?: string | null
+          overall_score?: number | null
+          response_speed?: number | null
+          service_breakdown?: Json | null
+          total_interactions?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          consistency?: number | null
+          created_at?: string | null
+          dispute_rate?: number | null
+          feedback_score?: number | null
+          fulfillment_quality?: number | null
+          id?: string
+          last_computed_at?: string | null
+          overall_score?: number | null
+          response_speed?: number | null
+          service_breakdown?: Json | null
+          total_interactions?: number | null
+          updated_at?: string | null
+          user_id?: string
         }
         Relationships: []
       }
