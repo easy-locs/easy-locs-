@@ -12,19 +12,21 @@ export default function RestaurantPage() {
   const { restaurantId } = useParams<{ restaurantId: string }>();
   const navigate = useNavigate();
 
-  // Fetch restaurant
+  // Fetch restaurant — keepPreviousData prevents flash on re-navigation
   const { data: shop, isLoading } = useQuery({
     queryKey: ["restaurant-detail", restaurantId],
     queryFn: async () => {
       const { data } = await (supabase as any)
         .from("storefront_pages")
-        .select("id, name, slug, city, vertical, subcategory, description, logo_url, cover_url, latitude, longitude, rating")
+        .select("id, name, slug, city, vertical, subcategory, description, logo_url, cover_url, latitude, longitude, rating, merchant_profile_id")
         .or(`slug.eq.${restaurantId},id.eq.${restaurantId}`)
         .limit(1)
         .maybeSingle();
       return data;
     },
     enabled: !!restaurantId,
+    staleTime: 60_000,
+    placeholderData: (prev: any) => prev,
   });
 
   // Fetch menu items
