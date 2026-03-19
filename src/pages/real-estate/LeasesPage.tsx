@@ -9,11 +9,11 @@ import { Search, KeyRound, Calendar, User, Building2 } from "lucide-react";
 import { format } from "date-fns";
 
 const statusColor: Record<string, string> = {
-  active: "bg-emerald-500/10 text-emerald-700 border-emerald-200",
-  draft: "bg-muted text-muted-foreground",
-  pending_signature: "bg-amber-500/10 text-amber-700 border-amber-200",
-  signed: "bg-blue-500/10 text-blue-700 border-blue-200",
-  archived: "bg-muted text-muted-foreground",
+  active: "bg-emerald-500/10 text-emerald-700 border-emerald-500/20",
+  draft: "bg-muted text-muted-foreground border-border",
+  pending_signature: "bg-amber-500/10 text-amber-700 border-amber-500/20",
+  signed: "bg-blue-500/10 text-blue-700 border-blue-500/20",
+  archived: "bg-muted text-muted-foreground border-border",
   cancelled: "bg-destructive/10 text-destructive border-destructive/20",
 };
 
@@ -25,7 +25,7 @@ export default function LeasesPage() {
     <div className="space-y-4">
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-        <Input placeholder="Search leases…" value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
+        <Input placeholder="Search leases…" value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9 bg-card border-border/50" />
       </div>
 
       {isLoading && <div className="space-y-3">{[1, 2, 3].map((i) => <Skeleton key={i} className="h-24 rounded-xl" />)}</div>}
@@ -40,17 +40,17 @@ export default function LeasesPage() {
       )}
 
       <div className="grid gap-3">
-        {leases?.map((l: any) => (
+        {leases?.map((l) => (
           <Link key={l.id} to={`/real-estate/lease/${l.id}`}>
-            <Card className="hover:shadow-md transition-shadow cursor-pointer">
+            <Card className="hover:shadow-md transition-all hover:border-primary/20 cursor-pointer border-border/50">
               <CardContent className="p-4">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
-                      <Badge className={`text-[10px] capitalize ${statusColor[l.status] || ""}`}>
+                      <Badge className={`text-[10px] capitalize border ${statusColor[l.status] || statusColor.draft}`}>
                         {l.status?.replace(/_/g, " ")}
                       </Badge>
-                      <span className="text-xs text-muted-foreground">{l.lease_type}</span>
+                      <span className="text-xs text-muted-foreground capitalize">{l.lease_type}</span>
                     </div>
                     <div className="flex items-center gap-1 mt-2 text-xs text-muted-foreground">
                       <User className="w-3 h-3" />
@@ -70,8 +70,8 @@ export default function LeasesPage() {
                     </div>
                   </div>
                   <div className="text-right shrink-0">
-                    <span className="text-sm font-bold">{l.rent_amount}€</span>
-                    <span className="block text-[10px] text-muted-foreground">+{l.charges_amount}€ charges</span>
+                    <span className="text-sm font-bold text-primary">{l.rent_amount}€</span>
+                    <span className="block text-[10px] text-muted-foreground">+{l.charges_amount}€</span>
                   </div>
                 </div>
               </CardContent>

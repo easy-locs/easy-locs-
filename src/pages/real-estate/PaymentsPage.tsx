@@ -7,7 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Receipt, CheckCircle, Clock, AlertTriangle } from "lucide-react";
 import { format } from "date-fns";
 
-const statusIcon: Record<string, any> = {
+const statusIcon: Record<string, { icon: typeof CheckCircle; cls: string }> = {
   paid: { icon: CheckCircle, cls: "text-emerald-600" },
   pending: { icon: Clock, cls: "text-amber-600" },
   overdue: { icon: AlertTriangle, cls: "text-destructive" },
@@ -18,16 +18,16 @@ export default function PaymentsPage() {
   const [selectedLease, setSelectedLease] = useState<string>("");
   const { data: payments, isLoading: paymentsLoading } = useRentPayments(selectedLease || undefined);
 
-  const loading = leasesLoading || (selectedLease && paymentsLoading);
+  const loading = leasesLoading || (!!selectedLease && paymentsLoading);
 
   return (
     <div className="space-y-4">
       <Select value={selectedLease} onValueChange={setSelectedLease}>
-        <SelectTrigger>
+        <SelectTrigger className="bg-card border-border/50">
           <SelectValue placeholder="Select a lease" />
         </SelectTrigger>
         <SelectContent>
-          {leases?.map((l: any) => (
+          {leases?.map((l) => (
             <SelectItem key={l.id} value={l.id}>
               {(l.tenants as any)?.name || "Tenant"} — {(l.properties as any)?.label || "Property"}
             </SelectItem>
@@ -52,11 +52,11 @@ export default function PaymentsPage() {
       )}
 
       <div className="grid gap-3">
-        {payments?.map((p: any) => {
-          const st = statusIcon[p.status] || statusIcon.pending;
+        {payments?.map((p) => {
+          const st = statusIcon[p.status ?? "pending"] || statusIcon.pending;
           const Icon = st.icon;
           return (
-            <Card key={p.id}>
+            <Card key={p.id} className="border-border/50">
               <CardContent className="p-4 flex items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
                   <Icon className={`w-5 h-5 ${st.cls}`} />
@@ -66,13 +66,13 @@ export default function PaymentsPage() {
                     </p>
                     <p className="text-xs text-muted-foreground">
                       Due {p.due_date ? format(new Date(p.due_date), "dd/MM/yyyy") : "—"}
-                      {p.paid_at && ` • Paid ${format(new Date(p.paid_at), "dd/MM/yyyy")}`}
+                      {p.paid_at && ` · Paid ${format(new Date(p.paid_at), "dd/MM/yyyy")}`}
                     </p>
                   </div>
                 </div>
-                <div className="text-right shrink-0">
+                <div className="text-right shrink-0 flex items-center gap-2">
                   <span className="text-sm font-bold">{p.amount} {p.currency}</span>
-                  <Badge variant="outline" className="text-[10px] capitalize ml-2">{p.status}</Badge>
+                  <Badge variant="outline" className="text-[10px] capitalize">{p.status}</Badge>
                 </div>
               </CardContent>
             </Card>

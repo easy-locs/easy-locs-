@@ -1,6 +1,5 @@
 import { useState } from "react";
-import { useProperties } from "@/hooks/useRealEstate";
-import { usePropertyUnits } from "@/hooks/useRealEstate";
+import { useProperties, usePropertyUnits } from "@/hooks/useRealEstate";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -12,16 +11,16 @@ export default function UnitsPage() {
   const [selectedProp, setSelectedProp] = useState<string>("");
   const { data: units, isLoading: unitsLoading } = usePropertyUnits(selectedProp || undefined);
 
-  const loading = propsLoading || (selectedProp && unitsLoading);
+  const loading = propsLoading || (!!selectedProp && unitsLoading);
 
   return (
     <div className="space-y-4">
       <Select value={selectedProp} onValueChange={setSelectedProp}>
-        <SelectTrigger>
+        <SelectTrigger className="bg-card border-border/50">
           <SelectValue placeholder="Select a property" />
         </SelectTrigger>
         <SelectContent>
-          {properties?.map((p: any) => (
+          {properties?.map((p) => (
             <SelectItem key={p.id} value={p.id}>{p.label} — {p.city}</SelectItem>
           ))}
         </SelectContent>
@@ -44,21 +43,21 @@ export default function UnitsPage() {
       )}
 
       <div className="grid gap-3">
-        {units?.map((u: any) => (
-          <Card key={u.id}>
+        {units?.map((u) => (
+          <Card key={u.id} className="border-border/50">
             <CardContent className="p-4 flex items-center justify-between gap-3">
               <div>
                 <h3 className="font-semibold text-sm">Unit {u.unit_number || "—"}</h3>
                 <div className="flex items-center gap-3 mt-1.5 text-xs text-muted-foreground">
                   {u.floor != null && <span>Floor {u.floor}</span>}
-                  {u.bedrooms && <span className="flex items-center gap-1"><BedDouble className="w-3 h-3" />{u.bedrooms}</span>}
-                  {u.bathrooms && <span className="flex items-center gap-1"><Bath className="w-3 h-3" />{u.bathrooms}</span>}
-                  {u.size_sqm && <span className="flex items-center gap-1"><Ruler className="w-3 h-3" />{u.size_sqm}m²</span>}
+                  {u.bedrooms != null && <span className="flex items-center gap-1"><BedDouble className="w-3 h-3" />{u.bedrooms}</span>}
+                  {u.bathrooms != null && <span className="flex items-center gap-1"><Bath className="w-3 h-3" />{u.bathrooms}</span>}
+                  {u.size_sqm != null && <span className="flex items-center gap-1"><Ruler className="w-3 h-3" />{u.size_sqm}m²</span>}
                 </div>
               </div>
-              <div className="text-right shrink-0">
-                {u.rent_amount > 0 && <span className="text-sm font-bold">{u.rent_amount} {u.currency}</span>}
-                <Badge variant="outline" className="text-[10px] capitalize ml-2">{u.status}</Badge>
+              <div className="text-right shrink-0 flex items-center gap-2">
+                {u.rent_amount != null && u.rent_amount > 0 && <span className="text-sm font-bold">{u.rent_amount} {u.currency}</span>}
+                <Badge variant="outline" className="text-[10px] capitalize">{u.status}</Badge>
               </div>
             </CardContent>
           </Card>
