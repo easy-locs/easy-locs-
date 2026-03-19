@@ -595,6 +595,11 @@ const App = () => (
               <Route path="/admin/audit-debug" element={<ProtectedRoute><AuditDebugPanelPage /></ProtectedRoute>} />
               <Route path="/admin/ops-wallboard" element={<ProtectedRoute><OpsWallboardPage /></ProtectedRoute>} />
               <Route path="/admin/dubai-import" element={<ProtectedRoute><DubaiRestaurantImportPage /></ProtectedRoute>} />
+              <Route path="/admin/outreach" element={<ProtectedRoute><AdminOutreachPage /></ProtectedRoute>} />
+
+              {/* Merchant claim & dashboard */}
+              <Route path="/merchant/claim" element={<MerchantClaimPage />} />
+              <Route path="/merchant/dashboard" element={<ProtectedRoute><MerchantDashboardPage /></ProtectedRoute>} />
 
               {/* Guest / Public */}
               <Route path="/guest/checkout/:cartId" element={<GuestCheckoutPage />} />
