@@ -25,4 +25,6 @@ export const routes = {
     `/city/${encodeURIComponent(countryCode)}/${encodeURIComponent(city)}/${encodeURIComponent(vertical)}/${encodeURIComponent(locale)}`,
   importTestBatches: () => `/admin/import-test-batches`,
   qrEntry: (targetCode: string) => `/qr/entry/${encodeURIComponent(targetCode)}`,
+  qrGenerate: () => `/admin/qr-generate`,
+  routeAudit: () => `/admin/route-audit`,
 };

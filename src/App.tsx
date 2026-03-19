@@ -304,6 +304,8 @@ const DubaiRestaurantImportPage = safeLazy(() => import("./pages/DubaiRestaurant
 const QrEntryPage = safeLazy(() => import("./pages/QrEntryPage"), "QrEntryPage");
 const AppNotFoundPage = safeLazy(() => import("./pages/AppNotFoundPage"), "AppNotFoundPage");
 const AdminImportTestBatchesPage = safeLazy(() => import("./pages/AdminImportTestBatchesPage"), "AdminImportTestBatchesPage");
+const QrGeneratePage = safeLazy(() => import("./pages/QrGeneratePage"), "QrGeneratePage");
+const RouteAuditPage = safeLazy(() => import("./pages/RouteAuditPage"), "RouteAuditPage");
 
 // City sub-page wrappers
 const CityServicesPage = () => <CityHubPage subPage="services" />;
@@ -643,6 +645,8 @@ const App = () => (
               <Route path="/city-market/:citySlug" element={<CityMarketplacePage />} />
               <Route path="/admin/growth-engine" element={<ProtectedRoute><AdminGrowthEnginePage /></ProtectedRoute>} />
               <Route path="/admin/import-test-batches" element={<ProtectedRoute><AdminImportTestBatchesPage /></ProtectedRoute>} />
+              <Route path="/admin/qr-generate" element={<ProtectedRoute><QrGeneratePage /></ProtectedRoute>} />
+              <Route path="/admin/route-audit" element={<ProtectedRoute><RouteAuditPage /></ProtectedRoute>} />
               <Route path="/city/:countryCode/:city/:vertical/:locale" element={<CityVerticalPage />} />
 
               {/* Guest / Public */}
