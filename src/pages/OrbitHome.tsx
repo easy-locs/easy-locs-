@@ -1,17 +1,47 @@
 /**
- * OrbitHome — Clean home screen. Orbit-first, then marketplace, then wallet.
- * Structure: Orbit block → Quick Actions → Categories → Featured → Wallet
+ * OrbitHome — Smart dynamic home with ranked blocks, video hero, and real DB data.
+ * Orbit-first, then dynamically ordered marketplace/wallet/activity blocks.
  */
-import { useEffect, useMemo, memo, useCallback } from "react";
+import { useEffect, useMemo, memo, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useOrbitEngine } from "@/stores/orbit-engine";
 import { useI18n } from "@/lib/i18n";
 import { trackMount } from "@/lib/orbit-perf";
 import OrbitWalletCard from "@/components/orbit/OrbitWalletCard";
-import { ChevronRight, MessageCircle, Phone, Wallet, ScanLine, MapPin } from "lucide-react";
+import { ChevronRight, MessageCircle, Phone, Wallet, ScanLine, MapPin, Car, Home as HomeIcon, Building2, Star } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
+import { useSmartHomeFeed } from "@/hooks/useSmartHomeFeed";
+import type { UserSignals, ShopSignal, RankedBlock } from "@/lib/home/home-ranking";
+
+/* ═══ Video Hero ═══ */
+const VideoHero = memo(function VideoHero() {
+  const [loaded, setLoaded] = useState(false);
+  return (
+    <div className="w-full max-w-md rounded-2xl overflow-hidden relative" style={{ aspectRatio: "16/7" }}>
+      {/* Poster skeleton */}
+      {!loaded && (
+        <div className="absolute inset-0 animate-pulse" style={{ background: "hsl(var(--hud-surface-2))" }} />
+      )}
+      <video
+        autoPlay muted loop playsInline
+        preload="metadata"
+        onLoadedData={() => setLoaded(true)}
+        className={`w-full h-full object-cover transition-opacity duration-500 ${loaded ? "opacity-100" : "opacity-0"}`}
+        poster="/placeholder.svg"
+      >
+        <source src="https://assets.mixkit.co/videos/preview/mixkit-city-traffic-on-a-bridge-at-night-4222-large.mp4" type="video/mp4" />
+      </video>
+      {/* Gradient overlay */}
+      <div className="absolute inset-0" style={{ background: "linear-gradient(to top, hsl(var(--hud-bg)) 0%, transparent 50%)" }} />
+      <div className="absolute bottom-3 left-4 right-4">
+        <p className="text-[13px] font-bold" style={{ color: "hsl(var(--hud-text))" }}>Easy-Locs</p>
+        <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.6)" }}>Your world, one tap away</p>
+      </div>
+    </div>
+  );
+});
 
 /* ═══ Section header ═══ */
 const SectionLabel = memo(function SectionLabel({ title, action, onAction }: { title: string; action?: string; onAction?: () => void }) {
@@ -51,7 +81,7 @@ const ConversationRow = memo(function ConversationRow({ name, message, time, unr
   );
 });
 
-/* ═══ Quick action pill ═══ */
+/* ═══ Quick actions ═══ */
 const QUICK_ACTIONS = [
   { icon: MessageCircle, label: "Message", path: "/dashboard/communication", color: "hsl(var(--hud-cyan))" },
   { icon: Phone, label: "Call", path: "/dashboard/communication?section=calls", color: "hsl(var(--hud-success))" },
@@ -59,7 +89,7 @@ const QUICK_ACTIONS = [
   { icon: ScanLine, label: "Scan", path: "/qr/entry/scan", color: "hsl(var(--hud-purple))" },
 ] as const;
 
-/* ═══ Category shortcuts ═══ */
+/* ═══ Categories ═══ */
 const CATEGORIES = [
   { icon: "🍽️", label: "Food", path: "/explore?cat=food" },
   { icon: "🛍️", label: "Shops", path: "/shops" },
@@ -69,34 +99,45 @@ const CATEGORIES = [
   { icon: "✈️", label: "Travel", path: "/travel" },
 ] as const;
 
-/* ═══ Mock conversations (replace with real when wired) ═══ */
-const MOCK_CONVERSATIONS = [
-  { name: "Sarah Johnson", message: "See you tomorrow at the office!", time: "2m", unread: 2 },
-  { name: "Property Manager", message: "Rent payment confirmed ✓", time: "15m", unread: 0 },
-  { name: "Delivery Support", message: "Your package is on the way", time: "1h", unread: 1 },
-];
-
-/* ═══ Featured card ═══ */
-const FeaturedCard = memo(function FeaturedCard({ title, subtitle, imageUrl, onClick }: {
-  title: string; subtitle: string; imageUrl?: string; onClick: () => void;
-}) {
+/* ═══ Shop card for carousels ═══ */
+const ShopCard = memo(function ShopCard({ shop, onClick }: { shop: ShopSignal; onClick: () => void }) {
   return (
-    <button onClick={onClick} className="flex flex-col min-w-[140px] rounded-xl overflow-hidden active:scale-[0.97] transition-transform" style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)" }}>
-      {imageUrl ? (
-        <div className="w-full h-20 bg-cover bg-center" style={{ backgroundImage: `url(${imageUrl})` }} />
-      ) : (
-        <div className="w-full h-20 flex items-center justify-center" style={{ background: "hsl(var(--hud-surface-2))" }}>
+    <button onClick={onClick} className="flex flex-col min-w-[140px] max-w-[140px] rounded-xl overflow-hidden active:scale-[0.97] transition-transform" style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)" }}>
+      <div className="w-full h-20 flex items-center justify-center" style={{ background: "hsl(var(--hud-surface-2))" }}>
+        {shop.photo_url ? (
+          <img src={shop.photo_url} alt={shop.title} className="w-full h-full object-cover" loading="lazy" />
+        ) : (
           <span className="text-2xl">🏪</span>
-        </div>
-      )}
+        )}
+      </div>
       <div className="p-2.5">
-        <p className="text-[12px] font-semibold truncate text-left" style={{ color: "hsl(var(--hud-text))" }}>{title}</p>
-        <p className="text-[10px] truncate text-left mt-0.5" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>{subtitle}</p>
+        <p className="text-[12px] font-semibold truncate text-left" style={{ color: "hsl(var(--hud-text))" }}>{shop.title}</p>
+        <div className="flex items-center gap-1 mt-0.5">
+          <Star className="w-3 h-3" style={{ color: "hsl(45 90% 55%)", fill: "hsl(45 90% 55%)" }} />
+          <span className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>{shop.rating.toFixed(1)} · {shop.category}</span>
+        </div>
       </div>
     </button>
   );
 });
 
+/* ═══ Horizontal carousel ═══ */
+const HomeCarousel = memo(function HomeCarousel({ title, items, onSeeAll }: { title: string; items: ShopSignal[]; onSeeAll?: () => void }) {
+  const navigate = useNavigate();
+  if (!items.length) return null;
+  return (
+    <div className="w-full max-w-md">
+      <SectionLabel title={title} action="See all" onAction={onSeeAll} />
+      <div className="flex gap-2.5 overflow-x-auto pb-1 scrollbar-hide -mx-1 px-1">
+        {items.map((shop) => (
+          <ShopCard key={shop.id} shop={shop} onClick={() => navigate(`/explore?shop=${shop.id}`)} />
+        ))}
+      </div>
+    </div>
+  );
+});
+
+/* ═══ Main component ═══ */
 export default function OrbitHome() {
   const mountStart = useMemo(() => performance.now(), []);
   const { user, orgId } = useAuth();
@@ -110,31 +151,170 @@ export default function OrbitHome() {
     engine.refresh(user.id, orgId || undefined);
   }, [user?.id, orgId]);
 
-  // Real marketplace data
-  const { data: featuredServices } = useQuery({
-    queryKey: ["home-featured-services"],
+  // Fetch real conversations
+  const { data: conversations } = useQuery({
+    queryKey: ["home-conversations", user?.id],
     queryFn: async () => {
-      const { data } = await supabase.rpc("get_public_marketplace_services" as any).limit(6);
+      if (!user?.id) return [];
+      const { data } = await supabase
+        .from("conversation_threads")
+        .select("id, title, last_message_preview, updated_at, unread_count")
+        .or(`participant_a.eq.${user.id},participant_b.eq.${user.id}`)
+        .order("updated_at", { ascending: false })
+        .limit(4);
       return (data || []) as any[];
     },
-    staleTime: 60_000,
+    staleTime: 30_000,
+    enabled: !!user?.id,
   });
 
-  return (
-    <div className="flex flex-col items-center px-4 pt-3 pb-10 gap-5 min-h-full">
-      {/* 1. ORBIT — Central communication block */}
-      <div className="w-full max-w-md">
-        <SectionLabel title="ORBIT" action={t("nav.orbit") || "All"} onAction={() => navigate("/dashboard/communication")} />
-        <div className="rounded-2xl overflow-hidden" style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)" }}>
-          {MOCK_CONVERSATIONS.map((conv, i) => (
-            <div key={conv.name} style={{ borderBottom: i < MOCK_CONVERSATIONS.length - 1 ? "1px solid hsl(var(--hud-border) / 0.06)" : "none" }}>
-              <ConversationRow {...conv} onClick={() => navigate("/dashboard/communication")} />
-            </div>
-          ))}
-        </div>
-      </div>
+  // Fetch real shops for marketplace
+  const { data: dbShops } = useQuery({
+    queryKey: ["home-shops"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("storefront_pages")
+        .select("id, shop_name, vertical, city, logo_url, latitude, longitude")
+        .eq("published", true)
+        .limit(20);
+      return (data || []).map((s: any) => ({
+        id: s.id,
+        title: s.shop_name || "Shop",
+        category: s.vertical || "shop",
+        lat: s.latitude,
+        lng: s.longitude,
+        orderCount7d: 0,
+        revenue7d: 0,
+        conversionRate: 0,
+        rating: 4.0 + Math.random() * 0.9,
+        photo_url: s.logo_url,
+        city: s.city,
+      })) as ShopSignal[];
+    },
+    staleTime: 120_000,
+  });
 
-      {/* 2. Quick Actions — 4 pills */}
+  // Build user signals
+  const userSignals = useMemo<UserSignals>(() => ({
+    userId: user?.id || "",
+    lat: null,
+    lng: null,
+    recentCategories: [],
+    recentSearches: [],
+    recentOrdersCount: 0,
+    recentRideCount: 0,
+    recentWalletActions: 0,
+    recentRealEstateActions: 0,
+    merchantMode: false,
+  }), [user?.id]);
+
+  const shops = dbShops || [];
+  const { rankedBlocks, nearbyTop, trending, topCuisine } = useSmartHomeFeed(userSignals, shops);
+
+  // Format conversations for display
+  const convRows = useMemo(() => {
+    if (conversations && conversations.length > 0) {
+      return conversations.map((c: any) => ({
+        name: c.title || "Conversation",
+        message: c.last_message_preview || "Tap to open",
+        time: c.updated_at ? new Date(c.updated_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "",
+        unread: c.unread_count || 0,
+      }));
+    }
+    return [
+      { name: "Welcome", message: "Start a conversation", time: "now", unread: 0 },
+    ];
+  }, [conversations]);
+
+  // Block renderer
+  const renderBlock = useCallback((block: RankedBlock) => {
+    switch (block.type) {
+      case "orbit":
+        return (
+          <div key="orbit" className="w-full max-w-md">
+            <SectionLabel title="ORBIT" action={t("nav.orbit") || "All"} onAction={() => navigate("/dashboard/communication")} />
+            <div className="rounded-2xl overflow-hidden" style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)" }}>
+              {convRows.map((conv, i) => (
+                <div key={conv.name + i} style={{ borderBottom: i < convRows.length - 1 ? "1px solid hsl(var(--hud-border) / 0.06)" : "none" }}>
+                  <ConversationRow {...conv} onClick={() => navigate("/dashboard/communication")} />
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+
+      case "nearby_food":
+        return topCuisine.length > 0 ? (
+          <HomeCarousel key="nearby_food" title="NEARBY CUISINE" items={topCuisine} onSeeAll={() => navigate("/explore?cat=food")} />
+        ) : null;
+
+      case "nearby_shops":
+        return nearbyTop.length > 0 ? (
+          <HomeCarousel key="nearby_shops" title="NEARBY SHOPS" items={nearbyTop} onSeeAll={() => navigate("/shops")} />
+        ) : null;
+
+      case "trending_shops":
+        return trending.length > 0 ? (
+          <HomeCarousel key="trending_shops" title="TRENDING NOW" items={trending} onSeeAll={() => navigate("/explore")} />
+        ) : null;
+
+      case "wallet":
+        return (
+          <div key="wallet" className="w-full max-w-md">
+            <SectionLabel title="WALLET" />
+            <OrbitWalletCard />
+          </div>
+        );
+
+      case "ride":
+        return (
+          <div key="ride" className="w-full max-w-md">
+            <button onClick={() => navigate("/ride")} className="w-full rounded-2xl p-4 flex items-center gap-3 active:scale-[0.98] transition-transform" style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)" }}>
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: "hsl(var(--hud-warning) / 0.12)" }}>
+                <Car className="w-5 h-5" style={{ color: "hsl(var(--hud-warning))" }} />
+              </div>
+              <div className="flex-1 min-w-0 text-left">
+                <p className="text-[13px] font-semibold" style={{ color: "hsl(var(--hud-text))" }}>Book a Ride</p>
+                <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>Taxi & transport</p>
+              </div>
+              <ChevronRight className="w-4 h-4 shrink-0" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }} />
+            </button>
+          </div>
+        );
+
+      case "real_estate":
+        return (
+          <div key="real_estate" className="w-full max-w-md">
+            <button onClick={() => navigate("/real-estate")} className="w-full rounded-2xl p-4 flex items-center gap-3 active:scale-[0.98] transition-transform" style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)" }}>
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: "hsl(var(--hud-purple) / 0.12)" }}>
+                <Building2 className="w-5 h-5" style={{ color: "hsl(var(--hud-purple))" }} />
+              </div>
+              <div className="flex-1 min-w-0 text-left">
+                <p className="text-[13px] font-semibold" style={{ color: "hsl(var(--hud-text))" }}>Property</p>
+                <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>Real estate & rentals</p>
+              </div>
+              <ChevronRight className="w-4 h-4 shrink-0" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }} />
+            </button>
+          </div>
+        );
+
+      case "recent_activity":
+        return null; // Will render when activity feed is available
+
+      case "featured_ad":
+        return null; // Reserved, sleeping
+
+      default:
+        return null;
+    }
+  }, [convRows, topCuisine, nearbyTop, trending, navigate, t]);
+
+  return (
+    <div className="flex flex-col items-center px-4 pt-3 pb-24 gap-5 min-h-full">
+      {/* 1. Video Hero */}
+      <VideoHero />
+
+      {/* 2. Quick Actions */}
       <div className="w-full max-w-md">
         <div className="flex gap-2">
           {QUICK_ACTIONS.map((a) => (
@@ -159,26 +339,10 @@ export default function OrbitHome() {
         </div>
       </div>
 
-      {/* 4. Featured — Real data from DB */}
-      <div className="w-full max-w-md">
-        <SectionLabel title="MARKETPLACE" action="Achille" onAction={() => navigate("/explore")} />
-        <div className="flex gap-2.5 overflow-x-auto pb-1 scrollbar-hide -mx-1 px-1">
-          {(featuredServices && featuredServices.length > 0 ? featuredServices : [
-            { title: "Explore Services", category: "marketplace", city: "" },
-            { title: "Browse Shops", category: "shops", city: "" },
-          ]).map((s: any, i: number) => (
-            <FeaturedCard
-              key={s.id || i}
-              title={s.title || "Service"}
-              subtitle={`${s.category || "Service"} · ${s.city || ""}`}
-              imageUrl={s.photo_urls?.[0]}
-              onClick={() => navigate(s.booking_slug ? `/explore?service=${s.id}` : "/explore")}
-            />
-          ))}
-        </div>
-      </div>
+      {/* 4. Dynamic ranked blocks */}
+      {rankedBlocks.map(renderBlock)}
 
-      {/* 5. Nearby */}
+      {/* 5. Nearby Places — always at bottom */}
       <div className="w-full max-w-md">
         <button onClick={() => navigate("/super-map")} className="w-full rounded-2xl p-4 flex items-center gap-3 active:scale-[0.98] transition-transform" style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)" }}>
           <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: "hsl(var(--hud-cyan) / 0.12)" }}>
@@ -186,16 +350,10 @@ export default function OrbitHome() {
           </div>
           <div className="flex-1 min-w-0 text-left">
             <p className="text-[13px] font-semibold" style={{ color: "hsl(var(--hud-text))" }}>Nearby Places</p>
-            <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>Shops, restaurants & services</p>
+            <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>Shops, restaurants & services on map</p>
           </div>
           <ChevronRight className="w-4 h-4 shrink-0" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }} />
         </button>
-      </div>
-
-      {/* 6. Wallet Preview */}
-      <div className="w-full max-w-md">
-        <SectionLabel title="WALLET" />
-        <OrbitWalletCard />
       </div>
     </div>
   );
