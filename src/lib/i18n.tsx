@@ -6283,7 +6283,7 @@ const translations: Record<Locale, Record<string, string>> = {
     "settings.organization": "Organisation", "settings.team": "Équipe", "settings.payment_providers": "Fournisseurs de paiement",
     "nav.local_services": "Activités & Services", "nav.accounting": "Comptabilité", "nav.marketplace": "Marketplace", "nav.collaboration": "Collaboration", "nav.pricing": "Tarification", "nav.concierge": "Conciergerie", "nav.listings": "Annonces",
     "page.communication.filter_seasonal": "Saisonnier", "page.communication.filter_market": "Marketplace", "page.communication.filter_concierge": "Conciergerie", "page.communication.all_properties": "Tous les biens",
-     "nav.explore": "Explorer", "nav.more": "Plus",
+     "nav.explore": "Explorer", "nav.more": "Plus", "nav.portfolio": "Portfolio", "nav.rentals": "Locations", "nav.team": "Équipe",
      "nav.dashboard_short": "Accueil", "nav.properties_short": "Biens", "nav.market_short": "Services", "nav.messages_short": "Chat",
     "badge.landlord": "Espace bailleur", "badge.tenant": "Espace locataire",
     "sidebar.workspace": "Espace de travail", "sidebar.select_country": "Sélectionnez un pays pour commencer",
