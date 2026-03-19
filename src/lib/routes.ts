@@ -88,6 +88,11 @@ export const routes = {
   // Wallet
   wallet: () => `/wallet`,
   walletHub: () => `/wallet/hub`,
+
+  // Map / Radar
+  map: () => `/map`,
+  superMap: () => `/super-map`,
+  radar: () => `/radar`,
 };
 
 export type AppRouteKey = keyof typeof routes;
