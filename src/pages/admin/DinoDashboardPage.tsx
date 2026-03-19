@@ -282,7 +282,197 @@ function DomainsTab() {
   );
 }
 
-/* ─── Sync Tab (DB-connected) ─── */
+/* ─── Business Tab (V6) ─── */
+function BusinessTab() {
+  const { data: proPerf } = useQuery({
+    queryKey: ["dino-pro-perf"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("dino_pro_performance")
+        .select("*")
+        .order("overall_score", { ascending: false })
+        .limit(20);
+      return data ?? [];
+    },
+    staleTime: 30_000,
+  });
+
+  const { data: funnels } = useQuery({
+    queryKey: ["dino-funnels"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("dino_conversion_funnels")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(10);
+      return data ?? [];
+    },
+    staleTime: 30_000,
+  });
+
+  const { data: balance } = useQuery({
+    queryKey: ["dino-balance"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("dino_market_balance")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(20);
+      return data ?? [];
+    },
+    staleTime: 30_000,
+  });
+
+  const tierCounts = (proPerf ?? []).reduce((acc: Record<string, number>, p: any) => {
+    acc[p.tier] = (acc[p.tier] ?? 0) + 1;
+    return acc;
+  }, {});
+
+  return (
+    <>
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <StatCard label="Excellent Pros" value={tierCounts.excellent ?? 0} icon={<CheckCircle2 className="h-4 w-4" />} variant="success" />
+        <StatCard label="At Risk" value={tierCounts.at_risk ?? 0} icon={<AlertTriangle className="h-4 w-4" />} variant="warning" />
+        <StatCard label="Funnels" value={(funnels ?? []).length} icon={<Target className="h-4 w-4" />} />
+        <StatCard label="Categories" value={(balance ?? []).length} icon={<Tag className="h-4 w-4" />} />
+      </div>
+
+      <Card>
+        <CardHeader><CardTitle className="text-sm flex items-center gap-2"><Users className="h-4 w-4" /> Pro Performance</CardTitle></CardHeader>
+        <CardContent className="space-y-2 max-h-48 overflow-y-auto">
+          {(proPerf ?? []).slice(0, 10).map((p: any) => (
+            <div key={p.id} className="flex items-center justify-between text-sm border-b border-border/30 pb-1 last:border-0">
+              <span className="truncate font-medium">{p.pro_id}</span>
+              <div className="flex gap-2 items-center">
+                <Badge variant={p.tier === "excellent" ? "default" : p.tier === "at_risk" ? "destructive" : "secondary"} className="text-[10px]">{p.tier}</Badge>
+                <span className="text-[10px] text-muted-foreground">{p.overall_score}/100</span>
+              </div>
+            </div>
+          ))}
+          {(!proPerf || proPerf.length === 0) && <p className="text-sm text-muted-foreground">No pro performance data yet.</p>}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader><CardTitle className="text-sm flex items-center gap-2"><TrendingUp className="h-4 w-4" /> Conversion Funnels</CardTitle></CardHeader>
+        <CardContent className="space-y-2 max-h-48 overflow-y-auto">
+          {(funnels ?? []).map((f: any) => (
+            <div key={f.id} className="flex items-center justify-between text-sm border-b border-border/30 pb-1 last:border-0">
+              <span className="truncate">{f.funnel_type}</span>
+              <span className="text-[10px] text-muted-foreground">{Math.round((f.conversion_rate ?? 0) * 100)}% conv · {f.total_entries} entries</span>
+            </div>
+          ))}
+          {(!funnels || funnels.length === 0) && <p className="text-sm text-muted-foreground">No funnel data yet.</p>}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader><CardTitle className="text-sm">Marketplace Balance</CardTitle></CardHeader>
+        <CardContent className="space-y-2 max-h-48 overflow-y-auto">
+          {(balance ?? []).slice(0, 10).map((b: any) => (
+            <div key={b.id} className="flex items-center justify-between text-sm border-b border-border/30 pb-1 last:border-0">
+              <span className="truncate">{b.category_name}</span>
+              <span className="text-[10px] text-muted-foreground">{b.active_listings} active · Q:{b.avg_quality} · D:{Math.round((b.demand_signal ?? 0) * 100)}%</span>
+            </div>
+          ))}
+          {(!balance || balance.length === 0) && <p className="text-sm text-muted-foreground">No marketplace data yet.</p>}
+        </CardContent>
+      </Card>
+    </>
+  );
+}
+
+/* ─── Intelligence Tab (V5) ─── */
+function IntelligenceTab() {
+  const marketProfile = buildMarketProfile("FR", "fr");
+  const adaptation = computeDesignAdaptation(marketProfile);
+  const uxAdaptations = analyzeUxSignals();
+  const uxStats = getSignalStats();
+  const learningInsights = analyzeLearningTrends();
+  const learningStats = getLearningStats();
+
+  const { data: dbAdaptations } = useQuery({
+    queryKey: ["dino-ux-adaptations"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("dino_ux_adaptations")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(20);
+      return data ?? [];
+    },
+    staleTime: 30_000,
+  });
+
+  return (
+    <>
+      <Card>
+        <CardHeader><CardTitle className="text-sm flex items-center gap-2"><Globe className="h-4 w-4" /> Market Adaptation</CardTitle></CardHeader>
+        <CardContent className="space-y-2 text-sm">
+          <div className="flex justify-between"><span>Country</span><Badge variant="outline">{marketProfile.country}</Badge></div>
+          <div className="flex justify-between"><span>Theme</span><Badge variant="secondary">{adaptation.theme}</Badge></div>
+          <div className="flex justify-between"><span>Density</span><Badge variant="secondary">{adaptation.density}</Badge></div>
+          <div className="flex justify-between"><span>Direction</span><Badge variant="secondary">{adaptation.direction}</Badge></div>
+          <div className="flex justify-between"><span>CTA Style</span><Badge variant="secondary">{adaptation.ctaStyle}</Badge></div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader><CardTitle className="text-sm flex items-center gap-2"><Activity className="h-4 w-4" /> UX Signals</CardTitle></CardHeader>
+        <CardContent className="space-y-2 text-sm">
+          <p className="text-muted-foreground">{uxStats.total} signals captured</p>
+          {Object.entries(uxStats.byType).map(([type, count]) => (
+            <div key={type} className="flex justify-between">
+              <span className="font-mono text-xs">{type}</span>
+              <span>{count as number}</span>
+            </div>
+          ))}
+          {uxAdaptations.length > 0 && (
+            <div className="pt-2 space-y-1">
+              <p className="font-semibold text-xs">Suggested Adaptations:</p>
+              {uxAdaptations.map((a, i) => (
+                <p key={i} className="text-xs text-muted-foreground">{a.action}: {a.reason}</p>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader><CardTitle className="text-sm flex items-center gap-2"><Brain className="h-4 w-4" /> Learning Insights</CardTitle></CardHeader>
+        <CardContent className="space-y-2 text-sm">
+          <p className="text-muted-foreground">{learningStats.total} learning events</p>
+          {learningInsights.map((insight, i) => (
+            <div key={i} className="border-b border-border/30 pb-2 last:border-0">
+              <div className="flex justify-between items-center">
+                <span className="font-mono text-xs">{insight.rule}</span>
+                <Badge variant="outline" className="text-[10px]">{Math.round(insight.confidence * 100)}% conf</Badge>
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">{insight.recommendation}</p>
+            </div>
+          ))}
+          {learningInsights.length === 0 && <p className="text-muted-foreground">No learning insights yet — system needs more data.</p>}
+        </CardContent>
+      </Card>
+
+      {(dbAdaptations ?? []).length > 0 && (
+        <Card>
+          <CardHeader><CardTitle className="text-sm">UX Adaptations Queue</CardTitle></CardHeader>
+          <CardContent className="space-y-2 max-h-48 overflow-y-auto">
+            {(dbAdaptations ?? []).map((a: any) => (
+              <div key={a.id} className="flex items-center justify-between text-sm border-b border-border/30 pb-1 last:border-0">
+                <span className="truncate">{a.route} → {a.action}</span>
+                <Badge variant={a.status === "applied" ? "default" : "secondary"} className="text-[10px]">{a.status}</Badge>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      )}
+    </>
+  );
+}
+
+
 function SyncTab() {
   const { data: jobs } = useQuery({
     queryKey: ["dino-sync-jobs"],
