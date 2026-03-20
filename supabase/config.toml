@@ -89,3 +89,9 @@ verify_jwt = false
 
 [functions.email-enqueue]
 verify_jwt = false
+
+[functions.admin-payout-approve]
+verify_jwt = false
+
+[functions.admin-payout-reject]
+verify_jwt = false
