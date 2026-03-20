@@ -72,6 +72,10 @@ export const routes = {
   orderReceipt: (orderId: string) => `/order/receipt/${encodeURIComponent(orderId)}`,
   merchantAnalytics: (merchantId: string) => `/merchant/analytics/${encodeURIComponent(merchantId)}`,
   adminOperationsLaunchpad: () => `/admin/operations-launchpad`,
+  merchantCustomers: (merchantId: string) => `/merchant/customers/${encodeURIComponent(merchantId)}`,
+  adminMerchantHealth: () => `/admin/merchant-health`,
+  walletTopUp: () => `/wallet/top-up`,
+  walletTransfer: () => `/wallet/transfer`,
 
   // Orbit
   orbitCallTest: () => `/orbit/call-test`,
