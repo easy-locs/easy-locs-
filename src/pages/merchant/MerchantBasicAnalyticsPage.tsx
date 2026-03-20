@@ -9,8 +9,8 @@ export default function MerchantBasicAnalyticsPage() {
   const { data, isLoading } = useQuery({
     queryKey: ["merchant-basic-analytics", merchantId],
     queryFn: async () => {
-      const [{ data: orders }, { data: reviews }, { data: promos }] = await Promise.all([
-        supabase.from("orders").select("id,total_amount,status,created_at").eq("merchant_id", merchantId).limit(1000) as any,
+      const [{ data: orders }, { data: reviews }, { data: promos }]: any[] = await Promise.all([
+        (supabase as any).from("orders").select("id,total_amount,status,created_at").eq("merchant_id", merchantId).limit(1000),
         (supabase as any).from("reviews").select("*").eq("merchant_id", merchantId).limit(1000),
         (supabase as any).from("seed_merchant_promos").select("*").eq("merchant_id", merchantId).limit(1000),
       ]);
