@@ -28,6 +28,10 @@ import CountryGuard from "@/components/dashboard/CountryGuard";
 import { UnifiedPaymentProvider } from "@/payments/UnifiedPaymentSystem";
 import V1BootBridge from "@/app/V1BootBridge";
 
+// V2 test pages
+const V2TestPage = safeLazy(() => import("./app/router/V2TestPage"), "V2TestPage");
+const V2BookingTestPage = safeLazy(() => import("./app/router/V2BookingTestPage"), "V2BookingTestPage");
+
 // Safe lazy wrapper that catches chunk failures + missing default export issues
 function safeLazy(factory: () => Promise<{ default: ComponentType<any> }>, name: string) {
   return lazy(async () => {
@@ -1381,6 +1385,10 @@ const App = () => (
 
               <Route path="/app/orbit" element={<Navigate to="/" replace />} />
               <Route path="/app/*" element={<Navigate to="/" replace />} />
+
+              {/* V2 test routes */}
+              <Route path="/v2-test" element={<V2TestPage />} />
+              <Route path="/v2-booking-test" element={<V2BookingTestPage />} />
 
               {/* SEO catch-all */}
               <Route path="/seo/*" element={<SEOCatchAll />} />
