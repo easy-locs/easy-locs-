@@ -44,9 +44,20 @@ export default function CheckoutPage() {
     setPlacing(true);
 
     try {
+      // Resolve the actual seller/owner of the shop
+      let sellerId = user.id;
+      try {
+        const { data: shopData } = await (await import("@/integrations/supabase/client")).supabase
+          .from("storefront_pages" as any)
+          .select("user_id")
+          .eq("id", cart.restaurantId)
+          .maybeSingle();
+        if ((shopData as any)?.user_id) sellerId = (shopData as any).user_id;
+      } catch { /* fallback to buyer id if resolution fails */ }
+
       const { order, alreadyExists } = await createStorefrontOrder({
         shopId: cart.restaurantId,
-        sellerId: user.id, // Will be resolved by the shop's seller_id in production
+        sellerId,
         items: cart.items,
         fulfillmentType: mode,
         currency: "AED",
