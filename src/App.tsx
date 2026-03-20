@@ -1336,6 +1336,14 @@ const App = () => (
                 <Route path="/v1/merchant-orders/:merchantId" element={<ProtectedRoute><V1MerchantOrdersPage merchantId="" /></ProtectedRoute>} />
                 <Route path="/v1/ride" element={<ProtectedRoute><V1RideSendPackagePage type="ride" /></ProtectedRoute>} />
                 <Route path="/v1/send-package" element={<ProtectedRoute><V1RideSendPackagePage type="package" /></ProtectedRoute>} />
+                {/* V1 Block 6-7 */}
+                <Route path="/v1/home" element={<V1HomeRoute />} />
+                <Route path="/v1/menu" element={<V1MenuRoute />} />
+                <Route path="/v1/wallet" element={<ProtectedRoute><V1WalletHubPage /></ProtectedRoute>} />
+                <Route path="/v1/notifications" element={<ProtectedRoute><V1NotificationsPage /></ProtectedRoute>} />
+                <Route path="/v1/profile" element={<ProtectedRoute><V1ProfileSettingsPage /></ProtectedRoute>} />
+                <Route path="/v1/achille" element={<V1AchillePage />} />
+                <Route path="/v1/restaurant/:restaurantId" element={<V1RestaurantRoute />} />
               <Route path="/city/:countryCode/:city/:vertical/:locale" element={<CityVerticalPage />} />
 
               {/* Guest / Public */}
