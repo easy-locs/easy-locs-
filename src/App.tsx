@@ -930,6 +930,12 @@ const App = () => (
                 <Route path="/my-orders/archive" element={<ProtectedRoute><CustomerOrderArchivePage /></ProtectedRoute>} />
                 <Route path="/merchant/product-performance/:merchantId" element={<ProtectedRoute><MerchantProductPerformancePage /></ProtectedRoute>} />
                 <Route path="/admin/wallet-watch" element={<ProtectedRoute><AdminWalletWatchPage /></ProtectedRoute>} />
+                <Route path="/reorder" element={<ProtectedRoute><CustomerReorderPage /></ProtectedRoute>} />
+                <Route path="/merchant/auto-accept/:merchantId" element={<ProtectedRoute><MerchantAutoAcceptSettingsPage /></ProtectedRoute>} />
+                <Route path="/admin/system-health" element={<ProtectedRoute><AdminSystemHealthPage /></ProtectedRoute>} />
+                <Route path="/location/live" element={<ProtectedRoute><CustomerLiveLocationPage /></ProtectedRoute>} />
+                <Route path="/driver/active-missions" element={<ProtectedRoute><DriverActiveMissionsPage /></ProtectedRoute>} />
+                <Route path="/admin/fraud-detection" element={<ProtectedRoute><AdminFraudDetectionPage /></ProtectedRoute>} />
               <Route path="/city/:countryCode/:city/:vertical/:locale" element={<CityVerticalPage />} />
 
               {/* Guest / Public */}
