@@ -118,6 +118,12 @@ export const routes = {
   customerReferFriend: () => `/me/refer-friend`,
   driverDocuments: () => `/driver/documents`,
   adminSupportSla: () => `/admin/support-sla`,
+  customerAddressSelector: () => `/checkout/address-selector`,
+  merchantDailySales: (merchantId: string) => `/merchant/daily-sales/${encodeURIComponent(merchantId)}`,
+  adminDeliveryIncidents: () => `/admin/delivery-incidents`,
+  customerPaymentActivity: () => `/me/payment-activity`,
+  driverAvailabilityZones: () => `/driver/availability-zones`,
+  adminGrowthDashboard: () => `/admin/growth-dashboard`,
 
   // Orbit
   orbitCallTest: () => `/orbit/call-test`,
@@ -281,6 +287,12 @@ export const ROUTE_REGISTRY = [
   { group: "public", label: "Refer a Friend", path: "/me/refer-friend" },
   { group: "driver", label: "Driver Documents", path: "/driver/documents" },
   { group: "admin", label: "Support SLA", path: "/admin/support-sla" },
+  { group: "public", label: "Address Selector", path: "/checkout/address-selector" },
+  { group: "merchant", label: "Daily Sales", path: "/merchant/daily-sales/:merchantId" },
+  { group: "admin", label: "Delivery Incidents", path: "/admin/delivery-incidents" },
+  { group: "public", label: "Payment Activity", path: "/me/payment-activity" },
+  { group: "driver", label: "Availability Zones", path: "/driver/availability-zones" },
+  { group: "admin", label: "Growth Dashboard", path: "/admin/growth-dashboard" },
 
   { group: "public", label: "Coming Soon", path: "/coming-soon/:slug" },
   { group: "public", label: "City Market", path: "/city-market/:citySlug" },
