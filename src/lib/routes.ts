@@ -223,6 +223,10 @@ export const routes = {
   // IS-IX
   adminProductionChecklist: () => `/admin/production-checklist`,
   adminFinalWrap: () => `/admin/final-wrap`,
+  // JA-JF
+  adminQaCommand: () => `/admin/qa-command`,
+  // KA-KF
+  liveTracking: () => `/live-tracking`,
 
   // Orbit
   orbitCallTest: () => `/orbit/call-test`,
