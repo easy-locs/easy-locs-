@@ -91,7 +91,9 @@ export default function SellerDashboard() {
             <Plus className="w-3.5 h-3.5 mr-1" /> Add
           </Button>
         }
-      />
+      >
+        <span />
+      </SectionBlock>
 
       {isLoading ? (
         <div className="space-y-3">
