@@ -258,12 +258,11 @@ export class CallManager {
         .update({
           status: "ended",
           ended_at: new Date().toISOString(),
-          duration_seconds: duration,
-          ended_by: this.role,
+          duration_sec: duration,
         } as any)
         .eq("id", this.callId)
         .neq("status", "ended")
-        .select("id,status,ended_at,duration_seconds")
+        .select("id,status,ended_at,duration_sec")
         .maybeSingle();
 
       this.debug("endCall DB update", {
