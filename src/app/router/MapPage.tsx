@@ -19,13 +19,13 @@ export default function MapPage() {
         <div className="space-y-2">
           <MapboxCanvas />
           {permission === "denied" && (
-            <p className="text-xs text-destructive text-center">
-              Location denied — showing Dubai default
+            <p className="text-xs text-destructive text-center px-2">
+              Location denied — enable location in Safari / browser settings
             </p>
           )}
           <button
             onClick={() => void refreshCurrentPosition()}
-            className="flex items-center gap-1.5 mx-auto text-xs text-muted-foreground hover:text-foreground transition-colors active:scale-95"
+            className="flex items-center gap-1.5 mx-auto text-xs text-muted-foreground hover:text-foreground transition-colors active:scale-[0.95]"
           >
             <RefreshCw className="w-3 h-3" />
             Refresh location
