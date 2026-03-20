@@ -123,7 +123,7 @@ export const usePropertyManagementStore = create<PropertyManagementStore>((set, 
       leases: [lease, ...state.leases],
     }));
 
-    const conversation = useChatStore.getState().createConversation({
+    const conversation = await useChatStore.getState().createConversation({
       type: "property_management",
       participants: [
         { orbitId: input.ownerOrbitId, role: "owner" },
@@ -134,7 +134,7 @@ export const usePropertyManagementStore = create<PropertyManagementStore>((set, 
       leaseId: lease.id,
     });
 
-    useChatStore.getState().sendMessage({
+    await useChatStore.getState().sendMessage({
       conversationId: conversation.id,
       senderOrbitId: input.ownerOrbitId,
       type: "system",
