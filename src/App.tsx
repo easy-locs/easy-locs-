@@ -753,11 +753,7 @@ const App = () => (
               {/* ══════ PUBLIC WEBSITE ══════ */}
               {/* Homepage */}
               <Route path="/" element={<HomeRouter />} />
-              <Route path="/home" element={
-                <Suspense fallback={<PageLoader />}>
-                  {(() => { const HR = () => { const { user, loading: l } = useAuth(); if (l) return <PageLoader />; if (!user) return <Index />; return <OrbitAppShell><OrbitHome /></OrbitAppShell>; }; return <HR />; })()}
-                </Suspense>
-              } />
+              <Route path="/home" element={<MarketplaceHomeRouter />} />
 
               {/* Auth */}
               <Route path="/login" element={<Login />} />
