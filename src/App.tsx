@@ -720,6 +720,13 @@ const OrbitSessionGuard = () => { useOrbitSessionInit(); return null; };
 const RealtimeHubGuard = () => { useRealtimeHub(); return null; };
 /** Install orchestration engine */
 const OrchestrationGuard = () => { useOrchestration(); return null; };
+/** Subscribe to realtime notifications */
+const NotificationsRealtimeGuard = () => {
+  import("react").then(({ useEffect }) => {});
+  // Call once at mount — subscribeRealtime is idempotent (channel deduplication)
+  useNotificationsStore.getState().subscribeRealtime();
+  return null;
+};
 
 // Apply lightweight mode class on slow devices
 if (typeof window !== "undefined") {
