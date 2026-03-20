@@ -11,7 +11,7 @@ import { useRealtimeHub } from "@/hooks/useRealtimeHub";
 import { useOrchestration } from "@/hooks/useOrchestration";
 import { I18nProvider } from "@/lib/i18n";
 import { ThemeProvider } from "next-themes";
-import { Suspense, lazy, type ComponentType } from "react";
+import { Suspense, lazy, useEffect, type ComponentType } from "react";
 import AppLockGuard from "@/components/security/AppLockGuard";
 import SplashScreen from "@/components/brand/SplashScreen";
 import BrandSuccessFlash from "@/components/brand/BrandSuccessFlash";
