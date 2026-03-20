@@ -13,7 +13,7 @@ export default function MerchantOrderBoardPage() {
   const { data: rows = [], isLoading, refetch } = useQuery({
     queryKey: ["merchant-order-board", merchantId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from("orders")
         .select("*")
         .eq("merchant_id", merchantId)
@@ -21,7 +21,7 @@ export default function MerchantOrderBoardPage() {
         .limit(100);
 
       if (error) throw error;
-      return data ?? [];
+      return (data ?? []) as any[];
     },
     enabled: !!merchantId,
     staleTime: 5000,
