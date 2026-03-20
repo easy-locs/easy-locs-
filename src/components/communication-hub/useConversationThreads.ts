@@ -540,10 +540,7 @@ export function useConversationThreads() {
       .on("postgres_changes", { event: "*", schema: "public", table: "deal_rooms", filter: `org_id=eq.${orgId}` }, () => {
         debouncedReload();
       })
-      .on("postgres_changes", { event: "*", schema: "public", table: "call_logs", filter: `callee_org_id=eq.${orgId}` }, () => {
-        debouncedReload();
-      })
-      .on("postgres_changes", { event: "*", schema: "public", table: "call_logs", filter: `caller_id=eq.${user.id}` }, () => {
+      .on("postgres_changes", { event: "*", schema: "public", table: "call_logs" }, () => {
         debouncedReload();
       })
       .on("postgres_changes", { event: "*", schema: "public", table: "conversation_threads", filter: `org_id=eq.${orgId}` }, () => {
