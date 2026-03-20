@@ -1,40 +1,46 @@
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
-import { toast } from "sonner";
 
-type DocRow = { id: string; title: string; status: string };
+const DOCS = [
+  { label: "Driving License", status: "Valid" },
+  { label: "Vehicle Registration", status: "Pending renewal" },
+  { label: "Insurance", status: "Valid" },
+  { label: "Work Permit", status: "Valid" },
+];
 
 export default function DriverDocumentsPage() {
   const navigate = useNavigate();
-  const [rows, setRows] = useState<DocRow[]>([
-    { id: "1", title: "Driving License", status: "Verified" },
-    { id: "2", title: "Vehicle Registration", status: "Pending" },
-  ]);
-
-  const uploadNew = () => {
-    setRows((prev) => [...prev, { id: crypto.randomUUID(), title: `New Document ${prev.length + 1}`, status: "Pending" }]);
-    toast.success("Document uploaded");
-  };
 
   return (
     <div className="max-w-md mx-auto px-4 py-4 space-y-4">
-      <div className="flex items-center gap-3">
-        <button onClick={() => navigate("/driver/dashboard")} className="w-9 h-9 rounded-xl bg-muted flex items-center justify-center">←</button>
-        <div>
-          <h1 className="text-lg font-bold text-foreground">Driver Documents</h1>
-          <p className="text-xs text-muted-foreground">Manage compliance files</p>
-        </div>
-      </div>
-
-      <button onClick={uploadNew} className="w-full rounded-2xl bg-primary text-primary-foreground px-4 py-3 text-sm font-bold">Upload Document</button>
+      <Header title="Documents" subtitle="Compliance and validity" onBack={() => navigate("/driver/dashboard")} />
 
       <div className="space-y-3">
-        {rows.map((row) => (
-          <div key={row.id} className="rounded-2xl border border-border/20 bg-card p-4">
-            <div className="text-sm font-bold text-foreground">{row.title}</div>
-            <div className="text-xs text-muted-foreground mt-1">{row.status}</div>
+        {DOCS.map((doc) => (
+          <div key={doc.label} className="rounded-[28px] border border-border/20 bg-card p-4 flex items-center justify-between gap-3">
+            <div className="text-sm font-semibold">{doc.label}</div>
+            <div
+              className={`rounded-full px-3 py-1 text-[11px] font-bold ${
+                doc.status === "Valid"
+                  ? "bg-emerald-500/10 text-emerald-500"
+                  : "bg-amber-500/10 text-amber-500"
+              }`}
+            >
+              {doc.status}
+            </div>
           </div>
         ))}
+      </div>
+    </div>
+  );
+}
+
+function Header({ title, subtitle, onBack }: { title: string; subtitle: string; onBack: () => void }) {
+  return (
+    <div className="flex items-center gap-3">
+      <button onClick={onBack} className="w-9 h-9 rounded-xl bg-muted flex items-center justify-center">←</button>
+      <div>
+        <h1 className="text-lg font-bold">{title}</h1>
+        <p className="text-xs text-muted-foreground">{subtitle}</p>
       </div>
     </div>
   );
