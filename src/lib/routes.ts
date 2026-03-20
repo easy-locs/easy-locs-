@@ -94,6 +94,12 @@ export const routes = {
   adminMerchantPromoWatch: () => `/admin/merchant-promo-watch`,
   driverEarningsSummary: () => `/driver/earnings-summary`,
   adminRefundWatch: () => `/admin/refund-watch`,
+  customerSupportShortcuts: () => `/support/shortcuts`,
+  merchantCustomerInsights: (merchantId: string) => `/merchant/customer-insights/${encodeURIComponent(merchantId)}`,
+  adminDriverHeatmap: () => `/admin/driver-heatmap`,
+  customerOrderArchive: () => `/my-orders/archive`,
+  merchantProductPerformance: (merchantId: string) => `/merchant/product-performance/${encodeURIComponent(merchantId)}`,
+  adminWalletWatch: () => `/admin/wallet-watch`,
 
   // Orbit
   orbitCallTest: () => `/orbit/call-test`,
@@ -233,6 +239,12 @@ export const ROUTE_REGISTRY = [
   { group: "admin", label: "Merchant Promo Watch", path: "/admin/merchant-promo-watch" },
   { group: "driver", label: "Driver Earnings Summary", path: "/driver/earnings-summary" },
   { group: "admin", label: "Refund Watch", path: "/admin/refund-watch" },
+  { group: "public", label: "Support Shortcuts", path: "/support/shortcuts" },
+  { group: "merchant", label: "Customer Insights", path: "/merchant/customer-insights/:merchantId" },
+  { group: "admin", label: "Driver Heatmap", path: "/admin/driver-heatmap" },
+  { group: "public", label: "Order Archive", path: "/my-orders/archive" },
+  { group: "merchant", label: "Product Performance", path: "/merchant/product-performance/:merchantId" },
+  { group: "admin", label: "Wallet Watch", path: "/admin/wallet-watch" },
 
   { group: "public", label: "Coming Soon", path: "/coming-soon/:slug" },
   { group: "public", label: "City Market", path: "/city-market/:citySlug" },
