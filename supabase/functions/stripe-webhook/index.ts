@@ -328,6 +328,8 @@ async function handleCheckoutCompleted(supabase: any, stripe: Stripe, session: S
     await handleMarketplacePayment(supabase, metadata, session.payment_intent as string || "");
   } else if (type === "orbit_payment") {
     await handleOrbitPaymentCompleted(supabase, session);
+  } else if (type === "wallet_topup") {
+    await handleWalletTopup(supabase, session);
   }
 }
 
