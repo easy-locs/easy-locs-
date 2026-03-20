@@ -635,6 +635,14 @@ const AdminMerchantSegmentsPage = safeLazy(() => import("./pages/admin/AdminMerc
 const V1CheckoutBridgePage = safeLazy(() => import("./pages/v1/V1CheckoutBridgePage"), "V1CheckoutBridgePage");
 const V1MerchantOrdersPage = safeLazy(() => import("./pages/v1/V1MerchantOrdersPage"), "V1MerchantOrdersPage");
 const V1RideSendPackagePage = safeLazy(() => import("./pages/v1/V1RideSendPackagePage"), "V1RideSendPackagePage");
+// V1 Block 6-7: wallet, notifications, profile, achille, restaurant, home/menu routes
+const V1WalletHubPage = safeLazy(() => import("./pages/v1/V1WalletHubPage"), "V1WalletHubPage");
+const V1NotificationsPage = safeLazy(() => import("./pages/v1/V1NotificationsPage"), "V1NotificationsPage");
+const V1ProfileSettingsPage = safeLazy(() => import("./pages/v1/V1ProfileSettingsPage"), "V1ProfileSettingsPage");
+const V1HomeRoute = safeLazy(() => import("./pages/v1/V1HomeRoute"), "V1HomeRoute");
+const V1MenuRoute = safeLazy(() => import("./pages/v1/V1MenuRoute"), "V1MenuRoute");
+const V1AchillePage = safeLazy(() => import("./pages/v1/V1AchillePage"), "V1AchillePage");
+const V1RestaurantRoute = safeLazy(() => import("./pages/v1/V1RestaurantRoute"), "V1RestaurantRoute");
 
 // City sub-page wrappers
 const CityServicesPage = () => <CityHubPage subPage="services" />;
