@@ -654,6 +654,7 @@ const V1MerchantPaymentsPage = safeLazy(() => import("./pages/v1/V1MerchantPayme
 const V1TrackingRoute = safeLazy(() => import("./pages/v1/V1TrackingRoute"), "V1TrackingRoute");
 const V1DriverMissionBoardPage = safeLazy(() => import("./pages/v1/V1DriverMissionBoardPage").then(m => ({ default: m.V1DriverMissionBoardPage })), "V1DriverMissionBoardPage");
 const V1DriverProofPage = safeLazy(() => import("./pages/v1/V1DriverProofPage").then(m => ({ default: m.V1DriverProofPage })), "V1DriverProofPage");
+const AuthCallbackPage = safeLazy(() => import("./pages/AuthCallbackPage"), "AuthCallbackPage");
 // City sub-page wrappers
 const CityServicesPage = () => <CityHubPage subPage="services" />;
 const CityActivitiesPage = () => <CityHubPage subPage="activities" />;
@@ -752,6 +753,7 @@ const App = () => (
               <Route path="/forgot-password" element={<ForgotPassword />} />
               <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/verify-email" element={<VerifyEmail />} />
+              <Route path="/auth/callback" element={<AuthCallbackPage />} />
               <Route path="/onboarding" element={<Onboarding />} />
               <Route path="/install" element={<Install />} />
 
