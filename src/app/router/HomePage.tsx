@@ -1,79 +1,182 @@
 import { useEffect } from "react";
-import { AppPageShell } from "@/components/layout/AppPageShell";
-import { AppMainNav } from "@/components/layout/AppMainNav";
+import { useNavigate } from "react-router-dom";
 import { useOrbitStore } from "@/stores/orbitStore";
 import { useWalletStore } from "@/stores/walletStore";
 import { useV2AuthStore } from "@/stores/v2AuthStore";
-import { AvatarUploader } from "@/components/profile/AvatarUploader";
-import { ActivityPanel } from "@/components/system/ActivityPanel";
-import { useActivityLogStore } from "@/stores/activityLogStore";
-import { PushSettingsPanel } from "@/components/settings/PushSettingsPanel";
 import { useActivityRealtime } from "@/hooks/useActivityRealtime";
 import { registerPushNotifications } from "@/lib/push/registerPush";
 import { usePushTokenStore } from "@/stores/pushTokenStore";
+import {
+  MessageCircle,
+  Wallet,
+  ShoppingBag,
+  Car,
+  QrCode,
+  Package,
+  CreditCard,
+  Store,
+  ChevronRight,
+  Bell,
+  Settings,
+  LogOut,
+} from "lucide-react";
+
+const QUICK_ACTIONS = [
+  { key: "orbit", label: "Chat", icon: MessageCircle, path: "/orbit", color: "bg-primary/10 text-primary" },
+  { key: "marketplace", label: "Shop", icon: Store, path: "/achille", color: "bg-orange-500/10 text-orange-600" },
+  { key: "ride", label: "Ride", icon: Car, path: "/ride", color: "bg-blue-500/10 text-blue-600" },
+  { key: "delivery", label: "Send", icon: Package, path: "/ride/send-package", color: "bg-emerald-500/10 text-emerald-600" },
+  { key: "wallet", label: "Wallet", icon: Wallet, path: "/wallet/hub", color: "bg-violet-500/10 text-violet-600" },
+  { key: "scan", label: "Scan", icon: QrCode, path: "/pay/scan", color: "bg-amber-500/10 text-amber-600" },
+  { key: "pay", label: "Pay", icon: CreditCard, path: "/wallet/hub", color: "bg-rose-500/10 text-rose-600" },
+  { key: "orders", label: "Orders", icon: ShoppingBag, path: "/my-orders", color: "bg-teal-500/10 text-teal-600" },
+];
 
 export default function HomePage() {
+  const navigate = useNavigate();
   const orbit = useOrbitStore((s) => s.profile);
   const wallet = useWalletStore((s) => s.wallet);
   const user = useV2AuthStore((s) => s.user);
   const signOut = useV2AuthStore((s) => s.signOut);
-  const hydrateActivity = useActivityLogStore((s) => s.hydrate);
 
   useActivityRealtime();
 
   useEffect(() => {
-    void hydrateActivity();
-  }, [hydrateActivity]);
-
-  // Auto-register push token on mount
-  useEffect(() => {
     (async () => {
       const { token, platform } = await registerPushNotifications();
-      if (token) {
-        await usePushTokenStore.getState().saveToken(token, platform);
-      }
+      if (token) await usePushTokenStore.getState().saveToken(token, platform);
     })();
   }, []);
 
+  const displayName = orbit?.displayName || user?.email?.split("@")[0] || "User";
+  const initials = displayName.slice(0, 2).toUpperCase();
+  const balance = wallet?.balance ?? 0;
+  const currency = wallet?.currency ?? "AED";
+
   return (
-    <AppPageShell
-      title="V2 Home"
-      actions={
-        <div className="flex items-center gap-3">
-          <span className="text-sm text-muted-foreground">{user?.email}</span>
+    <div className="flex flex-col min-h-[100dvh] bg-background">
+      {/* Header */}
+      <header className="shrink-0 px-4 pt-[max(env(safe-area-inset-top,12px),12px)] pb-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => navigate("/settings")}
+              className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-sm font-bold text-primary active:scale-[0.95] transition-transform"
+            >
+              {orbit?.avatarUrl ? (
+                <img src={orbit.avatarUrl} alt="" className="h-10 w-10 rounded-full object-cover" />
+              ) : (
+                initials
+              )}
+            </button>
+            <div>
+              <p className="text-[15px] font-bold text-foreground leading-tight">Hey, {displayName} 👋</p>
+              <p className="text-[11px] text-muted-foreground">What do you need today?</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => navigate("/notifications")}
+              className="h-9 w-9 rounded-full flex items-center justify-center hover:bg-accent/10 active:scale-[0.95] transition-all"
+            >
+              <Bell className="h-5 w-5 text-foreground/60" />
+            </button>
+            <button
+              onClick={() => void signOut()}
+              className="h-9 w-9 rounded-full flex items-center justify-center hover:bg-destructive/10 active:scale-[0.95] transition-all"
+            >
+              <LogOut className="h-4 w-4 text-destructive/70" />
+            </button>
+          </div>
+        </div>
+      </header>
+
+      {/* Wallet Card */}
+      <div className="px-4 mb-4">
+        <button
+          onClick={() => navigate("/wallet/hub")}
+          className="w-full rounded-2xl bg-gradient-to-br from-primary to-primary/80 p-4 text-left active:scale-[0.98] transition-transform shadow-lg shadow-primary/10"
+        >
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-[11px] font-medium text-primary-foreground/70 uppercase tracking-wide">Balance</p>
+              <p className="text-2xl font-bold text-primary-foreground mt-0.5 tabular-nums">
+                {balance.toLocaleString()} <span className="text-sm font-medium opacity-80">{currency}</span>
+              </p>
+            </div>
+            <div className="h-10 w-10 rounded-full bg-primary-foreground/15 flex items-center justify-center">
+              <Wallet className="h-5 w-5 text-primary-foreground" />
+            </div>
+          </div>
+          <div className="flex items-center gap-1 mt-2 text-primary-foreground/70">
+            <span className="text-[11px] font-medium">View wallet</span>
+            <ChevronRight className="h-3 w-3" />
+          </div>
+        </button>
+      </div>
+
+      {/* Quick Actions */}
+      <div className="px-4 mb-5">
+        <p className="text-[11px] uppercase tracking-wider font-bold text-muted-foreground mb-3">Quick Actions</p>
+        <div className="grid grid-cols-4 gap-2">
+          {QUICK_ACTIONS.map((action) => (
+            <button
+              key={action.key}
+              onClick={() => navigate(action.path)}
+              className="flex flex-col items-center gap-1.5 py-3 rounded-2xl bg-card border border-border/15 active:scale-[0.95] transition-transform"
+            >
+              <div className={`h-10 w-10 rounded-xl flex items-center justify-center ${action.color}`}>
+                <action.icon className="h-5 w-5" />
+              </div>
+              <span className="text-[10px] font-semibold text-foreground">{action.label}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Discover Section */}
+      <div className="px-4 mb-4">
+        <div className="flex items-center justify-between mb-3">
+          <p className="text-[11px] uppercase tracking-wider font-bold text-muted-foreground">Discover</p>
           <button
-            onClick={() => void signOut()}
-            className="rounded-lg border border-border px-3 py-1.5 text-sm text-destructive hover:bg-destructive/10 transition-colors"
+            onClick={() => navigate("/explore")}
+            className="text-[11px] font-semibold text-primary active:scale-[0.97] transition-transform"
           >
-            Déconnexion
+            See all
           </button>
         </div>
-      }
-    >
-      <AppMainNav />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
-        <div className="rounded-lg border border-border p-4">
-          <h3 className="text-lg font-semibold text-foreground">Orbit Profile</h3>
-          <pre className="text-xs text-muted-foreground whitespace-pre-wrap mt-2">
-            {JSON.stringify(orbit, null, 2)}
-          </pre>
+        <div className="flex gap-3 overflow-x-auto pb-1 -mx-4 px-4 scrollbar-hide">
+          {[
+            { label: "Food & Dining", emoji: "🍕", path: "/food", desc: "Restaurants nearby" },
+            { label: "Grocery", emoji: "🛒", path: "/grocery", desc: "Fresh & fast" },
+            { label: "Services", emoji: "🔧", path: "/services-hub", desc: "Home & more" },
+            { label: "Travel", emoji: "✈️", path: "/explore", desc: "Hotels & stays" },
+          ].map((item) => (
+            <button
+              key={item.label}
+              onClick={() => navigate(item.path)}
+              className="shrink-0 w-[130px] rounded-2xl bg-card border border-border/15 p-3 text-left active:scale-[0.97] transition-transform"
+            >
+              <span className="text-2xl">{item.emoji}</span>
+              <p className="text-xs font-bold text-foreground mt-2 leading-tight">{item.label}</p>
+              <p className="text-[10px] text-muted-foreground mt-0.5">{item.desc}</p>
+            </button>
+          ))}
         </div>
-
-        <div className="rounded-lg border border-border p-4">
-          <h3 className="text-lg font-semibold text-foreground">Wallet</h3>
-          <pre className="text-xs text-muted-foreground whitespace-pre-wrap mt-2">
-            {JSON.stringify(wallet, null, 2)}
-          </pre>
-        </div>
-
-        <div className="rounded-lg border border-border p-4">
-          <AvatarUploader />
-        </div>
-
-        <ActivityPanel />
-        <PushSettingsPanel />
       </div>
-    </AppPageShell>
+
+      {/* Settings shortcut */}
+      <div className="px-4 mt-auto pb-4">
+        <button
+          onClick={() => navigate("/settings")}
+          className="w-full flex items-center gap-3 rounded-2xl bg-card border border-border/15 px-4 py-3 active:scale-[0.98] transition-transform"
+        >
+          <Settings className="h-5 w-5 text-muted-foreground" />
+          <span className="text-sm font-medium text-foreground">Settings & Account</span>
+          <ChevronRight className="h-4 w-4 text-muted-foreground ml-auto" />
+        </button>
+      </div>
+    </div>
   );
 }
