@@ -26,6 +26,7 @@ import ErrorBoundary from "@/components/ErrorBoundary";
 import ChunkRecoveryBoundary from "@/components/system/ChunkRecoveryBoundary";
 import CountryGuard from "@/components/dashboard/CountryGuard";
 import { UnifiedPaymentProvider } from "@/payments/UnifiedPaymentSystem";
+import V1BootBridge from "@/app/V1BootBridge";
 
 // Safe lazy wrapper that catches chunk failures + missing default export issues
 function safeLazy(factory: () => Promise<{ default: ComponentType<any> }>, name: string) {
@@ -633,7 +634,6 @@ const AdminCustomerSegmentsPage = safeLazy(() => import("./pages/admin/AdminCust
 const AdminMerchantSegmentsPage = safeLazy(() => import("./pages/admin/AdminMerchantSegmentsPage"), "AdminMerchantSegmentsPage");
 // V1 order flow block
 const V1CheckoutBridgePage = safeLazy(() => import("./pages/v1/V1CheckoutBridgePage"), "V1CheckoutBridgePage");
-const V1MerchantOrdersPage = safeLazy(() => import("./pages/v1/V1MerchantOrdersPage"), "V1MerchantOrdersPage");
 const V1RideSendPackagePage = safeLazy(() => import("./pages/v1/V1RideSendPackagePage"), "V1RideSendPackagePage");
 // V1 Block 6-7: wallet, notifications, profile, achille, restaurant, home/menu routes
 const V1WalletHubPage = safeLazy(() => import("./pages/v1/V1WalletHubPage"), "V1WalletHubPage");
@@ -643,6 +643,11 @@ const V1HomeRoute = safeLazy(() => import("./pages/v1/V1HomeRoute"), "V1HomeRout
 const V1MenuRoute = safeLazy(() => import("./pages/v1/V1MenuRoute"), "V1MenuRoute");
 const V1AchillePage = safeLazy(() => import("./pages/v1/V1AchillePage"), "V1AchillePage");
 const V1RestaurantRoute = safeLazy(() => import("./pages/v1/V1RestaurantRoute"), "V1RestaurantRoute");
+// V1 Final Integration Block 3-4: merchant core pages
+const V1MerchantPosPage = safeLazy(() => import("./pages/v1/V1MerchantPosPage"), "V1MerchantPosPage");
+const V1MerchantQrPage = safeLazy(() => import("./pages/v1/V1MerchantQrPage"), "V1MerchantQrPage");
+const V1MerchantOrdersRoute = safeLazy(() => import("./pages/v1/V1MerchantOrdersRoute"), "V1MerchantOrdersRoute");
+const V1MerchantPaymentsPage = safeLazy(() => import("./pages/v1/V1MerchantPaymentsPage"), "V1MerchantPaymentsPage");
 
 // City sub-page wrappers
 const CityServicesPage = () => <CityHubPage subPage="services" />;
@@ -715,7 +720,8 @@ const App = () => (
            <AppLockGuard>
            <SplashScreen>
            <BrandSuccessFlash />
-            <OrchestrationGuard />
+             <OrchestrationGuard />
+             <V1BootBridge />
             <OrbitSessionGuard />
            <RealtimeHubGuard />
            <UpdateNotification />
@@ -1331,12 +1337,10 @@ const App = () => (
                 <Route path="/admin/notification-campaigns" element={<ProtectedRoute><AdminNotificationCampaignsPage /></ProtectedRoute>} />
                 <Route path="/admin/customer-segments" element={<ProtectedRoute><AdminCustomerSegmentsPage /></ProtectedRoute>} />
                 <Route path="/admin/merchant-segments" element={<ProtectedRoute><AdminMerchantSegmentsPage /></ProtectedRoute>} />
-                {/* V1 order flow */}
+                {/* V1 Primary Routes */}
                 <Route path="/v1/checkout" element={<ProtectedRoute><V1CheckoutBridgePage /></ProtectedRoute>} />
-                <Route path="/v1/merchant-orders/:merchantId" element={<ProtectedRoute><V1MerchantOrdersPage merchantId="" /></ProtectedRoute>} />
                 <Route path="/v1/ride" element={<ProtectedRoute><V1RideSendPackagePage type="ride" /></ProtectedRoute>} />
                 <Route path="/v1/send-package" element={<ProtectedRoute><V1RideSendPackagePage type="package" /></ProtectedRoute>} />
-                {/* V1 Block 6-7 */}
                 <Route path="/v1/home" element={<V1HomeRoute />} />
                 <Route path="/v1/menu" element={<V1MenuRoute />} />
                 <Route path="/v1/wallet" element={<ProtectedRoute><V1WalletHubPage /></ProtectedRoute>} />
@@ -1344,6 +1348,10 @@ const App = () => (
                 <Route path="/v1/profile" element={<ProtectedRoute><V1ProfileSettingsPage /></ProtectedRoute>} />
                 <Route path="/v1/achille" element={<V1AchillePage />} />
                 <Route path="/v1/restaurant/:restaurantId" element={<V1RestaurantRoute />} />
+                <Route path="/v1/merchant/pos" element={<V1MerchantPosPage />} />
+                <Route path="/v1/merchant/qr" element={<V1MerchantQrPage />} />
+                <Route path="/v1/merchant/orders" element={<V1MerchantOrdersRoute />} />
+                <Route path="/v1/merchant/payments" element={<V1MerchantPaymentsPage />} />
               <Route path="/city/:countryCode/:city/:vertical/:locale" element={<CityVerticalPage />} />
 
               {/* Guest / Public */}
