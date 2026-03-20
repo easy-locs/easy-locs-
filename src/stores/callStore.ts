@@ -21,13 +21,18 @@ type CallStore = {
   current: CallSession | null;
   incoming: CallSession | null;
   mode: "idle" | "ringing" | "connecting" | "active" | "ended";
+  type: "audio" | "video" | null;
+  peerOrbitId: string | null;
   localMicEnabled: boolean;
   localCamEnabled: boolean;
 
   createCall: (receiverOrbitId: string, callType: "audio" | "video", conversationId?: string) => Promise<void>;
+  startCall: (peerOrbitId: string, type: "audio" | "video") => void;
+  setConnecting: () => void;
+  setActive: () => void;
   acceptCall: (sessionId: string, conversationId?: string) => Promise<void>;
   rejectCall: (sessionId: string, conversationId?: string) => Promise<void>;
-  endCall: (sessionId: string, conversationId?: string, durationSec?: number) => Promise<void>;
+  endCall: (sessionId?: string, conversationId?: string, durationSec?: number) => Promise<void>;
   toggleMic: () => void;
   toggleCam: () => void;
 };
