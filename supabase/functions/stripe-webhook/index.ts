@@ -330,6 +330,10 @@ async function handleCheckoutCompleted(supabase: any, stripe: Stripe, session: S
     await handleOrbitPaymentCompleted(supabase, session);
   } else if (type === "wallet_topup") {
     await handleWalletTopup(supabase, session);
+  } else if (type === "listing_renewal") {
+    await handleListingRenewal(supabase, session);
+  } else if (type === "listing_boost") {
+    await handleListingBoost(supabase, session);
   }
 }
 
