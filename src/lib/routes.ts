@@ -227,6 +227,17 @@ export const routes = {
   adminQaCommand: () => `/admin/qa-command`,
   // KA-KF
   liveTracking: () => `/live-tracking`,
+  // LG-LR
+  driverFuelCostsV2: () => `/driver/fuel-costs-v2`,
+  driverCompliance: () => `/driver/compliance`,
+  driverBreaks: () => `/driver/breaks`,
+  driverShiftPlanner: () => `/driver/shift-planner`,
+  adminDriverComplianceOps: () => `/admin/driver-compliance-ops`,
+  adminMarketplaceExperiments: () => `/admin/marketplace-experiments`,
+  customerScheduledOrder: () => `/checkout/scheduled-order`,
+  merchantStaffRoles: (merchantId: string) => `/merchant/staff-roles/${encodeURIComponent(merchantId)}`,
+  merchantPermissions: (merchantId: string) => `/merchant/permissions/${encodeURIComponent(merchantId)}`,
+  merchantBusinessHours: (merchantId: string) => `/merchant/business-hours/${encodeURIComponent(merchantId)}`,
 
   // Orbit
   orbitCallTest: () => `/orbit/call-test`,
@@ -499,6 +510,17 @@ export const ROUTE_REGISTRY = [
   { group: "admin", label: "QA Command", path: "/admin/qa-command" },
   // KA-KF
   { group: "public", label: "Live Tracking", path: "/live-tracking" },
+  // LG-LR
+  { group: "driver", label: "Fuel Costs V2", path: "/driver/fuel-costs-v2" },
+  { group: "driver", label: "Compliance", path: "/driver/compliance" },
+  { group: "driver", label: "Breaks", path: "/driver/breaks" },
+  { group: "driver", label: "Shift Planner", path: "/driver/shift-planner" },
+  { group: "admin", label: "Driver Compliance Ops", path: "/admin/driver-compliance-ops" },
+  { group: "admin", label: "Marketplace Experiments", path: "/admin/marketplace-experiments" },
+  { group: "public", label: "Scheduled Order", path: "/checkout/scheduled-order" },
+  { group: "merchant", label: "Staff Roles", path: "/merchant/staff-roles/:merchantId" },
+  { group: "merchant", label: "Permissions Matrix", path: "/merchant/permissions/:merchantId" },
+  { group: "merchant", label: "Business Hours", path: "/merchant/business-hours/:merchantId" },
 
   { group: "public", label: "Coming Soon", path: "/coming-soon/:slug" },
   { group: "public", label: "City Market", path: "/city-market/:citySlug" },
