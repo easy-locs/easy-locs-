@@ -63,14 +63,14 @@ export default function NotificationPreferencesPage() {
 
     try {
       setSaving(true);
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from("user_notification_preferences")
         .upsert(
           {
             user_id: user.id,
             ...prefs,
             updated_at: new Date().toISOString(),
-          } as any,
+          },
           { onConflict: "user_id" }
         );
 
