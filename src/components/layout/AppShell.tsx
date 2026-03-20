@@ -7,7 +7,7 @@
 import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
-import MobileBottomNav from "@/components/dashboard/MobileBottomNav";
+import MainBottomNav from "@/components/navigation/MainBottomNav";
 import { useAuth } from "@/contexts/AuthContext";
 import { prefetchCriticalData } from "@/lib/query-prefetch";
 import { scheduleIdle } from "@/lib/performance";
