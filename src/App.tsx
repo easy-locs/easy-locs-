@@ -835,7 +835,7 @@ const App = () => (
 
               <Route path="/explore" element={<Explore />} />
               <Route path="/super-map" element={<SuperMapRadarPage />} />
-              <Route path="/map" element={<SuperMapRadarPage />} />
+              <Route path="/map" element={<MapTabPage />} />
               <Route path="/radar" element={<GlobalRadarPage />} />
               <Route path="/shops" element={<ShopsPage />} />
               <Route path="/s/:slug" element={<ShopPage />} />
