@@ -12157,6 +12157,57 @@ export type Database = {
           },
         ]
       }
+      payments: {
+        Row: {
+          amount: number
+          created_at: string
+          currency: string
+          id: string
+          merchant_id: string | null
+          metadata_json: Json | null
+          payment_type: string
+          provider: string
+          provider_payment_id: string | null
+          reference_id: string | null
+          reference_type: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          currency?: string
+          id?: string
+          merchant_id?: string | null
+          metadata_json?: Json | null
+          payment_type?: string
+          provider?: string
+          provider_payment_id?: string | null
+          reference_id?: string | null
+          reference_type?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          merchant_id?: string | null
+          metadata_json?: Json | null
+          payment_type?: string
+          provider?: string
+          provider_payment_id?: string | null
+          reference_id?: string | null
+          reference_type?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       payout_profiles: {
         Row: {
           created_at: string
