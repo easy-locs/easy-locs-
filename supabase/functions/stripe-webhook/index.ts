@@ -1025,7 +1025,7 @@ async function handleV2RentPayment(supabase: any, session: Stripe.Checkout.Sessi
   logStep("V2 rent payment fully processed", { rentPaymentId });
 }
 
-
+async function handleSubscriptionChange(supabase: any, stripe: Stripe, subscription: Stripe.Subscription) {
   const customerId = subscription.customer as string;
   const userId = await getUserIdByCustomerId(supabase, stripe, customerId);
   if (!userId) { logStep("No user found for customer", { customerId }); return; }
