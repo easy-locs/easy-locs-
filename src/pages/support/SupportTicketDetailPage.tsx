@@ -2,8 +2,9 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { getTicketTypeLabel } from "@/lib/support/ticketTypes";
-import { ArrowLeft, FileText, MessageCircle, Image } from "lucide-react";
+import { ArrowLeft, Image } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import SupportThread from "@/components/support/SupportThread";
 
 export default function SupportTicketDetailPage() {
   const navigate = useNavigate();
@@ -21,7 +22,7 @@ export default function SupportTicketDetailPage() {
       if (error) throw error;
       return data;
     },
-    staleTime: 15_000,
+    staleTime: 10000,
   });
 
   return (
@@ -102,16 +103,8 @@ export default function SupportTicketDetailPage() {
               </p>
             </div>
 
-            {/* Updates placeholder */}
-            <div className="rounded-2xl border border-border/20 bg-card p-4">
-              <div className="flex items-center gap-2 mb-2">
-                <MessageCircle className="w-4 h-4 text-muted-foreground" />
-                <p className="text-sm font-bold text-foreground">Updates</p>
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Support timeline and updates will appear here.
-              </p>
-            </div>
+            {/* Thread */}
+            <SupportThread ticketId={ticketId!} actorRole="user" />
           </>
         )}
       </div>
