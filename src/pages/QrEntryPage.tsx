@@ -1,10 +1,11 @@
 /**
- * QrEntryPage — Guaranteed visible debug-safe UI.
+ * QrEntryPage — Premium themed QR entry resolver.
  */
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { resolveQrTarget } from "@/lib/qr/qr-resolver";
 import { routes } from "@/lib/routes";
+import { Loader2, QrCode, AlertCircle, ArrowLeft, ArrowRight } from "lucide-react";
 
 export default function QrEntryPage() {
   const { targetCode } = useParams<{ targetCode: string }>();
@@ -14,8 +15,6 @@ export default function QrEntryPage() {
   const [target, setTarget] = useState<any>(null);
 
   useEffect(() => {
-    console.log("[qr-entry] mounted", targetCode);
-
     if (!targetCode) {
       setError("QR code missing");
       setLoading(false);
@@ -25,11 +24,9 @@ export default function QrEntryPage() {
     (async () => {
       try {
         const resolved = await resolveQrTarget(targetCode);
-        console.log("[qr-entry] resolved", resolved);
         setTarget(resolved);
       } catch (e: any) {
-        console.error("[qr-entry] error", e);
-        setError(e?.message ?? "QR expiré ou invalide");
+        setError(e?.message ?? "QR expired or invalid");
       } finally {
         setLoading(false);
       }
@@ -37,49 +34,77 @@ export default function QrEntryPage() {
   }, [targetCode]);
 
   return (
-    <div style={{ minHeight: "100vh", background: "#020b2d", color: "#fff", padding: 24 }}>
-      <h1 style={{ fontSize: 24, fontWeight: 700 }}>QR Entry</h1>
-      <p style={{ marginTop: 8, fontSize: 13, opacity: 0.6 }}>
-        Target code: {targetCode || "missing"}
-      </p>
-
-      {loading && <p style={{ marginTop: 12 }}>Loading QR...</p>}
-
-      {error && (
-        <div style={{ marginTop: 12 }}>
-          <p style={{ color: "#ff5c5c", fontWeight: 600 }}>QR expiré ou invalide</p>
-          <p style={{ color: "#ff5c5c", fontSize: 13, marginTop: 4 }}>{error}</p>
-          <a href="/#/discover" style={{ display: "inline-block", marginTop: 12, color: "#d6a84f", textDecoration: "underline", fontSize: 14 }}>
-            Retour
-          </a>
+    <div className="min-h-[100dvh] flex flex-col bg-background">
+      {/* Header */}
+      <header className="flex items-center gap-3 px-4 py-3 border-b border-border/10">
+        <button
+          onClick={() => navigate(-1)}
+          className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-95 transition-transform"
+          style={{ background: "hsl(var(--muted))" }}
+        >
+          <ArrowLeft className="w-4 h-4 text-foreground" />
+        </button>
+        <div className="flex-1 min-w-0">
+          <h1 className="text-base font-bold text-foreground">QR Entry</h1>
+          <p className="text-[11px] text-muted-foreground truncate">
+            Code: {targetCode || "—"}
+          </p>
         </div>
-      )}
+      </header>
 
-      {target && (
-        <div style={{ marginTop: 12 }}>
-          <p style={{ color: "#4ade80", fontWeight: 600 }}>QR loaded successfully ✓</p>
-          <pre style={{ whiteSpace: "pre-wrap", fontSize: 12, marginTop: 8, background: "#0a1640", padding: 12, borderRadius: 8 }}>
-            {JSON.stringify(target, null, 2)}
-          </pre>
-          <button
-            onClick={() => {
-              const qs = new URLSearchParams({
-                merchant: target.merchantProfileId,
-                target: target.targetCode,
-              });
-              if (target.tableNumber) qs.set("table", target.tableNumber);
-              navigate(`${routes.merchantPos()}?${qs.toString()}`, { replace: true });
-            }}
-            style={{ marginTop: 12, padding: "10px 20px", background: "#d6a84f", color: "#000", fontWeight: 600, fontSize: 14, borderRadius: 8, border: "none" }}
-          >
-            Continue to merchant POS
-          </button>
-        </div>
-      )}
+      <div className="flex-1 flex flex-col items-center justify-center px-6 py-12">
+        {loading && (
+          <div className="flex flex-col items-center gap-4">
+            <div className="w-16 h-16 rounded-2xl flex items-center justify-center" style={{ background: "hsl(var(--primary) / 0.1)" }}>
+              <Loader2 className="w-8 h-8 animate-spin" style={{ color: "hsl(var(--primary))" }} />
+            </div>
+            <p className="text-sm font-medium text-muted-foreground">Loading QR target…</p>
+          </div>
+        )}
 
-      <p style={{ marginTop: 24, fontSize: 12, opacity: 0.5 }}>
-        If you can see this, the page is rendering correctly.
-      </p>
+        {error && (
+          <div className="flex flex-col items-center gap-4 max-w-[300px] text-center">
+            <div className="w-16 h-16 rounded-2xl flex items-center justify-center" style={{ background: "hsl(var(--destructive) / 0.1)" }}>
+              <AlertCircle className="w-8 h-8" style={{ color: "hsl(var(--destructive))" }} />
+            </div>
+            <h2 className="text-lg font-bold text-foreground">QR Invalid</h2>
+            <p className="text-sm text-muted-foreground">{error}</p>
+            <button
+              onClick={() => navigate("/")}
+              className="mt-4 px-6 py-2.5 rounded-xl text-sm font-bold text-primary-foreground active:scale-[0.97] transition-transform"
+              style={{ background: "hsl(var(--primary))" }}
+            >
+              Go Home
+            </button>
+          </div>
+        )}
+
+        {target && (
+          <div className="flex flex-col items-center gap-4 max-w-[300px] text-center">
+            <div className="w-16 h-16 rounded-2xl flex items-center justify-center" style={{ background: "hsl(142 60% 45% / 0.1)" }}>
+              <QrCode className="w-8 h-8" style={{ color: "hsl(142 60% 45%)" }} />
+            </div>
+            <h2 className="text-lg font-bold text-foreground">QR Loaded</h2>
+            <p className="text-sm text-muted-foreground">
+              {target.targetType} · {target.tableNumber ? `Table ${target.tableNumber}` : "Ready"}
+            </p>
+            <button
+              onClick={() => {
+                const qs = new URLSearchParams({
+                  merchant: target.merchantProfileId,
+                  target: target.targetCode,
+                });
+                if (target.tableNumber) qs.set("table", target.tableNumber);
+                navigate(`${routes.merchantPos()}?${qs.toString()}`, { replace: true });
+              }}
+              className="mt-4 flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-bold text-primary-foreground active:scale-[0.97] transition-transform"
+              style={{ background: "hsl(var(--primary))" }}
+            >
+              Continue <ArrowRight className="w-4 h-4" />
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

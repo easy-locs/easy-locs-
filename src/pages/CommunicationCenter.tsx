@@ -341,7 +341,7 @@ export const CommunicationCenter = () => {
       )}
 
       <NewConversationDialog open={showNewConversation} onOpenChange={setShowNewConversation} onThreadCreated={handleNewThreadCreated} />
-    </DashboardLayout>
+    </>
   );
 };
 
