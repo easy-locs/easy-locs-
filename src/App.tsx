@@ -550,6 +550,12 @@ const AdminPaymentGoLivePage = safeLazy(() => import("./pages/admin/AdminPayment
 const AdminGoLiveReadinessPage = safeLazy(() => import("./pages/admin/AdminGoLiveReadinessPage"), "AdminGoLiveReadinessPage");
 // IG-IL block
 const AdminUiFinalizerPage = safeLazy(() => import("./pages/admin/AdminUiFinalizerPage"), "AdminUiFinalizerPage");
+// IM-IR block
+const AppBootstrapGuard = safeLazy(() => import("./components/app/AppBootstrapGuard"), "AppBootstrapGuard");
+const AdminMasterControlPage = safeLazy(() => import("./pages/admin/AdminMasterControlPage"), "AdminMasterControlPage");
+// IS-IX block
+const AdminProductionChecklistPage = safeLazy(() => import("./pages/admin/AdminProductionChecklistPage"), "AdminProductionChecklistPage");
+const AdminFinalWrapPage = safeLazy(() => import("./pages/admin/AdminFinalWrapPage"), "AdminFinalWrapPage");
 
 // City sub-page wrappers
 const CityServicesPage = () => <CityHubPage subPage="services" />;
@@ -626,8 +632,9 @@ const App = () => (
             <OrbitSessionGuard />
            <RealtimeHubGuard />
            <UpdateNotification />
-           <OrbitCallRoot />
-          
+            <OrbitCallRoot />
+            <AppBootstrapGuard />
+           
            <SkipLink />
            <Suspense fallback={<PageLoader />}>
             <main id="main-content">
@@ -1157,6 +1164,11 @@ const App = () => (
                 <Route path="/admin/go-live-readiness" element={<ProtectedRoute><AdminGoLiveReadinessPage /></ProtectedRoute>} />
                 {/* IG-IL */}
                 <Route path="/admin/ui-finalizer" element={<ProtectedRoute><AdminUiFinalizerPage /></ProtectedRoute>} />
+                {/* IM-IR */}
+                <Route path="/admin/master-control" element={<ProtectedRoute><AdminMasterControlPage /></ProtectedRoute>} />
+                {/* IS-IX */}
+                <Route path="/admin/production-checklist" element={<ProtectedRoute><AdminProductionChecklistPage /></ProtectedRoute>} />
+                <Route path="/admin/final-wrap" element={<ProtectedRoute><AdminFinalWrapPage /></ProtectedRoute>} />
               <Route path="/city/:countryCode/:city/:vertical/:locale" element={<CityVerticalPage />} />
 
               {/* Guest / Public */}
