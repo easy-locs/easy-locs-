@@ -1251,6 +1251,20 @@ const App = () => (
                 <Route path="/me/favorite-items" element={<ProtectedRoute><CustomerFavoriteItemsPage /></ProtectedRoute>} />
                 <Route path="/merchant/cancellation-rules/:merchantId" element={<ProtectedRoute><MerchantCancellationRulesPage /></ProtectedRoute>} />
                 <Route path="/merchant/chat-settings/:merchantId" element={<ProtectedRoute><MerchantCustomerChatSettingsPage /></ProtectedRoute>} />
+                {/* MX-OG */}
+                <Route path="/admin/city-launch-checklist" element={<ProtectedRoute><AdminCityLaunchChecklistPage /></ProtectedRoute>} />
+                <Route path="/admin/restaurant-autofill-v2" element={<ProtectedRoute><AdminRestaurantAutofillPage2 /></ProtectedRoute>} />
+                <Route path="/admin/system-live-status" element={<ProtectedRoute><AdminSystemLiveStatusPage /></ProtectedRoute>} />
+                <Route path="/me/quick-reorder" element={<ProtectedRoute><CustomerQuickReorderHubPage /></ProtectedRoute>} />
+                <Route path="/merchant/live-ops/:merchantId" element={<ProtectedRoute><MerchantLiveOpsPanelPage /></ProtectedRoute>} />
+                <Route path="/admin/central-control" element={<ProtectedRoute><CentralControlPanelPage /></ProtectedRoute>} />
+                <Route path="/admin/live-incident-feed" element={<ProtectedRoute><AdminLiveIncidentFeedPage /></ProtectedRoute>} />
+                <Route path="/admin/risk-scoreboard" element={<ProtectedRoute><AdminRiskScoreboardPage /></ProtectedRoute>} />
+                <Route path="/admin/store-readiness-matrix" element={<ProtectedRoute><AdminStoreReadinessMatrixPage /></ProtectedRoute>} />
+                <Route path="/checkout/bulk-party-builder" element={<ProtectedRoute><CustomerBulkPartyBuilderPage /></ProtectedRoute>} />
+                <Route path="/checkout/dinner-planner" element={<ProtectedRoute><CustomerDinnerPlannerPage /></ProtectedRoute>} />
+                <Route path="/merchant/auto-accept-rules/:merchantId" element={<ProtectedRoute><MerchantAutoAcceptRulesPage /></ProtectedRoute>} />
+                <Route path="/merchant/driver-handoff/:merchantId" element={<ProtectedRoute><MerchantDriverHandoffPage /></ProtectedRoute>} />
               <Route path="/city/:countryCode/:city/:vertical/:locale" element={<CityVerticalPage />} />
 
               {/* Guest / Public */}
