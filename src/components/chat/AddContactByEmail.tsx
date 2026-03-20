@@ -2,10 +2,16 @@ import { useState } from "react";
 import { findUserByEmail } from "@/lib/orbit/findUserByEmail";
 import { createOrGetDirectConversation } from "@/lib/chat/conversationService";
 import { useOrbitStore } from "@/stores/orbitStore";
-import { Search, UserCheck, AlertCircle, MessageCircle } from "lucide-react";
-import type { OrbitProfileRow, ConversationRow } from "@/lib/types/comms";
+import { Search, AlertCircle, MessageCircle } from "lucide-react";
+import type { ConversationRow } from "@/lib/types/comms";
 
-type FoundUser = Omit<OrbitProfileRow, "role">;
+type FoundUser = {
+  id: string;
+  orbit_id: string;
+  email: string | null;
+  display_name: string | null;
+  avatar_url: string | null;
+};
 
 export function AddContactByEmail(props: {
   onConversationReady?: (conversation: ConversationRow, peer: FoundUser) => void;
@@ -130,9 +136,6 @@ export function AddContactByEmail(props: {
                 <MessageCircle className="h-3.5 w-3.5" />
                 {opening ? "…" : "Chat"}
               </button>
-            )}
-            {!props.onConversationReady && (
-              <UserCheck className="h-4 w-4 text-emerald-500" />
             )}
           </div>
         </div>
