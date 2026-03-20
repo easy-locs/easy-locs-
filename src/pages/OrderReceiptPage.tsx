@@ -1,6 +1,16 @@
+/**
+ * OrderReceiptPage — Digital receipt for a completed/any order.
+ * Uses storefront_orders + storefront_order_items with status history.
+ */
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { getOrderWithItems, getOrderStatusHistory } from "@/lib/orders/orderEngine";
+import OrderReceipt from "@/components/order/OrderReceipt";
+import UnifiedTimeline from "@/components/order/UnifiedTimeline";
+import { buildUnifiedTimeline } from "@/lib/order/unified-order-types";
+import { ArrowLeft, Loader2 } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 
 export default function OrderReceiptPage() {
   const navigate = useNavigate();
@@ -9,108 +19,93 @@ export default function OrderReceiptPage() {
   const { data, isLoading } = useQuery({
     queryKey: ["order-receipt-page", orderId],
     queryFn: async () => {
-      const { data: order, error } = await supabase
-        .from("orders")
-        .select("*")
-        .eq("id", orderId)
-        .maybeSingle();
-
-      if (error) throw error;
-
-      const { data: items, error: itemsErr } = await supabase
-        .from("order_items")
-        .select("*")
-        .eq("order_id", orderId)
-        .order("created_at", { ascending: true });
-
-      if (itemsErr) throw itemsErr;
-
-      return { order, items: items ?? [] };
+      const order = await getOrderWithItems(orderId);
+      const history = await getOrderStatusHistory(orderId);
+      return { order, history };
     },
     enabled: !!orderId,
     staleTime: 10000,
   });
 
-  const order = data?.order as any;
-  const items = data?.items ?? [];
+  const order = data?.order;
+  const items = order?.storefront_order_items ?? [];
+  const history = data?.history ?? [];
+
+  const timeline = order ? buildUnifiedTimeline(order, null) : [];
 
   return (
     <div className="min-h-[100dvh] flex flex-col bg-background pb-24">
       <header className="flex items-center gap-3 px-4 pt-4 pb-3">
         <button
           onClick={() => navigate("/my-orders")}
-          className="w-9 h-9 rounded-xl bg-muted flex items-center justify-center"
+          className="w-9 h-9 rounded-xl bg-muted flex items-center justify-center active:scale-95 transition-transform"
         >
-          ←
+          <ArrowLeft className="w-4 h-4" />
         </button>
         <div>
           <h1 className="text-lg font-bold text-foreground">Order Receipt</h1>
           <p className="text-xs text-muted-foreground">
-            {orderId ? `#${orderId.slice(0, 8)}` : ""}
+            {orderId ? `#${orderId.slice(0, 8).toUpperCase()}` : ""}
           </p>
         </div>
       </header>
 
-      {isLoading && [1, 2, 3].map((i) => (
-        <div key={i} className="mx-4 mt-3 h-16 rounded-2xl bg-muted animate-pulse" />
-      ))}
-
-      {!isLoading && !order && (
-        <p className="text-center text-xs text-muted-foreground py-12">Receipt not found</p>
-      )}
-
-      {!isLoading && order && (
-        <>
-          <div className="mx-4 rounded-2xl border border-border/20 bg-card p-4 space-y-1">
-            <p className="text-sm font-bold text-foreground">Order Summary</p>
-            <p className="text-[11px] text-muted-foreground">
-              Created {order.created_at ? new Date(order.created_at).toLocaleString() : ""}
-            </p>
-            <p className="text-[11px] text-muted-foreground">
-              Status: {order.status ?? "draft"} · Payment: {order.payment_status ?? "unpaid"}
-            </p>
+      <div className="flex-1 px-4 space-y-4">
+        {isLoading && (
+          <div className="py-12 text-center">
+            <Loader2 className="h-6 w-6 animate-spin mx-auto text-muted-foreground" />
           </div>
+        )}
 
-          <div className="mx-4 mt-3 rounded-2xl border border-border/20 bg-card p-4 space-y-2">
-            <p className="text-sm font-bold text-foreground">Items</p>
-            {items.length === 0 ? (
-              <p className="text-xs text-muted-foreground">No items found</p>
-            ) : (
-              items.map((item: any, idx: number) => (
-                <div key={item.id ?? idx} className="flex items-center justify-between gap-2">
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs font-semibold text-foreground truncate">
-                      {Number(item.quantity ?? 0)}× {item.item_name || item.name || "Item"}
-                    </p>
-                    <p className="text-[10px] text-muted-foreground">
-                      {(item.notes ?? "").toString()}
-                    </p>
-                  </div>
-                  <p className="text-xs font-bold text-foreground">
-                    {(Number(item.quantity ?? 0) * Number(item.unit_price ?? item.price ?? 0)).toFixed(2)} AED
-                  </p>
-                </div>
-              ))
+        {!isLoading && !order && (
+          <div className="py-12 text-center">
+            <p className="text-sm text-muted-foreground">Receipt not found</p>
+            <Button variant="outline" className="mt-4" onClick={() => navigate("/my-orders")}>
+              Back to Orders
+            </Button>
+          </div>
+        )}
+
+        {!isLoading && order && (
+          <>
+            <OrderReceipt order={order} items={items} />
+
+            {/* Timeline */}
+            {timeline.length > 0 && (
+              <Card>
+                <CardContent className="p-4">
+                  <p className="text-xs font-semibold text-muted-foreground mb-3">Order Timeline</p>
+                  <UnifiedTimeline events={timeline} vertical />
+                </CardContent>
+              </Card>
             )}
-          </div>
 
-          <div className="mx-4 mt-3 rounded-2xl border border-border/20 bg-card p-4">
-            <div className="flex items-center justify-between">
-              <p className="text-sm font-bold text-foreground">Total</p>
-              <p className="text-base font-bold text-foreground">
-                {Number(order.total_amount ?? 0).toFixed(2)} {order.currency ?? "AED"}
-              </p>
-            </div>
-          </div>
+            {/* Status History */}
+            {history.length > 0 && (
+              <Card>
+                <CardContent className="p-4 space-y-2">
+                  <p className="text-xs font-semibold text-muted-foreground">Status History</p>
+                  {history.map((h: any) => (
+                    <div key={h.id} className="flex items-center justify-between text-[11px] py-1 border-b border-border/30 last:border-0">
+                      <span className="font-medium text-foreground capitalize">{h.status}</span>
+                      <span className="text-muted-foreground">
+                        {h.actor_type} · {new Date(h.created_at).toLocaleString()}
+                      </span>
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+            )}
 
-          <button
-            onClick={() => navigate(`/tracking/${order.id}`)}
-            className="mx-4 mt-4 w-[calc(100%-2rem)] rounded-2xl bg-primary text-primary-foreground px-4 py-3 text-sm font-bold"
-          >
-            Track Order
-          </button>
-        </>
-      )}
+            <Button
+              onClick={() => navigate(`/order/${order.id}`)}
+              className="w-full rounded-2xl"
+            >
+              Track Order
+            </Button>
+          </>
+        )}
+      </div>
     </div>
   );
 }
