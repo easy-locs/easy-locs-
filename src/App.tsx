@@ -28,6 +28,7 @@ import ChunkRecoveryBoundary from "@/components/system/ChunkRecoveryBoundary";
 import CountryGuard from "@/components/dashboard/CountryGuard";
 import { UnifiedPaymentProvider } from "@/payments/UnifiedPaymentSystem";
 import V1BootBridge from "@/app/V1BootBridge";
+import { useNotificationsStore } from "@/stores/notificationsStore";
 
 // V2 test pages
 const V2TestPage = safeLazy(() => import("./app/router/V2TestPage"), "V2TestPage");
