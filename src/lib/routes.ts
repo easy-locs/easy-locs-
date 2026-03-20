@@ -212,6 +212,12 @@ export const routes = {
   adminSystemLive: () => `/admin/system-live`,
   // HU-HZ
   adminRestaurantAutofill: () => `/admin/restaurant-autofill`,
+  // IA-IF
+  stripeCheckoutHandler: () => `/payments/stripe-handler`,
+  adminPaymentGoLive: () => `/admin/payment-go-live`,
+  adminGoLiveReadiness: () => `/admin/go-live-readiness`,
+  // IG-IL
+  adminUiFinalizer: () => `/admin/ui-finalizer`,
 
   // Orbit
   orbitCallTest: () => `/orbit/call-test`,
