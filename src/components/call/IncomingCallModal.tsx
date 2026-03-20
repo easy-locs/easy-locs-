@@ -1,6 +1,13 @@
+import { useEffect } from "react";
 import { useCallStore } from "@/stores/callStore";
 import { useIncomingCallStore } from "@/stores/incomingCallStore";
 import { Phone, PhoneOff } from "lucide-react";
+import {
+  startIncomingRingtone,
+  stopIncomingRingtone,
+  startIncomingVibration,
+  stopIncomingVibration,
+} from "@/lib/call/callSounds";
 
 export function IncomingCallModal() {
   const incoming = useCallStore((s) => s.incoming);
@@ -9,7 +16,23 @@ export function IncomingCallModal() {
   const rejectCall = useCallStore((s) => s.rejectCall);
   const clearIncoming = useIncomingCallStore((s) => s.clearIncoming);
 
-  if (!incoming && !incomingInfo) return null;
+  const isVisible = !!(incoming || incomingInfo);
+
+  useEffect(() => {
+    if (isVisible) {
+      startIncomingRingtone();
+      startIncomingVibration();
+    } else {
+      stopIncomingRingtone();
+      stopIncomingVibration();
+    }
+    return () => {
+      stopIncomingRingtone();
+      stopIncomingVibration();
+    };
+  }, [isVisible]);
+
+  if (!isVisible) return null;
 
   const sessionId = incoming?.id ?? incomingInfo?.sessionId ?? "";
   const callerLabel = incoming?.caller_orbit_id?.slice(0, 16) ?? incomingInfo?.callerOrbitId?.slice(0, 16) ?? "Unknown";
