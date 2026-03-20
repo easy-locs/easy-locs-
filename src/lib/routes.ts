@@ -180,6 +180,20 @@ export const routes = {
   adminSlaMonitor: () => `/admin/sla-monitor`,
   customerOrderGifts: () => `/checkout/gift-order`,
   adminIncidentCenter: () => `/admin/incident-center`,
+  // GQ-GV
+  customerSplitBill: () => `/checkout/split-bill`,
+  merchantKitchenDisplay: (merchantId: string) => `/merchant/kitchen-display/${encodeURIComponent(merchantId)}`,
+  adminOrderAudit: () => `/admin/order-audit`,
+  customerDeliveryInstructions: () => `/checkout/delivery-instructions`,
+  driverDailyTarget: () => `/driver/daily-target`,
+  adminMarketExpansion: () => `/admin/market-expansion`,
+  // GW-HB
+  customerSavedCarts: () => `/me/saved-carts`,
+  merchantOutOfStock: (merchantId: string) => `/merchant/out-of-stock/${encodeURIComponent(merchantId)}`,
+  adminFraudWatch: () => `/admin/fraud-watch`,
+  customerContactless: () => `/checkout/contactless`,
+  driverHotZones: () => `/driver/hot-zones`,
+  adminDemandForecast: () => `/admin/demand-forecast`,
 
   // Orbit
   orbitCallTest: () => `/orbit/call-test`,
