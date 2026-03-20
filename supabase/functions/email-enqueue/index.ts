@@ -1,0 +1,52 @@
+// deno-lint-ignore-file no-explicit-any
+import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+};
+
+serve(async (req) => {
+  if (req.method === "OPTIONS") {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  try {
+    const admin = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+    );
+
+    const body = await req.json();
+
+    const row = {
+      id: `mail_${crypto.randomUUID().slice(0, 8)}`,
+      to_email: body.toEmail,
+      subject: body.subject,
+      html: body.html,
+      status: "pending",
+      metadata: body.metadata ?? null,
+      created_at: new Date().toISOString(),
+      sent_at: null,
+    };
+
+    const { data, error } = await admin
+      .from("email_queue")
+      .insert(row)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    return new Response(
+      JSON.stringify({ email: data }),
+      { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
+    );
+  } catch (e: any) {
+    return new Response(
+      JSON.stringify({ error: e.message }),
+      { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 500 }
+    );
+  }
+});
