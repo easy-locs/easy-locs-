@@ -416,6 +416,11 @@ const AdminNotificationOpsPage = safeLazy(() => import("./pages/admin/AdminNotif
 const AdminFinanceSummaryPage = safeLazy(() => import("./pages/admin/AdminFinanceSummaryPage"), "AdminFinanceSummaryPage");
 const CustomerSpendingInsightsPage = safeLazy(() => import("./pages/CustomerSpendingInsightsPage"), "CustomerSpendingInsightsPage");
 const AdminPlatformAlertsPage = safeLazy(() => import("./pages/admin/AdminPlatformAlertsPage"), "AdminPlatformAlertsPage");
+const CustomerAddressBookPage = safeLazy(() => import("./pages/customer/CustomerAddressBookPage"), "CustomerAddressBookPage");
+const MerchantBusinessSummaryPage = safeLazy(() => import("./pages/merchant/MerchantBusinessSummaryPage"), "MerchantBusinessSummaryPage");
+const AdminOrderWatchPage = safeLazy(() => import("./pages/admin/AdminOrderWatchPage"), "AdminOrderWatchPage");
+const CustomerLoyaltyHistoryPage = safeLazy(() => import("./pages/customer/CustomerLoyaltyHistoryPage"), "CustomerLoyaltyHistoryPage");
+const AdminSearchWatchPage = safeLazy(() => import("./pages/admin/AdminSearchWatchPage"), "AdminSearchWatchPage");
 
 // City sub-page wrappers
 const CityServicesPage = () => <CityHubPage subPage="services" />;
@@ -892,6 +897,11 @@ const App = () => (
                 <Route path="/admin/finance-summary" element={<ProtectedRoute><AdminFinanceSummaryPage /></ProtectedRoute>} />
                 <Route path="/me/spending-insights" element={<ProtectedRoute><CustomerSpendingInsightsPage /></ProtectedRoute>} />
                 <Route path="/admin/platform-alerts" element={<ProtectedRoute><AdminPlatformAlertsPage /></ProtectedRoute>} />
+                <Route path="/me/address-book" element={<ProtectedRoute><CustomerAddressBookPage /></ProtectedRoute>} />
+                <Route path="/merchant/business-summary/:merchantId" element={<ProtectedRoute><MerchantBusinessSummaryPage /></ProtectedRoute>} />
+                <Route path="/admin/order-watch" element={<ProtectedRoute><AdminOrderWatchPage /></ProtectedRoute>} />
+                <Route path="/me/loyalty-history" element={<ProtectedRoute><CustomerLoyaltyHistoryPage /></ProtectedRoute>} />
+                <Route path="/admin/search-watch" element={<ProtectedRoute><AdminSearchWatchPage /></ProtectedRoute>} />
               <Route path="/city/:countryCode/:city/:vertical/:locale" element={<CityVerticalPage />} />
 
               {/* Guest / Public */}
