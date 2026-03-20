@@ -15,7 +15,7 @@ import {
   Plane, UtensilsCrossed, Search, Bell, Map, Rocket,
   MessageCircle, CreditCard, QrCode, Phone,
 } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import SEOHead from "@/components/SEOHead";
 import { useState, useEffect } from "react";
 
