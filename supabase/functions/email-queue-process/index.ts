@@ -5,7 +5,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
+    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
 serve(async (req) => {
@@ -28,16 +28,22 @@ serve(async (req) => {
     if (error) throw error;
 
     for (const email of emails ?? []) {
-      // TODO: replace with Resend / SendGrid / Mailgun
-      console.log(`[email-queue] would send to ${email.to_email}: ${email.subject}`);
+      try {
+        // TODO: replace with real provider call (Resend / SendGrid / Mailgun)
+        console.log(`[email-send] to=${email.to_email} subject=${email.subject}`);
 
-      await admin
-        .from("email_queue")
-        .update({
-          status: "sent",
-          sent_at: new Date().toISOString(),
-        })
-        .eq("id", email.id);
+        await admin
+          .from("email_queue")
+          .update({ status: "sent", sent_at: new Date().toISOString() })
+          .eq("id", email.id);
+      } catch (sendError: any) {
+        await admin
+          .from("email_queue")
+          .update({ status: "failed" })
+          .eq("id", email.id);
+
+        console.error("Email send failed:", sendError?.message ?? sendError);
+      }
     }
 
     return new Response(
