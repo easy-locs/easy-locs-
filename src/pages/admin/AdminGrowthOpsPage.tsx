@@ -8,40 +8,38 @@ export default function AdminGrowthOpsPage() {
   const { data, isLoading } = useQuery({
     queryKey: ["admin-growth-ops"],
     queryFn: async () => {
-      const [{ data: favorites }, { data: loyalty }, { data: promos }, { data: searchEvents }] =
+      const [{ data: merchants }, { data: promos }, { data: favorites }, { data: events }] =
         await Promise.all([
-          supabase.from("user_favorites").select("id,user_id").limit(1000),
-          (supabase as any).from("loyalty_accounts").select("*").limit(1000),
+          (supabase as any).from("seed_merchants").select("*").limit(1000),
           (supabase as any).from("seed_merchant_promos").select("*").limit(1000),
+          supabase.from("user_favorites").select("*").limit(2000),
           supabase
             .from("dino_learning_events")
-            .select("id,event_type")
-            .eq("event_type", "search_history_saved")
-            .limit(1000),
+            .select("event_type")
+            .in("event_type", ["home_view", "merchant_view", "product_add_to_cart", "order_created"])
+            .limit(5000),
         ]);
 
-      const bronze = (loyalty ?? []).filter((r: any) => r.tier === "bronze").length;
-      const silver = (loyalty ?? []).filter((r: any) => r.tier === "silver").length;
-      const gold = (loyalty ?? []).filter((r: any) => r.tier === "gold").length;
-      const platinum = (loyalty ?? []).filter((r: any) => r.tier === "platinum").length;
+      const rows = events ?? [];
+      const count = (key: string) => rows.filter((r: any) => r.event_type === key).length;
 
       return {
-        totalFavorites: (favorites ?? []).length,
-        totalLoyaltyAccounts: (loyalty ?? []).length,
+        merchants: (merchants ?? []).length,
+        featuredMerchants: (merchants ?? []).filter((r: any) => !!r.is_featured).length,
         activePromos: (promos ?? []).filter((r: any) => !!r.is_active).length,
-        totalSearches: (searchEvents ?? []).length,
-        bronze,
-        silver,
-        gold,
-        platinum,
+        favorites: (favorites ?? []).length,
+        homeViews: count("home_view"),
+        merchantViews: count("merchant_view"),
+        addToCart: count("product_add_to_cart"),
+        orders: count("order_created"),
       };
     },
     staleTime: 10000,
   });
 
   return (
-    <div className="min-h-[100dvh] flex flex-col bg-background">
-      <header className="flex items-center gap-3 px-4 pt-4 pb-3">
+    <div className="min-h-[100dvh] bg-background pb-24">
+      <div className="flex items-center gap-3 px-4 pt-6 pb-4">
         <button
           onClick={() => navigate("/admin")}
           className="w-9 h-9 rounded-xl bg-muted flex items-center justify-center"
@@ -50,31 +48,25 @@ export default function AdminGrowthOpsPage() {
         </button>
         <div>
           <h1 className="text-lg font-bold text-foreground">Growth Ops</h1>
-          <p className="text-xs text-muted-foreground">Retention, favorites, promos and loyalty</p>
+          <p className="text-xs text-muted-foreground">Acquisition and conversion overview</p>
         </div>
-      </header>
+      </div>
 
       {isLoading && [1, 2, 3].map((i) => (
-        <div key={i} className="mx-4 mt-3 h-16 rounded-2xl bg-muted animate-pulse" />
+        <div key={i} className="mx-4 mb-3 h-16 rounded-2xl bg-muted animate-pulse" />
       ))}
 
       {!isLoading && data && (
-        <>
-          <div className="grid grid-cols-2 gap-3 px-4 py-4">
-            <Metric title="Favorites" value={String(data.totalFavorites)} />
-            <Metric title="Loyalty Accounts" value={String(data.totalLoyaltyAccounts)} />
-            <Metric title="Active Promos" value={String(data.activePromos)} />
-            <Metric title="Searches" value={String(data.totalSearches)} />
-          </div>
-
-          <div className="px-4 pb-24 space-y-2">
-            <p className="text-sm font-bold text-foreground">Tier Distribution</p>
-            <TierRow label="Bronze" value={data.bronze} />
-            <TierRow label="Silver" value={data.silver} />
-            <TierRow label="Gold" value={data.gold} />
-            <TierRow label="Platinum" value={data.platinum} />
-          </div>
-        </>
+        <div className="grid grid-cols-2 gap-3 px-4">
+          <Metric title="Merchants" value={String(data.merchants)} />
+          <Metric title="Featured" value={String(data.featuredMerchants)} />
+          <Metric title="Active Promos" value={String(data.activePromos)} />
+          <Metric title="Favorites" value={String(data.favorites)} />
+          <Metric title="Home Views" value={String(data.homeViews)} />
+          <Metric title="Merchant Views" value={String(data.merchantViews)} />
+          <Metric title="Add to Cart" value={String(data.addToCart)} />
+          <Metric title="Orders" value={String(data.orders)} />
+        </div>
       )}
     </div>
   );
@@ -85,15 +77,6 @@ function Metric({ title, value }: { title: string; value: string }) {
     <div className="rounded-2xl border border-border/20 bg-card p-4">
       <p className="text-xs text-muted-foreground">{title}</p>
       <p className="text-lg font-bold text-foreground">{value}</p>
-    </div>
-  );
-}
-
-function TierRow({ label, value }: { label: string; value: number }) {
-  return (
-    <div className="flex items-center justify-between rounded-xl bg-card border border-border/20 px-4 py-3">
-      <p className="text-sm font-semibold text-foreground">{label}</p>
-      <p className="text-sm font-bold text-foreground">{value}</p>
     </div>
   );
 }
