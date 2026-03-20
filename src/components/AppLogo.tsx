@@ -2,7 +2,7 @@
  * AppLogo — unified brand component, delegates to EasyLocsLogo.
  */
 import { Link } from "react-router-dom";
-import EasyLocsLogo, { EasyLocsIcon } from "@/components/brand/EasyLocsLogo";
+import EasyLocsLogo from "@/components/brand/EasyLocsLogo";
 
 interface AppLogoProps {
   linkTo?: string;
