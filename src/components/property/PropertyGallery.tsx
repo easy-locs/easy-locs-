@@ -23,7 +23,7 @@ export function PropertyGallery() {
           {listing.media.map((media) => (
             <div key={media.url} className="rounded-lg overflow-hidden border border-border aspect-square">
               {media.type === "image" ? (
-                <img src={media.url} alt={media.label ?? ""} className="w-full h-full object-cover" />
+                <img src={media.url} alt="" className="w-full h-full object-cover" />
               ) : (
                 <video src={media.url} controls className="w-full h-full object-cover" />
               )}
