@@ -71,3 +71,12 @@ verify_jwt = false
 
 [functions.rent-create-payment]
 verify_jwt = false
+
+[functions.refund-request-booking]
+verify_jwt = false
+
+[functions.refund-process-booking]
+verify_jwt = false
+
+[functions.payout-request-create]
+verify_jwt = false
