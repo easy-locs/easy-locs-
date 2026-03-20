@@ -10,6 +10,7 @@ import { useContactStore } from "@/stores/contactStore";
 import { usePropertyManagementStore } from "@/stores/propertyManagementStore";
 import { useListingsRealtime } from "@/hooks/useListingsRealtime";
 import { useBookingsRealtime } from "@/hooks/useBookingsRealtime";
+import { useNotificationsRealtime } from "@/hooks/useNotificationsRealtime";
 import { useMapStore } from "@/stores/mapStore";
 import { MapMarkerList } from "@/components/map/MapMarkerList";
 import { PropertyDetailPanel } from "@/components/property/PropertyDetailPanel";
