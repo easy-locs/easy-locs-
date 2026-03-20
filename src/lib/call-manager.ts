@@ -267,9 +267,9 @@ export class CallManager {
 
       this.debug("endCall DB update", {
         updated: !!endedRow,
-        status: endedRow?.status || null,
-        endedAt: endedRow?.ended_at || null,
-        duration: endedRow?.duration_seconds ?? duration,
+        status: (endedRow as any)?.status || null,
+        endedAt: (endedRow as any)?.ended_at || null,
+        duration: (endedRow as any)?.duration_sec ?? duration,
         error: endedError?.message || null,
       });
 

@@ -312,7 +312,7 @@ export default function CommCallsSection() {
                         )}
                         {secondaryLabel && <span className="text-token-xs" style={{ color: "hsl(var(--hud-text-dim) / 0.25)" }}>·</span>}
                         <span className="text-token-xs" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
-                          {call.status === "ended" ? formatDuration(call.duration_seconds) : call.status}
+                          {call.status === "ended" ? formatDuration(call.duration_sec) : call.status}
                         </span>
                       </div>
                     </div>
