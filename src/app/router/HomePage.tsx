@@ -50,7 +50,7 @@ export default function HomePage() {
 
   const displayName = orbit?.displayName || user?.email?.split("@")[0] || "User";
   const initials = displayName.slice(0, 2).toUpperCase();
-  const balance = wallet?.balance ?? 0;
+  const balance = wallet?.availableBalance ?? 0;
   const currency = wallet?.currency ?? "AED";
 
   return (
