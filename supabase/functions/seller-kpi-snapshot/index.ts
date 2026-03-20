@@ -4,7 +4,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
 serve(async (req) => {
@@ -29,7 +29,7 @@ serve(async (req) => {
       const [{ data: listings }, { data: bookings }, { data: rentPayments }] = await Promise.all([
         admin.from("property_listings_v2").select("*").eq("owner_orbit_id", owner.orbit_id),
         admin.from("bookings_v2").select("*").eq("owner_orbit_id", owner.orbit_id),
-        admin.from("rent_payments").select("*").eq("ownerOrbitId", owner.orbit_id),
+        admin.from("rent_payments").select("*").eq("owner_orbit_id", owner.orbit_id),
       ]);
 
       const totalListings = listings?.length ?? 0;

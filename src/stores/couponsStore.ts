@@ -1,14 +1,16 @@
 import { create } from "zustand";
 import { supabase } from "@/integrations/supabase/client";
+import { useOrbitStore } from "@/stores/orbitStore";
 import type { ListingCoupon } from "@/lib/types/reviews";
+
+const db = supabase as any;
 
 type CouponsStore = {
   items: ListingCoupon[];
   loading: boolean;
-  hydrateOwnerCoupons: (ownerOrbitId: string) => Promise<void>;
+  hydrateOwnerCoupons: () => Promise<void>;
   hydratePublicCoupons: () => Promise<void>;
   createCoupon: (input: {
-    ownerOrbitId: string;
     listingId?: string;
     code: string;
     discountType: "flat" | "percent";
@@ -25,13 +27,16 @@ export const useCouponsStore = create<CouponsStore>((set, get) => ({
   items: [],
   loading: false,
 
-  hydrateOwnerCoupons: async (ownerOrbitId) => {
+  hydrateOwnerCoupons: async () => {
+    const orbit = useOrbitStore.getState().profile;
+    if (!orbit) return;
+
     set({ loading: true });
 
-    const { data, error } = await (supabase as any)
+    const { data, error } = await db
       .from("listing_coupons")
       .select("*")
-      .eq("owner_orbit_id", ownerOrbitId)
+      .eq("owner_orbit_id", orbit.orbitId)
       .order("created_at", { ascending: false });
 
     if (error) throw error;
@@ -45,7 +50,7 @@ export const useCouponsStore = create<CouponsStore>((set, get) => ({
   hydratePublicCoupons: async () => {
     set({ loading: true });
 
-    const { data, error } = await (supabase as any)
+    const { data, error } = await db
       .from("listing_coupons")
       .select("*")
       .eq("active", true);
@@ -59,9 +64,12 @@ export const useCouponsStore = create<CouponsStore>((set, get) => ({
   },
 
   createCoupon: async (input) => {
+    const orbit = useOrbitStore.getState().profile;
+    if (!orbit) throw new Error("Missing orbit");
+
     const row = {
       id: `cpn_${Math.random().toString(36).slice(2, 11)}`,
-      owner_orbit_id: input.ownerOrbitId,
+      owner_orbit_id: orbit.orbitId,
       listing_id: input.listingId ?? null,
       code: input.code.toUpperCase(),
       discount_type: input.discountType,
@@ -74,7 +82,7 @@ export const useCouponsStore = create<CouponsStore>((set, get) => ({
       created_at: new Date().toISOString(),
     };
 
-    const { data, error } = await (supabase as any)
+    const { data, error } = await db
       .from("listing_coupons")
       .insert(row)
       .select()
@@ -88,7 +96,7 @@ export const useCouponsStore = create<CouponsStore>((set, get) => ({
   },
 
   toggleCoupon: async (couponId, active) => {
-    const { data, error } = await (supabase as any)
+    const { data, error } = await db
       .from("listing_coupons")
       .update({ active })
       .eq("id", couponId)
