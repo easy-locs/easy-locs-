@@ -27,6 +27,7 @@ const SETTINGS_GROUPS = [
     items: [
       { key: "payment-methods", icon: CreditCard, label: "Payment Methods", desc: "Cards, wallet, cash", path: "/settings/payment-methods" },
       { key: "addresses", icon: MapPin, label: "Addresses", desc: "Saved delivery locations", path: "/settings/addresses" },
+      { key: "favorites", icon: Heart, label: "Favorites", desc: "Saved merchants and stores", path: "/favorites" },
     ],
   },
   {
