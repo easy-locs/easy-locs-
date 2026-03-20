@@ -32,7 +32,7 @@ export const usePushTokenStore = create<PushTokenStore>((set) => ({
 
     set({ loading: true });
 
-    const { data, error } = await (supabase as any)
+    const { data, error } = await supabase
       .from("push_tokens")
       .select("*")
       .eq("user_id", user.id)
