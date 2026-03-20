@@ -21,17 +21,18 @@ type CallFilter = "all" | "missed" | "incoming" | "outgoing";
 
 interface CallLog {
   id: string;
-  caller_id: string;
-  callee_org_id: string;
+  conversation_id: string;
+  session_id: string | null;
+  caller_orbit_id: string;
+  receiver_orbit_id: string;
+  call_type: string;
+  direction: string;
   status: string;
-  is_video: boolean;
-  duration_seconds: number | null;
+  started_at: string | null;
+  answered_at: string | null;
+  ended_at: string | null;
+  duration_sec: number;
   created_at: string;
-  context_label: string | null;
-  context_type: string;
-  context_id: string | null;
-  thread_id: string | null;
-  org_name?: string;
 }
 
 function formatCallTime(dateStr: string): string {
