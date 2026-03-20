@@ -9531,16 +9531,22 @@ export type Database = {
       }
       marketplace_services: {
         Row: {
+          activated_at: string | null
           active: boolean | null
           anchor_lat: number | null
           anchor_lng: number | null
           archived_at: string | null
           auto_expire: boolean
+          auto_renew_enabled: boolean
+          auto_renew_plan: string | null
           badges: string[] | null
           bathrooms: number | null
           bedrooms: number | null
           blocked_dates: Json | null
           booking_slug: string
+          boost_enabled: boolean
+          boost_expires_at: string | null
+          boost_multiplier: number
           boost_tier: string | null
           boost_until: string | null
           brand: string | null
@@ -9559,8 +9565,10 @@ export type Database = {
           duration_minutes: number | null
           entity_type: string
           features: Json | null
+          freshness_score: number
           id: string
           is_live_online: boolean
+          last_renewed_at: string | null
           lat: number | null
           listing_expires_at: string | null
           listing_type: string | null
@@ -9584,6 +9592,7 @@ export type Database = {
           provider_id: string
           published_at: string | null
           quantity: number | null
+          renewal_count: number
           requires_id_document: boolean
           rooms: number | null
           sort_order: number | null
@@ -9602,16 +9611,22 @@ export type Database = {
           year_built: number | null
         }
         Insert: {
+          activated_at?: string | null
           active?: boolean | null
           anchor_lat?: number | null
           anchor_lng?: number | null
           archived_at?: string | null
           auto_expire?: boolean
+          auto_renew_enabled?: boolean
+          auto_renew_plan?: string | null
           badges?: string[] | null
           bathrooms?: number | null
           bedrooms?: number | null
           blocked_dates?: Json | null
           booking_slug: string
+          boost_enabled?: boolean
+          boost_expires_at?: string | null
+          boost_multiplier?: number
           boost_tier?: string | null
           boost_until?: string | null
           brand?: string | null
@@ -9630,8 +9645,10 @@ export type Database = {
           duration_minutes?: number | null
           entity_type?: string
           features?: Json | null
+          freshness_score?: number
           id?: string
           is_live_online?: boolean
+          last_renewed_at?: string | null
           lat?: number | null
           listing_expires_at?: string | null
           listing_type?: string | null
@@ -9655,6 +9672,7 @@ export type Database = {
           provider_id: string
           published_at?: string | null
           quantity?: number | null
+          renewal_count?: number
           requires_id_document?: boolean
           rooms?: number | null
           sort_order?: number | null
@@ -9673,16 +9691,22 @@ export type Database = {
           year_built?: number | null
         }
         Update: {
+          activated_at?: string | null
           active?: boolean | null
           anchor_lat?: number | null
           anchor_lng?: number | null
           archived_at?: string | null
           auto_expire?: boolean
+          auto_renew_enabled?: boolean
+          auto_renew_plan?: string | null
           badges?: string[] | null
           bathrooms?: number | null
           bedrooms?: number | null
           blocked_dates?: Json | null
           booking_slug?: string
+          boost_enabled?: boolean
+          boost_expires_at?: string | null
+          boost_multiplier?: number
           boost_tier?: string | null
           boost_until?: string | null
           brand?: string | null
@@ -9701,8 +9725,10 @@ export type Database = {
           duration_minutes?: number | null
           entity_type?: string
           features?: Json | null
+          freshness_score?: number
           id?: string
           is_live_online?: boolean
+          last_renewed_at?: string | null
           lat?: number | null
           listing_expires_at?: string | null
           listing_type?: string | null
@@ -9726,6 +9752,7 @@ export type Database = {
           provider_id?: string
           published_at?: string | null
           quantity?: number | null
+          renewal_count?: number
           requires_id_document?: boolean
           rooms?: number | null
           sort_order?: number | null
