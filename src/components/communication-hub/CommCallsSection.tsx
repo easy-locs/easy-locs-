@@ -130,21 +130,17 @@ export default function CommCallsSection() {
 
   /** Single unified call icon with direction arrow overlay */
   const getCallIcon = (call: CallLog) => {
-    const isOutgoing = call.caller_id === user?.id;
+    const isOutgoing = call.direction === "outgoing";
     const isMissed = call.status === "missed";
-    const isVideoCall = call.is_video;
+    const isVideoCall = call.call_type === "video";
 
-    // Choose color
     const color = isMissed
       ? "hsl(var(--hud-danger))"
       : isOutgoing
         ? "hsl(var(--hud-cyan))"
         : "hsl(var(--hud-success))";
 
-    // Single icon: Phone or Video
     const MainIcon = isVideoCall ? Video : Phone;
-
-    // Direction arrow overlay
     const ArrowIcon = isMissed
       ? PhoneMissed
       : isOutgoing
