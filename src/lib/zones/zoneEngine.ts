@@ -1,5 +1,6 @@
 /**
  * zoneEngine — Assign businesses to zones and check launch status.
+ * Global-ready: supports any country/city/zone.
  */
 import { supabase } from "@/integrations/supabase/client";
 
@@ -9,11 +10,19 @@ export interface Zone {
   id: string;
   name: string;
   city: string;
+  country_code: string;
+  country_name: string;
+  region_name: string | null;
   center_lat: number;
   center_lng: number;
   radius_m: number;
+  timezone: string;
+  currency: string;
+  default_language: string;
   is_active: boolean;
   is_launched: boolean;
+  launch_priority: number;
+  slug: string | null;
 }
 
 /** Haversine distance in meters */
@@ -33,8 +42,12 @@ export async function loadZones(): Promise<Zone[]> {
   if (_cachedZones) return _cachedZones;
   const { data } = await db.from("zones").select("*").eq("is_active", true);
   _cachedZones = (data || []) as Zone[];
-  setTimeout(() => { _cachedZones = null; }, 60000); // invalidate after 1min
+  setTimeout(() => { _cachedZones = null; }, 60000);
   return _cachedZones;
+}
+
+export function invalidateZoneCache() {
+  _cachedZones = null;
 }
 
 export function findNearestZone(lat: number, lng: number, zones: Zone[]): Zone | null {
@@ -48,6 +61,21 @@ export function findNearestZone(lat: number, lng: number, zones: Zone[]): Zone |
     }
   }
   return best;
+}
+
+/** Find zone within radius (not just nearest) */
+export function findZoneInRadius(lat: number, lng: number, zones: Zone[]): Zone | null {
+  for (const z of zones) {
+    const d = distanceM(lat, lng, z.center_lat, z.center_lng);
+    if (d <= z.radius_m) return z;
+  }
+  return null;
+}
+
+/** Resolve zone for current position — prefers in-radius, falls back to nearest */
+export async function resolveCurrentZone(lat: number, lng: number): Promise<Zone | null> {
+  const zones = await loadZones();
+  return findZoneInRadius(lat, lng, zones) || findNearestZone(lat, lng, zones);
 }
 
 export async function assignZone(storefrontId: string, lat: number, lng: number): Promise<string | null> {
@@ -78,4 +106,16 @@ export async function isBusinessFullyActive(business: {
   if (globalOn) return true;
   if (business.zone_id) return isZoneLaunched(business.zone_id);
   return false;
+}
+
+/** Get zones for a specific city */
+export async function getZonesByCity(city: string): Promise<Zone[]> {
+  const zones = await loadZones();
+  return zones.filter((z) => z.city.toLowerCase() === city.toLowerCase());
+}
+
+/** Get zones for a specific country */
+export async function getZonesByCountry(countryCode: string): Promise<Zone[]> {
+  const zones = await loadZones();
+  return zones.filter((z) => z.country_code === countryCode);
 }
