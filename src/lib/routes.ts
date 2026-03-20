@@ -419,6 +419,20 @@ export const ROUTE_REGISTRY = [
   { group: "admin", label: "SLA Monitor", path: "/admin/sla-monitor" },
   { group: "public", label: "Gift Order", path: "/checkout/gift-order" },
   { group: "admin", label: "Incident Center", path: "/admin/incident-center" },
+  // GQ-GV
+  { group: "public", label: "Split Bill", path: "/checkout/split-bill" },
+  { group: "merchant", label: "Kitchen Display", path: "/merchant/kitchen-display/:merchantId" },
+  { group: "admin", label: "Order Audit", path: "/admin/order-audit" },
+  { group: "public", label: "Delivery Instructions", path: "/checkout/delivery-instructions" },
+  { group: "driver", label: "Daily Target", path: "/driver/daily-target" },
+  { group: "admin", label: "Market Expansion", path: "/admin/market-expansion" },
+  // GW-HB
+  { group: "public", label: "Saved Carts", path: "/me/saved-carts" },
+  { group: "merchant", label: "Out of Stock", path: "/merchant/out-of-stock/:merchantId" },
+  { group: "admin", label: "Fraud Watch", path: "/admin/fraud-watch" },
+  { group: "public", label: "Contactless Delivery", path: "/checkout/contactless" },
+  { group: "driver", label: "Hot Zones", path: "/driver/hot-zones" },
+  { group: "admin", label: "Demand Forecast", path: "/admin/demand-forecast" },
 
   { group: "public", label: "Coming Soon", path: "/coming-soon/:slug" },
   { group: "public", label: "City Market", path: "/city-market/:citySlug" },
