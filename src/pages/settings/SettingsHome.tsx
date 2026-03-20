@@ -4,7 +4,7 @@
  */
 import { useNavigate } from "react-router-dom";
 import { useDinoPageAudit } from "@/hooks/useDinoPageAudit";
-import { ArrowLeft, User, CreditCard, MapPin, Bell, Shield, Store, Palette, Globe, ChevronRight, FileText, Headphones } from "lucide-react";
+import { ArrowLeft, User, CreditCard, MapPin, Bell, Shield, Store, Palette, Globe, ChevronRight, FileText, Headphones, Heart } from "lucide-react";
 
 const SETTINGS_GROUPS = [
   {
@@ -27,6 +27,7 @@ const SETTINGS_GROUPS = [
     items: [
       { key: "payment-methods", icon: CreditCard, label: "Payment Methods", desc: "Cards, wallet, cash", path: "/settings/payment-methods" },
       { key: "addresses", icon: MapPin, label: "Addresses", desc: "Saved delivery locations", path: "/settings/addresses" },
+      { key: "favorites", icon: Heart, label: "Favorites", desc: "Saved merchants and stores", path: "/favorites" },
     ],
   },
   {

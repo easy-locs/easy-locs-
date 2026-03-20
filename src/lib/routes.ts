@@ -47,6 +47,8 @@ export const routes = {
   outreach: () => `/admin/outreach`,
   dinoAudit: () => `/admin/dino`,
   dinoControl: () => `/admin/dino-control`,
+  seedTools: () => `/admin/seed-tools`,
+  favorites: () => `/favorites`,
 
   // Orbit
   orbitCallTest: () => `/orbit/call-test`,
