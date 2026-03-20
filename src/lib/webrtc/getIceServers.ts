@@ -1,10 +1,10 @@
 import { supabase } from "@/integrations/supabase/client";
-import { useDebugCommsStore } from "@/stores/debugCommsStore";
 
-type IceConfigResponse = {
-  username: string;
-  credential: string;
-  ttlSeconds: number;
+export type IceServerResponse = {
+  ok: boolean;
+  mode?: "metered" | "coturn";
+  ttlSeconds?: number;
+  reason?: string;
   iceServers: RTCIceServer[];
 };
 
@@ -12,44 +12,48 @@ let cachedIceServers: RTCIceServer[] | null = null;
 let cachedUntil = 0;
 
 const FALLBACK_ICE: RTCIceServer[] = [
-  { urls: "stun:stun.l.google.com:19302" },
-  { urls: "stun:stun1.l.google.com:19302" },
+  { urls: ["stun:stun.l.google.com:19302", "stun:stun1.l.google.com:19302"] },
 ];
 
-export async function getIceServers(): Promise<RTCIceServer[]> {
+export async function getIceServers(forceRefresh = false): Promise<RTCIceServer[]> {
   const now = Date.now();
-  if (cachedIceServers && now < cachedUntil) {
-    useDebugCommsStore.getState().setTurn({
-      turnFetched: true,
-      turnServerCount: cachedIceServers.length,
-    });
+  if (!forceRefresh && cachedIceServers && now < cachedUntil) {
     return cachedIceServers;
   }
 
   try {
     const { data, error } = await supabase.functions.invoke("turn-credentials", {
-      body: {},
+      body: { purpose: "orbit_call" },
     });
 
-    if (error || !data?.iceServers) {
+    if (error || !data?.iceServers?.length) {
       console.warn("[getIceServers] TURN fetch failed, using STUN fallback", error);
-      useDebugCommsStore.getState().setTurn({ turnFetched: false, turnServerCount: 0 });
+      cachedIceServers = FALLBACK_ICE;
+      cachedUntil = now + 5 * 60_000;
       return FALLBACK_ICE;
     }
 
-    const result = data as IceConfigResponse;
+    const result = data as IceServerResponse;
+    const ttl = Math.max(60, Math.min(result.ttlSeconds ?? 600, 3600));
     cachedIceServers = result.iceServers;
-    cachedUntil = now + Math.max(300_000, (result.ttlSeconds - 60) * 1000);
+    cachedUntil = now + ttl * 1000 - 15_000;
 
-    useDebugCommsStore.getState().setTurn({
-      turnFetched: true,
-      turnServerCount: cachedIceServers.length,
+    console.info("[getIceServers] loaded", {
+      mode: result.mode,
+      count: result.iceServers.length,
+      ttl,
     });
 
     return cachedIceServers;
   } catch (err) {
     console.warn("[getIceServers] Exception, using STUN fallback", err);
-    useDebugCommsStore.getState().setTurn({ turnFetched: false, turnServerCount: 0 });
+    cachedIceServers = FALLBACK_ICE;
+    cachedUntil = now + 5 * 60_000;
     return FALLBACK_ICE;
   }
+}
+
+export function clearIceServerCache() {
+  cachedIceServers = null;
+  cachedUntil = 0;
 }
