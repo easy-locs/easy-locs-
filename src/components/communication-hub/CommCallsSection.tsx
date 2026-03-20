@@ -21,17 +21,18 @@ type CallFilter = "all" | "missed" | "incoming" | "outgoing";
 
 interface CallLog {
   id: string;
-  caller_id: string;
-  callee_org_id: string;
+  conversation_id: string;
+  session_id: string | null;
+  caller_orbit_id: string;
+  receiver_orbit_id: string;
+  call_type: string;
+  direction: string;
   status: string;
-  is_video: boolean;
-  duration_seconds: number | null;
+  started_at: string | null;
+  answered_at: string | null;
+  ended_at: string | null;
+  duration_sec: number;
   created_at: string;
-  context_label: string | null;
-  context_type: string;
-  context_id: string | null;
-  thread_id: string | null;
-  org_name?: string;
 }
 
 function formatCallTime(dateStr: string): string {
@@ -67,7 +68,7 @@ export default function CommCallsSection() {
     try {
       const { data: callData, error } = await supabase
         .from("call_logs")
-        .select("id, caller_id, callee_org_id, status, is_video, duration_seconds, created_at, context_label, context_type, context_id, thread_id")
+        .select("*")
         .order("created_at", { ascending: false })
         .limit(100);
 
@@ -79,20 +80,7 @@ export default function CommCallsSection() {
         return;
       }
 
-      const orgIds = [...new Set(callData.map(c => c.callee_org_id))];
-      const { data: orgs } = await supabase
-        .from("orgs")
-        .select("id, name")
-        .in("id", orgIds);
-
-      const orgMap = new Map((orgs || []).map(o => [o.id, o.name]));
-
-      const enriched: CallLog[] = callData.map(c => ({
-        ...c,
-        org_name: orgMap.get(c.callee_org_id) || undefined,
-      }));
-
-      setCalls(enriched);
+      setCalls(callData as unknown as CallLog[]);
     } catch (err: any) {
       setLoadError(err?.message || "Failed to load calls");
     } finally {
@@ -109,26 +97,23 @@ export default function CommCallsSection() {
     }
 
     haptic("medium");
-    const peerName = call.org_name || call.context_label || "Contact";
+    const peerId = call.caller_orbit_id === user?.id ? call.receiver_orbit_id : call.caller_orbit_id;
 
     await startCall({
-      orgId: call.callee_org_id,
-      threadId: call.thread_id || undefined,
-      contextType: call.context_type,
-      contextId: call.context_id || undefined,
-      contextLabel: call.context_label || undefined,
-      peerName,
-      isVideo: call.is_video,
+      orgId: peerId,
+      contextType: "direct",
+      peerName: peerId,
+      isVideo: call.call_type === "video",
     });
-  }, [startCall, isInCall, isStartingCall]);
+  }, [startCall, isInCall, isStartingCall, user?.id]);
 
   const filtered = calls.filter(c => {
     if (filter === "missed" && c.status !== "missed") return false;
-    if (filter === "incoming" && c.caller_id === user?.id) return false;
-    if (filter === "outgoing" && c.caller_id !== user?.id) return false;
+    if (filter === "incoming" && c.direction !== "incoming") return false;
+    if (filter === "outgoing" && c.direction !== "outgoing") return false;
     if (search) {
       const q = search.toLowerCase();
-      const searchable = [c.context_label, c.org_name].filter(Boolean).join(" ").toLowerCase();
+      const searchable = [c.caller_orbit_id, c.receiver_orbit_id].join(" ").toLowerCase();
       return searchable.includes(q);
     }
     return true;
@@ -145,21 +130,17 @@ export default function CommCallsSection() {
 
   /** Single unified call icon with direction arrow overlay */
   const getCallIcon = (call: CallLog) => {
-    const isOutgoing = call.caller_id === user?.id;
+    const isOutgoing = call.direction === "outgoing";
     const isMissed = call.status === "missed";
-    const isVideoCall = call.is_video;
+    const isVideoCall = call.call_type === "video";
 
-    // Choose color
     const color = isMissed
       ? "hsl(var(--hud-danger))"
       : isOutgoing
         ? "hsl(var(--hud-cyan))"
         : "hsl(var(--hud-success))";
 
-    // Single icon: Phone or Video
     const MainIcon = isVideoCall ? Video : Phone;
-
-    // Direction arrow overlay
     const ArrowIcon = isMissed
       ? PhoneMissed
       : isOutgoing
@@ -185,11 +166,8 @@ export default function CommCallsSection() {
   };
 
   const getDisplayLabel = (call: CallLog) => {
-    const parts: string[] = [];
-    if (call.org_name) parts.push(call.org_name);
-    if (call.context_label && call.context_label !== call.org_name) parts.push(call.context_label);
-    if (parts.length > 0) return parts;
-    return [call.caller_id === user?.id ? (t("orbit.calls.outgoing_call") || "Outgoing call") : (t("orbit.calls.incoming_call") || "Incoming call")];
+    const peerId = call.direction === "outgoing" ? call.receiver_orbit_id : call.caller_orbit_id;
+    return [peerId || (call.direction === "outgoing" ? (t("orbit.calls.outgoing_call") || "Outgoing call") : (t("orbit.calls.incoming_call") || "Incoming call"))];
   };
 
   return (
@@ -334,7 +312,7 @@ export default function CommCallsSection() {
                         )}
                         {secondaryLabel && <span className="text-token-xs" style={{ color: "hsl(var(--hud-text-dim) / 0.25)" }}>·</span>}
                         <span className="text-token-xs" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
-                          {call.status === "ended" ? formatDuration(call.duration_seconds) : call.status}
+                          {call.status === "ended" ? formatDuration(call.duration_sec) : call.status}
                         </span>
                       </div>
                     </div>
