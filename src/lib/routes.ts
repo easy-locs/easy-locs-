@@ -194,6 +194,20 @@ export const routes = {
   customerContactless: () => `/checkout/contactless`,
   driverHotZones: () => `/driver/hot-zones`,
   adminDemandForecast: () => `/admin/demand-forecast`,
+  // HC-HH
+  customerAutoRepeat: () => `/me/auto-repeat`,
+  merchantRushMode: (merchantId: string) => `/merchant/rush-mode/${encodeURIComponent(merchantId)}`,
+  adminRefundQueue: () => `/admin/refund-queue`,
+  customerPartyOrder: () => `/checkout/party-order`,
+  driverEarningsBreakdown: () => `/driver/earnings-breakdown`,
+  adminPlatformHealth: () => `/admin/platform-health`,
+  // HI-HN
+  customerOfficeLunch: () => `/checkout/office-lunch`,
+  merchantDeliveryFees: (merchantId: string) => `/merchant/delivery-fees/${encodeURIComponent(merchantId)}`,
+  adminDriverCompliance: () => `/admin/driver-compliance`,
+  customerRewardRedemption: () => `/me/redeem-rewards`,
+  driverFuelCosts: () => `/driver/fuel-costs`,
+  adminExecutiveOverview: () => `/admin/executive-overview`,
 
   // Orbit
   orbitCallTest: () => `/orbit/call-test`,
@@ -433,6 +447,20 @@ export const ROUTE_REGISTRY = [
   { group: "public", label: "Contactless Delivery", path: "/checkout/contactless" },
   { group: "driver", label: "Hot Zones", path: "/driver/hot-zones" },
   { group: "admin", label: "Demand Forecast", path: "/admin/demand-forecast" },
+  // HC-HH
+  { group: "public", label: "Auto Repeat", path: "/me/auto-repeat" },
+  { group: "merchant", label: "Rush Mode", path: "/merchant/rush-mode/:merchantId" },
+  { group: "admin", label: "Refund Queue", path: "/admin/refund-queue" },
+  { group: "public", label: "Party Order", path: "/checkout/party-order" },
+  { group: "driver", label: "Earnings Breakdown", path: "/driver/earnings-breakdown" },
+  { group: "admin", label: "Platform Health", path: "/admin/platform-health" },
+  // HI-HN
+  { group: "public", label: "Office Lunch", path: "/checkout/office-lunch" },
+  { group: "merchant", label: "Delivery Fees", path: "/merchant/delivery-fees/:merchantId" },
+  { group: "admin", label: "Driver Compliance", path: "/admin/driver-compliance" },
+  { group: "public", label: "Reward Redemption", path: "/me/redeem-rewards" },
+  { group: "driver", label: "Fuel Costs", path: "/driver/fuel-costs" },
+  { group: "admin", label: "Executive Overview", path: "/admin/executive-overview" },
 
   { group: "public", label: "Coming Soon", path: "/coming-soon/:slug" },
   { group: "public", label: "City Market", path: "/city-market/:citySlug" },
