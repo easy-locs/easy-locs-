@@ -4,6 +4,7 @@ import { MerchantCheckoutPanel } from "@/components/merchant/MerchantCheckoutPan
 import { NotificationsPanel } from "@/components/notifications/NotificationsPanel";
 import { RefundPanel } from "@/components/payments/RefundPanel";
 import { PayoutPanel } from "@/components/payments/PayoutPanel";
+import { CheckoutDiscountPanel } from "@/components/payments/CheckoutDiscountPanel";
 
 export default function PaymentsPage() {
   return (
@@ -13,6 +14,7 @@ export default function PaymentsPage() {
         <MerchantCheckoutPanel />
         <NotificationsPanel />
         <RefundPanel />
+        <CheckoutDiscountPanel originalAmount={0} />
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <PayoutPanel />
         </div>
