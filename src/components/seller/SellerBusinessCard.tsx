@@ -1,8 +1,7 @@
 /**
  * SellerBusinessCard — Card for each business in Seller Dashboard.
- * Shows photo, name, category, address, status + edit/open/share actions.
+ * Supports onboarding_draft | draft | pending | active lifecycle.
  */
-import { cn } from "@/lib/utils";
 import { Building2, Edit, ExternalLink, Share2, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { StatusChip } from "@/components/ui/system";
@@ -16,7 +15,7 @@ interface SellerBusinessCardProps {
   category?: string;
   address?: string;
   photo_url?: string | null;
-  status: "draft" | "pending" | "active";
+  status: "onboarding_draft" | "draft" | "pending" | "active";
   editPath?: string;
   viewPath?: string;
 }
@@ -33,16 +32,21 @@ export default function SellerBusinessCard({
 }: SellerBusinessCardProps) {
   const navigate = useNavigate();
 
-  const statusMap: Record<string, { variant: "success" | "warning" | "neutral"; label: string }> = {
+  const statusMap: Record<string, { variant: "success" | "warning" | "neutral" | "info"; label: string }> = {
     active: { variant: "success", label: "Active" },
-    pending: { variant: "warning", label: "Pending" },
+    pending: { variant: "warning", label: "Pending Review" },
     draft: { variant: "neutral", label: "Draft" },
+    onboarding_draft: { variant: "info", label: "Setting Up" },
   };
 
   const st = statusMap[status] ?? statusMap.draft;
 
   const handleShare = async () => {
-    const url = `${window.location.origin}${viewPath || `/listing/${id}`}`;
+    if (!viewPath) {
+      toast.info("Complete setup to share your listing");
+      return;
+    }
+    const url = `${window.location.origin}${viewPath}`;
     try {
       if (navigator.share) {
         await navigator.share({ title: name, url });
@@ -50,14 +54,11 @@ export default function SellerBusinessCard({
         await navigator.clipboard.writeText(url);
         toast.success("Link copied!");
       }
-    } catch {
-      // user cancelled
-    }
+    } catch {}
   };
 
   return (
     <div className="flex gap-3 p-3 rounded-2xl bg-card border border-border/30 transition-all active:scale-[0.98]">
-      {/* Photo */}
       <div className="w-20 h-20 rounded-xl bg-muted overflow-hidden flex-shrink-0">
         {photo_url ? (
           <img src={photo_url} alt={name} className="w-full h-full object-cover" />
@@ -68,12 +69,11 @@ export default function SellerBusinessCard({
         )}
       </div>
 
-      {/* Info */}
       <div className="flex-1 min-w-0 flex flex-col justify-between">
         <div>
           <div className="flex items-center gap-2">
             <h3 className="text-sm font-bold text-foreground truncate">{cleanUiText(name)}</h3>
-            <StatusChip label={st.label} variant={st.variant} size="sm" />
+            <StatusChip label={st.label} variant={st.variant as any} size="sm" />
           </div>
           {category && (
             <p className="text-xs text-muted-foreground mt-0.5 truncate">{cleanUiText(category)}</p>
@@ -86,7 +86,6 @@ export default function SellerBusinessCard({
           )}
         </div>
 
-        {/* Actions */}
         <div className="flex gap-1.5 mt-2">
           <Button
             variant="outline"
@@ -94,9 +93,10 @@ export default function SellerBusinessCard({
             className="h-7 text-xs rounded-lg active:scale-[0.97]"
             onClick={() => navigate(editPath || `/dashboard/seller`)}
           >
-            <Edit className="w-3 h-3 mr-1" /> Edit
+            <Edit className="w-3 h-3 mr-1" />
+            {status === "onboarding_draft" ? "Continue Setup" : "Edit"}
           </Button>
-          {viewPath && (
+          {viewPath && status === "active" && (
             <Button
               variant="outline"
               size="sm"
