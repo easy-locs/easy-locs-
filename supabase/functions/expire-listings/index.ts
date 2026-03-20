@@ -122,7 +122,7 @@ Deno.serve(async (req) => {
     } catch {
       results.freshness_updated = 0;
     }
-    results.freshness_updated = count || 0;
+    
 
     console.log(`[expire-listings] Results:`, results);
 
