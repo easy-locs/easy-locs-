@@ -1323,6 +1323,11 @@ const App = () => (
                 <Route path="/admin/notification-campaigns" element={<ProtectedRoute><AdminNotificationCampaignsPage /></ProtectedRoute>} />
                 <Route path="/admin/customer-segments" element={<ProtectedRoute><AdminCustomerSegmentsPage /></ProtectedRoute>} />
                 <Route path="/admin/merchant-segments" element={<ProtectedRoute><AdminMerchantSegmentsPage /></ProtectedRoute>} />
+                {/* V1 order flow */}
+                <Route path="/v1/checkout" element={<ProtectedRoute><V1CheckoutBridgePage /></ProtectedRoute>} />
+                <Route path="/v1/merchant-orders/:merchantId" element={<ProtectedRoute><V1MerchantOrdersPage merchantId="" /></ProtectedRoute>} />
+                <Route path="/v1/ride" element={<ProtectedRoute><V1RideSendPackagePage type="ride" /></ProtectedRoute>} />
+                <Route path="/v1/send-package" element={<ProtectedRoute><V1RideSendPackagePage type="package" /></ProtectedRoute>} />
               <Route path="/city/:countryCode/:city/:vertical/:locale" element={<CityVerticalPage />} />
 
               {/* Guest / Public */}
