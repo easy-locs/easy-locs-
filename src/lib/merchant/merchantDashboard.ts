@@ -23,9 +23,10 @@ export async function getMerchantDashboardSnapshot(merchantId: string) {
         .limit(20),
     ]);
 
-  const orderRows = orders ?? [];
-  const productRows = products ?? [];
-  const promoRows = promos ?? [];
+  const merchant = merchantRes?.data ?? null;
+  const orderRows = ordersRes?.data ?? [];
+  const productRows = productsRes?.data ?? [];
+  const promoRows = promosRes?.data ?? [];
 
   const grossSales = orderRows.reduce(
     (sum: number, row: any) => sum + Number(row.total_amount ?? 0),
