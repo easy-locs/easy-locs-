@@ -1,4 +1,4 @@
-import { isMerchantOpenNow } from "@/lib/availability/availabilityEngine";
+import { isMerchantOpenNow } from "@/lib/merchant/availabilityEngine";
 
 export default function MerchantOpeningHoursQuickCard({
   openingHours,
