@@ -348,10 +348,13 @@ class RealtimeManager {
     let visDebounce: ReturnType<typeof setTimeout> | null = null;
     this.visibilityHandler = () => {
       if (visDebounce) clearTimeout(visDebounce);
-      visDebounce = setTimeout(() => {
+      visDebounce = setTimeout(async () => {
         if (!this.userId || !this.isLeaderTab) return;
         const status = document.hidden ? "away" : "online";
-        if (status === this.lastPresenceStatus) return; // skip identical
+        if (status === this.lastPresenceStatus) return;
+        // Validate session before writing to prevent RLS 401
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session?.access_token) return;
         supabase.from("user_presence").upsert({
           user_id: this.userId,
           status,
