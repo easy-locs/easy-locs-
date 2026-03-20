@@ -258,6 +258,39 @@ export type Database = {
           },
         ]
       }
+      activity_logs: {
+        Row: {
+          action: string
+          created_at: string
+          entity_id: string | null
+          entity_type: string | null
+          id: string
+          metadata: Json | null
+          orbit_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          entity_id?: string | null
+          entity_type?: string | null
+          id: string
+          metadata?: Json | null
+          orbit_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          entity_id?: string | null
+          entity_type?: string | null
+          id?: string
+          metadata?: Json | null
+          orbit_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       ad_events: {
         Row: {
           cost_locs: number | null
@@ -6394,6 +6427,30 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      favorite_listings: {
+        Row: {
+          created_at: string
+          id: string
+          listing_id: string
+          orbit_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id: string
+          listing_id: string
+          orbit_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          listing_id?: string
+          orbit_id?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       featured_shops: {
         Row: {
@@ -14543,6 +14600,33 @@ export type Database = {
           listing_price?: number | null
           listing_title?: string | null
           listing_type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      saved_searches: {
+        Row: {
+          created_at: string
+          filters: Json
+          id: string
+          name: string
+          orbit_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          filters: Json
+          id: string
+          name: string
+          orbit_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          filters?: Json
+          id?: string
+          name?: string
+          orbit_id?: string
           user_id?: string
         }
         Relationships: []
