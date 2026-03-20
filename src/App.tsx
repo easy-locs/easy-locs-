@@ -1402,19 +1402,19 @@ const App = () => (
               {/* V2 test routes */}
               <Route path="/v2-test" element={<V2TestPage />} />
               <Route path="/v2-booking-test" element={<V2BookingTestPage />} />
-              <Route path="/v2-mega" element={<V2MegaPage />} />
+              <Route path="/v2-mega" element={<V2AuthBridgeWrapper><V2AuthGateWrapper><V2MegaPage /></V2AuthGateWrapper></V2AuthBridgeWrapper>} />
 
-              {/* V2 Suite 4 routes */}
-              <Route path="/v2-home" element={<V2HomePage />} />
-              <Route path="/v2-owner" element={<V2OwnerDashboardPage />} />
-              <Route path="/v2-tenant" element={<V2TenantDashboardPage />} />
-              <Route path="/v2-bookings" element={<V2BookingsPage />} />
-              <Route path="/v2-properties" element={<V2PropertiesPage />} />
-              <Route path="/v2-search" element={<V2SearchPage />} />
-              <Route path="/v2-map" element={<V2MapPage />} />
-              <Route path="/v2-messages" element={<V2MessagesPage />} />
-              <Route path="/v2-notifications" element={<V2NotificationsPage />} />
-              <Route path="/v2-payments" element={<V2PaymentsPage />} />
+              {/* V2 Suite 4 routes — auth protected */}
+              <Route path="/v2-home" element={<V2AuthBridgeWrapper><V2AuthGateWrapper><V2HomePage /></V2AuthGateWrapper></V2AuthBridgeWrapper>} />
+              <Route path="/v2-owner" element={<V2AuthBridgeWrapper><V2AuthGateWrapper><V2OwnerDashboardPage /></V2AuthGateWrapper></V2AuthBridgeWrapper>} />
+              <Route path="/v2-tenant" element={<V2AuthBridgeWrapper><V2AuthGateWrapper><V2TenantDashboardPage /></V2AuthGateWrapper></V2AuthBridgeWrapper>} />
+              <Route path="/v2-bookings" element={<V2AuthBridgeWrapper><V2AuthGateWrapper><V2BookingsPage /></V2AuthGateWrapper></V2AuthBridgeWrapper>} />
+              <Route path="/v2-properties" element={<V2AuthBridgeWrapper><V2AuthGateWrapper><V2PropertiesPage /></V2AuthGateWrapper></V2AuthBridgeWrapper>} />
+              <Route path="/v2-search" element={<V2AuthBridgeWrapper><V2AuthGateWrapper><V2SearchPage /></V2AuthGateWrapper></V2AuthBridgeWrapper>} />
+              <Route path="/v2-map" element={<V2AuthBridgeWrapper><V2AuthGateWrapper><V2MapPage /></V2AuthGateWrapper></V2AuthBridgeWrapper>} />
+              <Route path="/v2-messages" element={<V2AuthBridgeWrapper><V2AuthGateWrapper><V2MessagesPage /></V2AuthGateWrapper></V2AuthBridgeWrapper>} />
+              <Route path="/v2-notifications" element={<V2AuthBridgeWrapper><V2AuthGateWrapper><V2NotificationsPage /></V2AuthGateWrapper></V2AuthBridgeWrapper>} />
+              <Route path="/v2-payments" element={<V2AuthBridgeWrapper><V2AuthGateWrapper><V2PaymentsPage /></V2AuthGateWrapper></V2AuthBridgeWrapper>} />
 
               {/* SEO catch-all */}
               <Route path="/seo/*" element={<SEOCatchAll />} />
