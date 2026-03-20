@@ -198,9 +198,9 @@ export function CallProvider({ children }: { children: ReactNode }) {
         });
 
         // Use idempotent server-side function to prevent duplicates
-        const { data: callId, error } = await supabase.rpc("create_call_idempotent", {
-          _caller_id: authUser.id,
-          _callee_org_id: opts.orgId,
+        const { data: callId, error } = await supabase.rpc("create_call_idempotent" as any, {
+          _caller_orbit_id: authUser.id,
+          _receiver_orbit_id: opts.orgId,
           _thread_id: opts.threadId || null,
           _context_type: opts.contextType || "listing",
           _context_id: opts.contextId || null,

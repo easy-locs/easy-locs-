@@ -135,7 +135,7 @@ async function refreshCommunication(userId: string, orgId?: string) {
     }),
     safeCount("call_logs", (q) => {
       let query = q.eq("status", "missed").gt("created_at", weekAgo);
-      if (orgId) query = query.eq("callee_org_id", orgId);
+      if (orgId) query = query.eq("receiver_orbit_id", orgId);
       return query;
     }),
     safeCount("contacts", (q) => q.eq("owner_id", userId)),
