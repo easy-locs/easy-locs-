@@ -824,6 +824,8 @@ const App = () => (
                 <Route path="/admin/bulk-merchant-import" element={<ProtectedRoute><AdminBulkMerchantImportPage /></ProtectedRoute>} />
                 <Route path="/favorites" element={<ProtectedRoute><FavoritesPage /></ProtectedRoute>} />
                 <Route path="/admin/seed-tools" element={<ProtectedRoute><AdminSeedToolsPage /></ProtectedRoute>} />
+                <Route path="/search-results" element={<SearchResultsPage />} />
+                <Route path="/admin/content-ops" element={<ProtectedRoute><AdminContentOpsPage /></ProtectedRoute>} />
               <Route path="/city/:countryCode/:city/:vertical/:locale" element={<CityVerticalPage />} />
 
               {/* Guest / Public */}

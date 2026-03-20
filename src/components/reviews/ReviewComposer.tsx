@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/contexts/AuthContext";
 import { createMerchantReview, recomputeMerchantRating } from "@/lib/reviews/reviewEngine";
 import { toast } from "sonner";
 
