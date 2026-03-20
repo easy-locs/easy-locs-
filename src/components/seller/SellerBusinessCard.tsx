@@ -73,7 +73,7 @@ export default function SellerBusinessCard({
         <div>
           <div className="flex items-center gap-2">
             <h3 className="text-sm font-bold text-foreground truncate">{cleanUiText(name)}</h3>
-            <StatusChip variant={st.variant} size="xs">{st.label}</StatusChip>
+            <StatusChip label={st.label} variant={st.variant} size="sm" />
           </div>
           {category && (
             <p className="text-xs text-muted-foreground mt-0.5 truncate">{cleanUiText(category)}</p>
