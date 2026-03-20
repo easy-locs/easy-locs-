@@ -176,9 +176,17 @@ export default function WalletHubPage() {
             </div>
           ) : (
             <div className="rounded-2xl overflow-hidden" style={{ background: "hsl(var(--muted))", border: "1px solid hsl(var(--border) / 0.12)" }}>
-              {filteredTx.map((tx, i) => (
-                <div key={i}>
-                  <TransactionRow {...tx} />
+              {filteredTx.map((tx: any, i: number) => (
+                <div key={tx.id ?? i}>
+                  <TransactionRow
+                    title={tx.note || tx.entry_type || "Transaction"}
+                    amount={Number(tx.amount ?? 0)}
+                    currency={tx.currency ?? "AED"}
+                    type={tx.entry_type as TransactionType ?? "payment"}
+                    direction={tx.direction ?? "out"}
+                    status={tx.status === "posted" ? "completed" : tx.status === "pending" ? "pending" : "completed"}
+                    timestamp={tx.created_at}
+                  />
                   {i < filteredTx.length - 1 && <div className="mx-4 border-t" style={{ borderColor: "hsl(var(--border) / 0.06)" }} />}
                 </div>
               ))}
