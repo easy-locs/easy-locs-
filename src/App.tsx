@@ -381,6 +381,8 @@ const AdminPaymentsOpsPage = safeLazy(() => import("./pages/admin/AdminPaymentsO
 const AdminBulkMerchantImportPage = safeLazy(() => import("./pages/admin/AdminBulkMerchantImportPage"), "AdminBulkMerchantImportPage");
 const FavoritesPage = safeLazy(() => import("./pages/FavoritesPage"), "FavoritesPage");
 const AdminSeedToolsPage = safeLazy(() => import("./pages/admin/AdminSeedToolsPage"), "AdminSeedToolsPage");
+const SearchResultsPage = safeLazy(() => import("./pages/SearchResultsPage"), "SearchResultsPage");
+const AdminContentOpsPage = safeLazy(() => import("./pages/admin/AdminContentOpsPage"), "AdminContentOpsPage");
 
 // City sub-page wrappers
 const CityServicesPage = () => <CityHubPage subPage="services" />;
@@ -822,6 +824,8 @@ const App = () => (
                 <Route path="/admin/bulk-merchant-import" element={<ProtectedRoute><AdminBulkMerchantImportPage /></ProtectedRoute>} />
                 <Route path="/favorites" element={<ProtectedRoute><FavoritesPage /></ProtectedRoute>} />
                 <Route path="/admin/seed-tools" element={<ProtectedRoute><AdminSeedToolsPage /></ProtectedRoute>} />
+                <Route path="/search-results" element={<SearchResultsPage />} />
+                <Route path="/admin/content-ops" element={<ProtectedRoute><AdminContentOpsPage /></ProtectedRoute>} />
               <Route path="/city/:countryCode/:city/:vertical/:locale" element={<CityVerticalPage />} />
 
               {/* Guest / Public */}

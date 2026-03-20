@@ -49,6 +49,8 @@ export const routes = {
   dinoControl: () => `/admin/dino-control`,
   seedTools: () => `/admin/seed-tools`,
   favorites: () => `/favorites`,
+  searchResults: () => `/search-results`,
+  adminContentOps: () => `/admin/content-ops`,
 
   // Orbit
   orbitCallTest: () => `/orbit/call-test`,
