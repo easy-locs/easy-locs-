@@ -4,13 +4,11 @@ import { useGeoStore } from "@/stores/geoStore";
 import { useOrbitStore } from "@/stores/orbitStore";
 
 type DriverLive = {
-  user_id: string;
-  is_online: boolean;
-  is_available: boolean;
-  current_lat: number | null;
-  current_lng: number | null;
-  service_mode: string | null;
-  [key: string]: unknown;
+  orbit_id: string;
+  online: boolean;
+  lat: number | null;
+  lng: number | null;
+  updated_at: string;
 };
 
 type DriverStoreState = {
@@ -27,41 +25,37 @@ export const useDriverStore = create<DriverStoreState>((set) => ({
   online: false,
 
   setOnline: async (value) => {
-    const { data: authData } = await supabase.auth.getUser();
-    const userId = authData?.user?.id;
-    if (!userId) return;
+    const orbit = useOrbitStore.getState().profile;
+    if (!orbit) return;
 
     set({ online: value });
 
-    await (supabase as any).from("driver_profiles").upsert({
-      user_id: userId,
-      is_online: value,
+    await (supabase as any).from("drivers_live").upsert({
+      orbit_id: orbit.orbitId,
+      online: value,
       updated_at: new Date().toISOString(),
     });
   },
 
   updatePosition: async () => {
-    const { data: authData } = await supabase.auth.getUser();
-    const userId = authData?.user?.id;
-    if (!userId) return;
-
+    const orbit = useOrbitStore.getState().profile;
     const geo = useGeoStore.getState().currentPosition;
+    if (!orbit) return;
     if (!geo.lat && !geo.lng) return;
 
-    await (supabase as any).from("driver_profiles").upsert({
-      user_id: userId,
-      current_lat: geo.lat,
-      current_lng: geo.lng,
+    await (supabase as any).from("drivers_live").upsert({
+      orbit_id: orbit.orbitId,
+      lat: geo.lat,
+      lng: geo.lng,
       updated_at: new Date().toISOString(),
     });
   },
 
   hydrateDrivers: async () => {
     const { data } = await (supabase as any)
-      .from("driver_profiles")
+      .from("drivers_live")
       .select("*")
-      .eq("is_online", true)
-      .eq("is_available", true);
+      .eq("online", true);
 
     set({ drivers: (data ?? []) as DriverLive[] });
   },
