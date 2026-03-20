@@ -32,6 +32,7 @@ import { useChatStore } from "@/stores/chatStore";
 import { BookingStatusPanel } from "@/components/booking/BookingStatusPanel";
 import { RentStatusPanel } from "@/components/property/RentStatusPanel";
 import { SimpleNavTabs, type SimpleNavTab } from "@/components/layout/SimpleNavTabs";
+import { MerchantCheckoutPanel } from "@/components/merchant/MerchantCheckoutPanel";
 
 export default function V2MegaPage() {
   useListingsRealtime();
