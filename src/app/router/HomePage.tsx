@@ -60,6 +60,7 @@ export default function HomePage() {
         </div>
 
         <ActivityPanel />
+        <PushSettingsPanel />
       </div>
     </AppPageShell>
   );
