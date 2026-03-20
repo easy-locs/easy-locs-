@@ -81,6 +81,9 @@ export const routes = {
   adminDriverMonitor: () => `/admin/driver-monitor`,
   adminUserLookup: () => `/admin/user-lookup`,
   adminNotificationOps: () => `/admin/notification-ops`,
+  adminFinanceSummary: () => `/admin/finance-summary`,
+  customerSpendingInsights: () => `/me/spending-insights`,
+  adminPlatformAlerts: () => `/admin/platform-alerts`,
 
   // Orbit
   orbitCallTest: () => `/orbit/call-test`,
