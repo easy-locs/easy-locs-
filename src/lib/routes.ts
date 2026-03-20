@@ -168,6 +168,18 @@ export const routes = {
   customerAddressBookV2: () => `/me/address-book-v2`,
   driverNavigationMode: () => `/driver/navigation-mode`,
   adminCityOps: () => `/admin/city-ops`,
+  // GE-GJ
+  customerMealPlanner: () => `/me/meal-planner`,
+  merchantDeliveryZones: (merchantId: string) => `/merchant/delivery-zones/${encodeURIComponent(merchantId)}`,
+  adminOperatorNotes: () => `/admin/operator-notes`,
+  customerReceiptVault: () => `/me/receipt-vault`,
+  driverVehicleProfile: () => `/driver/vehicle-profile`,
+  adminNetworkStatus: () => `/admin/network-status`,
+  // GK-GP
+  customerSharedWallet: () => `/me/shared-wallet`,
+  adminSlaMonitor: () => `/admin/sla-monitor`,
+  customerOrderGifts: () => `/checkout/gift-order`,
+  adminIncidentCenter: () => `/admin/incident-center`,
 
   // Orbit
   orbitCallTest: () => `/orbit/call-test`,
@@ -381,6 +393,18 @@ export const ROUTE_REGISTRY = [
   { group: "public", label: "Address Book V2", path: "/me/address-book-v2" },
   { group: "driver", label: "Navigation Mode", path: "/driver/navigation-mode" },
   { group: "admin", label: "City Ops", path: "/admin/city-ops" },
+  // GE-GJ
+  { group: "public", label: "Meal Planner", path: "/me/meal-planner" },
+  { group: "merchant", label: "Delivery Zones", path: "/merchant/delivery-zones/:merchantId" },
+  { group: "admin", label: "Operator Notes", path: "/admin/operator-notes" },
+  { group: "public", label: "Receipt Vault", path: "/me/receipt-vault" },
+  { group: "driver", label: "Vehicle Profile", path: "/driver/vehicle-profile" },
+  { group: "admin", label: "Network Status", path: "/admin/network-status" },
+  // GK-GP
+  { group: "public", label: "Shared Wallet", path: "/me/shared-wallet" },
+  { group: "admin", label: "SLA Monitor", path: "/admin/sla-monitor" },
+  { group: "public", label: "Gift Order", path: "/checkout/gift-order" },
+  { group: "admin", label: "Incident Center", path: "/admin/incident-center" },
 
   { group: "public", label: "Coming Soon", path: "/coming-soon/:slug" },
   { group: "public", label: "City Market", path: "/city-market/:citySlug" },
