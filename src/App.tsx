@@ -1069,6 +1069,18 @@ const App = () => (
                 <Route path="/me/address-book-v2" element={<ProtectedRoute><CustomerAddressBookPageV2 /></ProtectedRoute>} />
                 <Route path="/driver/navigation-mode" element={<ProtectedRoute><DriverNavigationModePage /></ProtectedRoute>} />
                 <Route path="/admin/city-ops" element={<ProtectedRoute><AdminCityOpsPage /></ProtectedRoute>} />
+                {/* GE-GJ */}
+                <Route path="/me/meal-planner" element={<ProtectedRoute><CustomerMealPlannerPage /></ProtectedRoute>} />
+                <Route path="/merchant/delivery-zones/:merchantId" element={<ProtectedRoute><MerchantDeliveryZonesPage /></ProtectedRoute>} />
+                <Route path="/admin/operator-notes" element={<ProtectedRoute><AdminOperatorNotesPage /></ProtectedRoute>} />
+                <Route path="/me/receipt-vault" element={<ProtectedRoute><CustomerReceiptVaultPage /></ProtectedRoute>} />
+                <Route path="/driver/vehicle-profile" element={<ProtectedRoute><DriverVehicleProfilePage /></ProtectedRoute>} />
+                <Route path="/admin/network-status" element={<ProtectedRoute><AdminNetworkStatusPage /></ProtectedRoute>} />
+                {/* GK-GP */}
+                <Route path="/me/shared-wallet" element={<ProtectedRoute><CustomerSharedWalletPage /></ProtectedRoute>} />
+                <Route path="/admin/sla-monitor" element={<ProtectedRoute><AdminSlaMonitorPage /></ProtectedRoute>} />
+                <Route path="/checkout/gift-order" element={<ProtectedRoute><CustomerOrderGiftsPage /></ProtectedRoute>} />
+                <Route path="/admin/incident-center" element={<ProtectedRoute><AdminIncidentCenterPage /></ProtectedRoute>} />
               <Route path="/city/:countryCode/:city/:vertical/:locale" element={<CityVerticalPage />} />
 
               {/* Guest / Public */}
