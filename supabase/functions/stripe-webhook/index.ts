@@ -305,7 +305,20 @@ serve(async (req) => {
 async function handleCheckoutCompleted(supabase: any, stripe: Stripe, session: Stripe.Checkout.Session) {
   const metadata = session.metadata || {};
   const type = metadata.type;
-  logStep("Checkout completed", { type, metadata });
+  const flow = metadata.flow;
+  logStep("Checkout completed", { type, flow, metadata });
+
+  // ── V2 booking payment flow ──
+  if (flow === "booking_payment" && metadata.bookingId) {
+    await handleV2BookingPayment(supabase, session);
+    return;
+  }
+
+  // ── V2 rent payment flow ──
+  if (flow === "rent_payment" && metadata.rentPaymentId) {
+    await handleV2RentPayment(supabase, session);
+    return;
+  }
 
   if (type === "seasonal_booking") {
     await handleBookingPayment(supabase, metadata, session);
