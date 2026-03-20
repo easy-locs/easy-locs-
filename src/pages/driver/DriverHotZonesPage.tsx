@@ -1,22 +1,25 @@
 import { useNavigate } from "react-router-dom";
 
-const HOT_ZONES = [
-  { name: "Dubai Marina", multiplier: "1.3x", demand: "High" },
-  { name: "Business Bay", multiplier: "1.2x", demand: "High" },
-  { name: "JLT", multiplier: "1.1x", demand: "Medium" },
-  { name: "Downtown", multiplier: "1.25x", demand: "High" },
+const ZONES = [
+  { name: "Dubai Marina", demand: "High", bonus: "12 AED" },
+  { name: "JLT", demand: "Medium", bonus: "8 AED" },
+  { name: "Business Bay", demand: "High", bonus: "15 AED" },
+  { name: "Downtown Dubai", demand: "High", bonus: "18 AED" },
 ];
 
 export default function DriverHotZonesPage() {
   const navigate = useNavigate();
+
   return (
     <div className="max-w-md mx-auto px-4 py-4 space-y-4">
-      <Header title="Hot Zones" subtitle="High demand areas" onBack={() => navigate("/driver/dashboard")} />
+      <Header title="Hot Zones" subtitle="High-demand delivery areas" onBack={() => navigate("/driver/dashboard")} />
+
       <div className="space-y-3">
-        {HOT_ZONES.map((row) => (
-          <div key={row.name} className="rounded-2xl border border-border/20 bg-card p-4">
-            <div className="text-sm font-bold">{row.name}</div>
-            <div className="text-xs text-muted-foreground mt-1">Demand {row.demand} · Boost {row.multiplier}</div>
+        {ZONES.map((zone) => (
+          <div key={zone.name} className="rounded-[28px] border border-border/20 bg-card p-4">
+            <div className="text-sm font-bold">{zone.name}</div>
+            <div className="text-xs text-muted-foreground mt-1">Demand: {zone.demand}</div>
+            <div className="text-sm font-semibold mt-2">Bonus: {zone.bonus}</div>
           </div>
         ))}
       </div>
@@ -28,7 +31,10 @@ function Header({ title, subtitle, onBack }: { title: string; subtitle: string; 
   return (
     <div className="flex items-center gap-3">
       <button onClick={onBack} className="w-9 h-9 rounded-xl bg-muted flex items-center justify-center">←</button>
-      <div><h1 className="text-lg font-bold">{title}</h1><p className="text-xs text-muted-foreground">{subtitle}</p></div>
+      <div>
+        <h1 className="text-lg font-bold">{title}</h1>
+        <p className="text-xs text-muted-foreground">{subtitle}</p>
+      </div>
     </div>
   );
 }
