@@ -7,6 +7,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { ArrowLeft, Star, MapPin, Clock, Plus, Minus, ShoppingCart } from "lucide-react";
+import FavoriteMerchantButton from "@/components/favorites/FavoriteMerchantButton";
 import { motion } from "framer-motion";
 import { useCart } from "@/hooks/useCart";
 import { toast } from "sonner";
@@ -92,6 +93,11 @@ export default function RestaurantPage() {
         <button onClick={() => navigate(-1)} className="absolute top-4 left-4 w-10 h-10 rounded-xl flex items-center justify-center active:scale-90 transition-transform z-10" style={{ background: "hsl(0 0% 0% / 0.35)", backdropFilter: "blur(8px)" }}>
           <ArrowLeft className="w-5 h-5 text-white" />
         </button>
+        {shop?.id && (
+          <div className="absolute top-4 right-4 z-10">
+            <FavoriteMerchantButton merchantId={shop.id} />
+          </div>
+        )}
       </div>
 
       <div className="px-4 -mt-6 relative z-10 space-y-2">

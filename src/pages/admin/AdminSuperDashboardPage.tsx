@@ -112,8 +112,11 @@ export default function AdminSuperDashboardPage() {
             { label: "Marketplace Ops", path: "/admin/ops-dashboard" },
             { label: "Support Ops", path: "/admin/support-ops" },
             { label: "Delivery Ops", path: "/admin/delivery-ops" },
+            { label: "Payments Ops", path: "/admin/payments-ops" },
             { label: "Orchestration Logs", path: "/admin/orchestration" },
             { label: "Merchant Auto-Onboarding", path: "/admin/merchant-autofill" },
+            { label: "Bulk Merchant Import", path: "/admin/bulk-merchant-import" },
+            { label: "Seed Tools", path: "/admin/seed-tools" },
           ].map((item) => (
             <button key={item.path} onClick={() => navigate(item.path)} className="w-full rounded-2xl bg-card border border-border/20 px-4 py-3 text-left text-sm font-semibold text-foreground active:scale-[0.98] transition-transform">
               {item.label}
