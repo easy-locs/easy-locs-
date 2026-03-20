@@ -97,18 +97,15 @@ export default function CommCallsSection() {
     }
 
     haptic("medium");
-    const peerName = call.org_name || call.context_label || "Contact";
+    const peerId = call.caller_orbit_id === user?.id ? call.receiver_orbit_id : call.caller_orbit_id;
 
     await startCall({
-      orgId: call.callee_org_id,
-      threadId: call.thread_id || undefined,
-      contextType: call.context_type,
-      contextId: call.context_id || undefined,
-      contextLabel: call.context_label || undefined,
-      peerName,
-      isVideo: call.is_video,
+      orgId: peerId,
+      contextType: "direct",
+      peerName: peerId,
+      isVideo: call.call_type === "video",
     });
-  }, [startCall, isInCall, isStartingCall]);
+  }, [startCall, isInCall, isStartingCall, user?.id]);
 
   const filtered = calls.filter(c => {
     if (filter === "missed" && c.status !== "missed") return false;
