@@ -50,7 +50,7 @@ export default function AdminDriverHeatmapPage() {
             <div key={zone} className="rounded-2xl border border-border/20 bg-card p-4">
               <div className="flex items-center justify-between">
                 <p className="text-sm font-semibold text-foreground">{zone}</p>
-                <p className="text-sm font-bold text-foreground">{count}</p>
+                <p className="text-sm font-bold text-foreground">{String(count)}</p>
               </div>
             </div>
           ))}
