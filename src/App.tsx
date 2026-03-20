@@ -1,4 +1,5 @@
 import EmergencyRenderTestPage from "@/pages/EmergencyRenderTestPage";
+import MainBottomNav from "@/components/navigation/MainBottomNav";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -782,7 +783,7 @@ const App = () => (
            
            <SkipLink />
            <Suspense fallback={<PageLoader />}>
-            <main id="main-content">
+            <main id="main-content" className="pb-[calc(56px+env(safe-area-inset-bottom,0px))]">
             <Routes>
               {/* Emergency render test — no wrappers */}
               <Route path="/emergency-test" element={<EmergencyRenderTestPage />} />
@@ -1450,6 +1451,7 @@ const App = () => (
             </Routes>
             </main>
            </Suspense>
+           <MainBottomNav />
            <SmartInstallBanner />
            </SplashScreen>
            </AppLockGuard>

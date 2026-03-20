@@ -494,8 +494,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
       </div>
 
 
-      {/* Mobile bottom navigation */}
-      <MobileBottomNav />
+      {/* Bottom nav handled globally by MainBottomNav in App.tsx */}
     </div>
   );
 };

@@ -7,6 +7,7 @@ import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { supabase } from "@/integrations/supabase/client";
+import { useGeoEntities } from "@/hooks/useGeoEntities";
 import { createEasyLocsMarkerElement, buildEasyLocsPopupHTML } from "@/lib/map/easy-locs-markers";
 import { getEasyLocsRadiusPaint } from "@/lib/map/easy-locs-radius-style";
 import EasyLocsRadarOverlay from "@/components/map/EasyLocsRadarOverlay";
@@ -241,7 +242,10 @@ export default function SuperMapRadarPage() {
   const [showRadiusPicker, setShowRadiusPicker] = useState(false);
   const chipsRef = useRef<HTMLDivElement>(null);
 
-  /* ─── Fetch listings ─── */
+  // Unified geo entities (storefront_pages, properties, services, real estate)
+  const { entities: geoEntities } = useGeoEntities();
+
+  /* ─── Fetch marketplace_services + merge with geoEntities ─── */
   useEffect(() => {
     (async () => {
       setLoading(true);
@@ -252,27 +256,49 @@ export default function SuperMapRadarPage() {
         .eq("active", true)
         .neq("presence_mode", "off")
         .limit(500);
-      if (data) {
-        setListings(
-          data
-            .filter((d: any) => {
-              if (d.auto_expire && d.listing_expires_at && d.listing_expires_at < now) return false;
-              if (d.presence_mode === "live" && d.is_live_online === false) {
-                if (isLiveStale(d.live_updated_at)) return false;
-              }
-              return true;
-            })
-            .map((d: any) => ({
-              ...d,
-              lat: d.presence_mode === "live" ? (d.live_lat ?? d.anchor_lat ?? d.lat) : (d.anchor_lat ?? d.lat),
-              lng: d.presence_mode === "live" ? (d.live_lng ?? d.anchor_lng ?? d.lng) : (d.anchor_lng ?? d.lng),
-            }))
-            .filter((d: any) => d.lat && d.lng)
-        );
-      }
+
+      const marketplaceListings: MapListing[] = (data || [])
+        .filter((d: any) => {
+          if (d.auto_expire && d.listing_expires_at && d.listing_expires_at < now) return false;
+          if (d.presence_mode === "live" && d.is_live_online === false) {
+            if (isLiveStale(d.live_updated_at)) return false;
+          }
+          return true;
+        })
+        .map((d: any) => ({
+          ...d,
+          lat: d.presence_mode === "live" ? (d.live_lat ?? d.anchor_lat ?? d.lat) : (d.anchor_lat ?? d.lat),
+          lng: d.presence_mode === "live" ? (d.live_lng ?? d.anchor_lng ?? d.lng) : (d.anchor_lng ?? d.lng),
+        }))
+        .filter((d: any) => d.lat && d.lng);
+
+      // Convert geoEntities to MapListing format for unified rendering
+      const geoListings: MapListing[] = geoEntities
+        .filter(e => e.lat && e.lng)
+        .map(e => ({
+          id: e.id,
+          title: e.title,
+          lat: e.lat,
+          lng: e.lng,
+          presence_mode: "pinned",
+          entity_type: e.type === "restaurant" || e.type === "grocery" ? "fixed_store" : e.type === "service" ? "mobile_service" : "fixed_store",
+          coverage_mode: "point",
+          coverage_radius_m: null,
+          category: e.subtype || e.type,
+          price: 0,
+          currency: "AED",
+          listing_type: e.type,
+          city: e.city,
+          photo_urls: e.image_url ? [e.image_url] : undefined,
+        }));
+
+      // Merge — deduplicate by id
+      const seenIds = new Set(marketplaceListings.map(l => l.id));
+      const merged = [...marketplaceListings, ...geoListings.filter(l => !seenIds.has(l.id))];
+      setListings(merged);
       setLoading(false);
     })();
-  }, []);
+  }, [geoEntities]);
 
   /* ─── Filtered listings ─── */
   const filtered = useMemo(() => {
