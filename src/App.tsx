@@ -590,6 +590,20 @@ const CustomerFamilyProfilePage = safeLazy(() => import("./pages/customer/Custom
 const CustomerFavoriteItemsPage = safeLazy(() => import("./pages/customer/CustomerFavoriteItemsPage"), "CustomerFavoriteItemsPage");
 const MerchantCancellationRulesPage = safeLazy(() => import("./pages/merchant/MerchantCancellationRulesPage"), "MerchantCancellationRulesPage");
 const MerchantCustomerChatSettingsPage = safeLazy(() => import("./pages/merchant/MerchantCustomerChatSettingsPage"), "MerchantCustomerChatSettingsPage");
+// MX-OG block
+const AdminCityLaunchChecklistPage = safeLazy(() => import("./pages/admin/AdminCityLaunchChecklistPage"), "AdminCityLaunchChecklistPage");
+const AdminRestaurantAutofillPage2 = safeLazy(() => import("./pages/admin/AdminRestaurantAutofillPage"), "AdminRestaurantAutofillPage2");
+const AdminSystemLiveStatusPage = safeLazy(() => import("./pages/admin/AdminSystemLiveStatusPage"), "AdminSystemLiveStatusPage");
+const CustomerQuickReorderHubPage = safeLazy(() => import("./pages/customer/CustomerQuickReorderHubPage"), "CustomerQuickReorderHubPage");
+const MerchantLiveOpsPanelPage = safeLazy(() => import("./pages/merchant/MerchantLiveOpsPanelPage"), "MerchantLiveOpsPanelPage");
+const CentralControlPanelPage = safeLazy(() => import("./pages/admin/CentralControlPanelPage"), "CentralControlPanelPage");
+const AdminLiveIncidentFeedPage = safeLazy(() => import("./pages/admin/AdminLiveIncidentFeedPage"), "AdminLiveIncidentFeedPage");
+const AdminRiskScoreboardPage = safeLazy(() => import("./pages/admin/AdminRiskScoreboardPage"), "AdminRiskScoreboardPage");
+const AdminStoreReadinessMatrixPage = safeLazy(() => import("./pages/admin/AdminStoreReadinessMatrixPage"), "AdminStoreReadinessMatrixPage");
+const CustomerBulkPartyBuilderPage = safeLazy(() => import("./pages/customer/CustomerBulkPartyBuilderPage"), "CustomerBulkPartyBuilderPage");
+const CustomerDinnerPlannerPage = safeLazy(() => import("./pages/customer/CustomerDinnerPlannerPage"), "CustomerDinnerPlannerPage");
+const MerchantAutoAcceptRulesPage = safeLazy(() => import("./pages/merchant/MerchantAutoAcceptRulesPage"), "MerchantAutoAcceptRulesPage");
+const MerchantDriverHandoffPage = safeLazy(() => import("./pages/merchant/MerchantDriverHandoffPage"), "MerchantDriverHandoffPage");
 
 // City sub-page wrappers
 const CityServicesPage = () => <CityHubPage subPage="services" />;
