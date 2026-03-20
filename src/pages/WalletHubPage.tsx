@@ -6,21 +6,13 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useWalletAccounts } from "@/hooks/useWalletAccounts";
 import { createWalletAccount } from "@/lib/wallet/wallet-core";
+import { supabase } from "@/integrations/supabase/client";
 import { ArrowLeft, Plus, ArrowUpRight, ArrowDownLeft, QrCode, Eye, EyeOff, CreditCard, Wallet, Filter } from "lucide-react";
 import { motion } from "framer-motion";
 import { useState } from "react";
 import { toast } from "sonner";
+import { useQuery } from "@tanstack/react-query";
 import TransactionRow, { type TransactionType } from "@/components/wallet/TransactionRow";
-
-// Mock transactions for display (will be replaced with real data)
-const MOCK_TRANSACTIONS: { title: string; amount: number; currency: string; type: TransactionType; direction: "in" | "out"; status: "completed" | "pending" | "failed"; timestamp: string }[] = [
-  { title: "Order #a8f3", amount: 67.00, currency: "AED", type: "payment", direction: "out", status: "completed", timestamp: new Date(Date.now() - 3600000).toISOString() },
-  { title: "Refund - Pizza Milano", amount: 32.00, currency: "AED", type: "refund", direction: "in", status: "completed", timestamp: new Date(Date.now() - 7200000).toISOString() },
-  { title: "Wallet top-up", amount: 200.00, currency: "AED", type: "top_up", direction: "in", status: "completed", timestamp: new Date(Date.now() - 86400000).toISOString() },
-  { title: "Transfer to Ahmed", amount: 50.00, currency: "AED", type: "transfer", direction: "out", status: "pending", timestamp: new Date(Date.now() - 172800000).toISOString() },
-  { title: "Escrow hold - Order #c2d1", amount: 89.00, currency: "AED", type: "escrow_hold", direction: "out", status: "completed", timestamp: new Date(Date.now() - 259200000).toISOString() },
-  { title: "Escrow release", amount: 89.00, currency: "AED", type: "escrow_release", direction: "in", status: "completed", timestamp: new Date(Date.now() - 345600000).toISOString() },
-];
 
 export default function WalletHubPage() {
   const navigate = useNavigate();
@@ -39,7 +31,30 @@ export default function WalletHubPage() {
     { label: "Scan", icon: QrCode, action: () => navigate("/pay/scan") },
   ];
 
-  const filteredTx = MOCK_TRANSACTIONS.filter(tx => filter === "all" || tx.direction === filter);
+  const { data: ledgerRows = [] } = useQuery({
+    queryKey: ["wallet-ledger-real", user?.id],
+    enabled: !!user?.id,
+    queryFn: async () => {
+      const { data: accounts, error: accErr } = await supabase
+        .from("wallet_accounts")
+        .select("id")
+        .eq("owner_user_id", user!.id);
+      if (accErr) throw accErr;
+      const ids = (accounts ?? []).map((a: any) => a.id);
+      if (!ids.length) return [];
+      const { data, error } = await supabase
+        .from("wallet_ledger_entries")
+        .select("*")
+        .in("wallet_account_id", ids)
+        .order("created_at", { ascending: false })
+        .limit(100);
+      if (error) throw error;
+      return data ?? [];
+    },
+    staleTime: 10000,
+  });
+
+  const filteredTx = ledgerRows.filter((tx: any) => filter === "all" || tx.direction === filter);
 
   const createDefaultWallet = async () => {
     if (!user?.id) return;
@@ -161,9 +176,17 @@ export default function WalletHubPage() {
             </div>
           ) : (
             <div className="rounded-2xl overflow-hidden" style={{ background: "hsl(var(--muted))", border: "1px solid hsl(var(--border) / 0.12)" }}>
-              {filteredTx.map((tx, i) => (
-                <div key={i}>
-                  <TransactionRow {...tx} />
+              {filteredTx.map((tx: any, i: number) => (
+                <div key={tx.id ?? i}>
+                  <TransactionRow
+                    title={tx.note || tx.entry_type || "Transaction"}
+                    amount={Number(tx.amount ?? 0)}
+                    currency={tx.currency ?? "AED"}
+                    type={tx.entry_type as TransactionType ?? "payment"}
+                    direction={tx.direction ?? "out"}
+                    status={tx.status === "posted" ? "completed" : tx.status === "pending" ? "pending" : "completed"}
+                    timestamp={tx.created_at}
+                  />
                   {i < filteredTx.length - 1 && <div className="mx-4 border-t" style={{ borderColor: "hsl(var(--border) / 0.06)" }} />}
                 </div>
               ))}
