@@ -544,6 +544,12 @@ const AdminExecutiveOverviewPage = safeLazy(() => import("./pages/admin/AdminExe
 const AdminSystemLivePanelPage = safeLazy(() => import("./pages/admin/AdminSystemLivePanelPage"), "AdminSystemLivePanelPage");
 // HU-HZ block
 const AdminRestaurantFillPage = safeLazy(() => import("./pages/admin/AdminRestaurantFillPage"), "AdminRestaurantFillPage");
+// IA-IF block
+const StripeCheckoutHandlerPage = safeLazy(() => import("./pages/payments/StripeCheckoutHandlerPage"), "StripeCheckoutHandlerPage");
+const AdminPaymentGoLivePage = safeLazy(() => import("./pages/admin/AdminPaymentGoLivePage"), "AdminPaymentGoLivePage");
+const AdminGoLiveReadinessPage = safeLazy(() => import("./pages/admin/AdminGoLiveReadinessPage"), "AdminGoLiveReadinessPage");
+// IG-IL block
+const AdminUiFinalizerPage = safeLazy(() => import("./pages/admin/AdminUiFinalizerPage"), "AdminUiFinalizerPage");
 
 // City sub-page wrappers
 const CityServicesPage = () => <CityHubPage subPage="services" />;
