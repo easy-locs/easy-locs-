@@ -1,18 +1,30 @@
 import { useListingStore } from "@/stores/listingStore";
 import { useBookingStore } from "@/stores/bookingStore";
 import { useWalletStore } from "@/stores/walletStore";
+import { useChatStore } from "@/stores/chatStore";
+import { usePropertyManagementStore } from "@/stores/propertyManagementStore";
 
 export function V2BookingAudit() {
   const listings = useListingStore((s) => s.listings);
   const bookings = useBookingStore((s) => s.bookings);
   const wallet = useWalletStore((s) => s.wallet);
   const transactions = useWalletStore((s) => s.transactions);
+  const conversations = useChatStore((s) => s.conversations);
+  const messages = useChatStore((s) => s.messages);
+  const units = usePropertyManagementStore((s) => s.units);
+  const leases = usePropertyManagementStore((s) => s.leases);
+  const rentPayments = usePropertyManagementStore((s) => s.rentPayments);
 
   const sections = [
     { title: "Listings", data: listings },
     { title: "Bookings", data: bookings },
     { title: "Wallet", data: wallet },
     { title: "Transactions", data: transactions },
+    { title: "Conversations", data: conversations },
+    { title: "Messages", data: messages },
+    { title: "Property Units", data: units },
+    { title: "Leases", data: leases },
+    { title: "Rent Payments", data: rentPayments },
   ];
 
   return (
