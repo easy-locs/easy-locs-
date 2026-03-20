@@ -1,15 +1,23 @@
+import { useEffect } from "react";
 import { AppPageShell } from "@/components/layout/AppPageShell";
 import { AppMainNav } from "@/components/layout/AppMainNav";
 import { useOrbitStore } from "@/stores/orbitStore";
 import { useWalletStore } from "@/stores/walletStore";
 import { useV2AuthStore } from "@/stores/v2AuthStore";
 import { AvatarUploader } from "@/components/profile/AvatarUploader";
+import { ActivityPanel } from "@/components/system/ActivityPanel";
+import { useActivityLogStore } from "@/stores/activityLogStore";
 
 export default function HomePage() {
   const orbit = useOrbitStore((s) => s.profile);
   const wallet = useWalletStore((s) => s.wallet);
   const user = useV2AuthStore((s) => s.user);
   const signOut = useV2AuthStore((s) => s.signOut);
+  const hydrateActivity = useActivityLogStore((s) => s.hydrate);
+
+  useEffect(() => {
+    void hydrateActivity();
+  }, [hydrateActivity]);
 
   return (
     <AppPageShell
@@ -28,7 +36,7 @@ export default function HomePage() {
     >
       <AppMainNav />
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
         <div className="rounded-lg border border-border p-4">
           <h3 className="text-lg font-semibold text-foreground">Orbit Profile</h3>
           <pre className="text-xs text-muted-foreground whitespace-pre-wrap mt-2">
@@ -46,6 +54,8 @@ export default function HomePage() {
         <div className="rounded-lg border border-border p-4">
           <AvatarUploader />
         </div>
+
+        <ActivityPanel />
       </div>
     </AppPageShell>
   );
