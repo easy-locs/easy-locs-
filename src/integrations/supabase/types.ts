@@ -11870,6 +11870,48 @@ export type Database = {
         }
         Relationships: []
       }
+      payout_requests: {
+        Row: {
+          amount: number
+          created_at: string
+          currency: string
+          destination_ref: string | null
+          destination_type: string | null
+          id: string
+          note: string | null
+          owner_orbit_id: string
+          status: string
+          updated_at: string
+          wallet_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          currency: string
+          destination_ref?: string | null
+          destination_type?: string | null
+          id: string
+          note?: string | null
+          owner_orbit_id: string
+          status?: string
+          updated_at?: string
+          wallet_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          currency?: string
+          destination_ref?: string | null
+          destination_type?: string | null
+          id?: string
+          note?: string | null
+          owner_orbit_id?: string
+          status?: string
+          updated_at?: string
+          wallet_id?: string
+        }
+        Relationships: []
+      }
       permission_templates: {
         Row: {
           created_at: string | null
@@ -13206,40 +13248,61 @@ export type Database = {
         Row: {
           amount: number
           auto_approved: boolean | null
+          booking_id: string | null
+          buyer_or_tenant_orbit_id: string | null
           context_id: string | null
           context_type: string
           created_at: string | null
           currency: string | null
           id: string
+          owner_orbit_id: string | null
           processed_at: string | null
           reason: string | null
           refund_status: string
+          rent_payment_id: string | null
+          stripe_payment_intent_id: string | null
+          stripe_refund_id: string | null
+          updated_at: string | null
           user_id: string
         }
         Insert: {
           amount?: number
           auto_approved?: boolean | null
+          booking_id?: string | null
+          buyer_or_tenant_orbit_id?: string | null
           context_id?: string | null
           context_type: string
           created_at?: string | null
           currency?: string | null
           id?: string
+          owner_orbit_id?: string | null
           processed_at?: string | null
           reason?: string | null
           refund_status?: string
+          rent_payment_id?: string | null
+          stripe_payment_intent_id?: string | null
+          stripe_refund_id?: string | null
+          updated_at?: string | null
           user_id: string
         }
         Update: {
           amount?: number
           auto_approved?: boolean | null
+          booking_id?: string | null
+          buyer_or_tenant_orbit_id?: string | null
           context_id?: string | null
           context_type?: string
           created_at?: string | null
           currency?: string | null
           id?: string
+          owner_orbit_id?: string | null
           processed_at?: string | null
           reason?: string | null
           refund_status?: string
+          rent_payment_id?: string | null
+          stripe_payment_intent_id?: string | null
+          stripe_refund_id?: string | null
+          updated_at?: string | null
           user_id?: string
         }
         Relationships: []
