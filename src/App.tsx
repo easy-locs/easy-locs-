@@ -491,6 +491,15 @@ const AdminDisputeCenterPage = safeLazy(() => import("./pages/admin/AdminDispute
 const CustomerFavoriteOrdersPage = safeLazy(() => import("./pages/customer/CustomerFavoriteOrdersPage"), "CustomerFavoriteOrdersPage");
 const DriverShiftSchedulerPage = safeLazy(() => import("./pages/driver/DriverShiftSchedulerPage"), "DriverShiftSchedulerPage");
 const AdminGlobalFinancePage = safeLazy(() => import("./pages/admin/AdminGlobalFinancePage"), "AdminGlobalFinancePage");
+// FS-FX block
+const AdminCoreEnginePage = safeLazy(() => import("./pages/admin/AdminCoreEnginePage"), "AdminCoreEnginePage");
+// FY-GD block
+const CustomerGroupOrderPage = safeLazy(() => import("./pages/customer/CustomerGroupOrderPage"), "CustomerGroupOrderPage");
+const MerchantAutoAcceptPage = safeLazy(() => import("./pages/merchant/MerchantAutoAcceptPage"), "MerchantAutoAcceptPage");
+const AdminCashflowMonitorPage = safeLazy(() => import("./pages/admin/AdminCashflowMonitorPage"), "AdminCashflowMonitorPage");
+const CustomerAddressBookPageV2 = safeLazy(() => import("./pages/customer/CustomerAddressBookPageV2"), "CustomerAddressBookPageV2");
+const DriverNavigationModePage = safeLazy(() => import("./pages/driver/DriverNavigationModePage"), "DriverNavigationModePage");
+const AdminCityOpsPage = safeLazy(() => import("./pages/admin/AdminCityOpsPage"), "AdminCityOpsPage");
 
 // City sub-page wrappers
 const CityServicesPage = () => <CityHubPage subPage="services" />;
