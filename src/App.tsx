@@ -1390,6 +1390,7 @@ const App = () => (
               {/* V2 test routes */}
               <Route path="/v2-test" element={<V2TestPage />} />
               <Route path="/v2-booking-test" element={<V2BookingTestPage />} />
+              <Route path="/v2-mega" element={<V2MegaPage />} />
 
               {/* SEO catch-all */}
               <Route path="/seo/*" element={<SEOCatchAll />} />
