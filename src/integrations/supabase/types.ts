@@ -9531,16 +9531,22 @@ export type Database = {
       }
       marketplace_services: {
         Row: {
+          activated_at: string | null
           active: boolean | null
           anchor_lat: number | null
           anchor_lng: number | null
           archived_at: string | null
           auto_expire: boolean
+          auto_renew_enabled: boolean
+          auto_renew_plan: string | null
           badges: string[] | null
           bathrooms: number | null
           bedrooms: number | null
           blocked_dates: Json | null
           booking_slug: string
+          boost_enabled: boolean
+          boost_expires_at: string | null
+          boost_multiplier: number
           boost_tier: string | null
           boost_until: string | null
           brand: string | null
@@ -9559,8 +9565,10 @@ export type Database = {
           duration_minutes: number | null
           entity_type: string
           features: Json | null
+          freshness_score: number
           id: string
           is_live_online: boolean
+          last_renewed_at: string | null
           lat: number | null
           listing_expires_at: string | null
           listing_type: string | null
@@ -9584,6 +9592,7 @@ export type Database = {
           provider_id: string
           published_at: string | null
           quantity: number | null
+          renewal_count: number
           requires_id_document: boolean
           rooms: number | null
           sort_order: number | null
@@ -9602,16 +9611,22 @@ export type Database = {
           year_built: number | null
         }
         Insert: {
+          activated_at?: string | null
           active?: boolean | null
           anchor_lat?: number | null
           anchor_lng?: number | null
           archived_at?: string | null
           auto_expire?: boolean
+          auto_renew_enabled?: boolean
+          auto_renew_plan?: string | null
           badges?: string[] | null
           bathrooms?: number | null
           bedrooms?: number | null
           blocked_dates?: Json | null
           booking_slug: string
+          boost_enabled?: boolean
+          boost_expires_at?: string | null
+          boost_multiplier?: number
           boost_tier?: string | null
           boost_until?: string | null
           brand?: string | null
@@ -9630,8 +9645,10 @@ export type Database = {
           duration_minutes?: number | null
           entity_type?: string
           features?: Json | null
+          freshness_score?: number
           id?: string
           is_live_online?: boolean
+          last_renewed_at?: string | null
           lat?: number | null
           listing_expires_at?: string | null
           listing_type?: string | null
@@ -9655,6 +9672,7 @@ export type Database = {
           provider_id: string
           published_at?: string | null
           quantity?: number | null
+          renewal_count?: number
           requires_id_document?: boolean
           rooms?: number | null
           sort_order?: number | null
@@ -9673,16 +9691,22 @@ export type Database = {
           year_built?: number | null
         }
         Update: {
+          activated_at?: string | null
           active?: boolean | null
           anchor_lat?: number | null
           anchor_lng?: number | null
           archived_at?: string | null
           auto_expire?: boolean
+          auto_renew_enabled?: boolean
+          auto_renew_plan?: string | null
           badges?: string[] | null
           bathrooms?: number | null
           bedrooms?: number | null
           blocked_dates?: Json | null
           booking_slug?: string
+          boost_enabled?: boolean
+          boost_expires_at?: string | null
+          boost_multiplier?: number
           boost_tier?: string | null
           boost_until?: string | null
           brand?: string | null
@@ -9701,8 +9725,10 @@ export type Database = {
           duration_minutes?: number | null
           entity_type?: string
           features?: Json | null
+          freshness_score?: number
           id?: string
           is_live_online?: boolean
+          last_renewed_at?: string | null
           lat?: number | null
           listing_expires_at?: string | null
           listing_type?: string | null
@@ -9726,6 +9752,7 @@ export type Database = {
           provider_id?: string
           published_at?: string | null
           quantity?: number | null
+          renewal_count?: number
           requires_id_document?: boolean
           rooms?: number | null
           sort_order?: number | null
@@ -23997,124 +24024,85 @@ export type Database = {
           active: boolean | null
           auto_expire: boolean | null
           badges: string[] | null
-          bathrooms: number | null
-          bedrooms: number | null
-          boost_tier: string | null
-          boost_until: string | null
-          brand: string | null
+          booking_slug: string | null
+          boost_enabled: boolean | null
+          boost_expires_at: string | null
+          boost_multiplier: number | null
           category: string | null
           city: string | null
-          condition: string | null
           country: string | null
           created_at: string | null
           currency: string | null
           description: string | null
-          duration_minutes: number | null
-          entity_type: string | null
-          features: Json | null
+          freshness_score: number | null
           id: string | null
           lat: number | null
           listing_expires_at: string | null
           listing_type: string | null
           lng: number | null
-          location: string | null
-          max_capacity: number | null
-          model: string | null
           org_id: string | null
           photo_urls: Json | null
-          presence_mode: string | null
           price: number | null
-          price_type: string | null
+          provider_id: string | null
           published_at: string | null
-          rooms: number | null
           status: Database["public"]["Enums"]["listing_status"] | null
-          surface_sqm: number | null
           title: string | null
-          updated_at: string | null
-          video_url: string | null
-          year_built: number | null
         }
         Insert: {
           active?: boolean | null
           auto_expire?: boolean | null
           badges?: string[] | null
-          bathrooms?: number | null
-          bedrooms?: number | null
-          boost_tier?: string | null
-          boost_until?: string | null
-          brand?: string | null
+          booking_slug?: string | null
+          boost_enabled?: boolean | null
+          boost_expires_at?: string | null
+          boost_multiplier?: number | null
           category?: string | null
           city?: string | null
-          condition?: string | null
           country?: string | null
           created_at?: string | null
           currency?: string | null
           description?: string | null
-          duration_minutes?: number | null
-          entity_type?: string | null
-          features?: Json | null
+          freshness_score?: number | null
           id?: string | null
           lat?: number | null
           listing_expires_at?: string | null
           listing_type?: string | null
           lng?: number | null
-          location?: string | null
-          max_capacity?: number | null
-          model?: string | null
           org_id?: string | null
           photo_urls?: Json | null
-          presence_mode?: string | null
           price?: number | null
-          price_type?: string | null
+          provider_id?: string | null
           published_at?: string | null
-          rooms?: number | null
           status?: Database["public"]["Enums"]["listing_status"] | null
-          surface_sqm?: number | null
           title?: string | null
-          updated_at?: string | null
-          video_url?: string | null
-          year_built?: number | null
         }
         Update: {
           active?: boolean | null
           auto_expire?: boolean | null
           badges?: string[] | null
-          bathrooms?: number | null
-          bedrooms?: number | null
-          boost_tier?: string | null
-          boost_until?: string | null
-          brand?: string | null
+          booking_slug?: string | null
+          boost_enabled?: boolean | null
+          boost_expires_at?: string | null
+          boost_multiplier?: number | null
           category?: string | null
           city?: string | null
-          condition?: string | null
           country?: string | null
           created_at?: string | null
           currency?: string | null
           description?: string | null
-          duration_minutes?: number | null
-          entity_type?: string | null
-          features?: Json | null
+          freshness_score?: number | null
           id?: string | null
           lat?: number | null
           listing_expires_at?: string | null
           listing_type?: string | null
           lng?: number | null
-          location?: string | null
-          max_capacity?: number | null
-          model?: string | null
           org_id?: string | null
           photo_urls?: Json | null
-          presence_mode?: string | null
           price?: number | null
-          price_type?: string | null
+          provider_id?: string | null
           published_at?: string | null
-          rooms?: number | null
           status?: Database["public"]["Enums"]["listing_status"] | null
-          surface_sqm?: number | null
           title?: string | null
-          updated_at?: string | null
-          video_url?: string | null
-          year_built?: number | null
         }
         Relationships: [
           {
@@ -24129,6 +24117,13 @@ export type Database = {
             columns: ["org_id"]
             isOneToOne: false
             referencedRelation: "orgs_tenant_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "marketplace_services_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_providers"
             referencedColumns: ["id"]
           },
         ]
@@ -24457,6 +24452,10 @@ export type Database = {
         Args: { _roles: string[]; _workspace_id: string }
         Returns: boolean
       }
+      increment_listing_renewal_count: {
+        Args: { p_listing_id: string }
+        Returns: undefined
+      }
       increment_listing_views: { Args: { p_slug: string }; Returns: undefined }
       is_group_admin: {
         Args: { _group_id: string; _user_id: string }
@@ -24569,6 +24568,7 @@ export type Database = {
         }
         Returns: Json
       }
+      update_listing_freshness_scores: { Args: never; Returns: number }
       update_wallet_balance: {
         Args: { p_amount: number; p_type: string; p_wallet_id: string }
         Returns: undefined

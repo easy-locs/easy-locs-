@@ -38,10 +38,11 @@ export async function publishListing(listingId: string, listingType: ListingType
 }
 
 /**
- * Republish a sale listing — resets 30-day clock.
+ * Republish a sale listing — resets 30-day clock + increments renewal_count.
  */
 export async function republishListing(listingId: string): Promise<PublishResult> {
   const now = new Date().toISOString();
+  const newExpiry = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
 
   const { error } = await (supabase as any)
     .from("marketplace_services")
@@ -50,13 +51,19 @@ export async function republishListing(listingId: string): Promise<PublishResult
       active: true,
       published_at: now,
       auto_expire: true,
-      listing_expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+      listing_expires_at: newExpiry,
+      last_renewed_at: now,
       archived_at: null,
       updated_at: now,
     })
     .eq("id", listingId);
 
-  return error ? { success: false, error: error.message } : { success: true };
+  if (error) return { success: false, error: error.message };
+
+  // Increment renewal count
+  await (supabase as any).rpc("increment_listing_renewal_count", { p_listing_id: listingId }).catch(() => {});
+
+  return { success: true };
 }
 
 /**
