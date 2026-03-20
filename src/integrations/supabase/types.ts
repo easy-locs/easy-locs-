@@ -23597,6 +23597,10 @@ export type Database = {
         Args: { _token: string; _user_id: string }
         Returns: Json
       }
+      add_workspace_member: {
+        Args: { _role: string; _user_id: string; _workspace_id: string }
+        Returns: undefined
+      }
       aggregate_storefront_analytics_daily: { Args: never; Returns: number }
       check_inquiry_quota:
         | { Args: { _user_id: string }; Returns: Json }
