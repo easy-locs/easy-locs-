@@ -7,6 +7,7 @@ import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { supabase } from "@/integrations/supabase/client";
+import { useGeoEntities } from "@/hooks/useGeoEntities";
 import { createEasyLocsMarkerElement, buildEasyLocsPopupHTML } from "@/lib/map/easy-locs-markers";
 import { getEasyLocsRadiusPaint } from "@/lib/map/easy-locs-radius-style";
 import EasyLocsRadarOverlay from "@/components/map/EasyLocsRadarOverlay";
