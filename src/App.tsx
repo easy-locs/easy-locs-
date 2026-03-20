@@ -815,7 +815,9 @@ const App = () => (
                <Route path="/admin/merchant-autofill" element={<ProtectedRoute><AdminMerchantAutofillPage /></ProtectedRoute>} />
                <Route path="/admin/super-dashboard" element={<ProtectedRoute><AdminSuperDashboardPage /></ProtectedRoute>} />
                <Route path="/merchant/store-settings/:merchantId" element={<ProtectedRoute><MerchantStoreSettingsPage /></ProtectedRoute>} />
-               <Route path="/merchant/promos/:merchantId" element={<ProtectedRoute><MerchantPromoManagerPage /></ProtectedRoute>} />
+                <Route path="/merchant/promos/:merchantId" element={<ProtectedRoute><MerchantPromoManagerPage /></ProtectedRoute>} />
+                <Route path="/admin/payments-ops" element={<ProtectedRoute><AdminPaymentsOpsPage /></ProtectedRoute>} />
+                <Route path="/admin/bulk-merchant-import" element={<ProtectedRoute><AdminBulkMerchantImportPage /></ProtectedRoute>} />
               <Route path="/city/:countryCode/:city/:vertical/:locale" element={<CityVerticalPage />} />
 
               {/* Guest / Public */}
