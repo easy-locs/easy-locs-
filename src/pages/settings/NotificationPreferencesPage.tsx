@@ -33,7 +33,7 @@ export default function NotificationPreferencesPage() {
 
     const run = async () => {
       if (!user?.id) return;
-      const { data } = await supabase
+      const { data } = await (supabase as any)
         .from("user_notification_preferences")
         .select("*")
         .eq("user_id", user.id)
