@@ -81,6 +81,32 @@ const AddressAutocomplete = forwardRef<HTMLDivElement, AddressAutocompleteProps>
   }, []);
 
   const searchGlobal = useCallback(async (query: string, cc?: string): Promise<AddressResult[]> => {
+    // Try Photon (OpenStreetMap-based, fast, no rate-limit issues) first
+    try {
+      const photonParams = new URLSearchParams({ q: query, limit: "6" });
+      if (cc) photonParams.set("lang", cc.toLowerCase().slice(0, 2));
+      const photonRes = await fetch(`https://photon.komoot.io/api/?${photonParams}`, { signal: AbortSignal.timeout(4000) });
+      const photonData = await photonRes.json();
+      if (photonData.features?.length) {
+        return photonData.features.map((f: any) => {
+          const p = f.properties || {};
+          return {
+            label: [p.housenumber, p.street, p.city, p.state, p.country].filter(Boolean).join(", "),
+            housenumber: p.housenumber,
+            street: p.street,
+            postcode: p.postcode,
+            city: p.city || p.town || p.village,
+            context: [p.state, p.country].filter(Boolean).join(", "),
+            lat: f.geometry?.coordinates?.[1],
+            lng: f.geometry?.coordinates?.[0],
+            country: p.country,
+            countryCode: p.countrycode?.toUpperCase(),
+          };
+        });
+      }
+    } catch {}
+
+    // Fallback to Nominatim
     const params = new URLSearchParams({
       q: query,
       format: "json",

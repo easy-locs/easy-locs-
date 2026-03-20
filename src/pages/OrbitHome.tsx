@@ -237,8 +237,8 @@ export default function OrbitHome() {
         </div>
       </header>
 
-      <div className="flex-1 overflow-y-auto pb-[calc(64px+env(safe-area-inset-bottom,0px))]">
-        <div className="pt-3 pb-6 space-y-5 max-w-md mx-auto">
+      <div className="flex-1 overflow-y-auto overscroll-y-contain pb-[calc(64px+env(safe-area-inset-bottom,0px))]">
+        <div className="pt-3 pb-6 space-y-6 max-w-md mx-auto">
 
           {/* ─── DYNAMIC BANNER CAROUSEL ─── */}
           <div className="px-4">
