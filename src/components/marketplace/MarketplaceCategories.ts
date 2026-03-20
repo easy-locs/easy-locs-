@@ -22,6 +22,11 @@ export const MARKETPLACE_CATEGORIES = [
   { value: "personal", label: "Personal Services", icon: "💆" },
   // Events & Other
   { value: "event", label: "Events / Tickets", icon: "🎫" },
+  // Real Estate
+  { value: "real_estate_buy", label: "Buy Property", icon: "🏠" },
+  { value: "real_estate_rent", label: "Rent", icon: "🔑" },
+  { value: "real_estate_short_stay", label: "Short Stay", icon: "🏨" },
+  { value: "real_estate_commercial", label: "Commercial", icon: "🏢" },
   { value: "other", label: "Other", icon: "📦" },
 ] as const;
 

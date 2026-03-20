@@ -64,13 +64,49 @@ export function useGeoEntities(opts?: { types?: GeoEntity["type"][]; enabled?: b
     enabled: enabled && (wantAll || types!.includes("service")),
   });
 
-  const allEntities: GeoEntity[] = [...storefronts, ...properties, ...services];
+  // Real estate listings (public_listings with geo)
+  const { data: realEstate = [] } = useQuery({
+    queryKey: ["geo-real-estate"],
+    queryFn: async () => {
+      const { data } = await (supabase as any)
+        .from("public_listings")
+        .select("id, title, city, address, latitude, longitude, photo_urls, listing_type, price_per_night, monthly_price, sale_price, active")
+        .eq("active", true)
+        .not("latitude", "is", null)
+        .not("longitude", "is", null)
+        .limit(200);
+      return (data || []).map((r: any): GeoEntity | null => {
+        if (!r.latitude || !r.longitude) return null;
+        const price = r.sale_price || r.monthly_price || r.price_per_night;
+        return {
+          id: r.id,
+          type: "real_estate",
+          subtype: r.listing_type || undefined,
+          title: r.title || "Property",
+          subtitle: price ? `${price.toLocaleString()}` : r.city || undefined,
+          image_url: Array.isArray(r.photo_urls) ? r.photo_urls[0] : null,
+          lat: Number(r.latitude),
+          lng: Number(r.longitude),
+          address: r.address,
+          city: r.city,
+          source_table: "public_listings",
+          source_id: r.id,
+          route_path: `/listing/${r.id}`,
+        };
+      }).filter(Boolean) as GeoEntity[];
+    },
+    staleTime: 120_000,
+    enabled: enabled && (wantAll || types!.includes("real_estate")),
+  });
+
+  const allEntities: GeoEntity[] = [...storefronts, ...properties, ...services, ...realEstate];
 
   return {
     entities: allEntities,
     storefronts,
     properties,
     services,
+    realEstate,
     isLoading: false,
   };
 }

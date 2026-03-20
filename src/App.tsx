@@ -172,6 +172,7 @@ const PlatformVision = safeLazy(() => import("./pages/PlatformVision"), "Platfor
 const DealAnalyticsPage = safeLazy(() => import("./pages/DealAnalyticsPage"), "DealAnalyticsPage");
 const ServiceTrackingPage = safeLazy(() => import("./pages/ServiceTrackingPage"), "ServiceTrackingPage");
 const SellerHubPage = safeLazy(() => import("./pages/SellerHubPage"), "SellerHubPage");
+const SellerDashboardPage = safeLazy(() => import("./pages/seller/SellerDashboardPage"), "SellerDashboardPage");
 const DriverDashboard = safeLazy(() => import("./pages/DriverDashboard"), "DriverDashboard");
 const DeliveryCommandCenter = safeLazy(() => import("./pages/DeliveryCommandCenter"), "DeliveryCommandCenter");
 const ShopPage = safeLazy(() => import("./pages/ShopPage"), "ShopPage");
@@ -980,6 +981,7 @@ const App = () => (
               <Route path="/dashboard/deals" element={<ProtectedRoute><DealAnalyticsPage /></ProtectedRoute>} />
               <Route path="/dashboard/service-tracking" element={<ProtectedRoute><ServiceTrackingPage /></ProtectedRoute>} />
               <Route path="/dashboard/seller" element={<ProtectedRoute><SellerHubPage /></ProtectedRoute>} />
+              <Route path="/seller" element={<ProtectedRoute><SellerDashboardPage /></ProtectedRoute>} />
               <Route path="/dashboard/driver" element={<ProtectedRoute><DriverDashboard /></ProtectedRoute>} />
               <Route path="/dashboard/delivery" element={<ProtectedRoute><DeliveryCommandCenter /></ProtectedRoute>} />
               <Route path="/dashboard/my-shop" element={<ProtectedRoute><MyShopPage /></ProtectedRoute>} />
