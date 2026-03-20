@@ -31,6 +31,7 @@ export function AppInit() {
     }
 
     void (async () => {
+      await ensureOrbitProfile();
       await loadProfile(user.id);
       const orbit = useOrbitStore.getState().profile;
       if (!orbit) return;
