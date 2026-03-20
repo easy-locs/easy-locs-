@@ -43,7 +43,6 @@ export default function V2BookingTestPage() {
     if (!orbit?.orbitId) return;
 
     const listing = await createListing({
-      ownerOrbitId: orbit.orbitId,
       title: "Dubai Marina Apartment",
       description: "Direct booking enabled listing linked with wallet orbit and property management.",
       address: "Dubai Marina, Dubai, UAE",
