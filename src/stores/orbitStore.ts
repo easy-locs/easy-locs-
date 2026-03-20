@@ -69,6 +69,7 @@ export const useOrbitStore = create<OrbitStore>((set, get) => ({
     const profile: OrbitProfileV2 = {
       id: data.id,
       orbitId: data.orbit_id,
+      email: (data as any).email ?? null,
       role: (data.role as AppRole) || "buyer",
       displayName: data.display_name,
       avatarUrl: data.avatar_url,
