@@ -44,9 +44,29 @@ export default function CheckoutPage() {
     setPlacing(true);
 
     try {
+      // Resolve actual seller/owner — try storefront_pages first, then marketplace_listings
+      const { supabase } = await import("@/integrations/supabase/client");
+      let sellerId = user.id;
+      const { data: sfData } = await (supabase as any)
+        .from("storefront_pages")
+        .select("user_id")
+        .eq("id", cart.restaurantId)
+        .maybeSingle();
+      if (sfData?.user_id) {
+        sellerId = sfData.user_id;
+      } else {
+        // Fallback: check marketplace_listings for seeded restaurants
+        const { data: mlData } = await (supabase as any)
+          .from("marketplace_listings")
+          .select("owner_id")
+          .eq("id", cart.restaurantId)
+          .maybeSingle();
+        if (mlData?.owner_id) sellerId = mlData.owner_id;
+      }
+
       const { order, alreadyExists } = await createStorefrontOrder({
         shopId: cart.restaurantId,
-        sellerId: user.id, // Will be resolved by the shop's seller_id in production
+        sellerId,
         items: cart.items,
         fulfillmentType: mode,
         currency: "AED",
@@ -214,7 +234,7 @@ export default function CheckoutPage() {
       </div>
 
       {/* Bottom CTA */}
-      <div className="fixed bottom-0 left-0 right-0 px-4 pt-3 z-40 bg-background border-t border-border/10" style={{ paddingBottom: "max(env(safe-area-inset-bottom, 16px), 16px)" }}>
+      <div className="fixed left-0 right-0 px-4 pt-3 z-40 bg-background border-t border-border/10" style={{ bottom: "calc(56px + env(safe-area-inset-bottom, 0px))", paddingBottom: "12px" }}>
         <Button
           data-submit-order
           data-primary-cta
