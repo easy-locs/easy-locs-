@@ -1,9 +1,8 @@
 import { supabase } from "@/integrations/supabase/client";
-import type { ConversationParticipant, ConversationRow } from "@/lib/types/comms";
+import type { ConversationParticipant, ConversationRow, ChatMessageRow } from "@/lib/types/comms";
 
 /**
  * Creates or retrieves a direct conversation between two orbit participants.
- * Searches for existing conversation by participant orbit IDs before creating.
  */
 export async function createOrGetDirectConversation(input: {
   myOrbitId: string;
@@ -26,30 +25,30 @@ export async function createOrGetDirectConversation(input: {
   };
 
   const participants = [p1, p2].sort((a, b) => a.orbitId.localeCompare(b.orbitId));
+  const conversationId = `dm_${participants.map((x) => x.orbitId).join("_")}`;
 
-  // Try to find existing direct conversation with both participants
+  // Try to find existing
   const { data: existing } = await (supabase as any)
     .from("conversations_v2")
     .select("*")
-    .eq("type", "direct")
-    .contains("participants", [{ orbitId: input.myOrbitId }])
-    .contains("participants", [{ orbitId: input.peerOrbitId }])
+    .eq("id", conversationId)
     .maybeSingle();
 
   if (existing) return existing as ConversationRow;
 
-  // Create new direct conversation
+  // Create new
+  const row = {
+    id: conversationId,
+    created_by_orbit_id: input.myOrbitId,
+    participants,
+    last_message_at: null,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  };
+
   const { data, error } = await (supabase as any)
     .from("conversations_v2")
-    .insert({
-      type: "direct",
-      title: null,
-      created_by_orbit_id: input.myOrbitId,
-      participants,
-      last_message_at: null,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    })
+    .insert(row)
     .select("*")
     .single();
 
@@ -76,4 +75,24 @@ export async function listMyConversations(): Promise<ConversationRow[]> {
   }
 
   return (data ?? []) as ConversationRow[];
+}
+
+/**
+ * Loads all messages for a conversation, ordered chronologically.
+ */
+export async function getConversationMessages(
+  conversationId: string
+): Promise<ChatMessageRow[]> {
+  const { data, error } = await (supabase as any)
+    .from("chat_messages_v2")
+    .select("*")
+    .eq("conversation_id", conversationId)
+    .order("created_at", { ascending: true });
+
+  if (error) {
+    console.error("getConversationMessages error", error);
+    throw error;
+  }
+
+  return (data ?? []) as ChatMessageRow[];
 }

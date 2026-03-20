@@ -8,25 +8,26 @@ export async function sendTextMessage(input: {
   receiverOrbitId?: string;
   body: string;
 }): Promise<ChatMessageRow> {
-  const { data: authData } = await supabase.auth.getUser();
-  const userId = authData?.user?.id;
-  if (!userId) throw new Error("Not authenticated");
-
   const safeBody = DOMPurify.sanitize(input.body, {
     ALLOWED_TAGS: [],
     ALLOWED_ATTR: [],
   });
 
+  const row = {
+    id: `msg_${Math.random().toString(36).slice(2, 11)}`,
+    conversation_id: input.conversationId,
+    sender_orbit_id: input.senderOrbitId,
+    receiver_orbit_id: input.receiverOrbitId ?? null,
+    type: "text",
+    body: safeBody,
+    metadata: null,
+    read_at: null,
+    created_at: new Date().toISOString(),
+  };
+
   const { data, error } = await (supabase as any)
     .from("chat_messages_v2")
-    .insert({
-      conversation_id: input.conversationId,
-      sender_orbit_id: input.senderOrbitId,
-      sender_user_id: userId,
-      receiver_orbit_id: input.receiverOrbitId ?? null,
-      type: "text",
-      body: safeBody,
-    })
+    .insert(row)
     .select("*")
     .single();
 
@@ -50,23 +51,21 @@ export async function sendTextMessage(input: {
 export async function createCallSystemMessage(input: {
   conversationId: string;
   senderOrbitId: string | null;
-  receiverOrbitId: string | null;
+  receiverOrbitId?: string | null;
   body: string;
   metadata?: Record<string, unknown>;
 }) {
-  const { data: authData } = await supabase.auth.getUser();
-  const userId = authData?.user?.id;
-
   const { error } = await (supabase as any)
     .from("chat_messages_v2")
     .insert({
+      id: `msg_${Math.random().toString(36).slice(2, 11)}`,
       conversation_id: input.conversationId,
       sender_orbit_id: input.senderOrbitId,
-      sender_user_id: userId ?? null,
-      receiver_orbit_id: input.receiverOrbitId,
+      receiver_orbit_id: input.receiverOrbitId ?? null,
       type: "call",
       body: input.body,
       metadata: input.metadata ?? null,
+      created_at: new Date().toISOString(),
     });
 
   if (error) {
