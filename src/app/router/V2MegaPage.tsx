@@ -305,8 +305,8 @@ export default function V2MegaPage() {
           <button className={btnClass} onClick={() => void doImmoFlow()}>Create Immo Flow</button>
           <button className={btnClass} onClick={doOpenContact}>Open Contact</button>
           <button className={btnClass} onClick={openChatPanel}>Open Chat</button>
-          <button className={btnClass} onClick={startAudioCall}>Audio Call</button>
-          <button className={btnClass} onClick={startVideoCall}>Video Call</button>
+          <button className={btnClass} onClick={() => { const l = getPublishedListings()[0]; if (l) void realtimeCall.startOutgoingCall(l.ownerOrbitId, "audio"); }}>Audio Call</button>
+          <button className={btnClass} onClick={() => { const l = getPublishedListings()[0]; if (l) void realtimeCall.startOutgoingCall(l.ownerOrbitId, "video"); }}>Video Call</button>
           <button className={btnClass} onClick={() => void openCamera("qr")}>Open Camera</button>
           <button className={btnClass} onClick={() => void checkCamera()}>Check Camera</button>
           <button className={btnClass} onClick={() => void checkMicrophone()}>Check Mic</button>
