@@ -11544,6 +11544,36 @@ export type Database = {
           },
         ]
       }
+      payment_events: {
+        Row: {
+          created_at: string
+          event_type: string
+          external_id: string
+          id: string
+          metadata: Json | null
+          processed: boolean
+          provider: string
+        }
+        Insert: {
+          created_at?: string
+          event_type: string
+          external_id: string
+          id: string
+          metadata?: Json | null
+          processed?: boolean
+          provider?: string
+        }
+        Update: {
+          created_at?: string
+          event_type?: string
+          external_id?: string
+          id?: string
+          metadata?: Json | null
+          processed?: boolean
+          provider?: string
+        }
+        Relationships: []
+      }
       payment_intents: {
         Row: {
           amount: number
