@@ -37,13 +37,19 @@ export default function NewConversationDialog({ open, onOpenChange, onThreadCrea
     if (q.length < 2) { setResults([]); return; }
     setSearching(true);
     try {
-      const { data } = await supabase
-        .from("profiles")
-        .select("id, name, email")
-        .or(`name.ilike.%${q}%,email.ilike.%${q}%`)
+      // Search orbit_profiles_v2 which has open SELECT for authenticated users
+      const { data } = await (supabase as any)
+        .from("orbit_profiles_v2")
+        .select("id, display_name, email, avatar_url")
+        .or(`display_name.ilike.%${q}%,email.ilike.%${q}%`)
         .neq("id", user?.id || "")
         .limit(10);
-      setResults((data || []) as UserResult[]);
+      setResults((data || []).map((r: any) => ({
+        id: r.id,
+        name: r.display_name || "",
+        email: r.email || "",
+        avatar_url: r.avatar_url,
+      })));
     } catch {
       setResults([]);
     }
