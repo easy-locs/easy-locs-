@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import type { AppNotificationRecord } from "@/lib/types/notification";
 import { notificationsRepo } from "@/lib/supabase/notifications-repo";
+import { supabase } from "@/integrations/supabase/client";
 
 type NotificationsStore = {
   items: AppNotificationRecord[];
@@ -10,6 +11,7 @@ type NotificationsStore = {
   push: (input: Omit<AppNotificationRecord, "id" | "createdAt" | "read">) => Promise<void>;
   markRead: (id: string) => Promise<void>;
   unreadCount: () => number;
+  subscribeRealtime: () => void;
 };
 
 export const useNotificationsStore = create<NotificationsStore>((set, get) => ({
@@ -56,4 +58,32 @@ export const useNotificationsStore = create<NotificationsStore>((set, get) => ({
   },
 
   unreadCount: () => get().items.filter((i) => !i.read).length,
+
+  subscribeRealtime: () => {
+    supabase
+      .channel("app_notifications_realtime")
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "app_notifications",
+        },
+        (payload) => {
+          const row = payload.new as any;
+          const record: AppNotificationRecord = {
+            id: row.id,
+            orbitId: row.orbitId,
+            type: row.type,
+            title: row.title,
+            body: row.body,
+            read: row.read ?? false,
+            createdAt: row.createdAt,
+            metadata: row.metadata,
+          };
+          set((s) => ({ items: [record, ...s.items] }));
+        }
+      )
+      .subscribe();
+  },
 }));
