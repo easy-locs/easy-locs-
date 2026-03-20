@@ -627,6 +627,10 @@ const CustomerDinnerBudgetPage = safeLazy(() => import("./pages/customer/Custome
 const MerchantStoreAnnouncementPage = safeLazy(() => import("./pages/merchant/MerchantStoreAnnouncementPage"), "MerchantStoreAnnouncementPage");
 const MerchantTemporaryClosurePage = safeLazy(() => import("./pages/merchant/MerchantTemporaryClosurePage"), "MerchantTemporaryClosurePage");
 const MerchantQueueLimitPage = safeLazy(() => import("./pages/merchant/MerchantQueueLimitPage"), "MerchantQueueLimitPage");
+// PJ-PO block
+const AdminNotificationCampaignsPage = safeLazy(() => import("./pages/admin/AdminNotificationCampaignsPage"), "AdminNotificationCampaignsPage");
+const AdminCustomerSegmentsPage = safeLazy(() => import("./pages/admin/AdminCustomerSegmentsPage"), "AdminCustomerSegmentsPage");
+const AdminMerchantSegmentsPage = safeLazy(() => import("./pages/admin/AdminMerchantSegmentsPage"), "AdminMerchantSegmentsPage");
 
 // City sub-page wrappers
 const CityServicesPage = () => <CityHubPage subPage="services" />;
@@ -1311,6 +1315,10 @@ const App = () => (
                 <Route path="/merchant/store-announcement/:merchantId" element={<ProtectedRoute><MerchantStoreAnnouncementPage /></ProtectedRoute>} />
                 <Route path="/merchant/temporary-closure/:merchantId" element={<ProtectedRoute><MerchantTemporaryClosurePage /></ProtectedRoute>} />
                 <Route path="/merchant/queue-limit/:merchantId" element={<ProtectedRoute><MerchantQueueLimitPage /></ProtectedRoute>} />
+                {/* PJ-PO */}
+                <Route path="/admin/notification-campaigns" element={<ProtectedRoute><AdminNotificationCampaignsPage /></ProtectedRoute>} />
+                <Route path="/admin/customer-segments" element={<ProtectedRoute><AdminCustomerSegmentsPage /></ProtectedRoute>} />
+                <Route path="/admin/merchant-segments" element={<ProtectedRoute><AdminMerchantSegmentsPage /></ProtectedRoute>} />
               <Route path="/city/:countryCode/:city/:vertical/:locale" element={<CityVerticalPage />} />
 
               {/* Guest / Public */}
