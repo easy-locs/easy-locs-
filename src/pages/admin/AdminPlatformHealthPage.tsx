@@ -1,11 +1,12 @@
 import { useNavigate } from "react-router-dom";
 
 const HEALTH = [
-  { service: "Orders", value: "99.98%", status: "healthy" },
-  { service: "Dispatch", value: "99.91%", status: "healthy" },
-  { service: "Wallet", value: "99.76%", status: "watch" },
-  { service: "Notifications", value: "98.84%", status: "watch" },
-  { service: "Support", value: "99.42%", status: "healthy" },
+  { label: "Orders pipeline", status: "Healthy" },
+  { label: "Dispatch engine", status: "Healthy" },
+  { label: "Wallet ledger", status: "Healthy" },
+  { label: "Support thread", status: "Healthy" },
+  { label: "Payments", status: "Watch" },
+  { label: "Merchant onboarding", status: "Healthy" },
 ];
 
 export default function AdminPlatformHealthPage() {
@@ -13,28 +14,29 @@ export default function AdminPlatformHealthPage() {
 
   return (
     <div className="max-w-md mx-auto px-4 py-4 space-y-4">
-      <div className="flex items-center gap-3">
-        <button onClick={() => navigate("/admin")} className="w-9 h-9 rounded-xl bg-muted flex items-center justify-center">←</button>
-        <div>
-          <h1 className="text-lg font-bold">Platform Health</h1>
-          <p className="text-xs text-muted-foreground">Live health and uptime view</p>
-        </div>
-      </div>
+      <Header title="Platform Health" subtitle="System status overview" onBack={() => navigate("/admin")} />
 
       <div className="space-y-3">
         {HEALTH.map((row) => (
-          <div key={row.service} className="rounded-2xl border border-border/20 bg-card p-4">
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <div className="text-sm font-bold">{row.service}</div>
-                <div className="text-xs text-muted-foreground mt-1">Uptime {row.value}</div>
-              </div>
-              <div className={`rounded-full px-3 py-1 text-[11px] font-bold ${row.status === "healthy" ? "bg-emerald-500/10 text-emerald-500" : "bg-amber-500/10 text-amber-500"}`}>
-                {row.status}
-              </div>
+          <div key={row.label} className="rounded-[28px] border border-border/20 bg-card p-4 flex items-center justify-between gap-3">
+            <div className="text-sm font-semibold text-foreground">{row.label}</div>
+            <div className={`rounded-full px-3 py-1 text-[11px] font-bold ${row.status === "Healthy" ? "bg-emerald-500/10 text-emerald-500" : "bg-amber-500/10 text-amber-500"}`}>
+              {row.status}
             </div>
           </div>
         ))}
+      </div>
+    </div>
+  );
+}
+
+function Header({ title, subtitle, onBack }: { title: string; subtitle: string; onBack: () => void }) {
+  return (
+    <div className="flex items-center gap-3">
+      <button onClick={onBack} className="w-9 h-9 rounded-xl bg-muted flex items-center justify-center">←</button>
+      <div>
+        <h1 className="text-lg font-bold">{title}</h1>
+        <p className="text-xs text-muted-foreground">{subtitle}</p>
       </div>
     </div>
   );
