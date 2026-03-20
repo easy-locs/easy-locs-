@@ -1,43 +1,74 @@
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
-import { toast } from "sonner";
-
-type RefundRow = { id: string; orderCode: string; amount: number; reason: string; status: string };
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function AdminRefundQueuePage() {
   const navigate = useNavigate();
-  const [rows, setRows] = useState<RefundRow[]>([
-    { id: "1", orderCode: "ORD-2201", amount: 48, reason: "Late delivery", status: "pending" },
-    { id: "2", orderCode: "ORD-2202", amount: 72, reason: "Wrong item", status: "pending" },
-  ]);
 
-  const act = (id: string, status: "approved" | "rejected") => {
-    setRows((prev) => prev.map((r) => (r.id === id ? { ...r, status } : r)));
-    toast.success(`Refund ${status}`);
-  };
+  const { data: rows = [], isLoading } = useQuery({
+    queryKey: ["admin-refund-queue"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("orders")
+        .select("*")
+        .in("status", ["disputed", "refunded"])
+        .order("updated_at", { ascending: false })
+        .limit(100);
+      if (error) throw error;
+      return (data ?? []) as any[];
+    },
+    staleTime: 10000,
+  });
 
   return (
     <div className="max-w-md mx-auto px-4 py-4 space-y-4">
-      <div className="flex items-center gap-3">
-        <button onClick={() => navigate("/admin")} className="w-9 h-9 rounded-xl bg-muted flex items-center justify-center">←</button>
-        <div>
-          <h1 className="text-lg font-bold">Refund Queue</h1>
-          <p className="text-xs text-muted-foreground">Pending refund requests</p>
-        </div>
-      </div>
+      <Header title="Refund Queue" subtitle="Disputed and refunded orders" onBack={() => navigate("/admin")} />
 
-      <div className="space-y-3">
-        {rows.map((row) => (
-          <div key={row.id} className="rounded-2xl border border-border/20 bg-card p-4">
-            <div className="text-sm font-bold">{row.orderCode}</div>
-            <div className="text-xs text-muted-foreground mt-1">{row.amount.toFixed(2)} AED · {row.reason}</div>
-            <div className="text-xs text-muted-foreground mt-1">Status: {row.status}</div>
-            <div className="flex items-center gap-2 mt-4">
-              <button onClick={() => act(row.id, "approved")} className="rounded-2xl bg-primary text-primary-foreground px-4 py-3 text-sm font-bold">Approve</button>
-              <button onClick={() => act(row.id, "rejected")} className="rounded-2xl bg-muted px-4 py-3 text-sm font-bold text-foreground">Reject</button>
+      {isLoading && [1, 2, 3].map((i) => <div key={i} className="h-24 rounded-[28px] bg-muted animate-pulse" />)}
+
+      {!isLoading && rows.length === 0 && (
+        <div className="rounded-[28px] border border-border/20 bg-card p-6 text-center">
+          <div className="text-3xl">💸</div>
+          <div className="text-base font-bold mt-3">No refunds</div>
+          <div className="text-sm text-muted-foreground mt-2">No disputed or refunded orders found</div>
+        </div>
+      )}
+
+      {!isLoading && rows.length > 0 && (
+        <div className="space-y-3">
+          {rows.map((row: any) => (
+            <div key={row.id} className="rounded-[28px] border border-border/20 bg-card p-4">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <div className="text-sm font-bold text-foreground">Order #{String(row.id).slice(0, 8)}</div>
+                  <div className="text-xs text-muted-foreground mt-1">{Number(row.total_amount ?? 0).toFixed(2)} {row.currency ?? "AED"}</div>
+                </div>
+                <StatusPill status={row.status} />
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function StatusPill({ status }: { status: string }) {
+  const warn = ["disputed", "refunded"].includes(status);
+  return (
+    <div className={`rounded-full px-3 py-1 text-[11px] font-bold ${warn ? "bg-amber-500/10 text-amber-500" : "bg-emerald-500/10 text-emerald-500"}`}>
+      {status}
+    </div>
+  );
+}
+
+function Header({ title, subtitle, onBack }: { title: string; subtitle: string; onBack: () => void }) {
+  return (
+    <div className="flex items-center gap-3">
+      <button onClick={onBack} className="w-9 h-9 rounded-xl bg-muted flex items-center justify-center">←</button>
+      <div>
+        <h1 className="text-lg font-bold">{title}</h1>
+        <p className="text-xs text-muted-foreground">{subtitle}</p>
       </div>
     </div>
   );

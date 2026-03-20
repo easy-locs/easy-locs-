@@ -13,6 +13,18 @@ const PANELS = [
   { label: "Payments Ops", path: "/admin/payments-ops" },
   { label: "Analytics Ops", path: "/admin/analytics-ops" },
   { label: "CRM Ops", path: "/admin/crm-ops" },
+  { label: "Demand Forecast", path: "/admin/demand-forecast" },
+  { label: "Market Expansion", path: "/admin/market-expansion" },
+  { label: "Refund Queue", path: "/admin/refund-queue" },
+  { label: "SLA Monitor", path: "/admin/sla-monitor" },
+  { label: "Platform Health", path: "/admin/platform-health" },
+  { label: "Executive Overview", path: "/admin/executive-overview" },
+  { label: "Driver Compliance Ops", path: "/admin/driver-compliance-ops" },
+  { label: "Marketplace Experiments", path: "/admin/marketplace-experiments" },
+  { label: "Order Audit", path: "/admin/order-audit" },
+  { label: "Fraud Watch", path: "/admin/fraud-watch" },
+  { label: "Incident Center", path: "/admin/incident-center" },
+  { label: "QA Command", path: "/admin/qa-command" },
 ];
 
 export default function AdminMasterControlPage() {

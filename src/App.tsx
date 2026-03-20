@@ -560,6 +560,17 @@ const AdminFinalWrapPage = safeLazy(() => import("./pages/admin/AdminFinalWrapPa
 const AdminQaCommandPage = safeLazy(() => import("./pages/admin/AdminQaCommandPage"), "AdminQaCommandPage");
 // KA-KF block
 const LiveTrackingPageNew = safeLazy(() => import("./pages/live/LiveTrackingPage"), "LiveTrackingPageNew");
+// LG-LR block
+const DriverFuelCostsPage = safeLazy(() => import("./pages/driver/DriverFuelCostsPage"), "DriverFuelCostsPage");
+const DriverCompliancePage = safeLazy(() => import("./pages/driver/DriverCompliancePage"), "DriverCompliancePage");
+const DriverBreaksPage = safeLazy(() => import("./pages/driver/DriverBreaksPage"), "DriverBreaksPage");
+const DriverShiftPlannerPage = safeLazy(() => import("./pages/driver/DriverShiftPlannerPage"), "DriverShiftPlannerPage");
+const AdminDriverComplianceOpsPage = safeLazy(() => import("./pages/admin/AdminDriverComplianceOpsPage"), "AdminDriverComplianceOpsPage");
+const AdminMarketplaceExperimentsPage = safeLazy(() => import("./pages/admin/AdminMarketplaceExperimentsPage"), "AdminMarketplaceExperimentsPage");
+const CustomerScheduledOrderPage = safeLazy(() => import("./pages/customer/CustomerScheduledOrderPage"), "CustomerScheduledOrderPage");
+const MerchantStaffRolesPage = safeLazy(() => import("./pages/merchant/MerchantStaffRolesPage"), "MerchantStaffRolesPage");
+const MerchantPermissionsMatrixPage = safeLazy(() => import("./pages/merchant/MerchantPermissionsMatrixPage"), "MerchantPermissionsMatrixPage");
+const MerchantBusinessHoursPage = safeLazy(() => import("./pages/merchant/MerchantBusinessHoursPage"), "MerchantBusinessHoursPage");
 
 // City sub-page wrappers
 const CityServicesPage = () => <CityHubPage subPage="services" />;
@@ -1177,6 +1188,17 @@ const App = () => (
                 <Route path="/admin/qa-command" element={<ProtectedRoute><AdminQaCommandPage /></ProtectedRoute>} />
                 {/* KA-KF */}
                 <Route path="/live-tracking" element={<ProtectedRoute><LiveTrackingPageNew /></ProtectedRoute>} />
+                {/* LG-LR */}
+                <Route path="/driver/fuel-costs-v2" element={<ProtectedRoute><DriverFuelCostsPage /></ProtectedRoute>} />
+                <Route path="/driver/compliance" element={<ProtectedRoute><DriverCompliancePage /></ProtectedRoute>} />
+                <Route path="/driver/breaks" element={<ProtectedRoute><DriverBreaksPage /></ProtectedRoute>} />
+                <Route path="/driver/shift-planner" element={<ProtectedRoute><DriverShiftPlannerPage /></ProtectedRoute>} />
+                <Route path="/admin/driver-compliance-ops" element={<ProtectedRoute><AdminDriverComplianceOpsPage /></ProtectedRoute>} />
+                <Route path="/admin/marketplace-experiments" element={<ProtectedRoute><AdminMarketplaceExperimentsPage /></ProtectedRoute>} />
+                <Route path="/checkout/scheduled-order" element={<ProtectedRoute><CustomerScheduledOrderPage /></ProtectedRoute>} />
+                <Route path="/merchant/staff-roles/:merchantId" element={<ProtectedRoute><MerchantStaffRolesPage /></ProtectedRoute>} />
+                <Route path="/merchant/permissions/:merchantId" element={<ProtectedRoute><MerchantPermissionsMatrixPage /></ProtectedRoute>} />
+                <Route path="/merchant/business-hours/:merchantId" element={<ProtectedRoute><MerchantBusinessHoursPage /></ProtectedRoute>} />
               <Route path="/city/:countryCode/:city/:vertical/:locale" element={<CityVerticalPage />} />
 
               {/* Guest / Public */}
