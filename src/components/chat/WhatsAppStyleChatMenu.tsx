@@ -1,14 +1,14 @@
 import { useState, useRef, useEffect } from "react";
 import { MoreVertical } from "lucide-react";
 
-const MENU_ITEMS = [
+const MENU_ITEMS: Array<{ label: string; key: string; danger?: boolean }> = [
   { label: "View contact", key: "contact" },
   { label: "Media, links & docs", key: "media" },
   { label: "Search", key: "search" },
   { label: "Mute notifications", key: "mute" },
   { label: "Wallpaper", key: "wallpaper" },
   { label: "Clear chat", key: "clear", danger: true },
-] as const;
+];
 
 export function WhatsAppStyleChatMenu() {
   const [open, setOpen] = useState(false);
