@@ -372,6 +372,15 @@ export const ROUTE_REGISTRY = [
   { group: "public", label: "Favorite Orders", path: "/me/favorite-orders" },
   { group: "driver", label: "Shift Scheduler", path: "/driver/shift-scheduler" },
   { group: "admin", label: "Global Finance", path: "/admin/global-finance" },
+  // FS-FX
+  { group: "admin", label: "Core Engine", path: "/admin/core-engine" },
+  // FY-GD
+  { group: "public", label: "Group Order", path: "/checkout/group-order" },
+  { group: "merchant", label: "Auto Accept V2", path: "/merchant/auto-accept-v2/:merchantId" },
+  { group: "admin", label: "Cashflow Monitor", path: "/admin/cashflow-monitor" },
+  { group: "public", label: "Address Book V2", path: "/me/address-book-v2" },
+  { group: "driver", label: "Navigation Mode", path: "/driver/navigation-mode" },
+  { group: "admin", label: "City Ops", path: "/admin/city-ops" },
 
   { group: "public", label: "Coming Soon", path: "/coming-soon/:slug" },
   { group: "public", label: "City Market", path: "/city-market/:citySlug" },

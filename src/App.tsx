@@ -1048,6 +1048,15 @@ const App = () => (
                 <Route path="/me/favorite-orders" element={<ProtectedRoute><CustomerFavoriteOrdersPage /></ProtectedRoute>} />
                 <Route path="/driver/shift-scheduler" element={<ProtectedRoute><DriverShiftSchedulerPage /></ProtectedRoute>} />
                 <Route path="/admin/global-finance" element={<ProtectedRoute><AdminGlobalFinancePage /></ProtectedRoute>} />
+                {/* FS-FX */}
+                <Route path="/admin/core-engine" element={<ProtectedRoute><AdminCoreEnginePage /></ProtectedRoute>} />
+                {/* FY-GD */}
+                <Route path="/checkout/group-order" element={<ProtectedRoute><CustomerGroupOrderPage /></ProtectedRoute>} />
+                <Route path="/merchant/auto-accept-v2/:merchantId" element={<ProtectedRoute><MerchantAutoAcceptPage /></ProtectedRoute>} />
+                <Route path="/admin/cashflow-monitor" element={<ProtectedRoute><AdminCashflowMonitorPage /></ProtectedRoute>} />
+                <Route path="/me/address-book-v2" element={<ProtectedRoute><CustomerAddressBookPageV2 /></ProtectedRoute>} />
+                <Route path="/driver/navigation-mode" element={<ProtectedRoute><DriverNavigationModePage /></ProtectedRoute>} />
+                <Route path="/admin/city-ops" element={<ProtectedRoute><AdminCityOpsPage /></ProtectedRoute>} />
               <Route path="/city/:countryCode/:city/:vertical/:locale" element={<CityVerticalPage />} />
 
               {/* Guest / Public */}
