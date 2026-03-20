@@ -11242,6 +11242,7 @@ export type Database = {
           created_at: string | null
           device_id: string | null
           display_name: string | null
+          email: string | null
           id: string
           orbit_id: string
           permissions: Json | null
@@ -11255,6 +11256,7 @@ export type Database = {
           created_at?: string | null
           device_id?: string | null
           display_name?: string | null
+          email?: string | null
           id: string
           orbit_id: string
           permissions?: Json | null
@@ -11268,6 +11270,7 @@ export type Database = {
           created_at?: string | null
           device_id?: string | null
           display_name?: string | null
+          email?: string | null
           id?: string
           orbit_id?: string
           permissions?: Json | null
