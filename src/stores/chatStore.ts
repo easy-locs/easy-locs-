@@ -6,7 +6,10 @@ import type {
   ChatMessageRecord,
   ConversationType,
   MessageType,
-} from "@/lib/types/chat";
+} from "@/lib/types/domain";
+
+
+
 
 type CreateConversationInput = {
   type: ConversationType;

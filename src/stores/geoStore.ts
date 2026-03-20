@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { GeoPosition } from "@/lib/types/app";
+import type { GeoPosition } from "@/lib/types/domain";
 import { platformBus } from "@/app/events/platform-bus";
 import { usePermissionStore } from "./permissionStore";
 
