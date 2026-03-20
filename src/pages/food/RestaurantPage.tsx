@@ -8,6 +8,11 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { ArrowLeft, Star, MapPin, Clock, Plus, Minus, ShoppingCart } from "lucide-react";
 import FavoriteMerchantButton from "@/components/favorites/FavoriteMerchantButton";
+import ReviewList from "@/components/reviews/ReviewList";
+import ReviewComposer from "@/components/reviews/ReviewComposer";
+import { useAnalyticsPageView } from "@/hooks/useAnalyticsPageView";
+import { trackAnalyticsEvent } from "@/lib/analytics/analyticsEngine";
+import { useAuth } from "@/contexts/AuthContext";
 import { motion } from "framer-motion";
 import { useCart } from "@/hooks/useCart";
 import { toast } from "sonner";
@@ -15,6 +20,7 @@ import { toast } from "sonner";
 export default function RestaurantPage() {
   const { restaurantId } = useParams<{ restaurantId: string }>();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const { addItem, itemCount, total, cart, updateQuantity } = useCart();
   const [activeTab, setActiveTab] = useState<string | null>(null);
   const sectionRefs = useRef<Record<string, HTMLElement | null>>({});
@@ -65,12 +71,19 @@ export default function RestaurantPage() {
     sectionRefs.current[cat]?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
+  useAnalyticsPageView({
+    eventType: "merchant_view",
+    userId: user?.id,
+    merchantId: shop?.id,
+  });
+
   const handleAdd = (item: any) => {
     if (!shop) return;
     addItem(
       { id: shop.id, name: shop.name, image: shop.cover_image },
       { menuItemId: item.id, name: item.name, description: item.description, imageUrl: item.image, unitPrice: Number(item.price) || 0 }
     );
+    trackAnalyticsEvent({ eventType: "product_add_to_cart", userId: user?.id, merchantId: shop?.id, productId: item.id }).catch(() => {});
     toast.success(`${item.name} added`, { duration: 1500 });
   };
 
@@ -188,6 +201,13 @@ export default function RestaurantPage() {
               </div>
             </section>
           ))}
+
+          {shop?.id && (
+            <div className="space-y-6 pt-4">
+              <ReviewComposer merchantId={shop.id} />
+              <ReviewList merchantId={shop.id} />
+            </div>
+          )}
         </div>
       )}
 
