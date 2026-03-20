@@ -1,20 +1,24 @@
 import { useEffect } from "react";
 import { subscribeTable } from "@/lib/supabase/realtime";
 import { useRealtimeStore } from "@/stores/realtimeStore";
+import { useOrbitStore } from "@/stores/orbitStore";
 import { useNotificationsStore } from "@/stores/notificationsStore";
 
-export function useNotificationsRealtime(orbitId: string | null) {
+export function useNotificationsRealtime(orbitId?: string | null) {
+  const profileOrbitId = useOrbitStore((s) => s.profile?.orbitId);
+  const resolvedOrbitId = orbitId ?? profileOrbitId;
+
   useEffect(() => {
-    if (!orbitId) return;
+    if (!resolvedOrbitId) return;
 
     const { unsubscribe, ref } = subscribeTable({
-      key: `notifications_${orbitId}`,
-      channelName: `notifications_${orbitId}`,
+      key: `notifications_${resolvedOrbitId}`,
+      channelName: `notifications_${resolvedOrbitId}`,
       table: "app_notifications",
       callback: async (payload: unknown) => {
         const row = (payload as Record<string, unknown>)?.new as Record<string, unknown> | undefined;
-        if (!row || row.orbitId !== orbitId) return;
-        await useNotificationsStore.getState().hydrate(orbitId);
+        if (!row || row.orbitId !== resolvedOrbitId) return;
+        await useNotificationsStore.getState().hydrate(resolvedOrbitId);
       },
     });
 
@@ -24,5 +28,5 @@ export function useNotificationsRealtime(orbitId: string | null) {
       unsubscribe();
       useRealtimeStore.getState().removeSubscription(ref.key);
     };
-  }, [orbitId]);
+  }, [resolvedOrbitId]);
 }
