@@ -257,6 +257,20 @@ export const routes = {
   customerFavoriteItems: () => `/me/favorite-items`,
   merchantCancellationRules: (merchantId: string) => `/merchant/cancellation-rules/${encodeURIComponent(merchantId)}`,
   merchantCustomerChatSettings: (merchantId: string) => `/merchant/chat-settings/${encodeURIComponent(merchantId)}`,
+  // MX-OG
+  adminCityLaunchChecklist: () => `/admin/city-launch-checklist`,
+  adminRestaurantAutofillV2: () => `/admin/restaurant-autofill-v2`,
+  adminSystemLiveStatus: () => `/admin/system-live-status`,
+  customerQuickReorderHub: () => `/me/quick-reorder`,
+  merchantLiveOpsPanel: (merchantId: string) => `/merchant/live-ops/${encodeURIComponent(merchantId)}`,
+  adminCentralControl: () => `/admin/central-control`,
+  adminLiveIncidentFeed: () => `/admin/live-incident-feed`,
+  adminRiskScoreboard: () => `/admin/risk-scoreboard`,
+  adminStoreReadinessMatrix: () => `/admin/store-readiness-matrix`,
+  customerBulkPartyBuilder: () => `/checkout/bulk-party-builder`,
+  customerDinnerPlanner: () => `/checkout/dinner-planner`,
+  merchantAutoAcceptRules: (merchantId: string) => `/merchant/auto-accept-rules/${encodeURIComponent(merchantId)}`,
+  merchantDriverHandoff: (merchantId: string) => `/merchant/driver-handoff/${encodeURIComponent(merchantId)}`,
 
   // Orbit
   orbitCallTest: () => `/orbit/call-test`,
