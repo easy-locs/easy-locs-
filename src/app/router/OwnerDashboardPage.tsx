@@ -4,6 +4,7 @@ import { BookingStatusPanel } from "@/components/booking/BookingStatusPanel";
 import { RentStatusPanel } from "@/components/property/RentStatusPanel";
 import { SellerKpiPanel } from "@/components/analytics/SellerKpiPanel";
 import { BulkListingActionsPanel } from "@/components/property/BulkListingActionsPanel";
+import { CouponOwnerPanel } from "@/components/property/CouponOwnerPanel";
 
 export default function OwnerDashboardPage() {
   return (
@@ -12,6 +13,7 @@ export default function OwnerDashboardPage() {
         <SellerKpiPanel />
         <OwnerPropertyDashboard />
         <BulkListingActionsPanel />
+        <CouponOwnerPanel />
         <BookingStatusPanel />
         <RentStatusPanel />
       </div>
