@@ -1,4 +1,4 @@
-import { AppShell } from "@/components/shell/AppShell";
+import { V2AppShell as AppShell } from "@/components/shell/V2AppShell";
 import { V2BookingAudit } from "@/components/debug/V2BookingAudit";
 import { useUiShellStore } from "@/stores/uiShellStore";
 import { useOrbitStore } from "@/stores/orbitStore";
