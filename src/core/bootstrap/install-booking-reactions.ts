@@ -2,6 +2,7 @@ import { platformBus } from "@/app/events/platform-bus";
 import { useBookingStore } from "@/stores/bookingStore";
 import { useWalletStore } from "@/stores/walletStore";
 import { usePropertyManagementStore } from "@/stores/propertyManagementStore";
+import type { CurrencyCode } from "@/lib/types/domain";
 
 let installed = false;
 
@@ -10,24 +11,26 @@ export function installBookingReactions() {
   installed = true;
 
   platformBus.on("booking.payment.required", (event) => {
-    const walletStore = useWalletStore.getState();
-    const tx = walletStore.createTransaction({
-      type: "payment",
-      amount: event.payload.amount,
-      currency: event.payload.currency as "AED" | "USD" | "EUR" | "SAR" | "GBP",
-      reference: `booking:${event.payload.bookingId}`,
-      status: "pending",
-    });
-    walletStore.markTransactionSuccess(tx.id);
-    useBookingStore.getState().confirmBooking(event.payload.bookingId, tx.id);
+    void (async () => {
+      const walletStore = useWalletStore.getState();
+      const tx = await walletStore.createTransaction({
+        type: "payment",
+        amount: event.payload.amount,
+        currency: event.payload.currency as CurrencyCode,
+        reference: `booking:${event.payload.bookingId}`,
+        status: "pending",
+      });
+      walletStore.markTransactionSuccess(tx.id);
+      await useBookingStore.getState().confirmBooking(event.payload.bookingId, tx.id);
+    })();
   });
 
   platformBus.on("booking.confirmation.required", (event) => {
-    useBookingStore.getState().markPendingConfirmation(event.payload.bookingId);
+    void useBookingStore.getState().markPendingConfirmation(event.payload.bookingId);
   });
 
   platformBus.on("rent.payment.required", (event) => {
-    usePropertyManagementStore.getState().payRent(event.payload.paymentId);
+    void usePropertyManagementStore.getState().payRent(event.payload.paymentId);
   });
 
   platformBus.on("booking.cancelled", (event) => {

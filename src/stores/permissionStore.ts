@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { PermissionStateValue } from "@/lib/types/app";
+import type { PermissionStateValue } from "@/lib/types/domain";
 import { platformBus } from "@/app/events/platform-bus";
 
 type PermissionStore = {
