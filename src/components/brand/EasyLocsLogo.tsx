@@ -1,6 +1,7 @@
 /**
  * Easy-Locs Premium Brand System
- * 3 variants: full (horizontal wordmark), icon (EL monogram), splash (centered with glow)
+ * 2 variants: full (horizontal wordmark), splash (centered with tagline)
+ * No icon-only variant with "EL" text — brand is always the full name.
  */
 import { motion, type Variants } from "framer-motion";
 
@@ -23,6 +24,11 @@ const sizeMap: Record<LogoSize, { full: string; icon: number; splash: string }> 
   xl: { full: "text-3xl", icon: 48, splash: "text-6xl" },
 };
 
+const slideIn: Variants = {
+  hidden: { opacity: 0, x: -12 },
+  visible: { opacity: 1, x: 0, transition: { duration: 0.5, ease: "easeOut" } },
+};
+
 const fadeGlow: Variants = {
   hidden: { opacity: 0, filter: "blur(8px)" },
   visible: {
@@ -32,72 +38,35 @@ const fadeGlow: Variants = {
   },
 };
 
-const slideIn: Variants = {
-  hidden: { opacity: 0, x: -12 },
-  visible: { opacity: 1, x: 0, transition: { duration: 0.5, ease: "easeOut" } },
-};
-
-const pulseGlow: Variants = {
-  idle: { filter: "drop-shadow(0 0 0px transparent)" },
-  glow: {
-    filter: [
-      "drop-shadow(0 0 4px hsl(38 65% 56% / 0.4))",
-      "drop-shadow(0 0 12px hsl(38 65% 56% / 0.2))",
-      "drop-shadow(0 0 4px hsl(38 65% 56% / 0.4))",
-    ],
-    transition: { duration: 2, repeat: Infinity, ease: "easeInOut" },
-  },
-};
-
-/** EL Monogram Icon — geometric, premium */
+/** Compact icon — just the "E" brand letter, no circle with EL */
 export function EasyLocsIcon({ size = 32, animate = false }: { size?: number; animate?: boolean }) {
-  const icon = (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 48 48"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      aria-label="Easy-Locs icon"
+  const fontSize = Math.round(size * 0.55);
+  const content = (
+    <span
+      style={{
+        fontSize: `${fontSize}px`,
+        fontWeight: 800,
+        letterSpacing: "-0.5px",
+        lineHeight: 1,
+        background: "linear-gradient(135deg, hsl(45 90% 55%), hsl(35 85% 45%))",
+        WebkitBackgroundClip: "text",
+        WebkitTextFillColor: "transparent",
+        backgroundClip: "text",
+      }}
+      aria-label="Easy-Locs"
     >
-      {/* Outer orbit ring */}
-      <circle cx="24" cy="24" r="22" stroke="url(#gold-grad)" strokeWidth="1.5" fill="none" opacity="0.5" />
-      {/* E letter */}
-      <path
-        d="M14 15h10M14 24h8M14 33h10M14 15v18"
-        stroke="white"
-        strokeWidth="2.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      {/* L letter */}
-      <path
-        d="M28 15v18h8"
-        stroke="url(#gold-grad)"
-        strokeWidth="2.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      {/* Location pin dot */}
-      <circle cx="36" cy="14" r="2.5" fill="url(#gold-grad)" />
-      <defs>
-        <linearGradient id="gold-grad" x1="0" y1="0" x2="48" y2="48">
-          <stop stopColor="hsl(45, 90%, 55%)" />
-          <stop offset="1" stopColor="hsl(35, 85%, 45%)" />
-        </linearGradient>
-      </defs>
-    </svg>
+      Easy-Locs
+    </span>
   );
 
   if (animate) {
     return (
-      <motion.div variants={pulseGlow} initial="idle" animate="glow">
-        {icon}
+      <motion.div variants={slideIn} initial="hidden" animate="visible">
+        {content}
       </motion.div>
     );
   }
-
-  return icon;
+  return content;
 }
 
 /** Full horizontal wordmark */
@@ -134,13 +103,12 @@ function FullLogo({ size, animate }: { size: LogoSize; animate: boolean }) {
   return content;
 }
 
-/** Splash variant — centered with glow reveal */
+/** Splash variant — centered with tagline */
 function SplashLogo({ size, animate }: { size: LogoSize; animate: boolean }) {
   const textClass = sizeMap[size].splash;
 
   const content = (
-    <div className="flex flex-col items-center gap-4 select-none">
-      <EasyLocsIcon size={56} animate={animate} />
+    <div className="flex flex-col items-center gap-3 select-none">
       <div className="flex items-baseline gap-1">
         <span className={`${textClass} font-black tracking-tight text-white`}>
           Easy
@@ -156,6 +124,7 @@ function SplashLogo({ size, animate }: { size: LogoSize; animate: boolean }) {
         >
           -Locs
         </span>
+        <span className="text-[9px] font-bold align-super ml-0.5" style={{ color: "hsl(38 65% 56%)" }}>®</span>
       </div>
       <span
         className="text-[10px] tracking-[0.35em] uppercase font-medium"
@@ -186,6 +155,7 @@ export default function EasyLocsLogo({
   const inner = (() => {
     switch (variant) {
       case "icon":
+        // Icon variant now shows compact brand text, not a circle
         return <EasyLocsIcon size={sizeMap[size].icon} animate={animate} />;
       case "splash":
         return <SplashLogo size={size} animate={animate} />;
