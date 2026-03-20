@@ -20,6 +20,7 @@ import { toast } from "sonner";
 export default function RestaurantPage() {
   const { restaurantId } = useParams<{ restaurantId: string }>();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const { addItem, itemCount, total, cart, updateQuantity } = useCart();
   const [activeTab, setActiveTab] = useState<string | null>(null);
   const sectionRefs = useRef<Record<string, HTMLElement | null>>({});
