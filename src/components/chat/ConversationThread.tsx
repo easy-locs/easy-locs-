@@ -1,7 +1,9 @@
 import { useMemo, useState, useRef, useEffect, useCallback } from "react";
 import { useChatStore } from "@/stores/chatStore";
 import { useOrbitStore } from "@/stores/orbitStore";
-import { Send, Mic, Plus, Check, CheckCheck } from "lucide-react";
+import { useCallStore } from "@/stores/callStore";
+import { Send, Mic, Plus, Check, CheckCheck, Phone, Video } from "lucide-react";
+import { CallMessageBubble } from "@/components/chat/CallMessageBubble";
 
 function formatTime(dateStr: string) {
   return new Date(dateStr).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
