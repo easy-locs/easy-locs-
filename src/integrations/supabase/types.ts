@@ -8483,6 +8483,84 @@ export type Database = {
           },
         ]
       }
+      listing_coupons: {
+        Row: {
+          active: boolean
+          code: string
+          created_at: string
+          discount_type: string
+          discount_value: number
+          end_at: string | null
+          id: string
+          listing_id: string | null
+          owner_orbit_id: string
+          start_at: string | null
+          usage_limit: number | null
+          used_count: number
+        }
+        Insert: {
+          active?: boolean
+          code: string
+          created_at?: string
+          discount_type: string
+          discount_value: number
+          end_at?: string | null
+          id: string
+          listing_id?: string | null
+          owner_orbit_id: string
+          start_at?: string | null
+          usage_limit?: number | null
+          used_count?: number
+        }
+        Update: {
+          active?: boolean
+          code?: string
+          created_at?: string
+          discount_type?: string
+          discount_value?: number
+          end_at?: string | null
+          id?: string
+          listing_id?: string | null
+          owner_orbit_id?: string
+          start_at?: string | null
+          usage_limit?: number | null
+          used_count?: number
+        }
+        Relationships: []
+      }
+      listing_reviews: {
+        Row: {
+          booking_id: string | null
+          comment: string | null
+          created_at: string
+          id: string
+          listing_id: string
+          owner_orbit_id: string
+          rating: number
+          reviewer_orbit_id: string
+        }
+        Insert: {
+          booking_id?: string | null
+          comment?: string | null
+          created_at?: string
+          id: string
+          listing_id: string
+          owner_orbit_id: string
+          rating: number
+          reviewer_orbit_id: string
+        }
+        Update: {
+          booking_id?: string | null
+          comment?: string | null
+          created_at?: string
+          id?: string
+          listing_id?: string
+          owner_orbit_id?: string
+          rating?: number
+          reviewer_orbit_id?: string
+        }
+        Relationships: []
+      }
       listing_views: {
         Row: {
           created_at: string
