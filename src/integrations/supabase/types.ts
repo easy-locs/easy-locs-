@@ -10674,6 +10674,39 @@ export type Database = {
         }
         Relationships: []
       }
+      orbit_call_sessions_v2: {
+        Row: {
+          callee_orbit_id: string
+          caller_orbit_id: string
+          caller_user_id: string
+          created_at: string
+          id: string
+          mode: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          callee_orbit_id: string
+          caller_orbit_id: string
+          caller_user_id: string
+          created_at?: string
+          id?: string
+          mode?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          callee_orbit_id?: string
+          caller_orbit_id?: string
+          caller_user_id?: string
+          created_at?: string
+          id?: string
+          mode?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       orbit_call_signals: {
         Row: {
           consumed: boolean
@@ -10720,6 +10753,47 @@ export type Database = {
             columns: ["session_id"]
             isOneToOne: false
             referencedRelation: "orbit_call_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      orbit_call_signals_v2: {
+        Row: {
+          created_at: string
+          id: number
+          payload: Json
+          sender_orbit_id: string
+          sender_user_id: string
+          session_id: string
+          signal_type: string
+          target_orbit_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: number
+          payload: Json
+          sender_orbit_id: string
+          sender_user_id: string
+          session_id: string
+          signal_type: string
+          target_orbit_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: number
+          payload?: Json
+          sender_orbit_id?: string
+          sender_user_id?: string
+          session_id?: string
+          signal_type?: string
+          target_orbit_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orbit_call_signals_v2_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "orbit_call_sessions_v2"
             referencedColumns: ["id"]
           },
         ]
