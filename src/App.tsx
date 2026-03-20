@@ -31,6 +31,7 @@ import V1BootBridge from "@/app/V1BootBridge";
 // V2 test pages
 const V2TestPage = safeLazy(() => import("./app/router/V2TestPage"), "V2TestPage");
 const V2BookingTestPage = safeLazy(() => import("./app/router/V2BookingTestPage"), "V2BookingTestPage");
+const V2MegaPage = safeLazy(() => import("./app/router/V2MegaPage"), "V2MegaPage");
 
 // Safe lazy wrapper that catches chunk failures + missing default export issues
 function safeLazy(factory: () => Promise<{ default: ComponentType<any> }>, name: string) {
@@ -1389,6 +1390,7 @@ const App = () => (
               {/* V2 test routes */}
               <Route path="/v2-test" element={<V2TestPage />} />
               <Route path="/v2-booking-test" element={<V2BookingTestPage />} />
+              <Route path="/v2-mega" element={<V2MegaPage />} />
 
               {/* SEO catch-all */}
               <Route path="/seo/*" element={<SEOCatchAll />} />
