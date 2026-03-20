@@ -40,7 +40,7 @@ export function useOrbitCallSync() {
           if (
             payload.eventType === "UPDATE" &&
             row.status === "missed" &&
-            row.caller_id !== user.id
+            row.caller_orbit_id !== user.id
           ) {
             addAlert({
               type: "warning",

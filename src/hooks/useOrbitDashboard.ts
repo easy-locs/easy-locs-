@@ -138,8 +138,7 @@ export function useOrbitDashboard(): DashboardData {
       // Missed calls (last 7 days)
       queries.push(
         safeCount("call_logs", (q: any) => {
-          let query = q.eq("status", "missed").gt("created_at", weekAgo).neq("caller_id", user!.id);
-          if (orgId) query = query.eq("callee_org_id", orgId);
+          let query = q.eq("status", "missed").gt("created_at", weekAgo).neq("caller_orbit_id", user!.id);
           return query;
         }).then((v) => ["missedCalls", v] as [string, number])
       );

@@ -55,7 +55,7 @@ export function useRealtimeHub() {
     switch (table) {
       case "call_logs": {
         queryClient.invalidateQueries({ queryKey: ["call-logs"] });
-        if (eventType === "UPDATE" && row?.status === "missed" && row.caller_id !== user?.id) {
+        if (eventType === "UPDATE" && row?.status === "missed" && row.caller_orbit_id !== user?.id) {
           addAlertRef.current({
             type: "warning", priority: 2, icon: "📞",
             title: "Appel manqué", message: "Vous avez manqué un appel",
