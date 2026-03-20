@@ -438,6 +438,18 @@ const AdminSystemHealthPage = safeLazy(() => import("./pages/admin/AdminSystemHe
 const CustomerLiveLocationPage = safeLazy(() => import("./pages/customer/CustomerLiveLocationPage"), "CustomerLiveLocationPage");
 const DriverActiveMissionsPage = safeLazy(() => import("./pages/driver/DriverActiveMissionsPage"), "DriverActiveMissionsPage");
 const AdminFraudDetectionPage = safeLazy(() => import("./pages/admin/AdminFraudDetectionPage"), "AdminFraudDetectionPage");
+const CustomerSavedCardsPage = safeLazy(() => import("./pages/customer/CustomerSavedCardsPage"), "CustomerSavedCardsPage");
+const MerchantInventoryAlertsPage = safeLazy(() => import("./pages/merchant/MerchantInventoryAlertsPage"), "MerchantInventoryAlertsPage");
+const AdminOrderTimelinePage = safeLazy(() => import("./pages/admin/AdminOrderTimelinePage"), "AdminOrderTimelinePage");
+const CustomerQuickHelpPage = safeLazy(() => import("./pages/customer/CustomerQuickHelpPage"), "CustomerQuickHelpPage");
+const DriverShiftPage = safeLazy(() => import("./pages/driver/DriverShiftPage"), "DriverShiftPage");
+const AdminMerchantApprovalQueuePage = safeLazy(() => import("./pages/admin/AdminMerchantApprovalQueuePage"), "AdminMerchantApprovalQueuePage");
+const CustomerDeliveryNotesPage = safeLazy(() => import("./pages/customer/CustomerDeliveryNotesPage"), "CustomerDeliveryNotesPage");
+const MerchantStaffAccessPage = safeLazy(() => import("./pages/merchant/MerchantStaffAccessPage"), "MerchantStaffAccessPage");
+const AdminFailedPaymentsPage = safeLazy(() => import("./pages/admin/AdminFailedPaymentsPage"), "AdminFailedPaymentsPage");
+const CustomerReferFriendPage = safeLazy(() => import("./pages/customer/CustomerReferFriendPage"), "CustomerReferFriendPage");
+const DriverDocumentsPage = safeLazy(() => import("./pages/driver/DriverDocumentsPage"), "DriverDocumentsPage");
+const AdminSupportSlaPage = safeLazy(() => import("./pages/admin/AdminSupportSlaPage"), "AdminSupportSlaPage");
 
 // City sub-page wrappers
 const CityServicesPage = () => <CityHubPage subPage="services" />;
