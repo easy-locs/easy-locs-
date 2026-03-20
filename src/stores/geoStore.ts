@@ -35,8 +35,11 @@ export const useGeoStore = create<GeoStore>((set, get) => ({
   },
 
   refreshCurrentPosition: async () => {
+    console.log("[Geo] refreshCurrentPosition called");
     const position = await usePermissionStore.getState().requestGeolocation();
+    console.log("[Geo] raw position result", position);
     if (!position) {
+      console.warn("[Geo] position null → permission denied or unavailable");
       set({ permission: "denied" });
       return null;
     }
@@ -46,6 +49,7 @@ export const useGeoStore = create<GeoStore>((set, get) => ({
       accuracy: position.coords.accuracy ?? null,
       updatedAt: new Date().toISOString(),
     };
+    console.log("[Geo] normalized position", next);
     set({ permission: "granted", currentPosition: next });
     platformBus.emit({
       type: "geo.position.updated",
