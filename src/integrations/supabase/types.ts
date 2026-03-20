@@ -22450,6 +22450,39 @@ export type Database = {
         }
         Relationships: []
       }
+      wallet_ledger: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          reference_id: string | null
+          source: string | null
+          status: string | null
+          type: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          reference_id?: string | null
+          source?: string | null
+          status?: string | null
+          type: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          reference_id?: string | null
+          source?: string | null
+          status?: string | null
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       wallet_ledger_entries: {
         Row: {
           amount: number
@@ -22789,6 +22822,33 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      wallets: {
+        Row: {
+          balance: number
+          created_at: string
+          currency: string
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          balance?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          balance?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       wallets_v2: {
         Row: {
