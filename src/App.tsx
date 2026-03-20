@@ -1173,6 +1173,10 @@ const App = () => (
                 {/* IS-IX */}
                 <Route path="/admin/production-checklist" element={<ProtectedRoute><AdminProductionChecklistPage /></ProtectedRoute>} />
                 <Route path="/admin/final-wrap" element={<ProtectedRoute><AdminFinalWrapPage /></ProtectedRoute>} />
+                {/* JA-JF */}
+                <Route path="/admin/qa-command" element={<ProtectedRoute><AdminQaCommandPage /></ProtectedRoute>} />
+                {/* KA-KF */}
+                <Route path="/live-tracking" element={<ProtectedRoute><LiveTrackingPageNew /></ProtectedRoute>} />
               <Route path="/city/:countryCode/:city/:vertical/:locale" element={<CityVerticalPage />} />
 
               {/* Guest / Public */}
