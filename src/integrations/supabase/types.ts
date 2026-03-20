@@ -610,6 +610,39 @@ export type Database = {
           },
         ]
       }
+      app_notifications: {
+        Row: {
+          body: string
+          createdAt: string
+          id: string
+          metadata: Json | null
+          orbitId: string
+          read: boolean
+          title: string
+          type: string
+        }
+        Insert: {
+          body: string
+          createdAt?: string
+          id: string
+          metadata?: Json | null
+          orbitId: string
+          read?: boolean
+          title: string
+          type: string
+        }
+        Update: {
+          body?: string
+          createdAt?: string
+          id?: string
+          metadata?: Json | null
+          orbitId?: string
+          read?: boolean
+          title?: string
+          type?: string
+        }
+        Relationships: []
+      }
       approval_actions: {
         Row: {
           action_type: string

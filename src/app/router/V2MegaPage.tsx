@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { V2AppShell } from "@/components/shell/V2AppShell";
 import { V2MegaAudit } from "@/components/debug/V2MegaAudit";
 import { useUiShellStore } from "@/stores/uiShellStore";
@@ -17,10 +17,22 @@ import { SimpleCallPanel } from "@/components/call/SimpleCallPanel";
 import { CameraPreviewPanel } from "@/components/camera/CameraPreviewPanel";
 import { useCameraStore } from "@/stores/cameraStore";
 import { usePermissionStore } from "@/stores/permissionStore";
+import { ConversationList } from "@/components/chat/ConversationList";
+import { ConversationThread } from "@/components/chat/ConversationThread";
+import { NotificationsPanel } from "@/components/notifications/NotificationsPanel";
+import { useNotificationsStore } from "@/stores/notificationsStore";
+import { OwnerPropertyDashboard } from "@/components/property/OwnerPropertyDashboard";
+import { TenantDashboard } from "@/components/property/TenantDashboard";
+import { ListingSearchPanel } from "@/components/search/ListingSearchPanel";
+import { ListingSearchResults } from "@/components/search/ListingSearchResults";
+import { QrPaymentPanel } from "@/components/payments/QrPaymentPanel";
+import { GenerateListingQrButton } from "@/components/property/GenerateListingQrButton";
 
 export default function V2MegaPage() {
   useListingsRealtime();
   useBookingsRealtime();
+
+  const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
 
   const ui = useUiShellStore();
   const orbit = useOrbitStore((s) => s.profile);
@@ -42,12 +54,20 @@ export default function V2MegaPage() {
   const checkCamera = usePermissionStore((s) => s.checkCamera);
   const checkMicrophone = usePermissionStore((s) => s.checkMicrophone);
   const checkGeolocation = usePermissionStore((s) => s.checkGeolocation);
+  const hydrateNotifications = useNotificationsStore((s) => s.hydrate);
+  const pushNotification = useNotificationsStore((s) => s.push);
+  const unreadCount = useNotificationsStore((s) => s.unreadCount);
 
   useEffect(() => {
     void hydratePublished().then(() => {
       buildListingMarkers();
     });
   }, [hydratePublished, buildListingMarkers]);
+
+  useEffect(() => {
+    if (!orbit?.orbitId) return;
+    void hydrateNotifications(orbit.orbitId);
+  }, [orbit?.orbitId, hydrateNotifications]);
 
   const seedWallet = () => {
     const state = useWalletStore.getState();
@@ -82,12 +102,21 @@ export default function V2MegaPage() {
     });
     await publishListing(listing.id);
     buildListingMarkers();
+
+    await pushNotification({
+      orbitId: orbit.orbitId,
+      type: "system",
+      title: "Listing published",
+      body: `${listing.title} is now live`,
+      metadata: { listingId: listing.id },
+    });
   };
 
   const doInstantBooking = async () => {
     const listing = getPublishedListings()[0];
-    if (!listing) return;
-    await createBooking({
+    if (!listing || !orbit?.orbitId) return;
+
+    const booking = await createBooking({
       listingId: listing.id,
       buyerOrbitId: "orbit_buyer_demo_1",
       checkIn: "2026-03-25",
@@ -99,6 +128,17 @@ export default function V2MegaPage() {
         guestsCount: 2,
       },
     });
+
+    if (booking) {
+      await pushNotification({
+        orbitId: orbit.orbitId,
+        type: "booking",
+        title: "New booking flow",
+        body: `Booking ${booking.id} created`,
+        metadata: { bookingId: booking.id, listingId: listing.id },
+      });
+      if (booking.conversationId) setActiveConversationId(booking.conversationId);
+    }
   };
 
   const doImmoFlow = async () => {
@@ -131,6 +171,14 @@ export default function V2MegaPage() {
       dueDate: "2026-04-05",
       reference: "April rent",
     });
+
+    await pushNotification({
+      orbitId: orbit.orbitId,
+      type: "rent",
+      title: "Rent flow created",
+      body: `Lease ${lease.id} and payment schedule created`,
+      metadata: { leaseId: lease.id, listingId: listing.id },
+    });
   };
 
   const doOpenContact = () => {
@@ -138,6 +186,8 @@ export default function V2MegaPage() {
     if (!listing) return;
     openContact({ orbitId: listing.ownerOrbitId, listingId: listing.id });
   };
+
+  const firstListing = getPublishedListings()[0];
 
   const btnClass =
     "rounded-lg bg-secondary px-3 py-1.5 text-xs font-medium text-secondary-foreground hover:bg-secondary/80 transition-colors";
@@ -147,8 +197,11 @@ export default function V2MegaPage() {
       header={
         <div className="bg-card border-b border-border px-4 py-3">
           <h1 className="text-sm font-semibold text-foreground">
-            V2 Mega — Realtime / Map / Calendar / Camera
+            V2 Mega Connected — Suite 2
           </h1>
+          <p className="text-xs text-muted-foreground">
+            Unread notifications: {unreadCount()}
+          </p>
         </div>
       }
       bottomNav={
@@ -174,14 +227,40 @@ export default function V2MegaPage() {
       callLayer={<SimpleCallPanel />}
       rightPanel={<PropertyDetailPanel />}
     >
-      <div className="p-4 space-y-4">
-        <div className="rounded-lg border border-border bg-card p-3 text-sm space-y-1">
-          <p className="text-foreground">Orbit: {orbit?.orbitId ?? "none"}</p>
-          <p className="text-foreground">Wallet: {wallet?.walletId ?? "none"}</p>
-          <p className="text-foreground">
-            Balance: {wallet?.availableBalance ?? 0} {wallet?.currency ?? "AED"}
-          </p>
+      <div className="p-4 space-y-6">
+        {/* Chat Section */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <ConversationList onOpen={setActiveConversationId} />
+          <ConversationThread conversationId={activeConversationId} />
         </div>
+
+        {/* Search Section */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <ListingSearchPanel />
+          <ListingSearchResults />
+        </div>
+
+        {/* Dashboards Section */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <OwnerPropertyDashboard />
+          <TenantDashboard tenantOrbitId="orbit_tenant_demo_1" />
+        </div>
+
+        {/* Notifications + QR Section */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <NotificationsPanel />
+          <div className="space-y-4">
+            <QrPaymentPanel />
+            {firstListing ? (
+              <GenerateListingQrButton
+                amount={firstListing.pricing.nightPrice}
+                reference={`listing:${firstListing.id}`}
+              />
+            ) : null}
+          </div>
+        </div>
+
+        {/* Debug Audit */}
         <V2MegaAudit />
       </div>
     </V2AppShell>
