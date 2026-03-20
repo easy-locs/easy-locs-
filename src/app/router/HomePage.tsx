@@ -7,6 +7,7 @@ import { useV2AuthStore } from "@/stores/v2AuthStore";
 import { AvatarUploader } from "@/components/profile/AvatarUploader";
 import { ActivityPanel } from "@/components/system/ActivityPanel";
 import { useActivityLogStore } from "@/stores/activityLogStore";
+import { PushSettingsPanel } from "@/components/settings/PushSettingsPanel";
 import { useActivityRealtime } from "@/hooks/useActivityRealtime";
 
 export default function HomePage() {
