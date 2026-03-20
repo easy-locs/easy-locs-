@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { addSupportEvidenceMeta, listSupportEvidence } from "@/lib/support/supportEvidence";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 
 export default function SupportEvidencePanel({ ticketId }: { ticketId: string }) {
