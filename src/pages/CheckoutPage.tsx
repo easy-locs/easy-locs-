@@ -225,7 +225,7 @@ export default function CheckoutPage() {
       </div>
 
       {/* Bottom CTA */}
-      <div className="fixed bottom-0 left-0 right-0 px-4 pt-3 z-40 bg-background border-t border-border/10" style={{ paddingBottom: "max(env(safe-area-inset-bottom, 16px), 16px)" }}>
+      <div className="fixed left-0 right-0 px-4 pt-3 z-40 bg-background border-t border-border/10" style={{ bottom: "calc(56px + env(safe-area-inset-bottom, 0px))", paddingBottom: "12px" }}>
         <Button
           data-submit-order
           data-primary-cta

@@ -739,12 +739,12 @@ if (typeof window !== "undefined") {
   });
 }
 
-/** Route "/" → Orbit Communication (authenticated) or Index (guest) */
+/** Route "/" → Dashboard (authenticated) or Index (guest) */
 function HomeRouter() {
   const { user, loading } = useAuth();
   if (loading) return <PageLoader />;
   if (!user) return <Suspense fallback={<PageLoader />}><Index /></Suspense>;
-  return <Suspense fallback={<PageLoader />}><CommunicationCenter /></Suspense>;
+  return <Suspense fallback={<PageLoader />}><Dashboard /></Suspense>;
 }
 
 /** Route "/home" → OrbitHome marketplace hub (authenticated) or Index (guest) */
