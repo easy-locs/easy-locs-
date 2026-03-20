@@ -30,7 +30,7 @@ export function MerchantCheckoutPanel() {
                 Original: {listing.pricing.nightPrice} {listing.pricing.currency}
               </p>
               {discountAmount > 0 && (
-                <p className="text-xs text-emerald-600">
+                <p className="text-xs text-primary">
                   Final: {finalAmount} {listing.pricing.currency}
                   {appliedCode ? ` (${appliedCode})` : ""}
                 </p>
