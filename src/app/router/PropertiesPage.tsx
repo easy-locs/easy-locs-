@@ -1,14 +1,24 @@
+import { useEffect } from "react";
 import { AppPageShell } from "@/components/layout/AppPageShell";
 import { PropertyList } from "@/components/property/PropertyList";
 import { PropertyDetailPanel } from "@/components/property/PropertyDetailPanel";
 import { PropertyGallery } from "@/components/property/PropertyGallery";
-import { usePropertyDetailStore } from "@/stores/propertyDetailStore";
+import { ReviewPanel } from "@/components/property/ReviewPanel";
 import { FavoriteListingButton } from "@/components/property/FavoriteListingButton";
 import { ShareListingButton } from "@/components/property/ShareListingButton";
-import { ReviewPanel } from "@/components/property/ReviewPanel";
+import { usePropertyDetailStore } from "@/stores/propertyDetailStore";
+import { useFavoritesStore } from "@/stores/favoritesStore";
+import { useFavoritesRealtime } from "@/hooks/useFavoritesRealtime";
 
 export default function PropertiesPage() {
   const listing = usePropertyDetailStore((s) => s.selectedListing);
+  const hydrateFavorites = useFavoritesStore((s) => s.hydrate);
+
+  useFavoritesRealtime();
+
+  useEffect(() => {
+    void hydrateFavorites();
+  }, [hydrateFavorites]);
 
   return (
     <AppPageShell
