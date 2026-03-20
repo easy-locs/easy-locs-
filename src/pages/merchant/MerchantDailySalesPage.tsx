@@ -9,7 +9,7 @@ export default function MerchantDailySalesPage() {
   const { data, isLoading } = useQuery({
     queryKey: ["merchant-daily-sales", merchantId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from("orders")
         .select("id,total_amount,status,created_at")
         .eq("merchant_id", merchantId)
