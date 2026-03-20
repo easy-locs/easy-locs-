@@ -470,6 +470,27 @@ const AdminGlobalHeatmapPage = safeLazy(() => import("./pages/admin/AdminGlobalH
 const CustomerQuickReorderPage = safeLazy(() => import("./pages/customer/CustomerQuickReorderPage"), "CustomerQuickReorderPage");
 const DriverLiveMissionsPage = safeLazy(() => import("./pages/driver/DriverLiveMissionsPage"), "DriverLiveMissionsPage");
 const AdminRealtimeAlertsPage = safeLazy(() => import("./pages/admin/AdminRealtimeAlertsPage"), "AdminRealtimeAlertsPage");
+// FA-FF block
+const CustomerOrderSchedulePage = safeLazy(() => import("./pages/customer/CustomerOrderSchedulePage"), "CustomerOrderSchedulePage");
+const MerchantOpenClosePage = safeLazy(() => import("./pages/merchant/MerchantOpenClosePage"), "MerchantOpenClosePage");
+const AdminRetentionDashboardPage = safeLazy(() => import("./pages/admin/AdminRetentionDashboardPage"), "AdminRetentionDashboardPage");
+const CustomerPromoWalletPage = safeLazy(() => import("./pages/customer/CustomerPromoWalletPage"), "CustomerPromoWalletPage");
+const DriverBreakModePage = safeLazy(() => import("./pages/driver/DriverBreakModePage"), "DriverBreakModePage");
+const AdminMerchantPerformancePage = safeLazy(() => import("./pages/admin/AdminMerchantPerformancePage"), "AdminMerchantPerformancePage");
+// FG-FL block
+const CustomerFamilyProfilesPage = safeLazy(() => import("./pages/customer/CustomerFamilyProfilesPage"), "CustomerFamilyProfilesPage");
+const MerchantPrepTimePage = safeLazy(() => import("./pages/merchant/MerchantPrepTimePage"), "MerchantPrepTimePage");
+const AdminRefundControlPage = safeLazy(() => import("./pages/admin/AdminRefundControlPage"), "AdminRefundControlPage");
+const CustomerTippingPage = safeLazy(() => import("./pages/customer/CustomerTippingPage"), "CustomerTippingPage");
+const DriverAcceptanceRatePage = safeLazy(() => import("./pages/driver/DriverAcceptanceRatePage"), "DriverAcceptanceRatePage");
+const AdminDriverPerformancePage = safeLazy(() => import("./pages/admin/AdminDriverPerformancePage"), "AdminDriverPerformancePage");
+// FM-FR block
+const CustomerSubscriptionsPage = safeLazy(() => import("./pages/customer/CustomerSubscriptionsPage"), "CustomerSubscriptionsPage");
+const MerchantPromoSchedulerPage = safeLazy(() => import("./pages/merchant/MerchantPromoSchedulerPage"), "MerchantPromoSchedulerPage");
+const AdminDisputeCenterPage = safeLazy(() => import("./pages/admin/AdminDisputeCenterPage"), "AdminDisputeCenterPage");
+const CustomerFavoriteOrdersPage = safeLazy(() => import("./pages/customer/CustomerFavoriteOrdersPage"), "CustomerFavoriteOrdersPage");
+const DriverShiftSchedulerPage = safeLazy(() => import("./pages/driver/DriverShiftSchedulerPage"), "DriverShiftSchedulerPage");
+const AdminGlobalFinancePage = safeLazy(() => import("./pages/admin/AdminGlobalFinancePage"), "AdminGlobalFinancePage");
 
 // City sub-page wrappers
 const CityServicesPage = () => <CityHubPage subPage="services" />;
