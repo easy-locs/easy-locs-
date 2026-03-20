@@ -21,7 +21,7 @@ export const useAdminPayoutStore = create<AdminPayoutStore>((set) => ({
   hydrate: async () => {
     set({ loading: true });
 
-    const { data, error } = await (supabase as any)
+    const { data, error } = await supabase
       .from("payout_requests")
       .select("*")
       .order("created_at", { ascending: false });
