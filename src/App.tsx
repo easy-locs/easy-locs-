@@ -722,7 +722,6 @@ const RealtimeHubGuard = () => { useRealtimeHub(); return null; };
 /** Install orchestration engine */
 const OrchestrationGuard = () => { useOrchestration(); return null; };
 /** Subscribe to realtime notifications — useEffect to avoid re-subscribing on every render */
-import { useEffect } from "react";
 const NotificationsRealtimeGuard = () => {
   useEffect(() => {
     useNotificationsStore.getState().subscribeRealtime();
