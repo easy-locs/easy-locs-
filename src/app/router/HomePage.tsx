@@ -3,6 +3,7 @@ import { AppMainNav } from "@/components/layout/AppMainNav";
 import { useOrbitStore } from "@/stores/orbitStore";
 import { useWalletStore } from "@/stores/walletStore";
 import { useV2AuthStore } from "@/stores/v2AuthStore";
+import { AvatarUploader } from "@/components/profile/AvatarUploader";
 
 export default function HomePage() {
   const orbit = useOrbitStore((s) => s.profile);
@@ -27,7 +28,7 @@ export default function HomePage() {
     >
       <AppMainNav />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
         <div className="rounded-lg border border-border p-4">
           <h3 className="text-lg font-semibold text-foreground">Orbit Profile</h3>
           <pre className="text-xs text-muted-foreground whitespace-pre-wrap mt-2">
@@ -40,6 +41,10 @@ export default function HomePage() {
           <pre className="text-xs text-muted-foreground whitespace-pre-wrap mt-2">
             {JSON.stringify(wallet, null, 2)}
           </pre>
+        </div>
+
+        <div className="rounded-lg border border-border p-4">
+          <AvatarUploader />
         </div>
       </div>
     </AppPageShell>
