@@ -41,8 +41,18 @@ export const useCallStore = create<CallStore>((set, get) => ({
   current: null,
   incoming: null,
   mode: "idle",
+  type: null,
+  peerOrbitId: null,
   localMicEnabled: true,
   localCamEnabled: true,
+
+  startCall: (peerOrbitId, type) => {
+    set({ mode: "ringing", type, peerOrbitId, localMicEnabled: true, localCamEnabled: type === "video" });
+    platformBus.emit({ type: "call.started", payload: { peerOrbitId, mode: type } });
+  },
+
+  setConnecting: () => set({ mode: "connecting" }),
+  setActive: () => set({ mode: "active" }),
 
   createCall: async (receiverOrbitId, callType, conversationId) => {
     const orbit = useOrbitStore.getState().profile;
