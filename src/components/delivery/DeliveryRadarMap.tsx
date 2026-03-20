@@ -31,17 +31,17 @@ export function DeliveryRadarMap() {
         <ul className="space-y-1.5">
           {drivers.map((d) => (
             <li
-              key={d.user_id}
+              key={d.orbit_id}
               className="flex items-center justify-between rounded-lg bg-muted/20 px-3 py-2"
             >
               <div className="flex items-center gap-2">
                 <MapPin className="w-3.5 h-3.5 text-muted-foreground" />
                 <span className="text-sm text-foreground truncate">
-                  {d.user_id.slice(0, 12)}…
+                  {d.orbit_id.slice(0, 12)}…
                 </span>
               </div>
               <span className="text-xs text-muted-foreground shrink-0 ml-2">
-                {d.current_lat?.toFixed(4)}, {d.current_lng?.toFixed(4)}
+                {d.lat?.toFixed(4)}, {d.lng?.toFixed(4)}
               </span>
             </li>
           ))}
