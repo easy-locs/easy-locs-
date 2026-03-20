@@ -1451,6 +1451,7 @@ const App = () => (
             </Routes>
             </main>
            </Suspense>
+           <MainBottomNav />
            <SmartInstallBanner />
            </SplashScreen>
            </AppLockGuard>
