@@ -9268,6 +9268,13 @@ export type Database = {
             referencedRelation: "marketplace_services_public"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "marketplace_bookings_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "public_marketplace_listings"
+            referencedColumns: ["id"]
+          },
         ]
       }
       marketplace_providers: {
@@ -9511,6 +9518,13 @@ export type Database = {
             columns: ["service_id"]
             isOneToOne: false
             referencedRelation: "marketplace_services_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "marketplace_reviews_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "public_marketplace_listings"
             referencedColumns: ["id"]
           },
         ]
@@ -23767,6 +23781,13 @@ export type Database = {
             referencedRelation: "marketplace_services_public"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "marketplace_reviews_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "public_marketplace_listings"
+            referencedColumns: ["id"]
+          },
         ]
       }
       marketplace_services_public: {
@@ -23970,6 +23991,147 @@ export type Database = {
           postal_code?: string | null
         }
         Relationships: []
+      }
+      public_marketplace_listings: {
+        Row: {
+          active: boolean | null
+          auto_expire: boolean | null
+          badges: string[] | null
+          bathrooms: number | null
+          bedrooms: number | null
+          boost_tier: string | null
+          boost_until: string | null
+          brand: string | null
+          category: string | null
+          city: string | null
+          condition: string | null
+          country: string | null
+          created_at: string | null
+          currency: string | null
+          description: string | null
+          duration_minutes: number | null
+          entity_type: string | null
+          features: Json | null
+          id: string | null
+          lat: number | null
+          listing_expires_at: string | null
+          listing_type: string | null
+          lng: number | null
+          location: string | null
+          max_capacity: number | null
+          model: string | null
+          org_id: string | null
+          photo_urls: Json | null
+          presence_mode: string | null
+          price: number | null
+          price_type: string | null
+          published_at: string | null
+          rooms: number | null
+          status: Database["public"]["Enums"]["listing_status"] | null
+          surface_sqm: number | null
+          title: string | null
+          updated_at: string | null
+          video_url: string | null
+          year_built: number | null
+        }
+        Insert: {
+          active?: boolean | null
+          auto_expire?: boolean | null
+          badges?: string[] | null
+          bathrooms?: number | null
+          bedrooms?: number | null
+          boost_tier?: string | null
+          boost_until?: string | null
+          brand?: string | null
+          category?: string | null
+          city?: string | null
+          condition?: string | null
+          country?: string | null
+          created_at?: string | null
+          currency?: string | null
+          description?: string | null
+          duration_minutes?: number | null
+          entity_type?: string | null
+          features?: Json | null
+          id?: string | null
+          lat?: number | null
+          listing_expires_at?: string | null
+          listing_type?: string | null
+          lng?: number | null
+          location?: string | null
+          max_capacity?: number | null
+          model?: string | null
+          org_id?: string | null
+          photo_urls?: Json | null
+          presence_mode?: string | null
+          price?: number | null
+          price_type?: string | null
+          published_at?: string | null
+          rooms?: number | null
+          status?: Database["public"]["Enums"]["listing_status"] | null
+          surface_sqm?: number | null
+          title?: string | null
+          updated_at?: string | null
+          video_url?: string | null
+          year_built?: number | null
+        }
+        Update: {
+          active?: boolean | null
+          auto_expire?: boolean | null
+          badges?: string[] | null
+          bathrooms?: number | null
+          bedrooms?: number | null
+          boost_tier?: string | null
+          boost_until?: string | null
+          brand?: string | null
+          category?: string | null
+          city?: string | null
+          condition?: string | null
+          country?: string | null
+          created_at?: string | null
+          currency?: string | null
+          description?: string | null
+          duration_minutes?: number | null
+          entity_type?: string | null
+          features?: Json | null
+          id?: string | null
+          lat?: number | null
+          listing_expires_at?: string | null
+          listing_type?: string | null
+          lng?: number | null
+          location?: string | null
+          max_capacity?: number | null
+          model?: string | null
+          org_id?: string | null
+          photo_urls?: Json | null
+          presence_mode?: string | null
+          price?: number | null
+          price_type?: string | null
+          published_at?: string | null
+          rooms?: number | null
+          status?: Database["public"]["Enums"]["listing_status"] | null
+          surface_sqm?: number | null
+          title?: string | null
+          updated_at?: string | null
+          video_url?: string | null
+          year_built?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketplace_services_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "marketplace_services_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs_tenant_view"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Functions: {
