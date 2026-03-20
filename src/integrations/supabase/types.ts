@@ -23547,18 +23547,31 @@ export type Database = {
         Args: { _name: string; _org_id: string; _scopes: string[] }
         Returns: Json
       }
-      create_call_idempotent: {
-        Args: {
-          _callee_org_id: string
-          _caller_id: string
-          _context_id?: string
-          _context_label?: string
-          _context_type?: string
-          _is_video?: boolean
-          _thread_id?: string
-        }
-        Returns: string
-      }
+      create_call_idempotent:
+        | {
+            Args: {
+              _callee_org_id: string
+              _caller_id: string
+              _context_id?: string
+              _context_label?: string
+              _context_type?: string
+              _is_video?: boolean
+              _thread_id?: string
+            }
+            Returns: string
+          }
+        | {
+            Args: {
+              _caller_orbit_id: string
+              _context_id?: string
+              _context_label?: string
+              _context_type?: string
+              _is_video?: boolean
+              _receiver_orbit_id: string
+              _thread_id?: string
+            }
+            Returns: string
+          }
       geocode_city_approx: {
         Args: { _city: string }
         Returns: {

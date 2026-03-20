@@ -84,7 +84,7 @@ export function CallProvider({ children }: { children: ReactNode }) {
               if (!call || call.caller_orbit_id === user.id) return;
               if (call.status !== "ringing") return;
               // Accept call if targeted at user's org, or directly/indirectly targeted to this user
-              const isOrgCall = orgIds.length > 0 && orgIds.includes(call.callee_org_id);
+              const isOrgCall = orgIds.length > 0 && orgIds.includes(call.receiver_orbit_id);
               const isDirectCall = call.context_type === "direct" &&
                 typeof call.context_id === "string" &&
                 call.context_id.includes(user.id);
@@ -123,7 +123,7 @@ export function CallProvider({ children }: { children: ReactNode }) {
               setIncomingCallerName(profile?.name || profile?.email || "User");
               setIncomingContextLabel(call.context_label || "");
               setIncomingIsVideo(call.is_video || false);
-              setIncomingOrgId(call.callee_org_id || "");
+              setIncomingOrgId(call.receiver_orbit_id || "");
               setIncomingThreadId(call.thread_id || null);
               setShowIncoming(true);
             } catch (err) {
@@ -198,9 +198,9 @@ export function CallProvider({ children }: { children: ReactNode }) {
         });
 
         // Use idempotent server-side function to prevent duplicates
-        const { data: callId, error } = await supabase.rpc("create_call_idempotent", {
-          _caller_id: authUser.id,
-          _callee_org_id: opts.orgId,
+        const { data: callId, error } = await supabase.rpc("create_call_idempotent" as any, {
+          _caller_orbit_id: authUser.id,
+          _receiver_orbit_id: opts.orgId,
           _thread_id: opts.threadId || null,
           _context_type: opts.contextType || "listing",
           _context_id: opts.contextId || null,
