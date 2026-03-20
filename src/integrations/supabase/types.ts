@@ -10596,6 +10596,39 @@ export type Database = {
         }
         Relationships: []
       }
+      notification_deliveries: {
+        Row: {
+          channel: string
+          created_at: string
+          delivered_at: string | null
+          error_message: string | null
+          id: string
+          notification_id: string
+          provider_ref: string | null
+          status: string
+        }
+        Insert: {
+          channel: string
+          created_at?: string
+          delivered_at?: string | null
+          error_message?: string | null
+          id: string
+          notification_id: string
+          provider_ref?: string | null
+          status?: string
+        }
+        Update: {
+          channel?: string
+          created_at?: string
+          delivered_at?: string | null
+          error_message?: string | null
+          id?: string
+          notification_id?: string
+          provider_ref?: string | null
+          status?: string
+        }
+        Relationships: []
+      }
       notification_preferences: {
         Row: {
           email_bookings: boolean
@@ -13045,6 +13078,39 @@ export type Database = {
           platform?: string
           provider?: string
           user_id?: string | null
+        }
+        Relationships: []
+      }
+      push_tokens: {
+        Row: {
+          active: boolean
+          created_at: string
+          id: string
+          orbit_id: string | null
+          platform: string | null
+          token: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          id: string
+          orbit_id?: string | null
+          platform?: string | null
+          token: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          orbit_id?: string | null
+          platform?: string | null
+          token?: string
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
