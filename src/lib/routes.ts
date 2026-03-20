@@ -218,6 +218,11 @@ export const ROUTE_REGISTRY = [
   { group: "admin", label: "Finance Summary", path: "/admin/finance-summary" },
   { group: "public", label: "Spending Insights", path: "/me/spending-insights" },
   { group: "admin", label: "Platform Alerts", path: "/admin/platform-alerts" },
+  { group: "public", label: "Address Book", path: "/me/address-book" },
+  { group: "merchant", label: "Business Summary", path: "/merchant/business-summary/:merchantId" },
+  { group: "admin", label: "Order Watch", path: "/admin/order-watch" },
+  { group: "public", label: "Loyalty History", path: "/me/loyalty-history" },
+  { group: "admin", label: "Search Watch", path: "/admin/search-watch" },
 
   { group: "public", label: "Coming Soon", path: "/coming-soon/:slug" },
   { group: "public", label: "City Market", path: "/city-market/:citySlug" },
