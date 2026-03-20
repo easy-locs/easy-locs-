@@ -33,10 +33,10 @@ export default function SellerBusinessCard({
 }: SellerBusinessCardProps) {
   const navigate = useNavigate();
 
-  const statusMap: Record<string, { variant: "success" | "warning" | "default"; label: string }> = {
+  const statusMap: Record<string, { variant: "success" | "warning" | "neutral"; label: string }> = {
     active: { variant: "success", label: "Active" },
     pending: { variant: "warning", label: "Pending" },
-    draft: { variant: "default", label: "Draft" },
+    draft: { variant: "neutral", label: "Draft" },
   };
 
   const st = statusMap[status] ?? statusMap.draft;
