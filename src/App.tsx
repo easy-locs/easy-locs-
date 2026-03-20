@@ -45,6 +45,7 @@ const V2MessagesPage = safeLazy(() => import("./app/router/MessagesPage"), "V2Me
 const V2NotificationsPage = safeLazy(() => import("./app/router/NotificationsPage"), "V2NotificationsPage");
 const V2PaymentsPage = safeLazy(() => import("./app/router/PaymentsPage"), "V2PaymentsPage");
 const V2FavoritesPage = safeLazy(() => import("./app/router/FavoritesPage"), "V2FavoritesPage");
+const V2AdminPage = safeLazy(() => import("./app/router/AdminPage"), "V2AdminPage");
 
 // V2 Auth wrappers
 import { V2AuthBridge as V2AuthBridgeWrapper } from "@/components/system/V2AuthBridge";
