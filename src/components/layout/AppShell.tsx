@@ -7,7 +7,7 @@
 import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
-import MobileBottomNav from "@/components/dashboard/MobileBottomNav";
+import MainBottomNav from "@/components/navigation/MainBottomNav";
 import { useAuth } from "@/contexts/AuthContext";
 import { prefetchCriticalData } from "@/lib/query-prefetch";
 import { scheduleIdle } from "@/lib/performance";
@@ -30,10 +30,10 @@ export default function AppShell({ children }: { children?: React.ReactNode }) {
 
   return (
     <div className="min-h-[100dvh] flex flex-col bg-background">
-      <main className="flex-1 overflow-y-auto pb-[calc(60px+env(safe-area-inset-bottom,0px))] lg:pb-0">
+      <main className="flex-1 overflow-y-auto pb-[calc(56px+env(safe-area-inset-bottom,0px))] lg:pb-0">
         {children}
       </main>
-      <MobileBottomNav />
+      <MainBottomNav />
     </div>
   );
 }
