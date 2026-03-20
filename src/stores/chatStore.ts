@@ -8,11 +8,8 @@ import type {
   MessageType,
 } from "@/lib/types/domain";
 
-// Remove old imports block below
-  ChatMessageRecord,
-  ConversationType,
-  MessageType,
-} from "@/lib/types/chat";
+
+
 
 type CreateConversationInput = {
   type: ConversationType;
