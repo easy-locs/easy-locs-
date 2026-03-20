@@ -23426,12 +23426,20 @@ export type Database = {
           center_lng: number
           city: string
           country: string
+          country_code: string | null
+          country_name: string | null
           created_at: string
+          currency: string | null
+          default_language: string | null
           id: string
           is_active: boolean
           is_launched: boolean
+          launch_priority: number | null
           name: string
           radius_m: number
+          region_name: string | null
+          slug: string | null
+          timezone: string | null
           updated_at: string
         }
         Insert: {
@@ -23439,12 +23447,20 @@ export type Database = {
           center_lng: number
           city?: string
           country?: string
+          country_code?: string | null
+          country_name?: string | null
           created_at?: string
+          currency?: string | null
+          default_language?: string | null
           id?: string
           is_active?: boolean
           is_launched?: boolean
+          launch_priority?: number | null
           name: string
           radius_m?: number
+          region_name?: string | null
+          slug?: string | null
+          timezone?: string | null
           updated_at?: string
         }
         Update: {
@@ -23452,12 +23468,20 @@ export type Database = {
           center_lng?: number
           city?: string
           country?: string
+          country_code?: string | null
+          country_name?: string | null
           created_at?: string
+          currency?: string | null
+          default_language?: string | null
           id?: string
           is_active?: boolean
           is_launched?: boolean
+          launch_priority?: number | null
           name?: string
           radius_m?: number
+          region_name?: string | null
+          slug?: string | null
+          timezone?: string | null
           updated_at?: string
         }
         Relationships: []
