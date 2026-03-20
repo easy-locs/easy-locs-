@@ -438,6 +438,18 @@ const AdminSystemHealthPage = safeLazy(() => import("./pages/admin/AdminSystemHe
 const CustomerLiveLocationPage = safeLazy(() => import("./pages/customer/CustomerLiveLocationPage"), "CustomerLiveLocationPage");
 const DriverActiveMissionsPage = safeLazy(() => import("./pages/driver/DriverActiveMissionsPage"), "DriverActiveMissionsPage");
 const AdminFraudDetectionPage = safeLazy(() => import("./pages/admin/AdminFraudDetectionPage"), "AdminFraudDetectionPage");
+const CustomerSavedCardsPage = safeLazy(() => import("./pages/customer/CustomerSavedCardsPage"), "CustomerSavedCardsPage");
+const MerchantInventoryAlertsPage = safeLazy(() => import("./pages/merchant/MerchantInventoryAlertsPage"), "MerchantInventoryAlertsPage");
+const AdminOrderTimelinePage = safeLazy(() => import("./pages/admin/AdminOrderTimelinePage"), "AdminOrderTimelinePage");
+const CustomerQuickHelpPage = safeLazy(() => import("./pages/customer/CustomerQuickHelpPage"), "CustomerQuickHelpPage");
+const DriverShiftPage = safeLazy(() => import("./pages/driver/DriverShiftPage"), "DriverShiftPage");
+const AdminMerchantApprovalQueuePage = safeLazy(() => import("./pages/admin/AdminMerchantApprovalQueuePage"), "AdminMerchantApprovalQueuePage");
+const CustomerDeliveryNotesPage = safeLazy(() => import("./pages/customer/CustomerDeliveryNotesPage"), "CustomerDeliveryNotesPage");
+const MerchantStaffAccessPage = safeLazy(() => import("./pages/merchant/MerchantStaffAccessPage"), "MerchantStaffAccessPage");
+const AdminFailedPaymentsPage = safeLazy(() => import("./pages/admin/AdminFailedPaymentsPage"), "AdminFailedPaymentsPage");
+const CustomerReferFriendPage = safeLazy(() => import("./pages/customer/CustomerReferFriendPage"), "CustomerReferFriendPage");
+const DriverDocumentsPage = safeLazy(() => import("./pages/driver/DriverDocumentsPage"), "DriverDocumentsPage");
+const AdminSupportSlaPage = safeLazy(() => import("./pages/admin/AdminSupportSlaPage"), "AdminSupportSlaPage");
 
 // City sub-page wrappers
 const CityServicesPage = () => <CityHubPage subPage="services" />;
@@ -936,6 +948,18 @@ const App = () => (
                 <Route path="/location/live" element={<ProtectedRoute><CustomerLiveLocationPage /></ProtectedRoute>} />
                 <Route path="/driver/active-missions" element={<ProtectedRoute><DriverActiveMissionsPage /></ProtectedRoute>} />
                 <Route path="/admin/fraud-detection" element={<ProtectedRoute><AdminFraudDetectionPage /></ProtectedRoute>} />
+                <Route path="/me/saved-cards" element={<ProtectedRoute><CustomerSavedCardsPage /></ProtectedRoute>} />
+                <Route path="/merchant/inventory-alerts/:merchantId" element={<ProtectedRoute><MerchantInventoryAlertsPage /></ProtectedRoute>} />
+                <Route path="/admin/order-timeline" element={<ProtectedRoute><AdminOrderTimelinePage /></ProtectedRoute>} />
+                <Route path="/me/quick-help" element={<ProtectedRoute><CustomerQuickHelpPage /></ProtectedRoute>} />
+                <Route path="/driver/shift" element={<ProtectedRoute><DriverShiftPage /></ProtectedRoute>} />
+                <Route path="/admin/merchant-approval-queue" element={<ProtectedRoute><AdminMerchantApprovalQueuePage /></ProtectedRoute>} />
+                <Route path="/me/delivery-notes" element={<ProtectedRoute><CustomerDeliveryNotesPage /></ProtectedRoute>} />
+                <Route path="/merchant/staff-access/:merchantId" element={<ProtectedRoute><MerchantStaffAccessPage /></ProtectedRoute>} />
+                <Route path="/admin/failed-payments" element={<ProtectedRoute><AdminFailedPaymentsPage /></ProtectedRoute>} />
+                <Route path="/me/refer-friend" element={<ProtectedRoute><CustomerReferFriendPage /></ProtectedRoute>} />
+                <Route path="/driver/documents" element={<ProtectedRoute><DriverDocumentsPage /></ProtectedRoute>} />
+                <Route path="/admin/support-sla" element={<ProtectedRoute><AdminSupportSlaPage /></ProtectedRoute>} />
               <Route path="/city/:countryCode/:city/:vertical/:locale" element={<CityVerticalPage />} />
 
               {/* Guest / Public */}
