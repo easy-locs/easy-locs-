@@ -40,6 +40,42 @@ export const usePermissionStore = create<PermissionStore>((set) => ({
     }
   },
 
+  checkCamera: async () => {
+    try {
+      if (!navigator.permissions?.query) return "prompt";
+      const result = await navigator.permissions.query({ name: "camera" as PermissionName });
+      const state = result.state as PermissionStateValue;
+      set({ camera: state });
+      return state;
+    } catch {
+      return "prompt";
+    }
+  },
+
+  checkMicrophone: async () => {
+    try {
+      if (!navigator.permissions?.query) return "prompt";
+      const result = await navigator.permissions.query({ name: "microphone" as PermissionName });
+      const state = result.state as PermissionStateValue;
+      set({ microphone: state });
+      return state;
+    } catch {
+      return "prompt";
+    }
+  },
+
+  checkGeolocation: async () => {
+    try {
+      if (!navigator.permissions?.query) return "prompt";
+      const result = await navigator.permissions.query({ name: "geolocation" as PermissionName });
+      const state = result.state as PermissionStateValue;
+      set({ geolocation: state });
+      return state;
+    } catch {
+      return "prompt";
+    }
+  },
+
   checkGeolocationPermission: async () => {
     try {
       if (!("permissions" in navigator) || !navigator.permissions?.query) {
