@@ -2,8 +2,8 @@ import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { createCoupon } from "@/lib/coupons/couponEngine";
 import { supabase } from "@/integrations/supabase/client";
+import { createCoupon } from "@/lib/coupons/couponEngine";
 
 export default function MerchantCouponManagerPage() {
   const navigate = useNavigate();
@@ -15,7 +15,7 @@ export default function MerchantCouponManagerPage() {
   const [minimumOrderAmount, setMinimumOrderAmount] = useState("0");
   const [saving, setSaving] = useState(false);
 
-  const { data: promos = [], isLoading, refetch } = useQuery({
+  const { data: rows = [], isLoading, refetch } = useQuery({
     queryKey: ["merchant-coupon-manager", merchantId],
     queryFn: async () => {
       const { data, error } = await (supabase as any)
@@ -41,7 +41,7 @@ export default function MerchantCouponManagerPage() {
       setSaving(true);
       await createCoupon({
         merchantId,
-        title: title.trim(),
+        title,
         discountType,
         discountValue: Number(discountValue ?? 0),
         minimumOrderAmount: Number(minimumOrderAmount ?? 0),
@@ -58,18 +58,17 @@ export default function MerchantCouponManagerPage() {
     }
   };
 
-  const togglePromo = async (promo: any) => {
+  const toggle = async (row: any) => {
     try {
       const { error } = await (supabase as any)
         .from("seed_merchant_promos")
         .update({
-          is_active: !promo.is_active,
+          is_active: !row.is_active,
           updated_at: new Date().toISOString(),
         })
-        .eq("id", promo.id);
+        .eq("id", row.id);
 
       if (error) throw error;
-      toast.success("Coupon updated");
       refetch();
     } catch (err: any) {
       toast.error(err.message || "Could not update coupon");
@@ -77,8 +76,8 @@ export default function MerchantCouponManagerPage() {
   };
 
   return (
-    <div className="min-h-[100dvh] flex flex-col bg-background">
-      <header className="flex items-center gap-3 px-4 pt-4 pb-3">
+    <div className="min-h-[100dvh] bg-background pb-24">
+      <div className="flex items-center gap-3 px-4 pt-6 pb-4">
         <button
           onClick={() => navigate(`/merchant/dashboard/${merchantId}`)}
           className="w-9 h-9 rounded-xl bg-muted flex items-center justify-center"
@@ -86,21 +85,18 @@ export default function MerchantCouponManagerPage() {
           ←
         </button>
         <div>
-          <h1 className="text-lg font-bold text-foreground">Coupons</h1>
-          <p className="text-xs text-muted-foreground">Discounts and promo codes</p>
+          <h1 className="text-lg font-bold text-foreground">Coupon Manager</h1>
+          <p className="text-xs text-muted-foreground">Create and manage promo codes</p>
         </div>
-      </header>
+      </div>
 
       <div className="mx-4 rounded-2xl border border-border/20 bg-card p-4 space-y-3">
-        <p className="text-sm font-bold text-foreground">Create Coupon</p>
-
         <input
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          placeholder="Code / title"
+          placeholder="Coupon code / title"
           className="w-full rounded-xl border border-border/20 bg-background px-3 py-2.5 text-sm"
         />
-
         <select
           value={discountType}
           onChange={(e) => setDiscountType(e.target.value as "percent" | "fixed")}
@@ -109,7 +105,6 @@ export default function MerchantCouponManagerPage() {
           <option value="percent">Percent</option>
           <option value="fixed">Fixed AED</option>
         </select>
-
         <input
           type="number"
           value={discountValue}
@@ -117,7 +112,6 @@ export default function MerchantCouponManagerPage() {
           placeholder="Discount value"
           className="w-full rounded-xl border border-border/20 bg-background px-3 py-2.5 text-sm"
         />
-
         <input
           type="number"
           value={minimumOrderAmount}
@@ -125,7 +119,6 @@ export default function MerchantCouponManagerPage() {
           placeholder="Minimum order amount"
           className="w-full rounded-xl border border-border/20 bg-background px-3 py-2.5 text-sm"
         />
-
         <button
           onClick={submit}
           disabled={saving}
@@ -139,29 +132,37 @@ export default function MerchantCouponManagerPage() {
         <div key={i} className="mx-4 mt-3 h-16 rounded-2xl bg-muted animate-pulse" />
       ))}
 
-      {!isLoading && promos.length > 0 && (
-        <div className="px-4 pt-4 pb-24 space-y-3">
-          {promos.map((promo: any) => (
-            <div key={promo.id} className="rounded-2xl border border-border/20 bg-card p-4 flex items-center justify-between gap-3">
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-foreground">{promo.title}</p>
-                <p className="text-[11px] text-muted-foreground">
-                  {promo.discount_type === "percent"
-                    ? `${Number(promo.discount_value ?? 0)}%`
-                    : `${Number(promo.discount_value ?? 0).toFixed(2)} AED`}{" "}
-                  · Min {Number(promo.minimum_order_amount ?? 0).toFixed(2)} AED
-                </p>
+      {!isLoading && rows.length === 0 && (
+        <p className="text-center text-sm text-muted-foreground pt-8">No coupons yet</p>
+      )}
+
+      {!isLoading && rows.length > 0 && (
+        <div className="px-4 pt-4 space-y-3">
+          {rows.map((row: any) => (
+            <div key={row.id} className="rounded-2xl border border-border/20 bg-card p-4">
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-foreground">{row.title}</p>
+                  <p className="text-[11px] text-muted-foreground">
+                    {row.discount_type === "percent"
+                      ? `${Number(row.discount_value ?? 0)}% off`
+                      : `${Number(row.discount_value ?? 0).toFixed(2)} AED off`}
+                  </p>
+                  <p className="text-[11px] text-muted-foreground/70">
+                    Min {Number(row.minimum_order_amount ?? 0).toFixed(2)} AED
+                  </p>
+                </div>
+                <button
+                  onClick={() => toggle(row)}
+                  className={`rounded-full px-3 py-1 text-[11px] font-bold ${
+                    row.is_active
+                      ? "bg-emerald-500/10 text-emerald-500"
+                      : "bg-muted text-muted-foreground"
+                  }`}
+                >
+                  {row.is_active ? "Active" : "Inactive"}
+                </button>
               </div>
-              <button
-                onClick={() => togglePromo(promo)}
-                className={`rounded-full px-3 py-1 text-[11px] font-bold ${
-                  promo.is_active
-                    ? "bg-emerald-500/10 text-emerald-400"
-                    : "bg-muted text-muted-foreground"
-                }`}
-              >
-                {promo.is_active ? "Active" : "Inactive"}
-              </button>
             </div>
           ))}
         </div>

@@ -413,6 +413,9 @@ const MerchantPromoBannerEditorPage = safeLazy(() => import("./pages/merchant/Me
 const AdminDriverMonitorPage = safeLazy(() => import("./pages/admin/AdminDriverMonitorPage"), "AdminDriverMonitorPage");
 const AdminUserLookupPage = safeLazy(() => import("./pages/admin/AdminUserLookupPage"), "AdminUserLookupPage");
 const AdminNotificationOpsPage = safeLazy(() => import("./pages/admin/AdminNotificationOpsPage"), "AdminNotificationOpsPage");
+const AdminFinanceSummaryPage = safeLazy(() => import("./pages/admin/AdminFinanceSummaryPage"), "AdminFinanceSummaryPage");
+const CustomerSpendingInsightsPage = safeLazy(() => import("./pages/CustomerSpendingInsightsPage"), "CustomerSpendingInsightsPage");
+const AdminPlatformAlertsPage = safeLazy(() => import("./pages/admin/AdminPlatformAlertsPage"), "AdminPlatformAlertsPage");
 
 // City sub-page wrappers
 const CityServicesPage = () => <CityHubPage subPage="services" />;
@@ -886,6 +889,9 @@ const App = () => (
                 <Route path="/admin/driver-monitor" element={<ProtectedRoute><AdminDriverMonitorPage /></ProtectedRoute>} />
                 <Route path="/admin/user-lookup" element={<ProtectedRoute><AdminUserLookupPage /></ProtectedRoute>} />
                 <Route path="/admin/notification-ops" element={<ProtectedRoute><AdminNotificationOpsPage /></ProtectedRoute>} />
+                <Route path="/admin/finance-summary" element={<ProtectedRoute><AdminFinanceSummaryPage /></ProtectedRoute>} />
+                <Route path="/me/spending-insights" element={<ProtectedRoute><CustomerSpendingInsightsPage /></ProtectedRoute>} />
+                <Route path="/admin/platform-alerts" element={<ProtectedRoute><AdminPlatformAlertsPage /></ProtectedRoute>} />
               <Route path="/city/:countryCode/:city/:vertical/:locale" element={<CityVerticalPage />} />
 
               {/* Guest / Public */}
