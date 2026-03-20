@@ -66,6 +66,9 @@ export const routes = {
   merchantLiveControl: (merchantId: string) => `/merchant/live/${encodeURIComponent(merchantId)}`,
   merchantCoupons: (merchantId: string) => `/merchant/coupons/${encodeURIComponent(merchantId)}`,
   adminGrowthOps: () => `/admin/growth-ops`,
+  notifications: () => `/notifications`,
+  adminRetentionOps: () => `/admin/retention-ops`,
+  driverEarningsV2: () => `/driver/earnings-v2`,
 
   // Orbit
   orbitCallTest: () => `/orbit/call-test`,
