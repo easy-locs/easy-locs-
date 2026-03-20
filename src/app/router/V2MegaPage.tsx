@@ -14,7 +14,6 @@ import { useNotificationsRealtime } from "@/hooks/useNotificationsRealtime";
 import { useMapStore } from "@/stores/mapStore";
 import { MapMarkerList } from "@/components/map/MapMarkerList";
 import { PropertyDetailPanel } from "@/components/property/PropertyDetailPanel";
-import { SimpleCallPanel } from "@/components/call/SimpleCallPanel";
 import { CameraPreviewPanel } from "@/components/camera/CameraPreviewPanel";
 import { useCameraStore } from "@/stores/cameraStore";
 import { usePermissionStore } from "@/stores/permissionStore";
@@ -33,6 +32,9 @@ import { BookingStatusPanel } from "@/components/booking/BookingStatusPanel";
 import { RentStatusPanel } from "@/components/property/RentStatusPanel";
 import { SimpleNavTabs, type SimpleNavTab } from "@/components/layout/SimpleNavTabs";
 import { MerchantCheckoutPanel } from "@/components/merchant/MerchantCheckoutPanel";
+import { CallRealtimeBridge } from "@/components/call/CallRealtimeBridge";
+import { RealtimeCallPanel } from "@/components/call/RealtimeCallPanel";
+import { useRealtimeCallStore } from "@/stores/realtimeCallStore";
 
 export default function V2MegaPage() {
   useListingsRealtime();
