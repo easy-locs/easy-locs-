@@ -24407,6 +24407,10 @@ export type Database = {
         }
         Returns: Json
       }
+      update_wallet_balance: {
+        Args: { p_amount: number; p_type: string; p_wallet_id: string }
+        Returns: undefined
+      }
       validate_tenant_invitation: { Args: { _token: string }; Returns: Json }
       wallet_transfer: {
         Args: {
