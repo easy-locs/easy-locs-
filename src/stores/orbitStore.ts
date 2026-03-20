@@ -7,6 +7,7 @@ import type { AppRole } from "@/lib/types/domain";
 export interface OrbitProfileV2 {
   id: string; // auth user id
   orbitId: string;
+  email: string | null;
   role: AppRole;
   displayName: string | null;
   avatarUrl: string | null;
