@@ -32,6 +32,12 @@ const PANELS = [
   { label: "Promo Performance", path: "/admin/promo-performance" },
   { label: "Acquisition Funnel", path: "/admin/acquisition-funnel" },
   { label: "Driver Incentives", path: "/admin/driver-incentives" },
+  { label: "City Launch Checklist", path: "/admin/city-launch-checklist" },
+  { label: "System Live Status", path: "/admin/system-live-status" },
+  { label: "Central Control Panel", path: "/admin/central-control" },
+  { label: "Live Incident Feed", path: "/admin/live-incident-feed" },
+  { label: "Risk Scoreboard", path: "/admin/risk-scoreboard" },
+  { label: "Store Readiness Matrix", path: "/admin/store-readiness-matrix" },
 ];
 
 export default function AdminMasterControlPage() {
