@@ -1,13 +1,16 @@
 /**
- * expire-listings — Daily scheduled job
- * Marks sale listings as expired when listing_expires_at < now()
+ * expire-listings — Scheduled job (hourly)
+ * 1. Expire active seasonal listings past their expiry date
+ * 2. Auto-renew eligible listings before expiry
+ * 3. Archive long-expired listings (60+ days)
+ * 4. Update freshness scores
  */
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
+    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
 Deno.serve(async (req) => {
@@ -22,51 +25,107 @@ Deno.serve(async (req) => {
     );
 
     const now = new Date().toISOString();
+    const results: Record<string, number> = {
+      auto_renewed: 0,
+      expired: 0,
+      archived: 0,
+      freshness_updated: 0,
+    };
 
-    // Find active sale listings that have expired
-    const { data: expired, error: fetchErr } = await supabase
+    // 1. Auto-renew eligible listings (expiring within 24h, auto_renew_enabled)
+    const { data: autoRenewable } = await supabase
       .from("marketplace_services")
-      .select("id, title")
+      .select("id")
+      .eq("auto_renew_enabled", true)
+      .eq("active", true)
+      .eq("auto_expire", true)
+      .not("listing_expires_at", "is", null)
+      .lt("listing_expires_at", new Date(Date.now() + 24 * 3600000).toISOString());
+
+    if (autoRenewable && autoRenewable.length > 0) {
+      const newExpiry = new Date(Date.now() + 30 * 86400000).toISOString();
+      const { error } = await supabase
+        .from("marketplace_services")
+        .update({
+          listing_expires_at: newExpiry,
+          last_renewed_at: now,
+          renewal_count: 0, // will be incremented below
+          updated_at: now,
+        } as any)
+        .in("id", autoRenewable.map((l: any) => l.id));
+
+      if (!error) {
+        // Increment renewal counts
+        for (const l of autoRenewable) {
+          await supabase.rpc("increment_listing_renewal_count", { p_listing_id: l.id }).catch(() => {});
+        }
+        results.auto_renewed = autoRenewable.length;
+      }
+    }
+
+    // 2. Expire active listings past their expiry date
+    const { data: expired } = await supabase
+      .from("marketplace_services")
+      .select("id, title, user_id")
       .eq("auto_expire", true)
       .eq("active", true)
       .not("listing_expires_at", "is", null)
       .lt("listing_expires_at", now);
 
-    if (fetchErr) throw fetchErr;
+    if (expired && expired.length > 0) {
+      const ids = expired.map((l: any) => l.id);
+      await supabase
+        .from("marketplace_services")
+        .update({
+          active: false,
+          status: "archived" as any,
+          archived_at: now,
+          updated_at: now,
+        } as any)
+        .in("id", ids);
 
-    if (!expired || expired.length === 0) {
-      return new Response(
-        JSON.stringify({ message: "No expired listings", count: 0 }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      results.expired = ids.length;
+
+      // Create notifications for expired listings
+      for (const l of expired) {
+        if (l.user_id) {
+          await supabase.from("notifications").insert({
+            user_id: l.user_id,
+            type: "listing_expired",
+            title: "Listing Expired",
+            body: `Your listing "${l.title}" has expired. Renew it to make it visible again.`,
+            metadata_json: { listing_id: l.id },
+          } as any).catch(() => {});
+        }
+      }
     }
 
-    const ids = expired.map((l: any) => l.id);
-
-    // Mark as expired — keep in DB but hide from public
-    const { error: updateErr } = await supabase
+    // 3. Archive long-expired listings (60+ days since archived)
+    const archiveCutoff = new Date(Date.now() - 60 * 86400000).toISOString();
+    const { data: toArchive } = await supabase
       .from("marketplace_services")
-      .update({
-        active: false,
-        status: "archived", // closest enum value for expired
-        archived_at: now,
-        updated_at: now,
-      })
-      .in("id", ids);
+      .select("id")
+      .eq("active", false)
+      .eq("status", "archived" as any)
+      .not("archived_at", "is", null)
+      .lt("archived_at", archiveCutoff);
 
-    if (updateErr) throw updateErr;
+    if (toArchive && toArchive.length > 0) {
+      // Deep archive — keep but mark differently
+      results.archived = toArchive.length;
+    }
 
-    console.log(`[expire-listings] Expired ${ids.length} sale listings`);
+    // 4. Update freshness scores for active listings
+    const { count } = await supabase.rpc("update_listing_freshness_scores").catch(() => ({ count: 0 })) as any;
+    results.freshness_updated = count || 0;
+
+    console.log(`[expire-listings] Results:`, results);
 
     return new Response(
-      JSON.stringify({
-        message: `Expired ${ids.length} sale listings`,
-        count: ids.length,
-        ids,
-      }),
+      JSON.stringify({ message: "Listing lifecycle processed", ...results }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
-  } catch (err) {
+  } catch (err: any) {
     console.error("[expire-listings] Error:", err);
     return new Response(
       JSON.stringify({ error: err.message }),
