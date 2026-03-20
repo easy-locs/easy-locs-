@@ -100,6 +100,12 @@ export const routes = {
   customerOrderArchive: () => `/my-orders/archive`,
   merchantProductPerformance: (merchantId: string) => `/merchant/product-performance/${encodeURIComponent(merchantId)}`,
   adminWalletWatch: () => `/admin/wallet-watch`,
+  customerReorder: () => `/reorder`,
+  merchantAutoAccept: (merchantId: string) => `/merchant/auto-accept/${encodeURIComponent(merchantId)}`,
+  adminSystemHealth: () => `/admin/system-health`,
+  customerLiveLocation: () => `/location/live`,
+  driverActiveMissions: () => `/driver/active-missions`,
+  adminFraudDetection: () => `/admin/fraud-detection`,
 
   // Orbit
   orbitCallTest: () => `/orbit/call-test`,
@@ -245,6 +251,12 @@ export const ROUTE_REGISTRY = [
   { group: "public", label: "Order Archive", path: "/my-orders/archive" },
   { group: "merchant", label: "Product Performance", path: "/merchant/product-performance/:merchantId" },
   { group: "admin", label: "Wallet Watch", path: "/admin/wallet-watch" },
+  { group: "public", label: "Reorder", path: "/reorder" },
+  { group: "merchant", label: "Auto Accept Settings", path: "/merchant/auto-accept/:merchantId" },
+  { group: "admin", label: "System Health", path: "/admin/system-health" },
+  { group: "public", label: "Live Location", path: "/location/live" },
+  { group: "driver", label: "Active Missions", path: "/driver/active-missions" },
+  { group: "admin", label: "Fraud Detection", path: "/admin/fraud-detection" },
 
   { group: "public", label: "Coming Soon", path: "/coming-soon/:slug" },
   { group: "public", label: "City Market", path: "/city-market/:citySlug" },
