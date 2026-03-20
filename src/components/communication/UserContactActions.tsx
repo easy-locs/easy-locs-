@@ -77,7 +77,7 @@ export default function UserContactActions({
       }
 
       // For direct calls, we need the target user's org
-      // or our own org as the callee_org_id
+      // or our own org as the receiver_orbit_id
       let calleeOrgId = targetOrgId;
       if (!calleeOrgId) {
         const { data: targetMembership } = await supabase
