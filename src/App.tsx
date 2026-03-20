@@ -703,8 +703,16 @@ if (typeof window !== "undefined") {
   });
 }
 
-/** Route "/" → OrbitHome (authenticated) or Index (guest) */
+/** Route "/" → Orbit Communication (authenticated) or Index (guest) */
 function HomeRouter() {
+  const { user, loading } = useAuth();
+  if (loading) return <PageLoader />;
+  if (!user) return <Suspense fallback={<PageLoader />}><Index /></Suspense>;
+  return <Suspense fallback={<PageLoader />}><CommunicationCenter /></Suspense>;
+}
+
+/** Route "/home" → OrbitHome marketplace hub (authenticated) or Index (guest) */
+function MarketplaceHomeRouter() {
   const { user, loading } = useAuth();
   if (loading) return <PageLoader />;
   if (!user) return <Suspense fallback={<PageLoader />}><Index /></Suspense>;
@@ -745,7 +753,7 @@ const App = () => (
               {/* ══════ PUBLIC WEBSITE ══════ */}
               {/* Homepage */}
               <Route path="/" element={<HomeRouter />} />
-              <Route path="/home" element={<Index />} />
+              <Route path="/home" element={<MarketplaceHomeRouter />} />
 
               {/* Auth */}
               <Route path="/login" element={<Login />} />

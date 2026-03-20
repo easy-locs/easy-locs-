@@ -1,10 +1,9 @@
 /**
  * CommunicationCenter — Orbit Communication System.
- * Full-screen messaging experience integrated with Easy-Locs platform.
+ * Full-screen messaging experience — NO sidebar, standalone layout.
  */
 import { useState, useEffect, useCallback, useRef } from "react";
-import DashboardLayout from "@/components/dashboard/DashboardLayout";
-import { Plus, Zap, Lock } from "lucide-react";
+import { Plus, Zap, Lock, ShieldCheck } from "lucide-react";
 import { motion } from "framer-motion";
 import { useSearchParams } from "react-router-dom";
 import { useI18n } from "@/lib/i18n";
@@ -196,28 +195,28 @@ export const CommunicationCenter = () => {
   };
 
   return (
-    <DashboardLayout>
+    <>
       <div
         className="flex flex-col"
         style={{
-          height: isMobile ? "100dvh" : "100vh",
+          height: "100dvh",
           width: "100%",
-          position: isMobile ? "fixed" : "relative",
+          position: "fixed",
           top: 0,
           left: 0,
           right: 0,
           bottom: 0,
           background: "hsl(var(--background))",
-          zIndex: isMobile ? 50 : undefined,
+          zIndex: 50,
           overflow: "hidden",
         }}
       >
-        {/* Orbit header — compact, edge-to-edge */}
+        {/* Orbit header — E2EE++ Ghost branding */}
         <div
           className="flex items-center px-4 shrink-0"
           style={{
-            height: isMobile ? 48 : 44,
-            borderBottom: "1px solid hsl(var(--border) / 0.1)",
+            height: 52,
+            borderBottom: "1px solid hsl(var(--border) / 0.08)",
             background: "hsl(var(--background))",
           }}
         >
@@ -230,9 +229,13 @@ export const CommunicationCenter = () => {
               <h1 className="text-lg font-bold tracking-tight" style={{ color: "hsl(var(--foreground))" }}>
                 Orbit
               </h1>
-              <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[9px] font-semibold"
-                style={{ background: "hsl(var(--primary) / 0.08)", color: "hsl(var(--primary))" }}>
-                <Lock className="h-2.5 w-2.5" /> E2E
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold"
+                style={{ background: "hsl(142 60% 45% / 0.1)", color: "hsl(142 60% 45%)" }}>
+                <ShieldCheck className="h-3 w-3" /> E2EE++
+              </span>
+              <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[8px] font-semibold"
+                style={{ background: "hsl(270 60% 55% / 0.08)", color: "hsl(270 60% 55%)" }}>
+                👻 Ghost
               </span>
             </div>
           )}
@@ -338,7 +341,7 @@ export const CommunicationCenter = () => {
       )}
 
       <NewConversationDialog open={showNewConversation} onOpenChange={setShowNewConversation} onThreadCreated={handleNewThreadCreated} />
-    </DashboardLayout>
+    </>
   );
 };
 
