@@ -1602,76 +1602,51 @@ export type Database = {
       }
       call_logs: {
         Row: {
-          callee_org_id: string
-          caller_id: string
-          context_id: string | null
-          context_label: string | null
-          context_type: string
+          answered_at: string | null
+          call_type: string
+          caller_orbit_id: string
+          conversation_id: string
           created_at: string
-          duration_seconds: number | null
+          direction: string
+          duration_sec: number
           ended_at: string | null
-          ended_by: string | null
           id: string
-          is_video: boolean
+          receiver_orbit_id: string
+          session_id: string | null
           started_at: string | null
           status: string
-          thread_id: string | null
         }
         Insert: {
-          callee_org_id: string
-          caller_id: string
-          context_id?: string | null
-          context_label?: string | null
-          context_type?: string
+          answered_at?: string | null
+          call_type?: string
+          caller_orbit_id: string
+          conversation_id: string
           created_at?: string
-          duration_seconds?: number | null
+          direction: string
+          duration_sec?: number
           ended_at?: string | null
-          ended_by?: string | null
           id?: string
-          is_video?: boolean
+          receiver_orbit_id: string
+          session_id?: string | null
           started_at?: string | null
-          status?: string
-          thread_id?: string | null
+          status: string
         }
         Update: {
-          callee_org_id?: string
-          caller_id?: string
-          context_id?: string | null
-          context_label?: string | null
-          context_type?: string
+          answered_at?: string | null
+          call_type?: string
+          caller_orbit_id?: string
+          conversation_id?: string
           created_at?: string
-          duration_seconds?: number | null
+          direction?: string
+          duration_sec?: number
           ended_at?: string | null
-          ended_by?: string | null
           id?: string
-          is_video?: boolean
+          receiver_orbit_id?: string
+          session_id?: string | null
           started_at?: string | null
           status?: string
-          thread_id?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "call_logs_callee_org_id_fkey"
-            columns: ["callee_org_id"]
-            isOneToOne: false
-            referencedRelation: "orgs"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "call_logs_callee_org_id_fkey"
-            columns: ["callee_org_id"]
-            isOneToOne: false
-            referencedRelation: "orgs_tenant_view"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "call_logs_thread_id_fkey"
-            columns: ["thread_id"]
-            isOneToOne: false
-            referencedRelation: "conversation_threads"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       call_participants: {
         Row: {
