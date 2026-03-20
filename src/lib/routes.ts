@@ -298,6 +298,11 @@ export const routes = {
   adminNotificationCampaigns: () => `/admin/notification-campaigns`,
   adminCustomerSegments: () => `/admin/customer-segments`,
   adminMerchantSegments: () => `/admin/merchant-segments`,
+  // V1 order flow
+  v1Checkout: () => `/v1/checkout`,
+  v1MerchantOrders: (merchantId: string) => `/v1/merchant-orders/${encodeURIComponent(merchantId)}`,
+  v1Ride: () => `/v1/ride`,
+  v1SendPackage: () => `/v1/send-package`,
 
   // Orbit
   orbitCallTest: () => `/orbit/call-test`,
