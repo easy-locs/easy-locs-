@@ -166,11 +166,8 @@ export default function CommCallsSection() {
   };
 
   const getDisplayLabel = (call: CallLog) => {
-    const parts: string[] = [];
-    if (call.org_name) parts.push(call.org_name);
-    if (call.context_label && call.context_label !== call.org_name) parts.push(call.context_label);
-    if (parts.length > 0) return parts;
-    return [call.caller_id === user?.id ? (t("orbit.calls.outgoing_call") || "Outgoing call") : (t("orbit.calls.incoming_call") || "Incoming call")];
+    const peerId = call.direction === "outgoing" ? call.receiver_orbit_id : call.caller_orbit_id;
+    return [peerId || (call.direction === "outgoing" ? (t("orbit.calls.outgoing_call") || "Outgoing call") : (t("orbit.calls.incoming_call") || "Incoming call"))];
   };
 
   return (
