@@ -1,13 +1,19 @@
-import { useEffect, useMemo, useState, useCallback } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { ensureOrbitProfile } from "@/lib/orbit/ensureOrbitProfile";
-import { getConversationMessages } from "@/lib/chat/conversationService";
+import {
+  getConversationMessages,
+  listMyConversations,
+} from "@/lib/chat/conversationService";
 import { sendTextMessage } from "@/lib/chat/messageService";
 import { AddContactByEmail } from "@/components/chat/AddContactByEmail";
-import { CallButton } from "@/components/call/CallButton";
+import { ConversationListPanel } from "@/components/chat/ConversationListPanel";
+import { ChatThreadPanel } from "@/components/chat/ChatThreadPanel";
 import { IncomingCallModal } from "@/components/call/IncomingCallModal";
 import { useCallRealtime } from "@/hooks/useCallRealtime";
 import { useConversationRealtime } from "@/hooks/useConversationRealtime";
-import { ArrowLeft, Send } from "lucide-react";
+import { useConversationsRealtime } from "@/hooks/useConversationsRealtime";
+import { getConversationPeer } from "@/lib/chat/conversationUi";
+import { Plus, X } from "lucide-react";
 import type { ConversationRow, ChatMessageRow } from "@/lib/types/comms";
 
 type OrbitProfile = {
@@ -20,17 +26,31 @@ type PeerInfo = {
   orbit_id: string;
   email: string | null;
   display_name: string | null;
-  avatar_url: string | null;
+  avatar_url?: string | null;
 };
 
 export default function MessagesPage() {
   const [myOrbit, setMyOrbit] = useState<OrbitProfile | null>(null);
+  const [conversations, setConversations] = useState<ConversationRow[]>([]);
   const [conversation, setConversation] = useState<ConversationRow | null>(null);
   const [peer, setPeer] = useState<PeerInfo | null>(null);
   const [messages, setMessages] = useState<ChatMessageRow[]>([]);
-  const [text, setText] = useState("");
+  const [showAddContact, setShowAddContact] = useState(false);
 
   useCallRealtime();
+
+  const reloadConversations = useCallback(async () => {
+    try {
+      const rows = await listMyConversations();
+      setConversations(rows);
+    } catch (err) {
+      console.error("reloadConversations error", err);
+    }
+  }, []);
+
+  useConversationsRealtime(useCallback(() => {
+    void reloadConversations();
+  }, [reloadConversations]));
 
   useEffect(() => {
     void (async () => {
@@ -42,20 +62,28 @@ export default function MessagesPage() {
           displayName: (profile as any).display_name ?? null,
         });
       }
+      await reloadConversations();
     })();
-  }, []);
+  }, [reloadConversations]);
 
+  // When conversation changes, load messages and resolve peer
   useEffect(() => {
-    if (!conversation?.id) return;
+    if (!conversation?.id || !myOrbit?.orbitId) return;
     void (async () => {
       const rows = await getConversationMessages(conversation.id);
       setMessages(rows);
+      const p = getConversationPeer(conversation, myOrbit.orbitId);
+      setPeer(
+        p
+          ? { orbit_id: p.orbitId, email: p.email ?? null, display_name: p.displayName ?? null }
+          : null
+      );
     })();
-  }, [conversation?.id]);
+  }, [conversation?.id, myOrbit?.orbitId]);
 
   const handleRealtimeMessage = useCallback((row: any) => {
     setMessages((prev) => {
-      if (prev.some((x) => x.id === row.id)) return prev;
+      if (prev.some((x: any) => x.id === row.id)) return prev;
       return [...prev, row];
     });
   }, []);
@@ -73,21 +101,34 @@ export default function MessagesPage() {
     [messages]
   );
 
-  const handleSend = async () => {
-    if (!conversation || !peer || !myOrbit || !text.trim()) return;
+  const handleOpenConversation = async (conv: any) => {
+    setConversation(conv);
+    setShowAddContact(false);
+    const rows = await getConversationMessages(conv.id);
+    setMessages(rows);
+    if (myOrbit?.orbitId) {
+      const p = getConversationPeer(conv, myOrbit.orbitId);
+      setPeer(
+        p
+          ? { orbit_id: p.orbitId, email: p.email ?? null, display_name: p.displayName ?? null }
+          : null
+      );
+    }
+  };
 
+  const handleSendMessage = async (text: string) => {
+    if (!conversation || !peer || !myOrbit) return;
     const msg = await sendTextMessage({
       conversationId: conversation.id,
       senderOrbitId: myOrbit.orbitId,
       receiverOrbitId: peer.orbit_id,
       body: text,
     });
-
     setMessages((prev) => {
-      if (prev.some((x) => x.id === msg.id)) return prev;
+      if (prev.some((x: any) => x.id === msg.id)) return prev;
       return [...prev, msg];
     });
-    setText("");
+    await reloadConversations();
   };
 
   const handleBack = useCallback(() => {
@@ -104,87 +145,50 @@ export default function MessagesPage() {
 
       {!showThread ? (
         <>
-          <div className="shrink-0 px-4 pt-4 pb-2">
+          {/* List header */}
+          <div className="shrink-0 flex items-center justify-between px-4 pt-4 pb-2">
             <h1 className="text-xl font-bold text-foreground">Messages</h1>
+            <button
+              onClick={() => setShowAddContact((v) => !v)}
+              className="h-9 w-9 rounded-full flex items-center justify-center hover:bg-accent/10 active:scale-[0.95] transition-all text-foreground/60"
+            >
+              {showAddContact ? <X className="h-5 w-5" /> : <Plus className="h-5 w-5" />}
+            </button>
           </div>
 
-          <div className="flex-1 min-h-0 overflow-y-auto px-4 py-2">
-            <AddContactByEmail
-              onConversationReady={(conv, foundPeer) => {
-                setConversation(conv);
-                setPeer(foundPeer);
-                setMessages([]);
-              }}
+          {showAddContact && (
+            <div className="px-4 pb-3">
+              <AddContactByEmail
+                onConversationReady={(conv, foundPeer) => {
+                  setConversation(conv);
+                  setPeer(foundPeer);
+                  setMessages([]);
+                  setShowAddContact(false);
+                  void reloadConversations();
+                }}
+              />
+            </div>
+          )}
+
+          {/* Conversation list */}
+          <div className="flex-1 min-h-0 overflow-y-auto">
+            <ConversationListPanel
+              conversations={conversations}
+              activeConversationId={conversation?.id}
+              myOrbitId={myOrbit?.orbitId ?? ""}
+              onOpen={(conv) => void handleOpenConversation(conv)}
             />
           </div>
         </>
       ) : (
-        <>
-          {/* Header */}
-          <div className="shrink-0 flex items-center gap-3 px-3 py-2.5 border-b border-border/30 bg-card">
-            <button
-              onClick={handleBack}
-              className="h-9 w-9 flex items-center justify-center rounded-full hover:bg-accent/10 active:scale-[0.95] transition-all"
-            >
-              <ArrowLeft className="h-5 w-5 text-foreground/70" />
-            </button>
-
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-foreground truncate">
-                {peer?.display_name ?? peer?.email ?? "Chat"}
-              </p>
-              <p className="text-xs text-muted-foreground truncate">
-                {peer?.orbit_id}
-              </p>
-            </div>
-
-            <div className="flex items-center gap-1 shrink-0">
-              <CallButton orbitId={peer!.orbit_id} type="audio" />
-              <CallButton orbitId={peer!.orbit_id} type="video" />
-            </div>
-          </div>
-
-          {/* Messages */}
-          <div className="flex-1 min-h-0 overflow-y-auto px-4 py-3 space-y-2">
-            {sortedMessages.map((msg) => {
-              const mine = msg.sender_orbit_id === myOrbit?.orbitId;
-              return (
-                <div
-                  key={msg.id}
-                  className={`flex ${mine ? "justify-end" : "justify-start"}`}
-                >
-                  <div
-                    className={`max-w-[75%] rounded-2xl px-3.5 py-2 text-sm ${
-                      mine
-                        ? "bg-primary text-primary-foreground rounded-br-md"
-                        : "bg-muted text-foreground rounded-bl-md"
-                    }`}
-                  >
-                    {msg.body}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-
-          {/* Input */}
-          <div className="shrink-0 flex items-center gap-2 px-3 py-2.5 border-t border-border/30 bg-card">
-            <input
-              value={text}
-              onChange={(e) => setText(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && void handleSend()}
-              className="flex-1 rounded-full border border-border/30 bg-background px-4 py-2 text-sm text-foreground placeholder:text-muted-foreground/40 outline-none focus:ring-2 focus:ring-primary/20"
-              placeholder="Message…"
-            />
-            <button
-              onClick={() => void handleSend()}
-              disabled={!text.trim()}
-              className="h-9 w-9 flex items-center justify-center rounded-full bg-primary text-primary-foreground active:scale-[0.95] transition-transform disabled:opacity-40"
-            >
-              <Send className="h-4 w-4" />
-            </button>
-          </div>
-        </>
+        <ChatThreadPanel
+          conversation={conversation}
+          peer={peer}
+          messages={sortedMessages}
+          myOrbitId={myOrbit?.orbitId ?? ""}
+          onSendMessage={handleSendMessage}
+          onBack={handleBack}
+        />
       )}
     </div>
   );

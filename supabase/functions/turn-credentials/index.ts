@@ -1,5 +1,4 @@
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -8,78 +7,111 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
-async function hmacSha1Base64(secret: string, message: string): Promise<string> {
-  const enc = new TextEncoder();
+function json(data: unknown, status = 200) {
+  return new Response(JSON.stringify(data), {
+    status,
+    headers: { ...corsHeaders, "Content-Type": "application/json", "Cache-Control": "no-store" },
+  });
+}
+
+function getEnv(name: string, fallback = ""): string {
+  return Deno.env.get(name) ?? fallback;
+}
+
+async function hmacSha1Base64(secret: string, value: string): Promise<string> {
   const key = await crypto.subtle.importKey(
     "raw",
-    enc.encode(secret),
+    new TextEncoder().encode(secret),
     { name: "HMAC", hash: "SHA-1" },
     false,
     ["sign"]
   );
-  const sig = await crypto.subtle.sign("HMAC", key, enc.encode(message));
+  const sig = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(value));
   const bytes = new Uint8Array(sig);
-  let binary = "";
-  for (const b of bytes) binary += String.fromCharCode(b);
-  return btoa(binary);
+  let bin = "";
+  for (const b of bytes) bin += String.fromCharCode(b);
+  return btoa(bin);
 }
 
 serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
-  }
+  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader) throw new Error("Missing Authorization header");
+    const TURN_MODE = getEnv("TURN_MODE", "metered");
+    const TURN_TTL_SECONDS = Number(getEnv("TURN_TTL_SECONDS", "3600"));
 
-    const userClient = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_ANON_KEY")!,
-      { global: { headers: { Authorization: authHeader } } }
-    );
+    const stunServers = [
+      { urls: ["stun:stun.l.google.com:19302", "stun:stun1.l.google.com:19302"] },
+    ];
 
-    const { data: authData } = await userClient.auth.getUser();
-    const user = authData.user;
-    if (!user) throw new Error("Not authenticated");
+    if (TURN_MODE === "metered") {
+      const host = getEnv("METERED_TURN_HOST", "global.relay.metered.ca");
+      const username = getEnv("METERED_TURN_USERNAME");
+      const credential = getEnv("METERED_TURN_PASSWORD");
 
-    const turnSecret = Deno.env.get("TURN_SECRET");
-    const turnHost = Deno.env.get("TURN_HOST");
-    if (!turnSecret || !turnHost) throw new Error("TURN env missing");
+      if (!username || !credential) {
+        return json({ ok: false, mode: "metered", reason: "missing_metered_credentials", iceServers: stunServers });
+      }
 
-    const ttlSeconds = 3600;
-    const expiresAt = Math.floor(Date.now() / 1000) + ttlSeconds;
+      return json({
+        ok: true,
+        mode: "metered",
+        ttlSeconds: 600,
+        iceServers: [
+          ...stunServers,
+          {
+            urls: [
+              `turn:${host}:80`,
+              `turn:${host}:80?transport=tcp`,
+              `turn:${host}:443`,
+              `turn:${host}:443?transport=tcp`,
+            ],
+            username,
+            credential,
+          },
+        ],
+      });
+    }
 
-    // Coturn auth-secret username format: "<expiry>:<userid>"
-    const username = `${expiresAt}:${user.id}`;
-    const credential = await hmacSha1Base64(turnSecret, username);
+    if (TURN_MODE === "coturn") {
+      const host = getEnv("TURN_HOST");
+      const secret = getEnv("TURN_SECRET");
 
-    const payload = {
-      username,
-      credential,
-      ttlSeconds,
-      iceServers: [
-        { urls: ["stun:stun.l.google.com:19302", "stun:stun1.l.google.com:19302"] },
-        {
-          urls: [
-            `turn:${turnHost}:3478?transport=udp`,
-            `turn:${turnHost}:3478?transport=tcp`,
-            `turns:${turnHost}:5349?transport=tcp`,
-          ],
-          username,
-          credential,
-        },
-      ],
-    };
+      if (!host || !secret) {
+        return json({ ok: false, mode: "coturn", reason: "missing_turn_host_or_secret", iceServers: stunServers });
+      }
 
-    return new Response(JSON.stringify(payload), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-      status: 200,
-    });
+      const expiry = Math.floor(Date.now() / 1000) + TURN_TTL_SECONDS;
+      const userId = crypto.randomUUID().slice(0, 12);
+      const username = `${expiry}:${userId}`;
+      const credential = await hmacSha1Base64(secret, username);
+
+      return json({
+        ok: true,
+        mode: "coturn",
+        ttlSeconds: TURN_TTL_SECONDS,
+        iceServers: [
+          ...stunServers,
+          {
+            urls: [
+              `turn:${host}:3478?transport=udp`,
+              `turn:${host}:3478?transport=tcp`,
+              `turns:${host}:5349?transport=tcp`,
+            ],
+            username,
+            credential,
+          },
+        ],
+      });
+    }
+
+    return json({ ok: false, reason: "invalid_turn_mode", iceServers: stunServers }, 400);
   } catch (e: any) {
-    return new Response(JSON.stringify({ error: e.message }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-      status: 400,
-    });
+    return json({
+      ok: false,
+      reason: "unexpected_error",
+      error: e?.message ?? String(e),
+      iceServers: [{ urls: ["stun:stun.l.google.com:19302"] }],
+    }, 500);
   }
 });
