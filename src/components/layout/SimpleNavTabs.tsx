@@ -5,6 +5,7 @@ export type SimpleNavTab =
   | "tenant"
   | "search"
   | "payments"
+  | "merchant"
   | "system";
 
 export function SimpleNavTabs(props: {
@@ -18,6 +19,7 @@ export function SimpleNavTabs(props: {
     "tenant",
     "search",
     "payments",
+    "merchant",
     "system",
   ];
 
