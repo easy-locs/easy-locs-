@@ -218,6 +218,11 @@ export const routes = {
   adminGoLiveReadiness: () => `/admin/go-live-readiness`,
   // IG-IL
   adminUiFinalizer: () => `/admin/ui-finalizer`,
+  // IM-IR
+  adminMasterControl: () => `/admin/master-control`,
+  // IS-IX
+  adminProductionChecklist: () => `/admin/production-checklist`,
+  adminFinalWrap: () => `/admin/final-wrap`,
 
   // Orbit
   orbitCallTest: () => `/orbit/call-test`,
