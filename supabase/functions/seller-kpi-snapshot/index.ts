@@ -29,7 +29,7 @@ serve(async (req) => {
       const [{ data: listings }, { data: bookings }, { data: rentPayments }] = await Promise.all([
         admin.from("property_listings_v2").select("*").eq("owner_orbit_id", owner.orbit_id),
         admin.from("bookings_v2").select("*").eq("owner_orbit_id", owner.orbit_id),
-        admin.from("rent_payments").select("*").eq("ownerOrbitId", owner.orbit_id),
+        admin.from("rent_payments").select("*").eq("owner_orbit_id", owner.orbit_id),
       ]);
 
       const totalListings = listings?.length ?? 0;
