@@ -62,6 +62,10 @@ export const routes = {
   adminHomeEngine: () => `/admin/home-engine`,
   adminMapEngine: () => `/admin/map-engine`,
   adminNotificationEngine: () => `/admin/notification-engine`,
+  merchantInventory: (merchantId: string) => `/merchant/inventory/${encodeURIComponent(merchantId)}`,
+  merchantLiveControl: (merchantId: string) => `/merchant/live/${encodeURIComponent(merchantId)}`,
+  merchantCoupons: (merchantId: string) => `/merchant/coupons/${encodeURIComponent(merchantId)}`,
+  adminGrowthOps: () => `/admin/growth-ops`,
 
   // Orbit
   orbitCallTest: () => `/orbit/call-test`,
