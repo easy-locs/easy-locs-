@@ -91,7 +91,7 @@ function OrbitBottomNav() {
             aria-selected={isActive}
             aria-label={`${label}${badge > 0 ? ` (${badge})` : ""}`}
             onClick={() => navigate(item.path)}
-            className={`relative flex flex-col items-center justify-center gap-0.5 pt-2 pb-1 px-3 min-w-[56px] min-h-[44px] active:scale-90 transition-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-lg ${isOrbit ? "-mt-2" : ""}`}
+            className="relative flex flex-col items-center justify-center gap-0.5 pt-2 pb-1 px-3 min-w-[56px] min-h-[44px] active:scale-90 transition-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-lg"
           >
             {badge > 0 && (
               <span
