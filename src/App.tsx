@@ -1163,6 +1163,11 @@ const App = () => (
                 <Route path="/admin/go-live-readiness" element={<ProtectedRoute><AdminGoLiveReadinessPage /></ProtectedRoute>} />
                 {/* IG-IL */}
                 <Route path="/admin/ui-finalizer" element={<ProtectedRoute><AdminUiFinalizerPage /></ProtectedRoute>} />
+                {/* IM-IR */}
+                <Route path="/admin/master-control" element={<ProtectedRoute><AdminMasterControlPage /></ProtectedRoute>} />
+                {/* IS-IX */}
+                <Route path="/admin/production-checklist" element={<ProtectedRoute><AdminProductionChecklistPage /></ProtectedRoute>} />
+                <Route path="/admin/final-wrap" element={<ProtectedRoute><AdminFinalWrapPage /></ProtectedRoute>} />
               <Route path="/city/:countryCode/:city/:vertical/:locale" element={<CityVerticalPage />} />
 
               {/* Guest / Public */}
