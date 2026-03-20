@@ -1188,6 +1188,17 @@ const App = () => (
                 <Route path="/admin/qa-command" element={<ProtectedRoute><AdminQaCommandPage /></ProtectedRoute>} />
                 {/* KA-KF */}
                 <Route path="/live-tracking" element={<ProtectedRoute><LiveTrackingPageNew /></ProtectedRoute>} />
+                {/* LG-LR */}
+                <Route path="/driver/fuel-costs-v2" element={<ProtectedRoute><DriverFuelCostsPage /></ProtectedRoute>} />
+                <Route path="/driver/compliance" element={<ProtectedRoute><DriverCompliancePage /></ProtectedRoute>} />
+                <Route path="/driver/breaks" element={<ProtectedRoute><DriverBreaksPage /></ProtectedRoute>} />
+                <Route path="/driver/shift-planner" element={<ProtectedRoute><DriverShiftPlannerPage /></ProtectedRoute>} />
+                <Route path="/admin/driver-compliance-ops" element={<ProtectedRoute><AdminDriverComplianceOpsPage /></ProtectedRoute>} />
+                <Route path="/admin/marketplace-experiments" element={<ProtectedRoute><AdminMarketplaceExperimentsPage /></ProtectedRoute>} />
+                <Route path="/checkout/scheduled-order" element={<ProtectedRoute><CustomerScheduledOrderPage /></ProtectedRoute>} />
+                <Route path="/merchant/staff-roles/:merchantId" element={<ProtectedRoute><MerchantStaffRolesPage /></ProtectedRoute>} />
+                <Route path="/merchant/permissions/:merchantId" element={<ProtectedRoute><MerchantPermissionsMatrixPage /></ProtectedRoute>} />
+                <Route path="/merchant/business-hours/:merchantId" element={<ProtectedRoute><MerchantBusinessHoursPage /></ProtectedRoute>} />
               <Route path="/city/:countryCode/:city/:vertical/:locale" element={<CityVerticalPage />} />
 
               {/* Guest / Public */}
