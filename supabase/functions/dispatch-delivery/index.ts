@@ -113,6 +113,7 @@ serve(async (req) => {
 
       const { data: job } = await supabaseAdmin.from("delivery_jobs").select("*").eq("id", job_id).single();
       if (!job) throw new Error("Job not found");
+      await assertJobAuthority(supabaseAdmin, userId, job);
       if (!["pending"].includes(job.status)) throw new Error(`Cannot auto-dispatch in status: ${job.status}`);
 
       // Find online drivers
