@@ -98,47 +98,48 @@ const CategoryBubble = memo(function CategoryBubble({ cat, onNav }: { cat: typeo
   );
 });
 
-/* ── Banner carousel ── */
+/* ── Banner carousel — no flickering, smooth crossfade ── */
 function BannerCarousel({ banners, onNav }: { banners: ReturnType<typeof useDynamicBanners>; onNav: (p: string) => void }) {
   const [idx, setIdx] = useState(0);
 
   useEffect(() => {
     if (banners.length <= 1) return;
-    const timer = setInterval(() => setIdx((i) => (i + 1) % banners.length), 4000);
+    const timer = setInterval(() => setIdx((i) => (i + 1) % banners.length), 5000);
     return () => clearInterval(timer);
   }, [banners.length]);
 
   const b = banners[idx];
 
   return (
-    <div className="relative overflow-hidden" style={{ minHeight: 120 }}>
-      <AnimatePresence mode="wait" initial={false}>
-        <motion.button
-          key={b.id}
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -20 }}
-          transition={{ duration: 0.25, ease: "easeInOut" }}
-          onClick={() => onNav(b.path)}
-          className="w-full rounded-2xl p-4 text-left active:scale-[0.98] transition-transform"
-          style={{ background: b.bg, minHeight: 120 }}
+    <div className="relative" style={{ height: 130 }}>
+      {banners.map((banner, i) => (
+        <button
+          key={banner.id}
+          onClick={() => onNav(banner.path)}
+          className="absolute inset-0 w-full rounded-2xl p-4 text-left active:scale-[0.98] transition-all duration-500 ease-in-out"
+          style={{
+            background: banner.bg,
+            opacity: i === idx ? 1 : 0,
+            pointerEvents: i === idx ? "auto" : "none",
+            transform: i === idx ? "scale(1)" : "scale(0.97)",
+          }}
         >
-          <p className="text-lg font-bold text-white">{b.title}</p>
-          <p className="text-xs text-white/80 mt-0.5">{b.sub}</p>
+          <p className="text-lg font-bold text-white">{banner.title}</p>
+          <p className="text-xs text-white/80 mt-0.5">{banner.sub}</p>
           <span className="inline-block mt-3 px-4 py-1.5 rounded-xl text-xs font-bold bg-white/20 text-white backdrop-blur-sm">
-            {b.cta}
+            {banner.cta}
           </span>
-        </motion.button>
-      </AnimatePresence>
+        </button>
+      ))}
 
       {/* Dots */}
       {banners.length > 1 && (
-        <div className="flex gap-1.5 justify-center mt-2">
+        <div className="absolute -bottom-5 left-0 right-0 flex gap-1.5 justify-center">
           {banners.map((_, i) => (
             <button
               key={i}
               onClick={() => setIdx(i)}
-              className="rounded-full transition-all"
+              className="rounded-full transition-all duration-300"
               style={{
                 width: i === idx ? 16 : 6,
                 height: 6,
