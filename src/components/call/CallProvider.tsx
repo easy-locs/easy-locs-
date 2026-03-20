@@ -81,7 +81,7 @@ export function CallProvider({ children }: { children: ReactNode }) {
           async (payload) => {
             try {
               const call = payload.new as any;
-              if (!call || call.caller_id === user.id) return;
+              if (!call || call.caller_orbit_id === user.id) return;
               if (call.status !== "ringing") return;
               // Accept call if targeted at user's org, or directly/indirectly targeted to this user
               const isOrgCall = orgIds.length > 0 && orgIds.includes(call.callee_org_id);
@@ -116,7 +116,7 @@ export function CallProvider({ children }: { children: ReactNode }) {
               const { data: profile } = await supabase
                 .from("profiles")
                 .select("name, email")
-                .eq("id", call.caller_id)
+                .eq("id", call.caller_orbit_id)
                 .single();
 
               setIncomingCallId(call.id);
