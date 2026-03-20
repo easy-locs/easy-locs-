@@ -76,7 +76,7 @@ export const usePushTokenStore = create<PushTokenStore>((set) => ({
   },
 
   deactivateToken: async (token) => {
-    const { error } = await (supabase as any)
+    const { error } = await supabase
       .from("push_tokens")
       .update({ active: false, updated_at: new Date().toISOString() })
       .eq("token", token);
