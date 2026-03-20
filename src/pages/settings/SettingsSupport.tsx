@@ -1,15 +1,14 @@
 /**
- * SettingsSupport — Help & Support page.
+ * SettingsSupport — Help & Support page with ticket access.
  * Route: /settings/support
  */
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Headphones, MessageCircle, Mail, FileText, ExternalLink } from "lucide-react";
+import { ArrowLeft, Headphones, MessageCircle, FileText, Ticket } from "lucide-react";
 
 const SUPPORT_OPTIONS = [
-  { icon: MessageCircle, label: "Live Chat", desc: "Chat with our support team", action: "chat" },
-  { icon: Mail, label: "Email Support", desc: "support@easy-locs.com", action: "email" },
-  { icon: FileText, label: "FAQ", desc: "Frequently asked questions", action: "faq" },
-  { icon: ExternalLink, label: "Help Center", desc: "Browse help articles", action: "help" },
+  { icon: Ticket, label: "My Tickets", desc: "View your support requests", path: "/support/tickets" },
+  { icon: MessageCircle, label: "Create a Request", desc: "Report an order, payment or delivery issue", path: "/support/tickets" },
+  { icon: FileText, label: "FAQ / Help Center", desc: "Answers and guides coming soon", path: "/help" },
 ];
 
 export default function SettingsSupport() {
@@ -17,11 +16,10 @@ export default function SettingsSupport() {
 
   return (
     <div className="min-h-[100dvh] flex flex-col bg-background">
-      <header className="flex items-center gap-3 px-4 pt-4 pb-2">
+      <header className="flex items-center gap-3 px-4 pt-4 pb-3">
         <button
           onClick={() => navigate("/settings")}
-          className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-95 transition-transform"
-          style={{ background: "hsl(var(--muted))" }}
+          className="w-9 h-9 rounded-xl flex items-center justify-center bg-muted active:scale-95 transition-transform"
         >
           <ArrowLeft className="w-4.5 h-4.5" />
         </button>
@@ -29,14 +27,14 @@ export default function SettingsSupport() {
       </header>
 
       <div className="flex-1 px-4 pb-24 mt-2 space-y-5">
-        {/* Contact options */}
         <div
           className="rounded-2xl overflow-hidden"
           style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border) / 0.12)" }}
         >
           {SUPPORT_OPTIONS.map((opt, idx) => (
             <button
-              key={opt.action}
+              key={opt.label}
+              onClick={() => navigate(opt.path)}
               className="w-full px-4 py-3.5 flex items-center gap-3 active:bg-muted/30 transition-colors text-left"
               style={idx < SUPPORT_OPTIONS.length - 1 ? { borderBottom: "1px solid hsl(var(--border) / 0.08)" } : undefined}
             >
@@ -54,7 +52,6 @@ export default function SettingsSupport() {
           ))}
         </div>
 
-        {/* App info */}
         <div
           className="rounded-2xl p-4 text-center"
           style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border) / 0.12)" }}
