@@ -206,6 +206,7 @@ export const ROUTE_REGISTRY = [
   { group: "merchant", label: "Merchant Banner Editor", path: "/merchant/banner-editor/:merchantId" },
   { group: "admin", label: "Driver Monitor", path: "/admin/driver-monitor" },
   { group: "admin", label: "User Lookup", path: "/admin/user-lookup" },
+  { group: "admin", label: "Notification Ops", path: "/admin/notification-ops" },
 
   { group: "public", label: "Coming Soon", path: "/coming-soon/:slug" },
   { group: "public", label: "City Market", path: "/city-market/:citySlug" },
