@@ -753,6 +753,7 @@ const App = () => (
               <Route path="/forgot-password" element={<ForgotPassword />} />
               <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/verify-email" element={<VerifyEmail />} />
+              <Route path="/auth/callback" element={<AuthCallbackPage />} />
               <Route path="/onboarding" element={<Onboarding />} />
               <Route path="/install" element={<Install />} />
 
