@@ -54,6 +54,9 @@ export const routes = {
   reorder: (orderId: string) => `/order/reorder/${encodeURIComponent(orderId)}`,
   merchantOrderBoard: (merchantId: string) => `/merchant/orders/${encodeURIComponent(merchantId)}`,
   adminAnalyticsOps: () => `/admin/analytics-ops`,
+  customerProfile: () => `/me`,
+  notificationPreferences: () => `/settings/notification-preferences`,
+  adminQualityOps: () => `/admin/quality-ops`,
 
   // Orbit
   orbitCallTest: () => `/orbit/call-test`,
