@@ -2266,6 +2266,8 @@ export type Database = {
           created_at: string | null
           id: string
           metadata: Json | null
+          read_at: string | null
+          receiver_orbit_id: string | null
           sender_orbit_id: string
           sender_user_id: string
           type: string
@@ -2276,6 +2278,8 @@ export type Database = {
           created_at?: string | null
           id?: string
           metadata?: Json | null
+          read_at?: string | null
+          receiver_orbit_id?: string | null
           sender_orbit_id: string
           sender_user_id: string
           type?: string
@@ -2286,6 +2290,8 @@ export type Database = {
           created_at?: string | null
           id?: string
           metadata?: Json | null
+          read_at?: string | null
+          receiver_orbit_id?: string | null
           sender_orbit_id?: string
           sender_user_id?: string
           type?: string
@@ -3183,6 +3189,7 @@ export type Database = {
         Row: {
           booking_id: string | null
           created_at: string | null
+          created_by_orbit_id: string | null
           id: string
           last_message_at: string | null
           lease_id: string | null
@@ -3195,6 +3202,7 @@ export type Database = {
         Insert: {
           booking_id?: string | null
           created_at?: string | null
+          created_by_orbit_id?: string | null
           id?: string
           last_message_at?: string | null
           lease_id?: string | null
@@ -3207,6 +3215,7 @@ export type Database = {
         Update: {
           booking_id?: string | null
           created_at?: string | null
+          created_by_orbit_id?: string | null
           id?: string
           last_message_at?: string | null
           lease_id?: string | null
