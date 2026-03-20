@@ -2,6 +2,7 @@ import { AppPageShell } from "@/components/layout/AppPageShell";
 import { MapDashboard } from "@/components/map/MapDashboard";
 import { MapMarkerList } from "@/components/map/MapMarkerList";
 import { MapboxCanvas } from "@/components/map/MapboxCanvas";
+import { MapSearchPanel } from "@/components/map/MapSearchPanel";
 
 export default function MapPage() {
   return (
@@ -9,6 +10,7 @@ export default function MapPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <MapboxCanvas />
         <div className="space-y-4">
+          <MapSearchPanel />
           <MapDashboard />
           <MapMarkerList />
         </div>
