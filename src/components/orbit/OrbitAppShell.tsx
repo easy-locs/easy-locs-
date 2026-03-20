@@ -1,23 +1,21 @@
 /**
- * OrbitAppShell — Persistent shell for /app/* routes.
- * Centralizes realtime polling, notification dispatcher, and OrbitFAB.
+ * OrbitAppShell — Persistent shell for /home and orbit routes.
+ * Navigation is handled by the global MainBottomNav — NOT rendered here.
  */
 import { Outlet } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useOrbitEngine } from "@/stores/orbit-engine";
 import { useEffect, lazy, Suspense } from "react";
 import OrbitHeader from "./OrbitHeader";
-import OrbitBottomNav from "./OrbitBottomNav";
 import { startNotificationDispatcher, stopNotificationDispatcher } from "@/lib/orbit/notification-dispatcher";
 
 const OrbitFAB = lazy(() => import("./OrbitFAB"));
 const CartSheet = lazy(() => import("@/components/cart/CartSheet"));
 
-export default function OrbitAppShell() {
+export default function OrbitAppShell({ children }: { children?: React.ReactNode }) {
   const { user, orgId } = useAuth();
   const { refreshModule } = useOrbitEngine();
 
-  // Initial full refresh + polling fallback (60s)
   useEffect(() => {
     if (!user?.id) return;
     refreshModule("all", user.id, orgId || undefined);
@@ -25,14 +23,12 @@ export default function OrbitAppShell() {
     return () => clearInterval(interval);
   }, [user?.id, orgId]);
 
-  // Notification dispatcher — listens for real-time DB notifications
   useEffect(() => {
     if (!user?.id) return;
     startNotificationDispatcher({ userId: user.id });
     return () => stopNotificationDispatcher();
   }, [user?.id]);
 
-  // Network status
   useEffect(() => {
     const { setNetworkStatus } = useOrbitEngine.getState();
     const onOnline = () => setNetworkStatus("online");
@@ -47,12 +43,12 @@ export default function OrbitAppShell() {
   }, []);
 
   return (
-    <div className="min-h-[100dvh] flex flex-col" style={{ background: "hsl(var(--hud-bg))" }}>
+    <div className="min-h-[100dvh] flex flex-col bg-background">
       <OrbitHeader />
-      <main className="flex-1 overflow-y-auto pb-16">
+      <main className="flex-1 overflow-y-auto pb-[calc(56px+env(safe-area-inset-bottom,0px))]">
+        {children}
         <Outlet />
       </main>
-      <OrbitBottomNav />
       <Suspense fallback={null}>
         <OrbitFAB />
       </Suspense>
