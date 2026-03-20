@@ -208,6 +208,10 @@ export const routes = {
   customerRewardRedemption: () => `/me/redeem-rewards`,
   driverFuelCosts: () => `/driver/fuel-costs`,
   adminExecutiveOverview: () => `/admin/executive-overview`,
+  // HO-HT
+  adminSystemLive: () => `/admin/system-live`,
+  // HU-HZ
+  adminRestaurantAutofill: () => `/admin/restaurant-autofill`,
 
   // Orbit
   orbitCallTest: () => `/orbit/call-test`,
