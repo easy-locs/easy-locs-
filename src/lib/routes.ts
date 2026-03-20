@@ -168,6 +168,18 @@ export const routes = {
   customerAddressBookV2: () => `/me/address-book-v2`,
   driverNavigationMode: () => `/driver/navigation-mode`,
   adminCityOps: () => `/admin/city-ops`,
+  // GE-GJ
+  customerMealPlanner: () => `/me/meal-planner`,
+  merchantDeliveryZones: (merchantId: string) => `/merchant/delivery-zones/${encodeURIComponent(merchantId)}`,
+  adminOperatorNotes: () => `/admin/operator-notes`,
+  customerReceiptVault: () => `/me/receipt-vault`,
+  driverVehicleProfile: () => `/driver/vehicle-profile`,
+  adminNetworkStatus: () => `/admin/network-status`,
+  // GK-GP
+  customerSharedWallet: () => `/me/shared-wallet`,
+  adminSlaMonitor: () => `/admin/sla-monitor`,
+  customerOrderGifts: () => `/checkout/gift-order`,
+  adminIncidentCenter: () => `/admin/incident-center`,
 
   // Orbit
   orbitCallTest: () => `/orbit/call-test`,
