@@ -1,13 +1,13 @@
 import { supabase } from "@/integrations/supabase/client";
 
 export async function getMerchantDashboardSnapshot(merchantId: string) {
-  const [{ data: merchant }, { data: orders }, { data: products }, { data: promos }] =
+  const [merchantRes, ordersRes, productsRes, promosRes] =
     await Promise.all([
       (supabase as any).from("seed_merchants").select("*").eq("id", merchantId).maybeSingle(),
-      supabase
+      (supabase as any)
         .from("orders")
         .select("*")
-        .eq("merchant_id" as any, merchantId)
+        .eq("merchant_id", merchantId)
         .order("created_at", { ascending: false })
         .limit(200),
       (supabase as any)

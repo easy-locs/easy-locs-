@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { isFavoriteMerchant, toggleFavoriteMerchant } from "@/lib/favorites/favorites";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 
 export default function FavoriteMerchantButton({
