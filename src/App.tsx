@@ -412,6 +412,7 @@ const OrderRefundRequestPage = safeLazy(() => import("./pages/orders/OrderRefund
 const MerchantPromoBannerEditorPage = safeLazy(() => import("./pages/merchant/MerchantPromoBannerEditorPage"), "MerchantPromoBannerEditorPage");
 const AdminDriverMonitorPage = safeLazy(() => import("./pages/admin/AdminDriverMonitorPage"), "AdminDriverMonitorPage");
 const AdminUserLookupPage = safeLazy(() => import("./pages/admin/AdminUserLookupPage"), "AdminUserLookupPage");
+const AdminNotificationOpsPage = safeLazy(() => import("./pages/admin/AdminNotificationOpsPage"), "AdminNotificationOpsPage");
 
 // City sub-page wrappers
 const CityServicesPage = () => <CityHubPage subPage="services" />;
