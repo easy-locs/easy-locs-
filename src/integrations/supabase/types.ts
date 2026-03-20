@@ -24024,124 +24024,85 @@ export type Database = {
           active: boolean | null
           auto_expire: boolean | null
           badges: string[] | null
-          bathrooms: number | null
-          bedrooms: number | null
-          boost_tier: string | null
-          boost_until: string | null
-          brand: string | null
+          booking_slug: string | null
+          boost_enabled: boolean | null
+          boost_expires_at: string | null
+          boost_multiplier: number | null
           category: string | null
           city: string | null
-          condition: string | null
           country: string | null
           created_at: string | null
           currency: string | null
           description: string | null
-          duration_minutes: number | null
-          entity_type: string | null
-          features: Json | null
+          freshness_score: number | null
           id: string | null
           lat: number | null
           listing_expires_at: string | null
           listing_type: string | null
           lng: number | null
-          location: string | null
-          max_capacity: number | null
-          model: string | null
           org_id: string | null
           photo_urls: Json | null
-          presence_mode: string | null
           price: number | null
-          price_type: string | null
+          provider_id: string | null
           published_at: string | null
-          rooms: number | null
           status: Database["public"]["Enums"]["listing_status"] | null
-          surface_sqm: number | null
           title: string | null
-          updated_at: string | null
-          video_url: string | null
-          year_built: number | null
         }
         Insert: {
           active?: boolean | null
           auto_expire?: boolean | null
           badges?: string[] | null
-          bathrooms?: number | null
-          bedrooms?: number | null
-          boost_tier?: string | null
-          boost_until?: string | null
-          brand?: string | null
+          booking_slug?: string | null
+          boost_enabled?: boolean | null
+          boost_expires_at?: string | null
+          boost_multiplier?: number | null
           category?: string | null
           city?: string | null
-          condition?: string | null
           country?: string | null
           created_at?: string | null
           currency?: string | null
           description?: string | null
-          duration_minutes?: number | null
-          entity_type?: string | null
-          features?: Json | null
+          freshness_score?: number | null
           id?: string | null
           lat?: number | null
           listing_expires_at?: string | null
           listing_type?: string | null
           lng?: number | null
-          location?: string | null
-          max_capacity?: number | null
-          model?: string | null
           org_id?: string | null
           photo_urls?: Json | null
-          presence_mode?: string | null
           price?: number | null
-          price_type?: string | null
+          provider_id?: string | null
           published_at?: string | null
-          rooms?: number | null
           status?: Database["public"]["Enums"]["listing_status"] | null
-          surface_sqm?: number | null
           title?: string | null
-          updated_at?: string | null
-          video_url?: string | null
-          year_built?: number | null
         }
         Update: {
           active?: boolean | null
           auto_expire?: boolean | null
           badges?: string[] | null
-          bathrooms?: number | null
-          bedrooms?: number | null
-          boost_tier?: string | null
-          boost_until?: string | null
-          brand?: string | null
+          booking_slug?: string | null
+          boost_enabled?: boolean | null
+          boost_expires_at?: string | null
+          boost_multiplier?: number | null
           category?: string | null
           city?: string | null
-          condition?: string | null
           country?: string | null
           created_at?: string | null
           currency?: string | null
           description?: string | null
-          duration_minutes?: number | null
-          entity_type?: string | null
-          features?: Json | null
+          freshness_score?: number | null
           id?: string | null
           lat?: number | null
           listing_expires_at?: string | null
           listing_type?: string | null
           lng?: number | null
-          location?: string | null
-          max_capacity?: number | null
-          model?: string | null
           org_id?: string | null
           photo_urls?: Json | null
-          presence_mode?: string | null
           price?: number | null
-          price_type?: string | null
+          provider_id?: string | null
           published_at?: string | null
-          rooms?: number | null
           status?: Database["public"]["Enums"]["listing_status"] | null
-          surface_sqm?: number | null
           title?: string | null
-          updated_at?: string | null
-          video_url?: string | null
-          year_built?: number | null
         }
         Relationships: [
           {
@@ -24156,6 +24117,13 @@ export type Database = {
             columns: ["org_id"]
             isOneToOne: false
             referencedRelation: "orgs_tenant_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "marketplace_services_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_providers"
             referencedColumns: ["id"]
           },
         ]
@@ -24483,6 +24451,10 @@ export type Database = {
       has_workspace_role: {
         Args: { _roles: string[]; _workspace_id: string }
         Returns: boolean
+      }
+      increment_listing_renewal_count: {
+        Args: { p_listing_id: string }
+        Returns: undefined
       }
       increment_listing_views: { Args: { p_slug: string }; Returns: undefined }
       is_group_admin: {
