@@ -859,6 +859,9 @@ const App = () => (
                 <Route path="/merchant/live/:merchantId" element={<ProtectedRoute><MerchantLiveControlPage /></ProtectedRoute>} />
                 <Route path="/merchant/coupons/:merchantId" element={<ProtectedRoute><MerchantCouponManagerPage /></ProtectedRoute>} />
                 <Route path="/admin/growth-ops" element={<ProtectedRoute><AdminGrowthOpsPage /></ProtectedRoute>} />
+                <Route path="/notifications" element={<ProtectedRoute><NotificationCenterPage /></ProtectedRoute>} />
+                <Route path="/admin/retention-ops" element={<ProtectedRoute><AdminRetentionOpsPage /></ProtectedRoute>} />
+                <Route path="/driver/earnings-v2" element={<ProtectedRoute><DriverEarningsPageNew /></ProtectedRoute>} />
               <Route path="/city/:countryCode/:city/:vertical/:locale" element={<CityVerticalPage />} />
 
               {/* Guest / Public */}
