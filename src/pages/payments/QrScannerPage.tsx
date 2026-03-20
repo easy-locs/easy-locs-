@@ -209,22 +209,24 @@ export default function QrScannerPage() {
     }
   }, [clearScannerInstance, handleQrResult, ios, safari, secure, setErrorSafe, setStateSafe, resetRuntimeFlags]);
 
-  // Auto-start camera on mount
+  // Auto-start camera on mount — single clean effect
   useEffect(() => {
     mountedRef.current = true;
+    let timer: ReturnType<typeof setTimeout> | null = null;
+
     if (tab === "scan" && !autoStartedRef.current) {
       autoStartedRef.current = true;
-      const timer = setTimeout(() => {
+      timer = setTimeout(() => {
         if (mountedRef.current) startScanner();
-      }, 300);
-      return () => { clearTimeout(timer); };
+      }, 400);
     }
-    return () => { mountedRef.current = false; void clearScannerInstance("unmount", false); };
-  }, []);
 
-  useEffect(() => {
-    return () => { mountedRef.current = false; void clearScannerInstance("unmount", false); };
-  }, [clearScannerInstance]);
+    return () => {
+      if (timer) clearTimeout(timer);
+      mountedRef.current = false;
+      void clearScannerInstance("unmount", false);
+    };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (tab === "myqr" && (startedRef.current || startingRef.current)) {
