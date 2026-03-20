@@ -526,6 +526,20 @@ const AdminFraudWatchPage = safeLazy(() => import("./pages/admin/AdminFraudWatch
 const CustomerContactlessPage = safeLazy(() => import("./pages/customer/CustomerContactlessPage"), "CustomerContactlessPage");
 const DriverHotZonesPage = safeLazy(() => import("./pages/driver/DriverHotZonesPage"), "DriverHotZonesPage");
 const AdminDemandForecastPage = safeLazy(() => import("./pages/admin/AdminDemandForecastPage"), "AdminDemandForecastPage");
+// HC-HH block
+const CustomerAutoRepeatPage = safeLazy(() => import("./pages/customer/CustomerAutoRepeatPage"), "CustomerAutoRepeatPage");
+const MerchantRushModePage = safeLazy(() => import("./pages/merchant/MerchantRushModePage"), "MerchantRushModePage");
+const AdminRefundQueuePage = safeLazy(() => import("./pages/admin/AdminRefundQueuePage"), "AdminRefundQueuePage");
+const CustomerPartyOrderPage = safeLazy(() => import("./pages/customer/CustomerPartyOrderPage"), "CustomerPartyOrderPage");
+const DriverEarningsBreakdownPage = safeLazy(() => import("./pages/driver/DriverEarningsBreakdownPage"), "DriverEarningsBreakdownPage");
+const AdminPlatformHealthPage = safeLazy(() => import("./pages/admin/AdminPlatformHealthPage"), "AdminPlatformHealthPage");
+// HI-HN block
+const CustomerOfficeLunchPage = safeLazy(() => import("./pages/customer/CustomerOfficeLunchPage"), "CustomerOfficeLunchPage");
+const MerchantDeliveryFeesPage = safeLazy(() => import("./pages/merchant/MerchantDeliveryFeesPage"), "MerchantDeliveryFeesPage");
+const AdminDriverCompliancePage = safeLazy(() => import("./pages/admin/AdminDriverCompliancePage"), "AdminDriverCompliancePage");
+const CustomerRewardRedemptionPage = safeLazy(() => import("./pages/customer/CustomerRewardRedemptionPage"), "CustomerRewardRedemptionPage");
+const DriverFuelCostPage = safeLazy(() => import("./pages/driver/DriverFuelCostPage"), "DriverFuelCostPage");
+const AdminExecutiveOverviewPage = safeLazy(() => import("./pages/admin/AdminExecutiveOverviewPage"), "AdminExecutiveOverviewPage");
 
 // City sub-page wrappers
 const CityServicesPage = () => <CityHubPage subPage="services" />;
@@ -1109,6 +1123,20 @@ const App = () => (
                 <Route path="/checkout/contactless" element={<ProtectedRoute><CustomerContactlessPage /></ProtectedRoute>} />
                 <Route path="/driver/hot-zones" element={<ProtectedRoute><DriverHotZonesPage /></ProtectedRoute>} />
                 <Route path="/admin/demand-forecast" element={<ProtectedRoute><AdminDemandForecastPage /></ProtectedRoute>} />
+                {/* HC-HH */}
+                <Route path="/me/auto-repeat" element={<ProtectedRoute><CustomerAutoRepeatPage /></ProtectedRoute>} />
+                <Route path="/merchant/rush-mode/:merchantId" element={<ProtectedRoute><MerchantRushModePage /></ProtectedRoute>} />
+                <Route path="/admin/refund-queue" element={<ProtectedRoute><AdminRefundQueuePage /></ProtectedRoute>} />
+                <Route path="/checkout/party-order" element={<ProtectedRoute><CustomerPartyOrderPage /></ProtectedRoute>} />
+                <Route path="/driver/earnings-breakdown" element={<ProtectedRoute><DriverEarningsBreakdownPage /></ProtectedRoute>} />
+                <Route path="/admin/platform-health" element={<ProtectedRoute><AdminPlatformHealthPage /></ProtectedRoute>} />
+                {/* HI-HN */}
+                <Route path="/checkout/office-lunch" element={<ProtectedRoute><CustomerOfficeLunchPage /></ProtectedRoute>} />
+                <Route path="/merchant/delivery-fees/:merchantId" element={<ProtectedRoute><MerchantDeliveryFeesPage /></ProtectedRoute>} />
+                <Route path="/admin/driver-compliance" element={<ProtectedRoute><AdminDriverCompliancePage /></ProtectedRoute>} />
+                <Route path="/me/redeem-rewards" element={<ProtectedRoute><CustomerRewardRedemptionPage /></ProtectedRoute>} />
+                <Route path="/driver/fuel-costs" element={<ProtectedRoute><DriverFuelCostPage /></ProtectedRoute>} />
+                <Route path="/admin/executive-overview" element={<ProtectedRoute><AdminExecutiveOverviewPage /></ProtectedRoute>} />
               <Route path="/city/:countryCode/:city/:vertical/:locale" element={<CityVerticalPage />} />
 
               {/* Guest / Public */}
