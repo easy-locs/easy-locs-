@@ -169,8 +169,14 @@ export default function OrbitWalletPinDialog({ open, onVerified, onCancel }: Orb
                   value={mode === "setup" && step === "confirm" ? confirmPin : pin}
                   onChange={(v) => {
                     setError(null);
-                    if (mode === "setup" && step === "confirm") setConfirmPin(v);
-                    else setPin(v);
+                    if (mode === "setup" && step === "confirm") {
+                      setConfirmPin(v);
+                      if (v.length === 6) setTimeout(() => handleSetup(), 100);
+                    } else {
+                      setPin(v);
+                      if (v.length === 6 && mode === "verify") setTimeout(() => handleVerify(), 100);
+                      else if (v.length === 6 && mode === "setup" && step === "enter") setTimeout(() => handleSetup(), 100);
+                    }
                   }}
                   autoFocus
                 >
