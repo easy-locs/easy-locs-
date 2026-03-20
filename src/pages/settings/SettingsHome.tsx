@@ -1,60 +1,96 @@
 /**
- * SettingsHome — Clean hierarchical settings hub.
- * Route: /settings
+ * SettingsHome — Premium card-based settings hub.
+ * Each category is a separate visual card with smart click buttons.
  */
 import { useNavigate } from "react-router-dom";
 import { useDinoPageAudit } from "@/hooks/useDinoPageAudit";
 import {
   ArrowLeft, User, CreditCard, MapPin, Bell, Shield, Store,
   Palette, Globe, ChevronRight, FileText, Headphones, Heart,
-  MessageCircle, Wallet, LogOut,
+  MessageCircle, Wallet, LogOut, Settings, Lock, Phone,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
-const SETTINGS_GROUPS = [
+const SETTINGS_CARDS = [
   {
     title: "Account",
+    icon: User,
+    color: "hsl(210 80% 52%)",
     items: [
-      { key: "account", icon: User, label: "Profile", desc: "Name, email, photo", path: "/settings/account" },
-      { key: "security", icon: Shield, label: "Security", desc: "Password, PIN, 2FA", path: "/settings/security" },
+      { key: "profile", icon: User, label: "Personal Info", path: "/settings/account" },
+      { key: "security", icon: Lock, label: "Security & PIN", path: "/settings/security" },
+      { key: "phone", icon: Phone, label: "Phone Number", path: "/settings/account" },
     ],
   },
   {
-    title: "Communication",
+    title: "Orbit",
+    icon: MessageCircle,
+    color: "hsl(142 60% 45%)",
     items: [
-      { key: "orbit", icon: MessageCircle, label: "Orbit", desc: "Chat, calls, contacts", path: "/orbit" },
-      { key: "notifications", icon: Bell, label: "Notifications", desc: "Alerts & push settings", path: "/settings/notifications" },
+      { key: "chat", icon: MessageCircle, label: "Chat Settings", path: "/orbit" },
+      { key: "contacts", icon: User, label: "Contacts", path: "/orbit" },
     ],
   },
   {
-    title: "Payments & Addresses",
+    title: "Wallet & Payments",
+    icon: Wallet,
+    color: "hsl(38 65% 50%)",
     items: [
-      { key: "wallet", icon: Wallet, label: "Wallet", desc: "Balance, transactions", path: "/wallet/hub" },
-      { key: "payment-methods", icon: CreditCard, label: "Payment Methods", desc: "Cards, wallet, cash", path: "/settings/payment-methods" },
-      { key: "addresses", icon: MapPin, label: "Addresses", desc: "Saved delivery locations", path: "/settings/addresses" },
-      { key: "favorites", icon: Heart, label: "Favorites", desc: "Saved merchants & stores", path: "/favorites" },
+      { key: "wallet", icon: Wallet, label: "Wallet", path: "/wallet/hub" },
+      { key: "cards", icon: CreditCard, label: "Payment Methods", path: "/settings/payment-methods" },
     ],
   },
   {
-    title: "Business",
+    title: "Addresses",
+    icon: MapPin,
+    color: "hsl(16 85% 55%)",
     items: [
-      { key: "business", icon: Store, label: "Seller Hub", desc: "Manage your businesses", path: "/seller" },
+      { key: "addresses", icon: MapPin, label: "Saved Addresses", path: "/settings/addresses" },
+      { key: "favorites", icon: Heart, label: "Favorites", path: "/favorites" },
+    ],
+  },
+  {
+    title: "Notifications",
+    icon: Bell,
+    color: "hsl(270 60% 55%)",
+    items: [
+      { key: "notifs", icon: Bell, label: "Push & Alerts", path: "/settings/notifications" },
+    ],
+  },
+  {
+    title: "Security",
+    icon: Shield,
+    color: "hsl(0 70% 55%)",
+    items: [
+      { key: "privacy", icon: Shield, label: "Privacy & Security", path: "/settings/security" },
+    ],
+  },
+  {
+    title: "Business / Shop",
+    icon: Store,
+    color: "hsl(145 60% 42%)",
+    items: [
+      { key: "seller", icon: Store, label: "Seller Hub", path: "/seller" },
     ],
   },
   {
     title: "Preferences",
+    icon: Settings,
+    color: "hsl(200 60% 50%)",
     items: [
-      { key: "language", icon: Globe, label: "Language & Region", desc: "Language, currency, format", path: "/settings/orbit" },
-      { key: "appearance", icon: Palette, label: "Appearance", desc: "Theme, dark mode", path: "/settings/preferences" },
+      { key: "language", icon: Globe, label: "Language & Region", path: "/settings/orbit" },
+      { key: "theme", icon: Palette, label: "Appearance", path: "/settings/preferences" },
     ],
   },
   {
     title: "Support",
+    icon: Headphones,
+    color: "hsl(196 80% 50%)",
     items: [
-      { key: "support", icon: Headphones, label: "Help & Support", desc: "Contact us, FAQ", path: "/settings/support" },
-      { key: "legal", icon: FileText, label: "Legal", desc: "Terms, privacy, licenses", path: "/legal" },
+      { key: "help", icon: Headphones, label: "Help & Support", path: "/settings/support" },
+      { key: "legal", icon: FileText, label: "Legal", path: "/legal" },
     ],
   },
 ];
@@ -71,7 +107,7 @@ export default function SettingsHome() {
   };
 
   return (
-    <div className="min-h-[100dvh] flex flex-col bg-background" data-settings-page>
+    <div className="min-h-[100dvh] flex flex-col bg-background">
       {/* Header */}
       <header className="flex items-center gap-3 px-4 pt-4 pb-3">
         <button
@@ -84,76 +120,75 @@ export default function SettingsHome() {
         <h1 className="text-lg font-bold text-foreground">Settings</h1>
       </header>
 
-      {/* User card */}
+      {/* User Profile Card */}
       {user && (
-        <div className="px-4 mb-3">
+        <div className="px-4 mb-4">
           <button
             onClick={() => navigate("/settings/account")}
             className="w-full flex items-center gap-3 p-4 rounded-2xl active:scale-[0.98] transition-transform"
             style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border) / 0.12)" }}
           >
             <div
-              className="w-12 h-12 rounded-2xl flex items-center justify-center text-lg font-bold shrink-0"
+              className="w-14 h-14 rounded-2xl flex items-center justify-center text-xl font-bold shrink-0"
               style={{ background: "hsl(var(--primary) / 0.1)", color: "hsl(var(--primary))" }}
             >
               {(user.user_metadata?.display_name || user.email || "U")[0].toUpperCase()}
             </div>
             <div className="flex-1 min-w-0 text-left">
-              <p className="text-sm font-bold text-foreground truncate">
+              <p className="text-base font-bold text-foreground truncate">
                 {user.user_metadata?.display_name || user.email?.split("@")[0] || "User"}
               </p>
-              <p className="text-[11px] text-muted-foreground truncate">{user.email}</p>
+              <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+              <p className="text-[10px] text-muted-foreground mt-0.5">Tap to edit profile</p>
             </div>
             <ChevronRight className="w-4 h-4 shrink-0 text-muted-foreground/30" />
           </button>
         </div>
       )}
 
-      <div className="flex-1 px-4 pb-24 space-y-5 mt-1">
-        {SETTINGS_GROUPS.map((group) => (
-          <section key={group.title} className="space-y-1.5">
-            <h2 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground px-1 mb-1">
-              {group.title}
-            </h2>
-            <div
-              className="rounded-2xl overflow-hidden"
-              style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border) / 0.12)" }}
-            >
-              {group.items.map((item, idx) => (
-                <button
-                  key={item.key}
-                  data-setting-row
-                  onClick={() => navigate(item.path)}
-                  className="w-full px-4 py-3.5 flex items-center gap-3 active:bg-muted/30 transition-colors text-left"
-                  style={idx < group.items.length - 1 ? { borderBottom: "1px solid hsl(var(--border) / 0.08)" } : undefined}
-                >
-                  <div
-                    className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
-                    style={{ background: "hsl(var(--primary) / 0.08)" }}
-                  >
-                    <item.icon className="w-4.5 h-4.5" style={{ color: "hsl(var(--primary))" }} />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-foreground">{item.label}</p>
-                    <p className="text-[11px] text-muted-foreground truncate">{item.desc}</p>
-                  </div>
-                  <ChevronRight className="w-4 h-4 shrink-0 text-muted-foreground/30" />
-                </button>
-              ))}
+      {/* Settings Cards */}
+      <div className="flex-1 px-4 pb-24 space-y-3">
+        {SETTINGS_CARDS.map((card) => (
+          <div
+            key={card.title}
+            className="rounded-2xl overflow-hidden"
+            style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border) / 0.1)" }}
+          >
+            {/* Card header */}
+            <div className="flex items-center gap-2.5 px-4 pt-3.5 pb-2">
+              <div
+                className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
+                style={{ background: `${card.color.replace(")", " / 0.1)")}` }}
+              >
+                <card.icon className="w-4 h-4" style={{ color: card.color }} />
+              </div>
+              <h2 className="text-[13px] font-bold text-foreground">{card.title}</h2>
             </div>
-          </section>
+
+            {/* Card items */}
+            {card.items.map((item, idx) => (
+              <button
+                key={item.key}
+                onClick={() => navigate(item.path)}
+                className="w-full px-4 py-3 flex items-center gap-3 active:bg-muted/20 transition-colors text-left"
+                style={idx < card.items.length - 1 ? { borderBottom: "1px solid hsl(var(--border) / 0.06)" } : undefined}
+              >
+                <item.icon className="w-4 h-4 text-muted-foreground shrink-0" />
+                <span className="text-sm font-medium text-foreground flex-1">{item.label}</span>
+                <ChevronRight className="w-3.5 h-3.5 text-muted-foreground/30 shrink-0" />
+              </button>
+            ))}
+          </div>
         ))}
 
         {/* Logout */}
         <button
           onClick={handleLogout}
           className="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl active:scale-[0.98] transition-transform"
-          style={{ background: "hsl(var(--destructive) / 0.06)", border: "1px solid hsl(var(--destructive) / 0.12)" }}
+          style={{ background: "hsl(var(--destructive) / 0.06)", border: "1px solid hsl(var(--destructive) / 0.1)" }}
         >
-          <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: "hsl(var(--destructive) / 0.1)" }}>
-            <LogOut className="w-4.5 h-4.5" style={{ color: "hsl(var(--destructive))" }} />
-          </div>
-          <p className="text-sm font-semibold" style={{ color: "hsl(var(--destructive))" }}>Sign Out</p>
+          <LogOut className="w-4.5 h-4.5" style={{ color: "hsl(var(--destructive))" }} />
+          <span className="text-sm font-semibold" style={{ color: "hsl(var(--destructive))" }}>Sign Out</span>
         </button>
       </div>
     </div>
