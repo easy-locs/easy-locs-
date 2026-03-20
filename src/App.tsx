@@ -723,8 +723,6 @@ const RealtimeHubGuard = () => { useRealtimeHub(); return null; };
 const OrchestrationGuard = () => { useOrchestration(); return null; };
 /** Subscribe to realtime notifications */
 const NotificationsRealtimeGuard = () => {
-  import("react").then(({ useEffect }) => {});
-  // Call once at mount — subscribeRealtime is idempotent (channel deduplication)
   useNotificationsStore.getState().subscribeRealtime();
   return null;
 };
