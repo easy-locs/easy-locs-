@@ -228,6 +228,11 @@ export const ROUTE_REGISTRY = [
   { group: "admin", label: "Order Watch", path: "/admin/order-watch" },
   { group: "public", label: "Loyalty History", path: "/me/loyalty-history" },
   { group: "admin", label: "Search Watch", path: "/admin/search-watch" },
+  { group: "public", label: "Active Orders", path: "/my-orders/active" },
+  { group: "merchant", label: "Merchant Closing Mode", path: "/merchant/closing-mode/:merchantId" },
+  { group: "admin", label: "Merchant Promo Watch", path: "/admin/merchant-promo-watch" },
+  { group: "driver", label: "Driver Earnings Summary", path: "/driver/earnings-summary" },
+  { group: "admin", label: "Refund Watch", path: "/admin/refund-watch" },
 
   { group: "public", label: "Coming Soon", path: "/coming-soon/:slug" },
   { group: "public", label: "City Market", path: "/city-market/:citySlug" },
