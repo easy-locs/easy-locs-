@@ -364,6 +364,7 @@ serve(async (req) => {
       const { data: escrow } = await supabaseAdmin.from("escrow_payments")
         .select("*").eq("job_id", job_id).eq("status", "held").maybeSingle();
       if (!escrow) throw new Error("No held escrow found for this job");
+      await assertEscrowAuthority(supabaseAdmin, userId, escrow);
 
       const { error } = await supabaseAdmin.from("escrow_payments").update({
         status: "refunded", refunded_at: new Date().toISOString(),
