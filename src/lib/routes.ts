@@ -100,6 +100,12 @@ export const routes = {
   customerOrderArchive: () => `/my-orders/archive`,
   merchantProductPerformance: (merchantId: string) => `/merchant/product-performance/${encodeURIComponent(merchantId)}`,
   adminWalletWatch: () => `/admin/wallet-watch`,
+  customerReorder: () => `/reorder`,
+  merchantAutoAccept: (merchantId: string) => `/merchant/auto-accept/${encodeURIComponent(merchantId)}`,
+  adminSystemHealth: () => `/admin/system-health`,
+  customerLiveLocation: () => `/location/live`,
+  driverActiveMissions: () => `/driver/active-missions`,
+  adminFraudDetection: () => `/admin/fraud-detection`,
 
   // Orbit
   orbitCallTest: () => `/orbit/call-test`,
