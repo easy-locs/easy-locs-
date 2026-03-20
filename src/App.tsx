@@ -491,6 +491,15 @@ const AdminDisputeCenterPage = safeLazy(() => import("./pages/admin/AdminDispute
 const CustomerFavoriteOrdersPage = safeLazy(() => import("./pages/customer/CustomerFavoriteOrdersPage"), "CustomerFavoriteOrdersPage");
 const DriverShiftSchedulerPage = safeLazy(() => import("./pages/driver/DriverShiftSchedulerPage"), "DriverShiftSchedulerPage");
 const AdminGlobalFinancePage = safeLazy(() => import("./pages/admin/AdminGlobalFinancePage"), "AdminGlobalFinancePage");
+// FS-FX block
+const AdminCoreEnginePage = safeLazy(() => import("./pages/admin/AdminCoreEnginePage"), "AdminCoreEnginePage");
+// FY-GD block
+const CustomerGroupOrderPage = safeLazy(() => import("./pages/customer/CustomerGroupOrderPage"), "CustomerGroupOrderPage");
+const MerchantAutoAcceptPage = safeLazy(() => import("./pages/merchant/MerchantAutoAcceptPage"), "MerchantAutoAcceptPage");
+const AdminCashflowMonitorPage = safeLazy(() => import("./pages/admin/AdminCashflowMonitorPage"), "AdminCashflowMonitorPage");
+const CustomerAddressBookPageV2 = safeLazy(() => import("./pages/customer/CustomerAddressBookPageV2"), "CustomerAddressBookPageV2");
+const DriverNavigationModePage = safeLazy(() => import("./pages/driver/DriverNavigationModePage"), "DriverNavigationModePage");
+const AdminCityOpsPage = safeLazy(() => import("./pages/admin/AdminCityOpsPage"), "AdminCityOpsPage");
 
 // City sub-page wrappers
 const CityServicesPage = () => <CityHubPage subPage="services" />;
@@ -1039,6 +1048,15 @@ const App = () => (
                 <Route path="/me/favorite-orders" element={<ProtectedRoute><CustomerFavoriteOrdersPage /></ProtectedRoute>} />
                 <Route path="/driver/shift-scheduler" element={<ProtectedRoute><DriverShiftSchedulerPage /></ProtectedRoute>} />
                 <Route path="/admin/global-finance" element={<ProtectedRoute><AdminGlobalFinancePage /></ProtectedRoute>} />
+                {/* FS-FX */}
+                <Route path="/admin/core-engine" element={<ProtectedRoute><AdminCoreEnginePage /></ProtectedRoute>} />
+                {/* FY-GD */}
+                <Route path="/checkout/group-order" element={<ProtectedRoute><CustomerGroupOrderPage /></ProtectedRoute>} />
+                <Route path="/merchant/auto-accept-v2/:merchantId" element={<ProtectedRoute><MerchantAutoAcceptPage /></ProtectedRoute>} />
+                <Route path="/admin/cashflow-monitor" element={<ProtectedRoute><AdminCashflowMonitorPage /></ProtectedRoute>} />
+                <Route path="/me/address-book-v2" element={<ProtectedRoute><CustomerAddressBookPageV2 /></ProtectedRoute>} />
+                <Route path="/driver/navigation-mode" element={<ProtectedRoute><DriverNavigationModePage /></ProtectedRoute>} />
+                <Route path="/admin/city-ops" element={<ProtectedRoute><AdminCityOpsPage /></ProtectedRoute>} />
               <Route path="/city/:countryCode/:city/:vertical/:locale" element={<CityVerticalPage />} />
 
               {/* Guest / Public */}
