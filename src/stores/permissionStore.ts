@@ -14,6 +14,9 @@ type PermissionStore = {
     value: PermissionStateValue
   ) => void;
 
+  checkCamera: () => Promise<PermissionStateValue>;
+  checkMicrophone: () => Promise<PermissionStateValue>;
+  checkGeolocation: () => Promise<PermissionStateValue>;
   checkGeolocationPermission: () => Promise<PermissionStateValue>;
   requestGeolocation: () => Promise<GeolocationPosition | null>;
   requestCamera: () => Promise<boolean>;
@@ -34,6 +37,42 @@ export const usePermissionStore = create<PermissionStore>((set) => ({
         type: "geo.permission.changed",
         payload: { state: value },
       });
+    }
+  },
+
+  checkCamera: async () => {
+    try {
+      if (!navigator.permissions?.query) return "prompt";
+      const result = await navigator.permissions.query({ name: "camera" as PermissionName });
+      const state = result.state as PermissionStateValue;
+      set({ camera: state });
+      return state;
+    } catch {
+      return "prompt";
+    }
+  },
+
+  checkMicrophone: async () => {
+    try {
+      if (!navigator.permissions?.query) return "prompt";
+      const result = await navigator.permissions.query({ name: "microphone" as PermissionName });
+      const state = result.state as PermissionStateValue;
+      set({ microphone: state });
+      return state;
+    } catch {
+      return "prompt";
+    }
+  },
+
+  checkGeolocation: async () => {
+    try {
+      if (!navigator.permissions?.query) return "prompt";
+      const result = await navigator.permissions.query({ name: "geolocation" as PermissionName });
+      const state = result.state as PermissionStateValue;
+      set({ geolocation: state });
+      return state;
+    } catch {
+      return "prompt";
     }
   },
 

@@ -1,0 +1,189 @@
+import { useEffect } from "react";
+import { V2AppShell } from "@/components/shell/V2AppShell";
+import { V2MegaAudit } from "@/components/debug/V2MegaAudit";
+import { useUiShellStore } from "@/stores/uiShellStore";
+import { useOrbitStore } from "@/stores/orbitStore";
+import { useListingStore } from "@/stores/listingStore";
+import { useBookingStore } from "@/stores/bookingStore";
+import { useWalletStore } from "@/stores/walletStore";
+import { useContactStore } from "@/stores/contactStore";
+import { usePropertyManagementStore } from "@/stores/propertyManagementStore";
+import { useListingsRealtime } from "@/hooks/useListingsRealtime";
+import { useBookingsRealtime } from "@/hooks/useBookingsRealtime";
+import { useMapStore } from "@/stores/mapStore";
+import { MapMarkerList } from "@/components/map/MapMarkerList";
+import { PropertyDetailPanel } from "@/components/property/PropertyDetailPanel";
+import { SimpleCallPanel } from "@/components/call/SimpleCallPanel";
+import { CameraPreviewPanel } from "@/components/camera/CameraPreviewPanel";
+import { useCameraStore } from "@/stores/cameraStore";
+import { usePermissionStore } from "@/stores/permissionStore";
+
+export default function V2MegaPage() {
+  useListingsRealtime();
+  useBookingsRealtime();
+
+  const ui = useUiShellStore();
+  const orbit = useOrbitStore((s) => s.profile);
+  const createListing = useListingStore((s) => s.createListing);
+  const publishListing = useListingStore((s) => s.publishListing);
+  const getPublishedListings = useListingStore((s) => s.getPublishedListings);
+  const hydratePublished = useListingStore((s) => s.hydratePublished);
+  const createBooking = useBookingStore((s) => s.createBooking);
+  const wallet = useWalletStore((s) => s.wallet);
+  const createUnit = usePropertyManagementStore((s) => s.createUnit);
+  const createLease = usePropertyManagementStore((s) => s.createLease);
+  const createRentPayment = usePropertyManagementStore((s) => s.createRentPayment);
+  const openContact = useContactStore((s) => s.openContact);
+  const openChatPanel = useContactStore((s) => s.openChatPanel);
+  const startAudioCall = useContactStore((s) => s.startAudioCall);
+  const startVideoCall = useContactStore((s) => s.startVideoCall);
+  const buildListingMarkers = useMapStore((s) => s.buildListingMarkers);
+  const openCamera = useCameraStore((s) => s.openCamera);
+  const checkCamera = usePermissionStore((s) => s.checkCamera);
+  const checkMicrophone = usePermissionStore((s) => s.checkMicrophone);
+  const checkGeolocation = usePermissionStore((s) => s.checkGeolocation);
+
+  useEffect(() => {
+    void hydratePublished().then(() => {
+      buildListingMarkers();
+    });
+  }, [hydratePublished, buildListingMarkers]);
+
+  const seedWallet = () => {
+    const state = useWalletStore.getState();
+    if (!state.wallet) return;
+    useWalletStore.setState({
+      wallet: {
+        ...state.wallet,
+        availableBalance: 20000,
+        lastUpdatedAt: new Date().toISOString(),
+      },
+    });
+  };
+
+  const doCreateListing = async () => {
+    if (!orbit?.orbitId) return;
+    const listing = await createListing({
+      ownerOrbitId: orbit.orbitId,
+      title: "Dubai Marina Apartment",
+      description: "Wallet + Orbit + Booking + Immo connected",
+      address: "Dubai Marina, Dubai, UAE",
+      city: "Dubai",
+      country: "UAE",
+      lat: 25.0806,
+      lng: 55.1404,
+      currency: "AED",
+      nightPrice: 450,
+      cleaningFee: 75,
+      serviceFee: 25,
+      securityDeposit: 200,
+      monthlyRent: 6500,
+      flowMode: "instant_book",
+    });
+    await publishListing(listing.id);
+    buildListingMarkers();
+  };
+
+  const doInstantBooking = async () => {
+    const listing = getPublishedListings()[0];
+    if (!listing) return;
+    await createBooking({
+      listingId: listing.id,
+      buyerOrbitId: "orbit_buyer_demo_1",
+      checkIn: "2026-03-25",
+      checkOut: "2026-03-28",
+      guestInfo: {
+        fullName: "Demo Guest",
+        phone: "+971500000000",
+        notes: "Late arrival",
+        guestsCount: 2,
+      },
+    });
+  };
+
+  const doImmoFlow = async () => {
+    if (!orbit?.orbitId) return;
+    const listing = getPublishedListings()[0];
+    if (!listing) return;
+
+    const unit = await createUnit({
+      listingId: listing.id,
+      ownerOrbitId: orbit.orbitId,
+      unitLabel: "Unit A-101",
+      propertyType: "apartment",
+    });
+    if (!unit) return;
+
+    const lease = await createLease({
+      listingId: listing.id,
+      unitId: unit.id,
+      ownerOrbitId: orbit.orbitId,
+      tenantOrbitId: "orbit_tenant_demo_1",
+      startDate: "2026-04-01",
+      endDate: "2027-03-31",
+      dueDay: 5,
+      notes: "Annual residential lease",
+    });
+    if (!lease) return;
+
+    await createRentPayment({
+      leaseId: lease.id,
+      dueDate: "2026-04-05",
+      reference: "April rent",
+    });
+  };
+
+  const doOpenContact = () => {
+    const listing = getPublishedListings()[0];
+    if (!listing) return;
+    openContact({ orbitId: listing.ownerOrbitId, listingId: listing.id });
+  };
+
+  const btnClass =
+    "rounded-lg bg-secondary px-3 py-1.5 text-xs font-medium text-secondary-foreground hover:bg-secondary/80 transition-colors";
+
+  return (
+    <V2AppShell
+      header={
+        <div className="bg-card border-b border-border px-4 py-3">
+          <h1 className="text-sm font-semibold text-foreground">
+            V2 Mega — Realtime / Map / Calendar / Camera
+          </h1>
+        </div>
+      }
+      bottomNav={
+        <div className="flex flex-wrap gap-1.5 bg-card border-t border-border p-2">
+          <button className={btnClass} onClick={seedWallet}>Seed Wallet</button>
+          <button className={btnClass} onClick={() => void hydratePublished().then(buildListingMarkers)}>Load Published</button>
+          <button className={btnClass} onClick={() => void doCreateListing()}>Create Listing</button>
+          <button className={btnClass} onClick={() => void doInstantBooking()}>Instant Booking</button>
+          <button className={btnClass} onClick={() => void doImmoFlow()}>Create Immo Flow</button>
+          <button className={btnClass} onClick={doOpenContact}>Open Contact</button>
+          <button className={btnClass} onClick={openChatPanel}>Open Chat</button>
+          <button className={btnClass} onClick={startAudioCall}>Audio Call</button>
+          <button className={btnClass} onClick={startVideoCall}>Video Call</button>
+          <button className={btnClass} onClick={() => void openCamera("qr")}>Open Camera</button>
+          <button className={btnClass} onClick={() => void checkCamera()}>Check Camera</button>
+          <button className={btnClass} onClick={() => void checkMicrophone()}>Check Mic</button>
+          <button className={btnClass} onClick={() => void checkGeolocation()}>Check Geo</button>
+          <button className={btnClass} onClick={() => ui.setMapFullscreen(!ui.mapFullscreen)}>Toggle Map</button>
+        </div>
+      }
+      mapLayer={<MapMarkerList />}
+      cameraLayer={<CameraPreviewPanel />}
+      callLayer={<SimpleCallPanel />}
+      rightPanel={<PropertyDetailPanel />}
+    >
+      <div className="p-4 space-y-4">
+        <div className="rounded-lg border border-border bg-card p-3 text-sm space-y-1">
+          <p className="text-foreground">Orbit: {orbit?.orbitId ?? "none"}</p>
+          <p className="text-foreground">Wallet: {wallet?.walletId ?? "none"}</p>
+          <p className="text-foreground">
+            Balance: {wallet?.availableBalance ?? 0} {wallet?.currency ?? "AED"}
+          </p>
+        </div>
+        <V2MegaAudit />
+      </div>
+    </V2AppShell>
+  );
+}

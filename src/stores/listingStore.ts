@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { platformBus } from "@/app/events/platform-bus";
 import type { PropertyListingV2, ListingAvailabilityRange, CurrencyCode } from "@/lib/types/domain";
+import { listingRepo } from "@/lib/supabase/repositories";
 
 type CreateListingInput = {
   ownerOrbitId: string;
@@ -24,6 +25,7 @@ type ListingStore = {
   listings: PropertyListingV2[];
   loading: boolean;
 
+  hydratePublished: () => Promise<void>;
   createListing: (input: CreateListingInput) => PropertyListingV2;
   updateListing: (listingId: string, patch: Partial<PropertyListingV2>) => void;
   publishListing: (listingId: string) => void;
@@ -39,6 +41,17 @@ type ListingStore = {
 export const useListingStore = create<ListingStore>((set, get) => ({
   listings: [],
   loading: false,
+
+  hydratePublished: async () => {
+    set({ loading: true });
+    try {
+      const listings = await listingRepo.listPublished();
+      set({ listings, loading: false });
+    } catch {
+      set({ loading: false });
+    }
+  },
+
 
   createListing: (input) => {
     const now = new Date().toISOString();
