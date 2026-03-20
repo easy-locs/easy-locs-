@@ -880,6 +880,10 @@ const App = () => (
                 <Route path="/admin/merchant-health" element={<ProtectedRoute><AdminMerchantHealthPage /></ProtectedRoute>} />
                 <Route path="/wallet/top-up" element={<ProtectedRoute><WalletTopUpPage /></ProtectedRoute>} />
                 <Route path="/wallet/transfer" element={<ProtectedRoute><WalletTransferPage /></ProtectedRoute>} />
+                <Route path="/order/refund/:orderId" element={<ProtectedRoute><OrderRefundRequestPage /></ProtectedRoute>} />
+                <Route path="/merchant/banner-editor/:merchantId" element={<ProtectedRoute><MerchantPromoBannerEditorPage /></ProtectedRoute>} />
+                <Route path="/admin/driver-monitor" element={<ProtectedRoute><AdminDriverMonitorPage /></ProtectedRoute>} />
+                <Route path="/admin/user-lookup" element={<ProtectedRoute><AdminUserLookupPage /></ProtectedRoute>} />
               <Route path="/city/:countryCode/:city/:vertical/:locale" element={<CityVerticalPage />} />
 
               {/* Guest / Public */}
