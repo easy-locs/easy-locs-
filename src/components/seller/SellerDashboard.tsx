@@ -1,22 +1,27 @@
 /**
- * SellerDashboard — Shows all seller businesses with cards.
- * Auto-fetches from marketplace_services + storefront_pages.
+ * SellerDashboard — Shows all seller businesses (all lifecycle statuses).
+ * NO auto-create logic. Only explicit "Start Business" triggers draft creation.
  */
-import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import SellerBusinessCard from "./SellerBusinessCard";
 import { SectionBlock } from "@/components/ui/system";
-import { Plus, Store } from "lucide-react";
+import { Plus, Store, Rocket, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
+import { createOnboardingDraft } from "@/lib/onboarding/seller-onboarding-flow";
+import { toast } from "sonner";
 
 export default function SellerDashboard() {
   const { user, orgId } = useAuth();
   const navigate = useNavigate();
+  const qc = useQueryClient();
+  const [creating, setCreating] = useState(false);
 
-  // Fetch marketplace services (listings)
+  // Fetch marketplace services (all statuses visible to seller)
   const { data: services = [], isLoading: loadingServices } = useQuery({
     queryKey: ["seller-services", orgId],
     queryFn: async () => {
@@ -31,13 +36,13 @@ export default function SellerDashboard() {
     enabled: !!orgId,
   });
 
-  // Fetch storefronts (shops)
+  // Fetch storefronts (all statuses visible to seller)
   const { data: shops = [], isLoading: loadingShops } = useQuery({
     queryKey: ["seller-shops", user?.id],
     queryFn: async () => {
       const { data } = await (supabase as any)
         .from("storefront_pages")
-        .select("id, name, slug, vertical, city, logo_url, active")
+        .select("id, name, slug, vertical, city, logo_url, active, shop_visibility, onboarding_completed")
         .eq("user_id", user!.id)
         .order("created_at", { ascending: false })
         .limit(20);
@@ -48,7 +53,11 @@ export default function SellerDashboard() {
 
   const isLoading = loadingServices || loadingShops;
 
-  const getStatus = (item: any): "draft" | "pending" | "active" => {
+  const getStatus = (item: any): "onboarding_draft" | "draft" | "pending" | "active" => {
+    // Storefront logic
+    if (item.onboarding_completed === false && item.shop_visibility === "private" && !item.active) {
+      return "onboarding_draft";
+    }
     if (item.status === "draft" || (!item.active && !item.status)) return "draft";
     if (item.status === "pending" || item.status === "pending_review") return "pending";
     if (item.active || item.status === "published" || item.status === "active") return "active";
@@ -64,7 +73,7 @@ export default function SellerDashboard() {
       photo_url: s.logo_url,
       status: getStatus(s),
       editPath: `/my-shop/${s.id}`,
-      viewPath: `/store/${s.slug || s.id}`,
+      viewPath: s.active ? `/store/${s.slug || s.id}` : undefined,
     })),
     ...services.map((s: any) => ({
       id: s.id,
@@ -74,9 +83,25 @@ export default function SellerDashboard() {
       photo_url: s.photo_url,
       status: getStatus(s),
       editPath: `/dashboard/seller`,
-      viewPath: `/services/${s.id}`,
+      viewPath: s.active ? `/services/${s.id}` : undefined,
     })),
   ];
+
+  const handleStartBusiness = async () => {
+    if (!user?.id) { toast.error("Please sign in first"); return; }
+    setCreating(true);
+    try {
+      const draft = await createOnboardingDraft({ userId: user.id });
+      qc.invalidateQueries({ queryKey: ["seller-shops"] });
+      toast.success("Business draft created! Complete your setup.");
+      navigate(`/my-shop/${draft.id}`);
+    } catch (err) {
+      console.error("[onboarding] draft creation failed", err);
+      toast.error("Could not create business draft");
+    } finally {
+      setCreating(false);
+    }
+  };
 
   return (
     <div className="space-y-4">
@@ -86,9 +111,11 @@ export default function SellerDashboard() {
           <Button
             size="sm"
             className="h-8 rounded-xl text-xs active:scale-[0.97]"
-            onClick={() => navigate("/create-listing")}
+            onClick={handleStartBusiness}
+            disabled={creating}
           >
-            <Plus className="w-3.5 h-3.5 mr-1" /> Add
+            {creating ? <Loader2 className="w-3.5 h-3.5 mr-1 animate-spin" /> : <Plus className="w-3.5 h-3.5 mr-1" />}
+            Start Business
           </Button>
         }
       >
@@ -102,16 +129,21 @@ export default function SellerDashboard() {
           ))}
         </div>
       ) : allBusinesses.length === 0 ? (
-        <div className="flex flex-col items-center gap-3 py-12 text-center">
-          <div className="w-14 h-14 rounded-2xl bg-muted flex items-center justify-center">
-            <Store className="w-7 h-7 text-muted-foreground" />
+        <div className="flex flex-col items-center gap-4 py-16 text-center">
+          <div className="w-16 h-16 rounded-3xl bg-primary/10 flex items-center justify-center">
+            <Rocket className="w-8 h-8 text-primary" />
           </div>
-          <p className="text-sm text-muted-foreground">No businesses yet</p>
+          <div>
+            <p className="text-base font-bold text-foreground">Start your business</p>
+            <p className="text-sm text-muted-foreground mt-1">Create your first shop or service listing</p>
+          </div>
           <Button
-            className="rounded-xl active:scale-[0.97]"
-            onClick={() => navigate("/create-listing")}
+            className="rounded-2xl h-11 px-6 active:scale-[0.97]"
+            onClick={handleStartBusiness}
+            disabled={creating}
           >
-            <Plus className="w-4 h-4 mr-1.5" /> Create your first listing
+            {creating ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Plus className="w-4 h-4 mr-2" />}
+            Create your first business
           </Button>
         </div>
       ) : (
