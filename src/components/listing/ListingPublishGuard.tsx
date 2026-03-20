@@ -38,32 +38,32 @@ export default function ListingPublishGuard({
 
       {/* Warnings */}
       {result.warnings.length > 0 && result.canPublish && (
-        <div className="rounded-xl bg-amber-500/10 border border-amber-500/20 p-3 space-y-1.5">
-          <p className="text-xs font-bold text-amber-600 flex items-center gap-1.5">
+        <div className="rounded-xl bg-warning/10 border border-warning/20 p-3 space-y-1.5">
+          <p className="text-xs font-bold text-warning-foreground flex items-center gap-1.5">
             <AlertTriangle className="w-3.5 h-3.5" /> Suggestions
           </p>
           {result.warnings.map((w, i) => (
-            <p key={i} className="text-xs text-amber-600/80 pl-5">• {w}</p>
+            <p key={i} className="text-xs text-warning-foreground/80 pl-5">• {w}</p>
           ))}
         </div>
       )}
 
       {/* Suspicious flags */}
       {suspiciousFlags.length > 0 && (
-        <div className="rounded-xl bg-orange-500/10 border border-orange-500/20 p-3 space-y-1.5">
-          <p className="text-xs font-bold text-orange-600 flex items-center gap-1.5">
+        <div className="rounded-xl bg-warning/10 border border-warning/20 p-3 space-y-1.5">
+          <p className="text-xs font-bold text-warning-foreground flex items-center gap-1.5">
             <AlertTriangle className="w-3.5 h-3.5" /> Review needed
           </p>
           {suspiciousFlags.map((f, i) => (
-            <p key={i} className="text-xs text-orange-600/80 pl-5">• {f}</p>
+            <p key={i} className="text-xs text-warning-foreground/80 pl-5">• {f}</p>
           ))}
         </div>
       )}
 
       {/* Ready state */}
       {result.canPublish && result.errors.length === 0 && (
-        <div className="rounded-xl bg-emerald-500/10 border border-emerald-500/20 p-3">
-          <p className="text-xs font-bold text-emerald-600 flex items-center gap-1.5">
+        <div className="rounded-xl bg-success/10 border border-success/20 p-3">
+          <p className="text-xs font-bold text-success flex items-center gap-1.5">
             <CheckCircle2 className="w-3.5 h-3.5" /> Ready to publish
           </p>
         </div>
