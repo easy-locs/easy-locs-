@@ -1,14 +1,17 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { getTicketTypeLabel } from "@/lib/support/ticketTypes";
+import { updateTicketAdminState } from "@/lib/support/supportThread";
 import { ArrowLeft } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
+import SupportThread from "@/components/support/SupportThread";
 
 export default function AdminSupportOpsPage() {
   const navigate = useNavigate();
+  const [selectedTicketId, setSelectedTicketId] = useState<string | null>(null);
 
   const { data: tickets = [], isLoading, refetch } = useQuery({
     queryKey: ["admin-support-ops"],
@@ -31,15 +34,12 @@ export default function AdminSupportOpsPage() {
   }), [tickets]);
 
   const setStatus = async (ticketId: string, status: string) => {
-    const { error } = await (supabase as any)
-      .from("support_tickets")
-      .update({ status, updated_at: new Date().toISOString() })
-      .eq("id", ticketId);
-    if (error) {
-      toast.error("Failed to update ticket");
-    } else {
+    try {
+      await updateTicketAdminState({ ticketId, status });
       toast.success(`Ticket marked ${status}`);
       refetch();
+    } catch (err: any) {
+      toast.error(err.message || "Failed to update ticket");
     }
   };
 
@@ -78,29 +78,36 @@ export default function AdminSupportOpsPage() {
 
         {!isLoading && tickets.map((ticket: any) => (
           <div key={ticket.id} className="rounded-2xl border border-border/20 bg-card p-4 space-y-3">
-            <div className="flex items-start justify-between gap-3">
-              <div className="flex-1 min-w-0 space-y-1">
-                <p className="text-sm font-semibold text-foreground truncate">{ticket.subject || "Support request"}</p>
-                <p className="text-[11px] text-muted-foreground">{getTicketTypeLabel(ticket.ticket_type)}</p>
-                <p className="text-[11px] text-muted-foreground">
-                  {new Date(ticket.created_at).toLocaleString()}
-                </p>
+            <button onClick={() => setSelectedTicketId(selectedTicketId === ticket.id ? null : ticket.id)} className="w-full text-left">
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex-1 min-w-0 space-y-1">
+                  <p className="text-sm font-semibold text-foreground truncate">{ticket.subject || "Support request"}</p>
+                  <p className="text-[11px] text-muted-foreground">{getTicketTypeLabel(ticket.ticket_type)}</p>
+                  <p className="text-[11px] text-muted-foreground">
+                    {new Date(ticket.created_at).toLocaleString()}
+                  </p>
+                </div>
+                <span
+                  className="shrink-0 rounded-full px-2.5 py-0.5 text-[10px] font-bold"
+                  style={{
+                    color: ticket.status === "resolved" ? "hsl(142 70% 45%)" : ticket.status === "pending" || ticket.status === "in_progress" ? "hsl(45 90% 55%)" : "hsl(200 80% 55%)",
+                    background: ticket.status === "resolved" ? "hsl(142 70% 45% / 0.12)" : ticket.status === "pending" || ticket.status === "in_progress" ? "hsl(45 90% 55% / 0.12)" : "hsl(200 80% 55% / 0.12)",
+                  }}
+                >
+                  {ticket.status || "open"}
+                </span>
               </div>
-              <span
-                className="shrink-0 rounded-full px-2.5 py-0.5 text-[10px] font-bold"
-                style={{
-                  color: ticket.status === "resolved" ? "hsl(142 70% 45%)" : ticket.status === "pending" ? "hsl(45 90% 55%)" : "hsl(200 80% 55%)",
-                  background: ticket.status === "resolved" ? "hsl(142 70% 45% / 0.12)" : ticket.status === "pending" ? "hsl(45 90% 55% / 0.12)" : "hsl(200 80% 55% / 0.12)",
-                }}
-              >
-                {ticket.status || "open"}
-              </span>
-            </div>
+            </button>
+
             <div className="flex gap-2">
               <button onClick={() => setStatus(ticket.id, "open")} className="flex-1 rounded-xl bg-muted px-3 py-2 text-xs font-semibold text-foreground">Open</button>
               <button onClick={() => setStatus(ticket.id, "in_progress")} className="flex-1 rounded-xl px-3 py-2 text-xs font-semibold" style={{ background: "hsl(45 90% 55% / 0.12)", color: "hsl(45 90% 55%)" }}>Pending</button>
               <button onClick={() => setStatus(ticket.id, "resolved")} className="flex-1 rounded-xl px-3 py-2 text-xs font-semibold" style={{ background: "hsl(142 70% 45% / 0.12)", color: "hsl(142 70% 45%)" }}>Resolve</button>
             </div>
+
+            {selectedTicketId === ticket.id && (
+              <SupportThread ticketId={ticket.id} actorRole="admin" showInternal />
+            )}
           </div>
         ))}
       </div>
