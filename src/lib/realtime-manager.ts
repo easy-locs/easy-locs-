@@ -109,14 +109,17 @@ class RealtimeManager {
   }
 
   stop() {
-    // Set offline before teardown (only leader tab writes)
+    // Set offline before teardown (only leader tab writes) — validate session first
     if (this.userId && this.isLeaderTab) {
-      supabase.from("user_presence").upsert({
-        user_id: this.userId,
-        status: "offline",
-        last_seen_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      } as any, { onConflict: "user_id" }).then(() => {}, () => {});
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        if (!session?.access_token) return;
+        supabase.from("user_presence").upsert({
+          user_id: this.userId,
+          status: "offline",
+          last_seen_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        } as any, { onConflict: "user_id" }).then(() => {}, () => {});
+      }).catch(() => {});
     }
 
     if (this.visibilityHandler) {
@@ -345,10 +348,13 @@ class RealtimeManager {
     let visDebounce: ReturnType<typeof setTimeout> | null = null;
     this.visibilityHandler = () => {
       if (visDebounce) clearTimeout(visDebounce);
-      visDebounce = setTimeout(() => {
+      visDebounce = setTimeout(async () => {
         if (!this.userId || !this.isLeaderTab) return;
         const status = document.hidden ? "away" : "online";
-        if (status === this.lastPresenceStatus) return; // skip identical
+        if (status === this.lastPresenceStatus) return;
+        // Validate session before writing to prevent RLS 401
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session?.access_token) return;
         supabase.from("user_presence").upsert({
           user_id: this.userId,
           status,
