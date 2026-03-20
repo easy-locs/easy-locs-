@@ -75,7 +75,7 @@ export default function OrderRefundRequestPage() {
         >
           {REASONS.map((row) => (
             <option key={row} value={row}>
-              {row.replaceAll("_", " ")}
+              {row.replace(/_/g, " ")}
             </option>
           ))}
         </select>
