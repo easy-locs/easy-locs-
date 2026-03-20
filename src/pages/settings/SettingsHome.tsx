@@ -4,7 +4,7 @@
  */
 import { useNavigate } from "react-router-dom";
 import { useDinoPageAudit } from "@/hooks/useDinoPageAudit";
-import { ArrowLeft, User, CreditCard, MapPin, Bell, Shield, Store, Palette, Globe, ChevronRight, FileText, Headphones } from "lucide-react";
+import { ArrowLeft, User, CreditCard, MapPin, Bell, Shield, Store, Palette, Globe, ChevronRight, FileText, Headphones, Heart } from "lucide-react";
 
 const SETTINGS_GROUPS = [
   {
