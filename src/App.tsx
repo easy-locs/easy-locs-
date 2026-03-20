@@ -180,6 +180,7 @@ const DiscoverPage = safeLazy(() => import("./pages/DiscoverPage"), "DiscoverPag
 const OpsCenter = safeLazy(() => import("./pages/OpsCenter"), "OpsCenter");
 const ShopsPage = safeLazy(() => import("./pages/ShopsPage"), "ShopsPage");
 const SuperMapRadarPage = safeLazy(() => import("./pages/GlobalMapPage"), "GlobalMapPage");
+const MapTabPage = safeLazy(() => import("./pages/MapTabPage"), "MapTabPage");
 const DinoAuditPage = safeLazy(() => import("./pages/admin/DinoAuditPage"), "DinoAuditPage");
 const DinoDashboardPage = safeLazy(() => import("./pages/admin/DinoDashboardPage"), "DinoDashboardPage");
 const AdminUiEnginePage = safeLazy(() => import("./pages/admin/AdminUiEnginePage"), "AdminUiEnginePage");
