@@ -486,6 +486,11 @@ export const ROUTE_REGISTRY = [
   { group: "admin", label: "Go-Live Readiness", path: "/admin/go-live-readiness" },
   // IG-IL
   { group: "admin", label: "UI Finalizer", path: "/admin/ui-finalizer" },
+  // IM-IR
+  { group: "admin", label: "Master Control", path: "/admin/master-control" },
+  // IS-IX
+  { group: "admin", label: "Production Checklist", path: "/admin/production-checklist" },
+  { group: "admin", label: "Final Wrap", path: "/admin/final-wrap" },
 
   { group: "public", label: "Coming Soon", path: "/coming-soon/:slug" },
   { group: "public", label: "City Market", path: "/city-market/:citySlug" },
