@@ -972,6 +972,20 @@ const App = () => (
                 <Route path="/me/payment-activity" element={<ProtectedRoute><CustomerPaymentActivityPage /></ProtectedRoute>} />
                 <Route path="/driver/availability-zones" element={<ProtectedRoute><DriverAvailabilityZonesPage /></ProtectedRoute>} />
                 <Route path="/admin/growth-dashboard" element={<ProtectedRoute><AdminGrowthDashboardPage /></ProtectedRoute>} />
+                <Route path="/me/order-receipts" element={<ProtectedRoute><CustomerOrderReceiptsPage /></ProtectedRoute>} />
+                <Route path="/merchant/refund-requests/:merchantId" element={<ProtectedRoute><MerchantRefundRequestsPage /></ProtectedRoute>} />
+                <Route path="/admin/coupon-oversight" element={<ProtectedRoute><AdminCouponOversightPage /></ProtectedRoute>} />
+                <Route path="/me/notification-center" element={<ProtectedRoute><CustomerNotificationCenterPage /></ProtectedRoute>} />
+                <Route path="/driver/completed-deliveries" element={<ProtectedRoute><DriverCompletedDeliveriesPage /></ProtectedRoute>} />
+                <Route path="/admin/active-sessions" element={<ProtectedRoute><AdminActiveSessionsPage /></ProtectedRoute>} />
+                <Route path="/merchant/menu-bulk/:merchantId" element={<ProtectedRoute><MerchantMenuBulkEditPage /></ProtectedRoute>} />
+                <Route path="/admin/fraud-monitor" element={<ProtectedRoute><AdminFraudMonitorPage /></ProtectedRoute>} />
+                <Route path="/tracking-live/:orderId" element={<ProtectedRoute><CustomerLiveTrackingPage /></ProtectedRoute>} />
+                <Route path="/merchant/live-orders/:merchantId" element={<ProtectedRoute><MerchantRealtimeOrdersBoard /></ProtectedRoute>} />
+                <Route path="/admin/heatmap" element={<ProtectedRoute><AdminGlobalHeatmapPage /></ProtectedRoute>} />
+                <Route path="/quick-reorder" element={<ProtectedRoute><CustomerQuickReorderPage /></ProtectedRoute>} />
+                <Route path="/driver/live-missions" element={<ProtectedRoute><DriverLiveMissionsPage /></ProtectedRoute>} />
+                <Route path="/admin/realtime-alerts" element={<ProtectedRoute><AdminRealtimeAlertsPage /></ProtectedRoute>} />
               <Route path="/city/:countryCode/:city/:vertical/:locale" element={<CityVerticalPage />} />
 
               {/* Guest / Public */}
