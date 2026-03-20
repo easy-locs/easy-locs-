@@ -9,7 +9,7 @@ export default function MerchantKitchenDisplayPage() {
   const { data: rows = [], isLoading } = useQuery({
     queryKey: ["merchant-kds-orders", merchantId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from("orders")
         .select("*")
         .eq("merchant_id", merchantId!)
