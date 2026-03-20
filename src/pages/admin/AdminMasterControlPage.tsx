@@ -25,6 +25,13 @@ const PANELS = [
   { label: "Fraud Watch", path: "/admin/fraud-watch" },
   { label: "Incident Center", path: "/admin/incident-center" },
   { label: "QA Command", path: "/admin/qa-command" },
+  { label: "Region Performance", path: "/admin/region-performance" },
+  { label: "Courier Heatmap", path: "/admin/courier-heatmap" },
+  { label: "Customer Retention", path: "/admin/customer-retention" },
+  { label: "Growth Campaigns", path: "/admin/growth-campaigns" },
+  { label: "Promo Performance", path: "/admin/promo-performance" },
+  { label: "Acquisition Funnel", path: "/admin/acquisition-funnel" },
+  { label: "Driver Incentives", path: "/admin/driver-incentives" },
 ];
 
 export default function AdminMasterControlPage() {

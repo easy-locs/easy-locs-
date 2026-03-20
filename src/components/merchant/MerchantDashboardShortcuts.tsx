@@ -14,6 +14,10 @@ export default function MerchantDashboardShortcuts({
     { label: "Live Control", path: `/merchant/live/${merchantId}` },
     { label: "Review Replies", path: `/merchant/reviews/${merchantId}` },
     { label: "Store Settings", path: `/merchant/store-settings/${merchantId}` },
+    { label: "Packaging", path: `/merchant/packaging/${merchantId}` },
+    { label: "Order Throttle", path: `/merchant/order-throttle/${merchantId}` },
+    { label: "Cancellation Rules", path: `/merchant/cancellation-rules/${merchantId}` },
+    { label: "Chat Settings", path: `/merchant/chat-settings/${merchantId}` },
   ];
 
   return (

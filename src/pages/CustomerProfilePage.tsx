@@ -81,30 +81,15 @@ export default function CustomerProfilePage() {
       </div>
 
       <div className="grid grid-cols-2 gap-3 px-4">
-        <button
-          onClick={() => navigate("/my-orders")}
-          className="rounded-2xl bg-card border border-border/20 px-4 py-4 text-left text-sm font-bold"
-        >
-          My Orders
-        </button>
-        <button
-          onClick={() => navigate("/favorites")}
-          className="rounded-2xl bg-card border border-border/20 px-4 py-4 text-left text-sm font-bold"
-        >
-          Favorites
-        </button>
-        <button
-          onClick={() => navigate("/wallet/hub")}
-          className="rounded-2xl bg-card border border-border/20 px-4 py-4 text-left text-sm font-bold"
-        >
-          Wallet
-        </button>
-        <button
-          onClick={() => navigate("/support/tickets")}
-          className="rounded-2xl bg-card border border-border/20 px-4 py-4 text-left text-sm font-bold"
-        >
-          Support
-        </button>
+        <button onClick={() => navigate("/my-orders")} className="rounded-2xl bg-card border border-border/20 px-4 py-4 text-left text-sm font-bold">My Orders</button>
+        <button onClick={() => navigate("/favorites")} className="rounded-2xl bg-card border border-border/20 px-4 py-4 text-left text-sm font-bold">Favorites</button>
+        <button onClick={() => navigate("/wallet/hub")} className="rounded-2xl bg-card border border-border/20 px-4 py-4 text-left text-sm font-bold">Wallet</button>
+        <button onClick={() => navigate("/support/tickets")} className="rounded-2xl bg-card border border-border/20 px-4 py-4 text-left text-sm font-bold">Support</button>
+        <button onClick={() => navigate("/me/address-book")} className="rounded-2xl bg-card border border-border/20 px-4 py-4 text-left text-sm font-bold">Address Book</button>
+        <button onClick={() => navigate("/me/payment-methods")} className="rounded-2xl bg-card border border-border/20 px-4 py-4 text-left text-sm font-bold">Payment Methods</button>
+        <button onClick={() => navigate("/me/order-preferences")} className="rounded-2xl bg-card border border-border/20 px-4 py-4 text-left text-sm font-bold">Order Preferences</button>
+        <button onClick={() => navigate("/me/family-profile")} className="rounded-2xl bg-card border border-border/20 px-4 py-4 text-left text-sm font-bold">Family Profile</button>
+        <button onClick={() => navigate("/me/favorite-items")} className="rounded-2xl bg-card border border-border/20 px-4 py-4 text-left text-sm font-bold">Favorite Items</button>
       </div>
     </div>
   );
