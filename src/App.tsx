@@ -1352,6 +1352,9 @@ const App = () => (
                 <Route path="/v1/merchant/qr" element={<V1MerchantQrPage />} />
                 <Route path="/v1/merchant/orders" element={<V1MerchantOrdersRoute />} />
                 <Route path="/v1/merchant/payments" element={<V1MerchantPaymentsPage />} />
+                <Route path="/v1/tracking/:orderId" element={<V1TrackingRoute />} />
+                <Route path="/v1/driver/missions" element={<V1DriverMissionBoardPage />} />
+                <Route path="/v1/driver/proof/:orderId" element={<V1DriverProofPage />} />
               <Route path="/city/:countryCode/:city/:vertical/:locale" element={<CityVerticalPage />} />
 
               {/* Guest / Public */}
