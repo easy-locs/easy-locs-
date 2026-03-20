@@ -113,6 +113,7 @@ serve(async (req) => {
 
       const { data: job } = await supabaseAdmin.from("delivery_jobs").select("*").eq("id", job_id).single();
       if (!job) throw new Error("Job not found");
+      await assertJobAuthority(supabaseAdmin, userId, job);
       if (!["pending"].includes(job.status)) throw new Error(`Cannot auto-dispatch in status: ${job.status}`);
 
       // Find online drivers
@@ -170,6 +171,7 @@ serve(async (req) => {
       // Verify job status
       const { data: job } = await supabaseAdmin.from("delivery_jobs").select("*").eq("id", job_id).single();
       if (!job) throw new Error("Job not found");
+      await assertJobAuthority(supabaseAdmin, userId, job);
       if (!["pending", "assigned"].includes(job.status)) throw new Error(`Cannot assign in status: ${job.status}`);
 
       // Check driver is online
@@ -230,6 +232,12 @@ serve(async (req) => {
     if (action === "update_status") {
       const { job_id, status, cancellation_reason } = body;
       if (!job_id || !status) throw new Error("job_id and status required");
+
+      // Fetch job and verify authorization
+      const { data: jobForAuth } = await supabaseAdmin.from("delivery_jobs")
+        .select("*").eq("id", job_id).single();
+      if (!jobForAuth) throw new Error("Job not found");
+      await assertJobAuthority(supabaseAdmin, userId, jobForAuth);
 
       const updates: Record<string, any> = { status, updated_at: new Date().toISOString() };
 
@@ -330,6 +338,7 @@ serve(async (req) => {
       const { data: escrow } = await supabaseAdmin.from("escrow_payments")
         .select("*").eq("job_id", job_id).eq("status", "held").maybeSingle();
       if (!escrow) throw new Error("No held escrow found for this job");
+      await assertEscrowAuthority(supabaseAdmin, userId, escrow);
 
       const { error } = await supabaseAdmin.from("escrow_payments").update({
         status: "released", released_at: new Date().toISOString(),
@@ -355,6 +364,7 @@ serve(async (req) => {
       const { data: escrow } = await supabaseAdmin.from("escrow_payments")
         .select("*").eq("job_id", job_id).eq("status", "held").maybeSingle();
       if (!escrow) throw new Error("No held escrow found for this job");
+      await assertEscrowAuthority(supabaseAdmin, userId, escrow);
 
       const { error } = await supabaseAdmin.from("escrow_payments").update({
         status: "refunded", refunded_at: new Date().toISOString(),
@@ -396,6 +406,40 @@ function json(data: any, status = 200) {
     status,
     headers: { ...corsHeaders, "Content-Type": "application/json" },
   });
+}
+
+/** Check if userId is the job seller, the assigned driver, or an org owner/admin */
+async function assertJobAuthority(
+  supabaseAdmin: any,
+  userId: string,
+  job: any,
+  requireOwnerOrAdmin = false
+) {
+  if (!requireOwnerOrAdmin) {
+    if (userId === job.seller_id || userId === job.driver_id) return;
+  }
+  // Check org membership
+  const { data: orgRole } = await supabaseAdmin
+    .from("org_members")
+    .select("role")
+    .eq("user_id", userId)
+    .eq("org_id", job.org_id)
+    .in("role", ["owner", "admin"])
+    .maybeSingle();
+  if (!orgRole) throw new Error("Forbidden: not authorized for this job");
+}
+
+/** Check if userId is the escrow payer or an org owner/admin */
+async function assertEscrowAuthority(supabaseAdmin: any, userId: string, escrow: any) {
+  if (userId === escrow.payer_id) return;
+  const { data: orgRole } = await supabaseAdmin
+    .from("org_members")
+    .select("role")
+    .eq("user_id", userId)
+    .eq("org_id", escrow.org_id)
+    .in("role", ["owner", "admin"])
+    .maybeSingle();
+  if (!orgRole) throw new Error("Forbidden: not authorized for this escrow");
 }
 
 function haversine(lat1: number, lng1: number, lat2: number, lng2: number): number {
