@@ -43,7 +43,6 @@ export function useCallRealtime() {
               useCallStore.setState({ current: row });
             }
 
-            // Dismiss incoming if ended/rejected/missed
             if (["ended", "rejected", "missed"].includes(row.status)) {
               const incoming = useCallStore.getState().incoming;
               if (incoming?.id === row.id) {
