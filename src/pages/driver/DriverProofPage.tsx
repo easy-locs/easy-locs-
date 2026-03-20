@@ -13,7 +13,6 @@ export default function DriverProofPage() {
 
   const [recipientName, setRecipientName] = useState("");
   const [note, setNote] = useState("");
-  const [deliveryCode, setDeliveryCode] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
@@ -21,13 +20,12 @@ export default function DriverProofPage() {
     if (!orderId) return;
     setSubmitting(true);
     try {
-      const { error } = await (supabase as any).from("delivery_proofs").insert({
+      const { error } = await supabase.from("delivery_proofs").insert({
         order_id: orderId,
-        driver_id: user?.id ?? null,
-        recipient_name: recipientName || null,
-        note: note || null,
-        proof_url: null,
-        delivery_code: deliveryCode || null,
+        driver_user_id: user?.id ?? null,
+        notes: note || null,
+        proof_type: "photo",
+        photo_url: null,
         geo_lat: null,
         geo_lng: null,
       });
@@ -82,14 +80,6 @@ export default function DriverProofPage() {
               type="text" value={recipientName} onChange={(e) => setRecipientName(e.target.value)}
               className="w-full rounded-xl border border-border/20 bg-background px-3 py-2.5 text-sm text-foreground"
               placeholder="Who received the order?"
-            />
-          </div>
-          <div>
-            <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1 block">Delivery code</label>
-            <input
-              type="text" value={deliveryCode} onChange={(e) => setDeliveryCode(e.target.value)}
-              className="w-full rounded-xl border border-border/20 bg-background px-3 py-2.5 text-sm text-foreground"
-              placeholder="Optional code"
             />
           </div>
           <div>
