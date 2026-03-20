@@ -1,56 +1,118 @@
 import { create } from "zustand";
+import { supabase } from "@/integrations/supabase/client";
 import { platformBus } from "@/app/events/platform-bus";
-import type { OrbitProfile, AppRole } from "@/lib/types/domain";
-import { orbitRepo } from "@/lib/supabase/repositories";
+import type { AppRole } from "@/lib/types/domain";
+
+// V2 OrbitProfile aligned with orbit_profiles_v2 table
+export interface OrbitProfileV2 {
+  id: string; // auth user id
+  orbitId: string;
+  role: AppRole;
+  displayName: string | null;
+  avatarUrl: string | null;
+  deviceId: string | null;
+  verificationLevel: number;
+  permissions: {
+    camera: boolean;
+    microphone: boolean;
+    geolocation: boolean;
+    contacts: boolean;
+    notifications: boolean;
+  };
+  serviceLinks: {
+    walletLinked: boolean;
+    bookingEnabled: boolean;
+    deliveryEnabled: boolean;
+    propertyEnabled: boolean;
+    messagingEnabled: boolean;
+  };
+}
 
 type OrbitStore = {
-  profile: OrbitProfile | null;
+  profile: OrbitProfileV2 | null;
   loading: boolean;
-  loadOrbitProfile: (input: { userId: string; orbitId: string; role?: AppRole; deviceId?: string }) => Promise<void>;
-  setProfile: (profile: OrbitProfile | null) => void;
+  loadProfile: (userId: string) => Promise<void>;
+  updateRole: (role: AppRole) => Promise<void>;
+  setProfile: (profile: OrbitProfileV2 | null) => void;
   clear: () => void;
 };
 
-export const useOrbitStore = create<OrbitStore>((set) => ({
+// Use untyped client for V2 tables not yet in auto-generated types
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const db = supabase as any;
+
+export const useOrbitStore = create<OrbitStore>((set, get) => ({
   profile: null,
   loading: false,
 
-  loadOrbitProfile: async ({ userId, orbitId, role = "guest", deviceId }) => {
+  loadProfile: async (userId: string) => {
     set({ loading: true });
 
-    let profile = await orbitRepo.getByOrbitId(orbitId);
+    const { data, error } = await db
+      .from("orbit_profiles_v2")
+      .select("*")
+      .eq("id", userId)
+      .maybeSingle();
 
-    if (!profile) {
-      profile = {
-        userId,
-        orbitId,
-        role,
-        deviceId: deviceId ?? `device_${Math.random().toString(36).slice(2, 10)}`,
-        verificationLevel: 1,
-        permissions: {
-          camera: false,
-          microphone: false,
-          geolocation: false,
-          contacts: false,
-          notifications: false,
-        },
-        serviceLinks: {
-          walletLinked: false,
-          bookingEnabled: true,
-          deliveryEnabled: true,
-          propertyEnabled: true,
-          messagingEnabled: true,
-        },
-      };
-
-      profile = await orbitRepo.upsert(profile);
+    if (error) {
+      console.error("Failed to load orbit profile:", error);
+      set({ loading: false });
+      return;
     }
+
+    if (!data) {
+      set({ loading: false });
+      return;
+    }
+
+    const profile: OrbitProfileV2 = {
+      id: data.id,
+      orbitId: data.orbit_id,
+      role: (data.role as AppRole) || "buyer",
+      displayName: data.display_name,
+      avatarUrl: data.avatar_url,
+      deviceId: data.device_id,
+      verificationLevel: data.verification_level ?? 1,
+      permissions: data.permissions ?? {
+        camera: false,
+        microphone: false,
+        geolocation: false,
+        contacts: false,
+        notifications: false,
+      },
+      serviceLinks: data.service_links ?? {
+        walletLinked: false,
+        bookingEnabled: true,
+        deliveryEnabled: true,
+        propertyEnabled: true,
+        messagingEnabled: true,
+      },
+    };
 
     set({ profile, loading: false });
 
     platformBus.emit({
       type: "orbit.profile.loaded",
-      payload: { orbitId: profile.orbitId, userId: profile.userId },
+      payload: { orbitId: profile.orbitId, userId: profile.id },
+    });
+  },
+
+  updateRole: async (role: AppRole) => {
+    const profile = get().profile;
+    if (!profile) return;
+
+    const { error } = await db
+      .from("orbit_profiles_v2")
+      .update({ role, updated_at: new Date().toISOString() })
+      .eq("id", profile.id);
+
+    if (error) {
+      console.error("Failed to update role:", error);
+      return;
+    }
+
+    set({
+      profile: { ...profile, role },
     });
   },
 
