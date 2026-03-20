@@ -14164,6 +14164,63 @@ export type Database = {
         }
         Relationships: []
       }
+      seed_merchant_promos: {
+        Row: {
+          created_at: string
+          description: string | null
+          discount_type: string
+          discount_value: number
+          ends_at: string | null
+          id: string
+          is_active: boolean
+          merchant_id: string
+          minimum_order_amount: number | null
+          starts_at: string | null
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          discount_type?: string
+          discount_value?: number
+          ends_at?: string | null
+          id?: string
+          is_active?: boolean
+          merchant_id: string
+          minimum_order_amount?: number | null
+          starts_at?: string | null
+          title: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          discount_type?: string
+          discount_value?: number
+          ends_at?: string | null
+          id?: string
+          is_active?: boolean
+          merchant_id?: string
+          minimum_order_amount?: number | null
+          starts_at?: string | null
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "seed_merchant_promos_merchant_id_fkey"
+            columns: ["merchant_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "seed_merchant_promos_merchant_id_fkey"
+            columns: ["merchant_id"]
+            isOneToOne: false
+            referencedRelation: "seed_merchants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       seed_merchants: {
         Row: {
           area: string
@@ -14171,18 +14228,26 @@ export type Database = {
           city: string
           cover_image: string | null
           created_at: string
+          delivery_radius_km: number | null
           delivery_time_max: number
           delivery_time_min: number
+          delivery_zones: Json | null
           id: string
           is_active: boolean
           is_featured: boolean
           is_open: boolean
           logo_image: string | null
+          minimum_order_amount: number | null
           name: string
+          opening_hours: Json | null
           price_level: number
+          promo_active: boolean | null
+          promo_text: string | null
           rating: number
           review_count: number
           subcategory: string
+          support_email: string | null
+          support_phone: string | null
           tier: string
           visibility_score: number
         }
@@ -14192,18 +14257,26 @@ export type Database = {
           city?: string
           cover_image?: string | null
           created_at?: string
+          delivery_radius_km?: number | null
           delivery_time_max?: number
           delivery_time_min?: number
+          delivery_zones?: Json | null
           id?: string
           is_active?: boolean
           is_featured?: boolean
           is_open?: boolean
           logo_image?: string | null
+          minimum_order_amount?: number | null
           name: string
+          opening_hours?: Json | null
           price_level?: number
+          promo_active?: boolean | null
+          promo_text?: string | null
           rating?: number
           review_count?: number
           subcategory: string
+          support_email?: string | null
+          support_phone?: string | null
           tier?: string
           visibility_score?: number
         }
@@ -14213,18 +14286,26 @@ export type Database = {
           city?: string
           cover_image?: string | null
           created_at?: string
+          delivery_radius_km?: number | null
           delivery_time_max?: number
           delivery_time_min?: number
+          delivery_zones?: Json | null
           id?: string
           is_active?: boolean
           is_featured?: boolean
           is_open?: boolean
           logo_image?: string | null
+          minimum_order_amount?: number | null
           name?: string
+          opening_hours?: Json | null
           price_level?: number
+          promo_active?: boolean | null
+          promo_text?: string | null
           rating?: number
           review_count?: number
           subcategory?: string
+          support_email?: string | null
+          support_phone?: string | null
           tier?: string
           visibility_score?: number
         }
