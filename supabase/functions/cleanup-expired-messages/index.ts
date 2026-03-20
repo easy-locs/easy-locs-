@@ -15,8 +15,17 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    // Auth: only service-role or CRON_SECRET allowed
+    const authHeader = req.headers.get("Authorization")?.replace("Bearer ", "") || "";
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const cronSecret = Deno.env.get("CRON_SECRET") || "";
+    if (authHeader !== serviceKey && (cronSecret.length === 0 || authHeader !== cronSecret)) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabase = createClient(supabaseUrl, serviceKey);
 
     const { data, error } = await supabase.rpc("cleanup_expired_messages");
