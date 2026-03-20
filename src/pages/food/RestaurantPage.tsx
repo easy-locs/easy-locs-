@@ -71,12 +71,19 @@ export default function RestaurantPage() {
     sectionRefs.current[cat]?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
+  useAnalyticsPageView({
+    eventType: "merchant_view",
+    userId: user?.id,
+    merchantId: shop?.id,
+  });
+
   const handleAdd = (item: any) => {
     if (!shop) return;
     addItem(
       { id: shop.id, name: shop.name, image: shop.cover_image },
       { menuItemId: item.id, name: item.name, description: item.description, imageUrl: item.image, unitPrice: Number(item.price) || 0 }
     );
+    trackAnalyticsEvent({ eventType: "product_add_to_cart", userId: user?.id, merchantId: shop?.id, productId: item.id }).catch(() => {});
     toast.success(`${item.name} added`, { duration: 1500 });
   };
 
