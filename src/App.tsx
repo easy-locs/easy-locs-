@@ -633,7 +633,6 @@ const AdminCustomerSegmentsPage = safeLazy(() => import("./pages/admin/AdminCust
 const AdminMerchantSegmentsPage = safeLazy(() => import("./pages/admin/AdminMerchantSegmentsPage"), "AdminMerchantSegmentsPage");
 // V1 order flow block
 const V1CheckoutBridgePage = safeLazy(() => import("./pages/v1/V1CheckoutBridgePage"), "V1CheckoutBridgePage");
-const V1MerchantOrdersPage = safeLazy(() => import("./pages/v1/V1MerchantOrdersPage"), "V1MerchantOrdersPage");
 const V1RideSendPackagePage = safeLazy(() => import("./pages/v1/V1RideSendPackagePage"), "V1RideSendPackagePage");
 // V1 Block 6-7: wallet, notifications, profile, achille, restaurant, home/menu routes
 const V1WalletHubPage = safeLazy(() => import("./pages/v1/V1WalletHubPage"), "V1WalletHubPage");
@@ -643,6 +642,11 @@ const V1HomeRoute = safeLazy(() => import("./pages/v1/V1HomeRoute"), "V1HomeRout
 const V1MenuRoute = safeLazy(() => import("./pages/v1/V1MenuRoute"), "V1MenuRoute");
 const V1AchillePage = safeLazy(() => import("./pages/v1/V1AchillePage"), "V1AchillePage");
 const V1RestaurantRoute = safeLazy(() => import("./pages/v1/V1RestaurantRoute"), "V1RestaurantRoute");
+// V1 Final Integration Block 3-4: merchant core pages
+const V1MerchantPosPage = safeLazy(() => import("./pages/v1/V1MerchantPosPage"), "V1MerchantPosPage");
+const V1MerchantQrPage = safeLazy(() => import("./pages/v1/V1MerchantQrPage"), "V1MerchantQrPage");
+const V1MerchantOrdersRoute = safeLazy(() => import("./pages/v1/V1MerchantOrdersRoute"), "V1MerchantOrdersRoute");
+const V1MerchantPaymentsPage = safeLazy(() => import("./pages/v1/V1MerchantPaymentsPage"), "V1MerchantPaymentsPage");
 
 // City sub-page wrappers
 const CityServicesPage = () => <CityHubPage subPage="services" />;
