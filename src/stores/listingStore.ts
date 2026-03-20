@@ -17,6 +17,7 @@ type CreateListingInput = {
   cleaningFee?: number;
   serviceFee?: number;
   securityDeposit?: number;
+  monthlyRent?: number;
   flowMode?: "instant_book" | "request_to_book";
 };
 
@@ -51,25 +52,34 @@ export const useListingStore = create<ListingStore>((set, get) => ({
       category: "property",
       serviceModes: ["direct_booking", "chat_only"],
       flowMode: input.flowMode ?? "instant_book",
-      location: { lat: input.lat, lng: input.lng, address: input.address, city: input.city, country: input.country },
+      location: {
+        lat: input.lat,
+        lng: input.lng,
+        address: input.address,
+        city: input.city,
+        country: input.country,
+      },
       pricing: {
         currency: input.currency ?? "AED",
         nightPrice: input.nightPrice,
         cleaningFee: input.cleaningFee ?? 0,
         serviceFee: input.serviceFee ?? 0,
         securityDeposit: input.securityDeposit ?? 0,
+        monthlyRent: input.monthlyRent ?? 0,
       },
       capacity: { guests: 2, bedrooms: 1, beds: 1, bathrooms: 1 },
       media: [],
       tags: [],
       walletLinked: true,
       bookingEnabled: true,
+      orbitLinked: true,
       serviceConfig: {
         chatEnabled: true,
         callEnabled: true,
         directBookingEnabled: true,
         qrPaymentEnabled: true,
         orbitEscrowEnabled: true,
+        propertyManagementEnabled: true,
       },
       availability: [],
       createdAt: now,
@@ -87,7 +97,7 @@ export const useListingStore = create<ListingStore>((set, get) => ({
       listings: state.listings.map((l) => {
         if (l.id !== listingId) return l;
         updated = { ...l, ...patch, updatedAt: new Date().toISOString() };
-        return updated;
+        return updated!;
       }),
     }));
     if (updated) {
