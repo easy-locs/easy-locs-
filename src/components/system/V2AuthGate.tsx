@@ -100,7 +100,7 @@ function V2LoginForm() {
           )}
 
           {success && (
-            <p className="text-sm text-green-600">{success}</p>
+            <p className="text-sm text-primary">{success}</p>
           )}
 
           <button
