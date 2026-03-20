@@ -1710,43 +1710,85 @@ export type Database = {
       }
       call_sessions: {
         Row: {
+          answered_at: string | null
           call_type: string
+          caller_orbit_id: string | null
+          conversation_id: string | null
           created_at: string | null
           duration_seconds: number | null
           ended_at: string | null
           id: string
           initiator_id: string
           metadata_json: Json | null
+          receiver_orbit_id: string | null
           recipient_id: string | null
           started_at: string | null
           status: string
           thread_id: string | null
+          updated_at: string | null
         }
         Insert: {
+          answered_at?: string | null
           call_type?: string
+          caller_orbit_id?: string | null
+          conversation_id?: string | null
           created_at?: string | null
           duration_seconds?: number | null
           ended_at?: string | null
           id?: string
           initiator_id: string
           metadata_json?: Json | null
+          receiver_orbit_id?: string | null
           recipient_id?: string | null
           started_at?: string | null
           status?: string
           thread_id?: string | null
+          updated_at?: string | null
         }
         Update: {
+          answered_at?: string | null
           call_type?: string
+          caller_orbit_id?: string | null
+          conversation_id?: string | null
           created_at?: string | null
           duration_seconds?: number | null
           ended_at?: string | null
           id?: string
           initiator_id?: string
           metadata_json?: Json | null
+          receiver_orbit_id?: string | null
           recipient_id?: string | null
           started_at?: string | null
           status?: string
           thread_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      call_signals: {
+        Row: {
+          created_at: string
+          id: string
+          payload: Json | null
+          sender_orbit_id: string
+          session_id: string
+          signal_type: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          payload?: Json | null
+          sender_orbit_id: string
+          session_id: string
+          signal_type: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          payload?: Json | null
+          sender_orbit_id?: string
+          session_id?: string
+          signal_type?: string
         }
         Relationships: []
       }
