@@ -774,6 +774,7 @@ const App = () => (
              <V1BootBridge />
             <OrbitSessionGuard />
            <RealtimeHubGuard />
+           <NotificationsRealtimeGuard />
            <UpdateNotification />
              <OrbitCallRoot />
              <CallOverlayV2 />
