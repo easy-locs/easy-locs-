@@ -512,6 +512,20 @@ const CustomerSharedWalletPage = safeLazy(() => import("./pages/customer/Custome
 const AdminSlaMonitorPage = safeLazy(() => import("./pages/admin/AdminSlaMonitorPage"), "AdminSlaMonitorPage");
 const CustomerOrderGiftsPage = safeLazy(() => import("./pages/customer/CustomerOrderGiftsPage"), "CustomerOrderGiftsPage");
 const AdminIncidentCenterPage = safeLazy(() => import("./pages/admin/AdminIncidentCenterPage"), "AdminIncidentCenterPage");
+// GQ-GV block
+const CustomerSplitBillPage = safeLazy(() => import("./pages/customer/CustomerSplitBillPage"), "CustomerSplitBillPage");
+const MerchantKitchenDisplayPage = safeLazy(() => import("./pages/merchant/MerchantKitchenDisplayPage"), "MerchantKitchenDisplayPage");
+const AdminOrderAuditPage = safeLazy(() => import("./pages/admin/AdminOrderAuditPage"), "AdminOrderAuditPage");
+const CustomerDeliveryInstructionsPage = safeLazy(() => import("./pages/customer/CustomerDeliveryInstructionsPage"), "CustomerDeliveryInstructionsPage");
+const DriverDailyTargetPage = safeLazy(() => import("./pages/driver/DriverDailyTargetPage"), "DriverDailyTargetPage");
+const AdminMarketExpansionPage = safeLazy(() => import("./pages/admin/AdminMarketExpansionPage"), "AdminMarketExpansionPage");
+// GW-HB block
+const CustomerSavedCartsPage2 = safeLazy(() => import("./pages/customer/CustomerSavedCartsPage"), "CustomerSavedCartsPage2");
+const MerchantOutOfStockPage = safeLazy(() => import("./pages/merchant/MerchantOutOfStockPage"), "MerchantOutOfStockPage");
+const AdminFraudWatchPage = safeLazy(() => import("./pages/admin/AdminFraudWatchPage"), "AdminFraudWatchPage");
+const CustomerContactlessPage = safeLazy(() => import("./pages/customer/CustomerContactlessPage"), "CustomerContactlessPage");
+const DriverHotZonesPage = safeLazy(() => import("./pages/driver/DriverHotZonesPage"), "DriverHotZonesPage");
+const AdminDemandForecastPage = safeLazy(() => import("./pages/admin/AdminDemandForecastPage"), "AdminDemandForecastPage");
 
 // City sub-page wrappers
 const CityServicesPage = () => <CityHubPage subPage="services" />;
@@ -1081,6 +1095,20 @@ const App = () => (
                 <Route path="/admin/sla-monitor" element={<ProtectedRoute><AdminSlaMonitorPage /></ProtectedRoute>} />
                 <Route path="/checkout/gift-order" element={<ProtectedRoute><CustomerOrderGiftsPage /></ProtectedRoute>} />
                 <Route path="/admin/incident-center" element={<ProtectedRoute><AdminIncidentCenterPage /></ProtectedRoute>} />
+                {/* GQ-GV */}
+                <Route path="/checkout/split-bill" element={<ProtectedRoute><CustomerSplitBillPage /></ProtectedRoute>} />
+                <Route path="/merchant/kitchen-display/:merchantId" element={<ProtectedRoute><MerchantKitchenDisplayPage /></ProtectedRoute>} />
+                <Route path="/admin/order-audit" element={<ProtectedRoute><AdminOrderAuditPage /></ProtectedRoute>} />
+                <Route path="/checkout/delivery-instructions" element={<ProtectedRoute><CustomerDeliveryInstructionsPage /></ProtectedRoute>} />
+                <Route path="/driver/daily-target" element={<ProtectedRoute><DriverDailyTargetPage /></ProtectedRoute>} />
+                <Route path="/admin/market-expansion" element={<ProtectedRoute><AdminMarketExpansionPage /></ProtectedRoute>} />
+                {/* GW-HB */}
+                <Route path="/me/saved-carts" element={<ProtectedRoute><CustomerSavedCartsPage2 /></ProtectedRoute>} />
+                <Route path="/merchant/out-of-stock/:merchantId" element={<ProtectedRoute><MerchantOutOfStockPage /></ProtectedRoute>} />
+                <Route path="/admin/fraud-watch" element={<ProtectedRoute><AdminFraudWatchPage /></ProtectedRoute>} />
+                <Route path="/checkout/contactless" element={<ProtectedRoute><CustomerContactlessPage /></ProtectedRoute>} />
+                <Route path="/driver/hot-zones" element={<ProtectedRoute><DriverHotZonesPage /></ProtectedRoute>} />
+                <Route path="/admin/demand-forecast" element={<ProtectedRoute><AdminDemandForecastPage /></ProtectedRoute>} />
               <Route path="/city/:countryCode/:city/:vertical/:locale" element={<CityVerticalPage />} />
 
               {/* Guest / Public */}
