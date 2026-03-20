@@ -637,6 +637,10 @@ export const ROUTE_REGISTRY = [
   { group: "merchant", label: "Store Announcement", path: "/merchant/store-announcement/:merchantId" },
   { group: "merchant", label: "Temporary Closure", path: "/merchant/temporary-closure/:merchantId" },
   { group: "merchant", label: "Queue Limit", path: "/merchant/queue-limit/:merchantId" },
+  // PJ-PO
+  { group: "admin", label: "Notification Campaigns", path: "/admin/notification-campaigns" },
+  { group: "admin", label: "Customer Segments", path: "/admin/customer-segments" },
+  { group: "admin", label: "Merchant Segments", path: "/admin/merchant-segments" },
 
   { group: "public", label: "Coming Soon", path: "/coming-soon/:slug" },
   { group: "public", label: "City Market", path: "/city-market/:citySlug" },
