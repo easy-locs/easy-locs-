@@ -631,6 +631,10 @@ const MerchantQueueLimitPage = safeLazy(() => import("./pages/merchant/MerchantQ
 const AdminNotificationCampaignsPage = safeLazy(() => import("./pages/admin/AdminNotificationCampaignsPage"), "AdminNotificationCampaignsPage");
 const AdminCustomerSegmentsPage = safeLazy(() => import("./pages/admin/AdminCustomerSegmentsPage"), "AdminCustomerSegmentsPage");
 const AdminMerchantSegmentsPage = safeLazy(() => import("./pages/admin/AdminMerchantSegmentsPage"), "AdminMerchantSegmentsPage");
+// V1 order flow block
+const V1CheckoutBridgePage = safeLazy(() => import("./pages/v1/V1CheckoutBridgePage"), "V1CheckoutBridgePage");
+const V1MerchantOrdersPage = safeLazy(() => import("./pages/v1/V1MerchantOrdersPage"), "V1MerchantOrdersPage");
+const V1RideSendPackagePage = safeLazy(() => import("./pages/v1/V1RideSendPackagePage"), "V1RideSendPackagePage");
 
 // City sub-page wrappers
 const CityServicesPage = () => <CityHubPage subPage="services" />;
