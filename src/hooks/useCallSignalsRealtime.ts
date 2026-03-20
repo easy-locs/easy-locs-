@@ -1,30 +1,30 @@
 import { useEffect } from "react";
-import { subscribeTable } from "@/lib/supabase/realtime";
+import { supabase } from "@/integrations/supabase/client";
 import { useOrbitStore } from "@/stores/orbitStore";
-import { useRealtimeStore } from "@/stores/realtimeStore";
 
-export function useCallSignalsRealtime(onSignal: (payload: unknown) => void) {
+export function useCallSignalsRealtime(onSignal: (signal: any) => void) {
   const orbitId = useOrbitStore((s) => s.profile?.orbitId);
 
   useEffect(() => {
     if (!orbitId) return;
 
-    const { unsubscribe, ref } = subscribeTable({
-      key: `call_signals_v2_${orbitId}`,
-      channelName: `call_signals_v2_${orbitId}`,
-      table: "orbit_call_signals_v2",
-      callback: (payload: unknown) => {
-        const row = (payload as any)?.new;
-        if (!row || row.target_orbit_id !== orbitId) return;
-        onSignal(row);
-      },
-    });
-
-    useRealtimeStore.getState().addSubscription(ref);
+    const channel = supabase
+      .channel(`call_signals_rt_${orbitId}`)
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "call_signals" },
+        (payload: any) => {
+          const row = payload.new;
+          if (!row) return;
+          // Don't process our own signals
+          if (row.sender_orbit_id === orbitId) return;
+          onSignal(row);
+        }
+      )
+      .subscribe();
 
     return () => {
-      unsubscribe();
-      useRealtimeStore.getState().removeSubscription(ref.key);
+      void supabase.removeChannel(channel);
     };
   }, [orbitId, onSignal]);
 }

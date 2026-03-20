@@ -1,14 +1,20 @@
 import { useCallStore } from "@/stores/callStore";
-import { useCallSignalingStore } from "@/stores/callSignalingStore";
 import { useIncomingCallStore } from "@/stores/incomingCallStore";
 import { Phone, PhoneOff } from "lucide-react";
 
 export function IncomingCallModal() {
-  const incoming = useIncomingCallStore((s) => s.incoming);
+  const incoming = useCallStore((s) => s.incoming);
+  const incomingInfo = useIncomingCallStore((s) => s.incoming);
+  const acceptCall = useCallStore((s) => s.acceptCall);
+  const rejectCall = useCallStore((s) => s.rejectCall);
   const clearIncoming = useIncomingCallStore((s) => s.clearIncoming);
-  const acceptCall = useCallStore((s) => s.setActive);
 
-  if (!incoming) return null;
+  if (!incoming && !incomingInfo) return null;
+
+  const sessionId = incoming?.id ?? incomingInfo?.sessionId ?? "";
+  const callerLabel = incoming?.caller_orbit_id?.slice(0, 16) ?? incomingInfo?.callerOrbitId?.slice(0, 16) ?? "Unknown";
+  const callType = incoming?.call_type === "video" ? "Video" : "Audio";
+  const conversationId = incoming?.conversation_id ?? undefined;
 
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm animate-in fade-in">
@@ -19,19 +25,15 @@ export function IncomingCallModal() {
           </div>
 
           <div className="text-center space-y-1">
-            <p className="text-lg font-semibold text-foreground">Incoming Call</p>
-            <p className="text-sm text-muted-foreground">
-              From: {incoming.callerOrbitId?.slice(0, 16) ?? "Unknown"}…
-            </p>
+            <p className="text-lg font-semibold text-foreground">Incoming {callType} Call</p>
+            <p className="text-sm text-muted-foreground">From: {callerLabel}…</p>
           </div>
 
           <div className="flex gap-4 w-full">
             <button
               className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-destructive px-4 py-2.5 text-sm font-semibold text-destructive-foreground hover:bg-destructive/90 transition-colors active:scale-[0.97]"
               onClick={async () => {
-                await useCallSignalingStore
-                  .getState()
-                  .sendSignal("hangup", incoming.callerOrbitId, { reason: "rejected" });
+                await rejectCall(sessionId, conversationId);
                 clearIncoming();
               }}
             >
@@ -41,8 +43,8 @@ export function IncomingCallModal() {
 
             <button
               className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-emerald-700 transition-colors active:scale-[0.97]"
-              onClick={() => {
-                acceptCall();
+              onClick={async () => {
+                await acceptCall(sessionId, conversationId);
                 clearIncoming();
               }}
             >

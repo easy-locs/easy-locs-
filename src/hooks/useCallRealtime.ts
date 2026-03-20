@@ -1,40 +1,62 @@
 import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useOrbitStore } from "@/stores/orbitStore";
+import { useCallStore } from "@/stores/callStore";
 import { useIncomingCallStore } from "@/stores/incomingCallStore";
 
 export function useCallRealtime() {
-  const orbit = useOrbitStore((s) => s.profile);
+  const orbitId = useOrbitStore((s) => s.profile?.orbitId);
 
   useEffect(() => {
-    if (!orbit?.orbitId) return;
+    if (!orbitId) return;
 
     const channel = supabase
-      .channel(`call_sessions_realtime_${orbit.orbitId}`)
+      .channel(`call_sessions_rt_${orbitId}`)
       .on(
         "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "orbit_call_sessions_v2",
-        },
+        { event: "*", schema: "public", table: "call_sessions" },
         (payload: any) => {
-          const call = payload.new;
-          if (call?.callee_orbit_id === orbit.orbitId && call?.status === "ringing") {
+          const row = payload.new ?? payload.old;
+          if (!row) return;
+
+          // Incoming call detection
+          if (
+            payload.eventType === "INSERT" &&
+            row.receiver_orbit_id === orbitId &&
+            row.status === "ringing"
+          ) {
+            useCallStore.setState({ incoming: row, mode: "ringing" });
             useIncomingCallStore.setState({
               incoming: {
-                sessionId: call.id,
-                callerOrbitId: call.caller_orbit_id,
-                mode: call.mode ?? "audio",
+                sessionId: row.id,
+                callerOrbitId: row.caller_orbit_id,
+                mode: row.call_type === "video" ? "video" : "audio",
               },
             });
+          }
+
+          // Session updates
+          if (payload.eventType === "UPDATE") {
+            const current = useCallStore.getState().current;
+            if (current?.id === row.id) {
+              useCallStore.setState({ current: row });
+            }
+
+            // Dismiss incoming if ended/rejected/missed
+            if (["ended", "rejected", "missed"].includes(row.status)) {
+              const incoming = useCallStore.getState().incoming;
+              if (incoming?.id === row.id) {
+                useCallStore.setState({ incoming: null, mode: "idle" });
+                useIncomingCallStore.setState({ incoming: null });
+              }
+            }
           }
         }
       )
       .subscribe();
 
     return () => {
-      supabase.removeChannel(channel);
+      void supabase.removeChannel(channel);
     };
-  }, [orbit?.orbitId]);
+  }, [orbitId]);
 }
