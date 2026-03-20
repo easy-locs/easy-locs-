@@ -81,6 +81,9 @@ export const routes = {
   adminDriverMonitor: () => `/admin/driver-monitor`,
   adminUserLookup: () => `/admin/user-lookup`,
   adminNotificationOps: () => `/admin/notification-ops`,
+  adminFinanceSummary: () => `/admin/finance-summary`,
+  customerSpendingInsights: () => `/me/spending-insights`,
+  adminPlatformAlerts: () => `/admin/platform-alerts`,
 
   // Orbit
   orbitCallTest: () => `/orbit/call-test`,
@@ -207,6 +210,9 @@ export const ROUTE_REGISTRY = [
   { group: "admin", label: "Driver Monitor", path: "/admin/driver-monitor" },
   { group: "admin", label: "User Lookup", path: "/admin/user-lookup" },
   { group: "admin", label: "Notification Ops", path: "/admin/notification-ops" },
+  { group: "admin", label: "Finance Summary", path: "/admin/finance-summary" },
+  { group: "public", label: "Spending Insights", path: "/me/spending-insights" },
+  { group: "admin", label: "Platform Alerts", path: "/admin/platform-alerts" },
 
   { group: "public", label: "Coming Soon", path: "/coming-soon/:slug" },
   { group: "public", label: "City Market", path: "/city-market/:citySlug" },
