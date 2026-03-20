@@ -526,6 +526,20 @@ const AdminFraudWatchPage = safeLazy(() => import("./pages/admin/AdminFraudWatch
 const CustomerContactlessPage = safeLazy(() => import("./pages/customer/CustomerContactlessPage"), "CustomerContactlessPage");
 const DriverHotZonesPage = safeLazy(() => import("./pages/driver/DriverHotZonesPage"), "DriverHotZonesPage");
 const AdminDemandForecastPage = safeLazy(() => import("./pages/admin/AdminDemandForecastPage"), "AdminDemandForecastPage");
+// HC-HH block
+const CustomerAutoRepeatPage = safeLazy(() => import("./pages/customer/CustomerAutoRepeatPage"), "CustomerAutoRepeatPage");
+const MerchantRushModePage = safeLazy(() => import("./pages/merchant/MerchantRushModePage"), "MerchantRushModePage");
+const AdminRefundQueuePage = safeLazy(() => import("./pages/admin/AdminRefundQueuePage"), "AdminRefundQueuePage");
+const CustomerPartyOrderPage = safeLazy(() => import("./pages/customer/CustomerPartyOrderPage"), "CustomerPartyOrderPage");
+const DriverEarningsBreakdownPage = safeLazy(() => import("./pages/driver/DriverEarningsBreakdownPage"), "DriverEarningsBreakdownPage");
+const AdminPlatformHealthPage = safeLazy(() => import("./pages/admin/AdminPlatformHealthPage"), "AdminPlatformHealthPage");
+// HI-HN block
+const CustomerOfficeLunchPage = safeLazy(() => import("./pages/customer/CustomerOfficeLunchPage"), "CustomerOfficeLunchPage");
+const MerchantDeliveryFeesPage = safeLazy(() => import("./pages/merchant/MerchantDeliveryFeesPage"), "MerchantDeliveryFeesPage");
+const AdminDriverCompliancePage = safeLazy(() => import("./pages/admin/AdminDriverCompliancePage"), "AdminDriverCompliancePage");
+const CustomerRewardRedemptionPage = safeLazy(() => import("./pages/customer/CustomerRewardRedemptionPage"), "CustomerRewardRedemptionPage");
+const DriverFuelCostPage = safeLazy(() => import("./pages/driver/DriverFuelCostPage"), "DriverFuelCostPage");
+const AdminExecutiveOverviewPage = safeLazy(() => import("./pages/admin/AdminExecutiveOverviewPage"), "AdminExecutiveOverviewPage");
 
 // City sub-page wrappers
 const CityServicesPage = () => <CityHubPage subPage="services" />;
