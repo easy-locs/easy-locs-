@@ -1,13 +1,13 @@
 /**
- * SettingsHome — Premium card-based settings hub.
- * Each category is a separate visual card with smart click buttons.
+ * SettingsHome — "Me" page: Premium card-based hub.
+ * Includes Business & Tools, all settings categories.
  */
 import { useNavigate } from "react-router-dom";
-import { useDinoPageAudit } from "@/hooks/useDinoPageAudit";
 import {
   ArrowLeft, User, CreditCard, MapPin, Bell, Shield, Store,
   Palette, Globe, ChevronRight, FileText, Headphones, Heart,
-  MessageCircle, Wallet, LogOut, Settings, Lock, Phone,
+  MessageCircle, Wallet, LogOut, Lock, Phone, Briefcase,
+  QrCode, Package, BarChart3, Settings,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -25,18 +25,29 @@ const SETTINGS_CARDS = [
     ],
   },
   {
+    title: "Business & Tools",
+    icon: Briefcase,
+    color: "hsl(38 65% 50%)",
+    items: [
+      { key: "seller", icon: Store, label: "Seller Hub", path: "/seller" },
+      { key: "my-shops", icon: Package, label: "My Shops", path: "/dashboard/my-shops" },
+      { key: "pos", icon: QrCode, label: "POS & QR Menu", path: "/pos" },
+      { key: "analytics", icon: BarChart3, label: "Analytics", path: "/dashboard/reporting" },
+    ],
+  },
+  {
     title: "Orbit",
     icon: MessageCircle,
     color: "hsl(142 60% 45%)",
     items: [
-      { key: "chat", icon: MessageCircle, label: "Chat Settings", path: "/orbit" },
-      { key: "contacts", icon: User, label: "Contacts", path: "/orbit" },
+      { key: "chat", icon: MessageCircle, label: "Chat Settings", path: "/settings/orbit" },
+      { key: "contacts", icon: User, label: "Contacts", path: "/orbit/contacts" },
     ],
   },
   {
     title: "Wallet & Payments",
     icon: Wallet,
-    color: "hsl(38 65% 50%)",
+    color: "hsl(270 60% 55%)",
     items: [
       { key: "wallet", icon: Wallet, label: "Wallet", path: "/wallet/hub" },
       { key: "cards", icon: CreditCard, label: "Payment Methods", path: "/settings/payment-methods" },
@@ -54,7 +65,7 @@ const SETTINGS_CARDS = [
   {
     title: "Notifications",
     icon: Bell,
-    color: "hsl(270 60% 55%)",
+    color: "hsl(196 80% 50%)",
     items: [
       { key: "notifs", icon: Bell, label: "Push & Alerts", path: "/settings/notifications" },
     ],
@@ -65,14 +76,6 @@ const SETTINGS_CARDS = [
     color: "hsl(0 70% 55%)",
     items: [
       { key: "privacy", icon: Shield, label: "Privacy & Security", path: "/settings/security" },
-    ],
-  },
-  {
-    title: "Business / Shop",
-    icon: Store,
-    color: "hsl(145 60% 42%)",
-    items: [
-      { key: "seller", icon: Store, label: "Seller Hub", path: "/seller" },
     ],
   },
   {
@@ -87,7 +90,7 @@ const SETTINGS_CARDS = [
   {
     title: "Support",
     icon: Headphones,
-    color: "hsl(196 80% 50%)",
+    color: "hsl(145 60% 42%)",
     items: [
       { key: "help", icon: Headphones, label: "Help & Support", path: "/settings/support" },
       { key: "legal", icon: FileText, label: "Legal", path: "/legal" },
@@ -98,7 +101,6 @@ const SETTINGS_CARDS = [
 export default function SettingsHome() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  useDinoPageAudit({ actorType: "user", pageKey: "settings_home" });
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -107,17 +109,17 @@ export default function SettingsHome() {
   };
 
   return (
-    <div className="min-h-[100dvh] flex flex-col bg-background">
+    <div className="min-h-[100dvh] flex flex-col bg-background pb-20">
       {/* Header */}
       <header className="flex items-center gap-3 px-4 pt-4 pb-3">
         <button
-          onClick={() => navigate("/home")}
+          onClick={() => navigate("/")}
           className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-95 transition-transform"
           style={{ background: "hsl(var(--muted))" }}
         >
-          <ArrowLeft className="w-4.5 h-4.5" />
+          <ArrowLeft className="w-4 h-4 text-foreground" />
         </button>
-        <h1 className="text-lg font-bold text-foreground">Settings</h1>
+        <h1 className="text-lg font-bold text-foreground">Me</h1>
       </header>
 
       {/* User Profile Card */}
@@ -147,7 +149,7 @@ export default function SettingsHome() {
       )}
 
       {/* Settings Cards */}
-      <div className="flex-1 px-4 pb-24 space-y-3">
+      <div className="flex-1 px-4 space-y-3">
         {SETTINGS_CARDS.map((card) => (
           <div
             key={card.title}
@@ -165,12 +167,12 @@ export default function SettingsHome() {
               <h2 className="text-[13px] font-bold text-foreground">{card.title}</h2>
             </div>
 
-            {/* Card items */}
+            {/* Card items — same height rows */}
             {card.items.map((item, idx) => (
               <button
                 key={item.key}
                 onClick={() => navigate(item.path)}
-                className="w-full px-4 py-3 flex items-center gap-3 active:bg-muted/20 transition-colors text-left"
+                className="w-full h-12 px-4 flex items-center gap-3 active:bg-muted/20 transition-colors text-left"
                 style={idx < card.items.length - 1 ? { borderBottom: "1px solid hsl(var(--border) / 0.06)" } : undefined}
               >
                 <item.icon className="w-4 h-4 text-muted-foreground shrink-0" />
@@ -187,7 +189,7 @@ export default function SettingsHome() {
           className="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl active:scale-[0.98] transition-transform"
           style={{ background: "hsl(var(--destructive) / 0.06)", border: "1px solid hsl(var(--destructive) / 0.1)" }}
         >
-          <LogOut className="w-4.5 h-4.5" style={{ color: "hsl(var(--destructive))" }} />
+          <LogOut className="w-4 h-4" style={{ color: "hsl(var(--destructive))" }} />
           <span className="text-sm font-semibold" style={{ color: "hsl(var(--destructive))" }}>Sign Out</span>
         </button>
       </div>
