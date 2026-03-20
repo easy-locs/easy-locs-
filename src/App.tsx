@@ -377,6 +377,8 @@ const AdminMerchantAutofillPage = safeLazy(() => import("./pages/admin/AdminMerc
 const AdminSuperDashboardPage = safeLazy(() => import("./pages/admin/AdminSuperDashboardPage"), "AdminSuperDashboardPage");
 const MerchantStoreSettingsPage = safeLazy(() => import("./pages/merchant/MerchantStoreSettingsPage"), "MerchantStoreSettingsPage");
 const MerchantPromoManagerPage = safeLazy(() => import("./pages/merchant/MerchantPromoManagerPage"), "MerchantPromoManagerPage");
+const AdminPaymentsOpsPage = safeLazy(() => import("./pages/admin/AdminPaymentsOpsPage"), "AdminPaymentsOpsPage");
+const AdminBulkMerchantImportPage = safeLazy(() => import("./pages/admin/AdminBulkMerchantImportPage"), "AdminBulkMerchantImportPage");
 
 // City sub-page wrappers
 const CityServicesPage = () => <CityHubPage subPage="services" />;
