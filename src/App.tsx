@@ -632,8 +632,9 @@ const App = () => (
             <OrbitSessionGuard />
            <RealtimeHubGuard />
            <UpdateNotification />
-           <OrbitCallRoot />
-          
+            <OrbitCallRoot />
+            <AppBootstrapGuard />
+           
            <SkipLink />
            <Suspense fallback={<PageLoader />}>
             <main id="main-content">
