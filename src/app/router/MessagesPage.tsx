@@ -2,6 +2,7 @@ import { useState } from "react";
 import { AppPageShell } from "@/components/layout/AppPageShell";
 import { ConversationList } from "@/components/chat/ConversationList";
 import { ConversationThread } from "@/components/chat/ConversationThread";
+import { ChatAttachmentPanel } from "@/components/chat/ChatAttachmentPanel";
 import { useMessagesRealtime } from "@/hooks/useMessagesRealtime";
 
 export default function MessagesPage() {
@@ -10,9 +11,10 @@ export default function MessagesPage() {
 
   return (
     <AppPageShell title="Messages">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <ConversationList onOpen={setConversationId} />
         <ConversationThread conversationId={conversationId} />
+        <ChatAttachmentPanel conversationId={conversationId} />
       </div>
     </AppPageShell>
   );
