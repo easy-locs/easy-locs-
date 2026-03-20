@@ -16,38 +16,41 @@ export default function V1HomePage({
     { key: "wallet", label: "Wallet", path: "/wallet/hub", icon: Wallet, merchantOnly: false },
     { key: "scan_qr", label: "Scan QR", path: "/pay/scan", icon: QrCode, merchantOnly: false },
     { key: "pay", label: "Pay", path: "/wallet/hub", icon: CreditCard, merchantOnly: false },
-    { key: "merchant_pos", label: "Merchant POS", path: "/merchant/pos", icon: Store, merchantOnly: true },
+    { key: "merchant_pos", label: "POS", path: "/merchant/pos", icon: Store, merchantOnly: true },
   ];
 
   const filteredActions = coreActions.filter((a) => !a.merchantOnly || isMerchant);
 
   return (
-    <div className="max-w-md mx-auto px-4 py-4 pb-28 space-y-5">
+    <div className="max-w-md mx-auto px-4 py-5 pb-28 space-y-6">
+      {/* Header */}
       <div className="flex items-center justify-between gap-3">
-        <button onClick={() => navigate("/settings/addresses")} className="min-w-0 flex items-center gap-2 text-left">
-          <div className="w-10 h-10 rounded-2xl bg-muted flex items-center justify-center">
-            <MapPin size={18} />
+        <button onClick={() => navigate("/settings/addresses")} className="min-w-0 flex items-center gap-3 text-left">
+          <div className="w-11 h-11 rounded-2xl bg-muted flex items-center justify-center">
+            <MapPin size={20} />
           </div>
           <div className="min-w-0">
-            <div className="text-sm font-bold truncate">Dubai, UAE</div>
-            <div className="text-xs text-muted-foreground truncate">Current location</div>
+            <p className="text-base font-bold truncate">Dubai, UAE</p>
+            <p className="text-xs text-muted-foreground truncate">Current location</p>
           </div>
         </button>
-        <button onClick={() => navigate("/notifications")} className="w-10 h-10 rounded-2xl bg-muted flex items-center justify-center">
-          <Bell size={18} />
+        <button onClick={() => navigate("/notifications")} className="w-11 h-11 rounded-2xl bg-muted flex items-center justify-center active:scale-95 transition-transform">
+          <Bell size={20} />
         </button>
       </div>
 
+      {/* Search */}
       <button
         onClick={() => navigate("/search-results")}
-        className="w-full rounded-2xl bg-muted px-4 py-3 flex items-center gap-3 text-left"
+        className="w-full rounded-2xl bg-muted px-4 py-3.5 flex items-center gap-3 text-left active:scale-[0.98] transition-transform"
       >
         <Search size={18} className="text-muted-foreground" />
-        <span className="text-sm text-muted-foreground">Search Orbit, marketplace, ride, wallet...</span>
+        <span className="text-sm text-muted-foreground">Search marketplace, ride, wallet...</span>
       </button>
 
+      {/* Core Actions Grid */}
       <section className="space-y-3">
-        <div className="text-[11px] uppercase tracking-wide font-bold text-muted-foreground">V1 Core</div>
+        <p className="text-xs uppercase tracking-wide font-bold text-muted-foreground">Quick Actions</p>
         <div className="grid grid-cols-3 gap-3">
           {filteredActions.map((item) => {
             const Icon = item.icon;
@@ -55,10 +58,10 @@ export default function V1HomePage({
               <button
                 key={item.key}
                 onClick={() => navigate(item.path)}
-                className="rounded-[24px] border border-border/20 bg-card px-3 py-4 flex flex-col items-center gap-2 text-center active:scale-[0.98] transition-transform"
+                className="rounded-2xl border border-border/10 bg-card px-3 py-4 flex flex-col items-center gap-2.5 text-center active:scale-[0.97] transition-transform shadow-sm"
               >
-                <div className="w-11 h-11 rounded-2xl bg-primary/10 text-primary flex items-center justify-center">
-                  <Icon size={18} />
+                <div className="w-12 h-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center">
+                  <Icon size={20} />
                 </div>
                 <span className="text-xs font-bold leading-tight">{item.label}</span>
               </button>
@@ -67,31 +70,33 @@ export default function V1HomePage({
         </div>
       </section>
 
+      {/* Live Actions */}
       <section className="space-y-3">
-        <div className="text-[11px] uppercase tracking-wide font-bold text-muted-foreground">Live Actions</div>
+        <p className="text-xs uppercase tracking-wide font-bold text-muted-foreground">Discover</p>
         <div className="space-y-3">
-          <button onClick={() => navigate("/achille")} className="w-full rounded-[24px] border border-border/20 bg-card p-4 text-left">
-            <div className="text-sm font-bold">Nearby merchants</div>
-            <div className="text-xs text-muted-foreground mt-1">Browse Achille marketplace around you</div>
+          <button onClick={() => navigate("/achille")} className="w-full rounded-2xl border border-border/10 bg-card p-4 text-left active:scale-[0.98] transition-transform shadow-sm">
+            <p className="text-base font-bold">Nearby restaurants</p>
+            <p className="text-sm text-muted-foreground mt-1">Browse food marketplace around you</p>
           </button>
-          <button onClick={() => navigate("/orbit")} className="w-full rounded-[24px] border border-border/20 bg-card p-4 text-left">
-            <div className="text-sm font-bold">Orbit activity</div>
-            <div className="text-xs text-muted-foreground mt-1">Messages, contacts, communication</div>
+          <button onClick={() => navigate("/orbit")} className="w-full rounded-2xl border border-border/10 bg-card p-4 text-left active:scale-[0.98] transition-transform shadow-sm">
+            <p className="text-base font-bold">Orbit</p>
+            <p className="text-sm text-muted-foreground mt-1">Messages, contacts, communication</p>
           </button>
-          <button onClick={() => navigate("/ride")} className="w-full rounded-[24px] border border-border/20 bg-card p-4 text-left">
-            <div className="text-sm font-bold">Ride / Send Package</div>
-            <div className="text-xs text-muted-foreground mt-1">Transport and package dispatch</div>
+          <button onClick={() => navigate("/ride")} className="w-full rounded-2xl border border-border/10 bg-card p-4 text-left active:scale-[0.98] transition-transform shadow-sm">
+            <p className="text-base font-bold">Ride / Send Package</p>
+            <p className="text-sm text-muted-foreground mt-1">Transport and package dispatch</p>
           </button>
-          <button onClick={() => navigate("/wallet/hub")} className="w-full rounded-[24px] border border-border/20 bg-card p-4 text-left">
-            <div className="text-sm font-bold">Wallet shortcuts</div>
-            <div className="text-xs text-muted-foreground mt-1">Balance, scan QR, pay and receive</div>
+          <button onClick={() => navigate("/wallet/hub")} className="w-full rounded-2xl border border-border/10 bg-card p-4 text-left active:scale-[0.98] transition-transform shadow-sm">
+            <p className="text-base font-bold">Wallet</p>
+            <p className="text-sm text-muted-foreground mt-1">Balance, scan QR, pay and receive</p>
           </button>
         </div>
       </section>
 
+      {/* Merchant Section */}
       {isMerchant && (
         <section className="space-y-3">
-          <div className="text-[11px] uppercase tracking-wide font-bold text-muted-foreground">Merchant</div>
+          <p className="text-xs uppercase tracking-wide font-bold text-muted-foreground">Merchant</p>
           <div className="grid grid-cols-2 gap-3">
             {[
               { key: "pos", label: "POS", path: "/merchant/pos" },
@@ -102,9 +107,9 @@ export default function V1HomePage({
               <button
                 key={item.key}
                 onClick={() => navigate(item.path)}
-                className="rounded-[24px] border border-border/20 bg-card px-3 py-4 text-center active:scale-[0.98] transition-transform"
+                className="rounded-2xl border border-border/10 bg-card px-4 py-4 text-center active:scale-[0.97] transition-transform shadow-sm"
               >
-                <span className="text-xs font-bold">{item.label}</span>
+                <span className="text-sm font-bold">{item.label}</span>
               </button>
             ))}
           </div>
