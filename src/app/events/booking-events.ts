@@ -1,4 +1,4 @@
-import type { BookingRecordV2, PropertyListingV2 } from "@/lib/types/booking";
+import type { BookingRecordV2, PropertyListingV2 } from "@/lib/types/domain";
 
 export type BookingEvent =
   | { type: "listing.created"; payload: { listing: PropertyListingV2 } }

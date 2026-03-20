@@ -1,4 +1,4 @@
-import type { GeoPosition } from "@/lib/types/app";
+import type { GeoPosition } from "@/lib/types/domain";
 
 export async function getCurrentGeoPosition(): Promise<GeoPosition | null> {
   return new Promise((resolve) => {
