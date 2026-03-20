@@ -1,10 +1,10 @@
 /**
- * Easy-Locs branded "You Are Here" user marker.
- * Replaces generic blue dot with a premium radar-halo identity.
+ * Premium GPS location marker — Apple/Google Maps style.
+ * Clean blue dot with subtle pulse ring. No text inside.
  */
 
+const USER_BLUE = "#007AFF";
 const BRAND_GOLD = "#D4A853";
-const USER_BLUE = "#4F46E5";
 
 /** Inject user marker CSS once */
 function ensureUserMarkerCSS() {
@@ -13,28 +13,24 @@ function ensureUserMarkerCSS() {
   s.id = "easylocs-user-marker-css";
   s.textContent = `
     @keyframes el-user-pulse {
-      0% { transform: scale(1); opacity: 0.5; }
-      70% { transform: scale(2.6); opacity: 0; }
+      0% { transform: scale(1); opacity: 0.35; }
+      70% { transform: scale(2.8); opacity: 0; }
       100% { opacity: 0; }
     }
     @keyframes el-user-ring {
-      0% { transform: scale(1); opacity: 0.3; }
-      50% { transform: scale(1.4); opacity: 0.1; }
-      100% { transform: scale(1); opacity: 0.3; }
-    }
-    @keyframes el-user-sweep {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
+      0% { transform: scale(1); opacity: 0.2; }
+      50% { transform: scale(1.3); opacity: 0.08; }
+      100% { transform: scale(1); opacity: 0.2; }
     }
   `;
   document.head.appendChild(s);
 }
 
 /**
- * Creates a branded "You Are Here" marker element.
- * Features: center dot, radar halo ring, pulse wave, mini Easy-Locs logo.
+ * Creates a premium GPS dot marker (Apple Maps style).
+ * Clean blue dot with white border and subtle pulse.
  */
-export function createUserMarkerElement(size = 48): HTMLDivElement {
+export function createUserMarkerElement(size = 44): HTMLDivElement {
   ensureUserMarkerCSS();
 
   const root = document.createElement("div");
@@ -45,71 +41,60 @@ export function createUserMarkerElement(size = 48): HTMLDivElement {
     pointer-events: none;
   `;
 
-  // Radar halo ring
-  const halo = document.createElement("div");
-  halo.style.cssText = `
-    position: absolute; inset: 0;
-    border-radius: 9999px;
-    border: 2px solid ${USER_BLUE};
-    opacity: 0.25;
-    animation: el-user-ring 3s ease-in-out infinite;
-  `;
-  root.appendChild(halo);
-
-  // Pulse wave
+  // Pulse ring
   const pulse = document.createElement("div");
   pulse.style.cssText = `
     position: absolute; inset: 0;
     border-radius: 9999px;
     background: ${USER_BLUE};
-    animation: el-user-pulse 2.2s ease-out infinite;
+    animation: el-user-pulse 2s ease-out infinite;
   `;
   root.appendChild(pulse);
 
-  // Center dot with golden ring
+  // Outer ring
+  const ring = document.createElement("div");
+  ring.style.cssText = `
+    position: absolute; inset: ${size * 0.18}px;
+    border-radius: 9999px;
+    border: 1.5px solid ${USER_BLUE};
+    opacity: 0.18;
+    animation: el-user-ring 3s ease-in-out infinite;
+  `;
+  root.appendChild(ring);
+
+  // Center dot — clean, no text
+  const dotSize = Math.round(size * 0.36);
   const center = document.createElement("div");
-  const dotSize = Math.round(size * 0.38);
   center.style.cssText = `
     width: ${dotSize}px; height: ${dotSize}px;
     border-radius: 9999px;
     background: ${USER_BLUE};
-    border: 2.5px solid ${BRAND_GOLD};
-    box-shadow: 0 0 12px ${USER_BLUE}66, 0 0 24px ${USER_BLUE}33;
+    border: 2.5px solid #ffffff;
+    box-shadow: 0 0 8px ${USER_BLUE}55, 0 2px 8px rgba(0,0,0,0.15);
     position: relative; z-index: 2;
-    display: flex; align-items: center; justify-content: center;
   `;
-
-  // Mini "EL" text inside
-  const label = document.createElement("span");
-  label.style.cssText = `
-    font-size: ${Math.round(dotSize * 0.42)}px;
-    font-weight: 800;
-    color: white;
-    letter-spacing: -0.5px;
-    line-height: 1;
-  `;
-  label.textContent = "EL";
-  center.appendChild(label);
   root.appendChild(center);
 
   return root;
 }
 
 /**
- * Creates branded pickup marker (green with gold ring).
+ * Creates branded pickup marker (green).
  */
 export function createPickupMarkerElement(): HTMLDivElement {
-  return createBrandedPin("#22C55E", "A", "📦");
+  return createBrandedPin("#22C55E", "A");
 }
 
 /**
- * Creates branded dropoff marker (purple with gold ring).
+ * Creates branded dropoff marker (purple).
  */
 export function createDropoffMarkerElement(): HTMLDivElement {
-  return createBrandedPin("#8B5CF6", "B", "📍");
+  return createBrandedPin("#8B5CF6", "B");
 }
 
-function createBrandedPin(color: string, letter: string, _emoji: string): HTMLDivElement {
+function createBrandedPin(color: string, letter: string): HTMLDivElement {
+  ensureUserMarkerCSS();
+
   const root = document.createElement("div");
   root.style.cssText = `
     position: relative;
@@ -120,13 +105,13 @@ function createBrandedPin(color: string, letter: string, _emoji: string): HTMLDi
 
   const dot = document.createElement("div");
   dot.style.cssText = `
-    width: 36px; height: 36px;
+    width: 34px; height: 34px;
     border-radius: 9999px;
     background: ${color};
-    border: 2.5px solid ${BRAND_GOLD};
-    box-shadow: 0 4px 16px ${color}55, 0 0 0 1px ${color}22;
+    border: 2.5px solid #ffffff;
+    box-shadow: 0 2px 12px ${color}44, 0 2px 6px rgba(0,0,0,0.12);
     display: flex; align-items: center; justify-content: center;
-    font-size: 14px; font-weight: 800; color: white;
+    font-size: 13px; font-weight: 700; color: white;
     position: relative; z-index: 2;
   `;
   dot.textContent = letter;
@@ -138,7 +123,7 @@ function createBrandedPin(color: string, letter: string, _emoji: string): HTMLDi
     position: absolute; inset: 0;
     border-radius: 9999px;
     background: ${color};
-    opacity: 0.15;
+    opacity: 0.12;
     animation: el-user-pulse 2.5s ease-out infinite;
   `;
   root.appendChild(pulse);

@@ -2,7 +2,7 @@
  * AppLogo — unified brand component, delegates to EasyLocsLogo.
  */
 import { Link } from "react-router-dom";
-import EasyLocsLogo, { EasyLocsIcon } from "@/components/brand/EasyLocsLogo";
+import EasyLocsLogo from "@/components/brand/EasyLocsLogo";
 
 interface AppLogoProps {
   linkTo?: string;
@@ -34,16 +34,12 @@ const AppLogo = ({
       to={href}
       className={`flex items-center gap-2 shrink-0 select-none group ${className}`}
     >
-      {/* Mobile: icon only for header/sidebar. Full for landing/auth/footer */}
+      {/* Always show full brand name */}
       <div className="hidden sm:block">
         <EasyLocsLogo variant="full" size={sizeMap[variant]} />
       </div>
       <div className="block sm:hidden">
-        {variant === "landing" || variant === "auth" || variant === "footer" ? (
-          <EasyLocsLogo variant="full" size="sm" />
-        ) : (
-          <EasyLocsIcon size={28} />
-        )}
+        <EasyLocsLogo variant="full" size="sm" />
       </div>
       {variant === "footer" && (
         <span
