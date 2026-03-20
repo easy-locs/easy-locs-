@@ -32,7 +32,7 @@ export default function DriverMissionDetailPage() {
     const next = nextMap[mission.status];
     if (!next) return;
     try {
-      await setOrderStatus({ orderId: mission.id, currentStatus: mission.status, nextStatus: next as any });
+      await setOrderStatus({ orderId: mission.id, currentStatus: mission.status as any, nextStatus: next as any });
       toast.success(`Mission moved to ${next}`);
       refetch();
     } catch (err: any) {
