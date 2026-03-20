@@ -9,6 +9,8 @@ import { ActivityPanel } from "@/components/system/ActivityPanel";
 import { useActivityLogStore } from "@/stores/activityLogStore";
 import { PushSettingsPanel } from "@/components/settings/PushSettingsPanel";
 import { useActivityRealtime } from "@/hooks/useActivityRealtime";
+import { registerPushNotifications } from "@/lib/push/registerPush";
+import { usePushTokenStore } from "@/stores/pushTokenStore";
 
 export default function HomePage() {
   const orbit = useOrbitStore((s) => s.profile);
@@ -22,6 +24,16 @@ export default function HomePage() {
   useEffect(() => {
     void hydrateActivity();
   }, [hydrateActivity]);
+
+  // Auto-register push token on mount
+  useEffect(() => {
+    (async () => {
+      const { token, platform } = await registerPushNotifications();
+      if (token) {
+        await usePushTokenStore.getState().saveToken(token, platform);
+      }
+    })();
+  }, []);
 
   return (
     <AppPageShell
