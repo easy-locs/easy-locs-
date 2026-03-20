@@ -142,22 +142,32 @@ export const useCallStore = create<CallStore>((set, get) => ({
     set({ incoming: null, mode: "idle" });
   },
 
-  endCall: async (sessionId, conversationId, durationSec = 0) => {
+  endCall: async (sessionId?, conversationId?, durationSec = 0) => {
     const current = get().current;
     const orbit = useOrbitStore.getState().profile;
-    if (!current || !orbit) return;
+
+    // Support no-arg legacy calls
+    const sid = sessionId ?? current?.id;
+
+    if (!sid) {
+      // Pure local cleanup
+      set({ current: null, mode: "ended", type: null, peerOrbitId: null });
+      platformBus.emit({ type: "call.ended", payload: { peerOrbitId: get().peerOrbitId } });
+      setTimeout(() => set({ mode: "idle" }), 1500);
+      return;
+    }
 
     const now = new Date().toISOString();
 
     await (supabase as any)
       .from("call_sessions")
       .update({ status: "ended", ended_at: now, updated_at: now })
-      .eq("id", sessionId);
+      .eq("id", sid);
 
-    if (conversationId || current.conversation_id) {
+    if (current && orbit && (conversationId || current.conversation_id)) {
       await useCallHistoryStore.getState().addCallLog({
         conversationId: conversationId ?? current.conversation_id!,
-        sessionId,
+        sessionId: sid,
         callerOrbitId: current.caller_orbit_id,
         receiverOrbitId: current.receiver_orbit_id,
         callType: (current.call_type as "audio" | "video") ?? "audio",
@@ -169,10 +179,9 @@ export const useCallStore = create<CallStore>((set, get) => ({
       });
     }
 
-    set({ current: null, mode: "ended" });
-    platformBus.emit({ type: "call.ended", payload: { peerOrbitId: current.receiver_orbit_id } });
+    set({ current: null, mode: "ended", type: null, peerOrbitId: null });
+    platformBus.emit({ type: "call.ended", payload: { peerOrbitId: current?.receiver_orbit_id } });
 
-    // Reset to idle after brief delay
     setTimeout(() => set({ mode: "idle" }), 1500);
   },
 
