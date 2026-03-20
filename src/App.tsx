@@ -450,6 +450,12 @@ const AdminFailedPaymentsPage = safeLazy(() => import("./pages/admin/AdminFailed
 const CustomerReferFriendPage = safeLazy(() => import("./pages/customer/CustomerReferFriendPage"), "CustomerReferFriendPage");
 const DriverDocumentsPage = safeLazy(() => import("./pages/driver/DriverDocumentsPage"), "DriverDocumentsPage");
 const AdminSupportSlaPage = safeLazy(() => import("./pages/admin/AdminSupportSlaPage"), "AdminSupportSlaPage");
+const CustomerAddressSelectorPage = safeLazy(() => import("./pages/customer/CustomerAddressSelectorPage"), "CustomerAddressSelectorPage");
+const MerchantDailySalesPage = safeLazy(() => import("./pages/merchant/MerchantDailySalesPage"), "MerchantDailySalesPage");
+const AdminDeliveryIncidentsPage = safeLazy(() => import("./pages/admin/AdminDeliveryIncidentsPage"), "AdminDeliveryIncidentsPage");
+const CustomerPaymentActivityPage = safeLazy(() => import("./pages/customer/CustomerPaymentActivityPage"), "CustomerPaymentActivityPage");
+const DriverAvailabilityZonesPage = safeLazy(() => import("./pages/driver/DriverAvailabilityZonesPage"), "DriverAvailabilityZonesPage");
+const AdminGrowthDashboardPage = safeLazy(() => import("./pages/admin/AdminGrowthDashboardPage"), "AdminGrowthDashboardPage");
 
 // City sub-page wrappers
 const CityServicesPage = () => <CityHubPage subPage="services" />;
@@ -960,6 +966,12 @@ const App = () => (
                 <Route path="/me/refer-friend" element={<ProtectedRoute><CustomerReferFriendPage /></ProtectedRoute>} />
                 <Route path="/driver/documents" element={<ProtectedRoute><DriverDocumentsPage /></ProtectedRoute>} />
                 <Route path="/admin/support-sla" element={<ProtectedRoute><AdminSupportSlaPage /></ProtectedRoute>} />
+                <Route path="/checkout/address-selector" element={<ProtectedRoute><CustomerAddressSelectorPage /></ProtectedRoute>} />
+                <Route path="/merchant/daily-sales/:merchantId" element={<ProtectedRoute><MerchantDailySalesPage /></ProtectedRoute>} />
+                <Route path="/admin/delivery-incidents" element={<ProtectedRoute><AdminDeliveryIncidentsPage /></ProtectedRoute>} />
+                <Route path="/me/payment-activity" element={<ProtectedRoute><CustomerPaymentActivityPage /></ProtectedRoute>} />
+                <Route path="/driver/availability-zones" element={<ProtectedRoute><DriverAvailabilityZonesPage /></ProtectedRoute>} />
+                <Route path="/admin/growth-dashboard" element={<ProtectedRoute><AdminGrowthDashboardPage /></ProtectedRoute>} />
               <Route path="/city/:countryCode/:city/:vertical/:locale" element={<CityVerticalPage />} />
 
               {/* Guest / Public */}
