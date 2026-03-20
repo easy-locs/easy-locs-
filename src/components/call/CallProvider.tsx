@@ -116,7 +116,7 @@ export function CallProvider({ children }: { children: ReactNode }) {
               const { data: profile } = await supabase
                 .from("profiles")
                 .select("name, email")
-                .eq("id", call.caller_id)
+                .eq("id", call.caller_orbit_id)
                 .single();
 
               setIncomingCallId(call.id);
