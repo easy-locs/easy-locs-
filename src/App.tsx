@@ -721,9 +721,12 @@ const OrbitSessionGuard = () => { useOrbitSessionInit(); return null; };
 const RealtimeHubGuard = () => { useRealtimeHub(); return null; };
 /** Install orchestration engine */
 const OrchestrationGuard = () => { useOrchestration(); return null; };
-/** Subscribe to realtime notifications */
+/** Subscribe to realtime notifications — useEffect to avoid re-subscribing on every render */
+import { useEffect } from "react";
 const NotificationsRealtimeGuard = () => {
-  useNotificationsStore.getState().subscribeRealtime();
+  useEffect(() => {
+    useNotificationsStore.getState().subscribeRealtime();
+  }, []);
   return null;
 };
 

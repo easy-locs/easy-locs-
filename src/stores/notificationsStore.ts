@@ -59,7 +59,12 @@ export const useNotificationsStore = create<NotificationsStore>((set, get) => ({
 
   unreadCount: () => get().items.filter((i) => !i.read).length,
 
+  _subscribed: false,
+
   subscribeRealtime: () => {
+    if ((get() as any)._subscribed) return;
+    (set as any)({ _subscribed: true });
+
     supabase
       .channel("app_notifications_realtime")
       .on(
