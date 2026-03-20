@@ -116,7 +116,12 @@ Deno.serve(async (req) => {
     }
 
     // 4. Update freshness scores for active listings
-    const { count } = await supabase.rpc("update_listing_freshness_scores").catch(() => ({ count: 0 })) as any;
+    try {
+      const { data: freshnessResult } = await supabase.rpc("update_listing_freshness_scores");
+      results.freshness_updated = freshnessResult || 0;
+    } catch {
+      results.freshness_updated = 0;
+    }
     results.freshness_updated = count || 0;
 
     console.log(`[expire-listings] Results:`, results);
