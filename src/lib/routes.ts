@@ -84,6 +84,11 @@ export const routes = {
   adminFinanceSummary: () => `/admin/finance-summary`,
   customerSpendingInsights: () => `/me/spending-insights`,
   adminPlatformAlerts: () => `/admin/platform-alerts`,
+  customerAddressBook: () => `/me/address-book`,
+  merchantBusinessSummary: (merchantId: string) => `/merchant/business-summary/${encodeURIComponent(merchantId)}`,
+  adminOrderWatch: () => `/admin/order-watch`,
+  customerLoyaltyHistory: () => `/me/loyalty-history`,
+  adminSearchWatch: () => `/admin/search-watch`,
 
   // Orbit
   orbitCallTest: () => `/orbit/call-test`,
