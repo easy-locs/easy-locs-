@@ -193,6 +193,10 @@ export const ROUTE_REGISTRY = [
   { group: "public", label: "Order Receipt", path: "/order/receipt/:orderId" },
   { group: "merchant", label: "Merchant Analytics", path: "/merchant/analytics/:merchantId" },
   { group: "admin", label: "Operations Launchpad", path: "/admin/operations-launchpad" },
+  { group: "merchant", label: "Merchant Customers", path: "/merchant/customers/:merchantId" },
+  { group: "admin", label: "Merchant Health", path: "/admin/merchant-health" },
+  { group: "wallet", label: "Wallet Top Up", path: "/wallet/top-up" },
+  { group: "wallet", label: "Wallet Transfer", path: "/wallet/transfer" },
 
   { group: "public", label: "Coming Soon", path: "/coming-soon/:slug" },
   { group: "public", label: "City Market", path: "/city-market/:citySlug" },

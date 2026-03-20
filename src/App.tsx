@@ -868,6 +868,10 @@ const App = () => (
                 <Route path="/order/receipt/:orderId" element={<ProtectedRoute><OrderReceiptPage /></ProtectedRoute>} />
                 <Route path="/merchant/analytics/:merchantId" element={<ProtectedRoute><MerchantBasicAnalyticsPage /></ProtectedRoute>} />
                 <Route path="/admin/operations-launchpad" element={<ProtectedRoute><AdminOperationsLaunchpadPage /></ProtectedRoute>} />
+                <Route path="/merchant/customers/:merchantId" element={<ProtectedRoute><MerchantCustomersPage /></ProtectedRoute>} />
+                <Route path="/admin/merchant-health" element={<ProtectedRoute><AdminMerchantHealthPage /></ProtectedRoute>} />
+                <Route path="/wallet/top-up" element={<ProtectedRoute><WalletTopUpPage /></ProtectedRoute>} />
+                <Route path="/wallet/transfer" element={<ProtectedRoute><WalletTransferPage /></ProtectedRoute>} />
               <Route path="/city/:countryCode/:city/:vertical/:locale" element={<CityVerticalPage />} />
 
               {/* Guest / Public */}
