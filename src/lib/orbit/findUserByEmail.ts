@@ -6,8 +6,7 @@ export async function findUserByEmail(email: string) {
   const { data, error } = await supabase
     .from("orbit_profiles_v2")
     .select("id, orbit_id, email, display_name, avatar_url")
-    .ilike("email", normalizedEmail)
-    .limit(1)
+    .eq("email", normalizedEmail)
     .maybeSingle();
 
   if (error) {
