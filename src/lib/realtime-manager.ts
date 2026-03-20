@@ -109,14 +109,17 @@ class RealtimeManager {
   }
 
   stop() {
-    // Set offline before teardown (only leader tab writes)
+    // Set offline before teardown (only leader tab writes) — validate session first
     if (this.userId && this.isLeaderTab) {
-      supabase.from("user_presence").upsert({
-        user_id: this.userId,
-        status: "offline",
-        last_seen_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      } as any, { onConflict: "user_id" }).then(() => {}, () => {});
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        if (!session?.access_token) return;
+        supabase.from("user_presence").upsert({
+          user_id: this.userId,
+          status: "offline",
+          last_seen_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        } as any, { onConflict: "user_id" }).then(() => {}, () => {});
+      }).catch(() => {});
     }
 
     if (this.visibilityHandler) {
