@@ -590,6 +590,20 @@ const CustomerFamilyProfilePage = safeLazy(() => import("./pages/customer/Custom
 const CustomerFavoriteItemsPage = safeLazy(() => import("./pages/customer/CustomerFavoriteItemsPage"), "CustomerFavoriteItemsPage");
 const MerchantCancellationRulesPage = safeLazy(() => import("./pages/merchant/MerchantCancellationRulesPage"), "MerchantCancellationRulesPage");
 const MerchantCustomerChatSettingsPage = safeLazy(() => import("./pages/merchant/MerchantCustomerChatSettingsPage"), "MerchantCustomerChatSettingsPage");
+// MX-OG block
+const AdminCityLaunchChecklistPage = safeLazy(() => import("./pages/admin/AdminCityLaunchChecklistPage"), "AdminCityLaunchChecklistPage");
+const AdminRestaurantAutofillPage2 = safeLazy(() => import("./pages/admin/AdminRestaurantAutofillPage"), "AdminRestaurantAutofillPage2");
+const AdminSystemLiveStatusPage = safeLazy(() => import("./pages/admin/AdminSystemLiveStatusPage"), "AdminSystemLiveStatusPage");
+const CustomerQuickReorderHubPage = safeLazy(() => import("./pages/customer/CustomerQuickReorderHubPage"), "CustomerQuickReorderHubPage");
+const MerchantLiveOpsPanelPage = safeLazy(() => import("./pages/merchant/MerchantLiveOpsPanelPage"), "MerchantLiveOpsPanelPage");
+const CentralControlPanelPage = safeLazy(() => import("./pages/admin/CentralControlPanelPage"), "CentralControlPanelPage");
+const AdminLiveIncidentFeedPage = safeLazy(() => import("./pages/admin/AdminLiveIncidentFeedPage"), "AdminLiveIncidentFeedPage");
+const AdminRiskScoreboardPage = safeLazy(() => import("./pages/admin/AdminRiskScoreboardPage"), "AdminRiskScoreboardPage");
+const AdminStoreReadinessMatrixPage = safeLazy(() => import("./pages/admin/AdminStoreReadinessMatrixPage"), "AdminStoreReadinessMatrixPage");
+const CustomerBulkPartyBuilderPage = safeLazy(() => import("./pages/customer/CustomerBulkPartyBuilderPage"), "CustomerBulkPartyBuilderPage");
+const CustomerDinnerPlannerPage = safeLazy(() => import("./pages/customer/CustomerDinnerPlannerPage"), "CustomerDinnerPlannerPage");
+const MerchantAutoAcceptRulesPage = safeLazy(() => import("./pages/merchant/MerchantAutoAcceptRulesPage"), "MerchantAutoAcceptRulesPage");
+const MerchantDriverHandoffPage = safeLazy(() => import("./pages/merchant/MerchantDriverHandoffPage"), "MerchantDriverHandoffPage");
 
 // City sub-page wrappers
 const CityServicesPage = () => <CityHubPage subPage="services" />;
@@ -1237,6 +1251,20 @@ const App = () => (
                 <Route path="/me/favorite-items" element={<ProtectedRoute><CustomerFavoriteItemsPage /></ProtectedRoute>} />
                 <Route path="/merchant/cancellation-rules/:merchantId" element={<ProtectedRoute><MerchantCancellationRulesPage /></ProtectedRoute>} />
                 <Route path="/merchant/chat-settings/:merchantId" element={<ProtectedRoute><MerchantCustomerChatSettingsPage /></ProtectedRoute>} />
+                {/* MX-OG */}
+                <Route path="/admin/city-launch-checklist" element={<ProtectedRoute><AdminCityLaunchChecklistPage /></ProtectedRoute>} />
+                <Route path="/admin/restaurant-autofill-v2" element={<ProtectedRoute><AdminRestaurantAutofillPage2 /></ProtectedRoute>} />
+                <Route path="/admin/system-live-status" element={<ProtectedRoute><AdminSystemLiveStatusPage /></ProtectedRoute>} />
+                <Route path="/me/quick-reorder" element={<ProtectedRoute><CustomerQuickReorderHubPage /></ProtectedRoute>} />
+                <Route path="/merchant/live-ops/:merchantId" element={<ProtectedRoute><MerchantLiveOpsPanelPage /></ProtectedRoute>} />
+                <Route path="/admin/central-control" element={<ProtectedRoute><CentralControlPanelPage /></ProtectedRoute>} />
+                <Route path="/admin/live-incident-feed" element={<ProtectedRoute><AdminLiveIncidentFeedPage /></ProtectedRoute>} />
+                <Route path="/admin/risk-scoreboard" element={<ProtectedRoute><AdminRiskScoreboardPage /></ProtectedRoute>} />
+                <Route path="/admin/store-readiness-matrix" element={<ProtectedRoute><AdminStoreReadinessMatrixPage /></ProtectedRoute>} />
+                <Route path="/checkout/bulk-party-builder" element={<ProtectedRoute><CustomerBulkPartyBuilderPage /></ProtectedRoute>} />
+                <Route path="/checkout/dinner-planner" element={<ProtectedRoute><CustomerDinnerPlannerPage /></ProtectedRoute>} />
+                <Route path="/merchant/auto-accept-rules/:merchantId" element={<ProtectedRoute><MerchantAutoAcceptRulesPage /></ProtectedRoute>} />
+                <Route path="/merchant/driver-handoff/:merchantId" element={<ProtectedRoute><MerchantDriverHandoffPage /></ProtectedRoute>} />
               <Route path="/city/:countryCode/:city/:vertical/:locale" element={<CityVerticalPage />} />
 
               {/* Guest / Public */}
