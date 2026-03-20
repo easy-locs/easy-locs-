@@ -544,6 +544,12 @@ const AdminExecutiveOverviewPage = safeLazy(() => import("./pages/admin/AdminExe
 const AdminSystemLivePanelPage = safeLazy(() => import("./pages/admin/AdminSystemLivePanelPage"), "AdminSystemLivePanelPage");
 // HU-HZ block
 const AdminRestaurantFillPage = safeLazy(() => import("./pages/admin/AdminRestaurantFillPage"), "AdminRestaurantFillPage");
+// IA-IF block
+const StripeCheckoutHandlerPage = safeLazy(() => import("./pages/payments/StripeCheckoutHandlerPage"), "StripeCheckoutHandlerPage");
+const AdminPaymentGoLivePage = safeLazy(() => import("./pages/admin/AdminPaymentGoLivePage"), "AdminPaymentGoLivePage");
+const AdminGoLiveReadinessPage = safeLazy(() => import("./pages/admin/AdminGoLiveReadinessPage"), "AdminGoLiveReadinessPage");
+// IG-IL block
+const AdminUiFinalizerPage = safeLazy(() => import("./pages/admin/AdminUiFinalizerPage"), "AdminUiFinalizerPage");
 
 // City sub-page wrappers
 const CityServicesPage = () => <CityHubPage subPage="services" />;
@@ -1145,6 +1151,12 @@ const App = () => (
                 <Route path="/admin/system-live" element={<ProtectedRoute><AdminSystemLivePanelPage /></ProtectedRoute>} />
                 {/* HU-HZ */}
                 <Route path="/admin/restaurant-autofill" element={<ProtectedRoute><AdminRestaurantFillPage /></ProtectedRoute>} />
+                {/* IA-IF */}
+                <Route path="/payments/stripe-handler" element={<ProtectedRoute><StripeCheckoutHandlerPage /></ProtectedRoute>} />
+                <Route path="/admin/payment-go-live" element={<ProtectedRoute><AdminPaymentGoLivePage /></ProtectedRoute>} />
+                <Route path="/admin/go-live-readiness" element={<ProtectedRoute><AdminGoLiveReadinessPage /></ProtectedRoute>} />
+                {/* IG-IL */}
+                <Route path="/admin/ui-finalizer" element={<ProtectedRoute><AdminUiFinalizerPage /></ProtectedRoute>} />
               <Route path="/city/:countryCode/:city/:vertical/:locale" element={<CityVerticalPage />} />
 
               {/* Guest / Public */}
