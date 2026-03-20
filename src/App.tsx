@@ -1199,6 +1199,25 @@ const App = () => (
                 <Route path="/merchant/staff-roles/:merchantId" element={<ProtectedRoute><MerchantStaffRolesPage /></ProtectedRoute>} />
                 <Route path="/merchant/permissions/:merchantId" element={<ProtectedRoute><MerchantPermissionsMatrixPage /></ProtectedRoute>} />
                 <Route path="/merchant/business-hours/:merchantId" element={<ProtectedRoute><MerchantBusinessHoursPage /></ProtectedRoute>} />
+                {/* MA-MW */}
+                <Route path="/admin/region-performance" element={<ProtectedRoute><AdminRegionPerformancePage /></ProtectedRoute>} />
+                <Route path="/admin/courier-heatmap" element={<ProtectedRoute><AdminCourierHeatmapPage /></ProtectedRoute>} />
+                <Route path="/admin/customer-retention" element={<ProtectedRoute><AdminCustomerRetentionPage /></ProtectedRoute>} />
+                <Route path="/checkout/party-split-links" element={<ProtectedRoute><CustomerPartySplitLinksPage /></ProtectedRoute>} />
+                <Route path="/checkout/share-cart" element={<ProtectedRoute><CustomerShareCartPage /></ProtectedRoute>} />
+                <Route path="/merchant/rush-pricing/:merchantId" element={<ProtectedRoute><MerchantRushPricingPage /></ProtectedRoute>} />
+                <Route path="/admin/growth-campaigns" element={<ProtectedRoute><AdminGrowthCampaignsPage /></ProtectedRoute>} />
+                <Route path="/admin/promo-performance" element={<ProtectedRoute><AdminPromoPerformancePage /></ProtectedRoute>} />
+                <Route path="/me/payment-methods" element={<ProtectedRoute><CustomerPaymentMethodsHubPage /></ProtectedRoute>} />
+                <Route path="/me/order-preferences" element={<ProtectedRoute><CustomerOrderPreferencesPage /></ProtectedRoute>} />
+                <Route path="/merchant/packaging/:merchantId" element={<ProtectedRoute><MerchantPackagingSettingsPage /></ProtectedRoute>} />
+                <Route path="/merchant/order-throttle/:merchantId" element={<ProtectedRoute><MerchantOrderThrottlePage /></ProtectedRoute>} />
+                <Route path="/admin/acquisition-funnel" element={<ProtectedRoute><AdminAcquisitionFunnelPage /></ProtectedRoute>} />
+                <Route path="/admin/driver-incentives" element={<ProtectedRoute><AdminDriverIncentivesPage /></ProtectedRoute>} />
+                <Route path="/me/family-profile" element={<ProtectedRoute><CustomerFamilyProfilePage /></ProtectedRoute>} />
+                <Route path="/me/favorite-items" element={<ProtectedRoute><CustomerFavoriteItemsPage /></ProtectedRoute>} />
+                <Route path="/merchant/cancellation-rules/:merchantId" element={<ProtectedRoute><MerchantCancellationRulesPage /></ProtectedRoute>} />
+                <Route path="/merchant/chat-settings/:merchantId" element={<ProtectedRoute><MerchantCustomerChatSettingsPage /></ProtectedRoute>} />
               <Route path="/city/:countryCode/:city/:vertical/:locale" element={<CityVerticalPage />} />
 
               {/* Guest / Public */}
