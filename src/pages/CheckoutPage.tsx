@@ -1,12 +1,13 @@
 /**
  * CheckoutPage — Review cart, select delivery/pickup, choose payment, place order.
+ * Uses storefront_orders as the single source of truth.
  * Route: /checkout
  */
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "@/hooks/useCart";
 import { useAuth } from "@/contexts/AuthContext";
-import { createOrder, addOrderItem, updateOrderStatus } from "@/lib/orders/orders-core";
+import { createStorefrontOrder } from "@/lib/orders/orderEngine";
 import { ArrowLeft, MapPin, CreditCard, Wallet, Banknote, Loader2, Plus, Minus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -22,6 +23,7 @@ export default function CheckoutPage() {
   const [payment, setPayment] = useState<PaymentMethod>("wallet");
   const [notes, setNotes] = useState("");
   const [placing, setPlacing] = useState(false);
+  const idempotencyRef = useRef(crypto.randomUUID());
 
   if (itemCount === 0) {
     return (
@@ -38,29 +40,30 @@ export default function CheckoutPage() {
 
   const placeOrder = async () => {
     if (!user) { toast.error("Please sign in to place an order"); return; }
+    if (!cart.restaurantId) { toast.error("No restaurant selected"); return; }
     setPlacing(true);
+
     try {
-      const order = await createOrder({
-        merchantProfileId: cart.restaurantId ?? undefined,
-        orderType: "food_delivery",
-        serviceMode: mode === "delivery" ? "delivery" : "delivery",
+      const { order, alreadyExists } = await createStorefrontOrder({
+        shopId: cart.restaurantId,
+        sellerId: user.id, // Will be resolved by the shop's seller_id in production
+        items: cart.items,
+        fulfillmentType: mode,
+        currency: "AED",
+        deliveryFee,
         notes: notes || undefined,
+        paymentMethod: payment,
+        idempotencyKey: idempotencyRef.current,
       });
 
-      for (const item of cart.items) {
-        await addOrderItem({
-          orderId: order.id,
-          menuItemId: item.menuItemId,
-          itemName: item.name,
-          unitPrice: item.unitPrice,
-          quantity: item.quantity,
-          notes: item.notes,
-        });
+      if (alreadyExists) {
+        toast.info("Order already placed");
+      } else {
+        toast.success("Order placed!");
       }
 
-      await updateOrderStatus({ orderId: order.id, status: "pending" });
       clearCart();
-      toast.success("Order placed!");
+      idempotencyRef.current = crypto.randomUUID();
       navigate(`/order/${order.id}`);
     } catch (e: any) {
       toast.error(e.message || "Failed to place order");
@@ -77,9 +80,8 @@ export default function CheckoutPage() {
 
   return (
     <div className="min-h-[100dvh] flex flex-col bg-background" data-checkout-form>
-      {/* Header */}
       <header className="flex items-center gap-3 px-4 pt-4 pb-3">
-        <button onClick={() => navigate(-1)} className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-95 transition-transform" style={{ background: "hsl(var(--muted))" }}>
+        <button onClick={() => navigate(-1)} className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-95 transition-transform bg-muted">
           <ArrowLeft className="w-4.5 h-4.5" />
         </button>
         <h1 className="text-lg font-bold text-foreground">Checkout</h1>
@@ -87,7 +89,7 @@ export default function CheckoutPage() {
 
       <div className="flex-1 overflow-y-auto px-4 pb-32 space-y-4">
         {/* Restaurant */}
-        <div className="rounded-2xl p-4" style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border) / 0.12)" }}>
+        <div className="rounded-2xl p-4 bg-card border border-border/20">
           <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Restaurant</p>
           <p className="text-sm font-bold mt-0.5 text-foreground">{cart.restaurantName}</p>
         </div>
@@ -116,10 +118,9 @@ export default function CheckoutPage() {
         {mode === "delivery" && (
           <button
             onClick={() => navigate("/settings/addresses")}
-            className="w-full rounded-2xl p-4 flex items-center gap-3 active:scale-[0.98] transition-transform"
-            style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border) / 0.12)" }}
+            className="w-full rounded-2xl p-4 flex items-center gap-3 active:scale-[0.98] transition-transform bg-card border border-border/20"
           >
-            <MapPin className="w-5 h-5 shrink-0" style={{ color: "hsl(var(--primary))" }} />
+            <MapPin className="w-5 h-5 shrink-0 text-primary" />
             <div className="flex-1 text-left">
               <p className="text-[11px] text-muted-foreground font-medium">Deliver to</p>
               <p className="text-sm font-semibold text-foreground">Select address</p>
@@ -130,7 +131,7 @@ export default function CheckoutPage() {
         {/* Items */}
         <section>
           <p className="text-[11px] font-bold uppercase tracking-wider mb-2 text-muted-foreground">Items ({itemCount})</p>
-          <div className="rounded-2xl overflow-hidden" style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border) / 0.12)" }}>
+          <div className="rounded-2xl overflow-hidden bg-card border border-border/20">
             {cart.items.map((item, idx) => (
               <div
                 key={item.id}
@@ -140,13 +141,12 @@ export default function CheckoutPage() {
               >
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold text-foreground truncate">{item.name}</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">{(item.unitPrice * item.quantity).toFixed(2)}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">{(item.unitPrice * item.quantity).toFixed(2)} AED</p>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <button
                     onClick={() => item.quantity <= 1 ? removeItem(item.id) : updateQuantity(item.id, item.quantity - 1)}
-                    className="w-7 h-7 rounded-lg flex items-center justify-center active:scale-90 transition-transform"
-                    style={{ background: "hsl(var(--muted))" }}
+                    className="w-7 h-7 rounded-lg flex items-center justify-center active:scale-90 transition-transform bg-muted"
                   >
                     {item.quantity <= 1 ? <Trash2 className="w-3 h-3 text-destructive" /> : <Minus className="w-3 h-3" />}
                   </button>
@@ -156,7 +156,7 @@ export default function CheckoutPage() {
                     className="w-7 h-7 rounded-lg flex items-center justify-center active:scale-90 transition-transform"
                     style={{ background: "hsl(var(--primary) / 0.1)" }}
                   >
-                    <Plus className="w-3 h-3" style={{ color: "hsl(var(--primary))" }} />
+                    <Plus className="w-3 h-3 text-primary" />
                   </button>
                 </div>
               </div>
@@ -165,18 +165,18 @@ export default function CheckoutPage() {
         </section>
 
         {/* Pricing summary */}
-        <div className="rounded-2xl p-4 space-y-2" style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border) / 0.12)" }}>
+        <div className="rounded-2xl p-4 space-y-2 bg-card border border-border/20">
           <div className="flex justify-between text-sm">
             <span className="text-muted-foreground">Subtotal</span>
-            <span className="font-semibold text-foreground">{total.toFixed(2)}</span>
+            <span className="font-semibold text-foreground">{total.toFixed(2)} AED</span>
           </div>
           <div className="flex justify-between text-sm">
             <span className="text-muted-foreground">Delivery fee</span>
-            <span className="font-semibold text-foreground">{deliveryFee === 0 ? "Free" : deliveryFee.toFixed(2)}</span>
+            <span className="font-semibold text-foreground">{deliveryFee === 0 ? "Free" : `${deliveryFee.toFixed(2)} AED`}</span>
           </div>
-          <div className="flex justify-between text-sm font-bold pt-2" style={{ borderTop: "1px solid hsl(var(--border) / 0.12)" }}>
+          <div className="flex justify-between text-sm font-bold pt-2 border-t border-border/20">
             <span className="text-foreground">Total</span>
-            <span className="text-foreground">{grandTotal.toFixed(2)}</span>
+            <span className="text-foreground">{grandTotal.toFixed(2)} AED</span>
           </div>
         </div>
 
@@ -187,8 +187,7 @@ export default function CheckoutPage() {
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             placeholder="Special instructions..."
-            className="w-full rounded-2xl p-3 text-sm resize-none h-20 bg-card"
-            style={{ border: "1px solid hsl(var(--border) / 0.12)" }}
+            className="w-full rounded-2xl p-3 text-sm resize-none h-20 bg-card border border-border/20"
           />
         </section>
 
@@ -215,7 +214,7 @@ export default function CheckoutPage() {
       </div>
 
       {/* Bottom CTA */}
-      <div className="fixed bottom-0 left-0 right-0 px-4 pt-3 z-40" style={{ background: "hsl(var(--background))", borderTop: "1px solid hsl(var(--border) / 0.08)", paddingBottom: "max(env(safe-area-inset-bottom, 16px), 16px)" }}>
+      <div className="fixed bottom-0 left-0 right-0 px-4 pt-3 z-40 bg-background border-t border-border/10" style={{ paddingBottom: "max(env(safe-area-inset-bottom, 16px), 16px)" }}>
         <Button
           data-submit-order
           data-primary-cta
@@ -224,7 +223,7 @@ export default function CheckoutPage() {
           className="w-full rounded-2xl h-13 text-sm font-bold"
         >
           {placing ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
-          Place Order · {grandTotal.toFixed(2)}
+          Place Order · {grandTotal.toFixed(2)} AED
         </Button>
       </div>
     </div>
