@@ -500,6 +500,18 @@ const AdminCashflowMonitorPage = safeLazy(() => import("./pages/admin/AdminCashf
 const CustomerAddressBookPageV2 = safeLazy(() => import("./pages/customer/CustomerAddressBookPageV2"), "CustomerAddressBookPageV2");
 const DriverNavigationModePage = safeLazy(() => import("./pages/driver/DriverNavigationModePage"), "DriverNavigationModePage");
 const AdminCityOpsPage = safeLazy(() => import("./pages/admin/AdminCityOpsPage"), "AdminCityOpsPage");
+// GE-GJ block
+const CustomerMealPlannerPage = safeLazy(() => import("./pages/customer/CustomerMealPlannerPage"), "CustomerMealPlannerPage");
+const MerchantDeliveryZonesPage = safeLazy(() => import("./pages/merchant/MerchantDeliveryZonesPage"), "MerchantDeliveryZonesPage");
+const AdminOperatorNotesPage = safeLazy(() => import("./pages/admin/AdminOperatorNotesPage"), "AdminOperatorNotesPage");
+const CustomerReceiptVaultPage = safeLazy(() => import("./pages/customer/CustomerReceiptVaultPage"), "CustomerReceiptVaultPage");
+const DriverVehicleProfilePage = safeLazy(() => import("./pages/driver/DriverVehicleProfilePage"), "DriverVehicleProfilePage");
+const AdminNetworkStatusPage = safeLazy(() => import("./pages/admin/AdminNetworkStatusPage"), "AdminNetworkStatusPage");
+// GK-GP block
+const CustomerSharedWalletPage = safeLazy(() => import("./pages/customer/CustomerSharedWalletPage"), "CustomerSharedWalletPage");
+const AdminSlaMonitorPage = safeLazy(() => import("./pages/admin/AdminSlaMonitorPage"), "AdminSlaMonitorPage");
+const CustomerOrderGiftsPage = safeLazy(() => import("./pages/customer/CustomerOrderGiftsPage"), "CustomerOrderGiftsPage");
+const AdminIncidentCenterPage = safeLazy(() => import("./pages/admin/AdminIncidentCenterPage"), "AdminIncidentCenterPage");
 
 // City sub-page wrappers
 const CityServicesPage = () => <CityHubPage subPage="services" />;
@@ -1057,6 +1069,18 @@ const App = () => (
                 <Route path="/me/address-book-v2" element={<ProtectedRoute><CustomerAddressBookPageV2 /></ProtectedRoute>} />
                 <Route path="/driver/navigation-mode" element={<ProtectedRoute><DriverNavigationModePage /></ProtectedRoute>} />
                 <Route path="/admin/city-ops" element={<ProtectedRoute><AdminCityOpsPage /></ProtectedRoute>} />
+                {/* GE-GJ */}
+                <Route path="/me/meal-planner" element={<ProtectedRoute><CustomerMealPlannerPage /></ProtectedRoute>} />
+                <Route path="/merchant/delivery-zones/:merchantId" element={<ProtectedRoute><MerchantDeliveryZonesPage /></ProtectedRoute>} />
+                <Route path="/admin/operator-notes" element={<ProtectedRoute><AdminOperatorNotesPage /></ProtectedRoute>} />
+                <Route path="/me/receipt-vault" element={<ProtectedRoute><CustomerReceiptVaultPage /></ProtectedRoute>} />
+                <Route path="/driver/vehicle-profile" element={<ProtectedRoute><DriverVehicleProfilePage /></ProtectedRoute>} />
+                <Route path="/admin/network-status" element={<ProtectedRoute><AdminNetworkStatusPage /></ProtectedRoute>} />
+                {/* GK-GP */}
+                <Route path="/me/shared-wallet" element={<ProtectedRoute><CustomerSharedWalletPage /></ProtectedRoute>} />
+                <Route path="/admin/sla-monitor" element={<ProtectedRoute><AdminSlaMonitorPage /></ProtectedRoute>} />
+                <Route path="/checkout/gift-order" element={<ProtectedRoute><CustomerOrderGiftsPage /></ProtectedRoute>} />
+                <Route path="/admin/incident-center" element={<ProtectedRoute><AdminIncidentCenterPage /></ProtectedRoute>} />
               <Route path="/city/:countryCode/:city/:vertical/:locale" element={<CityVerticalPage />} />
 
               {/* Guest / Public */}
