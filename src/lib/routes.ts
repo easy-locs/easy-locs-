@@ -138,6 +138,27 @@ export const routes = {
   customerQuickReorder: () => `/quick-reorder`,
   driverLiveMissions: () => `/driver/live-missions`,
   adminRealtimeAlerts: () => `/admin/realtime-alerts`,
+  // FA-FF
+  customerOrderSchedule: () => `/checkout/schedule`,
+  merchantOpenClose: (merchantId: string) => `/merchant/open-close/${encodeURIComponent(merchantId)}`,
+  adminRetentionDashboard: () => `/admin/retention-dashboard`,
+  customerPromoWallet: () => `/me/promo-wallet`,
+  driverBreakMode: () => `/driver/break-mode`,
+  adminMerchantPerformance: () => `/admin/merchant-performance`,
+  // FG-FL
+  customerFamilyProfiles: () => `/me/family-profiles`,
+  merchantPrepTime: (merchantId: string) => `/merchant/prep-time/${encodeURIComponent(merchantId)}`,
+  adminRefundControl: () => `/admin/refund-control`,
+  customerTipping: () => `/checkout/tip`,
+  driverAcceptanceRate: () => `/driver/acceptance-rate`,
+  adminDriverPerformance: () => `/admin/driver-performance`,
+  // FM-FR
+  customerSubscriptions: () => `/me/subscriptions`,
+  merchantPromoScheduler: (merchantId: string) => `/merchant/promo-scheduler/${encodeURIComponent(merchantId)}`,
+  adminDisputeCenter: () => `/admin/dispute-center`,
+  customerFavoriteOrders: () => `/me/favorite-orders`,
+  driverShiftScheduler: () => `/driver/shift-scheduler`,
+  adminGlobalFinance: () => `/admin/global-finance`,
 
   // Orbit
   orbitCallTest: () => `/orbit/call-test`,
@@ -321,6 +342,27 @@ export const ROUTE_REGISTRY = [
   { group: "public", label: "Quick Reorder", path: "/quick-reorder" },
   { group: "driver", label: "Live Missions", path: "/driver/live-missions" },
   { group: "admin", label: "Realtime Alerts", path: "/admin/realtime-alerts" },
+  // FA-FF
+  { group: "public", label: "Order Schedule", path: "/checkout/schedule" },
+  { group: "merchant", label: "Open/Close", path: "/merchant/open-close/:merchantId" },
+  { group: "admin", label: "Retention Dashboard", path: "/admin/retention-dashboard" },
+  { group: "public", label: "Promo Wallet", path: "/me/promo-wallet" },
+  { group: "driver", label: "Break Mode", path: "/driver/break-mode" },
+  { group: "admin", label: "Merchant Performance", path: "/admin/merchant-performance" },
+  // FG-FL
+  { group: "public", label: "Family Profiles", path: "/me/family-profiles" },
+  { group: "merchant", label: "Prep Time", path: "/merchant/prep-time/:merchantId" },
+  { group: "admin", label: "Refund Control", path: "/admin/refund-control" },
+  { group: "public", label: "Tipping", path: "/checkout/tip" },
+  { group: "driver", label: "Acceptance Rate", path: "/driver/acceptance-rate" },
+  { group: "admin", label: "Driver Performance", path: "/admin/driver-performance" },
+  // FM-FR
+  { group: "public", label: "Subscriptions", path: "/me/subscriptions" },
+  { group: "merchant", label: "Promo Scheduler", path: "/merchant/promo-scheduler/:merchantId" },
+  { group: "admin", label: "Dispute Center", path: "/admin/dispute-center" },
+  { group: "public", label: "Favorite Orders", path: "/me/favorite-orders" },
+  { group: "driver", label: "Shift Scheduler", path: "/driver/shift-scheduler" },
+  { group: "admin", label: "Global Finance", path: "/admin/global-finance" },
 
   { group: "public", label: "Coming Soon", path: "/coming-soon/:slug" },
   { group: "public", label: "City Market", path: "/city-market/:citySlug" },
