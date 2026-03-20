@@ -27,6 +27,8 @@ export function AppInit() {
     if (!user) {
       clear();
       useWalletStore.setState({ wallet: null, transactions: [], loading: false });
+      useFavoritesStore.setState({ items: [], loading: false });
+      useSavedSearchStore.setState({ items: [], loading: false });
       return;
     }
 

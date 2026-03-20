@@ -5,7 +5,7 @@ const db = supabase as any;
 
 /**
  * Creates or retrieves a direct conversation between two orbit participants.
- * Uses deterministic ID: dm_orbitId1_orbitId2 (sorted).
+ * Searches by participant orbitIds using JSONB containment.
  */
 export async function createOrGetDirectConversation(input: {
   myOrbitId: string;
@@ -28,46 +28,43 @@ export async function createOrGetDirectConversation(input: {
   };
 
   const participants = [p1, p2].sort((a, b) => a.orbitId.localeCompare(b.orbitId));
-  const conversationId = `dm_${participants.map((x) => x.orbitId).join("_")}`;
 
-  // Try to find existing by deterministic ID
-  const { data: existing } = await db
+  // Find existing direct conversation containing both participants
+  const { data: existingRows, error: findErr } = await db
     .from("conversations_v2")
     .select("*")
-    .eq("id", conversationId)
-    .maybeSingle();
+    .eq("type", "direct")
+    .contains("participants", [{ orbitId: input.myOrbitId }])
+    .contains("participants", [{ orbitId: input.peerOrbitId }])
+    .limit(10);
+
+  if (findErr) {
+    console.error("createOrGetDirectConversation lookup error", findErr);
+    throw findErr;
+  }
+
+  // Find the one that is exactly 2 participants (direct)
+  const existing = (existingRows ?? []).find(
+    (row: any) => Array.isArray(row.participants) && row.participants.length === 2
+  );
 
   if (existing) return existing as ConversationRow;
 
-  // Create new
-  const row = {
-    id: conversationId,
-    type: "direct",
-    title: null,
-    created_by_orbit_id: input.myOrbitId,
-    participants,
-    last_message_at: null,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  };
-
+  // Create new — let DB generate UUID id
   const { data, error } = await db
     .from("conversations_v2")
-    .insert(row)
+    .insert({
+      type: "direct",
+      title: null,
+      created_by_orbit_id: input.myOrbitId,
+      participants,
+      last_message_at: null,
+    })
     .select("*")
     .single();
 
   if (error) {
-    // If conflict (race condition), fetch existing
-    if (error.code === "23505") {
-      const { data: retry } = await db
-        .from("conversations_v2")
-        .select("*")
-        .eq("id", conversationId)
-        .maybeSingle();
-      if (retry) return retry as ConversationRow;
-    }
-    console.error("createOrGetDirectConversation error", error);
+    console.error("createOrGetDirectConversation create error", error);
     throw error;
   }
 
