@@ -89,6 +89,11 @@ export const routes = {
   adminOrderWatch: () => `/admin/order-watch`,
   customerLoyaltyHistory: () => `/me/loyalty-history`,
   adminSearchWatch: () => `/admin/search-watch`,
+  customerActiveOrders: () => `/my-orders/active`,
+  merchantClosingMode: (merchantId: string) => `/merchant/closing-mode/${encodeURIComponent(merchantId)}`,
+  adminMerchantPromoWatch: () => `/admin/merchant-promo-watch`,
+  driverEarningsSummary: () => `/driver/earnings-summary`,
+  adminRefundWatch: () => `/admin/refund-watch`,
 
   // Orbit
   orbitCallTest: () => `/orbit/call-test`,
