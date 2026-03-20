@@ -966,6 +966,12 @@ const App = () => (
                 <Route path="/me/refer-friend" element={<ProtectedRoute><CustomerReferFriendPage /></ProtectedRoute>} />
                 <Route path="/driver/documents" element={<ProtectedRoute><DriverDocumentsPage /></ProtectedRoute>} />
                 <Route path="/admin/support-sla" element={<ProtectedRoute><AdminSupportSlaPage /></ProtectedRoute>} />
+                <Route path="/checkout/address-selector" element={<ProtectedRoute><CustomerAddressSelectorPage /></ProtectedRoute>} />
+                <Route path="/merchant/daily-sales/:merchantId" element={<ProtectedRoute><MerchantDailySalesPage /></ProtectedRoute>} />
+                <Route path="/admin/delivery-incidents" element={<ProtectedRoute><AdminDeliveryIncidentsPage /></ProtectedRoute>} />
+                <Route path="/me/payment-activity" element={<ProtectedRoute><CustomerPaymentActivityPage /></ProtectedRoute>} />
+                <Route path="/driver/availability-zones" element={<ProtectedRoute><DriverAvailabilityZonesPage /></ProtectedRoute>} />
+                <Route path="/admin/growth-dashboard" element={<ProtectedRoute><AdminGrowthDashboardPage /></ProtectedRoute>} />
               <Route path="/city/:countryCode/:city/:vertical/:locale" element={<CityVerticalPage />} />
 
               {/* Guest / Public */}
