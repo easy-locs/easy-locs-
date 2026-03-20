@@ -1143,3 +1143,147 @@ async function handleWalletTopup(supabase: any, session: Stripe.Checkout.Session
 
   logStep("Wallet topup complete", { userId, amount });
 }
+
+/* ── Handle listing renewal payment (webhook-confirmed) ── */
+async function handleListingRenewal(supabase: any, session: Stripe.Checkout.Session) {
+  const meta = session.metadata || {};
+  const listingId = meta.listing_id;
+  const userId = meta.user_id;
+  const sessionId = session.id;
+
+  if (!listingId || !userId) {
+    logStep("Missing listing_id or user_id for renewal", { meta });
+    return;
+  }
+
+  logStep("Processing listing renewal", { listingId, userId });
+
+  // Idempotency: check if already processed
+  const { data: existing } = await supabase
+    .from("payment_events")
+    .select("id")
+    .eq("provider_event_id", sessionId)
+    .eq("event_type", "listing_renewal_completed")
+    .maybeSingle();
+
+  if (existing) {
+    logStep("Listing renewal already processed (idempotent)", { sessionId });
+    return;
+  }
+
+  // Record payment event
+  await supabase.from("payment_events").insert({
+    provider_event_id: sessionId,
+    event_type: "listing_renewal_completed",
+    provider: "stripe",
+    processed: true,
+    metadata: { listing_id: listingId, user_id: userId, amount: meta.amount_aed },
+  });
+
+  // Renew listing: extend 30 days
+  const now = new Date();
+  const newExpiry = new Date(now.getTime() + 30 * 86400000).toISOString();
+
+  await supabase
+    .from("marketplace_services")
+    .update({
+      status: "published",
+      active: true,
+      listing_expires_at: newExpiry,
+      last_renewed_at: now.toISOString(),
+      auto_expire: true,
+      archived_at: null,
+      updated_at: now.toISOString(),
+    })
+    .eq("id", listingId)
+    .eq("user_id", userId);
+
+  // Increment renewal count
+  await supabase.rpc("increment_listing_renewal_count", { p_listing_id: listingId }).catch(() => {});
+
+  // Notification
+  await supabase.from("app_notifications").insert({
+    id: crypto.randomUUID(),
+    orbitId: userId,
+    user_id: userId,
+    title: "✅ Listing renewed",
+    body: `Your listing has been renewed for 30 more days.`,
+    type: "listing_renewed",
+    read: false,
+  });
+
+  logStep("Listing renewal complete", { listingId, newExpiry });
+}
+
+/* ── Handle listing boost payment (webhook-confirmed) ── */
+async function handleListingBoost(supabase: any, session: Stripe.Checkout.Session) {
+  const meta = session.metadata || {};
+  const listingId = meta.listing_id;
+  const userId = meta.user_id;
+  const boostTier = meta.boost_tier || "basic";
+  const sessionId = session.id;
+
+  if (!listingId || !userId) {
+    logStep("Missing listing_id or user_id for boost", { meta });
+    return;
+  }
+
+  logStep("Processing listing boost", { listingId, userId, boostTier });
+
+  // Idempotency
+  const { data: existing } = await supabase
+    .from("payment_events")
+    .select("id")
+    .eq("provider_event_id", sessionId)
+    .eq("event_type", "listing_boost_completed")
+    .maybeSingle();
+
+  if (existing) {
+    logStep("Listing boost already processed (idempotent)", { sessionId });
+    return;
+  }
+
+  await supabase.from("payment_events").insert({
+    provider_event_id: sessionId,
+    event_type: "listing_boost_completed",
+    provider: "stripe",
+    processed: true,
+    metadata: { listing_id: listingId, user_id: userId, boost_tier: boostTier, amount: meta.amount_aed },
+  });
+
+  // Boost config
+  const BOOST_CFG: Record<string, { multiplier: number; days: number }> = {
+    basic: { multiplier: 1.2, days: 7 },
+    premium: { multiplier: 1.5, days: 14 },
+    featured: { multiplier: 2.0, days: 30 },
+  };
+
+  const cfg = BOOST_CFG[boostTier] || BOOST_CFG.basic;
+  const now = new Date();
+  const boostExpiry = new Date(now.getTime() + cfg.days * 86400000).toISOString();
+
+  await supabase
+    .from("marketplace_services")
+    .update({
+      boost_enabled: true,
+      boost_multiplier: cfg.multiplier,
+      boost_expires_at: boostExpiry,
+      updated_at: now.toISOString(),
+    })
+    .eq("id", listingId)
+    .eq("user_id", userId);
+
+  // Notification
+  const tierLabel = boostTier.charAt(0).toUpperCase() + boostTier.slice(1);
+  await supabase.from("app_notifications").insert({
+    id: crypto.randomUUID(),
+    orbitId: userId,
+    user_id: userId,
+    title: `🚀 Boost activated — ${tierLabel}`,
+    body: `Your listing is now boosted ${cfg.multiplier}x for ${cfg.days} days.`,
+    type: "listing_boosted",
+    read: false,
+  });
+
+  logStep("Listing boost complete", { listingId, boostTier, boostExpiry });
+}
