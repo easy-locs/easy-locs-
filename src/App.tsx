@@ -852,6 +852,10 @@ const App = () => (
                 <Route path="/admin/home-engine" element={<ProtectedRoute><AdminHomeEnginePage /></ProtectedRoute>} />
                 <Route path="/admin/map-engine" element={<ProtectedRoute><AdminMapEnginePage /></ProtectedRoute>} />
                 <Route path="/admin/notification-engine" element={<ProtectedRoute><AdminNotificationEnginePage /></ProtectedRoute>} />
+                <Route path="/merchant/inventory/:merchantId" element={<ProtectedRoute><MerchantInventoryPage /></ProtectedRoute>} />
+                <Route path="/merchant/live/:merchantId" element={<ProtectedRoute><MerchantLiveControlPage /></ProtectedRoute>} />
+                <Route path="/merchant/coupons/:merchantId" element={<ProtectedRoute><MerchantCouponManagerPage /></ProtectedRoute>} />
+                <Route path="/admin/growth-ops" element={<ProtectedRoute><AdminGrowthOpsPage /></ProtectedRoute>} />
               <Route path="/city/:countryCode/:city/:vertical/:locale" element={<CityVerticalPage />} />
 
               {/* Guest / Public */}
