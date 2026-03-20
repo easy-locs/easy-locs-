@@ -13,10 +13,31 @@ serve(async (req) => {
   }
 
   try {
+    // Auth: require valid JWT or internal secret
+    const authHeader = req.headers.get("Authorization");
+    const internalSecret = Deno.env.get("INTERNAL_NOTIFICATION_SECRET") || "";
+    const token = authHeader?.replace("Bearer ", "") || "";
+    
     const admin = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
+
+    // Check if it's an internal call or authenticated user
+    const isInternal = internalSecret.length > 0 && token === internalSecret;
+    if (!isInternal) {
+      const userClient = createClient(
+        Deno.env.get("SUPABASE_URL")!,
+        Deno.env.get("SUPABASE_ANON_KEY")!,
+        { global: { headers: { Authorization: authHeader! } } }
+      );
+      const { data: userData, error: authErr } = await userClient.auth.getUser(token);
+      if (authErr || !userData?.user) {
+        return new Response(JSON.stringify({ error: "Unauthorized" }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 401
+        });
+      }
+    }
 
     const body = await req.json();
 
