@@ -45,7 +45,10 @@ const V2MessagesPage = safeLazy(() => import("./app/router/MessagesPage"), "V2Me
 const V2NotificationsPage = safeLazy(() => import("./app/router/NotificationsPage"), "V2NotificationsPage");
 const V2PaymentsPage = safeLazy(() => import("./app/router/PaymentsPage"), "V2PaymentsPage");
 
-// Safe lazy wrapper that catches chunk failures + missing default export issues
+// V2 Auth wrappers
+import { V2AuthBridge as V2AuthBridgeWrapper } from "@/components/system/V2AuthBridge";
+import { V2AuthGate as V2AuthGateWrapper } from "@/components/system/V2AuthGate";
+
 function safeLazy(factory: () => Promise<{ default: ComponentType<any> }>, name: string) {
   return lazy(async () => {
     try {
