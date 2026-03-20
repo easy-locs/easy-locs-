@@ -42,6 +42,17 @@ export const useListingStore = create<ListingStore>((set, get) => ({
   listings: [],
   loading: false,
 
+  hydratePublished: async () => {
+    set({ loading: true });
+    try {
+      const listings = await listingRepo.listPublished();
+      set({ listings, loading: false });
+    } catch {
+      set({ loading: false });
+    }
+  },
+
+
   createListing: (input) => {
     const now = new Date().toISOString();
     const listing: PropertyListingV2 = {
