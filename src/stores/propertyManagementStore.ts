@@ -91,7 +91,7 @@ export const usePropertyManagementStore = create<PropertyManagementStore>((set, 
     return unit;
   },
 
-  createLease: (input) => {
+  createLease: async (input) => {
     const unit = get().getUnitById(input.unitId);
     const listing = useListingStore.getState().getListingById(input.listingId);
     const wallet = useWalletStore.getState().wallet;
