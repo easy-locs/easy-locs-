@@ -560,6 +560,17 @@ const AdminFinalWrapPage = safeLazy(() => import("./pages/admin/AdminFinalWrapPa
 const AdminQaCommandPage = safeLazy(() => import("./pages/admin/AdminQaCommandPage"), "AdminQaCommandPage");
 // KA-KF block
 const LiveTrackingPageNew = safeLazy(() => import("./pages/live/LiveTrackingPage"), "LiveTrackingPageNew");
+// LG-LR block
+const DriverFuelCostsPage = safeLazy(() => import("./pages/driver/DriverFuelCostsPage"), "DriverFuelCostsPage");
+const DriverCompliancePage = safeLazy(() => import("./pages/driver/DriverCompliancePage"), "DriverCompliancePage");
+const DriverBreaksPage = safeLazy(() => import("./pages/driver/DriverBreaksPage"), "DriverBreaksPage");
+const DriverShiftPlannerPage = safeLazy(() => import("./pages/driver/DriverShiftPlannerPage"), "DriverShiftPlannerPage");
+const AdminDriverComplianceOpsPage = safeLazy(() => import("./pages/admin/AdminDriverComplianceOpsPage"), "AdminDriverComplianceOpsPage");
+const AdminMarketplaceExperimentsPage = safeLazy(() => import("./pages/admin/AdminMarketplaceExperimentsPage"), "AdminMarketplaceExperimentsPage");
+const CustomerScheduledOrderPage = safeLazy(() => import("./pages/customer/CustomerScheduledOrderPage"), "CustomerScheduledOrderPage");
+const MerchantStaffRolesPage = safeLazy(() => import("./pages/merchant/MerchantStaffRolesPage"), "MerchantStaffRolesPage");
+const MerchantPermissionsMatrixPage = safeLazy(() => import("./pages/merchant/MerchantPermissionsMatrixPage"), "MerchantPermissionsMatrixPage");
+const MerchantBusinessHoursPage = safeLazy(() => import("./pages/merchant/MerchantBusinessHoursPage"), "MerchantBusinessHoursPage");
 
 // City sub-page wrappers
 const CityServicesPage = () => <CityHubPage subPage="services" />;
