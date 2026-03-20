@@ -7,6 +7,7 @@ import { useV2AuthStore } from "@/stores/v2AuthStore";
 import { AvatarUploader } from "@/components/profile/AvatarUploader";
 import { ActivityPanel } from "@/components/system/ActivityPanel";
 import { useActivityLogStore } from "@/stores/activityLogStore";
+import { useActivityRealtime } from "@/hooks/useActivityRealtime";
 
 export default function HomePage() {
   const orbit = useOrbitStore((s) => s.profile);
@@ -14,6 +15,8 @@ export default function HomePage() {
   const user = useV2AuthStore((s) => s.user);
   const signOut = useV2AuthStore((s) => s.signOut);
   const hydrateActivity = useActivityLogStore((s) => s.hydrate);
+
+  useActivityRealtime();
 
   useEffect(() => {
     void hydrateActivity();
