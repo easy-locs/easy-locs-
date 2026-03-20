@@ -66,8 +66,8 @@ export function rankListings(
 
     let distanceKm: number | null = null;
     let proxScore = 0.5; // neutral if no coords
-    if (userLat && userLng && l.latitude && l.longitude) {
-      distanceKm = haversine(userLat, userLng, l.latitude, l.longitude);
+    if (userLat && userLng && l.lat && l.lng) {
+      distanceKm = haversine(userLat, userLng, l.lat, l.lng);
       proxScore = normalizeProximity(distanceKm, maxKm);
     }
 
