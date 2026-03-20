@@ -1386,6 +1386,10 @@ const App = () => (
               <Route path="/app/orbit" element={<Navigate to="/" replace />} />
               <Route path="/app/*" element={<Navigate to="/" replace />} />
 
+              {/* V2 test routes */}
+              <Route path="/v2-test" element={<V2TestPage />} />
+              <Route path="/v2-booking-test" element={<V2BookingTestPage />} />
+
               {/* SEO catch-all */}
               <Route path="/seo/*" element={<SEOCatchAll />} />
 
