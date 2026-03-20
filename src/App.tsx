@@ -28,6 +28,7 @@ import ChunkRecoveryBoundary from "@/components/system/ChunkRecoveryBoundary";
 import CountryGuard from "@/components/dashboard/CountryGuard";
 import { UnifiedPaymentProvider } from "@/payments/UnifiedPaymentSystem";
 import V1BootBridge from "@/app/V1BootBridge";
+import { useNotificationsStore } from "@/stores/notificationsStore";
 
 // V2 test pages
 const V2TestPage = safeLazy(() => import("./app/router/V2TestPage"), "V2TestPage");
@@ -720,6 +721,11 @@ const OrbitSessionGuard = () => { useOrbitSessionInit(); return null; };
 const RealtimeHubGuard = () => { useRealtimeHub(); return null; };
 /** Install orchestration engine */
 const OrchestrationGuard = () => { useOrchestration(); return null; };
+/** Subscribe to realtime notifications */
+const NotificationsRealtimeGuard = () => {
+  useNotificationsStore.getState().subscribeRealtime();
+  return null;
+};
 
 // Apply lightweight mode class on slow devices
 if (typeof window !== "undefined") {
@@ -766,6 +772,7 @@ const App = () => (
              <V1BootBridge />
             <OrbitSessionGuard />
            <RealtimeHubGuard />
+           <NotificationsRealtimeGuard />
            <UpdateNotification />
              <OrbitCallRoot />
              <CallOverlayV2 />
