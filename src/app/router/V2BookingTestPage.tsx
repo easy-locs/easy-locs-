@@ -83,7 +83,6 @@ export default function V2BookingTestPage() {
     if (!orbit?.orbitId) return;
 
     const listing = await createListing({
-      ownerOrbitId: orbit.orbitId,
       title: "JLT Studio",
       description: "Request to book listing",
       address: "JLT, Dubai, UAE",
