@@ -398,6 +398,40 @@ function json(data: any, status = 200) {
   });
 }
 
+/** Check if userId is the job seller, the assigned driver, or an org owner/admin */
+async function assertJobAuthority(
+  supabaseAdmin: any,
+  userId: string,
+  job: any,
+  requireOwnerOrAdmin = false
+) {
+  if (!requireOwnerOrAdmin) {
+    if (userId === job.seller_id || userId === job.driver_id) return;
+  }
+  // Check org membership
+  const { data: orgRole } = await supabaseAdmin
+    .from("org_members")
+    .select("role")
+    .eq("user_id", userId)
+    .eq("org_id", job.org_id)
+    .in("role", ["owner", "admin"])
+    .maybeSingle();
+  if (!orgRole) throw new Error("Forbidden: not authorized for this job");
+}
+
+/** Check if userId is the escrow payer or an org owner/admin */
+async function assertEscrowAuthority(supabaseAdmin: any, userId: string, escrow: any) {
+  if (userId === escrow.payer_id) return;
+  const { data: orgRole } = await supabaseAdmin
+    .from("org_members")
+    .select("role")
+    .eq("user_id", userId)
+    .eq("org_id", escrow.org_id)
+    .in("role", ["owner", "admin"])
+    .maybeSingle();
+  if (!orgRole) throw new Error("Forbidden: not authorized for this escrow");
+}
+
 function haversine(lat1: number, lng1: number, lat2: number, lng2: number): number {
   const R = 6371;
   const dLat = ((lat2 - lat1) * Math.PI) / 180;
