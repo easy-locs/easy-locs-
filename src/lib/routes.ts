@@ -51,6 +51,9 @@ export const routes = {
   favorites: () => `/favorites`,
   searchResults: () => `/search-results`,
   adminContentOps: () => `/admin/content-ops`,
+  reorder: (orderId: string) => `/order/reorder/${encodeURIComponent(orderId)}`,
+  merchantOrderBoard: (merchantId: string) => `/merchant/orders/${encodeURIComponent(merchantId)}`,
+  adminAnalyticsOps: () => `/admin/analytics-ops`,
 
   // Orbit
   orbitCallTest: () => `/orbit/call-test`,
