@@ -59,6 +59,9 @@ export const routes = {
   adminQualityOps: () => `/admin/quality-ops`,
   merchantReviewReplies: (merchantId: string) => `/merchant/reviews/${encodeURIComponent(merchantId)}`,
   adminCrmOps: () => `/admin/crm-ops`,
+  adminHomeEngine: () => `/admin/home-engine`,
+  adminMapEngine: () => `/admin/map-engine`,
+  adminNotificationEngine: () => `/admin/notification-engine`,
 
   // Orbit
   orbitCallTest: () => `/orbit/call-test`,
