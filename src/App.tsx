@@ -391,6 +391,9 @@ const NotificationPreferencesPage = safeLazy(() => import("./pages/settings/Noti
 const AdminQualityOpsPage = safeLazy(() => import("./pages/admin/AdminQualityOpsPage"), "AdminQualityOpsPage");
 const MerchantReviewRepliesPage = safeLazy(() => import("./pages/merchant/MerchantReviewRepliesPage"), "MerchantReviewRepliesPage");
 const AdminCrmOpsPage = safeLazy(() => import("./pages/admin/AdminCrmOpsPage"), "AdminCrmOpsPage");
+const AdminHomeEnginePage = safeLazy(() => import("./pages/admin/AdminHomeEnginePage"), "AdminHomeEnginePage");
+const AdminMapEnginePage = safeLazy(() => import("./pages/admin/AdminMapEnginePage"), "AdminMapEnginePage");
+const AdminNotificationEnginePage = safeLazy(() => import("./pages/admin/AdminNotificationEnginePage"), "AdminNotificationEnginePage");
 
 // City sub-page wrappers
 const CityServicesPage = () => <CityHubPage subPage="services" />;
