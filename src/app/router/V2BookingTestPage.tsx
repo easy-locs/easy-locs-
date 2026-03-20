@@ -103,7 +103,6 @@ export default function V2BookingTestPage() {
 
     await createBooking({
       listingId: listing.id,
-      buyerOrbitId: "orbit_buyer_demo_2",
       checkIn: "2026-04-02",
       checkOut: "2026-04-05",
       guestInfo: {
