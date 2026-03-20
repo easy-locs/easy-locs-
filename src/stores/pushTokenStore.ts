@@ -32,7 +32,7 @@ export const usePushTokenStore = create<PushTokenStore>((set) => ({
 
     set({ loading: true });
 
-    const { data, error } = await (supabase as any)
+    const { data, error } = await supabase
       .from("push_tokens")
       .select("*")
       .eq("user_id", user.id)
@@ -63,7 +63,7 @@ export const usePushTokenStore = create<PushTokenStore>((set) => ({
       updated_at: new Date().toISOString(),
     };
 
-    const { error } = await (supabase as any)
+    const { error } = await supabase
       .from("push_tokens")
       .upsert(row, { onConflict: "token" });
 
@@ -76,7 +76,7 @@ export const usePushTokenStore = create<PushTokenStore>((set) => ({
   },
 
   deactivateToken: async (token) => {
-    const { error } = await (supabase as any)
+    const { error } = await supabase
       .from("push_tokens")
       .update({ active: false, updated_at: new Date().toISOString() })
       .eq("token", token);
