@@ -28,7 +28,7 @@ export default function CustomerLiveTrackingPage() {
       </div>
 
       <div className="mx-4 rounded-2xl border border-border/20 bg-card p-6 text-center mb-4">
-        <div className="text-sm font-bold text-foreground capitalize">{status.replaceAll("_", " ")}</div>
+        <div className="text-sm font-bold text-foreground capitalize">{status.replace(/_/g, " ")}</div>
         <div className="text-xs text-muted-foreground mt-2">Driver is moving in real time (simulated)</div>
       </div>
 
