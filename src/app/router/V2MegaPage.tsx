@@ -269,6 +269,9 @@ export default function V2MegaPage() {
           </div>
         );
 
+      case "merchant":
+        return <MerchantCheckoutPanel />;
+
       case "system":
         return <V2MegaAudit />;
 
