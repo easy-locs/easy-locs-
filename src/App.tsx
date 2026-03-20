@@ -1404,6 +1404,18 @@ const App = () => (
               <Route path="/v2-booking-test" element={<V2BookingTestPage />} />
               <Route path="/v2-mega" element={<V2MegaPage />} />
 
+              {/* V2 Suite 4 routes */}
+              <Route path="/v2-home" element={<V2HomePage />} />
+              <Route path="/v2-owner" element={<V2OwnerDashboardPage />} />
+              <Route path="/v2-tenant" element={<V2TenantDashboardPage />} />
+              <Route path="/v2-bookings" element={<V2BookingsPage />} />
+              <Route path="/v2-properties" element={<V2PropertiesPage />} />
+              <Route path="/v2-search" element={<V2SearchPage />} />
+              <Route path="/v2-map" element={<V2MapPage />} />
+              <Route path="/v2-messages" element={<V2MessagesPage />} />
+              <Route path="/v2-notifications" element={<V2NotificationsPage />} />
+              <Route path="/v2-payments" element={<V2PaymentsPage />} />
+
               {/* SEO catch-all */}
               <Route path="/seo/*" element={<SEOCatchAll />} />
 
