@@ -69,6 +69,9 @@ export const routes = {
   notifications: () => `/notifications`,
   adminRetentionOps: () => `/admin/retention-ops`,
   driverEarningsV2: () => `/driver/earnings-v2`,
+  orderReceipt: (orderId: string) => `/order/receipt/${encodeURIComponent(orderId)}`,
+  merchantAnalytics: (merchantId: string) => `/merchant/analytics/${encodeURIComponent(merchantId)}`,
+  adminOperationsLaunchpad: () => `/admin/operations-launchpad`,
 
   // Orbit
   orbitCallTest: () => `/orbit/call-test`,
