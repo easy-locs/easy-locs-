@@ -66,6 +66,9 @@ export const routes = {
   merchantLiveControl: (merchantId: string) => `/merchant/live/${encodeURIComponent(merchantId)}`,
   merchantCoupons: (merchantId: string) => `/merchant/coupons/${encodeURIComponent(merchantId)}`,
   adminGrowthOps: () => `/admin/growth-ops`,
+  notifications: () => `/notifications`,
+  adminRetentionOps: () => `/admin/retention-ops`,
+  driverEarningsV2: () => `/driver/earnings-v2`,
 
   // Orbit
   orbitCallTest: () => `/orbit/call-test`,
@@ -177,6 +180,9 @@ export const ROUTE_REGISTRY = [
   { group: "merchant", label: "Merchant Live Control", path: "/merchant/live/:merchantId" },
   { group: "merchant", label: "Merchant Coupons", path: "/merchant/coupons/:merchantId" },
   { group: "admin", label: "Growth Ops", path: "/admin/growth-ops" },
+  { group: "public", label: "Notifications", path: "/notifications" },
+  { group: "admin", label: "Retention Ops", path: "/admin/retention-ops" },
+  { group: "driver", label: "Driver Earnings V2", path: "/driver/earnings-v2" },
 
   { group: "public", label: "Coming Soon", path: "/coming-soon/:slug" },
   { group: "public", label: "City Market", path: "/city-market/:citySlug" },
