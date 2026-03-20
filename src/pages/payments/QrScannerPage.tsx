@@ -1,16 +1,14 @@
 /**
- * QrScannerPage — Unified Scan + My QR page.
- * Tab toggle: Scan (camera) | My QR (receive money).
- * Camera starts only on explicit user tap (required for iOS Safari).
+ * QrScannerPage — Camera opens immediately on mount for Scan tab.
+ * No extra "Start" button — minimal clicks.
  */
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Camera, CameraOff, RefreshCcw, CheckCircle2, Info, ScanLine, QrCode } from "lucide-react";
+import { ArrowLeft, Camera, CameraOff, RefreshCcw, CheckCircle2, ScanLine, QrCode } from "lucide-react";
 import { Html5Qrcode } from "html5-qrcode";
-import { decodeQr, resolveRoute, isExpired, isSecurityAction, type UniversalQrPayload } from "@/lib/qr-engine";
+import { decodeQr, resolveRoute, isExpired, type UniversalQrPayload } from "@/lib/qr-engine";
 import { supabase } from "@/integrations/supabase/client";
 import { useUnifiedPayment } from "@/payments/UnifiedPaymentSystem";
-import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { QrResolvedCard } from "@/components/qr/QrResolvedCard";
 import { UserProfileQr } from "@/components/qr/UniversalQrWidgets";
@@ -48,6 +46,7 @@ export default function QrScannerPage() {
   const stoppingRef = useRef(false);
   const handledRef = useRef(false);
   const opRef = useRef(0);
+  const autoStartedRef = useRef(false);
 
   const navigateRef = useRef(navigate);
   const openPaymentRef = useRef(openPayment);
@@ -60,16 +59,10 @@ export default function QrScannerPage() {
   const [lastText, setLastText] = useState("");
   const [txId, setTxId] = useState("");
   const [resolvedPayload, setResolvedPayload] = useState<UniversalQrPayload | null>(null);
-  const [cameraCount, setCameraCount] = useState<number | null>(null);
 
   const secure = typeof window === "undefined" ? true : window.isSecureContext;
   const ios = isIOS();
   const safari = isSafariBrowser();
-
-  const log = useCallback((event: string, data?: unknown) => {
-    if (data !== undefined) console.info(`[qr-scanner] ${event}`, data);
-    else console.info(`[qr-scanner] ${event}`);
-  }, []);
 
   const setStateSafe = useCallback((s: ScanState) => { if (mountedRef.current) setState(s); }, []);
   const setErrorSafe = useCallback((m: string) => { if (mountedRef.current) setError(m); }, []);
@@ -84,7 +77,7 @@ export default function QrScannerPage() {
 
   const clearScannerInstance = useCallback(async (reason: string, updateState = true) => {
     const scanner = scannerRef.current;
-    const opId = ++opRef.current;
+    ++opRef.current;
     if (!scanner) { resetRuntimeFlags(); if (updateState && mountedRef.current) setState("stopped"); return; }
     if (stoppingRef.current) return;
     stoppingRef.current = true;
@@ -158,7 +151,6 @@ export default function QrScannerPage() {
     setStateSafe("starting");
 
     try {
-      // Preflight camera
       let tempStream: MediaStream | null = null;
       try {
         tempStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: "environment" }, width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false });
@@ -174,11 +166,9 @@ export default function QrScannerPage() {
 
       if (!mountedRef.current || opRef.current !== startOp) return;
 
-      // Select camera
       let preferredCameraId: string | null = null;
       try {
         const cameras = await Html5Qrcode.getCameras();
-        setCameraCount(cameras.length);
         const rear = cameras.find((c) => /back|rear|environment|wide/i.test(c.label));
         preferredCameraId = rear?.id || cameras[cameras.length - 1]?.id || cameras[0]?.id || null;
       } catch {}
@@ -189,7 +179,7 @@ export default function QrScannerPage() {
       scannerRef.current = scanner;
       const scanConfig = { fps: ios ? 6 : 10, qrbox: { width: QR_BOX_SIZE, height: QR_BOX_SIZE }, aspectRatio: 1, disableFlip: false };
 
-      const startWith = async (cfg: any, label: string) => {
+      const startWith = async (cfg: any, _label: string) => {
         await scanner.start(cfg, scanConfig, async (text) => {
           if (!mountedRef.current || handledRef.current) return;
           handledRef.current = true;
@@ -219,9 +209,22 @@ export default function QrScannerPage() {
     }
   }, [clearScannerInstance, handleQrResult, ios, safari, secure, setErrorSafe, setStateSafe, resetRuntimeFlags]);
 
-  // Cleanup on tab switch or unmount
+  // Auto-start camera on mount (scan tab)
   useEffect(() => {
     mountedRef.current = true;
+    if (tab === "scan" && !autoStartedRef.current) {
+      autoStartedRef.current = true;
+      // Small delay to let DOM render the container
+      const timer = setTimeout(() => {
+        if (mountedRef.current) startScanner();
+      }, 300);
+      return () => { clearTimeout(timer); };
+    }
+    return () => { mountedRef.current = false; void clearScannerInstance("unmount", false); };
+  }, []);
+
+  // Cleanup on unmount
+  useEffect(() => {
     return () => { mountedRef.current = false; void clearScannerInstance("unmount", false); };
   }, [clearScannerInstance]);
 
@@ -241,12 +244,12 @@ export default function QrScannerPage() {
     <div className="fixed inset-0 z-[200] flex flex-col bg-background">
       {/* Header */}
       <div className="flex items-center gap-3 border-b border-border/30 px-4 py-3">
-        <button type="button" onClick={() => navigate(-1)} className="rounded-full p-2 transition hover:bg-muted" aria-label="Back">
+        <button type="button" onClick={() => navigate(-1)} className="rounded-full p-2 active:scale-95 transition-transform hover:bg-muted" aria-label="Back">
           <ArrowLeft className="h-5 w-5 text-foreground" />
         </button>
         <div className="min-w-0 flex-1">
-          <h1 className="text-base font-bold text-foreground">Pay & Scan</h1>
-          <p className="text-[11px] text-muted-foreground">Send or receive money instantly</p>
+          <h1 className="text-base font-bold text-foreground">Scan & Pay</h1>
+          <p className="text-[11px] text-muted-foreground truncate">Send or receive money instantly</p>
         </div>
       </div>
 
@@ -254,15 +257,15 @@ export default function QrScannerPage() {
       <div className="flex border-b border-border/30">
         <button
           type="button"
-          onClick={() => { setTab("scan"); handleReset(); }}
-          className={`flex-1 flex items-center justify-center gap-2 py-3 text-sm font-semibold transition-colors ${tab === "scan" ? "text-primary border-b-2 border-primary" : "text-muted-foreground hover:text-foreground"}`}
+          onClick={() => { setTab("scan"); handleReset(); if (!startedRef.current && !startingRef.current) startScanner(); }}
+          className={`flex-1 flex items-center justify-center gap-2 py-3 text-sm font-semibold transition-colors active:scale-[0.97] ${tab === "scan" ? "text-primary border-b-2 border-primary" : "text-muted-foreground hover:text-foreground"}`}
         >
           <ScanLine className="h-4 w-4" /> Scan
         </button>
         <button
           type="button"
-          onClick={() => { setTab("myqr"); }}
-          className={`flex-1 flex items-center justify-center gap-2 py-3 text-sm font-semibold transition-colors ${tab === "myqr" ? "text-primary border-b-2 border-primary" : "text-muted-foreground hover:text-foreground"}`}
+          onClick={() => setTab("myqr")}
+          className={`flex-1 flex items-center justify-center gap-2 py-3 text-sm font-semibold transition-colors active:scale-[0.97] ${tab === "myqr" ? "text-primary border-b-2 border-primary" : "text-muted-foreground hover:text-foreground"}`}
         >
           <QrCode className="h-4 w-4" /> My QR
         </button>
@@ -271,14 +274,12 @@ export default function QrScannerPage() {
       {/* Content */}
       <div className="flex flex-1 flex-col items-center justify-center overflow-auto p-6">
         {tab === "myqr" ? (
-          /* ── My QR Tab ── */
           user?.id ? (
             <UserProfileQr userId={user.id} displayName={user.user_metadata?.display_name || user.email?.split("@")[0]} />
           ) : (
             <p className="text-sm text-muted-foreground">Sign in to see your QR code</p>
           )
         ) : (
-          /* ── Scan Tab ── */
           <>
             {!secure && (
               <p className="mb-4 px-4 text-center text-xs text-destructive">
@@ -293,7 +294,7 @@ export default function QrScannerPage() {
                 </div>
                 <p className="text-lg font-bold text-foreground">Payment sent!</p>
                 {txId && <p className="text-[11px] text-muted-foreground">TX: {txId.slice(0, 16)}…</p>}
-                <button type="button" onClick={() => navigate(-1)} className="mt-5 rounded-2xl bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground transition hover:opacity-90">
+                <button type="button" onClick={() => navigate(-1)} className="mt-5 rounded-2xl bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground active:scale-[0.97] transition-transform">
                   Done
                 </button>
               </div>
@@ -301,9 +302,15 @@ export default function QrScannerPage() {
               <QrResolvedCard payload={resolvedPayload} openPayment={openPayment} currentUserId={user?.id} currentOrgId={orgId} onReset={handleReset} />
             ) : (
               <>
-                <div className="relative aspect-square w-full max-w-[300px] overflow-hidden rounded-2xl border-2 border-border/50 bg-muted/30">
+                {/* Camera viewfinder — full area, no start button needed */}
+                <div className="relative aspect-square w-full max-w-[300px] overflow-hidden rounded-2xl border-2 border-border/50 bg-black/90">
                   <div id={REGION_ID} className="h-full w-full" />
-                  <div className="absolute inset-x-0 bottom-0 flex items-center justify-center gap-2 bg-background/80 py-3 backdrop-blur-sm">
+                  {/* Corner markers for premium feel */}
+                  <div className="absolute top-3 left-3 w-8 h-8 border-t-2 border-l-2 border-primary rounded-tl-lg" />
+                  <div className="absolute top-3 right-3 w-8 h-8 border-t-2 border-r-2 border-primary rounded-tr-lg" />
+                  <div className="absolute bottom-3 left-3 w-8 h-8 border-b-2 border-l-2 border-primary rounded-bl-lg" />
+                  <div className="absolute bottom-3 right-3 w-8 h-8 border-b-2 border-r-2 border-primary rounded-br-lg" />
+                  <div className="absolute inset-x-0 bottom-0 flex items-center justify-center gap-2 bg-background/80 py-2.5 backdrop-blur-sm">
                     {state === "scanning" || state === "starting" ? (
                       <Camera className="h-4 w-4 animate-pulse text-primary" />
                     ) : state === "paying" ? (
@@ -312,7 +319,7 @@ export default function QrScannerPage() {
                       <CameraOff className="h-4 w-4 text-muted-foreground" />
                     )}
                     <span className="text-xs font-medium text-foreground">
-                      {state === "idle" && "Tap Start to scan"}
+                      {state === "idle" && "Initializing camera…"}
                       {state === "starting" && "Starting camera…"}
                       {state === "scanning" && "Point at QR code"}
                       {state === "paying" && "Processing…"}
@@ -324,32 +331,14 @@ export default function QrScannerPage() {
 
                 {error && <p className="mt-4 max-w-[280px] text-center text-sm text-destructive">{error}</p>}
 
-                <div className="mt-6 flex w-full max-w-[300px] gap-3">
-                  <button
-                    type="button"
-                    disabled={state === "starting" || state === "scanning" || state === "paying"}
-                    onClick={startScanner}
-                    className="flex-1 rounded-2xl bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground transition hover:opacity-90 disabled:opacity-40"
-                  >
-                    <span className="flex items-center justify-center gap-2">
-                      <Camera className="h-4 w-4" /> Start
-                    </span>
-                  </button>
-                  <button
-                    type="button"
-                    disabled={state !== "scanning" && state !== "starting"}
-                    onClick={() => void clearScannerInstance("manual-stop")}
-                    className="flex-1 rounded-2xl border border-border px-4 py-3 text-sm font-semibold text-foreground transition hover:bg-muted disabled:opacity-40"
-                  >
-                    <span className="flex items-center justify-center gap-2">
-                      <CameraOff className="h-4 w-4" /> Stop
-                    </span>
-                  </button>
-                </div>
-
+                {/* Only show retry button on error/stopped — no start button needed */}
                 {(state === "error" || state === "stopped") && (
-                  <button type="button" onClick={handleReset} className="mt-3 flex items-center justify-center gap-2 text-sm font-medium text-muted-foreground transition hover:text-foreground">
-                    <RefreshCcw className="h-3.5 w-3.5" /> Reset
+                  <button
+                    type="button"
+                    onClick={() => { handleReset(); startScanner(); }}
+                    className="mt-5 flex items-center justify-center gap-2 rounded-2xl bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground active:scale-[0.97] transition-transform"
+                  >
+                    <RefreshCcw className="h-4 w-4" /> Retry
                   </button>
                 )}
               </>
