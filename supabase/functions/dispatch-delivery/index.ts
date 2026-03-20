@@ -233,6 +233,12 @@ serve(async (req) => {
       const { job_id, status, cancellation_reason } = body;
       if (!job_id || !status) throw new Error("job_id and status required");
 
+      // Fetch job and verify authorization
+      const { data: jobForAuth } = await supabaseAdmin.from("delivery_jobs")
+        .select("*").eq("id", job_id).single();
+      if (!jobForAuth) throw new Error("Job not found");
+      await assertJobAuthority(supabaseAdmin, userId, jobForAuth);
+
       const updates: Record<string, any> = { status, updated_at: new Date().toISOString() };
 
       if (status === "in_progress") updates.picked_up_at = new Date().toISOString();
