@@ -1123,6 +1123,20 @@ const App = () => (
                 <Route path="/checkout/contactless" element={<ProtectedRoute><CustomerContactlessPage /></ProtectedRoute>} />
                 <Route path="/driver/hot-zones" element={<ProtectedRoute><DriverHotZonesPage /></ProtectedRoute>} />
                 <Route path="/admin/demand-forecast" element={<ProtectedRoute><AdminDemandForecastPage /></ProtectedRoute>} />
+                {/* HC-HH */}
+                <Route path="/me/auto-repeat" element={<ProtectedRoute><CustomerAutoRepeatPage /></ProtectedRoute>} />
+                <Route path="/merchant/rush-mode/:merchantId" element={<ProtectedRoute><MerchantRushModePage /></ProtectedRoute>} />
+                <Route path="/admin/refund-queue" element={<ProtectedRoute><AdminRefundQueuePage /></ProtectedRoute>} />
+                <Route path="/checkout/party-order" element={<ProtectedRoute><CustomerPartyOrderPage /></ProtectedRoute>} />
+                <Route path="/driver/earnings-breakdown" element={<ProtectedRoute><DriverEarningsBreakdownPage /></ProtectedRoute>} />
+                <Route path="/admin/platform-health" element={<ProtectedRoute><AdminPlatformHealthPage /></ProtectedRoute>} />
+                {/* HI-HN */}
+                <Route path="/checkout/office-lunch" element={<ProtectedRoute><CustomerOfficeLunchPage /></ProtectedRoute>} />
+                <Route path="/merchant/delivery-fees/:merchantId" element={<ProtectedRoute><MerchantDeliveryFeesPage /></ProtectedRoute>} />
+                <Route path="/admin/driver-compliance" element={<ProtectedRoute><AdminDriverCompliancePage /></ProtectedRoute>} />
+                <Route path="/me/redeem-rewards" element={<ProtectedRoute><CustomerRewardRedemptionPage /></ProtectedRoute>} />
+                <Route path="/driver/fuel-costs" element={<ProtectedRoute><DriverFuelCostPage /></ProtectedRoute>} />
+                <Route path="/admin/executive-overview" element={<ProtectedRoute><AdminExecutiveOverviewPage /></ProtectedRoute>} />
               <Route path="/city/:countryCode/:city/:vertical/:locale" element={<CityVerticalPage />} />
 
               {/* Guest / Public */}
