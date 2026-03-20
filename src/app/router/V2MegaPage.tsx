@@ -56,8 +56,7 @@ export default function V2MegaPage() {
   const createRentPayment = usePropertyManagementStore((s) => s.createRentPayment);
   const openContact = useContactStore((s) => s.openContact);
   const openChatPanel = useContactStore((s) => s.openChatPanel);
-  const startAudioCall = useContactStore((s) => s.startAudioCall);
-  const startVideoCall = useContactStore((s) => s.startVideoCall);
+  const realtimeCall = useRealtimeCallStore();
   const buildListingMarkers = useMapStore((s) => s.buildListingMarkers);
   const openCamera = useCameraStore((s) => s.openCamera);
   const checkCamera = usePermissionStore((s) => s.checkCamera);
