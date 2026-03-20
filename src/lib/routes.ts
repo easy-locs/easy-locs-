@@ -118,6 +118,12 @@ export const routes = {
   customerReferFriend: () => `/me/refer-friend`,
   driverDocuments: () => `/driver/documents`,
   adminSupportSla: () => `/admin/support-sla`,
+  customerAddressSelector: () => `/checkout/address-selector`,
+  merchantDailySales: (merchantId: string) => `/merchant/daily-sales/${encodeURIComponent(merchantId)}`,
+  adminDeliveryIncidents: () => `/admin/delivery-incidents`,
+  customerPaymentActivity: () => `/me/payment-activity`,
+  driverAvailabilityZones: () => `/driver/availability-zones`,
+  adminGrowthDashboard: () => `/admin/growth-dashboard`,
 
   // Orbit
   orbitCallTest: () => `/orbit/call-test`,
