@@ -298,6 +298,11 @@ export const routes = {
   adminNotificationCampaigns: () => `/admin/notification-campaigns`,
   adminCustomerSegments: () => `/admin/customer-segments`,
   adminMerchantSegments: () => `/admin/merchant-segments`,
+  // V1 order flow
+  v1Checkout: () => `/v1/checkout`,
+  v1MerchantOrders: (merchantId: string) => `/v1/merchant-orders/${encodeURIComponent(merchantId)}`,
+  v1Ride: () => `/v1/ride`,
+  v1SendPackage: () => `/v1/send-package`,
 
   // Orbit
   orbitCallTest: () => `/orbit/call-test`,
@@ -641,6 +646,11 @@ export const ROUTE_REGISTRY = [
   { group: "admin", label: "Notification Campaigns", path: "/admin/notification-campaigns" },
   { group: "admin", label: "Customer Segments", path: "/admin/customer-segments" },
   { group: "admin", label: "Merchant Segments", path: "/admin/merchant-segments" },
+  // V1 order flow
+  { group: "public", label: "V1 Checkout", path: "/v1/checkout" },
+  { group: "merchant", label: "V1 Merchant Orders", path: "/v1/merchant-orders/:merchantId" },
+  { group: "public", label: "V1 Ride", path: "/v1/ride" },
+  { group: "public", label: "V1 Send Package", path: "/v1/send-package" },
 
   { group: "public", label: "Coming Soon", path: "/coming-soon/:slug" },
   { group: "public", label: "City Market", path: "/city-market/:citySlug" },

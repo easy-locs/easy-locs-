@@ -631,6 +631,10 @@ const MerchantQueueLimitPage = safeLazy(() => import("./pages/merchant/MerchantQ
 const AdminNotificationCampaignsPage = safeLazy(() => import("./pages/admin/AdminNotificationCampaignsPage"), "AdminNotificationCampaignsPage");
 const AdminCustomerSegmentsPage = safeLazy(() => import("./pages/admin/AdminCustomerSegmentsPage"), "AdminCustomerSegmentsPage");
 const AdminMerchantSegmentsPage = safeLazy(() => import("./pages/admin/AdminMerchantSegmentsPage"), "AdminMerchantSegmentsPage");
+// V1 order flow block
+const V1CheckoutBridgePage = safeLazy(() => import("./pages/v1/V1CheckoutBridgePage"), "V1CheckoutBridgePage");
+const V1MerchantOrdersPage = safeLazy(() => import("./pages/v1/V1MerchantOrdersPage"), "V1MerchantOrdersPage");
+const V1RideSendPackagePage = safeLazy(() => import("./pages/v1/V1RideSendPackagePage"), "V1RideSendPackagePage");
 
 // City sub-page wrappers
 const CityServicesPage = () => <CityHubPage subPage="services" />;
@@ -1319,6 +1323,11 @@ const App = () => (
                 <Route path="/admin/notification-campaigns" element={<ProtectedRoute><AdminNotificationCampaignsPage /></ProtectedRoute>} />
                 <Route path="/admin/customer-segments" element={<ProtectedRoute><AdminCustomerSegmentsPage /></ProtectedRoute>} />
                 <Route path="/admin/merchant-segments" element={<ProtectedRoute><AdminMerchantSegmentsPage /></ProtectedRoute>} />
+                {/* V1 order flow */}
+                <Route path="/v1/checkout" element={<ProtectedRoute><V1CheckoutBridgePage /></ProtectedRoute>} />
+                <Route path="/v1/merchant-orders/:merchantId" element={<ProtectedRoute><V1MerchantOrdersPage merchantId="" /></ProtectedRoute>} />
+                <Route path="/v1/ride" element={<ProtectedRoute><V1RideSendPackagePage type="ride" /></ProtectedRoute>} />
+                <Route path="/v1/send-package" element={<ProtectedRoute><V1RideSendPackagePage type="package" /></ProtectedRoute>} />
               <Route path="/city/:countryCode/:city/:vertical/:locale" element={<CityVerticalPage />} />
 
               {/* Guest / Public */}
