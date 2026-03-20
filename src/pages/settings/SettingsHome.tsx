@@ -4,36 +4,50 @@
  */
 import { useNavigate } from "react-router-dom";
 import { useDinoPageAudit } from "@/hooks/useDinoPageAudit";
-import { ArrowLeft, User, CreditCard, MapPin, Bell, Shield, Store, Palette, Globe, ChevronRight, FileText, Headphones, Heart } from "lucide-react";
+import {
+  ArrowLeft, User, CreditCard, MapPin, Bell, Shield, Store,
+  Palette, Globe, ChevronRight, FileText, Headphones, Heart,
+  MessageCircle, Wallet, LogOut,
+} from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const SETTINGS_GROUPS = [
   {
     title: "Account",
     items: [
       { key: "account", icon: User, label: "Profile", desc: "Name, email, photo", path: "/settings/account" },
-      { key: "security", icon: Shield, label: "Security", desc: "Password, PIN, MFA", path: "/settings/security" },
+      { key: "security", icon: Shield, label: "Security", desc: "Password, PIN, 2FA", path: "/settings/security" },
+    ],
+  },
+  {
+    title: "Communication",
+    items: [
+      { key: "orbit", icon: MessageCircle, label: "Orbit", desc: "Chat, calls, contacts", path: "/orbit" },
       { key: "notifications", icon: Bell, label: "Notifications", desc: "Alerts & push settings", path: "/settings/notifications" },
     ],
   },
   {
-    title: "Preferences",
+    title: "Payments & Addresses",
     items: [
-      { key: "orbit", icon: Globe, label: "Language & Region", desc: "Language, currency, format", path: "/settings/orbit" },
-      { key: "preferences", icon: Palette, label: "Appearance", desc: "Theme, dark mode", path: "/settings/preferences" },
-    ],
-  },
-  {
-    title: "Payments & Delivery",
-    items: [
+      { key: "wallet", icon: Wallet, label: "Wallet", desc: "Balance, transactions", path: "/wallet/hub" },
       { key: "payment-methods", icon: CreditCard, label: "Payment Methods", desc: "Cards, wallet, cash", path: "/settings/payment-methods" },
       { key: "addresses", icon: MapPin, label: "Addresses", desc: "Saved delivery locations", path: "/settings/addresses" },
-      { key: "favorites", icon: Heart, label: "Favorites", desc: "Saved merchants and stores", path: "/favorites" },
+      { key: "favorites", icon: Heart, label: "Favorites", desc: "Saved merchants & stores", path: "/favorites" },
     ],
   },
   {
     title: "Business",
     items: [
-      { key: "business", icon: Store, label: "Business Settings", desc: "Shop, store, organization", path: "/settings/business" },
+      { key: "business", icon: Store, label: "Seller Hub", desc: "Manage your businesses", path: "/seller" },
+    ],
+  },
+  {
+    title: "Preferences",
+    items: [
+      { key: "language", icon: Globe, label: "Language & Region", desc: "Language, currency, format", path: "/settings/orbit" },
+      { key: "appearance", icon: Palette, label: "Appearance", desc: "Theme, dark mode", path: "/settings/preferences" },
     ],
   },
   {
@@ -47,7 +61,14 @@ const SETTINGS_GROUPS = [
 
 export default function SettingsHome() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   useDinoPageAudit({ actorType: "user", pageKey: "settings_home" });
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    toast.success("Signed out");
+    navigate("/login", { replace: true });
+  };
 
   return (
     <div className="min-h-[100dvh] flex flex-col bg-background" data-settings-page>
@@ -63,10 +84,37 @@ export default function SettingsHome() {
         <h1 className="text-lg font-bold text-foreground">Settings</h1>
       </header>
 
+      {/* User card */}
+      {user && (
+        <div className="px-4 mb-3">
+          <button
+            onClick={() => navigate("/settings/account")}
+            className="w-full flex items-center gap-3 p-4 rounded-2xl active:scale-[0.98] transition-transform"
+            style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border) / 0.12)" }}
+          >
+            <div
+              className="w-12 h-12 rounded-2xl flex items-center justify-center text-lg font-bold shrink-0"
+              style={{ background: "hsl(var(--primary) / 0.1)", color: "hsl(var(--primary))" }}
+            >
+              {(user.user_metadata?.display_name || user.email || "U")[0].toUpperCase()}
+            </div>
+            <div className="flex-1 min-w-0 text-left">
+              <p className="text-sm font-bold text-foreground truncate">
+                {user.user_metadata?.display_name || user.email?.split("@")[0] || "User"}
+              </p>
+              <p className="text-[11px] text-muted-foreground truncate">{user.email}</p>
+            </div>
+            <ChevronRight className="w-4 h-4 shrink-0 text-muted-foreground/30" />
+          </button>
+        </div>
+      )}
+
       <div className="flex-1 px-4 pb-24 space-y-5 mt-1">
         {SETTINGS_GROUPS.map((group) => (
           <section key={group.title} className="space-y-1.5">
-            <h2 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground px-1 mb-1">{group.title}</h2>
+            <h2 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground px-1 mb-1">
+              {group.title}
+            </h2>
             <div
               className="rounded-2xl overflow-hidden"
               style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border) / 0.12)" }}
@@ -95,6 +143,18 @@ export default function SettingsHome() {
             </div>
           </section>
         ))}
+
+        {/* Logout */}
+        <button
+          onClick={handleLogout}
+          className="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl active:scale-[0.98] transition-transform"
+          style={{ background: "hsl(var(--destructive) / 0.06)", border: "1px solid hsl(var(--destructive) / 0.12)" }}
+        >
+          <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: "hsl(var(--destructive) / 0.1)" }}>
+            <LogOut className="w-4.5 h-4.5" style={{ color: "hsl(var(--destructive))" }} />
+          </div>
+          <p className="text-sm font-semibold" style={{ color: "hsl(var(--destructive))" }}>Sign Out</p>
+        </button>
       </div>
     </div>
   );

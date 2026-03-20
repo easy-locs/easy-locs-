@@ -1,6 +1,5 @@
 /**
- * QrScannerPage — Camera opens immediately on mount for Scan tab.
- * No extra "Start" button — minimal clicks.
+ * QrScannerPage — Premium scanner with green laser, auto-camera, consistent sizing.
  */
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -18,6 +17,7 @@ type TabMode = "scan" | "myqr";
 
 const REGION_ID = "qr-reader-region";
 const QR_BOX_SIZE = 240;
+const CARD_SIZE = 300; // Consistent size for both Scan and MyQR
 
 function isIOS() {
   if (typeof navigator === "undefined") return false;
@@ -156,8 +156,8 @@ export default function QrScannerPage() {
         tempStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: "environment" }, width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false });
       } catch (err) {
         const domErr = err as DOMException;
-        if (domErr?.name === "NotAllowedError") throw new Error("Camera permission denied.");
-        if (domErr?.name === "NotFoundError") throw new Error("No camera found.");
+        if (domErr?.name === "NotAllowedError") throw new Error("Camera permission denied. Please allow camera access in your browser settings.");
+        if (domErr?.name === "NotFoundError") throw new Error("No camera found on this device.");
         throw new Error(domErr?.message || "Unable to open camera.");
       } finally {
         tempStream?.getTracks().forEach((t) => t.stop());
@@ -209,12 +209,11 @@ export default function QrScannerPage() {
     }
   }, [clearScannerInstance, handleQrResult, ios, safari, secure, setErrorSafe, setStateSafe, resetRuntimeFlags]);
 
-  // Auto-start camera on mount (scan tab)
+  // Auto-start camera on mount
   useEffect(() => {
     mountedRef.current = true;
     if (tab === "scan" && !autoStartedRef.current) {
       autoStartedRef.current = true;
-      // Small delay to let DOM render the container
       const timer = setTimeout(() => {
         if (mountedRef.current) startScanner();
       }, 300);
@@ -223,12 +222,10 @@ export default function QrScannerPage() {
     return () => { mountedRef.current = false; void clearScannerInstance("unmount", false); };
   }, []);
 
-  // Cleanup on unmount
   useEffect(() => {
     return () => { mountedRef.current = false; void clearScannerInstance("unmount", false); };
   }, [clearScannerInstance]);
 
-  // Stop scanner when switching to My QR tab
   useEffect(() => {
     if (tab === "myqr" && (startedRef.current || startingRef.current)) {
       void clearScannerInstance("tab-switch");
@@ -253,7 +250,7 @@ export default function QrScannerPage() {
         </div>
       </div>
 
-      {/* Tab toggle */}
+      {/* Tab toggle — same size buttons */}
       <div className="flex border-b border-border/30">
         <button
           type="button"
@@ -271,14 +268,16 @@ export default function QrScannerPage() {
         </button>
       </div>
 
-      {/* Content */}
+      {/* Content — consistent card sizing */}
       <div className="flex flex-1 flex-col items-center justify-center overflow-auto p-6">
         {tab === "myqr" ? (
-          user?.id ? (
-            <UserProfileQr userId={user.id} displayName={user.user_metadata?.display_name || user.email?.split("@")[0]} />
-          ) : (
-            <p className="text-sm text-muted-foreground">Sign in to see your QR code</p>
-          )
+          <div className="w-full flex flex-col items-center" style={{ maxWidth: CARD_SIZE }}>
+            {user?.id ? (
+              <UserProfileQr userId={user.id} displayName={user.user_metadata?.display_name || user.email?.split("@")[0]} />
+            ) : (
+              <p className="text-sm text-muted-foreground">Sign in to see your QR code</p>
+            )}
+          </div>
         ) : (
           <>
             {!secure && (
@@ -302,14 +301,29 @@ export default function QrScannerPage() {
               <QrResolvedCard payload={resolvedPayload} openPayment={openPayment} currentUserId={user?.id} currentOrgId={orgId} onReset={handleReset} />
             ) : (
               <>
-                {/* Camera viewfinder — full area, no start button needed */}
-                <div className="relative aspect-square w-full max-w-[300px] overflow-hidden rounded-2xl border-2 border-border/50 bg-black/90">
+                {/* Camera viewfinder — matched to CARD_SIZE */}
+                <div className="relative aspect-square w-full overflow-hidden rounded-2xl border-2 border-border/50 bg-black/90" style={{ maxWidth: CARD_SIZE }}>
                   <div id={REGION_ID} className="h-full w-full" />
-                  {/* Corner markers for premium feel */}
-                  <div className="absolute top-3 left-3 w-8 h-8 border-t-2 border-l-2 border-primary rounded-tl-lg" />
-                  <div className="absolute top-3 right-3 w-8 h-8 border-t-2 border-r-2 border-primary rounded-tr-lg" />
-                  <div className="absolute bottom-3 left-3 w-8 h-8 border-b-2 border-l-2 border-primary rounded-bl-lg" />
-                  <div className="absolute bottom-3 right-3 w-8 h-8 border-b-2 border-r-2 border-primary rounded-br-lg" />
+
+                  {/* Corner markers */}
+                  <div className="absolute top-3 left-3 w-8 h-8 border-t-2 border-l-2 border-primary rounded-tl-lg pointer-events-none" />
+                  <div className="absolute top-3 right-3 w-8 h-8 border-t-2 border-r-2 border-primary rounded-tr-lg pointer-events-none" />
+                  <div className="absolute bottom-12 left-3 w-8 h-8 border-b-2 border-l-2 border-primary rounded-bl-lg pointer-events-none" />
+                  <div className="absolute bottom-12 right-3 w-8 h-8 border-b-2 border-r-2 border-primary rounded-br-lg pointer-events-none" />
+
+                  {/* GREEN LASER SCAN LINE */}
+                  {(state === "scanning" || state === "starting") && (
+                    <div
+                      className="absolute left-3 right-3 h-0.5 pointer-events-none z-10"
+                      style={{
+                        background: "linear-gradient(90deg, transparent, hsl(142 70% 50%), hsl(142 80% 60%), hsl(142 70% 50%), transparent)",
+                        boxShadow: "0 0 8px hsl(142 70% 50% / 0.6), 0 0 20px hsl(142 70% 50% / 0.3)",
+                        animation: "qr-laser-scan 2.5s ease-in-out infinite",
+                      }}
+                    />
+                  )}
+
+                  {/* Status bar */}
                   <div className="absolute inset-x-0 bottom-0 flex items-center justify-center gap-2 bg-background/80 py-2.5 backdrop-blur-sm">
                     {state === "scanning" || state === "starting" ? (
                       <Camera className="h-4 w-4 animate-pulse text-primary" />
@@ -331,7 +345,6 @@ export default function QrScannerPage() {
 
                 {error && <p className="mt-4 max-w-[280px] text-center text-sm text-destructive">{error}</p>}
 
-                {/* Only show retry button on error/stopped — no start button needed */}
                 {(state === "error" || state === "stopped") && (
                   <button
                     type="button"
@@ -346,6 +359,14 @@ export default function QrScannerPage() {
           </>
         )}
       </div>
+
+      {/* Laser animation keyframes */}
+      <style>{`
+        @keyframes qr-laser-scan {
+          0%, 100% { top: 15%; opacity: 0.4; }
+          50% { top: 70%; opacity: 1; }
+        }
+      `}</style>
     </div>
   );
 }
