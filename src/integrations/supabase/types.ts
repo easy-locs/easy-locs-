@@ -9911,6 +9911,56 @@ export type Database = {
           },
         ]
       }
+      merchant_accounts: {
+        Row: {
+          country: string | null
+          created_at: string
+          currency: string | null
+          id: string
+          kyc_status: string
+          legal_name: string | null
+          payout_enabled: boolean
+          payout_provider_account_id: string | null
+          shop_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          country?: string | null
+          created_at?: string
+          currency?: string | null
+          id?: string
+          kyc_status?: string
+          legal_name?: string | null
+          payout_enabled?: boolean
+          payout_provider_account_id?: string | null
+          shop_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          country?: string | null
+          created_at?: string
+          currency?: string | null
+          id?: string
+          kyc_status?: string
+          legal_name?: string | null
+          payout_enabled?: boolean
+          payout_provider_account_id?: string | null
+          shop_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "merchant_accounts_shop_id_fkey"
+            columns: ["shop_id"]
+            isOneToOne: false
+            referencedRelation: "storefront_pages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       merchant_activation_events: {
         Row: {
           created_at: string | null
@@ -9939,6 +9989,44 @@ export type Database = {
             columns: ["profile_id"]
             isOneToOne: false
             referencedRelation: "merchant_onboarding_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      merchant_balances: {
+        Row: {
+          available_balance: number
+          currency: string
+          id: string
+          locked_balance: number
+          merchant_id: string
+          pending_balance: number
+          updated_at: string
+        }
+        Insert: {
+          available_balance?: number
+          currency?: string
+          id?: string
+          locked_balance?: number
+          merchant_id: string
+          pending_balance?: number
+          updated_at?: string
+        }
+        Update: {
+          available_balance?: number
+          currency?: string
+          id?: string
+          locked_balance?: number
+          merchant_id?: string
+          pending_balance?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "merchant_balances_merchant_id_fkey"
+            columns: ["merchant_id"]
+            isOneToOne: false
+            referencedRelation: "merchant_accounts"
             referencedColumns: ["id"]
           },
         ]
@@ -11390,6 +11478,36 @@ export type Database = {
           locked_at?: string | null
           notes?: string | null
           order_id?: string
+        }
+        Relationships: []
+      }
+      order_status_history: {
+        Row: {
+          actor_id: string | null
+          actor_type: string | null
+          created_at: string
+          id: string
+          notes: string | null
+          order_id: string
+          status: string
+        }
+        Insert: {
+          actor_id?: string | null
+          actor_type?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          order_id: string
+          status: string
+        }
+        Update: {
+          actor_id?: string | null
+          actor_type?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          order_id?: string
+          status?: string
         }
         Relationships: []
       }
@@ -15478,6 +15596,59 @@ export type Database = {
             columns: ["created_by_org_id"]
             isOneToOne: false
             referencedRelation: "orgs_tenant_view"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      settlement_ledger: {
+        Row: {
+          booking_id: string | null
+          created_at: string
+          currency: string
+          gross_amount: number
+          id: string
+          merchant_id: string
+          net_amount: number
+          order_id: string | null
+          payment_id: string | null
+          platform_fee: number
+          processing_fee: number
+          status: string
+        }
+        Insert: {
+          booking_id?: string | null
+          created_at?: string
+          currency?: string
+          gross_amount: number
+          id?: string
+          merchant_id: string
+          net_amount: number
+          order_id?: string | null
+          payment_id?: string | null
+          platform_fee?: number
+          processing_fee?: number
+          status?: string
+        }
+        Update: {
+          booking_id?: string | null
+          created_at?: string
+          currency?: string
+          gross_amount?: number
+          id?: string
+          merchant_id?: string
+          net_amount?: number
+          order_id?: string | null
+          payment_id?: string | null
+          platform_fee?: number
+          processing_fee?: number
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "settlement_ledger_merchant_id_fkey"
+            columns: ["merchant_id"]
+            isOneToOne: false
+            referencedRelation: "merchant_accounts"
             referencedColumns: ["id"]
           },
         ]
@@ -24036,6 +24207,7 @@ export type Database = {
         Args: { _group_id: string; _user_id: string }
         Returns: boolean
       }
+      is_merchant_owner: { Args: { _merchant_id: string }; Returns: boolean }
       is_org_member: {
         Args: { _org_id: string; _user_id: string }
         Returns: boolean
