@@ -465,6 +465,10 @@ export const ROUTE_REGISTRY = [
   { group: "public", label: "Reward Redemption", path: "/me/redeem-rewards" },
   { group: "driver", label: "Fuel Costs", path: "/driver/fuel-costs" },
   { group: "admin", label: "Executive Overview", path: "/admin/executive-overview" },
+  // HO-HT
+  { group: "admin", label: "System Live Panel", path: "/admin/system-live" },
+  // HU-HZ
+  { group: "admin", label: "Restaurant Autofill", path: "/admin/restaurant-autofill" },
 
   { group: "public", label: "Coming Soon", path: "/coming-soon/:slug" },
   { group: "public", label: "City Market", path: "/city-market/:citySlug" },

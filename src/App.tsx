@@ -1141,6 +1141,10 @@ const App = () => (
                 <Route path="/me/redeem-rewards" element={<ProtectedRoute><CustomerRewardRedemptionPage /></ProtectedRoute>} />
                 <Route path="/driver/fuel-costs" element={<ProtectedRoute><DriverFuelCostPage /></ProtectedRoute>} />
                 <Route path="/admin/executive-overview" element={<ProtectedRoute><AdminExecutiveOverviewPage /></ProtectedRoute>} />
+                {/* HO-HT */}
+                <Route path="/admin/system-live" element={<ProtectedRoute><AdminSystemLivePanelPage /></ProtectedRoute>} />
+                {/* HU-HZ */}
+                <Route path="/admin/restaurant-autofill" element={<ProtectedRoute><AdminRestaurantFillPage /></ProtectedRoute>} />
               <Route path="/city/:countryCode/:city/:vertical/:locale" element={<CityVerticalPage />} />
 
               {/* Guest / Public */}
