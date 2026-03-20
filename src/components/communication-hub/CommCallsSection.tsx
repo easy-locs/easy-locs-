@@ -109,11 +109,11 @@ export default function CommCallsSection() {
 
   const filtered = calls.filter(c => {
     if (filter === "missed" && c.status !== "missed") return false;
-    if (filter === "incoming" && c.caller_id === user?.id) return false;
-    if (filter === "outgoing" && c.caller_id !== user?.id) return false;
+    if (filter === "incoming" && c.direction !== "incoming") return false;
+    if (filter === "outgoing" && c.direction !== "outgoing") return false;
     if (search) {
       const q = search.toLowerCase();
-      const searchable = [c.context_label, c.org_name].filter(Boolean).join(" ").toLowerCase();
+      const searchable = [c.caller_orbit_id, c.receiver_orbit_id].join(" ").toLowerCase();
       return searchable.includes(q);
     }
     return true;
