@@ -711,6 +711,14 @@ function HomeRouter() {
   return <Suspense fallback={<PageLoader />}><CommunicationCenter /></Suspense>;
 }
 
+/** Route "/home" → OrbitHome marketplace hub (authenticated) or Index (guest) */
+function MarketplaceHomeRouter() {
+  const { user, loading } = useAuth();
+  if (loading) return <PageLoader />;
+  if (!user) return <Suspense fallback={<PageLoader />}><Index /></Suspense>;
+  return <Suspense fallback={<PageLoader />}><OrbitAppShell><OrbitHome /></OrbitAppShell></Suspense>;
+}
+
 const App = () => (
   <ChunkRecoveryBoundary>
   <ErrorBoundary>
