@@ -10,6 +10,7 @@ import { useContactStore } from "@/stores/contactStore";
 import { usePropertyManagementStore } from "@/stores/propertyManagementStore";
 import { useListingsRealtime } from "@/hooks/useListingsRealtime";
 import { useBookingsRealtime } from "@/hooks/useBookingsRealtime";
+import { useNotificationsRealtime } from "@/hooks/useNotificationsRealtime";
 import { useMapStore } from "@/stores/mapStore";
 import { MapMarkerList } from "@/components/map/MapMarkerList";
 import { PropertyDetailPanel } from "@/components/property/PropertyDetailPanel";
@@ -31,10 +32,12 @@ import { useChatStore } from "@/stores/chatStore";
 import { BookingStatusPanel } from "@/components/booking/BookingStatusPanel";
 import { RentStatusPanel } from "@/components/property/RentStatusPanel";
 import { SimpleNavTabs, type SimpleNavTab } from "@/components/layout/SimpleNavTabs";
+import { MerchantCheckoutPanel } from "@/components/merchant/MerchantCheckoutPanel";
 
 export default function V2MegaPage() {
   useListingsRealtime();
   useBookingsRealtime();
+  useNotificationsRealtime();
 
   const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
   const [tab, setTab] = useState<SimpleNavTab>("overview");
@@ -96,7 +99,6 @@ export default function V2MegaPage() {
   const doCreateListing = async () => {
     if (!orbit?.orbitId) return;
     const listing = await createListing({
-      ownerOrbitId: orbit.orbitId,
       title: "Dubai Marina Apartment",
       description: "Wallet + Orbit + Booking + Immo connected",
       address: "Dubai Marina, Dubai, UAE",
@@ -130,7 +132,6 @@ export default function V2MegaPage() {
 
     const booking = await createBooking({
       listingId: listing.id,
-      buyerOrbitId: "orbit_buyer_demo_1",
       checkIn: "2026-03-25",
       checkOut: "2026-03-28",
       guestInfo: {
@@ -267,6 +268,9 @@ export default function V2MegaPage() {
             </div>
           </div>
         );
+
+      case "merchant":
+        return <MerchantCheckoutPanel />;
 
       case "system":
         return <V2MegaAudit />;
