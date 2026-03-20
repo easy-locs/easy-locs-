@@ -24568,6 +24568,7 @@ export type Database = {
         }
         Returns: Json
       }
+      update_listing_freshness_scores: { Args: never; Returns: number }
       update_wallet_balance: {
         Args: { p_amount: number; p_type: string; p_wallet_id: string }
         Returns: undefined
