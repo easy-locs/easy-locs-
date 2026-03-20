@@ -73,6 +73,7 @@ serve(async (req) => {
 
       const { data: job } = await supabaseAdmin.from("delivery_jobs").select("*").eq("id", job_id).single();
       if (!job) throw new Error("Job not found");
+      await assertJobAuthority(supabaseAdmin, userId, job);
 
       // Find online drivers
       const { data: drivers } = await supabaseAdmin
@@ -89,7 +90,6 @@ serve(async (req) => {
       const maxDist = max_distance_km || 15;
 
       if (ranked) {
-        // Use ranking engine
         const rankedDrivers = rankAndScoreDrivers(drivers, job, maxDist);
         return json({ success: true, drivers: rankedDrivers, total: rankedDrivers.length, ranked: true });
       }
