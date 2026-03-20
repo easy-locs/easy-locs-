@@ -69,6 +69,9 @@ export const routes = {
   notifications: () => `/notifications`,
   adminRetentionOps: () => `/admin/retention-ops`,
   driverEarningsV2: () => `/driver/earnings-v2`,
+  orderReceipt: (orderId: string) => `/order/receipt/${encodeURIComponent(orderId)}`,
+  merchantAnalytics: (merchantId: string) => `/merchant/analytics/${encodeURIComponent(merchantId)}`,
+  adminOperationsLaunchpad: () => `/admin/operations-launchpad`,
 
   // Orbit
   orbitCallTest: () => `/orbit/call-test`,
@@ -183,6 +186,9 @@ export const ROUTE_REGISTRY = [
   { group: "public", label: "Notifications", path: "/notifications" },
   { group: "admin", label: "Retention Ops", path: "/admin/retention-ops" },
   { group: "driver", label: "Driver Earnings V2", path: "/driver/earnings-v2" },
+  { group: "public", label: "Order Receipt", path: "/order/receipt/:orderId" },
+  { group: "merchant", label: "Merchant Analytics", path: "/merchant/analytics/:merchantId" },
+  { group: "admin", label: "Operations Launchpad", path: "/admin/operations-launchpad" },
 
   { group: "public", label: "Coming Soon", path: "/coming-soon/:slug" },
   { group: "public", label: "City Market", path: "/city-market/:citySlug" },

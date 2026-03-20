@@ -401,6 +401,9 @@ const AdminGrowthOpsPage = safeLazy(() => import("./pages/admin/AdminGrowthOpsPa
 const NotificationCenterPage = safeLazy(() => import("./pages/notifications/NotificationCenterPage"), "NotificationCenterPage");
 const AdminRetentionOpsPage = safeLazy(() => import("./pages/admin/AdminRetentionOpsPage"), "AdminRetentionOpsPage");
 const DriverEarningsPageNew = safeLazy(() => import("./pages/driver/DriverEarningsPageNew"), "DriverEarningsPageNew");
+const OrderReceiptPage = safeLazy(() => import("./pages/OrderReceiptPage"), "OrderReceiptPage");
+const MerchantBasicAnalyticsPage = safeLazy(() => import("./pages/merchant/MerchantBasicAnalyticsPage"), "MerchantBasicAnalyticsPage");
+const AdminOperationsLaunchpadPage = safeLazy(() => import("./pages/admin/AdminOperationsLaunchpadPage"), "AdminOperationsLaunchpadPage");
 
 // City sub-page wrappers
 const CityServicesPage = () => <CityHubPage subPage="services" />;
@@ -862,6 +865,9 @@ const App = () => (
                 <Route path="/notifications" element={<ProtectedRoute><NotificationCenterPage /></ProtectedRoute>} />
                 <Route path="/admin/retention-ops" element={<ProtectedRoute><AdminRetentionOpsPage /></ProtectedRoute>} />
                 <Route path="/driver/earnings-v2" element={<ProtectedRoute><DriverEarningsPageNew /></ProtectedRoute>} />
+                <Route path="/order/receipt/:orderId" element={<ProtectedRoute><OrderReceiptPage /></ProtectedRoute>} />
+                <Route path="/merchant/analytics/:merchantId" element={<ProtectedRoute><MerchantBasicAnalyticsPage /></ProtectedRoute>} />
+                <Route path="/admin/operations-launchpad" element={<ProtectedRoute><AdminOperationsLaunchpadPage /></ProtectedRoute>} />
               <Route path="/city/:countryCode/:city/:vertical/:locale" element={<CityVerticalPage />} />
 
               {/* Guest / Public */}
