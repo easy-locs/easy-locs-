@@ -1,12 +1,15 @@
 import { platformBus } from "@/app/events/platform-bus";
 import { useWalletStore } from "@/stores/walletStore";
 import { useOrbitStore } from "@/stores/orbitStore";
+import { installBookingReactions } from "@/core/bootstrap/install-booking-reactions";
 
 let installed = false;
 
 export function installPlatformReactions() {
   if (installed) return;
   installed = true;
+
+  installBookingReactions();
 
   platformBus.on("orbit.profile.loaded", (event) => {
     const current = useOrbitStore.getState().profile;
@@ -34,5 +37,17 @@ export function installPlatformReactions() {
 
   platformBus.on("call.started", (event) => {
     console.log("[reaction] call started", event.payload);
+  });
+
+  platformBus.on("listing.created", (event) => {
+    console.log("[reaction] listing created", event.payload.listing.id);
+  });
+
+  platformBus.on("listing.published", (event) => {
+    console.log("[reaction] listing published", event.payload.listingId);
+  });
+
+  platformBus.on("booking.requested", (event) => {
+    console.log("[reaction] booking requested", event.payload.booking.id);
   });
 }
