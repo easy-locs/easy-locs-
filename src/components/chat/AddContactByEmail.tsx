@@ -1,22 +1,22 @@
 import { useState } from "react";
 import { findUserByEmail } from "@/lib/orbit/findUserByEmail";
-import { Search, UserCheck, AlertCircle } from "lucide-react";
+import { createOrGetDirectConversation } from "@/lib/chat/conversationService";
+import { useOrbitStore } from "@/stores/orbitStore";
+import { Search, UserCheck, AlertCircle, MessageCircle } from "lucide-react";
+import type { OrbitProfileRow, ConversationRow } from "@/lib/types/comms";
 
-type FoundUser = {
-  id: string;
-  orbit_id: string;
-  email: string | null;
-  display_name: string | null;
-  avatar_url: string | null;
-};
+type FoundUser = Omit<OrbitProfileRow, "role">;
 
 export function AddContactByEmail(props: {
+  onConversationReady?: (conversation: ConversationRow, peer: FoundUser) => void;
   onSelect?: (user: FoundUser) => void;
 }) {
+  const myOrbit = useOrbitStore((s) => s.profile);
   const [email, setEmail] = useState("");
   const [result, setResult] = useState<FoundUser | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [opening, setOpening] = useState(false);
 
   const handleSearch = async () => {
     const trimmed = email.trim();
@@ -34,11 +34,39 @@ export function AddContactByEmail(props: {
         return;
       }
 
+      if (myOrbit?.email && user.email === myOrbit.email) {
+        setError("Tu ne peux pas t'ajouter toi-même");
+        return;
+      }
+
       setResult(user as FoundUser);
+      props.onSelect?.(user as FoundUser);
     } catch {
       setError("Erreur de recherche");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleOpenChat = async () => {
+    if (!myOrbit || !result) return;
+    setOpening(true);
+
+    try {
+      const conversation = await createOrGetDirectConversation({
+        myOrbitId: myOrbit.orbitId,
+        myEmail: myOrbit.email ?? null,
+        myDisplayName: myOrbit.displayName ?? null,
+        peerOrbitId: result.orbit_id,
+        peerEmail: result.email,
+        peerDisplayName: result.display_name,
+      });
+
+      props.onConversationReady?.(conversation, result);
+    } catch {
+      setError("Impossible d'ouvrir la conversation");
+    } finally {
+      setOpening(false);
     }
   };
 
@@ -70,25 +98,44 @@ export function AddContactByEmail(props: {
       )}
 
       {result && (
-        <button
-          onClick={() => props.onSelect?.(result)}
-          className="w-full flex items-center gap-3 rounded-xl bg-card border border-border/20 px-3 py-3 active:scale-[0.98] transition-transform text-left"
-        >
+        <div className="w-full flex items-center gap-3 rounded-xl bg-card border border-border/20 px-3 py-3">
           <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-sm font-bold text-primary shrink-0">
             {result.avatar_url ? (
-              <img src={result.avatar_url} alt="" className="h-10 w-10 rounded-full object-cover" />
+              <img
+                src={result.avatar_url}
+                alt=""
+                className="h-10 w-10 rounded-full object-cover"
+              />
             ) : (
-              (result.display_name ?? result.email ?? "?").slice(0, 2).toUpperCase()
+              (result.display_name ?? result.email ?? "?")
+                .slice(0, 2)
+                .toUpperCase()
             )}
           </div>
           <div className="min-w-0 flex-1">
             <p className="text-sm font-semibold text-foreground truncate">
               {result.display_name ?? "Sans nom"}
             </p>
-            <p className="text-xs text-muted-foreground truncate">{result.email}</p>
+            <p className="text-xs text-muted-foreground truncate">
+              {result.email}
+            </p>
           </div>
-          <UserCheck className="h-4 w-4 text-emerald-500 shrink-0" />
-        </button>
+          <div className="flex items-center gap-1.5 shrink-0">
+            {props.onConversationReady && (
+              <button
+                onClick={() => void handleOpenChat()}
+                disabled={opening}
+                className="h-9 px-3 rounded-lg bg-primary text-primary-foreground text-xs font-medium flex items-center gap-1.5 active:scale-[0.95] transition-transform disabled:opacity-40"
+              >
+                <MessageCircle className="h-3.5 w-3.5" />
+                {opening ? "…" : "Chat"}
+              </button>
+            )}
+            {!props.onConversationReady && (
+              <UserCheck className="h-4 w-4 text-emerald-500" />
+            )}
+          </div>
+        </div>
       )}
     </div>
   );
