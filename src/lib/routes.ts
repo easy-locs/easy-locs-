@@ -294,6 +294,10 @@ export const routes = {
   merchantStoreAnnouncement: (merchantId: string) => `/merchant/store-announcement/${encodeURIComponent(merchantId)}`,
   merchantTemporaryClosure: (merchantId: string) => `/merchant/temporary-closure/${encodeURIComponent(merchantId)}`,
   merchantQueueLimit: (merchantId: string) => `/merchant/queue-limit/${encodeURIComponent(merchantId)}`,
+  // PJ-PO
+  adminNotificationCampaigns: () => `/admin/notification-campaigns`,
+  adminCustomerSegments: () => `/admin/customer-segments`,
+  adminMerchantSegments: () => `/admin/merchant-segments`,
 
   // Orbit
   orbitCallTest: () => `/orbit/call-test`,
