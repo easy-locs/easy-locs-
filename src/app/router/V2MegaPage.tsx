@@ -129,7 +129,6 @@ export default function V2MegaPage() {
 
     const booking = await createBooking({
       listingId: listing.id,
-      buyerOrbitId: "orbit_buyer_demo_1",
       checkIn: "2026-03-25",
       checkOut: "2026-03-28",
       guestInfo: {
