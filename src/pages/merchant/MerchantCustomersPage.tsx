@@ -9,7 +9,7 @@ export default function MerchantCustomersPage() {
   const { data: rows = [], isLoading } = useQuery({
     queryKey: ["merchant-customers-page", merchantId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from("orders")
         .select("customer_user_id,total_amount,status,created_at")
         .eq("merchant_id", merchantId)
