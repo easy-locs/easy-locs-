@@ -2,9 +2,9 @@ import { create } from "zustand";
 import { platformBus } from "@/app/events/platform-bus";
 import type { PropertyListingV2, ListingAvailabilityRange, CurrencyCode } from "@/lib/types/domain";
 import { listingRepo } from "@/lib/supabase/repositories";
+import { useOrbitStore } from "@/stores/orbitStore";
 
 type CreateListingInput = {
-  ownerOrbitId: string;
   title: string;
   description?: string;
   address: string;
@@ -24,9 +24,8 @@ type CreateListingInput = {
 type ListingStore = {
   listings: PropertyListingV2[];
   loading: boolean;
-
   hydratePublished: () => Promise<void>;
-  createListing: (input: CreateListingInput) => PropertyListingV2;
+  createListing: (input: CreateListingInput) => Promise<PropertyListingV2>;
   updateListing: (listingId: string, patch: Partial<PropertyListingV2>) => void;
   publishListing: (listingId: string) => void;
   pauseListing: (listingId: string) => void;
@@ -35,6 +34,7 @@ type ListingStore = {
   addAvailabilityRange: (listingId: string, range: ListingAvailabilityRange) => void;
   getListingById: (listingId: string) => PropertyListingV2 | null;
   getPublishedListings: () => PropertyListingV2[];
+  getMyListings: () => PropertyListingV2[];
   getListingsByOwner: (ownerOrbitId: string) => PropertyListingV2[];
 };
 
@@ -52,12 +52,14 @@ export const useListingStore = create<ListingStore>((set, get) => ({
     }
   },
 
+  createListing: async (input) => {
+    const orbit = useOrbitStore.getState().profile;
+    if (!orbit) throw new Error("No authenticated orbit profile");
 
-  createListing: (input) => {
     const now = new Date().toISOString();
     const listing: PropertyListingV2 = {
       id: `listing_${Math.random().toString(36).slice(2, 11)}`,
-      ownerOrbitId: input.ownerOrbitId,
+      ownerOrbitId: orbit.orbitId,
       status: "draft",
       title: input.title,
       description: input.description,
@@ -98,9 +100,10 @@ export const useListingStore = create<ListingStore>((set, get) => ({
       updatedAt: now,
     };
 
-    set((state) => ({ listings: [listing, ...state.listings] }));
-    platformBus.emit({ type: "listing.created", payload: { listing } });
-    return listing;
+    const saved = await listingRepo.create(listing);
+    set((state) => ({ listings: [saved, ...state.listings] }));
+    platformBus.emit({ type: "listing.created", payload: { listing: saved } });
+    return saved;
   },
 
   updateListing: (listingId, patch) => {
@@ -124,7 +127,6 @@ export const useListingStore = create<ListingStore>((set, get) => ({
 
   pauseListing: (listingId) => { get().updateListing(listingId, { status: "paused" }); },
   archiveListing: (listingId) => { get().updateListing(listingId, { status: "archived" }); },
-
   setAvailability: (listingId, ranges) => { get().updateListing(listingId, { availability: ranges }); },
 
   addAvailabilityRange: (listingId, range) => {
@@ -135,5 +137,10 @@ export const useListingStore = create<ListingStore>((set, get) => ({
 
   getListingById: (listingId) => get().listings.find((l) => l.id === listingId) ?? null,
   getPublishedListings: () => get().listings.filter((l) => l.status === "published"),
+  getMyListings: () => {
+    const orbit = useOrbitStore.getState().profile;
+    if (!orbit) return [];
+    return get().listings.filter((l) => l.ownerOrbitId === orbit.orbitId);
+  },
   getListingsByOwner: (ownerOrbitId) => get().listings.filter((l) => l.ownerOrbitId === ownerOrbitId),
 }));

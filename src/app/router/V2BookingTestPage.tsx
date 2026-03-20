@@ -43,7 +43,6 @@ export default function V2BookingTestPage() {
     if (!orbit?.orbitId) return;
 
     const listing = await createListing({
-      ownerOrbitId: orbit.orbitId,
       title: "Dubai Marina Apartment",
       description: "Direct booking enabled listing linked with wallet orbit and property management.",
       address: "Dubai Marina, Dubai, UAE",
@@ -69,7 +68,6 @@ export default function V2BookingTestPage() {
 
     await createBooking({
       listingId: listing.id,
-      buyerOrbitId: "orbit_buyer_demo_1",
       checkIn: "2026-03-25",
       checkOut: "2026-03-28",
       guestInfo: {
@@ -85,7 +83,6 @@ export default function V2BookingTestPage() {
     if (!orbit?.orbitId) return;
 
     const listing = await createListing({
-      ownerOrbitId: orbit.orbitId,
       title: "JLT Studio",
       description: "Request to book listing",
       address: "JLT, Dubai, UAE",
@@ -106,7 +103,6 @@ export default function V2BookingTestPage() {
 
     await createBooking({
       listingId: listing.id,
-      buyerOrbitId: "orbit_buyer_demo_2",
       checkIn: "2026-04-02",
       checkOut: "2026-04-05",
       guestInfo: {

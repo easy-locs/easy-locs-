@@ -1,9 +1,10 @@
 import { useEffect } from "react";
 import { useV2AuthStore } from "@/stores/v2AuthStore";
 import { useOrbitStore } from "@/stores/orbitStore";
+import { useWalletStore } from "@/stores/walletStore";
 
 /**
- * AppInit — initializes V2 auth and hydrates orbit profile.
+ * AppInit — initializes V2 auth, hydrates orbit profile and wallet.
  * Mount once at the top of the app tree.
  */
 export function AppInit() {
@@ -19,11 +20,24 @@ export function AppInit() {
 
   useEffect(() => {
     if (!initialized) return;
+
     if (!user) {
       clear();
+      useWalletStore.setState({ wallet: null, transactions: [], loading: false });
       return;
     }
-    void loadProfile(user.id);
+
+    void (async () => {
+      await loadProfile(user.id);
+      const orbit = useOrbitStore.getState().profile;
+      if (!orbit) return;
+
+      await useWalletStore.getState().loadWallet({
+        walletId: `wallet_${orbit.orbitId}`,
+        ownerOrbitId: orbit.orbitId,
+        currency: "AED",
+      });
+    })();
   }, [initialized, user?.id, loadProfile, clear]);
 
   return null;
