@@ -12,16 +12,16 @@ const NAV_ITEMS = [
     icon: Home,
     labelKey: "nav.home",
     fallback: "Home",
-    path: "/",
-    match: (p: string) => p === "/",
+    path: "/home",
+    match: (p: string) => p === "/home",
   },
   {
     icon: CircleDot,
     labelKey: "nav.orbit",
     fallback: "Orbit",
-    path: "/dashboard/communication",
+    path: "/",
     match: (p: string) =>
-      ["/dashboard/communication", "/orbit"].some(
+      p === "/" || ["/dashboard/communication", "/orbit"].some(
         (prefix) => p === prefix || p.startsWith(prefix + "/")
       ),
     isOrbit: true,
@@ -47,9 +47,9 @@ const NAV_ITEMS = [
     icon: User,
     labelKey: "nav.me",
     fallback: "Me",
-    path: "/dashboard/settings",
+    path: "/settings",
     match: (p: string) =>
-      ["/dashboard/settings", "/dashboard/my-shop", "/dashboard/seller", "/dashboard/driver", "/business", "/property-hub", "/merchant", "/ride", "/send", "/travel"].some(
+      ["/settings", "/dashboard/settings", "/dashboard/my-shop", "/dashboard/seller", "/seller", "/dashboard/driver", "/business", "/property-hub", "/merchant"].some(
         (prefix) => p === prefix || p.startsWith(prefix + "/")
       ),
   },
