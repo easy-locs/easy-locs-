@@ -426,6 +426,12 @@ const MerchantClosingModePage = safeLazy(() => import("./pages/merchant/Merchant
 const AdminMerchantPromoWatchPage = safeLazy(() => import("./pages/admin/AdminMerchantPromoWatchPage"), "AdminMerchantPromoWatchPage");
 const DriverEarningsSummaryPage = safeLazy(() => import("./pages/driver/DriverEarningsSummaryPage"), "DriverEarningsSummaryPage");
 const AdminRefundWatchPage = safeLazy(() => import("./pages/admin/AdminRefundWatchPage"), "AdminRefundWatchPage");
+const CustomerSupportShortcutsPage = safeLazy(() => import("./pages/customer/CustomerSupportShortcutsPage"), "CustomerSupportShortcutsPage");
+const MerchantCustomerInsightsPage = safeLazy(() => import("./pages/merchant/MerchantCustomerInsightsPage"), "MerchantCustomerInsightsPage");
+const AdminDriverHeatmapPage = safeLazy(() => import("./pages/admin/AdminDriverHeatmapPage"), "AdminDriverHeatmapPage");
+const CustomerOrderArchivePage = safeLazy(() => import("./pages/customer/CustomerOrderArchivePage"), "CustomerOrderArchivePage");
+const MerchantProductPerformancePage = safeLazy(() => import("./pages/merchant/MerchantProductPerformancePage"), "MerchantProductPerformancePage");
+const AdminWalletWatchPage = safeLazy(() => import("./pages/admin/AdminWalletWatchPage"), "AdminWalletWatchPage");
 
 // City sub-page wrappers
 const CityServicesPage = () => <CityHubPage subPage="services" />;
