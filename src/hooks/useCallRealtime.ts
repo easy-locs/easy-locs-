@@ -26,6 +26,7 @@ export function useCallRealtime() {
             row.status === "ringing"
           ) {
             useCallStore.setState({ incoming: row, mode: "ringing" });
+            useCallStore.getState().startMissedCallTimer(row);
             useIncomingCallStore.setState({
               incoming: {
                 sessionId: row.id,
@@ -48,6 +49,12 @@ export function useCallRealtime() {
               if (incoming?.id === row.id) {
                 useCallStore.setState({ incoming: null, mode: "idle" });
                 useIncomingCallStore.setState({ incoming: null });
+              }
+
+              const missedTimer = useCallStore.getState().missedTimer;
+              if (missedTimer) {
+                clearTimeout(missedTimer);
+                useCallStore.setState({ missedTimer: null });
               }
             }
           }
