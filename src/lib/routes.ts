@@ -475,6 +475,12 @@ export const ROUTE_REGISTRY = [
   { group: "admin", label: "System Live Panel", path: "/admin/system-live" },
   // HU-HZ
   { group: "admin", label: "Restaurant Autofill", path: "/admin/restaurant-autofill" },
+  // IA-IF
+  { group: "payments", label: "Stripe Checkout Handler", path: "/payments/stripe-handler" },
+  { group: "admin", label: "Payment Go-Live", path: "/admin/payment-go-live" },
+  { group: "admin", label: "Go-Live Readiness", path: "/admin/go-live-readiness" },
+  // IG-IL
+  { group: "admin", label: "UI Finalizer", path: "/admin/ui-finalizer" },
 
   { group: "public", label: "Coming Soon", path: "/coming-soon/:slug" },
   { group: "public", label: "City Market", path: "/city-market/:citySlug" },
