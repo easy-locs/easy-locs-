@@ -173,6 +173,10 @@ export const ROUTE_REGISTRY = [
   { group: "admin", label: "Home Engine", path: "/admin/home-engine" },
   { group: "admin", label: "Map Engine", path: "/admin/map-engine" },
   { group: "admin", label: "Notification Engine", path: "/admin/notification-engine" },
+  { group: "merchant", label: "Merchant Inventory", path: "/merchant/inventory/:merchantId" },
+  { group: "merchant", label: "Merchant Live Control", path: "/merchant/live/:merchantId" },
+  { group: "merchant", label: "Merchant Coupons", path: "/merchant/coupons/:merchantId" },
+  { group: "admin", label: "Growth Ops", path: "/admin/growth-ops" },
 
   { group: "public", label: "Coming Soon", path: "/coming-soon/:slug" },
   { group: "public", label: "City Market", path: "/city-market/:citySlug" },
