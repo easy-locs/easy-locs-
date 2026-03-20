@@ -194,6 +194,20 @@ export const routes = {
   customerContactless: () => `/checkout/contactless`,
   driverHotZones: () => `/driver/hot-zones`,
   adminDemandForecast: () => `/admin/demand-forecast`,
+  // HC-HH
+  customerAutoRepeat: () => `/me/auto-repeat`,
+  merchantRushMode: (merchantId: string) => `/merchant/rush-mode/${encodeURIComponent(merchantId)}`,
+  adminRefundQueue: () => `/admin/refund-queue`,
+  customerPartyOrder: () => `/checkout/party-order`,
+  driverEarningsBreakdown: () => `/driver/earnings-breakdown`,
+  adminPlatformHealth: () => `/admin/platform-health`,
+  // HI-HN
+  customerOfficeLunch: () => `/checkout/office-lunch`,
+  merchantDeliveryFees: (merchantId: string) => `/merchant/delivery-fees/${encodeURIComponent(merchantId)}`,
+  adminDriverCompliance: () => `/admin/driver-compliance`,
+  customerRewardRedemption: () => `/me/redeem-rewards`,
+  driverFuelCosts: () => `/driver/fuel-costs`,
+  adminExecutiveOverview: () => `/admin/executive-overview`,
 
   // Orbit
   orbitCallTest: () => `/orbit/call-test`,
