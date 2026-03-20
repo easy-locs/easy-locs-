@@ -48,6 +48,10 @@ const V2PaymentsPage = safeLazy(() => import("./app/router/PaymentsPage"), "V2Pa
 // V2 Auth wrappers
 import { V2AuthBridge as V2AuthBridgeWrapper } from "@/components/system/V2AuthBridge";
 import { V2AuthGate as V2AuthGateWrapper } from "@/components/system/V2AuthGate";
+import { AuthGate as V2AuthGate } from "@/components/guards/AuthGate";
+import { AppInit as V2AppInit } from "@/components/system/AppInit";
+const V2AuthPage = safeLazy(() => import("./app/router/AuthPage"), "V2AuthPage");
+
 
 function safeLazy(factory: () => Promise<{ default: ComponentType<any> }>, name: string) {
   return lazy(async () => {
