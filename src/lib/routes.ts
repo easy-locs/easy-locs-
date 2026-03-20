@@ -150,6 +150,9 @@ export const ROUTE_REGISTRY = [
   { group: "admin", label: "Orbit Call Test", path: "/orbit/call-test" },
   { group: "admin", label: "Runtime Audit", path: "/admin/runtime-audit" },
   { group: "admin", label: "Runtime Quick Links", path: "/admin/runtime-links" },
+  { group: "admin", label: "Analytics Ops", path: "/admin/analytics-ops" },
+  { group: "admin", label: "Content Ops", path: "/admin/content-ops" },
+  { group: "merchant", label: "Merchant Order Board", path: "/merchant/orders/:merchantId" },
 
   { group: "public", label: "Coming Soon", path: "/coming-soon/:slug" },
   { group: "public", label: "City Market", path: "/city-market/:citySlug" },

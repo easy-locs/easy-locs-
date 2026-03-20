@@ -201,6 +201,13 @@ export default function RestaurantPage() {
               </div>
             </section>
           ))}
+
+          {shop?.id && (
+            <div className="space-y-6 pt-4">
+              <ReviewComposer merchantId={shop.id} />
+              <ReviewList merchantId={shop.id} />
+            </div>
+          )}
         </div>
       )}
 
