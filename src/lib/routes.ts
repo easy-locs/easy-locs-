@@ -76,6 +76,10 @@ export const routes = {
   adminMerchantHealth: () => `/admin/merchant-health`,
   walletTopUp: () => `/wallet/top-up`,
   walletTransfer: () => `/wallet/transfer`,
+  orderRefundRequest: (orderId: string) => `/order/refund/${encodeURIComponent(orderId)}`,
+  merchantBannerEditor: (merchantId: string) => `/merchant/banner-editor/${encodeURIComponent(merchantId)}`,
+  adminDriverMonitor: () => `/admin/driver-monitor`,
+  adminUserLookup: () => `/admin/user-lookup`,
 
   // Orbit
   orbitCallTest: () => `/orbit/call-test`,
