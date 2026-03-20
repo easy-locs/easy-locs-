@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { usePropertyQuerySync } from "@/hooks/usePropertyQuerySync";
 import { AppPageShell } from "@/components/layout/AppPageShell";
 import { PropertyList } from "@/components/property/PropertyList";
 import { PropertyDetailPanel } from "@/components/property/PropertyDetailPanel";
@@ -11,6 +12,8 @@ import { useFavoritesStore } from "@/stores/favoritesStore";
 import { useFavoritesRealtime } from "@/hooks/useFavoritesRealtime";
 
 export default function PropertiesPage() {
+  usePropertyQuerySync();
+
   const listing = usePropertyDetailStore((s) => s.selectedListing);
   const hydrateFavorites = useFavoritesStore((s) => s.hydrate);
 

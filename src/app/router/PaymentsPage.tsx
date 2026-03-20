@@ -5,8 +5,11 @@ import { NotificationsPanel } from "@/components/notifications/NotificationsPane
 import { RefundPanel } from "@/components/payments/RefundPanel";
 import { PayoutPanel } from "@/components/payments/PayoutPanel";
 import { CheckoutDiscountPanel } from "@/components/payments/CheckoutDiscountPanel";
+import { usePaymentStatusSync } from "@/hooks/usePaymentStatusSync";
 
 export default function PaymentsPage() {
+  usePaymentStatusSync();
+
   return (
     <AppPageShell title="Payments">
       <div className="space-y-4">
