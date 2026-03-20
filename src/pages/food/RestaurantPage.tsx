@@ -212,7 +212,7 @@ export default function RestaurantPage() {
       )}
 
       {itemCount > 0 && cart.restaurantId === shop?.id && (
-        <motion.div initial={{ y: 80 }} animate={{ y: 0 }} className="fixed bottom-0 left-0 right-0 z-40 px-4" style={{ paddingBottom: "max(env(safe-area-inset-bottom, 12px), 12px)" }}>
+        <motion.div initial={{ y: 80 }} animate={{ y: 0 }} className="fixed left-0 right-0 z-40 px-4" style={{ bottom: "calc(56px + env(safe-area-inset-bottom, 0px) + 8px)" }}>
           <button data-primary-cta onClick={() => navigate("/checkout")} className="w-full max-w-md mx-auto flex items-center justify-between px-5 py-3.5 rounded-2xl active:scale-[0.98] transition-transform" style={{ background: "hsl(var(--primary))", boxShadow: "0 8px 32px hsl(var(--primary) / 0.35)", display: "flex" }}>
             <div className="flex items-center gap-2">
               <div className="w-7 h-7 rounded-full flex items-center justify-center" style={{ background: "hsl(0 0% 100% / 0.2)" }}><ShoppingCart className="w-4 h-4 text-primary-foreground" /></div>
