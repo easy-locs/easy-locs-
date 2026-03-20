@@ -1,6 +1,9 @@
 import { create } from "zustand";
 import { supabase } from "@/integrations/supabase/client";
+import { useOrbitStore } from "@/stores/orbitStore";
 import type { ListingReview } from "@/lib/types/reviews";
+
+const db = supabase as any;
 
 type ReviewsStore = {
   items: ListingReview[];
@@ -10,7 +13,6 @@ type ReviewsStore = {
     listingId: string;
     bookingId?: string;
     ownerOrbitId: string;
-    reviewerOrbitId: string;
     rating: number;
     comment?: string;
   }) => Promise<void>;
@@ -25,7 +27,7 @@ export const useReviewsStore = create<ReviewsStore>((set, get) => ({
   hydrateListingReviews: async (listingId) => {
     set({ loading: true });
 
-    const { data, error } = await (supabase as any)
+    const { data, error } = await db
       .from("listing_reviews")
       .select("*")
       .eq("listing_id", listingId)
@@ -43,18 +45,21 @@ export const useReviewsStore = create<ReviewsStore>((set, get) => ({
   },
 
   createReview: async (input) => {
+    const orbit = useOrbitStore.getState().profile;
+    if (!orbit) throw new Error("Missing orbit");
+
     const row: ListingReview = {
       id: `rev_${Math.random().toString(36).slice(2, 11)}`,
       listing_id: input.listingId,
       booking_id: input.bookingId ?? null,
-      reviewer_orbit_id: input.reviewerOrbitId,
+      reviewer_orbit_id: orbit.orbitId,
       owner_orbit_id: input.ownerOrbitId,
       rating: input.rating,
       comment: input.comment ?? null,
       created_at: new Date().toISOString(),
     };
 
-    const { data, error } = await (supabase as any)
+    const { data, error } = await db
       .from("listing_reviews")
       .insert(row)
       .select()
