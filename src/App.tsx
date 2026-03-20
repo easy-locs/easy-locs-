@@ -33,6 +33,18 @@ const V2TestPage = safeLazy(() => import("./app/router/V2TestPage"), "V2TestPage
 const V2BookingTestPage = safeLazy(() => import("./app/router/V2BookingTestPage"), "V2BookingTestPage");
 const V2MegaPage = safeLazy(() => import("./app/router/V2MegaPage"), "V2MegaPage");
 
+// V2 Suite 4 pages
+const V2HomePage = safeLazy(() => import("./app/router/HomePage"), "V2HomePage");
+const V2OwnerDashboardPage = safeLazy(() => import("./app/router/OwnerDashboardPage"), "V2OwnerDashboardPage");
+const V2TenantDashboardPage = safeLazy(() => import("./app/router/TenantDashboardPage"), "V2TenantDashboardPage");
+const V2BookingsPage = safeLazy(() => import("./app/router/BookingsPage"), "V2BookingsPage");
+const V2PropertiesPage = safeLazy(() => import("./app/router/PropertiesPage"), "V2PropertiesPage");
+const V2SearchPage = safeLazy(() => import("./app/router/SearchPage"), "V2SearchPage");
+const V2MapPage = safeLazy(() => import("./app/router/MapPage"), "V2MapPage");
+const V2MessagesPage = safeLazy(() => import("./app/router/MessagesPage"), "V2MessagesPage");
+const V2NotificationsPage = safeLazy(() => import("./app/router/NotificationsPage"), "V2NotificationsPage");
+const V2PaymentsPage = safeLazy(() => import("./app/router/PaymentsPage"), "V2PaymentsPage");
+
 // Safe lazy wrapper that catches chunk failures + missing default export issues
 function safeLazy(factory: () => Promise<{ default: ComponentType<any> }>, name: string) {
   return lazy(async () => {
