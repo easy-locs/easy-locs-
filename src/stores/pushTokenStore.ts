@@ -63,7 +63,7 @@ export const usePushTokenStore = create<PushTokenStore>((set) => ({
       updated_at: new Date().toISOString(),
     };
 
-    const { error } = await (supabase as any)
+    const { error } = await supabase
       .from("push_tokens")
       .upsert(row, { onConflict: "token" });
 
