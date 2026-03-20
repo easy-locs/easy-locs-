@@ -387,6 +387,11 @@ serve(async (req) => {
       const { job_id } = body;
       if (!job_id) throw new Error("job_id required");
 
+      // Verify user has access to this job
+      const { data: job } = await supabaseAdmin.from("delivery_jobs").select("*").eq("id", job_id).single();
+      if (!job) throw new Error("Job not found");
+      await assertJobAuthority(supabaseAdmin, userId, job);
+
       const { data: escrow } = await supabaseAdmin.from("escrow_payments")
         .select("*").eq("job_id", job_id).order("created_at", { ascending: false }).limit(1).maybeSingle();
 
