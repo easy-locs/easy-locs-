@@ -81,8 +81,7 @@ export default function SellerDashboard() {
   return (
     <div className="space-y-4">
       <SectionBlock
-        title="My Businesses"
-        subtitle={`${allBusinesses.length} listing${allBusinesses.length !== 1 ? "s" : ""}`}
+        title={`My Businesses (${allBusinesses.length})`}
         action={
           <Button
             size="sm"
