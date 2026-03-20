@@ -48,10 +48,23 @@ export function CallScreen() {
 
       pc.onconnectionstatechange = () => {
         if (mounted) setConnectionState(pc.connectionState);
+        useDebugCommsStore.getState().setWebrtc({ webrtcConnectionState: pc.connectionState });
+      };
+
+      pc.oniceconnectionstatechange = () => {
+        useDebugCommsStore.getState().setWebrtc({ webrtcIceConnectionState: pc.iceConnectionState });
+      };
+
+      pc.onicegatheringstatechange = () => {
+        useDebugCommsStore.getState().setWebrtc({ webrtcIceGatheringState: pc.iceGatheringState });
       };
 
       pc.onicecandidate = (event) => {
         if (event.candidate) {
+          const candidate = event.candidate.candidate ?? "";
+          if (candidate.includes("typ relay")) {
+            useDebugCommsStore.getState().setWebrtc({ hasRelayCandidate: true });
+          }
           void sendSignal(current.id, "candidate", event.candidate.toJSON());
         }
       };
