@@ -1428,6 +1428,7 @@ const App = () => (
               <Route path="/v2-notifications" element={<V2AuthBridgeWrapper><V2AuthGate fallback={<V2AuthPage />}><V2NotificationsPage /></V2AuthGate></V2AuthBridgeWrapper>} />
               <Route path="/v2-payments" element={<V2AuthBridgeWrapper><V2AuthGate fallback={<V2AuthPage />}><V2PaymentsPage /></V2AuthGate></V2AuthBridgeWrapper>} />
               <Route path="/v2-favorites" element={<V2AuthBridgeWrapper><V2AuthGate fallback={<V2AuthPage />}><V2FavoritesPage /></V2AuthGate></V2AuthBridgeWrapper>} />
+              <Route path="/v2-admin" element={<V2AuthBridgeWrapper><V2AuthGate fallback={<V2AuthPage />}><V2AdminPage /></V2AuthGate></V2AuthBridgeWrapper>} />
 
               {/* SEO catch-all */}
               <Route path="/seo/*" element={<SEOCatchAll />} />
