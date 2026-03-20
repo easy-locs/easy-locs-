@@ -123,7 +123,7 @@ export function CallProvider({ children }: { children: ReactNode }) {
               setIncomingCallerName(profile?.name || profile?.email || "User");
               setIncomingContextLabel(call.context_label || "");
               setIncomingIsVideo(call.is_video || false);
-              setIncomingOrgId(call.callee_org_id || "");
+              setIncomingOrgId(call.receiver_orbit_id || "");
               setIncomingThreadId(call.thread_id || null);
               setShowIncoming(true);
             } catch (err) {
