@@ -1288,6 +1288,29 @@ const App = () => (
                 <Route path="/checkout/dinner-planner" element={<ProtectedRoute><CustomerDinnerPlannerPage /></ProtectedRoute>} />
                 <Route path="/merchant/auto-accept-rules/:merchantId" element={<ProtectedRoute><MerchantAutoAcceptRulesPage /></ProtectedRoute>} />
                 <Route path="/merchant/driver-handoff/:merchantId" element={<ProtectedRoute><MerchantDriverHandoffPage /></ProtectedRoute>} />
+                {/* OH-PI */}
+                <Route path="/admin/dispatch-tuning" element={<ProtectedRoute><AdminDispatchTuningPage /></ProtectedRoute>} />
+                <Route path="/admin/payment-watch" element={<ProtectedRoute><AdminPaymentWatchPage /></ProtectedRoute>} />
+                <Route path="/me/weekly-meal-plan" element={<ProtectedRoute><CustomerWeeklyMealPlanPage /></ProtectedRoute>} />
+                <Route path="/me/kids-meal-profile" element={<ProtectedRoute><CustomerKidsMealProfilePage /></ProtectedRoute>} />
+                <Route path="/merchant/menu-categories/:merchantId" element={<ProtectedRoute><MerchantMenuCategoryManagerPage /></ProtectedRoute>} />
+                <Route path="/merchant/item-badges/:merchantId" element={<ProtectedRoute><MerchantItemBadgesPage /></ProtectedRoute>} />
+                <Route path="/merchant/instructions-policy/:merchantId" element={<ProtectedRoute><MerchantInstructionsPolicyPage /></ProtectedRoute>} />
+                <Route path="/admin/menu-quality" element={<ProtectedRoute><AdminMenuQualityPage /></ProtectedRoute>} />
+                <Route path="/admin/delivery-latency" element={<ProtectedRoute><AdminDeliveryLatencyPage /></ProtectedRoute>} />
+                <Route path="/me/lunch-subscription" element={<ProtectedRoute><CustomerLunchSubscriptionPage /></ProtectedRoute>} />
+                <Route path="/checkout/family-night" element={<ProtectedRoute><CustomerFamilyNightPage /></ProtectedRoute>} />
+                <Route path="/merchant/menu-cloner/:merchantId" element={<ProtectedRoute><MerchantMenuClonerPage /></ProtectedRoute>} />
+                <Route path="/merchant/featured-items/:merchantId" element={<ProtectedRoute><MerchantFeaturedItemsPage /></ProtectedRoute>} />
+                <Route path="/merchant/holiday-schedule/:merchantId" element={<ProtectedRoute><MerchantHolidaySchedulePage /></ProtectedRoute>} />
+                <Route path="/admin/driver-payouts" element={<ProtectedRoute><AdminDriverPayoutsPage /></ProtectedRoute>} />
+                <Route path="/admin/merchant-payouts" element={<ProtectedRoute><AdminMerchantPayoutsPage /></ProtectedRoute>} />
+                <Route path="/admin/wallet-recon" element={<ProtectedRoute><AdminWalletReconPage /></ProtectedRoute>} />
+                <Route path="/checkout/guest-profile" element={<ProtectedRoute><CustomerGuestCheckoutProfilePage /></ProtectedRoute>} />
+                <Route path="/checkout/dinner-budget" element={<ProtectedRoute><CustomerDinnerBudgetPage /></ProtectedRoute>} />
+                <Route path="/merchant/store-announcement/:merchantId" element={<ProtectedRoute><MerchantStoreAnnouncementPage /></ProtectedRoute>} />
+                <Route path="/merchant/temporary-closure/:merchantId" element={<ProtectedRoute><MerchantTemporaryClosurePage /></ProtectedRoute>} />
+                <Route path="/merchant/queue-limit/:merchantId" element={<ProtectedRoute><MerchantQueueLimitPage /></ProtectedRoute>} />
               <Route path="/city/:countryCode/:city/:vertical/:locale" element={<CityVerticalPage />} />
 
               {/* Guest / Public */}
