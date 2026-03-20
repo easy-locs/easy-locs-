@@ -24,7 +24,7 @@ export default function AdminDriverHeatmapPage() {
     return acc;
   }, {});
 
-  const zoneRows = Object.entries(zones).sort((a, b) => b[1] - a[1]);
+  const zoneRows = Object.entries(zones).sort((a, b) => (b[1] as number) - (a[1] as number));
 
   return (
     <div className="min-h-[100dvh] bg-background pb-24">
