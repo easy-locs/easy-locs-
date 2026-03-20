@@ -1,3 +1,7 @@
+/**
+ * CallScreen — Full-screen call UI.
+ * Works across iOS, Android, and Desktop with safe-area support.
+ */
 import { useEffect, useRef, useState, useCallback } from "react";
 import { createPeerConnection } from "@/lib/webrtc/peer";
 import { useCallStore } from "@/stores/callStore";
@@ -5,7 +9,8 @@ import { useCallSignalStore } from "@/stores/callSignalStore";
 import { useCallSignalsRealtime } from "@/hooks/useCallSignalsRealtime";
 import { useOrbitStore } from "@/stores/orbitStore";
 import { useDebugCommsStore } from "@/stores/debugCommsStore";
-import { PhoneOff, Mic, MicOff, Video, VideoOff } from "lucide-react";
+import { useUiShellStore } from "@/stores/uiShellStore";
+import { PhoneOff, Mic, MicOff, Video, VideoOff, Volume2 } from "lucide-react";
 
 function formatDuration(sec: number) {
   const m = Math.floor(sec / 60);
@@ -23,6 +28,7 @@ export function CallScreen() {
   const toggleCam = useCallStore((s) => s.toggleCam);
   const sendSignal = useCallSignalStore((s) => s.sendSignal);
   const orbitId = useOrbitStore((s) => s.profile?.orbitId);
+  const setCallFullscreen = useUiShellStore((s) => s.setCallFullscreen);
 
   const pcRef = useRef<RTCPeerConnection | null>(null);
   const localStreamRef = useRef<MediaStream | null>(null);
@@ -34,6 +40,14 @@ export function CallScreen() {
   const [connectionState, setConnectionState] = useState("new");
 
   const isVideo = current?.call_type === "video";
+
+  // Ensure fullscreen on mount, remove on unmount
+  useEffect(() => {
+    if (current && mode !== "idle" && mode !== "ended") {
+      setCallFullscreen(true);
+    }
+    return () => { setCallFullscreen(false); };
+  }, [current?.id, mode, setCallFullscreen]);
 
   useEffect(() => {
     if (!current || !orbitId || mode === "idle" || mode === "ended") return;
@@ -89,7 +103,6 @@ export function CallScreen() {
           localVideoRef.current.srcObject = localStream;
         }
 
-        // Caller creates offer
         if (current.caller_orbit_id === orbitId) {
           const offer = await pc.createOffer();
           await pc.setLocalDescription(offer);
@@ -120,7 +133,6 @@ export function CallScreen() {
     };
   }, [current?.id, orbitId, mode]);
 
-  // Mute/unmute tracks reactively
   useEffect(() => {
     localStreamRef.current?.getAudioTracks().forEach((t) => {
       t.enabled = localMicEnabled;
@@ -160,65 +172,123 @@ export function CallScreen() {
 
   if (!current || mode === "idle" || mode === "ended") return null;
 
-  return (
-    <div className="fixed inset-0 z-[9995] bg-black/90 flex flex-col items-center justify-center text-white">
-      {/* Status */}
-      <p className="text-sm text-white/60 mb-1">
-        {mode === "ringing" ? "Calling…" : mode === "connecting" ? "Connecting…" : "In call"}
-      </p>
-      <p className="text-xs text-white/40 mb-2">{connectionState}</p>
-      <p className="text-2xl font-semibold tabular-nums mb-6">{formatDuration(elapsed)}</p>
+  const peerLabel = current.caller_orbit_id === orbitId
+    ? current.receiver_orbit_id
+    : current.caller_orbit_id;
 
-      {/* Video areas */}
+  const statusLabel = mode === "ringing" ? "Appel en cours…" : mode === "connecting" ? "Connexion…" : "En appel";
+
+  return (
+    <div
+      className="fixed inset-0 flex flex-col bg-black text-white select-none"
+      style={{
+        zIndex: 9999,
+        paddingTop: "env(safe-area-inset-top, 0px)",
+        paddingBottom: "env(safe-area-inset-bottom, 0px)",
+        paddingLeft: "env(safe-area-inset-left, 0px)",
+        paddingRight: "env(safe-area-inset-right, 0px)",
+      }}
+    >
+      {/* Video background layer */}
       {isVideo && (
-        <div className="relative w-full max-w-md aspect-[3/4] mb-6">
+        <div className="absolute inset-0">
           <video
             ref={remoteVideoRef}
             autoPlay
             playsInline
-            className="absolute inset-0 w-full h-full object-cover rounded-2xl"
+            className="absolute inset-0 w-full h-full object-cover"
           />
+          {/* Local PiP */}
           <video
             ref={localVideoRef}
             autoPlay
             playsInline
             muted
-            className="absolute top-3 right-3 w-24 h-32 object-cover rounded-xl border-2 border-white/20"
+            className="absolute top-16 right-4 w-28 h-40 object-cover rounded-2xl border-2 border-white/20 shadow-2xl"
+            style={{ marginTop: "env(safe-area-inset-top, 0px)" }}
           />
         </div>
       )}
 
-      {/* Audio element (hidden) */}
+      {/* Hidden audio for voice calls */}
       <audio ref={remoteAudioRef} autoPlay playsInline className="hidden" />
 
-      {/* Controls */}
-      <div className="flex items-center gap-5">
-        <button
-          onClick={toggleMic}
-          className="w-14 h-14 rounded-full flex items-center justify-center bg-white/10 hover:bg-white/20 transition-colors active:scale-[0.95]"
-        >
-          {localMicEnabled ? <Mic className="w-6 h-6" /> : <MicOff className="w-6 h-6 text-red-400" />}
-        </button>
-
-        {isVideo && (
-          <button
-            onClick={toggleCam}
-            className="w-14 h-14 rounded-full flex items-center justify-center bg-white/10 hover:bg-white/20 transition-colors active:scale-[0.95]"
-          >
-            {localCamEnabled ? <Video className="w-6 h-6" /> : <VideoOff className="w-6 h-6 text-red-400" />}
-          </button>
+      {/* Top section: status info */}
+      <div className={`flex-1 flex flex-col items-center pt-16 ${isVideo ? "relative z-10" : ""}`}>
+        {/* Avatar circle for audio calls */}
+        {!isVideo && (
+          <div className="w-28 h-28 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center mb-6">
+            <span className="text-3xl font-bold text-white/80">
+              {(peerLabel || "?").substring(0, 2).toUpperCase()}
+            </span>
+          </div>
         )}
 
-        <button
-          onClick={async () => {
-            if (!current) return;
-            await sendSignal(current.id, "hangup", { ended: true });
-            await endCall(current.id, current.conversation_id ?? undefined, elapsed);
-          }}
-          className="w-16 h-16 rounded-full flex items-center justify-center bg-destructive hover:bg-destructive/90 transition-colors active:scale-[0.95]"
-        >
-          <PhoneOff className="w-7 h-7" />
-        </button>
+        <p className="text-lg font-semibold tracking-wide">
+          {peerLabel || "Unknown"}
+        </p>
+
+        <p className="text-sm text-white/60 mt-1">{statusLabel}</p>
+
+        {mode === "active" && (
+          <p className="text-3xl font-light tabular-nums mt-4 tracking-wider">
+            {formatDuration(elapsed)}
+          </p>
+        )}
+
+        {connectionState !== "connected" && connectionState !== "new" && (
+          <p className="text-xs text-white/30 mt-2">{connectionState}</p>
+        )}
+      </div>
+
+      {/* Bottom controls */}
+      <div className={`pb-10 ${isVideo ? "relative z-10" : ""}`}>
+        <div className="flex items-center justify-center gap-6">
+          {/* Mute */}
+          <button
+            onClick={toggleMic}
+            className="w-16 h-16 rounded-full flex items-center justify-center transition-all duration-200 active:scale-[0.92]"
+            style={{ background: localMicEnabled ? "rgba(255,255,255,0.12)" : "rgba(239,68,68,0.6)" }}
+            aria-label={localMicEnabled ? "Mute" : "Unmute"}
+          >
+            {localMicEnabled ? <Mic className="w-6 h-6" /> : <MicOff className="w-6 h-6" />}
+          </button>
+
+          {/* Speaker (placeholder) */}
+          {!isVideo && (
+            <button
+              className="w-16 h-16 rounded-full flex items-center justify-center bg-white/12 transition-all duration-200 active:scale-[0.92]"
+              aria-label="Speaker"
+            >
+              <Volume2 className="w-6 h-6" />
+            </button>
+          )}
+
+          {/* Video toggle */}
+          {isVideo && (
+            <button
+              onClick={toggleCam}
+              className="w-16 h-16 rounded-full flex items-center justify-center transition-all duration-200 active:scale-[0.92]"
+              style={{ background: localCamEnabled ? "rgba(255,255,255,0.12)" : "rgba(239,68,68,0.6)" }}
+              aria-label={localCamEnabled ? "Camera off" : "Camera on"}
+            >
+              {localCamEnabled ? <Video className="w-6 h-6" /> : <VideoOff className="w-6 h-6" />}
+            </button>
+          )}
+
+          {/* Hang up */}
+          <button
+            onClick={async () => {
+              if (!current) return;
+              await sendSignal(current.id, "hangup", { ended: true });
+              await endCall(current.id, current.conversation_id ?? undefined, elapsed);
+            }}
+            className="w-[72px] h-[72px] rounded-full flex items-center justify-center bg-destructive shadow-lg shadow-destructive/40 transition-all duration-200 active:scale-[0.90] hover:bg-destructive/90"
+            aria-label="End call"
+          >
+            <PhoneOff className="w-7 h-7" />
+          </button>
+        </div>
       </div>
     </div>
   );
