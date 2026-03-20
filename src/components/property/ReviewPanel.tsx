@@ -55,7 +55,6 @@ export function ReviewPanel() {
             void createReview({
               listingId: listing.id,
               ownerOrbitId: listing.ownerOrbitId,
-              reviewerOrbitId: "",
               rating,
               comment,
             }).then(() => setComment(""))
