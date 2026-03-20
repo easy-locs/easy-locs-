@@ -649,6 +649,10 @@ const V1MerchantQrPage = safeLazy(() => import("./pages/v1/V1MerchantQrPage"), "
 const V1MerchantOrdersRoute = safeLazy(() => import("./pages/v1/V1MerchantOrdersRoute"), "V1MerchantOrdersRoute");
 const V1MerchantPaymentsPage = safeLazy(() => import("./pages/v1/V1MerchantPaymentsPage"), "V1MerchantPaymentsPage");
 
+// V1 Connection Pack 3-4: tracking, driver missions, driver proof
+const V1TrackingRoute = safeLazy(() => import("./pages/v1/V1TrackingRoute"), "V1TrackingRoute");
+const V1DriverMissionBoardPage = safeLazy(() => import("./pages/v1/V1DriverMissionBoardPage").then(m => ({ default: m.V1DriverMissionBoardPage })), "V1DriverMissionBoardPage");
+const V1DriverProofPage = safeLazy(() => import("./pages/v1/V1DriverProofPage").then(m => ({ default: m.V1DriverProofPage })), "V1DriverProofPage");
 // City sub-page wrappers
 const CityServicesPage = () => <CityHubPage subPage="services" />;
 const CityActivitiesPage = () => <CityHubPage subPage="activities" />;
@@ -1352,6 +1356,9 @@ const App = () => (
                 <Route path="/v1/merchant/qr" element={<V1MerchantQrPage />} />
                 <Route path="/v1/merchant/orders" element={<V1MerchantOrdersRoute />} />
                 <Route path="/v1/merchant/payments" element={<V1MerchantPaymentsPage />} />
+                <Route path="/v1/tracking/:orderId" element={<V1TrackingRoute />} />
+                <Route path="/v1/driver/missions" element={<V1DriverMissionBoardPage />} />
+                <Route path="/v1/driver/proof/:orderId" element={<V1DriverProofPage />} />
               <Route path="/city/:countryCode/:city/:vertical/:locale" element={<CityVerticalPage />} />
 
               {/* Guest / Public */}
