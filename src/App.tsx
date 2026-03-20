@@ -172,6 +172,7 @@ const PlatformVision = safeLazy(() => import("./pages/PlatformVision"), "Platfor
 const DealAnalyticsPage = safeLazy(() => import("./pages/DealAnalyticsPage"), "DealAnalyticsPage");
 const ServiceTrackingPage = safeLazy(() => import("./pages/ServiceTrackingPage"), "ServiceTrackingPage");
 const SellerHubPage = safeLazy(() => import("./pages/SellerHubPage"), "SellerHubPage");
+const SellerDashboardPage = safeLazy(() => import("./pages/seller/SellerDashboardPage"), "SellerDashboardPage");
 const DriverDashboard = safeLazy(() => import("./pages/DriverDashboard"), "DriverDashboard");
 const DeliveryCommandCenter = safeLazy(() => import("./pages/DeliveryCommandCenter"), "DeliveryCommandCenter");
 const ShopPage = safeLazy(() => import("./pages/ShopPage"), "ShopPage");
