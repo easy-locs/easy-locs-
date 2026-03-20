@@ -9,24 +9,18 @@ export default function MerchantBusinessSummaryPage() {
   const { data, isLoading } = useQuery({
     queryKey: ["merchant-business-summary", merchantId],
     queryFn: async () => {
-      const [merchantRes, { data: orders }, productsRes, promosRes] =
+      const [merchantRes, ordersRes, productsRes, promosRes] =
         await Promise.all([
           (supabase as any).from("seed_merchants").select("*").eq("id", merchantId).maybeSingle(),
-          supabase.from("orders").select("id,total_amount,status").eq("merchant_id", merchantId).limit(1000) as any,
+          (supabase as any).from("orders").select("id,total_amount,status").eq("merchant_id", merchantId).limit(1000),
           (supabase as any).from("seed_products").select("id,is_available,stock_quantity").eq("merchant_id", merchantId).limit(2000),
           (supabase as any).from("seed_merchant_promos").select("id,is_active").eq("merchant_id", merchantId).limit(500),
         ]);
 
       const merchant = merchantRes?.data;
-      const products = productsRes?.data;
-      const promos = promosRes?.data;
-          (supabase as any).from("seed_products").select("id,is_available,stock_quantity").eq("merchant_id", merchantId).limit(2000),
-          (supabase as any).from("seed_merchant_promos").select("id,is_active").eq("merchant_id", merchantId).limit(500),
-        ]);
-
-      const orderRows = orders ?? [];
-      const productRows = products ?? [];
-      const promoRows = promos ?? [];
+      const orderRows = ordersRes?.data ?? [];
+      const productRows = productsRes?.data ?? [];
+      const promoRows = promosRes?.data ?? [];
 
       return {
         merchant,
