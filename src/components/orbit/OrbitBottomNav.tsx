@@ -12,16 +12,16 @@ const NAV_ITEMS = [
     icon: Home,
     labelKey: "nav.home",
     fallback: "Home",
-    path: "/",
-    match: (p: string) => p === "/",
+    path: "/home",
+    match: (p: string) => p === "/home",
   },
   {
     icon: CircleDot,
     labelKey: "nav.orbit",
     fallback: "Orbit",
-    path: "/dashboard/communication",
+    path: "/",
     match: (p: string) =>
-      ["/dashboard/communication", "/orbit"].some(
+      p === "/" || ["/dashboard/communication", "/orbit"].some(
         (prefix) => p === prefix || p.startsWith(prefix + "/")
       ),
     isOrbit: true,
@@ -47,9 +47,9 @@ const NAV_ITEMS = [
     icon: User,
     labelKey: "nav.me",
     fallback: "Me",
-    path: "/dashboard/settings",
+    path: "/settings",
     match: (p: string) =>
-      ["/dashboard/settings", "/dashboard/my-shop", "/dashboard/seller", "/dashboard/driver", "/business", "/property-hub", "/merchant", "/ride", "/send", "/travel"].some(
+      ["/settings", "/dashboard/settings", "/dashboard/my-shop", "/dashboard/seller", "/seller", "/dashboard/driver", "/business", "/property-hub", "/merchant"].some(
         (prefix) => p === prefix || p.startsWith(prefix + "/")
       ),
   },
@@ -91,7 +91,7 @@ function OrbitBottomNav() {
             aria-selected={isActive}
             aria-label={`${label}${badge > 0 ? ` (${badge})` : ""}`}
             onClick={() => navigate(item.path)}
-            className={`relative flex flex-col items-center justify-center gap-0.5 pt-2 pb-1 px-3 min-w-[56px] min-h-[44px] active:scale-90 transition-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-lg ${isOrbit ? "-mt-2" : ""}`}
+            className="relative flex flex-col items-center justify-center gap-0.5 pt-2 pb-1 px-3 min-w-[56px] min-h-[44px] active:scale-90 transition-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-lg"
           >
             {badge > 0 && (
               <span

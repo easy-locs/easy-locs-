@@ -111,14 +111,14 @@ function BannerCarousel({ banners, onNav }: { banners: ReturnType<typeof useDyna
   const b = banners[idx];
 
   return (
-    <div className="relative">
-      <AnimatePresence mode="wait">
+    <div className="relative overflow-hidden" style={{ minHeight: 120 }}>
+      <AnimatePresence mode="wait" initial={false}>
         <motion.button
           key={b.id}
-          initial={{ opacity: 0, x: 30 }}
+          initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -30 }}
-          transition={{ duration: 0.3 }}
+          exit={{ opacity: 0, x: -20 }}
+          transition={{ duration: 0.25, ease: "easeInOut" }}
           onClick={() => onNav(b.path)}
           className="w-full rounded-2xl p-4 text-left active:scale-[0.98] transition-transform"
           style={{ background: b.bg, minHeight: 120 }}
