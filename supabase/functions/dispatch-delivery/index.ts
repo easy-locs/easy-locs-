@@ -312,6 +312,7 @@ serve(async (req) => {
 
       const { data: job } = await supabaseAdmin.from("delivery_jobs").select("*").eq("id", job_id).single();
       if (!job) throw new Error("Job not found");
+      await assertJobAuthority(supabaseAdmin, userId, job);
 
       // Check no existing active escrow
       const { data: existing } = await supabaseAdmin.from("escrow_payments")
