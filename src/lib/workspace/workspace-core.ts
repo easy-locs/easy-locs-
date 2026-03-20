@@ -81,17 +81,11 @@ export async function inviteWorkspaceMember(params: {
   userId: string;
   role?: string;
 }) {
-  const { data, error } = await supabase
-    .from("workspace_members" as any)
-    .insert({
-      workspace_id: params.workspaceId,
-      user_id: params.userId,
-      role: params.role ?? "member",
-      status: "active",
-    } as any)
-    .select("*")
-    .single();
+  const { error } = await supabase.rpc("add_workspace_member" as any, {
+    _workspace_id: params.workspaceId,
+    _user_id: params.userId,
+    _role: params.role ?? "member",
+  });
 
   if (error) throw error;
-  return data;
 }
