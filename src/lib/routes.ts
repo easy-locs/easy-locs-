@@ -161,6 +161,8 @@ export const ROUTE_REGISTRY = [
   { group: "public", label: "Customer Profile", path: "/me" },
   { group: "settings", label: "Notification Preferences", path: "/settings/notification-preferences" },
   { group: "admin", label: "Quality Ops", path: "/admin/quality-ops" },
+  { group: "merchant", label: "Merchant Review Replies", path: "/merchant/reviews/:merchantId" },
+  { group: "admin", label: "CRM Ops", path: "/admin/crm-ops" },
 
   { group: "public", label: "Coming Soon", path: "/coming-soon/:slug" },
   { group: "public", label: "City Market", path: "/city-market/:citySlug" },
