@@ -2,6 +2,7 @@ import { useMemo, useState, useRef, useEffect, useCallback } from "react";
 import { useChatStore } from "@/stores/chatStore";
 import { useOrbitStore } from "@/stores/orbitStore";
 import { useCallStore } from "@/stores/callStore";
+import { useDebugCommsStore } from "@/stores/debugCommsStore";
 import { Send, Mic, Plus, Check, CheckCheck, Phone, Video } from "lucide-react";
 import { CallMessageBubble } from "@/components/chat/CallMessageBubble";
 
@@ -24,11 +25,14 @@ export function ConversationThread(props: { conversationId: string | null }) {
     [props.conversationId, getMessagesByConversation]
   );
 
-  // Hydrate messages on conversation change
+  // Hydrate messages on conversation change + debug sync
   useEffect(() => {
     if (!props.conversationId || hydrated.current === props.conversationId) return;
     hydrated.current = props.conversationId;
     void hydrateMessages(props.conversationId);
+    useDebugCommsStore.getState().setConversation({
+      conversationId: props.conversationId,
+    });
   }, [props.conversationId, hydrateMessages]);
 
   // Auto-scroll to bottom
