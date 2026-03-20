@@ -106,6 +106,18 @@ export const routes = {
   customerLiveLocation: () => `/location/live`,
   driverActiveMissions: () => `/driver/active-missions`,
   adminFraudDetection: () => `/admin/fraud-detection`,
+  customerSavedCards: () => `/me/saved-cards`,
+  merchantInventoryAlerts: (merchantId: string) => `/merchant/inventory-alerts/${encodeURIComponent(merchantId)}`,
+  adminOrderTimeline: () => `/admin/order-timeline`,
+  customerQuickHelp: () => `/me/quick-help`,
+  driverShift: () => `/driver/shift`,
+  adminMerchantApprovalQueue: () => `/admin/merchant-approval-queue`,
+  customerDeliveryNotes: () => `/me/delivery-notes`,
+  merchantStaffAccess: (merchantId: string) => `/merchant/staff-access/${encodeURIComponent(merchantId)}`,
+  adminFailedPayments: () => `/admin/failed-payments`,
+  customerReferFriend: () => `/me/refer-friend`,
+  driverDocuments: () => `/driver/documents`,
+  adminSupportSla: () => `/admin/support-sla`,
 
   // Orbit
   orbitCallTest: () => `/orbit/call-test`,
