@@ -227,6 +227,17 @@ export const routes = {
   adminQaCommand: () => `/admin/qa-command`,
   // KA-KF
   liveTracking: () => `/live-tracking`,
+  // LG-LR
+  driverFuelCostsV2: () => `/driver/fuel-costs-v2`,
+  driverCompliance: () => `/driver/compliance`,
+  driverBreaks: () => `/driver/breaks`,
+  driverShiftPlanner: () => `/driver/shift-planner`,
+  adminDriverComplianceOps: () => `/admin/driver-compliance-ops`,
+  adminMarketplaceExperiments: () => `/admin/marketplace-experiments`,
+  customerScheduledOrder: () => `/checkout/scheduled-order`,
+  merchantStaffRoles: (merchantId: string) => `/merchant/staff-roles/${encodeURIComponent(merchantId)}`,
+  merchantPermissions: (merchantId: string) => `/merchant/permissions/${encodeURIComponent(merchantId)}`,
+  merchantBusinessHours: (merchantId: string) => `/merchant/business-hours/${encodeURIComponent(merchantId)}`,
 
   // Orbit
   orbitCallTest: () => `/orbit/call-test`,
