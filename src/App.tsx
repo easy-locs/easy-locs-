@@ -386,6 +386,9 @@ const AdminContentOpsPage = safeLazy(() => import("./pages/admin/AdminContentOps
 const ReorderPage = safeLazy(() => import("./pages/ReorderPage"), "ReorderPage");
 const MerchantOrderBoardPage = safeLazy(() => import("./pages/merchant/MerchantOrderBoardPage"), "MerchantOrderBoardPage");
 const AdminAnalyticsOpsPage = safeLazy(() => import("./pages/admin/AdminAnalyticsOpsPage"), "AdminAnalyticsOpsPage");
+const CustomerProfilePage = safeLazy(() => import("./pages/CustomerProfilePage"), "CustomerProfilePage");
+const NotificationPreferencesPage = safeLazy(() => import("./pages/settings/NotificationPreferencesPage"), "NotificationPreferencesPage");
+const AdminQualityOpsPage = safeLazy(() => import("./pages/admin/AdminQualityOpsPage"), "AdminQualityOpsPage");
 
 // City sub-page wrappers
 const CityServicesPage = () => <CityHubPage subPage="services" />;
@@ -832,6 +835,9 @@ const App = () => (
                 <Route path="/order/reorder/:orderId" element={<ProtectedRoute><ReorderPage /></ProtectedRoute>} />
                 <Route path="/merchant/orders/:merchantId" element={<ProtectedRoute><MerchantOrderBoardPage /></ProtectedRoute>} />
                 <Route path="/admin/analytics-ops" element={<ProtectedRoute><AdminAnalyticsOpsPage /></ProtectedRoute>} />
+                <Route path="/me" element={<ProtectedRoute><CustomerProfilePage /></ProtectedRoute>} />
+                <Route path="/settings/notification-preferences" element={<ProtectedRoute><NotificationPreferencesPage /></ProtectedRoute>} />
+                <Route path="/admin/quality-ops" element={<ProtectedRoute><AdminQualityOpsPage /></ProtectedRoute>} />
               <Route path="/city/:countryCode/:city/:vertical/:locale" element={<CityVerticalPage />} />
 
               {/* Guest / Public */}
