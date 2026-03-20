@@ -11,7 +11,7 @@ import { useRealtimeHub } from "@/hooks/useRealtimeHub";
 import { useOrchestration } from "@/hooks/useOrchestration";
 import { I18nProvider } from "@/lib/i18n";
 import { ThemeProvider } from "next-themes";
-import { Suspense, lazy, type ComponentType } from "react";
+import { Suspense, lazy, useEffect, type ComponentType } from "react";
 import AppLockGuard from "@/components/security/AppLockGuard";
 import SplashScreen from "@/components/brand/SplashScreen";
 import BrandSuccessFlash from "@/components/brand/BrandSuccessFlash";
@@ -721,9 +721,11 @@ const OrbitSessionGuard = () => { useOrbitSessionInit(); return null; };
 const RealtimeHubGuard = () => { useRealtimeHub(); return null; };
 /** Install orchestration engine */
 const OrchestrationGuard = () => { useOrchestration(); return null; };
-/** Subscribe to realtime notifications */
+/** Subscribe to realtime notifications — useEffect to avoid re-subscribing on every render */
 const NotificationsRealtimeGuard = () => {
-  useNotificationsStore.getState().subscribeRealtime();
+  useEffect(() => {
+    useNotificationsStore.getState().subscribeRealtime();
+  }, []);
   return null;
 };
 
