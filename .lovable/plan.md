@@ -358,3 +358,33 @@ Conversation → Offer → Counter offer → Accepted → Payment → Confirmed
 | EN locale keys | Full English translations for all reporting keys | ✅ Done |
 | RTL verified | dir="rtl" for ar/he already in I18nProvider, CSS logical properties in use | ✅ Pre-existing |
 | 31 locales supported | fr, en, es, de, it, pt, nl, pl, tr, ar, ja, ko, zh, hi, th, vi, id, ms, sv, da, nb, fi, el, cs, hu, ro, hr, bg, sk, he, uk | ✅ Pre-existing |
+
+---
+
+## PHASE V2-PREMIUM — Product Upgrade Plan
+
+### ✅ Navigation Rebuild (COMPLETED)
+- New 5-tab: Home (Orbit) | Explore (Achille) | Map (Ride) | Wallet | Profile
+- `MainBottomNav.tsx` — single source of truth
+- `MapTabPage.tsx` — full-screen map tab with bottom sheet
+- Centralized nav config in `src/config/navigation.ts`
+
+### 🔜 Location Precision
+- GPS accuracy for taxi/rider/transport
+- Building/tower/street/landmark address search
+- Enhanced reverse geocoding with Dubai fallback
+- Real-time driver location at higher frequency
+
+### 🔜 UX Positioning
+- Marketplace: Careem+Deliveroo map+list, category discovery, premium cards
+- Orbit: WhatsApp-style conversation list, fast actions, recent contacts
+
+### 🔜 Button Responsiveness
+- Sub-100ms feedback, haptic support, 44x44 touch targets, spring animations
+
+### 🔜 QR Audit (shop/wallet/orbit/menu/payment/table/front-desk)
+### 🔜 Wallet Notifications (debit/credit/amount/currency/deep-link)
+### 🔜 Front Desk QR Generation
+### 🔜 Dynamic Menu QR → Order → POS Flow
+### 🔜 Smart POS/QR/Order UX
+### 🔜 Global App Polish Pass

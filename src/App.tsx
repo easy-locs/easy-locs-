@@ -180,6 +180,7 @@ const DiscoverPage = safeLazy(() => import("./pages/DiscoverPage"), "DiscoverPag
 const OpsCenter = safeLazy(() => import("./pages/OpsCenter"), "OpsCenter");
 const ShopsPage = safeLazy(() => import("./pages/ShopsPage"), "ShopsPage");
 const SuperMapRadarPage = safeLazy(() => import("./pages/GlobalMapPage"), "GlobalMapPage");
+const MapTabPage = safeLazy(() => import("./pages/MapTabPage"), "MapTabPage");
 const DinoAuditPage = safeLazy(() => import("./pages/admin/DinoAuditPage"), "DinoAuditPage");
 const DinoDashboardPage = safeLazy(() => import("./pages/admin/DinoDashboardPage"), "DinoDashboardPage");
 const AdminUiEnginePage = safeLazy(() => import("./pages/admin/AdminUiEnginePage"), "AdminUiEnginePage");
@@ -835,7 +836,7 @@ const App = () => (
 
               <Route path="/explore" element={<Explore />} />
               <Route path="/super-map" element={<SuperMapRadarPage />} />
-              <Route path="/map" element={<SuperMapRadarPage />} />
+              <Route path="/map" element={<MapTabPage />} />
               <Route path="/radar" element={<GlobalRadarPage />} />
               <Route path="/shops" element={<ShopsPage />} />
               <Route path="/s/:slug" element={<ShopPage />} />
