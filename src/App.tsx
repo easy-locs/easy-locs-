@@ -500,6 +500,18 @@ const AdminCashflowMonitorPage = safeLazy(() => import("./pages/admin/AdminCashf
 const CustomerAddressBookPageV2 = safeLazy(() => import("./pages/customer/CustomerAddressBookPageV2"), "CustomerAddressBookPageV2");
 const DriverNavigationModePage = safeLazy(() => import("./pages/driver/DriverNavigationModePage"), "DriverNavigationModePage");
 const AdminCityOpsPage = safeLazy(() => import("./pages/admin/AdminCityOpsPage"), "AdminCityOpsPage");
+// GE-GJ block
+const CustomerMealPlannerPage = safeLazy(() => import("./pages/customer/CustomerMealPlannerPage"), "CustomerMealPlannerPage");
+const MerchantDeliveryZonesPage = safeLazy(() => import("./pages/merchant/MerchantDeliveryZonesPage"), "MerchantDeliveryZonesPage");
+const AdminOperatorNotesPage = safeLazy(() => import("./pages/admin/AdminOperatorNotesPage"), "AdminOperatorNotesPage");
+const CustomerReceiptVaultPage = safeLazy(() => import("./pages/customer/CustomerReceiptVaultPage"), "CustomerReceiptVaultPage");
+const DriverVehicleProfilePage = safeLazy(() => import("./pages/driver/DriverVehicleProfilePage"), "DriverVehicleProfilePage");
+const AdminNetworkStatusPage = safeLazy(() => import("./pages/admin/AdminNetworkStatusPage"), "AdminNetworkStatusPage");
+// GK-GP block
+const CustomerSharedWalletPage = safeLazy(() => import("./pages/customer/CustomerSharedWalletPage"), "CustomerSharedWalletPage");
+const AdminSlaMonitorPage = safeLazy(() => import("./pages/admin/AdminSlaMonitorPage"), "AdminSlaMonitorPage");
+const CustomerOrderGiftsPage = safeLazy(() => import("./pages/customer/CustomerOrderGiftsPage"), "CustomerOrderGiftsPage");
+const AdminIncidentCenterPage = safeLazy(() => import("./pages/admin/AdminIncidentCenterPage"), "AdminIncidentCenterPage");
 
 // City sub-page wrappers
 const CityServicesPage = () => <CityHubPage subPage="services" />;
