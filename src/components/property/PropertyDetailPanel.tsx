@@ -1,11 +1,13 @@
 import { usePropertyDetailStore } from "@/stores/propertyDetailStore";
 import { PropertyCalendar } from "@/components/property/PropertyCalendar";
 import { useContactStore } from "@/stores/contactStore";
+import { usePropertyQuerySync } from "@/hooks/usePropertyQuerySync";
 
 export function PropertyDetailPanel() {
   const listing = usePropertyDetailStore((s) => s.selectedListing);
   const closeListing = usePropertyDetailStore((s) => s.closeListing);
   const openContact = useContactStore((s) => s.openContact);
+  const { setListingInUrl } = usePropertyQuerySync();
 
   if (!listing) {
     return (
@@ -25,7 +27,10 @@ export function PropertyDetailPanel() {
         </div>
         <button
           className="text-xs text-destructive hover:underline"
-          onClick={closeListing}
+          onClick={() => {
+            closeListing();
+            setListingInUrl(null);
+          }}
         >
           Close
         </button>
