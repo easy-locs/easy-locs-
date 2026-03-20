@@ -7,6 +7,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { ArrowLeft, Star, MapPin, Clock, Plus, Minus, ShoppingCart } from "lucide-react";
+import FavoriteMerchantButton from "@/components/favorites/FavoriteMerchantButton";
 import { motion } from "framer-motion";
 import { useCart } from "@/hooks/useCart";
 import { toast } from "sonner";
