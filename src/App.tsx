@@ -840,6 +840,8 @@ const App = () => (
                 <Route path="/me" element={<ProtectedRoute><CustomerProfilePage /></ProtectedRoute>} />
                 <Route path="/settings/notification-preferences" element={<ProtectedRoute><NotificationPreferencesPage /></ProtectedRoute>} />
                 <Route path="/admin/quality-ops" element={<ProtectedRoute><AdminQualityOpsPage /></ProtectedRoute>} />
+                <Route path="/merchant/reviews/:merchantId" element={<ProtectedRoute><MerchantReviewRepliesPage /></ProtectedRoute>} />
+                <Route path="/admin/crm-ops" element={<ProtectedRoute><AdminCrmOpsPage /></ProtectedRoute>} />
               <Route path="/city/:countryCode/:city/:vertical/:locale" element={<CityVerticalPage />} />
 
               {/* Guest / Public */}
