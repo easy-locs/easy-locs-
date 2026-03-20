@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import DOMPurify from "dompurify";
 
 export async function sendTextMessage(input: {
   conversationId: string;
@@ -10,12 +11,18 @@ export async function sendTextMessage(input: {
   const userId = authData?.user?.id;
   if (!userId) throw new Error("Not authenticated");
 
+  // Sanitize body to prevent stored XSS
+  const safeBody = DOMPurify.sanitize(input.body, {
+    ALLOWED_TAGS: [],
+    ALLOWED_ATTR: [],
+  });
+
   const { data, error } = await (supabase as any).from("chat_messages_v2").insert({
     conversation_id: input.conversationId,
     sender_orbit_id: input.senderOrbitId,
     sender_user_id: userId,
     type: "text",
-    body: input.body,
+    body: safeBody,
   }).select("*").single();
 
   if (error) {
@@ -27,7 +34,6 @@ export async function sendTextMessage(input: {
 }
 
 export async function markMessageRead(messageId: string) {
-  // chat_messages_v2 may not have read_at column — use metadata approach
   const { error } = await (supabase as any)
     .from("chat_messages_v2")
     .update({ metadata: { read: true } })
