@@ -21,6 +21,7 @@ import UpdateNotification from "@/components/UpdateNotification";
 import { SkipLink } from "@/components/ui/a11y";
 import SmartInstallBanner from "@/components/pwa/SmartInstallBanner";
 import OrbitCallRoot from "@/components/orbit/OrbitCallRoot";
+import { CallOverlayV2 } from "@/components/call/CallOverlayV2";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import ChunkRecoveryBoundary from "@/components/system/ChunkRecoveryBoundary";
@@ -766,7 +767,8 @@ const App = () => (
             <OrbitSessionGuard />
            <RealtimeHubGuard />
            <UpdateNotification />
-            <OrbitCallRoot />
+             <OrbitCallRoot />
+             <CallOverlayV2 />
             <AppBootstrapGuard />
            
            <SkipLink />
