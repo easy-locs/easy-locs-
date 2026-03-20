@@ -96,7 +96,6 @@ export default function V2MegaPage() {
   const doCreateListing = async () => {
     if (!orbit?.orbitId) return;
     const listing = await createListing({
-      ownerOrbitId: orbit.orbitId,
       title: "Dubai Marina Apartment",
       description: "Wallet + Orbit + Booking + Immo connected",
       address: "Dubai Marina, Dubai, UAE",
