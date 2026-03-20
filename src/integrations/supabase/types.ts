@@ -12467,6 +12467,30 @@ export type Database = {
         }
         Relationships: []
       }
+      platform_settings: {
+        Row: {
+          created_at: string
+          id: string
+          key: string
+          updated_at: string
+          value: Json
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          key: string
+          updated_at?: string
+          value?: Json
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          key?: string
+          updated_at?: string
+          value?: Json
+        }
+        Relationships: []
+      }
       pos_orders: {
         Row: {
           created_at: string
@@ -18581,6 +18605,8 @@ export type Database = {
           anchor_lat: number | null
           anchor_lng: number | null
           banner_url: string | null
+          boost_expiry: string | null
+          boost_multiplier: number
           city: string | null
           contact_email: string | null
           contact_phone: string | null
@@ -18597,6 +18623,10 @@ export type Database = {
           entity_type: string
           geo_scope: string | null
           id: string
+          is_claimed: boolean
+          is_order_enabled: boolean
+          is_payment_enabled: boolean
+          is_qr_enabled: boolean
           is_test: boolean
           is_verified: boolean | null
           latitude: number | null
@@ -18613,6 +18643,7 @@ export type Database = {
           org_id: string
           presence_mode: string
           radius_km: number | null
+          ranking_score: number
           rating: number | null
           region: string | null
           reviews_count: number | null
@@ -18630,6 +18661,7 @@ export type Database = {
           user_id: string
           vertical: string | null
           views_count: number | null
+          zone_id: string | null
         }
         Insert: {
           active?: boolean | null
@@ -18637,6 +18669,8 @@ export type Database = {
           anchor_lat?: number | null
           anchor_lng?: number | null
           banner_url?: string | null
+          boost_expiry?: string | null
+          boost_multiplier?: number
           city?: string | null
           contact_email?: string | null
           contact_phone?: string | null
@@ -18653,6 +18687,10 @@ export type Database = {
           entity_type?: string
           geo_scope?: string | null
           id?: string
+          is_claimed?: boolean
+          is_order_enabled?: boolean
+          is_payment_enabled?: boolean
+          is_qr_enabled?: boolean
           is_test?: boolean
           is_verified?: boolean | null
           latitude?: number | null
@@ -18669,6 +18707,7 @@ export type Database = {
           org_id: string
           presence_mode?: string
           radius_km?: number | null
+          ranking_score?: number
           rating?: number | null
           region?: string | null
           reviews_count?: number | null
@@ -18686,6 +18725,7 @@ export type Database = {
           user_id: string
           vertical?: string | null
           views_count?: number | null
+          zone_id?: string | null
         }
         Update: {
           active?: boolean | null
@@ -18693,6 +18733,8 @@ export type Database = {
           anchor_lat?: number | null
           anchor_lng?: number | null
           banner_url?: string | null
+          boost_expiry?: string | null
+          boost_multiplier?: number
           city?: string | null
           contact_email?: string | null
           contact_phone?: string | null
@@ -18709,6 +18751,10 @@ export type Database = {
           entity_type?: string
           geo_scope?: string | null
           id?: string
+          is_claimed?: boolean
+          is_order_enabled?: boolean
+          is_payment_enabled?: boolean
+          is_qr_enabled?: boolean
           is_test?: boolean
           is_verified?: boolean | null
           latitude?: number | null
@@ -18725,6 +18771,7 @@ export type Database = {
           org_id?: string
           presence_mode?: string
           radius_km?: number | null
+          ranking_score?: number
           rating?: number | null
           region?: string | null
           reviews_count?: number | null
@@ -18742,6 +18789,7 @@ export type Database = {
           user_id?: string
           vertical?: string | null
           views_count?: number | null
+          zone_id?: string | null
         }
         Relationships: [
           {
@@ -18763,6 +18811,13 @@ export type Database = {
             columns: ["org_id"]
             isOneToOne: false
             referencedRelation: "orgs_tenant_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "storefront_pages_zone_id_fkey"
+            columns: ["zone_id"]
+            isOneToOne: false
+            referencedRelation: "zones"
             referencedColumns: ["id"]
           },
         ]
@@ -23321,6 +23376,48 @@ export type Database = {
           status?: string | null
           updated_at?: string | null
           workspace_type?: string | null
+        }
+        Relationships: []
+      }
+      zones: {
+        Row: {
+          center_lat: number
+          center_lng: number
+          city: string
+          country: string
+          created_at: string
+          id: string
+          is_active: boolean
+          is_launched: boolean
+          name: string
+          radius_m: number
+          updated_at: string
+        }
+        Insert: {
+          center_lat: number
+          center_lng: number
+          city?: string
+          country?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          is_launched?: boolean
+          name: string
+          radius_m?: number
+          updated_at?: string
+        }
+        Update: {
+          center_lat?: number
+          center_lng?: number
+          city?: string
+          country?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          is_launched?: boolean
+          name?: string
+          radius_m?: number
+          updated_at?: string
         }
         Relationships: []
       }
