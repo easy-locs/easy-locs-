@@ -86,7 +86,7 @@ export async function capturePayment(input: CapturePaymentInput) {
 
   const { data: order } = await supabase
     .from("orders")
-    .select("id,total_amount,currency,customer_user_id,merchant_id")
+    .select("id,total_amount,currency,customer_user_id,merchant_profile_id")
     .eq("id", input.orderId)
     .maybeSingle();
 
@@ -96,8 +96,8 @@ export async function capturePayment(input: CapturePaymentInput) {
       orderId: input.orderId,
       amount: Number(order?.total_amount ?? 0),
       currency: order?.currency ?? "AED",
-      merchantId: (order as any)?.merchant_id ?? null,
-      customerUserId: (order as any)?.customer_user_id ?? null,
+      merchantId: order?.merchant_profile_id ?? null,
+      customerUserId: order?.customer_user_id ?? null,
       paymentMethodType: "card",
     },
     { source: "paymentService:capturePayment" }

@@ -373,6 +373,7 @@ const SupportTicketDetailPage = safeLazy(() => import("./pages/support/SupportTi
 const DriverMissionsPage = safeLazy(() => import("./pages/driver/DriverMissionsPage"), "DriverMissionsPage");
 const DriverMissionDetailPage = safeLazy(() => import("./pages/driver/DriverMissionDetailPage"), "DriverMissionDetailPage");
 const DriverProofPage = safeLazy(() => import("./pages/driver/DriverProofPage"), "DriverProofPage");
+const AdminMerchantAutofillPage = safeLazy(() => import("./pages/admin/AdminMerchantAutofillPage"), "AdminMerchantAutofillPage");
 
 // City sub-page wrappers
 const CityServicesPage = () => <CityHubPage subPage="services" />;
