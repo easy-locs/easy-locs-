@@ -9,12 +9,6 @@ type Props = {
 export function AppBootstrap({ children }: Props) {
   useEffect(() => {
     installPlatformReactions();
-
-    void useOrbitStore.getState().loadOrbitProfile({
-      userId: "demo_user_1",
-      orbitId: "orbit_demo_1",
-      role: "seller",
-    });
   }, []);
 
   return <>{children}</>;
