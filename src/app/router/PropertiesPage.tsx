@@ -5,6 +5,7 @@ import { PropertyGallery } from "@/components/property/PropertyGallery";
 import { usePropertyDetailStore } from "@/stores/propertyDetailStore";
 import { FavoriteListingButton } from "@/components/property/FavoriteListingButton";
 import { ShareListingButton } from "@/components/property/ShareListingButton";
+import { ReviewPanel } from "@/components/property/ReviewPanel";
 
 export default function PropertiesPage() {
   const listing = usePropertyDetailStore((s) => s.selectedListing);
@@ -25,6 +26,7 @@ export default function PropertiesPage() {
         <div className="lg:col-span-2 space-y-4">
           <PropertyList />
           <PropertyDetailPanel />
+          <ReviewPanel />
         </div>
 
         <div>
