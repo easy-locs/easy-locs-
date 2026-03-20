@@ -41,7 +41,7 @@ export function CallScreen() {
     let mounted = true;
 
     const run = async () => {
-      const pc = createPeerConnection();
+      const pc = await createPeerConnection();
       pcRef.current = pc;
       startedAtRef.current = Date.now();
 
