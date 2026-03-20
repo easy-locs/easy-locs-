@@ -432,6 +432,12 @@ const AdminDriverHeatmapPage = safeLazy(() => import("./pages/admin/AdminDriverH
 const CustomerOrderArchivePage = safeLazy(() => import("./pages/customer/CustomerOrderArchivePage"), "CustomerOrderArchivePage");
 const MerchantProductPerformancePage = safeLazy(() => import("./pages/merchant/MerchantProductPerformancePage"), "MerchantProductPerformancePage");
 const AdminWalletWatchPage = safeLazy(() => import("./pages/admin/AdminWalletWatchPage"), "AdminWalletWatchPage");
+const CustomerReorderPage = safeLazy(() => import("./pages/customer/CustomerReorderPage"), "CustomerReorderPage");
+const MerchantAutoAcceptSettingsPage = safeLazy(() => import("./pages/merchant/MerchantAutoAcceptSettingsPage"), "MerchantAutoAcceptSettingsPage");
+const AdminSystemHealthPage = safeLazy(() => import("./pages/admin/AdminSystemHealthPage"), "AdminSystemHealthPage");
+const CustomerLiveLocationPage = safeLazy(() => import("./pages/customer/CustomerLiveLocationPage"), "CustomerLiveLocationPage");
+const DriverActiveMissionsPage = safeLazy(() => import("./pages/driver/DriverActiveMissionsPage"), "DriverActiveMissionsPage");
+const AdminFraudDetectionPage = safeLazy(() => import("./pages/admin/AdminFraudDetectionPage"), "AdminFraudDetectionPage");
 
 // City sub-page wrappers
 const CityServicesPage = () => <CityHubPage subPage="services" />;
