@@ -604,6 +604,29 @@ const CustomerBulkPartyBuilderPage = safeLazy(() => import("./pages/customer/Cus
 const CustomerDinnerPlannerPage = safeLazy(() => import("./pages/customer/CustomerDinnerPlannerPage"), "CustomerDinnerPlannerPage");
 const MerchantAutoAcceptRulesPage = safeLazy(() => import("./pages/merchant/MerchantAutoAcceptRulesPage"), "MerchantAutoAcceptRulesPage");
 const MerchantDriverHandoffPage = safeLazy(() => import("./pages/merchant/MerchantDriverHandoffPage"), "MerchantDriverHandoffPage");
+// OH-PI block
+const AdminDispatchTuningPage = safeLazy(() => import("./pages/admin/AdminDispatchTuningPage"), "AdminDispatchTuningPage");
+const AdminPaymentWatchPage = safeLazy(() => import("./pages/admin/AdminPaymentWatchPage"), "AdminPaymentWatchPage");
+const CustomerWeeklyMealPlanPage = safeLazy(() => import("./pages/customer/CustomerWeeklyMealPlanPage"), "CustomerWeeklyMealPlanPage");
+const CustomerKidsMealProfilePage = safeLazy(() => import("./pages/customer/CustomerKidsMealProfilePage"), "CustomerKidsMealProfilePage");
+const MerchantMenuCategoryManagerPage = safeLazy(() => import("./pages/merchant/MerchantMenuCategoryManagerPage"), "MerchantMenuCategoryManagerPage");
+const MerchantItemBadgesPage = safeLazy(() => import("./pages/merchant/MerchantItemBadgesPage"), "MerchantItemBadgesPage");
+const MerchantInstructionsPolicyPage = safeLazy(() => import("./pages/merchant/MerchantInstructionsPolicyPage"), "MerchantInstructionsPolicyPage");
+const AdminMenuQualityPage = safeLazy(() => import("./pages/admin/AdminMenuQualityPage"), "AdminMenuQualityPage");
+const AdminDeliveryLatencyPage = safeLazy(() => import("./pages/admin/AdminDeliveryLatencyPage"), "AdminDeliveryLatencyPage");
+const CustomerLunchSubscriptionPage = safeLazy(() => import("./pages/customer/CustomerLunchSubscriptionPage"), "CustomerLunchSubscriptionPage");
+const CustomerFamilyNightPage = safeLazy(() => import("./pages/customer/CustomerFamilyNightPage"), "CustomerFamilyNightPage");
+const MerchantMenuClonerPage = safeLazy(() => import("./pages/merchant/MerchantMenuClonerPage"), "MerchantMenuClonerPage");
+const MerchantFeaturedItemsPage = safeLazy(() => import("./pages/merchant/MerchantFeaturedItemsPage"), "MerchantFeaturedItemsPage");
+const MerchantHolidaySchedulePage = safeLazy(() => import("./pages/merchant/MerchantHolidaySchedulePage"), "MerchantHolidaySchedulePage");
+const AdminDriverPayoutsPage = safeLazy(() => import("./pages/admin/AdminDriverPayoutsPage"), "AdminDriverPayoutsPage");
+const AdminMerchantPayoutsPage = safeLazy(() => import("./pages/admin/AdminMerchantPayoutsPage"), "AdminMerchantPayoutsPage");
+const AdminWalletReconPage = safeLazy(() => import("./pages/admin/AdminWalletReconPage"), "AdminWalletReconPage");
+const CustomerGuestCheckoutProfilePage = safeLazy(() => import("./pages/customer/CustomerGuestCheckoutProfilePage"), "CustomerGuestCheckoutProfilePage");
+const CustomerDinnerBudgetPage = safeLazy(() => import("./pages/customer/CustomerDinnerBudgetPage"), "CustomerDinnerBudgetPage");
+const MerchantStoreAnnouncementPage = safeLazy(() => import("./pages/merchant/MerchantStoreAnnouncementPage"), "MerchantStoreAnnouncementPage");
+const MerchantTemporaryClosurePage = safeLazy(() => import("./pages/merchant/MerchantTemporaryClosurePage"), "MerchantTemporaryClosurePage");
+const MerchantQueueLimitPage = safeLazy(() => import("./pages/merchant/MerchantQueueLimitPage"), "MerchantQueueLimitPage");
 
 // City sub-page wrappers
 const CityServicesPage = () => <CityHubPage subPage="services" />;
