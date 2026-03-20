@@ -83,3 +83,9 @@ verify_jwt = false
 
 [functions.email-queue-process]
 verify_jwt = false
+
+[functions.seller-kpi-snapshot]
+verify_jwt = false
+
+[functions.email-enqueue]
+verify_jwt = false
