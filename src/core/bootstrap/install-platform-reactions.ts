@@ -17,7 +17,13 @@ export function installPlatformReactions() {
 
     useOrbitStore.getState().setProfile({
       ...current,
-      serviceLinks: { ...current.serviceLinks, walletLinked: true },
+      serviceLinks: {
+        ...current.serviceLinks,
+        walletLinked: true,
+        propertyEnabled: true,
+        bookingEnabled: true,
+        messagingEnabled: true,
+      },
     });
 
     void useWalletStore.getState().loadWallet({
@@ -49,5 +55,13 @@ export function installPlatformReactions() {
 
   platformBus.on("booking.requested", (event) => {
     console.log("[reaction] booking requested", event.payload.booking.id);
+  });
+
+  platformBus.on("conversation.created", (event) => {
+    console.log("[reaction] conversation created", event.payload.conversation.id);
+  });
+
+  platformBus.on("lease.created", (event) => {
+    console.log("[reaction] lease created", event.payload.lease.id);
   });
 }

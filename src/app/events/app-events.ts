@@ -1,5 +1,14 @@
 import type { BookingRecord, WalletTransaction } from "@/lib/types/app";
 import type { BookingRecordV2, PropertyListingV2 } from "@/lib/types/booking";
+import type {
+  ConversationRecord,
+  ChatMessageRecord,
+} from "@/lib/types/chat";
+import type {
+  LeaseRecord,
+  PropertyUnitManagement,
+  RentPaymentRecord,
+} from "@/lib/types/property-management";
 
 export type AppEvent =
   | { type: "auth.session.ready"; payload: { userId: string } }
@@ -24,4 +33,12 @@ export type AppEvent =
   | { type: "booking.payment.required"; payload: { bookingId: string; amount: number; currency: string; listingId: string } }
   | { type: "booking.confirmation.required"; payload: { bookingId: string; listingId: string } }
   | { type: "booking.cancelled"; payload: { bookingId: string; listingId: string } }
-  | { type: "booking.completed"; payload: { bookingId: string; listingId: string } };
+  | { type: "booking.completed"; payload: { bookingId: string; listingId: string } }
+  | { type: "conversation.created"; payload: { conversation: ConversationRecord } }
+  | { type: "message.sent"; payload: { message: ChatMessageRecord } }
+  | { type: "contact.opened"; payload: { orbitId: string; listingId?: string; bookingId?: string } }
+  | { type: "property.unit.created"; payload: { unit: PropertyUnitManagement } }
+  | { type: "lease.created"; payload: { lease: LeaseRecord } }
+  | { type: "rent.payment.created"; payload: { payment: RentPaymentRecord } }
+  | { type: "rent.payment.required"; payload: { paymentId: string; amount: number; currency: string; leaseId: string } }
+  | { type: "rent.payment.paid"; payload: { paymentId: string; transactionId?: string } };

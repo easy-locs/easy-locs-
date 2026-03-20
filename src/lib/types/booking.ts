@@ -42,6 +42,7 @@ export interface PropertyServiceConfig {
   directBookingEnabled: boolean;
   qrPaymentEnabled: boolean;
   orbitEscrowEnabled: boolean;
+  propertyManagementEnabled: boolean;
 }
 
 export interface PropertyListingV2 {
@@ -68,6 +69,7 @@ export interface PropertyListingV2 {
     cleaningFee?: number;
     serviceFee?: number;
     securityDeposit?: number;
+    monthlyRent?: number;
   };
 
   capacity?: {
@@ -82,6 +84,7 @@ export interface PropertyListingV2 {
 
   walletLinked: boolean;
   bookingEnabled: boolean;
+  orbitLinked: boolean;
 
   serviceConfig: PropertyServiceConfig;
   availability: ListingAvailabilityRange[];
@@ -125,6 +128,7 @@ export interface BookingRecordV2 {
 
   transactionId?: string;
   escrowTransactionId?: string;
+  conversationId?: string;
 
   createdAt: string;
   updatedAt: string;
