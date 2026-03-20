@@ -5973,6 +5973,30 @@ export type Database = {
           },
         ]
       }
+      drivers_live: {
+        Row: {
+          lat: number | null
+          lng: number | null
+          online: boolean
+          orbit_id: string
+          updated_at: string
+        }
+        Insert: {
+          lat?: number | null
+          lng?: number | null
+          online?: boolean
+          orbit_id: string
+          updated_at?: string
+        }
+        Update: {
+          lat?: number | null
+          lng?: number | null
+          online?: boolean
+          orbit_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       dunning_letters: {
         Row: {
           amount_due: number
