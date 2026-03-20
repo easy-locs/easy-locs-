@@ -94,6 +94,12 @@ export const routes = {
   adminMerchantPromoWatch: () => `/admin/merchant-promo-watch`,
   driverEarningsSummary: () => `/driver/earnings-summary`,
   adminRefundWatch: () => `/admin/refund-watch`,
+  customerSupportShortcuts: () => `/support/shortcuts`,
+  merchantCustomerInsights: (merchantId: string) => `/merchant/customer-insights/${encodeURIComponent(merchantId)}`,
+  adminDriverHeatmap: () => `/admin/driver-heatmap`,
+  customerOrderArchive: () => `/my-orders/archive`,
+  merchantProductPerformance: (merchantId: string) => `/merchant/product-performance/${encodeURIComponent(merchantId)}`,
+  adminWalletWatch: () => `/admin/wallet-watch`,
 
   // Orbit
   orbitCallTest: () => `/orbit/call-test`,
