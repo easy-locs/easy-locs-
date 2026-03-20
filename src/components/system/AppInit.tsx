@@ -2,9 +2,11 @@ import { useEffect } from "react";
 import { useV2AuthStore } from "@/stores/v2AuthStore";
 import { useOrbitStore } from "@/stores/orbitStore";
 import { useWalletStore } from "@/stores/walletStore";
+import { useFavoritesStore } from "@/stores/favoritesStore";
+import { useSavedSearchStore } from "@/stores/savedSearchStore";
 
 /**
- * AppInit — initializes V2 auth, hydrates orbit profile and wallet.
+ * AppInit — initializes V2 auth, hydrates orbit profile, wallet, favorites and saved searches.
  * Mount once at the top of the app tree.
  */
 export function AppInit() {
@@ -37,6 +39,11 @@ export function AppInit() {
         ownerOrbitId: orbit.orbitId,
         currency: "AED",
       });
+
+      await Promise.all([
+        useFavoritesStore.getState().hydrate(),
+        useSavedSearchStore.getState().hydrate(),
+      ]);
     })();
   }, [initialized, user?.id, loadProfile, clear]);
 

@@ -1,11 +1,13 @@
 import { Link, useLocation } from "react-router-dom";
 
 const links = [
+  { to: "/v2-home", label: "Home" },
   { to: "/v2-mega", label: "Mega" },
   { to: "/v2-owner", label: "Owner" },
   { to: "/v2-tenant", label: "Tenant" },
   { to: "/v2-bookings", label: "Bookings" },
   { to: "/v2-properties", label: "Properties" },
+  { to: "/v2-favorites", label: "Favorites" },
   { to: "/v2-search", label: "Search" },
   { to: "/v2-map", label: "Map" },
   { to: "/v2-messages", label: "Messages" },

@@ -1,11 +1,15 @@
 import { useListingStore } from "@/stores/listingStore";
 import { usePropertyDetailStore } from "@/stores/propertyDetailStore";
 import { useMapStore } from "@/stores/mapStore";
+import { useAnalyticsStore } from "@/stores/analyticsStore";
+import { usePropertyQuerySync } from "@/hooks/usePropertyQuerySync";
 
 export function PropertyList() {
   const listings = useListingStore((s) => s.getPublishedListings());
   const openListing = usePropertyDetailStore((s) => s.openListing);
   const selectMarker = useMapStore((s) => s.selectMarker);
+  const trackListingView = useAnalyticsStore((s) => s.trackListingView);
+  const { setListingInUrl } = usePropertyQuerySync();
 
   return (
     <div className="flex flex-col gap-2">
@@ -18,6 +22,8 @@ export function PropertyList() {
             onClick={() => {
               openListing(listing.id);
               selectMarker(`marker_${listing.id}`);
+              setListingInUrl(listing.id);
+              void trackListingView(listing.id, "property_list");
             }}
           >
             <p className="font-medium text-foreground">{listing.title}</p>
