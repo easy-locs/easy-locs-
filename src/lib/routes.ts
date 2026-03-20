@@ -159,6 +159,15 @@ export const routes = {
   customerFavoriteOrders: () => `/me/favorite-orders`,
   driverShiftScheduler: () => `/driver/shift-scheduler`,
   adminGlobalFinance: () => `/admin/global-finance`,
+  // FS-FX
+  adminCoreEngine: () => `/admin/core-engine`,
+  // FY-GD
+  customerGroupOrder: () => `/checkout/group-order`,
+  merchantAutoAcceptV2: (merchantId: string) => `/merchant/auto-accept-v2/${encodeURIComponent(merchantId)}`,
+  adminCashflowMonitor: () => `/admin/cashflow-monitor`,
+  customerAddressBookV2: () => `/me/address-book-v2`,
+  driverNavigationMode: () => `/driver/navigation-mode`,
+  adminCityOps: () => `/admin/city-ops`,
 
   // Orbit
   orbitCallTest: () => `/orbit/call-test`,
