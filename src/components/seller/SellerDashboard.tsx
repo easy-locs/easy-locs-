@@ -1,12 +1,13 @@
 /**
  * SellerDashboard — Shows all seller businesses (all lifecycle statuses).
- * NO auto-create logic. Only explicit "Start Business" triggers draft creation.
+ * Includes listing lifecycle cards for real estate / marketplace services.
  */
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import SellerBusinessCard from "./SellerBusinessCard";
+import SellerListingLifecycleCard from "./SellerListingLifecycleCard";
 import { SectionBlock } from "@/components/ui/system";
 import { Plus, Store, Rocket, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -21,13 +22,13 @@ export default function SellerDashboard() {
   const qc = useQueryClient();
   const [creating, setCreating] = useState(false);
 
-  // Fetch marketplace services (all statuses visible to seller)
-  const { data: services = [], isLoading: loadingServices } = useQuery({
+  // Fetch marketplace services with lifecycle fields
+  const { data: services = [], isLoading: loadingServices, refetch: refetchServices } = useQuery({
     queryKey: ["seller-services", orgId],
     queryFn: async () => {
-      const { data } = await supabase
+      const { data } = await (supabase as any)
         .from("marketplace_services")
-        .select("id, title, category, city, photo_url, status, active")
+        .select("id, title, category, city, photo_url, status, active, listing_expires_at, auto_renew_enabled, boost_enabled, boost_multiplier, boost_expires_at, renewal_count, listing_type, user_id")
         .eq("org_id", orgId!)
         .order("created_at", { ascending: false })
         .limit(50);
@@ -36,7 +37,7 @@ export default function SellerDashboard() {
     enabled: !!orgId,
   });
 
-  // Fetch storefronts (all statuses visible to seller)
+  // Fetch storefronts
   const { data: shops = [], isLoading: loadingShops } = useQuery({
     queryKey: ["seller-shops", user?.id],
     queryFn: async () => {
@@ -54,7 +55,6 @@ export default function SellerDashboard() {
   const isLoading = loadingServices || loadingShops;
 
   const getStatus = (item: any): "onboarding_draft" | "draft" | "pending" | "active" => {
-    // Storefront logic
     if (item.onboarding_completed === false && item.shop_visibility === "private" && !item.active) {
       return "onboarding_draft";
     }
@@ -75,7 +75,7 @@ export default function SellerDashboard() {
       editPath: `/my-shop/${s.id}`,
       viewPath: s.active ? `/store/${s.slug || s.id}` : undefined,
     })),
-    ...services.map((s: any) => ({
+    ...services.filter((s: any) => s.listing_type !== "sale").map((s: any) => ({
       id: s.id,
       name: s.title,
       category: s.category,
@@ -86,6 +86,11 @@ export default function SellerDashboard() {
       viewPath: s.active ? `/services/${s.id}` : undefined,
     })),
   ];
+
+  // Real estate / seasonal listings get lifecycle cards
+  const seasonalListings = services.filter((s: any) =>
+    s.listing_type === "sale" || s.listing_expires_at
+  );
 
   const handleStartBusiness = async () => {
     if (!user?.id) { toast.error("Please sign in first"); return; }
@@ -128,7 +133,7 @@ export default function SellerDashboard() {
             <Skeleton key={i} className="h-24 rounded-2xl" />
           ))}
         </div>
-      ) : allBusinesses.length === 0 ? (
+      ) : allBusinesses.length === 0 && seasonalListings.length === 0 ? (
         <div className="flex flex-col items-center gap-4 py-16 text-center">
           <div className="w-16 h-16 rounded-3xl bg-primary/10 flex items-center justify-center">
             <Rocket className="w-8 h-8 text-primary" />
@@ -147,11 +152,38 @@ export default function SellerDashboard() {
           </Button>
         </div>
       ) : (
-        <div className="space-y-2.5">
-          {allBusinesses.map((biz) => (
-            <SellerBusinessCard key={biz.id} {...biz} />
-          ))}
-        </div>
+        <>
+          {allBusinesses.length > 0 && (
+            <div className="space-y-2.5">
+              {allBusinesses.map((biz) => (
+                <SellerBusinessCard key={biz.id} {...biz} />
+              ))}
+            </div>
+          )}
+
+          {/* Seasonal / Real Estate Listing Lifecycle Cards */}
+          {seasonalListings.length > 0 && (
+            <div className="space-y-3 mt-4">
+              <h3 className="text-sm font-bold text-foreground px-1">Listings ({seasonalListings.length})</h3>
+              {seasonalListings.map((s: any) => (
+                <SellerListingLifecycleCard
+                  key={s.id}
+                  id={s.id}
+                  title={s.title}
+                  status={s.status}
+                  active={s.active}
+                  listing_expires_at={s.listing_expires_at}
+                  auto_renew_enabled={s.auto_renew_enabled}
+                  boost_enabled={s.boost_enabled}
+                  boost_multiplier={s.boost_multiplier}
+                  boost_expires_at={s.boost_expires_at}
+                  renewal_count={s.renewal_count}
+                  onRefresh={() => refetchServices()}
+                />
+              ))}
+            </div>
+          )}
+        </>
       )}
     </div>
   );
