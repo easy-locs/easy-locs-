@@ -1,0 +1,34 @@
+import { supabase } from "@/integrations/supabase/client";
+
+type Callback = (payload: any) => void;
+
+const channels: Record<string, any> = {};
+
+export function subscribeToTable(
+  key: string,
+  table: string,
+  callback: Callback
+) {
+  if (channels[key]) return;
+
+  const channel = supabase
+    .channel(`rt-${key}`)
+    .on(
+      "postgres_changes",
+      { event: "*", schema: "public", table },
+      (payload) => {
+        callback(payload);
+      }
+    )
+    .subscribe();
+
+  channels[key] = channel;
+}
+
+export function unsubscribeFromTable(key: string) {
+  const channel = channels[key];
+  if (!channel) return;
+
+  supabase.removeChannel(channel);
+  delete channels[key];
+}
