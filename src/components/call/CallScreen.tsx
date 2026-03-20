@@ -4,6 +4,7 @@ import { useCallStore } from "@/stores/callStore";
 import { useCallSignalStore } from "@/stores/callSignalStore";
 import { useCallSignalsRealtime } from "@/hooks/useCallSignalsRealtime";
 import { useOrbitStore } from "@/stores/orbitStore";
+import { useDebugCommsStore } from "@/stores/debugCommsStore";
 import { PhoneOff, Mic, MicOff, Video, VideoOff } from "lucide-react";
 
 function formatDuration(sec: number) {
