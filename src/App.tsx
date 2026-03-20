@@ -1021,6 +1021,24 @@ const App = () => (
                 <Route path="/quick-reorder" element={<ProtectedRoute><CustomerQuickReorderPage /></ProtectedRoute>} />
                 <Route path="/driver/live-missions" element={<ProtectedRoute><DriverLiveMissionsPage /></ProtectedRoute>} />
                 <Route path="/admin/realtime-alerts" element={<ProtectedRoute><AdminRealtimeAlertsPage /></ProtectedRoute>} />
+                <Route path="/checkout/schedule" element={<ProtectedRoute><CustomerOrderSchedulePage /></ProtectedRoute>} />
+                <Route path="/merchant/open-close/:merchantId" element={<ProtectedRoute><MerchantOpenClosePage /></ProtectedRoute>} />
+                <Route path="/admin/retention-dashboard" element={<ProtectedRoute><AdminRetentionDashboardPage /></ProtectedRoute>} />
+                <Route path="/me/promo-wallet" element={<ProtectedRoute><CustomerPromoWalletPage /></ProtectedRoute>} />
+                <Route path="/driver/break-mode" element={<ProtectedRoute><DriverBreakModePage /></ProtectedRoute>} />
+                <Route path="/admin/merchant-performance" element={<ProtectedRoute><AdminMerchantPerformancePage /></ProtectedRoute>} />
+                <Route path="/me/family-profiles" element={<ProtectedRoute><CustomerFamilyProfilesPage /></ProtectedRoute>} />
+                <Route path="/merchant/prep-time/:merchantId" element={<ProtectedRoute><MerchantPrepTimePage /></ProtectedRoute>} />
+                <Route path="/admin/refund-control" element={<ProtectedRoute><AdminRefundControlPage /></ProtectedRoute>} />
+                <Route path="/checkout/tip" element={<ProtectedRoute><CustomerTippingPage /></ProtectedRoute>} />
+                <Route path="/driver/acceptance-rate" element={<ProtectedRoute><DriverAcceptanceRatePage /></ProtectedRoute>} />
+                <Route path="/admin/driver-performance" element={<ProtectedRoute><AdminDriverPerformancePage /></ProtectedRoute>} />
+                <Route path="/me/subscriptions" element={<ProtectedRoute><CustomerSubscriptionsPage /></ProtectedRoute>} />
+                <Route path="/merchant/promo-scheduler/:merchantId" element={<ProtectedRoute><MerchantPromoSchedulerPage /></ProtectedRoute>} />
+                <Route path="/admin/dispute-center" element={<ProtectedRoute><AdminDisputeCenterPage /></ProtectedRoute>} />
+                <Route path="/me/favorite-orders" element={<ProtectedRoute><CustomerFavoriteOrdersPage /></ProtectedRoute>} />
+                <Route path="/driver/shift-scheduler" element={<ProtectedRoute><DriverShiftSchedulerPage /></ProtectedRoute>} />
+                <Route path="/admin/global-finance" element={<ProtectedRoute><AdminGlobalFinancePage /></ProtectedRoute>} />
               <Route path="/city/:countryCode/:city/:vertical/:locale" element={<CityVerticalPage />} />
 
               {/* Guest / Public */}

@@ -138,6 +138,27 @@ export const routes = {
   customerQuickReorder: () => `/quick-reorder`,
   driverLiveMissions: () => `/driver/live-missions`,
   adminRealtimeAlerts: () => `/admin/realtime-alerts`,
+  // FA-FF
+  customerOrderSchedule: () => `/checkout/schedule`,
+  merchantOpenClose: (merchantId: string) => `/merchant/open-close/${encodeURIComponent(merchantId)}`,
+  adminRetentionDashboard: () => `/admin/retention-dashboard`,
+  customerPromoWallet: () => `/me/promo-wallet`,
+  driverBreakMode: () => `/driver/break-mode`,
+  adminMerchantPerformance: () => `/admin/merchant-performance`,
+  // FG-FL
+  customerFamilyProfiles: () => `/me/family-profiles`,
+  merchantPrepTime: (merchantId: string) => `/merchant/prep-time/${encodeURIComponent(merchantId)}`,
+  adminRefundControl: () => `/admin/refund-control`,
+  customerTipping: () => `/checkout/tip`,
+  driverAcceptanceRate: () => `/driver/acceptance-rate`,
+  adminDriverPerformance: () => `/admin/driver-performance`,
+  // FM-FR
+  customerSubscriptions: () => `/me/subscriptions`,
+  merchantPromoScheduler: (merchantId: string) => `/merchant/promo-scheduler/${encodeURIComponent(merchantId)}`,
+  adminDisputeCenter: () => `/admin/dispute-center`,
+  customerFavoriteOrders: () => `/me/favorite-orders`,
+  driverShiftScheduler: () => `/driver/shift-scheduler`,
+  adminGlobalFinance: () => `/admin/global-finance`,
 
   // Orbit
   orbitCallTest: () => `/orbit/call-test`,
