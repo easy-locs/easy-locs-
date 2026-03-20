@@ -7,9 +7,8 @@ import type {
   ConversationType,
   MessageType,
 } from "@/lib/types/domain";
-
-
-
+import { chatRepo } from "@/lib/supabase/repositories";
+import { chatRepoExtended } from "@/lib/supabase/chat-repo-extended";
 
 type CreateConversationInput = {
   type: ConversationType;
@@ -31,8 +30,14 @@ type SendMessageInput = {
 type ChatStore = {
   conversations: ConversationRecord[];
   messages: ChatMessageRecord[];
+  loading: boolean;
 
-  createConversation: (input: CreateConversationInput) => ConversationRecord;
+  hydrateConversations: (orbitId: string) => Promise<void>;
+  hydrateMessages: (conversationId: string) => Promise<void>;
+
+  createConversation: (input: CreateConversationInput) => Promise<ConversationRecord>;
+  sendMessage: (input: SendMessageInput) => Promise<ChatMessageRecord>;
+
   getConversationById: (conversationId: string) => ConversationRecord | null;
   findConversation: (params: {
     type: ConversationType;
@@ -41,16 +46,37 @@ type ChatStore = {
     leaseId?: string;
     participantOrbitIds?: string[];
   }) => ConversationRecord | null;
-
-  sendMessage: (input: SendMessageInput) => ChatMessageRecord;
   getMessagesByConversation: (conversationId: string) => ChatMessageRecord[];
 };
 
 export const useChatStore = create<ChatStore>((set, get) => ({
   conversations: [],
   messages: [],
+  loading: false,
 
-  createConversation: (input) => {
+  hydrateConversations: async (orbitId) => {
+    set({ loading: true });
+    try {
+      const conversations = await chatRepoExtended.listConversationsByOrbitId(orbitId);
+      set({ conversations, loading: false });
+    } catch {
+      set({ loading: false });
+    }
+  },
+
+  hydrateMessages: async (conversationId) => {
+    try {
+      const messages = await chatRepoExtended.listMessages(conversationId);
+      set((state) => {
+        const others = state.messages.filter((m) => m.conversationId !== conversationId);
+        return { messages: [...others, ...messages] };
+      });
+    } catch {
+      // silent
+    }
+  },
+
+  createConversation: async (input) => {
     const now = new Date().toISOString();
 
     const conversation: ConversationRecord = {
@@ -66,21 +92,58 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       updatedAt: now,
     };
 
+    const saved = await chatRepo.createConversation(conversation);
+
     set((state) => ({
-      conversations: [conversation, ...state.conversations],
+      conversations: [saved, ...state.conversations.filter((c) => c.id !== saved.id)],
     }));
 
     platformBus.emit({
       type: "conversation.created",
-      payload: { conversation },
+      payload: { conversation: saved },
     });
 
-    return conversation;
+    return saved;
   },
 
-  getConversationById: (conversationId) => {
-    return get().conversations.find((c) => c.id === conversationId) ?? null;
+  sendMessage: async (input) => {
+    const now = new Date().toISOString();
+
+    const message: ChatMessageRecord = {
+      id: `msg_${Math.random().toString(36).slice(2, 11)}`,
+      conversationId: input.conversationId,
+      senderOrbitId: input.senderOrbitId,
+      body: input.body,
+      type: input.type ?? "text",
+      metadata: input.metadata,
+      createdAt: now,
+    };
+
+    const saved = await chatRepo.createMessage(message);
+    await chatRepoExtended.updateConversation(input.conversationId, {
+      lastMessageAt: now,
+      updatedAt: now,
+    });
+
+    set((state) => ({
+      messages: [...state.messages, saved],
+      conversations: state.conversations.map((conv) =>
+        conv.id === input.conversationId
+          ? { ...conv, lastMessageAt: now, updatedAt: now }
+          : conv
+      ),
+    }));
+
+    platformBus.emit({
+      type: "message.sent",
+      payload: { message: saved },
+    });
+
+    return saved;
   },
+
+  getConversationById: (conversationId) =>
+    get().conversations.find((c) => c.id === conversationId) ?? null,
 
   findConversation: ({ type, listingId, bookingId, leaseId, participantOrbitIds }) => {
     return (
@@ -102,40 +165,8 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     );
   },
 
-  sendMessage: (input) => {
-    const now = new Date().toISOString();
-
-    const message: ChatMessageRecord = {
-      id: `msg_${Math.random().toString(36).slice(2, 11)}`,
-      conversationId: input.conversationId,
-      senderOrbitId: input.senderOrbitId,
-      body: input.body,
-      type: input.type ?? "text",
-      metadata: input.metadata,
-      createdAt: now,
-    };
-
-    set((state) => ({
-      messages: [message, ...state.messages],
-      conversations: state.conversations.map((conv) =>
-        conv.id === input.conversationId
-          ? { ...conv, lastMessageAt: now, updatedAt: now }
-          : conv
-      ),
-    }));
-
-    platformBus.emit({
-      type: "message.sent",
-      payload: { message },
-    });
-
-    return message;
-  },
-
-  getMessagesByConversation: (conversationId) => {
-    return get()
-      .messages
-      .filter((m) => m.conversationId === conversationId)
-      .sort((a, b) => a.createdAt.localeCompare(b.createdAt));
-  },
+  getMessagesByConversation: (conversationId) =>
+    get()
+      .messages.filter((m) => m.conversationId === conversationId)
+      .sort((a, b) => a.createdAt.localeCompare(b.createdAt)),
 }));

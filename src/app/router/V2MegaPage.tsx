@@ -27,12 +27,17 @@ import { ListingSearchPanel } from "@/components/search/ListingSearchPanel";
 import { ListingSearchResults } from "@/components/search/ListingSearchResults";
 import { QrPaymentPanel } from "@/components/payments/QrPaymentPanel";
 import { GenerateListingQrButton } from "@/components/property/GenerateListingQrButton";
+import { useChatStore } from "@/stores/chatStore";
+import { BookingStatusPanel } from "@/components/booking/BookingStatusPanel";
+import { RentStatusPanel } from "@/components/property/RentStatusPanel";
+import { SimpleNavTabs, type SimpleNavTab } from "@/components/layout/SimpleNavTabs";
 
 export default function V2MegaPage() {
   useListingsRealtime();
   useBookingsRealtime();
 
   const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
+  const [tab, setTab] = useState<SimpleNavTab>("overview");
 
   const ui = useUiShellStore();
   const orbit = useOrbitStore((s) => s.profile);
@@ -41,7 +46,6 @@ export default function V2MegaPage() {
   const getPublishedListings = useListingStore((s) => s.getPublishedListings);
   const hydratePublished = useListingStore((s) => s.hydratePublished);
   const createBooking = useBookingStore((s) => s.createBooking);
-  const wallet = useWalletStore((s) => s.wallet);
   const createUnit = usePropertyManagementStore((s) => s.createUnit);
   const createLease = usePropertyManagementStore((s) => s.createLease);
   const createRentPayment = usePropertyManagementStore((s) => s.createRentPayment);
@@ -57,6 +61,8 @@ export default function V2MegaPage() {
   const hydrateNotifications = useNotificationsStore((s) => s.hydrate);
   const pushNotification = useNotificationsStore((s) => s.push);
   const unreadCount = useNotificationsStore((s) => s.unreadCount);
+  const hydrateConversations = useChatStore((s) => s.hydrateConversations);
+  const hydrateMessages = useChatStore((s) => s.hydrateMessages);
 
   useEffect(() => {
     void hydratePublished().then(() => {
@@ -67,7 +73,13 @@ export default function V2MegaPage() {
   useEffect(() => {
     if (!orbit?.orbitId) return;
     void hydrateNotifications(orbit.orbitId);
-  }, [orbit?.orbitId, hydrateNotifications]);
+    void hydrateConversations(orbit.orbitId);
+  }, [orbit?.orbitId, hydrateNotifications, hydrateConversations]);
+
+  useEffect(() => {
+    if (!activeConversationId) return;
+    void hydrateMessages(activeConversationId);
+  }, [activeConversationId, hydrateMessages]);
 
   const seedWallet = () => {
     const state = useWalletStore.getState();
@@ -137,7 +149,11 @@ export default function V2MegaPage() {
         body: `Booking ${booking.id} created`,
         metadata: { bookingId: booking.id, listingId: listing.id },
       });
-      if (booking.conversationId) setActiveConversationId(booking.conversationId);
+
+      if (booking.conversationId) {
+        setActiveConversationId(booking.conversationId);
+        setTab("chat");
+      }
     }
   };
 
@@ -192,16 +208,87 @@ export default function V2MegaPage() {
   const btnClass =
     "rounded-lg bg-secondary px-3 py-1.5 text-xs font-medium text-secondary-foreground hover:bg-secondary/80 transition-colors";
 
+  const renderTab = () => {
+    switch (tab) {
+      case "overview":
+        return (
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <NotificationsPanel />
+              <BookingStatusPanel />
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <RentStatusPanel />
+              <PropertyDetailPanel />
+            </div>
+          </>
+        );
+
+      case "chat":
+        return (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <ConversationList onOpen={setActiveConversationId} />
+            <ConversationThread conversationId={activeConversationId} />
+          </div>
+        );
+
+      case "owner":
+        return (
+          <div className="space-y-4">
+            <OwnerPropertyDashboard />
+            <BookingStatusPanel />
+            <RentStatusPanel />
+          </div>
+        );
+
+      case "tenant":
+        return <TenantDashboard tenantOrbitId="orbit_tenant_demo_1" />;
+
+      case "search":
+        return (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <ListingSearchPanel />
+            <ListingSearchResults />
+          </div>
+        );
+
+      case "payments":
+        return (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <QrPaymentPanel />
+            <div className="space-y-4">
+              <RentStatusPanel />
+              {firstListing ? (
+                <GenerateListingQrButton
+                  amount={firstListing.pricing.nightPrice}
+                  reference={`listing:${firstListing.id}`}
+                />
+              ) : null}
+            </div>
+          </div>
+        );
+
+      case "system":
+        return <V2MegaAudit />;
+
+      default:
+        return null;
+    }
+  };
+
   return (
     <V2AppShell
       header={
         <div className="bg-card border-b border-border px-4 py-3">
-          <h1 className="text-sm font-semibold text-foreground">
-            V2 Mega Connected — Suite 2
-          </h1>
-          <p className="text-xs text-muted-foreground">
-            Unread notifications: {unreadCount()}
-          </p>
+          <div className="flex items-center justify-between">
+            <h1 className="text-sm font-semibold text-foreground">
+              V2 Mega Connected — Suite 3
+            </h1>
+            <p className="text-xs text-muted-foreground">
+              Unread notifications: {unreadCount()}
+            </p>
+          </div>
+          <SimpleNavTabs value={tab} onChange={setTab} />
         </div>
       }
       bottomNav={
@@ -227,42 +314,7 @@ export default function V2MegaPage() {
       callLayer={<SimpleCallPanel />}
       rightPanel={<PropertyDetailPanel />}
     >
-      <div className="p-4 space-y-6">
-        {/* Chat Section */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <ConversationList onOpen={setActiveConversationId} />
-          <ConversationThread conversationId={activeConversationId} />
-        </div>
-
-        {/* Search Section */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <ListingSearchPanel />
-          <ListingSearchResults />
-        </div>
-
-        {/* Dashboards Section */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <OwnerPropertyDashboard />
-          <TenantDashboard tenantOrbitId="orbit_tenant_demo_1" />
-        </div>
-
-        {/* Notifications + QR Section */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <NotificationsPanel />
-          <div className="space-y-4">
-            <QrPaymentPanel />
-            {firstListing ? (
-              <GenerateListingQrButton
-                amount={firstListing.pricing.nightPrice}
-                reference={`listing:${firstListing.id}`}
-              />
-            ) : null}
-          </div>
-        </div>
-
-        {/* Debug Audit */}
-        <V2MegaAudit />
-      </div>
+      <div className="p-4 space-y-6">{renderTab()}</div>
     </V2AppShell>
   );
 }
