@@ -604,6 +604,29 @@ const CustomerBulkPartyBuilderPage = safeLazy(() => import("./pages/customer/Cus
 const CustomerDinnerPlannerPage = safeLazy(() => import("./pages/customer/CustomerDinnerPlannerPage"), "CustomerDinnerPlannerPage");
 const MerchantAutoAcceptRulesPage = safeLazy(() => import("./pages/merchant/MerchantAutoAcceptRulesPage"), "MerchantAutoAcceptRulesPage");
 const MerchantDriverHandoffPage = safeLazy(() => import("./pages/merchant/MerchantDriverHandoffPage"), "MerchantDriverHandoffPage");
+// OH-PI block
+const AdminDispatchTuningPage = safeLazy(() => import("./pages/admin/AdminDispatchTuningPage"), "AdminDispatchTuningPage");
+const AdminPaymentWatchPage = safeLazy(() => import("./pages/admin/AdminPaymentWatchPage"), "AdminPaymentWatchPage");
+const CustomerWeeklyMealPlanPage = safeLazy(() => import("./pages/customer/CustomerWeeklyMealPlanPage"), "CustomerWeeklyMealPlanPage");
+const CustomerKidsMealProfilePage = safeLazy(() => import("./pages/customer/CustomerKidsMealProfilePage"), "CustomerKidsMealProfilePage");
+const MerchantMenuCategoryManagerPage = safeLazy(() => import("./pages/merchant/MerchantMenuCategoryManagerPage"), "MerchantMenuCategoryManagerPage");
+const MerchantItemBadgesPage = safeLazy(() => import("./pages/merchant/MerchantItemBadgesPage"), "MerchantItemBadgesPage");
+const MerchantInstructionsPolicyPage = safeLazy(() => import("./pages/merchant/MerchantInstructionsPolicyPage"), "MerchantInstructionsPolicyPage");
+const AdminMenuQualityPage = safeLazy(() => import("./pages/admin/AdminMenuQualityPage"), "AdminMenuQualityPage");
+const AdminDeliveryLatencyPage = safeLazy(() => import("./pages/admin/AdminDeliveryLatencyPage"), "AdminDeliveryLatencyPage");
+const CustomerLunchSubscriptionPage = safeLazy(() => import("./pages/customer/CustomerLunchSubscriptionPage"), "CustomerLunchSubscriptionPage");
+const CustomerFamilyNightPage = safeLazy(() => import("./pages/customer/CustomerFamilyNightPage"), "CustomerFamilyNightPage");
+const MerchantMenuClonerPage = safeLazy(() => import("./pages/merchant/MerchantMenuClonerPage"), "MerchantMenuClonerPage");
+const MerchantFeaturedItemsPage = safeLazy(() => import("./pages/merchant/MerchantFeaturedItemsPage"), "MerchantFeaturedItemsPage");
+const MerchantHolidaySchedulePage = safeLazy(() => import("./pages/merchant/MerchantHolidaySchedulePage"), "MerchantHolidaySchedulePage");
+const AdminDriverPayoutsPage = safeLazy(() => import("./pages/admin/AdminDriverPayoutsPage"), "AdminDriverPayoutsPage");
+const AdminMerchantPayoutsPage = safeLazy(() => import("./pages/admin/AdminMerchantPayoutsPage"), "AdminMerchantPayoutsPage");
+const AdminWalletReconPage = safeLazy(() => import("./pages/admin/AdminWalletReconPage"), "AdminWalletReconPage");
+const CustomerGuestCheckoutProfilePage = safeLazy(() => import("./pages/customer/CustomerGuestCheckoutProfilePage"), "CustomerGuestCheckoutProfilePage");
+const CustomerDinnerBudgetPage = safeLazy(() => import("./pages/customer/CustomerDinnerBudgetPage"), "CustomerDinnerBudgetPage");
+const MerchantStoreAnnouncementPage = safeLazy(() => import("./pages/merchant/MerchantStoreAnnouncementPage"), "MerchantStoreAnnouncementPage");
+const MerchantTemporaryClosurePage = safeLazy(() => import("./pages/merchant/MerchantTemporaryClosurePage"), "MerchantTemporaryClosurePage");
+const MerchantQueueLimitPage = safeLazy(() => import("./pages/merchant/MerchantQueueLimitPage"), "MerchantQueueLimitPage");
 
 // City sub-page wrappers
 const CityServicesPage = () => <CityHubPage subPage="services" />;
@@ -1265,6 +1288,29 @@ const App = () => (
                 <Route path="/checkout/dinner-planner" element={<ProtectedRoute><CustomerDinnerPlannerPage /></ProtectedRoute>} />
                 <Route path="/merchant/auto-accept-rules/:merchantId" element={<ProtectedRoute><MerchantAutoAcceptRulesPage /></ProtectedRoute>} />
                 <Route path="/merchant/driver-handoff/:merchantId" element={<ProtectedRoute><MerchantDriverHandoffPage /></ProtectedRoute>} />
+                {/* OH-PI */}
+                <Route path="/admin/dispatch-tuning" element={<ProtectedRoute><AdminDispatchTuningPage /></ProtectedRoute>} />
+                <Route path="/admin/payment-watch" element={<ProtectedRoute><AdminPaymentWatchPage /></ProtectedRoute>} />
+                <Route path="/me/weekly-meal-plan" element={<ProtectedRoute><CustomerWeeklyMealPlanPage /></ProtectedRoute>} />
+                <Route path="/me/kids-meal-profile" element={<ProtectedRoute><CustomerKidsMealProfilePage /></ProtectedRoute>} />
+                <Route path="/merchant/menu-categories/:merchantId" element={<ProtectedRoute><MerchantMenuCategoryManagerPage /></ProtectedRoute>} />
+                <Route path="/merchant/item-badges/:merchantId" element={<ProtectedRoute><MerchantItemBadgesPage /></ProtectedRoute>} />
+                <Route path="/merchant/instructions-policy/:merchantId" element={<ProtectedRoute><MerchantInstructionsPolicyPage /></ProtectedRoute>} />
+                <Route path="/admin/menu-quality" element={<ProtectedRoute><AdminMenuQualityPage /></ProtectedRoute>} />
+                <Route path="/admin/delivery-latency" element={<ProtectedRoute><AdminDeliveryLatencyPage /></ProtectedRoute>} />
+                <Route path="/me/lunch-subscription" element={<ProtectedRoute><CustomerLunchSubscriptionPage /></ProtectedRoute>} />
+                <Route path="/checkout/family-night" element={<ProtectedRoute><CustomerFamilyNightPage /></ProtectedRoute>} />
+                <Route path="/merchant/menu-cloner/:merchantId" element={<ProtectedRoute><MerchantMenuClonerPage /></ProtectedRoute>} />
+                <Route path="/merchant/featured-items/:merchantId" element={<ProtectedRoute><MerchantFeaturedItemsPage /></ProtectedRoute>} />
+                <Route path="/merchant/holiday-schedule/:merchantId" element={<ProtectedRoute><MerchantHolidaySchedulePage /></ProtectedRoute>} />
+                <Route path="/admin/driver-payouts" element={<ProtectedRoute><AdminDriverPayoutsPage /></ProtectedRoute>} />
+                <Route path="/admin/merchant-payouts" element={<ProtectedRoute><AdminMerchantPayoutsPage /></ProtectedRoute>} />
+                <Route path="/admin/wallet-recon" element={<ProtectedRoute><AdminWalletReconPage /></ProtectedRoute>} />
+                <Route path="/checkout/guest-profile" element={<ProtectedRoute><CustomerGuestCheckoutProfilePage /></ProtectedRoute>} />
+                <Route path="/checkout/dinner-budget" element={<ProtectedRoute><CustomerDinnerBudgetPage /></ProtectedRoute>} />
+                <Route path="/merchant/store-announcement/:merchantId" element={<ProtectedRoute><MerchantStoreAnnouncementPage /></ProtectedRoute>} />
+                <Route path="/merchant/temporary-closure/:merchantId" element={<ProtectedRoute><MerchantTemporaryClosurePage /></ProtectedRoute>} />
+                <Route path="/merchant/queue-limit/:merchantId" element={<ProtectedRoute><MerchantQueueLimitPage /></ProtectedRoute>} />
               <Route path="/city/:countryCode/:city/:vertical/:locale" element={<CityVerticalPage />} />
 
               {/* Guest / Public */}

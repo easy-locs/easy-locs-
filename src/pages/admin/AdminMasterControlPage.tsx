@@ -38,6 +38,13 @@ const PANELS = [
   { label: "Live Incident Feed", path: "/admin/live-incident-feed" },
   { label: "Risk Scoreboard", path: "/admin/risk-scoreboard" },
   { label: "Store Readiness Matrix", path: "/admin/store-readiness-matrix" },
+  { label: "Dispatch Tuning", path: "/admin/dispatch-tuning" },
+  { label: "Payment Watch", path: "/admin/payment-watch" },
+  { label: "Menu Quality", path: "/admin/menu-quality" },
+  { label: "Delivery Latency", path: "/admin/delivery-latency" },
+  { label: "Driver Payouts", path: "/admin/driver-payouts" },
+  { label: "Merchant Payouts", path: "/admin/merchant-payouts" },
+  { label: "Wallet Recon", path: "/admin/wallet-recon" },
 ];
 
 export default function AdminMasterControlPage() {
