@@ -1064,3 +1064,78 @@ async function getUserIdByCustomerId(supabase: any, stripe: Stripe, customerId: 
     return profile?.id || null;
   } catch { return null; }
 }
+
+/* ── Handle wallet top-up checkout completion ── */
+async function handleWalletTopup(supabase: any, session: Stripe.Checkout.Session) {
+  const meta = session.metadata || {};
+  const userId = meta.user_id;
+  const amount = parseFloat(meta.amount || "0");
+  const currency = meta.currency || "AED";
+  const sessionId = session.id;
+
+  logStep("Processing wallet_topup", { userId, amount, currency, sessionId });
+
+  if (!userId || !amount || amount <= 0) {
+    logStep("Invalid wallet_topup metadata", { userId, amount });
+    return;
+  }
+
+  // Idempotency: check if already processed via payment_events
+  const { data: existingEvent } = await supabase
+    .from("payment_events")
+    .select("id")
+    .eq("external_id", sessionId)
+    .eq("event_type", "wallet_topup_completed")
+    .maybeSingle();
+
+  if (existingEvent) {
+    logStep("Wallet topup already processed (idempotent skip)", { sessionId });
+    return;
+  }
+
+  // Record payment event for idempotency
+  await supabase.from("payment_events").insert({
+    id: crypto.randomUUID(),
+    external_id: sessionId,
+    event_type: "wallet_topup_completed",
+    provider: "stripe",
+    processed: true,
+    metadata: { amount, currency, user_id: userId },
+  });
+
+  // Credit wallet_ledger — trigger will auto-update wallet balance
+  const { error: ledgerError } = await supabase.from("wallet_ledger").insert({
+    user_id: userId,
+    type: "credit",
+    amount,
+    source: "stripe_topup",
+    status: "completed",
+    reference_id: sessionId,
+  });
+
+  if (ledgerError) {
+    logStep("wallet_ledger insert error", { error: ledgerError.message });
+  } else {
+    logStep("Wallet credited via ledger", { userId, amount, currency });
+  }
+
+  // Update payment record status
+  await supabase
+    .from("payments")
+    .update({ status: "completed", provider_payment_id: session.payment_intent as string || sessionId, updated_at: new Date().toISOString() })
+    .eq("provider_payment_id", sessionId)
+    .eq("payment_type", "wallet_topup");
+
+  // Create notification
+  await supabase.from("app_notifications").insert({
+    id: crypto.randomUUID(),
+    orbitId: userId,
+    user_id: userId,
+    title: `💰 Wallet credited: ${amount} ${currency}`,
+    body: `Your wallet has been topped up with ${amount} ${currency} via card payment.`,
+    type: "wallet_credit",
+    read: false,
+  });
+
+  logStep("Wallet topup complete", { userId, amount });
+}
