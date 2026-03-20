@@ -5,7 +5,7 @@
 
 export interface GeoEntity {
   id: string;
-  type: "restaurant" | "shop" | "property" | "driver" | "courier" | "hotel" | "service" | "grocery";
+  type: "restaurant" | "shop" | "property" | "driver" | "courier" | "hotel" | "service" | "grocery" | "real_estate";
   subtype?: string;
   title: string;
   subtitle?: string;
