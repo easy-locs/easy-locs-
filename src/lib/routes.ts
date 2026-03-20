@@ -76,6 +76,10 @@ export const routes = {
   adminMerchantHealth: () => `/admin/merchant-health`,
   walletTopUp: () => `/wallet/top-up`,
   walletTransfer: () => `/wallet/transfer`,
+  orderRefundRequest: (orderId: string) => `/order/refund/${encodeURIComponent(orderId)}`,
+  merchantBannerEditor: (merchantId: string) => `/merchant/banner-editor/${encodeURIComponent(merchantId)}`,
+  adminDriverMonitor: () => `/admin/driver-monitor`,
+  adminUserLookup: () => `/admin/user-lookup`,
 
   // Orbit
   orbitCallTest: () => `/orbit/call-test`,
@@ -197,6 +201,10 @@ export const ROUTE_REGISTRY = [
   { group: "admin", label: "Merchant Health", path: "/admin/merchant-health" },
   { group: "wallet", label: "Wallet Top Up", path: "/wallet/top-up" },
   { group: "wallet", label: "Wallet Transfer", path: "/wallet/transfer" },
+  { group: "public", label: "Order Refund Request", path: "/order/refund/:orderId" },
+  { group: "merchant", label: "Merchant Banner Editor", path: "/merchant/banner-editor/:merchantId" },
+  { group: "admin", label: "Driver Monitor", path: "/admin/driver-monitor" },
+  { group: "admin", label: "User Lookup", path: "/admin/user-lookup" },
 
   { group: "public", label: "Coming Soon", path: "/coming-soon/:slug" },
   { group: "public", label: "City Market", path: "/city-market/:citySlug" },
