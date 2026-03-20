@@ -197,13 +197,13 @@ export const usePropertyManagementStore = create<PropertyManagementStore>((set, 
     return payment;
   },
 
-  payRent: (paymentId) => {
+  payRent: async (paymentId) => {
     const payment = get().rentPayments.find((p) => p.id === paymentId);
     if (!payment) return;
 
     const walletStore = useWalletStore.getState();
 
-    const tx = walletStore.createTransaction({
+    const tx = await walletStore.createTransaction({
       type: "payment",
       amount: payment.amount,
       currency: payment.currency,

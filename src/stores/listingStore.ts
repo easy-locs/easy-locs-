@@ -1,7 +1,6 @@
 import { create } from "zustand";
 import { platformBus } from "@/app/events/platform-bus";
-import type { PropertyListingV2, ListingAvailabilityRange } from "@/lib/types/booking";
-import type { CurrencyCode } from "@/lib/types/app";
+import type { PropertyListingV2, ListingAvailabilityRange, CurrencyCode } from "@/lib/types/domain";
 
 type CreateListingInput = {
   ownerOrbitId: string;

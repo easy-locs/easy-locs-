@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { platformBus } from "@/app/events/platform-bus";
 import { diffNights, isRangeOverlap } from "@/lib/utils/booking";
-import type { BookingRecordV2 } from "@/lib/types/booking";
+import type { BookingRecordV2 } from "@/lib/types/domain";
 import { useListingStore } from "@/stores/listingStore";
 import { useWalletStore } from "@/stores/walletStore";
 

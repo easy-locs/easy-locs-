@@ -39,10 +39,10 @@ export default function V2BookingTestPage() {
     });
   };
 
-  const createAndPublishListing = () => {
+  const createAndPublishListing = async () => {
     if (!orbit?.orbitId) return;
 
-    const listing = createListing({
+    const listing = await createListing({
       ownerOrbitId: orbit.orbitId,
       title: "Dubai Marina Apartment",
       description: "Direct booking enabled listing linked with wallet orbit and property management.",
@@ -60,14 +60,14 @@ export default function V2BookingTestPage() {
       flowMode: "instant_book",
     });
 
-    publishListing(listing.id);
+    await publishListing(listing.id);
   };
 
-  const createInstantBooking = () => {
+  const createInstantBooking = async () => {
     const listing = getPublishedListings()[0];
     if (!listing) return;
 
-    createBooking({
+    await createBooking({
       listingId: listing.id,
       buyerOrbitId: "orbit_buyer_demo_1",
       checkIn: "2026-03-25",
@@ -81,10 +81,10 @@ export default function V2BookingTestPage() {
     });
   };
 
-  const createRequestBooking = () => {
+  const createRequestBooking = async () => {
     if (!orbit?.orbitId) return;
 
-    const listing = createListing({
+    const listing = await createListing({
       ownerOrbitId: orbit.orbitId,
       title: "JLT Studio",
       description: "Request to book listing",
@@ -102,9 +102,9 @@ export default function V2BookingTestPage() {
       flowMode: "request_to_book",
     });
 
-    publishListing(listing.id);
+    await publishListing(listing.id);
 
-    createBooking({
+    await createBooking({
       listingId: listing.id,
       buyerOrbitId: "orbit_buyer_demo_2",
       checkIn: "2026-04-02",
@@ -116,12 +116,12 @@ export default function V2BookingTestPage() {
     });
   };
 
-  const createImmoFlow = () => {
+  const createImmoFlow = async () => {
     if (!orbit?.orbitId) return;
     const listing = getPublishedListings()[0];
     if (!listing) return;
 
-    const unit = createUnit({
+    const unit = await createUnit({
       listingId: listing.id,
       ownerOrbitId: orbit.orbitId,
       unitLabel: "Unit A-101",
@@ -130,7 +130,7 @@ export default function V2BookingTestPage() {
 
     if (!unit) return;
 
-    const lease = createLease({
+    const lease = await createLease({
       listingId: listing.id,
       unitId: unit.id,
       ownerOrbitId: orbit.orbitId,
@@ -143,7 +143,7 @@ export default function V2BookingTestPage() {
 
     if (!lease) return;
 
-    createRentPayment({
+    await createRentPayment({
       leaseId: lease.id,
       dueDate: "2026-04-05",
       reference: "April rent",
@@ -172,16 +172,16 @@ export default function V2BookingTestPage() {
           <button className="px-3 py-1 text-xs rounded-full bg-primary text-primary-foreground" onClick={seedWallet}>
             Seed Wallet
           </button>
-          <button className="px-3 py-1 text-xs rounded-full bg-primary text-primary-foreground" onClick={createAndPublishListing}>
+          <button className="px-3 py-1 text-xs rounded-full bg-primary text-primary-foreground" onClick={() => void createAndPublishListing()}>
             Create Published Listing
           </button>
-          <button className="px-3 py-1 text-xs rounded-full bg-primary text-primary-foreground" onClick={createInstantBooking}>
+          <button className="px-3 py-1 text-xs rounded-full bg-primary text-primary-foreground" onClick={() => void createInstantBooking()}>
             Instant Booking
           </button>
-          <button className="px-3 py-1 text-xs rounded-full bg-primary text-primary-foreground" onClick={createRequestBooking}>
+          <button className="px-3 py-1 text-xs rounded-full bg-primary text-primary-foreground" onClick={() => void createRequestBooking()}>
             Request Booking
           </button>
-          <button className="px-3 py-1 text-xs rounded-full bg-primary text-primary-foreground" onClick={createImmoFlow}>
+          <button className="px-3 py-1 text-xs rounded-full bg-primary text-primary-foreground" onClick={() => void createImmoFlow()}>
             Create Immo Flow
           </button>
           <button className="px-3 py-1 text-xs rounded-full bg-primary text-primary-foreground" onClick={openOwnerContact}>
