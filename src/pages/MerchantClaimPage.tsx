@@ -333,7 +333,7 @@ export default function MerchantClaimPage() {
                   </p>
 
                   <div className="flex justify-center">
-                    <InputOTP maxLength={6} value={otpCode} onChange={setOtpCode}>
+                    <InputOTP maxLength={6} value={otpCode} onChange={(v) => { setOtpCode(v); if (v.length === 6) { setTimeout(() => handleVerifyOtp(), 100); } }}>
                       <InputOTPGroup>
                         <InputOTPSlot index={0} />
                         <InputOTPSlot index={1} />
