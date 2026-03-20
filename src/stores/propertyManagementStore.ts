@@ -39,7 +39,7 @@ type PropertyManagementStore = {
   rentPayments: RentPaymentRecord[];
 
   createUnit: (input: CreateUnitInput) => PropertyUnitManagement | null;
-  createLease: (input: CreateLeaseInput) => LeaseRecord | null;
+  createLease: (input: CreateLeaseInput) => Promise<LeaseRecord | null>;
   createRentPayment: (input: CreateRentPaymentInput) => RentPaymentRecord | null;
   payRent: (paymentId: string) => void;
 
@@ -91,7 +91,7 @@ export const usePropertyManagementStore = create<PropertyManagementStore>((set, 
     return unit;
   },
 
-  createLease: (input) => {
+  createLease: async (input) => {
     const unit = get().getUnitById(input.unitId);
     const listing = useListingStore.getState().getListingById(input.listingId);
     const wallet = useWalletStore.getState().wallet;
@@ -123,7 +123,7 @@ export const usePropertyManagementStore = create<PropertyManagementStore>((set, 
       leases: [lease, ...state.leases],
     }));
 
-    const conversation = useChatStore.getState().createConversation({
+    const conversation = await useChatStore.getState().createConversation({
       type: "property_management",
       participants: [
         { orbitId: input.ownerOrbitId, role: "owner" },
@@ -134,7 +134,7 @@ export const usePropertyManagementStore = create<PropertyManagementStore>((set, 
       leaseId: lease.id,
     });
 
-    useChatStore.getState().sendMessage({
+    await useChatStore.getState().sendMessage({
       conversationId: conversation.id,
       senderOrbitId: input.ownerOrbitId,
       type: "system",
