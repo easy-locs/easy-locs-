@@ -8483,6 +8483,33 @@ export type Database = {
           },
         ]
       }
+      listing_views: {
+        Row: {
+          created_at: string
+          id: string
+          listing_id: string
+          orbit_id: string | null
+          source: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id: string
+          listing_id: string
+          orbit_id?: string | null
+          source?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          listing_id?: string
+          orbit_id?: string | null
+          source?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       live_tracking_points: {
         Row: {
           accuracy_m: number | null
@@ -14961,6 +14988,48 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      seller_kpi_snapshots: {
+        Row: {
+          completed_bookings: number
+          confirmed_bookings: number
+          created_at: string
+          gross_revenue: number
+          id: string
+          owner_orbit_id: string
+          paid_rent_amount: number
+          pending_rent_amount: number
+          published_listings: number
+          total_bookings: number
+          total_listings: number
+        }
+        Insert: {
+          completed_bookings?: number
+          confirmed_bookings?: number
+          created_at?: string
+          gross_revenue?: number
+          id: string
+          owner_orbit_id: string
+          paid_rent_amount?: number
+          pending_rent_amount?: number
+          published_listings?: number
+          total_bookings?: number
+          total_listings?: number
+        }
+        Update: {
+          completed_bookings?: number
+          confirmed_bookings?: number
+          created_at?: string
+          gross_revenue?: number
+          id?: string
+          owner_orbit_id?: string
+          paid_rent_amount?: number
+          pending_rent_amount?: number
+          published_listings?: number
+          total_bookings?: number
+          total_listings?: number
+        }
+        Relationships: []
       }
       service_bookings: {
         Row: {
