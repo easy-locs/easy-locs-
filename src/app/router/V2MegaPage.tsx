@@ -37,6 +37,7 @@ import { MerchantCheckoutPanel } from "@/components/merchant/MerchantCheckoutPan
 export default function V2MegaPage() {
   useListingsRealtime();
   useBookingsRealtime();
+  useNotificationsRealtime();
 
   const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
   const [tab, setTab] = useState<SimpleNavTab>("overview");
