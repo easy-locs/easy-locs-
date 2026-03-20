@@ -56,3 +56,18 @@ verify_jwt = false
 
 [functions.expire-listings]
 verify_jwt = false
+
+[functions.booking-create]
+verify_jwt = false
+
+[functions.booking-approve]
+verify_jwt = false
+
+[functions.booking-reject]
+verify_jwt = false
+
+[functions.booking-complete]
+verify_jwt = false
+
+[functions.rent-create-payment]
+verify_jwt = false

@@ -1,14 +1,15 @@
 import { useMemo } from "react";
 import { useBookingStore } from "@/stores/bookingStore";
 import { useOrbitStore } from "@/stores/orbitStore";
-import { useBookingActionsStore } from "@/stores/bookingActionsStore";
+import { useSecureBookingActionsStore } from "@/stores/secureBookingActionsStore";
 
 export function BookingStatusPanel() {
   const orbit = useOrbitStore((s) => s.profile);
   const bookings = useBookingStore((s) => s.bookings);
-  const ownerApproveBooking = useBookingActionsStore((s) => s.ownerApproveBooking);
-  const ownerRejectBooking = useBookingActionsStore((s) => s.ownerRejectBooking);
-  const ownerCompleteBooking = useBookingActionsStore((s) => s.ownerCompleteBooking);
+  const loading = useSecureBookingActionsStore((s) => s.loading);
+  const approve = useSecureBookingActionsStore((s) => s.approveBookingServer);
+  const reject = useSecureBookingActionsStore((s) => s.rejectBookingServer);
+  const complete = useSecureBookingActionsStore((s) => s.completeBookingServer);
 
   const ownerBookings = useMemo(
     () => bookings.filter((b) => b.ownerOrbitId === orbit?.orbitId),
@@ -32,14 +33,16 @@ export function BookingStatusPanel() {
               {booking.status === "pending_confirmation" ? (
                 <>
                   <button
-                    className="rounded-lg bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
-                    onClick={() => void ownerApproveBooking(booking.id)}
+                    disabled={loading}
+                    className="rounded-lg bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors"
+                    onClick={() => void approve(booking.id)}
                   >
                     Approve
                   </button>
                   <button
-                    className="rounded-lg bg-destructive px-3 py-1.5 text-xs font-medium text-destructive-foreground hover:bg-destructive/90 transition-colors"
-                    onClick={() => void ownerRejectBooking(booking.id)}
+                    disabled={loading}
+                    className="rounded-lg bg-destructive px-3 py-1.5 text-xs font-medium text-destructive-foreground hover:bg-destructive/90 disabled:opacity-50 transition-colors"
+                    onClick={() => void reject(booking.id)}
                   >
                     Reject
                   </button>
@@ -48,8 +51,9 @@ export function BookingStatusPanel() {
 
               {booking.status === "confirmed" ? (
                 <button
-                  className="rounded-lg bg-secondary px-3 py-1.5 text-xs font-medium text-secondary-foreground hover:bg-secondary/80 transition-colors"
-                  onClick={() => void ownerCompleteBooking(booking.id)}
+                  disabled={loading}
+                  className="rounded-lg bg-secondary px-3 py-1.5 text-xs font-medium text-secondary-foreground hover:bg-secondary/80 disabled:opacity-50 transition-colors"
+                  onClick={() => void complete(booking.id)}
                 >
                   Complete
                 </button>
