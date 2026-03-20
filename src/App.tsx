@@ -556,6 +556,10 @@ const AdminMasterControlPage = safeLazy(() => import("./pages/admin/AdminMasterC
 // IS-IX block
 const AdminProductionChecklistPage = safeLazy(() => import("./pages/admin/AdminProductionChecklistPage"), "AdminProductionChecklistPage");
 const AdminFinalWrapPage = safeLazy(() => import("./pages/admin/AdminFinalWrapPage"), "AdminFinalWrapPage");
+// JA-JF block
+const AdminQaCommandPage = safeLazy(() => import("./pages/admin/AdminQaCommandPage"), "AdminQaCommandPage");
+// KA-KF block
+const LiveTrackingPageNew = safeLazy(() => import("./pages/live/LiveTrackingPage"), "LiveTrackingPageNew");
 
 // City sub-page wrappers
 const CityServicesPage = () => <CityHubPage subPage="services" />;
@@ -1169,6 +1173,10 @@ const App = () => (
                 {/* IS-IX */}
                 <Route path="/admin/production-checklist" element={<ProtectedRoute><AdminProductionChecklistPage /></ProtectedRoute>} />
                 <Route path="/admin/final-wrap" element={<ProtectedRoute><AdminFinalWrapPage /></ProtectedRoute>} />
+                {/* JA-JF */}
+                <Route path="/admin/qa-command" element={<ProtectedRoute><AdminQaCommandPage /></ProtectedRoute>} />
+                {/* KA-KF */}
+                <Route path="/live-tracking" element={<ProtectedRoute><LiveTrackingPageNew /></ProtectedRoute>} />
               <Route path="/city/:countryCode/:city/:vertical/:locale" element={<CityVerticalPage />} />
 
               {/* Guest / Public */}

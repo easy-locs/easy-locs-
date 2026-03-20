@@ -223,6 +223,10 @@ export const routes = {
   // IS-IX
   adminProductionChecklist: () => `/admin/production-checklist`,
   adminFinalWrap: () => `/admin/final-wrap`,
+  // JA-JF
+  adminQaCommand: () => `/admin/qa-command`,
+  // KA-KF
+  liveTracking: () => `/live-tracking`,
 
   // Orbit
   orbitCallTest: () => `/orbit/call-test`,
@@ -491,6 +495,10 @@ export const ROUTE_REGISTRY = [
   // IS-IX
   { group: "admin", label: "Production Checklist", path: "/admin/production-checklist" },
   { group: "admin", label: "Final Wrap", path: "/admin/final-wrap" },
+  // JA-JF
+  { group: "admin", label: "QA Command", path: "/admin/qa-command" },
+  // KA-KF
+  { group: "public", label: "Live Tracking", path: "/live-tracking" },
 
   { group: "public", label: "Coming Soon", path: "/coming-soon/:slug" },
   { group: "public", label: "City Market", path: "/city-market/:citySlug" },
