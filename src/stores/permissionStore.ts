@@ -14,6 +14,9 @@ type PermissionStore = {
     value: PermissionStateValue
   ) => void;
 
+  checkCamera: () => Promise<PermissionStateValue>;
+  checkMicrophone: () => Promise<PermissionStateValue>;
+  checkGeolocation: () => Promise<PermissionStateValue>;
   checkGeolocationPermission: () => Promise<PermissionStateValue>;
   requestGeolocation: () => Promise<GeolocationPosition | null>;
   requestCamera: () => Promise<boolean>;
