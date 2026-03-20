@@ -9,7 +9,7 @@ export default function MerchantCustomerInsightsPage() {
   const { data, isLoading } = useQuery({
     queryKey: ["merchant-customer-insights", merchantId],
     queryFn: async () => {
-      const { data: orders, error } = await supabase
+      const { data: orders, error } = await (supabase as any)
         .from("orders")
         .select("id,customer_user_id,total_amount,status,created_at")
         .eq("merchant_id", merchantId)
