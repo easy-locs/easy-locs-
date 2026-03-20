@@ -620,6 +620,7 @@ export type Database = {
           read: boolean
           title: string
           type: string
+          user_id: string | null
         }
         Insert: {
           body: string
@@ -630,6 +631,7 @@ export type Database = {
           read?: boolean
           title: string
           type: string
+          user_id?: string | null
         }
         Update: {
           body?: string
@@ -640,6 +642,7 @@ export type Database = {
           read?: boolean
           title?: string
           type?: string
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -1153,6 +1156,71 @@ export type Database = {
             columns: ["property_id"]
             isOneToOne: false
             referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      bookings_v2: {
+        Row: {
+          amount: number
+          buyer_orbit_id: string
+          buyer_user_id: string
+          check_in: string
+          check_out: string
+          conversation_id: string | null
+          created_at: string | null
+          currency: string
+          guest_info: Json | null
+          id: string
+          listing_id: string
+          owner_orbit_id: string
+          owner_user_id: string
+          status: string
+          transaction_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          amount?: number
+          buyer_orbit_id: string
+          buyer_user_id: string
+          check_in: string
+          check_out: string
+          conversation_id?: string | null
+          created_at?: string | null
+          currency?: string
+          guest_info?: Json | null
+          id?: string
+          listing_id: string
+          owner_orbit_id: string
+          owner_user_id: string
+          status?: string
+          transaction_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          amount?: number
+          buyer_orbit_id?: string
+          buyer_user_id?: string
+          check_in?: string
+          check_out?: string
+          conversation_id?: string | null
+          created_at?: string | null
+          currency?: string
+          guest_info?: Json | null
+          id?: string
+          listing_id?: string
+          owner_orbit_id?: string
+          owner_user_id?: string
+          status?: string
+          transaction_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bookings_v2_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "property_listings_v2"
             referencedColumns: ["id"]
           },
         ]
@@ -2105,6 +2173,47 @@ export type Database = {
         }
         Relationships: []
       }
+      chat_messages_v2: {
+        Row: {
+          body: string
+          conversation_id: string
+          created_at: string | null
+          id: string
+          metadata: Json | null
+          sender_orbit_id: string
+          sender_user_id: string
+          type: string
+        }
+        Insert: {
+          body: string
+          conversation_id: string
+          created_at?: string | null
+          id?: string
+          metadata?: Json | null
+          sender_orbit_id: string
+          sender_user_id: string
+          type?: string
+        }
+        Update: {
+          body?: string
+          conversation_id?: string
+          created_at?: string | null
+          id?: string
+          metadata?: Json | null
+          sender_orbit_id?: string
+          sender_user_id?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_messages_v2_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations_v2"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       churn_risk_profiles: {
         Row: {
           churn_score: number | null
@@ -2983,6 +3092,45 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      conversations_v2: {
+        Row: {
+          booking_id: string | null
+          created_at: string | null
+          id: string
+          last_message_at: string | null
+          lease_id: string | null
+          listing_id: string | null
+          participants: Json
+          title: string | null
+          type: string
+          updated_at: string | null
+        }
+        Insert: {
+          booking_id?: string | null
+          created_at?: string | null
+          id?: string
+          last_message_at?: string | null
+          lease_id?: string | null
+          listing_id?: string | null
+          participants?: Json
+          title?: string | null
+          type?: string
+          updated_at?: string | null
+        }
+        Update: {
+          booking_id?: string | null
+          created_at?: string | null
+          id?: string
+          last_message_at?: string | null
+          lease_id?: string | null
+          listing_id?: string | null
+          participants?: Json
+          title?: string | null
+          type?: string
+          updated_at?: string | null
+        }
+        Relationships: []
       }
       cross_service_journeys: {
         Row: {
@@ -10709,6 +10857,48 @@ export type Database = {
           },
         ]
       }
+      orbit_profiles_v2: {
+        Row: {
+          avatar_url: string | null
+          created_at: string | null
+          device_id: string | null
+          display_name: string | null
+          id: string
+          orbit_id: string
+          permissions: Json | null
+          role: string
+          service_links: Json | null
+          updated_at: string | null
+          verification_level: number | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string | null
+          device_id?: string | null
+          display_name?: string | null
+          id: string
+          orbit_id: string
+          permissions?: Json | null
+          role?: string
+          service_links?: Json | null
+          updated_at?: string | null
+          verification_level?: number | null
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string | null
+          device_id?: string | null
+          display_name?: string | null
+          id?: string
+          orbit_id?: string
+          permissions?: Json | null
+          role?: string
+          service_links?: Json | null
+          updated_at?: string | null
+          verification_level?: number | null
+        }
+        Relationships: []
+      }
       orbit_session_tokens: {
         Row: {
           created_at: string | null
@@ -12193,6 +12383,60 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      property_listings_v2: {
+        Row: {
+          amenities: Json | null
+          availability: Json | null
+          capacity: Json | null
+          created_at: string | null
+          description: string | null
+          flow_mode: string
+          id: string
+          location: Json
+          owner_orbit_id: string
+          photos: Json | null
+          pricing: Json
+          status: string
+          title: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          amenities?: Json | null
+          availability?: Json | null
+          capacity?: Json | null
+          created_at?: string | null
+          description?: string | null
+          flow_mode?: string
+          id?: string
+          location?: Json
+          owner_orbit_id: string
+          photos?: Json | null
+          pricing?: Json
+          status?: string
+          title: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          amenities?: Json | null
+          availability?: Json | null
+          capacity?: Json | null
+          created_at?: string | null
+          description?: string | null
+          flow_mode?: string
+          id?: string
+          location?: Json
+          owner_orbit_id?: string
+          photos?: Json | null
+          pricing?: Json
+          status?: string
+          title?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
       }
       property_units: {
         Row: {
@@ -21959,6 +22203,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      wallets_v2: {
+        Row: {
+          available_balance: number
+          created_at: string | null
+          currency: string
+          id: string
+          locked_balance: number
+          orbit_id: string
+          pending_balance: number
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          available_balance?: number
+          created_at?: string | null
+          currency?: string
+          id?: string
+          locked_balance?: number
+          orbit_id: string
+          pending_balance?: number
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          available_balance?: number
+          created_at?: string | null
+          currency?: string
+          id?: string
+          locked_balance?: number
+          orbit_id?: string
+          pending_balance?: number
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
       }
       webhook_deliveries: {
         Row: {
