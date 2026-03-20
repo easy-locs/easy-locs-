@@ -84,7 +84,7 @@ export function CallProvider({ children }: { children: ReactNode }) {
               if (!call || call.caller_orbit_id === user.id) return;
               if (call.status !== "ringing") return;
               // Accept call if targeted at user's org, or directly/indirectly targeted to this user
-              const isOrgCall = orgIds.length > 0 && orgIds.includes(call.callee_org_id);
+              const isOrgCall = orgIds.length > 0 && orgIds.includes(call.receiver_orbit_id);
               const isDirectCall = call.context_type === "direct" &&
                 typeof call.context_id === "string" &&
                 call.context_id.includes(user.id);
