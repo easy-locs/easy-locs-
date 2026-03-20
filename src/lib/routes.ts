@@ -80,6 +80,7 @@ export const routes = {
   merchantBannerEditor: (merchantId: string) => `/merchant/banner-editor/${encodeURIComponent(merchantId)}`,
   adminDriverMonitor: () => `/admin/driver-monitor`,
   adminUserLookup: () => `/admin/user-lookup`,
+  adminNotificationOps: () => `/admin/notification-ops`,
 
   // Orbit
   orbitCallTest: () => `/orbit/call-test`,
