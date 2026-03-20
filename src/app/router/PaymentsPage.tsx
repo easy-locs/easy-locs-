@@ -2,6 +2,8 @@ import { AppPageShell } from "@/components/layout/AppPageShell";
 import { QrPaymentPanel } from "@/components/payments/QrPaymentPanel";
 import { MerchantCheckoutPanel } from "@/components/merchant/MerchantCheckoutPanel";
 import { NotificationsPanel } from "@/components/notifications/NotificationsPanel";
+import { RefundPanel } from "@/components/payments/RefundPanel";
+import { PayoutPanel } from "@/components/payments/PayoutPanel";
 
 export default function PaymentsPage() {
   return (
@@ -10,6 +12,10 @@ export default function PaymentsPage() {
         <QrPaymentPanel />
         <MerchantCheckoutPanel />
         <NotificationsPanel />
+        <RefundPanel />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <PayoutPanel />
+        </div>
       </div>
     </AppPageShell>
   );
