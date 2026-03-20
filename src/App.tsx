@@ -48,6 +48,10 @@ const V2PaymentsPage = safeLazy(() => import("./app/router/PaymentsPage"), "V2Pa
 // V2 Auth wrappers
 import { V2AuthBridge as V2AuthBridgeWrapper } from "@/components/system/V2AuthBridge";
 import { V2AuthGate as V2AuthGateWrapper } from "@/components/system/V2AuthGate";
+import { AuthGate as V2AuthGate } from "@/components/guards/AuthGate";
+import { AppInit as V2AppInit } from "@/components/system/AppInit";
+const V2AuthPage = safeLazy(() => import("./app/router/AuthPage"), "V2AuthPage");
+
 
 function safeLazy(factory: () => Promise<{ default: ComponentType<any> }>, name: string) {
   return lazy(async () => {
@@ -1402,22 +1406,25 @@ const App = () => (
               <Route path="/app/orbit" element={<Navigate to="/" replace />} />
               <Route path="/app/*" element={<Navigate to="/" replace />} />
 
+              {/* V2 Auth */}
+              <Route path="/v2-auth" element={<V2AuthBridgeWrapper><V2AuthPage /></V2AuthBridgeWrapper>} />
+
               {/* V2 test routes */}
               <Route path="/v2-test" element={<V2TestPage />} />
               <Route path="/v2-booking-test" element={<V2BookingTestPage />} />
-              <Route path="/v2-mega" element={<V2AuthBridgeWrapper><V2AuthGateWrapper><V2MegaPage /></V2AuthGateWrapper></V2AuthBridgeWrapper>} />
+              <Route path="/v2-mega" element={<V2AuthBridgeWrapper><V2AuthGate fallback={<V2AuthPage />}><V2MegaPage /></V2AuthGate></V2AuthBridgeWrapper>} />
 
               {/* V2 Suite 4 routes — auth protected */}
-              <Route path="/v2-home" element={<V2AuthBridgeWrapper><V2AuthGateWrapper><V2HomePage /></V2AuthGateWrapper></V2AuthBridgeWrapper>} />
-              <Route path="/v2-owner" element={<V2AuthBridgeWrapper><V2AuthGateWrapper><V2OwnerDashboardPage /></V2AuthGateWrapper></V2AuthBridgeWrapper>} />
-              <Route path="/v2-tenant" element={<V2AuthBridgeWrapper><V2AuthGateWrapper><V2TenantDashboardPage /></V2AuthGateWrapper></V2AuthBridgeWrapper>} />
-              <Route path="/v2-bookings" element={<V2AuthBridgeWrapper><V2AuthGateWrapper><V2BookingsPage /></V2AuthGateWrapper></V2AuthBridgeWrapper>} />
-              <Route path="/v2-properties" element={<V2AuthBridgeWrapper><V2AuthGateWrapper><V2PropertiesPage /></V2AuthGateWrapper></V2AuthBridgeWrapper>} />
-              <Route path="/v2-search" element={<V2AuthBridgeWrapper><V2AuthGateWrapper><V2SearchPage /></V2AuthGateWrapper></V2AuthBridgeWrapper>} />
-              <Route path="/v2-map" element={<V2AuthBridgeWrapper><V2AuthGateWrapper><V2MapPage /></V2AuthGateWrapper></V2AuthBridgeWrapper>} />
-              <Route path="/v2-messages" element={<V2AuthBridgeWrapper><V2AuthGateWrapper><V2MessagesPage /></V2AuthGateWrapper></V2AuthBridgeWrapper>} />
-              <Route path="/v2-notifications" element={<V2AuthBridgeWrapper><V2AuthGateWrapper><V2NotificationsPage /></V2AuthGateWrapper></V2AuthBridgeWrapper>} />
-              <Route path="/v2-payments" element={<V2AuthBridgeWrapper><V2AuthGateWrapper><V2PaymentsPage /></V2AuthGateWrapper></V2AuthBridgeWrapper>} />
+              <Route path="/v2-home" element={<V2AuthBridgeWrapper><V2AuthGate fallback={<V2AuthPage />}><V2HomePage /></V2AuthGate></V2AuthBridgeWrapper>} />
+              <Route path="/v2-owner" element={<V2AuthBridgeWrapper><V2AuthGate fallback={<V2AuthPage />}><V2OwnerDashboardPage /></V2AuthGate></V2AuthBridgeWrapper>} />
+              <Route path="/v2-tenant" element={<V2AuthBridgeWrapper><V2AuthGate fallback={<V2AuthPage />}><V2TenantDashboardPage /></V2AuthGate></V2AuthBridgeWrapper>} />
+              <Route path="/v2-bookings" element={<V2AuthBridgeWrapper><V2AuthGate fallback={<V2AuthPage />}><V2BookingsPage /></V2AuthGate></V2AuthBridgeWrapper>} />
+              <Route path="/v2-properties" element={<V2AuthBridgeWrapper><V2AuthGate fallback={<V2AuthPage />}><V2PropertiesPage /></V2AuthGate></V2AuthBridgeWrapper>} />
+              <Route path="/v2-search" element={<V2AuthBridgeWrapper><V2AuthGate fallback={<V2AuthPage />}><V2SearchPage /></V2AuthGate></V2AuthBridgeWrapper>} />
+              <Route path="/v2-map" element={<V2AuthBridgeWrapper><V2AuthGate fallback={<V2AuthPage />}><V2MapPage /></V2AuthGate></V2AuthBridgeWrapper>} />
+              <Route path="/v2-messages" element={<V2AuthBridgeWrapper><V2AuthGate fallback={<V2AuthPage />}><V2MessagesPage /></V2AuthGate></V2AuthBridgeWrapper>} />
+              <Route path="/v2-notifications" element={<V2AuthBridgeWrapper><V2AuthGate fallback={<V2AuthPage />}><V2NotificationsPage /></V2AuthGate></V2AuthBridgeWrapper>} />
+              <Route path="/v2-payments" element={<V2AuthBridgeWrapper><V2AuthGate fallback={<V2AuthPage />}><V2PaymentsPage /></V2AuthGate></V2AuthBridgeWrapper>} />
 
               {/* SEO catch-all */}
               <Route path="/seo/*" element={<SEOCatchAll />} />
