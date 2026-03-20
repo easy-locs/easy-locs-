@@ -7,8 +7,8 @@ import { computeFreshnessScore } from "./listingLifecycle";
 
 export interface RankableListing {
   id: string;
-  latitude?: number | null;
-  longitude?: number | null;
+  lat?: number | null;
+  lng?: number | null;
   published_at?: string | null;
   boost_enabled?: boolean;
   boost_multiplier?: number;
