@@ -1,0 +1,1 @@
+create index if not exists idx_payment_events_processed on public.payment_events(processed);

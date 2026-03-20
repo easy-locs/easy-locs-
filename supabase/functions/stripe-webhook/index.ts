@@ -305,7 +305,20 @@ serve(async (req) => {
 async function handleCheckoutCompleted(supabase: any, stripe: Stripe, session: Stripe.Checkout.Session) {
   const metadata = session.metadata || {};
   const type = metadata.type;
-  logStep("Checkout completed", { type, metadata });
+  const flow = metadata.flow;
+  logStep("Checkout completed", { type, flow, metadata });
+
+  // ── V2 booking payment flow ──
+  if (flow === "booking_payment" && metadata.bookingId) {
+    await handleV2BookingPayment(supabase, session);
+    return;
+  }
+
+  // ── V2 rent payment flow ──
+  if (flow === "rent_payment" && metadata.rentPaymentId) {
+    await handleV2RentPayment(supabase, session);
+    return;
+  }
 
   if (type === "seasonal_booking") {
     await handleBookingPayment(supabase, metadata, session);
@@ -843,7 +856,176 @@ async function handleRentPayment(supabase: any, metadata: Record<string, string>
   logStep("Rent payment fully processed");
 }
 
-async function handleSubscriptionChange(supabase: any, stripe: Stripe, subscription: Stripe.Subscription) {
+/* ── V2 Booking Payment (bookings table with ownerOrbitId) ── */
+async function handleV2BookingPayment(supabase: any, session: Stripe.Checkout.Session) {
+  const meta = session.metadata || {};
+  const bookingId = meta.bookingId;
+  const listingId = meta.listingId || null;
+  const paymentIntentId = session.payment_intent as string | null;
+  const amountTotal = session.amount_total ?? 0;
+  const currency = (session.currency ?? "aed").toUpperCase();
+  const now = new Date().toISOString();
+  const eventId = `stripe_v2_booking_${session.id}`;
+
+  logStep("V2 booking payment", { bookingId, paymentIntentId });
+
+  // Idempotency check
+  const { data: existing } = await supabase
+    .from("payment_events")
+    .select("processed")
+    .eq("id", eventId)
+    .maybeSingle();
+  if (existing?.processed) { logStep("V2 booking already processed"); return; }
+
+  await supabase.from("payment_events").upsert({
+    id: eventId,
+    provider: "stripe",
+    event_type: "checkout.session.completed",
+    external_id: session.id,
+    processed: false,
+    metadata: { bookingId, listingId, paymentIntentId },
+    created_at: now,
+  });
+
+  const { data: booking, error: bErr } = await supabase
+    .from("bookings")
+    .select("*")
+    .eq("id", bookingId)
+    .single();
+  if (bErr || !booking) { logStep("V2 booking not found", { bookingId }); return; }
+
+  const nextStatus = booking.status === "pending_payment" ? "confirmed" : booking.status;
+  await supabase.from("bookings").update({
+    status: nextStatus,
+    transactionId: paymentIntentId,
+    updatedAt: now,
+  }).eq("id", bookingId);
+
+  await supabase.from("wallet_transactions").insert({
+    id: `tx_${crypto.randomUUID().slice(0, 8)}`,
+    type: "payment",
+    status: "success",
+    amount: amountTotal / 100,
+    currency,
+    reference: `booking:${bookingId}`,
+    createdAt: now,
+  });
+
+  const { data: ownerOrbit } = await supabase
+    .from("orbit_profiles")
+    .select("id, orbit_id")
+    .eq("orbit_id", booking.ownerOrbitId)
+    .maybeSingle();
+
+  if (ownerOrbit?.id) {
+    await supabase.from("app_notifications").insert({
+      id: `notif_${crypto.randomUUID().slice(0, 8)}`,
+      user_id: ownerOrbit.id,
+      orbitId: booking.ownerOrbitId,
+      type: "payment",
+      title: "Booking payment received",
+      body: `Booking ${bookingId} paid successfully`,
+      read: false,
+      metadata: { bookingId, paymentIntentId, listingId },
+      createdAt: now,
+    });
+  }
+
+  if (booking.conversationId) {
+    await supabase.from("chat_messages").insert({
+      id: `msg_${crypto.randomUUID().slice(0, 8)}`,
+      conversationId: booking.conversationId,
+      senderOrbitId: booking.ownerOrbitId,
+      type: "payment",
+      body: "Payment received and booking confirmed",
+      metadata: { bookingId, paymentIntentId },
+      createdAt: now,
+    });
+  }
+
+  await supabase.from("payment_events").update({ processed: true }).eq("id", eventId);
+  logStep("V2 booking payment fully processed", { bookingId });
+}
+
+/* ── V2 Rent Payment (rent_payments table with ownerOrbitId) ── */
+async function handleV2RentPayment(supabase: any, session: Stripe.Checkout.Session) {
+  const meta = session.metadata || {};
+  const rentPaymentId = meta.rentPaymentId;
+  const leaseId = meta.leaseId || null;
+  const paymentIntentId = session.payment_intent as string | null;
+  const amountTotal = session.amount_total ?? 0;
+  const currency = (session.currency ?? "aed").toUpperCase();
+  const now = new Date().toISOString();
+  const eventId = `stripe_v2_rent_${session.id}`;
+
+  logStep("V2 rent payment", { rentPaymentId, paymentIntentId });
+
+  const { data: existing } = await supabase
+    .from("payment_events")
+    .select("processed")
+    .eq("id", eventId)
+    .maybeSingle();
+  if (existing?.processed) { logStep("V2 rent already processed"); return; }
+
+  await supabase.from("payment_events").upsert({
+    id: eventId,
+    provider: "stripe",
+    event_type: "checkout.session.completed",
+    external_id: session.id,
+    processed: false,
+    metadata: { rentPaymentId, leaseId, paymentIntentId },
+    created_at: now,
+  });
+
+  const { data: rentPayment, error: rErr } = await supabase
+    .from("rent_payments")
+    .select("*")
+    .eq("id", rentPaymentId)
+    .single();
+  if (rErr || !rentPayment) { logStep("V2 rent payment not found"); return; }
+
+  await supabase.from("rent_payments").update({
+    status: "paid",
+    paidAt: now,
+    transactionId: paymentIntentId,
+    updatedAt: now,
+  }).eq("id", rentPaymentId);
+
+  await supabase.from("wallet_transactions").insert({
+    id: `tx_${crypto.randomUUID().slice(0, 8)}`,
+    type: "payment",
+    status: "success",
+    amount: amountTotal / 100,
+    currency,
+    reference: `rent:${rentPaymentId}`,
+    createdAt: now,
+  });
+
+  const { data: ownerOrbit } = await supabase
+    .from("orbit_profiles")
+    .select("id, orbit_id")
+    .eq("orbit_id", rentPayment.ownerOrbitId)
+    .maybeSingle();
+
+  if (ownerOrbit?.id) {
+    await supabase.from("app_notifications").insert({
+      id: `notif_${crypto.randomUUID().slice(0, 8)}`,
+      user_id: ownerOrbit.id,
+      orbitId: rentPayment.ownerOrbitId,
+      type: "rent",
+      title: "Rent payment received",
+      body: `Rent payment ${rentPaymentId} paid successfully`,
+      read: false,
+      metadata: { rentPaymentId, paymentIntentId, leaseId },
+      createdAt: now,
+    });
+  }
+
+  await supabase.from("payment_events").update({ processed: true }).eq("id", eventId);
+  logStep("V2 rent payment fully processed", { rentPaymentId });
+}
+
+
   const customerId = subscription.customer as string;
   const userId = await getUserIdByCustomerId(supabase, stripe, customerId);
   if (!userId) { logStep("No user found for customer", { customerId }); return; }
