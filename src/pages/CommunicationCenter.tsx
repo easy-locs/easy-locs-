@@ -1,10 +1,9 @@
 /**
  * CommunicationCenter — Orbit Communication System.
- * Full-screen messaging experience integrated with Easy-Locs platform.
+ * Full-screen messaging experience — NO sidebar, standalone layout.
  */
 import { useState, useEffect, useCallback, useRef } from "react";
-import DashboardLayout from "@/components/dashboard/DashboardLayout";
-import { Plus, Zap, Lock } from "lucide-react";
+import { Plus, Zap, Lock, ShieldCheck } from "lucide-react";
 import { motion } from "framer-motion";
 import { useSearchParams } from "react-router-dom";
 import { useI18n } from "@/lib/i18n";
