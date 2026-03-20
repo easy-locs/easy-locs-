@@ -1,11 +1,45 @@
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
+import { useDriverLive } from "@/hooks/useDriverLive";
+import { setDriverLiveStatus } from "@/lib/driver/driverLive";
 import { ArrowLeft, Navigation, Power, Zap } from "lucide-react";
+import { toast } from "sonner";
 
 export default function DriverDashboardPage() {
   const navigate = useNavigate();
-  const [online, setOnline] = useState(false);
-  const [available, setAvailable] = useState(false);
+  const { user } = useAuth();
+  const { data: profile, refetch } = useDriverLive(user?.id);
+
+  const online = !!profile?.is_online;
+  const available = !!profile?.is_available;
+
+  const toggleOnline = async () => {
+    if (!user?.id) return;
+    try {
+      await setDriverLiveStatus({
+        userId: user.id,
+        isOnline: !online,
+        currentStatus: !online ? "online" : "offline",
+      });
+      refetch();
+    } catch (err: any) {
+      toast.error(err.message || "Could not update online status");
+    }
+  };
+
+  const toggleAvailable = async () => {
+    if (!user?.id) return;
+    try {
+      await setDriverLiveStatus({
+        userId: user.id,
+        isAvailable: !available,
+        currentStatus: !available ? "available" : "busy",
+      });
+      refetch();
+    } catch (err: any) {
+      toast.error(err.message || "Could not update availability");
+    }
+  };
 
   return (
     <div className="min-h-[100dvh] flex flex-col bg-background">
@@ -28,7 +62,7 @@ export default function DriverDashboardPage() {
               <span className="text-sm font-semibold text-foreground">Online</span>
             </div>
             <button
-              onClick={() => setOnline((v) => !v)}
+              onClick={toggleOnline}
               className={`rounded-full px-4 py-2 text-xs font-bold transition-colors ${
                 online ? "bg-emerald-500/10 text-emerald-400" : "bg-muted text-muted-foreground"
               }`}
@@ -39,10 +73,10 @@ export default function DriverDashboardPage() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Zap className="w-4 h-4 text-muted-foreground" />
-              <span className="text-sm font-semibold text-foreground">Available</span>
+              <span className="text-sm font-semibold text-foreground">Availability</span>
             </div>
             <button
-              onClick={() => setAvailable((v) => !v)}
+              onClick={toggleAvailable}
               className={`rounded-full px-4 py-2 text-xs font-bold transition-colors ${
                 available ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"
               }`}
@@ -52,10 +86,12 @@ export default function DriverDashboardPage() {
           </div>
         </div>
 
-        {/* Active mission */}
+        {/* Profile Status */}
         <div className="rounded-2xl border border-border/20 bg-card p-4">
-          <p className="text-sm font-bold text-foreground">Active Mission</p>
-          <p className="mt-2 text-sm text-muted-foreground">No active mission</p>
+          <p className="text-sm font-bold text-foreground">Profile Status</p>
+          <p className="mt-2 text-sm text-muted-foreground">
+            current: {(profile as any)?.current_status || "unknown"}
+          </p>
         </div>
 
         {/* Quick actions */}
