@@ -15,43 +15,53 @@ const DUBAI_FALLBACK = { lat: 25.2048, lng: 55.2708, accuracy: 5000, timestamp: 
 
 export function useCurrentLocation(opts?: { watch?: boolean }) {
   const started = useRef(false);
-  const store = useLocationStore();
+  const setCurrentLocation = useLocationStore((s) => s.setCurrentLocation);
+  const setPermissionState = useLocationStore((s) => s.setPermissionState);
+  const setLoading = useLocationStore((s) => s.setLoading);
+  const setIsFallback = useLocationStore((s) => s.setIsFallback);
+  const setError = useLocationStore((s) => s.setError);
+  const currentLocation = useLocationStore((s) => s.currentLocation);
+  const lastKnownLocation = useLocationStore((s) => s.lastKnownLocation);
 
   useEffect(() => {
     if (started.current) return;
     started.current = true;
 
     (async () => {
-      store.setLoading(true);
+      setLoading(true);
       const perm = await getGeoPermissionState();
-      store.setPermissionState(perm);
+      setPermissionState(perm);
 
       if (perm === "denied") {
-        store.setIsFallback(true);
-        if (!store.currentLocation) {
-          store.setCurrentLocation(DUBAI_FALLBACK);
+        setIsFallback(true);
+        if (!currentLocation) {
+          setCurrentLocation(lastKnownLocation || DUBAI_FALLBACK);
         }
-        store.setLoading(false);
+        setLoading(false);
         return;
       }
 
       try {
         const pos = await getCurrentPositionHighAccuracy();
-        store.setCurrentLocation(pos);
-        store.setPermissionState("granted");
+        setCurrentLocation(pos);
+        setPermissionState("granted");
+        setError(null);
       } catch {
-        store.setIsFallback(true);
-        store.setPermissionState("denied");
-        if (!store.currentLocation) {
-          store.setCurrentLocation(store.lastKnownLocation || DUBAI_FALLBACK);
+        setIsFallback(true);
+        setPermissionState("denied");
+        if (!currentLocation) {
+          setCurrentLocation(lastKnownLocation || DUBAI_FALLBACK);
         }
       } finally {
-        store.setLoading(false);
+        setLoading(false);
       }
 
       if (opts?.watch) {
         watchCurrentPosition(
-          (pos) => store.setCurrentLocation(pos),
+          (pos) => {
+            setCurrentLocation(pos);
+            setError(null);
+          },
           () => {},
         );
       }
@@ -64,10 +74,10 @@ export function useCurrentLocation(opts?: { watch?: boolean }) {
   }, []);
 
   return {
-    location: store.currentLocation,
-    loading: store.loading,
-    error: store.error,
-    permission: store.permissionState,
-    isFallback: store.isFallback,
+    location: useLocationStore((s) => s.currentLocation),
+    loading: useLocationStore((s) => s.loading),
+    error: useLocationStore((s) => s.error),
+    permission: useLocationStore((s) => s.permissionState),
+    isFallback: useLocationStore((s) => s.isFallback),
   };
 }

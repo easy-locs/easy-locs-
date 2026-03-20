@@ -1,5 +1,6 @@
 /**
  * geolocation.ts — Real GPS helpers. Single source of truth for raw position access.
+ * Enhanced with accuracy classification and explicit fallback policy.
  */
 
 export interface GeoResult {
@@ -7,6 +8,7 @@ export interface GeoResult {
   lng: number;
   accuracy: number;
   timestamp: string;
+  source: "gps" | "lastKnown" | "manual" | "fallback";
 }
 
 export interface GeoError {
@@ -47,6 +49,7 @@ export function getCurrentPositionHighAccuracy(): Promise<GeoResult> {
           lng: pos.coords.longitude,
           accuracy: pos.coords.accuracy,
           timestamp: new Date(pos.timestamp).toISOString(),
+          source: "gps",
         });
       },
       (err) => {
@@ -73,6 +76,7 @@ export function watchCurrentPosition(
         lng: pos.coords.longitude,
         accuracy: pos.coords.accuracy,
         timestamp: new Date(pos.timestamp).toISOString(),
+        source: "gps",
       });
     },
     (err) => {
@@ -87,4 +91,12 @@ export function stopWatchingPosition(): void {
     navigator.geolocation.clearWatch(_watchId);
     _watchId = null;
   }
+}
+
+/** Classify accuracy level */
+export function classifyAccuracy(meters: number): "excellent" | "good" | "approximate" | "poor" {
+  if (meters <= 10) return "excellent";
+  if (meters <= 50) return "good";
+  if (meters <= 500) return "approximate";
+  return "poor";
 }
