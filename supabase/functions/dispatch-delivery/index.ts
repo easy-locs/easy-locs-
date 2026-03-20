@@ -73,6 +73,7 @@ serve(async (req) => {
 
       const { data: job } = await supabaseAdmin.from("delivery_jobs").select("*").eq("id", job_id).single();
       if (!job) throw new Error("Job not found");
+      await assertJobAuthority(supabaseAdmin, userId, job);
 
       // Find online drivers
       const { data: drivers } = await supabaseAdmin
@@ -89,7 +90,6 @@ serve(async (req) => {
       const maxDist = max_distance_km || 15;
 
       if (ranked) {
-        // Use ranking engine
         const rankedDrivers = rankAndScoreDrivers(drivers, job, maxDist);
         return json({ success: true, drivers: rankedDrivers, total: rankedDrivers.length, ranked: true });
       }
@@ -312,6 +312,7 @@ serve(async (req) => {
 
       const { data: job } = await supabaseAdmin.from("delivery_jobs").select("*").eq("id", job_id).single();
       if (!job) throw new Error("Job not found");
+      await assertJobAuthority(supabaseAdmin, userId, job);
 
       // Check no existing active escrow
       const { data: existing } = await supabaseAdmin.from("escrow_payments")
@@ -385,6 +386,11 @@ serve(async (req) => {
     if (action === "escrow_status") {
       const { job_id } = body;
       if (!job_id) throw new Error("job_id required");
+
+      // Verify user has access to this job
+      const { data: job } = await supabaseAdmin.from("delivery_jobs").select("*").eq("id", job_id).single();
+      if (!job) throw new Error("Job not found");
+      await assertJobAuthority(supabaseAdmin, userId, job);
 
       const { data: escrow } = await supabaseAdmin.from("escrow_payments")
         .select("*").eq("job_id", job_id).order("created_at", { ascending: false }).limit(1).maybeSingle();
