@@ -571,6 +571,25 @@ const CustomerScheduledOrderPage = safeLazy(() => import("./pages/customer/Custo
 const MerchantStaffRolesPage = safeLazy(() => import("./pages/merchant/MerchantStaffRolesPage"), "MerchantStaffRolesPage");
 const MerchantPermissionsMatrixPage = safeLazy(() => import("./pages/merchant/MerchantPermissionsMatrixPage"), "MerchantPermissionsMatrixPage");
 const MerchantBusinessHoursPage = safeLazy(() => import("./pages/merchant/MerchantBusinessHoursPage"), "MerchantBusinessHoursPage");
+// MA-MW block
+const AdminRegionPerformancePage = safeLazy(() => import("./pages/admin/AdminRegionPerformancePage"), "AdminRegionPerformancePage");
+const AdminCourierHeatmapPage = safeLazy(() => import("./pages/admin/AdminCourierHeatmapPage"), "AdminCourierHeatmapPage");
+const AdminCustomerRetentionPage = safeLazy(() => import("./pages/admin/AdminCustomerRetentionPage"), "AdminCustomerRetentionPage");
+const CustomerPartySplitLinksPage = safeLazy(() => import("./pages/customer/CustomerPartySplitLinksPage"), "CustomerPartySplitLinksPage");
+const CustomerShareCartPage = safeLazy(() => import("./pages/customer/CustomerShareCartPage"), "CustomerShareCartPage");
+const MerchantRushPricingPage = safeLazy(() => import("./pages/merchant/MerchantRushPricingPage"), "MerchantRushPricingPage");
+const AdminGrowthCampaignsPage = safeLazy(() => import("./pages/admin/AdminGrowthCampaignsPage"), "AdminGrowthCampaignsPage");
+const AdminPromoPerformancePage = safeLazy(() => import("./pages/admin/AdminPromoPerformancePage"), "AdminPromoPerformancePage");
+const CustomerPaymentMethodsHubPage = safeLazy(() => import("./pages/customer/CustomerPaymentMethodsHubPage"), "CustomerPaymentMethodsHubPage");
+const CustomerOrderPreferencesPage = safeLazy(() => import("./pages/customer/CustomerOrderPreferencesPage"), "CustomerOrderPreferencesPage");
+const MerchantPackagingSettingsPage = safeLazy(() => import("./pages/merchant/MerchantPackagingSettingsPage"), "MerchantPackagingSettingsPage");
+const MerchantOrderThrottlePage = safeLazy(() => import("./pages/merchant/MerchantOrderThrottlePage"), "MerchantOrderThrottlePage");
+const AdminAcquisitionFunnelPage = safeLazy(() => import("./pages/admin/AdminAcquisitionFunnelPage"), "AdminAcquisitionFunnelPage");
+const AdminDriverIncentivesPage = safeLazy(() => import("./pages/admin/AdminDriverIncentivesPage"), "AdminDriverIncentivesPage");
+const CustomerFamilyProfilePage = safeLazy(() => import("./pages/customer/CustomerFamilyProfilePage"), "CustomerFamilyProfilePage");
+const CustomerFavoriteItemsPage = safeLazy(() => import("./pages/customer/CustomerFavoriteItemsPage"), "CustomerFavoriteItemsPage");
+const MerchantCancellationRulesPage = safeLazy(() => import("./pages/merchant/MerchantCancellationRulesPage"), "MerchantCancellationRulesPage");
+const MerchantCustomerChatSettingsPage = safeLazy(() => import("./pages/merchant/MerchantCustomerChatSettingsPage"), "MerchantCustomerChatSettingsPage");
 
 // City sub-page wrappers
 const CityServicesPage = () => <CityHubPage subPage="services" />;
@@ -1199,6 +1218,25 @@ const App = () => (
                 <Route path="/merchant/staff-roles/:merchantId" element={<ProtectedRoute><MerchantStaffRolesPage /></ProtectedRoute>} />
                 <Route path="/merchant/permissions/:merchantId" element={<ProtectedRoute><MerchantPermissionsMatrixPage /></ProtectedRoute>} />
                 <Route path="/merchant/business-hours/:merchantId" element={<ProtectedRoute><MerchantBusinessHoursPage /></ProtectedRoute>} />
+                {/* MA-MW */}
+                <Route path="/admin/region-performance" element={<ProtectedRoute><AdminRegionPerformancePage /></ProtectedRoute>} />
+                <Route path="/admin/courier-heatmap" element={<ProtectedRoute><AdminCourierHeatmapPage /></ProtectedRoute>} />
+                <Route path="/admin/customer-retention" element={<ProtectedRoute><AdminCustomerRetentionPage /></ProtectedRoute>} />
+                <Route path="/checkout/party-split-links" element={<ProtectedRoute><CustomerPartySplitLinksPage /></ProtectedRoute>} />
+                <Route path="/checkout/share-cart" element={<ProtectedRoute><CustomerShareCartPage /></ProtectedRoute>} />
+                <Route path="/merchant/rush-pricing/:merchantId" element={<ProtectedRoute><MerchantRushPricingPage /></ProtectedRoute>} />
+                <Route path="/admin/growth-campaigns" element={<ProtectedRoute><AdminGrowthCampaignsPage /></ProtectedRoute>} />
+                <Route path="/admin/promo-performance" element={<ProtectedRoute><AdminPromoPerformancePage /></ProtectedRoute>} />
+                <Route path="/me/payment-methods" element={<ProtectedRoute><CustomerPaymentMethodsHubPage /></ProtectedRoute>} />
+                <Route path="/me/order-preferences" element={<ProtectedRoute><CustomerOrderPreferencesPage /></ProtectedRoute>} />
+                <Route path="/merchant/packaging/:merchantId" element={<ProtectedRoute><MerchantPackagingSettingsPage /></ProtectedRoute>} />
+                <Route path="/merchant/order-throttle/:merchantId" element={<ProtectedRoute><MerchantOrderThrottlePage /></ProtectedRoute>} />
+                <Route path="/admin/acquisition-funnel" element={<ProtectedRoute><AdminAcquisitionFunnelPage /></ProtectedRoute>} />
+                <Route path="/admin/driver-incentives" element={<ProtectedRoute><AdminDriverIncentivesPage /></ProtectedRoute>} />
+                <Route path="/me/family-profile" element={<ProtectedRoute><CustomerFamilyProfilePage /></ProtectedRoute>} />
+                <Route path="/me/favorite-items" element={<ProtectedRoute><CustomerFavoriteItemsPage /></ProtectedRoute>} />
+                <Route path="/merchant/cancellation-rules/:merchantId" element={<ProtectedRoute><MerchantCancellationRulesPage /></ProtectedRoute>} />
+                <Route path="/merchant/chat-settings/:merchantId" element={<ProtectedRoute><MerchantCustomerChatSettingsPage /></ProtectedRoute>} />
               <Route path="/city/:countryCode/:city/:vertical/:locale" element={<CityVerticalPage />} />
 
               {/* Guest / Public */}
