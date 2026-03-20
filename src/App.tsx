@@ -456,6 +456,20 @@ const AdminDeliveryIncidentsPage = safeLazy(() => import("./pages/admin/AdminDel
 const CustomerPaymentActivityPage = safeLazy(() => import("./pages/customer/CustomerPaymentActivityPage"), "CustomerPaymentActivityPage");
 const DriverAvailabilityZonesPage = safeLazy(() => import("./pages/driver/DriverAvailabilityZonesPage"), "DriverAvailabilityZonesPage");
 const AdminGrowthDashboardPage = safeLazy(() => import("./pages/admin/AdminGrowthDashboardPage"), "AdminGrowthDashboardPage");
+const CustomerOrderReceiptsPage = safeLazy(() => import("./pages/customer/CustomerOrderReceiptsPage"), "CustomerOrderReceiptsPage");
+const MerchantRefundRequestsPage = safeLazy(() => import("./pages/merchant/MerchantRefundRequestsPage"), "MerchantRefundRequestsPage");
+const AdminCouponOversightPage = safeLazy(() => import("./pages/admin/AdminCouponOversightPage"), "AdminCouponOversightPage");
+const CustomerNotificationCenterPage = safeLazy(() => import("./pages/customer/CustomerNotificationCenterPage"), "CustomerNotificationCenterPage");
+const DriverCompletedDeliveriesPage = safeLazy(() => import("./pages/driver/DriverCompletedDeliveriesPage"), "DriverCompletedDeliveriesPage");
+const AdminActiveSessionsPage = safeLazy(() => import("./pages/admin/AdminActiveSessionsPage"), "AdminActiveSessionsPage");
+const MerchantMenuBulkEditPage = safeLazy(() => import("./pages/merchant/MerchantMenuBulkEditPage"), "MerchantMenuBulkEditPage");
+const AdminFraudMonitorPage = safeLazy(() => import("./pages/admin/AdminFraudMonitorPage"), "AdminFraudMonitorPage");
+const CustomerLiveTrackingPage = safeLazy(() => import("./pages/customer/CustomerLiveTrackingPage"), "CustomerLiveTrackingPage");
+const MerchantRealtimeOrdersBoard = safeLazy(() => import("./pages/merchant/MerchantRealtimeOrdersBoard"), "MerchantRealtimeOrdersBoard");
+const AdminGlobalHeatmapPage = safeLazy(() => import("./pages/admin/AdminGlobalHeatmapPage"), "AdminGlobalHeatmapPage");
+const CustomerQuickReorderPage = safeLazy(() => import("./pages/customer/CustomerQuickReorderPage"), "CustomerQuickReorderPage");
+const DriverLiveMissionsPage = safeLazy(() => import("./pages/driver/DriverLiveMissionsPage"), "DriverLiveMissionsPage");
+const AdminRealtimeAlertsPage = safeLazy(() => import("./pages/admin/AdminRealtimeAlertsPage"), "AdminRealtimeAlertsPage");
 
 // City sub-page wrappers
 const CityServicesPage = () => <CityHubPage subPage="services" />;
