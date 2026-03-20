@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useCouponsStore } from "@/stores/couponsStore";
 
-export function CouponOwnerPanel({ ownerOrbitId }: { ownerOrbitId?: string }) {
+export function CouponOwnerPanel() {
   const hydrateOwnerCoupons = useCouponsStore((s) => s.hydrateOwnerCoupons);
   const createCoupon = useCouponsStore((s) => s.createCoupon);
   const toggleCoupon = useCouponsStore((s) => s.toggleCoupon);
@@ -12,8 +12,8 @@ export function CouponOwnerPanel({ ownerOrbitId }: { ownerOrbitId?: string }) {
   const [discountValue, setDiscountValue] = useState("10");
 
   useEffect(() => {
-    if (ownerOrbitId) void hydrateOwnerCoupons(ownerOrbitId);
-  }, [ownerOrbitId, hydrateOwnerCoupons]);
+    void hydrateOwnerCoupons();
+  }, [hydrateOwnerCoupons]);
 
   return (
     <div className="p-4 space-y-4">
@@ -46,7 +46,6 @@ export function CouponOwnerPanel({ ownerOrbitId }: { ownerOrbitId?: string }) {
         className="w-full rounded-lg bg-primary px-3 py-2 text-sm font-medium text-primary-foreground"
         onClick={() =>
           void createCoupon({
-            ownerOrbitId: ownerOrbitId ?? "",
             code,
             discountType,
             discountValue: Number(discountValue),
@@ -69,7 +68,6 @@ export function CouponOwnerPanel({ ownerOrbitId }: { ownerOrbitId?: string }) {
             <p className="text-xs text-muted-foreground">
               Used {coupon.used_count} / {coupon.usage_limit ?? "∞"}
             </p>
-
             <button
               className="text-xs text-primary underline"
               onClick={() => void toggleCoupon(coupon.id, !coupon.active)}
