@@ -39,7 +39,7 @@ type PropertyManagementStore = {
   rentPayments: RentPaymentRecord[];
 
   createUnit: (input: CreateUnitInput) => PropertyUnitManagement | null;
-  createLease: (input: CreateLeaseInput) => LeaseRecord | null;
+  createLease: (input: CreateLeaseInput) => Promise<LeaseRecord | null>;
   createRentPayment: (input: CreateRentPaymentInput) => RentPaymentRecord | null;
   payRent: (paymentId: string) => void;
 
