@@ -1,5 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 
+declare const __BUILD_TIMESTAMP__: string;
+
 export type RuntimeAuditStatus = "pass" | "warn" | "fail";
 
 export type RuntimeAuditCheck = {
@@ -11,8 +13,38 @@ export type RuntimeAuditCheck = {
 
 export type RuntimeAuditReport = {
   generatedAt: string;
+  buildTimestamp: string;
+  auditVersion: string;
+  environmentName: string;
   checks: RuntimeAuditCheck[];
 };
+
+const RUNTIME_AUDIT_VERSION = "2026-03-21-v3";
+const RUNTIME_AUDIT_BUILD_TIMESTAMP = import.meta.env.VITE_APP_VERSION || __BUILD_TIMESTAMP__;
+
+function getRuntimeAuditEnvironmentName() {
+  if (typeof window === "undefined") return "server";
+
+  const host = window.location.hostname;
+
+  if (host.includes("lovableproject.com") || host.includes("id-preview--")) {
+    return "lovable-preview";
+  }
+
+  if (host === "easy-locs.lovable.app") {
+    return "production";
+  }
+
+  if (host === "www.easy-locs.com" || host === "easy-locs.com") {
+    return "custom-domain";
+  }
+
+  if (host.includes("localhost") || host.includes("127.0.0.1")) {
+    return "local";
+  }
+
+  return `other:${host}`;
+}
 
 function pass(label: string, key: string, detail?: string): RuntimeAuditCheck {
   return { key, label, status: "pass", detail };
@@ -221,6 +253,9 @@ export async function runRuntimeAudit(): Promise<RuntimeAuditReport> {
 
   return {
     generatedAt: new Date().toISOString(),
+    buildTimestamp: RUNTIME_AUDIT_BUILD_TIMESTAMP,
+    auditVersion: RUNTIME_AUDIT_VERSION,
+    environmentName: getRuntimeAuditEnvironmentName(),
     checks,
   };
 }
