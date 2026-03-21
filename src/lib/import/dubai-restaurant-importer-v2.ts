@@ -7,9 +7,12 @@
  *   - storefront_pages
  * All marked as unclaimed / coming_soon.
  * Now properly links storefront_pages.merchant_profile_id.
+ * V2.1: Adds duplicate detection + zone assignment on import.
  */
 import { supabase } from "@/integrations/supabase/client";
 import { generateDubaiRestaurants, type GeneratedRestaurant } from "./dubai-restaurant-generator";
+import { checkStorefrontDuplicate } from "@/lib/geo/duplicateGuard";
+import { assignZoneToStorefront } from "@/lib/zones/autoAssignZone";
 
 export interface ImportProgress {
   total: number;
