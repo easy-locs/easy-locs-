@@ -784,7 +784,7 @@ const App = () => (
            
            <SkipLink />
            <Suspense fallback={<PageLoader />}>
-            <main id="main-content" className="pb-[calc(56px+env(safe-area-inset-bottom,0px))]">
+            <SwipeableMain className="pb-[calc(56px+env(safe-area-inset-bottom,0px))]">
             <Routes>
               {/* Emergency render test — no wrappers */}
               <Route path="/emergency-test" element={<EmergencyRenderTestPage />} />
