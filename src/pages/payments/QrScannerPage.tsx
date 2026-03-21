@@ -308,8 +308,8 @@ export default function QrScannerPage() {
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Could not read QR from image";
       setStartErrorMessage(msg);
-      setErrorSafe(msg);
-      setStateSafe("error");
+      // Don't set global error/state — allow user to retry or switch to live scan
+      toast.error("No QR code found in image. Try another image or use live scan.");
     }
   }, [handleQrResult, setErrorSafe, setStateSafe]);
 
