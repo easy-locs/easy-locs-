@@ -63,7 +63,12 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const isPropertyHubRoute = location.pathname.startsWith("/property-hub");
   const isAdminRoute = location.pathname.startsWith("/admin");
 
-  // Keep onboarding accessible for brand-new users, but never force-redirect existing sessions to it.
+  // Onboarding gate: force redirect to /onboarding if not completed (single source of truth)
+  if (!onboardingCompleted && !isOnboarding) {
+    return <Navigate to="/onboarding" replace />;
+  }
+
+  // Already completed onboarding but trying to access /onboarding → redirect to role dashboard
   if (isOnboarding && onboardingCompleted) {
     const dest = activeRole === "tenant" ? "/tenant" : activeRole === "client" ? "/client" : "/dashboard";
     return <Navigate to={dest} replace />;
