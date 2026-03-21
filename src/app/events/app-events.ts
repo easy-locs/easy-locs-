@@ -36,6 +36,7 @@ export type AppEvent =
   | { type: "geo.position.updated"; payload: { lat: number; lng: number; accuracy: number | null } }
   | { type: "call.started"; payload: { peerOrbitId: string; mode: "audio" | "video" } }
   | { type: "call.ended"; payload: { peerOrbitId: string | null } }
+  | { type: "call.request"; payload: { orgId: string; peerName: string; isVideo: boolean; threadId?: string } }
   | { type: "ui.panel.changed"; payload: { leftPanel?: string | null; rightPanel?: string | null } }
   | { type: "camera.opened"; payload: { mode: "qr" | "call" | "proof" | "avatar" } }
   | { type: "camera.closed"; payload: { mode?: "qr" | "call" | "proof" | "avatar" } };

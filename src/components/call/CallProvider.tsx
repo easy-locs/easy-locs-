@@ -4,6 +4,7 @@
  * Renders IncomingCallDialog and InAppCallDialog globally.
  */
 import { createContext, useContext, useState, useEffect, useCallback, useRef, type ReactNode } from "react";
+import { platformBus } from "@/app/events/platform-bus";
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -245,6 +246,19 @@ export function CallProvider({ children }: { children: ReactNode }) {
     },
     [user]
   );
+
+  // Listen for call.request events from non-React contexts (e.g. contactStore)
+  useEffect(() => {
+    const unsub = platformBus.on("call.request", (event) => {
+      void startCall({
+        orgId: event.payload.orgId,
+        peerName: event.payload.peerName,
+        isVideo: event.payload.isVideo,
+        threadId: event.payload.threadId,
+      });
+    });
+    return unsub;
+  }, [startCall]);
 
   const handleAcceptIncoming = useCallback(async () => {
     if (!user || !incomingCallId) return;
