@@ -3,7 +3,7 @@
  * Used across Taxi (/ride), Delivery (/send), and food delivery flows.
  */
 import { useState, useEffect, useCallback } from "react";
-import { useGeolocation } from "./useGeolocation";
+import { useLocationStore } from "@/stores/locationStore";
 
 export interface SavedPlace {
   id: string;
