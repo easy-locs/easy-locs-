@@ -8,7 +8,7 @@ import "leaflet/dist/leaflet.css";
 import "leaflet.markercluster";
 import "leaflet.markercluster/dist/MarkerCluster.css";
 import "leaflet.markercluster/dist/MarkerCluster.Default.css";
-import { useGeolocation } from "@/hooks/useGeolocation";
+import { useLocationStore } from "@/stores/locationStore";
 
 interface Shop {
   id: string;
