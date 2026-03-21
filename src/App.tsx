@@ -809,7 +809,7 @@ const App = () => (
               <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/verify-email" element={<VerifyEmail />} />
               <Route path="/auth/callback" element={<AuthCallbackPage />} />
-              <Route path="/onboarding" element={<Onboarding />} />
+              <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
               <Route path="/install" element={<Install />} />
 
               {/* Deep-link public pages */}
