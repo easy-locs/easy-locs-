@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { supabase } from "@/integrations/supabase/client";
-import { useGeoStore } from "@/stores/geoStore";
+import { useLocationStore } from "@/stores/locationStore";
 import { useOrbitStore } from "@/stores/orbitStore";
 
 type DriverLive = {
