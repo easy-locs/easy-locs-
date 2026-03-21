@@ -8,7 +8,6 @@ import { usePropertyDetailStore } from "@/stores/propertyDetailStore";
 import { useRealtimeStore } from "@/stores/realtimeStore";
 import { usePermissionStore } from "@/stores/permissionStore";
 import { useCameraStore } from "@/stores/cameraStore";
-import { useSimpleRtcStore } from "@/stores/simpleRtcStore";
 
 export function V2MegaAudit() {
   const listings = useListingStore((s) => s.listings);
@@ -30,7 +29,6 @@ export function V2MegaAudit() {
   const geoPermission = usePermissionStore((s) => s.geolocation);
   const cameraOpen = useCameraStore((s) => s.isOpen);
   const cameraMode = useCameraStore((s) => s.mode);
-  const rtcInit = useSimpleRtcStore((s) => s.isInitialized);
 
   const sections = [
     { title: "Listings", data: listings },
@@ -39,29 +37,28 @@ export function V2MegaAudit() {
     { title: "Transactions", data: transactions },
     { title: "Conversations", data: conversations },
     { title: "Messages", data: messages },
-    { title: "Property Units", data: units },
+    { title: "Units", data: units },
     { title: "Leases", data: leases },
     { title: "Rent Payments", data: rentPayments },
     { title: "Map Markers", data: markers },
     { title: "Selected Marker", data: selectedMarker },
     { title: "Property Detail", data: propertyDetail },
     { title: "Calendar Days", data: calendarDays },
-    { title: "Realtime Subs", data: realtimeSubs },
+    { title: "Realtime Subscriptions", data: realtimeSubs },
     {
       title: "Permissions",
-      data: { camera: cameraPermission, microphone: micPermission, geolocation: geoPermission },
+      data: { camera: cameraPermission, mic: micPermission, geo: geoPermission },
     },
     { title: "Camera", data: { open: cameraOpen, mode: cameraMode } },
-    { title: "RTC", data: { initialized: rtcInit } },
   ];
 
   return (
-    <div className="space-y-4 p-4 text-xs">
-      {sections.map((section) => (
-        <div key={section.title} className="rounded-lg border border-border p-3">
-          <h4 className="font-semibold text-foreground mb-1">{section.title}</h4>
-          <pre className="whitespace-pre-wrap break-all text-muted-foreground bg-muted rounded p-2 overflow-auto max-h-48">
-            {JSON.stringify(section.data, null, 2)}
+    <div className="space-y-4 p-4">
+      {sections.map((s) => (
+        <div key={s.title} className="rounded-2xl border border-border/30 bg-card p-4">
+          <h3 className="text-sm font-bold text-foreground mb-2">{s.title}</h3>
+          <pre className="text-[11px] text-muted-foreground whitespace-pre-wrap overflow-x-auto max-h-40">
+            {JSON.stringify(s.data, null, 2)}
           </pre>
         </div>
       ))}
