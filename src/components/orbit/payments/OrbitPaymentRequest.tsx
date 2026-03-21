@@ -70,7 +70,7 @@ export default function OrbitPaymentRequest({
     } finally {
       setProcessing(false);
     }
-  }, [numericAmount, recipientUserId, description, threadId, requestMoney, onSuccess]);
+  }, [numericAmount, recipientUserId, description, threadId, user?.id, onSuccess]);
 
   if (success) {
     return (

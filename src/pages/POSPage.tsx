@@ -42,7 +42,7 @@ type POSStep = "catalog" | "cart" | "payment" | "receipt";
 
 export default function POSPage() {
   const { user } = useAuth();
-  const { balance, sendMoney } = useWallet();
+  const { balance: walletBalance } = useWalletBalance();
   const [step, setStep] = useState<POSStep>("catalog");
   const [cart, setCart] = useState<CartItem[]>([]);
   const [customTitle, setCustomTitle] = useState("");
