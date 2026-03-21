@@ -25,7 +25,7 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { useGeolocation } from "@/hooks/useGeolocation";
+import { useLocationStore } from "@/stores/locationStore";
 import { useNavigate } from "react-router-dom";
 import { haptic } from "@/lib/haptics";
 import { Button } from "@/components/ui/button";
