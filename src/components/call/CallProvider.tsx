@@ -206,10 +206,38 @@ export function CallProvider({ children }: { children: ReactNode }) {
           authUserId: authUser.id,
         });
 
+        let receiverOrbitId = opts.orgId;
+        const { data: matchedMember, error: matchedMemberError } = await supabase
+          .from("org_members")
+          .select("user_id")
+          .eq("org_id", opts.orgId)
+          .neq("user_id", authUser.id)
+          .limit(1)
+          .maybeSingle();
+
+        if (!matchedMemberError && matchedMember?.user_id) {
+          receiverOrbitId = matchedMember.user_id;
+        }
+
+        if (receiverOrbitId === authUser.id) {
+          toast.error(t("call.error.start_failed") || "Unable to start call");
+          console.warn("[CallProvider] blocked self-call after receiver resolution", {
+            requestedReceiver: opts.orgId,
+            resolvedReceiver: receiverOrbitId,
+          });
+          return;
+        }
+
+        console.log("[CallProvider] receiver resolved", {
+          requestedReceiver: opts.orgId,
+          resolvedReceiver: receiverOrbitId,
+          viaOrgMember: receiverOrbitId !== opts.orgId,
+        });
+
         // Use idempotent server-side function to prevent duplicates
         const { data: callId, error } = await supabase.rpc("create_call_idempotent" as any, {
           _caller_orbit_id: authUser.id,
-          _receiver_orbit_id: opts.orgId,
+          _receiver_orbit_id: receiverOrbitId,
           _thread_id: opts.threadId || null,
           _context_type: opts.contextType || "listing",
           _context_id: opts.contextId || null,
