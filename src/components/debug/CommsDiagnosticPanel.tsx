@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useDebugCommsStore } from "@/stores/debugCommsStore";
 import { useOrbitStore } from "@/stores/orbitStore";
-import { useGeoStore } from "@/stores/geoStore";
+import { useLocationStore } from "@/stores/locationStore";
 import { cn } from "@/lib/utils";
 
 function StatusDot({ ok }: { ok: boolean }) {
@@ -48,8 +48,8 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 
 export function CommsDiagnosticPanel() {
   const orbit = useOrbitStore((s) => s.profile);
-  const geo = useGeoStore((s) => s.currentPosition);
-  const permission = useGeoStore((s) => s.permission);
+  const currentLocation = useLocationStore((s) => s.currentLocation);
+  const permissionState = useLocationStore((s) => s.permissionState);
   const debug = useDebugCommsStore();
 
   useEffect(() => {
@@ -58,11 +58,11 @@ export function CommsDiagnosticPanel() {
       email: (orbit as any)?.email ?? null,
     });
     debug.setGeo({
-      geoPermission: permission ?? null,
-      geoLat: geo?.lat ?? null,
-      geoLng: geo?.lng ?? null,
+      geoPermission: permissionState ?? null,
+      geoLat: currentLocation?.lat ?? null,
+      geoLng: currentLocation?.lng ?? null,
     });
-  }, [orbit?.orbitId, (orbit as any)?.email, geo?.lat, geo?.lng, permission]);
+  }, [orbit?.orbitId, (orbit as any)?.email, currentLocation?.lat, currentLocation?.lng, permissionState]);
 
   return (
     <div className="p-4 max-w-md mx-auto">
