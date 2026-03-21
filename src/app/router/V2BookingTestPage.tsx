@@ -21,10 +21,10 @@ export default function V2BookingTestPage() {
   const createLease = usePropertyManagementStore((s) => s.createLease);
   const createRentPayment = usePropertyManagementStore((s) => s.createRentPayment);
 
-  const openContact = useContactStore((s) => s.openContact);
-  const startAudioCall = useContactStore((s) => s.startAudioCall);
-  const startVideoCall = useContactStore((s) => s.startVideoCall);
-  const openChatPanel = useContactStore((s) => s.openChatPanel);
+  const navigate = useNavigate();
+  const openContact = (input: { orbitId: string; listingId?: string }) => {
+    navigate(`/dashboard/communication?section=contacts&orbit=${input.orbitId}`);
+  };
 
   const seedWallet = () => {
     const state = useWalletStore.getState();

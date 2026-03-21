@@ -52,8 +52,8 @@ export default function V2MegaPage() {
   const createUnit = usePropertyManagementStore((s) => s.createUnit);
   const createLease = usePropertyManagementStore((s) => s.createLease);
   const createRentPayment = usePropertyManagementStore((s) => s.createRentPayment);
-  const openContact = useContactStore((s) => s.openContact);
-  const openChatPanel = useContactStore((s) => s.openChatPanel);
+  const openContact = (_input: { orbitId: string }) => { /* removed: contactStore killed */ };
+  const openChatPanel = () => { /* removed: contactStore killed */ };
   const { startCall } = useCall();
   const buildListingMarkers = useMapStore((s) => s.buildListingMarkers);
   const openCamera = useCameraStore((s) => s.openCamera);

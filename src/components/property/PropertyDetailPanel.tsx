@@ -6,7 +6,10 @@ import { useNavigate } from "react-router-dom";
 export function PropertyDetailPanel() {
   const listing = usePropertyDetailStore((s) => s.selectedListing);
   const closeListing = usePropertyDetailStore((s) => s.closeListing);
-  const openContact = useContactStore((s) => s.openContact);
+  const navigate = useNavigate();
+  const openContact = (input: { orbitId: string; listingId?: string }) => {
+    navigate(`/dashboard/communication?section=contacts&orbit=${input.orbitId}`);
+  };
   const { setListingInUrl } = usePropertyQuerySync();
 
   if (!listing) {
