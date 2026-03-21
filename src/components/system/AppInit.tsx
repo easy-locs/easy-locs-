@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useV2AuthStore } from "@/stores/v2AuthStore";
 import { useOrbitStore } from "@/stores/orbitStore";
 import { ensureOrbitProfile } from "@/lib/orbit/ensureOrbitProfile";
+import { ensureWalletAccount } from "@/lib/wallet/ensureWalletAccount";
 import { useWalletStore } from "@/stores/walletStore";
 import { useFavoritesStore } from "@/stores/favoritesStore";
 import { useSavedSearchStore } from "@/stores/savedSearchStore";
@@ -34,6 +35,7 @@ export function AppInit() {
 
     void (async () => {
       await ensureOrbitProfile();
+      await ensureWalletAccount(user.id);
       await loadProfile(user.id);
       const orbit = useOrbitStore.getState().profile;
       if (!orbit) return;
