@@ -139,8 +139,55 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     }
   }
 
+  // Admin gate: /admin/* routes require admin or owner role (server-side check)
+  if (isAdminRoute) {
+    return <AdminGate>{children}</AdminGate>;
+  }
+
   return <>{children}</>;
 };
+
+/**
+ * AdminGate — checks has_role('admin') or has_role('owner') via server RPC.
+ * Renders children only if the user has an admin/owner role.
+ */
+function AdminGate({ children }: { children: React.ReactNode }) {
+  const { user } = useAuth();
+  const [checking, setChecking] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    if (!user?.id) { setChecking(false); return; }
+
+    let cancelled = false;
+
+    (async () => {
+      const [{ data: admin }, { data: owner }] = await Promise.all([
+        supabase.rpc("has_role", { _user_id: user.id, _role: "admin" }),
+        supabase.rpc("has_role", { _user_id: user.id, _role: "owner" }),
+      ]);
+
+      if (!cancelled) {
+        setIsAdmin(!!admin || !!owner);
+        setChecking(false);
+      }
+    })();
+
+    return () => { cancelled = true; };
+  }, [user?.id]);
+
+  if (checking) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  if (!isAdmin) return <Navigate to="/dashboard" replace />;
+
+  return <>{children}</>;
+}
 
 export default ProtectedRoute;
 
