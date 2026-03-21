@@ -1,9 +1,12 @@
 /**
- * Bridge between wallet transfers and financial reconciliation.
+ * DEPRECATED — Legacy bridge between wallet transfers and financial reconciliation.
+ * REPLACED_BY: atomic_wallet_transfer RPC handles all transfer logic atomically.
+ * TO_REMOVE after all callers are migrated.
  */
 import { reconcileTransaction } from "@/lib/finance/reconcile";
 import { transferBetweenWallets } from "@/lib/wallet/wallet-core";
 
+/** @deprecated Use executeSecureTransfer() from transactionChallenge.ts instead */
 export async function transferWithReconciliation(params: {
   workspaceId?: string;
   fromWalletId: string;
@@ -13,6 +16,7 @@ export async function transferWithReconciliation(params: {
   referenceType?: string;
   referenceId?: string;
 }) {
+  console.warn("[DEPRECATED] transferWithReconciliation — use executeSecureTransfer() instead");
   const transfer = await transferBetweenWallets({
     workspaceId: params.workspaceId,
     fromWalletId: params.fromWalletId,

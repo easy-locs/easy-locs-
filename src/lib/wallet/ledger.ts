@@ -1,3 +1,11 @@
+/**
+ * DEPRECATED — Legacy client-side ledger operations.
+ * REPLACED_BY: atomic_wallet_transfer RPC for transfers, wallet-transfer edge function for P2P.
+ * 
+ * transferBetweenUsers is NOT atomic — use executeSecureTransfer() instead.
+ * postWalletTransaction / recomputeWalletBalance kept for non-P2P flows (escrow, top-up).
+ * TO_REMOVE: transferBetweenUsers after all callers migrated.
+ */
 import { supabase } from "@/integrations/supabase/client";
 
 export type LedgerDirection = "in" | "out";
@@ -49,24 +57,26 @@ export async function getOrCreateWalletAccount(params: {
 
 export async function createLedgerEntry(params: {
   walletAccountId: string;
+  direction: LedgerDirection;
   amount: number;
   currency: string;
-  direction: LedgerDirection;
   entryType: LedgerEntryType;
   referenceId?: string | null;
   referenceType?: string | null;
+  externalTxnId?: string | null;
   note?: string | null;
 }) {
   const { data, error } = await supabase
     .from("wallet_ledger_entries")
     .insert({
       wallet_account_id: params.walletAccountId,
+      direction: params.direction,
       amount: params.amount,
       currency: params.currency,
-      direction: params.direction,
       entry_type: params.entryType,
       reference_id: params.referenceId ?? null,
       reference_type: params.referenceType ?? null,
+      external_txn_id: params.externalTxnId ?? null,
       note: params.note ?? null,
       status: "posted",
     } as any)
@@ -78,56 +88,56 @@ export async function createLedgerEntry(params: {
 }
 
 export async function recomputeWalletBalance(walletAccountId: string) {
-  const { data: entries, error: entriesErr } = await supabase
+  const { data: entries, error } = await supabase
     .from("wallet_ledger_entries")
-    .select("amount,direction,status")
-    .eq("wallet_account_id", walletAccountId);
+    .select("direction, amount, status")
+    .eq("wallet_account_id", walletAccountId)
+    .eq("status", "posted");
 
-  if (entriesErr) throw entriesErr;
+  if (error) throw error;
 
-  const posted = (entries ?? []).filter((e: any) => (e.status ?? "posted") === "posted");
-  const balance = posted.reduce((sum: number, row: any) => {
-    return sum + (row.direction === "in" ? Number(row.amount ?? 0) : -Number(row.amount ?? 0));
+  const balance = (entries ?? []).reduce((sum: number, row: any) => {
+    const dir = row.direction === "in" || row.direction === "credit" ? 1 : -1;
+    return sum + dir * Number(row.amount ?? 0);
   }, 0);
 
-  const { data, error } = await supabase
+  const { data: updated, error: updateErr } = await supabase
     .from("wallet_accounts")
-    .update({
-      balance,
-      available_balance: balance,
-      updated_at: new Date().toISOString(),
-    } as any)
+    .update({ balance, available_balance: balance })
     .eq("id", walletAccountId)
     .select("*")
     .single();
 
-  if (error) throw error;
-  return data;
+  if (updateErr) throw updateErr;
+  return updated;
 }
 
+/** Post a wallet transaction: create ledger entry + recompute balance */
 export async function postWalletTransaction(params: {
   ownerUserId: string;
   amount: number;
-  currency?: string;
+  currency: string;
   direction: LedgerDirection;
   entryType: LedgerEntryType;
   referenceId?: string | null;
   referenceType?: string | null;
+  externalTxnId?: string | null;
   note?: string | null;
 }) {
   const wallet = await getOrCreateWalletAccount({
     ownerUserId: params.ownerUserId,
-    currency: params.currency ?? "AED",
+    currency: params.currency,
   });
 
   const entry = await createLedgerEntry({
     walletAccountId: wallet.id,
-    amount: Number(params.amount || 0),
-    currency: params.currency ?? wallet.currency ?? "AED",
     direction: params.direction,
+    amount: params.amount,
+    currency: params.currency,
     entryType: params.entryType,
     referenceId: params.referenceId ?? null,
     referenceType: params.referenceType ?? null,
+    externalTxnId: params.externalTxnId ?? null,
     note: params.note ?? null,
   });
 
@@ -135,6 +145,11 @@ export async function postWalletTransaction(params: {
   return { wallet: updatedWallet, entry };
 }
 
+/**
+ * DEPRECATED — NOT atomic. Use executeSecureTransfer() from transactionChallenge.ts instead.
+ * REPLACED_BY: wallet-transfer edge function → atomic_wallet_transfer RPC
+ * TO_REMOVE after all callers migrated.
+ */
 export async function transferBetweenUsers(params: {
   fromUserId: string;
   toUserId: string;
@@ -144,6 +159,7 @@ export async function transferBetweenUsers(params: {
   referenceType?: string | null;
   note?: string | null;
 }) {
+  console.warn("[DEPRECATED] transferBetweenUsers is not atomic. Use executeSecureTransfer() instead.");
   const currency = params.currency ?? "AED";
 
   await postWalletTransaction({
@@ -169,6 +185,7 @@ export async function transferBetweenUsers(params: {
   });
 }
 
+/** Hold escrow for an order */
 export async function holdEscrow(params: {
   customerUserId: string;
   amount: number;
@@ -187,7 +204,8 @@ export async function holdEscrow(params: {
   });
 }
 
-export async function releaseEscrowToMerchant(params: {
+/** Release escrow to merchant */
+export async function releaseEscrow(params: {
   merchantUserId: string;
   amount: number;
   currency?: string;
@@ -205,6 +223,10 @@ export async function releaseEscrowToMerchant(params: {
   });
 }
 
+/** Alias for releaseEscrow — used by settlement engine */
+export const releaseEscrowToMerchant = releaseEscrow;
+
+/** Post refund credit to customer wallet */
 export async function postRefundToCustomer(params: {
   customerUserId: string;
   amount: number;
