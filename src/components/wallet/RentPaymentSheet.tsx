@@ -60,7 +60,7 @@ export default function RentPaymentSheet({ rentCallId, onClose, onSuccess }: Ren
         contextId: rentCallId,
         title: `Rent - ${rentCall.properties?.title || "Property"}`,
       });
-      await supabase.from("rent_calls").update({ status: "paid", paid_at: new Date().toISOString() }).eq("id", rentCallId);
+      await supabase.from("rent_calls").update({ paid: true, paid_amount: rentCall.amount, paid_date: new Date().toISOString() } as any).eq("id", rentCallId);
       await reloadBalance();
       queryClient.invalidateQueries({ queryKey: ["rent-calls"] });
       setStep("success");
