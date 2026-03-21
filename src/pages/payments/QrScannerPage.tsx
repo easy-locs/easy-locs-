@@ -140,28 +140,6 @@ export default function QrScannerPage() {
   const setStateSafe = useCallback((s: ScanState) => { if (mountedRef.current) setState(s); }, []);
   const setErrorSafe = useCallback((m: string) => { if (mountedRef.current) setError(m); }, []);
 
-  // ── Upload QR image fallback ──
-  const handleImageUpload = useCallback(async (file: File) => {
-    setStateSafe("starting");
-    setErrorSafe("");
-    setStartErrorMessage("");
-    try {
-      const scanner = new Html5Qrcode("qr-file-upload-region", { verbose: false });
-      const result = await scanner.scanFile(file, false);
-      scanner.clear();
-      if (!result) throw new Error("No QR code found in image");
-      playScanBeep();
-      haptic("success");
-      setLastText(result);
-      await handleQrResult(result);
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : "Could not read QR from image";
-      setStartErrorMessage(msg);
-      setErrorSafe(msg);
-      setStateSafe("error");
-    }
-  }, [handleQrResult, setErrorSafe, setStateSafe]);
-
   const readCameraPermission = useCallback(async (): Promise<CameraPermissionState> => {
     if (typeof navigator === "undefined" || !navigator.mediaDevices?.getUserMedia) {
       if (mountedRef.current) setCameraPermission("unsupported");
