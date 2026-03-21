@@ -1,6 +1,8 @@
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Loader2 } from "lucide-react";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 /** Dashboard paths that require an active subscription (pro features) */
 const PRO_DASHBOARD_PREFIXES = [
