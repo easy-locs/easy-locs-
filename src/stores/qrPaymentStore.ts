@@ -1,14 +1,20 @@
+/**
+ * QR Payment Store — Generates canonical QR for wallet receive.
+ * Uses qr-engine canonical format only.
+ */
 import { create } from "zustand";
-import { buildMockQrPaymentString } from "@/lib/utils/qr";
-import { useWalletStore } from "@/stores/walletStore";
+import { encodeQr, qr } from "@/lib/qr-engine";
+import { useAuth } from "@/contexts/AuthContext";
 
 type QrPaymentStore = {
   qrString: string | null;
   lastReference: string | null;
 
-  generateListingPaymentQr: (input: {
-    amount: number;
-    reference: string;
+  generateReceiveQr: (input: {
+    userId: string;
+    amount?: number;
+    currency?: string;
+    name?: string;
   }) => void;
 
   clear: () => void;
@@ -18,27 +24,12 @@ export const useQrPaymentStore = create<QrPaymentStore>((set) => ({
   qrString: null,
   lastReference: null,
 
-  generateListingPaymentQr: ({ amount, reference }) => {
-    const wallet = useWalletStore.getState().wallet;
-    if (!wallet) return;
-
-    const qrString = buildMockQrPaymentString({
-      walletId: wallet.walletId,
-      amount,
-      currency: wallet.currency,
-      reference,
-    });
-
-    set({
-      qrString,
-      lastReference: reference,
-    });
+  generateReceiveQr: ({ userId, amount, currency, name }) => {
+    const qrString = encodeQr(qr.payUser(userId, { amount, currency: currency || "AED", name }));
+    set({ qrString, lastReference: userId });
   },
 
   clear: () => {
-    set({
-      qrString: null,
-      lastReference: null,
-    });
+    set({ qrString: null, lastReference: null });
   },
 }));

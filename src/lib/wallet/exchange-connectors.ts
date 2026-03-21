@@ -1,5 +1,13 @@
 import { supabase } from "@/integrations/supabase/client";
-import { postWalletEntry, refreshWalletBalance } from "@/lib/wallet/wallet-core";
+
+/** @deprecated postWalletEntry/refreshWalletBalance removed — exchange flows need backend RPC */
+async function postWalletEntry(params: any) {
+  console.warn("[DEPRECATED] postWalletEntry called from exchange-connectors — needs migration to RPC");
+  throw new Error("Legacy postWalletEntry removed. Use atomic_wallet_transfer RPC.");
+}
+async function refreshWalletBalance(walletAccountId: string) {
+  console.warn("[DEPRECATED] refreshWalletBalance called from exchange-connectors — needs migration");
+}
 
 export async function createExchangeQuote(params: {
   connectorId?: string;

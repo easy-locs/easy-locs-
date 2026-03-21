@@ -32,6 +32,11 @@ class OrbitCallCoordinator {
     peerUserId: string;
     callType: CallType;
   }) {
+    // ── SELF-CALL BLOCK ──
+    if (params.myUserId === params.peerUserId) {
+      throw new Error("Cannot call yourself");
+    }
+
     await this.boot(params.myUserId);
     await assertMediaSupport({ video: params.callType === "video" });
 
