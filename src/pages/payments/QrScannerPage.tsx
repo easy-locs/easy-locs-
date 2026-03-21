@@ -291,6 +291,28 @@ export default function QrScannerPage() {
     setErrorSafe("Unsupported QR format"); setStateSafe("error");
   }, [setErrorSafe, setStateSafe]);
 
+  // ── Upload QR image fallback ──
+  const handleImageUpload = useCallback(async (file: File) => {
+    setStateSafe("starting");
+    setErrorSafe("");
+    setStartErrorMessage("");
+    try {
+      const scanner = new Html5Qrcode("qr-file-upload-region", { verbose: false });
+      const result = await scanner.scanFile(file, false);
+      scanner.clear();
+      if (!result) throw new Error("No QR code found in image");
+      playScanBeep();
+      haptic("success");
+      setLastText(result);
+      await handleQrResult(result);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Could not read QR from image";
+      setStartErrorMessage(msg);
+      setErrorSafe(msg);
+      setStateSafe("error");
+    }
+  }, [handleQrResult, setErrorSafe, setStateSafe]);
+
   const startScanner = useCallback(async (preferredDeviceId?: string) => {
     if (!secure) { setErrorSafe("Camera scanning requires HTTPS."); setStateSafe("error"); return; }
     if (startingRef.current || startedRef.current || stoppingRef.current) return;
