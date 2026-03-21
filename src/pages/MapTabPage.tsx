@@ -1,5 +1,5 @@
 /**
- * MapTabPage — Map tab entry point.
+ * MapTabPage — Map tab entry point with minimal geo status bar.
  */
 import ExplorerMap from "@/components/map/ExplorerMap";
 import { useLocationStore } from "@/stores/locationStore";
