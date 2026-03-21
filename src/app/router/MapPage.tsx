@@ -5,12 +5,13 @@ import { MapMarkerList } from "@/components/map/MapMarkerList";
 import { MapboxCanvas } from "@/components/map/MapboxCanvas";
 import { MapSearchPanel } from "@/components/map/MapSearchPanel";
 import { RadarMap } from "@/components/map/RadarMap";
-import { useGeoStore } from "@/stores/geoStore";
+import { useLocationStore } from "@/stores/locationStore";
+import { useGeolocation } from "@/hooks/useGeolocation";
 import { RefreshCw } from "lucide-react";
 
 export default function MapPage() {
-  const permission = useGeoStore((s) => s.permission);
-  const refreshCurrentPosition = useGeoStore((s) => s.refreshCurrentPosition);
+  const permissionState = useLocationStore((s) => s.permissionState);
+  const { requestLocation } = useGeolocation();
 
   return (
     <AppPageShell title="Map">
@@ -18,13 +19,13 @@ export default function MapPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
           <MapboxCanvas />
-          {permission === "denied" && (
+          {permissionState === "denied" && (
             <p className="text-xs text-destructive text-center px-2">
               Location denied — enable location in Safari / browser settings
             </p>
           )}
           <button
-            onClick={() => void refreshCurrentPosition()}
+            onClick={() => requestLocation()}
             className="flex items-center gap-1.5 mx-auto text-xs text-muted-foreground hover:text-foreground transition-colors active:scale-[0.95]"
           >
             <RefreshCw className="w-3 h-3" />
