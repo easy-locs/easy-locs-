@@ -83,7 +83,7 @@ async function importSingleRestaurant(
   userId: string,
   orgId: string
 ): Promise<"imported" | "skipped"> {
-  // Check duplicates
+  // Check source-level duplicates
   const { data: existing } = await (supabase as any)
     .from("merchant_onboarding_sources")
     .select("id")
@@ -91,6 +91,15 @@ async function importSingleRestaurant(
     .maybeSingle();
 
   if (existing) return "skipped";
+
+  // Check storefront-level duplicates (name + geo proximity + phone)
+  const dupCheck = await checkStorefrontDuplicate(
+    r.merchant_name,
+    r.lat,
+    r.lng,
+    r.phone
+  );
+  if (dupCheck.blocked) return "skipped";
 
   // 1. Source
   const { data: source, error: srcErr } = await (supabase as any)
