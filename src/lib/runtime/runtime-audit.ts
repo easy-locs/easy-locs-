@@ -19,8 +19,8 @@ export type RuntimeAuditReport = {
   checks: RuntimeAuditCheck[];
 };
 
-const RUNTIME_AUDIT_VERSION = "2026-03-21-v3";
-const RUNTIME_AUDIT_BUILD_TIMESTAMP = import.meta.env.VITE_APP_VERSION || __BUILD_TIMESTAMP__;
+const RUNTIME_AUDIT_VERSION = "2026-03-21-v4";
+const RUNTIME_AUDIT_BUILD_TIMESTAMP = import.meta.env.VITE_APP_VERSION || (typeof __BUILD_TIMESTAMP__ !== "undefined" ? __BUILD_TIMESTAMP__ : new Date().toISOString());
 
 function getRuntimeAuditEnvironmentName() {
   if (typeof window === "undefined") return "server";
