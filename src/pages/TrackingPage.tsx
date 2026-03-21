@@ -40,6 +40,14 @@ export default function TrackingPage() {
   const { data: order, isLoading } = useQuery({
     queryKey: ["tracking-order", orderId],
     queryFn: async () => {
+      // Try storefront_orders first (authoritative), fallback to orders
+      const { data: sfOrder } = await (supabase as any)
+        .from("storefront_orders")
+        .select("id, status, payment_status, created_at, notes, total_amount, currency, shop_id, items_snapshot, fulfillment_type, updated_at")
+        .eq("id", orderId)
+        .maybeSingle();
+      if (sfOrder) return { ...sfOrder, order_type: sfOrder.fulfillment_type || "delivery" };
+      
       const { data } = await (supabase as any)
         .from("orders")
         .select("id, status, order_type, created_at, notes, total_amount, currency")
