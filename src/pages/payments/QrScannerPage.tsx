@@ -3,7 +3,7 @@
  */
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Camera, CameraOff, RefreshCcw, CheckCircle2, ScanLine, QrCode } from "lucide-react";
+import { ArrowLeft, Camera, CameraOff, RefreshCcw, CheckCircle2, ScanLine, QrCode, Upload, ExternalLink } from "lucide-react";
 import { Html5Qrcode } from "html5-qrcode";
 import { decodeQr, resolveRoute, isExpired, type UniversalQrPayload } from "@/lib/qr-engine";
 import { playScanBeep } from "@/lib/calls/call-ringtone";
@@ -82,8 +82,58 @@ export default function QrScannerPage() {
   const [startStatus, setStartStatus] = useState<"idle" | "success" | "fail">("idle");
   const [startErrorMessage, setStartErrorMessage] = useState("");
   const [cameraRequested, setCameraRequested] = useState(false);
+  const [envInfo, setEnvInfo] = useState<Record<string, string>>({});
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const secure = typeof window === "undefined" ? true : window.isSecureContext;
+  // ── Deep environment probe on mount ──
+  useEffect(() => {
+    const info: Record<string, string> = {};
+    info["mediaDevices"] = typeof navigator !== "undefined" && !!navigator.mediaDevices ? "yes" : "no";
+    info["getUserMedia"] = typeof navigator !== "undefined" && !!navigator.mediaDevices?.getUserMedia ? "yes" : "no";
+    info["enumerateDevices"] = typeof navigator !== "undefined" && !!navigator.mediaDevices?.enumerateDevices ? "yes" : "no";
+    info["isSecureContext"] = typeof window !== "undefined" ? String(window.isSecureContext) : "N/A";
+    info["protocol"] = typeof window !== "undefined" ? window.location.protocol : "N/A";
+    info["userAgent"] = typeof navigator !== "undefined" ? navigator.userAgent : "N/A";
+    info["isIOS"] = String(isIOS());
+    info["isSafari"] = String(isSafariBrowser());
+    info["isIframe"] = typeof window !== "undefined" ? String(window.self !== window.top) : "N/A";
+
+    // Async probes
+    (async () => {
+      // Permission
+      if (navigator.permissions?.query) {
+        try {
+          const s = await navigator.permissions.query({ name: "camera" as PermissionName });
+          info["permissionState"] = s.state;
+        } catch (e) {
+          info["permissionState"] = `query failed: ${(e as Error).message}`;
+        }
+      } else {
+        info["permissionState"] = "permissions API unavailable";
+      }
+
+      // Enumerate
+      if (navigator.mediaDevices?.enumerateDevices) {
+        try {
+          const all = await navigator.mediaDevices.enumerateDevices();
+          const video = all.filter((d) => d.kind === "videoinput");
+          const audio = all.filter((d) => d.kind === "audioinput");
+          info["totalDevices"] = String(all.length);
+          info["videoinputCount"] = String(video.length);
+          info["audioinputCount"] = String(audio.length);
+          info["videoLabels"] = video.map((d) => d.label || "(empty)").join(" | ") || "(none)";
+        } catch (e) {
+          info["enumerateError"] = (e as Error).message;
+        }
+      }
+
+      if (mountedRef.current) setEnvInfo({ ...info });
+    })();
+
+    setEnvInfo(info);
+  }, []);
+
   const ios = isIOS();
   const safari = isSafariBrowser();
 
@@ -240,6 +290,28 @@ export default function QrScannerPage() {
     if (route) { navigateRef.current(route, { replace: true }); return; }
     setErrorSafe("Unsupported QR format"); setStateSafe("error");
   }, [setErrorSafe, setStateSafe]);
+
+  // ── Upload QR image fallback ──
+  const handleImageUpload = useCallback(async (file: File) => {
+    setStateSafe("starting");
+    setErrorSafe("");
+    setStartErrorMessage("");
+    try {
+      const scanner = new Html5Qrcode("qr-file-upload-region", { verbose: false });
+      const result = await scanner.scanFile(file, false);
+      scanner.clear();
+      if (!result) throw new Error("No QR code found in image");
+      playScanBeep();
+      haptic("success");
+      setLastText(result);
+      await handleQrResult(result);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Could not read QR from image";
+      setStartErrorMessage(msg);
+      setErrorSafe(msg);
+      setStateSafe("error");
+    }
+  }, [handleQrResult, setErrorSafe, setStateSafe]);
 
   const startScanner = useCallback(async (preferredDeviceId?: string) => {
     if (!secure) { setErrorSafe("Camera scanning requires HTTPS."); setStateSafe("error"); return; }
@@ -484,19 +556,38 @@ export default function QrScannerPage() {
                   </div>
                 </div>
 
-                 <div className="mt-4 w-full max-w-[300px] space-y-3">
-                   <div className="rounded-2xl border border-border/50 bg-card/80 p-3 text-left text-xs text-foreground shadow-sm">
-                     <p><span className="text-muted-foreground">scanner state:</span> {state}</p>
-                     <p><span className="text-muted-foreground">permission granted:</span> {cameraPermission === "granted" ? "yes" : cameraPermission === "denied" ? "no" : cameraPermission}</p>
-                     <p><span className="text-muted-foreground">enumerateDevices count:</span> {cameraDevices.length}</p>
-                     <p className="break-all"><span className="text-muted-foreground">selected camera id:</span> {selectedCameraId || "none"}</p>
-                     <p><span className="text-muted-foreground">Html5Qrcode.start:</span> {startStatus}</p>
-                     <p className="break-words"><span className="text-muted-foreground">exact error:</span> {startErrorMessage || error || "none"}</p>
-                   </div>
+                 <div className="mt-4 w-full max-w-[320px] space-y-3">
+                   {/* ── Environment debug panel ── */}
+                   <details className="rounded-2xl border border-border/50 bg-card/80 shadow-sm">
+                     <summary className="cursor-pointer p-3 text-xs font-semibold text-muted-foreground">
+                       🔍 Device diagnostics
+                     </summary>
+                     <div className="px-3 pb-3 text-[10px] leading-relaxed text-foreground space-y-0.5">
+                       <p><span className="text-muted-foreground">scanner state:</span> {state}</p>
+                       <p><span className="text-muted-foreground">permission:</span> {cameraPermission}</p>
+                       <p><span className="text-muted-foreground">mediaDevices:</span> {envInfo["mediaDevices"] ?? "…"}</p>
+                       <p><span className="text-muted-foreground">getUserMedia:</span> {envInfo["getUserMedia"] ?? "…"}</p>
+                       <p><span className="text-muted-foreground">enumerateDevices:</span> {envInfo["enumerateDevices"] ?? "…"}</p>
+                       <p><span className="text-muted-foreground">isSecureContext:</span> {envInfo["isSecureContext"] ?? "…"}</p>
+                       <p><span className="text-muted-foreground">protocol:</span> {envInfo["protocol"] ?? "…"}</p>
+                       <p><span className="text-muted-foreground">videoinput count:</span> {envInfo["videoinputCount"] ?? String(cameraDevices.length)}</p>
+                       <p><span className="text-muted-foreground">audioinput count:</span> {envInfo["audioinputCount"] ?? "…"}</p>
+                       <p><span className="text-muted-foreground">video labels:</span> {envInfo["videoLabels"] ?? "…"}</p>
+                       <p><span className="text-muted-foreground">permissionState:</span> {envInfo["permissionState"] ?? "…"}</p>
+                       <p><span className="text-muted-foreground">isIOS:</span> {envInfo["isIOS"] ?? "…"}</p>
+                       <p><span className="text-muted-foreground">isSafari:</span> {envInfo["isSafari"] ?? "…"}</p>
+                       <p><span className="text-muted-foreground">isIframe:</span> {envInfo["isIframe"] ?? "…"}</p>
+                       <p className="break-all"><span className="text-muted-foreground">selected camera:</span> {selectedCameraId || "none"}</p>
+                       <p><span className="text-muted-foreground">Html5Qrcode.start:</span> {startStatus}</p>
+                       <p className="break-words"><span className="text-muted-foreground">error:</span> {startErrorMessage || error || "none"}</p>
+                       <p className="break-all"><span className="text-muted-foreground">userAgent:</span> {envInfo["userAgent"]?.slice(0, 120) ?? "…"}</p>
+                     </div>
+                   </details>
 
                    {error && <p className="text-center text-sm text-destructive">{error}</p>}
 
-                   <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+                   {/* ── Action buttons ── */}
+                   <div className="flex flex-col gap-2">
                      {!cameraRequested || state === "idle" ? (
                        <button
                          type="button"
@@ -515,16 +606,57 @@ export default function QrScannerPage() {
                        <RefreshCcw className="h-4 w-4" /> Retry camera
                      </button>
 
+                     {cameraDevices.length >= 2 && (
+                       <button
+                         type="button"
+                         onClick={() => void handleSwitchCamera()}
+                         className="flex items-center justify-center gap-2 rounded-2xl border border-border bg-card px-4 py-3 text-sm font-semibold text-foreground active:scale-[0.97] transition-transform"
+                       >
+                         <Camera className="h-4 w-4" /> Switch camera
+                       </button>
+                     )}
+
+                     {/* ── Upload QR image fallback ── */}
                      <button
                        type="button"
-                       onClick={() => void handleSwitchCamera()}
-                       className="flex items-center justify-center gap-2 rounded-2xl border border-border bg-card px-4 py-3 text-sm font-semibold text-foreground active:scale-[0.97] transition-transform disabled:opacity-50"
-                       disabled={cameraDevices.length < 2}
+                       onClick={() => fileInputRef.current?.click()}
+                       className="flex items-center justify-center gap-2 rounded-2xl border border-border bg-card px-4 py-3 text-sm font-semibold text-foreground active:scale-[0.97] transition-transform"
                      >
-                       <Camera className="h-4 w-4" /> Switch camera
+                       <Upload className="h-4 w-4" /> Upload QR image
                      </button>
+                     <input
+                       ref={fileInputRef}
+                       type="file"
+                       accept="image/*"
+                       className="hidden"
+                       onChange={(e) => {
+                         const file = e.target.files?.[0];
+                         if (file) void handleImageUpload(file);
+                         e.target.value = "";
+                       }}
+                     />
+
+                     {/* Hint when camera is unavailable */}
+                     {(envInfo["videoinputCount"] === "0" || (startStatus === "fail" && cameraDevices.length === 0)) && (
+                       <div className="rounded-2xl border border-border/50 bg-muted/50 p-3 text-center text-xs text-muted-foreground space-y-1">
+                         <p className="font-semibold text-foreground">Camera unavailable in this runtime</p>
+                         <p>The Lovable preview iframe does not expose physical cameras. To use live scanning:</p>
+                         <a
+                           href={window.location.href}
+                           target="_blank"
+                           rel="noopener noreferrer"
+                           className="inline-flex items-center gap-1 text-primary underline"
+                         >
+                           <ExternalLink className="h-3 w-3" /> Open in Safari / Chrome directly
+                         </a>
+                         <p>Or use <strong>Upload QR image</strong> above.</p>
+                       </div>
+                     )}
                    </div>
                  </div>
+
+                 {/* Hidden region for file-based QR scan */}
+                 <div id="qr-file-upload-region" className="hidden" />
               </>
             )}
           </>
