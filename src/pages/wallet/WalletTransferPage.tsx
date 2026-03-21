@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
-import { transferBetweenUsers } from "@/lib/wallet/ledger";
+import { executeSecureTransfer, createTransactionChallenge, generateIdempotencyKey } from "@/lib/wallet/transactionChallenge";
 
 export default function WalletTransferPage() {
   const navigate = useNavigate();
@@ -21,17 +21,49 @@ export default function WalletTransferPage() {
       toast.error("Enter target user id");
       return;
     }
+    const numAmount = Number(amount ?? 0);
+    if (!numAmount || numAmount <= 0) {
+      toast.error("Enter a valid amount");
+      return;
+    }
 
     try {
       setSaving(true);
-      await transferBetweenUsers({
-        fromUserId: user.id,
-        toUserId: targetUserId.trim(),
-        amount: Number(amount ?? 0),
+
+      // Create challenge + idempotency key
+      const challenge = createTransactionChallenge({
+        amount: numAmount,
         currency: "AED",
-        note: note.trim() || null,
+        receiverUserId: targetUserId.trim(),
       });
-      toast.success("Transfer completed");
+
+      const idempotencyKey = generateIdempotencyKey({
+        senderUserId: user.id,
+        receiverUserId: targetUserId.trim(),
+        amount: numAmount,
+        nonce: challenge.nonce,
+      });
+
+      // Execute via backend-authoritative edge function
+      const result = await executeSecureTransfer({
+        senderUserId: user.id,
+        receiverUserId: targetUserId.trim(),
+        amount: numAmount,
+        currency: "AED",
+        idempotencyKey,
+        source: "manual_transfer",
+        note: note.trim() || undefined,
+      });
+
+      if (!result.success) {
+        throw new Error(result.error || "Transfer failed");
+      }
+
+      if (result.duplicate) {
+        toast.info("Transfer already processed");
+      } else {
+        toast.success("Transfer completed");
+      }
       navigate("/wallet/hub");
     } catch (err: any) {
       toast.error(err.message || "Transfer failed");
