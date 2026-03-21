@@ -41,17 +41,8 @@ const SPEED_STATS = [
 
 /** Simulated live stats with gentle increments */
 function useLiveStats() {
-  const [stats, setStats] = useState({ users: 120_000, processed: 2.4, txPerMin: 12 });
-  useEffect(() => {
-    const iv = setInterval(() => {
-      setStats(s => ({
-        users: s.users + Math.floor(Math.random() * 5),
-        processed: +(s.processed + Math.random() * 0.001).toFixed(1),
-        txPerMin: 8 + Math.floor(Math.random() * 12),
-      }));
-    }, 4000);
-    return () => clearInterval(iv);
-  }, []);
+  // Static values — no interval to prevent continuous re-renders / flicker
+  const stats = useMemo(() => ({ users: 120_000, processed: 2.4, txPerMin: 12 }), []);
   return stats;
 }
 

@@ -400,8 +400,10 @@ export default function CommContactsSection() {
 
       const directContextId = `direct:${[user.id, contact.contact_user_id!].sort().join(":")}`;
 
+      // Pass contact_user_id directly — NOT the org_id.
+      // The RPC will see it's not an org and use it as-is for receiver_orbit_id.
       await initiateCall({
-        orgId: contact.targetOrgId!,
+        orgId: contact.contact_user_id!,
         threadId: thread?.threadId,
         contextType: "direct",
         contextId: directContextId,
