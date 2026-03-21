@@ -17,24 +17,19 @@ export async function createMerchantDraft(params: {
   ownerUserId?: string | null;
   coverImage?: string | null;
 }) {
-  const slug = `${slugify(params.name)}-${Math.random().toString(36).slice(2, 7)}`;
-
   const { data, error } = await supabase
     .from("seed_merchants")
     .insert({
       name: params.name,
-      slug,
       category: params.category,
       subcategory: params.subcategory ?? null,
       city: params.city ?? "Dubai",
       area: params.area ?? "Business Bay",
-      owner_user_id: params.ownerUserId ?? null,
       cover_image: params.coverImage ?? null,
-      logo_url: params.coverImage ?? null,
+      logo_image: params.coverImage ?? null,
       is_active: true,
       is_open: false,
       is_featured: false,
-      onboarding_status: "draft",
       visibility_score: 50,
       rating: 4.2,
       review_count: 0,
@@ -91,9 +86,7 @@ export async function activateMerchantStore(params: {
       is_open: true,
       is_active: true,
       is_featured: params.featured ?? false,
-      onboarding_status: "ready",
       visibility_score: params.visibilityScore ?? 80,
-      updated_at: new Date().toISOString(),
     } as any)
     .eq("id", params.merchantId)
     .select("*")
