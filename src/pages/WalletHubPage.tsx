@@ -62,8 +62,18 @@ export default function WalletHubPage() {
   const handleTestTopUp = async () => {
     if (!user?.id) return;
     try {
+      // Credit wallet_balances_v2 — the table wallet_transfer RPC actually uses
+      const { error } = await supabase
+        .from("wallet_balances_v2" as any)
+        .upsert(
+          { user_id: user.id, balance: 100, currency: mainCurrency || "AED", updated_at: new Date().toISOString() },
+          { onConflict: "user_id" }
+        );
+      if (error) throw error;
+
+      // Also credit wallet_accounts for UI display
       const wallet = await getOrCreateWalletAccount({ ownerUserId: user.id, currency: mainCurrency || "AED" });
-      const ledger = await createLedgerEntry({
+      await createLedgerEntry({
         walletAccountId: wallet.id,
         direction: "in",
         amount: 100,
@@ -72,8 +82,9 @@ export default function WalletHubPage() {
         referenceType: "test_credit",
         note: "Runtime test top-up",
       });
-      const updatedWallet = await recomputeWalletBalance(wallet.id);
-      console.log("[WalletHubPage] test top-up success", { walletId: wallet.id, ledgerId: ledger.id, balance: updatedWallet?.balance });
+      await recomputeWalletBalance(wallet.id);
+
+      console.log("[WalletHubPage] test top-up success — wallet_balances_v2 + wallet_accounts credited");
       toast.success("Test top-up added: 100 AED");
       window.location.reload();
     } catch (err) {
