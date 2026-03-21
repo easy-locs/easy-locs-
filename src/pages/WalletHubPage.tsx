@@ -13,7 +13,7 @@ import {
   CreditCard, Wallet, Shield, ScanLine, Settings,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import TransactionRow, { type TransactionType } from "@/components/wallet/TransactionRow";
 import WalletSecurityPanel from "@/components/wallet/WalletSecurityPanel";
