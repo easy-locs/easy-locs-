@@ -183,13 +183,13 @@ export default function V2BookingTestPage() {
           <button className="px-3 py-1 text-xs rounded-full bg-primary text-primary-foreground" onClick={openOwnerContact}>
             Open Contact
           </button>
-          <button className="px-3 py-1 text-xs rounded-full bg-primary text-primary-foreground" onClick={openChatPanel}>
+          <button className="px-3 py-1 text-xs rounded-full bg-primary text-primary-foreground" onClick={() => navigate('/dashboard/communication?section=chats')}>
             Open Chat
           </button>
-          <button className="px-3 py-1 text-xs rounded-full bg-primary text-primary-foreground" onClick={startAudioCall}>
+          <button className="px-3 py-1 text-xs rounded-full bg-primary text-primary-foreground" onClick={() => navigate('/dashboard/communication?section=calls')}>
             Audio Call
           </button>
-          <button className="px-3 py-1 text-xs rounded-full bg-primary text-primary-foreground" onClick={startVideoCall}>
+          <button className="px-3 py-1 text-xs rounded-full bg-primary text-primary-foreground" onClick={() => navigate('/dashboard/communication?section=calls')}>
             Video Call
           </button>
           <button className="px-3 py-1 text-xs rounded-full bg-secondary text-secondary-foreground" onClick={() => ui.setMapFullscreen(!ui.mapFullscreen)}>
