@@ -5,7 +5,7 @@
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useWalletAccounts } from "@/hooks/useWalletAccounts";
-import { createWalletAccount } from "@/lib/wallet/wallet-core";
+import { createWalletAccount } from "@/lib/wallet/wallet-account";
 import { supabase } from "@/integrations/supabase/client";
 import { ArrowLeft, Plus, ArrowUpRight, ArrowDownLeft, QrCode, Eye, EyeOff, CreditCard, Wallet, Filter } from "lucide-react";
 import { motion } from "framer-motion";
