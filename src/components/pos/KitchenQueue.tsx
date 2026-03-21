@@ -67,7 +67,7 @@ export default function KitchenQueue({ shopId }: KitchenQueueProps) {
 
   const updateStatus = async (orderId: string, newStatus: OrderStatus) => {
     setUpdatingId(orderId);
-    haptic("impact");
+    haptic("light");
     try {
       const { error } = await db
         .from("storefront_orders")
