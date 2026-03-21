@@ -47,9 +47,9 @@ function savePlaces(places: SavedPlace[]) {
 }
 
 export function useSmartLocation() {
-  const currentLocation = useLocationStore((s) => s.currentLocation);
+  const storeLocation = useLocationStore((s) => s.currentLocation);
   const loading = useLocationStore((s) => s.loading);
-  const geo = { lat: currentLocation?.lat ?? null, lng: currentLocation?.lng ?? null, effectiveCity: null as string | null, loading };
+  const geo = { lat: storeLocation?.lat ?? null, lng: storeLocation?.lng ?? null, effectiveCity: null as string | null, loading };
   const [places, setPlaces] = useState<SavedPlace[]>(loadPlaces);
   const [activePlace, setActivePlace] = useState<SavedPlace | null>(null);
 
