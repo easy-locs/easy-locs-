@@ -25,7 +25,7 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { useGeolocation } from "@/hooks/useGeolocation";
+import { useLocationStore } from "@/stores/locationStore";
 import { useNavigate } from "react-router-dom";
 import { haptic } from "@/lib/haptics";
 import { Button } from "@/components/ui/button";
@@ -59,7 +59,17 @@ const RADIUS_OPTIONS = [5, 10, 25, 50, 100, 200];
 export default function OrbitRadar() {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const { lat, lng, loading: geoLoading, error: geoError, requestLocation } = useGeolocation();
+  const currentLocation = useLocationStore((s) => s.currentLocation);
+  const geoLoading = useLocationStore((s) => s.loading);
+  const geoError = useLocationStore((s) => s.error);
+  const lat = currentLocation?.lat ?? null;
+  const lng = currentLocation?.lng ?? null;
+  const setCurrentLocation = useLocationStore((s) => s.setCurrentLocation);
+  const requestLocation = () => {
+    navigator.geolocation?.getCurrentPosition((pos) => {
+      setCurrentLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude, accuracy: pos.coords.accuracy, timestamp: new Date().toISOString() });
+    }, () => {}, { enableHighAccuracy: true, timeout: 12000 });
+  };
 
   const [radius, setRadius] = useState(25);
   const [filter, setFilter] = useState<EcosystemFilter>("all");

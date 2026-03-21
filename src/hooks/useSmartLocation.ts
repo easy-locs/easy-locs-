@@ -3,7 +3,7 @@
  * Used across Taxi (/ride), Delivery (/send), and food delivery flows.
  */
 import { useState, useEffect, useCallback } from "react";
-import { useGeolocation } from "./useGeolocation";
+import { useLocationStore } from "@/stores/locationStore";
 
 export interface SavedPlace {
   id: string;
@@ -47,7 +47,9 @@ function savePlaces(places: SavedPlace[]) {
 }
 
 export function useSmartLocation() {
-  const geo = useGeolocation();
+  const storeLocation = useLocationStore((s) => s.currentLocation);
+  const loading = useLocationStore((s) => s.loading);
+  const geo = { lat: storeLocation?.lat ?? null, lng: storeLocation?.lng ?? null, effectiveCity: null as string | null, loading };
   const [places, setPlaces] = useState<SavedPlace[]>(loadPlaces);
   const [activePlace, setActivePlace] = useState<SavedPlace | null>(null);
 

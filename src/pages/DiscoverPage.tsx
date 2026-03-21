@@ -14,7 +14,7 @@ import {
   Cpu, Scissors, Home, Wrench, ArrowRight, Flame, Pizza,
   Truck, BadgePercent, ShoppingBag, Crown, Rocket,
 } from "lucide-react";
-import { useGeolocation } from "@/hooks/useGeolocation";
+import { useLocationStore } from "@/stores/locationStore";
 import GlobalSearch from "@/components/storefront/GlobalSearch";
 import { motion, AnimatePresence } from "framer-motion";
 import { haptic } from "@/lib/haptics";
@@ -429,7 +429,8 @@ export default function DiscoverPage() {
   const query = searchParams.get("q") || "";
   const activeRail = (searchParams.get("rail") as RailId) || null;
   const [vertical, setVertical] = useState(searchParams.get("v") || "all");
-  const geo = useGeolocation();
+  const currentLocation = useLocationStore((s) => s.currentLocation);
+  const geo = { lat: currentLocation?.lat ?? null, lng: currentLocation?.lng ?? null };
   const hasGeo = geo.lat != null && geo.lng != null;
 
   /* ── Main shops query ── */

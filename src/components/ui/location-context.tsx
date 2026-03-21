@@ -4,7 +4,7 @@
  */
 import { MapPin, Navigation, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useGeolocation } from "@/hooks/useGeolocation";
+import { useLocationStore } from "@/stores/locationStore";
 import { haversineDistance, estimateETA, formatDistance, formatETA } from "@/lib/delivery/geo-utils";
 
 type ProximityLevel = "nearby" | "medium" | "far";
@@ -54,7 +54,10 @@ export function LocationContext({
   compact = false,
   className,
 }: LocationContextProps) {
-  const { lat, lng, effectiveCity } = useGeolocation();
+  const currentLocation = useLocationStore((s) => s.currentLocation);
+  const lat = currentLocation?.lat ?? null;
+  const lng = currentLocation?.lng ?? null;
+  const effectiveCity: string | null = null;
 
   const hasTarget = targetLat != null && targetLng != null;
   const hasUser = lat != null && lng != null;
