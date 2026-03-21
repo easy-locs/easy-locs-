@@ -140,7 +140,6 @@ export default function MessagesPage() {
 
   return (
     <div className="flex flex-col h-[100dvh] bg-background">
-      <IncomingCallModal />
 
       {!showThread ? (
         <>
