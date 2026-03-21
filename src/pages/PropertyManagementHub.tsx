@@ -14,7 +14,7 @@ import OrbitSmartHub from "@/components/dashboard/OrbitSmartHub";
 import { useAuth } from "@/contexts/AuthContext";
 import { useI18n } from "@/lib/i18n";
 import { usePlatformCurrency } from "@/hooks/usePlatformCurrency";
-import { useWallet } from "@/hooks/useWallet";
+import { useWalletBalance } from "@/payments/wallet-hooks";
 import { supabase } from "@/integrations/supabase/client";
 import { getCountryEntryOrDefault } from "@/lib/global-country-registry";
 import { format } from "date-fns";
@@ -56,7 +56,7 @@ export default function PropertyManagementHub() {
   const { orgId } = useAuth();
   const { t } = useI18n();
   const { fmtLocal, code: userCurrencyCode } = usePlatformCurrency();
-  const { balance } = useWallet();
+  const { balance } = useWalletBalance();
 
   const [stats, setStats] = useState({ totalProperties: 0, totalCountries: 0, revenueThisMonth: 0, propertiesByCountry: [] as CountryStat[] });
   const [loading, setLoading] = useState(true);
@@ -120,7 +120,7 @@ export default function PropertyManagementHub() {
     { icon: Building, label: t("page.dashboard.properties") || "Properties", value: String(stats.totalProperties), path: "/dashboard/properties", sub: "View all →" },
     { icon: MapPin, label: t("page.dashboard.countries") || "Countries", value: String(stats.totalCountries), sub: "Select below" },
     { icon: TrendingUp, label: "Collected", value: fmtLocal(stats.revenueThisMonth), path: "/dashboard/receipts", sub: "This month →" },
-    { icon: Wallet, label: `Wallet (${userCurrencyCode})`, value: fmtLocal(balance?.balance || 0), path: "/dashboard/wallet", sub: "Open →" },
+    { icon: Wallet, label: `Wallet (${userCurrencyCode})`, value: fmtLocal(balance || 0), path: "/dashboard/wallet", sub: "Open →" },
   ];
 
   return (

@@ -1,6 +1,6 @@
 /**
  * WalletCurrencySettings — Currency preference selector for Settings page
- * Allows users to set their default currency from 120+ supported currencies.
+ * Uses unified wallet engine only
  */
 import { useState, useEffect } from "react";
 import { Wallet, Check, Globe, Loader2 } from "lucide-react";
@@ -13,12 +13,11 @@ import {
   FEATURED_CURRENCIES,
 } from "@/lib/orbit-payments/types";
 import OrbitCurrencySelector from "@/components/orbit/payments/OrbitCurrencySelector";
-import { formatLocs } from "@/lib/orbit-payments";
-import { useWallet } from "@/hooks/useWallet";
+import { useWalletBalance } from "@/payments/wallet-hooks";
 
 export default function WalletCurrencySettings() {
   const { user, userCurrency, refreshProfile } = useAuth();
-  const { balance, loading: walletLoading } = useWallet();
+  const { balance, currency: walletCurrency, loading: walletLoading } = useWalletBalance();
   const [currency, setCurrency] = useState(userCurrency || "EUR");
   const [showSelector, setShowSelector] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -28,115 +27,60 @@ export default function WalletCurrencySettings() {
   }, [userCurrency]);
 
   const handleSave = async () => {
-    if (!user) return;
+    if (!user?.id) return;
     setSaving(true);
-    await supabase
+    const { error } = await supabase
       .from("profiles")
-      .update({ currency } as any)
+      .update({ currency })
       .eq("id", user.id);
-    await refreshProfile?.();
-    toast.success("Default currency updated");
+    if (error) {
+      toast.error("Failed to update currency");
+    } else {
+      toast.success("Currency updated");
+      refreshProfile?.();
+    }
     setSaving(false);
   };
 
-  const currencyInfo = SUPPORTED_CURRENCIES[currency];
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center gap-2">
+        <Wallet className="w-5 h-5 text-primary" />
+        <h3 className="text-sm font-bold text-foreground">Currency Preference</h3>
+      </div>
 
-  if (showSelector) {
-    return (
-      <div className="ui-card">
+      <div className="rounded-xl bg-muted p-4 space-y-2">
+        <p className="text-xs text-muted-foreground">Current balance</p>
+        <p className="text-lg font-bold text-foreground">
+          {walletLoading ? "..." : `${balance.toFixed(2)} ${walletCurrency}`}
+        </p>
+      </div>
+
+      <div className="space-y-2">
+        <p className="text-xs text-muted-foreground">Display currency</p>
+        <button
+          onClick={() => setShowSelector(true)}
+          className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl border border-border bg-background text-sm"
+        >
+          <span className="flex items-center gap-2">
+            <Globe className="w-4 h-4 text-muted-foreground" />
+            {currency}
+          </span>
+          <span className="text-muted-foreground text-xs">Change</span>
+        </button>
+      </div>
+
+      <Button onClick={handleSave} disabled={saving || currency === userCurrency} className="w-full" size="sm">
+        {saving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Check className="w-4 h-4 mr-2" />}
+        Save
+      </Button>
+
+      {showSelector && (
         <OrbitCurrencySelector
           selected={currency}
-          onSelect={(code) => {
-            setCurrency(code);
-            setShowSelector(false);
-          }}
+          onSelect={(c) => { setCurrency(c); setShowSelector(false); }}
           onClose={() => setShowSelector(false)}
         />
-      </div>
-    );
-  }
-
-  return (
-    <div className="space-y-5">
-      {/* Wallet Balance */}
-      <div className="p-5 rounded-2xl bg-gradient-to-br from-primary to-primary/80 text-primary-foreground">
-        <div className="flex items-center gap-2 mb-2">
-          <Wallet className="w-5 h-5 text-accent" />
-          <span className="text-sm font-medium opacity-80">LOCS Wallet</span>
-        </div>
-        <p className="text-2xl font-black">
-          {walletLoading ? "..." : formatLocs(balance?.balance || 0)}
-        </p>
-        <p className="text-xs opacity-60 mt-1">1 LOCS = 1 EUR</p>
-      </div>
-
-      {/* Default Currency */}
-      <div>
-        <label className="form-label flex items-center gap-2">
-          <Globe className="w-4 h-4 text-muted-foreground" />
-          Default Currency
-        </label>
-        <p className="text-xs text-muted-foreground mb-3">
-          This currency will be used by default for payments and conversions.
-        </p>
-
-        {/* Featured quick chips */}
-        <div className="flex flex-wrap gap-1.5 mb-3">
-          {FEATURED_CURRENCIES.map((code) => {
-            const info = SUPPORTED_CURRENCIES[code];
-            return (
-              <button
-                key={code}
-                onClick={() => setCurrency(code)}
-                className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all border ${
-                  currency === code
-                    ? "bg-accent text-accent-foreground border-accent shadow-sm"
-                    : "bg-card text-foreground border-border hover:border-accent/40"
-                }`}
-              >
-                {info.symbol} {code}
-              </button>
-            );
-          })}
-          <button
-            onClick={() => setShowSelector(true)}
-            className="px-3 py-1.5 rounded-full text-xs font-medium transition-all border border-dashed border-border text-muted-foreground hover:text-foreground hover:border-accent/40"
-          >
-            120+ more →
-          </button>
-        </div>
-
-        {/* Current selection */}
-        <div className="flex items-center justify-between p-3 rounded-xl border border-border bg-card">
-          <div className="flex items-center gap-3">
-            <span className="text-lg">{currencyInfo?.symbol}</span>
-            <div>
-              <p className="text-sm font-semibold text-foreground">{currency}</p>
-              <p className="text-xs text-muted-foreground">{currencyInfo?.name}</p>
-            </div>
-          </div>
-          {currency !== userCurrency && (
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-accent font-medium">Changed</span>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Save */}
-      {currency !== userCurrency && (
-        <Button
-          onClick={handleSave}
-          disabled={saving}
-          className="w-full rounded-xl bg-accent text-accent-foreground hover:bg-accent/90"
-        >
-          {saving ? (
-            <Loader2 className="w-4 h-4 animate-spin mr-2" />
-          ) : (
-            <Check className="w-4 h-4 mr-2" />
-          )}
-          {saving ? "Saving..." : "Save Currency Preference"}
-        </Button>
       )}
     </div>
   );

@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/contexts/AuthContext";
-import { useWallet } from "@/hooks/useWallet";
+import { useWalletBalance } from "@/payments/wallet-hooks";
 import { usePaymentFX } from "@/hooks/usePaymentFX";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -67,7 +67,9 @@ export default function OrbitSmartPayment({
     preferredCurrency: userCurrency || null,
     accountCountry: userCountry || null,
   });
-  const { balance, loading: walletLoading, isLargeTx } = useWallet();
+  const { balance: walletBalanceNum, loading: walletLoading } = useWalletBalance();
+  const balance = { balance: walletBalanceNum };
+  const isLargeTx = (amt: number) => amt >= 500;
   const { preview, loading: fxLoading, convert, fetchRates } = usePaymentFX();
 
   const [method, setMethod] = useState<PaymentMethod>("fiat");

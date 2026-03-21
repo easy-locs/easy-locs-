@@ -7,7 +7,8 @@
  */
 import { useState, useCallback, useMemo } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { useWallet } from "@/hooks/useWallet";
+import { useWalletBalance } from "@/payments/wallet-hooks";
+import { walletTransfer } from "@/payments/wallet-hooks";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { platformBus } from "@/lib/shared/platform-bus";
@@ -41,7 +42,7 @@ type POSStep = "catalog" | "cart" | "payment" | "receipt";
 
 export default function POSPage() {
   const { user } = useAuth();
-  const { balance, sendMoney } = useWallet();
+  const { balance: walletBalance } = useWalletBalance();
   const [step, setStep] = useState<POSStep>("catalog");
   const [cart, setCart] = useState<CartItem[]>([]);
   const [customTitle, setCustomTitle] = useState("");
@@ -166,22 +167,22 @@ export default function POSPage() {
       }));
       await (supabase as any).from("storefront_order_items").insert(orderItems);
 
-      // Wallet settlement
-      const result = await sendMoney({
-        recipientUserId: user.id,
+      // Wallet settlement via unified engine
+      const result = await walletTransfer({
+        senderId: buyerUserId || user.id,
+        recipientId: user.id,
         amount: total,
-        description: `POS Order #${order.id.slice(0, 8)}`,
-        referenceType: "order",
-        referenceId: order.id,
-        skipLimitCheck: false,
-      });
+        contextType: "pos_order",
+        contextId: order.id,
+        title: `POS Order #${order.id.slice(0, 8)}`,
+      }).then(() => ({ success: true, error: null as string | null })).catch((e: any) => ({ success: false, error: e.message }));
 
       if (!result.success) {
         await (supabase as any).from("storefront_orders").update({ status: "cancelled" }).eq("id", order.id);
         throw new Error(result.error || "Payment failed");
       }
 
-      const refCode = (result.data as any)?.reference_code || null;
+      const refCode = null;
       await (supabase as any)
         .from("storefront_orders")
         .update({ status: "accepted", payment_status: "paid", wallet_reference_code: refCode })
@@ -481,7 +482,7 @@ export default function POSPage() {
 
           {/* Balance */}
           <div className="text-center text-xs text-muted-foreground pt-2">
-            Wallet Balance: <span className="font-semibold text-foreground">{balance?.balance?.toFixed(2) || "0.00"} LOCS</span>
+            Wallet Balance: <span className="font-semibold text-foreground">{walletBalance?.toFixed(2) || "0.00"} AED</span>
           </div>
         </div>
       </div>

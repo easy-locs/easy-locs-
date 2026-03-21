@@ -34,9 +34,9 @@ export default function WalletHubPage() {
   const mainCurrency = rows[0]?.currency || "AED";
 
   const quickActions = [
-    { label: "Top up", icon: Plus, action: () => toast.info("Top up coming soon") },
-    { label: "Send", icon: ArrowUpRight, action: () => navigate("/send") },
-    { label: "Request", icon: ArrowDownLeft, action: () => toast.info("Request coming soon") },
+    { label: "Top up", icon: Plus, action: () => navigate("/wallet/top-up") },
+    { label: "Send", icon: ArrowUpRight, action: () => navigate("/wallet/transfer") },
+    { label: "Request", icon: ArrowDownLeft, action: () => navigate("/wallet/request") },
     { label: "Scan", icon: ScanLine, action: () => navigate("/pay/scan") },
   ];
 

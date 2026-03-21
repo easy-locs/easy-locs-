@@ -8,7 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { useWallet } from "@/hooks/useWallet";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import { detectLocalCurrency, formatCurrency, SUPPORTED_CURRENCIES } from "@/lib/orbit-payments";
 import type { PaymentContext } from "@/lib/orbit-payments/types";
 
@@ -30,7 +31,7 @@ export default function OrbitPaymentRequest({
   onCancel,
 }: OrbitPaymentRequestProps) {
   const detected = detectLocalCurrency();
-  const { requestMoney } = useWallet();
+  const { user } = useAuth();
   const [amount, setAmount] = useState("");
   const [currency, setCurrency] = useState(detected.code);
   const [description, setDescription] = useState("");
@@ -46,14 +47,22 @@ export default function OrbitPaymentRequest({
     setError(null);
 
     try {
-      const result = await requestMoney({
-        fromUserId: recipientUserId,
-        amount: numericAmount,
-        description: description || `Payment request`,
-        threadId,
-      });
-
-      if (!result.success) throw new Error(result.error);
+      if (!user?.id) throw new Error("Not authenticated");
+      const { error: insertErr } = await (supabase as any)
+        .from("unified_wallet_transactions")
+        .insert({
+          sender_id: null,
+          recipient_id: user.id,
+          amount: numericAmount,
+          currency: currency || "AED",
+          context_type: "request",
+          title: description || "Payment request",
+          subtitle: recipientName ? `From ${recipientName}` : undefined,
+          status: "pending",
+          metadata: { requested_from_user: recipientUserId },
+        });
+      if (insertErr) throw insertErr;
+      const result = { success: true, error: null as string | null };
       setSuccess(true);
       setTimeout(() => onSuccess?.(), 1500);
     } catch (err: any) {
@@ -61,7 +70,7 @@ export default function OrbitPaymentRequest({
     } finally {
       setProcessing(false);
     }
-  }, [numericAmount, recipientUserId, description, threadId, requestMoney, onSuccess]);
+  }, [numericAmount, recipientUserId, description, threadId, user?.id, onSuccess]);
 
   if (success) {
     return (
