@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useDebugCommsStore } from "@/stores/debugCommsStore";
 import { useOrbitStore } from "@/stores/orbitStore";
-import { useGeoStore } from "@/stores/geoStore";
+import { useLocationStore } from "@/stores/locationStore";
 import { cn } from "@/lib/utils";
 
 function StatusDot({ ok }: { ok: boolean }) {
