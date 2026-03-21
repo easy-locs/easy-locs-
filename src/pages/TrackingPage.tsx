@@ -40,14 +40,15 @@ export default function TrackingPage() {
   const { data: order, isLoading } = useQuery({
     queryKey: ["tracking-order", orderId],
     queryFn: async () => {
-      // Try storefront_orders first (authoritative), fallback to orders
+      // Authoritative: storefront_orders + snapshot items
       const { data: sfOrder } = await (supabase as any)
         .from("storefront_orders")
-        .select("id, status, payment_status, created_at, notes, total_amount, currency, shop_id, items_snapshot, fulfillment_type, updated_at")
+        .select("id, status, payment_status, created_at, notes, total, currency, shop_id, fulfillment_type, updated_at, storefront_order_items(*), storefront_pages!storefront_orders_shop_id_fkey(name, slug, logo_url)")
         .eq("id", orderId)
         .maybeSingle();
       if (sfOrder) return { ...sfOrder, order_type: sfOrder.fulfillment_type || "delivery" };
-      
+
+      // Temporary legacy fallback — will be removed after migration
       const { data } = await (supabase as any)
         .from("orders")
         .select("id, status, order_type, created_at, notes, total_amount, currency")
