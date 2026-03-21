@@ -58,11 +58,11 @@ export function CommsDiagnosticPanel() {
       email: (orbit as any)?.email ?? null,
     });
     debug.setGeo({
-      geoPermission: permission ?? null,
-      geoLat: geo?.lat ?? null,
-      geoLng: geo?.lng ?? null,
+      geoPermission: permissionState ?? null,
+      geoLat: currentLocation?.lat ?? null,
+      geoLng: currentLocation?.lng ?? null,
     });
-  }, [orbit?.orbitId, (orbit as any)?.email, geo?.lat, geo?.lng, permission]);
+  }, [orbit?.orbitId, (orbit as any)?.email, currentLocation?.lat, currentLocation?.lng, permissionState]);
 
   return (
     <div className="p-4 max-w-md mx-auto">
