@@ -816,6 +816,7 @@ const App = () => (
               <Route path="/qr/pay/:code" element={<QrPayResolver />} />
               <Route path="/qr/:code" element={<QrResolvePage />} />
               <Route path="/qr/entry/:targetCode" element={<QrEntryPage />} />
+              <Route path="/claim/:token" element={<ClaimPage />} />
 
               {/* V7 Public pillars */}
               {/* Redirects */}
