@@ -9,8 +9,7 @@ import type { SavedPlace } from "@/hooks/useSmartLocation";
 import { createUserMarkerElement, createPickupMarkerElement, createDropoffMarkerElement } from "@/lib/map/easy-locs-user-marker";
 import { useDriverRadar } from "@/hooks/useDriverRadar";
 import RadarOverlay from "./RadarOverlay";
-
-const MAPBOX_TOKEN = "pk.eyJ1IjoiZWFzeWxvY3MyMDI2IiwiYSI6ImNtbXZiZ3h0cTF6ZHMycnIyOWw4NnJzZTIifQ.ElIj6bFQK_BpVm6suigHUQ";
+import { MAPBOX_ACCESS_TOKEN } from "@/lib/mapbox/config";
 
 interface RideMapProps {
   pickup: SavedPlace | null;

@@ -18,8 +18,7 @@ import {
 } from "lucide-react";
 import type { GeoEntity } from "@/lib/geo/geoEntityAdapter";
 import type { ResolvedPlace } from "@/stores/locationStore";
-
-const TOKEN = "pk.eyJ1IjoiZWFzeWxvY3MyMDI2IiwiYSI6ImNtbXZiZ3h0cTF6ZHMycnIyOWw4NnJzZTIifQ.ElIj6bFQK_BpVm6suigHUQ";
+import { MAPBOX_ACCESS_TOKEN } from "@/lib/mapbox/config";
 
 const CATEGORIES = [
   { key: "all", label: "All", icon: Compass },
