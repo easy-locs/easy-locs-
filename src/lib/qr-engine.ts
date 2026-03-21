@@ -68,6 +68,8 @@ export interface PaymentConfirmQr extends QrBase { action: "payment_confirm"; tx
 export interface TrustedContactQr extends QrBase { action: "trusted_contact"; userId: string; name?: string; token: string; }
 
 export interface ShopQr extends QrBase { action: "shop"; shopSlug: string; }
+export interface MenuQr extends QrBase { action: "menu"; shopSlug: string; }
+export interface PosOrderQr extends QrBase { action: "pos_order"; shopSlug: string; tableCode?: string; terminalId?: string; }
 export interface ProductQr extends QrBase { action: "product"; productId: string; shopSlug?: string; }
 export interface OrderQr extends QrBase { action: "order"; orderId: string; }
 
