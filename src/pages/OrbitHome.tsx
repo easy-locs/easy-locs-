@@ -9,7 +9,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import MarketplaceSection from "@/components/marketplace/MarketplaceSection";
-import OrbitWalletCard from "@/components/orbit/OrbitWalletCard";
+import { useWalletBalance } from "@/payments/wallet-hooks";
 import {
   ChevronRight, MapPin, Car, Building2,
   Plane, UtensilsCrossed, Search, Bell, Map, Rocket,
