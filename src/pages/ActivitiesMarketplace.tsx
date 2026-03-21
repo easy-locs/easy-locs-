@@ -28,6 +28,8 @@ import { MARKETPLACE_CATEGORIES, getCategoryInfo } from "@/components/marketplac
 import ReviewsManagerPanel from "@/components/marketplace/ReviewsManagerPanel";
 import { computeExchangeRate, RATES_TO_EUR } from "@/hooks/useCurrencyConversion";
 import { useEnsureOrg } from "@/hooks/useEnsureOrg";
+import { checkServiceDuplicate } from "@/lib/geo/duplicateGuard";
+import { assignZoneToService } from "@/lib/zones/autoAssignZone";
 
 const DISPLAY_CURRENCIES = ["EUR", "USD", "GBP", "CHF", "MAD", "AED", "SAR", "XOF", "CAD", "AUD", "TND", "TRY", "JPY", "CNY", "INR", "BRL", "MXN", "ZAR", "NGN", "KES", "EGP"];
 
@@ -204,6 +206,13 @@ const ActivitiesMarketplace = () => {
     mutationFn: async (data: ServiceFormData) => {
       const resolvedOrgId = orgId || await ensureOrg();
       if (!resolvedOrgId) throw new Error("Organisation introuvable");
+
+      // Duplicate detection
+      const dupCheck = await checkServiceDuplicate(data.title, (data as any).lat ?? null, (data as any).lng ?? null, (data as any).phone ?? null);
+      if (dupCheck.blocked) {
+        throw new Error(`Duplicate detected: similar service "${dupCheck.existingMatch?.name}" already exists nearby.`);
+      }
+
       const slug = data.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") + "-" + Date.now().toString(36);
       const insertData: Record<string, unknown> = {
         ...data,
@@ -212,8 +221,13 @@ const ActivitiesMarketplace = () => {
         org_id: resolvedOrgId,
         user_id: user!.id,
       };
-      const { error } = await supabase.from("marketplace_services").insert(insertData as any);
+      const { data: created, error } = await supabase.from("marketplace_services").insert(insertData as any).select("id, lat, lng").single();
       if (error) throw error;
+
+      // Auto-assign zone
+      if (created?.id && created.lat && created.lng) {
+        assignZoneToService(created.id, created.lat, created.lng).catch(() => {});
+      }
     },
     onSuccess: () => {
       toast.success("Service created!");
