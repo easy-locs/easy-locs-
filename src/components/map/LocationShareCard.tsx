@@ -27,7 +27,12 @@ export default memo(function LocationShareCard({
 
   const currentLocation = useLocationStore((s) => s.currentLocation);
   const permissionState = useLocationStore((s) => s.permissionState);
-  const { requestLocation } = useGeolocation();
+  const setCurrentLocation = useLocationStore((s) => s.setCurrentLocation);
+  const requestLocation = () => {
+    navigator.geolocation?.getCurrentPosition((pos) => {
+      setCurrentLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude, accuracy: pos.coords.accuracy, timestamp: new Date().toISOString() });
+    }, () => {}, { enableHighAccuracy: true, timeout: 12000 });
+  };
 
   const lat = currentLocation?.lat ?? 25.2048;
   const lng = currentLocation?.lng ?? 55.2708;

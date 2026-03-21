@@ -54,7 +54,10 @@ export function LocationContext({
   compact = false,
   className,
 }: LocationContextProps) {
-  const { lat, lng, effectiveCity } = useGeolocation();
+  const currentLocation = useLocationStore((s) => s.currentLocation);
+  const lat = currentLocation?.lat ?? null;
+  const lng = currentLocation?.lng ?? null;
+  const effectiveCity: string | null = null;
 
   const hasTarget = targetLat != null && targetLng != null;
   const hasUser = lat != null && lng != null;

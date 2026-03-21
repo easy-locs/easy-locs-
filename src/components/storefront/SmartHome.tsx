@@ -213,7 +213,8 @@ const UtilityRow = memo(() => (
 /* ═══ Main Component ═══ */
 export default function SmartHome() {
   const navigate = useNavigate();
-  const geo = useGeolocation();
+  const currentLocation = useLocationStore((s) => s.currentLocation);
+  const geo = { effectiveCity: null as string | null, manualCity: null as string | null, lat: currentLocation?.lat ?? null, lng: currentLocation?.lng ?? null };
   const timezone = useMemo(() => {
     try { return Intl.DateTimeFormat().resolvedOptions().timeZone; } catch { return undefined; }
   }, []);
