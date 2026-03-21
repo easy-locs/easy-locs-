@@ -36,6 +36,9 @@ export default function MapTabPage() {
           <p><span className="text-muted-foreground">currentLocation:</span> <b>{currentLocation ? `${currentLocation.lat.toFixed(5)}, ${currentLocation.lng.toFixed(5)}` : "null"}</b></p>
           <p><span className="text-muted-foreground">accuracy:</span> <b>{currentLocation?.accuracy ?? "N/A"}</b></p>
           <p><span className="text-muted-foreground">error:</span> <b>{error || "none"}</b></p>
+          <p className="text-muted-foreground pt-1 italic">
+            💡 If map is blank: allow location in Safari Settings → easy-locs.lovable.app → Location
+          </p>
         </div>
       </details>
     </>
