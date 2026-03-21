@@ -3,7 +3,8 @@
  * Connected to wallet engine, POS, and kitchen display.
  */
 import { supabase } from "@/integrations/supabase/client";
-import { processUniversalPayment, type OrderMode } from "@/lib/wallet/payments-v1";
+import { walletTransfer } from "@/payments/wallet-hooks";
+type OrderMode = "dine_in" | "takeaway" | "delivery" | "room_service" | "onsite_qr";
 import { platformBus } from "@/lib/shared/platform-bus";
 import { resolveTransactionCurrency } from "@/lib/currency";
 
@@ -148,20 +149,21 @@ export async function payQrOrder(params: {
   vertical?: string;
   orderMode?: OrderMode;
 }): Promise<QrOrderResult> {
-  const result = await processUniversalPayment({
-    orderId: params.orderId,
-    grossAmount: params.grossAmount,
-    orderMode: params.orderMode ?? "onsite_qr",
-    countryCode: params.countryCode,
-    city: params.city,
-    vertical: params.vertical ?? "food",
-    customerWalletId: params.customerWalletId,
-    merchantProfileId: params.merchantProfileId,
-    pin: params.pin,
+  // Use walletTransfer as the authoritative payment method
+  const { txId } = await walletTransfer({
+    senderId: params.customerWalletId,
+    recipientId: params.merchantProfileId,
+    amount: params.grossAmount,
+    currency: "AED",
+    contextType: "qr_order",
+    contextId: params.orderId,
+    title: "QR Order Payment",
   });
 
+  const walletStatus = txId ? "captured" : "failed";
+
   // Move to kitchen only after successful capture
-  if (result.walletStatus === "captured") {
+  if (walletStatus === "captured") {
     await (supabase as any)
       .from("pos_orders")
       .update({ kitchen_status: "new" } as any)
@@ -176,11 +178,11 @@ export async function payQrOrder(params: {
   return {
     orderId: params.orderId,
     posOrderId: "",
-    paymentStatus: result.walletStatus,
-    walletStatus: result.walletStatus,
-    kitchenStatus: result.walletStatus === "captured" ? "new" : "pending_payment",
+    paymentStatus: walletStatus,
+    walletStatus,
+    kitchenStatus: walletStatus === "captured" ? "new" : "pending_payment",
     totalAmount: params.grossAmount,
-    currency: result.currency,
+    currency: "AED",
   };
 }
 
