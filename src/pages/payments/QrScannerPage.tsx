@@ -98,12 +98,31 @@ export default function QrScannerPage() {
 
     if (payload.action === "pay_user") {
       setStateSafe("paying");
+
+      // ── EXPLICIT TARGET RESOLUTION before payment ──
+      let resolved: ResolvedPayTarget;
+      try {
+        resolved = await resolvePayTarget({ userId: payload.userId, currency: payload.currency || "AED" });
+      } catch (resolveErr) {
+        setErrorSafe("Unresolved recipient — could not verify target");
+        setStateSafe("error");
+        return;
+      }
+
+      if (resolved.walletStatus === "locked") {
+        setErrorSafe("Recipient wallet is locked");
+        setStateSafe("error");
+        return;
+      }
+
       const result = await openPaymentRef.current({
-        amount: payload.amount || 0, currency: payload.currency || "AED",
-        title: "QR Payment", subtitle: "Scanned payment",
-        recipientId: payload.userId, recipientName: payload.name || "QR Recipient",
-        contextType: "generic", contextId: payload.userId,
-        metadata: { source: "qr_scan", qr_type: "pay_user" },
+        amount: payload.amount || 0, currency: resolved.currency || "AED",
+        title: `Pay ${resolved.displayName || payload.name || "User"}`,
+        subtitle: "QR Payment",
+        recipientId: resolved.targetUserId,
+        recipientName: resolved.displayName || payload.name || "QR Recipient",
+        contextType: "generic", contextId: resolved.targetUserId,
+        metadata: { source: "qr_scan", qr_type: "pay_user", resolved_wallet_id: resolved.targetWalletId },
       });
       if (!mountedRef.current) return;
       if (result.ok) { setTxId(result.transactionId || ""); setState("paid"); }
