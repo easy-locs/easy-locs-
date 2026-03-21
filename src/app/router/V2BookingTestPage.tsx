@@ -5,7 +5,7 @@ import { useOrbitStore } from "@/stores/orbitStore";
 import { useListingStore } from "@/stores/listingStore";
 import { useBookingStore } from "@/stores/bookingStore";
 import { useWalletStore } from "@/stores/walletStore";
-import { useContactStore } from "@/stores/contactStore";
+import { useNavigate } from "react-router-dom";
 import { usePropertyManagementStore } from "@/stores/propertyManagementStore";
 
 export default function V2BookingTestPage() {
