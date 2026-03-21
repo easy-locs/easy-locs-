@@ -18,6 +18,7 @@ import { toast } from "sonner";
 
 type ScanState = "idle" | "starting" | "scanning" | "paying" | "paid" | "stopped" | "error" | "resolved";
 type TabMode = "scan" | "myqr";
+type CameraPermissionState = "unknown" | "prompt" | "granted" | "denied" | "unsupported";
 
 const REGION_ID = "qr-reader-region";
 const QR_BOX_SIZE = 240;
@@ -39,6 +40,19 @@ function wait(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+async function withTimeout<T>(promise: Promise<T>, ms: number, message: string): Promise<T> {
+  let timer: ReturnType<typeof setTimeout> | null = null;
+
+  return Promise.race([
+    promise.finally(() => {
+      if (timer) clearTimeout(timer);
+    }),
+    new Promise<T>((_, reject) => {
+      timer = setTimeout(() => reject(new Error(message)), ms);
+    }),
+  ]);
+}
+
 export default function QrScannerPage() {
   const navigate = useNavigate();
   const { openPayment } = useUnifiedPayment();
@@ -50,7 +64,6 @@ export default function QrScannerPage() {
   const stoppingRef = useRef(false);
   const handledRef = useRef(false);
   const opRef = useRef(0);
-  const autoStartedRef = useRef(false);
 
   const navigateRef = useRef(navigate);
   const openPaymentRef = useRef(openPayment);
@@ -63,6 +76,12 @@ export default function QrScannerPage() {
   const [lastText, setLastText] = useState("");
   const [txId, setTxId] = useState("");
   const [resolvedPayload, setResolvedPayload] = useState<UniversalQrPayload | null>(null);
+  const [cameraPermission, setCameraPermission] = useState<CameraPermissionState>("unknown");
+  const [cameraDevices, setCameraDevices] = useState<Array<{ id: string; label: string }>>([]);
+  const [selectedCameraId, setSelectedCameraId] = useState("");
+  const [startStatus, setStartStatus] = useState<"idle" | "success" | "fail">("idle");
+  const [startErrorMessage, setStartErrorMessage] = useState("");
+  const [cameraRequested, setCameraRequested] = useState(false);
 
   const secure = typeof window === "undefined" ? true : window.isSecureContext;
   const ios = isIOS();
@@ -70,6 +89,67 @@ export default function QrScannerPage() {
 
   const setStateSafe = useCallback((s: ScanState) => { if (mountedRef.current) setState(s); }, []);
   const setErrorSafe = useCallback((m: string) => { if (mountedRef.current) setError(m); }, []);
+
+  const readCameraPermission = useCallback(async (): Promise<CameraPermissionState> => {
+    if (typeof navigator === "undefined" || !navigator.mediaDevices?.getUserMedia) {
+      if (mountedRef.current) setCameraPermission("unsupported");
+      return "unsupported";
+    }
+
+    if (!navigator.permissions?.query) {
+      if (mountedRef.current) setCameraPermission("unknown");
+      return "unknown";
+    }
+
+    try {
+      const status = await navigator.permissions.query({ name: "camera" as PermissionName });
+      const next = (status.state as CameraPermissionState) || "unknown";
+      if (mountedRef.current) {
+        setCameraPermission(next);
+        status.onchange = () => {
+          if (mountedRef.current) {
+            setCameraPermission((status.state as CameraPermissionState) || "unknown");
+          }
+        };
+      }
+      return next;
+    } catch {
+      if (mountedRef.current) setCameraPermission("unknown");
+      return "unknown";
+    }
+  }, []);
+
+  const refreshCameraDevices = useCallback(async () => {
+    if (typeof navigator === "undefined" || !navigator.mediaDevices?.enumerateDevices) {
+      if (mountedRef.current) setCameraDevices([]);
+      return [] as Array<{ id: string; label: string }>;
+    }
+
+    try {
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      const cameras = devices
+        .filter((device) => device.kind === "videoinput")
+        .map((device, index) => ({
+          id: device.deviceId,
+          label: device.label || `Camera ${index + 1}`,
+        }));
+      if (mountedRef.current) setCameraDevices(cameras);
+      return cameras;
+    } catch {
+      if (mountedRef.current) setCameraDevices([]);
+      return [] as Array<{ id: string; label: string }>;
+    }
+  }, []);
+
+  const chooseBestCamera = useCallback((cameras: Array<{ id: string; label: string }>, preferredId?: string | null) => {
+    if (!cameras.length) return "";
+    if (preferredId && cameras.some((camera) => camera.id === preferredId)) return preferredId;
+    if (selectedCameraId && cameras.some((camera) => camera.id === selectedCameraId)) return selectedCameraId;
+
+    const rear = cameras.find((camera) => /back|rear|environment|wide|ultra/i.test(camera.label));
+    if (rear) return rear.id;
+    return cameras[cameras.length - 1]?.id || cameras[0].id;
+  }, [selectedCameraId]);
 
   const resetRuntimeFlags = useCallback(() => {
     startingRef.current = false;
@@ -161,7 +241,7 @@ export default function QrScannerPage() {
     setErrorSafe("Unsupported QR format"); setStateSafe("error");
   }, [setErrorSafe, setStateSafe]);
 
-  const startScanner = useCallback(async () => {
+  const startScanner = useCallback(async (preferredDeviceId?: string) => {
     if (!secure) { setErrorSafe("Camera scanning requires HTTPS."); setStateSafe("error"); return; }
     if (startingRef.current || startedRef.current || stoppingRef.current) return;
     const el = document.getElementById(REGION_ID);
@@ -171,15 +251,25 @@ export default function QrScannerPage() {
     startingRef.current = true;
     handledRef.current = false;
     setErrorSafe(""); setLastText(""); setTxId("");
+    setStartErrorMessage("");
+    setStartStatus("idle");
     setStateSafe("starting");
 
     try {
+      await readCameraPermission();
+
       let tempStream: MediaStream | null = null;
+      let grantedDeviceId = "";
       try {
         tempStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: "environment" }, width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false });
+        grantedDeviceId = tempStream.getVideoTracks()[0]?.getSettings().deviceId || "";
+        if (mountedRef.current) setCameraPermission("granted");
       } catch (err) {
         const domErr = err as DOMException;
-        if (domErr?.name === "NotAllowedError") throw new Error("Camera permission denied. Please allow camera access in your browser settings.");
+        if (domErr?.name === "NotAllowedError") {
+          if (mountedRef.current) setCameraPermission("denied");
+          throw new Error("Camera permission denied. Please allow camera access in your browser settings.");
+        }
         if (domErr?.name === "NotFoundError") throw new Error("No camera found on this device.");
         throw new Error(domErr?.message || "Unable to open camera.");
       } finally {
@@ -189,19 +279,9 @@ export default function QrScannerPage() {
 
       if (!mountedRef.current || opRef.current !== startOp) return;
 
-      let preferredCameraId: string | null = null;
-      try {
-        const cameras = await Html5Qrcode.getCameras();
-        // Prefer rear/back/environment camera — pick last match (often highest-res rear)
-        const rear = cameras.find((c) => /back|rear|environment|wide/i.test(c.label));
-        if (rear) {
-          preferredCameraId = rear.id;
-        } else if (cameras.length > 1) {
-          // On most phones, last camera in list is rear
-          preferredCameraId = cameras[cameras.length - 1].id;
-        }
-        // Don't fall back to cameras[0] — that's usually front camera
-      } catch {}
+      const cameras = await refreshCameraDevices();
+      const preferredCameraId = chooseBestCamera(cameras, preferredDeviceId || grantedDeviceId);
+      if (mountedRef.current) setSelectedCameraId(preferredCameraId);
 
       if (!mountedRef.current || opRef.current !== startOp) return;
 
@@ -210,7 +290,7 @@ export default function QrScannerPage() {
       const scanConfig = { fps: ios ? 6 : 10, qrbox: { width: QR_BOX_SIZE, height: QR_BOX_SIZE }, aspectRatio: 1, disableFlip: false };
 
       const startWith = async (cfg: any, _label: string) => {
-        await scanner.start(cfg, scanConfig, async (text) => {
+        await withTimeout(scanner.start(cfg, scanConfig, async (text) => {
           if (!mountedRef.current || handledRef.current) return;
           handledRef.current = true;
           // Premium scan feedback — beep + haptic
@@ -219,7 +299,7 @@ export default function QrScannerPage() {
           setLastText(text);
           await clearScannerInstance("decode", false);
           await handleQrResult(text);
-        }, () => {});
+        }, () => {}), 12000, "Html5Qrcode.start timed out before camera preview appeared.");
       };
 
       try {
@@ -234,32 +314,32 @@ export default function QrScannerPage() {
 
       if (!mountedRef.current || opRef.current !== startOp) { await clearScannerInstance("stale", false); return; }
       startedRef.current = true; startingRef.current = false; stoppingRef.current = false;
+      if (mountedRef.current) {
+        setStartStatus("success");
+        setStartErrorMessage("");
+      }
       setStateSafe("scanning");
     } catch (err) {
       resetRuntimeFlags();
-      setErrorSafe(err instanceof Error ? err.message : "Unable to access camera.");
+      const message = err instanceof Error ? err.message : "Unable to access camera.";
+      setStartStatus("fail");
+      setStartErrorMessage(message);
+      setErrorSafe(message);
       setStateSafe("error");
     }
-  }, [clearScannerInstance, handleQrResult, ios, safari, secure, setErrorSafe, setStateSafe, resetRuntimeFlags]);
+  }, [chooseBestCamera, clearScannerInstance, handleQrResult, ios, readCameraPermission, refreshCameraDevices, safari, secure, setErrorSafe, setStateSafe, resetRuntimeFlags]);
 
-  // Auto-start camera on mount — single clean effect
   useEffect(() => {
     mountedRef.current = true;
-    let timer: ReturnType<typeof setTimeout> | null = null;
 
-    if (tab === "scan" && !autoStartedRef.current) {
-      autoStartedRef.current = true;
-      timer = setTimeout(() => {
-        if (mountedRef.current) startScanner();
-      }, 400);
-    }
+    void readCameraPermission();
+    void refreshCameraDevices();
 
     return () => {
-      if (timer) clearTimeout(timer);
       mountedRef.current = false;
       void clearScannerInstance("unmount", false);
     };
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [clearScannerInstance, readCameraPermission, refreshCameraDevices]);
 
   useEffect(() => {
     if (tab === "myqr" && (startedRef.current || startingRef.current)) {
@@ -267,9 +347,35 @@ export default function QrScannerPage() {
     }
   }, [tab, clearScannerInstance]);
 
+  useEffect(() => {
+    if (tab === "scan" && cameraRequested && !startingRef.current && !startedRef.current) {
+      void refreshCameraDevices();
+    }
+  }, [cameraRequested, refreshCameraDevices, tab]);
+
   const handleReset = () => {
     setError(""); setLastText(""); setTxId(""); setResolvedPayload(null);
     setState("idle"); handledRef.current = false;
+  };
+
+  const handleStartCamera = async (preferredDeviceId?: string) => {
+    setCameraRequested(true);
+    await startScanner(preferredDeviceId);
+  };
+
+  const handleSwitchCamera = async () => {
+    const cameras = cameraDevices.length ? cameraDevices : await refreshCameraDevices();
+    if (!cameras.length) {
+      setErrorSafe("No alternate camera found.");
+      setStateSafe("error");
+      return;
+    }
+
+    const currentIndex = cameras.findIndex((camera) => camera.id === selectedCameraId);
+    const nextCamera = cameras[(currentIndex + 1 + cameras.length) % cameras.length];
+    await clearScannerInstance("switch-camera", false);
+    handleReset();
+    await handleStartCamera(nextCamera.id);
   };
 
   return (
@@ -289,7 +395,7 @@ export default function QrScannerPage() {
       <div className="flex border-b border-border/30">
         <button
           type="button"
-          onClick={() => { setTab("scan"); handleReset(); if (!startedRef.current && !startingRef.current) startScanner(); }}
+          onClick={() => { setTab("scan"); handleReset(); }}
           className={`flex-1 flex items-center justify-center gap-2 py-3 text-sm font-semibold transition-colors active:scale-[0.97] ${tab === "scan" ? "text-primary border-b-2 border-primary" : "text-muted-foreground hover:text-foreground"}`}
         >
           <ScanLine className="h-4 w-4" /> Scan
@@ -378,17 +484,47 @@ export default function QrScannerPage() {
                   </div>
                 </div>
 
-                {error && <p className="mt-4 max-w-[280px] text-center text-sm text-destructive">{error}</p>}
+                 <div className="mt-4 w-full max-w-[300px] space-y-3">
+                   <div className="rounded-2xl border border-border/50 bg-card/80 p-3 text-left text-xs text-foreground shadow-sm">
+                     <p><span className="text-muted-foreground">scanner state:</span> {state}</p>
+                     <p><span className="text-muted-foreground">permission granted:</span> {cameraPermission === "granted" ? "yes" : cameraPermission === "denied" ? "no" : cameraPermission}</p>
+                     <p><span className="text-muted-foreground">enumerateDevices count:</span> {cameraDevices.length}</p>
+                     <p className="break-all"><span className="text-muted-foreground">selected camera id:</span> {selectedCameraId || "none"}</p>
+                     <p><span className="text-muted-foreground">Html5Qrcode.start:</span> {startStatus}</p>
+                     <p className="break-words"><span className="text-muted-foreground">exact error:</span> {startErrorMessage || error || "none"}</p>
+                   </div>
 
-                {(state === "error" || state === "stopped") && (
-                  <button
-                    type="button"
-                    onClick={() => { handleReset(); startScanner(); }}
-                    className="mt-5 flex items-center justify-center gap-2 rounded-2xl bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground active:scale-[0.97] transition-transform"
-                  >
-                    <RefreshCcw className="h-4 w-4" /> Retry
-                  </button>
-                )}
+                   {error && <p className="text-center text-sm text-destructive">{error}</p>}
+
+                   <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+                     {!cameraRequested || state === "idle" ? (
+                       <button
+                         type="button"
+                         onClick={() => { handleReset(); void handleStartCamera(); }}
+                         className="flex items-center justify-center gap-2 rounded-2xl bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground active:scale-[0.97] transition-transform"
+                       >
+                         <Camera className="h-4 w-4" /> Start camera
+                       </button>
+                     ) : null}
+
+                     <button
+                       type="button"
+                       onClick={() => { handleReset(); void handleStartCamera(selectedCameraId || undefined); }}
+                       className="flex items-center justify-center gap-2 rounded-2xl bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground active:scale-[0.97] transition-transform"
+                     >
+                       <RefreshCcw className="h-4 w-4" /> Retry camera
+                     </button>
+
+                     <button
+                       type="button"
+                       onClick={() => void handleSwitchCamera()}
+                       className="flex items-center justify-center gap-2 rounded-2xl border border-border bg-card px-4 py-3 text-sm font-semibold text-foreground active:scale-[0.97] transition-transform disabled:opacity-50"
+                       disabled={cameraDevices.length < 2}
+                     >
+                       <Camera className="h-4 w-4" /> Switch camera
+                     </button>
+                   </div>
+                 </div>
               </>
             )}
           </>
