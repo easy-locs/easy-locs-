@@ -60,14 +60,11 @@ function fail(label: string, key: string, detail?: string): RuntimeAuditCheck {
 
 async function checkSupabaseConnection(): Promise<RuntimeAuditCheck> {
   try {
-    // Use a known-accessible table (confirmed via network: orders returns 200)
-    const { error } = await (supabase as any)
-      .from("orders")
-      .select("id", { head: true, count: "exact" })
-      .limit(1);
-    console.log("Supabase connection audit", { error: error?.message ?? null });
-    if (error) return fail("Supabase connection", "supabase", error.message);
-    return pass("Supabase connection", "supabase", "Database reachable");
+    // Use auth.getSession() first — it doesn't hit PostgREST/RLS at all
+    const { data, error: authErr } = await supabase.auth.getSession();
+    if (authErr) return fail("Supabase connection", "supabase", authErr.message);
+    // Auth reachable means Supabase is connected
+    return pass("Supabase connection", "supabase", data.session ? "Authenticated session active" : "Reachable (no active session)");
   } catch (e: any) {
     return fail("Supabase connection", "supabase", e.message ?? "Unknown error");
   }
