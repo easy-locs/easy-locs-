@@ -741,19 +741,29 @@ if (typeof window !== "undefined") {
   });
 }
 
-/** Route "/" → Dashboard (authenticated) or Index (guest) */
+/** Route "/" → Onboarding (if needed) or Dashboard (authenticated) or Index (guest) */
 function HomeRouter() {
-  const { user, loading } = useAuth();
+  const { user, loading, profileLoaded, onboardingCompleted, emailVerified, activeRole } = useAuth();
   if (loading) return <PageLoader />;
   if (!user) return <Suspense fallback={<PageLoader />}><Index /></Suspense>;
+  // Wait for profile to load before making onboarding decision — prevents flicker
+  if (!profileLoaded) return <PageLoader />;
+  if (!emailVerified) return <Navigate to="/verify-email" replace />;
+  if (!onboardingCompleted) return <Navigate to="/onboarding" replace />;
+  // Redirect to role-appropriate dashboard
+  if (activeRole === "tenant") return <Navigate to="/tenant" replace />;
+  if (activeRole === "client") return <Navigate to="/client" replace />;
   return <Suspense fallback={<PageLoader />}><Dashboard /></Suspense>;
 }
 
 /** Route "/home" → OrbitHome marketplace hub (authenticated) or Index (guest) */
 function MarketplaceHomeRouter() {
-  const { user, loading } = useAuth();
+  const { user, loading, profileLoaded, onboardingCompleted, emailVerified } = useAuth();
   if (loading) return <PageLoader />;
   if (!user) return <Suspense fallback={<PageLoader />}><Index /></Suspense>;
+  if (!profileLoaded) return <PageLoader />;
+  if (!emailVerified) return <Navigate to="/verify-email" replace />;
+  if (!onboardingCompleted) return <Navigate to="/onboarding" replace />;
   return <Suspense fallback={<PageLoader />}><OrbitAppShell><OrbitHome /></OrbitAppShell></Suspense>;
 }
 
@@ -802,7 +812,7 @@ const App = () => (
               <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/verify-email" element={<VerifyEmail />} />
               <Route path="/auth/callback" element={<AuthCallbackPage />} />
-              <Route path="/onboarding" element={<Onboarding />} />
+              <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
               <Route path="/install" element={<Install />} />
 
               {/* Deep-link public pages */}
