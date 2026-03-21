@@ -758,9 +758,12 @@ function HomeRouter() {
 
 /** Route "/home" → OrbitHome marketplace hub (authenticated) or Index (guest) */
 function MarketplaceHomeRouter() {
-  const { user, loading } = useAuth();
+  const { user, loading, profileLoaded, onboardingCompleted, emailVerified } = useAuth();
   if (loading) return <PageLoader />;
   if (!user) return <Suspense fallback={<PageLoader />}><Index /></Suspense>;
+  if (!profileLoaded) return <PageLoader />;
+  if (!emailVerified) return <Navigate to="/verify-email" replace />;
+  if (!onboardingCompleted) return <Navigate to="/onboarding" replace />;
   return <Suspense fallback={<PageLoader />}><OrbitAppShell><OrbitHome /></OrbitAppShell></Suspense>;
 }
 
