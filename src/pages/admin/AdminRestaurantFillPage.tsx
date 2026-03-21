@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { runDubaiPizzaAutofill } from "@/lib/autofill/dubaiPizzaSeedRunner";
-import { autofillSingleRestaurant } from "@/lib/autofill/restaurantAutofillEngine";
+import { autoOnboardMerchant } from "@/lib/merchant/onboarding";
 
 export default function AdminRestaurantFillPage() {
   const navigate = useNavigate();
@@ -19,11 +19,17 @@ export default function AdminRestaurantFillPage() {
 
     try {
       setLoading(true);
-      const res = await autofillSingleRestaurant({
+      const res = await autoOnboardMerchant({
         name: singleName.trim(),
-        area: singleArea,
+        category: "food",
+        subcategory: "pizza",
         city: "Dubai",
-        cuisine: "pizza",
+        area: singleArea,
+        items: [
+          { name: "Margherita", description: "Tomato sauce, mozzarella, basil", price: 29, category: "pizza" },
+          { name: "Pepperoni", description: "Tomato sauce, mozzarella, pepperoni", price: 34, category: "pizza" },
+          { name: "Garlic Bread", description: "Fresh baked garlic bread", price: 14, category: "sides" },
+        ],
       });
       setResults((prev) => [res, ...prev]);
       toast.success("Restaurant created");

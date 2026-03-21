@@ -117,12 +117,6 @@ export const PROFILE_SECTIONS = [
       { label: "Security & Privacy", path: "/settings/security" },
     ],
   },
-  {
-    title: "Business",
-    items: [
-      { label: "Business Hub", path: "/settings/business" },
-    ],
-  },
 ] as const;
 
 export const EXPLORE_CATEGORIES = [

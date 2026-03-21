@@ -5,16 +5,13 @@
 import { useEffect, useRef, useState, useMemo, useCallback } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
-import { useGeoEntities } from "@/hooks/useGeoEntities";
 import { useLocationStore } from "@/stores/locationStore";
-import { useCurrentLocation } from "@/hooks/useCurrentLocation";
 import { filterByRadius, sortByDistance, formatDistance } from "@/lib/location/radar";
 import { LocationSearchInput } from "./LocationSearchInput";
 import { motion, AnimatePresence } from "framer-motion";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
-  Locate, List, Map as MapIcon, SlidersHorizontal,
-  UtensilsCrossed, ShoppingCart, Building2, Car, Wrench, Compass,
+  Locate, List, Map as MapIcon, Expand, UtensilsCrossed, ShoppingCart, Building2, Wrench, Compass, Car,
 } from "lucide-react";
 import type { GeoEntity } from "@/lib/geo/geoEntityAdapter";
 import type { ResolvedPlace } from "@/stores/locationStore";
@@ -41,9 +38,42 @@ const MARKER_COLORS: Record<string, string> = {
 };
 
 export default function ExplorerMap() {
+  return <ExplorerMapInner />;
+}
+
+type ExploreMapItem = {
+  id: string;
+  title?: string;
+  city?: string;
+  country?: string;
+  category?: string;
+  _type?: string;
+  route_path?: string;
+  slug?: string;
+  booking_slug?: string;
+  photo_urls?: string[] | null;
+  cover_url?: string | null;
+  image_url?: string | null;
+  lat?: number | null;
+  lng?: number | null;
+  latitude?: number | null;
+  longitude?: number | null;
+};
+
+export function ExplorerMapInner({
+  items,
+  radiusKm,
+  selectedId,
+  onSelectId,
+  compact = false,
+}: {
+  items?: ExploreMapItem[];
+  radiusKm?: number;
+  selectedId?: string | null;
+  onSelectId?: (id: string | null) => void;
+  compact?: boolean;
+}) {
   const navigate = useNavigate();
-  const { location } = useCurrentLocation({ watch: true });
-  const { entities } = useGeoEntities();
   const searchRadiusKm = useLocationStore((s) => s.searchRadiusKm);
   const currentLocation = useLocationStore((s) => s.currentLocation);
 
@@ -54,21 +84,52 @@ export default function ExplorerMap() {
 
   const [viewMode, setViewMode] = useState<"map" | "list">("map");
   const [activeCategory, setActiveCategory] = useState("all");
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [internalSelectedId, setInternalSelectedId] = useState<string | null>(null);
 
   const center = currentLocation || { lat: 25.2048, lng: 55.2708 };
+  const effectiveRadius = radiusKm ?? searchRadiusKm;
+  const effectiveSelectedId = selectedId ?? internalSelectedId;
+
+  const normalizedItems = useMemo(() => {
+    if (!items) return [] as Array<GeoEntity & { route_path: string }>;
+    return items
+      .map((item) => {
+        const lat = item.lat ?? item.latitude ?? null;
+        const lng = item.lng ?? item.longitude ?? null;
+        if (typeof lat !== "number" || typeof lng !== "number") return null;
+        const routePath = item.route_path || (item._type === "seasonal"
+          ? `/listing/${item.slug}`
+          : item._type === "real-estate"
+          ? `/properties/${item.slug}`
+          : item.booking_slug
+          ? `/book/${item.booking_slug}`
+          : "#");
+        return {
+          id: item.id,
+          lat,
+          lng,
+          type: item.category || item._type || "service",
+          title: item.title || "Listing",
+          subtitle: item.city || item.country || item.category || item._type || "",
+          city: item.city || "",
+          image_url: item.image_url || item.cover_url || item.photo_urls?.[0] || null,
+          route_path: routePath,
+        } as GeoEntity & { route_path: string };
+      })
+      .filter(Boolean) as Array<GeoEntity & { route_path: string }>;
+  }, [items]);
 
   // Filter and sort entities
   const filtered = useMemo(() => {
-    let list = entities;
+    let list = normalizedItems;
     if (activeCategory !== "all") {
       list = list.filter((e) => e.type === activeCategory);
     }
-    const nearby = filterByRadius(list, center, searchRadiusKm);
+    const nearby = filterByRadius(list, center, effectiveRadius);
     return sortByDistance(nearby, center);
-  }, [entities, activeCategory, center, searchRadiusKm]);
+  }, [normalizedItems, activeCategory, center, effectiveRadius]);
 
-  const selectedEntity = filtered.find((e) => e.id === selectedId) || null;
+  const selectedEntity = filtered.find((e) => e.id === effectiveSelectedId) || null;
 
   // Init map
   useEffect(() => {
@@ -143,7 +204,8 @@ export default function ExplorerMap() {
         .addTo(map);
 
       el.addEventListener("click", () => {
-        setSelectedId(entity.id);
+          onSelectId?.(entity.id);
+          setInternalSelectedId(entity.id);
         map.flyTo({ center: [entity.lng, entity.lat], zoom: 15, duration: 500 });
       });
 
@@ -161,8 +223,13 @@ export default function ExplorerMap() {
     mapRef.current.flyTo({ center: [place.lng, place.lat], zoom: 15, duration: 600 });
   };
 
+  useEffect(() => {
+    if (!selectedEntity || !mapRef.current) return;
+    mapRef.current.flyTo({ center: [selectedEntity.lng, selectedEntity.lat], zoom: 15, duration: 500 });
+  }, [selectedEntity]);
+
   return (
-    <div className="flex flex-col h-[100dvh] bg-background overflow-hidden">
+    <div className={`flex flex-col bg-background overflow-hidden ${compact ? "h-[360px] rounded-[28px] border border-border/40" : "h-[100dvh]"}`}>
       {/* Header */}
       <div className="shrink-0 px-4 pt-3 pb-2 space-y-2 bg-background/95 backdrop-blur-md z-20 border-b border-border/20">
         <LocationSearchInput onSelect={handleSearchSelect} placeholder="Search places nearby…" />
@@ -191,6 +258,15 @@ export default function ExplorerMap() {
         <div className="flex items-center justify-between">
           <p className="text-xs text-muted-foreground">{filtered.length} nearby</p>
           <div className="flex gap-1">
+            {compact && (
+              <Link
+                to="/map"
+                className="p-1.5 rounded-lg text-muted-foreground"
+                aria-label="Open full map"
+              >
+                <Expand className="h-4 w-4" />
+              </Link>
+            )}
             <button
               onClick={() => setViewMode("map")}
               className={`p-1.5 rounded-lg ${viewMode === "map" ? "bg-primary/10 text-primary" : "text-muted-foreground"}`}
@@ -229,7 +305,10 @@ export default function ExplorerMap() {
                 exit={{ y: 100, opacity: 0 }}
                 className="absolute bottom-20 left-4 right-4 z-10"
               >
-                <EntityCard entity={selectedEntity} center={center} onTap={() => navigate(selectedEntity.route_path)} onClose={() => setSelectedId(null)} />
+                <EntityCard entity={selectedEntity} center={center} onTap={() => navigate(selectedEntity.route_path)} onClose={() => {
+                  onSelectId?.(null);
+                  setInternalSelectedId(null);
+                }} />
               </motion.div>
             )}
           </AnimatePresence>
