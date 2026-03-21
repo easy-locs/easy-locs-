@@ -290,6 +290,14 @@ const CreateListing = () => {
 
     setSaving(true);
     try {
+      // Duplicate detection before insert
+      const dupCheck = await checkServiceDuplicate(form.title.trim(), geoLat, geoLng, form.contact_whatsapp);
+      if (dupCheck.blocked) {
+        toast({ title: "Duplicate detected", description: `Similar listing "${dupCheck.existingMatch?.name}" already exists nearby.`, variant: "destructive" });
+        setSaving(false);
+        return;
+      }
+
       // First ensure provider exists
       let { data: provider } = await supabase
         .from("marketplace_providers")
