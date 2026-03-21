@@ -35,6 +35,7 @@ const AuthContext = createContext<AuthContextType>({
   user: null,
   session: null,
   loading: true,
+  profileLoaded: false,
   emailVerified: false,
   orgId: null,
   allOrgs: [],
