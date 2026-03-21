@@ -39,9 +39,9 @@ export const useDriverStore = create<DriverStoreState>((set) => ({
 
   updatePosition: async () => {
     const orbit = useOrbitStore.getState().profile;
-    const geo = useGeoStore.getState().currentPosition;
+    const loc = useLocationStore.getState().currentLocation;
     if (!orbit) return;
-    if (!geo.lat && !geo.lng) return;
+    if (!loc?.lat && !loc?.lng) return;
 
     await (supabase as any).from("drivers_live").upsert({
       orbit_id: orbit.orbitId,
