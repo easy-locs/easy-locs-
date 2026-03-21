@@ -61,18 +61,26 @@ export function CallProvider({ children }: { children: ReactNode }) {
   // Keep ref in sync for use in realtime closures
   useEffect(() => { incomingCallIdRef.current = incomingCallId; }, [incomingCallId]);
 
-  // Listen for incoming calls (calls where user's org is the callee)
+  // Listen for incoming calls (calls where user's org or user ID is the receiver)
   useEffect(() => {
     if (!user) return;
 
-    // Get user's org memberships to listen for calls to those orgs
     const setupListener = async () => {
+      // Get user's org memberships
       const { data: memberships } = await supabase
         .from("org_members")
         .select("org_id")
         .eq("user_id", user.id);
 
       const orgIds = memberships?.map((m) => m.org_id) || [];
+      // All IDs this user should receive calls for: own user_id + org IDs
+      const receiverIds = new Set([user.id, ...orgIds]);
+
+      console.log("[CallProvider] incoming listener setup", {
+        userId: user.id,
+        orgIds,
+        receiverIdCount: receiverIds.size,
+      });
 
       const channel = supabase
         .channel("incoming-calls")
@@ -82,38 +90,32 @@ export function CallProvider({ children }: { children: ReactNode }) {
           async (payload) => {
             try {
               const call = payload.new as any;
-              if (!call || call.caller_orbit_id === user.id) return;
+              if (!call) return;
+
+              console.log("[CallProvider] realtime INSERT received", {
+                callId: call.id,
+                caller: call.caller_orbit_id,
+                receiver: call.receiver_orbit_id,
+                status: call.status,
+                isSelf: call.caller_orbit_id === user.id,
+              });
+
+              // Skip if we are the caller
+              if (call.caller_orbit_id === user.id) return;
+              // Skip if not ringing
               if (call.status !== "ringing") return;
-              // Accept call if targeted at user's org, or directly/indirectly targeted to this user
-              const isOrgCall = orgIds.length > 0 && orgIds.includes(call.receiver_orbit_id);
-              const isDirectCall = call.context_type === "direct" &&
-                typeof call.context_id === "string" &&
-                call.context_id.includes(user.id);
-
-              let isTenantTarget = false;
-              if (call.context_type === "tenant" && typeof call.context_id === "string") {
-                const { data: tenantMatch } = await supabase
-                  .from("tenants")
-                  .select("id")
-                  .eq("id", call.context_id)
-                  .eq("tenant_user_id", user.id)
-                  .maybeSingle();
-                isTenantTarget = !!tenantMatch;
+              // Match: receiver_orbit_id is either our user.id or one of our org IDs
+              if (!receiverIds.has(call.receiver_orbit_id)) {
+                console.log("[CallProvider] incoming call not for us", {
+                  receiver: call.receiver_orbit_id,
+                  ourIds: Array.from(receiverIds),
+                });
+                return;
               }
 
-              let isThreadParticipant = false;
-              if (call.thread_id) {
-                const { data: threadMatch } = await supabase
-                  .from("conversation_threads")
-                  .select("id")
-                  .eq("id", call.thread_id)
-                  .contains("participant_ids", [user.id])
-                  .maybeSingle();
-                isThreadParticipant = !!threadMatch;
-              }
+              console.log("[CallProvider] ✅ incoming call matched!", { callId: call.id });
 
-              if (!isOrgCall && !isDirectCall && !isTenantTarget && !isThreadParticipant) return;
-
+              // Lookup caller name
               const { data: profile } = await supabase
                 .from("profiles")
                 .select("name, email")
@@ -122,11 +124,16 @@ export function CallProvider({ children }: { children: ReactNode }) {
 
               setIncomingCallId(call.id);
               setIncomingCallerName(profile?.name || profile?.email || "User");
-              setIncomingContextLabel(call.context_label || "");
-              setIncomingIsVideo(call.is_video || false);
+              setIncomingContextLabel("");
+              setIncomingIsVideo(call.call_type === "video");
               setIncomingOrgId(call.receiver_orbit_id || "");
-              setIncomingThreadId(call.thread_id || null);
+              setIncomingThreadId(call.conversation_id || null);
               setShowIncoming(true);
+
+              console.log("[CallProvider] incoming popup SHOWN", {
+                callId: call.id,
+                callerName: profile?.name || profile?.email || "User",
+              });
             } catch (err) {
               console.error("[CallProvider] incoming call handler error:", err);
             }
@@ -138,7 +145,6 @@ export function CallProvider({ children }: { children: ReactNode }) {
           (payload) => {
             try {
               const call = payload.new as any;
-              // If this call was accepted/declined/ended by someone else, dismiss our ring
               if (call && call.status !== "ringing" && call.id === incomingCallIdRef.current) {
                 setShowIncoming(false);
                 setIncomingCallId(null);
@@ -148,7 +154,9 @@ export function CallProvider({ children }: { children: ReactNode }) {
             }
           }
         )
-        .subscribe();
+        .subscribe((status) => {
+          console.log("[CallProvider] realtime subscription status:", status);
+        });
 
       return () => {
         supabase.removeChannel(channel);
