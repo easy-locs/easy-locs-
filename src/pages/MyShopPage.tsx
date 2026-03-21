@@ -19,6 +19,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Store, Package, ShoppingBag, Settings, ExternalLink, Copy, Check, Loader2, Handshake, BarChart3, Rocket, DollarSign } from "lucide-react";
 import { toast } from "sonner";
 import { haptic } from "@/lib/haptics";
+import { assignZoneToStorefront } from "@/lib/zones/autoAssignZone";
 
 // Lazy-loaded tab modules — only loaded when the tab is active
 const CatalogManager = lazy(() => import("@/components/storefront/CatalogManager"));
