@@ -312,7 +312,7 @@ export default function V2MegaPage() {
           <button className={btnClass} onClick={() => ui.setMapFullscreen(!ui.mapFullscreen)}>Toggle Map</button>
         </div>
       }
-      mapLayer={<MapMarkerList />}
+      mapLayer={null}
       cameraLayer={<CameraPreviewPanel />}
       rightPanel={<PropertyDetailPanel />}
     >
