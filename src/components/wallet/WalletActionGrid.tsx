@@ -8,7 +8,7 @@ import {
   History, ScanLine, Settings, Banknote,
 } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
-import type { WalletView } from "@/pages/WalletHub";
+export type WalletView = "home" | "pay" | "receive" | "request" | "scan" | "history" | "settings" | "rent-pay" | "crypto";
 
 interface WalletActionGridProps {
   onAction: (view: WalletView) => void;

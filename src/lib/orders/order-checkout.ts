@@ -1,6 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import { updateOrderStatus } from "@/lib/orders/orders-core";
-import { settleOrderPayment } from "@/lib/wallet/payments-v1";
+import { walletTransfer } from "@/payments/wallet-hooks";
 import { createDispatchFromOrder } from "@/lib/orders/order-dispatch-bridge";
 
 export async function checkoutFoodDeliveryOrder(params: {
