@@ -239,15 +239,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     let mounted = true;
-    let hydrating = false;
+    let latestSeq = 0;
 
     // Mark V1 auth as active — prevents v2AuthStore from registering a second listener
     markV1AuthActive();
 
     const hydrateAuthState = async (nextSession: Session | null) => {
-      // Prevent concurrent hydrations (avoids lock contention)
-      if (hydrating) return;
-      hydrating = true;
+      // Use a monotonic sequence so only the latest event wins (no dropped events)
+      const seq = ++latestSeq;
 
       setSession(nextSession);
       setUser(nextSession?.user ?? null);
@@ -259,7 +258,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         try {
           // SEQUENTIAL — prevents auth token lock contention from parallel queries
           await fetchOrgId(nextSession.user.id);
+          if (seq !== latestSeq) return; // superseded by newer event
           await fetchUserType(nextSession.user.id);
+          if (seq !== latestSeq) return;
         } catch (err) {
           console.error("[AuthContext] hydrateAuthState failed:", err);
         }
@@ -278,22 +279,24 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setAllOrgs([]);
       }
 
-      if (mounted) setLoading(false);
-      hydrating = false;
+      if (mounted && seq === latestSeq) setLoading(false);
     };
 
+    // Single source of truth: onAuthStateChange fires INITIAL_SESSION on setup,
+    // then SIGNED_IN / SIGNED_OUT / TOKEN_REFRESHED as needed.
+    // We do NOT call getSession() separately — that caused a race where
+    // getSession() resolved with null before onAuthStateChange delivered the
+    // restored session, leading to a premature redirect to /login.
     const { data: { subscription: authSub } } = supabase.auth.onAuthStateChange(
       (_event, nextSession) => {
         if (_event === "SIGNED_IN" && nextSession?.user) {
           logAudit({ userId: nextSession.user.id, action: "user_login" });
-          // Ensure user_profiles row exists (no-op if already created)
           void import("@/lib/auth/profile")
             .then((m) => m.ensureUserProfile(nextSession.user.id, {
               fullName: nextSession.user.user_metadata?.full_name,
               phone: nextSession.user.phone ?? undefined,
             }))
             .catch(() => null);
-          // Request notification permission after login (deferred, non-blocking)
           setTimeout(() => {
             void import("@/lib/notif-alert-prefs")
               .then((m) => m?.requestNotificationPermission?.())
@@ -306,10 +309,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         void hydrateAuthState(nextSession);
       }
     );
-
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      void hydrateAuthState(session);
-    });
 
     return () => {
       mounted = false;
