@@ -9609,6 +9609,7 @@ export type Database = {
           verification_types: Json | null
           video_url: string | null
           year_built: number | null
+          zone_id: string | null
         }
         Insert: {
           activated_at?: string | null
@@ -9689,6 +9690,7 @@ export type Database = {
           verification_types?: Json | null
           video_url?: string | null
           year_built?: number | null
+          zone_id?: string | null
         }
         Update: {
           activated_at?: string | null
@@ -9769,6 +9771,7 @@ export type Database = {
           verification_types?: Json | null
           video_url?: string | null
           year_built?: number | null
+          zone_id?: string | null
         }
         Relationships: [
           {
@@ -9790,6 +9793,13 @@ export type Database = {
             columns: ["provider_id"]
             isOneToOne: false
             referencedRelation: "marketplace_providers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "marketplace_services_zone_id_fkey"
+            columns: ["zone_id"]
+            isOneToOne: false
+            referencedRelation: "zones"
             referencedColumns: ["id"]
           },
         ]
@@ -13098,6 +13108,7 @@ export type Database = {
           title: string
           updated_at: string | null
           user_id: string
+          zone_id: string | null
         }
         Insert: {
           amenities?: Json | null
@@ -13115,6 +13126,7 @@ export type Database = {
           title: string
           updated_at?: string | null
           user_id: string
+          zone_id?: string | null
         }
         Update: {
           amenities?: Json | null
@@ -13132,8 +13144,17 @@ export type Database = {
           title?: string
           updated_at?: string | null
           user_id?: string
+          zone_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "property_listings_v2_zone_id_fkey"
+            columns: ["zone_id"]
+            isOneToOne: false
+            referencedRelation: "zones"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       property_units: {
         Row: {
@@ -23428,14 +23449,19 @@ export type Database = {
           country: string
           country_code: string | null
           country_name: string | null
+          coverage_radius_m: number | null
           created_at: string
           currency: string | null
           default_language: string | null
+          delivery_supported: boolean
+          display_order: number
           id: string
           is_active: boolean
           is_launched: boolean
           launch_priority: number | null
+          level: string
           name: string
+          parent_id: string | null
           radius_m: number
           region_name: string | null
           slug: string | null
@@ -23449,14 +23475,19 @@ export type Database = {
           country?: string
           country_code?: string | null
           country_name?: string | null
+          coverage_radius_m?: number | null
           created_at?: string
           currency?: string | null
           default_language?: string | null
+          delivery_supported?: boolean
+          display_order?: number
           id?: string
           is_active?: boolean
           is_launched?: boolean
           launch_priority?: number | null
+          level?: string
           name: string
+          parent_id?: string | null
           radius_m?: number
           region_name?: string | null
           slug?: string | null
@@ -23470,21 +23501,34 @@ export type Database = {
           country?: string
           country_code?: string | null
           country_name?: string | null
+          coverage_radius_m?: number | null
           created_at?: string
           currency?: string | null
           default_language?: string | null
+          delivery_supported?: boolean
+          display_order?: number
           id?: string
           is_active?: boolean
           is_launched?: boolean
           launch_priority?: number | null
+          level?: string
           name?: string
+          parent_id?: string | null
           radius_m?: number
           region_name?: string | null
           slug?: string | null
           timezone?: string | null
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "zones_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "zones"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
