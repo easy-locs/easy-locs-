@@ -82,6 +82,7 @@ export default function QrScannerPage() {
   const [startStatus, setStartStatus] = useState<"idle" | "success" | "fail">("idle");
   const [startErrorMessage, setStartErrorMessage] = useState("");
   const [cameraRequested, setCameraRequested] = useState(false);
+  const [cameraUnavailableReason, setCameraUnavailableReason] = useState("");
   const [envInfo, setEnvInfo] = useState<Record<string, string>>({});
   const fileInputRef = useRef<HTMLInputElement>(null);
 
