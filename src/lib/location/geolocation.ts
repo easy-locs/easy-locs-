@@ -18,8 +18,8 @@ export interface GeoError {
 
 const GEO_OPTIONS: PositionOptions = {
   enableHighAccuracy: true,
-  timeout: 10000,
-  maximumAge: 15000,
+  timeout: 15000,
+  maximumAge: 0,
 };
 
 export function isGeoSupported(): boolean {
@@ -36,11 +36,7 @@ export async function getGeoPermissionState(): Promise<"granted" | "denied" | "p
   }
 }
 
-export function getCurrentPositionHighAccuracy(): Promise<GeoResult> {
-  if (!isGeoSupported()) {
-    return Promise.reject({ code: 0, message: "Geolocation not supported" } as GeoError);
-  }
-
+function readCurrentPositionOnce(options: PositionOptions): Promise<GeoResult> {
   return new Promise((resolve, reject) => {
     navigator.geolocation.getCurrentPosition(
       (pos) => {
@@ -55,9 +51,26 @@ export function getCurrentPositionHighAccuracy(): Promise<GeoResult> {
       (err) => {
         reject({ code: err.code, message: err.message } as GeoError);
       },
-      GEO_OPTIONS,
+      options,
     );
   });
+}
+
+export async function getCurrentPositionHighAccuracy(): Promise<GeoResult> {
+  if (!isGeoSupported()) {
+    return Promise.reject({ code: 0, message: "Geolocation not supported" } as GeoError);
+  }
+
+  try {
+    return await readCurrentPositionOnce(GEO_OPTIONS);
+  } catch (err) {
+    const geoErr = err as GeoError;
+    if (geoErr.code === 3) {
+      console.warn("[geo] timeout on first attempt, retrying once", geoErr);
+      return readCurrentPositionOnce(GEO_OPTIONS);
+    }
+    throw geoErr;
+  }
 }
 
 let _watchId: number | null = null;

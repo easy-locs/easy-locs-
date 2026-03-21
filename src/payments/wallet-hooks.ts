@@ -122,7 +122,7 @@ export async function walletTransfer(opts: {
   subtitle?: string | null;
   metadata?: Record<string, any>;
 }): Promise<{ txId: string }> {
-  const { data, error } = await (supabase as any).rpc("wallet_transfer", {
+  const payload = {
     p_sender: opts.senderId,
     p_recipient: opts.recipientId,
     p_amount: opts.amount,
@@ -132,8 +132,16 @@ export async function walletTransfer(opts: {
     p_title: opts.title || null,
     p_subtitle: opts.subtitle || null,
     p_metadata: opts.metadata || {},
-  });
+  };
 
-  if (error) throw error;
+  console.log("[walletTransfer] rpc request", payload);
+  const { data, error } = await (supabase as any).rpc("wallet_transfer", payload);
+
+  if (error) {
+    console.error("[walletTransfer] rpc error", error);
+    throw error;
+  }
+
+  console.log("[walletTransfer] rpc success", { txId: data });
   return { txId: data as string };
 }

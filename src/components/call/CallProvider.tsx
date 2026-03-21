@@ -66,20 +66,11 @@ export function CallProvider({ children }: { children: ReactNode }) {
     if (!user) return;
 
     const setupListener = async () => {
-      // Get user's org memberships
-      const { data: memberships } = await supabase
-        .from("org_members")
-        .select("org_id")
-        .eq("user_id", user.id);
-
-      const orgIds = memberships?.map((m) => m.org_id) || [];
-      // All IDs this user should receive calls for: own user_id + org IDs
-      const receiverIds = new Set([user.id, ...orgIds]);
+      const receiverIds = new Set([user.id]);
 
       console.log("[CallProvider] incoming listener setup", {
         userId: user.id,
-        orgIds,
-        receiverIdCount: receiverIds.size,
+        receiverIds: Array.from(receiverIds),
       });
 
       const channel = supabase
@@ -90,32 +81,31 @@ export function CallProvider({ children }: { children: ReactNode }) {
           async (payload) => {
             try {
               const call = payload.new as any;
-              if (!call) return;
+              console.log("[CallProvider] realtime event INSERT", payload);
+              if (!call) {
+                console.warn("[CallProvider] missing condition: payload.new is empty");
+                return;
+              }
 
-              console.log("[CallProvider] realtime INSERT received", {
-                callId: call.id,
-                caller: call.caller_orbit_id,
-                receiver: call.receiver_orbit_id,
-                status: call.status,
-                isSelf: call.caller_orbit_id === user.id,
-              });
+              if (call.caller_orbit_id === user.id) {
+                console.warn("[CallProvider] missing condition: skipped self-originated call", { callId: call.id });
+                return;
+              }
 
-              // Skip if we are the caller
-              if (call.caller_orbit_id === user.id) return;
-              // Skip if not ringing
-              if (call.status !== "ringing") return;
-              // Match: receiver_orbit_id is either our user.id or one of our org IDs
+              if (call.status !== "ringing") {
+                console.warn("[CallProvider] missing condition: call status is not ringing", { callId: call.id, status: call.status });
+                return;
+              }
+
               if (!receiverIds.has(call.receiver_orbit_id)) {
-                console.log("[CallProvider] incoming call not for us", {
-                  receiver: call.receiver_orbit_id,
-                  ourIds: Array.from(receiverIds),
+                console.warn("[CallProvider] missing condition: receiver_orbit_id did not match authenticated user_id", {
+                  callId: call.id,
+                  receiverOrbitId: call.receiver_orbit_id,
+                  expectedUserId: user.id,
                 });
                 return;
               }
 
-              console.log("[CallProvider] ✅ incoming call matched!", { callId: call.id });
-
-              // Lookup caller name
               const { data: profile } = await supabase
                 .from("profiles")
                 .select("name, email")
@@ -144,7 +134,12 @@ export function CallProvider({ children }: { children: ReactNode }) {
           { event: "UPDATE", schema: "public", table: "call_logs" },
           (payload) => {
             try {
+              console.log("[CallProvider] realtime event UPDATE", payload);
               const call = payload.new as any;
+              if (!call) {
+                console.warn("[CallProvider] missing condition: update payload.new is empty");
+                return;
+              }
               if (call && call.status !== "ringing" && call.id === incomingCallIdRef.current) {
                 setShowIncoming(false);
                 setIncomingCallId(null);
@@ -206,7 +201,7 @@ export function CallProvider({ children }: { children: ReactNode }) {
           authUserId: authUser.id,
         });
 
-        let receiverOrbitId = opts.orgId;
+        let receiverOrbitId: string | null = null;
         const { data: matchedMember, error: matchedMemberError } = await supabase
           .from("org_members")
           .select("user_id")
@@ -217,6 +212,16 @@ export function CallProvider({ children }: { children: ReactNode }) {
 
         if (!matchedMemberError && matchedMember?.user_id) {
           receiverOrbitId = matchedMember.user_id;
+        }
+
+        if (!receiverOrbitId) {
+          console.error("[CallProvider] missing condition: orgId did not resolve to a recipient user_id", {
+            requestedReceiver: opts.orgId,
+            authUserId: authUser.id,
+            matchedMemberError,
+          });
+          toast.error("No callable recipient found for this organization");
+          return;
         }
 
         if (receiverOrbitId === authUser.id) {
@@ -231,7 +236,7 @@ export function CallProvider({ children }: { children: ReactNode }) {
         console.log("[CallProvider] receiver resolved", {
           requestedReceiver: opts.orgId,
           resolvedReceiver: receiverOrbitId,
-          viaOrgMember: receiverOrbitId !== opts.orgId,
+          viaOrgMember: true,
         });
 
         // Use idempotent server-side function to prevent duplicates
