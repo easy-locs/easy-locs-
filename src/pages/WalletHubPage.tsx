@@ -1,31 +1,31 @@
 /**
- * WalletHubPage — Wallet Pro with Fiat, Crypto, QR Pay, Security tabs.
+ * WalletHubPage — Wallet Pro with Fiat, QR Pay, Security tabs.
  * Single authoritative wallet page. Route: /wallet/hub + /wallet
+ * Uses ONLY: wallet_accounts + wallet_ledger_entries + unified_wallet_transactions
  */
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useWalletAccounts } from "@/hooks/useWalletAccounts";
+import { useWalletTransactions } from "@/payments/wallet-hooks";
 import { createWalletAccount } from "@/lib/wallet/wallet-account";
-import { supabase } from "@/integrations/supabase/client";
 import {
   ArrowLeft, Plus, ArrowUpRight, ArrowDownLeft, QrCode, Eye, EyeOff,
-  CreditCard, Wallet, Shield, Bitcoin, ScanLine, Settings,
+  CreditCard, Wallet, Shield, ScanLine, Settings,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
 import { toast } from "sonner";
-import { useQuery } from "@tanstack/react-query";
 import TransactionRow, { type TransactionType } from "@/components/wallet/TransactionRow";
-import CryptoWalletPanel from "@/components/wallet/CryptoWalletPanel";
 import WalletSecurityPanel from "@/components/wallet/WalletSecurityPanel";
 import ReceiveQrPanel from "@/components/wallet/ReceiveQrPanel";
 
-type WalletTab = "fiat" | "crypto" | "qr" | "security";
+type WalletTab = "fiat" | "qr" | "security";
 
 export default function WalletHubPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { rows, loading } = useWalletAccounts(user?.id);
+  const { items: txHistory, loading: txLoading } = useWalletTransactions(100);
   const [showBalance, setShowBalance] = useState(true);
   const [filter, setFilter] = useState<"all" | "in" | "out">("all");
   const [activeTab, setActiveTab] = useState<WalletTab>("fiat");
@@ -40,30 +40,11 @@ export default function WalletHubPage() {
     { label: "Scan", icon: ScanLine, action: () => navigate("/pay/scan") },
   ];
 
-  const { data: ledgerRows = [] } = useQuery({
-    queryKey: ["wallet-ledger-real", user?.id],
-    enabled: !!user?.id,
-    queryFn: async () => {
-      const { data: accounts, error: accErr } = await supabase
-        .from("wallet_accounts")
-        .select("id")
-        .eq("owner_user_id", user!.id);
-      if (accErr) throw accErr;
-      const ids = (accounts ?? []).map((a: any) => a.id);
-      if (!ids.length) return [];
-      const { data, error } = await supabase
-        .from("wallet_ledger_entries")
-        .select("*")
-        .in("wallet_account_id", ids)
-        .order("created_at", { ascending: false })
-        .limit(100);
-      if (error) throw error;
-      return data ?? [];
-    },
-    staleTime: 10000,
+  const filteredTx = txHistory.filter((tx) => {
+    if (filter === "all") return true;
+    if (filter === "in") return tx.recipient_id === user?.id;
+    return tx.sender_id === user?.id;
   });
-
-  const filteredTx = ledgerRows.filter((tx: any) => filter === "all" || tx.direction === filter);
 
   const createDefaultWallet = async () => {
     if (!user?.id) return;
@@ -76,15 +57,13 @@ export default function WalletHubPage() {
   };
 
   const TABS: { key: WalletTab; icon: typeof Wallet; label: string }[] = [
-    { key: "fiat", icon: Wallet, label: "Fiat" },
-    { key: "crypto", icon: Bitcoin, label: "Crypto" },
+    { key: "fiat", icon: Wallet, label: "Wallet" },
     { key: "qr", icon: QrCode, label: "QR Pay" },
     { key: "security", icon: Shield, label: "Security" },
   ];
 
   return (
     <div className="min-h-[100dvh] flex flex-col bg-background" data-wallet-page>
-      {/* Header */}
       <header className="flex items-center justify-between px-4 pt-4 pb-3">
         <div className="flex items-center gap-3">
           <button onClick={() => navigate(-1)} className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-95 transition-transform bg-muted">
@@ -102,7 +81,6 @@ export default function WalletHubPage() {
         </div>
       </header>
 
-      {/* Tab Bar */}
       <div className="px-4 pb-3">
         <div className="flex gap-1 p-1 rounded-2xl bg-muted/50">
           {TABS.map((tab) => {
@@ -127,7 +105,6 @@ export default function WalletHubPage() {
         </div>
       </div>
 
-      {/* Tab Content */}
       <div className="flex-1 overflow-y-auto px-4 pb-24">
         <AnimatePresence mode="wait">
           {activeTab === "fiat" && (
@@ -190,7 +167,6 @@ export default function WalletHubPage() {
                 </div>
               )}
 
-              {/* Loading state */}
               {loading && (
                 <div className="flex flex-col items-center gap-3 py-8">
                   <div className="w-8 h-8 rounded-full border-2 border-primary border-t-transparent animate-spin" />
@@ -198,7 +174,7 @@ export default function WalletHubPage() {
                 </div>
               )}
 
-              {/* Transaction History */}
+              {/* Transaction History from unified_wallet_transactions */}
               <div>
                 <div className="flex items-center justify-between mb-3">
                   <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Recent Activity</p>
@@ -222,19 +198,19 @@ export default function WalletHubPage() {
                 {filteredTx.length === 0 ? (
                   <div className="rounded-2xl p-6 flex flex-col items-center gap-2 text-center bg-muted border border-border/10">
                     <CreditCard className="w-8 h-8 text-muted-foreground" />
-                    <p className="text-sm text-muted-foreground">No transactions yet</p>
+                    <p className="text-sm text-muted-foreground">{txLoading ? "Loading..." : "No transactions yet"}</p>
                   </div>
                 ) : (
                   <div className="rounded-2xl overflow-hidden bg-muted border border-border/10">
-                    {filteredTx.map((tx: any, i: number) => (
+                    {filteredTx.map((tx, i) => (
                       <div key={tx.id ?? i}>
                         <TransactionRow
-                          title={tx.note || tx.entry_type || "Transaction"}
+                          title={tx.title || tx.context_type || "Transaction"}
                           amount={Number(tx.amount ?? 0)}
                           currency={tx.currency ?? "AED"}
-                          type={tx.entry_type as TransactionType ?? "payment"}
-                          direction={tx.direction ?? "out"}
-                          status={tx.status === "posted" ? "completed" : tx.status === "pending" ? "pending" : "completed"}
+                          type={(tx.context_type as TransactionType) ?? "payment"}
+                          direction={tx.sender_id === user?.id ? "out" : "in"}
+                          status={tx.status === "completed" ? "completed" : tx.status === "pending" ? "pending" : "completed"}
                           timestamp={tx.created_at}
                         />
                         {i < filteredTx.length - 1 && <div className="mx-4 border-t" style={{ borderColor: "hsl(var(--border) / 0.06)" }} />}
@@ -243,12 +219,6 @@ export default function WalletHubPage() {
                   </div>
                 )}
               </div>
-            </motion.div>
-          )}
-
-          {activeTab === "crypto" && (
-            <motion.div key="crypto" initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 8 }}>
-              <CryptoWalletPanel />
             </motion.div>
           )}
 
