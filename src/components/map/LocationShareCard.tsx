@@ -7,7 +7,7 @@ import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { MAPBOX_ACCESS_TOKEN } from "@/lib/mapbox/config";
 import { useLocationStore } from "@/stores/locationStore";
-import { useGeolocation } from "@/hooks/useGeolocation";
+// locationStore already imported above; requestLocation via navigator directly
 import { Send, RefreshCw, Maximize2, MapPin } from "lucide-react";
 
 interface LocationShareCardProps {
