@@ -1318,17 +1318,18 @@ async function handleStorefrontOrderPayment(supabase: any, session: Stripe.Check
     return;
   }
 
-  if (order.payment_status === "secured" || order.payment_status === "released") {
-    logStep("storefront_order: already paid, idempotent skip", { orderId });
+  // Normalized idempotency: skip if already paid/failed/refunded
+  if (["paid", "failed", "refunded"].includes(order.payment_status)) {
+    logStep("storefront_order: already processed, idempotent skip", { orderId, payment_status: order.payment_status });
     return;
   }
 
-  // ── Mark order as paid ──
+  // ── Mark payment as paid, order as paid (seller must still confirm) ──
   const { error: updateErr } = await supabase
     .from("storefront_orders")
     .update({
-      payment_status: "secured",
-      status: "accepted",
+      payment_status: "paid",
+      status: "paid",
       stripe_payment_intent_id: paymentIntentId,
       stripe_session_id: session.id,
       updated_at: new Date().toISOString(),
@@ -1340,34 +1341,36 @@ async function handleStorefrontOrderPayment(supabase: any, session: Stripe.Check
     return;
   }
 
-  logStep("storefront_order: marked paid", { orderId });
+  logStep("storefront_order: marked paid (seller acceptance pending)", { orderId });
 
-  // ── Status history ──
+  // ── Status history (idempotent via unique index on order_id+status+actor_type=system) ──
   await supabase.from("order_status_history").insert({
     order_id: orderId,
-    status: "accepted",
+    status: "paid",
     actor_type: "system",
     actor_id: null,
     notes: "Payment confirmed via Stripe webhook",
+  }).then(({ error }: any) => {
+    if (error) logStep("status_history insert (dedup expected)", { error: error.message });
   });
 
-  // ── Payment event record (idempotent) ──
-  const eventId = `storefront_order_${orderId}_${session.id}`;
-  await supabase.from("payment_events").upsert({
-    id: eventId,
+  // ── Payment event record (idempotent via unique constraint on external_id+event_type) ──
+  await supabase.from("payment_events").insert({
     event_type: "storefront_order_paid",
     provider: "stripe",
     external_id: session.id,
     processed: true,
     metadata: { payment_intent: paymentIntentId, shop_id: shopId, order_id: orderId, buyer_id: buyerId, amount: order.total, currency: order.currency },
   }).then(({ error }: any) => {
-    if (error) logStep("payment_event insert non-fatal", { error: error.message });
+    if (error) logStep("payment_event insert (dedup expected)", { error: error.message });
   });
 
-  // ── Notify seller ──
-  if (sellerId || order.seller_id) {
-    const targetSeller = sellerId || order.seller_id;
-    await supabase.from("notifications").insert({
+  // ── Notify seller (idempotent: use upsert with composite key simulation) ──
+  const targetSeller = sellerId || order.seller_id;
+  if (targetSeller) {
+    const sellerNotifId = `order_paid_seller_${orderId}`;
+    await supabase.from("notifications").upsert({
+      id: sellerNotifId,
       user_id: targetSeller,
       type: "order_received",
       title: "🛒 New paid order",
@@ -1375,23 +1378,25 @@ async function handleStorefrontOrderPayment(supabase: any, session: Stripe.Check
       link: `/pos/${shopId}`,
       priority: "high",
       category: "order",
-    }).then(({ error }: any) => {
-      if (error) logStep("seller notif non-fatal", { error: error.message });
+    }, { onConflict: "id" }).then(({ error }: any) => {
+      if (error) logStep("seller notif upsert non-fatal", { error: error.message });
     });
   }
 
-  // ── Notify buyer ──
+  // ── Notify buyer (idempotent) ──
   if (buyerId) {
-    await supabase.from("notifications").insert({
+    const buyerNotifId = `order_paid_buyer_${orderId}`;
+    await supabase.from("notifications").upsert({
+      id: buyerNotifId,
       user_id: buyerId,
       type: "payment_received",
       title: "✅ Payment confirmed",
-      message: `Your order #${orderId.slice(0, 8).toUpperCase()} is confirmed`,
+      message: `Your order #${orderId.slice(0, 8).toUpperCase()} is paid — awaiting seller confirmation`,
       link: `/order/${orderId}`,
       priority: "normal",
       category: "order",
-    }).then(({ error }: any) => {
-      if (error) logStep("buyer notif non-fatal", { error: error.message });
+    }, { onConflict: "id" }).then(({ error }: any) => {
+      if (error) logStep("buyer notif upsert non-fatal", { error: error.message });
     });
   }
 

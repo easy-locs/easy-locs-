@@ -24267,6 +24267,10 @@ export type Database = {
             }
             Returns: string
           }
+      create_storefront_order_atomic: {
+        Args: { p_items: Json; p_order: Json }
+        Returns: Json
+      }
       geocode_city_approx: {
         Args: { _city: string }
         Returns: {

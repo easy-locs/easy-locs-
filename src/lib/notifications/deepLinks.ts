@@ -21,7 +21,7 @@ const DEEP_LINK_MAP: Record<string, string> = {
   payment_request: "/wallet/hub",
   refund: "/wallet/hub",
 
-  // Orders
+  // Orders — deep link includes order_id from notification link field
   order_received: "/my-orders",
   order_accepted: "/my-orders",
   order_preparing: "/my-orders",
@@ -29,16 +29,22 @@ const DEEP_LINK_MAP: Record<string, string> = {
   order_delivered: "/my-orders",
   order_cancelled: "/my-orders",
   order_update: "/my-orders",
+  order_paid: "/my-orders",
 
   // Ride / Delivery
   ride_update: "/ride",
   delivery_update: "/my-orders",
+  driver_mission: "/dispatch",
 
   // Booking / Real Estate
   booking_confirmed: "/my-orders",
   booking_cancelled: "/my-orders",
   rent_due: "/property-hub",
   rent_paid: "/property-hub",
+
+  // Business
+  new_order: "/pos",
+  business_alert: "/seller-hub",
 
   // Security / System
   security_alert: "/settings",
