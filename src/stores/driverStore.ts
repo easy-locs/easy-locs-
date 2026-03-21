@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { supabase } from "@/integrations/supabase/client";
-import { useGeoStore } from "@/stores/geoStore";
+import { useLocationStore } from "@/stores/locationStore";
 import { useOrbitStore } from "@/stores/orbitStore";
 
 type DriverLive = {
@@ -39,14 +39,14 @@ export const useDriverStore = create<DriverStoreState>((set) => ({
 
   updatePosition: async () => {
     const orbit = useOrbitStore.getState().profile;
-    const geo = useGeoStore.getState().currentPosition;
+    const loc = useLocationStore.getState().currentLocation;
     if (!orbit) return;
-    if (!geo.lat && !geo.lng) return;
+    if (!loc?.lat && !loc?.lng) return;
 
     await (supabase as any).from("drivers_live").upsert({
       orbit_id: orbit.orbitId,
-      lat: geo.lat,
-      lng: geo.lng,
+      lat: loc?.lat,
+      lng: loc?.lng,
       updated_at: new Date().toISOString(),
     });
   },

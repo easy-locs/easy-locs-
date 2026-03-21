@@ -1,10 +1,12 @@
 import { useDeliveryStore } from "@/stores/deliveryStore";
-import { useGeoStore } from "@/stores/geoStore";
+import { useLocationStore } from "@/stores/locationStore";
 import { Package } from "lucide-react";
 
 export function CreateDeliveryPanel() {
-  const geo = useGeoStore((s) => s.currentPosition);
+  const currentLocation = useLocationStore((s) => s.currentLocation);
   const createJob = useDeliveryStore((s) => s.createJob);
+  const lat = currentLocation?.lat ?? 25.2048;
+  const lng = currentLocation?.lng ?? 55.2708;
 
   return (
     <div className="space-y-3 p-4 rounded-xl bg-card border border-border">
@@ -13,10 +15,10 @@ export function CreateDeliveryPanel() {
       <button
         onClick={() =>
           void createJob({
-            pickupLat: geo.lat,
-            pickupLng: geo.lng,
-            dropLat: geo.lat + 0.01,
-            dropLng: geo.lng + 0.01,
+            pickupLat: lat,
+            pickupLng: lng,
+            dropLat: lat + 0.01,
+            dropLng: lng + 0.01,
             price: 20,
           })
         }

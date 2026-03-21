@@ -1,18 +1,18 @@
 import { useMemo } from "react";
-import { useGeoStore } from "@/stores/geoStore";
+import { useLocationStore } from "@/stores/locationStore";
 import { useListingStore } from "@/stores/listingStore";
 import { haversine, formatDistance } from "@/lib/radar/radar-engine";
 import { MapPin } from "lucide-react";
 
 export function RadarMap() {
-  const currentPosition = useGeoStore((s) => s.currentPosition);
-  const permission = useGeoStore((s) => s.permission);
+  const currentLocation = useLocationStore((s) => s.currentLocation);
+  const permissionState = useLocationStore((s) => s.permissionState);
   const listings = useListingStore((s) => s.getPublishedListings());
 
-  const hasGeo = currentPosition.lat !== 0 || currentPosition.lng !== 0;
+  const hasGeo = currentLocation != null && (currentLocation.lat !== 0 || currentLocation.lng !== 0);
 
   const nearby = useMemo(() => {
-    if (!hasGeo) return [];
+    if (!hasGeo || !currentLocation) return [];
     return listings
       .map((listing) => {
         const lat = listing.location?.lat;
@@ -22,21 +22,21 @@ export function RadarMap() {
         return {
           id: listing.id,
           title: listing.title,
-          distanceKm: haversine(currentPosition.lat, currentPosition.lng, lat, lng),
+          distanceKm: haversine(currentLocation.lat, currentLocation.lng, lat, lng),
         };
       })
       .filter(Boolean)
       .filter((x) => x!.distanceKm <= 10)
       .sort((a, b) => a!.distanceKm - b!.distanceKm)
       .slice(0, 20) as { id: string; title: string; distanceKm: number }[];
-  }, [hasGeo, currentPosition.lat, currentPosition.lng, listings]);
+  }, [hasGeo, currentLocation?.lat, currentLocation?.lng, listings]);
 
   if (!hasGeo) {
     return (
       <div className="flex flex-col items-center justify-center gap-3 p-6 text-center rounded-lg bg-muted/30 min-h-[120px]">
         <MapPin className="w-6 h-6 text-muted-foreground" />
         <p className="text-sm text-muted-foreground">
-          {permission === "denied"
+          {permissionState === "denied"
             ? "Location access denied. Enable in browser settings."
             : "Waiting for location…"}
         </p>
