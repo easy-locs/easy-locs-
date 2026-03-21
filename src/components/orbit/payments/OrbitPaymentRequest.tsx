@@ -47,12 +47,22 @@ export default function OrbitPaymentRequest({
     setError(null);
 
     try {
-      const result = await requestMoney({
-        fromUserId: recipientUserId,
-        amount: numericAmount,
-        description: description || `Payment request`,
-        threadId,
-      });
+      if (!user?.id) throw new Error("Not authenticated");
+      const { error: insertErr } = await (supabase as any)
+        .from("unified_wallet_transactions")
+        .insert({
+          sender_id: null,
+          recipient_id: user.id,
+          amount: numericAmount,
+          currency: currency || "AED",
+          context_type: "request",
+          title: description || "Payment request",
+          subtitle: recipientName ? `From ${recipientName}` : undefined,
+          status: "pending",
+          metadata: { requested_from_user: recipientUserId },
+        });
+      if (insertErr) throw insertErr;
+      const result = { success: true };
 
       if (!result.success) throw new Error(result.error);
       setSuccess(true);

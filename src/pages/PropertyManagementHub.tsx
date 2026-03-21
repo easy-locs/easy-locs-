@@ -56,7 +56,7 @@ export default function PropertyManagementHub() {
   const { orgId } = useAuth();
   const { t } = useI18n();
   const { fmtLocal, code: userCurrencyCode } = usePlatformCurrency();
-  const { balance } = useWallet();
+  const { balance } = useWalletBalance();
 
   const [stats, setStats] = useState({ totalProperties: 0, totalCountries: 0, revenueThisMonth: 0, propertiesByCountry: [] as CountryStat[] });
   const [loading, setLoading] = useState(true);

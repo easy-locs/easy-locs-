@@ -7,7 +7,8 @@
  */
 import { useState, useCallback, useMemo } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { useWallet } from "@/hooks/useWallet";
+import { useWalletBalance } from "@/payments/wallet-hooks";
+import { walletTransfer } from "@/payments/wallet-hooks";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { platformBus } from "@/lib/shared/platform-bus";
