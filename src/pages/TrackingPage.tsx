@@ -40,14 +40,15 @@ export default function TrackingPage() {
   const { data: order, isLoading } = useQuery({
     queryKey: ["tracking-order", orderId],
     queryFn: async () => {
-      // Try storefront_orders first (authoritative), fallback to orders
+      // Authoritative: storefront_orders + snapshot items
       const { data: sfOrder } = await (supabase as any)
         .from("storefront_orders")
-        .select("id, status, payment_status, created_at, notes, total_amount, currency, shop_id, items_snapshot, fulfillment_type, updated_at")
+        .select("id, status, payment_status, created_at, notes, total, currency, shop_id, fulfillment_type, updated_at, storefront_order_items(*), storefront_pages!storefront_orders_shop_id_fkey(name, slug, logo_url)")
         .eq("id", orderId)
         .maybeSingle();
       if (sfOrder) return { ...sfOrder, order_type: sfOrder.fulfillment_type || "delivery" };
-      
+
+      // Temporary legacy fallback — will be removed after migration
       const { data } = await (supabase as any)
         .from("orders")
         .select("id, status, order_type, created_at, notes, total_amount, currency")
@@ -146,7 +147,36 @@ export default function TrackingPage() {
             })}
           </div>
 
-          {/* Support ticket form */}
+          {/* Item snapshots (from storefront_order_items, NOT live catalog) */}
+          {order.storefront_order_items?.length > 0 && (
+            <div className="rounded-2xl p-4 space-y-2" style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border) / 0.1)" }}>
+              <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">Items</p>
+              {order.storefront_order_items.map((item: any) => (
+                <div key={item.id} className="flex justify-between text-sm">
+                  <span className="text-foreground">{item.quantity}× {item.title}</span>
+                  <span className="text-muted-foreground font-medium">{Number(item.total_price || 0).toFixed(2)} {order.currency}</span>
+                </div>
+              ))}
+              <div className="border-t border-border/10 pt-2 mt-2 flex justify-between text-sm font-bold">
+                <span className="text-foreground">Total</span>
+                <span className="text-foreground">{Number(order.total || order.total_amount || 0).toFixed(2)} {order.currency}</span>
+              </div>
+            </div>
+          )}
+
+          {/* Shop info */}
+          {order.storefront_pages && (
+            <div className="flex items-center gap-3 rounded-2xl p-3" style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border) / 0.1)" }}>
+              {order.storefront_pages.logo_url && (
+                <img src={order.storefront_pages.logo_url} alt="" className="w-10 h-10 rounded-xl object-cover" />
+              )}
+              <div>
+                <p className="text-sm font-semibold text-foreground">{order.storefront_pages.name}</p>
+                <p className="text-[11px] text-muted-foreground">Order #{order.id?.slice(0, 8).toUpperCase()}</p>
+              </div>
+            </div>
+          )}
+
           {showSupport ? (
             <SupportTicketForm
               orderId={orderId}

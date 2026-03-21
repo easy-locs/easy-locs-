@@ -116,7 +116,7 @@ export async function updateStorefrontOrderStatus(params: {
   };
 
   if (params.status === "completed" || params.status === "delivered") {
-    patch.payment_status = "released";
+    patch.payment_status = "paid";
   }
 
   const { data, error } = await (supabase as any)
