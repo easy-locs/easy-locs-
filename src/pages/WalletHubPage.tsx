@@ -1,18 +1,26 @@
 /**
- * WalletHubPage — Premium wallet dashboard with balance, actions, and transaction history.
- * Route: /wallet/hub
+ * WalletHubPage — Wallet Pro with Fiat, Crypto, QR Pay, Security tabs.
+ * Single authoritative wallet page. Route: /wallet/hub + /wallet
  */
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useWalletAccounts } from "@/hooks/useWalletAccounts";
 import { createWalletAccount } from "@/lib/wallet/wallet-account";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowLeft, Plus, ArrowUpRight, ArrowDownLeft, QrCode, Eye, EyeOff, CreditCard, Wallet, Filter } from "lucide-react";
-import { motion } from "framer-motion";
+import {
+  ArrowLeft, Plus, ArrowUpRight, ArrowDownLeft, QrCode, Eye, EyeOff,
+  CreditCard, Wallet, Shield, Bitcoin, ScanLine, Settings,
+} from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
 import { toast } from "sonner";
 import { useQuery } from "@tanstack/react-query";
 import TransactionRow, { type TransactionType } from "@/components/wallet/TransactionRow";
+import CryptoWalletPanel from "@/components/wallet/CryptoWalletPanel";
+import WalletSecurityPanel from "@/components/wallet/WalletSecurityPanel";
+import ReceiveQrPanel from "@/components/wallet/ReceiveQrPanel";
+
+type WalletTab = "fiat" | "crypto" | "qr" | "security";
 
 export default function WalletHubPage() {
   const navigate = useNavigate();
@@ -20,6 +28,7 @@ export default function WalletHubPage() {
   const { rows, loading } = useWalletAccounts(user?.id);
   const [showBalance, setShowBalance] = useState(true);
   const [filter, setFilter] = useState<"all" | "in" | "out">("all");
+  const [activeTab, setActiveTab] = useState<WalletTab>("fiat");
 
   const totalBalance = rows.reduce((sum: number, r: any) => sum + (r.balance || 0), 0);
   const mainCurrency = rows[0]?.currency || "AED";
@@ -28,7 +37,7 @@ export default function WalletHubPage() {
     { label: "Top up", icon: Plus, action: () => toast.info("Top up coming soon") },
     { label: "Send", icon: ArrowUpRight, action: () => navigate("/send") },
     { label: "Request", icon: ArrowDownLeft, action: () => toast.info("Request coming soon") },
-    { label: "Scan", icon: QrCode, action: () => navigate("/pay/scan") },
+    { label: "Scan", icon: ScanLine, action: () => navigate("/pay/scan") },
   ];
 
   const { data: ledgerRows = [] } = useQuery({
@@ -66,144 +75,202 @@ export default function WalletHubPage() {
     }
   };
 
+  const TABS: { key: WalletTab; icon: typeof Wallet; label: string }[] = [
+    { key: "fiat", icon: Wallet, label: "Fiat" },
+    { key: "crypto", icon: Bitcoin, label: "Crypto" },
+    { key: "qr", icon: QrCode, label: "QR Pay" },
+    { key: "security", icon: Shield, label: "Security" },
+  ];
+
   return (
     <div className="min-h-[100dvh] flex flex-col bg-background" data-wallet-page>
       {/* Header */}
       <header className="flex items-center justify-between px-4 pt-4 pb-3">
         <div className="flex items-center gap-3">
-          <button onClick={() => navigate("/home")} className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-95 transition-transform" style={{ background: "hsl(var(--muted))" }}>
+          <button onClick={() => navigate(-1)} className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-95 transition-transform bg-muted">
             <ArrowLeft className="w-4.5 h-4.5" />
           </button>
-          <h1 className="text-lg font-bold text-foreground">Wallet</h1>
+          <h1 className="text-lg font-bold text-foreground">Wallet Pro</h1>
         </div>
-        <button onClick={() => setShowBalance(v => !v)} className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: "hsl(var(--muted))" }}>
-          {showBalance ? <Eye className="w-4 h-4 text-muted-foreground" /> : <EyeOff className="w-4 h-4 text-muted-foreground" />}
-        </button>
+        <div className="flex items-center gap-1">
+          <button onClick={() => setShowBalance(v => !v)} className="w-9 h-9 rounded-xl flex items-center justify-center bg-muted">
+            {showBalance ? <Eye className="w-4 h-4 text-muted-foreground" /> : <EyeOff className="w-4 h-4 text-muted-foreground" />}
+          </button>
+          <button onClick={() => navigate("/settings/payment-methods")} className="w-9 h-9 rounded-xl flex items-center justify-center bg-muted">
+            <Settings className="w-4 h-4 text-muted-foreground" />
+          </button>
+        </div>
       </header>
 
-      <div className="flex-1 overflow-y-auto px-4 pb-24 space-y-6">
-        {/* Balance Card */}
-        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="rounded-2xl p-5" style={{ background: "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary) / 0.7))" }}>
-          <p className="text-xs font-medium text-primary-foreground/70">Total Balance</p>
-          <p className="text-3xl font-black text-primary-foreground mt-1">
-            {showBalance ? `${totalBalance.toFixed(2)} ${mainCurrency}` : "••••••"}
-          </p>
-          {rows.length === 0 && !loading && (
-            <p className="text-xs text-primary-foreground/60 mt-2">No wallet yet</p>
-          )}
-        </motion.div>
+      {/* Tab Bar */}
+      <div className="px-4 pb-3">
+        <div className="flex gap-1 p-1 rounded-2xl bg-muted/50">
+          {TABS.map((tab) => {
+            const Icon = tab.icon;
+            const isActive = activeTab === tab.key;
+            return (
+              <button
+                key={tab.key}
+                onClick={() => setActiveTab(tab.key)}
+                className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-[11px] font-bold transition-all"
+                style={{
+                  background: isActive ? "hsl(var(--card))" : "transparent",
+                  color: isActive ? "hsl(var(--foreground))" : "hsl(var(--muted-foreground))",
+                  boxShadow: isActive ? "var(--shadow-card)" : "none",
+                }}
+              >
+                <Icon className="w-3.5 h-3.5" />
+                {tab.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
 
-        {/* Quick Actions */}
-        <div className="grid grid-cols-4 gap-3">
-          {quickActions.map(a => (
-            <button key={a.label} onClick={a.action} className="flex flex-col items-center gap-1.5 active:scale-90 transition-transform">
-              <div className="w-12 h-12 rounded-2xl flex items-center justify-center" style={{ background: "hsl(var(--muted))" }}>
-                <a.icon className="w-5 h-5 text-foreground" />
+      {/* Tab Content */}
+      <div className="flex-1 overflow-y-auto px-4 pb-24">
+        <AnimatePresence mode="wait">
+          {activeTab === "fiat" && (
+            <motion.div key="fiat" initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 8 }} className="space-y-6">
+              {/* Balance Card */}
+              <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="rounded-2xl p-5" style={{ background: "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary) / 0.7))" }}>
+                <p className="text-xs font-medium text-primary-foreground/70">Total Balance</p>
+                <p className="text-3xl font-black text-primary-foreground mt-1">
+                  {showBalance ? `${totalBalance.toFixed(2)} ${mainCurrency}` : "••••••"}
+                </p>
+                {rows.length === 0 && !loading && (
+                  <p className="text-xs text-primary-foreground/60 mt-2">No wallet yet</p>
+                )}
+              </motion.div>
+
+              {/* Quick Actions */}
+              <div className="grid grid-cols-4 gap-3">
+                {quickActions.map(a => (
+                  <button key={a.label} onClick={a.action} className="flex flex-col items-center gap-1.5 active:scale-90 transition-transform">
+                    <div className="w-12 h-12 rounded-2xl flex items-center justify-center bg-muted">
+                      <a.icon className="w-5 h-5 text-foreground" />
+                    </div>
+                    <span className="text-[10px] font-semibold text-muted-foreground">{a.label}</span>
+                  </button>
+                ))}
               </div>
-              <span className="text-[10px] font-semibold text-muted-foreground">{a.label}</span>
-            </button>
-          ))}
-        </div>
 
-        {/* Accounts */}
-        {rows.length > 0 && (
-          <div>
-            <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-3">Accounts</p>
-            <div className="space-y-2">
-              {rows.map((acc: any) => (
-                <div key={acc.id} className="flex items-center gap-3 rounded-2xl p-4" style={{ background: "hsl(var(--muted))", border: "1px solid hsl(var(--border) / 0.12)" }}>
-                  <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: "hsl(var(--primary) / 0.1)" }}>
-                    <Wallet className="w-5 h-5 text-primary" />
+              {/* Accounts */}
+              {rows.length > 0 && (
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-3">Accounts</p>
+                  <div className="space-y-2">
+                    {rows.map((acc: any) => (
+                      <div key={acc.id} className="flex items-center gap-3 rounded-2xl p-4 bg-muted border border-border/10">
+                        <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: "hsl(var(--primary) / 0.1)" }}>
+                          <Wallet className="w-5 h-5 text-primary" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-semibold text-foreground capitalize">{acc.account_type || "Main"}</p>
+                          <p className="text-[10px] text-muted-foreground">{acc.currency}</p>
+                        </div>
+                        <span className="text-sm font-bold text-foreground">
+                          {showBalance ? `${(acc.balance || 0).toFixed(2)}` : "••••"}
+                        </span>
+                      </div>
+                    ))}
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-foreground capitalize">{acc.account_type || "Main"}</p>
-                    <p className="text-[10px] text-muted-foreground">{acc.currency}</p>
+                </div>
+              )}
+
+              {/* No wallet state */}
+              {rows.length === 0 && !loading && (
+                <div className="rounded-2xl p-6 flex flex-col items-center gap-3 text-center bg-muted border border-border/10">
+                  <Wallet className="w-10 h-10 text-muted-foreground" />
+                  <p className="text-sm font-semibold text-foreground">No wallet yet</p>
+                  <p className="text-xs text-muted-foreground">Create a wallet to start transacting</p>
+                  <button onClick={createDefaultWallet} className="mt-2 px-4 py-2 rounded-xl text-xs font-bold bg-primary text-primary-foreground active:scale-95 transition-transform">
+                    Create Wallet
+                  </button>
+                </div>
+              )}
+
+              {/* Loading state */}
+              {loading && (
+                <div className="flex flex-col items-center gap-3 py-8">
+                  <div className="w-8 h-8 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+                  <p className="text-xs text-muted-foreground">Loading wallet...</p>
+                </div>
+              )}
+
+              {/* Transaction History */}
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Recent Activity</p>
+                  <div className="flex gap-1">
+                    {(["all", "in", "out"] as const).map(f => (
+                      <button
+                        key={f}
+                        onClick={() => setFilter(f)}
+                        className="px-2.5 py-1 rounded-lg text-[10px] font-bold transition-colors"
+                        style={{
+                          background: filter === f ? "hsl(var(--primary) / 0.12)" : "transparent",
+                          color: filter === f ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))",
+                        }}
+                      >
+                        {f === "all" ? "All" : f === "in" ? "In" : "Out"}
+                      </button>
+                    ))}
                   </div>
-                  <span className="text-sm font-bold text-foreground">
-                    {showBalance ? `${(acc.balance || 0).toFixed(2)}` : "••••"}
-                  </span>
                 </div>
-              ))}
-            </div>
-          </div>
-        )}
 
-        {/* No wallet state */}
-        {rows.length === 0 && !loading && (
-          <div className="rounded-2xl p-6 flex flex-col items-center gap-3 text-center" style={{ background: "hsl(var(--muted))", border: "1px solid hsl(var(--border) / 0.12)" }}>
-            <Wallet className="w-10 h-10 text-muted-foreground" />
-            <p className="text-sm font-semibold text-foreground">No wallet yet</p>
-            <p className="text-xs text-muted-foreground">Create a wallet to start transacting</p>
-            <button onClick={createDefaultWallet} className="mt-2 px-4 py-2 rounded-xl text-xs font-bold bg-primary text-primary-foreground active:scale-95 transition-transform">
-              Create Wallet
-            </button>
-          </div>
-        )}
-
-        {/* Loading state */}
-        {loading && (
-          <div className="flex flex-col items-center gap-3 py-8">
-            <div className="w-8 h-8 rounded-full border-2 border-primary border-t-transparent animate-spin" />
-            <p className="text-xs text-muted-foreground">Loading wallet...</p>
-          </div>
-        )}
-
-        {/* Transaction History */}
-        <div>
-          <div className="flex items-center justify-between mb-3">
-            <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Recent Activity</p>
-            <div className="flex gap-1">
-              {(["all", "in", "out"] as const).map(f => (
-                <button
-                  key={f}
-                  onClick={() => setFilter(f)}
-                  className="px-2.5 py-1 rounded-lg text-[10px] font-bold transition-colors"
-                  style={{
-                    background: filter === f ? "hsl(var(--primary) / 0.12)" : "transparent",
-                    color: filter === f ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))",
-                  }}
-                >
-                  {f === "all" ? "All" : f === "in" ? "In" : "Out"}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {filteredTx.length === 0 ? (
-            <div className="rounded-2xl p-6 flex flex-col items-center gap-2 text-center" style={{ background: "hsl(var(--muted))", border: "1px solid hsl(var(--border) / 0.12)" }}>
-              <CreditCard className="w-8 h-8 text-muted-foreground" />
-              <p className="text-sm text-muted-foreground">No transactions yet</p>
-            </div>
-          ) : (
-            <div className="rounded-2xl overflow-hidden" style={{ background: "hsl(var(--muted))", border: "1px solid hsl(var(--border) / 0.12)" }}>
-              {filteredTx.map((tx: any, i: number) => (
-                <div key={tx.id ?? i}>
-                  <TransactionRow
-                    title={tx.note || tx.entry_type || "Transaction"}
-                    amount={Number(tx.amount ?? 0)}
-                    currency={tx.currency ?? "AED"}
-                    type={tx.entry_type as TransactionType ?? "payment"}
-                    direction={tx.direction ?? "out"}
-                    status={tx.status === "posted" ? "completed" : tx.status === "pending" ? "pending" : "completed"}
-                    timestamp={tx.created_at}
-                  />
-                  {i < filteredTx.length - 1 && <div className="mx-4 border-t" style={{ borderColor: "hsl(var(--border) / 0.06)" }} />}
-                </div>
-              ))}
-            </div>
+                {filteredTx.length === 0 ? (
+                  <div className="rounded-2xl p-6 flex flex-col items-center gap-2 text-center bg-muted border border-border/10">
+                    <CreditCard className="w-8 h-8 text-muted-foreground" />
+                    <p className="text-sm text-muted-foreground">No transactions yet</p>
+                  </div>
+                ) : (
+                  <div className="rounded-2xl overflow-hidden bg-muted border border-border/10">
+                    {filteredTx.map((tx: any, i: number) => (
+                      <div key={tx.id ?? i}>
+                        <TransactionRow
+                          title={tx.note || tx.entry_type || "Transaction"}
+                          amount={Number(tx.amount ?? 0)}
+                          currency={tx.currency ?? "AED"}
+                          type={tx.entry_type as TransactionType ?? "payment"}
+                          direction={tx.direction ?? "out"}
+                          status={tx.status === "posted" ? "completed" : tx.status === "pending" ? "pending" : "completed"}
+                          timestamp={tx.created_at}
+                        />
+                        {i < filteredTx.length - 1 && <div className="mx-4 border-t" style={{ borderColor: "hsl(var(--border) / 0.06)" }} />}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </motion.div>
           )}
-        </div>
 
-        {/* Settings link */}
-        <button
-          onClick={() => navigate("/settings/payment-methods")}
-          className="w-full flex items-center gap-3 rounded-2xl p-4 active:scale-[0.98] transition-transform"
-          style={{ background: "hsl(var(--muted))", border: "1px solid hsl(var(--border) / 0.12)" }}
-        >
-          <CreditCard className="w-5 h-5 text-muted-foreground" />
-          <span className="text-sm font-semibold text-foreground flex-1 text-left">Payment Methods</span>
-          <ArrowUpRight className="w-4 h-4 text-muted-foreground" />
-        </button>
+          {activeTab === "crypto" && (
+            <motion.div key="crypto" initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 8 }}>
+              <CryptoWalletPanel />
+            </motion.div>
+          )}
+
+          {activeTab === "qr" && (
+            <motion.div key="qr" initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 8 }} className="space-y-4">
+              <ReceiveQrPanel />
+              <button
+                onClick={() => navigate("/pay/scan")}
+                className="w-full flex items-center justify-center gap-2 rounded-2xl p-4 bg-primary text-primary-foreground font-bold text-sm active:scale-[0.98] transition-transform"
+              >
+                <ScanLine className="w-5 h-5" />
+                Scan to Pay
+              </button>
+            </motion.div>
+          )}
+
+          {activeTab === "security" && (
+            <motion.div key="security" initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 8 }}>
+              <WalletSecurityPanel />
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );
