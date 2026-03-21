@@ -3833,6 +3833,84 @@ export type Database = {
           },
         ]
       }
+      delivery_missions: {
+        Row: {
+          accepted_at: string | null
+          assigned_driver_id: string | null
+          broadcast_radius_km: number | null
+          cancel_reason: string | null
+          cancelled_at: string | null
+          created_at: string
+          currency: string
+          delivered_at: string | null
+          drop_address: string | null
+          drop_lat: number
+          drop_lng: number
+          id: string
+          order_id: string
+          picked_up_at: string | null
+          pickup_address: string | null
+          pickup_lat: number
+          pickup_lng: number
+          price: number
+          retry_count: number | null
+          seller_id: string
+          seller_shop_id: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          assigned_driver_id?: string | null
+          broadcast_radius_km?: number | null
+          cancel_reason?: string | null
+          cancelled_at?: string | null
+          created_at?: string
+          currency?: string
+          delivered_at?: string | null
+          drop_address?: string | null
+          drop_lat: number
+          drop_lng: number
+          id?: string
+          order_id: string
+          picked_up_at?: string | null
+          pickup_address?: string | null
+          pickup_lat: number
+          pickup_lng: number
+          price?: number
+          retry_count?: number | null
+          seller_id: string
+          seller_shop_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          accepted_at?: string | null
+          assigned_driver_id?: string | null
+          broadcast_radius_km?: number | null
+          cancel_reason?: string | null
+          cancelled_at?: string | null
+          created_at?: string
+          currency?: string
+          delivered_at?: string | null
+          drop_address?: string | null
+          drop_lat?: number
+          drop_lng?: number
+          id?: string
+          order_id?: string
+          picked_up_at?: string | null
+          pickup_address?: string | null
+          pickup_lat?: number
+          pickup_lng?: number
+          price?: number
+          retry_count?: number | null
+          seller_id?: string
+          seller_shop_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       delivery_offers: {
         Row: {
           created_at: string | null
@@ -23033,6 +23111,75 @@ export type Database = {
           },
         ]
       }
+      wallet_security_events: {
+        Row: {
+          created_at: string
+          device_id: string | null
+          event_type: string
+          id: string
+          ip_hint: string | null
+          metadata_json: Json | null
+          owner_user_id: string
+        }
+        Insert: {
+          created_at?: string
+          device_id?: string | null
+          event_type: string
+          id?: string
+          ip_hint?: string | null
+          metadata_json?: Json | null
+          owner_user_id: string
+        }
+        Update: {
+          created_at?: string
+          device_id?: string | null
+          event_type?: string
+          id?: string
+          ip_hint?: string | null
+          metadata_json?: Json | null
+          owner_user_id?: string
+        }
+        Relationships: []
+      }
+      wallet_transaction_challenges: {
+        Row: {
+          amount: number
+          created_at: string
+          currency: string
+          expires_at: string
+          id: string
+          nonce: string
+          owner_user_id: string
+          receiver_user_id: string
+          status: string
+          verified_at: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          currency?: string
+          expires_at: string
+          id: string
+          nonce: string
+          owner_user_id: string
+          receiver_user_id: string
+          status?: string
+          verified_at?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          currency?: string
+          expires_at?: string
+          id?: string
+          nonce?: string
+          owner_user_id?: string
+          receiver_user_id?: string
+          status?: string
+          verified_at?: string | null
+        }
+        Relationships: []
+      }
       wallet_transactions: {
         Row: {
           amount: number
@@ -23170,6 +23317,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      wallet_trusted_devices: {
+        Row: {
+          device_id: string
+          device_name: string | null
+          id: string
+          last_seen_at: string | null
+          owner_user_id: string
+          revoked_at: string | null
+          trusted_at: string
+        }
+        Insert: {
+          device_id: string
+          device_name?: string | null
+          id?: string
+          last_seen_at?: string | null
+          owner_user_id: string
+          revoked_at?: string | null
+          trusted_at?: string
+        }
+        Update: {
+          device_id?: string
+          device_name?: string | null
+          id?: string
+          last_seen_at?: string | null
+          owner_user_id?: string
+          revoked_at?: string | null
+          trusted_at?: string
+        }
+        Relationships: []
       }
       wallets: {
         Row: {
