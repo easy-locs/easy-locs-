@@ -231,20 +231,35 @@ function checkHashRoutes(): RuntimeAuditCheck {
 }
 
 export async function runRuntimeAudit(): Promise<RuntimeAuditReport> {
-  const checks = await Promise.all([
-    checkSupabaseConnection(),
-    checkRealtimeChannels(),
-    checkRtcConfig(),
-    checkCallTables(),
-    checkQrTables(),
-    checkDispatchTables(),
-    Promise.resolve(checkWebRtcSupport()),
-    Promise.resolve(checkGeolocationSupport()),
-    checkGeolocationPermission(),
-    checkWalletTables(),
-    checkImportBatchTables(),
-    Promise.resolve(checkHashRoutes()),
-  ]);
+  // CRITICAL: Run checks SEQUENTIALLY to prevent auth token lock contention.
+  // Running all in parallel causes "Lock was stolen by another request" AbortErrors.
+  const checks: RuntimeAuditCheck[] = [];
+
+  // Sync checks first (no network)
+  checks.push(checkWebRtcSupport());
+  checks.push(checkGeolocationSupport());
+  checks.push(checkHashRoutes());
+
+  // Async checks — sequential with max 2 concurrent to avoid lock storms
+  const asyncChecks = [
+    checkSupabaseConnection,
+    checkRealtimeChannels,
+    checkRtcConfig,
+    checkCallTables,
+    checkQrTables,
+    checkDispatchTables,
+    checkGeolocationPermission,
+    checkWalletTables,
+    checkImportBatchTables,
+  ];
+
+  for (const check of asyncChecks) {
+    try {
+      checks.push(await check());
+    } catch (e: any) {
+      checks.push(fail("Unknown", "unknown", e.message));
+    }
+  }
 
   return {
     generatedAt: new Date().toISOString(),
