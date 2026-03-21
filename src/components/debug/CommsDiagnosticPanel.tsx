@@ -48,8 +48,8 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 
 export function CommsDiagnosticPanel() {
   const orbit = useOrbitStore((s) => s.profile);
-  const geo = useGeoStore((s) => s.currentPosition);
-  const permission = useGeoStore((s) => s.permission);
+  const currentLocation = useLocationStore((s) => s.currentLocation);
+  const permissionState = useLocationStore((s) => s.permissionState);
   const debug = useDebugCommsStore();
 
   useEffect(() => {

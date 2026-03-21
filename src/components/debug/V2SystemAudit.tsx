@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useGeoStore } from "@/stores/geoStore";
+import { useLocationStore } from "@/stores/locationStore";
 import { useOrbitStore } from "@/stores/orbitStore";
 import { useWalletStore } from "@/stores/walletStore";
 import { usePermissionStore } from "@/stores/permissionStore";
@@ -7,7 +7,10 @@ import { useCallStore } from "@/stores/callStore";
 import { useUiShellStore } from "@/stores/uiShellStore";
 
 export function V2SystemAudit() {
-  const geo = useGeoStore();
+  const currentLocation = useLocationStore((s) => s.currentLocation);
+  const permissionState = useLocationStore((s) => s.permissionState);
+  const accuracyLevel = useLocationStore((s) => s.accuracyLevel);
+  const isFallback = useLocationStore((s) => s.isFallback);
   const orbit = useOrbitStore();
   const wallet = useWalletStore();
   const permissions = usePermissionStore();
@@ -24,9 +27,10 @@ export function V2SystemAudit() {
     {
       title: "Geo",
       data: {
-        permission: geo.permission,
-        currentPosition: geo.currentPosition,
-        mapReady: geo.mapReady,
+        permission: permissionState,
+        currentLocation,
+        accuracyLevel,
+        isFallback,
       },
     },
     {
