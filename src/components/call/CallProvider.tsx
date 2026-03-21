@@ -201,7 +201,7 @@ export function CallProvider({ children }: { children: ReactNode }) {
           authUserId: authUser.id,
         });
 
-        let receiverOrbitId = opts.orgId;
+        let receiverOrbitId: string | null = null;
         const { data: matchedMember, error: matchedMemberError } = await supabase
           .from("org_members")
           .select("user_id")
@@ -212,6 +212,16 @@ export function CallProvider({ children }: { children: ReactNode }) {
 
         if (!matchedMemberError && matchedMember?.user_id) {
           receiverOrbitId = matchedMember.user_id;
+        }
+
+        if (!receiverOrbitId) {
+          console.error("[CallProvider] missing condition: orgId did not resolve to a recipient user_id", {
+            requestedReceiver: opts.orgId,
+            authUserId: authUser.id,
+            matchedMemberError,
+          });
+          toast.error("No callable recipient found for this organization");
+          return;
         }
 
         if (receiverOrbitId === authUser.id) {
@@ -226,7 +236,7 @@ export function CallProvider({ children }: { children: ReactNode }) {
         console.log("[CallProvider] receiver resolved", {
           requestedReceiver: opts.orgId,
           resolvedReceiver: receiverOrbitId,
-          viaOrgMember: receiverOrbitId !== opts.orgId,
+          viaOrgMember: true,
         });
 
         // Use idempotent server-side function to prevent duplicates

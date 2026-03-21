@@ -34,6 +34,7 @@ export function useCurrentLocation(opts?: { watch?: boolean }) {
 
       if (perm === "denied") {
         setIsFallback(true);
+        setError("Location permission denied");
         if (!currentLocation) {
           setCurrentLocation(lastKnownLocation || DUBAI_FALLBACK);
         }
@@ -43,20 +44,24 @@ export function useCurrentLocation(opts?: { watch?: boolean }) {
 
       try {
         const pos = await getCurrentPositionHighAccuracy();
+        console.log("[useCurrentLocation] GPS success", pos);
         setCurrentLocation(pos);
         setIsFallback(false);
         setPermissionState("granted");
         setError(null);
       } catch (err: any) {
-        // Only mark as denied if it's actually a permission denial (code 1)
-        const isDenied = err?.code === 1;
-        if (isDenied) {
+        console.error("[useCurrentLocation] GPS failed", {
+          code: err?.code,
+          message: err?.message,
+        });
+
+        if (err?.code === 1) {
           setPermissionState("denied");
         } else {
-          // Timeout or unavailable — keep as prompt so retry is possible
           setPermissionState("prompt");
           setError(err?.message || "Location unavailable");
         }
+
         setIsFallback(true);
         if (!currentLocation) {
           setCurrentLocation(lastKnownLocation || DUBAI_FALLBACK);
@@ -68,10 +73,16 @@ export function useCurrentLocation(opts?: { watch?: boolean }) {
       if (opts?.watch) {
         watchCurrentPosition(
           (pos) => {
+            console.log("[useCurrentLocation] GPS watch update", pos);
             setCurrentLocation(pos);
+            setIsFallback(false);
+            setPermissionState("granted");
             setError(null);
           },
-          () => {},
+          (geoErr) => {
+            console.error("[useCurrentLocation] GPS watch error", geoErr);
+            if (geoErr?.code === 1) setPermissionState("denied");
+          },
         );
       }
     })();

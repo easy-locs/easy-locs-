@@ -659,22 +659,22 @@ export default function QrScannerPage() {
                        }}
                      />
 
-                     {/* Hint when camera is unavailable */}
-                     {(envInfo["videoinputCount"] === "0" || (startStatus === "fail" && cameraDevices.length === 0)) && (
-                       <div className="rounded-2xl border border-border/50 bg-muted/50 p-3 text-center text-xs text-muted-foreground space-y-1">
-                         <p className="font-semibold text-foreground">Camera unavailable in this runtime</p>
-                         <p>The Lovable preview iframe does not expose physical cameras. To use live scanning:</p>
-                         <a
-                           href={window.location.href}
-                           target="_blank"
-                           rel="noopener noreferrer"
-                           className="inline-flex items-center gap-1 text-primary underline"
-                         >
-                           <ExternalLink className="h-3 w-3" /> Open in Safari / Chrome directly
-                         </a>
-                         <p>Or use <strong>Upload QR image</strong> above.</p>
-                       </div>
-                     )}
+                      {(cameraPermission === "denied" || cameraPermission === "unsupported" || !secure || startStatus === "fail" || envInfo["videoinputCount"] === "0") && (
+                        <div className="rounded-2xl border border-border/50 bg-muted/50 p-3 text-center text-xs text-muted-foreground space-y-1">
+                          <p className="font-semibold text-foreground">Camera unavailable in this runtime</p>
+                          <p>{cameraUnavailableReason || startErrorMessage || "Live camera access is blocked or unavailable."}</p>
+                          <p>The Lovable preview iframe may not expose physical cameras. To use live scanning:</p>
+                          <a
+                            href={window.location.href}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 text-primary underline"
+                          >
+                            <ExternalLink className="h-3 w-3" /> Open in Safari / Chrome directly
+                          </a>
+                          <p>Or use <strong>Upload QR image</strong> above.</p>
+                        </div>
+                      )}
                    </div>
                  </div>
 
