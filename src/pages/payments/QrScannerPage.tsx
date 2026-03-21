@@ -213,6 +213,9 @@ export default function QrScannerPage() {
         await scanner.start(cfg, scanConfig, async (text) => {
           if (!mountedRef.current || handledRef.current) return;
           handledRef.current = true;
+          // Premium scan feedback — beep + haptic
+          playScanBeep();
+          haptic("success");
           setLastText(text);
           await clearScannerInstance("decode", false);
           await handleQrResult(text);
