@@ -21,10 +21,13 @@ import SmartSuggestions from "@/components/explore/SmartSuggestions";
 import ExploreHeader from "@/components/explore/ExploreHeader";
 import ExploreBreadcrumbs from "@/components/explore/ExploreBreadcrumbs";
 import ExploreAdvancedFilters, { defaultAdvancedFilters } from "@/components/explore/ExploreAdvancedFilters";
+import { useState } from "react";
+import { ExplorerMapInner } from "@/components/map/ExplorerMap";
 
 export default function Explore() {
   const { t } = useI18n();
   useExploreRealtimeSync();
+  const [selectedMapItemId, setSelectedMapItemId] = useState<string | null>(null);
 
   const state = useExploreState();
   const {
@@ -204,6 +207,18 @@ export default function Explore() {
           </h1>
         </div>
 
+        {!loading && allItems.length > 0 && (
+          <div className="mb-6">
+            <ExplorerMapInner
+              compact
+              items={allItems as any[]}
+              radiusKm={radiusKm}
+              selectedId={selectedMapItemId}
+              onSelectId={setSelectedMapItemId}
+            />
+          </div>
+        )}
+
         {/* Grid */}
         {loading ? (
           <div className="responsive-card-grid">
@@ -224,7 +239,15 @@ export default function Explore() {
           <>
             <div className="responsive-card-grid">
               {allItems.slice(0, visibleCount).map((item, i) => (
-                <motion.div key={`${item._type}-${item.id}`} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: Math.min(i * 0.03, 0.3) }}>
+                <motion.div
+                  key={`${item._type}-${item.id}`}
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: Math.min(i * 0.03, 0.3) }}
+                  onClickCapture={() => setSelectedMapItemId(item.id)}
+                  onMouseEnter={() => setSelectedMapItemId(item.id)}
+                  className={selectedMapItemId === item.id ? "ring-2 ring-primary/30 rounded-[28px]" : ""}
+                >
                   <ExploreListingCard item={item} />
                 </motion.div>
               ))}
