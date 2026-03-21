@@ -334,6 +334,8 @@ async function handleCheckoutCompleted(supabase: any, stripe: Stripe, session: S
     await handleListingRenewal(supabase, session);
   } else if (type === "listing_boost") {
     await handleListingBoost(supabase, session);
+  } else if (type === "storefront_order") {
+    await handleStorefrontOrderPayment(supabase, session);
   }
 }
 
