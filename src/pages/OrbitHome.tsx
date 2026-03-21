@@ -287,15 +287,7 @@ export default function OrbitHome() {
           )}
 
           {/* ─── WALLET PREVIEW ─── */}
-          <div className="px-4 space-y-2">
-            <div className="flex items-center justify-between">
-              <h2 className="text-sm font-bold text-foreground">Wallet</h2>
-              <button onClick={() => handleNav("/wallet/hub")} className="text-xs font-semibold flex items-center gap-0.5 active:opacity-70" style={{ color: "hsl(var(--primary))" }}>
-                Manage <ChevronRight className="w-3.5 h-3.5" />
-              </button>
-            </div>
-            <OrbitWalletCard />
-          </div>
+          <OrbitHomeWalletCard onNavigate={handleNav} />
 
           {/* ─── MAP PREVIEW ─── */}
           <div className="px-4">
