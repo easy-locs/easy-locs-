@@ -1,26 +1,42 @@
 /**
  * WalletSecurityPanel — Security dashboard for wallet
- * Shows PIN status, daily limits, recent activity summary
- * PASS61: Wallet Hardening
+ * Uses unified wallet engine (wallet_accounts + unified_wallet_transactions)
  */
 import { useState, useEffect } from "react";
 import { Shield, Lock, AlertTriangle, CheckCircle2, TrendingUp, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { useWallet, type WalletTransaction } from "@/hooks/useWallet";
-import { DAILY_TRANSFER_LIMITS, formatLimitInfo } from "@/lib/wallet-limits";
-import { exportTransactionsCSV } from "@/lib/wallet-export";
+import { useWalletTransactions, type UnifiedTx } from "@/payments/wallet-hooks";
+import { DAILY_TRANSFER_LIMITS } from "@/lib/wallet-limits";
 import { useI18n } from "@/lib/i18n";
+
+function exportUnifiedCSV(txns: UnifiedTx[]) {
+  const headers = ["Date", "Type", "Amount", "Currency", "Status", "Title"];
+  const rows = txns.map((tx) => [
+    new Date(tx.created_at).toISOString(),
+    tx.context_type,
+    tx.amount.toString(),
+    tx.currency,
+    tx.status,
+    (tx.title || "").replace(/,/g, ";"),
+  ]);
+  const csv = [headers, ...rows].map((r) => r.join(",")).join("\n");
+  const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `wallet-transactions-${new Date().toISOString().slice(0, 10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
 
 export default function WalletSecurityPanel() {
   const { user } = useAuth();
-  const { transactions } = useWallet();
+  const { items: transactions, todaySpent } = useWalletTransactions();
   const { t } = useI18n();
   const [pinStatus, setPinStatus] = useState<"loading" | "set" | "not_set">("loading");
-  const [todaySpent, setTodaySpent] = useState(0);
 
-  // Check PIN status
   useEffect(() => {
     if (!user?.id) return;
     (async () => {
@@ -30,16 +46,6 @@ export default function WalletSecurityPanel() {
       setPinStatus(data?.has_pin ? "set" : "not_set");
     })();
   }, [user?.id]);
-
-  // Calculate today's outgoing transfers
-  useEffect(() => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const spent = transactions
-      .filter((tx) => tx.direction === "out" && tx.type === "transfer" && tx.status === "completed" && new Date(tx.created_at) >= today)
-      .reduce((sum, tx) => sum + tx.amount, 0);
-    setTodaySpent(spent);
-  }, [transactions]);
 
   const limit = DAILY_TRANSFER_LIMITS.default;
   const remaining = Math.max(0, limit - todaySpent);
@@ -55,9 +61,7 @@ export default function WalletSecurityPanel() {
             {t("orbit.security_status") || "Security Status"}
           </span>
         </div>
-
         <div className="space-y-2">
-          {/* PIN */}
           <div className="flex items-center justify-between py-2 px-3 rounded-lg bg-muted/30">
             <div className="flex items-center gap-2">
               <Lock className="w-3.5 h-3.5 text-muted-foreground" />
@@ -75,8 +79,6 @@ export default function WalletSecurityPanel() {
               </span>
             )}
           </div>
-
-          {/* Atomic RPC */}
           <div className="flex items-center justify-between py-2 px-3 rounded-lg bg-muted/30">
             <div className="flex items-center gap-2">
               <Shield className="w-3.5 h-3.5 text-muted-foreground" />
@@ -86,8 +88,6 @@ export default function WalletSecurityPanel() {
               <CheckCircle2 className="w-3 h-3" /> Enforced
             </span>
           </div>
-
-          {/* Anti-replay */}
           <div className="flex items-center justify-between py-2 px-3 rounded-lg bg-muted/30">
             <div className="flex items-center gap-2">
               <Shield className="w-3.5 h-3.5 text-muted-foreground" />
@@ -108,13 +108,11 @@ export default function WalletSecurityPanel() {
             {t("orbit.daily_limits") || "Daily Transfer Limit"}
           </span>
         </div>
-
         <div className="space-y-2">
           <div className="flex items-center justify-between text-xs">
             <span className="text-muted-foreground">{t("orbit.used_today") || "Used today"}</span>
             <span className="font-semibold text-foreground">{todaySpent.toLocaleString()}</span>
           </div>
-          {/* Progress bar */}
           <div className="h-2 rounded-full bg-muted overflow-hidden">
             <div
               className="h-full rounded-full transition-all duration-500"
@@ -141,7 +139,7 @@ export default function WalletSecurityPanel() {
           variant="outline"
           size="sm"
           className="w-full gap-2"
-          onClick={() => exportTransactionsCSV(transactions)}
+          onClick={() => exportUnifiedCSV(transactions)}
         >
           <Download className="w-3.5 h-3.5" />
           {t("orbit.export_csv") || "Export Transactions (CSV)"}
