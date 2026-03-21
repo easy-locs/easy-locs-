@@ -267,7 +267,7 @@ const RiderPrioritySubscriptionPage = safeLazy(() => import("./pages/RiderPriori
 const AdminDispatchBoardPage = safeLazy(() => import("./pages/AdminDispatchBoardPage"), "AdminDispatchBoardPage");
 const AdminSLAPage = safeLazy(() => import("./pages/AdminSLAPage"), "AdminSLAPage");
 const RefundRequestPage = safeLazy(() => import("./pages/RefundRequestPage"), "RefundRequestPage");
-const OrbitLiveCallPage = safeLazy(() => import("./pages/OrbitLiveCallPage"), "OrbitLiveCallPage");
+// OrbitLiveCallPage removed — legacy, calls handled by CallProvider
 const OrbitContactsPage = safeLazy(() => import("./components/orbit/OrbitContactsDirectory"), "OrbitContactsPage");
 const TeamCommandCenterPage = safeLazy(() => import("./pages/TeamCommandCenterPage"), "TeamCommandCenterPage");
 const AdminTrustGraphPage = safeLazy(() => import("./pages/AdminTrustGraphPage"), "AdminTrustGraphPage");
@@ -388,7 +388,7 @@ const AppNotFoundPage = safeLazy(() => import("./pages/AppNotFoundPage"), "AppNo
 const AdminImportTestBatchesPage = safeLazy(() => import("./pages/AdminImportTestBatchesPage"), "AdminImportTestBatchesPage");
 const QrGeneratePage = safeLazy(() => import("./pages/QrGeneratePage"), "QrGeneratePage");
 const RouteAuditPage = safeLazy(() => import("./pages/RouteAuditPage"), "RouteAuditPage");
-const OrbitCallTestPage = safeLazy(() => import("./pages/OrbitCallTestPage"), "OrbitCallTestPage");
+// OrbitCallTestPage removed — legacy test page
 const AdminRestaurantTestSeederPage = safeLazy(() => import("./pages/AdminRestaurantTestSeederPage"), "AdminRestaurantTestSeederPage");
 const AdminRuntimeAuditPage = safeLazy(() => import("./pages/AdminRuntimeAuditPage"), "AdminRuntimeAuditPage");
 const AdminRuntimeQuickLinksPage = safeLazy(() => import("./pages/AdminRuntimeQuickLinksPage"), "AdminRuntimeQuickLinksPage");
@@ -871,7 +871,7 @@ const App = () => (
               <Route path="/admin/sla" element={<AdminSLAPage />} />
               <Route path="/admin/trust-graph" element={<AdminTrustGraphPage />} />
               <Route path="/refund/:rideRequestId" element={<RefundRequestPage />} />
-              <Route path="/orbit/call/:threadId" element={<OrbitLiveCallPage />} />
+              {/* orbit/call route removed — calls handled by CallProvider */}
               <Route path="/orbit/contacts" element={<OrbitContactsPage />} />
               <Route path="/team/command-center" element={<TeamCommandCenterPage />} />
               <Route path="/admin/executive-kpi" element={<ExecutiveKPIBoardPage />} />
@@ -1130,7 +1130,7 @@ const App = () => (
               <Route path="/admin/route-audit" element={<ProtectedRoute><RouteAuditPage /></ProtectedRoute>} />
               <Route path="/admin/dino" element={<ProtectedRoute><DinoAuditPage /></ProtectedRoute>} />
               <Route path="/admin/dino-dashboard" element={<ProtectedRoute><DinoDashboardPage /></ProtectedRoute>} />
-              <Route path="/orbit/call-test" element={<ProtectedRoute><OrbitCallTestPage /></ProtectedRoute>} />
+              {/* orbit/call-test route removed */}
               <Route path="/admin/test-restaurants" element={<ProtectedRoute><AdminRestaurantTestSeederPage /></ProtectedRoute>} />
               <Route path="/admin/runtime-audit" element={<ProtectedRoute><AdminRuntimeAuditPage /></ProtectedRoute>} />
               <Route path="/admin/runtime-links" element={<ProtectedRoute><AdminRuntimeQuickLinksPage /></ProtectedRoute>} />
