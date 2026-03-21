@@ -167,15 +167,15 @@ export default function POSPage() {
       }));
       await (supabase as any).from("storefront_order_items").insert(orderItems);
 
-      // Wallet settlement
-      const result = await sendMoney({
-        recipientUserId: user.id,
+      // Wallet settlement via unified engine
+      const result = await walletTransfer({
+        senderId: buyerUserId || user.id,
+        recipientId: user.id,
         amount: total,
-        description: `POS Order #${order.id.slice(0, 8)}`,
-        referenceType: "order",
-        referenceId: order.id,
-        skipLimitCheck: false,
-      });
+        contextType: "pos_order",
+        contextId: order.id,
+        title: `POS Order #${order.id.slice(0, 8)}`,
+      }).then(() => ({ success: true })).catch((e: any) => ({ success: false, error: e.message }));
 
       if (!result.success) {
         await (supabase as any).from("storefront_orders").update({ status: "cancelled" }).eq("id", order.id);
