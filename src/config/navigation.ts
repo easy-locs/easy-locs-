@@ -2,7 +2,7 @@
  * Centralized navigation config — Single source of truth.
  * All primary routes, tab matching, and nav structure defined here.
  */
-import { Home, Compass, MapPin, Wallet, User } from "lucide-react";
+import { LayoutDashboard, Compass, MapPin, Wallet, User } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
 /* ── Primary 5-tab bottom navigation ── */
@@ -16,12 +16,12 @@ export interface NavTab {
 
 export const NAV_TABS_CONFIG: NavTab[] = [
   {
-    key: "home",
-    label: "Home",
+    key: "dashboard",
+    label: "Dashboard",
     path: "/",
-    icon: Home,
+    icon: LayoutDashboard,
     match: (p) =>
-      p === "/" || p === "/home" || p === "/index" ||
+      p === "/" || p === "/home" || p === "/index" || p === "/dashboard" ||
       p.startsWith("/orbit") || p.startsWith("/dashboard/communication"),
   },
   {
@@ -76,7 +76,7 @@ export const HIDE_NAV_PREFIXES = [
 
 /* ── Legacy path mappings for backward compat ── */
 export const NAV_TABS = {
-  home: "/",
+  dashboard: "/",
   explore: "/explore",
   map: "/map",
   wallet: "/wallet/hub",
