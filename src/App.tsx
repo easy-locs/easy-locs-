@@ -1452,7 +1452,7 @@ const App = () => (
               <Route path="/index" element={<Navigate to="/" replace />} />
               <Route path="*" element={<AppNotFoundPage />} />
             </Routes>
-            </main>
+            </SwipeableMain>
            </Suspense>
            <MainBottomNav />
            <SmartInstallBanner />
