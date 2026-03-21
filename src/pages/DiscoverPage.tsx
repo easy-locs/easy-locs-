@@ -14,7 +14,7 @@ import {
   Cpu, Scissors, Home, Wrench, ArrowRight, Flame, Pizza,
   Truck, BadgePercent, ShoppingBag, Crown, Rocket,
 } from "lucide-react";
-import { useGeolocation } from "@/hooks/useGeolocation";
+import { useLocationStore } from "@/stores/locationStore";
 import GlobalSearch from "@/components/storefront/GlobalSearch";
 import { motion, AnimatePresence } from "framer-motion";
 import { haptic } from "@/lib/haptics";
