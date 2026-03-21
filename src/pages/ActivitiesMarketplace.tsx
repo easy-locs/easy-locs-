@@ -28,6 +28,8 @@ import { MARKETPLACE_CATEGORIES, getCategoryInfo } from "@/components/marketplac
 import ReviewsManagerPanel from "@/components/marketplace/ReviewsManagerPanel";
 import { computeExchangeRate, RATES_TO_EUR } from "@/hooks/useCurrencyConversion";
 import { useEnsureOrg } from "@/hooks/useEnsureOrg";
+import { checkServiceDuplicate } from "@/lib/geo/duplicateGuard";
+import { assignZoneToService } from "@/lib/zones/autoAssignZone";
 
 const DISPLAY_CURRENCIES = ["EUR", "USD", "GBP", "CHF", "MAD", "AED", "SAR", "XOF", "CAD", "AUD", "TND", "TRY", "JPY", "CNY", "INR", "BRL", "MXN", "ZAR", "NGN", "KES", "EGP"];
 
