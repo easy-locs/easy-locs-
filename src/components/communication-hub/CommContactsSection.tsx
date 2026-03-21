@@ -251,7 +251,7 @@ export default function CommContactsSection() {
         ...c,
         appState,
         canMessage: hasUserId,
-        canCall: hasUserId && !!targetOrgId,
+        canCall: hasUserId,
         targetOrgId,
       };
     });
