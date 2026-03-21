@@ -1,7 +1,8 @@
-import { createContext, useContext, useEffect, useState, useCallback } from "react";
+import { createContext, useContext, useEffect, useState, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { logAudit } from "@/lib/audit";
 import type { User, Session } from "@supabase/supabase-js";
+import { markV1AuthActive, useV2AuthStore } from "@/stores/v2AuthStore";
 import { useSubscriptionLoader, defaultSubscription, type SubscriptionState } from "@/hooks/useSubscription";
 
 type UserType = "landlord" | "tenant" | "client";
