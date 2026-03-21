@@ -178,7 +178,7 @@ const CountryWorkspace = safeLazy(() => import("./pages/CountryWorkspace"), "Cou
 // Orbit App Shell & Home
 const OrbitAppShell = safeLazy(() => import("./components/orbit/OrbitAppShell"), "OrbitAppShell");
 const OrbitHome = safeLazy(() => import("./pages/OrbitHome"), "OrbitHome");
-const WalletHub = safeLazy(() => import("./pages/WalletHub"), "WalletHub");
+const WalletHub = safeLazy(() => import("./pages/WalletHubPage"), "WalletHubPage");
 const AddProperty = safeLazy(() => import("./pages/AddProperty"), "AddProperty");
 const PropertyDetailHub = safeLazy(() => import("./pages/PropertyDetailHub"), "PropertyDetailHub");
 const CreateListing = safeLazy(() => import("./pages/CreateListing"), "CreateListing");
