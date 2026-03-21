@@ -1,7 +1,6 @@
 import { create } from "zustand";
 import { platformBus } from "@/app/events/platform-bus";
 import { useUiShellStore } from "@/stores/uiShellStore";
-import { useCallStore } from "@/stores/callStore";
 
 type ContactState = {
   activeOrbitId: string | null;
@@ -55,15 +54,20 @@ export const useContactStore = create<ContactState>((set, get) => ({
   startAudioCall: () => {
     const orbitId = get().activeOrbitId;
     if (!orbitId) return;
-    useCallStore.getState().startCall(orbitId, "audio");
-    useUiShellStore.getState().setCallFullscreen(true);
+    // Emit event for CallProvider to handle (non-React context cannot use useCall)
+    platformBus.emit({
+      type: "call.request",
+      payload: { orgId: orbitId, peerName: "Contact", isVideo: false },
+    });
   },
 
   startVideoCall: () => {
     const orbitId = get().activeOrbitId;
     if (!orbitId) return;
-    useCallStore.getState().startCall(orbitId, "video");
-    useUiShellStore.getState().setCallFullscreen(true);
+    platformBus.emit({
+      type: "call.request",
+      payload: { orgId: orbitId, peerName: "Contact", isVideo: true },
+    });
   },
 
   clear: () => {

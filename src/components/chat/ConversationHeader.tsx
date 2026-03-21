@@ -1,5 +1,5 @@
 import { ArrowLeft, Phone, Video, MoreVertical } from "lucide-react";
-import { useCallStore } from "@/stores/callStore";
+import { useCall } from "@/components/call/CallProvider";
 
 export function ConversationHeader(props: {
   title: string;
@@ -8,7 +8,16 @@ export function ConversationHeader(props: {
   conversationId?: string;
   onBack?: () => void;
 }) {
-  const createCall = useCallStore((s) => s.createCall);
+  const { startCall } = useCall();
+
+  const handleCall = (isVideo: boolean) => {
+    void startCall({
+      orgId: props.peerOrbitId,
+      peerName: props.title,
+      threadId: props.conversationId,
+      isVideo,
+    });
+  };
 
   return (
     <div className="flex items-center gap-3 px-3 py-2.5 border-b border-border bg-background/80 backdrop-blur-md sticky top-0 z-10">
@@ -34,13 +43,13 @@ export function ConversationHeader(props: {
 
       <div className="flex items-center gap-1">
         <button
-          onClick={() => void createCall(props.peerOrbitId, "video", props.conversationId)}
+          onClick={() => handleCall(true)}
           className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-muted/50 active:scale-[0.95] transition-transform"
         >
           <Video className="w-[18px] h-[18px] text-foreground" />
         </button>
         <button
-          onClick={() => void createCall(props.peerOrbitId, "audio", props.conversationId)}
+          onClick={() => handleCall(false)}
           className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-muted/50 active:scale-[0.95] transition-transform"
         >
           <Phone className="w-[18px] h-[18px] text-foreground" />

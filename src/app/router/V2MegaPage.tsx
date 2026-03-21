@@ -32,9 +32,7 @@ import { BookingStatusPanel } from "@/components/booking/BookingStatusPanel";
 import { RentStatusPanel } from "@/components/property/RentStatusPanel";
 import { SimpleNavTabs, type SimpleNavTab } from "@/components/layout/SimpleNavTabs";
 import { MerchantCheckoutPanel } from "@/components/merchant/MerchantCheckoutPanel";
-// Call system: CallProvider is the single authoritative engine
-import { RealtimeCallPanel } from "@/components/call/RealtimeCallPanel";
-import { useRealtimeCallStore } from "@/stores/realtimeCallStore";
+import { useCall } from "@/components/call/CallProvider";
 
 export default function V2MegaPage() {
   useListingsRealtime();
@@ -56,7 +54,7 @@ export default function V2MegaPage() {
   const createRentPayment = usePropertyManagementStore((s) => s.createRentPayment);
   const openContact = useContactStore((s) => s.openContact);
   const openChatPanel = useContactStore((s) => s.openChatPanel);
-  const realtimeCall = useRealtimeCallStore();
+  const { startCall } = useCall();
   const buildListingMarkers = useMapStore((s) => s.buildListingMarkers);
   const openCamera = useCameraStore((s) => s.openCamera);
   const checkCamera = usePermissionStore((s) => s.checkCamera);
@@ -305,8 +303,8 @@ export default function V2MegaPage() {
           <button className={btnClass} onClick={() => void doImmoFlow()}>Create Immo Flow</button>
           <button className={btnClass} onClick={doOpenContact}>Open Contact</button>
           <button className={btnClass} onClick={openChatPanel}>Open Chat</button>
-          <button className={btnClass} onClick={() => { const l = getPublishedListings()[0]; if (l) void realtimeCall.startOutgoingCall(l.ownerOrbitId, "audio"); }}>Audio Call</button>
-          <button className={btnClass} onClick={() => { const l = getPublishedListings()[0]; if (l) void realtimeCall.startOutgoingCall(l.ownerOrbitId, "video"); }}>Video Call</button>
+          <button className={btnClass} onClick={() => { const l = getPublishedListings()[0]; if (l) void startCall({ orgId: l.ownerOrbitId, peerName: l.title || "Owner", isVideo: false }); }}>Audio Call</button>
+          <button className={btnClass} onClick={() => { const l = getPublishedListings()[0]; if (l) void startCall({ orgId: l.ownerOrbitId, peerName: l.title || "Owner", isVideo: true }); }}>Video Call</button>
           <button className={btnClass} onClick={() => void openCamera("qr")}>Open Camera</button>
           <button className={btnClass} onClick={() => void checkCamera()}>Check Camera</button>
           <button className={btnClass} onClick={() => void checkMicrophone()}>Check Mic</button>
@@ -316,7 +314,6 @@ export default function V2MegaPage() {
       }
       mapLayer={<MapMarkerList />}
       cameraLayer={<CameraPreviewPanel />}
-      callLayer={<RealtimeCallPanel />}
       rightPanel={<PropertyDetailPanel />}
     >
       <div className="p-4 space-y-6">{renderTab()}</div>
