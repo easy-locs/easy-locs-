@@ -363,7 +363,7 @@ export function CallProvider({ children }: { children: ReactNode }) {
       // Fetch duration from call_logs
       const { data: log } = await supabase
         .from("call_logs")
-        .select("status, duration_seconds")
+        .select("status, duration_sec")
         .eq("id", meta.callId)
         .single();
       const status = (log as any)?.status;
@@ -371,7 +371,7 @@ export function CallProvider({ children }: { children: ReactNode }) {
         logCallEventToThread({
           callId: meta.callId, threadId: meta.threadId,
           orgId: meta.orgId, senderId: user.id, event: "ended",
-          durationSeconds: (log as any)?.duration_seconds || 0,
+          durationSeconds: (log as any)?.duration_sec || 0,
           contextId: meta.contextId,
         });
       }
