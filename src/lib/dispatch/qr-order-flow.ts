@@ -3,7 +3,8 @@
  * Connected to wallet engine, POS, and kitchen display.
  */
 import { supabase } from "@/integrations/supabase/client";
-import { processUniversalPayment, type OrderMode } from "@/lib/wallet/payments-v1";
+import { walletTransfer } from "@/payments/wallet-hooks";
+type OrderMode = "dine_in" | "takeaway" | "delivery" | "room_service";
 import { platformBus } from "@/lib/shared/platform-bus";
 import { resolveTransactionCurrency } from "@/lib/currency";
 
