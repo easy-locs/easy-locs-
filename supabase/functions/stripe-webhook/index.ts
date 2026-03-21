@@ -1352,16 +1352,14 @@ async function handleStorefrontOrderPayment(supabase: any, session: Stripe.Check
   });
 
   // ── Payment event record (idempotent) ──
-  await supabase.from("payment_events").insert({
-    event_type: "payment_succeeded",
+  const eventId = `storefront_order_${orderId}_${session.id}`;
+  await supabase.from("payment_events").upsert({
+    id: eventId,
+    event_type: "storefront_order_paid",
     provider: "stripe",
-    provider_event_id: session.id,
-    entity_type: "storefront_order",
-    entity_id: orderId,
-    amount: Number(order.total || 0),
-    currency: order.currency || "EUR",
-    metadata_json: { payment_intent: paymentIntentId, shop_id: shopId },
-    user_id: buyerId || null,
+    external_id: session.id,
+    processed: true,
+    metadata: { payment_intent: paymentIntentId, shop_id: shopId, order_id: orderId, buyer_id: buyerId, amount: order.total, currency: order.currency },
   }).then(({ error }: any) => {
     if (error) logStep("payment_event insert non-fatal", { error: error.message });
   });
