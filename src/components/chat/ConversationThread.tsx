@@ -1,7 +1,7 @@
 import { useMemo, useState, useRef, useEffect, useCallback } from "react";
 import { useChatStore } from "@/stores/chatStore";
 import { useOrbitStore } from "@/stores/orbitStore";
-import { useCallStore } from "@/stores/callStore";
+import { useCall } from "@/components/call/CallProvider";
 import { useDebugCommsStore } from "@/stores/debugCommsStore";
 import { Send, Mic, Plus, Check, CheckCheck, Phone, Video } from "lucide-react";
 import { CallMessageBubble } from "@/components/chat/CallMessageBubble";
@@ -16,6 +16,7 @@ export function ConversationThread(props: { conversationId: string | null }) {
   const getMessagesByConversation = useChatStore((s) => s.getMessagesByConversation);
   const sendMessage = useChatStore((s) => s.sendMessage);
   const hydrateMessages = useChatStore((s) => s.hydrateMessages);
+  const { startCall } = useCall();
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const hydrated = useRef<string | null>(null);
@@ -25,7 +26,6 @@ export function ConversationThread(props: { conversationId: string | null }) {
     [props.conversationId, getMessagesByConversation]
   );
 
-  // Hydrate messages on conversation change + debug sync
   useEffect(() => {
     if (!props.conversationId || hydrated.current === props.conversationId) return;
     hydrated.current = props.conversationId;
@@ -35,7 +35,6 @@ export function ConversationThread(props: { conversationId: string | null }) {
     });
   }, [props.conversationId, hydrateMessages]);
 
-  // Auto-scroll to bottom
   useEffect(() => {
     const el = scrollRef.current;
     if (el) el.scrollTop = el.scrollHeight;
@@ -67,7 +66,6 @@ export function ConversationThread(props: { conversationId: string | null }) {
     );
   }
 
-  // Group messages by date
   const grouped: { date: string; msgs: typeof messages }[] = [];
   let currentDate = "";
   for (const msg of messages) {
@@ -82,7 +80,6 @@ export function ConversationThread(props: { conversationId: string | null }) {
 
   return (
     <div className="flex flex-col h-full bg-background">
-      {/* Messages */}
       <div
         ref={scrollRef}
         className="flex-1 overflow-y-auto px-3 py-3 space-y-1 min-h-0"
@@ -92,7 +89,6 @@ export function ConversationThread(props: { conversationId: string | null }) {
       >
         {grouped.map((group) => (
           <div key={group.date}>
-            {/* Date separator */}
             <div className="flex justify-center my-3">
               <span className="text-[10px] font-medium text-muted-foreground/60 bg-muted/40 px-3 py-0.5 rounded-full">
                 {group.date === new Date().toLocaleDateString() ? "Today" : group.date}
@@ -102,7 +98,6 @@ export function ConversationThread(props: { conversationId: string | null }) {
             {group.msgs.map((msg) => {
               const isMine = msg.senderOrbitId === orbit?.orbitId;
 
-              // Call-type messages get a special bubble
               if (msg.type === "call") {
                 return (
                   <CallMessageBubble
@@ -115,11 +110,12 @@ export function ConversationThread(props: { conversationId: string | null }) {
                         ? (msg.metadata as any)?.receiverOrbitId
                         : msg.senderOrbitId;
                       if (!peerOrbitId || !props.conversationId) return;
-                      void useCallStore.getState().createCall(
-                        peerOrbitId,
-                        (msg.metadata as any)?.callType === "video" ? "video" : "audio",
-                        props.conversationId
-                      );
+                      void startCall({
+                        orgId: peerOrbitId,
+                        peerName: "Contact",
+                        threadId: props.conversationId,
+                        isVideo: (msg.metadata as any)?.callType === "video",
+                      });
                     }}
                   />
                 );
@@ -158,7 +154,6 @@ export function ConversationThread(props: { conversationId: string | null }) {
         )}
       </div>
 
-      {/* Input bar */}
       <div className="flex items-end gap-1.5 px-2 py-2 border-t border-border/15 bg-card/50 backdrop-blur-sm shrink-0">
         <button
           className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-colors hover:bg-accent/10 active:scale-[0.95]"

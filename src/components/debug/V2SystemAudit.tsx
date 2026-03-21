@@ -3,7 +3,6 @@ import { useLocationStore } from "@/stores/locationStore";
 import { useOrbitStore } from "@/stores/orbitStore";
 import { useWalletStore } from "@/stores/walletStore";
 import { usePermissionStore } from "@/stores/permissionStore";
-import { useCallStore } from "@/stores/callStore";
 import { useUiShellStore } from "@/stores/uiShellStore";
 
 export function V2SystemAudit() {
@@ -14,7 +13,6 @@ export function V2SystemAudit() {
   const orbit = useOrbitStore();
   const wallet = useWalletStore();
   const permissions = usePermissionStore();
-  const call = useCallStore();
   const ui = useUiShellStore();
 
   useEffect(() => {
@@ -43,7 +41,6 @@ export function V2SystemAudit() {
         notifications: permissions.notifications,
       },
     },
-    { title: "Call", data: { mode: call.mode, type: call.type, peerOrbitId: call.peerOrbitId } },
     {
       title: "UI Shell",
       data: {

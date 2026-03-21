@@ -3,12 +3,10 @@ import { V2SystemAudit } from "@/components/debug/V2SystemAudit";
 import { useLocationStore } from "@/stores/locationStore";
 import { useGeolocation } from "@/hooks/useGeolocation";
 import { useUiShellStore } from "@/stores/uiShellStore";
-import { useCallStore } from "@/stores/callStore";
 
 export default function V2TestPage() {
   const { requestLocation } = useGeolocation();
   const ui = useUiShellStore();
-  const call = useCallStore();
 
   return (
     <AppShell
@@ -30,12 +28,6 @@ export default function V2TestPage() {
             onClick={() => ui.openCamera("qr")}
           >
             Open Camera
-          </button>
-          <button
-            className="px-3 py-1 text-xs rounded-full bg-primary text-primary-foreground"
-            onClick={() => call.startCall("orbit_peer_1", "audio")}
-          >
-            Start Call
           </button>
           <button
             className="px-3 py-1 text-xs rounded-full bg-secondary text-secondary-foreground"
