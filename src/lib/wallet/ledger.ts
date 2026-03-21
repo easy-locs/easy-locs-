@@ -222,3 +222,25 @@ export async function releaseEscrow(params: {
     note: "Escrow release",
   });
 }
+
+/** Alias for releaseEscrow — used by settlement engine */
+export const releaseEscrowToMerchant = releaseEscrow;
+
+/** Post refund credit to customer wallet */
+export async function postRefundToCustomer(params: {
+  customerUserId: string;
+  amount: number;
+  currency?: string;
+  orderId: string;
+}) {
+  return postWalletTransaction({
+    ownerUserId: params.customerUserId,
+    amount: params.amount,
+    currency: params.currency ?? "AED",
+    direction: "in",
+    entryType: "refund",
+    referenceId: params.orderId,
+    referenceType: "order",
+    note: "Refund",
+  });
+}
