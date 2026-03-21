@@ -32,7 +32,7 @@ import { BookingStatusPanel } from "@/components/booking/BookingStatusPanel";
 import { RentStatusPanel } from "@/components/property/RentStatusPanel";
 import { SimpleNavTabs, type SimpleNavTab } from "@/components/layout/SimpleNavTabs";
 import { MerchantCheckoutPanel } from "@/components/merchant/MerchantCheckoutPanel";
-// CallRealtimeBridge removed — call system handled globally by CallOverlayV2
+// Call system: CallProvider is the single authoritative engine
 import { RealtimeCallPanel } from "@/components/call/RealtimeCallPanel";
 import { useRealtimeCallStore } from "@/stores/realtimeCallStore";
 
