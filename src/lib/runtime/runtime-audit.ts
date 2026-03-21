@@ -147,11 +147,10 @@ async function checkQrTables(): Promise<RuntimeAuditCheck> {
 
 async function checkDispatchTables(): Promise<RuntimeAuditCheck> {
   try {
-    const [jobs, offers] = await Promise.all([
-      (supabase as any).from("dispatch_jobs_v2").select("id", { head: true, count: "exact" }).limit(1),
-      (supabase as any).from("driver_mission_offers").select("id", { head: true, count: "exact" }).limit(1),
-    ]);
+    // Sequential to avoid lock contention
+    const jobs = await (supabase as any).from("dispatch_jobs_v2").select("id", { head: true, count: "exact" }).limit(1);
     if (jobs.error) return fail("Dispatch tables", "dispatch_tables", jobs.error.message);
+    const offers = await (supabase as any).from("driver_mission_offers").select("id", { head: true, count: "exact" }).limit(1);
     if (offers.error) return fail("Dispatch tables", "dispatch_tables", offers.error.message);
     return pass("Dispatch tables", "dispatch_tables", "dispatch_jobs_v2 + driver_mission_offers OK");
   } catch (e: any) {
