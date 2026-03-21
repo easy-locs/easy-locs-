@@ -395,7 +395,7 @@ export default function QrScannerPage() {
 
       const scanner = new Html5Qrcode(REGION_ID, { verbose: false });
       scannerRef.current = scanner;
-      const scanConfig = { fps: ios ? 10 : 15, qrbox: { width: QR_BOX_SIZE, height: QR_BOX_SIZE }, aspectRatio: 1, disableFlip: false };
+      const scanConfig = { fps: ios ? 10 : 15, qrbox: { width: QR_BOX_SIZE, height: QR_BOX_SIZE }, disableFlip: false };
 
       const startWith = async (cfg: any, label: string) => {
         try {

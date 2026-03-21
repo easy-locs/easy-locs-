@@ -61,10 +61,14 @@ export function useCurrentLocation(opts?: { watch?: boolean }) {
           store().setError(err?.message || "Location unavailable");
         }
 
-        store().setIsFallback(true);
-        // Only apply fallback if no real location was ever set
-        if (!store().currentLocation) {
-          store().setCurrentLocation(store().lastKnownLocation || DUBAI_FALLBACK);
+        // Only enter fallback state if NO valid live location exists yet
+        const existing = store().currentLocation;
+        const hasValidLive = existing && !store().isFallback && existing.accuracy < 5000;
+        if (!hasValidLive) {
+          store().setIsFallback(true);
+          if (!existing) {
+            store().setCurrentLocation(store().lastKnownLocation || DUBAI_FALLBACK);
+          }
         }
       } finally {
         store().setLoading(false);
