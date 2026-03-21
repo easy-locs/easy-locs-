@@ -35,6 +35,7 @@ export function AppInit() {
 
     void (async () => {
       await ensureOrbitProfile();
+      await ensureWalletAccount(user.id);
       await loadProfile(user.id);
       const orbit = useOrbitStore.getState().profile;
       if (!orbit) return;
