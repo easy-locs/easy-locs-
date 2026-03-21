@@ -6,7 +6,7 @@ import { useOrbitStore } from "@/stores/orbitStore";
 import { useListingStore } from "@/stores/listingStore";
 import { useBookingStore } from "@/stores/bookingStore";
 import { useWalletStore } from "@/stores/walletStore";
-import { useContactStore } from "@/stores/contactStore";
+
 import { usePropertyManagementStore } from "@/stores/propertyManagementStore";
 import { useListingsRealtime } from "@/hooks/useListingsRealtime";
 import { useBookingsRealtime } from "@/hooks/useBookingsRealtime";
