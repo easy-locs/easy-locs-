@@ -442,6 +442,7 @@ const MerchantCustomersPage = safeLazy(() => import("./pages/merchant/MerchantCu
 const AdminMerchantHealthPage = safeLazy(() => import("./pages/admin/AdminMerchantHealthPage"), "AdminMerchantHealthPage");
 const WalletTopUpPage = safeLazy(() => import("./pages/wallet/WalletTopUpPage"), "WalletTopUpPage");
 const WalletTransferPage = safeLazy(() => import("./pages/wallet/WalletTransferPage"), "WalletTransferPage");
+const WalletRequestPage = safeLazy(() => import("./pages/wallet/WalletRequestPage"), "WalletRequestPage");
 const OrderRefundRequestPage = safeLazy(() => import("./pages/orders/OrderRefundRequestPage"), "OrderRefundRequestPage");
 const MerchantPromoBannerEditorPage = safeLazy(() => import("./pages/merchant/MerchantPromoBannerEditorPage"), "MerchantPromoBannerEditorPage");
 const AdminDriverMonitorPage = safeLazy(() => import("./pages/admin/AdminDriverMonitorPage"), "AdminDriverMonitorPage");
