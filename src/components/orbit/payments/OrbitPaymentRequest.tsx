@@ -62,9 +62,7 @@ export default function OrbitPaymentRequest({
           metadata: { requested_from_user: recipientUserId },
         });
       if (insertErr) throw insertErr;
-      const result = { success: true };
-
-      if (!result.success) throw new Error(result.error);
+      const result = { success: true, error: null as string | null };
       setSuccess(true);
       setTimeout(() => onSuccess?.(), 1500);
     } catch (err: any) {
