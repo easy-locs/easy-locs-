@@ -62,7 +62,7 @@ export default function RideMap({ pickup, dropoff, userLat, userLng, drivers: ex
   // Init map — always show Dubai fallback if no coords
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
-    mapboxgl.accessToken = MAPBOX_TOKEN;
+    mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN;
     const centerLng = userLng || pickup?.lng || 55.2708;
     const centerLat = userLat || pickup?.lat || 25.2048;
     const center: [number, number] = [centerLng, centerLat];

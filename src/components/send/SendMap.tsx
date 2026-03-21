@@ -36,7 +36,7 @@ export default function SendMap({ pickup, dropoff, userLat, userLng, className =
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
-    mapboxgl.accessToken = MAPBOX_TOKEN;
+    mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN;
     const map = new mapboxgl.Map({
       container: containerRef.current,
       style: "mapbox://styles/mapbox/dark-v11",
