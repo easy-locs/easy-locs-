@@ -83,7 +83,7 @@ export type UniversalQrPayload =
   | PayUserQr | PayShopQr | PaymentRequestQr | ReceiveQr
   | ProfileQr | AddContactQr
   | LoginVerifyQr | DeviceLinkQr | PaymentConfirmQr | TrustedContactQr
-  | ShopQr | ProductQr | OrderQr
+  | ShopQr | MenuQr | PosOrderQr | ProductQr | OrderQr
   | ServiceQr | LiveQr
   | DeepLinkQr;
 
