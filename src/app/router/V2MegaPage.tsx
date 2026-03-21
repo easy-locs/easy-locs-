@@ -32,9 +32,8 @@ import { BookingStatusPanel } from "@/components/booking/BookingStatusPanel";
 import { RentStatusPanel } from "@/components/property/RentStatusPanel";
 import { SimpleNavTabs, type SimpleNavTab } from "@/components/layout/SimpleNavTabs";
 import { MerchantCheckoutPanel } from "@/components/merchant/MerchantCheckoutPanel";
-import { CallRealtimeBridge } from "@/components/call/CallRealtimeBridge";
+// CallRealtimeBridge removed — call system handled globally by CallOverlayV2
 import { RealtimeCallPanel } from "@/components/call/RealtimeCallPanel";
-import { useRealtimeCallStore } from "@/stores/realtimeCallStore";
 
 export default function V2MegaPage() {
   useListingsRealtime();
