@@ -30,10 +30,22 @@ const PRO_DASHBOARD_PREFIXES = [
 ];
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const { user, loading, emailVerified, activeRole, onboardingCompleted, subscription } = useAuth();
+  const { user, loading, emailVerified, activeRole, onboardingCompleted, profileLoaded, subscription } = useAuth();
   const location = useLocation();
 
   if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  if (!user) return <Navigate to="/login" replace />;
+  if (!emailVerified) return <Navigate to="/verify-email" replace />;
+
+  // Wait for profile to load before making onboarding decision — prevents flicker
+  if (!profileLoaded) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
