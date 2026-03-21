@@ -1,12 +1,10 @@
-import { useEffect } from "react";
-import { useGeoStore } from "@/stores/geoStore";
+/**
+ * GeoBootstrap — Initializes GPS and populates locationStore (single source of truth).
+ * Mount once at app root or on pages needing live location.
+ */
+import { useCurrentLocation } from "@/hooks/useCurrentLocation";
 
 export function GeoBootstrap() {
-  const refreshCurrentPosition = useGeoStore((s) => s.refreshCurrentPosition);
-
-  useEffect(() => {
-    void refreshCurrentPosition();
-  }, [refreshCurrentPosition]);
-
+  useCurrentLocation({ watch: true });
   return null;
 }

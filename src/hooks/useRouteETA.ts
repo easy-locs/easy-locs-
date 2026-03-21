@@ -9,7 +9,7 @@
  */
 import { useState, useCallback, useRef, useEffect } from "react";
 
-const MAPBOX_TOKEN = "pk.eyJ1IjoiZWFzeWxvY3MyMDI2IiwiYSI6ImNtbXZiZ3h0cTF6ZHMycnIyOWw4NnJzZTIifQ.ElIj6bFQK_BpVm6suigHUQ";
+import { MAPBOX_ACCESS_TOKEN } from "@/lib/mapbox/config";
 
 export interface RouteInfo {
   distanceKm: number;
@@ -65,7 +65,7 @@ export function useRouteETA(opts?: { autoRefreshSec?: number }) {
 
     setLoading(true);
     try {
-      const url = `https://api.mapbox.com/directions/v5/mapbox/${profile}/${originLng},${originLat};${destLng},${destLat}?access_token=${MAPBOX_TOKEN}&geometries=geojson&overview=full&annotations=duration,congestion`;
+      const url = `https://api.mapbox.com/directions/v5/mapbox/${profile}/${originLng},${originLat};${destLng},${destLat}?access_token=${MAPBOX_ACCESS_TOKEN}&geometries=geojson&overview=full&annotations=duration,congestion`;
 
       const res = await fetch(url, { signal: abortRef.current.signal });
       if (!res.ok) throw new Error("Directions API failed");

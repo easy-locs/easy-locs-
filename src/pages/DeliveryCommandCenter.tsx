@@ -25,8 +25,7 @@ import { toast } from "sonner";
 import { useGeolocation } from "@/hooks/useGeolocation";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
-
-const MAPBOX_TOKEN = "pk.eyJ1IjoiZWFzeWxvY3MyMDI2IiwiYSI6ImNtbXZiZ3h0cTF6ZHMycnIyOWw4NnJzZTIifQ.ElIj6bFQK_BpVm6suigHUQ";
+import { MAPBOX_ACCESS_TOKEN } from "@/lib/mapbox/config";
 
 /* ═══════════════════════════════════════════════
    STATS BAR
@@ -223,7 +222,7 @@ function CommandMap({
 
   useEffect(() => {
     if (!mapRef.current || mapInstance.current) return;
-    mapboxgl.accessToken = MAPBOX_TOKEN;
+    mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN;
     const center: [number, number] = userLng && userLat ? [userLng, userLat] : [3.06, 36.75];
     const map = new mapboxgl.Map({
       container: mapRef.current,

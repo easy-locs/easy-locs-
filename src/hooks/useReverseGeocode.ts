@@ -8,8 +8,7 @@
  * - Fallback to coordinates display
  */
 import { useState, useCallback, useRef, useEffect } from "react";
-
-const MAPBOX_TOKEN = "pk.eyJ1IjoiZWFzeWxvY3MyMDI2IiwiYSI6ImNtbXZiZ3h0cTF6ZHMycnIyOWw4NnJzZTIifQ.ElIj6bFQK_BpVm6suigHUQ";
+import { MAPBOX_ACCESS_TOKEN } from "@/lib/mapbox/config";
 
 export interface GeocodedAddress {
   fullAddress: string;
@@ -48,7 +47,7 @@ export function useReverseGeocode() {
     setLoading(true);
     try {
       const res = await fetch(
-        `https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json?access_token=${MAPBOX_TOKEN}&types=address,place,neighborhood&limit=1`,
+        `https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json?access_token=${MAPBOX_ACCESS_TOKEN}&types=address,place,neighborhood&limit=1`,
         { signal: abortRef.current.signal },
       );
 

@@ -9,8 +9,7 @@ import type { SavedPlace } from "@/hooks/useSmartLocation";
 import { createUserMarkerElement, createPickupMarkerElement, createDropoffMarkerElement } from "@/lib/map/easy-locs-user-marker";
 import { useDriverRadar } from "@/hooks/useDriverRadar";
 import RadarOverlay from "./RadarOverlay";
-
-const MAPBOX_TOKEN = "pk.eyJ1IjoiZWFzeWxvY3MyMDI2IiwiYSI6ImNtbXZiZ3h0cTF6ZHMycnIyOWw4NnJzZTIifQ.ElIj6bFQK_BpVm6suigHUQ";
+import { MAPBOX_ACCESS_TOKEN } from "@/lib/mapbox/config";
 
 interface RideMapProps {
   pickup: SavedPlace | null;
@@ -63,7 +62,7 @@ export default function RideMap({ pickup, dropoff, userLat, userLng, drivers: ex
   // Init map — always show Dubai fallback if no coords
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
-    mapboxgl.accessToken = MAPBOX_TOKEN;
+    mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN;
     const centerLng = userLng || pickup?.lng || 55.2708;
     const centerLat = userLat || pickup?.lat || 25.2048;
     const center: [number, number] = [centerLng, centerLat];

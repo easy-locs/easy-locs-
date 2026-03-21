@@ -3,7 +3,7 @@
  * Normalizes results, caches, debounces.
  */
 
-const TOKEN = "pk.eyJ1IjoiZWFzeWxvY3MyMDI2IiwiYSI6ImNtbXZiZ3h0cTF6ZHMycnIyOWw4NnJzZTIifQ.ElIj6bFQK_BpVm6suigHUQ";
+import { MAPBOX_ACCESS_TOKEN as TOKEN } from "@/lib/mapbox/config";
 
 export interface NormalizedPlace {
   label: string;

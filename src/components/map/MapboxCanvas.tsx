@@ -2,9 +2,8 @@ import { useEffect, useRef } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { useMapStore } from "@/stores/mapStore";
-import { useGeoStore } from "@/stores/geoStore";
-
-mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN as string;
+import { useLocationStore } from "@/stores/locationStore";
+import { MAPBOX_ACCESS_TOKEN } from "@/lib/mapbox/config";
 
 const DEFAULT_LNG = 55.2708;
 const DEFAULT_LAT = 25.2048;
@@ -17,21 +16,22 @@ export function MapboxCanvas() {
 
   const markers = useMapStore((s) => s.markers);
   const viewport = useMapStore((s) => s.viewport);
-  const currentPosition = useGeoStore((s) => s.currentPosition);
-  const permission = useGeoStore((s) => s.permission);
+  const currentLocation = useLocationStore((s) => s.currentLocation);
+  const permissionState = useLocationStore((s) => s.permissionState);
 
-  const hasGeo = currentPosition.lat !== 0 || currentPosition.lng !== 0;
+  const hasGeo = currentLocation != null && (currentLocation.lat !== 0 || currentLocation.lng !== 0);
 
   // Init map once
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
-    if (!mapboxgl.accessToken) {
-      console.error("[Map] Missing VITE_MAPBOX_ACCESS_TOKEN");
+    if (!MAPBOX_ACCESS_TOKEN) {
+      console.error("[Map] Missing Mapbox access token");
       return;
     }
+    mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN;
 
-    const centerLng = hasGeo ? currentPosition.lng : (viewport.centerLng || DEFAULT_LNG);
-    const centerLat = hasGeo ? currentPosition.lat : (viewport.centerLat || DEFAULT_LAT);
+    const centerLng = hasGeo ? currentLocation!.lng : (viewport.centerLng || DEFAULT_LNG);
+    const centerLat = hasGeo ? currentLocation!.lat : (viewport.centerLat || DEFAULT_LAT);
 
     const map = new mapboxgl.Map({
       container: containerRef.current,
@@ -57,10 +57,10 @@ export function MapboxCanvas() {
   // Fly to user position when geo updates
   useEffect(() => {
     const map = mapRef.current;
-    if (!map || !hasGeo) return;
+    if (!map || !hasGeo || !currentLocation) return;
 
     map.flyTo({
-      center: [currentPosition.lng, currentPosition.lat],
+      center: [currentLocation.lng, currentLocation.lat],
       zoom: 15,
       essential: true,
     });
@@ -69,12 +69,12 @@ export function MapboxCanvas() {
       const el = document.createElement("div");
       el.className = "w-4 h-4 rounded-full bg-blue-500 border-2 border-white shadow-lg";
       userMarkerRef.current = new mapboxgl.Marker(el)
-        .setLngLat([currentPosition.lng, currentPosition.lat])
+        .setLngLat([currentLocation.lng, currentLocation.lat])
         .addTo(map);
     } else {
-      userMarkerRef.current.setLngLat([currentPosition.lng, currentPosition.lat]);
+      userMarkerRef.current.setLngLat([currentLocation.lng, currentLocation.lat]);
     }
-  }, [hasGeo, currentPosition.lat, currentPosition.lng]);
+  }, [hasGeo, currentLocation?.lat, currentLocation?.lng]);
 
   // Render store markers
   useEffect(() => {
@@ -98,9 +98,9 @@ export function MapboxCanvas() {
   return (
     <div className="relative">
       <p className="absolute top-2 left-2 z-10 rounded-lg bg-card/90 backdrop-blur-sm px-2.5 py-1 text-xs text-muted-foreground border border-border/30 shadow-sm">
-        {permission === "granted" ? "📍" : "⏳"}{" "}
-        {hasGeo
-          ? `${currentPosition.lat.toFixed(5)}, ${currentPosition.lng.toFixed(5)}`
+        {permissionState === "granted" ? "📍" : "⏳"}{" "}
+        {hasGeo && currentLocation
+          ? `${currentLocation.lat.toFixed(5)}, ${currentLocation.lng.toFixed(5)}`
           : "Dubai fallback"}
       </p>
       <div ref={containerRef} className="h-full w-full min-h-[300px] rounded-lg" />

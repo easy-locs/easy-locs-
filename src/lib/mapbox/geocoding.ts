@@ -1,8 +1,9 @@
+import { MAPBOX_ACCESS_TOKEN } from "@/lib/mapbox/config";
+
 export async function forwardGeocode(query: string) {
-  const token = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN as string;
   const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
     query
-  )}.json?limit=5&access_token=${token}`;
+  )}.json?limit=5&access_token=${MAPBOX_ACCESS_TOKEN}`;
 
   const res = await fetch(url);
   if (!res.ok) throw new Error("Geocoding failed");
@@ -10,8 +11,7 @@ export async function forwardGeocode(query: string) {
 }
 
 export async function reverseGeocode(lat: number, lng: number) {
-  const token = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN as string;
-  const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json?limit=1&access_token=${token}`;
+  const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json?limit=1&access_token=${MAPBOX_ACCESS_TOKEN}`;
 
   const res = await fetch(url);
   if (!res.ok) throw new Error("Reverse geocoding failed");
