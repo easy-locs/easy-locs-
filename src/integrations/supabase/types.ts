@@ -13740,6 +13740,30 @@ export type Database = {
           },
         ]
       }
+      qr_targets: {
+        Row: {
+          created_at: string
+          id: string
+          metadata: Json | null
+          target_id: string | null
+          type: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          target_id?: string | null
+          type: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          target_id?: string | null
+          type?: string
+        }
+        Relationships: []
+      }
       real_estate_leads: {
         Row: {
           created_at: string
@@ -14940,6 +14964,8 @@ export type Database = {
       }
       rtc_config: {
         Row: {
+          active: boolean
+          config: Json | null
           created_at: string | null
           enabled: boolean | null
           id: string
@@ -14951,6 +14977,8 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          active?: boolean
+          config?: Json | null
           created_at?: string | null
           enabled?: boolean | null
           id?: string
@@ -14962,6 +14990,8 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          active?: boolean
+          config?: Json | null
           created_at?: string | null
           enabled?: boolean | null
           id?: string
