@@ -4,7 +4,7 @@
  */
 import { supabase } from "@/integrations/supabase/client";
 import { walletTransfer } from "@/payments/wallet-hooks";
-type OrderMode = "dine_in" | "takeaway" | "delivery" | "room_service";
+type OrderMode = "dine_in" | "takeaway" | "delivery" | "room_service" | "onsite_qr";
 import { platformBus } from "@/lib/shared/platform-bus";
 import { resolveTransactionCurrency } from "@/lib/currency";
 

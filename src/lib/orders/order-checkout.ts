@@ -20,15 +20,15 @@ export async function checkoutFoodDeliveryOrder(params: {
 
   await updateOrderStatus({ orderId: order.id, status: "pending_payment" });
 
-  await settleOrderPayment({
-    workspaceId: order.workspace_id ?? undefined,
-    buyerWalletId: params.buyerWalletId,
-    merchantWalletId: params.merchantWalletId,
-    platformWalletId: params.platformWalletId,
+  // Use wallet transfer for payment
+  await walletTransfer({
+    senderId: params.buyerWalletId,
+    recipientId: params.merchantWalletId,
     amount: Number(order.total_amount),
-    feePct: params.feePct ?? 0,
     currency: order.currency ?? "AED",
-    orderId: order.id,
+    contextType: "order",
+    contextId: order.id,
+    title: "Order payment",
   });
 
   await updateOrderStatus({ orderId: order.id, status: "paid" });
