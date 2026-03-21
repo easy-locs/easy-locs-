@@ -45,8 +45,8 @@ export const useDriverStore = create<DriverStoreState>((set) => ({
 
     await (supabase as any).from("drivers_live").upsert({
       orbit_id: orbit.orbitId,
-      lat: geo.lat,
-      lng: geo.lng,
+      lat: loc?.lat,
+      lng: loc?.lng,
       updated_at: new Date().toISOString(),
     });
   },
