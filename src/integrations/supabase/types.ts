@@ -18403,6 +18403,7 @@ export type Database = {
           delivery_source: string | null
           delivery_status: string | null
           id: string
+          idempotency_key: string | null
           notes: string | null
           payment_method: string | null
           payment_status: string | null
@@ -18419,8 +18420,10 @@ export type Database = {
           shipping_zone_id: string | null
           shop_id: string
           status: string | null
+          stripe_payment_intent_id: string | null
           stripe_session_id: string | null
           subtotal: number | null
+          table_code: string | null
           total: number | null
           tracking_number: string | null
           updated_at: string | null
@@ -18443,6 +18446,7 @@ export type Database = {
           delivery_source?: string | null
           delivery_status?: string | null
           id?: string
+          idempotency_key?: string | null
           notes?: string | null
           payment_method?: string | null
           payment_status?: string | null
@@ -18459,8 +18463,10 @@ export type Database = {
           shipping_zone_id?: string | null
           shop_id: string
           status?: string | null
+          stripe_payment_intent_id?: string | null
           stripe_session_id?: string | null
           subtotal?: number | null
+          table_code?: string | null
           total?: number | null
           tracking_number?: string | null
           updated_at?: string | null
@@ -18483,6 +18489,7 @@ export type Database = {
           delivery_source?: string | null
           delivery_status?: string | null
           id?: string
+          idempotency_key?: string | null
           notes?: string | null
           payment_method?: string | null
           payment_status?: string | null
@@ -18499,8 +18506,10 @@ export type Database = {
           shipping_zone_id?: string | null
           shop_id?: string
           status?: string | null
+          stripe_payment_intent_id?: string | null
           stripe_session_id?: string | null
           subtotal?: number | null
+          table_code?: string | null
           total?: number | null
           tracking_number?: string | null
           updated_at?: string | null
