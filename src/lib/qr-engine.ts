@@ -19,6 +19,9 @@ export type QrAction =
   | "pay_shop"          // pay a shop / storefront
   | "payment_request"   // fulfill a payment request
   | "receive"           // show "receive money" QR (my wallet)
+  /* ── POS / Commerce ────────────────────────── */
+  | "menu"              // open shop menu (restaurant QR)
+  | "pos_order"         // table / counter / dine-in order
   /* ── Identity ─────────────────────────────── */
   | "profile"           // open user profile
   | "add_contact"       // add as contact
@@ -65,6 +68,8 @@ export interface PaymentConfirmQr extends QrBase { action: "payment_confirm"; tx
 export interface TrustedContactQr extends QrBase { action: "trusted_contact"; userId: string; name?: string; token: string; }
 
 export interface ShopQr extends QrBase { action: "shop"; shopSlug: string; }
+export interface MenuQr extends QrBase { action: "menu"; shopSlug: string; }
+export interface PosOrderQr extends QrBase { action: "pos_order"; shopSlug: string; tableCode?: string; terminalId?: string; }
 export interface ProductQr extends QrBase { action: "product"; productId: string; shopSlug?: string; }
 export interface OrderQr extends QrBase { action: "order"; orderId: string; }
 
@@ -78,7 +83,7 @@ export type UniversalQrPayload =
   | PayUserQr | PayShopQr | PaymentRequestQr | ReceiveQr
   | ProfileQr | AddContactQr
   | LoginVerifyQr | DeviceLinkQr | PaymentConfirmQr | TrustedContactQr
-  | ShopQr | ProductQr | OrderQr
+  | ShopQr | MenuQr | PosOrderQr | ProductQr | OrderQr
   | ServiceQr | LiveQr
   | DeepLinkQr;
 
@@ -180,6 +185,10 @@ export function resolveRoute(payload: UniversalQrPayload): string | null {
       return null; // handled inline
     case "trusted_contact":
       return `/u/${payload.userId}`;
+    case "menu":
+      return `/s/${payload.shopSlug}`;
+    case "pos_order":
+      return `/s/${payload.shopSlug}${payload.tableCode ? `?table=${payload.tableCode}` : ""}`;
     case "shop":
       return `/s/${payload.shopSlug}`;
     case "product":
@@ -315,6 +324,12 @@ export const qr = {
 
   shop: (shopSlug: string): ShopQr =>
     ({ action: "shop", v: 1, shopSlug }),
+
+  menu: (shopSlug: string): MenuQr =>
+    ({ action: "menu", v: 1, shopSlug }),
+
+  posOrder: (shopSlug: string, opts?: { tableCode?: string; terminalId?: string }): PosOrderQr =>
+    ({ action: "pos_order", v: 1, shopSlug, ...opts }),
 
   product: (productId: string, shopSlug?: string): ProductQr =>
     ({ action: "product", v: 1, productId, shopSlug }),
