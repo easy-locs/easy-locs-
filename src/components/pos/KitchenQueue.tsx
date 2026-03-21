@@ -180,7 +180,7 @@ export default function KitchenQueue({ shopId }: KitchenQueueProps) {
                         </div>
 
                         {order.notes && (
-                          <p className="text-[10px] text-amber-600 bg-amber-50 dark:bg-amber-950/30 rounded px-2 py-1">
+                          <p className="text-[10px] text-accent-foreground bg-accent/30 rounded px-2 py-1">
                             📝 {order.notes}
                           </p>
                         )}
