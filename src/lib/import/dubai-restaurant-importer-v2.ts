@@ -7,9 +7,12 @@
  *   - storefront_pages
  * All marked as unclaimed / coming_soon.
  * Now properly links storefront_pages.merchant_profile_id.
+ * V2.1: Adds duplicate detection + zone assignment on import.
  */
 import { supabase } from "@/integrations/supabase/client";
 import { generateDubaiRestaurants, type GeneratedRestaurant } from "./dubai-restaurant-generator";
+import { checkStorefrontDuplicate } from "@/lib/geo/duplicateGuard";
+import { assignZoneToStorefront } from "@/lib/zones/autoAssignZone";
 
 export interface ImportProgress {
   total: number;
@@ -80,7 +83,7 @@ async function importSingleRestaurant(
   userId: string,
   orgId: string
 ): Promise<"imported" | "skipped"> {
-  // Check duplicates
+  // Check source-level duplicates
   const { data: existing } = await (supabase as any)
     .from("merchant_onboarding_sources")
     .select("id")
@@ -88,6 +91,15 @@ async function importSingleRestaurant(
     .maybeSingle();
 
   if (existing) return "skipped";
+
+  // Check storefront-level duplicates (name + geo proximity + phone)
+  const dupCheck = await checkStorefrontDuplicate(
+    r.merchant_name,
+    r.lat,
+    r.lng,
+    r.phone
+  );
+  if (dupCheck.blocked) return "skipped";
 
   // 1. Source
   const { data: source, error: srcErr } = await (supabase as any)
@@ -137,15 +149,15 @@ async function importSingleRestaurant(
     if (menuErr) throw new Error(`menu: ${menuErr.message}`);
   }
 
-  // 4. Storefront page — NOW with merchant_profile_id linkage
-  const { error: shopErr } = await (supabase as any)
+  // 4. Storefront page — NOW with merchant_profile_id linkage + zone assignment
+  const { data: shopData, error: shopErr } = await (supabase as any)
     .from("storefront_pages")
     .insert({
       name: r.merchant_name,
       slug: r.slug,
       org_id: orgId,
       user_id: userId,
-      merchant_profile_id: merchant.id, // ← Critical linkage
+      merchant_profile_id: merchant.id,
       entity_type: "fixed_store",
       presence_mode: "pin",
       coverage_mode: "radius",
@@ -171,8 +183,15 @@ async function importSingleRestaurant(
       subcategory: r.category_key,
       seo_title: `${r.merchant_name} — ${r.cuisine_type} Delivery in Dubai`,
       seo_description: `Order ${r.cuisine_type} from ${r.merchant_name} in ${r.area}. Fast delivery in Dubai.`,
-    });
+    })
+    .select("id")
+    .single();
   if (shopErr) throw new Error(`storefront: ${shopErr.message}`);
+
+  // Auto-assign zone
+  if (shopData?.id && r.lat && r.lng) {
+    assignZoneToStorefront(shopData.id, r.lat, r.lng).catch(() => {});
+  }
 
   return "imported";
 }
