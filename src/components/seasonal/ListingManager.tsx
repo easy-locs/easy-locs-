@@ -81,6 +81,15 @@ const ListingManager = ({ propertyId, propertyLabel }: ListingManagerProps) => {
 
   const createListing = async () => {
     if (!orgId || !user) return;
+
+    // Duplicate detection
+    const title = form.title || propertyLabel;
+    const dupCheck = await checkListingDuplicate(title, null, null, "public_listings");
+    if (dupCheck.blocked) {
+      toast({ title: "Duplicate detected", description: `Similar listing "${dupCheck.existingMatch?.name}" already exists.`, variant: "destructive" });
+      return;
+    }
+
     const slug = generateSlug();
     const amenities = [
       ...form.options,
@@ -88,7 +97,7 @@ const ListingManager = ({ propertyId, propertyLabel }: ListingManagerProps) => {
     ];
     const { data, error } = await supabase.from("public_listings").insert({
       property_id: propertyId, org_id: orgId, user_id: user.id, slug,
-      title: form.title || propertyLabel, description: form.description,
+      title: title, description: form.description,
       price_per_night: form.price_per_night, min_nights: form.min_nights,
       max_guests: form.max_guests, amenities: amenities as any,
       listing_type: "short_term_stay",
@@ -101,6 +110,12 @@ const ListingManager = ({ propertyId, propertyLabel }: ListingManagerProps) => {
       toast({ title: t("common.error") || "Error", description: error.message, variant: "destructive" });
       return;
     }
+
+    // Auto-assign zone if coordinates available
+    if (data?.id && data.lat && data.lng) {
+      assignZoneToListing(data.id, data.lat, data.lng).catch(() => {});
+    }
+
     setListing(data);
     toast({ title: t("page.listing_mgr.created") });
   };

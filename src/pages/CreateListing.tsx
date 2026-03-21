@@ -367,6 +367,15 @@ const CreateListing = () => {
       } as any);
 
       if (error) throw error;
+
+      // Auto-assign zone after creation
+      if (geoLat && geoLng) {
+        const { data: created } = await supabase.from("marketplace_services").select("id").eq("booking_slug", slug).maybeSingle();
+        if (created?.id) {
+          assignZoneToService(created.id, geoLat, geoLng).catch(() => {});
+        }
+      }
+
       toast({ title: "✅ Listing published!", description: isSale ? "Your listing is live for 30 days." : "Your listing is live until you deactivate it." });
       navigate("/dashboard/my-shop");
     } catch (err: any) {
