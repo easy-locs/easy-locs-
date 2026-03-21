@@ -28,10 +28,12 @@ function fail(label: string, key: string, detail?: string): RuntimeAuditCheck {
 
 async function checkSupabaseConnection(): Promise<RuntimeAuditCheck> {
   try {
+    // Use a known-accessible table (confirmed via network: orders returns 200)
     const { error } = await (supabase as any)
-      .from("merchant_onboarding_profiles")
+      .from("orders")
       .select("id", { head: true, count: "exact" })
       .limit(1);
+    console.log("Supabase connection audit", { error: error?.message ?? null });
     if (error) return fail("Supabase connection", "supabase", error.message);
     return pass("Supabase connection", "supabase", "Database reachable");
   } catch (e: any) {
