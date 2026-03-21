@@ -7,7 +7,7 @@ import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { MAPBOX_ACCESS_TOKEN } from "@/lib/mapbox/config";
 import { useLocationStore } from "@/stores/locationStore";
-import { useGeolocation } from "@/hooks/useGeolocation";
+// locationStore already imported above; requestLocation via navigator directly
 import { Send, RefreshCw, Maximize2, MapPin } from "lucide-react";
 
 interface LocationShareCardProps {
@@ -27,7 +27,12 @@ export default memo(function LocationShareCard({
 
   const currentLocation = useLocationStore((s) => s.currentLocation);
   const permissionState = useLocationStore((s) => s.permissionState);
-  const { requestLocation } = useGeolocation();
+  const setCurrentLocation = useLocationStore((s) => s.setCurrentLocation);
+  const requestLocation = () => {
+    navigator.geolocation?.getCurrentPosition((pos) => {
+      setCurrentLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude, accuracy: pos.coords.accuracy, timestamp: new Date().toISOString() });
+    }, () => {}, { enableHighAccuracy: true, timeout: 12000 });
+  };
 
   const lat = currentLocation?.lat ?? 25.2048;
   const lng = currentLocation?.lng ?? 55.2708;

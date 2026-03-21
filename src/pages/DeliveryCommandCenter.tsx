@@ -22,7 +22,7 @@ import {
 import { formatDistance, formatETA, haversineDistance, estimateETA } from "@/lib/delivery/geo-utils";
 import type { DeliveryJob } from "@/hooks/useDriverMissions";
 import { toast } from "sonner";
-import { useGeolocation } from "@/hooks/useGeolocation";
+import { useLocationStore } from "@/stores/locationStore";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { MAPBOX_ACCESS_TOKEN } from "@/lib/mapbox/config";
@@ -349,7 +349,15 @@ export default function DeliveryCommandCenter() {
     updateMissionStatus, cancelMission, refetch,
   } = useDeliveryCommandCenter();
 
-  const { lat: userLat, lng: userLng, requestLocation } = useGeolocation();
+  const _loc = useLocationStore((s) => s.currentLocation);
+  const userLat = _loc?.lat ?? null;
+  const userLng = _loc?.lng ?? null;
+  const _setLoc = useLocationStore((s) => s.setCurrentLocation);
+  const requestLocation = () => {
+    navigator.geolocation?.getCurrentPosition((pos) => {
+      _setLoc({ lat: pos.coords.latitude, lng: pos.coords.longitude, accuracy: pos.coords.accuracy, timestamp: new Date().toISOString() });
+    }, () => {}, { enableHighAccuracy: true, timeout: 12000 });
+  };
 
   const [assignDrawerOpen, setAssignDrawerOpen] = useState(false);
   const [assigningJobId, setAssigningJobId] = useState<string | null>(null);

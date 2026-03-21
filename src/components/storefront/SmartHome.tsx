@@ -5,7 +5,7 @@
 import { memo, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Search, MapPin, Bell, Wallet, QrCode, Send, ChevronRight, Star, Clock } from "lucide-react";
-import { useGeolocation } from "@/hooks/useGeolocation";
+import { useLocationStore } from "@/stores/locationStore";
 import { useOrbitEngine } from "@/stores/orbit-engine";
 import { getSmartCategories, getSmartHero, getTimeGreeting, getSmartSections, getTimeSlot, type SmartCategory } from "@/lib/smart-home-engine";
 import { motion } from "framer-motion";
@@ -213,7 +213,8 @@ const UtilityRow = memo(() => (
 /* ═══ Main Component ═══ */
 export default function SmartHome() {
   const navigate = useNavigate();
-  const geo = useGeolocation();
+  const currentLocation = useLocationStore((s) => s.currentLocation);
+  const geo = { effectiveCity: null as string | null, manualCity: null as string | null, lat: currentLocation?.lat ?? null, lng: currentLocation?.lng ?? null };
   const timezone = useMemo(() => {
     try { return Intl.DateTimeFormat().resolvedOptions().timeZone; } catch { return undefined; }
   }, []);

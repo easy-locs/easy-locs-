@@ -6,7 +6,7 @@
 import { useState, useEffect, useCallback, lazy, Suspense, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { useGeolocation } from "@/hooks/useGeolocation";
+import { useLocationStore } from "@/stores/locationStore";
 import { PresenceDot, presenceLabel } from "@/hooks/usePresenceStatus";
 import {
   Radar, MapPin, Search, MessageCircle, Phone, Navigation,
@@ -91,7 +91,18 @@ function getTypeColor(type: string): string {
 export default function CommNearbySection() {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const { lat, lng, loading: geoLoading, error: geoError, permissionDenied, requestLocation } = useGeolocation();
+  const _loc = useLocationStore((s) => s.currentLocation);
+  const lat = _loc?.lat ?? null;
+  const lng = _loc?.lng ?? null;
+  const geoLoading = useLocationStore((s) => s.loading);
+  const geoError = useLocationStore((s) => s.error);
+  const permissionDenied = useLocationStore((s) => s.permissionState) === "denied";
+  const _setLoc = useLocationStore((s) => s.setCurrentLocation);
+  const requestLocation = () => {
+    navigator.geolocation?.getCurrentPosition((pos) => {
+      _setLoc({ lat: pos.coords.latitude, lng: pos.coords.longitude, accuracy: pos.coords.accuracy, timestamp: new Date().toISOString() });
+    }, () => {}, { enableHighAccuracy: true, timeout: 12000 });
+  };
   const [items, setItems] = useState<NearbyItem[]>([]);
   const [nearbyUsers, setNearbyUsers] = useState<NearbyUser[]>([]);
   const [loading, setLoading] = useState(false);
