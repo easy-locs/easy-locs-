@@ -1,7 +1,7 @@
 import { V2AppShell as AppShell } from "@/components/shell/V2AppShell";
 import { V2SystemAudit } from "@/components/debug/V2SystemAudit";
 import { useLocationStore } from "@/stores/locationStore";
-import { useGeolocation } from "@/hooks/useGeolocation";
+import { useLocationStore } from "@/stores/locationStore";
 import { useUiShellStore } from "@/stores/uiShellStore";
 
 export default function V2TestPage() {

@@ -429,7 +429,8 @@ export default function DiscoverPage() {
   const query = searchParams.get("q") || "";
   const activeRail = (searchParams.get("rail") as RailId) || null;
   const [vertical, setVertical] = useState(searchParams.get("v") || "all");
-  const geo = useGeolocation();
+  const currentLocation = useLocationStore((s) => s.currentLocation);
+  const geo = { lat: currentLocation?.lat ?? null, lng: currentLocation?.lng ?? null };
   const hasGeo = geo.lat != null && geo.lng != null;
 
   /* ── Main shops query ── */

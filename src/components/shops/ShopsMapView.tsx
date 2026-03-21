@@ -31,7 +31,9 @@ export default function ShopsMapView({ shops, radiusKm = 25, onOpenShop }: Props
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
   const clusterRef = useRef<L.MarkerClusterGroup | null>(null);
-  const { lat: userLat, lng: userLng } = useGeolocation();
+  const currentLocation = useLocationStore((s) => s.currentLocation);
+  const userLat = currentLocation?.lat ?? null;
+  const userLng = currentLocation?.lng ?? null;
 
   const centerLat = userLat || 48.8566;
   const centerLng = userLng || 2.3522;

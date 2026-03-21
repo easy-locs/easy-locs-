@@ -6,7 +6,7 @@
 import { useState, useEffect, useCallback, lazy, Suspense, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { useGeolocation } from "@/hooks/useGeolocation";
+import { useLocationStore } from "@/stores/locationStore";
 import { PresenceDot, presenceLabel } from "@/hooks/usePresenceStatus";
 import {
   Radar, MapPin, Search, MessageCircle, Phone, Navigation,

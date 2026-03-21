@@ -13,7 +13,8 @@ import {
 } from "@/lib/address/address-engine";
 
 export function useAddressEngine() {
-  const geo = useGeolocation();
+  const currentLocation = useLocationStore((s) => s.currentLocation);
+  const geo = { lat: currentLocation?.lat ?? null, lng: currentLocation?.lng ?? null, effectiveCity: null as string | null };
   const [bestAddress, setBestAddress] = useState<ResolvedAddress | null>(null);
   const [savedAddresses, setSavedAddresses] = useState<ResolvedAddress[]>([]);
   const [searchResults, setSearchResults] = useState<ResolvedAddress[]>([]);
