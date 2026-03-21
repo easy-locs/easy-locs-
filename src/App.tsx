@@ -585,7 +585,7 @@ const AdminGoLiveReadinessPage = safeLazy(() => import("./pages/admin/AdminGoLiv
 // IG-IL block
 const AdminUiFinalizerPage = safeLazy(() => import("./pages/admin/AdminUiFinalizerPage"), "AdminUiFinalizerPage");
 // IM-IR block
-const AppBootstrapGuard = safeLazy(() => import("./components/app/AppBootstrapGuard"), "AppBootstrapGuard");
+// AppBootstrapGuard imported directly (not lazy) — it's a tiny null component
 const AdminMasterControlPage = safeLazy(() => import("./pages/admin/AdminMasterControlPage"), "AdminMasterControlPage");
 // IS-IX block
 const AdminProductionChecklistPage = safeLazy(() => import("./pages/admin/AdminProductionChecklistPage"), "AdminProductionChecklistPage");
