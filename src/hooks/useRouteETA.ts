@@ -65,7 +65,7 @@ export function useRouteETA(opts?: { autoRefreshSec?: number }) {
 
     setLoading(true);
     try {
-      const url = `https://api.mapbox.com/directions/v5/mapbox/${profile}/${originLng},${originLat};${destLng},${destLat}?access_token=${MAPBOX_TOKEN}&geometries=geojson&overview=full&annotations=duration,congestion`;
+      const url = `https://api.mapbox.com/directions/v5/mapbox/${profile}/${originLng},${originLat};${destLng},${destLat}?access_token=${MAPBOX_ACCESS_TOKEN}&geometries=geojson&overview=full&annotations=duration,congestion`;
 
       const res = await fetch(url, { signal: abortRef.current.signal });
       if (!res.ok) throw new Error("Directions API failed");
