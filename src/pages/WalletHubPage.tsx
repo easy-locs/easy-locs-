@@ -13,7 +13,7 @@ import {
   CreditCard, Wallet, Shield, ScanLine, Settings,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import TransactionRow, { type TransactionType } from "@/components/wallet/TransactionRow";
 import WalletSecurityPanel from "@/components/wallet/WalletSecurityPanel";
@@ -55,6 +55,14 @@ export default function WalletHubPage() {
       toast.error("Could not create wallet");
     }
   };
+
+  // Auto-create wallet if user has none
+  useEffect(() => {
+    if (!loading && rows.length === 0 && user?.id) {
+      createDefaultWallet();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loading, rows.length, user?.id]);
 
   const TABS: { key: WalletTab; icon: typeof Wallet; label: string }[] = [
     { key: "fiat", icon: Wallet, label: "Wallet" },

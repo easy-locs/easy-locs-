@@ -401,17 +401,33 @@ export default function QrScannerPage() {
     }
   }, [chooseBestCamera, clearScannerInstance, handleQrResult, ios, readCameraPermission, refreshCameraDevices, safari, secure, setErrorSafe, setStateSafe, resetRuntimeFlags]);
 
+  // Auto-start scanner on mount when scan tab is active
   useEffect(() => {
     mountedRef.current = true;
 
     void readCameraPermission();
     void refreshCameraDevices();
 
+    // Auto-start camera when on scan tab (no manual button press required)
+    if (tab === "scan" && secure) {
+      const autoStartTimer = setTimeout(() => {
+        if (mountedRef.current && !startingRef.current && !startedRef.current) {
+          setCameraRequested(true);
+          void startScanner();
+        }
+      }, 300);
+      return () => {
+        clearTimeout(autoStartTimer);
+        mountedRef.current = false;
+        void clearScannerInstance("unmount", false);
+      };
+    }
+
     return () => {
       mountedRef.current = false;
       void clearScannerInstance("unmount", false);
     };
-  }, [clearScannerInstance, readCameraPermission, refreshCameraDevices]);
+  }, [clearScannerInstance, readCameraPermission, refreshCameraDevices, tab, secure, startScanner]);
 
   useEffect(() => {
     if (tab === "myqr" && (startedRef.current || startingRef.current)) {
