@@ -151,6 +151,11 @@ export default function WalletHubPage() {
                 {rows.length === 0 && !loading && (
                   <p className="text-xs text-primary-foreground/60 mt-2">No wallet yet</p>
                 )}
+                {rows.length > 0 && totalBalance <= 0 && (
+                  <button onClick={handleTestTopUp} className="mt-3 rounded-xl bg-primary-foreground/15 px-3 py-2 text-xs font-bold text-primary-foreground">
+                    Add test top-up (100 AED)
+                  </button>
+                )}
               </motion.div>
 
               {/* Quick Actions */}
