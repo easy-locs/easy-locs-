@@ -20,6 +20,8 @@ import PresenceMobilitySelector, { type PresenceMode, type EntityType, type Cove
 import { getCategoryConfig, getCategoryOptions, getAllowedListingTypes, getAllowedPresenceModes, type ListingType } from "@/lib/category-config";
 import { detectListingContext, currencyFromCountry, detectLocationFromTimezone, type DetectedContext } from "@/lib/smart-prefill";
 import SmartPrefillBanner from "@/components/marketplace/SmartPrefillBanner";
+import { checkServiceDuplicate } from "@/lib/geo/duplicateGuard";
+import { assignZoneToService } from "@/lib/zones/autoAssignZone";
 
 /* ─── Constants ─── */
 const MAX_LISTINGS_FREE = 5;
