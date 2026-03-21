@@ -1,7 +1,8 @@
 /**
  * wallet-transfer — Backend-authoritative atomic P2P wallet transfer.
- * Resolves wallets server-side, checks balance, debits/credits atomically.
- * Enforces idempotency, PIN verification, and audit logging.
+ * Uses atomic_wallet_transfer RPC for single-transaction execution.
+ * Handles: auth, PIN verification (inline), limit checks, audit.
+ * No partial success — all or nothing.
  */
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
@@ -16,6 +17,15 @@ function ok(data: unknown) {
 }
 function err(msg: string, status = 400) {
   return new Response(JSON.stringify({ error: msg }), { status, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+}
+
+/** HMAC-SHA256 PIN hash (matches wallet-pin edge function) */
+async function hashPin(pin: string): Promise<string> {
+  const secret = Deno.env.get("WALLET_PIN_SECRET") || "default-wallet-pin-secret";
+  const enc = new TextEncoder();
+  const key = await crypto.subtle.importKey("raw", enc.encode(secret), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+  const sig = await crypto.subtle.sign("HMAC", key, enc.encode(pin));
+  return Array.from(new Uint8Array(sig)).map(b => b.toString(16).padStart(2, "0")).join("");
 }
 
 serve(async (req) => {
@@ -54,139 +64,96 @@ serve(async (req) => {
     if (!amount || typeof amount !== "number" || amount <= 0) return err("Amount must be a positive number");
     if (amount > 50000) return err("Transfer exceeds maximum limit");
 
-    // ── Idempotency check ──
-    if (idempotency_key) {
-      const { data: existing } = await sb
-        .from("wallet_ledger_entries")
-        .select("id")
-        .eq("external_txn_id", idempotency_key)
-        .limit(1)
-        .maybeSingle();
-      if (existing) {
-        return ok({ success: true, duplicate: true, message: "Transfer already processed" });
-      }
-    }
+    // ── Verify receiver exists ──
+    const { data: receiverProfile } = await sb
+      .from("profiles")
+      .select("id, full_name, username")
+      .eq("id", receiver_user_id)
+      .maybeSingle();
+    if (!receiverProfile) return err("Recipient not found — cannot transfer to unknown user");
 
-    // ── PIN verification (if PIN is set) ──
+    // ── PIN verification (inline, no cross-function call) ──
     const { data: senderProfile } = await sb
       .from("profiles")
-      .select("wallet_pin_hash")
+      .select("wallet_pin_hash, wallet_pin_failed_attempts, wallet_pin_locked_until")
       .eq("id", sender_user_id)
       .maybeSingle();
 
     if (senderProfile?.wallet_pin_hash) {
+      // Check lock
+      if (senderProfile.wallet_pin_locked_until && new Date(senderProfile.wallet_pin_locked_until) > new Date()) {
+        return err("Wallet PIN is temporarily locked. Try again later.", 403);
+      }
       if (!pin) return err("Wallet PIN required for this transfer");
-      // Delegate to wallet-pin verify logic inline
-      const { data: pinResult, error: pinErr } = await sb.functions.invoke("wallet-pin", {
-        body: { action: "verify", pin },
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (pinErr || !pinResult?.verified) {
-        return err(pinResult?.error || "Invalid PIN", 403);
+
+      const pinHash = await hashPin(pin);
+      if (pinHash !== senderProfile.wallet_pin_hash) {
+        const attempts = (senderProfile.wallet_pin_failed_attempts || 0) + 1;
+        const lockUntil = attempts >= 5 ? new Date(Date.now() + 5 * 60 * 1000).toISOString() : null;
+        await sb.from("profiles").update({
+          wallet_pin_failed_attempts: attempts,
+          wallet_pin_locked_until: lockUntil,
+        }).eq("id", sender_user_id);
+        return err(`Invalid PIN (${attempts}/5 attempts)`, 403);
+      }
+      // Reset failed attempts on success
+      if (senderProfile.wallet_pin_failed_attempts > 0) {
+        await sb.from("profiles").update({ wallet_pin_failed_attempts: 0, wallet_pin_locked_until: null }).eq("id", sender_user_id);
       }
     }
 
-    // ── Resolve sender wallet (server-side) ──
-    let senderWallet = await getOrCreateWallet(sb, sender_user_id, currency);
-    if (!senderWallet) return err("Could not resolve sender wallet");
-    if (senderWallet.status !== "active") return err("Sender wallet is not active");
-
-    // ── Balance check ──
-    const senderBalance = Number(senderWallet.balance ?? senderWallet.available_balance ?? 0);
-    if (senderBalance < amount) {
-      return err(`Insufficient balance. Available: ${senderBalance} ${currency}`);
-    }
-
-    // ── Resolve receiver wallet (server-side) ──
-    let receiverWallet = await getOrCreateWallet(sb, receiver_user_id, currency);
-    if (!receiverWallet) return err("Could not resolve receiver wallet");
-
-    // ── Resolve receiver display name ──
-    const { data: receiverProfile } = await sb
-      .from("profiles")
-      .select("full_name, username")
-      .eq("id", receiver_user_id)
+    // ── Limit check ──
+    const { data: limits } = await sb
+      .from("wallet_limit_profiles")
+      .select("single_tx_limit, daily_send_limit")
+      .eq("user_id", sender_user_id)
       .maybeSingle();
-    const receiverName = receiverProfile?.full_name || receiverProfile?.username || "Unknown";
 
-    // ── Generate transfer ID ──
-    const transferId = crypto.randomUUID();
-    const idemKey = idempotency_key || `tf_${transferId}`;
-    const now = new Date().toISOString();
-
-    // ── Atomic debit + credit via ledger entries ──
-    // Debit sender
-    const { error: debitErr } = await sb.from("wallet_ledger_entries").insert({
-      wallet_account_id: senderWallet.id,
-      direction: "out",
-      amount,
-      currency,
-      entry_type: "transfer",
-      reference_type: "p2p_transfer",
-      reference_id: transferId,
-      external_txn_id: idemKey,
-      status: "posted",
-      note: note || `Transfer to ${receiverName}`,
-    });
-    if (debitErr) throw new Error(`Debit failed: ${debitErr.message}`);
-
-    // Credit receiver
-    const { error: creditErr } = await sb.from("wallet_ledger_entries").insert({
-      wallet_account_id: receiverWallet.id,
-      direction: "in",
-      amount,
-      currency,
-      entry_type: "transfer",
-      reference_type: "p2p_transfer",
-      reference_id: transferId,
-      external_txn_id: `${idemKey}_credit`,
-      status: "posted",
-      note: note || `Transfer from ${ud.user.email || callerUserId}`,
-    });
-    if (creditErr) {
-      // Rollback debit
-      await sb.from("wallet_ledger_entries").delete().eq("external_txn_id", idemKey);
-      throw new Error(`Credit failed: ${creditErr.message}`);
+    if (limits) {
+      if (amount > Number(limits.single_tx_limit || 100)) {
+        return err(`Amount exceeds single transaction limit of ${limits.single_tx_limit} ${currency}`);
+      }
+      // Daily check: sum today's outgoing
+      const todayStart = new Date(); todayStart.setHours(0, 0, 0, 0);
+      const { data: todayEntries } = await sb
+        .from("wallet_ledger_entries")
+        .select("amount")
+        .eq("status", "posted")
+        .eq("direction", "out")
+        .eq("entry_type", "transfer")
+        .gte("created_at", todayStart.toISOString())
+        .in("wallet_account_id", (await sb.from("wallet_accounts").select("id").eq("owner_user_id", sender_user_id).eq("currency", currency)).data?.map((w: any) => w.id) || []);
+      const todayTotal = (todayEntries || []).reduce((s: number, e: any) => s + Number(e.amount), 0);
+      if (todayTotal + amount > Number(limits.daily_send_limit || 500)) {
+        return err(`Would exceed daily send limit of ${limits.daily_send_limit} ${currency}`);
+      }
     }
 
-    // ── Recompute balances from ledger (authoritative) ──
-    await recomputeBalance(sb, senderWallet.id);
-    await recomputeBalance(sb, receiverWallet.id);
-
-    // ── Write to unified_wallet_transactions for history ──
-    await sb.from("unified_wallet_transactions").insert({
-      sender_id: sender_user_id,
-      recipient_id: receiver_user_id,
-      amount,
-      currency,
-      context_type: source,
-      title: `Transfer to ${receiverName}`,
-      subtitle: note || null,
-      status: "completed",
-      metadata: { transfer_id: transferId, idempotency_key: idemKey, source },
-    }).catch(() => {}); // Non-critical
-
-    // ── Audit log ──
-    await sb.from("audit_logs").insert({
-      user_id: callerUserId,
-      action: "wallet_p2p_transfer",
-      metadata_json: {
-        transfer_id: transferId,
-        sender_user_id,
-        receiver_user_id,
-        sender_wallet_id: senderWallet.id,
-        receiver_wallet_id: receiverWallet.id,
-        amount,
-        currency,
-        source,
-        idempotency_key: idemKey,
-        ts: now,
-      },
+    // ── Execute atomic transfer via RPC ──
+    const { data: result, error: rpcError } = await sb.rpc("atomic_wallet_transfer", {
+      p_sender_user_id: sender_user_id,
+      p_receiver_user_id: receiver_user_id,
+      p_amount: amount,
+      p_currency: currency,
+      p_idempotency_key: idempotency_key || null,
+      p_source: source,
+      p_note: note || null,
     });
+
+    if (rpcError) {
+      console.error("[wallet-transfer] RPC error:", rpcError.message);
+      // Parse specific errors from RPC
+      if (rpcError.message.includes("Insufficient balance")) return err(rpcError.message);
+      if (rpcError.message.includes("Sender wallet not found")) return err("Wallet not found for this currency");
+      return err(rpcError.message || "Transfer failed", 500);
+    }
+
+    const receiverName = receiverProfile.full_name || receiverProfile.username || "Unknown";
 
     return ok({
       success: true,
-      transfer_id: transferId,
+      transfer_id: result?.transfer_id,
+      duplicate: result?.duplicate || false,
       amount,
       currency,
       receiver_name: receiverName,
@@ -197,53 +164,3 @@ serve(async (req) => {
     return err(e instanceof Error ? e.message : "Transfer failed", 500);
   }
 });
-
-// ── Helper: get or create wallet for user ──
-async function getOrCreateWallet(sb: any, userId: string, currency: string) {
-  const { data: existing } = await sb
-    .from("wallet_accounts")
-    .select("*")
-    .eq("owner_user_id", userId)
-    .eq("currency", currency)
-    .limit(1)
-    .maybeSingle();
-
-  if (existing) return existing;
-
-  const { data: created, error } = await sb
-    .from("wallet_accounts")
-    .insert({
-      owner_user_id: userId,
-      currency,
-      account_type: "fiat",
-      balance: 0,
-      available_balance: 0,
-      pending_balance: 0,
-      status: "active",
-    })
-    .select("*")
-    .single();
-
-  if (error) return null;
-  return created;
-}
-
-// ── Helper: recompute balance from ledger (authoritative) ──
-async function recomputeBalance(sb: any, walletAccountId: string) {
-  const { data: entries } = await sb
-    .from("wallet_ledger_entries")
-    .select("amount, direction, status")
-    .eq("wallet_account_id", walletAccountId)
-    .eq("status", "posted");
-
-  const balance = (entries ?? []).reduce((sum: number, row: any) => {
-    const dir = row.direction === "in" || row.direction === "credit" ? 1 : -1;
-    return sum + dir * Number(row.amount ?? 0);
-  }, 0);
-
-  await sb.from("wallet_accounts").update({
-    balance,
-    available_balance: balance,
-    updated_at: new Date().toISOString(),
-  }).eq("id", walletAccountId);
-}

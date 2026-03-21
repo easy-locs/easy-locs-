@@ -19,7 +19,7 @@ export default function QrPayResolver() {
   const type = params.get("t"); // user | shop | request
   const id = params.get("id");
   const amount = params.get("a") ? Number(params.get("a")) : undefined;
-  const currency = params.get("c") || "AED";
+  const currency = params.get("c") || params.get("currency") || "AED";
   const name = params.get("n") || "";
 
   useEffect(() => {
