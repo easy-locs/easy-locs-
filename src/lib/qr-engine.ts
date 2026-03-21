@@ -19,6 +19,9 @@ export type QrAction =
   | "pay_shop"          // pay a shop / storefront
   | "payment_request"   // fulfill a payment request
   | "receive"           // show "receive money" QR (my wallet)
+  /* ── POS / Commerce ────────────────────────── */
+  | "menu"              // open shop menu (restaurant QR)
+  | "pos_order"         // table / counter / dine-in order
   /* ── Identity ─────────────────────────────── */
   | "profile"           // open user profile
   | "add_contact"       // add as contact
