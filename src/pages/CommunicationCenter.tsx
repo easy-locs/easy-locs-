@@ -341,7 +341,7 @@ export const CommunicationCenter = () => {
       )}
 
       {showNewConversation && (
-        <AddContactByEmail onClose={() => setShowNewConversation(false)} />
+        <AddContactByEmail onSaved={() => setShowNewConversation(false)} />
       )}
     </>
   );
