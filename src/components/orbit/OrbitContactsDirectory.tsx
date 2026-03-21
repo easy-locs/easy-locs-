@@ -4,6 +4,7 @@
 import { useState, useEffect, useMemo, memo, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useCall } from "@/components/call/CallProvider";
 import { useNavigate } from "react-router-dom";
 import { Search, MessageCircle, Phone, CreditCard, Store, Star, Clock, Users, User } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -221,10 +222,24 @@ export default function OrbitContactsDirectory() {
     }
   }, [user, orgId, navigate]);
 
-  const handleCall = useCallback((contact: OrbitContact) => {
+  const { startCall, isInCall, isStartingCall } = useCall();
+
+  const handleCall = useCallback(async (contact: OrbitContact) => {
     if (!contact.contact_user_id) { toast.info("Cannot call this contact yet"); return; }
-    navigate(`/dashboard/communication?section=calls&target=${contact.contact_user_id}`);
-  }, [navigate]);
+    if (isInCall || isStartingCall) { toast.info("Already in a call"); return; }
+    haptic("medium");
+    try {
+      await startCall({
+        orgId: contact.contact_user_id,
+        peerName: contact.name,
+        contextType: "contact",
+        contextId: contact.id,
+        isVideo: false,
+      });
+    } catch {
+      toast.error("Failed to start call");
+    }
+  }, [startCall, isInCall, isStartingCall]);
 
   const handlePay = useCallback((contact: OrbitContact) => {
     if (!contact.contact_user_id) return;
