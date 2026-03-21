@@ -1,7 +1,7 @@
 /**
  * create-storefront-checkout — Backend-validated storefront order + Stripe checkout session.
  * 1. Validates shop, items, prices against catalog_items
- * 2. Creates order in storefront_orders with pending_payment
+ * 2. Creates order ATOMICALLY via RPC (order + items + status history)
  * 3. Creates Stripe checkout session linked to order
  * 4. Returns checkout URL
  */
@@ -128,14 +128,12 @@ serve(async (req) => {
 
     log("Items validated", { count: validatedItems.length, subtotal, total, currency });
 
-    // ── Create order ──
-    const orderPayload: Record<string, any> = {
+    // ── Create order ATOMICALLY via RPC ──
+    const orderPayload = {
       shop_id: shop.id,
       seller_id: shop.user_id,
       buyer_id: user.id,
       buyer_email: user.email || null,
-      status: "pending_payment",
-      payment_status: "pending",
       payment_method: "card",
       subtotal,
       delivery_fee: deliveryFee,
@@ -149,35 +147,24 @@ serve(async (req) => {
       requires_delivery: fulfillmentType === "delivery",
       idempotency_key: idempotencyKey || null,
       table_code: tableCode || null,
+      fulfillment_type: fulfillmentType,
     };
 
-    const { data: order, error: orderErr } = await admin
-      .from("storefront_orders")
-      .insert(orderPayload)
-      .select("id")
-      .single();
-
-    if (orderErr) throw new Error(`Order creation failed: ${orderErr.message}`);
-    log("Order created", { orderId: order.id });
-
-    // ── Insert order items ──
-    const itemRows = validatedItems.map((vi) => ({ ...vi, order_id: order.id }));
-    const { error: itemsErr } = await admin.from("storefront_order_items").insert(itemRows);
-    if (itemsErr) log("Items insert error (non-fatal)", { error: itemsErr.message });
-
-    // ── Status history ──
-    await admin.from("order_status_history").insert({
-      order_id: order.id,
-      status: "pending_payment",
-      actor_type: "customer",
-      actor_id: user.id,
+    const { data: rpcResult, error: rpcErr } = await admin.rpc("create_storefront_order_atomic", {
+      p_order: orderPayload,
+      p_items: validatedItems,
     });
+
+    if (rpcErr) throw new Error(`Atomic order creation failed: ${rpcErr.message}`);
+    const orderId = rpcResult?.order_id;
+    if (!orderId) throw new Error("Order creation returned no ID");
+    log("Order created atomically", { orderId });
 
     // ── Create Stripe checkout session ──
     const stripeKey = (Deno.env.get("STRIPE_SECRET_KEY") || "").replace(/[^\x20-\x7E]/g, "").trim();
     if (!stripeKey) {
       // No Stripe configured — return order only (for wallet/cash flows)
-      return new Response(JSON.stringify({ orderId: order.id, checkoutUrl: null }), {
+      return new Response(JSON.stringify({ orderId, checkoutUrl: null }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
@@ -199,25 +186,25 @@ serve(async (req) => {
       })),
       metadata: {
         type: "storefront_order",
-        order_id: order.id,
+        order_id: orderId,
         shop_id: shop.id,
         buyer_id: user.id,
         seller_id: shop.user_id,
       },
-      success_url: `${origin}/order/${order.id}?payment=success`,
-      cancel_url: `${origin}/order/${order.id}?payment=cancelled`,
+      success_url: `${origin}/order/${orderId}?payment=success`,
+      cancel_url: `${origin}/order/${orderId}?payment=cancelled`,
     });
 
     // Store stripe session on order
     await admin
       .from("storefront_orders")
       .update({ stripe_session_id: session.id })
-      .eq("id", order.id);
+      .eq("id", orderId);
 
     log("Checkout session created", { sessionId: session.id, url: session.url });
 
     return new Response(
-      JSON.stringify({ orderId: order.id, checkoutUrl: session.url }),
+      JSON.stringify({ orderId, checkoutUrl: session.url }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   } catch (e: any) {
