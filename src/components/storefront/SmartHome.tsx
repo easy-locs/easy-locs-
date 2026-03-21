@@ -5,7 +5,7 @@
 import { memo, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Search, MapPin, Bell, Wallet, QrCode, Send, ChevronRight, Star, Clock } from "lucide-react";
-import { useGeolocation } from "@/hooks/useGeolocation";
+import { useLocationStore } from "@/stores/locationStore";
 import { useOrbitEngine } from "@/stores/orbit-engine";
 import { getSmartCategories, getSmartHero, getTimeGreeting, getSmartSections, getTimeSlot, type SmartCategory } from "@/lib/smart-home-engine";
 import { motion } from "framer-motion";
