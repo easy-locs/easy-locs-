@@ -61,108 +61,94 @@ export function CallProvider({ children }: { children: ReactNode }) {
   // Keep ref in sync for use in realtime closures
   useEffect(() => { incomingCallIdRef.current = incomingCallId; }, [incomingCallId]);
 
-  // Listen for incoming calls (calls where user's org or user ID is the receiver)
+  // Listen for incoming calls via Supabase Realtime on call_logs
+  const channelRef = useRef<any>(null);
+
   useEffect(() => {
     if (!user) return;
 
-    const setupListener = async () => {
-      const receiverIds = new Set([user.id]);
+    // Clean up previous channel synchronously to prevent race
+    if (channelRef.current) {
+      supabase.removeChannel(channelRef.current);
+      channelRef.current = null;
+    }
 
-      console.log("[CallProvider] incoming listener setup", {
-        userId: user.id,
-        receiverIds: Array.from(receiverIds),
+    console.log("[CallProvider] incoming listener setup", {
+      userId: user.id,
+      receiverIds: [user.id],
+    });
+
+    const channel = supabase
+      .channel(`incoming-calls-${user.id}-${Date.now()}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "call_logs",
+          filter: `receiver_orbit_id=eq.${user.id}`,
+        },
+        async (payload) => {
+          try {
+            const call = payload.new as any;
+            console.log("[CallProvider] realtime INSERT received", { callId: call?.id, status: call?.status, receiver: call?.receiver_orbit_id });
+            if (!call || call.status !== "ringing") return;
+            if (call.caller_orbit_id === user.id) return; // skip self
+
+            const { data: profile } = await supabase
+              .from("profiles")
+              .select("name, email")
+              .eq("id", call.caller_orbit_id)
+              .single();
+
+            setIncomingCallId(call.id);
+            setIncomingCallerName(profile?.name || profile?.email || "User");
+            setIncomingContextLabel("");
+            setIncomingIsVideo(call.call_type === "video");
+            setIncomingOrgId(call.receiver_orbit_id || "");
+            setIncomingThreadId(call.conversation_id || null);
+            setShowIncoming(true);
+
+            console.log("[CallProvider] incoming popup SHOWN", { callId: call.id });
+          } catch (err) {
+            console.error("[CallProvider] incoming handler error:", err);
+          }
+        }
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "call_logs",
+          filter: `receiver_orbit_id=eq.${user.id}`,
+        },
+        (payload) => {
+          try {
+            console.log("[CallProvider] realtime UPDATE received", payload.new);
+            const call = payload.new as any;
+            if (call && call.status !== "ringing" && call.id === incomingCallIdRef.current) {
+              setShowIncoming(false);
+              setIncomingCallId(null);
+            }
+          } catch (err) {
+            console.error("[CallProvider] update handler error:", err);
+          }
+        }
+      )
+      .subscribe((status, err) => {
+        console.log("[CallProvider] realtime subscription status:", status, err ? `error: ${err.message}` : "");
       });
 
-      const channel = supabase
-        .channel(`incoming-calls-${user.id}`)
-        .on(
-          "postgres_changes",
-          { event: "INSERT", schema: "public", table: "call_logs" },
-          async (payload) => {
-            try {
-              const call = payload.new as any;
-              console.log("[CallProvider] realtime event INSERT", payload);
-              if (!call) {
-                console.warn("[CallProvider] missing condition: payload.new is empty");
-                return;
-              }
+    channelRef.current = channel;
 
-              if (call.caller_orbit_id === user.id) {
-                console.warn("[CallProvider] missing condition: skipped self-originated call", { callId: call.id });
-                return;
-              }
-
-              if (call.status !== "ringing") {
-                console.warn("[CallProvider] missing condition: call status is not ringing", { callId: call.id, status: call.status });
-                return;
-              }
-
-              if (!receiverIds.has(call.receiver_orbit_id)) {
-                console.warn("[CallProvider] missing condition: receiver_orbit_id did not match authenticated user_id", {
-                  callId: call.id,
-                  receiverOrbitId: call.receiver_orbit_id,
-                  expectedUserId: user.id,
-                });
-                return;
-              }
-
-              const { data: profile } = await supabase
-                .from("profiles")
-                .select("name, email")
-                .eq("id", call.caller_orbit_id)
-                .single();
-
-              setIncomingCallId(call.id);
-              setIncomingCallerName(profile?.name || profile?.email || "User");
-              setIncomingContextLabel("");
-              setIncomingIsVideo(call.call_type === "video");
-              setIncomingOrgId(call.receiver_orbit_id || "");
-              setIncomingThreadId(call.conversation_id || null);
-              setShowIncoming(true);
-
-              console.log("[CallProvider] incoming popup SHOWN", {
-                callId: call.id,
-                callerName: profile?.name || profile?.email || "User",
-              });
-            } catch (err) {
-              console.error("[CallProvider] incoming call handler error:", err);
-            }
-          }
-        )
-        .on(
-          "postgres_changes",
-          { event: "UPDATE", schema: "public", table: "call_logs" },
-          (payload) => {
-            try {
-              console.log("[CallProvider] realtime event UPDATE", payload);
-              const call = payload.new as any;
-              if (!call) {
-                console.warn("[CallProvider] missing condition: update payload.new is empty");
-                return;
-              }
-              if (call && call.status !== "ringing" && call.id === incomingCallIdRef.current) {
-                setShowIncoming(false);
-                setIncomingCallId(null);
-              }
-            } catch (err) {
-              console.error("[CallProvider] call update handler error:", err);
-            }
-          }
-        )
-        .subscribe((status) => {
-          console.log("[CallProvider] realtime subscription status:", status);
-        });
-
-      return () => {
-        supabase.removeChannel(channel);
-      };
-    };
-
-    const cleanup = setupListener();
     return () => {
-      cleanup.then((fn) => fn?.()).catch(() => {});
+      if (channelRef.current) {
+        supabase.removeChannel(channelRef.current);
+        channelRef.current = null;
+      }
     };
-  }, [user]);
+  }, [user?.id]);
 
   const startCall = useCallback(
     async (opts: {
