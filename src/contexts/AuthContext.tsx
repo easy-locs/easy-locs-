@@ -11,6 +11,7 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
+  profileLoaded: boolean;
   emailVerified: boolean;
   orgId: string | null;
   allOrgs: { id: string; name: string; country: string; currency: string }[];
