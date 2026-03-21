@@ -1,10 +1,12 @@
 import { useDeliveryStore } from "@/stores/deliveryStore";
-import { useGeoStore } from "@/stores/geoStore";
+import { useLocationStore } from "@/stores/locationStore";
 import { Package } from "lucide-react";
 
 export function CreateDeliveryPanel() {
-  const geo = useGeoStore((s) => s.currentPosition);
+  const currentLocation = useLocationStore((s) => s.currentLocation);
   const createJob = useDeliveryStore((s) => s.createJob);
+  const lat = currentLocation?.lat ?? 25.2048;
+  const lng = currentLocation?.lng ?? 55.2708;
 
   return (
     <div className="space-y-3 p-4 rounded-xl bg-card border border-border">
