@@ -1,15 +1,17 @@
 /**
  * NotificationCenter — Production notification center UI.
  * Reads from unifiedNotificationStore, supports read/unread, deep links, categories.
+ * Authoritative source: `notifications` table via unifiedNotificationStore.
  */
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUnifiedNotificationStore } from "@/stores/unifiedNotificationStore";
 import { resolveDeepLink } from "@/lib/notifications/deepLinks";
+import { useI18n } from "@/lib/i18n";
 import { motion } from "framer-motion";
 import {
-  Bell, BellOff, Check, CheckCheck,
+  Bell, BellOff, CheckCheck,
   CreditCard, MessageSquare, Phone, ShoppingBag, Building2, Shield, Zap,
 } from "lucide-react";
 
@@ -27,6 +29,7 @@ const CATEGORY_ICONS: Record<string, typeof Bell> = {
 export default function NotificationCenter() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { t } = useI18n();
   const store = useUnifiedNotificationStore();
 
   useEffect(() => {
@@ -51,8 +54,12 @@ export default function NotificationCenter() {
             ←
           </button>
           <div>
-            <h1 className="text-lg font-bold text-foreground">Notifications</h1>
-            <p className="text-xs text-muted-foreground">{unread > 0 ? `${unread} unread` : "All caught up"}</p>
+            <h1 className="text-lg font-bold text-foreground">{t("notifications.title") || "Notifications"}</h1>
+            <p className="text-xs text-muted-foreground">
+              {unread > 0
+                ? `${unread} ${t("notifications.unread") || "unread"}`
+                : t("notifications.all_caught_up") || "All caught up"}
+            </p>
           </div>
         </div>
         {unread > 0 && (
@@ -61,7 +68,7 @@ export default function NotificationCenter() {
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-xs font-medium active:scale-95 transition-transform"
           >
             <CheckCheck className="h-3.5 w-3.5" />
-            Mark all read
+            {t("notifications.mark_all_read") || "Mark all read"}
           </button>
         )}
       </header>
@@ -79,8 +86,8 @@ export default function NotificationCenter() {
         {!store.loading && store.notifications.length === 0 && (
           <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
             <BellOff className="h-10 w-10 mb-3 opacity-30" />
-            <p className="text-sm font-medium">No notifications yet</p>
-            <p className="text-xs">Important updates will appear here</p>
+            <p className="text-sm font-medium">{t("notifications.empty_title") || "No notifications yet"}</p>
+            <p className="text-xs">{t("notifications.empty_description") || "Important updates will appear here"}</p>
           </div>
         )}
 
