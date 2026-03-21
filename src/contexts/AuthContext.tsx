@@ -167,6 +167,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         supabase.from("profiles").update({ onboarding_completed: true }).eq("id", userId).then(() => {});
       }
       setOnboardingCompleted(onboardingDone);
+      setProfileLoaded(true);
 
       const savedRole = (() => {
         try {
