@@ -77,26 +77,26 @@ async function checkRtcConfig(): Promise<RuntimeAuditCheck> {
 
 async function checkCallTables(): Promise<RuntimeAuditCheck> {
   try {
-    const [sessions, signals] = await Promise.all([
-      (supabase as any).from("orbit_call_sessions").select("id", { head: true, count: "exact" }).limit(1),
-      (supabase as any).from("orbit_call_signals").select("id", { head: true, count: "exact" }).limit(1),
-    ]);
-    if (sessions.error) return fail("Call sessions table", "call_tables", sessions.error.message);
-    if (signals.error) return fail("Call signals table", "call_tables", signals.error.message);
-    return pass("Call signaling tables", "call_tables", "orbit_call_sessions + orbit_call_signals available");
+    const { error } = await (supabase as any)
+      .from("call_logs")
+      .select("id", { head: true, count: "exact" })
+      .limit(1);
+    if (error) return fail("Call logs table", "call_tables", error.message);
+    return pass("Call logs table", "call_tables", "call_logs reachable");
   } catch (e: any) {
-    return fail("Call signaling tables", "call_tables", e.message ?? "Unknown error");
+    return fail("Call logs table", "call_tables", e.message ?? "Unknown error");
   }
 }
 
 async function checkQrTables(): Promise<RuntimeAuditCheck> {
   try {
     const { error } = await (supabase as any)
-      .from("qr_order_targets")
+      .from("qr_targets")
       .select("id", { head: true, count: "exact" })
       .limit(1);
+    console.log("QR audit result", { error: error?.message ?? null, table: "qr_targets" });
     if (error) return fail("QR targets table", "qr_table", error.message);
-    return pass("QR targets table", "qr_table", "qr_order_targets reachable");
+    return pass("QR targets table", "qr_table", "qr_targets reachable");
   } catch (e: any) {
     return fail("QR targets table", "qr_table", e.message ?? "Unknown error");
   }
