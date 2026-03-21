@@ -1,55 +1,56 @@
 /**
- * Unified Wallet Hooks — useWalletBalance, useWalletTransactions, walletTransfer
- * Uses wallet_balances_v2 + unified_wallet_transactions + wallet_transfer RPC.
+ * Unified Wallet Hooks — SINGLE AUTHORITATIVE FIAT ENGINE
+ * Data model: wallet_accounts + wallet_ledger_entries + unified_wallet_transactions
+ * All balance reads, transfers, and history come from HERE.
  */
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 
-/* ── Balance hook ──────────────────────────────────────────── */
+/* ── Balance hook (reads wallet_accounts) ──────────────────── */
 export function useWalletBalance() {
   const { user } = useAuth();
   const [balance, setBalance] = useState(0);
   const [currency, setCurrency] = useState("AED");
   const [loading, setLoading] = useState(true);
+  const [accountId, setAccountId] = useState<string | null>(null);
+
+  const load = useCallback(async () => {
+    if (!user?.id) { setLoading(false); return; }
+    setLoading(true);
+    const { data } = await supabase
+      .from("wallet_accounts")
+      .select("id, balance, currency")
+      .eq("owner_user_id", user.id)
+      .eq("status", "active")
+      .order("created_at", { ascending: true })
+      .limit(1)
+      .maybeSingle();
+    setBalance(data?.balance ?? 0);
+    setCurrency(data?.currency || "AED");
+    setAccountId(data?.id ?? null);
+    setLoading(false);
+  }, [user?.id]);
 
   useEffect(() => {
-    if (!user?.id) { setLoading(false); return; }
-    let mounted = true;
-
-    async function load() {
-      setLoading(true);
-      const { data } = await (supabase as any)
-        .from("wallet_balances_v2")
-        .select("balance, currency")
-        .eq("user_id", user!.id)
-        .maybeSingle();
-      if (mounted) {
-        setBalance(data?.balance ?? 0);
-        setCurrency(data?.currency || "AED");
-        setLoading(false);
-      }
-    }
-
     load();
-
+    if (!user?.id) return;
     const channel = supabase
       .channel(`wb-${user.id}`)
       .on("postgres_changes", {
         event: "*",
         schema: "public",
-        table: "wallet_balances_v2",
-        filter: `user_id=eq.${user.id}`,
+        table: "wallet_accounts",
+        filter: `owner_user_id=eq.${user.id}`,
       }, () => load())
       .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [user?.id, load]);
 
-    return () => { mounted = false; supabase.removeChannel(channel); };
-  }, [user?.id]);
-
-  return { balance, currency, loading };
+  return { balance, currency, loading, accountId, reload: load };
 }
 
-/* ── Transactions hook ─────────────────────────────────────── */
+/* ── Transactions hook (reads unified_wallet_transactions) ── */
 export interface UnifiedTx {
   id: string;
   created_at: string;
@@ -86,7 +87,6 @@ export function useWalletTransactions(limit = 50) {
   useEffect(() => {
     if (!user?.id) { setLoading(false); return; }
     load();
-
     const channel = supabase
       .channel(`wtx-${user.id}`)
       .on("postgres_changes", {
@@ -95,11 +95,19 @@ export function useWalletTransactions(limit = 50) {
         table: "unified_wallet_transactions",
       }, () => load())
       .subscribe();
-
     return () => { supabase.removeChannel(channel); };
   }, [user?.id, load]);
 
-  return { items, loading, reload: load };
+  /** Today's outgoing transfer total */
+  const todaySpent = useMemo(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return items
+      .filter((tx) => tx.sender_id === user?.id && tx.status === "completed" && new Date(tx.created_at) >= today)
+      .reduce((sum, tx) => sum + tx.amount, 0);
+  }, [items, user?.id]);
+
+  return { items, loading, reload: load, todaySpent };
 }
 
 /* ── Transfer function (calls atomic RPC) ──────────────────── */
