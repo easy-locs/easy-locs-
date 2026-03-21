@@ -178,7 +178,7 @@ const CountryWorkspace = safeLazy(() => import("./pages/CountryWorkspace"), "Cou
 // Orbit App Shell & Home
 const OrbitAppShell = safeLazy(() => import("./components/orbit/OrbitAppShell"), "OrbitAppShell");
 const OrbitHome = safeLazy(() => import("./pages/OrbitHome"), "OrbitHome");
-const WalletHub = safeLazy(() => import("./pages/WalletHub"), "WalletHub");
+const WalletHub = safeLazy(() => import("./pages/WalletHubPage"), "WalletHubPage");
 const AddProperty = safeLazy(() => import("./pages/AddProperty"), "AddProperty");
 const PropertyDetailHub = safeLazy(() => import("./pages/PropertyDetailHub"), "PropertyDetailHub");
 const CreateListing = safeLazy(() => import("./pages/CreateListing"), "CreateListing");
@@ -324,7 +324,7 @@ const AdminOutreachPage = safeLazy(() => import("./pages/AdminOutreachPage"), "A
 const MerchantPosPage = safeLazy(() => import("./pages/MerchantPosPage"), "MerchantPosPage");
 const MerchantKitchenPage = safeLazy(() => import("./pages/MerchantKitchenPage"), "MerchantKitchenPage");
 const MerchantOrdersPage = safeLazy(() => import("./pages/MerchantOrdersPage"), "MerchantOrdersPage");
-const WalletCommerceTestPage = safeLazy(() => import("./pages/WalletCommerceTestPage"), "WalletCommerceTestPage");
+// WalletCommerceTestPage removed — legacy test page
 const AdminWalletDiagnosticsPage = safeLazy(() => import("./pages/AdminWalletDiagnosticsPage"), "AdminWalletDiagnosticsPage");
 const AdminDispatchDiagnosticsPage = safeLazy(() => import("./pages/AdminDispatchDiagnosticsPage"), "AdminDispatchDiagnosticsPage");
 const AdminAutomationsPage = safeLazy(() => import("./pages/AdminAutomationsPage"), "AdminAutomationsPage");
@@ -669,7 +669,7 @@ const AdminMerchantSegmentsPage = safeLazy(() => import("./pages/admin/AdminMerc
 const V1CheckoutBridgePage = safeLazy(() => import("./pages/v1/V1CheckoutBridgePage"), "V1CheckoutBridgePage");
 const V1RideSendPackagePage = safeLazy(() => import("./pages/v1/V1RideSendPackagePage"), "V1RideSendPackagePage");
 // V1 Block 6-7: wallet, notifications, profile, achille, restaurant, home/menu routes
-const V1WalletHubPage = safeLazy(() => import("./pages/v1/V1WalletHubPage"), "V1WalletHubPage");
+// V1WalletHubPage removed — legacy redirect
 const V1NotificationsPage = safeLazy(() => import("./pages/v1/V1NotificationsPage"), "V1NotificationsPage");
 const V1ProfileSettingsPage = safeLazy(() => import("./pages/v1/V1ProfileSettingsPage"), "V1ProfileSettingsPage");
 const V1HomeRoute = safeLazy(() => import("./pages/v1/V1HomeRoute"), "V1HomeRoute");
@@ -1109,7 +1109,7 @@ const App = () => (
               <Route path="/merchant/pos" element={<ProtectedRoute><MerchantPosPage /></ProtectedRoute>} />
               <Route path="/merchant/kitchen" element={<ProtectedRoute><MerchantKitchenPage /></ProtectedRoute>} />
               <Route path="/merchant/orders" element={<ProtectedRoute><MerchantOrdersPage /></ProtectedRoute>} />
-              <Route path="/admin/wallet-test" element={<ProtectedRoute><WalletCommerceTestPage /></ProtectedRoute>} />
+              {/* /admin/wallet-test removed — legacy test page */}
               <Route path="/admin/wallet-diagnostics" element={<ProtectedRoute><AdminWalletDiagnosticsPage /></ProtectedRoute>} />
               <Route path="/admin/dispatch-diagnostics" element={<ProtectedRoute><AdminDispatchDiagnosticsPage /></ProtectedRoute>} />
               <Route path="/admin/automations" element={<ProtectedRoute><AdminAutomationsPage /></ProtectedRoute>} />
@@ -1411,7 +1411,7 @@ const App = () => (
                 <Route path="/v1/send-package" element={<ProtectedRoute><V1RideSendPackagePage type="package" /></ProtectedRoute>} />
                 <Route path="/v1/home" element={<V1HomeRoute />} />
                 <Route path="/v1/menu" element={<V1MenuRoute />} />
-                <Route path="/v1/wallet" element={<ProtectedRoute><V1WalletHubPage /></ProtectedRoute>} />
+                <Route path="/v1/wallet" element={<Navigate to="/wallet" replace />} />
                 <Route path="/v1/notifications" element={<ProtectedRoute><V1NotificationsPage /></ProtectedRoute>} />
                 <Route path="/v1/profile" element={<ProtectedRoute><V1ProfileSettingsPage /></ProtectedRoute>} />
                 <Route path="/v1/achille" element={<V1AchillePage />} />
