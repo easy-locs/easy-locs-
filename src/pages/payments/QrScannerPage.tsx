@@ -419,10 +419,26 @@ export default function QrScannerPage() {
         else await startWith({ facingMode: { ideal: "environment" } }, "facingMode");
       } catch (primaryErr) {
         console.warn("[QrScannerPage] primary scanner config failed, trying fallback", primaryErr);
-        await Promise.resolve(scanner.clear()).catch(() => {});
-        scannerRef.current = scanner;
-        await wait(ios ? 250 : 100);
-        await startWith({ facingMode: "environment" }, "fallback");
+        try {
+          await Promise.resolve(scanner.clear()).catch(() => {});
+          scannerRef.current = scanner;
+          await wait(ios ? 250 : 100);
+          await startWith({ facingMode: "environment" }, "fallback");
+        } catch (fallbackErr) {
+          // All camera configs failed — go straight to upload fallback
+          console.error("[QrScannerPage] all camera configs failed", fallbackErr);
+          resetRuntimeFlags();
+          const fbMsg = fallbackErr instanceof Error ? fallbackErr.message : "Camera unavailable";
+          if (mountedRef.current) {
+            setCameraPermission("unsupported");
+            setStartStatus("fail");
+            setStartErrorMessage(fbMsg);
+            setCameraUnavailableReason(fbMsg);
+            setErrorSafe("Camera unavailable — use Upload QR image below.");
+            setStateSafe("error");
+          }
+          return; // exit cleanly, upload fallback is visible
+        }
       }
 
       if (!mountedRef.current || opRef.current !== startOp) { await clearScannerInstance("stale", false); return; }

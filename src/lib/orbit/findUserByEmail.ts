@@ -1,6 +1,9 @@
+/**
+ * findUserByEmail — Resolves email to user identity.
+ * Uses public.profiles (authoritative identity source) instead of orbit_profiles_v2.
+ */
 import { supabase } from "@/integrations/supabase/client";
 
-// Use untyped client for orbit_profiles_v2 (not in auto-generated types)
 const db = supabase as any;
 
 export async function findUserByEmail(email: string) {
@@ -8,8 +11,8 @@ export async function findUserByEmail(email: string) {
   if (!normalizedEmail) return null;
 
   const { data, error } = await db
-    .from("orbit_profiles_v2")
-    .select("id, orbit_id, email, display_name, avatar_url")
+    .from("profiles")
+    .select("id, email, full_name, username, avatar_url")
     .ilike("email", normalizedEmail)
     .limit(1)
     .maybeSingle();
@@ -19,7 +22,16 @@ export async function findUserByEmail(email: string) {
     throw error;
   }
 
-  return data;
+  if (!data) return null;
+
+  // Normalize to the shape consumers expect
+  return {
+    id: data.id,
+    orbit_id: data.id, // profiles.id IS the user_id / orbit_id
+    email: data.email,
+    display_name: data.full_name || data.username || null,
+    avatar_url: data.avatar_url || null,
+  };
 }
 
 export async function searchUsersByEmail(query: string, limit = 10) {
@@ -27,8 +39,8 @@ export async function searchUsersByEmail(query: string, limit = 10) {
   if (!trimmed) return [];
 
   const { data, error } = await db
-    .from("orbit_profiles_v2")
-    .select("id, orbit_id, email, display_name, avatar_url")
+    .from("profiles")
+    .select("id, email, full_name, username, avatar_url")
     .ilike("email", `%${trimmed}%`)
     .limit(limit);
 
@@ -37,5 +49,11 @@ export async function searchUsersByEmail(query: string, limit = 10) {
     throw error;
   }
 
-  return data ?? [];
+  return (data ?? []).map((d: any) => ({
+    id: d.id,
+    orbit_id: d.id,
+    email: d.email,
+    display_name: d.full_name || d.username || null,
+    avatar_url: d.avatar_url || null,
+  }));
 }
