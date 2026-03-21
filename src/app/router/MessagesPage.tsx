@@ -8,7 +8,7 @@ import { sendTextMessage } from "@/lib/chat/messageService";
 import { AddContactByEmail } from "@/components/chat/AddContactByEmail";
 import { ConversationListPanel } from "@/components/chat/ConversationListPanel";
 import { ChatThreadPanel } from "@/components/chat/ChatThreadPanel";
-// IncomingCallModal + useCallRealtime removed — handled globally by CallOverlayV2
+// Call system: CallProvider is the single authoritative engine
 import { useConversationRealtime } from "@/hooks/useConversationRealtime";
 import { useConversationsRealtime } from "@/hooks/useConversationsRealtime";
 import { getConversationPeer } from "@/lib/chat/conversationUi";
