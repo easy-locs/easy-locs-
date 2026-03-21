@@ -84,7 +84,19 @@ export default function ExplorerMap() {
     map.addControl(new mapboxgl.NavigationControl({ showCompass: false }), "top-right");
     mapRef.current = map;
 
+    // Force resize after load to fix container sizing issues
+    map.on("load", () => {
+      map.resize();
+      console.log("[ExplorerMap] map loaded & resized");
+    });
+    map.on("error", (e) => {
+      console.error("[ExplorerMap] map error:", e.error?.message || e);
+    });
+    // Also resize after a short delay for layout settle
+    const resizeTimer = setTimeout(() => map.resize(), 300);
+
     return () => {
+      clearTimeout(resizeTimer);
       markersRef.current.forEach((m) => m.remove());
       markersRef.current = [];
       userMarkerRef.current?.remove();
@@ -197,8 +209,8 @@ export default function ExplorerMap() {
 
       {/* Map or List */}
       {viewMode === "map" ? (
-        <div className="flex-1 relative">
-          <div ref={mapContainerRef} className="absolute inset-0" />
+        <div className="flex-1 relative min-h-[300px]">
+          <div ref={mapContainerRef} className="absolute inset-0" style={{ minHeight: 300 }} />
 
           {/* Recenter */}
           <button
