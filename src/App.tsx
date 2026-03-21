@@ -56,6 +56,7 @@ import { V2AuthGate as V2AuthGateWrapper } from "@/components/system/V2AuthGate"
 import { AuthGate as V2AuthGate } from "@/components/guards/AuthGate";
 import { AppInit as V2AppInit } from "@/components/system/AppInit";
 const V2AuthPage = safeLazy(() => import("./app/router/AuthPage"), "V2AuthPage");
+const ClaimPage = safeLazy(() => import("./pages/ClaimPage"), "ClaimPage");
 
 
 function safeLazy(factory: () => Promise<{ default: ComponentType<any> }>, name: string) {
@@ -815,6 +816,7 @@ const App = () => (
               <Route path="/qr/pay/:code" element={<QrPayResolver />} />
               <Route path="/qr/:code" element={<QrResolvePage />} />
               <Route path="/qr/entry/:targetCode" element={<QrEntryPage />} />
+              <Route path="/claim/:token" element={<ClaimPage />} />
 
               {/* V7 Public pillars */}
               {/* Redirects */}
