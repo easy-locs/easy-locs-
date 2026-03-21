@@ -209,8 +209,8 @@ export default function ExplorerMap() {
 
       {/* Map or List */}
       {viewMode === "map" ? (
-        <div className="flex-1 relative">
-          <div ref={mapContainerRef} className="absolute inset-0" />
+        <div className="flex-1 relative min-h-[300px]">
+          <div ref={mapContainerRef} className="absolute inset-0" style={{ minHeight: 300 }} />
 
           {/* Recenter */}
           <button
