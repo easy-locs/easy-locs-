@@ -6,6 +6,8 @@ import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Camera, CameraOff, RefreshCcw, CheckCircle2, ScanLine, QrCode } from "lucide-react";
 import { Html5Qrcode } from "html5-qrcode";
 import { decodeQr, resolveRoute, isExpired, type UniversalQrPayload } from "@/lib/qr-engine";
+import { playScanBeep } from "@/lib/calls/call-ringtone";
+import { haptic } from "@/lib/haptics";
 import { resolvePayTarget, type ResolvedPayTarget } from "@/lib/wallet/resolvePayTarget";
 import { supabase } from "@/integrations/supabase/client";
 import { useUnifiedPayment } from "@/payments/UnifiedPaymentSystem";
@@ -211,6 +213,9 @@ export default function QrScannerPage() {
         await scanner.start(cfg, scanConfig, async (text) => {
           if (!mountedRef.current || handledRef.current) return;
           handledRef.current = true;
+          // Premium scan feedback — beep + haptic
+          playScanBeep();
+          haptic("success");
           setLastText(text);
           await clearScannerInstance("decode", false);
           await handleQrResult(text);
