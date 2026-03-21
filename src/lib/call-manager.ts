@@ -184,9 +184,14 @@ export class CallManager {
     await this.setupMedia(isVideo);
 
     // Update call_logs status
+    const nowIso = new Date().toISOString();
     const { data: activatedRow, error: activatedError } = await supabase
       .from("call_logs")
-      .update({ status: "active", started_at: new Date().toISOString() } as any)
+      .update({
+        status: "active",
+        started_at: nowIso,
+        answered_at: nowIso,
+      } as any)
       .eq("id", this.callId)
       .select("id,status,started_at")
       .maybeSingle();
