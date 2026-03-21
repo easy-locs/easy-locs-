@@ -1289,3 +1289,114 @@ async function handleListingBoost(supabase: any, session: Stripe.Checkout.Sessio
 
   logStep("Listing boost complete", { listingId, boostTier, boostExpiry });
 }
+
+/* ── Handle storefront order payment (webhook-confirmed) ── */
+async function handleStorefrontOrderPayment(supabase: any, session: Stripe.Checkout.Session) {
+  const meta = session.metadata || {};
+  const orderId = meta.order_id;
+  const shopId = meta.shop_id;
+  const buyerId = meta.buyer_id;
+  const sellerId = meta.seller_id;
+  const paymentIntentId = (session.payment_intent as string) || session.id;
+
+  if (!orderId) {
+    logStep("storefront_order: no order_id in metadata, skipping");
+    return;
+  }
+
+  logStep("Processing storefront_order payment", { orderId, shopId });
+
+  // ── Idempotency: check if already paid ──
+  const { data: order } = await supabase
+    .from("storefront_orders")
+    .select("id, payment_status, status, total, currency, seller_id")
+    .eq("id", orderId)
+    .single();
+
+  if (!order) {
+    logStep("storefront_order: order not found", { orderId });
+    return;
+  }
+
+  if (order.payment_status === "secured" || order.payment_status === "released") {
+    logStep("storefront_order: already paid, idempotent skip", { orderId });
+    return;
+  }
+
+  // ── Mark order as paid ──
+  const { error: updateErr } = await supabase
+    .from("storefront_orders")
+    .update({
+      payment_status: "secured",
+      status: "accepted",
+      stripe_payment_intent_id: paymentIntentId,
+      stripe_session_id: session.id,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", orderId);
+
+  if (updateErr) {
+    logStep("storefront_order: update failed", { error: updateErr.message });
+    return;
+  }
+
+  logStep("storefront_order: marked paid", { orderId });
+
+  // ── Status history ──
+  await supabase.from("order_status_history").insert({
+    order_id: orderId,
+    status: "accepted",
+    actor_type: "system",
+    actor_id: null,
+    notes: "Payment confirmed via Stripe webhook",
+  });
+
+  // ── Payment event record (idempotent) ──
+  await supabase.from("payment_events").insert({
+    event_type: "payment_succeeded",
+    provider: "stripe",
+    provider_event_id: session.id,
+    entity_type: "storefront_order",
+    entity_id: orderId,
+    amount: Number(order.total || 0),
+    currency: order.currency || "EUR",
+    metadata_json: { payment_intent: paymentIntentId, shop_id: shopId },
+    user_id: buyerId || null,
+  }).then(({ error }: any) => {
+    if (error) logStep("payment_event insert non-fatal", { error: error.message });
+  });
+
+  // ── Notify seller ──
+  if (sellerId || order.seller_id) {
+    const targetSeller = sellerId || order.seller_id;
+    await supabase.from("notifications").insert({
+      user_id: targetSeller,
+      type: "order_received",
+      title: "🛒 New paid order",
+      message: `Order #${orderId.slice(0, 8).toUpperCase()} — ${order.total} ${order.currency}`,
+      link: `/pos/${shopId}`,
+      priority: "high",
+      category: "order",
+    }).then(({ error }: any) => {
+      if (error) logStep("seller notif non-fatal", { error: error.message });
+    });
+  }
+
+  // ── Notify buyer ──
+  if (buyerId) {
+    await supabase.from("notifications").insert({
+      user_id: buyerId,
+      type: "payment_received",
+      title: "✅ Payment confirmed",
+      message: `Your order #${orderId.slice(0, 8).toUpperCase()} is confirmed`,
+      link: `/order/${orderId}`,
+      priority: "normal",
+      category: "order",
+    }).then(({ error }: any) => {
+      if (error) logStep("buyer notif non-fatal", { error: error.message });
+    });
+  }
+
+  logStep("storefront_order payment fully processed", { orderId });
+}
+
