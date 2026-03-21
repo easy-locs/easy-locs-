@@ -42,9 +42,8 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   }
 
   if (!user) return <Navigate to="/login" replace />;
-  if (!emailVerified) return <Navigate to="/verify-email" replace />;
 
-  // Wait for profile to load before making onboarding decision — prevents flicker
+  // Wait for profile to load before making ANY routing decision — prevents flicker
   if (!profileLoaded) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -53,7 +52,6 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     );
   }
 
-  if (!user) return <Navigate to="/login" replace />;
   if (!emailVerified) return <Navigate to="/verify-email" replace />;
 
   const isOnboarding = location.pathname === "/onboarding";

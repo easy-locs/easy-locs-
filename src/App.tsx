@@ -790,7 +790,7 @@ const App = () => (
            <NotificationsRealtimeGuard />
            <UpdateNotification />
                 <GeoBootstrap />
-             <AppBootstrapGuard />
+             <AppBootstrapGuardDirect />
            
            <SkipLink />
            <Suspense fallback={<PageLoader />}>
