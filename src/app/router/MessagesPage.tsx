@@ -8,8 +8,7 @@ import { sendTextMessage } from "@/lib/chat/messageService";
 import { AddContactByEmail } from "@/components/chat/AddContactByEmail";
 import { ConversationListPanel } from "@/components/chat/ConversationListPanel";
 import { ChatThreadPanel } from "@/components/chat/ChatThreadPanel";
-import { IncomingCallModal } from "@/components/call/IncomingCallModal";
-import { useCallRealtime } from "@/hooks/useCallRealtime";
+// IncomingCallModal + useCallRealtime removed — handled globally by CallOverlayV2
 import { useConversationRealtime } from "@/hooks/useConversationRealtime";
 import { useConversationsRealtime } from "@/hooks/useConversationsRealtime";
 import { getConversationPeer } from "@/lib/chat/conversationUi";
