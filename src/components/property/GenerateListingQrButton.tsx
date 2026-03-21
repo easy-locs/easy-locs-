@@ -1,22 +1,25 @@
 import { useQrPaymentStore } from "@/stores/qrPaymentStore";
+import { useAuth } from "@/contexts/AuthContext";
 
 export function GenerateListingQrButton(props: {
   amount: number;
   reference: string;
 }) {
-  const generateListingPaymentQr = useQrPaymentStore(
-    (s) => s.generateListingPaymentQr
-  );
+  const { user } = useAuth();
+  const generateReceiveQr = useQrPaymentStore((s) => s.generateReceiveQr);
 
   return (
     <button
       className="rounded-lg border border-border px-3 py-2 text-xs font-medium text-foreground hover:bg-muted transition-colors"
-      onClick={() =>
-        generateListingPaymentQr({
+      onClick={() => {
+        if (!user?.id) return;
+        generateReceiveQr({
+          userId: user.id,
           amount: props.amount,
-          reference: props.reference,
-        })
-      }
+          currency: "AED",
+          name: props.reference,
+        });
+      }}
     >
       Generate QR Payment
     </button>
