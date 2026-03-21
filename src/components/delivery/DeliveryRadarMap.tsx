@@ -1,10 +1,10 @@
 import { useEffect } from "react";
-import { useGeoStore } from "@/stores/geoStore";
+import { useLocationStore } from "@/stores/locationStore";
 import { useDriverStore } from "@/stores/driverStore";
 import { MapPin, Radio } from "lucide-react";
 
 export function DeliveryRadarMap() {
-  const geo = useGeoStore((s) => s.currentPosition);
+  const currentLocation = useLocationStore((s) => s.currentLocation);
   const drivers = useDriverStore((s) => s.drivers);
   const hydrate = useDriverStore((s) => s.hydrateDrivers);
 
