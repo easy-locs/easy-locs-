@@ -287,7 +287,30 @@ export default function OrbitHome() {
           )}
 
           {/* ─── WALLET PREVIEW ─── */}
-          <WalletPreviewInline onNavigate={handleNav} />
+          {(() => {
+            const { balance: wb, currency: wc, loading: wl } = useWalletBalance();
+            return (
+              <div className="px-4 space-y-2">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-sm font-bold text-foreground">Wallet</h2>
+                  <button onClick={() => handleNav("/wallet/hub")} className="text-xs font-semibold flex items-center gap-0.5 active:opacity-70" style={{ color: "hsl(var(--primary))" }}>
+                    Manage <ChevronRight className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+                <div className="rounded-2xl p-4 flex items-center justify-between" style={{ background: "hsl(var(--muted))" }}>
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: "hsl(var(--primary) / 0.1)" }}>
+                      <CreditCard className="w-5 h-5 text-primary" />
+                    </div>
+                    <div>
+                      <p className="text-lg font-black text-foreground">{wl ? "..." : `${wb.toFixed(2)} ${wc}`}</p>
+                      <p className="text-[10px] text-muted-foreground">Available balance</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
 
           {/* ─── MAP PREVIEW ─── */}
           <div className="px-4">
