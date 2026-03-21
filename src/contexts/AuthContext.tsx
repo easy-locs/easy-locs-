@@ -59,6 +59,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [profileLoaded, setProfileLoaded] = useState(false);
   const [orgId, setOrgId] = useState<string | null>(null);
   const [userType, setUserType] = useState<UserType>("landlord");
   const [userCountry, setUserCountry] = useState("FR");
