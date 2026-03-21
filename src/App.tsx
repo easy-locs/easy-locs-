@@ -31,6 +31,7 @@ import CountryGuard from "@/components/dashboard/CountryGuard";
 import { UnifiedPaymentProvider } from "@/payments/UnifiedPaymentSystem";
 import V1BootBridge from "@/app/V1BootBridge";
 import { useNotificationsStore } from "@/stores/notificationsStore";
+import AppBootstrapGuardDirect from "@/components/app/AppBootstrapGuard";
 
 // V2 test pages
 const V2TestPage = safeLazy(() => import("./app/router/V2TestPage"), "V2TestPage");
