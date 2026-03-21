@@ -201,9 +201,17 @@ export function resolveRoute(payload: UniversalQrPayload): string | null {
    5. LEGACY MIGRATION — backward-compatible with old QR codes
    ═══════════════════════════════════════════════════════════════ */
 
+/**
+ * Legacy migration — STRICT RULES:
+ * - Only map to pay_user if we have a verified userId field
+ * - Never map walletId into userId
+ * - receiver_id is only trusted if it's a UUID that is NOT a wallet_id pattern
+ * - Unresolvable payloads route to wallet/resolve deep link for server-side resolution
+ */
 function migrateLegacy(old: Record<string, any>): UniversalQrPayload | null {
   switch (old.type) {
     case "user_pay":
+      if (!old.userId) return null;
       return { action: "pay_user", v: 1, userId: old.userId, amount: old.amount, currency: old.currency };
     case "shop_pay":
       return { action: "pay_shop", v: 1, shopSlug: old.shopSlug, amount: old.amount, currency: old.currency };
@@ -213,19 +221,41 @@ function migrateLegacy(old: Record<string, any>): UniversalQrPayload | null {
       return { action: "profile", v: 1, userId: old.userId };
     case "shop":
       return { action: "shop", v: 1, shopSlug: old.shopSlug };
-    // Legacy wallet QR payment format — SAFETY: only map if we have a true userId
+
+    // Legacy wallet QR payment — SAFETY: walletId is NEVER a userId
     case "wallet_qr_payment": {
-      // walletId is NOT a userId — only use userId if explicitly present
-      const targetUserId = old.userId;
-      if (!targetUserId) return { action: "deep_link", v: 1, path: `/wallet/resolve?walletId=${encodeURIComponent(old.walletId || "")}` };
-      return { action: "pay_user", v: 1, userId: targetUserId, amount: old.amount, currency: old.currency };
+      if (old.userId) {
+        return { action: "pay_user", v: 1, userId: old.userId, amount: old.amount, currency: old.currency };
+      }
+      // walletId only → must be resolved server-side, do NOT map to userId
+      if (old.walletId) {
+        return { action: "deep_link", v: 1, path: `/wallet/resolve?walletId=${encodeURIComponent(old.walletId)}&amount=${old.amount || ""}&currency=${old.currency || "AED"}` };
+      }
+      return null;
     }
+
     case "wallet_pay": {
-      // receiver_id is typically a userId, wallet_id is NOT
-      const resolvedUserId = old.userId || old.receiver_id;
-      if (!resolvedUserId) return { action: "deep_link", v: 1, path: `/wallet/resolve?walletId=${encodeURIComponent(old.wallet_id || "")}` };
-      return { action: "pay_user", v: 1, userId: resolvedUserId, amount: old.amount, currency: old.currency };
+      // STRICT: only use userId if explicitly present
+      if (old.userId) {
+        return { action: "pay_user", v: 1, userId: old.userId, amount: old.amount, currency: old.currency };
+      }
+      // receiver_id — could be userId OR walletId. Only trust if it looks like a user context
+      // (legacy apps that set receiver_id typically mean the user who should receive)
+      if (old.receiver_id && !old.wallet_id) {
+        // receiver_id is the only ID → treat as userId (legacy convention)
+        return { action: "pay_user", v: 1, userId: old.receiver_id, amount: old.amount, currency: old.currency };
+      }
+      if (old.receiver_id && old.wallet_id) {
+        // Both present → receiver_id is the userId, wallet_id is the walletId
+        return { action: "pay_user", v: 1, userId: old.receiver_id, amount: old.amount, currency: old.currency };
+      }
+      // Only wallet_id → must resolve server-side
+      if (old.wallet_id) {
+        return { action: "deep_link", v: 1, path: `/wallet/resolve?walletId=${encodeURIComponent(old.wallet_id)}&amount=${old.amount || ""}&currency=${old.currency || "AED"}` };
+      }
+      return null;
     }
+
     default:
       return null;
   }

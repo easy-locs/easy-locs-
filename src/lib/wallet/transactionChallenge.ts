@@ -1,6 +1,7 @@
 /**
  * transactionChallenge — Pre-transfer challenge flow for wallet security.
  * Creates a short-lived challenge that must be validated before transfer execution.
+ * Enforces idempotency via unique nonce + challenge_id.
  */
 import { supabase } from "@/integrations/supabase/client";
 
@@ -58,7 +59,7 @@ export async function verifyWalletPin(pin: string): Promise<{ verified: boolean;
  */
 export async function hasWalletPin(): Promise<boolean> {
   const { data, error } = await supabase.functions.invoke("wallet-pin", {
-    body: { action: "status" },
+    body: { action: "check_status" },
   });
 
   if (error) return false;
@@ -67,6 +68,7 @@ export async function hasWalletPin(): Promise<boolean> {
 
 /**
  * Generate an idempotency key for a transfer to prevent duplicates.
+ * Uses sender + receiver + amount + nonce for uniqueness.
  */
 export function generateIdempotencyKey(params: {
   senderUserId: string;
@@ -75,4 +77,36 @@ export function generateIdempotencyKey(params: {
   nonce: string;
 }): string {
   return `txf_${params.senderUserId}_${params.receiverUserId}_${params.amount}_${params.nonce}`;
+}
+
+/**
+ * Execute a backend-authoritative wallet transfer via edge function.
+ * This is the ONLY way transfers should be executed from frontend.
+ */
+export async function executeSecureTransfer(params: {
+  senderUserId: string;
+  receiverUserId: string;
+  amount: number;
+  currency: string;
+  idempotencyKey: string;
+  source: string;
+  note?: string;
+  pin?: string;
+}): Promise<{ success: boolean; transfer_id?: string; error?: string; duplicate?: boolean }> {
+  const { data, error } = await supabase.functions.invoke("wallet-transfer", {
+    body: {
+      sender_user_id: params.senderUserId,
+      receiver_user_id: params.receiverUserId,
+      amount: params.amount,
+      currency: params.currency,
+      idempotency_key: params.idempotencyKey,
+      source: params.source,
+      note: params.note || null,
+      pin: params.pin || null,
+    },
+  });
+
+  if (error) return { success: false, error: error.message };
+  if (data?.error) return { success: false, error: data.error };
+  return { success: true, transfer_id: data?.transfer_id, duplicate: data?.duplicate };
 }
