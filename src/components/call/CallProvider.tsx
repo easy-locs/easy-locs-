@@ -381,8 +381,6 @@ export function CallProvider({ children }: { children: ReactNode }) {
     <CallContext.Provider value={{ startCall, isInCall: showCallDialog, isStartingCall }}>
       {children}
 
-      {/* Call debug overlay */}
-      <CallDebugOverlay />
 
       {/* Incoming call dialog */}
       <IncomingCallDialog
