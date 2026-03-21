@@ -14,7 +14,7 @@ import OrbitSmartHub from "@/components/dashboard/OrbitSmartHub";
 import { useAuth } from "@/contexts/AuthContext";
 import { useI18n } from "@/lib/i18n";
 import { usePlatformCurrency } from "@/hooks/usePlatformCurrency";
-import { useWallet } from "@/hooks/useWallet";
+import { useWalletBalance } from "@/payments/wallet-hooks";
 import { supabase } from "@/integrations/supabase/client";
 import { getCountryEntryOrDefault } from "@/lib/global-country-registry";
 import { format } from "date-fns";
