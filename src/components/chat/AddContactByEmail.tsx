@@ -2,7 +2,10 @@ import { useState } from "react";
 import { findUserByEmail } from "@/lib/orbit/findUserByEmail";
 import { createOrGetDirectConversation } from "@/lib/chat/conversationService";
 import { useOrbitStore } from "@/stores/orbitStore";
-import { Search, AlertCircle, MessageCircle } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { Search, AlertCircle, MessageCircle, UserPlus } from "lucide-react";
+import { toast } from "sonner";
 import type { ConversationRow } from "@/lib/types/comms";
 
 type FoundUser = {
@@ -16,13 +19,17 @@ type FoundUser = {
 export function AddContactByEmail(props: {
   onConversationReady?: (conversation: ConversationRow, peer: FoundUser) => void;
   onSelect?: (user: FoundUser) => void;
+  onSaved?: () => void;
 }) {
   const myOrbit = useOrbitStore((s) => s.profile);
+  const { user } = useAuth();
   const [email, setEmail] = useState("");
   const [result, setResult] = useState<FoundUser | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [opening, setOpening] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
 
   const handleSearch = async () => {
     const trimmed = email.trim();
@@ -30,27 +37,72 @@ export function AddContactByEmail(props: {
 
     setError("");
     setResult(null);
+    setSaved(false);
     setLoading(true);
 
     try {
-      const user = await findUserByEmail(trimmed);
+      const foundUser = await findUserByEmail(trimmed);
 
-      if (!user) {
+      if (!foundUser) {
         setError("Utilisateur introuvable");
         return;
       }
 
-      if (myOrbit?.email && user.email === myOrbit.email) {
+      if (myOrbit?.email && foundUser.email === myOrbit.email) {
         setError("Tu ne peux pas t'ajouter toi-même");
         return;
       }
 
-      setResult(user as FoundUser);
-      props.onSelect?.(user as FoundUser);
+      setResult(foundUser as FoundUser);
+      props.onSelect?.(foundUser as FoundUser);
     } catch {
       setError("Erreur de recherche");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleSaveFriend = async () => {
+    if (!user || !result) return;
+    setSaving(true);
+
+    try {
+      // Check if contact already exists
+      const { data: existing } = await supabase
+        .from("contacts")
+        .select("id")
+        .eq("owner_id", user.id)
+        .eq("contact_user_id", result.orbit_id)
+        .maybeSingle();
+
+      if (existing) {
+        toast.info("Ce contact existe déjà");
+        setSaved(true);
+        setSaving(false);
+        return;
+      }
+
+      const { error: insertErr } = await supabase.from("contacts").insert({
+        owner_id: user.id,
+        name: result.display_name || result.email || "Contact",
+        email: result.email || null,
+        contact_user_id: result.orbit_id,
+        category: "friend",
+      } as any);
+
+      if (insertErr) {
+        console.error("[AddContactByEmail] insert error", insertErr);
+        setError("Impossible d'ajouter le contact");
+        return;
+      }
+
+      setSaved(true);
+      toast.success("Contact ajouté !");
+      props.onSaved?.();
+    } catch {
+      setError("Erreur lors de l'ajout");
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -127,6 +179,16 @@ export function AddContactByEmail(props: {
             </p>
           </div>
           <div className="flex items-center gap-1.5 shrink-0">
+            {!saved && (
+              <button
+                onClick={() => void handleSaveFriend()}
+                disabled={saving}
+                className="h-9 px-3 rounded-lg bg-accent text-accent-foreground text-xs font-medium flex items-center gap-1.5 active:scale-[0.95] transition-transform disabled:opacity-40"
+              >
+                <UserPlus className="h-3.5 w-3.5" />
+                {saving ? "…" : "Ajouter"}
+              </button>
+            )}
             {props.onConversationReady && (
               <button
                 onClick={() => void handleOpenChat()}
