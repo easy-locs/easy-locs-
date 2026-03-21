@@ -29,8 +29,22 @@ async function safeCount(table: string, workspaceId?: string | null) {
   }
 }
 
+export type CheckSeverity = "info" | "warning" | "critical" | "empty";
+
+export interface AuditCheck {
+  ok: boolean;
+  key: string;
+  group: string;
+  severity: CheckSeverity;
+  impact: number;
+  title: string;
+  expected: string;
+  actual: string;
+  hint: string;
+}
+
 function diagLabel(r: { queryFailed: boolean; errorType: string | null; errorMsg: string | null; count: number }) {
-  if (!r.queryFailed) return r.count > 0 ? String(r.count) : "0 — no data yet";
+  if (!r.queryFailed) return r.count > 0 ? String(r.count) : "0";
   const prefix = r.errorType === "table_missing" ? "⛔ Table missing"
     : r.errorType === "column_missing" ? "⛔ Column missing"
     : r.errorType === "rls_denied" ? "🔒 RLS denied"
@@ -38,29 +52,60 @@ function diagLabel(r: { queryFailed: boolean; errorType: string | null; errorMsg
   return `${prefix}: ${r.errorMsg}`;
 }
 
+/** Classify: query failed = error, success+0 = empty (not warning), success+N = pass */
+function classifyResult(
+  label: string,
+  key: string,
+  group: string,
+  result: { count: number; queryFailed: boolean; errorMsg: string | null; errorType: string | null },
+  hint: string,
+): AuditCheck {
+  if (result.queryFailed) {
+    return {
+      ok: false,
+      key,
+      group,
+      severity: "critical",
+      impact: 12,
+      title: `${label} — query failed`,
+      expected: `Readable ${label.toLowerCase()} table`,
+      actual: diagLabel(result),
+      hint: `Check table and RLS policies for ${key}`,
+    };
+  }
+  if (result.count === 0) {
+    return {
+      ok: true, // empty is OK, not a failure
+      key,
+      group,
+      severity: "empty",
+      impact: 0,
+      title: `${label} — no data yet`,
+      expected: `At least one ${label.toLowerCase()}`,
+      actual: "0",
+      hint,
+    };
+  }
+  return {
+    ok: true,
+    key,
+    group,
+    severity: "info",
+    impact: 0,
+    title: `${label} — ${result.count} found`,
+    expected: `At least one ${label.toLowerCase()}`,
+    actual: String(result.count),
+    hint: "",
+  };
+}
+
 /* ── Payment checks ── */
-export async function auditPaymentChecks(workspaceId?: string) {
+export async function auditPaymentChecks(workspaceId?: string): Promise<AuditCheck[]> {
   const intents = await safeCount("payment_intents", workspaceId);
   const paidIntegrity = await checkCompletedOrdersWithoutPaymentIntent(workspaceId);
 
   return [
-    {
-      ok: !intents.queryFailed && intents.count > 0,
-      key: "payment.intents_exist",
-      group: "payment",
-      severity: intents.queryFailed ? "critical" : intents.count > 0 ? "info" : "warning",
-      impact: intents.queryFailed ? 15 : intents.count > 0 ? 0 : 4,
-      title: intents.queryFailed
-        ? "Payment intents query failed"
-        : intents.count > 0
-        ? "Payment intents exist"
-        : "No payment intents yet — no data yet",
-      expected: "at least one payment intent",
-      actual: diagLabel(intents),
-      hint: intents.queryFailed
-        ? "Check payment_intents table and RLS policies"
-        : "Run payment flow at least once",
-    },
+    classifyResult("Payment intents", "payment.intents_exist", "payment", intents, "Run a payment flow to create intents"),
     {
       ok: paidIntegrity.ok,
       key: "payment.completed_orders_have_paid_intent",
@@ -78,9 +123,8 @@ export async function auditPaymentChecks(workspaceId?: string) {
 }
 
 /* ── Dispatch checks ── */
-export async function auditDispatchChecks(workspaceId?: string) {
+export async function auditDispatchChecks(workspaceId?: string): Promise<AuditCheck[]> {
   const integrity = await checkDispatchAssignedWithoutDriver(workspaceId);
-
   const total = await safeCount("dispatch_jobs_v2", workspaceId);
 
   return [
@@ -95,65 +139,23 @@ export async function auditDispatchChecks(workspaceId?: string) {
       actual: String(integrity.broken),
       hint: "Fix assignment path and assigned_driver_id mapping",
     },
-    {
-      ok: true,
-      key: "dispatch.open_vs_assigned",
-      group: "dispatch",
-      severity: "info" as const,
-      impact: 0,
-      title: "Dispatch volume snapshot",
-      expected: "visibility into queue",
-      actual: total.queryFailed ? diagLabel(total) : `total=${total.count}`,
-      hint: "",
-    },
+    classifyResult("Dispatch jobs", "dispatch.total_volume", "dispatch", total, "Create delivery flows to populate"),
   ];
 }
 
 /* ── Tracking checks ── */
-export async function auditTrackingChecks(workspaceId?: string) {
+export async function auditTrackingChecks(workspaceId?: string): Promise<AuditCheck[]> {
   const sessions = await safeCount("live_tracking_sessions", workspaceId);
   const points = await safeCount("live_tracking_points");
 
   return [
-    {
-      ok: !sessions.queryFailed && sessions.count > 0,
-      key: "tracking.sessions_exist",
-      group: "tracking",
-      severity: sessions.queryFailed ? "critical" : sessions.count > 0 ? "info" : "warning",
-      impact: sessions.queryFailed ? 12 : sessions.count > 0 ? 0 : 4,
-      title: sessions.queryFailed
-        ? "Tracking sessions query failed"
-        : sessions.count > 0
-        ? "Tracking sessions exist"
-        : "No tracking sessions yet — no data yet",
-      expected: "at least one tracking session",
-      actual: diagLabel(sessions),
-      hint: sessions.queryFailed
-        ? "Check live_tracking_sessions table and RLS"
-        : "Start a real delivery flow to test tracking bridge",
-    },
-    {
-      ok: !points.queryFailed && points.count > 0,
-      key: "tracking.points_exist",
-      group: "tracking",
-      severity: points.queryFailed ? "critical" : points.count > 0 ? "info" : "warning",
-      impact: points.queryFailed ? 12 : points.count > 0 ? 0 : 4,
-      title: points.queryFailed
-        ? "Tracking points query failed"
-        : points.count > 0
-        ? "Tracking points exist"
-        : "No tracking points yet — no data yet",
-      expected: "at least one tracking point",
-      actual: diagLabel(points),
-      hint: points.queryFailed
-        ? "Check live_tracking_points table and RLS"
-        : "Verify geolocation and point insert path",
-    },
+    classifyResult("Tracking sessions", "tracking.sessions_exist", "tracking", sessions, "Start a delivery flow to test tracking"),
+    classifyResult("Tracking points", "tracking.points_exist", "tracking", points, "Verify geolocation and point insert path"),
   ];
 }
 
 /* ── Data integrity checks ── */
-export async function auditDataChecks(workspaceId?: string) {
+export async function auditDataChecks(workspaceId?: string): Promise<AuditCheck[]> {
   const ordersNoItems = await checkOrdersWithoutItems(workspaceId);
 
   return [
@@ -171,38 +173,18 @@ export async function auditDataChecks(workspaceId?: string) {
   ];
 }
 
-/* ── Business readiness checks (empty = warning, not critical) ── */
-export async function auditBusinessChecks(workspaceId?: string) {
-  const [merchants, drivers, orders] = await Promise.all([
-    safeCount("merchant_onboarding_profiles", workspaceId),
+/* ── Business readiness checks ── */
+export async function auditBusinessChecks(workspaceId?: string): Promise<AuditCheck[]> {
+  // Use storefront_pages as the authoritative merchant/business source
+  const [storefronts, drivers, storefrontOrders] = await Promise.all([
+    safeCount("storefront_pages"),
     safeCount("driver_profiles", workspaceId),
-    safeCount("orders", workspaceId),
+    safeCount("storefront_orders"),
   ]);
 
-  const makeCheck = (
-    label: string,
-    key: string,
-    result: { count: number; queryFailed: boolean; errorMsg: string | null; errorType: string | null },
-    hint: string,
-  ) => ({
-    ok: !result.queryFailed && result.count > 0,
-    key,
-    group: "business",
-    severity: result.queryFailed ? ("critical" as const) : result.count > 0 ? ("info" as const) : ("warning" as const),
-    impact: result.queryFailed ? 12 : result.count > 0 ? 0 : 3,
-    title: result.queryFailed
-      ? `${label} query failed`
-      : result.count > 0
-      ? `${label} exist`
-      : `No ${label.toLowerCase()} yet — no data yet`,
-    expected: `at least one ${label.toLowerCase()}`,
-    actual: diagLabel(result),
-    hint: result.queryFailed ? `Check ${key.split(".")[1]} table and RLS policies` : hint,
-  });
-
   return [
-    makeCheck("Merchants", "business.merchants_exist", merchants, "Complete merchant onboarding before launch"),
-    makeCheck("Drivers", "business.drivers_exist", drivers, "Create driver profiles and test online/offline flow"),
-    makeCheck("Orders", "business.orders_exist", orders, "Run guest/customer checkout before launch scoring"),
+    classifyResult("Storefronts", "business.storefronts_exist", "business", storefronts, "Complete merchant onboarding to create storefronts"),
+    classifyResult("Drivers", "business.drivers_exist", "business", drivers, "Create driver profiles and test online/offline flow"),
+    classifyResult("Storefront orders", "business.orders_exist", "business", storefrontOrders, "Run customer checkout to create orders"),
   ];
 }
