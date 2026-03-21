@@ -222,7 +222,7 @@ function CommandMap({
 
   useEffect(() => {
     if (!mapRef.current || mapInstance.current) return;
-    mapboxgl.accessToken = MAPBOX_TOKEN;
+    mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN;
     const center: [number, number] = userLng && userLat ? [userLng, userLat] : [3.06, 36.75];
     const map = new mapboxgl.Map({
       container: mapRef.current,
