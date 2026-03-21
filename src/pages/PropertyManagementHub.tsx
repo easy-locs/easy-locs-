@@ -120,7 +120,7 @@ export default function PropertyManagementHub() {
     { icon: Building, label: t("page.dashboard.properties") || "Properties", value: String(stats.totalProperties), path: "/dashboard/properties", sub: "View all →" },
     { icon: MapPin, label: t("page.dashboard.countries") || "Countries", value: String(stats.totalCountries), sub: "Select below" },
     { icon: TrendingUp, label: "Collected", value: fmtLocal(stats.revenueThisMonth), path: "/dashboard/receipts", sub: "This month →" },
-    { icon: Wallet, label: `Wallet (${userCurrencyCode})`, value: fmtLocal(balance?.balance || 0), path: "/dashboard/wallet", sub: "Open →" },
+    { icon: Wallet, label: `Wallet (${userCurrencyCode})`, value: fmtLocal(balance || 0), path: "/dashboard/wallet", sub: "Open →" },
   ];
 
   return (
