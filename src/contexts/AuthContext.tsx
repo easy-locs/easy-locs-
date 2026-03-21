@@ -197,6 +197,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setOnboardingCompleted(false);
       setActiveRole("landlord");
       setHasDualRole(false);
+      setProfileLoaded(true);
     }
   }, []);
 
