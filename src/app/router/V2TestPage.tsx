@@ -1,11 +1,15 @@
 import { V2AppShell as AppShell } from "@/components/shell/V2AppShell";
 import { V2SystemAudit } from "@/components/debug/V2SystemAudit";
 import { useLocationStore } from "@/stores/locationStore";
-import { useLocationStore } from "@/stores/locationStore";
 import { useUiShellStore } from "@/stores/uiShellStore";
 
 export default function V2TestPage() {
-  const { requestLocation } = useGeolocation();
+  const setCurrentLocation = useLocationStore((s) => s.setCurrentLocation);
+  const requestLocation = () => {
+    navigator.geolocation?.getCurrentPosition((pos) => {
+      setCurrentLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude, accuracy: pos.coords.accuracy, timestamp: new Date().toISOString() });
+    }, () => {}, { enableHighAccuracy: true, timeout: 12000 });
+  };
   const ui = useUiShellStore();
 
   return (
