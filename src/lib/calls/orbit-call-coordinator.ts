@@ -192,7 +192,7 @@ class OrbitCallCoordinator {
     if (!s.sessionId || !s.myUserId) return null;
 
     const { data: session } = await (supabase as any)
-      .from("orbit_call_sessions")
+      .from("call_sessions")
       .select("*")
       .eq("id", s.sessionId)
       .maybeSingle();

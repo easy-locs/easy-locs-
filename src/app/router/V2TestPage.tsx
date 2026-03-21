@@ -1,11 +1,12 @@
 import { V2AppShell as AppShell } from "@/components/shell/V2AppShell";
 import { V2SystemAudit } from "@/components/debug/V2SystemAudit";
-import { useGeoStore } from "@/stores/geoStore";
+import { useLocationStore } from "@/stores/locationStore";
+import { useGeolocation } from "@/hooks/useGeolocation";
 import { useUiShellStore } from "@/stores/uiShellStore";
 import { useCallStore } from "@/stores/callStore";
 
 export default function V2TestPage() {
-  const geo = useGeoStore();
+  const { requestLocation } = useGeolocation();
   const ui = useUiShellStore();
   const call = useCallStore();
 
@@ -20,7 +21,7 @@ export default function V2TestPage() {
         <div className="flex flex-wrap gap-2 p-2">
           <button
             className="px-3 py-1 text-xs rounded-full bg-primary text-primary-foreground"
-            onClick={() => void geo.refreshCurrentPosition()}
+            onClick={() => requestLocation()}
           >
             Refresh Geo
           </button>
