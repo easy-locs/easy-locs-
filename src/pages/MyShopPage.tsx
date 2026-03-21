@@ -122,6 +122,16 @@ export default function MyShopPage() {
   const updateShop = async (field: string, value: any) => {
     if (!shop) return;
     await (supabase as any).from("storefront_pages").update({ [field]: value, updated_at: new Date().toISOString() }).eq("id", shop.id);
+    
+    // Recalculate zone when coordinates or address change
+    const geoFields = ["latitude", "longitude", "city", "country", "address"];
+    if (geoFields.includes(field)) {
+      const { data: updated } = await (supabase as any).from("storefront_pages").select("latitude, longitude").eq("id", shop.id).single();
+      if (updated?.latitude && updated?.longitude) {
+        assignZoneToStorefront(shop.id, updated.latitude, updated.longitude).catch(() => {});
+      }
+    }
+    
     refetch();
     toast.success("Updated");
   };
