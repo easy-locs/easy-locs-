@@ -22,7 +22,7 @@ import EasyLocsLogo from "@/components/brand/EasyLocsLogo";
 import UpdateNotification from "@/components/UpdateNotification";
 import { SkipLink } from "@/components/ui/a11y";
 import SmartInstallBanner from "@/components/pwa/SmartInstallBanner";
-import OrbitCallRoot from "@/components/orbit/OrbitCallRoot";
+// OrbitCallRoot removed — was returning null, call system unified under CallOverlayV2
 import { CallOverlayV2 } from "@/components/call/CallOverlayV2";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import ErrorBoundary from "@/components/ErrorBoundary";
@@ -779,8 +779,8 @@ const App = () => (
            <RealtimeHubGuard />
            <NotificationsRealtimeGuard />
            <UpdateNotification />
-             <OrbitCallRoot />
-             <CallOverlayV2 />
+              {/* OrbitCallRoot removed — was returning null */}
+              <CallOverlayV2 />
             <AppBootstrapGuard />
            
            <SkipLink />

@@ -8,8 +8,7 @@ import { sendTextMessage } from "@/lib/chat/messageService";
 import { AddContactByEmail } from "@/components/chat/AddContactByEmail";
 import { ConversationListPanel } from "@/components/chat/ConversationListPanel";
 import { ChatThreadPanel } from "@/components/chat/ChatThreadPanel";
-import { IncomingCallModal } from "@/components/call/IncomingCallModal";
-import { useCallRealtime } from "@/hooks/useCallRealtime";
+// IncomingCallModal + useCallRealtime removed — handled globally by CallOverlayV2
 import { useConversationRealtime } from "@/hooks/useConversationRealtime";
 import { useConversationsRealtime } from "@/hooks/useConversationsRealtime";
 import { getConversationPeer } from "@/lib/chat/conversationUi";
@@ -37,7 +36,7 @@ export default function MessagesPage() {
   const [messages, setMessages] = useState<ChatMessageRow[]>([]);
   const [showAddContact, setShowAddContact] = useState(false);
 
-  useCallRealtime();
+  // useCallRealtime removed — handled globally by CallOverlayV2
 
   const reloadConversations = useCallback(async () => {
     try {
@@ -141,7 +140,6 @@ export default function MessagesPage() {
 
   return (
     <div className="flex flex-col h-[100dvh] bg-background">
-      <IncomingCallModal />
 
       {!showThread ? (
         <>
