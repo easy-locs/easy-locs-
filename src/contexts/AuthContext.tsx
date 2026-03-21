@@ -240,25 +240,32 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     let mounted = true;
-    let hydrated = false;
+    let hydrating = false;
+
+    // Mark V1 auth as active — prevents v2AuthStore from registering a second listener
+    markV1AuthActive();
 
     const hydrateAuthState = async (nextSession: Session | null) => {
-      if (hydrated && nextSession?.user?.id === user?.id) return;
-      hydrated = true;
+      // Prevent concurrent hydrations (avoids lock contention)
+      if (hydrating) return;
+      hydrating = true;
+
       setSession(nextSession);
       setUser(nextSession?.user ?? null);
 
+      // Sync v2AuthStore without triggering another onAuthStateChange
+      useV2AuthStore.getState().syncFromV1(nextSession);
+
       if (nextSession?.user) {
         try {
-          await Promise.all([
-            fetchOrgId(nextSession.user.id),
-            fetchUserType(nextSession.user.id),
-          ]);
+          // SEQUENTIAL — prevents auth token lock contention from parallel queries
+          await fetchOrgId(nextSession.user.id);
+          await fetchUserType(nextSession.user.id);
         } catch (err) {
           console.error("[AuthContext] hydrateAuthState failed:", err);
         }
         // Defer subscription check — don't block initial render
-        setTimeout(() => { void refreshSubRef(); }, 100);
+        setTimeout(() => { void refreshSubRef(); }, 500);
       } else {
         setOrgId(null);
         setUserType("landlord");
@@ -273,6 +280,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
 
       if (mounted) setLoading(false);
+      hydrating = false;
     };
 
     const { data: { subscription: authSub } } = supabase.auth.onAuthStateChange(
@@ -311,13 +319,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fetchOrgId, fetchUserType]);
 
-  // Keep session alive — refresh every 10 minutes to prevent early logout
+  // Keep session alive — Supabase SDK auto-refreshes tokens, so we only need
+  // a very gentle heartbeat (every 25 min) instead of aggressive 10-min refresh
+  // that caused additional lock contention
   useEffect(() => {
     const interval = setInterval(() => {
-      supabase.auth.getSession().then(({ data: { session: s } }) => {
-        if (s) supabase.auth.refreshSession();
-      });
-    }, 10 * 60 * 1000);
+      supabase.auth.getSession();
+    }, 25 * 60 * 1000);
     return () => clearInterval(interval);
   }, []);
 
