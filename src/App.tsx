@@ -22,8 +22,7 @@ import EasyLocsLogo from "@/components/brand/EasyLocsLogo";
 import UpdateNotification from "@/components/UpdateNotification";
 import { SkipLink } from "@/components/ui/a11y";
 import SmartInstallBanner from "@/components/pwa/SmartInstallBanner";
-// OrbitCallRoot removed — was returning null, call system unified under CallOverlayV2
-import { CallOverlayV2 } from "@/components/call/CallOverlayV2";
+// Call system: CallProvider is the single authoritative engine (call_logs table)
 import { GeoBootstrap } from "@/components/map/GeoBootstrap";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import ErrorBoundary from "@/components/ErrorBoundary";
