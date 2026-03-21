@@ -8,8 +8,7 @@
  * - Fallback to coordinates display
  */
 import { useState, useCallback, useRef, useEffect } from "react";
-
-const MAPBOX_TOKEN = "pk.eyJ1IjoiZWFzeWxvY3MyMDI2IiwiYSI6ImNtbXZiZ3h0cTF6ZHMycnIyOWw4NnJzZTIifQ.ElIj6bFQK_BpVm6suigHUQ";
+import { MAPBOX_ACCESS_TOKEN } from "@/lib/mapbox/config";
 
 export interface GeocodedAddress {
   fullAddress: string;
