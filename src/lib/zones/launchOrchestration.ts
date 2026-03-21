@@ -1,6 +1,6 @@
 /**
  * launchOrchestration — Controlled rollout by country/city/zone/vertical.
- * Supports mass activation with preview, confirmation, and audit trail.
+ * Supports mass activation with preview, readiness gates, and audit trail.
  */
 import { supabase } from "@/integrations/supabase/client";
 
@@ -16,14 +16,39 @@ export interface LaunchFilter {
 }
 
 export interface LaunchPreview {
-  totalAffected: number;
-  businesses: Array<{ id: string; name: string; city: string; vertical: string; status: string }>;
+  totalEligible: number;
+  totalIneligible: number;
+  businesses: Array<{
+    id: string;
+    name: string;
+    city: string;
+    vertical: string;
+    status: string;
+    eligible: boolean;
+    reason?: string;
+  }>;
+}
+
+/** Readiness checks before activation */
+function checkEligibility(biz: any): { eligible: boolean; reason?: string } {
+  if (!biz.name?.trim()) return { eligible: false, reason: "Missing business name" };
+  if (!biz.latitude || !biz.longitude) return { eligible: false, reason: "Missing coordinates" };
+  if (!biz.contact_phone && !biz.email) return { eligible: false, reason: "Missing contact info" };
+  if (!biz.vertical) return { eligible: false, reason: "Missing vertical/category" };
+
+  // Must be in ready/claimed state (not raw draft)
+  const validStatuses = ["ready", "claimed_pending_activation", "claimed"];
+  if (!validStatuses.includes(biz.status)) {
+    return { eligible: false, reason: `Status "${biz.status}" not activation-ready` };
+  }
+
+  return { eligible: true };
 }
 
 /** Preview which businesses would be affected by a launch action */
 export async function previewLaunchAction(filter: LaunchFilter): Promise<LaunchPreview> {
   let query = db.from("storefront_pages")
-    .select("id, name, city, vertical, status, is_claimed, active")
+    .select("id, name, city, vertical, status, is_claimed, active, latitude, longitude, contact_phone, email, zone_id")
     .eq("active", false);
 
   if (filter.country) query = query.eq("country", filter.country);
@@ -31,34 +56,70 @@ export async function previewLaunchAction(filter: LaunchFilter): Promise<LaunchP
   if (filter.zoneId) query = query.eq("zone_id", filter.zoneId);
   if (filter.vertical) query = query.eq("vertical", filter.vertical);
   if (filter.onlyClaimed) query = query.eq("is_claimed", true);
-  query = query.limit(200);
+  query = query.limit(500);
 
   const { data } = await query;
-  const businesses = (data || []).map((b: any) => ({
-    id: b.id,
-    name: b.name || "",
-    city: b.city || "",
-    vertical: b.vertical || "",
-    status: b.status || "",
-  }));
+  const businesses = (data || []).map((b: any) => {
+    const check = checkEligibility(b);
+    return {
+      id: b.id,
+      name: b.name || "",
+      city: b.city || "",
+      vertical: b.vertical || "",
+      status: b.status || "",
+      eligible: check.eligible,
+      reason: check.reason,
+    };
+  });
 
-  return { totalAffected: businesses.length, businesses };
+  return {
+    totalEligible: businesses.filter((b) => b.eligible).length,
+    totalIneligible: businesses.filter((b) => !b.eligible).length,
+    businesses,
+  };
 }
 
-/** Mass activate businesses matching filter */
+/** Mass activate ONLY eligible businesses matching filter */
 export async function massActivate(
   filter: LaunchFilter,
   activatedBy?: string
-): Promise<{ activated: number; errors: string[] }> {
+): Promise<{ activated: number; skipped: number; errors: string[] }> {
   const preview = await previewLaunchAction(filter);
+  const eligible = preview.businesses.filter((b) => b.eligible);
   const errors: string[] = [];
   let activated = 0;
 
-  for (const biz of preview.businesses) {
+  for (const biz of eligible) {
+    // Check zone launch status before activating
+    if (biz.city) {
+      const { data: zone } = await db.from("zones")
+        .select("is_launched")
+        .eq("city", biz.city)
+        .eq("is_launched", true)
+        .limit(1)
+        .maybeSingle();
+
+      // Also check global launch
+      const { data: globalSetting } = await db.from("platform_settings")
+        .select("value")
+        .eq("key", "global_launch")
+        .maybeSingle();
+
+      const globalEnabled = globalSetting?.value?.enabled === true;
+
+      if (!zone && !globalEnabled) {
+        errors.push(`${biz.name}: Zone/city not launched yet`);
+        continue;
+      }
+    }
+
     const { error } = await db.from("storefront_pages").update({
       active: true,
       status: "active",
       shop_visibility: "public",
+      is_order_enabled: true,
+      is_payment_enabled: true,
+      is_qr_enabled: true,
       updated_at: new Date().toISOString(),
     }).eq("id", biz.id);
 
@@ -70,12 +131,14 @@ export async function massActivate(
   }
 
   // Audit trail
-  if (activated > 0) {
+  if (activated > 0 || errors.length > 0) {
     await db.from("audit_logs").insert({
       action: "mass_activation",
       user_id: activatedBy || null,
       metadata_json: {
         filter,
+        eligible_count: eligible.length,
+        skipped_count: preview.totalIneligible,
         activated_count: activated,
         error_count: errors.length,
         timestamp: new Date().toISOString(),
@@ -83,7 +146,7 @@ export async function massActivate(
     }).catch(() => {});
   }
 
-  return { activated, errors };
+  return { activated, skipped: preview.totalIneligible, errors };
 }
 
 /** Pause all businesses in a zone */
