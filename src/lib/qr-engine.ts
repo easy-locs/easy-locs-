@@ -325,6 +325,12 @@ export const qr = {
   shop: (shopSlug: string): ShopQr =>
     ({ action: "shop", v: 1, shopSlug }),
 
+  menu: (shopSlug: string): MenuQr =>
+    ({ action: "menu", v: 1, shopSlug }),
+
+  posOrder: (shopSlug: string, opts?: { tableCode?: string; terminalId?: string }): PosOrderQr =>
+    ({ action: "pos_order", v: 1, shopSlug, ...opts }),
+
   product: (productId: string, shopSlug?: string): ProductQr =>
     ({ action: "product", v: 1, productId, shopSlug }),
 
