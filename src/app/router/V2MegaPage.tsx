@@ -34,6 +34,7 @@ import { SimpleNavTabs, type SimpleNavTab } from "@/components/layout/SimpleNavT
 import { MerchantCheckoutPanel } from "@/components/merchant/MerchantCheckoutPanel";
 // CallRealtimeBridge removed — call system handled globally by CallOverlayV2
 import { RealtimeCallPanel } from "@/components/call/RealtimeCallPanel";
+import { useRealtimeCallStore } from "@/stores/realtimeCallStore";
 
 export default function V2MegaPage() {
   useListingsRealtime();
