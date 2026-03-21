@@ -73,6 +73,14 @@ export default function AdminRuntimeAuditPage() {
         </div>
       </div>
 
+      {!loading && report && (
+        <div className="border border-border rounded-lg p-4 bg-card space-y-1">
+          <p className="text-xs text-muted-foreground">Audit version: {report.auditVersion}</p>
+          <p className="text-xs text-muted-foreground">Build timestamp: {report.buildTimestamp}</p>
+          <p className="text-xs text-muted-foreground">Environment: {report.environmentName}</p>
+        </div>
+      )}
+
       <div className="space-y-2">
         {loading && (
           <div className="flex items-center justify-center py-8">
