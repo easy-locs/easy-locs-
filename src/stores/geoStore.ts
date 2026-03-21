@@ -1,9 +1,15 @@
+/**
+ * geoStore — DEPRECATED BRIDGE.
+ * All consumers should migrate to useLocationStore.
+ * This bridge keeps existing consumers working while migration happens.
+ */
 import { create } from "zustand";
+import { useLocationStore } from "./locationStore";
 import type { GeoPosition } from "@/lib/types/domain";
 import { platformBus } from "@/app/events/platform-bus";
-import { usePermissionStore } from "./permissionStore";
 
 type GeoStore = {
+  /** @deprecated Use useLocationStore instead */
   currentPosition: GeoPosition;
   permission: "prompt" | "granted" | "denied";
   mapReady: boolean;
@@ -12,7 +18,6 @@ type GeoStore = {
   setMapReady: (ready: boolean) => void;
   setPermission: (state: "prompt" | "granted" | "denied") => void;
   setPosition: (payload: GeoPosition) => void;
-
   refreshCurrentPosition: () => Promise<GeoPosition | null>;
   startWatching: () => void;
   stopWatching: () => void;
@@ -28,6 +33,13 @@ export const useGeoStore = create<GeoStore>((set, get) => ({
   setPermission: (state) => set({ permission: state }),
   setPosition: (payload) => {
     set({ currentPosition: payload });
+    // Bridge: sync to locationStore
+    useLocationStore.getState().setCurrentLocation({
+      lat: payload.lat,
+      lng: payload.lng,
+      accuracy: payload.accuracy,
+      timestamp: payload.updatedAt,
+    });
     platformBus.emit({
       type: "geo.position.updated",
       payload: { lat: payload.lat, lng: payload.lng, accuracy: payload.accuracy },
@@ -35,34 +47,48 @@ export const useGeoStore = create<GeoStore>((set, get) => ({
   },
 
   refreshCurrentPosition: async () => {
-    console.log("[Geo] refreshCurrentPosition called");
-    const position = await usePermissionStore.getState().requestGeolocation();
-    console.log("[Geo] raw position result", position);
-    if (!position) {
-      console.warn("[Geo] position null → permission denied or unavailable");
+    if (!navigator.geolocation) {
       set({ permission: "denied" });
       return null;
     }
-    const next: GeoPosition = {
-      lat: position.coords.latitude,
-      lng: position.coords.longitude,
-      accuracy: position.coords.accuracy ?? null,
-      updatedAt: new Date().toISOString(),
-    };
-    console.log("[Geo] normalized position", next);
-    set({ permission: "granted", currentPosition: next });
-    platformBus.emit({
-      type: "geo.position.updated",
-      payload: { lat: next.lat, lng: next.lng, accuracy: next.accuracy },
+    return new Promise((resolve) => {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const next: GeoPosition = {
+            lat: position.coords.latitude,
+            lng: position.coords.longitude,
+            accuracy: position.coords.accuracy ?? null,
+            updatedAt: new Date().toISOString(),
+          };
+          set({ permission: "granted", currentPosition: next });
+          // Bridge: sync to locationStore
+          useLocationStore.getState().setCurrentLocation({
+            lat: next.lat,
+            lng: next.lng,
+            accuracy: next.accuracy,
+            timestamp: next.updatedAt,
+          });
+          useLocationStore.getState().setPermissionState("granted");
+          platformBus.emit({
+            type: "geo.position.updated",
+            payload: { lat: next.lat, lng: next.lng, accuracy: next.accuracy },
+          });
+          resolve(next);
+        },
+        () => {
+          set({ permission: "denied" });
+          useLocationStore.getState().setPermissionState("denied");
+          resolve(null);
+        },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+      );
     });
-    return next;
   },
 
   startWatching: () => {
     if (!navigator.geolocation) { set({ permission: "denied" }); return; }
     const existing = get().watchId;
     if (existing !== null) return;
-
     const watchId = navigator.geolocation.watchPosition(
       (position) => {
         const next: GeoPosition = {
@@ -72,6 +98,9 @@ export const useGeoStore = create<GeoStore>((set, get) => ({
           updatedAt: new Date().toISOString(),
         };
         set({ permission: "granted", currentPosition: next });
+        useLocationStore.getState().setCurrentLocation({
+          lat: next.lat, lng: next.lng, accuracy: next.accuracy, timestamp: next.updatedAt,
+        });
         platformBus.emit({
           type: "geo.position.updated",
           payload: { lat: next.lat, lng: next.lng, accuracy: next.accuracy },
