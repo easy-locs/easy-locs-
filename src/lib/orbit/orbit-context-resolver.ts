@@ -48,9 +48,11 @@ export async function resolveWalletContext(userId: string): Promise<{
 }> {
   const { data: wallet } = await (supabase as any)
     .from("wallet_accounts")
-    .select("id, balance_cash, currency, country_code")
-    .eq("user_id", userId)
-    .eq("account_type", "fiat")
+    .select("id, balance, currency, country_code")
+    .eq("owner_user_id", userId)
+    .eq("status", "active")
+    .order("created_at", { ascending: true })
+    .limit(1)
     .maybeSingle();
 
   return {
