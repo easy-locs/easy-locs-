@@ -1109,7 +1109,7 @@ const App = () => (
               <Route path="/merchant/pos" element={<ProtectedRoute><MerchantPosPage /></ProtectedRoute>} />
               <Route path="/merchant/kitchen" element={<ProtectedRoute><MerchantKitchenPage /></ProtectedRoute>} />
               <Route path="/merchant/orders" element={<ProtectedRoute><MerchantOrdersPage /></ProtectedRoute>} />
-              <Route path="/admin/wallet-test" element={<ProtectedRoute><WalletCommerceTestPage /></ProtectedRoute>} />
+              {/* /admin/wallet-test removed — legacy test page */}
               <Route path="/admin/wallet-diagnostics" element={<ProtectedRoute><AdminWalletDiagnosticsPage /></ProtectedRoute>} />
               <Route path="/admin/dispatch-diagnostics" element={<ProtectedRoute><AdminDispatchDiagnosticsPage /></ProtectedRoute>} />
               <Route path="/admin/automations" element={<ProtectedRoute><AdminAutomationsPage /></ProtectedRoute>} />
