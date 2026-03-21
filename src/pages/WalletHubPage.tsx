@@ -4,6 +4,7 @@
  * Uses ONLY: wallet_accounts + wallet_ledger_entries + unified_wallet_transactions
  */
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useWalletAccounts } from "@/hooks/useWalletAccounts";
 import { useWalletTransactions } from "@/payments/wallet-hooks";
