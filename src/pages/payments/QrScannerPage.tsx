@@ -315,7 +315,23 @@ export default function QrScannerPage() {
   }, [handleQrResult, setErrorSafe, setStateSafe]);
 
   const startScanner = useCallback(async (preferredDeviceId?: string) => {
-    if (!secure) { setErrorSafe("Camera scanning requires HTTPS."); setStateSafe("error"); return; }
+    if (!secure) {
+      const msg = "Camera scanning requires HTTPS.";
+      console.error("[QrScannerPage] getUserMedia blocked", { reason: msg });
+      setCameraUnavailableReason(msg);
+      setErrorSafe(msg);
+      setStateSafe("error");
+      return;
+    }
+    if (!navigator.mediaDevices?.getUserMedia) {
+      const msg = "getUserMedia is unavailable in this runtime.";
+      console.error("[QrScannerPage] getUserMedia unavailable", { mediaDevices: !!navigator.mediaDevices });
+      setCameraUnavailableReason(msg);
+      setCameraPermission("unsupported");
+      setErrorSafe(msg);
+      setStateSafe("error");
+      return;
+    }
     if (startingRef.current || startedRef.current || stoppingRef.current) return;
     const el = document.getElementById(REGION_ID);
     if (!el) { setErrorSafe("Scanner container not found."); setStateSafe("error"); return; }
@@ -325,6 +341,7 @@ export default function QrScannerPage() {
     handledRef.current = false;
     setErrorSafe(""); setLastText(""); setTxId("");
     setStartErrorMessage("");
+    setCameraUnavailableReason("");
     setStartStatus("idle");
     setStateSafe("starting");
 
@@ -336,15 +353,24 @@ export default function QrScannerPage() {
       try {
         tempStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: "environment" }, width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false });
         grantedDeviceId = tempStream.getVideoTracks()[0]?.getSettings().deviceId || "";
+        console.log("[QrScannerPage] getUserMedia success", { grantedDeviceId });
         if (mountedRef.current) setCameraPermission("granted");
       } catch (err) {
-        const domErr = err as DOMException;
+        const domErr = err as DOMException & { constraint?: string };
+        const exactError = `${domErr?.name || "UnknownError"}: ${domErr?.message || "Unable to open camera."}`;
+        console.error("[QrScannerPage] getUserMedia failed", {
+          name: domErr?.name,
+          message: domErr?.message,
+          constraint: domErr?.constraint,
+        });
+        setCameraUnavailableReason(exactError);
         if (domErr?.name === "NotAllowedError") {
           if (mountedRef.current) setCameraPermission("denied");
           throw new Error("Camera permission denied. Please allow camera access in your browser settings.");
         }
         if (domErr?.name === "NotFoundError") throw new Error("No camera found on this device.");
-        throw new Error(domErr?.message || "Unable to open camera.");
+        if (domErr?.name === "NotReadableError") throw new Error("Camera is busy or blocked by another app.");
+        throw new Error(exactError);
       } finally {
         tempStream?.getTracks().forEach((t) => t.stop());
         if (ios || safari) await wait(250);
@@ -362,23 +388,28 @@ export default function QrScannerPage() {
       scannerRef.current = scanner;
       const scanConfig = { fps: ios ? 10 : 15, qrbox: { width: QR_BOX_SIZE, height: QR_BOX_SIZE }, aspectRatio: 1, disableFlip: false };
 
-      const startWith = async (cfg: any, _label: string) => {
-        await withTimeout(scanner.start(cfg, scanConfig, async (text) => {
-          if (!mountedRef.current || handledRef.current) return;
-          handledRef.current = true;
-          // Premium scan feedback — beep + haptic
-          playScanBeep();
-          haptic("success");
-          setLastText(text);
-          await clearScannerInstance("decode", false);
-          await handleQrResult(text);
-        }, () => {}), 12000, "Html5Qrcode.start timed out before camera preview appeared.");
+      const startWith = async (cfg: any, label: string) => {
+        try {
+          await withTimeout(scanner.start(cfg, scanConfig, async (text) => {
+            if (!mountedRef.current || handledRef.current) return;
+            handledRef.current = true;
+            playScanBeep();
+            haptic("success");
+            setLastText(text);
+            await clearScannerInstance("decode", false);
+            await handleQrResult(text);
+          }, () => {}), 12000, `Html5Qrcode.start timed out before camera preview appeared (${label}).`);
+        } catch (scannerErr) {
+          console.error("[QrScannerPage] scanner start failed", { label, error: scannerErr });
+          throw scannerErr;
+        }
       };
 
       try {
         if (preferredCameraId) await startWith({ deviceId: { exact: preferredCameraId } }, "preferred");
         else await startWith({ facingMode: { ideal: "environment" } }, "facingMode");
-      } catch {
+      } catch (primaryErr) {
+        console.warn("[QrScannerPage] primary scanner config failed, trying fallback", primaryErr);
         await Promise.resolve(scanner.clear()).catch(() => {});
         scannerRef.current = scanner;
         await wait(ios ? 250 : 100);
@@ -397,6 +428,7 @@ export default function QrScannerPage() {
       const message = err instanceof Error ? err.message : "Unable to access camera.";
       setStartStatus("fail");
       setStartErrorMessage(message);
+      setCameraUnavailableReason((prev) => prev || message);
       setErrorSafe(message);
       setStateSafe("error");
     }
