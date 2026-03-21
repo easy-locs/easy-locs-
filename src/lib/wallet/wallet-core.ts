@@ -1,8 +1,16 @@
 /**
- * Hybrid wallet engine — fiat + crypto + escrow + rewards accounts with double-entry ledger.
+ * DEPRECATED — Legacy wallet engine with client-side multi-step transfers.
+ * REPLACED_BY: wallet-transfer edge function + atomic_wallet_transfer RPC
+ * 
+ * Do NOT use transferBetweenWallets for new code.
+ * Use executeSecureTransfer from transactionChallenge.ts instead.
+ * 
+ * Kept temporarily for workspace/commerce flows that still reference it.
+ * TO_REMOVE after all callers are migrated.
  */
 import { supabase } from "@/integrations/supabase/client";
 
+// ── DEPRECATED: Use wallet-transfer edge function instead ──
 export async function createWalletAccount(params: {
   workspaceId?: string;
   ownerUserId?: string;
@@ -32,6 +40,7 @@ export async function createWalletAccount(params: {
   return data;
 }
 
+/** DEPRECATED — use atomic_wallet_transfer RPC via edge function */
 export async function postWalletEntry(params: {
   workspaceId?: string;
   walletAccountId: string;
@@ -66,6 +75,7 @@ export async function postWalletEntry(params: {
   return data;
 }
 
+/** DEPRECATED — use atomic_wallet_transfer RPC */
 export async function refreshWalletBalance(walletAccountId: string) {
   const { data: entries, error: entriesError } = await supabase
     .from("wallet_ledger_entries")
@@ -90,6 +100,11 @@ export async function refreshWalletBalance(walletAccountId: string) {
   return data;
 }
 
+/**
+ * DEPRECATED — Legacy multi-step transfer. NOT atomic.
+ * REPLACED_BY: executeSecureTransfer() → wallet-transfer edge function → atomic_wallet_transfer RPC
+ * TO_REMOVE after all callers are migrated.
+ */
 export async function transferBetweenWallets(params: {
   workspaceId?: string;
   fromWalletId: string;
