@@ -779,9 +779,7 @@ const App = () => (
            <RealtimeHubGuard />
            <NotificationsRealtimeGuard />
            <UpdateNotification />
-              {/* OrbitCallRoot removed — was returning null */}
-               <CallOverlayV2 />
-               <GeoBootstrap />
+                <GeoBootstrap />
              <AppBootstrapGuard />
            
            <SkipLink />
