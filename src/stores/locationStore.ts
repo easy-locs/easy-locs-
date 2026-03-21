@@ -1,8 +1,12 @@
 /**
- * locationStore — Single source of truth for all location state.
- * Used by Explorer, Ride, Send Package, Home, Search.
+ * locationStore — SINGLE source of truth for all location state.
+ * Used by Explorer, Ride, Send Package, Home, Search, Radar, Map.
+ * This is the ONLY authoritative location store — geoStore is deprecated.
  */
 import { create } from "zustand";
+
+export type AccuracyLevel = "exact" | "approximate" | "fallback";
+export type PermissionState = "granted" | "denied" | "prompt" | "unavailable" | "timeout" | "unknown";
 
 export interface LocationPoint {
   lat: number;
@@ -28,13 +32,20 @@ export interface SavedPlace extends ResolvedPlace {
   type: "home" | "work" | "saved" | "recent";
 }
 
-type PermissionState = "granted" | "denied" | "prompt" | "unknown";
+/** Classify GPS accuracy into explicit tiers */
+export function classifyAccuracy(meters: number | null | undefined): AccuracyLevel {
+  if (meters == null) return "fallback";
+  if (meters <= 50) return "exact";
+  if (meters <= 500) return "approximate";
+  return "fallback";
+}
 
 interface LocationState {
   // GPS
   currentLocation: LocationPoint | null;
   lastKnownLocation: LocationPoint | null;
   permissionState: PermissionState;
+  accuracyLevel: AccuracyLevel;
   loading: boolean;
   error: string | null;
   isFallback: boolean;
@@ -69,6 +80,10 @@ interface LocationState {
   savePlace: (place: SavedPlace) => void;
   removePlace: (id: string) => void;
   resetLocationState: () => void;
+
+  // Convenience getters
+  getLat: () => number | null;
+  getLng: () => number | null;
 }
 
 const STORAGE_KEY = "loc:saved-places";
@@ -76,21 +91,14 @@ const RECENT_KEY = "loc:recent-places";
 const MAX_RECENT = 8;
 
 function loadSaved(): SavedPlace[] {
-  try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
-  } catch { return []; }
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"); } catch { return []; }
 }
-
 function loadRecent(): SavedPlace[] {
-  try {
-    return JSON.parse(localStorage.getItem(RECENT_KEY) || "[]");
-  } catch { return []; }
+  try { return JSON.parse(localStorage.getItem(RECENT_KEY) || "[]"); } catch { return []; }
 }
-
 function persistSaved(places: SavedPlace[]) {
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify(places)); } catch {}
 }
-
 function persistRecent(places: SavedPlace[]) {
   try { localStorage.setItem(RECENT_KEY, JSON.stringify(places)); } catch {}
 }
@@ -99,6 +107,7 @@ export const useLocationStore = create<LocationState>((set, get) => ({
   currentLocation: null,
   lastKnownLocation: null,
   permissionState: "unknown",
+  accuracyLevel: "fallback",
   loading: false,
   error: null,
   isFallback: false,
@@ -111,12 +120,18 @@ export const useLocationStore = create<LocationState>((set, get) => ({
   savedPlaces: loadSaved(),
   recentPlaces: loadRecent(),
 
-  setCurrentLocation: (loc) => set({ currentLocation: loc, lastKnownLocation: loc, isFallback: false, error: null }),
+  setCurrentLocation: (loc) => set({
+    currentLocation: loc,
+    lastKnownLocation: loc,
+    isFallback: false,
+    error: null,
+    accuracyLevel: classifyAccuracy(loc.accuracy),
+  }),
   setLastKnownLocation: (loc) => set({ lastKnownLocation: loc }),
   setPermissionState: (state) => set({ permissionState: state }),
   setLoading: (loading) => set({ loading }),
   setError: (error) => set({ error }),
-  setIsFallback: (val) => set({ isFallback: val }),
+  setIsFallback: (val) => set({ isFallback: val, accuracyLevel: val ? "fallback" : get().accuracyLevel }),
   setSelectedLocation: (place) => set({ selectedLocation: place }),
   setPickupLocation: (place) => set({ pickupLocation: place }),
   setDropoffLocation: (place) => set({ dropoffLocation: place }),
@@ -136,9 +151,7 @@ export const useLocationStore = create<LocationState>((set, get) => ({
   savePlace: (place) => {
     const saved = get().savedPlaces;
     const idx = saved.findIndex(s => s.id === place.id);
-    const next = idx >= 0
-      ? saved.map((s, i) => i === idx ? place : s)
-      : [...saved, place];
+    const next = idx >= 0 ? saved.map((s, i) => i === idx ? place : s) : [...saved, place];
     set({ savedPlaces: next });
     persistSaved(next);
   },
@@ -158,4 +171,7 @@ export const useLocationStore = create<LocationState>((set, get) => ({
     error: null,
     loading: false,
   }),
+
+  getLat: () => get().currentLocation?.lat ?? null,
+  getLng: () => get().currentLocation?.lng ?? null,
 }));
