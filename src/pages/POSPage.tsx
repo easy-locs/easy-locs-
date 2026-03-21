@@ -175,14 +175,14 @@ export default function POSPage() {
         contextType: "pos_order",
         contextId: order.id,
         title: `POS Order #${order.id.slice(0, 8)}`,
-      }).then(() => ({ success: true })).catch((e: any) => ({ success: false, error: e.message }));
+      }).then(() => ({ success: true, error: null as string | null })).catch((e: any) => ({ success: false, error: e.message }));
 
       if (!result.success) {
         await (supabase as any).from("storefront_orders").update({ status: "cancelled" }).eq("id", order.id);
         throw new Error(result.error || "Payment failed");
       }
 
-      const refCode = (result.data as any)?.reference_code || null;
+      const refCode = null;
       await (supabase as any)
         .from("storefront_orders")
         .update({ status: "accepted", payment_status: "paid", wallet_reference_code: refCode })
