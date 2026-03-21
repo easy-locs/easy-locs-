@@ -1,25 +1,28 @@
 /**
  * SellerHubPage — Unified seller management page.
- * Tabs: Dashboard, Videos, Analytics, Live
- * PASS55 Block E2: Seller Deep
+ * Tabs: My Shops, Orders/POS, Logistics, Videos, Analytics, Live
  */
-import { useState } from "react";
+import { useState, lazy, Suspense } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
+import SellerDashboard from "@/components/seller/SellerDashboard";
 import SellerDashboardPanel from "@/components/marketplace/SellerDashboardPanel";
 import SellerVideoHub from "@/components/marketplace/SellerVideoHub";
 import StorefrontAnalytics from "@/components/marketplace/StorefrontAnalytics";
 import LiveCommerceToggle from "@/components/marketplace/LiveCommerceToggle";
 import SellerLogisticsPanel from "@/components/delivery/SellerLogisticsPanel";
-import { Store, Video, BarChart3, Radio, Truck } from "lucide-react";
+import { Store, Video, BarChart3, Radio, Truck, ChefHat, Loader2 } from "lucide-react";
 import { haptic } from "@/lib/haptics";
 
+const KitchenQueue = lazy(() => import("@/components/pos/KitchenQueue"));
+
 const TABS = [
-  { id: "dashboard", label: "Dashboard", icon: Store },
-  { id: "logistics", label: "Livraisons", icon: Truck },
-  { id: "videos", label: "Vidéos", icon: Video },
+  { id: "shops", label: "My Shops", icon: Store },
+  { id: "orders", label: "Orders", icon: ChefHat },
+  { id: "logistics", label: "Deliveries", icon: Truck },
+  { id: "videos", label: "Videos", icon: Video },
   { id: "analytics", label: "Analytics", icon: BarChart3 },
   { id: "live", label: "Live", icon: Radio },
 ] as const;
@@ -28,7 +31,7 @@ type TabId = typeof TABS[number]["id"];
 
 export default function SellerHubPage() {
   const { user, orgId } = useAuth();
-  const [tab, setTab] = useState<TabId>("dashboard");
+  const [tab, setTab] = useState<TabId>("shops");
 
   const { data: provider } = useQuery({
     queryKey: ["seller_provider", orgId],
@@ -69,13 +72,29 @@ export default function SellerHubPage() {
     enabled: !!orgId,
   });
 
+  // Get first active shop for POS
+  const { data: activeShop } = useQuery({
+    queryKey: ["seller_active_shop", user?.id],
+    queryFn: async () => {
+      const { data } = await (supabase as any)
+        .from("storefront_pages")
+        .select("id, name")
+        .eq("user_id", user!.id)
+        .eq("active", true)
+        .limit(1)
+        .maybeSingle();
+      return data;
+    },
+    enabled: !!user?.id,
+  });
+
   return (
     <DashboardLayout>
       <div className="max-w-2xl mx-auto pb-6">
         {/* Page header */}
         <div className="px-4 pt-4 pb-2">
           <h1 className="text-lg font-bold text-foreground">Seller Hub</h1>
-          <p className="text-xs text-muted-foreground">Gérez votre vitrine, vidéos et performances</p>
+          <p className="text-xs text-muted-foreground">Manage your shops, orders & performance</p>
         </div>
 
         {/* Tab bar */}
@@ -102,21 +121,25 @@ export default function SellerHubPage() {
 
         {/* Content */}
         <div className="px-4">
-          {tab === "dashboard" && (
-            <SellerDashboardPanel
-              provider={provider}
-              services={services}
-              bookingsCount={bookingsCount}
-            />
+          {tab === "shops" && <SellerDashboard />}
+
+          {tab === "orders" && (
+            activeShop ? (
+              <Suspense fallback={<div className="flex justify-center py-12"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>}>
+                <KitchenQueue shopId={activeShop.id} />
+              </Suspense>
+            ) : (
+              <div className="text-center py-12">
+                <p className="text-sm text-muted-foreground">
+                  Activate a shop first to see incoming orders.
+                </p>
+              </div>
+            )
           )}
 
-          {tab === "logistics" && (
-            <SellerLogisticsPanel />
-          )}
+          {tab === "logistics" && <SellerLogisticsPanel />}
 
-          {tab === "videos" && (
-            <SellerVideoHub services={services} />
-          )}
+          {tab === "videos" && <SellerVideoHub services={services} />}
 
           {tab === "analytics" && provider && (
             <StorefrontAnalytics providerId={provider.id} services={services} />
@@ -133,7 +156,7 @@ export default function SellerHubPage() {
           {(tab === "analytics" || tab === "live") && !provider && (
             <div className="text-center py-12">
               <p className="text-sm text-muted-foreground">
-                Créez d'abord votre profil prestataire pour accéder à cette section.
+                Create a provider profile first to access this section.
               </p>
             </div>
           )}
