@@ -24,6 +24,7 @@ import { SkipLink } from "@/components/ui/a11y";
 import SmartInstallBanner from "@/components/pwa/SmartInstallBanner";
 // OrbitCallRoot removed — was returning null, call system unified under CallOverlayV2
 import { CallOverlayV2 } from "@/components/call/CallOverlayV2";
+import { GeoBootstrap } from "@/components/map/GeoBootstrap";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import ChunkRecoveryBoundary from "@/components/system/ChunkRecoveryBoundary";
