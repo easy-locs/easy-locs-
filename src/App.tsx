@@ -31,6 +31,7 @@ import CountryGuard from "@/components/dashboard/CountryGuard";
 import { UnifiedPaymentProvider } from "@/payments/UnifiedPaymentSystem";
 import V1BootBridge from "@/app/V1BootBridge";
 import { useNotificationsStore } from "@/stores/notificationsStore";
+import AppBootstrapGuardDirect from "@/components/app/AppBootstrapGuard";
 
 // V2 test pages
 const V2TestPage = safeLazy(() => import("./app/router/V2TestPage"), "V2TestPage");
@@ -55,7 +56,6 @@ const V2AdminPage = safeLazy(() => import("./app/router/AdminPage"), "V2AdminPag
 import { V2AuthBridge as V2AuthBridgeWrapper } from "@/components/system/V2AuthBridge";
 import { V2AuthGate as V2AuthGateWrapper } from "@/components/system/V2AuthGate";
 import { AuthGate as V2AuthGate } from "@/components/guards/AuthGate";
-import { AppInit as V2AppInit } from "@/components/system/AppInit";
 const V2AuthPage = safeLazy(() => import("./app/router/AuthPage"), "V2AuthPage");
 const ClaimPage = safeLazy(() => import("./pages/ClaimPage"), "ClaimPage");
 
@@ -585,7 +585,7 @@ const AdminGoLiveReadinessPage = safeLazy(() => import("./pages/admin/AdminGoLiv
 // IG-IL block
 const AdminUiFinalizerPage = safeLazy(() => import("./pages/admin/AdminUiFinalizerPage"), "AdminUiFinalizerPage");
 // IM-IR block
-const AppBootstrapGuard = safeLazy(() => import("./components/app/AppBootstrapGuard"), "AppBootstrapGuard");
+// AppBootstrapGuard imported directly (not lazy) — it's a tiny null component
 const AdminMasterControlPage = safeLazy(() => import("./pages/admin/AdminMasterControlPage"), "AdminMasterControlPage");
 // IS-IX block
 const AdminProductionChecklistPage = safeLazy(() => import("./pages/admin/AdminProductionChecklistPage"), "AdminProductionChecklistPage");
@@ -790,7 +790,7 @@ const App = () => (
            <NotificationsRealtimeGuard />
            <UpdateNotification />
                 <GeoBootstrap />
-             <AppBootstrapGuard />
+             <AppBootstrapGuardDirect />
            
            <SkipLink />
            <Suspense fallback={<PageLoader />}>
@@ -879,7 +879,7 @@ const App = () => (
               <Route path="/admin/ai-ops-chat" element={<AIOpsChatPage />} />
               <Route path="/admin/financial-recon" element={<FinancialReconPage />} />
               <Route path="/admin/recon-alerts" element={<ReconAlertsPage />} />
-              <Route path="/call/:callSessionId" element={<CallSessionPage />} />
+              <Route path="/call-session/:callSessionId" element={<CallSessionPage />} />
               <Route path="/orbit/identity" element={<OrbitIdentityPage />} />
               <Route path="/wallet/hub" element={<WalletHubPage />} />
               <Route path="/dispatch/predictive" element={<PredictiveDispatchPage />} />
