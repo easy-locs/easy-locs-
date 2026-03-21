@@ -11,6 +11,7 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
+  profileLoaded: boolean;
   emailVerified: boolean;
   orgId: string | null;
   allOrgs: { id: string; name: string; country: string; currency: string }[];
@@ -34,6 +35,7 @@ const AuthContext = createContext<AuthContextType>({
   user: null,
   session: null,
   loading: true,
+  profileLoaded: false,
   emailVerified: false,
   orgId: null,
   allOrgs: [],
@@ -57,6 +59,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [profileLoaded, setProfileLoaded] = useState(false);
   const [orgId, setOrgId] = useState<string | null>(null);
   const [userType, setUserType] = useState<UserType>("landlord");
   const [userCountry, setUserCountry] = useState("FR");
@@ -164,6 +167,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         supabase.from("profiles").update({ onboarding_completed: true }).eq("id", userId).then(() => {});
       }
       setOnboardingCompleted(onboardingDone);
+      setProfileLoaded(true);
 
       const savedRole = (() => {
         try {
@@ -193,6 +197,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setOnboardingCompleted(false);
       setActiveRole("landlord");
       setHasDualRole(false);
+      setProfileLoaded(true);
     }
   }, []);
 
@@ -259,6 +264,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setUserCountry("FR");
         setUserCurrency("EUR");
         setOnboardingCompleted(false);
+        setProfileLoaded(false);
         resetSubscription();
         setActiveRole("landlord");
         setHasDualRole(false);
@@ -325,13 +331,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setUserCountry("FR");
     setUserCurrency("EUR");
     setOnboardingCompleted(false);
+    setProfileLoaded(false);
     resetSubscription();
     setActiveRole("landlord");
     setHasDualRole(false);
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, emailVerified, orgId, allOrgs, switchOrg, userType, userCountry, userCurrency, onboardingCompleted, subscription, activeRole, hasDualRole, switchRole, refreshSubscription, refreshProfile, signOut }}>
+    <AuthContext.Provider value={{ user, session, loading, profileLoaded, emailVerified, orgId, allOrgs, switchOrg, userType, userCountry, userCurrency, onboardingCompleted, subscription, activeRole, hasDualRole, switchRole, refreshSubscription, refreshProfile, signOut }}>
       {children}
     </AuthContext.Provider>
   );

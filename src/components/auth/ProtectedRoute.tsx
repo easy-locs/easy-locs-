@@ -30,10 +30,22 @@ const PRO_DASHBOARD_PREFIXES = [
 ];
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const { user, loading, emailVerified, activeRole, onboardingCompleted, subscription } = useAuth();
+  const { user, loading, emailVerified, activeRole, onboardingCompleted, profileLoaded, subscription } = useAuth();
   const location = useLocation();
 
   if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  if (!user) return <Navigate to="/login" replace />;
+  if (!emailVerified) return <Navigate to="/verify-email" replace />;
+
+  // Wait for profile to load before making onboarding decision — prevents flicker
+  if (!profileLoaded) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
@@ -51,7 +63,12 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const isPropertyHubRoute = location.pathname.startsWith("/property-hub");
   const isAdminRoute = location.pathname.startsWith("/admin");
 
-  // Keep onboarding accessible for brand-new users, but never force-redirect existing sessions to it.
+  // Onboarding gate: force redirect to /onboarding if not completed (single source of truth)
+  if (!onboardingCompleted && !isOnboarding) {
+    return <Navigate to="/onboarding" replace />;
+  }
+
+  // Already completed onboarding but trying to access /onboarding → redirect to role dashboard
   if (isOnboarding && onboardingCompleted) {
     const dest = activeRole === "tenant" ? "/tenant" : activeRole === "client" ? "/client" : "/dashboard";
     return <Navigate to={dest} replace />;
