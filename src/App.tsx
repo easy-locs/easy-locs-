@@ -871,7 +871,7 @@ const App = () => (
               <Route path="/admin/sla" element={<AdminSLAPage />} />
               <Route path="/admin/trust-graph" element={<AdminTrustGraphPage />} />
               <Route path="/refund/:rideRequestId" element={<RefundRequestPage />} />
-              <Route path="/orbit/call/:threadId" element={<OrbitLiveCallPage />} />
+              {/* orbit/call route removed — calls handled by CallProvider */}
               <Route path="/orbit/contacts" element={<OrbitContactsPage />} />
               <Route path="/team/command-center" element={<TeamCommandCenterPage />} />
               <Route path="/admin/executive-kpi" element={<ExecutiveKPIBoardPage />} />
