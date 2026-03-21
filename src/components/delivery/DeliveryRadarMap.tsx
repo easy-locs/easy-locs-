@@ -22,7 +22,7 @@ export function DeliveryRadarMap() {
       </div>
 
       <p className="text-xs text-muted-foreground">
-        You: {geo.lat.toFixed(4)}, {geo.lng.toFixed(4)}
+        You: {(currentLocation?.lat ?? 0).toFixed(4)}, {(currentLocation?.lng ?? 0).toFixed(4)}
       </p>
 
       {drivers.length === 0 ? (

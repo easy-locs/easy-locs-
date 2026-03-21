@@ -6,8 +6,7 @@ import { useEffect, useRef, useCallback, memo } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import type { GeoEntity } from "@/lib/geo/geoEntityAdapter";
-
-const MAPBOX_TOKEN = "pk.eyJ1IjoibG92YWJsZS1kZXYiLCJhIjoiY200aGt6NnFzMGo2MTJscTB6cXRrZmFhMCJ9.a_2YvYMEjaavqiSMfmGvbQ";
+import { MAPBOX_ACCESS_TOKEN } from "@/lib/mapbox/config";
 
 const ENTITY_COLORS: Record<string, string> = {
   restaurant: "#f97316",

@@ -15,10 +15,10 @@ export function CreateDeliveryPanel() {
       <button
         onClick={() =>
           void createJob({
-            pickupLat: geo.lat,
-            pickupLng: geo.lng,
-            dropLat: geo.lat + 0.01,
-            dropLng: geo.lng + 0.01,
+            pickupLat: lat,
+            pickupLng: lng,
+            dropLat: lat + 0.01,
+            dropLng: lng + 0.01,
             price: 20,
           })
         }
