@@ -51,13 +51,37 @@ export default function WalletHubPage() {
     if (!user?.id) return;
     try {
       await createWalletAccount({ ownerUserId: user.id, ownerType: "user", currency: "AED", accountType: "fiat" });
+      console.log("[WalletHubPage] wallet created", { userId: user.id });
       toast.success("Wallet created");
-    } catch {
+    } catch (err) {
+      console.error("[WalletHubPage] wallet create failed", err);
       toast.error("Could not create wallet");
     }
   };
 
-  // Auto-create wallet if user has none
+  const handleTestTopUp = async () => {
+    if (!user?.id) return;
+    try {
+      const wallet = await getOrCreateWalletAccount({ ownerUserId: user.id, currency: mainCurrency || "AED" });
+      const ledger = await createLedgerEntry({
+        walletAccountId: wallet.id,
+        direction: "in",
+        amount: 100,
+        currency: wallet.currency || "AED",
+        entryType: "top_up",
+        referenceType: "test_credit",
+        note: "Runtime test top-up",
+      });
+      const updatedWallet = await recomputeWalletBalance(wallet.id);
+      console.log("[WalletHubPage] test top-up success", { walletId: wallet.id, ledgerId: ledger.id, balance: updatedWallet?.balance });
+      toast.success("Test top-up added: 100 AED");
+      window.location.reload();
+    } catch (err) {
+      console.error("[WalletHubPage] test top-up failed", err);
+      toast.error("Test top-up failed");
+    }
+  };
+
   useEffect(() => {
     if (!loading && rows.length === 0 && user?.id) {
       createDefaultWallet();
