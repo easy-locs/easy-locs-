@@ -31,7 +31,7 @@ export default function OrbitPaymentRequest({
   onCancel,
 }: OrbitPaymentRequestProps) {
   const detected = detectLocalCurrency();
-  const { requestMoney } = useWallet();
+  const { user } = useAuth();
   const [amount, setAmount] = useState("");
   const [currency, setCurrency] = useState(detected.code);
   const [description, setDescription] = useState("");
