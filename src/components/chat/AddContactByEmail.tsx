@@ -179,6 +179,16 @@ export function AddContactByEmail(props: {
             </p>
           </div>
           <div className="flex items-center gap-1.5 shrink-0">
+            {!saved && (
+              <button
+                onClick={() => void handleSaveFriend()}
+                disabled={saving}
+                className="h-9 px-3 rounded-lg bg-accent text-accent-foreground text-xs font-medium flex items-center gap-1.5 active:scale-[0.95] transition-transform disabled:opacity-40"
+              >
+                <UserPlus className="h-3.5 w-3.5" />
+                {saving ? "…" : "Ajouter"}
+              </button>
+            )}
             {props.onConversationReady && (
               <button
                 onClick={() => void handleOpenChat()}
