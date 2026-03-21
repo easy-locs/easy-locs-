@@ -13,7 +13,6 @@ import { logCallEventToThread } from "@/lib/call-thread-logger";
 import { toast } from "sonner";
 import InAppCallDialog from "./InAppCallDialog";
 import IncomingCallDialog from "./IncomingCallDialog";
-import { CallDebugOverlay } from "./CallDebugOverlay";
 
 interface CallContextType {
   /** Start a call to an org (provider) */
@@ -382,8 +381,6 @@ export function CallProvider({ children }: { children: ReactNode }) {
     <CallContext.Provider value={{ startCall, isInCall: showCallDialog, isStartingCall }}>
       {children}
 
-      {/* Call debug overlay */}
-      <CallDebugOverlay />
 
       {/* Incoming call dialog */}
       <IncomingCallDialog
