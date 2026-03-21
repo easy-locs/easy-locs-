@@ -429,48 +429,9 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
 
       {/* Main content area */}
       <div className="flex-1 flex flex-col min-h-screen min-w-0">
-        <header className="min-h-[48px] sm:min-h-[56px] border-b border-border bg-card/95 backdrop-blur-sm flex items-center px-2 sm:px-6 gap-1.5 sm:gap-3 sticky top-0 z-30 overflow-visible" style={{ paddingTop: "max(4px, env(safe-area-inset-top, 4px))" }}>
-          <button onClick={() => setSidebarOpen(true)} className="lg:hidden text-foreground w-11 h-11 flex items-center justify-center -ml-1 rounded-lg hover:bg-muted transition-colors" aria-label="Menu">
-            <Menu className="h-5 w-5" />
-          </button>
-
-          {/* Country breadcrumb in header */}
-          {activeCountry && countryEntry && (
-            <div className="hidden sm:flex items-center gap-2 text-sm">
-              <span className="text-lg">{countryEntry.flag}</span>
-              <span className="font-semibold text-foreground">{countryEntry.name}</span>
-            </div>
-          )}
-
-          {/* Quick Explore access */}
-          <Link
-            to="/explore"
-            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm font-medium text-accent hover:bg-accent/10 transition-colors"
-            title={t("nav.explore") || "Explore"}
-          >
-            <Compass className="h-4 w-4" />
-            <span className="hidden sm:inline">{t("nav.explore") || "Explore"}</span>
-          </Link>
-
-          <Link
-            to="/dashboard/wallet"
-            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm font-medium text-foreground/80 hover:text-foreground hover:bg-muted transition-colors"
-            title="Wallet"
-          >
-            <Wallet className="h-4 w-4" />
-            <span className="hidden sm:inline">Wallet</span>
-          </Link>
-
-          <div className="flex-1" />
-          {/* Hub quick access — desktop topbar */}
-          <HubQuickAccess variant="topbar" />
-          {/* Language auto-detected — manual change in Settings only */}
-          <ThemeSwitcher />
-          <NotificationBell />
-        </header>
 
         {subscription.isTrial && (
-          <div className="mx-4 sm:mx-6 mt-4 flex items-center gap-3 bg-accent/10 border border-accent/30 rounded-lg px-4 py-2.5">
+          <div className="mx-4 sm:mx-6 mt-3 flex items-center gap-3 bg-accent/10 border border-accent/30 rounded-lg px-4 py-2.5">
             <Clock className="h-4 w-4 text-accent shrink-0" />
             <p className="text-sm text-foreground">
               <span className="font-semibold">{t("trial.free")}</span>

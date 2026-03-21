@@ -85,6 +85,17 @@ export const CATEGORY_HIERARCHY: CategoryGroup[] = [
     ],
   },
   {
+    value: "mobility",
+    label: "Mobility",
+    emoji: "🚕",
+    subcategories: [
+      { value: "taxi", label: "Taxi", emoji: "🚕" },
+      { value: "private_driver", label: "Private Driver", emoji: "🚘" },
+      { value: "airport_transfer", label: "Airport Transfer", emoji: "✈️" },
+      { value: "transport", label: "Transport", emoji: "🚐" },
+    ],
+  },
+  {
     value: "professional",
     label: "Professional Services",
     emoji: "💼",

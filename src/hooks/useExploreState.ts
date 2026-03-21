@@ -5,12 +5,12 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { useGeoDetect } from "@/hooks/useGeoDetect";
 import { CATEGORY_HIERARCHY } from "@/lib/category-hierarchy";
 import { haversineKm } from "@/lib/geo-distance";
 import { batchGeocideCities, cityKey, type CityCoords } from "@/lib/city-geocoder";
 import type { AdvancedFilters } from "@/components/explore/ExploreAdvancedFilters";
 import { defaultAdvancedFilters } from "@/components/explore/ExploreAdvancedFilters";
+import { useLocationStore } from "@/stores/locationStore";
 
 interface RealEstateListing {
   id: string; title: string; listing_type: string; price: number; currency: string;
@@ -41,7 +41,9 @@ const ITEMS_PER_PAGE = 24;
 
 export function useExploreState() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const geo = useGeoDetect();
+  const currentLocation = useLocationStore((s) => s.currentLocation);
+  const permissionState = useLocationStore((s) => s.permissionState);
+  const setSearchRadiusKm = useLocationStore((s) => s.setSearchRadiusKm);
 
   // UI state
   const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || "");
@@ -56,6 +58,15 @@ export function useExploreState() {
   const [geoApplied, setGeoApplied] = useState(false);
   const geocodingRef = useRef(false);
   const [advancedFilters, setAdvancedFilters] = useState<AdvancedFilters>(defaultAdvancedFilters);
+  const geo = useMemo(() => ({
+    detection: currentLocation
+      ? { lat: currentLocation.lat, lng: currentLocation.lng, city: null, country: null }
+      : null,
+    loading: permissionState === "unknown" || permissionState === "prompt",
+    country: "",
+    permissionState,
+    currentLocation,
+  }), [currentLocation, permissionState]);
 
   // Data
   const [realEstate, setRealEstate] = useState<RealEstateListing[]>([]);
@@ -68,9 +79,19 @@ export function useExploreState() {
   useEffect(() => {
     if (geoApplied) return;
     if (searchParams.get("location") || searchParams.get("q")) return;
-    if (!geo.detection || geo.loading) return;
+    if (!currentLocation || geo.loading) return;
     setGeoApplied(true);
-  }, [geo.detection, geo.loading, geoApplied, searchParams]);
+  }, [currentLocation, geo.loading, geoApplied, searchParams]);
+
+  useEffect(() => {
+    setSearchRadiusKm(radiusKm || 0);
+  }, [radiusKm, setSearchRadiusKm]);
+
+  useEffect(() => {
+    if (radiusKm > 0 && currentLocation && !searchCenter) {
+      setSearchCenter({ lat: currentLocation.lat, lng: currentLocation.lng });
+    }
+  }, [radiusKm, currentLocation, searchCenter]);
 
   // Data fetch
   useEffect(() => {
@@ -254,6 +275,10 @@ export function useExploreState() {
       if (geo.detection.lat && geo.detection.lng) {
         setSearchCenter({ lat: geo.detection.lat, lng: geo.detection.lng });
       }
+    } else if (suggestion.type === "geo" && currentLocation) {
+      setLocationQuery("Near me");
+      setRadiusKm(25);
+      setSearchCenter({ lat: currentLocation.lat, lng: currentLocation.lng });
     } else {
       setLocationQuery(suggestion.label);
       if (suggestion.type === "city") {
@@ -269,15 +294,16 @@ export function useExploreState() {
   };
 
   const handleNearMe = () => {
-    if (geo.detection?.city) {
+    if (currentLocation) {
+      setLocationQuery(geo.detection?.city || "Near me");
+      setRadiusKm(25);
+      setSearchCenter({ lat: currentLocation.lat, lng: currentLocation.lng });
+    } else if (geo.detection?.city) {
       setLocationQuery(geo.detection.city);
       setRadiusKm(25);
       if (geo.detection.lat && geo.detection.lng) {
         setSearchCenter({ lat: geo.detection.lat, lng: geo.detection.lng });
       }
-    } else if (geo.country) {
-      setLocationQuery(geo.country);
-      setRadiusKm(100);
     }
   };
 

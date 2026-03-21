@@ -6,7 +6,6 @@ import { Outlet } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useOrbitEngine } from "@/stores/orbit-engine";
 import { useEffect, lazy, Suspense } from "react";
-import OrbitHeader from "./OrbitHeader";
 import { startNotificationDispatcher, stopNotificationDispatcher } from "@/lib/orbit/notification-dispatcher";
 
 const OrbitFAB = lazy(() => import("./OrbitFAB"));
@@ -44,7 +43,6 @@ export default function OrbitAppShell({ children }: { children?: React.ReactNode
 
   return (
     <div className="min-h-[100dvh] flex flex-col bg-background">
-      <OrbitHeader />
       <main className="flex-1 overflow-y-auto pb-[calc(56px+env(safe-area-inset-bottom,0px))]">
         {children}
         <Outlet />
