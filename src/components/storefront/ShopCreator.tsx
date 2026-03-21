@@ -1,5 +1,6 @@
 /**
  * ShopCreator — Smart pro onboarding with photo/logo upload, AI category, futuristic UX.
+ * Enforces duplicate detection + auto zone assignment on creation.
  */
 import { useState, useRef } from "react";
 import { validateShop } from "@/lib/validation/marketplace-validators";
@@ -7,6 +8,8 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEnsureOrg } from "@/hooks/useEnsureOrg";
+import { checkStorefrontDuplicate } from "@/lib/geo/duplicateGuard";
+import { assignZoneToStorefront } from "@/lib/zones/autoAssignZone";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
