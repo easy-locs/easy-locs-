@@ -482,7 +482,7 @@ export default function POSPage() {
 
           {/* Balance */}
           <div className="text-center text-xs text-muted-foreground pt-2">
-            Wallet Balance: <span className="font-semibold text-foreground">{balance?.balance?.toFixed(2) || "0.00"} LOCS</span>
+            Wallet Balance: <span className="font-semibold text-foreground">{walletBalance?.toFixed(2) || "0.00"} AED</span>
           </div>
         </div>
       </div>
