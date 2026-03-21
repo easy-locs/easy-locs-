@@ -57,9 +57,9 @@ export async function resolveWalletContext(userId: string): Promise<{
 
   return {
     walletId: wallet?.id ?? null,
-    balance: Number(wallet?.balance_cash ?? 0),
-    currency: wallet?.currency ?? "EUR",
-    country: wallet?.country_code ?? "FR",
+    balance: Number(wallet?.balance ?? 0),
+    currency: wallet?.currency ?? "AED",
+    country: wallet?.country_code ?? "AE",
   };
 }
 
