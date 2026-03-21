@@ -188,7 +188,11 @@ export function resolveRoute(payload: UniversalQrPayload): string | null {
     case "menu":
       return `/s/${payload.shopSlug}`;
     case "pos_order":
-      return `/s/${payload.shopSlug}${payload.tableCode ? `?table=${payload.tableCode}` : ""}`;
+      const params = new URLSearchParams();
+      if (payload.tableCode) params.set("table", payload.tableCode);
+      if (payload.terminalId) params.set("terminal", payload.terminalId);
+      const qs = params.toString();
+      return `/s/${payload.shopSlug}${qs ? `?${qs}` : ""}`;
     case "shop":
       return `/s/${payload.shopSlug}`;
     case "product":
