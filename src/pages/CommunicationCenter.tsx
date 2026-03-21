@@ -22,7 +22,7 @@ import OrbitRadar from "@/components/orbit/OrbitRadar";
 import HudConversationList from "@/components/communication-hub/HudConversationList";
 import HudChatPanel from "@/components/communication-hub/HudChatPanel";
 import HudContextPanel from "@/components/communication-hub/HudContextPanel";
-import NewConversationDialog from "@/components/communication-hub/NewConversationDialog";
+import { AddContactByEmail } from "@/components/chat/AddContactByEmail";
 import OrbitSecuritySettings from "@/components/orbit/OrbitSecuritySettings";
 import OrbitAccountSection from "@/components/communication-hub/OrbitAccountSection";
 import { useConversationThreads } from "@/components/communication-hub/useConversationThreads";
@@ -340,7 +340,9 @@ export const CommunicationCenter = () => {
         </Sheet>
       )}
 
-      <NewConversationDialog open={showNewConversation} onOpenChange={setShowNewConversation} onThreadCreated={handleNewThreadCreated} />
+      {showNewConversation && (
+        <AddContactByEmail onSaved={() => setShowNewConversation(false)} />
+      )}
     </>
   );
 };

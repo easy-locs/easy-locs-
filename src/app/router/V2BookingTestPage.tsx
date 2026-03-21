@@ -5,7 +5,7 @@ import { useOrbitStore } from "@/stores/orbitStore";
 import { useListingStore } from "@/stores/listingStore";
 import { useBookingStore } from "@/stores/bookingStore";
 import { useWalletStore } from "@/stores/walletStore";
-import { useContactStore } from "@/stores/contactStore";
+import { useNavigate } from "react-router-dom";
 import { usePropertyManagementStore } from "@/stores/propertyManagementStore";
 
 export default function V2BookingTestPage() {
@@ -21,10 +21,10 @@ export default function V2BookingTestPage() {
   const createLease = usePropertyManagementStore((s) => s.createLease);
   const createRentPayment = usePropertyManagementStore((s) => s.createRentPayment);
 
-  const openContact = useContactStore((s) => s.openContact);
-  const startAudioCall = useContactStore((s) => s.startAudioCall);
-  const startVideoCall = useContactStore((s) => s.startVideoCall);
-  const openChatPanel = useContactStore((s) => s.openChatPanel);
+  const navigate = useNavigate();
+  const openContact = (input: { orbitId: string; listingId?: string }) => {
+    navigate(`/dashboard/communication?section=contacts&orbit=${input.orbitId}`);
+  };
 
   const seedWallet = () => {
     const state = useWalletStore.getState();
@@ -183,13 +183,13 @@ export default function V2BookingTestPage() {
           <button className="px-3 py-1 text-xs rounded-full bg-primary text-primary-foreground" onClick={openOwnerContact}>
             Open Contact
           </button>
-          <button className="px-3 py-1 text-xs rounded-full bg-primary text-primary-foreground" onClick={openChatPanel}>
+          <button className="px-3 py-1 text-xs rounded-full bg-primary text-primary-foreground" onClick={() => navigate('/dashboard/communication?section=chats')}>
             Open Chat
           </button>
-          <button className="px-3 py-1 text-xs rounded-full bg-primary text-primary-foreground" onClick={startAudioCall}>
+          <button className="px-3 py-1 text-xs rounded-full bg-primary text-primary-foreground" onClick={() => navigate('/dashboard/communication?section=calls')}>
             Audio Call
           </button>
-          <button className="px-3 py-1 text-xs rounded-full bg-primary text-primary-foreground" onClick={startVideoCall}>
+          <button className="px-3 py-1 text-xs rounded-full bg-primary text-primary-foreground" onClick={() => navigate('/dashboard/communication?section=calls')}>
             Video Call
           </button>
           <button className="px-3 py-1 text-xs rounded-full bg-secondary text-secondary-foreground" onClick={() => ui.setMapFullscreen(!ui.mapFullscreen)}>

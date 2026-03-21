@@ -6,7 +6,7 @@ import { useOrbitStore } from "@/stores/orbitStore";
 import { useListingStore } from "@/stores/listingStore";
 import { useBookingStore } from "@/stores/bookingStore";
 import { useWalletStore } from "@/stores/walletStore";
-import { useContactStore } from "@/stores/contactStore";
+
 import { usePropertyManagementStore } from "@/stores/propertyManagementStore";
 import { useListingsRealtime } from "@/hooks/useListingsRealtime";
 import { useBookingsRealtime } from "@/hooks/useBookingsRealtime";
@@ -52,8 +52,8 @@ export default function V2MegaPage() {
   const createUnit = usePropertyManagementStore((s) => s.createUnit);
   const createLease = usePropertyManagementStore((s) => s.createLease);
   const createRentPayment = usePropertyManagementStore((s) => s.createRentPayment);
-  const openContact = useContactStore((s) => s.openContact);
-  const openChatPanel = useContactStore((s) => s.openChatPanel);
+  const openContact = (_input: { orbitId: string }) => { /* removed: contactStore killed */ };
+  const openChatPanel = () => { /* removed: contactStore killed */ };
   const { startCall } = useCall();
   const buildListingMarkers = useMapStore((s) => s.buildListingMarkers);
   const openCamera = useCameraStore((s) => s.openCamera);
@@ -200,7 +200,7 @@ export default function V2MegaPage() {
   const doOpenContact = () => {
     const listing = getPublishedListings()[0];
     if (!listing) return;
-    openContact({ orbitId: listing.ownerOrbitId, listingId: listing.id });
+    openContact({ orbitId: listing.ownerOrbitId });
   };
 
   const firstListing = getPublishedListings()[0];
