@@ -213,6 +213,11 @@ function migrateLegacy(old: Record<string, any>): UniversalQrPayload | null {
       return { action: "profile", v: 1, userId: old.userId };
     case "shop":
       return { action: "shop", v: 1, shopSlug: old.shopSlug };
+    // Legacy wallet QR payment format
+    case "wallet_qr_payment":
+      return { action: "pay_user", v: 1, userId: old.walletId || old.userId, amount: old.amount, currency: old.currency };
+    case "wallet_pay":
+      return { action: "pay_user", v: 1, userId: old.receiver_id || old.userId || old.wallet_id, amount: old.amount, currency: old.currency };
     default:
       return null;
   }

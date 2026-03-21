@@ -169,8 +169,15 @@ export default function QrScannerPage() {
       let preferredCameraId: string | null = null;
       try {
         const cameras = await Html5Qrcode.getCameras();
+        // Prefer rear/back/environment camera — pick last match (often highest-res rear)
         const rear = cameras.find((c) => /back|rear|environment|wide/i.test(c.label));
-        preferredCameraId = rear?.id || cameras[cameras.length - 1]?.id || cameras[0]?.id || null;
+        if (rear) {
+          preferredCameraId = rear.id;
+        } else if (cameras.length > 1) {
+          // On most phones, last camera in list is rear
+          preferredCameraId = cameras[cameras.length - 1].id;
+        }
+        // Don't fall back to cameras[0] — that's usually front camera
       } catch {}
 
       if (!mountedRef.current || opRef.current !== startOp) return;
