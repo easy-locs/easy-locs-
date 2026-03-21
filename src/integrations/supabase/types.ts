@@ -586,6 +586,48 @@ export type Database = {
         }
         Relationships: []
       }
+      aml_events: {
+        Row: {
+          created_at: string | null
+          entity_id: string | null
+          entity_type: string | null
+          event_type: string
+          id: string
+          metadata_json: Json | null
+          score: number | null
+          severity: string | null
+          shop_id: string | null
+          status: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          entity_id?: string | null
+          entity_type?: string | null
+          event_type: string
+          id?: string
+          metadata_json?: Json | null
+          score?: number | null
+          severity?: string | null
+          shop_id?: string | null
+          status?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          entity_id?: string | null
+          entity_type?: string | null
+          event_type?: string
+          id?: string
+          metadata_json?: Json | null
+          score?: number | null
+          severity?: string | null
+          shop_id?: string | null
+          status?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       api_keys: {
         Row: {
           active: boolean
@@ -1533,6 +1575,72 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      business_compliance_profiles: {
+        Row: {
+          bank_account_last4: string | null
+          bank_account_name: string | null
+          beneficial_owner_id: string | null
+          beneficial_owner_name: string | null
+          company_type: string | null
+          compliance_status: string | null
+          created_at: string | null
+          id: string
+          incorporation_country: string | null
+          legal_name: string | null
+          payout_status: string | null
+          pep_check_status: string | null
+          risk_rating: string | null
+          sanctions_check_status: string | null
+          screening_last_run_at: string | null
+          shop_id: string
+          tax_number: string | null
+          trade_license_number: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          bank_account_last4?: string | null
+          bank_account_name?: string | null
+          beneficial_owner_id?: string | null
+          beneficial_owner_name?: string | null
+          company_type?: string | null
+          compliance_status?: string | null
+          created_at?: string | null
+          id?: string
+          incorporation_country?: string | null
+          legal_name?: string | null
+          payout_status?: string | null
+          pep_check_status?: string | null
+          risk_rating?: string | null
+          sanctions_check_status?: string | null
+          screening_last_run_at?: string | null
+          shop_id: string
+          tax_number?: string | null
+          trade_license_number?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          bank_account_last4?: string | null
+          bank_account_name?: string | null
+          beneficial_owner_id?: string | null
+          beneficial_owner_name?: string | null
+          company_type?: string | null
+          compliance_status?: string | null
+          created_at?: string | null
+          id?: string
+          incorporation_country?: string | null
+          legal_name?: string | null
+          payout_status?: string | null
+          pep_check_status?: string | null
+          risk_rating?: string | null
+          sanctions_check_status?: string | null
+          screening_last_run_at?: string | null
+          shop_id?: string
+          tax_number?: string | null
+          trade_license_number?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
       }
       call_auth_tokens: {
         Row: {
@@ -2620,6 +2728,45 @@ export type Database = {
           observed_at?: string | null
           observed_price?: number
           workspace_id?: string | null
+        }
+        Relationships: []
+      }
+      compliance_cases: {
+        Row: {
+          assigned_to: string | null
+          case_type: string
+          created_at: string | null
+          id: string
+          notes: string | null
+          severity: string | null
+          shop_id: string | null
+          status: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          assigned_to?: string | null
+          case_type: string
+          created_at?: string | null
+          id?: string
+          notes?: string | null
+          severity?: string | null
+          shop_id?: string | null
+          status?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          assigned_to?: string | null
+          case_type?: string
+          created_at?: string | null
+          id?: string
+          notes?: string | null
+          severity?: string | null
+          shop_id?: string | null
+          status?: string | null
+          updated_at?: string | null
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -8359,6 +8506,45 @@ export type Database = {
           id?: string
           language?: string | null
           route?: string
+        }
+        Relationships: []
+      }
+      kyc_documents: {
+        Row: {
+          doc_type: string
+          file_back_url: string | null
+          file_url: string | null
+          id: string
+          rejection_reason: string | null
+          reviewed_at: string | null
+          selfie_url: string | null
+          status: string | null
+          uploaded_at: string | null
+          user_id: string
+        }
+        Insert: {
+          doc_type: string
+          file_back_url?: string | null
+          file_url?: string | null
+          id?: string
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          selfie_url?: string | null
+          status?: string | null
+          uploaded_at?: string | null
+          user_id: string
+        }
+        Update: {
+          doc_type?: string
+          file_back_url?: string | null
+          file_url?: string | null
+          id?: string
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          selfie_url?: string | null
+          status?: string | null
+          uploaded_at?: string | null
+          user_id?: string
         }
         Relationships: []
       }
@@ -22245,6 +22431,84 @@ export type Database = {
         }
         Relationships: []
       }
+      user_kyc_profiles: {
+        Row: {
+          address_line_1: string | null
+          city: string | null
+          country: string | null
+          country_of_residence: string | null
+          created_at: string | null
+          date_of_birth: string | null
+          document_expiry: string | null
+          first_name: string | null
+          id: string
+          id_document_number: string | null
+          id_document_type: string | null
+          kyc_level: string
+          last_name: string | null
+          nationality: string | null
+          pep_check_status: string | null
+          risk_rating: string | null
+          sanctions_check_status: string | null
+          screening_last_run_at: string | null
+          status: string
+          updated_at: string | null
+          user_id: string
+          verification_provider: string | null
+          verification_reference: string | null
+        }
+        Insert: {
+          address_line_1?: string | null
+          city?: string | null
+          country?: string | null
+          country_of_residence?: string | null
+          created_at?: string | null
+          date_of_birth?: string | null
+          document_expiry?: string | null
+          first_name?: string | null
+          id?: string
+          id_document_number?: string | null
+          id_document_type?: string | null
+          kyc_level?: string
+          last_name?: string | null
+          nationality?: string | null
+          pep_check_status?: string | null
+          risk_rating?: string | null
+          sanctions_check_status?: string | null
+          screening_last_run_at?: string | null
+          status?: string
+          updated_at?: string | null
+          user_id: string
+          verification_provider?: string | null
+          verification_reference?: string | null
+        }
+        Update: {
+          address_line_1?: string | null
+          city?: string | null
+          country?: string | null
+          country_of_residence?: string | null
+          created_at?: string | null
+          date_of_birth?: string | null
+          document_expiry?: string | null
+          first_name?: string | null
+          id?: string
+          id_document_number?: string | null
+          id_document_type?: string | null
+          kyc_level?: string
+          last_name?: string | null
+          nationality?: string | null
+          pep_check_status?: string | null
+          risk_rating?: string | null
+          sanctions_check_status?: string | null
+          screening_last_run_at?: string | null
+          status?: string
+          updated_at?: string | null
+          user_id?: string
+          verification_provider?: string | null
+          verification_reference?: string | null
+        }
+        Relationships: []
+      }
       user_loyalty: {
         Row: {
           points: number | null
@@ -22964,6 +23228,51 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      wallet_limit_profiles: {
+        Row: {
+          cashout_limit: number | null
+          daily_receive_limit: number | null
+          daily_send_limit: number | null
+          id: string
+          kyc_level: string | null
+          monthly_receive_limit: number | null
+          monthly_send_limit: number | null
+          p2p_limit: number | null
+          qr_pay_limit: number | null
+          single_tx_limit: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          cashout_limit?: number | null
+          daily_receive_limit?: number | null
+          daily_send_limit?: number | null
+          id?: string
+          kyc_level?: string | null
+          monthly_receive_limit?: number | null
+          monthly_send_limit?: number | null
+          p2p_limit?: number | null
+          qr_pay_limit?: number | null
+          single_tx_limit?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          cashout_limit?: number | null
+          daily_receive_limit?: number | null
+          daily_send_limit?: number | null
+          id?: string
+          kyc_level?: string | null
+          monthly_receive_limit?: number | null
+          monthly_send_limit?: number | null
+          p2p_limit?: number | null
+          qr_pay_limit?: number | null
+          single_tx_limit?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
       }
       wallet_order_splits: {
         Row: {
@@ -24401,6 +24710,18 @@ export type Database = {
         Returns: undefined
       }
       aggregate_storefront_analytics_daily: { Args: never; Returns: number }
+      atomic_wallet_transfer: {
+        Args: {
+          p_amount: number
+          p_currency?: string
+          p_idempotency_key?: string
+          p_note?: string
+          p_receiver_user_id: string
+          p_sender_user_id: string
+          p_source?: string
+        }
+        Returns: Json
+      }
       check_inquiry_quota:
         | { Args: { _user_id: string }; Returns: Json }
         | { Args: { _hourly_limit?: number; _user_id: string }; Returns: Json }
