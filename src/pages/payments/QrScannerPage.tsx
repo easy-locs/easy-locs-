@@ -368,7 +368,16 @@ export default function QrScannerPage() {
           if (mountedRef.current) setCameraPermission("denied");
           throw new Error("Camera permission denied. Please allow camera access in your browser settings.");
         }
-        if (domErr?.name === "NotFoundError") throw new Error("No camera found on this device.");
+        if (domErr?.name === "NotFoundError") {
+          // Immediately abort scanner — show upload fallback, don't proceed
+          if (mountedRef.current) {
+            setCameraPermission("unsupported");
+            setStateSafe("error");
+            setErrorSafe(exactError);
+          }
+          startingRef.current = false;
+          return; // exit startScanner entirely — upload fallback is already visible
+        }
         if (domErr?.name === "NotReadableError") throw new Error("Camera is busy or blocked by another app.");
         throw new Error(exactError);
       } finally {
