@@ -36,7 +36,7 @@ export default function MessagesPage() {
   const [messages, setMessages] = useState<ChatMessageRow[]>([]);
   const [showAddContact, setShowAddContact] = useState(false);
 
-  useCallRealtime();
+  // useCallRealtime removed — handled globally by CallOverlayV2
 
   const reloadConversations = useCallback(async () => {
     try {
