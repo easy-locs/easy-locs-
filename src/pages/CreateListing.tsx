@@ -20,6 +20,8 @@ import PresenceMobilitySelector, { type PresenceMode, type EntityType, type Cove
 import { getCategoryConfig, getCategoryOptions, getAllowedListingTypes, getAllowedPresenceModes, type ListingType } from "@/lib/category-config";
 import { detectListingContext, currencyFromCountry, detectLocationFromTimezone, type DetectedContext } from "@/lib/smart-prefill";
 import SmartPrefillBanner from "@/components/marketplace/SmartPrefillBanner";
+import { checkServiceDuplicate } from "@/lib/geo/duplicateGuard";
+import { assignZoneToService } from "@/lib/zones/autoAssignZone";
 
 /* ─── Constants ─── */
 const MAX_LISTINGS_FREE = 5;
@@ -288,6 +290,14 @@ const CreateListing = () => {
 
     setSaving(true);
     try {
+      // Duplicate detection before insert
+      const dupCheck = await checkServiceDuplicate(form.title.trim(), geoLat, geoLng, form.contact_whatsapp);
+      if (dupCheck.blocked) {
+        toast({ title: "Duplicate detected", description: `Similar listing "${dupCheck.existingMatch?.name}" already exists nearby.`, variant: "destructive" });
+        setSaving(false);
+        return;
+      }
+
       // First ensure provider exists
       let { data: provider } = await supabase
         .from("marketplace_providers")
@@ -357,6 +367,15 @@ const CreateListing = () => {
       } as any);
 
       if (error) throw error;
+
+      // Auto-assign zone after creation
+      if (geoLat && geoLng) {
+        const { data: created } = await supabase.from("marketplace_services").select("id").eq("booking_slug", slug).maybeSingle();
+        if (created?.id) {
+          assignZoneToService(created.id, geoLat, geoLng).catch(() => {});
+        }
+      }
+
       toast({ title: "✅ Listing published!", description: isSale ? "Your listing is live for 30 days." : "Your listing is live until you deactivate it." });
       navigate("/dashboard/my-shop");
     } catch (err: any) {
