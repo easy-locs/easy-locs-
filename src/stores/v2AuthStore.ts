@@ -51,20 +51,14 @@ export const useV2AuthStore = create<V2AuthStore>((set, get) => ({
     }
 
     // Standalone V2 mode — register listener (only when AuthContext is NOT present)
+    // onAuthStateChange fires INITIAL_SESSION on setup — no separate getSession() needed.
     supabase.auth.onAuthStateChange((_event, session) => {
       set({
         session,
         user: session?.user ?? null,
         loading: false,
+        initialized: true,
       });
-    });
-
-    const { data } = await supabase.auth.getSession();
-    set({
-      session: data.session,
-      user: data.session?.user ?? null,
-      loading: false,
-      initialized: true,
     });
   },
 
