@@ -893,6 +893,7 @@ const App = () => (
               <Route path="/business" element={<MyBusinessHub />} />
               <Route path="/property-hub" element={<PropertyManagementHub />} />
               <Route path="/pos" element={<POSPage />} />
+              <Route path="/pos/:shopId" element={<POSPage />} />
               <Route path="/my-orders" element={<MyOrdersPage />} />
               <Route path="/orders" element={<OrdersPage />} />
               <Route path="/order/:orderId" element={<UnifiedOrderDetailPage />} />

@@ -1,6 +1,6 @@
 /**
  * SellerDashboard — Shows all seller businesses (all lifecycle statuses).
- * Includes listing lifecycle cards for real estate / marketplace services.
+ * Uses businessLifecycle for authoritative status resolution.
  */
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -9,11 +9,12 @@ import { useAuth } from "@/contexts/AuthContext";
 import SellerBusinessCard from "./SellerBusinessCard";
 import SellerListingLifecycleCard from "./SellerListingLifecycleCard";
 import { SectionBlock } from "@/components/ui/system";
-import { Plus, Store, Rocket, Loader2 } from "lucide-react";
+import { Plus, Rocket, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
 import { createOnboardingDraft } from "@/lib/onboarding/seller-onboarding-flow";
+import { resolveBusinessStatus, validateBusinessReadiness } from "@/lib/seller/businessLifecycle";
 import { toast } from "sonner";
 
 export default function SellerDashboard() {
@@ -43,7 +44,7 @@ export default function SellerDashboard() {
     queryFn: async () => {
       const { data } = await (supabase as any)
         .from("storefront_pages")
-        .select("id, name, slug, vertical, city, logo_url, active, shop_visibility, onboarding_completed")
+        .select("id, name, slug, vertical, city, logo_url, active, shop_visibility, onboarding_completed, status, phone, latitude, longitude")
         .eq("user_id", user!.id)
         .order("created_at", { ascending: false })
         .limit(20);
@@ -54,34 +55,30 @@ export default function SellerDashboard() {
 
   const isLoading = loadingServices || loadingShops;
 
-  const getStatus = (item: any): "onboarding_draft" | "draft" | "pending" | "active" => {
-    if (item.onboarding_completed === false && item.shop_visibility === "private" && !item.active) {
-      return "onboarding_draft";
-    }
-    if (item.status === "draft" || (!item.active && !item.status)) return "draft";
-    if (item.status === "pending" || item.status === "pending_review") return "pending";
-    if (item.active || item.status === "published" || item.status === "active") return "active";
-    return "draft";
-  };
-
   const allBusinesses = [
-    ...shops.map((s: any) => ({
-      id: s.id,
-      name: s.name,
-      category: s.vertical,
-      address: s.city,
-      photo_url: s.logo_url,
-      status: getStatus(s),
-      editPath: `/my-shop/${s.id}`,
-      viewPath: s.active ? `/store/${s.slug || s.id}` : undefined,
-    })),
+    ...shops.map((s: any) => {
+      const status = resolveBusinessStatus(s);
+      const { requirements } = validateBusinessReadiness(s);
+      return {
+        id: s.id,
+        name: s.name,
+        category: s.vertical,
+        address: s.city,
+        photo_url: s.logo_url,
+        status,
+        editPath: `/my-shop/${s.id}`,
+        viewPath: s.active ? `/shop/${s.slug || s.id}` : undefined,
+        slug: s.slug,
+        requirements,
+      };
+    }),
     ...services.filter((s: any) => s.listing_type !== "sale").map((s: any) => ({
       id: s.id,
       name: s.title,
       category: s.category,
       address: s.city,
       photo_url: s.photo_url,
-      status: getStatus(s),
+      status: resolveBusinessStatus(s),
       editPath: `/dashboard/seller`,
       viewPath: s.active ? `/services/${s.id}` : undefined,
     })),
