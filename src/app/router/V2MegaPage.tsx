@@ -200,7 +200,7 @@ export default function V2MegaPage() {
   const doOpenContact = () => {
     const listing = getPublishedListings()[0];
     if (!listing) return;
-    openContact({ orbitId: listing.ownerOrbitId, listingId: listing.id });
+    openContact({ orbitId: listing.ownerOrbitId });
   };
 
   const firstListing = getPublishedListings()[0];
