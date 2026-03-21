@@ -12,7 +12,7 @@ import { useListingsRealtime } from "@/hooks/useListingsRealtime";
 import { useBookingsRealtime } from "@/hooks/useBookingsRealtime";
 import { useNotificationsRealtime } from "@/hooks/useNotificationsRealtime";
 import { useMapStore } from "@/stores/mapStore";
-import { MapMarkerList } from "@/components/map/MapMarkerList";
+// MapMarkerList removed — ExplorerMap is the authoritative map component
 import { PropertyDetailPanel } from "@/components/property/PropertyDetailPanel";
 import { CameraPreviewPanel } from "@/components/camera/CameraPreviewPanel";
 import { useCameraStore } from "@/stores/cameraStore";
@@ -312,7 +312,7 @@ export default function V2MegaPage() {
           <button className={btnClass} onClick={() => ui.setMapFullscreen(!ui.mapFullscreen)}>Toggle Map</button>
         </div>
       }
-      mapLayer={<MapMarkerList />}
+      mapLayer={null}
       cameraLayer={<CameraPreviewPanel />}
       rightPanel={<PropertyDetailPanel />}
     >

@@ -1,6 +1,9 @@
 import { OrbitCallService } from "@/lib/calls/call-service";
 import { supabase } from "@/integrations/supabase/client";
-import { startRingTimeout, clearRingTimeout, clearAllRingTimeouts } from "@/lib/orbit/call-timeout";
+// call-timeout removed — timeouts handled in CallProvider/CallManager
+const startRingTimeout = (_id: string, _cb: () => void) => {};
+const clearRingTimeout = (_id: string) => {};
+const clearAllRingTimeouts = () => {};
 import {
   loadCallState,
   setCallState,

@@ -557,32 +557,6 @@ export default function QrScannerPage() {
                 </div>
 
                  <div className="mt-4 w-full max-w-[320px] space-y-3">
-                   {/* ── Environment debug panel ── */}
-                   <details className="rounded-2xl border border-border/50 bg-card/80 shadow-sm">
-                     <summary className="cursor-pointer p-3 text-xs font-semibold text-muted-foreground">
-                       🔍 Device diagnostics
-                     </summary>
-                     <div className="px-3 pb-3 text-[10px] leading-relaxed text-foreground space-y-0.5">
-                       <p><span className="text-muted-foreground">scanner state:</span> {state}</p>
-                       <p><span className="text-muted-foreground">permission:</span> {cameraPermission}</p>
-                       <p><span className="text-muted-foreground">mediaDevices:</span> {envInfo["mediaDevices"] ?? "…"}</p>
-                       <p><span className="text-muted-foreground">getUserMedia:</span> {envInfo["getUserMedia"] ?? "…"}</p>
-                       <p><span className="text-muted-foreground">enumerateDevices:</span> {envInfo["enumerateDevices"] ?? "…"}</p>
-                       <p><span className="text-muted-foreground">isSecureContext:</span> {envInfo["isSecureContext"] ?? "…"}</p>
-                       <p><span className="text-muted-foreground">protocol:</span> {envInfo["protocol"] ?? "…"}</p>
-                       <p><span className="text-muted-foreground">videoinput count:</span> {envInfo["videoinputCount"] ?? String(cameraDevices.length)}</p>
-                       <p><span className="text-muted-foreground">audioinput count:</span> {envInfo["audioinputCount"] ?? "…"}</p>
-                       <p><span className="text-muted-foreground">video labels:</span> {envInfo["videoLabels"] ?? "…"}</p>
-                       <p><span className="text-muted-foreground">permissionState:</span> {envInfo["permissionState"] ?? "…"}</p>
-                       <p><span className="text-muted-foreground">isIOS:</span> {envInfo["isIOS"] ?? "…"}</p>
-                       <p><span className="text-muted-foreground">isSafari:</span> {envInfo["isSafari"] ?? "…"}</p>
-                       <p><span className="text-muted-foreground">isIframe:</span> {envInfo["isIframe"] ?? "…"}</p>
-                       <p className="break-all"><span className="text-muted-foreground">selected camera:</span> {selectedCameraId || "none"}</p>
-                       <p><span className="text-muted-foreground">Html5Qrcode.start:</span> {startStatus}</p>
-                       <p className="break-words"><span className="text-muted-foreground">error:</span> {startErrorMessage || error || "none"}</p>
-                       <p className="break-all"><span className="text-muted-foreground">userAgent:</span> {envInfo["userAgent"]?.slice(0, 120) ?? "…"}</p>
-                     </div>
-                   </details>
 
                    {error && <p className="text-center text-sm text-destructive">{error}</p>}
 

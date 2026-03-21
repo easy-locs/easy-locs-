@@ -83,7 +83,7 @@ export function CallProvider({ children }: { children: ReactNode }) {
       });
 
       const channel = supabase
-        .channel("incoming-calls")
+        .channel(`incoming-calls-${user.id}`)
         .on(
           "postgres_changes",
           { event: "INSERT", schema: "public", table: "call_logs" },
