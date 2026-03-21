@@ -315,7 +315,7 @@ export default function V2MegaPage() {
       }
       mapLayer={<MapMarkerList />}
       cameraLayer={<CameraPreviewPanel />}
-      callLayer={<><CallRealtimeBridge /><RealtimeCallPanel /></>}
+      callLayer={<RealtimeCallPanel />}
       rightPanel={<PropertyDetailPanel />}
     >
       <div className="p-4 space-y-6">{renderTab()}</div>

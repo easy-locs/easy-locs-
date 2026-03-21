@@ -781,8 +781,9 @@ const App = () => (
            <NotificationsRealtimeGuard />
            <UpdateNotification />
               {/* OrbitCallRoot removed — was returning null */}
-              <CallOverlayV2 />
-            <AppBootstrapGuard />
+               <CallOverlayV2 />
+               <GeoBootstrap />
+             <AppBootstrapGuard />
            
            <SkipLink />
            <Suspense fallback={<PageLoader />}>
