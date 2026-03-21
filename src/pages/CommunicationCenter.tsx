@@ -340,7 +340,9 @@ export const CommunicationCenter = () => {
         </Sheet>
       )}
 
-      <NewConversationDialog open={showNewConversation} onOpenChange={setShowNewConversation} onThreadCreated={handleNewThreadCreated} />
+      {showNewConversation && (
+        <AddContactByEmail onClose={() => setShowNewConversation(false)} />
+      )}
     </>
   );
 };

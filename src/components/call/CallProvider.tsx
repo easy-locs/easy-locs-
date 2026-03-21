@@ -253,18 +253,7 @@ export function CallProvider({ children }: { children: ReactNode }) {
     [user]
   );
 
-  // Listen for call.request events from non-React contexts (e.g. contactStore)
-  useEffect(() => {
-    const unsub = platformBus.on("call.request", (event) => {
-      void startCall({
-        orgId: event.payload.orgId,
-        peerName: event.payload.peerName,
-        isVideo: event.payload.isVideo,
-        threadId: event.payload.threadId,
-      });
-    });
-    return unsub;
-  }, [startCall]);
+  // Legacy call.request listener removed — contactStore purged. Use useCall().startCall directly.
 
   const handleAcceptIncoming = useCallback(async () => {
     if (!user || !incomingCallId) return;
