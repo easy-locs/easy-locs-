@@ -1,7 +1,7 @@
 import { usePropertyDetailStore } from "@/stores/propertyDetailStore";
 import { PropertyCalendar } from "@/components/property/PropertyCalendar";
-import { useContactStore } from "@/stores/contactStore";
 import { usePropertyQuerySync } from "@/hooks/usePropertyQuerySync";
+import { useNavigate } from "react-router-dom";
 
 export function PropertyDetailPanel() {
   const listing = usePropertyDetailStore((s) => s.selectedListing);
