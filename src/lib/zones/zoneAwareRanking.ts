@@ -18,11 +18,11 @@ export interface RankableEntity {
   order_count?: number;
 }
 
-export interface RankedEntity<T extends RankableEntity> extends T {
+export type RankedEntity<T extends RankableEntity> = T & {
   _rankScore: number;
   _distanceKm: number;
   _proximityTier: "same_zone" | "nearby_zone" | "same_city" | "far";
-}
+};
 
 const WEIGHTS = {
   proximity: 0.35,
