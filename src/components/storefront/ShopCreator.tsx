@@ -78,11 +78,18 @@ export default function ShopCreator() {
     if (!user) { toast.error("Please sign in first"); return; }
     setLoading(true);
     try {
+      // Duplicate guard
+      const dupCheck = await checkStorefrontDuplicate(name.trim(), null, null, phone.trim() || null);
+      if (dupCheck.blocked) {
+        toast.error(`Duplicate detected: "${dupCheck.existingMatch?.name}". ${dupCheck.result.reasons.join(", ")}`);
+        return;
+      }
+
       const orgId = await ensureOrg();
       if (!orgId) { toast.error("Failed to set up organization"); return; }
       const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 
-      const { error } = await (supabase as any)
+      const { data: created, error } = await (supabase as any)
         .from("storefront_pages")
         .insert({
           org_id: orgId,
@@ -100,13 +107,18 @@ export default function ShopCreator() {
           active: false,
           onboarding_completed: false,
         })
-        .select("id")
+        .select("id, latitude, longitude")
         .single();
 
       if (error) {
         if (error.code === "23505") toast.error("This shop name is already taken");
         else toast.error(error.message);
         return;
+      }
+
+      // Auto zone assignment if coordinates exist
+      if (created?.latitude && created?.longitude) {
+        await assignZoneToStorefront(created.id, created.latitude, created.longitude);
       }
 
       toast.success("Shop created! Complete your setup. 🎉");
