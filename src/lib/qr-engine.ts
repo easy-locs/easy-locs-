@@ -185,6 +185,10 @@ export function resolveRoute(payload: UniversalQrPayload): string | null {
       return null; // handled inline
     case "trusted_contact":
       return `/u/${payload.userId}`;
+    case "menu":
+      return `/s/${payload.shopSlug}`;
+    case "pos_order":
+      return `/s/${payload.shopSlug}${payload.tableCode ? `?table=${payload.tableCode}` : ""}`;
     case "shop":
       return `/s/${payload.shopSlug}`;
     case "product":
