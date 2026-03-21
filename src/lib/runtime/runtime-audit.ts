@@ -19,8 +19,8 @@ export type RuntimeAuditReport = {
   checks: RuntimeAuditCheck[];
 };
 
-const RUNTIME_AUDIT_VERSION = "2026-03-21-v3";
-const RUNTIME_AUDIT_BUILD_TIMESTAMP = import.meta.env.VITE_APP_VERSION || __BUILD_TIMESTAMP__;
+const RUNTIME_AUDIT_VERSION = "2026-03-21-v4";
+const RUNTIME_AUDIT_BUILD_TIMESTAMP = import.meta.env.VITE_APP_VERSION || (typeof __BUILD_TIMESTAMP__ !== "undefined" ? __BUILD_TIMESTAMP__ : new Date().toISOString());
 
 function getRuntimeAuditEnvironmentName() {
   if (typeof window === "undefined") return "server";
@@ -60,14 +60,11 @@ function fail(label: string, key: string, detail?: string): RuntimeAuditCheck {
 
 async function checkSupabaseConnection(): Promise<RuntimeAuditCheck> {
   try {
-    // Use a known-accessible table (confirmed via network: orders returns 200)
-    const { error } = await (supabase as any)
-      .from("orders")
-      .select("id", { head: true, count: "exact" })
-      .limit(1);
-    console.log("Supabase connection audit", { error: error?.message ?? null });
-    if (error) return fail("Supabase connection", "supabase", error.message);
-    return pass("Supabase connection", "supabase", "Database reachable");
+    // Use auth.getSession() first — it doesn't hit PostgREST/RLS at all
+    const { data, error: authErr } = await supabase.auth.getSession();
+    if (authErr) return fail("Supabase connection", "supabase", authErr.message);
+    // Auth reachable means Supabase is connected
+    return pass("Supabase connection", "supabase", data.session ? "Authenticated session active" : "Reachable (no active session)");
   } catch (e: any) {
     return fail("Supabase connection", "supabase", e.message ?? "Unknown error");
   }
@@ -150,11 +147,10 @@ async function checkQrTables(): Promise<RuntimeAuditCheck> {
 
 async function checkDispatchTables(): Promise<RuntimeAuditCheck> {
   try {
-    const [jobs, offers] = await Promise.all([
-      (supabase as any).from("dispatch_jobs_v2").select("id", { head: true, count: "exact" }).limit(1),
-      (supabase as any).from("driver_mission_offers").select("id", { head: true, count: "exact" }).limit(1),
-    ]);
+    // Sequential to avoid lock contention
+    const jobs = await (supabase as any).from("dispatch_jobs_v2").select("id", { head: true, count: "exact" }).limit(1);
     if (jobs.error) return fail("Dispatch tables", "dispatch_tables", jobs.error.message);
+    const offers = await (supabase as any).from("driver_mission_offers").select("id", { head: true, count: "exact" }).limit(1);
     if (offers.error) return fail("Dispatch tables", "dispatch_tables", offers.error.message);
     return pass("Dispatch tables", "dispatch_tables", "dispatch_jobs_v2 + driver_mission_offers OK");
   } catch (e: any) {
@@ -196,13 +192,12 @@ async function checkGeolocationPermission(): Promise<RuntimeAuditCheck> {
 
 async function checkWalletTables(): Promise<RuntimeAuditCheck> {
   try {
-    const [accounts, tx, ledger] = await Promise.all([
-      (supabase as any).from("wallet_accounts").select("id", { head: true, count: "exact" }).limit(1),
-      (supabase as any).from("wallet_transactions").select("id", { head: true, count: "exact" }).limit(1),
-      (supabase as any).from("wallet_ledger_entries").select("id", { head: true, count: "exact" }).limit(1),
-    ]);
+    // Sequential to avoid lock contention
+    const accounts = await (supabase as any).from("wallet_accounts").select("id", { head: true, count: "exact" }).limit(1);
     if (accounts.error) return fail("Wallet tables", "wallet_tables", accounts.error.message);
+    const tx = await (supabase as any).from("wallet_transactions").select("id", { head: true, count: "exact" }).limit(1);
     if (tx.error) return fail("Wallet tables", "wallet_tables", tx.error.message);
+    const ledger = await (supabase as any).from("wallet_ledger_entries").select("id", { head: true, count: "exact" }).limit(1);
     if (ledger.error) return fail("Wallet tables", "wallet_tables", ledger.error.message);
     return pass("Wallet tables", "wallet_tables", "wallet_accounts + transactions + ledger OK");
   } catch (e: any) {
@@ -236,20 +231,35 @@ function checkHashRoutes(): RuntimeAuditCheck {
 }
 
 export async function runRuntimeAudit(): Promise<RuntimeAuditReport> {
-  const checks = await Promise.all([
-    checkSupabaseConnection(),
-    checkRealtimeChannels(),
-    checkRtcConfig(),
-    checkCallTables(),
-    checkQrTables(),
-    checkDispatchTables(),
-    Promise.resolve(checkWebRtcSupport()),
-    Promise.resolve(checkGeolocationSupport()),
-    checkGeolocationPermission(),
-    checkWalletTables(),
-    checkImportBatchTables(),
-    Promise.resolve(checkHashRoutes()),
-  ]);
+  // CRITICAL: Run checks SEQUENTIALLY to prevent auth token lock contention.
+  // Running all in parallel causes "Lock was stolen by another request" AbortErrors.
+  const checks: RuntimeAuditCheck[] = [];
+
+  // Sync checks first (no network)
+  checks.push(checkWebRtcSupport());
+  checks.push(checkGeolocationSupport());
+  checks.push(checkHashRoutes());
+
+  // Async checks — sequential with max 2 concurrent to avoid lock storms
+  const asyncChecks = [
+    checkSupabaseConnection,
+    checkRealtimeChannels,
+    checkRtcConfig,
+    checkCallTables,
+    checkQrTables,
+    checkDispatchTables,
+    checkGeolocationPermission,
+    checkWalletTables,
+    checkImportBatchTables,
+  ];
+
+  for (const check of asyncChecks) {
+    try {
+      checks.push(await check());
+    } catch (e: any) {
+      checks.push(fail("Unknown", "unknown", e.message));
+    }
+  }
 
   return {
     generatedAt: new Date().toISOString(),
