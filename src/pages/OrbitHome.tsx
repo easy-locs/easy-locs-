@@ -287,7 +287,7 @@ export default function OrbitHome() {
           )}
 
           {/* ─── WALLET PREVIEW ─── */}
-          <OrbitHomeWalletInline onNavigate={handleNav} />
+          <WalletPreviewInline onNavigate={handleNav} />
 
           {/* ─── MAP PREVIEW ─── */}
           <div className="px-4">
