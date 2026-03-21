@@ -2,7 +2,7 @@
  * useAddressEngine — Hook for Uber/Careem-like address prefill and search.
  */
 import { useState, useEffect, useCallback, useRef } from "react";
-import { useGeolocation } from "./useGeolocation";
+import { useLocationStore } from "@/stores/locationStore";
 import {
   resolveBestAddress,
   getSavedAddresses,
