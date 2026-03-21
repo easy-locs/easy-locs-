@@ -56,6 +56,14 @@ export default function WalletHubPage() {
     }
   };
 
+  // Auto-create wallet if user has none
+  useEffect(() => {
+    if (!loading && rows.length === 0 && user?.id) {
+      createDefaultWallet();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loading, rows.length, user?.id]);
+
   const TABS: { key: WalletTab; icon: typeof Wallet; label: string }[] = [
     { key: "fiat", icon: Wallet, label: "Wallet" },
     { key: "qr", icon: QrCode, label: "QR Pay" },

@@ -86,7 +86,14 @@ export function ExplorerMapInner({
   const [activeCategory, setActiveCategory] = useState("all");
   const [internalSelectedId, setInternalSelectedId] = useState<string | null>(null);
 
+  const isFallback = useLocationStore((s) => s.isFallback);
   const center = currentLocation || { lat: 25.2048, lng: 55.2708 };
+  // Log when using fallback so it's visible in console
+  useEffect(() => {
+    if (isFallback && currentLocation) {
+      console.warn("[ExplorerMap] Using fallback location — GPS permission denied or unavailable");
+    }
+  }, [isFallback, currentLocation]);
   const effectiveRadius = radiusKm ?? searchRadiusKm;
   const effectiveSelectedId = selectedId ?? internalSelectedId;
 

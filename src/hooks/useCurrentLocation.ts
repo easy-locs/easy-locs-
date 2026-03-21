@@ -44,11 +44,20 @@ export function useCurrentLocation(opts?: { watch?: boolean }) {
       try {
         const pos = await getCurrentPositionHighAccuracy();
         setCurrentLocation(pos);
+        setIsFallback(false);
         setPermissionState("granted");
         setError(null);
-      } catch {
+      } catch (err: any) {
+        // Only mark as denied if it's actually a permission denial (code 1)
+        const isDenied = err?.code === 1;
+        if (isDenied) {
+          setPermissionState("denied");
+        } else {
+          // Timeout or unavailable — keep as prompt so retry is possible
+          setPermissionState("prompt");
+          setError(err?.message || "Location unavailable");
+        }
         setIsFallback(true);
-        setPermissionState("denied");
         if (!currentLocation) {
           setCurrentLocation(lastKnownLocation || DUBAI_FALLBACK);
         }
