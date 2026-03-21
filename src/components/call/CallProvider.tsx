@@ -201,42 +201,18 @@ export function CallProvider({ children }: { children: ReactNode }) {
           authUserId: authUser.id,
         });
 
-        let receiverOrbitId: string | null = null;
-        const { data: matchedMember, error: matchedMemberError } = await supabase
-          .from("org_members")
-          .select("user_id")
-          .eq("org_id", opts.orgId)
-          .neq("user_id", authUser.id)
-          .limit(1)
-          .maybeSingle();
-
-        if (!matchedMemberError && matchedMember?.user_id) {
-          receiverOrbitId = matchedMember.user_id;
-        }
-
-        if (!receiverOrbitId) {
-          console.error("[CallProvider] missing condition: orgId did not resolve to a recipient user_id", {
-            requestedReceiver: opts.orgId,
-            authUserId: authUser.id,
-            matchedMemberError,
-          });
-          toast.error("No callable recipient found for this organization");
-          return;
-        }
+        // Pass orgId directly — the RPC handles org→user resolution server-side
+        const receiverOrbitId = opts.orgId;
 
         if (receiverOrbitId === authUser.id) {
           toast.error(t("call.error.start_failed") || "Unable to start call");
-          console.warn("[CallProvider] blocked self-call after receiver resolution", {
-            requestedReceiver: opts.orgId,
-            resolvedReceiver: receiverOrbitId,
-          });
+          console.warn("[CallProvider] blocked self-call", { receiverOrbitId });
           return;
         }
 
-        console.log("[CallProvider] receiver resolved", {
-          requestedReceiver: opts.orgId,
-          resolvedReceiver: receiverOrbitId,
-          viaOrgMember: true,
+        console.log("[CallProvider] sending to RPC — server resolves org→user", {
+          callerOrbitId: authUser.id,
+          receiverOrbitId,
         });
 
         // Use idempotent server-side function to prevent duplicates
