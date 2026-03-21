@@ -137,7 +137,10 @@ export function CallProvider({ children }: { children: ReactNode }) {
         }
       )
       .subscribe((status, err) => {
-        console.log("[CallProvider] realtime subscription status:", status, err ? `error: ${err.message}` : "");
+        console.log("[CallProvider] realtime subscription status:", status, err ? JSON.stringify({ message: err.message, name: (err as any).name, code: (err as any).code, stack: (err as any).stack?.slice(0, 200) }) : "");
+        if (status === "CHANNEL_ERROR") {
+          console.error("[CallProvider] CHANNEL_ERROR — full error object:", err);
+        }
       });
 
     channelRef.current = channel;
