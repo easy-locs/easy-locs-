@@ -146,11 +146,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       let tenantLink: any = null;
       let orgLink: any = null;
       try {
-        const [t, o] = await Promise.all([
-          supabase.from("tenants").select("id").eq("tenant_user_id", userId).limit(1).maybeSingle(),
-          supabase.from("org_members").select("id").eq("user_id", userId).limit(1).maybeSingle(),
-        ]);
+        // Sequential to avoid auth lock contention
+        const t = await supabase.from("tenants").select("id").eq("tenant_user_id", userId).limit(1).maybeSingle();
         tenantLink = t.data;
+        const o = await supabase.from("org_members").select("id").eq("user_id", userId).limit(1).maybeSingle();
         orgLink = o.data;
       } catch (err) {
         console.warn("[AuthContext] dual-role check failed:", err);
