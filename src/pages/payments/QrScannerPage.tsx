@@ -134,16 +134,20 @@ export default function QrScannerPage() {
     setEnvInfo(info);
   }, []);
 
+  const ios = isIOS();
+  const safari = isSafariBrowser();
+
+  const setStateSafe = useCallback((s: ScanState) => { if (mountedRef.current) setState(s); }, []);
+  const setErrorSafe = useCallback((m: string) => { if (mountedRef.current) setError(m); }, []);
+
   // ── Upload QR image fallback ──
   const handleImageUpload = useCallback(async (file: File) => {
     setStateSafe("starting");
     setErrorSafe("");
     setStartErrorMessage("");
     try {
-      const imageUrl = URL.createObjectURL(file);
       const scanner = new Html5Qrcode("qr-file-upload-region", { verbose: false });
-      const result = await scanner.scanFile(file, /* showImage */ false);
-      URL.revokeObjectURL(imageUrl);
+      const result = await scanner.scanFile(file, false);
       scanner.clear();
       if (!result) throw new Error("No QR code found in image");
       playScanBeep();
@@ -157,12 +161,6 @@ export default function QrScannerPage() {
       setStateSafe("error");
     }
   }, [handleQrResult, setErrorSafe, setStateSafe]);
-
-  const ios = isIOS();
-  const safari = isSafariBrowser();
-
-  const setStateSafe = useCallback((s: ScanState) => { if (mountedRef.current) setState(s); }, []);
-  const setErrorSafe = useCallback((m: string) => { if (mountedRef.current) setError(m); }, []);
 
   const readCameraPermission = useCallback(async (): Promise<CameraPermissionState> => {
     if (typeof navigator === "undefined" || !navigator.mediaDevices?.getUserMedia) {
