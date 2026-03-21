@@ -23567,47 +23567,71 @@ export type Database = {
       wallet_transfers: {
         Row: {
           amount: number
+          challenge_id: string | null
           completed_at: string | null
           created_at: string | null
           currency: string
           from_wallet_id: string | null
           id: string
+          idempotency_key: string | null
           metadata: Json | null
+          note: string | null
+          receiver_user_id: string | null
           reference_id: string | null
           reference_type: string | null
+          risk_score: number | null
+          sender_user_id: string | null
+          source: string | null
           status: string | null
           to_wallet_id: string | null
           transfer_type: string | null
+          updated_at: string | null
           workspace_id: string | null
         }
         Insert: {
           amount: number
+          challenge_id?: string | null
           completed_at?: string | null
           created_at?: string | null
           currency: string
           from_wallet_id?: string | null
           id?: string
+          idempotency_key?: string | null
           metadata?: Json | null
+          note?: string | null
+          receiver_user_id?: string | null
           reference_id?: string | null
           reference_type?: string | null
+          risk_score?: number | null
+          sender_user_id?: string | null
+          source?: string | null
           status?: string | null
           to_wallet_id?: string | null
           transfer_type?: string | null
+          updated_at?: string | null
           workspace_id?: string | null
         }
         Update: {
           amount?: number
+          challenge_id?: string | null
           completed_at?: string | null
           created_at?: string | null
           currency?: string
           from_wallet_id?: string | null
           id?: string
+          idempotency_key?: string | null
           metadata?: Json | null
+          note?: string | null
+          receiver_user_id?: string | null
           reference_id?: string | null
           reference_type?: string | null
+          risk_score?: number | null
+          sender_user_id?: string | null
+          source?: string | null
           status?: string | null
           to_wallet_id?: string | null
           transfer_type?: string | null
+          updated_at?: string | null
           workspace_id?: string | null
         }
         Relationships: [
