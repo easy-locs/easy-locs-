@@ -2,6 +2,14 @@ import { create } from "zustand";
 import { supabase } from "@/integrations/supabase/client";
 import type { User, Session } from "@supabase/supabase-js";
 
+/**
+ * Global flag: when AuthContext (v1) is active, v2AuthStore piggybacks
+ * off its session instead of registering a second onAuthStateChange listener.
+ * This prevents duplicate Web Locks contention.
+ */
+let _v1AuthActive = false;
+export function markV1AuthActive() { _v1AuthActive = true; }
+
 type V2AuthStore = {
   user: User | null;
   session: Session | null;
@@ -9,6 +17,7 @@ type V2AuthStore = {
   initialized: boolean;
 
   init: () => Promise<void>;
+  syncFromV1: (session: Session | null) => void;
   signUp: (email: string, password: string) => Promise<void>;
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
@@ -23,7 +32,25 @@ export const useV2AuthStore = create<V2AuthStore>((set, get) => ({
   init: async () => {
     if (get().initialized) return;
 
-    // Set up listener FIRST (per Supabase best practices)
+    // If AuthContext (v1) is already managing auth, don't register a second listener.
+    // V2 will be synced via syncFromV1() called from AuthContext.
+    if (_v1AuthActive) {
+      // Just read current session without triggering a new lock
+      try {
+        const { data } = await supabase.auth.getSession();
+        set({
+          session: data.session,
+          user: data.session?.user ?? null,
+          loading: false,
+          initialized: true,
+        });
+      } catch {
+        set({ loading: false, initialized: true });
+      }
+      return;
+    }
+
+    // Standalone V2 mode — register listener (only when AuthContext is NOT present)
     supabase.auth.onAuthStateChange((_event, session) => {
       set({
         session,
@@ -32,11 +59,20 @@ export const useV2AuthStore = create<V2AuthStore>((set, get) => ({
       });
     });
 
-    // Then get existing session
     const { data } = await supabase.auth.getSession();
     set({
       session: data.session,
       user: data.session?.user ?? null,
+      loading: false,
+      initialized: true,
+    });
+  },
+
+  /** Called by AuthContext to sync session without a second onAuthStateChange */
+  syncFromV1: (session) => {
+    set({
+      session,
+      user: session?.user ?? null,
       loading: false,
       initialized: true,
     });
