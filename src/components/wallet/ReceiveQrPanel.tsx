@@ -82,8 +82,8 @@ export default function ReceiveQrPanel() {
         <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
           My Payment QR
         </p>
-        <div className="rounded-xl bg-white p-4">
-          <QRCode value={link} size={180} level="M" />
+        <div>
+          <BrandedQR value={link} size={180} />
         </div>
         <p className="text-sm font-semibold text-foreground">{displayName}</p>
         {parseFloat(amount) > 0 && (
