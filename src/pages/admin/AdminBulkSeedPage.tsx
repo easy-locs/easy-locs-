@@ -1,7 +1,7 @@
 /**
  * AdminBulkSeedPage — Seeds 20 shops per category across Dubai.
  * All shops created with launch_status = 'waiting_launch'.
- * Uses correct storefront_pages columns: slug (not public_slug), org_id, user_id.
+ * Products go into canonical `products` table linked by shop_id.
  */
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -18,7 +18,6 @@ export default function AdminBulkSeedPage() {
   const runSeed = async () => {
     setLoading(true);
 
-    // Get current user for required fields
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
       toast.error("You must be logged in to seed shops.");
@@ -26,7 +25,6 @@ export default function AdminBulkSeedPage() {
       return;
     }
 
-    // Get user's org_id
     const { data: orgMember } = await supabase
       .from("org_members")
       .select("org_id")
@@ -50,13 +48,15 @@ export default function AdminBulkSeedPage() {
       try {
         const slug = seed.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").slice(0, 50) + "-" + Math.random().toString(36).slice(2, 6);
 
-        // Create storefront page with correct columns
+        // Create storefront page with canonical fields
         const { data: shop, error: shopErr } = await (supabase as any)
           .from("storefront_pages")
           .insert({
             name: seed.name,
-            slug, // correct column name
+            slug,
             vertical: seed.vertical,
+            category: seed.category,
+            subcategory: seed.subcategory,
             city: "Dubai",
             country: "AE",
             address: seed.area + ", Dubai",
@@ -65,71 +65,34 @@ export default function AdminBulkSeedPage() {
             logo_url: seed.logo_url,
             banner_url: seed.cover_url,
             launch_status: "waiting_launch",
+            ranking_score: 50 + Math.floor(Math.random() * 45),
+            rating: Number((3.5 + Math.random() * 1.5).toFixed(1)),
+            reviews_count: Math.floor(Math.random() * 300),
             org_id: orgMember.org_id,
             user_id: user.id,
-            subcategory: seed.subcategory,
-            metadata_json: {
-              category: seed.category,
-              subcategory: seed.subcategory,
-              auto_seeded: true,
-              area: seed.area,
-            },
           })
           .select("id")
           .single();
 
         if (shopErr) throw shopErr;
 
-        // Also insert into seed_merchants for marketplace discovery
-        await (supabase as any)
-          .from("seed_merchants")
-          .insert({
-            name: seed.name,
-            category: seed.vertical === "food" ? "food" : seed.vertical === "grocery" ? "grocery" : "services",
-            subcategory: seed.subcategory,
-            city: "Dubai",
-            area: seed.area,
-            cover_image: seed.cover_url,
-            logo_image: seed.logo_url,
-            is_active: true,
-            is_open: true,
-            is_featured: false,
-            visibility_score: 70 + Math.floor(Math.random() * 25),
-            rating: Number((3.8 + Math.random() * 1.2).toFixed(1)),
-            review_count: Math.floor(Math.random() * 200),
-            delivery_time_min: 15 + Math.floor(Math.random() * 20),
-            delivery_time_max: 35 + Math.floor(Math.random() * 20),
-            latitude: seed.lat,
-            longitude: seed.lng,
-          } as any)
-          .select("id")
-          .single();
-
-        // Insert menu items as seed_products
-        if (seed.menu_items.length > 0) {
-          const merchantResult = await (supabase as any)
-            .from("seed_merchants")
-            .select("id")
-            .eq("name", seed.name)
-            .order("created_at", { ascending: false })
-            .limit(1)
-            .single();
-
-          if (merchantResult.data?.id) {
-            await (supabase as any)
-              .from("seed_products")
-              .insert(
-                seed.menu_items.map((item, idx) => ({
-                  merchant_id: merchantResult.data.id,
-                  name: item.name,
-                  description: item.description,
-                  price: item.price,
-                  category: item.category,
-                  sort_order: idx + 1,
-                  is_available: true,
-                })) as any
-              );
-          }
+        // Insert products into canonical products table
+        if (seed.menu_items.length > 0 && shop?.id) {
+          await (supabase as any)
+            .from("products")
+            .insert(
+              seed.menu_items.map((item, idx) => ({
+                shop_id: shop.id,
+                name: item.name,
+                description: item.description,
+                price: item.price,
+                category: item.category,
+                subcategory: seed.subcategory,
+                currency: "AED",
+                sort_order: idx + 1,
+                is_available: true,
+              }))
+            );
         }
 
         done++;

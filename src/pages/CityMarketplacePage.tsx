@@ -19,17 +19,18 @@ const CityMarketplacePage = () => {
     (async () => {
       const { data } = await (supabase as any)
         .from("storefront_pages")
-        .select("id, name, slug, city, vertical, status")
+        .select("id, name, slug, city, vertical, category, launch_status")
         .ilike("city", cityName)
-        .order("name")
+        .eq("launch_status", "launched")
+        .order("ranking_score", { ascending: false })
         .limit(100);
       setMerchants(data ?? []);
       setLoading(false);
     })();
   }, [citySlug]);
 
-  const active = merchants.filter((m) => m.status === "active" || m.status === "live");
-  const comingSoon = merchants.filter((m) => m.status === "coming_soon");
+  const active = merchants.length;
+  const comingSoon = 0;
   const seo = generateCitySEO({ city: cityName, countryName: "", merchantCount: merchants.length });
 
   return (
@@ -41,7 +42,7 @@ const CityMarketplacePage = () => {
           <MapPin className="h-6 w-6 text-primary" />
           <div>
             <h1 className="text-2xl font-bold text-foreground">Food Delivery in {cityName}</h1>
-            <p className="text-sm text-muted-foreground">{merchants.length} restaurants · {active.length} active · {comingSoon.length} coming soon</p>
+            <p className="text-sm text-muted-foreground">{merchants.length} restaurants · {active} active · {comingSoon} coming soon</p>
           </div>
         </div>
 
@@ -53,12 +54,12 @@ const CityMarketplacePage = () => {
           </CardContent></Card>
           <Card><CardContent className="p-4 text-center">
             <TrendingUp className="h-5 w-5 mx-auto text-green-500 mb-1" />
-            <p className="text-xl font-bold text-foreground">{active.length}</p>
+            <p className="text-xl font-bold text-foreground">{active}</p>
             <p className="text-xs text-muted-foreground">Active</p>
           </CardContent></Card>
           <Card><CardContent className="p-4 text-center">
             <Users className="h-5 w-5 mx-auto text-yellow-500 mb-1" />
-            <p className="text-xl font-bold text-foreground">{comingSoon.length}</p>
+            <p className="text-xl font-bold text-foreground">{comingSoon}</p>
             <p className="text-xs text-muted-foreground">Coming Soon</p>
           </CardContent></Card>
         </div>
