@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePlatformCurrency } from "@/hooks/usePlatformCurrency";
 import { createPaymentRequest } from "@/payments/payment-request-hooks";
-import { QRCodeSVG } from "qrcode.react";
+import BrandedQR from "@/components/qr/BrandedQR";
 
 export type ActionSheetMode = "pay" | "receive" | "request";
 
