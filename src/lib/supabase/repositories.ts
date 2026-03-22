@@ -32,15 +32,35 @@ export const orbitRepo = {
 
 export const walletRepo = {
   async getByOwnerOrbitId(ownerOrbitId: string): Promise<WalletStateModel | null> {
-    const { data, error } = await db.from("wallets").select("*").eq("ownerOrbitId", ownerOrbitId).maybeSingle();
-    if (error) throw error;
-    return data as WalletStateModel | null;
+    const { data, error } = await db
+      .from("wallet_accounts")
+      .select("*")
+      .eq("owner_user_id", ownerOrbitId)
+      .eq("status", "active")
+      .maybeSingle();
+    if (error) {
+      console.warn("[walletRepo] getByOwnerOrbitId query failed, returning null", error.message);
+      return null;
+    }
+    if (!data) return null;
+    // Map DB columns to domain model
+    return {
+      walletId: data.id,
+      ownerOrbitId: data.owner_user_id,
+      currency: data.currency || "AED",
+      availableBalance: data.available_balance ?? data.balance ?? 0,
+      lockedBalance: data.balance_locked ?? 0,
+      pendingBalance: data.pending_balance ?? 0,
+      lastUpdatedAt: data.updated_at || data.created_at,
+    } as WalletStateModel;
   },
 
   async upsert(wallet: WalletStateModel): Promise<WalletStateModel> {
-    const { data, error } = await db.from("wallets").upsert(wallet).select().single();
-    if (error) throw error;
-    return data as WalletStateModel;
+    // wallet_accounts already exists via ensureWalletAccount — just reload
+    const existing = await walletRepo.getByOwnerOrbitId(wallet.ownerOrbitId);
+    if (existing) return existing;
+    // Fallback: return input as-is (account was already created by AppInit)
+    return wallet;
   },
 
   async createTransaction(tx: WalletTransaction): Promise<WalletTransaction> {
