@@ -3,7 +3,6 @@
  * Top menu strip → Dynamic banners → Categories → Marketplace feed
  */
 import { useMemo, memo, useCallback } from "react";
-import { useDinoPageAudit } from "@/hooks/useDinoPageAudit";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
@@ -157,7 +156,6 @@ export default function OrbitHome() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const handleNav = useCallback((path: string) => navigate(path), [navigate]);
-  useDinoPageAudit({ actorType: user ? "user" : "anonymous", actorId: user?.id, pageKey: "home" });
 
   const banners = useDynamicBanners();
 
