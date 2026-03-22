@@ -86,7 +86,7 @@ export default function PaymentConfirmPage() {
           </div>
         ) : sent ? (
           <AppCard variant="elevated" padding="lg" className="flex flex-col items-center gap-3 py-8">
-            <CheckCircle2 className="h-14 w-14 text-green-500" />
+            <CheckCircle2 className="h-14 w-14 text-primary" />
             <p className="text-lg font-bold text-foreground">Payment Sent</p>
             <p className="text-sm text-muted-foreground">{amount} {currency} to {target?.display_name || "user"}</p>
           </AppCard>
