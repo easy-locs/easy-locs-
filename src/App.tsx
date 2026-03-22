@@ -281,8 +281,7 @@ const PredictiveDispatchPage = safeLazy(() => import("./pages/PredictiveDispatch
 const MerchantOnboardingPage = safeLazy(() => import("./pages/MerchantOnboardingPage"), "MerchantOnboardingPage");
 const MerchantOnboardingAdminPage = safeLazy(() => import("./pages/MerchantOnboardingAdminPage"), "MerchantOnboardingAdminPage");
 const ExecutiveDashboard = safeLazy(() => import("./pages/ExecutiveDashboard"), "ExecutiveDashboard");
-const GhostCallPage = safeLazy(() => import("./pages/GhostCallPage"), "GhostCallPage");
-// Ghost V2/V3 pages — removed (Batch B purge)
+// GhostCallPage — removed (orphan, bypassed CallProvider)
 const SalesSequencePage = safeLazy(() => import("./pages/SalesSequencePage"), "SalesSequencePage");
 const WorkspaceBootstrapPage = safeLazy(() => import("./pages/WorkspaceBootstrapPage"), "WorkspaceBootstrapPage");
 const MenuAdminPage = safeLazy(() => import("./pages/MenuAdminPage"), "MenuAdminPage");
