@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { platformBus } from "@/app/events/platform-bus";
+import { platformBus } from "@/lib/shared/platform-bus";
 import { diffNights, isRangeOverlap } from "@/lib/utils/booking";
 import type { BookingRecordV2 } from "@/lib/types/domain";
 import { useListingStore } from "@/stores/listingStore";
@@ -59,7 +59,6 @@ export const useBookingStore = create<BookingStore>((set, get) => ({
     const bookingId = `booking_${Math.random().toString(36).slice(2, 11)}`;
     const now = new Date().toISOString();
 
-    // Create conversation for booking
     const conversation = await useChatStore.getState().createConversation({
       type: "booking",
       participants: [
@@ -99,18 +98,16 @@ export const useBookingStore = create<BookingStore>((set, get) => ({
 
     set((state) => ({ bookings: [booking, ...state.bookings] }));
 
-    platformBus.emit({ type: "booking.requested", payload: { booking } });
+    platformBus.emit("booking.requested", { booking }, "marketplace");
 
     if (flowMode === "instant_book") {
-      platformBus.emit({
-        type: "booking.payment.required",
-        payload: { bookingId: booking.id, amount: booking.amount, currency: booking.currency, listingId: booking.listingId },
-      });
+      platformBus.emit("booking.payment.required", {
+        bookingId: booking.id, amount: booking.amount, currency: booking.currency, listingId: booking.listingId,
+      }, "marketplace");
     } else {
-      platformBus.emit({
-        type: "booking.confirmation.required",
-        payload: { bookingId: booking.id, listingId: booking.listingId },
-      });
+      platformBus.emit("booking.confirmation.required", {
+        bookingId: booking.id, listingId: booking.listingId,
+      }, "marketplace");
     }
 
     return booking;
@@ -126,7 +123,7 @@ export const useBookingStore = create<BookingStore>((set, get) => ({
       }),
     }));
     if (confirmed) {
-      platformBus.emit({ type: "booking.confirmed", payload: { bookingId: (confirmed as BookingRecordV2).id, transactionId: (confirmed as BookingRecordV2).transactionId } });
+      platformBus.emit("booking.confirmed", { bookingId: (confirmed as BookingRecordV2).id, transactionId: (confirmed as BookingRecordV2).transactionId }, "marketplace");
     }
   },
 
@@ -146,7 +143,7 @@ export const useBookingStore = create<BookingStore>((set, get) => ({
         b.id === bookingId ? { ...b, status: "cancelled" as const, updatedAt: new Date().toISOString() } : b
       ),
     }));
-    platformBus.emit({ type: "booking.cancelled", payload: { bookingId, listingId: booking.listingId } });
+    platformBus.emit("booking.cancelled", { bookingId, listingId: booking.listingId }, "marketplace");
   },
 
   completeBooking: (bookingId) => {
@@ -157,7 +154,7 @@ export const useBookingStore = create<BookingStore>((set, get) => ({
         b.id === bookingId ? { ...b, status: "completed" as const, updatedAt: new Date().toISOString() } : b
       ),
     }));
-    platformBus.emit({ type: "booking.completed", payload: { bookingId, listingId: booking.listingId } });
+    platformBus.emit("booking.completed", { bookingId, listingId: booking.listingId }, "marketplace");
   },
 
   getBookingById: (bookingId) => get().bookings.find((b) => b.id === bookingId) ?? null,
