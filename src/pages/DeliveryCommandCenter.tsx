@@ -352,11 +352,8 @@ export default function DeliveryCommandCenter() {
   const _loc = useLocationStore((s) => s.currentLocation);
   const userLat = _loc?.lat ?? null;
   const userLng = _loc?.lng ?? null;
-  const _setLoc = useLocationStore((s) => s.setCurrentLocation);
   const requestLocation = () => {
-    navigator.geolocation?.getCurrentPosition((pos) => {
-      _setLoc({ lat: pos.coords.latitude, lng: pos.coords.longitude, accuracy: pos.coords.accuracy, timestamp: new Date().toISOString() });
-    }, () => {}, { enableHighAccuracy: true, timeout: 12000 });
+    import("@/lib/location/requestLocation").then(({ requestLocation: rl }) => rl());
   };
 
   const [assignDrawerOpen, setAssignDrawerOpen] = useState(false);

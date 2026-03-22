@@ -39,18 +39,12 @@ export default function ChatLocationPicker({ open, onClose, onSend }: Props) {
   const [searching, setSearching] = useState(false);
   const [currentPos, setCurrentPos] = useState<{ lat: number; lng: number } | null>(null);
 
-  const getCurrentPosition = useCallback((): Promise<{ lat: number; lng: number }> => {
-    return new Promise((resolve, reject) => {
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          const p = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-          setCurrentPos(p);
-          resolve(p);
-        },
-        (err) => reject(err),
-        { enableHighAccuracy: true, timeout: 10000 }
-      );
-    });
+  const getCurrentPosition = useCallback(async (): Promise<{ lat: number; lng: number }> => {
+    const { requestLocation } = await import("@/lib/location/requestLocation");
+    const pos = await requestLocation();
+    if (!pos) throw new Error("Location unavailable");
+    setCurrentPos(pos);
+    return pos;
   }, []);
 
   const handleSendCurrent = useCallback(async () => {
