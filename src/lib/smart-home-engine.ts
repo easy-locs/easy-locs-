@@ -9,7 +9,8 @@ export type CategoryKey = "food" | "grocery" | "shops" | "services" | "taxi" | "
 export interface SmartCategory {
   key: CategoryKey;
   label: string;
-  icon: string; // emoji
+  icon: string; // emoji fallback
+  image?: string; // image module path key
   subtitle?: string;
   color: string; // hsl token
   size: "normal" | "wide" | "tall";
