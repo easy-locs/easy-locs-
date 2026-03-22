@@ -8,6 +8,7 @@ import {
   enforceVersionConsistencyOnBoot,
   purgeLegacyServiceWorkersAndCaches,
 } from "@/lib/version-check";
+import { initMonitoring } from "@/lib/monitoring";
 
 const rootElement = document.getElementById("root");
 
@@ -42,6 +43,8 @@ if (typeof window !== "undefined") {
   // void enforceVersionConsistencyOnBoot().then((reloadedForFreshBuild) => {
   //   console.info("[Build] stale HTML detected", reloadedForFreshBuild);
   // });
+
+  initMonitoring();
 }
 
 // Remove the static loading fallback as soon as the app bundle starts executing.

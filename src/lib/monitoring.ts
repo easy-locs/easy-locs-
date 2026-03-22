@@ -44,6 +44,7 @@ const DEDUP_WINDOW_MS = 5000;
 let events: MonitoringEvent[] = [];
 let listeners: Array<() => void> = [];
 const startTime = Date.now();
+let monitoringInitialized = false;
 
 function uid() {
   return Math.random().toString(36).slice(2, 10);
@@ -165,6 +166,8 @@ async function persistToAuditLog(evt: MonitoringEvent) {
 
 export function initMonitoring() {
   if (typeof window === "undefined") return;
+  if (monitoringInitialized) return;
+  monitoringInitialized = true;
 
   // Unhandled JS errors
   window.addEventListener("error", (e) => {
