@@ -244,15 +244,12 @@ export function CallProvider({ children }: { children: ReactNode }) {
 
         const receiverOrbitId = await resolveReceiverUserId(opts.orgId);
 
-        if (receiverOrbitId === authUser.id) {
-          toast.error(t("call.error.start_failed") || "Unable to start call");
-          console.warn("[CallProvider] blocked self-call", { receiverOrbitId });
-          return;
-        }
-
-        if (!receiverOrbitId) {
-          toast.error(t("call.error.start_failed") || "Unable to start call");
-          console.warn("[CallProvider] no resolved receiver for call", { rawTarget: opts.orgId });
+        if (!receiverOrbitId || receiverOrbitId === authUser.id) {
+          const reason = receiverOrbitId === authUser.id
+            ? "No other team member available to receive this call."
+            : "Could not find a callable contact for this business.";
+          toast.error(reason);
+          console.warn("[CallProvider] no callable target", { rawTarget: opts.orgId, resolved: receiverOrbitId, reason });
           return;
         }
 
