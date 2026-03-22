@@ -113,18 +113,17 @@ export default function LiveDeliveryChat({ jobId, onClose }: Props) {
 
   const shareLocation = useCallback(async () => {
     if (!thread?.id || !user?.id) return;
-    if (!("geolocation" in navigator)) return;
-
-    navigator.geolocation.getCurrentPosition(async (pos) => {
-      await (supabase as any).from("messages").insert({
-        thread_id: thread.id,
-        sender_id: user.id,
-        content: `📍 ${pos.coords.latitude.toFixed(4)}, ${pos.coords.longitude.toFixed(4)}`,
-        message_type: "location",
-        metadata_json: { lat: pos.coords.latitude, lng: pos.coords.longitude },
-      });
-      setShowLocation(false);
+    const { requestLocation } = await import("@/lib/location/requestLocation");
+    const pos = await requestLocation();
+    if (!pos) return;
+    await (supabase as any).from("messages").insert({
+      thread_id: thread.id,
+      sender_id: user.id,
+      content: `📍 ${pos.lat.toFixed(4)}, ${pos.lng.toFixed(4)}`,
+      message_type: "location",
+      metadata_json: { lat: pos.lat, lng: pos.lng },
     });
+    setShowLocation(false);
   }, [thread?.id, user?.id]);
 
   const driverName = job?.profiles

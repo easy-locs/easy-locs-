@@ -97,11 +97,8 @@ export default function CommNearbySection() {
   const geoLoading = useLocationStore((s) => s.loading);
   const geoError = useLocationStore((s) => s.error);
   const permissionDenied = useLocationStore((s) => s.permissionState) === "denied";
-  const _setLoc = useLocationStore((s) => s.setCurrentLocation);
   const requestLocation = () => {
-    navigator.geolocation?.getCurrentPosition((pos) => {
-      _setLoc({ lat: pos.coords.latitude, lng: pos.coords.longitude, accuracy: pos.coords.accuracy, timestamp: new Date().toISOString() });
-    }, () => {}, { enableHighAccuracy: true, timeout: 12000 });
+    import("@/lib/location/requestLocation").then(({ requestLocation: rl }) => rl());
   };
   const [items, setItems] = useState<NearbyItem[]>([]);
   const [nearbyUsers, setNearbyUsers] = useState<NearbyUser[]>([]);
