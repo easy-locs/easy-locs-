@@ -101,17 +101,17 @@ export default function AppPreferencesSection() {
   const handleLocationToggle = useCallback((checked: boolean) => {
     update("autoLocation", checked);
     if (checked && locationStatus !== "granted") {
-      navigator.geolocation?.getCurrentPosition(
-        () => {
-          setLocationStatus("granted");
-          toast.success(t("settings.location_enabled") || "📍 Location enabled");
-        },
-        () => {
-          setLocationStatus("denied");
-          toast.error(t("settings.location_denied") || "Location permission denied");
-        },
-        { timeout: 8000 }
-      );
+      import("@/lib/location/requestLocation").then(({ requestLocation }) => {
+        requestLocation().then((pos) => {
+          if (pos) {
+            setLocationStatus("granted");
+            toast.success(t("settings.location_enabled") || "📍 Location enabled");
+          } else {
+            setLocationStatus("denied");
+            toast.error(t("settings.location_denied") || "Location permission denied");
+          }
+        });
+      });
     }
   }, [locationStatus, update]);
 
