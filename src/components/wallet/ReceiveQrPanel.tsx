@@ -4,7 +4,7 @@
  */
 import { useState, useMemo } from "react";
 import { Copy, Check, Share2 } from "lucide-react";
-import QRCode from "react-qr-code";
+import BrandedQR from "@/components/qr/BrandedQR";
 import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { qr, toResolveUrl } from "@/lib/qr-engine";
