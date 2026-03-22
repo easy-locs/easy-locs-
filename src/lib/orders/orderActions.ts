@@ -31,10 +31,10 @@ export async function setOrderStatus(params: {
   if (error) throw error;
 
   if (params.nextStatus === "confirmed") {
-    await platformBus.emit("ORDER_CONFIRMED", {
+    platformBus.emit("ORDER_CONFIRMED", {
       orderId: params.orderId,
       merchantId: params.merchantId ?? "",
-    }, { source: "orderActions" });
+    }, "system");
   }
 
   if (params.nextStatus === "ready_for_pickup") {
