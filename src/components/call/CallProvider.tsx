@@ -64,6 +64,46 @@ export function CallProvider({ children }: { children: ReactNode }) {
   // Listen for incoming calls via Supabase Realtime on call_logs
   const channelRef = useRef<any>(null);
 
+  const resolveReceiverUserId = useCallback(async (rawTargetId: string) => {
+    const normalized = rawTargetId.trim();
+    if (!normalized) return "";
+
+    const { data: directProfile } = await supabase
+      .from("profiles")
+      .select("id")
+      .eq("id", normalized)
+      .maybeSingle();
+
+    if (directProfile?.id) return directProfile.id;
+
+    const { data: ownerMembership } = await supabase
+      .from("org_members")
+      .select("user_id, role")
+      .eq("org_id", normalized)
+      .eq("role", "owner")
+      .limit(1)
+      .maybeSingle();
+
+    if (ownerMembership?.user_id) return ownerMembership.user_id;
+
+    const { data: org } = await supabase
+      .from("orgs")
+      .select("owner_user_id")
+      .eq("id", normalized)
+      .maybeSingle();
+
+    if (org?.owner_user_id) return org.owner_user_id;
+
+    const { data: anyMembership } = await supabase
+      .from("org_members")
+      .select("user_id")
+      .eq("org_id", normalized)
+      .limit(1)
+      .maybeSingle();
+
+    return anyMembership?.user_id || normalized;
+  }, []);
+
   useEffect(() => {
     if (!user) return;
 
@@ -190,8 +230,7 @@ export function CallProvider({ children }: { children: ReactNode }) {
           authUserId: authUser.id,
         });
 
-        // Pass orgId directly — the RPC handles org→user resolution server-side
-        const receiverOrbitId = opts.orgId;
+        const receiverOrbitId = await resolveReceiverUserId(opts.orgId);
 
         if (receiverOrbitId === authUser.id) {
           toast.error(t("call.error.start_failed") || "Unable to start call");
@@ -199,8 +238,15 @@ export function CallProvider({ children }: { children: ReactNode }) {
           return;
         }
 
-        console.log("[CallProvider] sending to RPC — server resolves org→user", {
+        if (!receiverOrbitId) {
+          toast.error(t("call.error.start_failed") || "Unable to start call");
+          console.warn("[CallProvider] no resolved receiver for call", { rawTarget: opts.orgId });
+          return;
+        }
+
+        console.log("[CallProvider] sending to RPC", {
           callerOrbitId: authUser.id,
+          rawTarget: opts.orgId,
           receiverOrbitId,
         });
 
@@ -250,7 +296,7 @@ export function CallProvider({ children }: { children: ReactNode }) {
         setIsStartingCall(false);
       }
     },
-    [user]
+    [resolveReceiverUserId, t, user]
   );
 
   // Legacy call.request listener removed — contactStore purged. Use useCall().startCall directly.
