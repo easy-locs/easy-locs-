@@ -186,8 +186,14 @@ export default function QrScannerPage() {
       });
       if (!mountedRef.current) return;
       if (result.ok) {
-        setTxId(result.transactionId || ""); setState("paid");
-        haptic("success"); playScanBeep();
+        setSuccessAmount(`${payload.amount || 0} ${payload.currency || "AED"}`);
+        playPremiumSuccessBeep();
+        hapticPremiumSuccess();
+        setShowPremiumSuccess(true);
+        setTimeout(() => {
+          setShowPremiumSuccess(false);
+          setTxId(result.transactionId || ""); setState("paid");
+        }, 1600);
       } else if (result.error !== "Cancelled") {
         setError(result.error || "Payment failed"); setState("error");
       } else {
