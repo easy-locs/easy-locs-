@@ -6,7 +6,7 @@ import { useEffect, useRef, useState, useMemo, useCallback } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { useLocationStore } from "@/stores/locationStore";
-import { filterByRadius, sortByDistance, formatDistance } from "@/lib/location/radar";
+import { filterByRadius, sortByDistance, formatDistance } from "@/lib/radar/radar-engine";
 import { LocationSearchInput } from "./LocationSearchInput";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
