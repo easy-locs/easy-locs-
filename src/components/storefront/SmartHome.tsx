@@ -201,7 +201,21 @@ function DynamicSection({ section, index }: { section: { key: string; title: str
 export default function SmartHome() {
   const navigate = useNavigate();
   const currentLocation = useLocationStore((s) => s.currentLocation);
-  const geo = { effectiveCity: null as string | null, manualCity: null as string | null };
+  const isFallback = useLocationStore((s) => s.isFallback);
+  
+  // Derive city from locationStore or localStorage
+  const city = useMemo(() => {
+    try {
+      const raw = localStorage.getItem("orbit:last-geo");
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed.city) return parsed.city;
+      }
+    } catch {}
+    if (currentLocation && !isFallback) return "Dubai"; // GPS active
+    return null;
+  }, [currentLocation, isFallback]);
+
   const timezone = useMemo(() => {
     try { return Intl.DateTimeFormat().resolvedOptions().timeZone; } catch { return undefined; }
   }, []);
@@ -229,7 +243,7 @@ export default function SmartHome() {
   return (
     <div className="space-y-0">
       <CompactHeader
-        city={geo.effectiveCity || geo.manualCity}
+        city={city}
         greeting={greeting}
         onSearch={() => navigate("/radar")}
       />
