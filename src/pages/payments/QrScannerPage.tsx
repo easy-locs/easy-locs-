@@ -128,6 +128,7 @@ export default function QrScannerPage() {
     platformBus.emit("qr.scan.decoded", { action: payload.action, raw }, "system");
 
     if (payload.action === "pay_user") {
+      platformBus.emit("qr.payment.initiated", { action: "pay_user", userId: payload.userId }, "wallet");
       setS("paying");
       let resolved: ResolvedPayTarget;
       try {
