@@ -96,27 +96,34 @@ export function useDriverSession() {
   }, [user?.id]);
 
   const startGPSTracking = useCallback(() => {
-    if (!navigator.geolocation) return;
-    // Watch position
-    watchIdRef.current = navigator.geolocation.watchPosition(
-      (pos) => updatePosition(pos.coords.latitude, pos.coords.longitude),
-      () => {},
-      { enableHighAccuracy: true, maximumAge: 10000, timeout: 15000 }
-    );
-    // Heartbeat every 30s
+    // Use canonical locationStore — subscribe to watch updates
+    const { useLocationStore } = require("@/stores/locationStore");
+    
+    // Initial position from store
+    const loc = useLocationStore.getState().currentLocation;
+    if (loc) updatePosition(loc.lat, loc.lng);
+    
+    // Subscribe to store updates for live tracking
+    const unsub = useLocationStore.subscribe((state: any) => {
+      if (state.currentLocation) {
+        updatePosition(state.currentLocation.lat, state.currentLocation.lng);
+      }
+    });
+    
+    // Heartbeat every 30s from store
     heartbeatRef.current = setInterval(() => {
-      navigator.geolocation.getCurrentPosition(
-        (pos) => updatePosition(pos.coords.latitude, pos.coords.longitude),
-        () => {},
-        { enableHighAccuracy: false, maximumAge: 30000 }
-      );
+      const current = useLocationStore.getState().currentLocation;
+      if (current) updatePosition(current.lat, current.lng);
     }, 30000);
+    
+    // Store unsub for cleanup
+    (watchIdRef as any)._unsub = unsub;
   }, [updatePosition]);
 
   const stopGPSTracking = useCallback(() => {
-    if (watchIdRef.current !== null) {
-      navigator.geolocation.clearWatch(watchIdRef.current);
-      watchIdRef.current = null;
+    if ((watchIdRef as any)._unsub) {
+      (watchIdRef as any)._unsub();
+      (watchIdRef as any)._unsub = null;
     }
     if (heartbeatRef.current) {
       clearInterval(heartbeatRef.current);
