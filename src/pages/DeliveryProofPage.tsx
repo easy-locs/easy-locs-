@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useParams } from "react-router-dom";
 import { submitDeliveryProof } from "@/lib/delivery/delivery-proof";
 import { useAuth } from "@/contexts/AuthContext";
-import { useLiveGeolocation } from "@/hooks/useLiveGeolocation";
+import { useGeo } from "@/lib/geo/use-geo";
 import { toast } from "sonner";
 import { Camera, MapPin, CheckCircle } from "lucide-react";
 
