@@ -119,7 +119,8 @@ export function installOrchestrationEngine() {
   });
 
   // ── ORDER_CONFIRMED ──
-  platformBus.on<OrderConfirmedPayload>("ORDER_CONFIRMED", async (payload) => {
+  platformBus.on("ORDER_CONFIRMED", async (event) => {
+    const payload = event.payload as OrderConfirmedPayload;
     await updateOrderStatus(payload.orderId, "confirmed");
 
     await createNotification({
@@ -137,10 +138,11 @@ export function installOrchestrationEngine() {
   });
 
   // ── ORDER_READY ──
-  platformBus.on<OrderReadyPayload>("ORDER_READY", async (payload) => {
+  platformBus.on("ORDER_READY", async (event) => {
+    const payload = event.payload as OrderReadyPayload;
     await updateOrderStatus(payload.orderId, "driver_search");
 
-    await platformBus.emit(
+    platformBus.emit(
       "MISSION_CREATED",
       {
         orderId: payload.orderId,
@@ -149,7 +151,7 @@ export function installOrchestrationEngine() {
         pickupLng: payload.pickupLng ?? 0,
         zone: payload.zone ?? "",
       },
-      { source: "orchestrator:ORDER_READY" }
+      "system"
     );
 
     await logOrchestrationEvent({
