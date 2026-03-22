@@ -111,15 +111,9 @@ export function CallProvider({ children }: { children: ReactNode }) {
 
     if (otherMembers?.user_id) return otherMembers.user_id;
 
-    // Last resort: any member at all
-    const { data: anyMembership } = await supabase
-      .from("org_members")
-      .select("user_id")
-      .eq("org_id", normalized)
-      .limit(1)
-      .maybeSingle();
-
-    return anyMembership?.user_id || normalized;
+    // No other member found — return empty to trigger clear error
+    console.warn("[CallProvider] no callable target found (all resolved to self)", { rawTarget: rawTargetId, callerId: user?.id });
+    return "";
   }, [user?.id]);
 
   useEffect(() => {
