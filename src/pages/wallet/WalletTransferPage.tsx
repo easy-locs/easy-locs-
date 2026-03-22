@@ -2,17 +2,18 @@
  * WalletTransferPage — Uses unified walletTransfer (wallet_accounts engine)
  * Optimistic UI: balance deducted instantly, rolled back on error.
  */
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { walletTransfer, useWalletBalance } from "@/payments/wallet-hooks";
 
 export default function WalletTransferPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { user } = useAuth();
   const { balance, currency, reload: reloadBalance, optimisticAdjust } = useWalletBalance();
-  const [targetUserId, setTargetUserId] = useState("");
+  const [targetUserId, setTargetUserId] = useState(searchParams.get("to") || "");
   const [amount, setAmount] = useState("25");
   const [note, setNote] = useState("");
   const [saving, setSaving] = useState(false);
