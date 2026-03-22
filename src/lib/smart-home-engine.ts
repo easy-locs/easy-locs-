@@ -151,7 +151,12 @@ export function getSmartCategories(timezone?: string, countryCode?: string): Sma
     if (!seen.has(key)) { ordered.push(key); seen.add(key); }
   }
 
-  return ordered.slice(0, 8).map(key => ALL_CATEGORIES[key]);
+  // Return all unique categories for horizontal scroll (no limit)
+  // Fill remaining from ALL_CATEGORIES
+  for (const key of Object.keys(ALL_CATEGORIES) as CategoryKey[]) {
+    if (!seen.has(key)) { ordered.push(key); seen.add(key); }
+  }
+  return ordered.map(key => ALL_CATEGORIES[key]);
 }
 
 export function getSmartHero(timezone?: string): SmartHero {
