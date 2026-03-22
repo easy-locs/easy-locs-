@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePlatformCurrency } from "@/hooks/usePlatformCurrency";
 import { createPaymentRequest } from "@/payments/payment-request-hooks";
-import { QRCodeSVG } from "qrcode.react";
+import BrandedQR from "@/components/qr/BrandedQR";
 
 export type ActionSheetMode = "pay" | "receive" | "request";
 
@@ -139,9 +139,7 @@ function ReceiveMode() {
     <div className="space-y-5">
       {/* QR Code */}
       <div className="flex justify-center">
-        <div className="rounded-2xl bg-white p-4">
-          <QRCodeSVG value={qrValue} size={200} level="M" />
-        </div>
+        <BrandedQR value={qrValue} size={200} />
       </div>
 
       {/* Amount + Currency */}
@@ -250,12 +248,10 @@ function RequestMode() {
 
   if (requestUrl) {
     return (
-      <div className="space-y-5">
-        <div className="flex justify-center">
-          <div className="rounded-2xl bg-white p-4">
-            <QRCodeSVG value={requestUrl} size={200} level="M" />
+       <div className="space-y-5">
+          <div className="flex justify-center">
+            <BrandedQR value={requestUrl} size={200} />
           </div>
-        </div>
 
         <div className="rounded-xl bg-muted/50 p-3 text-center">
           <p className="text-lg font-bold text-foreground">

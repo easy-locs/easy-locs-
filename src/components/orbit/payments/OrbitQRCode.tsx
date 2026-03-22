@@ -6,7 +6,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import { Copy, Share2, Clock, Shield, Check, Loader2 } from "lucide-react";
-import { QRCodeSVG } from "qrcode.react";
+import BrandedQR from "@/components/qr/BrandedQR";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -120,20 +120,7 @@ export default function OrbitQRCode({
           {loading ? (
             <Loader2 className="w-8 h-8 text-muted-foreground animate-spin" />
           ) : qrData ? (
-            <QRCodeSVG
-              value={qrData}
-              size={200}
-              level="M"
-              includeMargin={false}
-              bgColor="transparent"
-              fgColor="hsl(var(--foreground))"
-              imageSettings={{
-                src: "",
-                height: 0,
-                width: 0,
-                excavate: false,
-              }}
-            />
+            <BrandedQR value={qrData} size={200} darkMode />
           ) : (
             <p className="text-sm text-muted-foreground">Failed to generate QR</p>
           )}
