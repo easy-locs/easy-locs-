@@ -30,6 +30,10 @@ const TARGET_ROUTES: Record<TargetType, { landlord: string; tenant?: string }> =
   deal:                { landlord: "/dashboard/communication" },
   offer:               { landlord: "/dashboard/communication" },
   counter_offer:       { landlord: "/dashboard/communication" },
+  // Orders / Commerce
+  order:               { landlord: "/merchant/orders",           tenant: "/my-orders" },
+  delivery:            { landlord: "/merchant/orders",           tenant: "/my-orders" },
+  storefront_order:    { landlord: "/merchant/orders",           tenant: "/my-orders" },
   // General
   message:             { landlord: "/dashboard/communication",   tenant: "/tenant/messages" },
 };
@@ -43,6 +47,9 @@ const TYPE_FALLBACKS: Record<string, string> = {
   rent_call: "/dashboard/rental",
   request: "/dashboard/interventions",
   receipt: "/dashboard/receipts",
+  order: "/my-orders",
+  order_update: "/my-orders",
+  delivery: "/my-orders",
   info: "/dashboard",
 };
 
