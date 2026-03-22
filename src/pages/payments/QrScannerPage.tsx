@@ -152,8 +152,10 @@ export default function QrScannerPage() {
         setTxId(result.transactionId || "");
         setState("paid");
         haptic("success"); playScanBeep();
+        platformBus.emit("qr.payment.completed", { action: "pay_user", txId: result.transactionId }, "wallet");
       } else if (result.error !== "Cancelled") {
         setError(result.error || "Payment failed"); setState("error");
+        platformBus.emit("qr.payment.failed", { action: "pay_user", error: result.error }, "wallet");
       } else {
         setState("idle"); handledRef.current = false;
       }
