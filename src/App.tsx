@@ -80,7 +80,7 @@ function safeLazy(factory: () => Promise<{ default: ComponentType<any> }>, name:
   });
 }
 
-const Explore = safeLazy(() => import("./pages/Explore"), "Explore");
+// Explore — dead, redirected to /radar. Import removed.
 
 // Lazy load all pages
 const Index = safeLazy(() => import("./pages/Index"), "Index");
