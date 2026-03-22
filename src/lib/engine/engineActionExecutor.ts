@@ -1,4 +1,4 @@
-import { platformBus } from "@/lib/orchestration/platformBus";
+import { platformBus } from "@/lib/shared/platform-bus";
 import { runEngineHealthChecks } from "@/lib/engine/engineHealthChecks";
 
 export async function executeEngineAction(action: string) {
