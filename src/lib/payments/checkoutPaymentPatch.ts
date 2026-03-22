@@ -1,6 +1,6 @@
 import { createCheckoutPayment, confirmWalletOrCashOrder } from "@/lib/payments/paymentService";
 import { holdEscrow } from "@/lib/wallet/ledger";
-import { platformBus } from "@/lib/orchestration/platformBus";
+import { platformBus } from "@/lib/shared/platform-bus";
 
 export async function placeOrderWithRealPayment(params: {
   orderId: string;
