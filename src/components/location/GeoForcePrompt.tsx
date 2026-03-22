@@ -3,22 +3,22 @@
  * Non-blocking banner that re-triggers the native prompt on tap.
  * Uses i18n for all user-facing strings.
  */
-import { useLocationStore } from "@/stores/locationStore";
+import { useGeoStore } from "@/lib/geo/geo-store";
+import { geoService } from "@/lib/geo/geo-service";
 import { MapPin } from "lucide-react";
-import { requestLocation } from "@/lib/location/requestLocation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useI18n, tSafe } from "@/lib/i18n";
 
 export default function GeoForcePrompt() {
   const { t } = useI18n();
-  const permission = useLocationStore((s) => s.permissionState);
-  const isFallback = useLocationStore((s) => s.isFallback);
-  const loading = useLocationStore((s) => s.loading);
+  const permission = useGeoStore((s) => s.permission);
+  const loading = useGeoStore((s) => s.loading);
+  const point = useGeoStore((s) => s.point);
 
-  const show = !loading && (permission === "denied" || (isFallback && permission !== "granted"));
+  const show = !loading && (permission === "denied" || (!point && permission !== "granted"));
 
-  const handleRetry = async () => {
-    await requestLocation();
+  const handleRetry = () => {
+    geoService.forceRetry();
   };
 
   return (

@@ -1,23 +1,22 @@
 import { useEffect } from "react";
 import { useRadarStore } from "@/stores/radarStore";
-import { useLocationStore } from "@/stores/locationStore";
+import { useGeoStore } from "@/lib/geo/geo-store";
 
 /**
- * useRadarGeo — Syncs locationStore (canonical GPS) into radarStore.
- * No duplicate navigator.geolocation calls.
+ * useRadarGeo — Syncs geoStore (canonical GPS) into radarStore.
  */
 export function useRadarGeo() {
   const setUserLocation = useRadarStore((s) => s.setUserLocation);
 
   useEffect(() => {
     // Sync current value
-    const loc = useLocationStore.getState().currentLocation;
-    if (loc) setUserLocation({ lat: loc.lat, lng: loc.lng, accuracy: loc.accuracy ?? null });
+    const pt = useGeoStore.getState().point;
+    if (pt) setUserLocation({ lat: pt.lat, lng: pt.lng, accuracy: pt.accuracy ?? null });
 
     // Subscribe to future updates
-    const unsub = useLocationStore.subscribe((state) => {
-      const cur = state.currentLocation;
-      if (cur) setUserLocation({ lat: cur.lat, lng: cur.lng, accuracy: cur.accuracy ?? null });
+    const unsub = useGeoStore.subscribe((state) => {
+      const p = state.point;
+      if (p) setUserLocation({ lat: p.lat, lng: p.lng, accuracy: p.accuracy ?? null });
     });
     return unsub;
   }, [setUserLocation]);

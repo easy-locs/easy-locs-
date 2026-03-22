@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useParams } from "react-router-dom";
 import { submitDeliveryProof } from "@/lib/delivery/delivery-proof";
 import { useAuth } from "@/contexts/AuthContext";
-import { useLiveGeolocation } from "@/hooks/useLiveGeolocation";
+import { useGeo } from "@/lib/geo/use-geo";
 import { toast } from "sonner";
 import { Camera, MapPin, CheckCircle } from "lucide-react";
 
@@ -13,7 +13,7 @@ export default function DeliveryProofPage() {
   const [notes, setNotes] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
-  const { coords } = useLiveGeolocation(true);
+  const { point } = useGeo();
 
   const handleSubmit = async () => {
     if (!orderId || !user) return;
@@ -24,8 +24,8 @@ export default function DeliveryProofPage() {
         driverUserId: user.id,
         proofType: "photo",
         photoUrl: photoUrl || undefined,
-        geoLat: coords?.latitude,
-        geoLng: coords?.longitude,
+        geoLat: point?.lat,
+        geoLng: point?.lng,
         notes: notes || undefined,
       });
       setSubmitted(true);
@@ -83,11 +83,11 @@ export default function DeliveryProofPage() {
             />
           </div>
 
-          {coords && (
+          {point && (
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <MapPin className="h-4 w-4" />
               <span>
-                {coords.latitude.toFixed(5)}, {coords.longitude.toFixed(5)}
+                {point.lat.toFixed(5)}, {point.lng.toFixed(5)}
               </span>
             </div>
           )}

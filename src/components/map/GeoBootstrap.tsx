@@ -1,11 +1,9 @@
 /**
- * GeoBootstrap — Initializes GPS and populates locationStore (single source of truth).
- * Mount once at app root or on pages needing live location.
- * Silent — no banner on denied, just logs.
+ * GeoBootstrap — Initializes GPS via unified geoService.
+ * Mount once at app root. Silent — no banner on denied.
  */
-import { useCurrentLocation } from "@/hooks/useCurrentLocation";
+import { GeoBoot } from "@/lib/geo/GeoBoot";
 
 export function GeoBootstrap() {
-  useCurrentLocation({ watch: true });
-  return null;
+  return <GeoBoot />;
 }
