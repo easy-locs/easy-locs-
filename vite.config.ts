@@ -21,6 +21,26 @@ export default defineConfig(({ mode }) => ({
     mode === "development" && componentTagger(),
     sitemapPlugin(),
   ].filter(Boolean),
+  optimizeDeps: {
+    include: [
+      "react",
+      "react/jsx-runtime",
+      "react/jsx-dev-runtime",
+      "react-dom",
+      "react-dom/client",
+      "react-router-dom",
+      "@tanstack/react-query",
+      "next-themes",
+      "zustand",
+      "zustand/middleware",
+      "sonner",
+      "framer-motion",
+      "clsx",
+      "tailwind-merge",
+      "class-variance-authority",
+    ],
+    force: true,
+  },
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
