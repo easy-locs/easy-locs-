@@ -1,4 +1,5 @@
 import { useRadarStore } from "@/stores/radarStore";
+import { ultraHaptic } from "@/lib/performance/useUltraFast";
 
 export function RadarResultsList() {
   const filtered = useRadarStore((s) => s.filtered);
@@ -20,7 +21,8 @@ export function RadarResultsList() {
       {filtered.map((item) => (
         <div
           key={item.id}
-          className="rounded-2xl border border-border/20 bg-card p-3"
+          onClick={() => ultraHaptic("light")}
+          className="rounded-2xl border border-border/20 bg-card p-3 active:scale-[0.97] transition-transform duration-75 will-change-transform cursor-pointer"
         >
           <div className="flex items-center justify-between">
             <div className="min-w-0">
