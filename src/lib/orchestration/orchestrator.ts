@@ -163,7 +163,8 @@ export function installOrchestrationEngine() {
   });
 
   // ── MISSION_CREATED ──
-  platformBus.on("MISSION_CREATED", async (payload: any) => {
+  platformBus.on("MISSION_CREATED", async (event) => {
+    const payload = event.payload as any;
     await logOrchestrationEvent({
       eventType: "orch_mission_created",
       entityId: payload.orderId,
@@ -173,7 +174,8 @@ export function installOrchestrationEngine() {
   });
 
   // ── MISSION_ACCEPTED ──
-  platformBus.on<MissionAcceptedPayload>("MISSION_ACCEPTED", async (payload) => {
+  platformBus.on("MISSION_ACCEPTED", async (event) => {
+    const payload = event.payload as MissionAcceptedPayload;
     await updateOrderStatus(payload.orderId, "driver_assigned");
 
     await supabase
@@ -196,13 +198,14 @@ export function installOrchestrationEngine() {
   });
 
   // ── MISSION_COMPLETED ──
-  platformBus.on<MissionCompletedPayload>("MISSION_COMPLETED", async (payload) => {
+  platformBus.on("MISSION_COMPLETED", async (event) => {
+    const payload = event.payload as MissionCompletedPayload;
     await updateOrderStatus(payload.orderId, "delivered");
 
-    await platformBus.emit(
+    platformBus.emit(
       "ORDER_DELIVERED",
       { orderId: payload.orderId },
-      { source: "orchestrator:MISSION_COMPLETED" }
+      "system"
     );
 
     await logOrchestrationEvent({
