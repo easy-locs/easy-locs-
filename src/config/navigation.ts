@@ -38,12 +38,12 @@ export const NAV_TABS_CONFIG: NavTab[] = [
       p.startsWith("/trending") || p.startsWith("/super-map"),
   },
   {
-    key: "map",
-    label: "Map",
-    path: "/map",
-    icon: MapPin,
+    key: "radar",
+    label: "Radar",
+    path: "/radar",
+    icon: Radar,
     match: (p) =>
-      p === "/map" || p.startsWith("/ride") || p.startsWith("/send") ||
+      p === "/radar" || p === "/map" || p.startsWith("/ride") || p.startsWith("/send") ||
       p.startsWith("/track/"),
   },
   {
