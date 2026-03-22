@@ -1,23 +1,13 @@
-import { useEffect, useState } from "react";
+/**
+ * CustomerLiveLocationPage — Uses canonical locationStore for live position.
+ */
 import { useNavigate } from "react-router-dom";
+import { useLocationStore } from "@/stores/locationStore";
 
 export default function CustomerLiveLocationPage() {
   const navigate = useNavigate();
-  const [coords, setCoords] = useState<GeolocationCoordinates | null>(null);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!navigator.geolocation) {
-      setError("Geolocation not supported");
-      return;
-    }
-    const watchId = navigator.geolocation.watchPosition(
-      (pos) => setCoords(pos.coords),
-      (err) => setError(err.message),
-      { enableHighAccuracy: true }
-    );
-    return () => navigator.geolocation.clearWatch(watchId);
-  }, []);
+  const loc = useLocationStore((s) => s.currentLocation);
+  const error = useLocationStore((s) => s.error);
 
   return (
     <div className="min-h-[100dvh] bg-background pb-24">
@@ -32,12 +22,12 @@ export default function CustomerLiveLocationPage() {
       <div className="px-4">
         {error ? (
           <p className="py-8 text-center text-sm text-destructive">{error}</p>
-        ) : coords ? (
+        ) : loc ? (
           <div className="rounded-2xl border border-border/20 bg-card p-4 space-y-2">
-            <p className="text-sm text-foreground">Latitude: <span className="font-bold">{coords.latitude.toFixed(6)}</span></p>
-            <p className="text-sm text-foreground">Longitude: <span className="font-bold">{coords.longitude.toFixed(6)}</span></p>
-            {coords.accuracy && (
-              <p className="text-xs text-muted-foreground">Accuracy: {coords.accuracy.toFixed(0)}m</p>
+            <p className="text-sm text-foreground">Latitude: <span className="font-bold">{loc.lat.toFixed(6)}</span></p>
+            <p className="text-sm text-foreground">Longitude: <span className="font-bold">{loc.lng.toFixed(6)}</span></p>
+            {loc.accuracy != null && (
+              <p className="text-xs text-muted-foreground">Accuracy: {Math.round(loc.accuracy)}m</p>
             )}
           </div>
         ) : (
