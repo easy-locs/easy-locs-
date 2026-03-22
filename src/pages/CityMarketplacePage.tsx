@@ -54,7 +54,7 @@ const CityMarketplacePage = () => {
           </CardContent></Card>
           <Card><CardContent className="p-4 text-center">
             <TrendingUp className="h-5 w-5 mx-auto text-green-500 mb-1" />
-            <p className="text-xl font-bold text-foreground">{active.length}</p>
+            <p className="text-xl font-bold text-foreground">{active}</p>
             <p className="text-xs text-muted-foreground">Active</p>
           </CardContent></Card>
           <Card><CardContent className="p-4 text-center">
