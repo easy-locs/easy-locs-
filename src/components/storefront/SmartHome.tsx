@@ -1,13 +1,14 @@
 /**
  * SmartHome — Premium super-app home with Careem-style visual category cards.
  * Dense, action-first, contextual, visually powerful.
- * Categories scroll horizontally for unlimited discovery.
+ * Dynamic sections pull real shop data from storefront_pages.
  */
-import { memo, useMemo, lazy, Suspense } from "react";
+import { memo, useMemo, useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Search, MapPin, Bell, Wallet, QrCode, Send, ChevronRight, Star, Clock } from "lucide-react";
 import { useLocationStore } from "@/stores/locationStore";
 import { useOrbitEngine } from "@/stores/orbit-engine";
+import { supabase } from "@/integrations/supabase/client";
 import { getSmartCategories, getSmartHero, getTimeGreeting, getSmartSections, getTimeSlot, type SmartCategory } from "@/lib/smart-home-engine";
 import { motion } from "framer-motion";
 import GeoForcePrompt from "@/components/location/GeoForcePrompt";
@@ -38,6 +39,15 @@ const CATEGORY_IMAGES: Record<string, string> = {
   concierge: conciergeImg, mobility: mobilityImg, rentals: rentalsImg,
   stays: staysImg, travel: travelImg,
 };
+
+interface ShopPreview {
+  id: string;
+  name: string;
+  logo_url: string | null;
+  vertical: string | null;
+  address: string | null;
+  public_slug: string | null;
+}
 
 /* ═══ Compact Header ═══ */
 const CompactHeader = memo(({ city, greeting, onSearch }: { city: string | null; greeting: string; onSearch: () => void }) => {
@@ -122,6 +132,7 @@ function CategoryCard({ cat, index }: { cat: SmartCategory; index: number }) {
           )}
         </div>
         <p className="text-[10px] font-semibold text-foreground leading-tight text-center truncate w-full">{cat.label}</p>
+        {cat.subtitle && <p className="text-[8px] text-muted-foreground leading-none truncate w-full text-center">{cat.subtitle}</p>}
       </Link>
     </motion.div>
   );
@@ -163,8 +174,8 @@ function SmartHeroCard({ timezone }: { timezone?: string }) {
   );
 }
 
-/* ═══ Dynamic Section ═══ */
-function DynamicSection({ section, index }: { section: { key: string; title: string; icon: string }; index: number }) {
+/* ═══ Real-data Dynamic Section ═══ */
+function DynamicSection({ section, shops, index }: { section: { key: string; title: string; icon: string }; shops: ShopPreview[]; index: number }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 8 }}
@@ -181,17 +192,38 @@ function DynamicSection({ section, index }: { section: { key: string; title: str
         </Link>
       </div>
       <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
-        {[1, 2, 3].map(i => (
-          <div key={i} className="shrink-0 w-32 rounded-xl border border-border/15 bg-card/50 overflow-hidden">
-            <div className="h-16 bg-muted/20 flex items-center justify-center">
-              <Star className="h-4 w-4 text-muted-foreground/20" />
+        {shops.length === 0 ? (
+          // Skeleton placeholders
+          [1, 2, 3].map(i => (
+            <div key={i} className="shrink-0 w-36 rounded-xl border border-border/15 bg-card/50 overflow-hidden animate-pulse">
+              <div className="h-16 bg-muted/20" />
+              <div className="p-2 space-y-1">
+                <div className="h-2 w-3/4 bg-muted/30 rounded" />
+                <div className="h-1.5 w-1/2 bg-muted/20 rounded" />
+              </div>
             </div>
-            <div className="p-2">
-              <div className="h-2 w-3/4 bg-muted/30 rounded mb-1" />
-              <div className="h-1.5 w-1/2 bg-muted/20 rounded" />
-            </div>
-          </div>
-        ))}
+          ))
+        ) : (
+          shops.map((shop) => (
+            <Link
+              key={shop.id}
+              to={shop.public_slug ? `/shop/${shop.public_slug}` : `/radar`}
+              className="shrink-0 w-36 rounded-xl border border-border/15 bg-card/50 overflow-hidden active:scale-[0.96] transition-transform"
+            >
+              <div className="h-16 bg-muted/10 flex items-center justify-center relative overflow-hidden">
+                {shop.logo_url ? (
+                  <img src={shop.logo_url} alt={shop.name} className="w-full h-full object-cover" loading="lazy" />
+                ) : (
+                  <Star className="h-5 w-5 text-muted-foreground/30" />
+                )}
+              </div>
+              <div className="p-2">
+                <p className="text-[11px] font-bold text-foreground truncate">{shop.name}</p>
+                <p className="text-[9px] text-muted-foreground truncate">{shop.address || shop.vertical || "Dubai"}</p>
+              </div>
+            </Link>
+          ))
+        )}
       </div>
     </motion.div>
   );
@@ -202,6 +234,7 @@ export default function SmartHome() {
   const navigate = useNavigate();
   const currentLocation = useLocationStore((s) => s.currentLocation);
   const isFallback = useLocationStore((s) => s.isFallback);
+  const [sectionShops, setSectionShops] = useState<Record<string, ShopPreview[]>>({});
   
   // Derive city from locationStore or localStorage
   const city = useMemo(() => {
@@ -212,7 +245,7 @@ export default function SmartHome() {
         if (parsed.city) return parsed.city;
       }
     } catch {}
-    if (currentLocation && !isFallback) return "Dubai"; // GPS active
+    if (currentLocation && !isFallback) return "Dubai";
     return null;
   }, [currentLocation, isFallback]);
 
@@ -235,6 +268,35 @@ export default function SmartHome() {
   const greeting = useMemo(() => getTimeGreeting(timezone), [timezone]);
   const sections = useMemo(() => getSmartSections(timezone), [timezone]);
 
+  // Fetch real shops for dynamic sections
+  useEffect(() => {
+    (async () => {
+      try {
+        const { data } = await (supabase as any)
+          .from("storefront_pages")
+          .select("id, name, logo_url, vertical, address, public_slug")
+          .eq("status", "active")
+          .not("latitude", "is", null)
+          .order("created_at", { ascending: false })
+          .limit(30);
+
+        if (!data?.length) return;
+        const shops = data as ShopPreview[];
+        
+        // Distribute shops across sections with shuffling
+        const shuffled = [...shops].sort(() => Math.random() - 0.5);
+        const mapped: Record<string, ShopPreview[]> = {};
+        const secs = getSmartSections(timezone);
+        secs.forEach((sec, i) => {
+          mapped[sec.key] = shuffled.slice(i * 6, i * 6 + 6);
+        });
+        setSectionShops(mapped);
+      } catch {
+        // Silent
+      }
+    })();
+  }, [timezone]);
+
   // Split into 2 rows for horizontal scrolling grid
   const half = Math.ceil(categories.length / 2);
   const row1 = categories.slice(0, half);
@@ -250,7 +312,7 @@ export default function SmartHome() {
       <GeoForcePrompt />
       <QuickActions />
 
-      {/* Category grid — 2 rows, horizontally scrollable with touch/swipe */}
+      {/* Category grid — 2 rows, horizontally scrollable */}
       <div className="overflow-x-auto scrollbar-none mb-3 -mx-1 px-1 touch-pan-x">
         <div className="flex flex-col gap-1.5" style={{ width: "max-content" }}>
           <div className="flex gap-1.5">
@@ -268,7 +330,7 @@ export default function SmartHome() {
 
       <SmartHeroCard timezone={timezone} />
       {sections.slice(0, 3).map((sec, i) => (
-        <DynamicSection key={sec.key} section={sec} index={i} />
+        <DynamicSection key={sec.key} section={sec} shops={sectionShops[sec.key] || []} index={i} />
       ))}
     </div>
   );
