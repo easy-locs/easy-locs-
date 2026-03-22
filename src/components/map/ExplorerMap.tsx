@@ -23,7 +23,6 @@ const CATEGORIES = [
   { key: "grocery", label: "Grocery", icon: ShoppingCart },
   { key: "service", label: "Services", icon: Wrench },
   { key: "property", label: "Property", icon: Building2 },
-  { key: "real_estate", label: "Real Estate", icon: Building2 },
 ] as const;
 
 const MARKER_COLORS: Record<string, string> = {
@@ -149,7 +148,7 @@ export function ExplorerMapInner({
       zoom: 13,
       attributionControl: false,
     });
-    map.addControl(new mapboxgl.NavigationControl({ showCompass: false }), "top-right");
+    // No NavigationControl — zoom via pinch/scroll only
     mapRef.current = map;
 
     // Force resize after load to fix container sizing issues
@@ -267,7 +266,7 @@ export function ExplorerMapInner({
           <div className="flex gap-1">
             {compact && (
               <Link
-                to="/map"
+                to="/radar"
                 className="p-1.5 rounded-lg text-muted-foreground"
                 aria-label="Open full map"
               >
