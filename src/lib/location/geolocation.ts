@@ -1,8 +1,9 @@
 /**
- * geolocation.ts — Real GPS helpers. Single source of truth for raw position access.
- * Enhanced with accuracy classification and explicit fallback policy.
+ * geolocation.ts — Compatibility shim. All GPS now goes through geoService/geoStore.
+ * These exports exist for files that still import from here (useServiceTracking, useLiveTracking).
  */
-import { getGeoAccessErrorMessage } from "@/lib/device/permissions";
+import { useGeoStore } from "@/lib/geo/geo-store";
+import { geoService } from "@/lib/geo/geo-service";
 
 export interface GeoResult {
   lat: number;
@@ -16,12 +17,6 @@ export interface GeoError {
   code: number;
   message: string;
 }
-
-const GEO_OPTIONS: PositionOptions = {
-  enableHighAccuracy: true,
-  timeout: 15000,
-  maximumAge: 0,
-};
 
 export function isGeoSupported(): boolean {
   return typeof navigator !== "undefined" && !!navigator.geolocation;
@@ -37,73 +32,69 @@ export async function getGeoPermissionState(): Promise<"granted" | "denied" | "p
   }
 }
 
-function readCurrentPositionOnce(options: PositionOptions): Promise<GeoResult> {
+export async function getCurrentPositionHighAccuracy(): Promise<GeoResult> {
+  const point = useGeoStore.getState().point;
+  if (point) {
+    return {
+      lat: point.lat,
+      lng: point.lng,
+      accuracy: point.accuracy ?? 0,
+      timestamp: new Date(point.timestamp).toISOString(),
+      source: "gps",
+    };
+  }
+  // Force retry and wait
+  geoService.forceRetry();
   return new Promise((resolve, reject) => {
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
+    const unsub = useGeoStore.subscribe((state) => {
+      if (state.point) {
+        unsub();
         resolve({
-          lat: pos.coords.latitude,
-          lng: pos.coords.longitude,
-          accuracy: pos.coords.accuracy,
-          timestamp: new Date(pos.timestamp).toISOString(),
+          lat: state.point.lat,
+          lng: state.point.lng,
+          accuracy: state.point.accuracy ?? 0,
+          timestamp: new Date(state.point.timestamp).toISOString(),
           source: "gps",
         });
-      },
-      (err) => {
-        reject({ code: err.code, message: getGeoAccessErrorMessage(err) } as GeoError);
-      },
-      options,
-    );
+      }
+    });
+    setTimeout(() => {
+      unsub();
+      const p = useGeoStore.getState().point;
+      if (p) {
+        resolve({ lat: p.lat, lng: p.lng, accuracy: p.accuracy ?? 0, timestamp: new Date(p.timestamp).toISOString(), source: "gps" });
+      } else {
+        reject({ code: 0, message: "Location unavailable" } as GeoError);
+      }
+    }, 8000);
   });
 }
 
-export async function getCurrentPositionHighAccuracy(): Promise<GeoResult> {
-  if (!isGeoSupported()) {
-    return Promise.reject({ code: 0, message: "Geolocation not supported" } as GeoError);
-  }
-
-  try {
-    return await readCurrentPositionOnce(GEO_OPTIONS);
-  } catch (err) {
-    const geoErr = err as GeoError;
-    if (geoErr.code === 3) {
-      console.warn("[geo] timeout on first attempt, retrying once", geoErr);
-      return readCurrentPositionOnce(GEO_OPTIONS);
-    }
-    throw geoErr;
-  }
-}
-
-let _watchId: number | null = null;
-
+/** @deprecated — GPS watching is now handled by geoService.start() */
 export function watchCurrentPosition(
   onUpdate: (result: GeoResult) => void,
-  onError?: (err: GeoError) => void,
+  _onError?: (err: GeoError) => void,
 ): void {
-  if (!isGeoSupported()) return;
-  stopWatchingPosition();
-
-  _watchId = navigator.geolocation.watchPosition(
-    (pos) => {
+  // Bridge: subscribe to geoStore and forward updates
+  const unsub = useGeoStore.subscribe((state) => {
+    if (state.point) {
       onUpdate({
-        lat: pos.coords.latitude,
-        lng: pos.coords.longitude,
-        accuracy: pos.coords.accuracy,
-        timestamp: new Date(pos.timestamp).toISOString(),
+        lat: state.point.lat,
+        lng: state.point.lng,
+        accuracy: state.point.accuracy ?? 0,
+        timestamp: new Date(state.point.timestamp).toISOString(),
         source: "gps",
       });
-    },
-    (err) => {
-      onError?.({ code: err.code, message: err.message });
-    },
-    GEO_OPTIONS,
-  );
+    }
+  });
+  // Store unsub for cleanup — caller should use stopWatchingPosition
+  (watchCurrentPosition as any)._unsub = unsub;
 }
 
 export function stopWatchingPosition(): void {
-  if (_watchId !== null && isGeoSupported()) {
-    navigator.geolocation.clearWatch(_watchId);
-    _watchId = null;
+  if ((watchCurrentPosition as any)?._unsub) {
+    (watchCurrentPosition as any)._unsub();
+    (watchCurrentPosition as any)._unsub = null;
   }
 }
 

@@ -1,37 +1,26 @@
 /**
  * GeoPermissionRecovery — Shows when geolocation permission is denied.
- * Provides instructions to re-enable and a retry button.
+ * Uses unified geoStore + geoService for retry.
  */
 import { MapPin, RefreshCw } from "lucide-react";
-import { useLocationStore } from "@/stores/locationStore";
-import { requestLocation } from "@/lib/location/requestLocation";
+import { useGeoStore } from "@/lib/geo/geo-store";
+import { geoService } from "@/lib/geo/geo-service";
 import { useState } from "react";
 
 export function GeoPermissionRecovery() {
-  const permissionState = useLocationStore((s) => s.permissionState);
-  const isFallback = useLocationStore((s) => s.isFallback);
-  const setCurrentLocation = useLocationStore((s) => s.setCurrentLocation);
-  const setPermissionState = useLocationStore((s) => s.setPermissionState);
-  const setIsFallback = useLocationStore((s) => s.setIsFallback);
-  const setError = useLocationStore((s) => s.setError);
+  const permission = useGeoStore((s) => s.permission);
+  const point = useGeoStore((s) => s.point);
   const [retrying, setRetrying] = useState(false);
 
-  if (permissionState !== "denied" && !isFallback) return null;
+  if (permission !== "denied" && point) return null;
+  if (permission !== "denied" && !point) return null; // still loading
 
   const handleRetry = async () => {
     setRetrying(true);
-    try {
-      const result = await requestLocation();
-      if (result) {
-        console.log("[GeoRecovery] retry success", result);
-      } else {
-        console.warn("[GeoRecovery] retry returned null — still denied or unavailable");
-      }
-    } catch (err: any) {
-      console.warn("[GeoRecovery] retry failed", err);
-    } finally {
-      setRetrying(false);
-    }
+    geoService.forceRetry();
+    // Wait briefly for result
+    await new Promise((r) => setTimeout(r, 3000));
+    setRetrying(false);
   };
 
   return (
@@ -40,9 +29,7 @@ export function GeoPermissionRecovery() {
       <div className="flex-1 min-w-0">
         <p className="text-xs font-semibold text-foreground">Location access needed</p>
         <p className="text-[10px] text-muted-foreground mt-0.5">
-          {permissionState === "denied"
-            ? "Allow location access for this site in your phone/browser settings, then tap Retry."
-            : "Precise GPS is not active yet. Tap Retry after enabling location on your phone."}
+          Allow location access for this site in your phone/browser settings, then tap Retry.
         </p>
         <button
           onClick={handleRetry}

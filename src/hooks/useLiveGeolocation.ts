@@ -1,25 +1,24 @@
 /**
- * useLiveGeolocation — Thin wrapper over locationStore for components
- * needing real-time coordinates. Uses the canonical geo pipeline.
+ * useLiveGeolocation — Thin wrapper over geoStore for components
+ * needing real-time coordinates.
  */
-import { useLocationStore } from "@/stores/locationStore";
+import { useGeoStore } from "@/lib/geo/geo-store";
 
 export function useLiveGeolocation(enabled: boolean) {
-  const location = useLocationStore((s) => s.currentLocation);
-  const error = useLocationStore((s) => s.error);
+  const point = useGeoStore((s) => s.point);
+  const error = useGeoStore((s) => s.error);
 
   if (!enabled) return { coords: null, error: null };
 
-  // Map locationStore format to GeolocationCoordinates-like shape
-  const coords = location
+  const coords = point
     ? {
-        latitude: location.lat,
-        longitude: location.lng,
-        accuracy: location.accuracy ?? null,
+        latitude: point.lat,
+        longitude: point.lng,
+        accuracy: point.accuracy ?? null,
         altitude: null,
         altitudeAccuracy: null,
-        heading: null,
-        speed: null,
+        heading: point.heading ?? null,
+        speed: point.speed ?? null,
       }
     : null;
 
