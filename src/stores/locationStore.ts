@@ -1,9 +1,10 @@
 /**
  * locationStore — SINGLE source of truth for all location state.
- * Used by Explorer, Ride, Send Package, Home, Search, Radar, Map.
- * This is the ONLY authoritative location store — geoStore is deprecated.
+ * GPS data is synced FROM geoStore (src/lib/geo/geo-store.ts).
+ * This store adds saved places, pickup/dropoff, map viewport on top.
  */
 import { create } from "zustand";
+import { useGeoStore } from "@/lib/geo/geo-store";
 
 export type AccuracyLevel = "exact" | "approximate" | "fallback";
 export type PermissionState = "granted" | "denied" | "prompt" | "unavailable" | "timeout" | "unknown";
@@ -41,7 +42,7 @@ export function classifyAccuracy(meters: number | null | undefined): AccuracyLev
 }
 
 interface LocationState {
-  // GPS
+  // GPS — synced from geoStore
   currentLocation: LocationPoint | null;
   lastKnownLocation: LocationPoint | null;
   permissionState: PermissionState;
@@ -175,3 +176,47 @@ export const useLocationStore = create<LocationState>((set, get) => ({
   getLat: () => get().currentLocation?.lat ?? null,
   getLng: () => get().currentLocation?.lng ?? null,
 }));
+
+// ── Auto-sync geoStore → locationStore ──
+// This runs once at module load and keeps locationStore in sync forever.
+useGeoStore.subscribe((geoState) => {
+  const locStore = useLocationStore.getState();
+
+  if (geoState.point) {
+    const loc: LocationPoint = {
+      lat: geoState.point.lat,
+      lng: geoState.point.lng,
+      accuracy: geoState.point.accuracy,
+      timestamp: new Date(geoState.point.timestamp).toISOString(),
+    };
+    locStore.setCurrentLocation(loc);
+  }
+
+  // Sync permission
+  const permMap: Record<string, PermissionState> = {
+    granted: "granted",
+    denied: "denied",
+    prompt: "prompt",
+    unknown: "unknown",
+  };
+  const mappedPerm = permMap[geoState.permission] || "unknown";
+  if (mappedPerm !== locStore.permissionState) {
+    locStore.setPermissionState(mappedPerm);
+  }
+
+  // Sync loading
+  if (geoState.loading !== locStore.loading) {
+    locStore.setLoading(geoState.loading);
+  }
+
+  // Sync error
+  if (geoState.error !== locStore.error) {
+    locStore.setError(geoState.error);
+  }
+
+  // Sync fallback
+  const isFallback = geoState.ready && !geoState.point;
+  if (isFallback !== locStore.isFallback) {
+    locStore.setIsFallback(isFallback);
+  }
+});
