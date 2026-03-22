@@ -54,6 +54,7 @@ const QuickActions = memo(() => (
       <Link
         key={label}
         to={to}
+        onClick={() => console.log(`CLICK ${label.toUpperCase()} BUTTON`)}
         className="flex-1 flex items-center justify-center gap-1.5 h-9 rounded-xl border border-border/15 bg-card/50 active:scale-95 active:bg-primary/5 transition-all"
       >
         <Icon className="h-3.5 w-3.5 text-primary" />
