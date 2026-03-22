@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useParams } from "react-router-dom";
 import { submitDeliveryProof } from "@/lib/delivery/delivery-proof";
 import { useAuth } from "@/contexts/AuthContext";
-import { useGeo } from "@/lib/geo/use-geo";
+import { useGeoStore } from "@/lib/geo/geo-store";
 import { toast } from "sonner";
 import { Camera, MapPin, CheckCircle } from "lucide-react";
 
@@ -13,7 +13,7 @@ export default function DeliveryProofPage() {
   const [notes, setNotes] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
-  const { point } = useGeo();
+  const point = useGeoStore((s) => s.point);
 
   const handleSubmit = async () => {
     if (!orderId || !user) return;
