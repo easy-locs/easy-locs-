@@ -242,7 +242,22 @@ export default function SmartHome() {
         if (parsed.city) return parsed.city;
       }
     } catch {}
-    if (currentLocation && !isFallback) return "Dubai";
+    if (currentLocation && !isFallback) {
+      // Trigger reverse geocode to populate city
+      import("@/lib/mapbox/geocoding").then(({ reverseGeocode }) => {
+        reverseGeocode(currentLocation.lat, currentLocation.lng).then(res => {
+          const place = res?.features?.[0];
+          if (place) {
+            const cityCtx = place.context?.find((c: any) => c.id?.startsWith("place"));
+            const cityName = cityCtx?.text || place.text;
+            if (cityName) {
+              try { localStorage.setItem("orbit:last-geo", JSON.stringify({ city: cityName, country: "AE" })); } catch {}
+            }
+          }
+        }).catch(() => {});
+      });
+      return "Dubai";
+    }
     return null;
   }, [currentLocation, isFallback]);
 
