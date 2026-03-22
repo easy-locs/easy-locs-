@@ -15,7 +15,6 @@ import CommNavBar, { type CommSection } from "@/components/communication-hub/Com
 import CommPlaceholderSection from "@/components/communication-hub/CommPlaceholderSection";
 import CommCallsSection from "@/components/communication-hub/CommCallsSection";
 import CommContactsSection from "@/components/communication-hub/CommContactsSection";
-import CommPaymentsSection from "@/components/communication-hub/CommPaymentsSection";
 import CommGroupsSection from "@/components/communication-hub/CommGroupsSection";
 import HudConversationList from "@/components/communication-hub/HudConversationList";
 import HudChatPanel from "@/components/communication-hub/HudChatPanel";
