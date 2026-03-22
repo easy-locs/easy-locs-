@@ -77,12 +77,20 @@ export default function AuthPage() {
           </button>
         </form>
 
-        <div className="mt-4 text-center">
+        <div className="mt-4 flex items-center justify-between">
+          {mode === "signin" && (
+            <button
+              onClick={() => navigate("/forgot-password")}
+              className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Mot de passe oublié ?
+            </button>
+          )}
           <button
             onClick={() => { setMode(mode === "signin" ? "signup" : "signin"); setError(null); setSuccess(null); }}
-            className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+            className="text-xs font-semibold text-primary hover:text-primary/80 transition-colors ml-auto"
           >
-            {mode === "signin" ? "Pas encore de compte ? S'inscrire" : "Déjà un compte ? Se connecter"}
+            {mode === "signin" ? "Créer un compte" : "Se connecter"}
           </button>
         </div>
       </div>
