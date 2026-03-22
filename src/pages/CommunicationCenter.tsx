@@ -17,13 +17,10 @@ import CommCallsSection from "@/components/communication-hub/CommCallsSection";
 import CommContactsSection from "@/components/communication-hub/CommContactsSection";
 import CommPaymentsSection from "@/components/communication-hub/CommPaymentsSection";
 import CommGroupsSection from "@/components/communication-hub/CommGroupsSection";
-import CommNearbySection from "@/components/communication-hub/CommNearbySection";
-import OrbitRadar from "@/components/orbit/OrbitRadar";
 import HudConversationList from "@/components/communication-hub/HudConversationList";
 import HudChatPanel from "@/components/communication-hub/HudChatPanel";
 import HudContextPanel from "@/components/communication-hub/HudContextPanel";
 import { AddContactByEmail } from "@/components/chat/AddContactByEmail";
-import OrbitSecuritySettings from "@/components/orbit/OrbitSecuritySettings";
 import OrbitAccountSection from "@/components/communication-hub/OrbitAccountSection";
 import { useConversationThreads } from "@/components/communication-hub/useConversationThreads";
 import { useThreadActions } from "@/hooks/useThreadActions";
@@ -182,12 +179,6 @@ export const CommunicationCenter = () => {
       case "contacts": return <CommContactsSection />;
       case "payments": return <CommPaymentsSection />;
       case "groups": return <CommGroupsSection />;
-      case "nearby": return <OrbitRadar />;
-      case "meetings":
-      case "files":
-        return <CommPlaceholderSection section={activeSection} />;
-      case "settings":
-        return userId ? <OrbitSecuritySettings userId={userId} /> : <CommPlaceholderSection section={activeSection} />;
       case "you":
         return <OrbitAccountSection />;
       default: return null;
