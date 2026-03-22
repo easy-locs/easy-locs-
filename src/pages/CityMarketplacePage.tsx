@@ -19,7 +19,7 @@ const CityMarketplacePage = () => {
     (async () => {
       const { data } = await (supabase as any)
         .from("storefront_pages")
-        .select("id, name, public_slug, city, vertical, status")
+        .select("id, name, slug, city, vertical, status")
         .ilike("city", cityName)
         .order("name")
         .limit(100);
