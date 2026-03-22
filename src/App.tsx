@@ -1046,11 +1046,8 @@ const App = () => (
               {/* /admin/wallet-test removed — legacy test page */}
               <Route path="/admin/wallet-diagnostics" element={<ProtectedRoute><AdminWalletDiagnosticsPage /></ProtectedRoute>} />
               <Route path="/driver/earnings" element={<ProtectedRoute><DriverEarningsPage /></ProtectedRoute>} />
-              <Route path="/driver/mission/:dispatchJobId" element={<ProtectedRoute><DriverActiveMissionPage /></ProtectedRoute>} />
-              <Route path="/tracking/order/:orderId" element={<CustomerDeliveryTrackingPage />} />
               <Route path="/admin/review-queue" element={<ProtectedRoute><AdminReviewQueuePage /></ProtectedRoute>} />
               <Route path="/admin/growth" element={<ProtectedRoute><AdminGrowthDashboard /></ProtectedRoute>} />
-              <Route path="/coming-soon/:slug" element={<ComingSoonMerchantPage />} />
               <Route path="/city-market/:citySlug" element={<CityMarketplacePage />} />
               <Route path="/admin/qr-generate" element={<ProtectedRoute><QrGeneratePage /></ProtectedRoute>} />
               <Route path="/admin/route-audit" element={<ProtectedRoute><RouteAuditPage /></ProtectedRoute>} />
