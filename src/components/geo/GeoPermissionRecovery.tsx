@@ -42,11 +42,11 @@ export function GeoPermissionRecovery() {
     <div className="mx-4 my-2 rounded-xl p-3 flex items-start gap-3 bg-muted border border-border/20">
       <MapPin className="w-5 h-5 text-destructive shrink-0 mt-0.5" />
       <div className="flex-1 min-w-0">
-        <p className="text-xs font-semibold text-foreground">Location access denied</p>
+        <p className="text-xs font-semibold text-foreground">Location access needed</p>
         <p className="text-[10px] text-muted-foreground mt-0.5">
           {permissionState === "denied"
-            ? "Enable location in your browser settings, then tap Retry."
-            : "Using approximate location. Tap Retry for precise GPS."}
+            ? "Allow location access for this site in your phone/browser settings, then tap Retry."
+            : "Precise GPS is not active yet. Tap Retry after enabling location on your phone."}
         </p>
         <button
           onClick={handleRetry}
