@@ -2,7 +2,7 @@
  * Orchestration Engine — Connects all platform engines via the event bus.
  */
 
-import { platformBus } from "./platformBus";
+import { platformBus } from "@/lib/shared/platform-bus";
 import { logOrchestrationEvent } from "./logger";
 import type {
   IssueCreatedPayload,
@@ -80,7 +80,8 @@ export function installOrchestrationEngine() {
   installed = true;
 
   // ── ORDER_CREATED ──
-  platformBus.on<OrderCreatedPayload>("ORDER_CREATED", async (payload) => {
+  platformBus.on("ORDER_CREATED", async (event) => {
+    const payload = event.payload as OrderCreatedPayload;
     await createNotification({
       actorType: "pro",
       actorId: payload.merchantId,
@@ -97,7 +98,8 @@ export function installOrchestrationEngine() {
   });
 
   // ── PAYMENT_SUCCESS ──
-  platformBus.on<PaymentSuccessPayload>("PAYMENT_SUCCESS", async (payload) => {
+  platformBus.on("PAYMENT_SUCCESS", async (event) => {
+    const payload = event.payload as PaymentSuccessPayload;
     await updateOrderStatus(payload.orderId, "paid");
 
     await createNotification({
@@ -117,7 +119,8 @@ export function installOrchestrationEngine() {
   });
 
   // ── ORDER_CONFIRMED ──
-  platformBus.on<OrderConfirmedPayload>("ORDER_CONFIRMED", async (payload) => {
+  platformBus.on("ORDER_CONFIRMED", async (event) => {
+    const payload = event.payload as OrderConfirmedPayload;
     await updateOrderStatus(payload.orderId, "confirmed");
 
     await createNotification({
@@ -135,10 +138,11 @@ export function installOrchestrationEngine() {
   });
 
   // ── ORDER_READY ──
-  platformBus.on<OrderReadyPayload>("ORDER_READY", async (payload) => {
+  platformBus.on("ORDER_READY", async (event) => {
+    const payload = event.payload as OrderReadyPayload;
     await updateOrderStatus(payload.orderId, "driver_search");
 
-    await platformBus.emit(
+    platformBus.emit(
       "MISSION_CREATED",
       {
         orderId: payload.orderId,
@@ -147,7 +151,7 @@ export function installOrchestrationEngine() {
         pickupLng: payload.pickupLng ?? 0,
         zone: payload.zone ?? "",
       },
-      { source: "orchestrator:ORDER_READY" }
+      "system"
     );
 
     await logOrchestrationEvent({
@@ -159,7 +163,8 @@ export function installOrchestrationEngine() {
   });
 
   // ── MISSION_CREATED ──
-  platformBus.on("MISSION_CREATED", async (payload: any) => {
+  platformBus.on("MISSION_CREATED", async (event) => {
+    const payload = event.payload as any;
     await logOrchestrationEvent({
       eventType: "orch_mission_created",
       entityId: payload.orderId,
@@ -169,7 +174,8 @@ export function installOrchestrationEngine() {
   });
 
   // ── MISSION_ACCEPTED ──
-  platformBus.on<MissionAcceptedPayload>("MISSION_ACCEPTED", async (payload) => {
+  platformBus.on("MISSION_ACCEPTED", async (event) => {
+    const payload = event.payload as MissionAcceptedPayload;
     await updateOrderStatus(payload.orderId, "driver_assigned");
 
     await supabase
@@ -192,13 +198,14 @@ export function installOrchestrationEngine() {
   });
 
   // ── MISSION_COMPLETED ──
-  platformBus.on<MissionCompletedPayload>("MISSION_COMPLETED", async (payload) => {
+  platformBus.on("MISSION_COMPLETED", async (event) => {
+    const payload = event.payload as MissionCompletedPayload;
     await updateOrderStatus(payload.orderId, "delivered");
 
-    await platformBus.emit(
+    platformBus.emit(
       "ORDER_DELIVERED",
       { orderId: payload.orderId },
-      { source: "orchestrator:MISSION_COMPLETED" }
+      "system"
     );
 
     await logOrchestrationEvent({
@@ -210,7 +217,8 @@ export function installOrchestrationEngine() {
   });
 
   // ── ORDER_DELIVERED ──
-  platformBus.on<OrderDeliveredPayload>("ORDER_DELIVERED", async (payload) => {
+  platformBus.on("ORDER_DELIVERED", async (event) => {
+    const payload = event.payload as OrderDeliveredPayload;
     await updateOrderStatus(payload.orderId, "completed");
 
     await createNotification({
@@ -228,7 +236,8 @@ export function installOrchestrationEngine() {
   });
 
   // ── REFUND_REQUESTED ──
-  platformBus.on<RefundRequestedPayload>("REFUND_REQUESTED", async (payload) => {
+  platformBus.on("REFUND_REQUESTED", async (event) => {
+    const payload = event.payload as RefundRequestedPayload;
     await createSupportTicket(payload);
     await updateOrderStatus(payload.orderId, "disputed");
 
@@ -247,7 +256,8 @@ export function installOrchestrationEngine() {
   });
 
   // ── ISSUE_CREATED ──
-  platformBus.on<IssueCreatedPayload>("ISSUE_CREATED", async (payload) => {
+  platformBus.on("ISSUE_CREATED", async (event) => {
+    const payload = event.payload as IssueCreatedPayload;
     await createSupportTicket(payload);
 
     await createNotification({
@@ -265,7 +275,8 @@ export function installOrchestrationEngine() {
   });
 
   // ── USER_OPEN_HOME ──
-  platformBus.on<UserOpenHomePayload>("USER_OPEN_HOME", async (payload) => {
+  platformBus.on("USER_OPEN_HOME", async (event) => {
+    const payload = event.payload as UserOpenHomePayload;
     await logOrchestrationEvent({
       eventType: "orch_user_open_home",
       entityId: payload.userId ?? "anonymous",
@@ -275,7 +286,8 @@ export function installOrchestrationEngine() {
   });
 
   // ── USER_SEARCH ──
-  platformBus.on<UserSearchPayload>("USER_SEARCH", async (payload) => {
+  platformBus.on("USER_SEARCH", async (event) => {
+    const payload = event.payload as UserSearchPayload;
     await logOrchestrationEvent({
       eventType: "orch_user_search",
       entityId: payload.userId ?? "anonymous",

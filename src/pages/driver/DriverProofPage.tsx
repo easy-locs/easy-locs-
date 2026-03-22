@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { platformBus } from "@/lib/orchestration/platformBus";
+import { platformBus } from "@/lib/shared/platform-bus";
 import { ArrowLeft, Camera, CheckCircle } from "lucide-react";
 import { toast } from "sonner";
 
@@ -31,10 +31,10 @@ export default function DriverProofPage() {
       });
       if (error) throw error;
 
-      await platformBus.emit("MISSION_COMPLETED", {
+      platformBus.emit("MISSION_COMPLETED", {
         orderId,
         driverId: user?.id ?? "",
-      }, { source: "driver-proof-page" });
+      }, "system");
 
       setSubmitted(true);
       toast.success("Delivery proof submitted");

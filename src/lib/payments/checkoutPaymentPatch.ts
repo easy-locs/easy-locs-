@@ -1,6 +1,6 @@
 import { createCheckoutPayment, confirmWalletOrCashOrder } from "@/lib/payments/paymentService";
 import { holdEscrow } from "@/lib/wallet/ledger";
-import { platformBus } from "@/lib/orchestration/platformBus";
+import { platformBus } from "@/lib/shared/platform-bus";
 
 export async function placeOrderWithRealPayment(params: {
   orderId: string;
@@ -27,7 +27,7 @@ export async function placeOrderWithRealPayment(params: {
       paymentMethodType: "wallet",
     });
 
-    await platformBus.emit(
+    platformBus.emit(
       "ORDER_CREATED",
       {
         orderId: params.orderId,
@@ -36,7 +36,7 @@ export async function placeOrderWithRealPayment(params: {
         totalAmount: params.total,
         currency: params.currency,
       },
-      { source: "checkout:wallet" }
+      "system"
     );
 
     return { mode: "wallet" as const, done: true };
@@ -52,7 +52,7 @@ export async function placeOrderWithRealPayment(params: {
       paymentMethodType: "cash",
     });
 
-    await platformBus.emit(
+    platformBus.emit(
       "ORDER_CREATED",
       {
         orderId: params.orderId,
@@ -61,7 +61,7 @@ export async function placeOrderWithRealPayment(params: {
         totalAmount: params.total,
         currency: params.currency,
       },
-      { source: "checkout:cash" }
+      "system"
     );
 
     return { mode: "cash" as const, done: true };
@@ -76,7 +76,7 @@ export async function placeOrderWithRealPayment(params: {
     paymentMethodType: params.paymentMethod,
   });
 
-  await platformBus.emit(
+  platformBus.emit(
     "ORDER_CREATED",
     {
       orderId: params.orderId,
@@ -85,7 +85,7 @@ export async function placeOrderWithRealPayment(params: {
       totalAmount: params.total,
       currency: params.currency,
     },
-    { source: "checkout:card" }
+    "system"
   );
 
   return payment;

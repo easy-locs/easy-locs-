@@ -1,5 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-import { platformBus } from "@/lib/orchestration/platformBus";
+import { platformBus } from "@/lib/shared/platform-bus";
 
 export async function createRidePackageMission(params: {
   customerUserId: string;
@@ -28,7 +28,7 @@ export async function createRidePackageMission(params: {
 
   if (error) throw error;
 
-  await platformBus.emit(
+  platformBus.emit(
     "MISSION_CREATED",
     {
       orderId: data.id,
@@ -37,7 +37,7 @@ export async function createRidePackageMission(params: {
       pickupLat: 0,
       pickupLng: 0,
     },
-    { source: "ridePackageFlow:createRidePackageMission" }
+    "system"
   );
 
   return data;
@@ -58,13 +58,13 @@ export async function assignDriverToMission(params: {
 
   if (error) throw error;
 
-  await platformBus.emit(
+  platformBus.emit(
     "MISSION_ACCEPTED",
     {
       orderId: params.orderId,
       driverId: params.driverId,
     },
-    { source: "ridePackageFlow:assignDriverToMission" }
+    "system"
   );
 
   return true;
@@ -85,10 +85,10 @@ export async function advanceMissionStatus(params: {
   if (error) throw error;
 
   if (params.nextStatus === "delivered") {
-    await platformBus.emit(
+    platformBus.emit(
       "MISSION_COMPLETED",
       { orderId: params.orderId },
-      { source: "ridePackageFlow:advanceMissionStatus" }
+      "system"
     );
   }
 

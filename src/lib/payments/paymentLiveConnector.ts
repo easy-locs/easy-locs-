@@ -1,5 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-import { platformBus } from "@/lib/orchestration/platformBus";
+import { platformBus } from "@/lib/shared/platform-bus";
 
 export type LivePaymentMethod = "card" | "wallet" | "cash";
 
@@ -15,7 +15,7 @@ export async function createLiveCheckoutSession(params: {
 
   if (params.paymentMethod === "wallet") {
     await markOrderPaymentPending(params.orderId, "wallet");
-    await platformBus.emit(
+    platformBus.emit(
       "PAYMENT_SUCCESS",
       {
         orderId: params.orderId,
@@ -25,7 +25,7 @@ export async function createLiveCheckoutSession(params: {
         merchantId: params.merchantId ?? null,
         paymentMethodType: "wallet",
       },
-      { source: "paymentLiveConnector:wallet" }
+      "system"
     );
 
     await markOrderPaymentCaptured(params.orderId, "wallet_local");
@@ -89,7 +89,7 @@ export async function captureLiveCardPayment(params: {
       merchantId: (order as any)?.merchant_id ?? null,
       paymentMethodType: "card",
     },
-    { source: "paymentLiveConnector:capture" }
+    "system"
   );
 
   return data;
@@ -122,10 +122,10 @@ export async function refundLivePayment(params: {
 
   if (updateError) throw updateError;
 
-  await platformBus.emit(
+  platformBus.emit(
     "ORDER_REFUNDED",
     { orderId: params.orderId, reason: params.reason ?? "admin_refund" },
-    { source: "paymentLiveConnector:refund" }
+    "system"
   );
 
   return data;

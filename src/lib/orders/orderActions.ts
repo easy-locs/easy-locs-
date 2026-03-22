@@ -4,7 +4,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { canTransition, type OrderStatus } from "./order-status";
-import { platformBus } from "@/lib/orchestration/platformBus";
+import { platformBus } from "@/lib/shared/platform-bus";
 
 export async function setOrderStatus(params: {
   orderId: string;
@@ -31,20 +31,20 @@ export async function setOrderStatus(params: {
   if (error) throw error;
 
   if (params.nextStatus === "confirmed") {
-    await platformBus.emit("ORDER_CONFIRMED", {
+    platformBus.emit("ORDER_CONFIRMED", {
       orderId: params.orderId,
       merchantId: params.merchantId ?? "",
-    }, { source: "orderActions" });
+    }, "system");
   }
 
   if (params.nextStatus === "ready_for_pickup") {
-    await platformBus.emit("ORDER_READY", {
+    platformBus.emit("ORDER_READY", {
       orderId: params.orderId,
       merchantId: params.merchantId ?? "",
       city: params.city ?? "Dubai",
       pickupLat: params.pickupLat ?? 0,
       pickupLng: params.pickupLng ?? 0,
       zone: params.zone ?? "",
-    }, { source: "orderActions" });
+    }, "system");
   }
 }

@@ -108,7 +108,23 @@ type PlatformEventType =
   // System
   | "system:currency_changed"
   | "system:sync_completed"
-  | "system:user_online";
+  | "system:user_online"
+  // Orchestration engine (UPPERCASE legacy — merged from lib/orchestration)
+  | "ORDER_CREATED"
+  | "ORDER_CONFIRMED"
+  | "ORDER_READY"
+  | "ORDER_DELIVERED"
+  | "ORDER_COMPLETED"
+  | "ORDER_REFUNDED"
+  | "ORDER_SETTLED"
+  | "PAYMENT_SUCCESS"
+  | "REFUND_REQUESTED"
+  | "MISSION_CREATED"
+  | "MISSION_ACCEPTED"
+  | "MISSION_COMPLETED"
+  | "ISSUE_CREATED"
+  | "USER_OPEN_HOME"
+  | "USER_SEARCH";
 
 export type { PlatformEventType };
 
@@ -127,9 +143,9 @@ class PlatformBus {
   private listeners = new Map<string, Set<EventListener>>();
   private globalListeners = new Set<EventListener>();
   private eventLog: PlatformEvent[] = [];
-  private readonly MAX_LOG = 200;
+  private readonly MAX_LOG = 300;
 
-  on(type: PlatformEventType, listener: EventListener): () => void {
+  on(type: PlatformEventType | string, listener: EventListener): () => void {
     if (!this.listeners.has(type)) {
       this.listeners.set(type, new Set());
     }
@@ -151,15 +167,15 @@ class PlatformBus {
   }
 
   emit<T = unknown>(
-    type: PlatformEventType,
+    type: PlatformEventType | string,
     payload: T,
-    source: PlatformEvent["source"],
+    source: PlatformEvent["source"] | string,
     meta?: { userId?: string; orgId?: string }
   ): void {
     const event: PlatformEvent<T> = {
-      type,
+      type: type as PlatformEventType,
       payload,
-      source,
+      source: source as PlatformEvent["source"],
       userId: meta?.userId,
       orgId: meta?.orgId,
       timestamp: Date.now(),
@@ -181,6 +197,25 @@ class PlatformBus {
 
   getLog(): PlatformEvent[] {
     return [...this.eventLog];
+  }
+
+  /** Alias for admin monitoring (merged from orchestration bus) */
+  getLogs() {
+    return this.eventLog.map((e, i) => ({
+      id: `${i}-${e.timestamp}`,
+      event: e.type,
+      payload: e.payload,
+      createdAt: new Date(e.timestamp).toISOString(),
+      source: typeof e.source === "string" ? e.source : undefined,
+    }));
+  }
+
+  getRegisteredEvents(): string[] {
+    return Array.from(this.listeners.keys());
+  }
+
+  clearLogs(): void {
+    this.eventLog = [];
   }
 
   clear(): void {

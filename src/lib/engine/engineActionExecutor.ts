@@ -1,4 +1,4 @@
-import { platformBus } from "@/lib/orchestration/platformBus";
+import { platformBus } from "@/lib/shared/platform-bus";
 import { runEngineHealthChecks } from "@/lib/engine/engineHealthChecks";
 
 export async function executeEngineAction(action: string) {
@@ -16,7 +16,7 @@ export async function executeEngineAction(action: string) {
           amount: 99,
           currency: "AED",
         },
-        { source: "central-control-panel" }
+        "system"
       );
 
     case "emit_test_payment_success":
@@ -30,7 +30,7 @@ export async function executeEngineAction(action: string) {
           customerUserId: "test-user",
           paymentMethodType: "card",
         },
-        { source: "central-control-panel" }
+        "system"
       );
 
     case "emit_test_support_ticket":
@@ -42,7 +42,7 @@ export async function executeEngineAction(action: string) {
           requesterUserId: "test-user",
           type: "general_issue",
         },
-        { source: "central-control-panel" }
+        "system"
       );
 
     default:
