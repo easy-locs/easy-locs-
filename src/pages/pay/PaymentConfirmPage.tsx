@@ -11,6 +11,8 @@ import { resolvePayTarget, type ResolvedTarget } from "@/lib/pay/resolvePayTarge
 import { walletTransfer } from "@/payments/wallet-hooks";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { PremiumPaymentSuccess } from "@/components/pay/PremiumPaymentSuccess";
+import { playPremiumSuccessBeep, hapticPremiumSuccess } from "@/lib/scan/feedback";
 
 export default function PaymentConfirmPage() {
   const [params] = useSearchParams();
@@ -23,6 +25,7 @@ export default function PaymentConfirmPage() {
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
+  const [showPremiumSuccess, setShowPremiumSuccess] = useState(false);
 
   useEffect(() => {
     void (async () => {
@@ -57,9 +60,15 @@ export default function PaymentConfirmPage() {
         contextType: "qr_payment",
         title: note.trim() || `Pay ${target.display_name || "user"}`,
       });
-      setSent(true);
+      playPremiumSuccessBeep();
+      hapticPremiumSuccess();
+      setShowPremiumSuccess(true);
       toast.success("Payment sent!");
-      setTimeout(() => navigate("/wallet/hub", { replace: true }), 1500);
+      setTimeout(() => {
+        setShowPremiumSuccess(false);
+        setSent(true);
+        navigate("/wallet/hub", { replace: true });
+      }, 1800);
     } catch (err: any) {
       toast.error(err.message || "Payment failed");
     } finally {
@@ -68,7 +77,12 @@ export default function PaymentConfirmPage() {
   };
 
   return (
-    <div className="min-h-[100dvh] bg-background pb-24">
+    <div className="min-h-[100dvh] bg-background pb-24 relative">
+      <PremiumPaymentSuccess
+        open={showPremiumSuccess}
+        logoUrl="/easylocs-logo.png"
+        amount={`${amount} ${currency}`}
+      />
       <div className="flex items-center gap-3 px-4 pt-6 pb-4">
         <button
           onClick={() => navigate(-1)}

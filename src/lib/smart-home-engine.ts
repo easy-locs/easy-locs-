@@ -113,7 +113,7 @@ const HERO_BY_TIME: Record<TimeSlot, SmartHero> = {
     gradient: "linear-gradient(135deg, hsl(200 80% 50%), hsl(220 85% 55%))",
   },
   dinner: {
-    title: "Dinner tonight 🍽️",
+    title: "Good evening 🍽️",
     subtitle: "Dine out or order in — your pick",
     emoji: "🍣",
     cta: "Find dinner",

@@ -19,6 +19,8 @@ import { UserProfileQr } from "@/components/qr/UniversalQrWidgets";
 import { toast } from "sonner";
 import { requestMediaStream } from "@/lib/device/permissions";
 import { motion, AnimatePresence } from "framer-motion";
+import { PremiumPaymentSuccess } from "@/components/pay/PremiumPaymentSuccess";
+import { playPremiumSuccessBeep, hapticPremiumSuccess } from "@/lib/scan/feedback";
 
 type ScanState = "idle" | "starting" | "scanning" | "paying" | "paid" | "stopped" | "error" | "resolved";
 type TabMode = "scan" | "myqr";
@@ -67,6 +69,8 @@ export default function QrScannerPage() {
   const [selectedCameraId, setSelectedCameraId] = useState("");
   const [cameraRequested, setCameraRequested] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [showPremiumSuccess, setShowPremiumSuccess] = useState(false);
+  const [successAmount, setSuccessAmount] = useState("");
 
   const secure = typeof window === "undefined" ? true : window.isSecureContext;
   const ios = isIOS();
@@ -147,10 +151,16 @@ export default function QrScannerPage() {
       });
       if (!mountedRef.current) return;
       if (result.ok) {
-        setTxId(result.transactionId || "");
-        setState("paid");
-        haptic("success"); playScanBeep();
+        setSuccessAmount(`${payload.amount || 0} ${resolved.currency || "AED"}`);
+        playPremiumSuccessBeep();
+        hapticPremiumSuccess();
+        setShowPremiumSuccess(true);
         platformBus.emit("qr.payment.completed", { action: "pay_user", txId: result.transactionId }, "wallet");
+        setTimeout(() => {
+          setShowPremiumSuccess(false);
+          setTxId(result.transactionId || "");
+          setState("paid");
+        }, 1600);
       } else if (result.error !== "Cancelled") {
         setError(result.error || "Payment failed"); setState("error");
         platformBus.emit("qr.payment.failed", { action: "pay_user", error: result.error }, "wallet");
@@ -176,8 +186,14 @@ export default function QrScannerPage() {
       });
       if (!mountedRef.current) return;
       if (result.ok) {
-        setTxId(result.transactionId || ""); setState("paid");
-        haptic("success"); playScanBeep();
+        setSuccessAmount(`${payload.amount || 0} ${payload.currency || "AED"}`);
+        playPremiumSuccessBeep();
+        hapticPremiumSuccess();
+        setShowPremiumSuccess(true);
+        setTimeout(() => {
+          setShowPremiumSuccess(false);
+          setTxId(result.transactionId || ""); setState("paid");
+        }, 1600);
       } else if (result.error !== "Cancelled") {
         setError(result.error || "Payment failed"); setState("error");
       } else {
@@ -335,6 +351,11 @@ export default function QrScannerPage() {
 
   return (
     <div className="fixed inset-0 z-[200] flex flex-col bg-background">
+      <PremiumPaymentSuccess
+        open={showPremiumSuccess}
+        logoUrl="/easylocs-logo.png"
+        amount={successAmount}
+      />
       {/* Header */}
       <div className="flex items-center gap-3 px-4 py-3">
         <button type="button" onClick={() => navigate(-1)} className="w-9 h-9 rounded-xl flex items-center justify-center bg-muted/60 backdrop-blur-sm active:scale-95 transition-transform">
