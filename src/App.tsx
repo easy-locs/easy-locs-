@@ -24,6 +24,7 @@ import { SkipLink } from "@/components/ui/a11y";
 import SmartInstallBanner from "@/components/pwa/SmartInstallBanner";
 // Call system: CallProvider is the single authoritative engine (call_logs table)
 import { GeoBootstrap } from "@/components/map/GeoBootstrap";
+import { PermissionBootstrap } from "@/components/boot/PermissionBootstrap";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import ChunkRecoveryBoundary from "@/components/system/ChunkRecoveryBoundary";
@@ -730,6 +731,7 @@ const App = () => (
            <UpdateNotification />
                 <AppInit />
                 <GeoBootstrap />
+                <PermissionBootstrap />
              <AppBootstrapGuardDirect />
            
            <SkipLink />
