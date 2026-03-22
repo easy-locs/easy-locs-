@@ -89,7 +89,7 @@ export async function captureLiveCardPayment(params: {
       merchantId: (order as any)?.merchant_id ?? null,
       paymentMethodType: "card",
     },
-    { source: "paymentLiveConnector:capture" }
+    "system"
   );
 
   return data;
