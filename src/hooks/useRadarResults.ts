@@ -16,7 +16,7 @@ export function useRadarResults(opts?: { type?: string; radiusKm?: number }) {
     // Load storefront_pages as nearby entities
     (supabase as any)
       .from("storefront_pages")
-      .select("id, business_name, latitude, longitude, logo_url, slug, vertical, address")
+      .select("id, name, latitude, longitude, logo_url, slug, vertical, address")
       .not("latitude", "is", null)
       .not("longitude", "is", null)
       .limit(50)
@@ -24,7 +24,7 @@ export function useRadarResults(opts?: { type?: string; radiusKm?: number }) {
         const mapped: GeoEntity[] = (data ?? []).map((s: any) => ({
           id: s.id,
           type: (s.vertical === "food" ? "restaurant" : "shop") as GeoEntity["type"],
-          name: s.business_name || "Business",
+          name: s.name || "Business",
           lat: s.latitude,
           lng: s.longitude,
           imageUrl: s.logo_url,
