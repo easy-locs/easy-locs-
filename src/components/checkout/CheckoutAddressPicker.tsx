@@ -3,10 +3,42 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
-  createSavedAddress,
-  listSavedAddresses,
-  setDefaultAddress,
-} from "@/lib/address/addressEngine";
+  getSavedAddresses,
+  saveAddress,
+  touchAddressUsed,
+} from "@/lib/address/address-engine";
+
+// Adapter: fetch saved addresses in flat row shape for the picker
+async function listSavedAddresses() {
+  const addrs = await getSavedAddresses();
+  return addrs.map(a => ({
+    id: a.id ?? crypto.randomUUID(),
+    label: a.label,
+    line1: a.fullAddress,
+    city: a.city,
+    area: a.area ?? null,
+    is_default: a.source === "default",
+  }));
+}
+
+// Adapter: create address via canonical engine
+async function createSavedAddress(input: { label: string; line1: string; city: string; area?: string | null; isDefault?: boolean }) {
+  const row = await saveAddress({
+    label: input.label,
+    fullAddress: input.line1,
+    city: input.city,
+    area: input.area ?? undefined,
+    lat: 0,
+    lng: 0,
+    isDefault: input.isDefault,
+  });
+  return { id: row.id, label: row.label ?? input.label, line1: row.full_address ?? input.line1, city: row.city ?? input.city, area: row.area ?? null };
+}
+
+// Adapter: set default by touching + saving
+async function setDefaultAddress(_userId: string, addressId: string) {
+  await touchAddressUsed(addressId);
+}
 
 export interface CheckoutAddressValue {
   id: string;
@@ -33,7 +65,7 @@ export default function CheckoutAddressPicker({
 
   const { data: rows = [], isLoading, refetch } = useQuery({
     queryKey: ["checkout-address-picker", user?.id],
-    queryFn: () => listSavedAddresses(user!.id),
+    queryFn: () => listSavedAddresses(),
     enabled: !!user?.id,
     staleTime: 5000,
   });
@@ -61,7 +93,7 @@ export default function CheckoutAddressPicker({
     try {
       setSaving(true);
       const row = await createSavedAddress({
-        userId: user.id, label, line1, city, area: area || null, isDefault: true,
+        label, line1, city, area: area || undefined, isDefault: true,
       });
       onChange({ id: row.id, label: row.label, line1: row.line1, city: row.city, area: row.area });
       setLine1(""); setArea(""); setOpen(false); refetch();
