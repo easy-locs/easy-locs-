@@ -210,7 +210,7 @@ const ActivitiesMarketplace = () => {
       // Duplicate detection
       const dupCheck = await checkServiceDuplicate(data.title, (data as any).lat ?? null, (data as any).lng ?? null, (data as any).phone ?? null);
       if (dupCheck.blocked) {
-        throw new Error(`Duplicate detected: similar service "${dupCheck.existingMatch?.name ?? "unknown" ?? "unknown"}" already exists nearby.`);
+        throw new Error(`Duplicate detected: similar service "${dupCheck.existingMatch?.name ?? "unknown"}" already exists nearby.`);
       }
 
       const slug = data.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") + "-" + Date.now().toString(36);
