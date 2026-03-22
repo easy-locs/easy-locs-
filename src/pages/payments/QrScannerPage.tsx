@@ -116,8 +116,16 @@ export default function QrScannerPage() {
   // ── HANDLE QR RESULT ──
   const handleQrResult = useCallback(async (raw: string) => {
     const payload = decodeQr(raw);
-    if (!payload) { setE("Unsupported QR format"); setS("error"); return; }
-    if (isExpired(payload)) { setE("QR code expired"); setS("error"); return; }
+    if (!payload) {
+      platformBus.emit("qr.scan.failed", { raw, reason: "unsupported_format" }, "system");
+      setE("Unsupported QR format"); setS("error"); return;
+    }
+    if (isExpired(payload)) {
+      platformBus.emit("qr.scan.expired", { action: payload.action }, "system");
+      setE("QR code expired"); setS("error"); return;
+    }
+
+    platformBus.emit("qr.scan.decoded", { action: payload.action, raw }, "system");
 
     if (payload.action === "pay_user") {
       setS("paying");
