@@ -816,6 +816,8 @@ const App = () => (
               <Route path="/pay/:payId" element={<PayPage />} />
               <Route path="/pay/request/:requestId" element={<PayRequestPage />} />
               <Route path="/pay/scan" element={<QrScannerPage />} />
+              <Route path="/pay/link-resolver" element={<PaymentLinkResolverPage />} />
+              <Route path="/pay/confirm" element={<PaymentConfirmPage />} />
               <Route path="/pay/success" element={<GuestPaymentSuccess />} />
               <Route path="/qr/pay/:code" element={<QrPayResolver />} />
               <Route path="/qr/:code" element={<QrResolvePage />} />
