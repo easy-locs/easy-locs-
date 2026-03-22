@@ -14,16 +14,20 @@ export type RadarSubCategory =
   | "pharmacy"
   | "apartment"
   | "repair"
-  | "cleaning";
+  | "cleaning"
+  | string;
 
 export type RadarPoint = {
   id: string;
   title: string;
+  subtitle?: string | null;
+  imageUrl?: string | null;
   category: RadarCategory;
   subcategory?: RadarSubCategory | null;
   lat: number;
   lng: number;
   rating?: number | null;
+  reviewsCount?: number | null;
   isSponsored?: boolean;
   distanceKm?: number;
 };
