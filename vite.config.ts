@@ -39,7 +39,6 @@ export default defineConfig(({ mode }) => ({
       "tailwind-merge",
       "class-variance-authority",
     ],
-    force: true,
   },
   resolve: {
     alias: {
