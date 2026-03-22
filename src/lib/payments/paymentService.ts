@@ -90,7 +90,7 @@ export async function capturePayment(input: CapturePaymentInput) {
     .eq("id", input.orderId)
     .maybeSingle();
 
-  await platformBus.emit(
+  platformBus.emit(
     "PAYMENT_SUCCESS",
     {
       orderId: input.orderId,
@@ -100,7 +100,7 @@ export async function capturePayment(input: CapturePaymentInput) {
       customerUserId: order?.customer_user_id ?? null,
       paymentMethodType: "card",
     },
-    { source: "paymentService:capturePayment" }
+    "system"
   );
 
   return data;

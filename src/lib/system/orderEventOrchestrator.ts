@@ -53,10 +53,10 @@ export async function emitOrderCompleted(orderId: string) {
 }
 
 export async function emitOrderRefunded(orderId: string) {
-  await platformBus.emit(
+  platformBus.emit(
     "ORDER_REFUNDED",
     { orderId },
-    { source: "orderEventOrchestrator:emitOrderRefunded" }
+    "system"
   );
 
   return true;

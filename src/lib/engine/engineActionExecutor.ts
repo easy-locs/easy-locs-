@@ -42,7 +42,7 @@ export async function executeEngineAction(action: string) {
           requesterUserId: "test-user",
           type: "general_issue",
         },
-        { source: "central-control-panel" }
+        "system"
       );
 
     default:

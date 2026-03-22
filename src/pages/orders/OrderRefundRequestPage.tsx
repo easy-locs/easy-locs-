@@ -30,7 +30,7 @@ export default function OrderRefundRequestPage() {
 
     try {
       setSaving(true);
-      await platformBus.emit(
+      platformBus.emit(
         "REFUND_REQUESTED",
         {
           orderId,
@@ -38,7 +38,7 @@ export default function OrderRefundRequestPage() {
           reason,
           details: details.trim(),
         },
-        { source: "order-refund-request-page" }
+        "system"
       );
       toast.success("Refund request submitted");
       navigate(`/support/tickets`);

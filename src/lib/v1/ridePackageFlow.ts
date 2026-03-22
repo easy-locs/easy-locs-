@@ -85,10 +85,10 @@ export async function advanceMissionStatus(params: {
   if (error) throw error;
 
   if (params.nextStatus === "delivered") {
-    await platformBus.emit(
+    platformBus.emit(
       "MISSION_COMPLETED",
       { orderId: params.orderId },
-      { source: "ridePackageFlow:advanceMissionStatus" }
+      "system"
     );
   }
 
