@@ -1,9 +1,13 @@
+/**
+ * BookingStripeButton — Canonical booking payment via create-stripe-intent.
+ */
 import { useState } from "react";
-import { createCheckoutSession } from "@/lib/payments/createCheckoutSession";
+import { supabase } from "@/integrations/supabase/client";
 import { useBookingStore } from "@/stores/bookingStore";
 import { useCheckoutDiscountStore } from "@/stores/checkoutDiscountStore";
 import { computeDiscountedAmount } from "@/lib/payments/amounts";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 export function BookingStripeButton(props: { bookingId: string }) {
   const booking = useBookingStore((s) => s.getBookingById(props.bookingId));
@@ -26,30 +30,33 @@ export function BookingStripeButton(props: { bookingId: string }) {
             discountAmount,
           });
 
-          const url = await createCheckoutSession({
-            successUrl: `${window.location.origin}/v2-payments?booking=${booking.id}&status=success`,
-            cancelUrl: `${window.location.origin}/v2-payments?booking=${booking.id}&status=cancel`,
-            lineItems: [
-              {
-                name: `Booking ${booking.id}${appliedCode ? ` (${appliedCode})` : ""}`,
-                amount: Math.round(finalAmount * 100),
-                currency: booking.currency.toLowerCase(),
-                quantity: 1,
+          const { data, error } = await supabase.functions.invoke("create-stripe-intent", {
+            body: {
+              amount: finalAmount,
+              currency: booking.currency.toLowerCase(),
+              metadata: {
+                bookingId: booking.id,
+                listingId: booking.listingId,
+                flow: "booking_payment",
+                couponCode: appliedCode ?? "",
+                originalAmount: String(booking.amount),
+                discountAmount: String(discountAmount ?? 0),
+                finalAmount: String(finalAmount),
               },
-            ],
-            metadata: {
-              bookingId: booking.id,
-              listingId: booking.listingId,
-              flow: "booking_payment",
-              couponCode: appliedCode ?? "",
-              originalAmount: String(booking.amount),
-              discountAmount: String(discountAmount ?? 0),
-              finalAmount: String(finalAmount),
             },
           });
-          window.location.href = url;
-        } catch (err) {
-          console.error("Booking checkout error:", err);
+          if (error) throw error;
+          const params = new URLSearchParams({
+            client_secret: data.clientSecret,
+            intent_id: data.paymentIntentId,
+            amount: String(finalAmount),
+            currency: booking.currency,
+            label: `Booking ${booking.id}`,
+          });
+          window.location.href = `/wallet/pay-confirm?${params.toString()}`;
+        } catch (err: any) {
+          console.error("Booking payment error:", err);
+          toast.error(err?.message || "Payment failed");
         } finally {
           setLoading(false);
         }

@@ -1,5 +1,10 @@
+/**
+ * StripeCheckoutButton — Canonical payment button using create-stripe-intent.
+ * Uses PaymentIntent flow (not legacy Checkout Sessions).
+ */
 import { useState } from "react";
-import { createCheckoutSession } from "@/lib/payments/createCheckoutSession";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 export function StripeCheckoutButton(props: {
   label?: string;
@@ -7,36 +12,45 @@ export function StripeCheckoutButton(props: {
   amountMinor: number;
   currency: string;
   metadata?: Record<string, string>;
+  onSuccess?: (intentId: string) => void;
 }) {
   const [loading, setLoading] = useState(false);
+
+  const handlePay = async () => {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("create-stripe-intent", {
+        body: {
+          amount: props.amountMinor / 100,
+          currency: props.currency.toLowerCase(),
+          metadata: { ...props.metadata, item_name: props.name },
+        },
+      });
+      if (error) throw error;
+      if (!data?.clientSecret) throw new Error("No payment intent created");
+
+      // Navigate to unified payment confirmation page
+      const params = new URLSearchParams({
+        client_secret: data.clientSecret,
+        intent_id: data.paymentIntentId,
+        amount: String(props.amountMinor / 100),
+        currency: props.currency,
+        label: props.name,
+      });
+      window.location.href = `/wallet/pay-confirm?${params.toString()}`;
+    } catch (err: any) {
+      console.error("Payment error:", err);
+      toast.error(err?.message || "Payment failed");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <button
       disabled={loading}
-      className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors"
-      onClick={async () => {
-        setLoading(true);
-        try {
-          const url = await createCheckoutSession({
-            successUrl: `${window.location.origin}/v2-payments?status=success`,
-            cancelUrl: `${window.location.origin}/v2-payments?status=cancel`,
-            lineItems: [
-              {
-                name: props.name,
-                amount: props.amountMinor,
-                currency: props.currency.toLowerCase(),
-                quantity: 1,
-              },
-            ],
-            metadata: props.metadata,
-          });
-          window.location.href = url;
-        } catch (err) {
-          console.error("Stripe checkout error:", err);
-        } finally {
-          setLoading(false);
-        }
-      }}
+      onClick={handlePay}
+      className="rounded-xl bg-primary px-5 py-2.5 text-sm font-bold text-primary-foreground active:scale-95 transition-all disabled:opacity-50"
     >
       {loading ? "Processing..." : props.label ?? "Pay with Stripe"}
     </button>

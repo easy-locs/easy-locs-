@@ -1,16 +1,17 @@
 /**
  * Smart Geolocation Detection — IP + GPS + Browser locale.
  * Auto-detects user's country, language, and currency on first visit.
- * Caches result in localStorage to avoid repeated API calls.
+ * Uses canonical locationStore for GPS — no raw navigator.geolocation calls.
  */
 
 import { useState, useEffect, useCallback } from "react";
 import { getCountryEntryOrDefault, type CountryEntry } from "@/lib/global-country-registry";
+import { useLocationStore } from "@/stores/locationStore";
 
 export interface GeoDetection {
-  country: string;       // ISO 3166-1 alpha-2
-  language: string;       // BCP-47 language tag
-  currency: string;       // ISO 4217 currency code
+  country: string;
+  language: string;
+  currency: string;
   timezone: string;
   city?: string;
   lat?: number;
@@ -20,7 +21,7 @@ export interface GeoDetection {
 }
 
 const CACHE_KEY = "easylocs_geo_detect";
-const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
+const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
 
 function getCachedDetection(): GeoDetection | null {
   try {
@@ -31,7 +32,7 @@ function getCachedDetection(): GeoDetection | null {
       localStorage.removeItem(CACHE_KEY);
       return null;
     }
-    return { ...cached, method: "cached" };
+    return cached;
   } catch {
     return null;
   }
@@ -40,119 +41,68 @@ function getCachedDetection(): GeoDetection | null {
 function cacheDetection(detection: GeoDetection) {
   try {
     localStorage.setItem(CACHE_KEY, JSON.stringify({ ...detection, _ts: Date.now() }));
-  } catch { /* quota exceeded — ignore */ }
+  } catch { /* quota */ }
 }
 
-/** Extract country from browser locale (e.g. "fr-FR" → "FR") */
 function detectFromBrowser(): Partial<GeoDetection> {
-  if (typeof navigator === "undefined") {
-    return {
-      language: "en",
-      method: "default",
-    };
-  }
-
-  const locale = navigator.language || (navigator as any).userLanguage || "en-US";
-  const parts = locale.split("-");
-  const language = parts[0]?.toLowerCase() || "en";
+  const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || "";
+  const lang = navigator.language || "en";
+  const parts = lang.split("-");
   const country = parts[1]?.toUpperCase() || "";
 
   return {
-    language,
+    timezone: tz,
+    language: lang,
     country: country || undefined,
-    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || "",
     method: "browser",
   };
 }
 
-/** Detect country via free IP geolocation API */
 async function detectFromIP(): Promise<Partial<GeoDetection>> {
-  // Try ip-api.com (free, no key, 45 req/min)
   try {
-    const res = await fetch("https://ip-api.com/json/?fields=status,country,countryCode,city,lat,lon,timezone,currency", {
-      signal: AbortSignal.timeout(4000),
-    });
-    if (res.ok) {
-      const data = await res.json();
-      if (data.status === "success") {
-        return {
-          country: data.countryCode,
-          city: data.city,
-          lat: data.lat,
-          lng: data.lon,
-          timezone: data.timezone,
-          currency: data.currency,
-          method: "ip",
-        };
-      }
-    }
-  } catch { /* timeout or network error */ }
-
-  // Fallback: ipapi.co
-  try {
-    const res = await fetch("https://ipapi.co/json/", {
-      signal: AbortSignal.timeout(4000),
-    });
-    if (res.ok) {
-      const data = await res.json();
-      if (data.country_code) {
-        return {
-          country: data.country_code,
-          city: data.city,
-          lat: data.latitude,
-          lng: data.longitude,
-          timezone: data.timezone,
-          currency: data.currency,
-          method: "ip",
-        };
-      }
-    }
-  } catch { /* ignore */ }
-
-  return {};
+    const res = await fetch("https://ipapi.co/json/", { signal: AbortSignal.timeout(5000) });
+    const data = await res.json();
+    return {
+      country: data.country_code || "",
+      city: data.city || "",
+      currency: data.currency || "",
+      lat: data.latitude,
+      lng: data.longitude,
+      timezone: data.timezone || "",
+      method: "ip",
+    };
+  } catch {
+    return {};
+  }
 }
 
-/** Optional GPS refinement */
-function detectFromGPS(): Promise<Partial<GeoDetection>> {
-  return new Promise((resolve) => {
-    if (!navigator.geolocation) {
-      resolve({});
-      return;
-    }
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        resolve({
-          lat: pos.coords.latitude,
-          lng: pos.coords.longitude,
-          method: "gps",
-        });
-      },
-      () => resolve({}),
-      { timeout: 8000, enableHighAccuracy: true, maximumAge: 60000 }
-    );
-  });
+function detectFromLocationStore(): Partial<GeoDetection> {
+  const loc = useLocationStore.getState().currentLocation;
+  if (!loc) return {};
+  return {
+    lat: loc.lat,
+    lng: loc.lng,
+    method: "gps",
+  };
 }
 
-function buildFullDetection(parts: Partial<GeoDetection>[]): GeoDetection {
+function mergeDetections(...sources: Partial<GeoDetection>[]): GeoDetection {
   const merged: Partial<GeoDetection> = {};
-
-  // Merge in priority order (later overrides earlier for non-null values)
-  for (const part of parts) {
-    for (const [key, val] of Object.entries(part)) {
-      if (val !== undefined && val !== null && val !== "") {
+  for (const src of sources) {
+    for (const [key, val] of Object.entries(src)) {
+      if (val != null && val !== "") {
         (merged as any)[key] = val;
       }
     }
   }
 
-  const country = merged.country || "US";
-  const entry = getCountryEntryOrDefault(country);
+  const entry = getCountryEntryOrDefault(merged.country || "AE");
 
   return {
-    country,
-    language: merged.language || entry.locale.split("-")[0] || "en",
-    currency: merged.currency || entry.currency,
-    timezone: merged.timezone || entry.timezone,
+    country: merged.country || entry.code,
+    language: merged.language || entry.language || "en",
+    currency: merged.currency || entry.currency || "AED",
+    timezone: merged.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone,
     city: merged.city,
     lat: merged.lat,
     lng: merged.lng,
@@ -161,78 +111,52 @@ function buildFullDetection(parts: Partial<GeoDetection>[]): GeoDetection {
   };
 }
 
-/**
- * Main hook — detects user's geolocation on mount.
- * Priority: cache → IP → browser → GPS (for coordinates refinement)
- */
 export function useGeoDetect() {
   const [detection, setDetection] = useState<GeoDetection | null>(getCachedDetection);
   const [loading, setLoading] = useState(!detection);
 
-  useEffect(() => {
-    if (detection) return; // Already have cached result
-
-    let cancelled = false;
-
-    (async () => {
-      const browserData = detectFromBrowser();
-      const ipData = await detectFromIP();
-
-      if (cancelled) return;
-
-      // GPS is optional — don't block on it
-      const gpsPromise = detectFromGPS();
-      const gpsData = await Promise.race([
-        gpsPromise,
-        new Promise<Partial<GeoDetection>>((r) => setTimeout(() => r({}), 3000)),
-      ]);
-
-      if (cancelled) return;
-
-      const result = buildFullDetection([browserData, ipData, gpsData]);
+  const detect = useCallback(async () => {
+    setLoading(true);
+    try {
+      const browser = detectFromBrowser();
+      const gps = detectFromLocationStore();
+      const ip = await detectFromIP();
+      const result = mergeDetections(browser, gps, ip);
       cacheDetection(result);
       setDetection(result);
-      setLoading(false);
-    })();
-
-    return () => { cancelled = true; };
-  }, [detection]);
-
-  /** Force re-detection (clears cache) */
-  const redetect = useCallback(async () => {
-    try {
-      localStorage.removeItem(CACHE_KEY);
     } catch {
-      // ignore storage errors
+      const fallback = mergeDetections(detectFromBrowser());
+      setDetection(fallback);
+    } finally {
+      setLoading(false);
     }
-    setDetection(null);
-    setLoading(true);
   }, []);
 
-  /** Manually override country */
-  const setCountry = useCallback((country: string) => {
-    const entry = getCountryEntryOrDefault(country);
-    const updated: GeoDetection = {
-      ...(detection || buildFullDetection([])),
-      country,
-      currency: entry.currency,
-      language: entry.locale.split("-")[0] || "en",
-      timezone: entry.timezone,
-      method: "default",
-      detectedAt: new Date().toISOString(),
-    };
-    cacheDetection(updated);
-    setDetection(updated);
-  }, [detection]);
+  useEffect(() => {
+    if (!detection) detect();
+  }, [detection, detect]);
 
+  return { detection, loading, refresh: detect };
+}
+
+export function detectLocationFromTimezone(): { country?: string; currency?: string; city?: string } {
+  const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || "";
+  const parts = tz.split("/");
+  const cityRaw = parts[parts.length - 1]?.replace(/_/g, " ") || "";
+
+  const tzMap: Record<string, { country: string; currency: string }> = {
+    "Asia/Dubai": { country: "AE", currency: "AED" },
+    "Europe/Paris": { country: "FR", currency: "EUR" },
+    "Europe/London": { country: "GB", currency: "GBP" },
+    "America/New_York": { country: "US", currency: "USD" },
+    "Asia/Riyadh": { country: "SA", currency: "SAR" },
+    "Africa/Casablanca": { country: "MA", currency: "MAD" },
+  };
+
+  const match = tzMap[tz];
   return {
-    detection,
-    loading,
-    redetect,
-    setCountry,
-    country: detection?.country || "US",
-    language: detection?.language || "en",
-    currency: detection?.currency || "USD",
-    timezone: detection?.timezone || "UTC",
+    country: match?.country,
+    currency: match?.currency,
+    city: cityRaw || undefined,
   };
 }
