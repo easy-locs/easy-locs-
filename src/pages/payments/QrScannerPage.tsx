@@ -351,6 +351,11 @@ export default function QrScannerPage() {
 
   return (
     <div className="fixed inset-0 z-[200] flex flex-col bg-background">
+      <PremiumPaymentSuccess
+        open={showPremiumSuccess}
+        logoUrl="/easylocs-logo.png"
+        amount={successAmount}
+      />
       {/* Header */}
       <div className="flex items-center gap-3 px-4 py-3">
         <button type="button" onClick={() => navigate(-1)} className="w-9 h-9 rounded-xl flex items-center justify-center bg-muted/60 backdrop-blur-sm active:scale-95 transition-transform">
