@@ -33,10 +33,7 @@ import V1BootBridge from "@/app/V1BootBridge";
 import { useNotificationsStore } from "@/stores/notificationsStore";
 import AppBootstrapGuardDirect from "@/components/app/AppBootstrapGuard";
 
-// V2 test pages
-const V2TestPage = safeLazy(() => import("./app/router/V2TestPage"), "V2TestPage");
-const V2BookingTestPage = safeLazy(() => import("./app/router/V2BookingTestPage"), "V2BookingTestPage");
-const V2MegaPage = safeLazy(() => import("./app/router/V2MegaPage"), "V2MegaPage");
+// V2 test pages — removed (Batch B purge)
 
 // V2 Suite 4 pages
 const V2HomePage = safeLazy(() => import("./app/router/HomePage"), "V2HomePage");
@@ -284,12 +281,7 @@ const MerchantOnboardingPage = safeLazy(() => import("./pages/MerchantOnboarding
 const MerchantOnboardingAdminPage = safeLazy(() => import("./pages/MerchantOnboardingAdminPage"), "MerchantOnboardingAdminPage");
 const ExecutiveDashboard = safeLazy(() => import("./pages/ExecutiveDashboard"), "ExecutiveDashboard");
 const GhostCallPage = safeLazy(() => import("./pages/GhostCallPage"), "GhostCallPage");
-// Ghost V2/V3 pages
-const GhostInboxPage = safeLazy(() => import("./pages/ghost/GhostInboxPage"), "GhostInboxPage");
-const GhostThreadPage = safeLazy(() => import("./pages/ghost/GhostThreadPage"), "GhostThreadPage");
-const GhostCallPageV2 = safeLazy(() => import("./pages/ghost/GhostCallPageV2"), "GhostCallPageV2");
-const GhostSettingsPage = safeLazy(() => import("./pages/ghost/GhostSettingsPage"), "GhostSettingsPage");
-const GhostContactsPage = safeLazy(() => import("./pages/ghost/GhostContactsPage"), "GhostContactsPage");
+// Ghost V2/V3 pages — removed (Batch B purge)
 const SalesSequencePage = safeLazy(() => import("./pages/SalesSequencePage"), "SalesSequencePage");
 const WorkspaceBootstrapPage = safeLazy(() => import("./pages/WorkspaceBootstrapPage"), "WorkspaceBootstrapPage");
 const MenuAdminPage = safeLazy(() => import("./pages/MenuAdminPage"), "MenuAdminPage");
@@ -1070,13 +1062,7 @@ const App = () => (
               <Route path="/admin/ai-quality" element={<ProtectedRoute><AIQualityDashboard /></ProtectedRoute>} />
               <Route path="/admin/ghost-call" element={<ProtectedRoute><GhostCallPage /></ProtectedRoute>} />
 
-              {/* ══════ GHOST V2/V3 ══════ */}
-              <Route path="/ghost" element={<Navigate to="/ghost/inbox" replace />} />
-              <Route path="/ghost/inbox" element={<ProtectedRoute><GhostInboxPage /></ProtectedRoute>} />
-              <Route path="/ghost/thread/:threadId" element={<ProtectedRoute><GhostThreadPage /></ProtectedRoute>} />
-              <Route path="/ghost/call/:callId" element={<ProtectedRoute><GhostCallPageV2 /></ProtectedRoute>} />
-              <Route path="/ghost/settings" element={<ProtectedRoute><GhostSettingsPage /></ProtectedRoute>} />
-              <Route path="/ghost/contacts" element={<ProtectedRoute><GhostContactsPage /></ProtectedRoute>} />
+              {/* Ghost V2/V3 routes — removed (Batch B purge) */}
               <Route path="/admin/sales-sequences" element={<ProtectedRoute><SalesSequencePage /></ProtectedRoute>} />
               <Route path="/admin/workspace-bootstrap" element={<ProtectedRoute><WorkspaceBootstrapPage /></ProtectedRoute>} />
               <Route path="/admin/menu" element={<ProtectedRoute><MenuAdminPage /></ProtectedRoute>} />
@@ -1436,10 +1422,7 @@ const App = () => (
               {/* V2 Auth */}
               <Route path="/v2-auth" element={<V2AuthBridgeWrapper><V2AuthPage /></V2AuthBridgeWrapper>} />
 
-              {/* V2 test routes */}
-              <Route path="/v2-test" element={<V2TestPage />} />
-              <Route path="/v2-booking-test" element={<V2BookingTestPage />} />
-              <Route path="/v2-mega" element={<V2AuthBridgeWrapper><V2AuthGate fallback={<V2AuthPage />}><V2MegaPage /></V2AuthGate></V2AuthBridgeWrapper>} />
+              {/* V2 test routes — removed (Batch B purge) */}
 
               {/* V2 Suite 4 routes — auth protected */}
               <Route path="/v2-home" element={<V2AuthBridgeWrapper><V2AuthGate fallback={<V2AuthPage />}><V2HomePage /></V2AuthGate></V2AuthBridgeWrapper>} />
