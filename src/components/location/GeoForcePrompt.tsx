@@ -7,7 +7,7 @@ import { useLocationStore } from "@/stores/locationStore";
 import { MapPin } from "lucide-react";
 import { requestLocation } from "@/lib/location/requestLocation";
 import { motion, AnimatePresence } from "framer-motion";
-import { useI18n } from "@/lib/i18n";
+import { useI18n, tSafe } from "@/lib/i18n";
 
 export default function GeoForcePrompt() {
   const { t } = useI18n();
