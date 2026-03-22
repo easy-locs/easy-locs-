@@ -211,8 +211,6 @@ const OpsCenter = safeLazy(() => import("./pages/OpsCenter"), "OpsCenter");
 const ShopsPage = safeLazy(() => import("./pages/ShopsPage"), "ShopsPage");
 const SuperMapRadarPage = safeLazy(() => import("./pages/GlobalMapPage"), "GlobalMapPage");
 const MapTabPage = safeLazy(() => import("./pages/MapTabPage"), "MapTabPage");
-const DinoAuditPage = safeLazy(() => import("./pages/admin/DinoAuditPage"), "DinoAuditPage");
-const DinoDashboardPage = safeLazy(() => import("./pages/admin/DinoDashboardPage"), "DinoDashboardPage");
 const AdminUiEnginePage = safeLazy(() => import("./pages/admin/AdminUiEnginePage"), "AdminUiEnginePage");
 const GlobalRadarPage = safeLazy(() => import("./pages/GlobalRadarPage"), "GlobalRadarPage");
 const MyBusinessHub = safeLazy(() => import("./pages/MyBusinessHub"), "MyBusinessHub");
@@ -247,13 +245,9 @@ const ProviderSEOPage = safeLazy(() => import("./pages/seo/ProviderSEOPage"), "P
 const SlugResolver = safeLazy(() => import("./pages/seo/SEOShortUrlResolver").then(m => ({ default: m.SlugResolver })), "SlugResolver");
 const SlugCategoryResolver = safeLazy(() => import("./pages/seo/SEOShortUrlResolver").then(m => ({ default: m.SlugCategoryResolver })), "SlugCategoryResolver");
 // Ride & Send universes
-const RidePage = safeLazy(() => import("./pages/RidePage"), "RidePage");
-const RideSearchPage = safeLazy(() => import("./pages/RideSearchPage"), "RideSearchPage");
-const SendPage = safeLazy(() => import("./pages/SendPage"), "SendPage");
 const TrackRidePage = safeLazy(() => import("./pages/TrackRidePage"), "TrackRidePage");
 const PayRidePage = safeLazy(() => import("./pages/PayRidePage"), "PayRidePage");
 const RideReceiptPage = safeLazy(() => import("./pages/RideReceiptPage"), "RideReceiptPage");
-const RideCompletePage = safeLazy(() => import("./pages/RideCompletePage"), "RideCompletePage");
 const CallDriverPage = safeLazy(() => import("./pages/CallDriverPage"), "CallDriverPage");
 const DriverPayoutPage = safeLazy(() => import("./pages/DriverPayoutPage"), "DriverPayoutPage");
 const AdminDisputesPage = safeLazy(() => import("./pages/AdminDisputesPage"), "AdminDisputesPage");
@@ -277,19 +271,15 @@ const ReconAlertsPage = safeLazy(() => import("./pages/ReconAlertsPage"), "Recon
 // CallSessionPage — removed (orphan, bypassed CallProvider)
 const OrbitIdentityPage = safeLazy(() => import("./pages/OrbitIdentityPage"), "OrbitIdentityPage");
 const WalletHubPage = safeLazy(() => import("./pages/WalletHubPage"), "WalletHubPage");
-const PredictiveDispatchPage = safeLazy(() => import("./pages/PredictiveDispatchPage"), "PredictiveDispatchPage");
 const MerchantOnboardingPage = safeLazy(() => import("./pages/MerchantOnboardingPage"), "MerchantOnboardingPage");
 const MerchantOnboardingAdminPage = safeLazy(() => import("./pages/MerchantOnboardingAdminPage"), "MerchantOnboardingAdminPage");
 const ExecutiveDashboard = safeLazy(() => import("./pages/ExecutiveDashboard"), "ExecutiveDashboard");
 // GhostCallPage — removed (orphan, bypassed CallProvider)
-const SalesSequencePage = safeLazy(() => import("./pages/SalesSequencePage"), "SalesSequencePage");
 const WorkspaceBootstrapPage = safeLazy(() => import("./pages/WorkspaceBootstrapPage"), "WorkspaceBootstrapPage");
 const MenuAdminPage = safeLazy(() => import("./pages/MenuAdminPage"), "MenuAdminPage");
-const DispatchBoardPage = safeLazy(() => import("./pages/DispatchBoardPage"), "DispatchBoardPage");
 const SupportInboxPage = safeLazy(() => import("./pages/SupportInboxPage"), "SupportInboxPage");
 const AdminHomeV1Page = safeLazy(() => import("./pages/AdminHomeV1Page"), "AdminHomeV1Page");
 const DriverLivePage = safeLazy(() => import("./pages/DriverLivePage"), "DriverLivePage");
-const DriverPickerPage = safeLazy(() => import("./pages/DriverPickerPage"), "DriverPickerPage");
 const FoodOrderCheckoutPage = safeLazy(() => import("./pages/FoodOrderCheckoutPage"), "FoodOrderCheckoutPage");
 const CheckoutPage = safeLazy(() => import("./pages/CheckoutPage"), "CheckoutPage");
 const OrdersPage = safeLazy(() => import("./pages/OrdersPage"), "OrdersPage");
@@ -300,7 +290,6 @@ const PaymentPage = safeLazy(() => import("./pages/PaymentPage"), "PaymentPage")
 const KpiChartsPage = safeLazy(() => import("./pages/KpiChartsPage"), "KpiChartsPage");
 const PublicStorefrontBySlugPage = safeLazy(() => import("./pages/PublicStorefrontBySlugPage"), "PublicStorefrontBySlugPage");
 const DriverHeatmapMapPage = safeLazy(() => import("./pages/DriverHeatmapMapPage"), "DriverHeatmapMapPage");
-const BatchDeliveryPlannerPage = safeLazy(() => import("./pages/BatchDeliveryPlannerPage"), "BatchDeliveryPlannerPage");
 const AdminRealtimeControlPage = safeLazy(() => import("./pages/AdminRealtimeControlPage"), "AdminRealtimeControlPage");
 const DeploymentChecklistPage = safeLazy(() => import("./pages/DeploymentChecklistPage"), "DeploymentChecklistPage");
 const LoyaltyRedeemPage = safeLazy(() => import("./pages/LoyaltyRedeemPage"), "LoyaltyRedeemPage");
@@ -318,21 +307,11 @@ const MerchantKitchenPage = safeLazy(() => import("./pages/MerchantKitchenPage")
 const MerchantOrdersPage = safeLazy(() => import("./pages/MerchantOrdersPage"), "MerchantOrdersPage");
 // WalletCommerceTestPage removed — legacy test page
 const AdminWalletDiagnosticsPage = safeLazy(() => import("./pages/AdminWalletDiagnosticsPage"), "AdminWalletDiagnosticsPage");
-const AdminDispatchDiagnosticsPage = safeLazy(() => import("./pages/AdminDispatchDiagnosticsPage"), "AdminDispatchDiagnosticsPage");
-const AdminAutomationsPage = safeLazy(() => import("./pages/AdminAutomationsPage"), "AdminAutomationsPage");
 const DriverEarningsPage = safeLazy(() => import("./pages/DriverEarningsPage"), "DriverEarningsPage");
-const DriverMissionInboxPage = safeLazy(() => import("./pages/DriverMissionInboxPage"), "DriverMissionInboxPage");
-const DriverActiveMissionPage = safeLazy(() => import("./pages/DriverActiveMissionPage"), "DriverActiveMissionPage");
-const CustomerDeliveryTrackingPage = safeLazy(() => import("./pages/CustomerDeliveryTrackingPage"), "CustomerDeliveryTrackingPage");
-const MerchantDeliveryMonitorPage = safeLazy(() => import("./pages/MerchantDeliveryMonitorPage"), "MerchantDeliveryMonitorPage");
 const AdminOpsExceptionsPage = safeLazy(() => import("./pages/AdminOpsExceptionsPage"), "AdminOpsExceptionsPage");
-const AdminAutomationHealthPage = safeLazy(() => import("./pages/AdminAutomationHealthPage"), "AdminAutomationHealthPage");
 const AdminReviewQueuePage = safeLazy(() => import("./pages/AdminReviewQueuePage"), "AdminReviewQueuePage");
 const AdminGrowthDashboard = safeLazy(() => import("./pages/AdminGrowthDashboard"), "AdminGrowthDashboard");
-const ComingSoonMerchantPage = safeLazy(() => import("./pages/ComingSoonMerchantPage"), "ComingSoonMerchantPage");
 const CityMarketplacePage = safeLazy(() => import("./pages/CityMarketplacePage"), "CityMarketplacePage");
-const AdminGrowthEnginePage = safeLazy(() => import("./pages/AdminGrowthEnginePage"), "AdminGrowthEnginePage");
-const CityVerticalPage = safeLazy(() => import("./pages/CityVerticalPage"), "CityVerticalPage");
 
 // Travel universe
 const TravelHub = safeLazy(() => import("./pages/travel/TravelHub"), "TravelHub");
@@ -374,10 +353,8 @@ const QrResolvePage = safeLazy(() => import("./pages/deep-link/QrResolvePage"), 
 const PayRequestPage = safeLazy(() => import("./pages/deep-link/PayRequestPage"), "PayRequestPage");
 const QrScannerPage = safeLazy(() => import("./pages/payments/QrScannerPage"), "QrScannerPage");
 const GuestPaymentSuccess = safeLazy(() => import("./pages/deep-link/GuestPaymentSuccess"), "GuestPaymentSuccess");
-const DubaiRestaurantImportPage = safeLazy(() => import("./pages/DubaiRestaurantImportPage"), "DubaiRestaurantImportPage");
 const QrEntryPage = safeLazy(() => import("./pages/QrEntryPage"), "QrEntryPage");
 const AppNotFoundPage = safeLazy(() => import("./pages/AppNotFoundPage"), "AppNotFoundPage");
-const AdminImportTestBatchesPage = safeLazy(() => import("./pages/AdminImportTestBatchesPage"), "AdminImportTestBatchesPage");
 const QrGeneratePage = safeLazy(() => import("./pages/QrGeneratePage"), "QrGeneratePage");
 const RouteAuditPage = safeLazy(() => import("./pages/RouteAuditPage"), "RouteAuditPage");
 // OrbitCallTestPage removed — legacy test page
@@ -660,27 +637,8 @@ const MerchantQueueLimitPage = safeLazy(() => import("./pages/merchant/MerchantQ
 const AdminNotificationCampaignsPage = safeLazy(() => import("./pages/admin/AdminNotificationCampaignsPage"), "AdminNotificationCampaignsPage");
 const AdminCustomerSegmentsPage = safeLazy(() => import("./pages/admin/AdminCustomerSegmentsPage"), "AdminCustomerSegmentsPage");
 const AdminMerchantSegmentsPage = safeLazy(() => import("./pages/admin/AdminMerchantSegmentsPage"), "AdminMerchantSegmentsPage");
-// V1 order flow block
-const V1CheckoutBridgePage = safeLazy(() => import("./pages/v1/V1CheckoutBridgePage"), "V1CheckoutBridgePage");
-const V1RideSendPackagePage = safeLazy(() => import("./pages/v1/V1RideSendPackagePage"), "V1RideSendPackagePage");
-// V1 Block 6-7: wallet, notifications, profile, achille, restaurant, home/menu routes
 // V1WalletHubPage removed — legacy redirect
-const V1NotificationsPage = safeLazy(() => import("./pages/v1/V1NotificationsPage"), "V1NotificationsPage");
-const V1ProfileSettingsPage = safeLazy(() => import("./pages/v1/V1ProfileSettingsPage"), "V1ProfileSettingsPage");
-const V1HomeRoute = safeLazy(() => import("./pages/v1/V1HomeRoute"), "V1HomeRoute");
-const V1MenuRoute = safeLazy(() => import("./pages/v1/V1MenuRoute"), "V1MenuRoute");
-const V1AchillePage = safeLazy(() => import("./pages/v1/V1AchillePage"), "V1AchillePage");
-const V1RestaurantRoute = safeLazy(() => import("./pages/v1/V1RestaurantRoute"), "V1RestaurantRoute");
-// V1 Final Integration Block 3-4: merchant core pages
-const V1MerchantPosPage = safeLazy(() => import("./pages/v1/V1MerchantPosPage"), "V1MerchantPosPage");
-const V1MerchantQrPage = safeLazy(() => import("./pages/v1/V1MerchantQrPage"), "V1MerchantQrPage");
-const V1MerchantOrdersRoute = safeLazy(() => import("./pages/v1/V1MerchantOrdersRoute"), "V1MerchantOrdersRoute");
-const V1MerchantPaymentsPage = safeLazy(() => import("./pages/v1/V1MerchantPaymentsPage"), "V1MerchantPaymentsPage");
 
-// V1 Connection Pack 3-4: tracking, driver missions, driver proof
-const V1TrackingRoute = safeLazy(() => import("./pages/v1/V1TrackingRoute"), "V1TrackingRoute");
-const V1DriverMissionBoardPage = safeLazy(() => import("./pages/v1/V1DriverMissionBoardPage").then(m => ({ default: m.V1DriverMissionBoardPage })), "V1DriverMissionBoardPage");
-const V1DriverProofPage = safeLazy(() => import("./pages/v1/V1DriverProofPage").then(m => ({ default: m.V1DriverProofPage })), "V1DriverProofPage");
 const AuthCallbackPage = safeLazy(() => import("./pages/AuthCallbackPage"), "AuthCallbackPage");
 // City sub-page wrappers
 const CityServicesPage = () => <CityHubPage subPage="services" />;
@@ -848,13 +806,8 @@ const App = () => (
               <Route path="/settings/security" element={<SettingsSecurityPage />} />
               <Route path="/settings/preferences" element={<SettingsPreferencesPage />} />
               <Route path="/settings/support" element={<SettingsSupportPage />} />
-              <Route path="/ride" element={<RidePage />} />
-              <Route path="/ride/search" element={<RideSearchPage />} />
-              <Route path="/send" element={<SendPage />} />
               <Route path="/track/:rideRequestId" element={<TrackRidePage />} />
               <Route path="/wallet/pay/:threadId" element={<PayRidePage />} />
-              <Route path="/ride/receipt/:rideRequestId" element={<RideReceiptPage />} />
-              <Route path="/ride/complete/:rideRequestId" element={<RideCompletePage />} />
               <Route path="/call/:threadId" element={<CallDriverPage />} />
               <Route path="/driver/payout" element={<DriverPayoutPage />} />
               <Route path="/admin/disputes" element={<AdminDisputesPage />} />
@@ -863,7 +816,6 @@ const App = () => (
               <Route path="/admin/fraud" element={<AdminFraudPage />} />
               <Route path="/admin/live-ops" element={<AdminLiveOpsPage />} />
               <Route path="/subscription/priority" element={<RiderPrioritySubscriptionPage />} />
-              <Route path="/admin/dispatch-board" element={<AdminDispatchBoardPage />} />
               <Route path="/admin/sla" element={<AdminSLAPage />} />
               <Route path="/admin/trust-graph" element={<AdminTrustGraphPage />} />
               <Route path="/refund/:rideRequestId" element={<RefundRequestPage />} />
@@ -878,7 +830,6 @@ const App = () => (
               {/* call-session route removed — calls go through CallProvider */}
               <Route path="/orbit/identity" element={<OrbitIdentityPage />} />
               <Route path="/wallet/hub" element={<WalletHubPage />} />
-              <Route path="/dispatch/predictive" element={<PredictiveDispatchPage />} />
               <Route path="/merchant/onboarding" element={<MerchantOnboardingPage />} />
               <Route path="/admin/merchant-onboarding" element={<MerchantOnboardingAdminPage />} />
               <Route path="/admin/executive-dashboard" element={<ExecutiveDashboard />} />
@@ -1066,19 +1017,15 @@ const App = () => (
               <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
               <Route path="/admin/ai-quality" element={<ProtectedRoute><AIQualityDashboard /></ProtectedRoute>} />
               {/* Ghost call route removed — calls go through CallProvider */}
-              <Route path="/admin/sales-sequences" element={<ProtectedRoute><SalesSequencePage /></ProtectedRoute>} />
               <Route path="/admin/workspace-bootstrap" element={<ProtectedRoute><WorkspaceBootstrapPage /></ProtectedRoute>} />
               <Route path="/admin/menu" element={<ProtectedRoute><MenuAdminPage /></ProtectedRoute>} />
-              <Route path="/admin/dispatch-board" element={<ProtectedRoute><DispatchBoardPage /></ProtectedRoute>} />
               <Route path="/admin/support-inbox" element={<ProtectedRoute><SupportInboxPage /></ProtectedRoute>} />
               <Route path="/admin/home-v1" element={<ProtectedRoute><AdminHomeV1Page /></ProtectedRoute>} />
               <Route path="/admin/driver-live" element={<ProtectedRoute><DriverLivePage /></ProtectedRoute>} />
-              <Route path="/admin/driver-picker" element={<ProtectedRoute><DriverPickerPage /></ProtectedRoute>} />
               <Route path="/admin/food-checkout" element={<ProtectedRoute><FoodOrderCheckoutPage /></ProtectedRoute>} />
               <Route path="/admin/delivery-proof/:orderId" element={<ProtectedRoute><DeliveryProofPage /></ProtectedRoute>} />
               <Route path="/admin/kpi-charts" element={<ProtectedRoute><KpiChartsPage /></ProtectedRoute>} />
               <Route path="/admin/driver-heatmap" element={<ProtectedRoute><DriverHeatmapMapPage /></ProtectedRoute>} />
-              <Route path="/admin/batch-delivery" element={<ProtectedRoute><BatchDeliveryPlannerPage /></ProtectedRoute>} />
               <Route path="/admin/realtime-control" element={<ProtectedRoute><AdminRealtimeControlPage /></ProtectedRoute>} />
               <Route path="/admin/deployment-checklist" element={<ProtectedRoute><DeploymentChecklistPage /></ProtectedRoute>} />
               <Route path="/admin/loyalty-redeem" element={<ProtectedRoute><LoyaltyRedeemPage /></ProtectedRoute>} />
@@ -1088,7 +1035,6 @@ const App = () => (
               <Route path="/payments/stripe-elements" element={<ProtectedRoute><StripeElementsPage /></ProtectedRoute>} />
               <Route path="/admin/audit-debug" element={<ProtectedRoute><AuditDebugPanelPage /></ProtectedRoute>} />
               <Route path="/admin/ops-wallboard" element={<ProtectedRoute><OpsWallboardPage /></ProtectedRoute>} />
-              <Route path="/admin/dubai-import" element={<ProtectedRoute><DubaiRestaurantImportPage /></ProtectedRoute>} />
               <Route path="/admin/outreach" element={<ProtectedRoute><AdminOutreachPage /></ProtectedRoute>} />
 
               {/* Merchant claim & dashboard */}
@@ -1099,25 +1045,15 @@ const App = () => (
               <Route path="/merchant/orders" element={<ProtectedRoute><MerchantOrdersPage /></ProtectedRoute>} />
               {/* /admin/wallet-test removed — legacy test page */}
               <Route path="/admin/wallet-diagnostics" element={<ProtectedRoute><AdminWalletDiagnosticsPage /></ProtectedRoute>} />
-              <Route path="/admin/dispatch-diagnostics" element={<ProtectedRoute><AdminDispatchDiagnosticsPage /></ProtectedRoute>} />
-              <Route path="/admin/automations" element={<ProtectedRoute><AdminAutomationsPage /></ProtectedRoute>} />
               <Route path="/driver/earnings" element={<ProtectedRoute><DriverEarningsPage /></ProtectedRoute>} />
-              <Route path="/driver/missions" element={<ProtectedRoute><DriverMissionInboxPage /></ProtectedRoute>} />
               <Route path="/driver/mission/:dispatchJobId" element={<ProtectedRoute><DriverActiveMissionPage /></ProtectedRoute>} />
               <Route path="/tracking/order/:orderId" element={<CustomerDeliveryTrackingPage />} />
-              <Route path="/merchant/delivery-monitor" element={<ProtectedRoute><MerchantDeliveryMonitorPage /></ProtectedRoute>} />
-              <Route path="/admin/ops-exceptions" element={<ProtectedRoute><AdminOpsExceptionsPage /></ProtectedRoute>} />
-              <Route path="/admin/automation-health" element={<ProtectedRoute><AdminAutomationHealthPage /></ProtectedRoute>} />
               <Route path="/admin/review-queue" element={<ProtectedRoute><AdminReviewQueuePage /></ProtectedRoute>} />
               <Route path="/admin/growth" element={<ProtectedRoute><AdminGrowthDashboard /></ProtectedRoute>} />
               <Route path="/coming-soon/:slug" element={<ComingSoonMerchantPage />} />
               <Route path="/city-market/:citySlug" element={<CityMarketplacePage />} />
-              <Route path="/admin/growth-engine" element={<ProtectedRoute><AdminGrowthEnginePage /></ProtectedRoute>} />
-              <Route path="/admin/import-test-batches" element={<ProtectedRoute><AdminImportTestBatchesPage /></ProtectedRoute>} />
               <Route path="/admin/qr-generate" element={<ProtectedRoute><QrGeneratePage /></ProtectedRoute>} />
               <Route path="/admin/route-audit" element={<ProtectedRoute><RouteAuditPage /></ProtectedRoute>} />
-              <Route path="/admin/dino" element={<ProtectedRoute><DinoAuditPage /></ProtectedRoute>} />
-              <Route path="/admin/dino-dashboard" element={<ProtectedRoute><DinoDashboardPage /></ProtectedRoute>} />
               {/* orbit/call-test route removed */}
               <Route path="/admin/test-restaurants" element={<ProtectedRoute><AdminRestaurantTestSeederPage /></ProtectedRoute>} />
               <Route path="/admin/runtime-audit" element={<ProtectedRoute><AdminRuntimeAuditPage /></ProtectedRoute>} />
@@ -1394,21 +1330,7 @@ const App = () => (
                 <Route path="/admin/notification-campaigns" element={<ProtectedRoute><AdminNotificationCampaignsPage /></ProtectedRoute>} />
                 <Route path="/admin/customer-segments" element={<ProtectedRoute><AdminCustomerSegmentsPage /></ProtectedRoute>} />
                 <Route path="/admin/merchant-segments" element={<ProtectedRoute><AdminMerchantSegmentsPage /></ProtectedRoute>} />
-                {/* V1 Primary Routes */}
-                <Route path="/v1/checkout" element={<ProtectedRoute><V1CheckoutBridgePage /></ProtectedRoute>} />
-                <Route path="/v1/ride" element={<ProtectedRoute><V1RideSendPackagePage type="ride" /></ProtectedRoute>} />
-                <Route path="/v1/send-package" element={<ProtectedRoute><V1RideSendPackagePage type="package" /></ProtectedRoute>} />
-                <Route path="/v1/home" element={<V1HomeRoute />} />
-                <Route path="/v1/menu" element={<V1MenuRoute />} />
-                <Route path="/v1/wallet" element={<Navigate to="/wallet" replace />} />
-                <Route path="/v1/notifications" element={<ProtectedRoute><V1NotificationsPage /></ProtectedRoute>} />
-                <Route path="/v1/profile" element={<ProtectedRoute><V1ProfileSettingsPage /></ProtectedRoute>} />
-                <Route path="/v1/achille" element={<V1AchillePage />} />
                 <Route path="/v1/restaurant/:restaurantId" element={<V1RestaurantRoute />} />
-                <Route path="/v1/merchant/pos" element={<V1MerchantPosPage />} />
-                <Route path="/v1/merchant/qr" element={<V1MerchantQrPage />} />
-                <Route path="/v1/merchant/orders" element={<V1MerchantOrdersRoute />} />
-                <Route path="/v1/merchant/payments" element={<V1MerchantPaymentsPage />} />
                 <Route path="/v1/tracking/:orderId" element={<V1TrackingRoute />} />
                 <Route path="/v1/driver/missions" element={<V1DriverMissionBoardPage />} />
                 <Route path="/v1/driver/proof/:orderId" element={<V1DriverProofPage />} />

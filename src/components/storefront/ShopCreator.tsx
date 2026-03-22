@@ -81,7 +81,7 @@ export default function ShopCreator() {
       // Duplicate guard
       const dupCheck = await checkStorefrontDuplicate(name.trim(), null, null, phone.trim() || null);
       if (dupCheck.blocked) {
-        toast.error(`Duplicate detected: "${dupCheck.existingMatch?.name}". ${dupCheck.result.reasons.join(", ")}`);
+        toast.error(`Duplicate detected: "${dupCheck.existingMatch?.name ?? "unknown" ?? "unknown"}". ${dupCheck.result?.reasons?.join(", ") ?? ""}`);
         return;
       }
 
