@@ -198,6 +198,7 @@ export const CommunicationCenter = () => {
     <>
       <div
         className="flex flex-col"
+        onClick={(e) => e.stopPropagation()}
         style={{
           height: "100dvh",
           width: "100%",
@@ -207,7 +208,7 @@ export const CommunicationCenter = () => {
           right: 0,
           bottom: 0,
           background: "hsl(var(--background))",
-          zIndex: 50,
+          zIndex: 60,
           overflow: "hidden",
         }}
       >
