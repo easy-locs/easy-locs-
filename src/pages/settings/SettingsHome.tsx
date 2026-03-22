@@ -41,6 +41,7 @@ const ME_SECTIONS: MeSection[] = [
       { key: "security", icon: Lock, label: "Security & PIN", path: "/settings/security" },
       { key: "phone", icon: Phone, label: "Phone Number", path: "/settings/account" },
       { key: "verification", icon: Shield, label: "Verification", path: "/settings/security" },
+      { key: "orbit-security", icon: Shield, label: "Chat Privacy & Encryption", path: "/settings/orbit" },
     ],
   },
   {
