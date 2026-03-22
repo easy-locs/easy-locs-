@@ -18,17 +18,26 @@ export function useWalletBalance() {
   const load = useCallback(async () => {
     if (!user?.id) { setLoading(false); return; }
     setLoading(true);
-    const { data } = await supabase
+
+    // Read real balance from wallet_balances_v2 (source of truth for wallet_transfer RPC)
+    const { data: balRow } = await (supabase as any)
+      .from("wallet_balances_v2")
+      .select("balance, currency")
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    // Still fetch wallet_accounts for accountId (needed by other flows)
+    const { data: accRow } = await supabase
       .from("wallet_accounts")
-      .select("id, balance, currency")
+      .select("id")
       .eq("owner_user_id", user.id)
       .eq("status", "active")
-      .order("created_at", { ascending: true })
       .limit(1)
       .maybeSingle();
-    setBalance(data?.balance ?? 0);
-    setCurrency(data?.currency || "AED");
-    setAccountId(data?.id ?? null);
+
+    setBalance(balRow?.balance ?? 0);
+    setCurrency(balRow?.currency || "AED");
+    setAccountId(accRow?.id ?? null);
     setLoading(false);
   }, [user?.id]);
 
@@ -40,8 +49,8 @@ export function useWalletBalance() {
       .on("postgres_changes", {
         event: "*",
         schema: "public",
-        table: "wallet_accounts",
-        filter: `owner_user_id=eq.${user.id}`,
+        table: "wallet_balances_v2",
+        filter: `user_id=eq.${user.id}`,
       }, () => load())
       .subscribe();
     return () => { supabase.removeChannel(channel); };
