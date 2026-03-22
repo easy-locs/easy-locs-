@@ -236,6 +236,9 @@ serve(async (req) => {
           logStep("PaymentIntent succeeded for marketplace booking", { bookingId: meta.marketplace_booking_id });
           await handleMarketplacePayment(supabase, meta, pi.id);
         }
+
+        // ── Canonical post-payment automation ──
+        await runPostPaymentAutomation(supabase, pi, meta);
         break;
       }
       case "payment_intent.payment_failed": {
