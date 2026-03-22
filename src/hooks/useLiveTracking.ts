@@ -120,16 +120,14 @@ export function useTracker(opts: UseTrackerOpts) {
       contextId: opts.contextId,
     }, "tracking", { userId: user.id, orgId });
 
-    // Start GPS watch
-    if ("geolocation" in navigator) {
-      watchIdRef.current = navigator.geolocation.watchPosition(
-        (pos) => {
-          updatePosition(id, pos.coords.latitude, pos.coords.longitude, pos.coords.speed, pos.coords.heading);
-        },
-        () => {},
-        { enableHighAccuracy: true, maximumAge: 3000, timeout: 15000 }
-      );
-    }
+    // Use canonical geo pipeline for GPS watch
+    const { watchCurrentPosition } = await import("@/lib/location/geolocation");
+    watchCurrentPosition(
+      (pos) => {
+        updatePosition(id, pos.lat, pos.lng, null, null);
+      },
+      () => {},
+    );
 
     return id;
   }, [user?.id, orgId, opts.contextType, opts.contextId, opts.contextLabel, opts.viewerUserId, opts.destinationLat, opts.destinationLng]);
