@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useV2AuthStore } from "@/stores/v2AuthStore";
 
 export default function AuthPage() {
