@@ -193,7 +193,10 @@ export default function QrScannerPage() {
     }
 
     const route = resolveRoute(payload);
-    if (route) { navigateRef.current(route, { replace: true }); return; }
+    if (route) {
+      platformBus.emit("qr.navigation", { action: payload.action, route }, "system");
+      navigateRef.current(route, { replace: true }); return;
+    }
     setE("Unsupported QR format"); setS("error");
   }, [setE, setS]);
 

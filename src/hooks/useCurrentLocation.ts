@@ -86,6 +86,7 @@ export function useCurrentLocation(opts?: { watch?: boolean }) {
             store().setIsFallback(false);
             store().setPermissionState("granted");
             store().setError(null);
+            platformBus.emit("geo.position.updated", { lat: pos.lat, lng: pos.lng, accuracy: pos.accuracy, source: "watch" }, "system");
           },
           (geoErr) => {
             // Silent — only update permission state, no console spam
