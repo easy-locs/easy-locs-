@@ -6,7 +6,7 @@ export async function emitOrderCreated(orderId: string) {
   if (error) throw error;
   if (!data) throw new Error("Order not found");
 
-  await platformBus.emit(
+  platformBus.emit(
     "ORDER_CREATED",
     {
       orderId: data.id,
@@ -15,7 +15,7 @@ export async function emitOrderCreated(orderId: string) {
       amount: Number((data as any).total_amount ?? 0),
       currency: (data as any).currency ?? "AED",
     },
-    { source: "orderEventOrchestrator:emitOrderCreated" }
+    "system"
   );
 
   return true;
