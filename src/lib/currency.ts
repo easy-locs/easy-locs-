@@ -45,8 +45,8 @@ export function formatPrice(amount: number, currency?: string | null): string {
   return `${amount.toFixed(2)} ${sym}`;
 }
 
-/** Alias for formatPrice — used across commerce engine. */
-export const formatMoney = formatPrice;
+/** Canonical formatMoney — re-exported from lib/format for consistency */
+export { formatMoney } from "@/lib/format";
 
 /** Format using Intl for locale-aware display. */
 export function formatPriceIntl(amount: number, currency?: string | null, locale?: string): string {
