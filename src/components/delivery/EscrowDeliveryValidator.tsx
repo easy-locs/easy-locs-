@@ -84,7 +84,7 @@ export default function EscrowDeliveryValidator({
 
   // GPS proximity check
   const checkGpsProximity = useCallback((): Promise<boolean> => {
-    return new Promise((resolve) => {
+    return new Promise(async (resolve) => {
       // If no dropoff coordinates, skip GPS check
       if (!dropoffLat || !dropoffLng) {
         setGpsStatus("ok");
