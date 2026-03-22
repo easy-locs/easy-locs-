@@ -6,7 +6,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import { Copy, Share2, Clock, Shield, Check, Loader2 } from "lucide-react";
-import { QRCodeSVG } from "qrcode.react";
+import BrandedQR from "@/components/qr/BrandedQR";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
