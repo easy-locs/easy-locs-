@@ -1,5 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-import { platformBus } from "@/lib/orchestration/platformBus";
+import { platformBus } from "@/lib/shared/platform-bus";
 
 function haversineKm(lat1: number, lng1: number, lat2: number, lng2: number) {
   const R = 6371;
@@ -78,7 +78,7 @@ export async function assignBestDriverToOrder(params: {
 
   if (error) throw error;
 
-  await platformBus.emit(
+  platformBus.emit(
     "MISSION_ACCEPTED",
     {
       orderId: params.orderId,
@@ -87,7 +87,7 @@ export async function assignBestDriverToOrder(params: {
       city: params.city ?? "Dubai",
       zone: params.zone ?? "",
     },
-    { source: "dispatchEngine:assignBestDriverToOrder" }
+    "system"
   );
 
   return best;

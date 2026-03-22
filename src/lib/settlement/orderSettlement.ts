@@ -4,7 +4,7 @@ import {
   postRefundToCustomer,
   postWalletTransaction,
 } from "@/lib/wallet/ledger";
-import { platformBus } from "@/lib/orchestration/platformBus";
+import { platformBus } from "@/lib/shared/platform-bus";
 
 export async function settleDeliveredOrder(params: {
   orderId: string;
@@ -55,7 +55,7 @@ export async function settleDeliveredOrder(params: {
 
   if (error) throw error;
 
-  await platformBus.emit(
+  platformBus.emit(
     "ORDER_SETTLED",
     {
       orderId: params.orderId,
@@ -66,7 +66,7 @@ export async function settleDeliveredOrder(params: {
       platformFee,
       currency,
     },
-    { source: "orderSettlement:settleDeliveredOrder" }
+    "system"
   );
 
   return { orderId: params.orderId, merchantNet, driverFee, platformFee, currency };
@@ -100,7 +100,7 @@ export async function refundDisputedOrder(params: {
 
   if (error) throw error;
 
-  await platformBus.emit(
+  platformBus.emit(
     "ORDER_REFUNDED",
     {
       orderId: params.orderId,
@@ -109,7 +109,7 @@ export async function refundDisputedOrder(params: {
       currency,
       reason: params.reason ?? "",
     },
-    { source: "orderSettlement:refundDisputedOrder" }
+    "system"
   );
 
   return { orderId: params.orderId, amount: params.amount, currency };

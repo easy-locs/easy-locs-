@@ -1,5 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-import { platformBus } from "@/lib/orchestration/platformBus";
+import { platformBus } from "@/lib/shared/platform-bus";
 
 const MERCHANT_NEXT: Record<string, string[]> = {
   paid: ["confirmed"],
@@ -47,26 +47,26 @@ export async function advanceMerchantOrderStatus(params: {
   if (error) throw error;
 
   if (params.nextStatus === "confirmed") {
-    await platformBus.emit(
+    platformBus.emit(
       "ORDER_CONFIRMED",
       { orderId: params.orderId },
-      { source: "merchantOrderFlow:advanceMerchantOrderStatus" }
+      "system"
     );
   }
 
   if (params.nextStatus === "ready_for_pickup") {
-    await platformBus.emit(
+    platformBus.emit(
       "ORDER_READY",
       { orderId: params.orderId, city: "Dubai" },
-      { source: "merchantOrderFlow:advanceMerchantOrderStatus" }
+      "system"
     );
   }
 
   if (params.nextStatus === "completed") {
-    await platformBus.emit(
+    platformBus.emit(
       "ORDER_DELIVERED",
       { orderId: params.orderId },
-      { source: "merchantOrderFlow:advanceMerchantOrderStatus" }
+      "system"
     );
   }
 

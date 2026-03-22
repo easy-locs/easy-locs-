@@ -1,5 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-import { platformBus } from "@/lib/orchestration/platformBus";
+import { platformBus } from "@/lib/shared/platform-bus";
 import type {
   CreateCheckoutPaymentInput,
   CapturePaymentInput,
@@ -56,7 +56,7 @@ export async function confirmWalletOrCashOrder(params: {
   );
 
   if (paymentMethodType === "wallet") {
-    await platformBus.emit(
+    platformBus.emit(
       "PAYMENT_SUCCESS",
       {
         orderId,
@@ -66,7 +66,7 @@ export async function confirmWalletOrCashOrder(params: {
         customerUserId,
         paymentMethodType,
       },
-      { source: "paymentService:confirmWalletOrCashOrder" }
+      "system"
     );
   }
 
@@ -90,7 +90,7 @@ export async function capturePayment(input: CapturePaymentInput) {
     .eq("id", input.orderId)
     .maybeSingle();
 
-  await platformBus.emit(
+  platformBus.emit(
     "PAYMENT_SUCCESS",
     {
       orderId: input.orderId,
@@ -100,7 +100,7 @@ export async function capturePayment(input: CapturePaymentInput) {
       customerUserId: order?.customer_user_id ?? null,
       paymentMethodType: "card",
     },
-    { source: "paymentService:capturePayment" }
+    "system"
   );
 
   return data;

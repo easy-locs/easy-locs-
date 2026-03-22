@@ -1,5 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-import { platformBus } from "@/lib/orchestration/platformBus";
+import { platformBus } from "@/lib/shared/platform-bus";
 
 
 export type V1CheckoutInput = {
@@ -57,7 +57,7 @@ export async function createV1OrderDraft(input: V1CheckoutInput) {
     if (itemError) throw itemError;
   }
 
-  await platformBus.emit(
+  platformBus.emit(
     "ORDER_CREATED",
     {
       orderId,
@@ -66,7 +66,7 @@ export async function createV1OrderDraft(input: V1CheckoutInput) {
       amount: subtotal,
       currency: input.currency ?? "AED",
     },
-    { source: "customerOrderFlow:createV1OrderDraft" }
+    "system"
   );
 
   return data;
@@ -92,7 +92,7 @@ export async function markV1OrderPaid(params: {
   if (error) throw error;
 
   if (params.paymentMethodType !== "cash") {
-    await platformBus.emit(
+    platformBus.emit(
       "PAYMENT_SUCCESS",
       {
         orderId: params.orderId,
@@ -102,7 +102,7 @@ export async function markV1OrderPaid(params: {
         customerUserId: params.customerUserId,
         paymentMethodType: params.paymentMethodType,
       },
-      { source: "customerOrderFlow:markV1OrderPaid" }
+      "system"
     );
   }
 
