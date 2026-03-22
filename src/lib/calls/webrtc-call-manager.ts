@@ -157,13 +157,10 @@ export class WebRtcCallManager {
   private async tryVideoWithFallback(): Promise<MediaStream> {
     // Step 1: Optimal constraints
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        audio: {
-          echoCancellation: true,
-          noiseSuppression: true,
-          autoGainControl: true,
-        },
-        video: {
+      const stream = await requestMediaStream({
+        camera: true,
+        microphone: true,
+        videoConstraints: {
           facingMode: "user",
           width: { ideal: 1280 },
           height: { ideal: 720 },
