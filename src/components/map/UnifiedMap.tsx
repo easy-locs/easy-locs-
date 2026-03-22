@@ -71,7 +71,7 @@ export default memo(function UnifiedMap({
       zoom,
       attributionControl: false,
     });
-    map.addControl(new mapboxgl.NavigationControl(), "top-right");
+    // No NavigationControl — zoom via pinch/scroll only
     mapRef.current = map;
 
     return () => { map.remove(); mapRef.current = null; };

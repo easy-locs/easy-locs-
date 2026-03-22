@@ -149,7 +149,7 @@ export function ExplorerMapInner({
       zoom: 13,
       attributionControl: false,
     });
-    map.addControl(new mapboxgl.NavigationControl({ showCompass: false }), "top-right");
+    // No NavigationControl — zoom via pinch/scroll only
     mapRef.current = map;
 
     // Force resize after load to fix container sizing issues

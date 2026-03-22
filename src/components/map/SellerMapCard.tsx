@@ -52,7 +52,7 @@ export default memo(function SellerMapCard({
       attributionControl: false,
     });
 
-    map.addControl(new mapboxgl.NavigationControl({ showCompass: false }), "top-right");
+    // No NavigationControl — zoom via pinch/scroll only
 
     // Draggable store marker
     const el = document.createElement("div");
