@@ -6,6 +6,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Camera, CameraOff, RefreshCcw, CheckCircle2, ScanLine, QrCode, Upload } from "lucide-react";
 import { Html5Qrcode } from "html5-qrcode";
+import "@/styles/qr-scan-line.css";
 import { decodeQr, resolveRoute, isExpired, type UniversalQrPayload } from "@/lib/qr-engine";
 import { playScanBeep } from "@/lib/audio/scan-beep";
 import { haptic } from "@/lib/haptics";
@@ -422,7 +423,7 @@ export default function QrScannerPage() {
               ) : (
                 <motion.div key="scanner" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="w-full flex flex-col items-center">
                   {/* ── Single Viewfinder — NO duplicate inner frame ── */}
-                  <div className="relative w-full aspect-square overflow-hidden rounded-3xl bg-black/95" style={{ maxWidth: 320 }}>
+                  <div className="relative w-full aspect-square overflow-hidden rounded-[28px] bg-black/95" style={{ maxWidth: 320 }}>
                     {/* Camera feed */}
                     <div id={REGION_ID} className="absolute inset-0 [&_video]:!object-cover [&_video]:!w-full [&_video]:!h-full [&>div]:!border-none [&>div>img]:!hidden" />
 
@@ -432,24 +433,18 @@ export default function QrScannerPage() {
                       #${REGION_ID} img[alt="Info icon"] { display: none !important; }
                     `}</style>
 
-                    {/* Single premium corner markers */}
-                    <div className="absolute inset-6 pointer-events-none z-20">
-                      <div className="absolute top-0 left-0 w-10 h-10 border-t-[3px] border-l-[3px] rounded-tl-xl" style={{ borderColor: "hsl(var(--primary))" }} />
-                      <div className="absolute top-0 right-0 w-10 h-10 border-t-[3px] border-r-[3px] rounded-tr-xl" style={{ borderColor: "hsl(var(--primary))" }} />
-                      <div className="absolute bottom-0 left-0 w-10 h-10 border-b-[3px] border-l-[3px] rounded-bl-xl" style={{ borderColor: "hsl(var(--primary))" }} />
-                      <div className="absolute bottom-0 right-0 w-10 h-10 border-b-[3px] border-r-[3px] rounded-br-xl" style={{ borderColor: "hsl(var(--primary))" }} />
-                    </div>
+                    {/* Premium white corner markers */}
+                    <div className="absolute left-0 top-0 h-10 w-10 rounded-tl-[28px] border-l-4 border-t-4 border-white z-20" />
+                    <div className="absolute right-0 top-0 h-10 w-10 rounded-tr-[28px] border-r-4 border-t-4 border-white z-20" />
+                    <div className="absolute bottom-0 left-0 h-10 w-10 rounded-bl-[28px] border-b-4 border-l-4 border-white z-20" />
+                    <div className="absolute bottom-0 right-0 h-10 w-10 rounded-br-[28px] border-b-4 border-r-4 border-white z-20" />
 
-                    {/* Animated laser line */}
+                    {/* Animated green scan line + glow */}
                     {isActive && (
-                      <div
-                        className="absolute left-8 right-8 h-[2px] pointer-events-none z-30"
-                        style={{
-                          background: "linear-gradient(90deg, transparent, hsl(var(--primary)), hsl(var(--primary)), transparent)",
-                          boxShadow: "0 0 16px hsl(var(--primary) / 0.6), 0 0 32px hsl(var(--primary) / 0.2)",
-                          animation: "qr-laser 2s ease-in-out infinite",
-                        }}
-                      />
+                      <>
+                        <div className="qr-scan-line-glow" />
+                        <div className="qr-scan-line" />
+                      </>
                     )}
 
                     {/* Vignette overlay */}
@@ -517,12 +512,7 @@ export default function QrScannerPage() {
         )}
       </div>
 
-      <style>{`
-        @keyframes qr-laser {
-          0%, 100% { top: 15%; opacity: 0.3; }
-          50% { top: 75%; opacity: 1; }
-        }
-      `}</style>
+      {/* scan line animations now in qr-scan-line.css */}
     </div>
   );
 }
