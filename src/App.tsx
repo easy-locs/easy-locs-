@@ -274,7 +274,7 @@ const TeamPermissionsPage = safeLazy(() => import("./pages/TeamPermissionsPage")
 const AIOpsChatPage = safeLazy(() => import("./pages/AIOpsChatPage"), "AIOpsChatPage");
 const FinancialReconPage = safeLazy(() => import("./pages/FinancialReconPage"), "FinancialReconPage");
 const ReconAlertsPage = safeLazy(() => import("./pages/ReconAlertsPage"), "ReconAlertsPage");
-const CallSessionPage = safeLazy(() => import("./pages/CallSessionPage"), "CallSessionPage");
+// CallSessionPage — removed (orphan, bypassed CallProvider)
 const OrbitIdentityPage = safeLazy(() => import("./pages/OrbitIdentityPage"), "OrbitIdentityPage");
 const WalletHubPage = safeLazy(() => import("./pages/WalletHubPage"), "WalletHubPage");
 const PredictiveDispatchPage = safeLazy(() => import("./pages/PredictiveDispatchPage"), "PredictiveDispatchPage");
