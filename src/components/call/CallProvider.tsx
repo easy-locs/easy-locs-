@@ -76,6 +76,7 @@ export function CallProvider({ children }: { children: ReactNode }) {
 
     if (directProfile?.id) return directProfile.id;
 
+    // Try org owner first
     const { data: ownerMembership } = await supabase
       .from("org_members")
       .select("user_id, role")
@@ -84,16 +85,33 @@ export function CallProvider({ children }: { children: ReactNode }) {
       .limit(1)
       .maybeSingle();
 
-    if (ownerMembership?.user_id) return ownerMembership.user_id;
+    if (ownerMembership?.user_id && ownerMembership.user_id !== user?.id) {
+      return ownerMembership.user_id;
+    }
 
+    // Try org.owner_user_id
     const { data: org } = await supabase
       .from("orgs")
       .select("owner_user_id")
       .eq("id", normalized)
       .maybeSingle();
 
-    if (org?.owner_user_id) return org.owner_user_id;
+    if (org?.owner_user_id && org.owner_user_id !== user?.id) {
+      return org.owner_user_id;
+    }
 
+    // Fallback: any OTHER member of the org (skip self)
+    const { data: otherMembers } = await supabase
+      .from("org_members")
+      .select("user_id")
+      .eq("org_id", normalized)
+      .neq("user_id", user?.id ?? "")
+      .limit(1)
+      .maybeSingle();
+
+    if (otherMembers?.user_id) return otherMembers.user_id;
+
+    // Last resort: any member at all
     const { data: anyMembership } = await supabase
       .from("org_members")
       .select("user_id")
@@ -102,7 +120,7 @@ export function CallProvider({ children }: { children: ReactNode }) {
       .maybeSingle();
 
     return anyMembership?.user_id || normalized;
-  }, []);
+  }, [user?.id]);
 
   useEffect(() => {
     if (!user) return;

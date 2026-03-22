@@ -42,7 +42,7 @@ export function AppInit() {
 
       await useWalletStore.getState().loadWallet({
         walletId: `wallet_${orbit.orbitId}`,
-        ownerOrbitId: orbit.orbitId,
+        ownerOrbitId: user.id,
         currency: "AED",
       });
 
