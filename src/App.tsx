@@ -310,6 +310,9 @@ const TravelFlightDetail = safeLazy(() => import("./pages/travel/TravelFlightDet
 const FoodHub = safeLazy(() => import("./pages/universe/FoodHub"), "FoodHub");
 const GroceryHub = safeLazy(() => import("./pages/universe/GroceryHub"), "GroceryHub");
 const ServicesHub = safeLazy(() => import("./pages/universe/ServicesHub"), "ServicesHub");
+const RetailHub = safeLazy(() => import("./pages/universe/RetailHub"), "RetailHub");
+const PropertyHubUniverse = safeLazy(() => import("./pages/universe/PropertyHub"), "PropertyHubUniverse");
+const DiscoverPage = safeLazy(() => import("./pages/universe/DiscoverPage"), "DiscoverPage");
 
 // Food sub-pages (Careem-style drill-down)
 const FoodTypePage = safeLazy(() => import("./pages/food/FoodTypePage"), "FoodTypePage");
