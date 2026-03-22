@@ -512,12 +512,7 @@ export default function QrScannerPage() {
         )}
       </div>
 
-      <style>{`
-        @keyframes qr-laser {
-          0%, 100% { top: 15%; opacity: 0.3; }
-          50% { top: 75%; opacity: 1; }
-        }
-      `}</style>
+      {/* scan line animations now in qr-scan-line.css */}
     </div>
   );
 }
