@@ -1,39 +1,57 @@
+/**
+ * MarketplaceCategories — Smart, customer-friendly grouping.
+ * Ordered by frequency of use: most popular first.
+ */
 export const MARKETPLACE_CATEGORIES = [
-  // Property & Home
-  { value: "cleaning", label: "Cleaning", icon: "🧹" },
-  { value: "maintenance", label: "Property Maintenance", icon: "🔧" },
-  { value: "construction", label: "Construction / Renovation", icon: "🏗️" },
-  // Transport
-  { value: "transport", label: "Transport", icon: "🚐" },
-  { value: "car_rental", label: "Car Rental", icon: "🚗" },
-  { value: "airport_transfer", label: "Airport Transfer", icon: "✈️" },
-  // Experiences
-  { value: "tours", label: "Tours & Activities", icon: "🗺️" },
-  { value: "water_sport", label: "Water Sport", icon: "🚤" },
-  { value: "spa", label: "Wellness / Spa", icon: "🧖" },
-  { value: "sports_coach", label: "Sports Coach", icon: "🏋️" },
-  // Food & Workspace
-  { value: "restaurant", label: "Restaurant", icon: "🍽️" },
-  { value: "coworking", label: "Coworking", icon: "💻" },
-  // Professional Services
-  { value: "legal", label: "Legal / Advocate", icon: "⚖️" },
-  { value: "business_services", label: "Business Services", icon: "💼" },
-  { value: "consulting", label: "Professional Consulting", icon: "📊" },
-  { value: "personal", label: "Personal Services", icon: "💆" },
-  // Events & Other
-  { value: "event", label: "Events / Tickets", icon: "🎫" },
-  // Real Estate
-  { value: "real_estate_buy", label: "Buy Property", icon: "🏠" },
-  { value: "real_estate_rent", label: "Rent", icon: "🔑" },
-  { value: "real_estate_short_stay", label: "Short Stay", icon: "🏨" },
-  { value: "real_estate_commercial", label: "Commercial", icon: "🏢" },
-  { value: "other", label: "Other", icon: "📦" },
+  // 🚗 Mobility — most searched
+  { value: "car_rental", label: "Car Rental", icon: "🚗", group: "Mobility" },
+  { value: "airport_transfer", label: "Airport Transfer", icon: "✈️", group: "Mobility" },
+  { value: "transport", label: "Transport", icon: "🚐", group: "Mobility" },
+
+  // 🏠 Property — high value
+  { value: "real_estate_buy", label: "Buy Property", icon: "🏠", group: "Property" },
+  { value: "real_estate_rent", label: "Rent", icon: "🔑", group: "Property" },
+  { value: "real_estate_short_stay", label: "Short Stay", icon: "🏨", group: "Property" },
+  { value: "real_estate_commercial", label: "Commercial", icon: "🏢", group: "Property" },
+
+  // 🍽️ Food & Lifestyle
+  { value: "restaurant", label: "Restaurant", icon: "🍽️", group: "Food & Lifestyle" },
+  { value: "spa", label: "Wellness / Spa", icon: "🧖", group: "Food & Lifestyle" },
+  { value: "personal", label: "Personal Services", icon: "💆", group: "Food & Lifestyle" },
+
+  // 🗺️ Experiences
+  { value: "tours", label: "Tours & Activities", icon: "🗺️", group: "Experiences" },
+  { value: "water_sport", label: "Water Sport", icon: "🚤", group: "Experiences" },
+  { value: "sports_coach", label: "Sports Coach", icon: "🏋️", group: "Experiences" },
+  { value: "event", label: "Events / Tickets", icon: "🎫", group: "Experiences" },
+
+  // 🏗️ Home Services
+  { value: "cleaning", label: "Cleaning", icon: "🧹", group: "Home Services" },
+  { value: "maintenance", label: "Maintenance", icon: "🔧", group: "Home Services" },
+  { value: "construction", label: "Renovation", icon: "🏗️", group: "Home Services" },
+
+  // 💼 Professional
+  { value: "coworking", label: "Coworking", icon: "💻", group: "Professional" },
+  { value: "legal", label: "Legal", icon: "⚖️", group: "Professional" },
+  { value: "business_services", label: "Business Services", icon: "💼", group: "Professional" },
+  { value: "consulting", label: "Consulting", icon: "📊", group: "Professional" },
+
+  // 📦 Other
+  { value: "other", label: "Other", icon: "📦", group: "Other" },
 ] as const;
 
 export type MarketplaceCategory = typeof MARKETPLACE_CATEGORIES[number]["value"];
 
+/** Get unique groups in display order */
+export const CATEGORY_GROUPS = [...new Set(MARKETPLACE_CATEGORIES.map(c => c.group))];
+
+/** Get categories by group */
+export function getCategoriesByGroup(group: string) {
+  return MARKETPLACE_CATEGORIES.filter(c => c.group === group);
+}
+
 export const PROVIDER_TYPES = [
-  { value: "concierge", label: "Concierge Company", icon: "🔑" },
+  { value: "concierge", label: "Concierge", icon: "🔑" },
   { value: "agency", label: "Agency", icon: "🏬" },
   { value: "freelancer", label: "Freelancer", icon: "👤" },
   { value: "company", label: "Company", icon: "🏢" },
