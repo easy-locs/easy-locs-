@@ -19284,6 +19284,7 @@ export type Database = {
           is_test: boolean
           is_verified: boolean | null
           latitude: number | null
+          launch_status: string
           live_lat: number | null
           live_lng: number | null
           live_updated_at: string | null
@@ -19348,6 +19349,7 @@ export type Database = {
           is_test?: boolean
           is_verified?: boolean | null
           latitude?: number | null
+          launch_status?: string
           live_lat?: number | null
           live_lng?: number | null
           live_updated_at?: string | null
@@ -19412,6 +19414,7 @@ export type Database = {
           is_test?: boolean
           is_verified?: boolean | null
           latitude?: number | null
+          launch_status?: string
           live_lat?: number | null
           live_lng?: number | null
           live_updated_at?: string | null
