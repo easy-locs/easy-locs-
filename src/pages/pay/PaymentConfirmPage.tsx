@@ -11,6 +11,8 @@ import { resolvePayTarget, type ResolvedTarget } from "@/lib/pay/resolvePayTarge
 import { walletTransfer } from "@/payments/wallet-hooks";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { PremiumPaymentSuccess } from "@/components/pay/PremiumPaymentSuccess";
+import { playPremiumSuccessBeep, hapticPremiumSuccess } from "@/lib/scan/feedback";
 
 export default function PaymentConfirmPage() {
   const [params] = useSearchParams();
