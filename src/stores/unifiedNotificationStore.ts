@@ -98,10 +98,10 @@ export const useUnifiedNotificationStore = create<NotificationStoreState>((set, 
 
   markAllAsRead: async (userId) => {
     await supabase
-      .from("notifications" as any)
-      .update({ read_at: new Date().toISOString() } as any)
+      .from("app_notifications")
+      .update({ read: true } as any)
       .eq("user_id", userId)
-      .is("read_at", null);
+      .eq("read", false);
     set((s) => ({
       notifications: s.notifications.map((n) =>
         n.read_at ? n : { ...n, read_at: new Date().toISOString() }
