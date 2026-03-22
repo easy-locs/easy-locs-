@@ -2,7 +2,6 @@
  * FoodHub — Food category page connected to seed data.
  */
 import { useState } from "react";
-import { useDinoPageAudit } from "@/hooks/useDinoPageAudit";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -30,7 +29,6 @@ export default function FoodHub() {
   const [activeFilter, setActiveFilter] = useState("All");
   const [activeCuisine, setActiveCuisine] = useState<string | null>(null);
   const navigate = useNavigate();
-  useDinoPageAudit({ actorType: "anonymous", pageKey: "food_home" });
 
   const { data: restaurants = [], isLoading } = useQuery({
     queryKey: ["food-hub-seed", activeCuisine],

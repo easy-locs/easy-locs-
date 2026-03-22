@@ -3,7 +3,6 @@
  * Route: /food/:type (delivery | pickup)
  */
 import { useParams, useNavigate } from "react-router-dom";
-import { useDinoPageAudit } from "@/hooks/useDinoPageAudit";
 import UniversePageShell from "@/components/universe/UniversePageShell";
 import CategoryCard from "@/components/universe/CategoryCard";
 import { UtensilsCrossed } from "lucide-react";
@@ -27,7 +26,6 @@ export default function FoodTypePage() {
   const { type } = useParams<{ type: string }>();
   const navigate = useNavigate();
   const mode = type === "pickup" ? "Pickup" : "Delivery";
-  useDinoPageAudit({ actorType: "anonymous", pageKey: "food_type" });
 
   return (
     <UniversePageShell
