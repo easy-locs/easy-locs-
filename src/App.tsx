@@ -786,6 +786,9 @@ const App = () => (
               <Route path="/food/:type/:cuisine" element={<CuisineListPage />} />
               <Route path="/grocery" element={<GroceryHub />} />
               <Route path="/services-hub" element={<ServicesHub />} />
+              <Route path="/shops" element={<RetailHub />} />
+              <Route path="/real-estate" element={<PropertyHubUniverse />} />
+              <Route path="/browse" element={<DiscoverPage />} />
 
               {/* Settings sub-pages */}
               <Route path="/settings" element={<SettingsHomePage />} />
