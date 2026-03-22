@@ -785,9 +785,9 @@ const App = () => (
               <Route path="/qr/entry/:targetCode" element={<QrEntryPage />} />
               <Route path="/claim/:token" element={<ClaimPage />} />
 
-              {/* V7 Public pillars */}
-              {/* Redirects */}
-              <Route path="/discover" element={<Navigate to="/explore" replace />} />
+              {/* V7 Public pillars — Radar is unified ecosystem */}
+              <Route path="/discover" element={<Navigate to="/radar" replace />} />
+              <Route path="/explore" element={<Navigate to="/radar" replace />} />
               <Route path="/search" element={<DiscoverPage />} />
 
               {/* Universe hubs */}
@@ -811,6 +811,7 @@ const App = () => (
               <Route path="/settings/support" element={<SettingsSupportPage />} />
               <Route path="/track/:rideRequestId" element={<TrackRidePage />} />
               <Route path="/wallet/pay/:threadId" element={<PayRidePage />} />
+              <Route path="/wallet/accounts" element={<Navigate to="/settings/wallet" replace />} />
               <Route path="/call/:threadId" element={<CallDriverPage />} />
               <Route path="/driver/payout" element={<DriverPayoutPage />} />
               <Route path="/admin/disputes" element={<AdminDisputesPage />} />
@@ -845,9 +846,8 @@ const App = () => (
               <Route path="/travel/stay/:id" element={<TravelStayDetail />} />
               <Route path="/travel/flight/:id" element={<TravelFlightDetail />} />
 
-              <Route path="/explore" element={<Explore />} />
               <Route path="/super-map" element={<SuperMapRadarPage />} />
-              <Route path="/map" element={<GlobalRadarPage />} />
+              <Route path="/map" element={<Navigate to="/radar" replace />} />
               <Route path="/radar" element={<GlobalRadarPage />} />
               <Route path="/shops" element={<ShopsPage />} />
               <Route path="/s/:slug" element={<ShopPage />} />
