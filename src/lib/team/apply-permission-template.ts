@@ -1,6 +1,6 @@
 /**
  * apply-permission-template — Stub.
  */
-export async function applyPermissionTemplate(_userId: string, _templateId: string) {
+export async function applyPermissionTemplate(..._args: any[]) {
   console.log("[permission-template] stub called");
 }
