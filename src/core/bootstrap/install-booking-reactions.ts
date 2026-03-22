@@ -11,26 +11,29 @@ export function installBookingReactions() {
   installed = true;
 
   platformBus.on("booking.payment.required", (event) => {
+    const p = event.payload as { bookingId: string; amount: number; currency: string; listingId: string };
     void (async () => {
       const walletStore = useWalletStore.getState();
       const tx = await walletStore.createTransaction({
         type: "payment",
-        amount: event.payload.amount,
-        currency: event.payload.currency as CurrencyCode,
-        reference: `booking:${event.payload.bookingId}`,
+        amount: p.amount,
+        currency: p.currency as CurrencyCode,
+        reference: `booking:${p.bookingId}`,
         status: "pending",
       });
       walletStore.markTransactionSuccess(tx.id);
-      await useBookingStore.getState().confirmBooking(event.payload.bookingId, tx.id);
+      await useBookingStore.getState().confirmBooking(p.bookingId, tx.id);
     })();
   });
 
   platformBus.on("booking.confirmation.required", (event) => {
-    void useBookingStore.getState().markPendingConfirmation(event.payload.bookingId);
+    const p = event.payload as { bookingId: string };
+    void useBookingStore.getState().markPendingConfirmation(p.bookingId);
   });
 
   platformBus.on("rent.payment.required", (event) => {
-    void usePropertyManagementStore.getState().payRent(event.payload.paymentId);
+    const p = event.payload as { paymentId: string };
+    void usePropertyManagementStore.getState().payRent(p.paymentId);
   });
 
   platformBus.on("booking.cancelled", (event) => {

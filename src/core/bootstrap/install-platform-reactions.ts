@@ -12,6 +12,7 @@ export function installPlatformReactions() {
   installBookingReactions();
 
   platformBus.on("orbit.profile.loaded", (event) => {
+    const p = event.payload as { orbitId: string; userId: string };
     const current = useOrbitStore.getState().profile;
     if (!current) return;
 
@@ -27,8 +28,8 @@ export function installPlatformReactions() {
     });
 
     void useWalletStore.getState().loadWallet({
-      walletId: `wallet_${event.payload.orbitId}`,
-      ownerOrbitId: event.payload.userId,
+      walletId: `wallet_${p.orbitId}`,
+      ownerOrbitId: p.userId,
       currency: "AED",
     });
   });
@@ -46,22 +47,27 @@ export function installPlatformReactions() {
   });
 
   platformBus.on("listing.created", (event) => {
-    console.log("[reaction] listing created", event.payload.listing.id);
+    const p = event.payload as { listing: { id: string } };
+    console.log("[reaction] listing created", p.listing.id);
   });
 
   platformBus.on("listing.published", (event) => {
-    console.log("[reaction] listing published", event.payload.listingId);
+    const p = event.payload as { listingId: string };
+    console.log("[reaction] listing published", p.listingId);
   });
 
   platformBus.on("booking.requested", (event) => {
-    console.log("[reaction] booking requested", event.payload.booking.id);
+    const p = event.payload as { booking: { id: string } };
+    console.log("[reaction] booking requested", p.booking.id);
   });
 
   platformBus.on("conversation.created", (event) => {
-    console.log("[reaction] conversation created", event.payload.conversation.id);
+    const p = event.payload as { conversation: { id: string } };
+    console.log("[reaction] conversation created", p.conversation.id);
   });
 
   platformBus.on("lease.created", (event) => {
-    console.log("[reaction] lease created", event.payload.lease.id);
+    const p = event.payload as { lease: { id: string } };
+    console.log("[reaction] lease created", p.lease.id);
   });
 }
