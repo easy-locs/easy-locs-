@@ -3,7 +3,6 @@
  * Route: /food/:type/:cuisine
  */
 import { useParams } from "react-router-dom";
-import { useDinoPageAudit } from "@/hooks/useDinoPageAudit";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import UniversePageShell from "@/components/universe/UniversePageShell";
@@ -12,7 +11,6 @@ import { UtensilsCrossed } from "lucide-react";
 
 export default function CuisineListPage() {
   const { type, cuisine } = useParams<{ type: string; cuisine: string }>();
-  useDinoPageAudit({ actorType: "anonymous", pageKey: "cuisine_list" });
 
   const { data: restaurants = [], isLoading } = useQuery({
     queryKey: ["cuisine-restaurants", cuisine],
