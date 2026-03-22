@@ -86,7 +86,7 @@ const ListingManager = ({ propertyId, propertyLabel }: ListingManagerProps) => {
     const title = form.title || propertyLabel;
     const dupCheck = await checkListingDuplicate(title, null, null, "public_listings");
     if (dupCheck.blocked) {
-      toast({ title: "Duplicate detected", description: `Similar listing "${dupCheck.existingMatch?.name}" already exists.`, variant: "destructive" });
+      toast({ title: "Duplicate detected", description: `Similar listing "${dupCheck.existingMatch?.name ?? "unknown"}" already exists.`, variant: "destructive" });
       return;
     }
 

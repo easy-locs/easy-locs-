@@ -36,15 +36,17 @@ export default memo(function RadarView({ initialType, radiusKm = 20, showMap = t
   const [viewMode, setViewMode] = useState<"map" | "list">(showMap ? "map" : "list");
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
-  const types = activeType === "all" ? undefined : [activeType];
-  const { results, userLat, userLng } = useRadarResults({ types, radiusKm, sortBy });
+  const type = activeType === "all" ? undefined : activeType;
+  const { entities: results, loading: radarLoading, location } = useRadarResults({ type, radiusKm });
+  const userLat = location?.lat ?? 25.2;
+  const userLng = location?.lng ?? 55.27;
 
   const handleSelect = useCallback((entity: GeoEntity) => {
     setSelectedId(entity.id);
   }, []);
 
   const handleOpen = useCallback((entity: GeoEntity) => {
-    navigate(entity.route_path);
+    navigate(entity.route_path || `/s/${entity.slug || entity.id}`);
   }, [navigate]);
 
   const selected = results.find(e => e.id === selectedId);
