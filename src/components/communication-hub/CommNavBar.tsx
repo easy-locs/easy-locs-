@@ -116,7 +116,7 @@ export default function CommNavBar({ active, onChange, isMobile, unreadCount = 0
         return (
           <button
             key={tab.id}
-            onClick={(e) => { e.stopPropagation(); onChange(tab.id); }}
+            onClick={(e) => { e.stopPropagation(); console.log(`CLICK ${tab.id.toUpperCase()} BUTTON`); onChange(tab.id); }}
             className="relative w-9 h-9 rounded-xl flex items-center justify-center transition-colors"
             style={{
               background: isActive ? "hsl(var(--primary) / 0.08)" : "transparent",
