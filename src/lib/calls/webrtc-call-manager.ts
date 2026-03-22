@@ -3,6 +3,7 @@ import { debugLog } from "@/lib/debug/runtime-debug-bus";
 import { safeErrorMessage } from "@/lib/debug/debug-helpers";
 import { clearFrameEncryptionKey } from "@/lib/calls/call-media-key";
 import { resetReplayGuard } from "@/lib/calls/call-replay-guard";
+import { requestMediaStream } from "@/lib/device/permissions";
 
 export interface MediaStatus {
   cameraReady: boolean;
