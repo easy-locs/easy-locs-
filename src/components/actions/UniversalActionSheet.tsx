@@ -248,11 +248,10 @@ function RequestMode() {
 
   if (requestUrl) {
     return (
-      <div className="space-y-5">
+       <div className="space-y-5">
           <div className="flex justify-center">
             <BrandedQR value={requestUrl} size={200} />
           </div>
-        </div>
 
         <div className="rounded-xl bg-muted/50 p-3 text-center">
           <p className="text-lg font-bold text-foreground">
