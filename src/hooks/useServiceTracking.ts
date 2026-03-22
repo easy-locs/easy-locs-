@@ -182,15 +182,12 @@ export function useTrackingStreamer(sessionId: string | null) {
         platformBus.emit("tracking:position_updated", { sessionId, lat, lng, eta }, "tracking");
       },
       (err) => setError(err.message),
-      { enableHighAccuracy: true, maximumAge: 2000, timeout: 10000 }
     );
   }, [sessionId, user?.id]);
 
-  const stopStreaming = useCallback(() => {
-    if (watchRef.current !== null) {
-      navigator.geolocation.clearWatch(watchRef.current);
-      watchRef.current = null;
-    }
+  const stopStreaming = useCallback(async () => {
+    const { stopWatchingPosition } = await import("@/lib/location/geolocation");
+    stopWatchingPosition();
     setStreaming(false);
   }, []);
 
