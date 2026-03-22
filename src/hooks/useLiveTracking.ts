@@ -76,15 +76,9 @@ export function useTracker(opts: UseTrackerOpts) {
       return null;
     }
 
-    // Capture origin position
-    const origin = await new Promise<{ lat: number; lng: number } | null>((resolve) => {
-      if (!("geolocation" in navigator)) { resolve(null); return; }
-      navigator.geolocation.getCurrentPosition(
-        (pos) => resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
-        () => resolve(null),
-        { enableHighAccuracy: true, timeout: 10000 }
-      );
-    });
+    // Use canonical locationStore + requestLocation instead of raw navigator.geolocation
+    const { requestLocation } = await import("@/lib/location/requestLocation");
+    const origin = await requestLocation();
 
     const insertPayload: Record<string, unknown> = {
       org_id: orgId,
