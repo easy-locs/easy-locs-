@@ -6354,6 +6354,9 @@ const translations: Record<Locale, Record<string, string>> = {
     "page.reporting.no_expenses": "Aucune dépense enregistrée pour",
     "page.reporting.property": "Bien", "page.reporting.country": "Pays", "page.reporting.revenue": "Revenus",
     ...obFr, ...pageFr,
+    "geo_enable_location": "Activer la géolocalisation",
+    "geo_enable_location_desc": "Autorisez l'accès pour des résultats proches de vous",
+    "geo_enable_btn": "Activer",
   },
   en: {
     "nav.dashboard": "Dashboard", "nav.properties": "Properties", "nav.tenants": "Tenants",
