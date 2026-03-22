@@ -174,9 +174,9 @@ export class WebRtcCallManager {
 
     // Step 2: Simple constraints
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        audio: true,
-        video: true,
+      const stream = await requestMediaStream({
+        camera: true,
+        microphone: true,
       });
       debugLog.success("call", "camera_request_success", "Simple video constraints OK");
       return stream;
