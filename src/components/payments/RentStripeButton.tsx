@@ -1,6 +1,10 @@
+/**
+ * RentStripeButton — Canonical rent payment via create-stripe-intent.
+ */
 import { useState } from "react";
-import { createCheckoutSession } from "@/lib/payments/createCheckoutSession";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 export function RentStripeButton(props: {
   rentPaymentId: string;
@@ -18,26 +22,29 @@ export function RentStripeButton(props: {
       onClick={async () => {
         setLoading(true);
         try {
-          const url = await createCheckoutSession({
-            successUrl: `${window.location.origin}/payments?rent=${props.rentPaymentId}&status=success`,
-            cancelUrl: `${window.location.origin}/payments?rent=${props.rentPaymentId}&status=cancel`,
-            lineItems: [
-              {
-                name: `Rent ${props.rentPaymentId}`,
-                amount: Math.round(props.amount * 100),
-                currency: props.currency.toLowerCase(),
-                quantity: 1,
+          const { data, error } = await supabase.functions.invoke("create-stripe-intent", {
+            body: {
+              amount: props.amount,
+              currency: props.currency.toLowerCase(),
+              metadata: {
+                rentPaymentId: props.rentPaymentId,
+                leaseId: props.leaseId,
+                flow: "rent_payment",
               },
-            ],
-            metadata: {
-              rentPaymentId: props.rentPaymentId,
-              leaseId: props.leaseId,
-              flow: "rent_payment",
             },
           });
-          window.location.href = url;
-        } catch (err) {
-          console.error("Rent checkout error:", err);
+          if (error) throw error;
+          const params = new URLSearchParams({
+            client_secret: data.clientSecret,
+            intent_id: data.paymentIntentId,
+            amount: String(props.amount),
+            currency: props.currency,
+            label: `Rent ${props.rentPaymentId}`,
+          });
+          window.location.href = `/wallet/pay-confirm?${params.toString()}`;
+        } catch (err: any) {
+          console.error("Rent payment error:", err);
+          toast.error(err?.message || "Payment failed");
         } finally {
           setLoading(false);
         }

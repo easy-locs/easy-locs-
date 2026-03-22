@@ -68,17 +68,17 @@ const Onboarding = () => {
   const { user, refreshProfile } = useAuth();
   const { toast } = useToast();
   const { t, setLocale } = useI18n();
-  const geo = useGeoDetect();
+  const { detection: geo } = useGeoDetect();
 
   // Auto-detect country from geolocation + pre-fill email
   useEffect(() => {
-    if (!country && geo.country && geo.country !== "US") {
+    if (!country && geo?.country && geo.country !== "US") {
       setCountry(geo.country);
     }
     if (user?.email && !ownerForm.email) {
       setOwnerForm(f => ({ ...f, email: user.email || "" }));
     }
-  }, [geo.country, user?.email]);
+  }, [geo?.country, user?.email]);
 
   // Load saved progress
   useEffect(() => {
