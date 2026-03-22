@@ -100,7 +100,7 @@ function mergeDetections(...sources: Partial<GeoDetection>[]): GeoDetection {
 
   return {
     country: merged.country || entry.code,
-    language: merged.language || entry.language || "en",
+    language: merged.language || entry.defaultLanguage || "en",
     currency: merged.currency || entry.currency || "AED",
     timezone: merged.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone,
     city: merged.city,
