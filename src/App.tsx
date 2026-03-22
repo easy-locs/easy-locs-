@@ -846,7 +846,7 @@ const App = () => (
               <Route path="/travel/stay/:id" element={<TravelStayDetail />} />
               <Route path="/travel/flight/:id" element={<TravelFlightDetail />} />
 
-              <Route path="/super-map" element={<SuperMapRadarPage />} />
+              <Route path="/super-map" element={<Navigate to="/radar" replace />} />
               <Route path="/map" element={<Navigate to="/radar" replace />} />
               <Route path="/radar" element={<GlobalRadarPage />} />
               <Route path="/shops" element={<ShopsPage />} />
