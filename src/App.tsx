@@ -1422,10 +1422,7 @@ const App = () => (
               {/* V2 Auth */}
               <Route path="/v2-auth" element={<V2AuthBridgeWrapper><V2AuthPage /></V2AuthBridgeWrapper>} />
 
-              {/* V2 test routes */}
-              <Route path="/v2-test" element={<V2TestPage />} />
-              <Route path="/v2-booking-test" element={<V2BookingTestPage />} />
-              <Route path="/v2-mega" element={<V2AuthBridgeWrapper><V2AuthGate fallback={<V2AuthPage />}><V2MegaPage /></V2AuthGate></V2AuthBridgeWrapper>} />
+              {/* V2 test routes — removed (Batch B purge) */}
 
               {/* V2 Suite 4 routes — auth protected */}
               <Route path="/v2-home" element={<V2AuthBridgeWrapper><V2AuthGate fallback={<V2AuthPage />}><V2HomePage /></V2AuthGate></V2AuthBridgeWrapper>} />
