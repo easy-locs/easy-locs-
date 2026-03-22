@@ -16,7 +16,7 @@ export async function executeEngineAction(action: string) {
           amount: 99,
           currency: "AED",
         },
-        { source: "central-control-panel" }
+        "system"
       );
 
     case "emit_test_payment_success":
