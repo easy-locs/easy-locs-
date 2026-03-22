@@ -331,7 +331,7 @@ export function generateAllCategorySeeds(): ShopSeed[] {
         lat: jitter(coords.lat),
         lng: jitter(coords.lng),
         logo_url: logoUrl(brand),
-        cover_url: `https://source.unsplash.com/800x400/?${encodeURIComponent(catKey + " business")}`,
+        cover_url: coverUrl(catKey, i),
         menu_items: config.menu,
       });
     }
