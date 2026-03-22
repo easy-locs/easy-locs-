@@ -7,7 +7,7 @@ const VERSION_KEY = "easylocs-app-version";
 const CHECK_INTERVAL = 5 * 60 * 1000; // 5 minutes
 
 // Build-time version stamp (Vite injects this)
-const APP_VERSION = import.meta.env.VITE_APP_VERSION || __BUILD_TIMESTAMP__;
+export const APP_VERSION = import.meta.env.VITE_APP_VERSION || __BUILD_TIMESTAMP__;
 
 declare const __BUILD_TIMESTAMP__: string;
 
@@ -50,8 +50,10 @@ export async function forceCleanRefresh(): Promise<void> {
   // Update stored version
   acknowledgeUpdate();
 
-  // Hard reload
-  window.location.reload();
+  // Hard reload with explicit cache-busting marker
+  const url = new URL(window.location.href);
+  url.searchParams.set("build", APP_VERSION);
+  window.location.replace(url.toString());
 }
 
 /**
