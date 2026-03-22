@@ -1,6 +1,7 @@
 /**
  * SmartHome — Premium super-app home with Careem-style visual category cards.
  * Dense, action-first, contextual, visually powerful.
+ * Categories scroll horizontally for unlimited discovery.
  */
 import { memo, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
@@ -98,28 +99,23 @@ function CategoryCard({ cat, index }: { cat: SmartCategory; index: number }) {
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.02 * index, duration: 0.2 }}
+      className="shrink-0"
     >
       <Link
         to={cat.route}
-        className="group flex flex-col items-center gap-1 rounded-2xl p-2 active:scale-[0.93] transition-all duration-150 border border-border/10 relative overflow-hidden"
+        className="group flex flex-col items-center gap-1 rounded-2xl p-2 active:scale-[0.93] transition-all duration-150 border border-border/10 relative overflow-hidden w-[76px]"
         style={{ background: `color-mix(in srgb, ${cat.color} 6%, hsl(var(--card)))` }}
       >
-        {/* Image container */}
-        <div className="w-16 h-16 rounded-xl flex items-center justify-center overflow-hidden relative"
+        <div className="w-14 h-14 rounded-xl flex items-center justify-center overflow-hidden relative"
           style={{ background: `color-mix(in srgb, ${cat.color} 8%, transparent)` }}
         >
           {imgSrc ? (
-            <img
-              src={imgSrc}
-              alt={cat.label}
-              className="w-14 h-14 object-contain drop-shadow-sm"
-              loading="lazy"
-            />
+            <img src={imgSrc} alt={cat.label} className="w-12 h-12 object-contain drop-shadow-sm" loading="lazy" />
           ) : (
             <span className="text-2xl">{cat.icon}</span>
           )}
         </div>
-        <p className="text-[11px] font-semibold text-foreground leading-tight text-center truncate w-full">{cat.label}</p>
+        <p className="text-[10px] font-semibold text-foreground leading-tight text-center truncate w-full">{cat.label}</p>
       </Link>
     </motion.div>
   );
@@ -174,7 +170,7 @@ function DynamicSection({ section, index }: { section: { key: string; title: str
         <h3 className="text-xs font-bold text-foreground flex items-center gap-1">
           <span>{section.icon}</span> {section.title}
         </h3>
-        <Link to="/discover" className="text-[10px] font-medium text-primary flex items-center gap-0.5 active:opacity-70">
+        <Link to="/radar" className="text-[10px] font-medium text-primary flex items-center gap-0.5 active:opacity-70">
           See all <ChevronRight className="h-3 w-3" />
         </Link>
       </div>
@@ -219,28 +215,33 @@ export default function SmartHome() {
   const greeting = useMemo(() => getTimeGreeting(timezone), [timezone]);
   const sections = useMemo(() => getSmartSections(timezone), [timezone]);
 
-  // Split categories into 2 rows of 4 for Careem-style swipeable grid
-  const row1 = categories.slice(0, 4);
-  const row2 = categories.slice(4, 8);
+  // Split into 2 rows for horizontal scrolling grid
+  const half = Math.ceil(categories.length / 2);
+  const row1 = categories.slice(0, half);
+  const row2 = categories.slice(half);
 
   return (
     <div className="space-y-0">
       <CompactHeader
         city={geo.effectiveCity || geo.manualCity}
         greeting={greeting}
-        onSearch={() => navigate("/discover")}
+        onSearch={() => navigate("/radar")}
       />
       <QuickActions />
 
-      {/* Category grid — 2 rows × 4 columns, horizontally scrollable */}
-      <div className="overflow-x-auto scrollbar-none mb-3 -mx-1 px-1">
-        <div className="grid grid-rows-2 grid-flow-col auto-cols-[minmax(80px,1fr)] gap-1.5" style={{ gridTemplateColumns: `repeat(${Math.max(row1.length, row2.length)}, minmax(80px, 1fr))` }}>
-          {row1.map((cat, i) => (
-            <CategoryCard key={cat.key} cat={cat} index={i} />
-          ))}
-          {row2.map((cat, i) => (
-            <CategoryCard key={cat.key} cat={cat} index={i + 4} />
-          ))}
+      {/* Category grid — 2 rows, horizontally scrollable with touch/swipe */}
+      <div className="overflow-x-auto scrollbar-none mb-3 -mx-1 px-1 touch-pan-x">
+        <div className="flex flex-col gap-1.5" style={{ width: "max-content" }}>
+          <div className="flex gap-1.5">
+            {row1.map((cat, i) => (
+              <CategoryCard key={cat.key} cat={cat} index={i} />
+            ))}
+          </div>
+          <div className="flex gap-1.5">
+            {row2.map((cat, i) => (
+              <CategoryCard key={cat.key} cat={cat} index={i + half} />
+            ))}
+          </div>
         </div>
       </div>
 
