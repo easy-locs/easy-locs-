@@ -38,24 +38,7 @@ import { AppInit } from "@/components/system/AppInit";
 // V2 test pages — removed (Batch B purge)
 
 // V2 Suite 4 pages
-const V2HomePage = safeLazy(() => import("./app/router/HomePage"), "V2HomePage");
-const V2OwnerDashboardPage = safeLazy(() => import("./app/router/OwnerDashboardPage"), "V2OwnerDashboardPage");
-const V2TenantDashboardPage = safeLazy(() => import("./app/router/TenantDashboardPage"), "V2TenantDashboardPage");
-const V2BookingsPage = safeLazy(() => import("./app/router/BookingsPage"), "V2BookingsPage");
-const V2PropertiesPage = safeLazy(() => import("./app/router/PropertiesPage"), "V2PropertiesPage");
-const V2SearchPage = safeLazy(() => import("./app/router/SearchPage"), "V2SearchPage");
-const V2MapPage = safeLazy(() => import("./app/router/MapPage"), "V2MapPage");
-const V2MessagesPage = safeLazy(() => import("./app/router/MessagesPage"), "V2MessagesPage");
-const V2NotificationsPage = safeLazy(() => import("./app/router/NotificationsPage"), "V2NotificationsPage");
-const V2PaymentsPage = safeLazy(() => import("./app/router/PaymentsPage"), "V2PaymentsPage");
-const V2FavoritesPage = safeLazy(() => import("./app/router/FavoritesPage"), "V2FavoritesPage");
-const V2AdminPage = safeLazy(() => import("./app/router/AdminPage"), "V2AdminPage");
-
-// V2 Auth wrappers
-import { V2AuthBridge as V2AuthBridgeWrapper } from "@/components/system/V2AuthBridge";
-import { V2AuthGate as V2AuthGateWrapper } from "@/components/system/V2AuthGate";
-import { AuthGate as V2AuthGate } from "@/components/guards/AuthGate";
-const V2AuthPage = safeLazy(() => import("./app/router/AuthPage"), "V2AuthPage");
+// V2 Suite 4 pages — all removed, routes redirect to canonical paths
 const ClaimPage = safeLazy(() => import("./pages/ClaimPage"), "ClaimPage");
 
 
