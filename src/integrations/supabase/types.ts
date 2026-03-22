@@ -2635,6 +2635,71 @@ export type Database = {
         }
         Relationships: []
       }
+      commission_splits: {
+        Row: {
+          created_at: string
+          currency: string
+          driver_amount: number
+          driver_rate: number
+          driver_user_id: string | null
+          id: string
+          order_id: string | null
+          platform_amount: number
+          platform_rate: number
+          settled_at: string | null
+          status: string
+          store_amount: number
+          store_rate: number
+          store_user_id: string | null
+          total_amount: number
+          transaction_intent_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          currency?: string
+          driver_amount?: number
+          driver_rate?: number
+          driver_user_id?: string | null
+          id?: string
+          order_id?: string | null
+          platform_amount?: number
+          platform_rate?: number
+          settled_at?: string | null
+          status?: string
+          store_amount?: number
+          store_rate?: number
+          store_user_id?: string | null
+          total_amount: number
+          transaction_intent_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          currency?: string
+          driver_amount?: number
+          driver_rate?: number
+          driver_user_id?: string | null
+          id?: string
+          order_id?: string | null
+          platform_amount?: number
+          platform_rate?: number
+          settled_at?: string | null
+          status?: string
+          store_amount?: number
+          store_rate?: number
+          store_user_id?: string | null
+          total_amount?: number
+          transaction_intent_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "commission_splits_transaction_intent_id_fkey"
+            columns: ["transaction_intent_id"]
+            isOneToOne: false
+            referencedRelation: "transaction_intents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       companies: {
         Row: {
           city: string | null
@@ -12396,6 +12461,48 @@ export type Database = {
           },
         ]
       }
+      payment_method_links: {
+        Row: {
+          brand: string | null
+          created_at: string
+          expires_at: string | null
+          id: string
+          is_default: boolean
+          label: string | null
+          last4: string | null
+          method_type: string
+          provider: string
+          provider_method_id: string
+          user_id: string
+        }
+        Insert: {
+          brand?: string | null
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          is_default?: boolean
+          label?: string | null
+          last4?: string | null
+          method_type?: string
+          provider?: string
+          provider_method_id: string
+          user_id: string
+        }
+        Update: {
+          brand?: string | null
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          is_default?: boolean
+          label?: string | null
+          last4?: string | null
+          method_type?: string
+          provider?: string
+          provider_method_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       payment_nonces: {
         Row: {
           nonce: string
@@ -12490,6 +12597,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      payment_provider_events: {
+        Row: {
+          created_at: string
+          error_message: string | null
+          event_id: string
+          event_type: string
+          id: string
+          payload_json: Json
+          processed: boolean
+          processed_at: string | null
+          provider: string
+        }
+        Insert: {
+          created_at?: string
+          error_message?: string | null
+          event_id: string
+          event_type: string
+          id?: string
+          payload_json?: Json
+          processed?: boolean
+          processed_at?: string | null
+          provider?: string
+        }
+        Update: {
+          created_at?: string
+          error_message?: string | null
+          event_id?: string
+          event_type?: string
+          id?: string
+          payload_json?: Json
+          processed?: boolean
+          processed_at?: string | null
+          provider?: string
+        }
+        Relationships: []
       }
       payment_requests: {
         Row: {
@@ -12674,6 +12817,9 @@ export type Database = {
       payout_requests: {
         Row: {
           amount: number
+          approved_at: string | null
+          approved_by: string | null
+          completed_at: string | null
           created_at: string
           currency: string
           destination_ref: string | null
@@ -12681,12 +12827,19 @@ export type Database = {
           id: string
           note: string | null
           owner_orbit_id: string
+          provider: string | null
+          provider_payout_id: string | null
+          rejected_reason: string | null
           status: string
           updated_at: string
+          user_id: string | null
           wallet_id: string
         }
         Insert: {
           amount: number
+          approved_at?: string | null
+          approved_by?: string | null
+          completed_at?: string | null
           created_at?: string
           currency: string
           destination_ref?: string | null
@@ -12694,12 +12847,19 @@ export type Database = {
           id: string
           note?: string | null
           owner_orbit_id: string
+          provider?: string | null
+          provider_payout_id?: string | null
+          rejected_reason?: string | null
           status?: string
           updated_at?: string
+          user_id?: string | null
           wallet_id: string
         }
         Update: {
           amount?: number
+          approved_at?: string | null
+          approved_by?: string | null
+          completed_at?: string | null
           created_at?: string
           currency?: string
           destination_ref?: string | null
@@ -12707,8 +12867,12 @@ export type Database = {
           id?: string
           note?: string | null
           owner_orbit_id?: string
+          provider?: string | null
+          provider_payout_id?: string | null
+          rejected_reason?: string | null
           status?: string
           updated_at?: string
+          user_id?: string | null
           wallet_id?: string
         }
         Relationships: []
@@ -13736,6 +13900,80 @@ export type Database = {
             columns: ["storefront_page_id"]
             isOneToOne: false
             referencedRelation: "storefront_pages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      qr_payment_sessions: {
+        Row: {
+          amount: number | null
+          completed_at: string | null
+          context_id: string | null
+          context_type: string
+          created_at: string
+          creator_user_id: string
+          currency: string
+          expires_at: string
+          id: string
+          nonce: string
+          order_id: string | null
+          payer_user_id: string | null
+          scanned_at: string | null
+          session_token: string
+          status: string
+          store_id: string | null
+          table_number: string | null
+          terminal_id: string | null
+          transaction_intent_id: string | null
+        }
+        Insert: {
+          amount?: number | null
+          completed_at?: string | null
+          context_id?: string | null
+          context_type?: string
+          created_at?: string
+          creator_user_id: string
+          currency?: string
+          expires_at: string
+          id?: string
+          nonce: string
+          order_id?: string | null
+          payer_user_id?: string | null
+          scanned_at?: string | null
+          session_token: string
+          status?: string
+          store_id?: string | null
+          table_number?: string | null
+          terminal_id?: string | null
+          transaction_intent_id?: string | null
+        }
+        Update: {
+          amount?: number | null
+          completed_at?: string | null
+          context_id?: string | null
+          context_type?: string
+          created_at?: string
+          creator_user_id?: string
+          currency?: string
+          expires_at?: string
+          id?: string
+          nonce?: string
+          order_id?: string | null
+          payer_user_id?: string | null
+          scanned_at?: string | null
+          session_token?: string
+          status?: string
+          store_id?: string | null
+          table_number?: string | null
+          terminal_id?: string | null
+          transaction_intent_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "qr_payment_sessions_transaction_intent_id_fkey"
+            columns: ["transaction_intent_id"]
+            isOneToOne: false
+            referencedRelation: "transaction_intents"
             referencedColumns: ["id"]
           },
         ]
@@ -16032,6 +16270,57 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      settlement_records: {
+        Row: {
+          amount: number
+          created_at: string
+          currency: string
+          id: string
+          metadata_json: Json | null
+          period_end: string
+          period_start: string
+          provider: string
+          provider_payout_id: string | null
+          recipient_type: string
+          recipient_user_id: string
+          settled_at: string | null
+          status: string
+          transaction_count: number
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          currency?: string
+          id?: string
+          metadata_json?: Json | null
+          period_end: string
+          period_start: string
+          provider?: string
+          provider_payout_id?: string | null
+          recipient_type?: string
+          recipient_user_id: string
+          settled_at?: string | null
+          status?: string
+          transaction_count?: number
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          metadata_json?: Json | null
+          period_end?: string
+          period_start?: string
+          provider?: string
+          provider_payout_id?: string | null
+          recipient_type?: string
+          recipient_user_id?: string
+          settled_at?: string | null
+          status?: string
+          transaction_count?: number
+        }
+        Relationships: []
       }
       share_links: {
         Row: {
@@ -22103,6 +22392,57 @@ export type Database = {
           },
         ]
       }
+      topup_requests: {
+        Row: {
+          amount: number
+          completed_at: string | null
+          created_at: string
+          currency: string
+          error_message: string | null
+          id: string
+          method: string | null
+          provider: string
+          provider_intent_id: string | null
+          provider_session_id: string | null
+          status: string
+          updated_at: string
+          user_id: string
+          wallet_id: string
+        }
+        Insert: {
+          amount: number
+          completed_at?: string | null
+          created_at?: string
+          currency?: string
+          error_message?: string | null
+          id?: string
+          method?: string | null
+          provider?: string
+          provider_intent_id?: string | null
+          provider_session_id?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+          wallet_id: string
+        }
+        Update: {
+          amount?: number
+          completed_at?: string | null
+          created_at?: string
+          currency?: string
+          error_message?: string | null
+          id?: string
+          method?: string | null
+          provider?: string
+          provider_intent_id?: string | null
+          provider_session_id?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+          wallet_id?: string
+        }
+        Relationships: []
+      }
       tracking_positions: {
         Row: {
           accuracy_m: number | null
@@ -22227,6 +22567,63 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      transaction_intents: {
+        Row: {
+          amount: number
+          context_id: string | null
+          context_type: string | null
+          created_at: string
+          currency: string
+          error_message: string | null
+          expires_at: string | null
+          id: string
+          idempotency_key: string
+          intent_type: string
+          metadata_json: Json | null
+          provider: string
+          provider_intent_id: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          context_id?: string | null
+          context_type?: string | null
+          created_at?: string
+          currency?: string
+          error_message?: string | null
+          expires_at?: string | null
+          id?: string
+          idempotency_key: string
+          intent_type?: string
+          metadata_json?: Json | null
+          provider?: string
+          provider_intent_id?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          context_id?: string | null
+          context_type?: string | null
+          created_at?: string
+          currency?: string
+          error_message?: string | null
+          expires_at?: string | null
+          id?: string
+          idempotency_key?: string
+          intent_type?: string
+          metadata_json?: Json | null
+          provider?: string
+          provider_intent_id?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       transaction_journal: {
         Row: {

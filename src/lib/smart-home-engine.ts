@@ -9,7 +9,8 @@ export type CategoryKey = "food" | "grocery" | "shops" | "services" | "taxi" | "
 export interface SmartCategory {
   key: CategoryKey;
   label: string;
-  icon: string; // emoji
+  icon: string; // emoji fallback
+  image?: string; // image module path key
   subtitle?: string;
   color: string; // hsl token
   size: "normal" | "wide" | "tall";
@@ -43,23 +44,23 @@ export function getTimeSlot(timezone?: string): TimeSlot {
 
 /* ═══ All Categories ═══ */
 const ALL_CATEGORIES: Record<CategoryKey, SmartCategory> = {
-  food:      { key: "food",      label: "Food",        icon: "🍕", color: "hsl(var(--warning))",  size: "wide",   route: "/discover?rail=food",     subtitle: "Order now" },
-  grocery:   { key: "grocery",   label: "Grocery",     icon: "🛒", color: "hsl(var(--success))",  size: "normal", route: "/discover?rail=grocery",   subtitle: "Fresh & fast" },
-  shops:     { key: "shops",     label: "Shops",       icon: "🏪", color: "hsl(var(--primary))",  size: "normal", route: "/shops",                   subtitle: "Browse stores" },
-  services:  { key: "services",  label: "Services",    icon: "🔧", color: "hsl(var(--info))",     size: "normal", route: "/discover?rail=services",  subtitle: "Near you" },
-  taxi:      { key: "taxi",      label: "Taxi",        icon: "🚕", color: "hsl(var(--accent))",   size: "normal", route: "/ride",                    subtitle: "Book a ride" },
-  delivery:  { key: "delivery",  label: "Delivery",    icon: "🚚", color: "hsl(var(--info))",     size: "normal", route: "/send",                    subtitle: "Send & track" },
-  property:  { key: "property",  label: "Property",    icon: "🏠", color: "hsl(var(--primary))",  size: "normal", route: "/property-hub",            subtitle: "Rent & buy" },
-  wallet:    { key: "wallet",    label: "Wallet",      icon: "💳", color: "hsl(var(--success))",  size: "normal", route: "/dashboard/wallet",        subtitle: "Pay & send" },
-  coffee:    { key: "coffee",    label: "Coffee",      icon: "☕", color: "hsl(var(--warning))",  size: "normal", route: "/discover?rail=coffee",    subtitle: "Wake up" },
-  bakery:    { key: "bakery",    label: "Bakery",      icon: "🥐", color: "hsl(var(--warning))",  size: "normal", route: "/discover?rail=bakery" },
-  dineout:   { key: "dineout",   label: "Dine Out",    icon: "🍽️", color: "hsl(var(--accent))",   size: "wide",   route: "/discover?rail=dineout",   subtitle: "Restaurants" },
-  beauty:    { key: "beauty",    label: "Beauty",      icon: "💅", color: "hsl(var(--accent))",   size: "normal", route: "/discover?rail=beauty" },
-  concierge: { key: "concierge", label: "Concierge",   icon: "🎯", color: "hsl(var(--primary))",  size: "normal", route: "/discover?rail=concierge" },
-  mobility:  { key: "mobility",  label: "Rides",       icon: "🏍️", color: "hsl(var(--info))",     size: "normal", route: "/ride" },
-  rentals:   { key: "rentals",   label: "Rentals",     icon: "🔑", color: "hsl(var(--primary))",  size: "normal", route: "/property-hub",  subtitle: "Long-term" },
-  stays:     { key: "stays",     label: "Stays",       icon: "🏨", color: "hsl(var(--accent))",   size: "normal", route: "/travel/stays",    subtitle: "Short-term" },
-  travel:    { key: "travel",    label: "Travel",      icon: "✈️", color: "hsl(var(--info))",     size: "wide",   route: "/travel",          subtitle: "Flights, hotels & stays" },
+  food:      { key: "food",      label: "Food",        icon: "🍕", image: "food",      color: "hsl(var(--warning))",  size: "normal", route: "/discover?rail=food",     subtitle: "Order now" },
+  grocery:   { key: "grocery",   label: "Grocery",     icon: "🛒", image: "grocery",   color: "hsl(var(--success))",  size: "normal", route: "/discover?rail=grocery",   subtitle: "Fresh & fast" },
+  shops:     { key: "shops",     label: "Shops",       icon: "🏪", image: "shops",     color: "hsl(var(--primary))",  size: "normal", route: "/shops",                   subtitle: "Browse stores" },
+  services:  { key: "services",  label: "Services",    icon: "🔧", image: "services",  color: "hsl(var(--info))",     size: "normal", route: "/discover?rail=services",  subtitle: "Near you" },
+  taxi:      { key: "taxi",      label: "Taxi",        icon: "🚕", image: "taxi",      color: "hsl(var(--accent))",   size: "normal", route: "/ride",                    subtitle: "Book a ride" },
+  delivery:  { key: "delivery",  label: "Delivery",    icon: "🚚", image: "delivery",  color: "hsl(var(--info))",     size: "normal", route: "/send",                    subtitle: "Send & track" },
+  property:  { key: "property",  label: "Property",    icon: "🏠", image: "property",  color: "hsl(var(--primary))",  size: "normal", route: "/property-hub",            subtitle: "Rent & buy" },
+  wallet:    { key: "wallet",    label: "Pay",         icon: "💳", image: "wallet",    color: "hsl(var(--success))",  size: "normal", route: "/dashboard/wallet",        subtitle: "Pay & send" },
+  coffee:    { key: "coffee",    label: "Coffee",      icon: "☕", image: "coffee",    color: "hsl(var(--warning))",  size: "normal", route: "/discover?rail=coffee",    subtitle: "Wake up" },
+  bakery:    { key: "bakery",    label: "Bakery",      icon: "🥐", image: "bakery",    color: "hsl(var(--warning))",  size: "normal", route: "/discover?rail=bakery" },
+  dineout:   { key: "dineout",   label: "Dine Out",    icon: "🍽️", image: "dineout",   color: "hsl(var(--accent))",   size: "normal", route: "/discover?rail=dineout",   subtitle: "Restaurants" },
+  beauty:    { key: "beauty",    label: "Beauty",      icon: "💅", image: "beauty",    color: "hsl(var(--accent))",   size: "normal", route: "/discover?rail=beauty" },
+  concierge: { key: "concierge", label: "Concierge",   icon: "🎯", image: "concierge", color: "hsl(var(--primary))",  size: "normal", route: "/discover?rail=concierge" },
+  mobility:  { key: "mobility",  label: "Rides",       icon: "🏍️", image: "mobility",  color: "hsl(var(--info))",     size: "normal", route: "/ride" },
+  rentals:   { key: "rentals",   label: "Rentals",     icon: "🔑", image: "rentals",   color: "hsl(var(--primary))",  size: "normal", route: "/property-hub",  subtitle: "Long-term" },
+  stays:     { key: "stays",     label: "Stays",       icon: "🏨", image: "stays",     color: "hsl(var(--accent))",   size: "normal", route: "/travel/stays",    subtitle: "Short-term" },
+  travel:    { key: "travel",    label: "Travel",      icon: "✈️", image: "travel",    color: "hsl(var(--info))",     size: "normal", route: "/travel",          subtitle: "Flights & hotels" },
 };
 
 /* ═══ Time-based priority ═══ */
