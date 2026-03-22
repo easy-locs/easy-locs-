@@ -355,7 +355,7 @@ export default function SmartHome() {
         </div>
       </div>
 
-      <SmartHeroCard timezone={timezone} />
+      <SmartHeroCard timezone={timezone} city={city} />
       {SECTION_DEFS.map((sec, i) => (
         <DynamicSection key={sec.key} section={sec} shops={sections[sec.key as keyof HomeSections]} index={i} />
       ))}
