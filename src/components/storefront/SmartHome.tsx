@@ -187,30 +187,7 @@ function DynamicSection({ section, index }: { section: { key: string; title: str
   );
 }
 
-/* ═══ Utility Row ═══ */
-const UtilityRow = memo(() => (
-  <div className="mb-2">
-    <h3 className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/50 mb-1.5">Business & Tools</h3>
-    <div className="grid grid-cols-4 gap-1.5">
-      {[
-        { icon: "🏠", label: "Property", to: "/property-hub" },
-        { icon: "📊", label: "Analytics", to: "/dashboard/seller" },
-        { icon: "🏪", label: "My Shop", to: "/dashboard/my-shop" },
-        { icon: "🤖", label: "AI", to: "/dashboard/assistant" },
-      ].map(item => (
-        <Link
-          key={item.label}
-          to={item.to}
-          className="flex flex-col items-center gap-0.5 p-2 rounded-xl bg-card/30 border border-border/10 active:scale-95 transition-transform"
-        >
-          <span className="text-base">{item.icon}</span>
-          <span className="text-[9px] font-medium text-muted-foreground">{item.label}</span>
-        </Link>
-      ))}
-    </div>
-  </div>
-));
-
+/* UtilityRow removed — business tools live in Me/Settings only */
 /* ═══ Main Component ═══ */
 export default function SmartHome() {
   const navigate = useNavigate();
