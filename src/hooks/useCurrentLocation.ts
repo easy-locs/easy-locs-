@@ -84,13 +84,9 @@ export function useCurrentLocation(opts?: { watch?: boolean }) {
             store().setError(null);
           },
           (geoErr) => {
-            console.error("[useCurrentLocation] GPS watch error", geoErr);
-            // KEY FIX: Only set denied if NO valid position exists
+            // Silent — only update permission state, no console spam
             const current = store().currentLocation;
-            if (current && current.accuracy < 5000) {
-              console.log("[useCurrentLocation] watch error ignored — valid position exists");
-              return;
-            }
+            if (current && current.accuracy < 5000) return;
             if (geoErr?.code === 1) store().setPermissionState("denied");
           },
         );
