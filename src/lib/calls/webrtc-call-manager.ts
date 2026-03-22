@@ -188,13 +188,8 @@ export class WebRtcCallManager {
     setMediaStatus({ fallbackActive: true, error: "Camera unavailable, continuing with audio only" });
     debugLog.warn("call", "camera_request_fallback", "Audio-only fallback active");
 
-    return navigator.mediaDevices.getUserMedia({
-      audio: {
-        echoCancellation: true,
-        noiseSuppression: true,
-        autoGainControl: true,
-      },
-      video: false,
+    return requestMediaStream({
+      microphone: true,
     });
   }
 
