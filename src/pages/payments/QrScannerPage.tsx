@@ -15,6 +15,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { QrResolvedCard } from "@/components/qr/QrResolvedCard";
 import { UserProfileQr } from "@/components/qr/UniversalQrWidgets";
 import { toast } from "sonner";
+import { requestMediaStream } from "@/lib/device/permissions";
 
 type ScanState = "idle" | "starting" | "scanning" | "paying" | "paid" | "stopped" | "error" | "resolved";
 type TabMode = "scan" | "myqr";
