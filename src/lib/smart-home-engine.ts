@@ -109,7 +109,7 @@ const HERO_BY_TIME: Record<TimeSlot, SmartHero> = {
     subtitle: "Shops, services & deals around you",
     emoji: "🏪",
     cta: "Discover",
-    route: "/discover",
+    route: "/radar",
     gradient: "linear-gradient(135deg, hsl(200 80% 50%), hsl(220 85% 55%))",
   },
   dinner: {
