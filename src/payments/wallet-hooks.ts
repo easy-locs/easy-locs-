@@ -49,8 +49,8 @@ export function useWalletBalance() {
       .on("postgres_changes", {
         event: "*",
         schema: "public",
-        table: "wallet_accounts",
-        filter: `owner_user_id=eq.${user.id}`,
+        table: "wallet_balances_v2",
+        filter: `user_id=eq.${user.id}`,
       }, () => load())
       .subscribe();
     return () => { supabase.removeChannel(channel); };

@@ -26,15 +26,15 @@ export default function WalletRequestPage() {
       const { error } = await (supabase as any)
         .from("unified_wallet_transactions")
         .insert({
-          sender_id: null,
+          sender_id: user.id,
           recipient_id: user.id,
           amount: numAmount,
           currency: "AED",
           context_type: "request",
           title: note.trim() || "Payment Request",
-          subtitle: `From ${targetEmail}`,
+          subtitle: `Request to ${targetEmail}`,
           status: "pending",
-          metadata: { requested_from_email: targetEmail },
+          metadata: { requested_from_email: targetEmail, is_request: true },
         });
       if (error) throw error;
       toast.success("Request sent");
