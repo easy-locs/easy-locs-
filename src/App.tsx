@@ -435,6 +435,8 @@ const AdminMerchantHealthPage = safeLazy(() => import("./pages/admin/AdminMercha
 const WalletTopUpPage = safeLazy(() => import("./pages/wallet/WalletTopUpPage"), "WalletTopUpPage");
 const WalletTransferPage = safeLazy(() => import("./pages/wallet/WalletTransferPage"), "WalletTransferPage");
 const WalletRequestPage = safeLazy(() => import("./pages/wallet/WalletRequestPage"), "WalletRequestPage");
+const PaymentLinkResolverPage = safeLazy(() => import("./pages/pay/PaymentLinkResolverPage"), "PaymentLinkResolverPage");
+const PaymentConfirmPage = safeLazy(() => import("./pages/pay/PaymentConfirmPage"), "PaymentConfirmPage");
 const OrderRefundRequestPage = safeLazy(() => import("./pages/orders/OrderRefundRequestPage"), "OrderRefundRequestPage");
 const MerchantPromoBannerEditorPage = safeLazy(() => import("./pages/merchant/MerchantPromoBannerEditorPage"), "MerchantPromoBannerEditorPage");
 const AdminDriverMonitorPage = safeLazy(() => import("./pages/admin/AdminDriverMonitorPage"), "AdminDriverMonitorPage");
@@ -814,6 +816,8 @@ const App = () => (
               <Route path="/pay/:payId" element={<PayPage />} />
               <Route path="/pay/request/:requestId" element={<PayRequestPage />} />
               <Route path="/pay/scan" element={<QrScannerPage />} />
+              <Route path="/pay/link-resolver" element={<PaymentLinkResolverPage />} />
+              <Route path="/pay/confirm" element={<PaymentConfirmPage />} />
               <Route path="/pay/success" element={<GuestPaymentSuccess />} />
               <Route path="/qr/pay/:code" element={<QrPayResolver />} />
               <Route path="/qr/:code" element={<QrResolvePage />} />
