@@ -7,7 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Camera, CameraOff, RefreshCcw, CheckCircle2, ScanLine, QrCode, Upload } from "lucide-react";
 import { Html5Qrcode } from "html5-qrcode";
 import { decodeQr, resolveRoute, isExpired, type UniversalQrPayload } from "@/lib/qr-engine";
-import { playScanBeep } from "@/lib/calls/call-ringtone";
+import { playScanBeep } from "@/lib/audio/scan-beep";
 import { haptic } from "@/lib/haptics";
 import { resolvePayTarget, type ResolvedPayTarget } from "@/lib/wallet/resolvePayTarget";
 import { supabase } from "@/integrations/supabase/client";
