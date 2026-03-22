@@ -27,7 +27,7 @@ export async function placeOrderWithRealPayment(params: {
       paymentMethodType: "wallet",
     });
 
-    await platformBus.emit(
+    platformBus.emit(
       "ORDER_CREATED",
       {
         orderId: params.orderId,
@@ -36,7 +36,7 @@ export async function placeOrderWithRealPayment(params: {
         totalAmount: params.total,
         currency: params.currency,
       },
-      { source: "checkout:wallet" }
+      "system"
     );
 
     return { mode: "wallet" as const, done: true };
