@@ -65,5 +65,5 @@ export async function autoCreateStorefront(params: {
     .update({ shop_id: shop.id } as any)
     .eq("id", params.merchantProfileId);
 
-  return { shopId: shop.id, slug: shop.public_slug };
+  return { shopId: shop.id, slug: shop.slug };
 }
