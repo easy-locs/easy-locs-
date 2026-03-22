@@ -201,7 +201,7 @@ export default function SuperAppHome() {
     { icon: ShoppingBag, label: "Orders", to: "/my-orders", color: "hsl(var(--warning))", badge: engine.pendingOrders },
     { icon: Truck, label: "Delivery", to: "/dashboard/driver", color: "hsl(var(--info))" },
     { icon: Scan, label: "POS", to: "/pos", color: "hsl(var(--accent))" },
-    { icon: MapPin, label: "Nearby", to: "/discover?rail=nearby", color: "hsl(var(--hud-cyan))" },
+    { icon: MapPin, label: "Nearby", to: "/radar", color: "hsl(var(--hud-cyan))" },
     { icon: Building2, label: "Property", to: "/property-hub", color: "hsl(var(--primary))" },
   ];
 
