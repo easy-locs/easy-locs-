@@ -56,7 +56,11 @@ export function useWalletBalance() {
     return () => { supabase.removeChannel(channel); };
   }, [user?.id, load]);
 
-  return { balance, currency, loading, accountId, reload: load };
+  const optimisticAdjust = useCallback((delta: number) => {
+    setBalance((prev) => prev + delta);
+  }, []);
+
+  return { balance, currency, loading, accountId, reload: load, optimisticAdjust };
 }
 
 /* ── Transactions hook (reads unified_wallet_transactions) ── */
