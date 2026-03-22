@@ -247,6 +247,7 @@ export default function SmartHome() {
         greeting={greeting}
         onSearch={() => navigate("/radar")}
       />
+      <GeoForcePrompt />
       <QuickActions />
 
       {/* Category grid — 2 rows, horizontally scrollable with touch/swipe */}
