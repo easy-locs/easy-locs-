@@ -30,6 +30,10 @@ const TARGET_ROUTES: Record<TargetType, { landlord: string; tenant?: string }> =
   deal:                { landlord: "/dashboard/communication" },
   offer:               { landlord: "/dashboard/communication" },
   counter_offer:       { landlord: "/dashboard/communication" },
+  // Orders / Commerce
+  order:               { landlord: "/merchant/orders",           tenant: "/my-orders" },
+  delivery:            { landlord: "/merchant/orders",           tenant: "/my-orders" },
+  storefront_order:    { landlord: "/merchant/orders",           tenant: "/my-orders" },
   // General
   message:             { landlord: "/dashboard/communication",   tenant: "/tenant/messages" },
 };
