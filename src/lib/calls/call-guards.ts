@@ -1,6 +1,7 @@
 /**
  * Call Guards — Browser capability checks before starting calls.
  */
+import { probeMediaAccess } from "@/lib/device/permissions";
 
 /** Synchronous check — throws if WebRTC basics are missing. */
 export function assertCallReady(params?: { video?: boolean }): true {
@@ -19,14 +20,10 @@ export function assertCallReady(params?: { video?: boolean }): true {
 /** Async check — actually requests mic/camera to confirm permissions. */
 export async function assertMediaSupport(params?: { video?: boolean }): Promise<true> {
   assertCallReady(params);
-  try {
-    const stream = await navigator.mediaDevices.getUserMedia({
-      audio: true,
-      video: !!params?.video,
-    });
-    stream.getTracks().forEach((t) => t.stop());
-    return true;
-  } catch (e: any) {
-    throw new Error(e?.message ?? "Unable to access microphone/camera");
-  }
+  await probeMediaAccess({
+    camera: !!params?.video,
+    microphone: true,
+    videoConstraints: params?.video ? { facingMode: "user" } : undefined,
+  });
+  return true;
 }
