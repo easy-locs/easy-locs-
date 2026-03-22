@@ -197,14 +197,14 @@ function DynamicSection({ section, shops, index }: { section: { key: string; tit
           See all <ChevronRight className="h-3 w-3" />
         </Link>
       </div>
-      <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
+      <div className="flex gap-2.5 overflow-x-auto pb-1 scrollbar-none">
         {shops.map((shop) => (
           <Link
             key={shop.id}
             to={`/shop/${shop.slug}`}
-            className="shrink-0 w-36 rounded-xl border border-border/15 bg-card/50 overflow-hidden active:scale-[0.96] transition-transform"
+            className="shrink-0 w-[140px] rounded-xl border border-border/15 bg-card/50 overflow-hidden active:scale-[0.96] transition-transform"
           >
-            <div className="h-16 bg-muted/10 flex items-center justify-center relative overflow-hidden">
+            <div className="h-[88px] bg-muted/10 flex items-center justify-center relative overflow-hidden">
               {shop.logo_url ? (
                 <img src={shop.logo_url} alt={shop.name} className="w-full h-full object-cover" loading="lazy" />
               ) : (
