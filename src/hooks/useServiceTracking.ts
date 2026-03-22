@@ -97,8 +97,19 @@ export function useTrackingStreamer(sessionId: string | null) {
   const PUSH_INTERVAL_MS = 3000; // push every 3s max
 
   const startStreaming = useCallback(async () => {
-    if (!sessionId || !user?.id || !navigator.geolocation) {
-      setError("Geolocation not available");
+    if (!sessionId || !user?.id) {
+      setError("Session or user not available");
+      return;
+    }
+
+    // Use canonical geo pipeline
+    const { watchCurrentPosition } = await import("@/lib/location/geolocation");
+    const { requestLocation } = await import("@/lib/location/requestLocation");
+
+    // Force a fresh GPS fix first
+    const initialPos = await requestLocation();
+    if (!initialPos) {
+      setError("Location unavailable — please enable GPS");
       return;
     }
 
@@ -110,13 +121,15 @@ export function useTrackingStreamer(sessionId: string | null) {
 
     setStreaming(true);
 
-    watchRef.current = navigator.geolocation.watchPosition(
-      async (pos) => {
+    watchCurrentPosition(
+      async (geoResult) => {
         const now = Date.now();
         if (now - lastPushRef.current < PUSH_INTERVAL_MS) return;
         lastPushRef.current = now;
 
-        const { latitude: lat, longitude: lng, speed, heading, accuracy } = pos.coords;
+        const { lat, lng, accuracy } = geoResult;
+        const speed: number | null = null;
+        const heading: number | null = null;
 
         // Get destination for ETA
         const { data: sess } = await supabase
