@@ -80,7 +80,8 @@ export function installOrchestrationEngine() {
   installed = true;
 
   // ── ORDER_CREATED ──
-  platformBus.on<OrderCreatedPayload>("ORDER_CREATED", async (payload) => {
+  platformBus.on("ORDER_CREATED", async (event) => {
+    const payload = event.payload as OrderCreatedPayload;
     await createNotification({
       actorType: "pro",
       actorId: payload.merchantId,
