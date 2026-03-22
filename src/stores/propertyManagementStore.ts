@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { platformBus } from "@/app/events/platform-bus";
+import { platformBus } from "@/lib/shared/platform-bus";
 import type {
   PropertyUnitManagement,
   LeaseRecord,
@@ -83,10 +83,7 @@ export const usePropertyManagementStore = create<PropertyManagementStore>((set, 
       units: [unit, ...state.units],
     }));
 
-    platformBus.emit({
-      type: "property.unit.created",
-      payload: { unit },
-    });
+    platformBus.emit("property.unit.created", { unit }, "pm");
 
     return unit;
   },
@@ -145,10 +142,7 @@ export const usePropertyManagementStore = create<PropertyManagementStore>((set, 
       },
     });
 
-    platformBus.emit({
-      type: "lease.created",
-      payload: { lease },
-    });
+    platformBus.emit("lease.created", { lease }, "pm");
 
     return lease;
   },
@@ -179,20 +173,13 @@ export const usePropertyManagementStore = create<PropertyManagementStore>((set, 
       rentPayments: [payment, ...state.rentPayments],
     }));
 
-    platformBus.emit({
-      type: "rent.payment.created",
-      payload: { payment },
-    });
-
-    platformBus.emit({
-      type: "rent.payment.required",
-      payload: {
-        paymentId: payment.id,
-        amount: payment.amount,
-        currency: payment.currency,
-        leaseId: payment.leaseId,
-      },
-    });
+    platformBus.emit("rent.payment.created", { payment }, "pm");
+    platformBus.emit("rent.payment.required", {
+      paymentId: payment.id,
+      amount: payment.amount,
+      currency: payment.currency,
+      leaseId: payment.leaseId,
+    }, "pm");
 
     return payment;
   },
@@ -227,13 +214,10 @@ export const usePropertyManagementStore = create<PropertyManagementStore>((set, 
       ),
     }));
 
-    platformBus.emit({
-      type: "rent.payment.paid",
-      payload: {
-        paymentId,
-        transactionId: tx.id,
-      },
-    });
+    platformBus.emit("rent.payment.paid", {
+      paymentId,
+      transactionId: tx.id,
+    }, "pm");
   },
 
   getUnitById: (unitId) => {
