@@ -61,6 +61,7 @@ export function useCurrentLocation(opts?: { watch?: boolean }) {
           // Keep current good state, don't touch permission/fallback/error
         } else if (err?.code === 1) {
           store().setPermissionState("denied");
+          platformBus.emit("geo.permission.changed", { state: "denied" }, "system");
           store().setIsFallback(true);
           if (!existing) {
             store().setCurrentLocation(store().lastKnownLocation || DUBAI_FALLBACK);
