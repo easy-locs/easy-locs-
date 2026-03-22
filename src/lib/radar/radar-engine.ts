@@ -119,3 +119,40 @@ export function selectBestDriver(drivers: DriverWithDistance[]): DriverWithDista
       return scoreB - scoreA;
     })[0] || null;
 }
+
+// ── Aliases for migration from duplicate modules ──
+
+/** Alias: same as haversine, for consumers that used haversineKm */
+export const haversineKm = haversine;
+
+/** Radius filter presets (migrated from geo-distance.ts) */
+export const RADIUS_OPTIONS = [
+  { value: "5", label: "5 km", km: 5 },
+  { value: "10", label: "10 km", km: 10 },
+  { value: "25", label: "25 km", km: 25 },
+  { value: "50", label: "50 km", km: 50 },
+  { value: "city", label: "City", km: null },
+  { value: "country", label: "Country", km: null },
+  { value: "worldwide", label: "Worldwide", km: null },
+] as const;
+
+export type RadiusValue = typeof RADIUS_OPTIONS[number]["value"];
+
+/** Filter entities within radius (migrated from location/radar.ts) */
+export function filterByRadius<T extends { lat: number; lng: number }>(
+  entities: T[],
+  center: { lat: number; lng: number },
+  radiusKm: number,
+): T[] {
+  return entities.filter((e) => haversine(center.lat, center.lng, e.lat, e.lng) <= radiusKm);
+}
+
+/** Sort entities by distance (migrated from location/radar.ts) */
+export function sortByDistance<T extends { lat: number; lng: number }>(
+  entities: T[],
+  center: { lat: number; lng: number },
+): (T & { _distKm: number })[] {
+  return entities
+    .map((e) => ({ ...e, _distKm: haversine(center.lat, center.lng, e.lat, e.lng) }))
+    .sort((a, b) => a._distKm - b._distKm);
+}

@@ -3,10 +3,28 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
-  createSavedAddress,
-  listSavedAddresses,
-  setDefaultAddress,
-} from "@/lib/address/addressEngine";
+  saveAddress as createSavedAddressRaw,
+  getSavedAddresses as listSavedAddressesRaw,
+  setDefaultAddress as setDefaultAddressRaw,
+} from "@/lib/address/address-engine";
+
+// Thin adapters to match the old addressEngine API shape
+async function listSavedAddresses(userId: string) {
+  // address-engine resolves userId internally from auth
+  return getSavedAddressesForCheckout();
+}
+async function getSavedAddressesForCheckout() {
+  const { getSavedAddresses } = await import("@/lib/address/address-engine");
+  const addrs = await getSavedAddresses();
+  return addrs.map(a => ({
+    id: a.id ?? crypto.randomUUID(),
+    label: a.label,
+    line1: a.fullAddress,
+    city: a.city,
+    area: a.area ?? null,
+    is_default: a.source === "default",
+  }));
+}
 
 export interface CheckoutAddressValue {
   id: string;
