@@ -3,13 +3,14 @@
  * Dense, action-first, contextual, visually powerful.
  * Categories scroll horizontally for unlimited discovery.
  */
-import { memo, useMemo } from "react";
+import { memo, useMemo, lazy, Suspense } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Search, MapPin, Bell, Wallet, QrCode, Send, ChevronRight, Star, Clock } from "lucide-react";
 import { useLocationStore } from "@/stores/locationStore";
 import { useOrbitEngine } from "@/stores/orbit-engine";
 import { getSmartCategories, getSmartHero, getTimeGreeting, getSmartSections, getTimeSlot, type SmartCategory } from "@/lib/smart-home-engine";
 import { motion } from "framer-motion";
+import GeoForcePrompt from "@/components/location/GeoForcePrompt";
 
 // Category images map
 import foodImg from "@/assets/categories/food.png";
@@ -200,7 +201,21 @@ function DynamicSection({ section, index }: { section: { key: string; title: str
 export default function SmartHome() {
   const navigate = useNavigate();
   const currentLocation = useLocationStore((s) => s.currentLocation);
-  const geo = { effectiveCity: null as string | null, manualCity: null as string | null };
+  const isFallback = useLocationStore((s) => s.isFallback);
+  
+  // Derive city from locationStore or localStorage
+  const city = useMemo(() => {
+    try {
+      const raw = localStorage.getItem("orbit:last-geo");
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed.city) return parsed.city;
+      }
+    } catch {}
+    if (currentLocation && !isFallback) return "Dubai"; // GPS active
+    return null;
+  }, [currentLocation, isFallback]);
+
   const timezone = useMemo(() => {
     try { return Intl.DateTimeFormat().resolvedOptions().timeZone; } catch { return undefined; }
   }, []);
@@ -228,10 +243,11 @@ export default function SmartHome() {
   return (
     <div className="space-y-0">
       <CompactHeader
-        city={geo.effectiveCity || geo.manualCity}
+        city={city}
         greeting={greeting}
         onSearch={() => navigate("/radar")}
       />
+      <GeoForcePrompt />
       <QuickActions />
 
       {/* Category grid — 2 rows, horizontally scrollable with touch/swipe */}
