@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useLiveGeolocation } from "@/hooks/useLiveGeolocation";
+import { useGeoStore } from "@/lib/geo/geo-store";
 import { pushDriverLocation } from "@/lib/services/driver-location";
 
 export function useDriverLiveMode(params: {
@@ -7,21 +7,32 @@ export function useDriverLiveMode(params: {
   driverId?: string;
   serviceMode?: "delivery" | "taxi" | "courier" | "mixed";
 }) {
-  const { coords, error } = useLiveGeolocation(params.enabled && !!params.driverId);
+  const point = useGeoStore((s) => s.point);
+  const error = useGeoStore((s) => s.error);
 
   useEffect(() => {
-    if (!coords || !params.driverId) return;
+    if (!params.enabled || !params.driverId || !point) return;
 
     pushDriverLocation({
       driverId: params.driverId,
-      lat: coords.latitude,
-      lng: coords.longitude,
-      accuracyM: coords.accuracy ?? undefined,
-      heading: coords.heading ?? undefined,
-      speedKmh: coords.speed ? coords.speed * 3.6 : undefined,
+      lat: point.lat,
+      lng: point.lng,
+      accuracyM: point.accuracy ?? undefined,
+      heading: point.heading ?? undefined,
+      speedKmh: point.speed ? point.speed * 3.6 : undefined,
       serviceMode: params.serviceMode,
     }).catch(console.error);
-  }, [coords, params.driverId, params.serviceMode]);
+  }, [point, params.driverId, params.serviceMode, params.enabled]);
+
+  const coords = point
+    ? {
+        latitude: point.lat,
+        longitude: point.lng,
+        accuracy: point.accuracy,
+        heading: point.heading,
+        speed: point.speed,
+      }
+    : null;
 
   return { coords, error };
 }
