@@ -7,6 +7,7 @@
  */
 import { useEffect, useRef } from "react";
 import { useLocationStore } from "@/stores/locationStore";
+import { platformBus } from "@/lib/shared/platform-bus";
 import {
   getCurrentPositionHighAccuracy,
   getGeoPermissionState,
@@ -43,6 +44,8 @@ export function useCurrentLocation(opts?: { watch?: boolean }) {
         store().setIsFallback(false);
         store().setPermissionState("granted");
         store().setError(null);
+        platformBus.emit("geo.position.updated", { lat: pos.lat, lng: pos.lng, accuracy: pos.accuracy, source: "gps" }, "system");
+        platformBus.emit("geo.permission.changed", { state: "granted" }, "system");
       } catch (err: any) {
         console.error("[useCurrentLocation] GPS failed", {
           code: err?.code,
@@ -58,6 +61,7 @@ export function useCurrentLocation(opts?: { watch?: boolean }) {
           // Keep current good state, don't touch permission/fallback/error
         } else if (err?.code === 1) {
           store().setPermissionState("denied");
+          platformBus.emit("geo.permission.changed", { state: "denied" }, "system");
           store().setIsFallback(true);
           if (!existing) {
             store().setCurrentLocation(store().lastKnownLocation || DUBAI_FALLBACK);
@@ -82,6 +86,7 @@ export function useCurrentLocation(opts?: { watch?: boolean }) {
             store().setIsFallback(false);
             store().setPermissionState("granted");
             store().setError(null);
+            platformBus.emit("geo.position.updated", { lat: pos.lat, lng: pos.lng, accuracy: pos.accuracy, source: "watch" }, "system");
           },
           (geoErr) => {
             // Silent — only update permission state, no console spam
