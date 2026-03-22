@@ -676,12 +676,14 @@ const seoPublicPrefixes = [
 const OrbitSessionGuard = () => { useOrbitSessionInit(); return null; };
 /** Centralized realtime: replaces usePresence, useOrbitCallSync, RealtimeMessageToast */
 const RealtimeHubGuard = () => { useRealtimeHub(); return null; };
-/** Orchestration now handled by AppBootstrapGuard via useMasterAppBootstrap */
-/** Subscribe to realtime notifications — useEffect to avoid re-subscribing on every render */
+/** Unified notification dispatcher — starts realtime listener for current user */
 const NotificationsRealtimeGuard = () => {
+  const { user } = useAuth();
   useEffect(() => {
-    useNotificationsStore.getState().subscribeRealtime();
-  }, []);
+    if (!user?.id) return;
+    startUnifiedNotificationDispatcher(user.id);
+    return () => stopUnifiedNotificationDispatcher();
+  }, [user?.id]);
   return null;
 };
 
