@@ -37,6 +37,7 @@ export const walletRepo = {
       .select("*")
       .eq("owner_user_id", ownerOrbitId)
       .eq("status", "active")
+      .limit(1)
       .maybeSingle();
     if (error) {
       console.warn("[walletRepo] getByOwnerOrbitId query failed, returning null", error.message);
