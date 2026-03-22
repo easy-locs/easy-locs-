@@ -5,7 +5,7 @@
  */
 import { memo, useMemo, useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Search, MapPin, Bell, Wallet, QrCode, Send, ChevronRight, Star, Clock } from "lucide-react";
+import { Search, MapPin, Bell, Wallet, QrCode, Send, ChevronRight, Star } from "lucide-react";
 import { useLocationStore } from "@/stores/locationStore";
 import { useOrbitEngine } from "@/stores/orbit-engine";
 import { supabase } from "@/integrations/supabase/client";
@@ -156,20 +156,22 @@ function CategoryCard({ cat, index }: { cat: SmartCategory; index: number }) {
 }
 
 /* ═══ Hero Card ═══ */
-function SmartHeroCard({ timezone }: { timezone?: string }) {
+function SmartHeroCard({ timezone, city }: { timezone?: string; city: string | null }) {
   const hero = getSmartHero(timezone);
   const slot = getTimeSlot(timezone);
   const isNight = slot === "latenight" || slot === "dinner";
+  const locationLabel = city || "your area";
   return (
     <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.1, duration: 0.3 }} className="mb-3">
-      <Link to={hero.route} className="block rounded-2xl p-3.5 relative overflow-hidden active:scale-[0.98] transition-transform" style={{ background: hero.gradient }}>
+      <Link to={hero.route} className="block rounded-2xl p-4 relative overflow-hidden active:scale-[0.98] transition-transform" style={{ background: hero.gradient }}>
         <div className="relative z-10 flex items-center justify-between">
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-1.5 mb-1">
-              <Clock className="h-3 w-3 text-white/60" />
-              <p className="text-white/70 text-[10px] font-medium uppercase tracking-wider">{hero.subtitle}</p>
+            <div className="flex items-center gap-1.5 mb-0.5">
+              <MapPin className="h-3 w-3 text-white/60" />
+              <p className="text-white/70 text-[10px] font-medium">{locationLabel}</p>
             </div>
-            <h2 className="text-white text-base font-black leading-tight mb-2">{hero.title}</h2>
+            <h2 className="text-white text-lg font-black leading-tight mb-0.5">{hero.title}</h2>
+            <p className="text-white/70 text-[11px] mb-3">{hero.subtitle}</p>
             <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-white/20 backdrop-blur-sm text-white text-[11px] font-bold active:bg-white/30 transition-colors">
               {hero.cta} <ChevronRight className="h-3 w-3" />
             </span>
@@ -195,14 +197,14 @@ function DynamicSection({ section, shops, index }: { section: { key: string; tit
           See all <ChevronRight className="h-3 w-3" />
         </Link>
       </div>
-      <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
+      <div className="flex gap-2.5 overflow-x-auto pb-1 scrollbar-none">
         {shops.map((shop) => (
           <Link
             key={shop.id}
             to={`/shop/${shop.slug}`}
-            className="shrink-0 w-36 rounded-xl border border-border/15 bg-card/50 overflow-hidden active:scale-[0.96] transition-transform"
+            className="shrink-0 w-[140px] rounded-xl border border-border/15 bg-card/50 overflow-hidden active:scale-[0.96] transition-transform"
           >
-            <div className="h-16 bg-muted/10 flex items-center justify-center relative overflow-hidden">
+            <div className="h-[88px] bg-muted/10 flex items-center justify-center relative overflow-hidden">
               {shop.logo_url ? (
                 <img src={shop.logo_url} alt={shop.name} className="w-full h-full object-cover" loading="lazy" />
               ) : (
@@ -240,7 +242,22 @@ export default function SmartHome() {
         if (parsed.city) return parsed.city;
       }
     } catch {}
-    if (currentLocation && !isFallback) return "Dubai";
+    if (currentLocation && !isFallback) {
+      // Trigger reverse geocode to populate city
+      import("@/lib/mapbox/geocoding").then(({ reverseGeocode }) => {
+        reverseGeocode(currentLocation.lat, currentLocation.lng).then(res => {
+          const place = res?.features?.[0];
+          if (place) {
+            const cityCtx = place.context?.find((c: any) => c.id?.startsWith("place"));
+            const cityName = cityCtx?.text || place.text;
+            if (cityName) {
+              try { localStorage.setItem("orbit:last-geo", JSON.stringify({ city: cityName, country: "AE" })); } catch {}
+            }
+          }
+        }).catch(() => {});
+      });
+      return "Dubai";
+    }
     return null;
   }, [currentLocation, isFallback]);
 
@@ -353,7 +370,7 @@ export default function SmartHome() {
         </div>
       </div>
 
-      <SmartHeroCard timezone={timezone} />
+      <SmartHeroCard timezone={timezone} city={city} />
       {SECTION_DEFS.map((sec, i) => (
         <DynamicSection key={sec.key} section={sec} shops={sections[sec.key as keyof HomeSections]} index={i} />
       ))}
