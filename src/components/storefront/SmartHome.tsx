@@ -267,40 +267,41 @@ export default function SmartHome() {
     (async () => {
       try {
         // Parallel queries for each section with real ordering
+        const baseSelect = "id, name, logo_url, banner_url, vertical, category, subcategory, address, slug, ranking_score, rating, reviews_count, created_at";
         const [trendingRes, bestRatedRes, newestRes, nearYouRes] = await Promise.all([
-          // Trending: by ranking_score (real visibility/engagement score)
+          // Trending: ORDER BY ranking_score DESC
           (supabase as any)
             .from("storefront_pages")
-            .select("id, name, logo_url, vertical, address, slug, ranking_score, rating, reviews_count, created_at")
+            .select(baseSelect)
             .eq("launch_status", "launched")
             .not("latitude", "is", null)
             .order("ranking_score", { ascending: false })
-            .limit(8),
-          // Best Rated: by rating desc, min reviews
+            .limit(10),
+          // Best Rated: ORDER BY rating DESC WHERE reviews_count > 0
           (supabase as any)
             .from("storefront_pages")
-            .select("id, name, logo_url, vertical, address, slug, ranking_score, rating, reviews_count, created_at")
+            .select(baseSelect)
             .eq("launch_status", "launched")
             .not("latitude", "is", null)
-            .not("rating", "is", null)
+            .gt("reviews_count", 0)
             .order("rating", { ascending: false })
-            .limit(8),
-          // Newest: by created_at desc
+            .limit(10),
+          // Newest: ORDER BY created_at DESC
           (supabase as any)
             .from("storefront_pages")
-            .select("id, name, logo_url, vertical, address, slug, ranking_score, rating, reviews_count, created_at")
+            .select(baseSelect)
             .eq("launch_status", "launched")
             .not("latitude", "is", null)
             .order("created_at", { ascending: false })
-            .limit(8),
-          // Near You: all launched with coords (client-side distance sort would need lat/lng)
+            .limit(10),
+          // Near You: all launched with coords
           (supabase as any)
             .from("storefront_pages")
-            .select("id, name, logo_url, vertical, address, slug, ranking_score, rating, reviews_count, created_at, latitude, longitude")
+            .select(baseSelect + ", latitude, longitude")
             .eq("launch_status", "launched")
             .not("latitude", "is", null)
             .not("longitude", "is", null)
-            .limit(20),
+            .limit(30),
         ]);
 
         // Near You: sort by distance if we have user location
