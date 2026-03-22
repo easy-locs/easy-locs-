@@ -1,5 +1,5 @@
 /**
- * SmartHome — Premium super-app home.
+ * SmartHome — Premium super-app home with Careem-style visual category cards.
  * Dense, action-first, contextual, visually powerful.
  */
 import { memo, useMemo } from "react";
@@ -9,6 +9,33 @@ import { useLocationStore } from "@/stores/locationStore";
 import { useOrbitEngine } from "@/stores/orbit-engine";
 import { getSmartCategories, getSmartHero, getTimeGreeting, getSmartSections, getTimeSlot, type SmartCategory } from "@/lib/smart-home-engine";
 import { motion } from "framer-motion";
+
+// Category images map
+import foodImg from "@/assets/categories/food.png";
+import groceryImg from "@/assets/categories/grocery.png";
+import shopsImg from "@/assets/categories/shops.png";
+import servicesImg from "@/assets/categories/services.png";
+import taxiImg from "@/assets/categories/taxi.png";
+import deliveryImg from "@/assets/categories/delivery.png";
+import propertyImg from "@/assets/categories/property.png";
+import walletImg from "@/assets/categories/wallet.png";
+import coffeeImg from "@/assets/categories/coffee.png";
+import bakeryImg from "@/assets/categories/bakery.png";
+import dineoutImg from "@/assets/categories/dineout.png";
+import beautyImg from "@/assets/categories/beauty.png";
+import conciergeImg from "@/assets/categories/concierge.png";
+import mobilityImg from "@/assets/categories/mobility.png";
+import rentalsImg from "@/assets/categories/rentals.png";
+import staysImg from "@/assets/categories/stays.png";
+import travelImg from "@/assets/categories/travel.png";
+
+const CATEGORY_IMAGES: Record<string, string> = {
+  food: foodImg, grocery: groceryImg, shops: shopsImg, services: servicesImg,
+  taxi: taxiImg, delivery: deliveryImg, property: propertyImg, wallet: walletImg,
+  coffee: coffeeImg, bakery: bakeryImg, dineout: dineoutImg, beauty: beautyImg,
+  concierge: conciergeImg, mobility: mobilityImg, rentals: rentalsImg,
+  stays: staysImg, travel: travelImg,
+};
 
 /* ═══ Compact Header ═══ */
 const CompactHeader = memo(({ city, greeting, onSearch }: { city: string | null; greeting: string; onSearch: () => void }) => {
@@ -54,7 +81,6 @@ const QuickActions = memo(() => (
       <Link
         key={label}
         to={to}
-        onClick={() => console.log(`CLICK ${label.toUpperCase()} BUTTON`)}
         className="flex-1 flex items-center justify-center gap-1.5 h-9 rounded-xl border border-border/15 bg-card/50 active:scale-95 active:bg-primary/5 transition-all"
       >
         <Icon className="h-3.5 w-3.5 text-primary" />
@@ -64,54 +90,36 @@ const QuickActions = memo(() => (
   </div>
 ));
 
-/* ═══ Featured Category Card (wide) ═══ */
-function FeaturedCategoryCard({ cat, index }: { cat: SmartCategory; index: number }) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.03 * index, duration: 0.25 }}
-      className="col-span-2"
-    >
-      <Link
-        to={cat.route}
-        className="group flex items-center gap-3 rounded-2xl p-3 h-full active:scale-[0.97] transition-all duration-150 border border-border/10 relative overflow-hidden"
-        style={{ background: `color-mix(in srgb, ${cat.color} 10%, hsl(var(--card)))` }}
-      >
-        <div className="absolute inset-0 opacity-[0.04]" style={{ background: `radial-gradient(circle at 80% 50%, ${cat.color}, transparent 70%)` }} />
-        <div className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0 relative z-10" style={{ background: `color-mix(in srgb, ${cat.color} 15%, transparent)` }}>
-          <span className="text-2xl">{cat.icon}</span>
-        </div>
-        <div className="min-w-0 relative z-10 flex-1">
-          <p className="text-sm font-bold text-foreground leading-tight">{cat.label}</p>
-          {cat.subtitle && <p className="text-[10px] text-muted-foreground mt-0.5">{cat.subtitle}</p>}
-        </div>
-        <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/40 shrink-0 group-active:translate-x-0.5 transition-transform" />
-      </Link>
-    </motion.div>
-  );
-}
-
-/* ═══ Standard Category Card ═══ */
+/* ═══ Careem-style Visual Category Card ═══ */
 function CategoryCard({ cat, index }: { cat: SmartCategory; index: number }) {
-  if (cat.size === "wide") return <FeaturedCategoryCard cat={cat} index={index} />;
+  const imgSrc = cat.image ? CATEGORY_IMAGES[cat.image] : null;
   return (
     <motion.div
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.03 * index, duration: 0.25 }}
-      className="col-span-1"
+      transition={{ delay: 0.02 * index, duration: 0.2 }}
     >
       <Link
         to={cat.route}
-        className="group flex flex-col items-center gap-1 rounded-xl p-2.5 active:scale-[0.95] transition-all duration-150 border border-border/10 relative overflow-hidden"
+        className="group flex flex-col items-center gap-1 rounded-2xl p-2 active:scale-[0.93] transition-all duration-150 border border-border/10 relative overflow-hidden"
         style={{ background: `color-mix(in srgb, ${cat.color} 6%, hsl(var(--card)))` }}
       >
-        <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: `color-mix(in srgb, ${cat.color} 12%, transparent)` }}>
-          <span className="text-xl">{cat.icon}</span>
+        {/* Image container */}
+        <div className="w-16 h-16 rounded-xl flex items-center justify-center overflow-hidden relative"
+          style={{ background: `color-mix(in srgb, ${cat.color} 8%, transparent)` }}
+        >
+          {imgSrc ? (
+            <img
+              src={imgSrc}
+              alt={cat.label}
+              className="w-14 h-14 object-contain drop-shadow-sm"
+              loading="lazy"
+            />
+          ) : (
+            <span className="text-2xl">{cat.icon}</span>
+          )}
         </div>
-        <p className="text-[11px] font-semibold text-foreground leading-tight text-center">{cat.label}</p>
-        {cat.subtitle && <p className="text-[9px] text-muted-foreground leading-none">{cat.subtitle}</p>}
+        <p className="text-[11px] font-semibold text-foreground leading-tight text-center truncate w-full">{cat.label}</p>
       </Link>
     </motion.div>
   );
@@ -153,7 +161,7 @@ function SmartHeroCard({ timezone }: { timezone?: string }) {
   );
 }
 
-/* ═══ Dynamic Section with richer cards ═══ */
+/* ═══ Dynamic Section ═══ */
 function DynamicSection({ section, index }: { section: { key: string; title: string; icon: string }; index: number }) {
   return (
     <motion.div
@@ -187,12 +195,11 @@ function DynamicSection({ section, index }: { section: { key: string; title: str
   );
 }
 
-/* UtilityRow removed — business tools live in Me/Settings only */
 /* ═══ Main Component ═══ */
 export default function SmartHome() {
   const navigate = useNavigate();
   const currentLocation = useLocationStore((s) => s.currentLocation);
-  const geo = { effectiveCity: null as string | null, manualCity: null as string | null, lat: currentLocation?.lat ?? null, lng: currentLocation?.lng ?? null };
+  const geo = { effectiveCity: null as string | null, manualCity: null as string | null };
   const timezone = useMemo(() => {
     try { return Intl.DateTimeFormat().resolvedOptions().timeZone; } catch { return undefined; }
   }, []);
@@ -212,6 +219,10 @@ export default function SmartHome() {
   const greeting = useMemo(() => getTimeGreeting(timezone), [timezone]);
   const sections = useMemo(() => getSmartSections(timezone), [timezone]);
 
+  // Split categories into 2 rows of 4 for Careem-style swipeable grid
+  const row1 = categories.slice(0, 4);
+  const row2 = categories.slice(4, 8);
+
   return (
     <div className="space-y-0">
       <CompactHeader
@@ -220,11 +231,19 @@ export default function SmartHome() {
         onSearch={() => navigate("/discover")}
       />
       <QuickActions />
-      <div className="grid grid-cols-4 gap-1.5 mb-3">
-        {categories.map((cat, i) => (
-          <CategoryCard key={cat.key} cat={cat} index={i} />
-        ))}
+
+      {/* Category grid — 2 rows × 4 columns, horizontally scrollable */}
+      <div className="overflow-x-auto scrollbar-none mb-3 -mx-1 px-1">
+        <div className="grid grid-rows-2 grid-flow-col auto-cols-[minmax(80px,1fr)] gap-1.5" style={{ gridTemplateColumns: `repeat(${Math.max(row1.length, row2.length)}, minmax(80px, 1fr))` }}>
+          {row1.map((cat, i) => (
+            <CategoryCard key={cat.key} cat={cat} index={i} />
+          ))}
+          {row2.map((cat, i) => (
+            <CategoryCard key={cat.key} cat={cat} index={i + 4} />
+          ))}
+        </div>
       </div>
+
       <SmartHeroCard timezone={timezone} />
       {sections.slice(0, 3).map((sec, i) => (
         <DynamicSection key={sec.key} section={sec} index={i} />
