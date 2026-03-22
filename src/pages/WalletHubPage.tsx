@@ -39,7 +39,7 @@ export default function WalletHubPage() {
     { label: "Top up", icon: Plus, action: () => navigate("/wallet/top-up") },
     { label: "Send", icon: ArrowUpRight, action: () => navigate("/wallet/transfer") },
     { label: "Request", icon: ArrowDownLeft, action: () => navigate("/wallet/request") },
-    { label: "Scan", icon: ScanLine, action: () => navigate("/pay/scan") },
+    { label: "Scan", icon: ScanLine, action: () => { console.log("[WalletHub] Scan clicked — navigating to /pay/scan"); navigate("/pay/scan"); } },
   ];
 
   const filteredTx = txHistory.filter((tx) => {
