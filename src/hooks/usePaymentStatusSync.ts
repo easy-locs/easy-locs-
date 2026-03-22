@@ -1,11 +1,12 @@
 import { useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
-import { useNotificationsStore } from "@/stores/notificationsStore";
+import { useUnifiedNotificationStore } from "@/stores/unifiedNotificationStore";
 import { useActivityLogStore } from "@/stores/activityLogStore";
-import { useOrbitStore } from "@/stores/orbitStore";
+import { useAuth } from "@/contexts/AuthContext";
 
 export function usePaymentStatusSync() {
   const [searchParams, setSearchParams] = useSearchParams();
+  const { user } = useAuth();
 
   useEffect(() => {
     const status = searchParams.get("status");
@@ -15,9 +16,8 @@ export function usePaymentStatusSync() {
     if (!status) return;
 
     void (async () => {
-      const orbit = useOrbitStore.getState().profile;
-      if (orbit) {
-        await useNotificationsStore.getState().hydrate(orbit.orbitId);
+      if (user?.id) {
+        await useUnifiedNotificationStore.getState().hydrate(user.id);
       }
 
       if (status === "success" && bookingId) {
@@ -42,5 +42,5 @@ export function usePaymentStatusSync() {
       next.delete("status");
       setSearchParams(next, { replace: true });
     })();
-  }, [searchParams, setSearchParams]);
+  }, [searchParams, setSearchParams, user?.id]);
 }
