@@ -352,7 +352,10 @@ export default function QrScannerPage() {
       let tempStream: MediaStream | null = null;
       let grantedDeviceId = "";
       try {
-        tempStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: "environment" }, width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false });
+        tempStream = await requestMediaStream({
+          camera: true,
+          videoConstraints: { facingMode: { ideal: "environment" }, width: { ideal: 1280 }, height: { ideal: 720 } },
+        });
         grantedDeviceId = tempStream.getVideoTracks()[0]?.getSettings().deviceId || "";
         console.log("[QrScannerPage] getUserMedia success", { grantedDeviceId });
         if (mountedRef.current) setCameraPermission("granted");

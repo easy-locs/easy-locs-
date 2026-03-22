@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import type { PermissionStateValue } from "@/lib/types/domain";
 import { platformBus } from "@/app/events/platform-bus";
+import { probeMediaAccess } from "@/lib/device/permissions";
 
 type PermissionStore = {
   camera: PermissionStateValue;
@@ -122,8 +123,7 @@ export const usePermissionStore = create<PermissionStore>((set) => ({
 
   requestCamera: async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-      stream.getTracks().forEach((t) => t.stop());
+      await probeMediaAccess({ camera: true });
       set({ camera: "granted" });
       return true;
     } catch {
@@ -134,8 +134,7 @@ export const usePermissionStore = create<PermissionStore>((set) => ({
 
   requestMicrophone: async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      stream.getTracks().forEach((t) => t.stop());
+      await probeMediaAccess({ microphone: true });
       set({ microphone: "granted" });
       return true;
     } catch {
