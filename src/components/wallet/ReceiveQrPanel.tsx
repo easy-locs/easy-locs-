@@ -4,7 +4,7 @@
  */
 import { useState, useMemo } from "react";
 import { Copy, Check, Share2 } from "lucide-react";
-import QRCode from "react-qr-code";
+import BrandedQR from "@/components/qr/BrandedQR";
 import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { qr, toResolveUrl } from "@/lib/qr-engine";
@@ -33,7 +33,19 @@ export default function ReceiveQrPanel() {
   const link = useMemo(() => toResolveUrl(payload), [payload]);
 
   const handleCopy = async () => {
-    await navigator.clipboard.writeText(link);
+    try {
+      await navigator.clipboard.writeText(link);
+    } catch {
+      // Fallback for non-HTTPS / iframe contexts
+      const ta = document.createElement("textarea");
+      ta.value = link;
+      ta.style.position = "fixed";
+      ta.style.opacity = "0";
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand("copy");
+      document.body.removeChild(ta);
+    }
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -70,8 +82,8 @@ export default function ReceiveQrPanel() {
         <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
           My Payment QR
         </p>
-        <div className="rounded-xl bg-white p-4">
-          <QRCode value={link} size={180} level="M" />
+        <div>
+          <BrandedQR value={link} size={180} />
         </div>
         <p className="text-sm font-semibold text-foreground">{displayName}</p>
         {parseFloat(amount) > 0 && (
