@@ -33,10 +33,10 @@ export async function autoCreateStorefront(params: {
   if (profile?.shop_id) {
     const { data: shop } = await (supabase as any)
       .from("storefront_pages")
-      .select("id, public_slug")
+      .select("id, slug")
       .eq("id", profile.shop_id)
       .maybeSingle();
-    if (shop) return { shopId: shop.id, slug: shop.public_slug };
+    if (shop) return { shopId: shop.id, slug: shop.slug };
   }
 
   const slug = generateSlug(params.merchantName, params.city);
@@ -45,16 +45,16 @@ export async function autoCreateStorefront(params: {
     .from("storefront_pages")
     .insert({
       name: params.merchantName,
-      public_slug: slug,
+      slug,
       city: params.city,
       country: params.countryCode,
-      status: "coming_soon",
+      launch_status: "draft",
       user_id: params.userId,
       org_id: params.orgId,
       vertical: params.category ?? "food",
       metadata_json: { auto_generated: true, source: "auto_storefront_builder" },
     } as any)
-    .select("id, public_slug")
+    .select("id, slug")
     .single();
 
   if (error) throw error;
@@ -65,5 +65,5 @@ export async function autoCreateStorefront(params: {
     .update({ shop_id: shop.id } as any)
     .eq("id", params.merchantProfileId);
 
-  return { shopId: shop.id, slug: shop.public_slug };
+  return { shopId: shop.id, slug: shop.slug };
 }
