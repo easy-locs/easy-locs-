@@ -38,24 +38,7 @@ import { AppInit } from "@/components/system/AppInit";
 // V2 test pages — removed (Batch B purge)
 
 // V2 Suite 4 pages
-const V2HomePage = safeLazy(() => import("./app/router/HomePage"), "V2HomePage");
-const V2OwnerDashboardPage = safeLazy(() => import("./app/router/OwnerDashboardPage"), "V2OwnerDashboardPage");
-const V2TenantDashboardPage = safeLazy(() => import("./app/router/TenantDashboardPage"), "V2TenantDashboardPage");
-const V2BookingsPage = safeLazy(() => import("./app/router/BookingsPage"), "V2BookingsPage");
-const V2PropertiesPage = safeLazy(() => import("./app/router/PropertiesPage"), "V2PropertiesPage");
-const V2SearchPage = safeLazy(() => import("./app/router/SearchPage"), "V2SearchPage");
-const V2MapPage = safeLazy(() => import("./app/router/MapPage"), "V2MapPage");
-const V2MessagesPage = safeLazy(() => import("./app/router/MessagesPage"), "V2MessagesPage");
-const V2NotificationsPage = safeLazy(() => import("./app/router/NotificationsPage"), "V2NotificationsPage");
-const V2PaymentsPage = safeLazy(() => import("./app/router/PaymentsPage"), "V2PaymentsPage");
-const V2FavoritesPage = safeLazy(() => import("./app/router/FavoritesPage"), "V2FavoritesPage");
-const V2AdminPage = safeLazy(() => import("./app/router/AdminPage"), "V2AdminPage");
-
-// V2 Auth wrappers
-import { V2AuthBridge as V2AuthBridgeWrapper } from "@/components/system/V2AuthBridge";
-import { V2AuthGate as V2AuthGateWrapper } from "@/components/system/V2AuthGate";
-import { AuthGate as V2AuthGate } from "@/components/guards/AuthGate";
-const V2AuthPage = safeLazy(() => import("./app/router/AuthPage"), "V2AuthPage");
+// V2 Suite 4 pages — all removed, routes redirect to canonical paths
 const ClaimPage = safeLazy(() => import("./pages/ClaimPage"), "ClaimPage");
 
 
@@ -80,7 +63,7 @@ function safeLazy(factory: () => Promise<{ default: ComponentType<any> }>, name:
   });
 }
 
-const Explore = safeLazy(() => import("./pages/Explore"), "Explore");
+// Explore — dead, redirected to /radar. Import removed.
 
 // Lazy load all pages
 const Index = safeLazy(() => import("./pages/Index"), "Index");
@@ -207,11 +190,11 @@ const DriverDashboard = safeLazy(() => import("./pages/DriverDashboard"), "Drive
 const DeliveryCommandCenter = safeLazy(() => import("./pages/DeliveryCommandCenter"), "DeliveryCommandCenter");
 const ShopPage = safeLazy(() => import("./pages/ShopPage"), "ShopPage");
 const MyShopPage = safeLazy(() => import("./pages/MyShopPage"), "MyShopPage");
-const DiscoverPage = safeLazy(() => import("./pages/DiscoverPage"), "DiscoverPage");
+// DiscoverPage — merged into /radar. Import removed.
 const OpsCenter = safeLazy(() => import("./pages/OpsCenter"), "OpsCenter");
 const ShopsPage = safeLazy(() => import("./pages/ShopsPage"), "ShopsPage");
-const SuperMapRadarPage = safeLazy(() => import("./pages/GlobalMapPage"), "GlobalMapPage");
-const MapTabPage = safeLazy(() => import("./pages/MapTabPage"), "MapTabPage");
+// SuperMapRadarPage — duplicate of /radar. Removed.
+// MapTabPage — dead, unused. Removed.
 const AdminUiEnginePage = safeLazy(() => import("./pages/admin/AdminUiEnginePage"), "AdminUiEnginePage");
 const GlobalRadarPage = safeLazy(() => import("./pages/GlobalRadarPage"), "GlobalRadarPage");
 const MyBusinessHub = safeLazy(() => import("./pages/MyBusinessHub"), "MyBusinessHub");
@@ -788,7 +771,7 @@ const App = () => (
               {/* V7 Public pillars — Radar is unified ecosystem */}
               <Route path="/discover" element={<Navigate to="/radar" replace />} />
               <Route path="/explore" element={<Navigate to="/radar" replace />} />
-              <Route path="/search" element={<DiscoverPage />} />
+              <Route path="/search" element={<Navigate to="/radar" replace />} />
 
               {/* Universe hubs */}
               <Route path="/food" element={<FoodHub />} />
@@ -846,7 +829,7 @@ const App = () => (
               <Route path="/travel/stay/:id" element={<TravelStayDetail />} />
               <Route path="/travel/flight/:id" element={<TravelFlightDetail />} />
 
-              <Route path="/super-map" element={<SuperMapRadarPage />} />
+              <Route path="/super-map" element={<Navigate to="/radar" replace />} />
               <Route path="/map" element={<Navigate to="/radar" replace />} />
               <Route path="/radar" element={<GlobalRadarPage />} />
               <Route path="/shops" element={<ShopsPage />} />
@@ -1339,24 +1322,20 @@ const App = () => (
               <Route path="/app/orbit" element={<Navigate to="/" replace />} />
               <Route path="/app/*" element={<Navigate to="/" replace />} />
 
-              {/* V2 Auth */}
-              <Route path="/v2-auth" element={<V2AuthBridgeWrapper><V2AuthPage /></V2AuthBridgeWrapper>} />
-
-              {/* V2 test routes — removed (Batch B purge) */}
-
-              {/* V2 Suite 4 routes — auth protected */}
-              <Route path="/v2-home" element={<V2AuthBridgeWrapper><V2AuthGate fallback={<V2AuthPage />}><V2HomePage /></V2AuthGate></V2AuthBridgeWrapper>} />
-              <Route path="/v2-owner" element={<V2AuthBridgeWrapper><V2AuthGate fallback={<V2AuthPage />}><V2OwnerDashboardPage /></V2AuthGate></V2AuthBridgeWrapper>} />
-              <Route path="/v2-tenant" element={<V2AuthBridgeWrapper><V2AuthGate fallback={<V2AuthPage />}><V2TenantDashboardPage /></V2AuthGate></V2AuthBridgeWrapper>} />
-              <Route path="/v2-bookings" element={<V2AuthBridgeWrapper><V2AuthGate fallback={<V2AuthPage />}><V2BookingsPage /></V2AuthGate></V2AuthBridgeWrapper>} />
-              <Route path="/v2-properties" element={<V2AuthBridgeWrapper><V2AuthGate fallback={<V2AuthPage />}><V2PropertiesPage /></V2AuthGate></V2AuthBridgeWrapper>} />
-              <Route path="/v2-search" element={<V2AuthBridgeWrapper><V2AuthGate fallback={<V2AuthPage />}><V2SearchPage /></V2AuthGate></V2AuthBridgeWrapper>} />
-              <Route path="/v2-map" element={<V2AuthBridgeWrapper><V2AuthGate fallback={<V2AuthPage />}><V2MapPage /></V2AuthGate></V2AuthBridgeWrapper>} />
-              <Route path="/v2-messages" element={<V2AuthBridgeWrapper><V2AuthGate fallback={<V2AuthPage />}><V2MessagesPage /></V2AuthGate></V2AuthBridgeWrapper>} />
-              <Route path="/v2-notifications" element={<V2AuthBridgeWrapper><V2AuthGate fallback={<V2AuthPage />}><V2NotificationsPage /></V2AuthGate></V2AuthBridgeWrapper>} />
-              <Route path="/v2-payments" element={<V2AuthBridgeWrapper><V2AuthGate fallback={<V2AuthPage />}><V2PaymentsPage /></V2AuthGate></V2AuthBridgeWrapper>} />
-              <Route path="/v2-favorites" element={<V2AuthBridgeWrapper><V2AuthGate fallback={<V2AuthPage />}><V2FavoritesPage /></V2AuthGate></V2AuthBridgeWrapper>} />
-              <Route path="/v2-admin" element={<V2AuthBridgeWrapper><V2AuthGate fallback={<V2AuthPage />}><V2AdminPage /></V2AuthGate></V2AuthBridgeWrapper>} />
+              {/* V2 routes — all redirected to canonical paths */}
+              <Route path="/v2-auth" element={<Navigate to="/login" replace />} />
+              <Route path="/v2-home" element={<Navigate to="/" replace />} />
+              <Route path="/v2-owner" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/v2-tenant" element={<Navigate to="/tenant" replace />} />
+              <Route path="/v2-bookings" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/v2-properties" element={<Navigate to="/dashboard/properties" replace />} />
+              <Route path="/v2-search" element={<Navigate to="/radar" replace />} />
+              <Route path="/v2-map" element={<Navigate to="/radar" replace />} />
+              <Route path="/v2-messages" element={<Navigate to="/dashboard/communication" replace />} />
+              <Route path="/v2-notifications" element={<Navigate to="/notifications" replace />} />
+              <Route path="/v2-payments" element={<Navigate to="/wallet" replace />} />
+              <Route path="/v2-favorites" element={<Navigate to="/favorites" replace />} />
+              <Route path="/v2-admin" element={<Navigate to="/admin" replace />} />
 
               {/* SEO catch-all */}
               <Route path="/seo/*" element={<SEOCatchAll />} />

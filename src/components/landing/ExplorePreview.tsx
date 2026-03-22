@@ -204,7 +204,7 @@ export default function ExplorePreview() {
           viewport={{ once: true }}
           className="text-center mt-10"
         >
-          <Link to="/explore">
+          <Link to="/radar">
             <Button size="lg" className="rounded-2xl gap-2 px-8 shadow-lg">
               <Sparkles className="h-4 w-4" />
               {t("landing.explore.cta") || "Explore All Listings"}
