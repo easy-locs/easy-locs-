@@ -55,10 +55,10 @@ export async function advanceMerchantOrderStatus(params: {
   }
 
   if (params.nextStatus === "ready_for_pickup") {
-    await platformBus.emit(
+    platformBus.emit(
       "ORDER_READY",
       { orderId: params.orderId, city: "Dubai" },
-      { source: "merchantOrderFlow:advanceMerchantOrderStatus" }
+      "system"
     );
   }
 
