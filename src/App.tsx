@@ -733,7 +733,7 @@ const App = () => (
            <NotificationsRealtimeGuard />
            <UpdateNotification />
                 <AppInit />
-                <GeoBootstrap />
+                <GeoBoot />
                 <PermissionBootstrap />
              <AppBootstrapGuardDirect />
            
