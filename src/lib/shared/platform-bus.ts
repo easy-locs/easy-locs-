@@ -108,7 +108,23 @@ type PlatformEventType =
   // System
   | "system:currency_changed"
   | "system:sync_completed"
-  | "system:user_online";
+  | "system:user_online"
+  // Orchestration engine (UPPERCASE legacy — merged from lib/orchestration)
+  | "ORDER_CREATED"
+  | "ORDER_CONFIRMED"
+  | "ORDER_READY"
+  | "ORDER_DELIVERED"
+  | "ORDER_COMPLETED"
+  | "ORDER_REFUNDED"
+  | "ORDER_SETTLED"
+  | "PAYMENT_SUCCESS"
+  | "REFUND_REQUESTED"
+  | "MISSION_CREATED"
+  | "MISSION_ACCEPTED"
+  | "MISSION_COMPLETED"
+  | "ISSUE_CREATED"
+  | "USER_OPEN_HOME"
+  | "USER_SEARCH";
 
 export type { PlatformEventType };
 
