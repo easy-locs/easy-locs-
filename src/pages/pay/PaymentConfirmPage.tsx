@@ -60,9 +60,15 @@ export default function PaymentConfirmPage() {
         contextType: "qr_payment",
         title: note.trim() || `Pay ${target.display_name || "user"}`,
       });
-      setSent(true);
+      playPremiumSuccessBeep();
+      hapticPremiumSuccess();
+      setShowPremiumSuccess(true);
       toast.success("Payment sent!");
-      setTimeout(() => navigate("/wallet/hub", { replace: true }), 1500);
+      setTimeout(() => {
+        setShowPremiumSuccess(false);
+        setSent(true);
+        navigate("/wallet/hub", { replace: true });
+      }, 1800);
     } catch (err: any) {
       toast.error(err.message || "Payment failed");
     } finally {
