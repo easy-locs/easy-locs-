@@ -90,7 +90,7 @@ const NotFound = () => {
           </motion.div>
 
           <Link
-            to="/explore"
+            to="/radar"
             className="inline-flex items-center justify-center gap-2 h-12 px-6 rounded-xl text-sm font-semibold border transition-colors"
             style={{
               borderColor: "hsl(var(--primary-foreground) / 0.12)",
@@ -98,7 +98,7 @@ const NotFound = () => {
             }}
           >
             <Search className="h-4 w-4" />
-            Explore
+            Radar
           </Link>
         </motion.div>
 
