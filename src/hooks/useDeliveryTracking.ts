@@ -1,21 +1,17 @@
 /**
  * useDeliveryTracking — Bridge delivery jobs to live_trackings system.
- * PASS79-J: Live GPS Tracking for Deliveries
+ * Uses canonical locationStore instead of raw navigator.geolocation.
  */
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useTrackingObserver, type TrackingSession } from "@/hooks/useServiceTracking";
 import { findActiveTracking } from "@/hooks/useLiveTracking";
+import { useLocationStore } from "@/stores/locationStore";
 
-/**
- * For SELLERS/BUYERS: observe a delivery driver's live position.
- * Finds or creates the tracking session linked to a delivery job.
- */
 export function useDeliveryTracking(jobId: string | null) {
   const [trackingId, setTrackingId] = useState<string | null>(null);
   const [searching, setSearching] = useState(false);
 
-  // Find existing tracking session for this job
   useEffect(() => {
     if (!jobId) { setTrackingId(null); return; }
     let cancelled = false;
@@ -32,7 +28,6 @@ export function useDeliveryTracking(jobId: string | null) {
     return () => { cancelled = true; };
   }, [jobId]);
 
-  // Use the existing observer hook
   const { session, loading: observerLoading } = useTrackingObserver(trackingId);
 
   return {
@@ -45,6 +40,7 @@ export function useDeliveryTracking(jobId: string | null) {
 
 /**
  * For DRIVERS: start tracking for a delivery job.
+ * Uses canonical locationStore for current position.
  */
 export function useDeliveryTrackerStart() {
   const [starting, setStarting] = useState(false);
@@ -59,14 +55,13 @@ export function useDeliveryTrackerStart() {
   }) => {
     setStarting(true);
     try {
-      // Check if tracking already exists
       const existing = await findActiveTracking("delivery", opts.jobId);
       if (existing) return existing;
 
-      // Get current position
-      const pos = await new Promise<GeolocationPosition>((resolve, reject) =>
-        navigator.geolocation.getCurrentPosition(resolve, reject, { enableHighAccuracy: true, timeout: 10000 })
-      );
+      // Use canonical locationStore instead of raw navigator.geolocation
+      const loc = useLocationStore.getState().currentLocation;
+      const lat = loc?.lat ?? 0;
+      const lng = loc?.lng ?? 0;
 
       const { data, error } = await supabase
         .from("live_trackings")
@@ -78,8 +73,8 @@ export function useDeliveryTrackerStart() {
           destination_lat: opts.destinationLat || null,
           destination_lng: opts.destinationLng || null,
           destination_label: opts.destinationLabel || null,
-          current_lat: pos.coords.latitude,
-          current_lng: pos.coords.longitude,
+          current_lat: lat,
+          current_lng: lng,
           status: "en_route",
           started_at: new Date().toISOString(),
           viewer_user_id: opts.viewerUserId || null,

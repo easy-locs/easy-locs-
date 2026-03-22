@@ -59,7 +59,8 @@ export default function SmartClientForm({
   onCancel,
   loading,
 }: SmartClientFormProps) {
-  const { country: detectedCountry } = useGeoDetect();
+  const { detection } = useGeoDetect();
+  const detectedCountry = detection?.country;
 
   const effectiveCountry = propertyCountry || initialData?.country || detectedCountry || "FR";
 

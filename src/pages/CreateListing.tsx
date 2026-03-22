@@ -158,17 +158,14 @@ const CreateListing = () => {
 
   // Auto-capture geolocation + prefill country/currency
   useEffect(() => {
-    // GPS-based prefill
-    if ("geolocation" in navigator) {
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          setGeoLat(pos.coords.latitude);
-          setGeoLng(pos.coords.longitude);
-        },
-        () => {},
-        { enableHighAccuracy: false, timeout: 5000, maximumAge: 300000 }
-      );
-    }
+    // GPS-based prefill from canonical locationStore
+    import("@/stores/locationStore").then(({ useLocationStore }) => {
+      const loc = useLocationStore.getState().currentLocation;
+      if (loc) {
+        setGeoLat(loc.lat);
+        setGeoLng(loc.lng);
+      }
+    });
     // Timezone-based country/currency prefill
     if (!userCountry || userCountry === "FR") {
       const loc = detectLocationFromTimezone();

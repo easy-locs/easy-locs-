@@ -1,5 +1,5 @@
 /**
- * WalletHubPage — Futuristic Wallet Pro with glassmorphic cards.
+ * WalletHubPage — Premium Wallet with glassmorphic cards, detailed analytics, and rich UX.
  * Single authoritative wallet page. Route: /wallet/hub + /wallet
  */
 import { useNavigate } from "react-router-dom";
@@ -12,9 +12,10 @@ import { createLedgerEntry, getOrCreateWalletAccount, recomputeWalletBalance } f
 import {
   ArrowLeft, Plus, ArrowUpRight, ArrowDownLeft, QrCode, Eye, EyeOff,
   CreditCard, Wallet, Shield, ScanLine, Settings, TrendingUp, Sparkles,
+  Clock, CheckCircle, AlertCircle, ArrowRight, Globe, Banknote,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { toast } from "sonner";
 import TransactionRow, { type TransactionType } from "@/components/wallet/TransactionRow";
 import WalletSecurityPanel from "@/components/wallet/WalletSecurityPanel";
@@ -34,11 +35,24 @@ export default function WalletHubPage() {
   const totalBalance = rows.reduce((sum: number, r: any) => sum + (r.balance || 0), 0);
   const mainCurrency = rows[0]?.currency || "AED";
 
+  // Analytics
+  const stats = useMemo(() => {
+    const now = new Date();
+    const thisMonth = txHistory.filter(tx => {
+      const d = new Date(tx.created_at || "");
+      return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+    });
+    const inTotal = thisMonth.filter(tx => tx.recipient_id === user?.id).reduce((s, tx) => s + Number(tx.amount || 0), 0);
+    const outTotal = thisMonth.filter(tx => tx.sender_id === user?.id).reduce((s, tx) => s + Number(tx.amount || 0), 0);
+    const pending = txHistory.filter(tx => tx.status === "pending").length;
+    return { inTotal, outTotal, pending, txCount: thisMonth.length };
+  }, [txHistory, user?.id]);
+
   const quickActions = [
-    { label: "Top up", icon: Plus, gradient: "from-emerald-500/20 to-emerald-600/10" },
-    { label: "Send", icon: ArrowUpRight, gradient: "from-blue-500/20 to-blue-600/10" },
-    { label: "Request", icon: ArrowDownLeft, gradient: "from-violet-500/20 to-violet-600/10" },
-    { label: "Scan", icon: ScanLine, gradient: "from-amber-500/20 to-amber-600/10" },
+    { label: "Top up", icon: Plus, color: "from-emerald-500 to-emerald-600" },
+    { label: "Send", icon: ArrowUpRight, color: "from-blue-500 to-blue-600" },
+    { label: "Request", icon: ArrowDownLeft, color: "from-violet-500 to-violet-600" },
+    { label: "Scan", icon: ScanLine, color: "from-amber-500 to-amber-600" },
   ];
   const quickRoutes = ["/wallet/top-up", "/wallet/transfer", "/wallet/request", "/pay/scan"];
 
@@ -55,30 +69,6 @@ export default function WalletHubPage() {
       toast.success("Wallet created");
     } catch {
       toast.error("Could not create wallet");
-    }
-  };
-
-  const handleTestTopUp = async () => {
-    if (!user?.id) return;
-    try {
-      const { error } = await supabase
-        .from("wallet_balances_v2" as any)
-        .upsert(
-          { user_id: user.id, balance: 100, currency: mainCurrency || "AED", updated_at: new Date().toISOString() },
-          { onConflict: "user_id" }
-        );
-      if (error) throw error;
-      const wallet = await getOrCreateWalletAccount({ ownerUserId: user.id, currency: mainCurrency || "AED" });
-      await createLedgerEntry({
-        walletAccountId: wallet.id, direction: "in", amount: 100,
-        currency: wallet.currency || "AED", entryType: "top_up",
-        referenceType: "test_credit", note: "Runtime test top-up",
-      });
-      await recomputeWalletBalance(wallet.id);
-      toast.success("Test top-up added: 100 AED");
-      window.location.reload();
-    } catch {
-      toast.error("Test top-up failed");
     }
   };
 
@@ -153,16 +143,18 @@ export default function WalletHubPage() {
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.05 }}
                 className="relative rounded-3xl p-6 overflow-hidden"
-                style={{ background: "linear-gradient(145deg, hsl(var(--primary)), hsl(var(--primary) / 0.75))" }}
+                style={{ background: "linear-gradient(145deg, hsl(var(--primary)), hsl(var(--primary) / 0.7))" }}
               >
-                {/* Decorative orbs */}
                 <div className="absolute -top-10 -right-10 w-40 h-40 rounded-full opacity-20" style={{ background: "radial-gradient(circle, hsl(var(--primary-foreground) / 0.3), transparent)" }} />
                 <div className="absolute -bottom-8 -left-8 w-32 h-32 rounded-full opacity-10" style={{ background: "radial-gradient(circle, hsl(var(--primary-foreground) / 0.4), transparent)" }} />
 
                 <div className="relative z-10">
                   <div className="flex items-center justify-between mb-1">
                     <p className="text-xs font-medium text-primary-foreground/60 uppercase tracking-wider">Total Balance</p>
-                    <TrendingUp className="w-4 h-4 text-primary-foreground/40" />
+                    <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary-foreground/10">
+                      <Globe className="w-3 h-3 text-primary-foreground/50" />
+                      <span className="text-[10px] font-bold text-primary-foreground/50">{mainCurrency}</span>
+                    </div>
                   </div>
                   <p className="text-4xl font-black text-primary-foreground tracking-tight">
                     {showBalance ? `${totalBalance.toFixed(2)}` : "••••••"}
@@ -172,13 +164,41 @@ export default function WalletHubPage() {
                   {rows.length === 0 && !loading && (
                     <p className="text-xs text-primary-foreground/40 mt-3">No wallet yet</p>
                   )}
-                  {rows.length > 0 && totalBalance <= 0 && (
-                    <button onClick={handleTestTopUp} className="mt-4 rounded-xl bg-primary-foreground/15 backdrop-blur-sm px-4 py-2.5 text-xs font-bold text-primary-foreground active:scale-95 transition-transform">
-                      Add test top-up (100 AED)
-                    </button>
-                  )}
                 </div>
               </motion.div>
+
+              {/* ── Monthly Summary ── */}
+              {txHistory.length > 0 && (
+                <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="grid grid-cols-3 gap-2">
+                  <div className="rounded-2xl p-3 bg-emerald-500/5 border border-emerald-500/10">
+                    <div className="flex items-center gap-1 mb-1">
+                      <ArrowDownLeft className="w-3 h-3 text-emerald-500" />
+                      <span className="text-[9px] font-bold text-emerald-500/70 uppercase">Income</span>
+                    </div>
+                    <p className="text-sm font-black text-foreground tabular-nums">
+                      {showBalance ? stats.inTotal.toFixed(0) : "••"} <span className="text-[9px] text-muted-foreground">{mainCurrency}</span>
+                    </p>
+                  </div>
+                  <div className="rounded-2xl p-3 bg-red-500/5 border border-red-500/10">
+                    <div className="flex items-center gap-1 mb-1">
+                      <ArrowUpRight className="w-3 h-3 text-red-400" />
+                      <span className="text-[9px] font-bold text-red-400/70 uppercase">Spent</span>
+                    </div>
+                    <p className="text-sm font-black text-foreground tabular-nums">
+                      {showBalance ? stats.outTotal.toFixed(0) : "••"} <span className="text-[9px] text-muted-foreground">{mainCurrency}</span>
+                    </p>
+                  </div>
+                  <div className="rounded-2xl p-3 bg-amber-500/5 border border-amber-500/10">
+                    <div className="flex items-center gap-1 mb-1">
+                      <Clock className="w-3 h-3 text-amber-500" />
+                      <span className="text-[9px] font-bold text-amber-500/70 uppercase">Pending</span>
+                    </div>
+                    <p className="text-sm font-black text-foreground tabular-nums">
+                      {stats.pending}
+                    </p>
+                  </div>
+                </motion.div>
+              )}
 
               {/* ── Quick Actions Grid ── */}
               <div className="grid grid-cols-4 gap-3">
@@ -187,12 +207,12 @@ export default function WalletHubPage() {
                     key={a.label}
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.1 + i * 0.04 }}
+                    transition={{ delay: 0.12 + i * 0.04 }}
                     onClick={() => navigate(quickRoutes[i])}
                     className="flex flex-col items-center gap-2 active:scale-90 transition-transform"
                   >
-                    <div className={`w-14 h-14 rounded-2xl flex items-center justify-center bg-gradient-to-br ${a.gradient} border border-border/10 backdrop-blur-sm`}>
-                      <a.icon className="w-5 h-5 text-foreground" />
+                    <div className={`w-14 h-14 rounded-2xl flex items-center justify-center bg-gradient-to-br ${a.color} shadow-lg`}>
+                      <a.icon className="w-5 h-5 text-white" />
                     </div>
                     <span className="text-[10px] font-bold text-muted-foreground">{a.label}</span>
                   </motion.button>
@@ -202,16 +222,24 @@ export default function WalletHubPage() {
               {/* ── Accounts ── */}
               {rows.length > 0 && (
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}>
-                  <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-3">Accounts</p>
+                  <div className="flex items-center justify-between mb-3">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Accounts</p>
+                    <button onClick={() => navigate("/wallet/accounts")} className="text-[10px] font-bold text-primary flex items-center gap-0.5">
+                      Manage <ArrowRight className="w-3 h-3" />
+                    </button>
+                  </div>
                   <div className="space-y-2">
                     {rows.map((acc: any) => (
                       <div key={acc.id} className="flex items-center gap-3 rounded-2xl p-4 bg-card/80 backdrop-blur-sm border border-border/10">
                         <div className="w-11 h-11 rounded-xl flex items-center justify-center" style={{ background: "hsl(var(--primary) / 0.08)" }}>
-                          <Wallet className="w-5 h-5 text-primary" />
+                          {acc.account_type === "fiat" ? <Banknote className="w-5 h-5 text-primary" /> : <Wallet className="w-5 h-5 text-primary" />}
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-bold text-foreground capitalize">{acc.account_type || "Main"}</p>
-                          <p className="text-[10px] text-muted-foreground">{acc.currency}</p>
+                          <p className="text-[10px] text-muted-foreground flex items-center gap-1">
+                            <CheckCircle className="w-2.5 h-2.5 text-emerald-500" />
+                            Active · {acc.currency}
+                          </p>
                         </div>
                         <span className="text-sm font-black text-foreground tabular-nums">
                           {showBalance ? `${(acc.balance || 0).toFixed(2)}` : "••••"}
