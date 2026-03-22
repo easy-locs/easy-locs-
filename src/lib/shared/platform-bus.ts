@@ -134,6 +134,17 @@ type PlatformEventType =
   | "ui.panel.changed"
   | "camera.opened"
   | "camera.closed"
+  // QR (dot-notation — emitted by QrScannerPage / qr-engine)
+  | "qr.scan.started"
+  | "qr.scan.decoded"
+  | "qr.scan.failed"
+  | "qr.scan.expired"
+  | "qr.resolve.started"
+  | "qr.resolve.completed"
+  | "qr.payment.initiated"
+  | "qr.payment.completed"
+  | "qr.payment.failed"
+  | "qr.navigation"
   // Deals
   | "deal:created"
   | "deal:offer_sent"
