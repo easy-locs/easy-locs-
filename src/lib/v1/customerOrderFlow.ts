@@ -57,7 +57,7 @@ export async function createV1OrderDraft(input: V1CheckoutInput) {
     if (itemError) throw itemError;
   }
 
-  await platformBus.emit(
+  platformBus.emit(
     "ORDER_CREATED",
     {
       orderId,
@@ -66,7 +66,7 @@ export async function createV1OrderDraft(input: V1CheckoutInput) {
       amount: subtotal,
       currency: input.currency ?? "AED",
     },
-    { source: "customerOrderFlow:createV1OrderDraft" }
+    "system"
   );
 
   return data;
