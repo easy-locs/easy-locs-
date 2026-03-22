@@ -15,6 +15,8 @@ export type TargetType =
   | "real_estate_lead" | "real_estate_listing"
   // Deal Room
   | "deal" | "offer" | "counter_offer"
+  // Orders / Commerce
+  | "order" | "delivery" | "storefront_order"
   // General
   | "message";
 
