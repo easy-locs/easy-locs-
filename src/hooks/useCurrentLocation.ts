@@ -31,14 +31,21 @@ export function useCurrentLocation(opts?: { watch?: boolean }) {
       store().setPermissionState(perm);
 
       if (perm === "denied") {
-        store().setIsFallback(true);
-        store().setError("Location permission denied");
-        // Only set fallback if no real location exists yet
-        if (!store().currentLocation) {
-          store().setCurrentLocation(store().lastKnownLocation || DUBAI_FALLBACK);
+        // If we already have a valid position, don't block the UI
+        const existing = store().currentLocation;
+        if (existing && existing.accuracy < 5000) {
+          console.log("[useCurrentLocation] perm=denied but valid location exists, skipping fallback");
+          store().setLoading(false);
+          // Still try to get position — browser may allow it despite permissions API
+        } else {
+          store().setIsFallback(true);
+          store().setError("Location permission denied");
+          if (!existing) {
+            store().setCurrentLocation(store().lastKnownLocation || DUBAI_FALLBACK);
+          }
+          store().setLoading(false);
+          return;
         }
-        store().setLoading(false);
-        return;
       }
 
       try {
