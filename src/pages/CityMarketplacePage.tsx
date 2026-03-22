@@ -42,7 +42,7 @@ const CityMarketplacePage = () => {
           <MapPin className="h-6 w-6 text-primary" />
           <div>
             <h1 className="text-2xl font-bold text-foreground">Food Delivery in {cityName}</h1>
-            <p className="text-sm text-muted-foreground">{merchants.length} restaurants · {active.length} active · {comingSoon.length} coming soon</p>
+            <p className="text-sm text-muted-foreground">{merchants.length} restaurants · {active} active · {comingSoon} coming soon</p>
           </div>
         </div>
 
