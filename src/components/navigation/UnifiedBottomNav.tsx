@@ -1,21 +1,21 @@
 /**
- * UnifiedBottomNav — 5-tab bottom navigation.
- * Home (Orbit) | Explore (Achille) | Map | Wallet | Profile
+ * UnifiedBottomNav — Legacy compat wrapper.
+ * Dashboard | Radar | Orbit | Wallet | Me
  */
 import { useLocation, useNavigate } from "react-router-dom";
-import { Home, Compass, Map, Wallet, User } from "lucide-react";
+import { Home, Radar, MessageCircle, Wallet, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const TABS = [
   { key: "home", label: "Home", icon: Home, path: "/" },
-  { key: "explore", label: "Explore", icon: Compass, path: "/explore" },
-  { key: "map", label: "Map", icon: Map, path: "/map" },
+  { key: "radar", label: "Radar", icon: Radar, path: "/radar" },
+  { key: "orbit", label: "Orbit", icon: MessageCircle, path: "/dashboard/communication" },
   { key: "wallet", label: "Wallet", icon: Wallet, path: "/wallet/hub" },
-  { key: "profile", label: "Profile", icon: User, path: "/settings" },
+  { key: "profile", label: "Me", icon: User, path: "/settings" },
 ] as const;
 
 function isActive(path: string, currentPath: string) {
-  if (path === "/") return currentPath === "/" || currentPath === "/index" || currentPath.startsWith("/orbit");
+  if (path === "/") return currentPath === "/" || currentPath === "/index";
   return currentPath.startsWith(path);
 }
 
