@@ -3,18 +3,13 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
-  saveAddress as createSavedAddressRaw,
-  getSavedAddresses as listSavedAddressesRaw,
-  setDefaultAddress as setDefaultAddressRaw,
+  getSavedAddresses,
+  saveAddress,
+  touchAddressUsed,
 } from "@/lib/address/address-engine";
 
-// Thin adapters to match the old addressEngine API shape
-async function listSavedAddresses(userId: string) {
-  // address-engine resolves userId internally from auth
-  return getSavedAddressesForCheckout();
-}
-async function getSavedAddressesForCheckout() {
-  const { getSavedAddresses } = await import("@/lib/address/address-engine");
+// Adapter: fetch saved addresses in flat row shape for the picker
+async function listSavedAddresses() {
   const addrs = await getSavedAddresses();
   return addrs.map(a => ({
     id: a.id ?? crypto.randomUUID(),
@@ -24,6 +19,25 @@ async function getSavedAddressesForCheckout() {
     area: a.area ?? null,
     is_default: a.source === "default",
   }));
+}
+
+// Adapter: create address via canonical engine
+async function createSavedAddress(input: { label: string; line1: string; city: string; area?: string | null; isDefault?: boolean }) {
+  const row = await saveAddress({
+    label: input.label,
+    fullAddress: input.line1,
+    city: input.city,
+    area: input.area ?? undefined,
+    lat: 0,
+    lng: 0,
+    isDefault: input.isDefault,
+  });
+  return { id: row.id, label: row.label ?? input.label, line1: row.full_address ?? input.line1, city: row.city ?? input.city, area: row.area ?? null };
+}
+
+// Adapter: set default by touching + saving
+async function setDefaultAddress(_userId: string, addressId: string) {
+  await touchAddressUsed(addressId);
 }
 
 export interface CheckoutAddressValue {
