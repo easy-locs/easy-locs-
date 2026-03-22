@@ -131,9 +131,9 @@ export default memo(function RadarView({ initialType, radiusKm = 20, showMap = t
                         {selected.rating.toFixed(1)}
                       </span>
                     )}
-                    {selected.distance_m != null && (
+                    {selected.distance != null && (
                       <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">
-                        <Navigation className="w-2.5 h-2.5" />{formatGeoDistance(selected.distance_m)}
+                        <Navigation className="w-2.5 h-2.5" />{formatGeoDistance(selected.distance)}
                       </span>
                     )}
                   </div>
@@ -180,11 +180,11 @@ export default memo(function RadarView({ initialType, radiusKm = 20, showMap = t
                         {entity.rating.toFixed(1)}
                       </span>
                     )}
-                    {entity.distance_m != null && (
-                      <span className="text-[10px] text-muted-foreground">{formatGeoDistance(entity.distance_m)}</span>
+                    {entity.distance != null && (
+                      <span className="text-[10px] text-muted-foreground">{formatGeoDistance(entity.distance)}</span>
                     )}
-                    {entity.eta_min != null && (
-                      <span className="text-[10px] text-muted-foreground">{formatGeoETA(entity.eta_min)}</span>
+                    {entity.distance != null && (
+                      <span className="text-[10px] text-muted-foreground">{formatGeoETA(entity.distance)}</span>
                     )}
                   </div>
                 </div>
