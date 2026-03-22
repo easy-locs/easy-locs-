@@ -1,7 +1,7 @@
 /**
  * MainBottomNav — THE single bottom navigation for the entire app.
+ * 5 tabs: Dashboard | Radar | Orbit | Wallet | Me
  * Sources config from src/config/navigation.ts.
- * Rendered once at App.tsx level — no other bottom nav should exist.
  */
 import { memo } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -14,7 +14,6 @@ function MainBottomNav() {
   const { pathname } = useLocation();
   const { user } = useAuth();
 
-  // Hide on auth/onboarding pages or when not authenticated
   if (!user) return null;
   if (HIDE_NAV_PREFIXES.some((p) => pathname.startsWith(p))) return null;
 
@@ -36,6 +35,7 @@ function MainBottomNav() {
         {NAV_TABS_CONFIG.map((tab) => {
           const active = tab.match(pathname);
           const Icon = tab.icon;
+          const isOrbit = tab.key === "orbit";
           return (
             <button
               key={tab.key}
@@ -48,7 +48,7 @@ function MainBottomNav() {
                          active:scale-[0.92] transition-all duration-150 ease-out
                          focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-lg"
             >
-              {active && (
+              {active && !isOrbit && (
                 <motion.div
                   layoutId="main-tab-pill"
                   className="absolute top-0 left-3 right-3 h-[2px] rounded-full"
@@ -56,21 +56,32 @@ function MainBottomNav() {
                   transition={{ type: "spring", stiffness: 500, damping: 35 }}
                 />
               )}
-              <Icon
-                className="w-[21px] h-[21px] transition-colors duration-150"
-                strokeWidth={active ? 2.4 : 1.8}
-                style={{
-                  color: active
-                    ? "hsl(var(--primary))"
-                    : "hsl(var(--muted-foreground) / 0.5)",
-                }}
-              />
+              {isOrbit ? (
+                <div
+                  className="w-10 h-10 rounded-full flex items-center justify-center -mt-3"
+                  style={{
+                    background: active ? "hsl(var(--primary))" : "hsl(var(--primary) / 0.12)",
+                  }}
+                >
+                  <Icon
+                    className="w-5 h-5"
+                    strokeWidth={active ? 2.4 : 1.8}
+                    style={{ color: active ? "hsl(var(--primary-foreground))" : "hsl(var(--primary))" }}
+                  />
+                </div>
+              ) : (
+                <Icon
+                  className="w-[21px] h-[21px] transition-colors duration-150"
+                  strokeWidth={active ? 2.4 : 1.8}
+                  style={{
+                    color: active ? "hsl(var(--primary))" : "hsl(var(--muted-foreground) / 0.5)",
+                  }}
+                />
+              )}
               <span
                 className="text-[10px] leading-tight transition-colors duration-150"
                 style={{
-                  color: active
-                    ? "hsl(var(--primary))"
-                    : "hsl(var(--muted-foreground) / 0.5)",
+                  color: active ? "hsl(var(--primary))" : "hsl(var(--muted-foreground) / 0.5)",
                   fontWeight: active ? 700 : 500,
                 }}
               >
