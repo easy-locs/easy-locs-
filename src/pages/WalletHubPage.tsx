@@ -32,8 +32,19 @@ export default function WalletHubPage() {
   const [filter, setFilter] = useState<"all" | "in" | "out">("all");
   const [activeTab, setActiveTab] = useState<WalletTab>("fiat");
 
-  const totalBalance = rows.reduce((sum: number, r: any) => sum + (r.balance || 0), 0);
   const mainCurrency = rows[0]?.currency || "AED";
+  
+  // Dynamic total balance: sum wallet_accounts balances, cross-check with tx flow
+  const totalBalance = useMemo(() => {
+    const accountBalance = rows.reduce((sum: number, r: any) => sum + (r.balance || 0), 0);
+    // If account balance is 0 but we have completed transactions, compute from tx
+    if (accountBalance === 0 && txHistory.length > 0) {
+      const inFlow = txHistory.filter(tx => tx.recipient_id === user?.id && tx.status === "completed").reduce((s, tx) => s + Number(tx.amount || 0), 0);
+      const outFlow = txHistory.filter(tx => tx.sender_id === user?.id && tx.status === "completed").reduce((s, tx) => s + Number(tx.amount || 0), 0);
+      return inFlow - outFlow;
+    }
+    return accountBalance;
+  }, [rows, txHistory, user?.id]);
 
   // Analytics
   const stats = useMemo(() => {
