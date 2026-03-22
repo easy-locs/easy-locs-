@@ -47,9 +47,9 @@ const CompactHeader = memo(({ city, greeting, onSearch }: { city: string | null;
 const QuickActions = memo(() => (
   <div className="flex items-center gap-1.5 mb-3">
     {[
-      { icon: QrCode, label: "Scan", to: "/dashboard/wallet?action=scan" },
-      { icon: Send, label: "Pay", to: "/dashboard/wallet?action=pay" },
-      { icon: Wallet, label: "Wallet", to: "/dashboard/wallet" },
+      { icon: QrCode, label: "Scan", to: "/pay/scan" },
+      { icon: Send, label: "Pay", to: "/wallet/transfer" },
+      { icon: Wallet, label: "Wallet", to: "/wallet/hub" },
     ].map(({ icon: Icon, label, to }) => (
       <Link
         key={label}
