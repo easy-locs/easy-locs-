@@ -274,15 +274,14 @@ const TeamPermissionsPage = safeLazy(() => import("./pages/TeamPermissionsPage")
 const AIOpsChatPage = safeLazy(() => import("./pages/AIOpsChatPage"), "AIOpsChatPage");
 const FinancialReconPage = safeLazy(() => import("./pages/FinancialReconPage"), "FinancialReconPage");
 const ReconAlertsPage = safeLazy(() => import("./pages/ReconAlertsPage"), "ReconAlertsPage");
-const CallSessionPage = safeLazy(() => import("./pages/CallSessionPage"), "CallSessionPage");
+// CallSessionPage — removed (orphan, bypassed CallProvider)
 const OrbitIdentityPage = safeLazy(() => import("./pages/OrbitIdentityPage"), "OrbitIdentityPage");
 const WalletHubPage = safeLazy(() => import("./pages/WalletHubPage"), "WalletHubPage");
 const PredictiveDispatchPage = safeLazy(() => import("./pages/PredictiveDispatchPage"), "PredictiveDispatchPage");
 const MerchantOnboardingPage = safeLazy(() => import("./pages/MerchantOnboardingPage"), "MerchantOnboardingPage");
 const MerchantOnboardingAdminPage = safeLazy(() => import("./pages/MerchantOnboardingAdminPage"), "MerchantOnboardingAdminPage");
 const ExecutiveDashboard = safeLazy(() => import("./pages/ExecutiveDashboard"), "ExecutiveDashboard");
-const GhostCallPage = safeLazy(() => import("./pages/GhostCallPage"), "GhostCallPage");
-// Ghost V2/V3 pages — removed (Batch B purge)
+// GhostCallPage — removed (orphan, bypassed CallProvider)
 const SalesSequencePage = safeLazy(() => import("./pages/SalesSequencePage"), "SalesSequencePage");
 const WorkspaceBootstrapPage = safeLazy(() => import("./pages/WorkspaceBootstrapPage"), "WorkspaceBootstrapPage");
 const MenuAdminPage = safeLazy(() => import("./pages/MenuAdminPage"), "MenuAdminPage");
@@ -872,7 +871,7 @@ const App = () => (
               <Route path="/admin/ai-ops-chat" element={<AIOpsChatPage />} />
               <Route path="/admin/financial-recon" element={<FinancialReconPage />} />
               <Route path="/admin/recon-alerts" element={<ReconAlertsPage />} />
-              <Route path="/call-session/:callSessionId" element={<CallSessionPage />} />
+              {/* call-session route removed — calls go through CallProvider */}
               <Route path="/orbit/identity" element={<OrbitIdentityPage />} />
               <Route path="/wallet/hub" element={<WalletHubPage />} />
               <Route path="/dispatch/predictive" element={<PredictiveDispatchPage />} />
@@ -1062,9 +1061,7 @@ const App = () => (
               {/* Admin */}
               <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
               <Route path="/admin/ai-quality" element={<ProtectedRoute><AIQualityDashboard /></ProtectedRoute>} />
-              <Route path="/admin/ghost-call" element={<ProtectedRoute><GhostCallPage /></ProtectedRoute>} />
-
-              {/* Ghost V2/V3 routes — removed (Batch B purge) */}
+              {/* Ghost call route removed — calls go through CallProvider */}
               <Route path="/admin/sales-sequences" element={<ProtectedRoute><SalesSequencePage /></ProtectedRoute>} />
               <Route path="/admin/workspace-bootstrap" element={<ProtectedRoute><WorkspaceBootstrapPage /></ProtectedRoute>} />
               <Route path="/admin/menu" element={<ProtectedRoute><MenuAdminPage /></ProtectedRoute>} />
