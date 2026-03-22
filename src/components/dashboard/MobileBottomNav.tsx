@@ -1,15 +1,16 @@
 /**
  * MobileBottomNav — V7 Bottom navigation with 5 pillars.
- * Home · Explore · Orbit (center) · Wallet · Me
+ * Dashboard · Radar · Orbit (center) · Wallet · Me
+ * NOTE: MainBottomNav is the canonical nav. This is kept for backward compat.
  */
 import { NavLink, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Home, Compass, MessageCircle, Wallet, User } from "lucide-react";
+import { Home, Radar, MessageCircle, Wallet, User } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 
 const FALLBACKS: Record<string, string> = {
   "nav.home": "Home",
-  "nav.explore": "Explore",
+  "nav.radar": "Radar",
   "nav.orbit": "Orbit",
   "nav.wallet": "Wallet",
   "nav.me": "Me",
@@ -32,9 +33,9 @@ const MobileBottomNav = () => {
       match: (p: string) => p === "/",
     },
     {
-      icon: Compass, labelKey: "nav.explore", path: "/explore",
+      icon: Radar, labelKey: "nav.radar", path: "/radar",
       match: (p: string) =>
-        p.startsWith("/explore") || p.startsWith("/search") || p.startsWith("/discover") ||
+        p === "/radar" || p.startsWith("/explore") || p.startsWith("/search") || p.startsWith("/discover") ||
         p.startsWith("/listing/") || p.startsWith("/trending") || p.startsWith("/nearby") ||
         p.startsWith("/top-rated") || p.startsWith("/shops") || p.startsWith("/s/") ||
         p.startsWith("/super-map") || p.startsWith("/food") || p.startsWith("/grocery"),
