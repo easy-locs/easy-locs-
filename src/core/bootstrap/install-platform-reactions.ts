@@ -28,7 +28,7 @@ export function installPlatformReactions() {
 
     void useWalletStore.getState().loadWallet({
       walletId: `wallet_${event.payload.orbitId}`,
-      ownerOrbitId: event.payload.orbitId,
+      ownerOrbitId: event.payload.userId,
       currency: "AED",
     });
   });
