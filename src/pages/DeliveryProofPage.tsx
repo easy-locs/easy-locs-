@@ -83,11 +83,11 @@ export default function DeliveryProofPage() {
             />
           </div>
 
-          {coords && (
+          {point && (
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <MapPin className="h-4 w-4" />
               <span>
-                {coords.latitude.toFixed(5)}, {coords.longitude.toFixed(5)}
+                {point.lat.toFixed(5)}, {point.lng.toFixed(5)}
               </span>
             </div>
           )}
