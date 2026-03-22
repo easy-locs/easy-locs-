@@ -198,10 +198,9 @@ export function useTracker(opts: UseTrackerOpts) {
   }, [trackingId, user?.id, orgId, opts.contextType, opts.contextId]);
 
   const stopWatch = useCallback(() => {
-    if (watchIdRef.current !== null) {
-      navigator.geolocation.clearWatch(watchIdRef.current);
-      watchIdRef.current = null;
-    }
+    import("@/lib/location/geolocation").then(({ stopWatchingPosition }) => {
+      stopWatchingPosition();
+    });
   }, []);
 
   useEffect(() => {
