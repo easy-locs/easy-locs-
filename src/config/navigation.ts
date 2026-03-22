@@ -2,7 +2,7 @@
  * Centralized navigation config — Single source of truth.
  * All primary routes, tab matching, and nav structure defined here.
  */
-import { LayoutDashboard, Compass, MapPin, Wallet, User } from "lucide-react";
+import { LayoutDashboard, Compass, Radar, Wallet, User } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
 /* ── Primary 5-tab bottom navigation ── */
