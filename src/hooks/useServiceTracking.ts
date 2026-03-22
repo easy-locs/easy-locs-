@@ -211,7 +211,7 @@ export function useTrackingStreamer(sessionId: string | null) {
 
   // Cleanup on unmount
   useEffect(() => {
-    return () => stopStreaming();
+    return () => { stopStreaming(); };
   }, [stopStreaming]);
 
   return { streaming, error, startStreaming, stopStreaming, markArrived, markCompleted };
