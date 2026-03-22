@@ -13,7 +13,7 @@ export default function DeliveryProofPage() {
   const [notes, setNotes] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
-  const { coords } = useLiveGeolocation(true);
+  const { point } = useGeo();
 
   const handleSubmit = async () => {
     if (!orderId || !user) return;
