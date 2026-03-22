@@ -136,7 +136,7 @@ function CategoryCard({ cat, index }: { cat: SmartCategory; index: number }) {
     >
       <Link
         to={cat.route}
-        className="group flex flex-col items-center gap-1 rounded-2xl p-2 active:scale-[0.93] transition-all duration-150 border border-border/10 relative overflow-hidden w-[76px]"
+        className="group flex flex-col items-center gap-1 rounded-2xl p-2 active:scale-[0.93] transition-all duration-150 border border-border/10 relative overflow-hidden w-[76px] h-[96px]"
         style={{ background: `color-mix(in srgb, ${cat.color} 6%, hsl(var(--card)))` }}
       >
         <div className="w-14 h-14 rounded-xl flex items-center justify-center overflow-hidden relative"
@@ -202,16 +202,16 @@ function DynamicSection({ section, shops, index }: { section: { key: string; tit
           <Link
             key={shop.id}
             to={`/shop/${shop.slug}`}
-            className="shrink-0 w-[140px] rounded-xl border border-border/15 bg-card/50 overflow-hidden active:scale-[0.96] transition-transform"
+            className="shrink-0 w-[148px] rounded-2xl border border-border/15 bg-card/50 overflow-hidden active:scale-[0.96] transition-transform"
           >
-            <div className="h-[88px] bg-muted/10 flex items-center justify-center relative overflow-hidden">
+            <div className="h-[92px] bg-muted/10 flex items-center justify-center relative overflow-hidden">
               {shop.logo_url ? (
                 <img src={shop.logo_url} alt={shop.name} className="w-full h-full object-cover" loading="lazy" />
               ) : (
                 <Star className="h-5 w-5 text-muted-foreground/30" />
               )}
             </div>
-            <div className="p-2">
+            <div className="p-2.5 space-y-0.5">
               <p className="text-[11px] font-bold text-foreground truncate">{shop.name}</p>
               <div className="flex items-center gap-1">
                 {shop.rating != null && shop.rating > 0 && (
