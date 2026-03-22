@@ -1,13 +1,16 @@
 /**
  * GeoForcePrompt — Shown when GPS permission is denied.
  * Non-blocking banner that re-triggers the native prompt on tap.
+ * Uses i18n for all user-facing strings.
  */
 import { useLocationStore } from "@/stores/locationStore";
 import { MapPin } from "lucide-react";
 import { requestLocation } from "@/lib/location/requestLocation";
 import { motion, AnimatePresence } from "framer-motion";
+import { useI18n, tSafe } from "@/lib/i18n";
 
 export default function GeoForcePrompt() {
+  const { t } = useI18n();
   const permission = useLocationStore((s) => s.permissionState);
   const isFallback = useLocationStore((s) => s.isFallback);
   const loading = useLocationStore((s) => s.loading);
@@ -15,7 +18,6 @@ export default function GeoForcePrompt() {
   const show = !loading && (permission === "denied" || (isFallback && permission !== "granted"));
 
   const handleRetry = async () => {
-    // Re-trigger the native browser permission prompt
     await requestLocation();
   };
 
@@ -33,10 +35,10 @@ export default function GeoForcePrompt() {
             <MapPin className="h-3.5 w-3.5 text-primary" />
           </div>
           <div className="flex-1 text-left min-w-0">
-            <p className="text-[11px] font-bold text-foreground">📍 Activer la géolocalisation</p>
-            <p className="text-[10px] text-muted-foreground">Autorisez l'accès pour des résultats proches de vous</p>
+            <p className="text-[11px] font-bold text-foreground">📍 {tSafe(t, "geo_enable_location", "Enable location")}</p>
+            <p className="text-[10px] text-muted-foreground">{tSafe(t, "geo_enable_location_desc", "Allow access for nearby results")}</p>
           </div>
-          <span className="text-[10px] font-bold text-primary shrink-0">Activer</span>
+          <span className="text-[10px] font-bold text-primary shrink-0">{tSafe(t, "geo_enable_btn", "Enable")}</span>
         </motion.button>
       )}
     </AnimatePresence>
