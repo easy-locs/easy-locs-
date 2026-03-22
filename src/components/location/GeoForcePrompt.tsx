@@ -35,10 +35,10 @@ export default function GeoForcePrompt() {
             <MapPin className="h-3.5 w-3.5 text-primary" />
           </div>
           <div className="flex-1 text-left min-w-0">
-            <p className="text-[11px] font-bold text-foreground">📍 {t("geo_enable_location", "Enable location")}</p>
-            <p className="text-[10px] text-muted-foreground">{t("geo_enable_location_desc", "Allow access for nearby results")}</p>
+            <p className="text-[11px] font-bold text-foreground">📍 {tSafe(t, "geo_enable_location", "Enable location")}</p>
+            <p className="text-[10px] text-muted-foreground">{tSafe(t, "geo_enable_location_desc", "Allow access for nearby results")}</p>
           </div>
-          <span className="text-[10px] font-bold text-primary shrink-0">{t("geo_enable_btn", "Enable")}</span>
+          <span className="text-[10px] font-bold text-primary shrink-0">{tSafe(t, "geo_enable_btn", "Enable")}</span>
         </motion.button>
       )}
     </AnimatePresence>
