@@ -69,6 +69,8 @@ export default function QrScannerPage() {
   const [selectedCameraId, setSelectedCameraId] = useState("");
   const [cameraRequested, setCameraRequested] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [showPremiumSuccess, setShowPremiumSuccess] = useState(false);
+  const [successAmount, setSuccessAmount] = useState("");
 
   const secure = typeof window === "undefined" ? true : window.isSecureContext;
   const ios = isIOS();
