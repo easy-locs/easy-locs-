@@ -30,9 +30,7 @@ export function ConversationThread(props: { conversationId: string | null }) {
     if (!props.conversationId || hydrated.current === props.conversationId) return;
     hydrated.current = props.conversationId;
     void hydrateMessages(props.conversationId);
-    useDebugCommsStore.getState().setConversation({
-      conversationId: props.conversationId,
-    });
+    // debugCommsStore removed (Batch A purge)
   }, [props.conversationId, hydrateMessages]);
 
   useEffect(() => {
