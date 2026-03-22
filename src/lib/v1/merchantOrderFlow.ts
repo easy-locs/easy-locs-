@@ -47,10 +47,10 @@ export async function advanceMerchantOrderStatus(params: {
   if (error) throw error;
 
   if (params.nextStatus === "confirmed") {
-    await platformBus.emit(
+    platformBus.emit(
       "ORDER_CONFIRMED",
       { orderId: params.orderId },
-      { source: "merchantOrderFlow:advanceMerchantOrderStatus" }
+      "system"
     );
   }
 
