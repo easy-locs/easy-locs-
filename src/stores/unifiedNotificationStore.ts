@@ -86,8 +86,8 @@ export const useUnifiedNotificationStore = create<NotificationStoreState>((set, 
 
   markAsRead: async (id) => {
     await supabase
-      .from("notifications" as any)
-      .update({ read_at: new Date().toISOString() } as any)
+      .from("app_notifications")
+      .update({ read: true } as any)
       .eq("id", id);
     set((s) => ({
       notifications: s.notifications.map((n) =>
