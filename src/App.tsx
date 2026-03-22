@@ -32,6 +32,7 @@ import { UnifiedPaymentProvider } from "@/payments/UnifiedPaymentSystem";
 import V1BootBridge from "@/app/V1BootBridge";
 import { useNotificationsStore } from "@/stores/notificationsStore";
 import AppBootstrapGuardDirect from "@/components/app/AppBootstrapGuard";
+import { AppInit } from "@/components/system/AppInit";
 
 // V2 test pages — removed (Batch B purge)
 
@@ -781,6 +782,7 @@ const App = () => (
            <RealtimeHubGuard />
            <NotificationsRealtimeGuard />
            <UpdateNotification />
+                <AppInit />
                 <GeoBootstrap />
              <AppBootstrapGuardDirect />
            
