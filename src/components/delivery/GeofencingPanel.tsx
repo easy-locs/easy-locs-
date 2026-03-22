@@ -32,14 +32,13 @@ export default function GeofencingPanel({ className }: Props) {
   const [newZone, setNewZone] = useState<{ name: string; lat: number; lng: number; radius_km: number; type: "allowed" | "restricted" | "premium" }>({ name: "", lat: 48.8566, lng: 2.3522, radius_km: 10, type: "allowed" });
   const [driverPos, setDriverPos] = useState<{ lat: number; lng: number } | null>(null);
 
-  // Get driver position
+  // Get driver position from canonical store
   useEffect(() => {
-    if (!navigator.geolocation) return;
-    navigator.geolocation.getCurrentPosition(
-      (pos) => setDriverPos({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
-      () => {},
-      { enableHighAccuracy: false }
-    );
+    import("@/lib/location/requestLocation").then(({ requestLocation }) => {
+      requestLocation().then((pos) => {
+        if (pos) setDriverPos(pos);
+      });
+    });
   }, []);
 
   // Load zones from localStorage (simple persistence)
