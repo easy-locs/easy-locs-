@@ -871,7 +871,7 @@ const App = () => (
               <Route path="/admin/ai-ops-chat" element={<AIOpsChatPage />} />
               <Route path="/admin/financial-recon" element={<FinancialReconPage />} />
               <Route path="/admin/recon-alerts" element={<ReconAlertsPage />} />
-              <Route path="/call-session/:callSessionId" element={<CallSessionPage />} />
+              {/* call-session route removed — calls go through CallProvider */}
               <Route path="/orbit/identity" element={<OrbitIdentityPage />} />
               <Route path="/wallet/hub" element={<WalletHubPage />} />
               <Route path="/dispatch/predictive" element={<PredictiveDispatchPage />} />
