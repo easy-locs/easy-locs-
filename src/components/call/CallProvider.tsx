@@ -421,6 +421,7 @@ export function CallProvider({ children }: { children: ReactNode }) {
     }
     activeCallRef.current = null;
     callManager?.cleanup("provider-close");
+    platformBus.emit("call.ended", { status: callState.status || "ended" }, "orbit");
     setCallManager(null);
     setShowCallDialog(false);
     setCallState({});

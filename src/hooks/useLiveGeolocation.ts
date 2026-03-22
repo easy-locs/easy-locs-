@@ -1,32 +1,27 @@
-import { useEffect, useRef, useState } from "react";
+/**
+ * useLiveGeolocation — Thin wrapper over locationStore for components
+ * needing real-time coordinates. Uses the canonical geo pipeline.
+ */
+import { useLocationStore } from "@/stores/locationStore";
 
 export function useLiveGeolocation(enabled: boolean) {
-  const watchIdRef = useRef<number | null>(null);
-  const [coords, setCoords] = useState<GeolocationCoordinates | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const location = useLocationStore((s) => s.currentLocation);
+  const error = useLocationStore((s) => s.error);
 
-  useEffect(() => {
-    if (!enabled) return;
-    if (!navigator.geolocation) {
-      setError("Geolocation not supported");
-      return;
-    }
+  if (!enabled) return { coords: null, error: null };
 
-    watchIdRef.current = navigator.geolocation.watchPosition(
-      (position) => {
-        setCoords(position.coords);
-        setError(null);
-      },
-      (err) => setError(err.message || "Location error"),
-      { enableHighAccuracy: true, maximumAge: 3000, timeout: 15000 }
-    );
-
-    return () => {
-      if (watchIdRef.current !== null) {
-        navigator.geolocation.clearWatch(watchIdRef.current);
+  // Map locationStore format to GeolocationCoordinates-like shape
+  const coords = location
+    ? {
+        latitude: location.lat,
+        longitude: location.lng,
+        accuracy: location.accuracy ?? null,
+        altitude: null,
+        altitudeAccuracy: null,
+        heading: null,
+        speed: null,
       }
-    };
-  }, [enabled]);
+    : null;
 
   return { coords, error };
 }
