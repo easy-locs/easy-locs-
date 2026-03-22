@@ -64,12 +64,15 @@ export default function OrbitRadar() {
   const geoError = useLocationStore((s) => s.error);
   const lat = currentLocation?.lat ?? null;
   const lng = currentLocation?.lng ?? null;
-  const setCurrentLocation = useLocationStore((s) => s.setCurrentLocation);
-  const requestLocation = () => {
-    navigator.geolocation?.getCurrentPosition((pos) => {
-      setCurrentLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude, accuracy: pos.coords.accuracy, timestamp: new Date().toISOString() });
-    }, () => {}, { enableHighAccuracy: true, timeout: 12000 });
-  };
+  // Use canonical geo from GeoBootstrap — no duplicate navigator.geolocation call
+  const requestLocation = useCallback(() => {
+    // GeoBootstrap already handles this globally; force a re-read from locationStore
+    import("@/lib/location/geolocation").then(({ getCurrentPositionHighAccuracy }) => {
+      getCurrentPositionHighAccuracy().then((pos) => {
+        useLocationStore.getState().setCurrentLocation(pos);
+      }).catch(() => {});
+    });
+  }, []);
 
   const [radius, setRadius] = useState(25);
   const [filter, setFilter] = useState<EcosystemFilter>("all");
@@ -88,7 +91,7 @@ export default function OrbitRadar() {
     lat, lng, radius, userId: user?.id, filter, search, onlyAvailable, onlyVerified,
   });
 
-  // Auto-request location
+  // Auto-request location if not yet available
   useEffect(() => {
     if (!lat && !lng && !geoLoading && !geoError) requestLocation();
   }, [lat, lng, geoLoading, geoError, requestLocation]);
