@@ -44,6 +44,8 @@ export function useCurrentLocation(opts?: { watch?: boolean }) {
         store().setIsFallback(false);
         store().setPermissionState("granted");
         store().setError(null);
+        platformBus.emit("geo.position.updated", { lat: pos.lat, lng: pos.lng, accuracy: pos.accuracy, source: "gps" }, "system");
+        platformBus.emit("geo.permission.changed", { state: "granted" }, "system");
       } catch (err: any) {
         console.error("[useCurrentLocation] GPS failed", {
           code: err?.code,
