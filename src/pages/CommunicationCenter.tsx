@@ -182,12 +182,6 @@ export const CommunicationCenter = () => {
       case "contacts": return <CommContactsSection />;
       case "payments": return <CommPaymentsSection />;
       case "groups": return <CommGroupsSection />;
-      case "nearby": return <OrbitRadar />;
-      case "meetings":
-      case "files":
-        return <CommPlaceholderSection section={activeSection} />;
-      case "settings":
-        return userId ? <OrbitSecuritySettings userId={userId} /> : <CommPlaceholderSection section={activeSection} />;
       case "you":
         return <OrbitAccountSection />;
       default: return null;
