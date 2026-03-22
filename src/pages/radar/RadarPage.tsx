@@ -5,6 +5,7 @@ import { RadarLocateButton } from "@/components/radar/RadarLocateButton";
 import { RadarFilterMenu } from "@/components/radar/RadarFilterMenu";
 import { RadarResultsList } from "@/components/radar/RadarResultsList";
 import { RadarUserPulse } from "@/components/radar/RadarUserPulse";
+import { ultraHaptic } from "@/lib/performance/useUltraFast";
 import type { RadarPoint } from "@/lib/radar/types";
 import "@/styles/radar-pro.css";
 
@@ -43,7 +44,6 @@ export default function RadarPage() {
     <div className="min-h-[100dvh] bg-background pb-24">
       <RadarFilterMenu />
 
-      {/* Header */}
       <div className="flex items-center justify-between px-4 pt-6 pb-3">
         <div>
           <h1 className="text-lg font-bold text-foreground">Radar</h1>
@@ -52,13 +52,12 @@ export default function RadarPage() {
         <RadarLocateButton onLocate={handleLocate} />
       </div>
 
-      {/* Sort pills */}
       <div className="flex gap-2 px-4 pb-3 overflow-x-auto no-scrollbar">
         {SORT_MODES.map(({ key, label }) => (
           <button
             key={key}
-            onClick={() => setSortMode(key)}
-            className={`rounded-2xl px-4 py-2 text-sm whitespace-nowrap transition-colors ${
+            onClick={() => { ultraHaptic("light"); setSortMode(key); }}
+            className={`rounded-2xl px-4 py-2 text-sm whitespace-nowrap active:scale-[0.95] transition-transform duration-75 ${
               sortMode === key
                 ? "bg-primary/20 text-primary font-medium"
                 : "bg-muted/40 text-muted-foreground"
@@ -69,27 +68,25 @@ export default function RadarPage() {
         ))}
       </div>
 
-      {/* View toggle */}
       <div className="flex items-center justify-between px-4 pb-3">
         <div className="flex rounded-xl bg-muted/30 p-1">
           <button
-            onClick={() => setMapMode("list")}
-            className={`rounded-lg px-4 py-2 text-sm transition-colors ${mapMode === "list" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"}`}
+            onClick={() => { ultraHaptic("light"); setMapMode("list"); }}
+            className={`rounded-lg px-4 py-2 text-sm active:scale-[0.95] transition-transform duration-75 ${mapMode === "list" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"}`}
           >
             ☰
           </button>
           <button
-            onClick={() => setMapMode("map")}
-            className={`rounded-lg px-4 py-2 text-sm transition-colors ${mapMode === "map" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"}`}
+            onClick={() => { ultraHaptic("light"); setMapMode("map"); }}
+            className={`rounded-lg px-4 py-2 text-sm active:scale-[0.95] transition-transform duration-75 ${mapMode === "map" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"}`}
           >
             📍
           </button>
         </div>
       </div>
 
-      {/* Content */}
       {mapMode === "map" ? (
-        <div className="relative mx-4 h-[320px] rounded-2xl bg-muted/20 border border-border/20 overflow-hidden flex items-center justify-center">
+        <div className="relative mx-4 h-[320px] rounded-2xl bg-muted/20 border border-border/20 overflow-hidden flex items-center justify-center ultra-smooth">
           <div className="relative w-[200px] h-[200px] rounded-full border border-primary/10">
             <RadarUserPulse />
           </div>

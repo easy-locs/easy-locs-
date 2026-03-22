@@ -24,7 +24,7 @@ const AppActionButton = forwardRef<HTMLButtonElement, AppActionButtonProps>(
       ref={ref}
       disabled={disabled || loading}
       className={cn(
-        "rounded-2xl px-5 py-3 text-sm font-bold transition-all duration-100 active:scale-[0.97] disabled:opacity-50",
+        "rounded-2xl px-5 py-3 text-sm font-bold transition-transform duration-75 active:scale-[0.96] disabled:opacity-50 will-change-transform",
         VARIANTS[variant],
         full && "w-full",
         "flex items-center justify-center gap-2",
