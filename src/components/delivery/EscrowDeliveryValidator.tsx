@@ -94,45 +94,36 @@ export default function EscrowDeliveryValidator({
 
       setGpsStatus("checking");
 
-      if (!navigator.geolocation) {
-        setGpsStatus("unavailable");
-        toast.error("GPS non disponible sur cet appareil");
-        resolve(false);
-        return;
-      }
+      try {
+        const { getCurrentPositionHighAccuracy } = await import("@/lib/location/geolocation");
+        const pos = await getCurrentPositionHighAccuracy();
+        const { useLocationStore } = await import("@/stores/locationStore");
+        useLocationStore.getState().setCurrentLocation(pos);
 
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          const { latitude, longitude, accuracy } = pos.coords;
-          setCurrentCoords({ lat: latitude, lng: longitude, accuracy });
+        setCurrentCoords({ lat: pos.lat, lng: pos.lng, accuracy: pos.accuracy });
 
-          // Check accuracy
-          if (accuracy > MAX_GPS_ACCURACY_M) {
-            setGpsStatus("low_accuracy");
-            toast.error(`Précision GPS insuffisante (${Math.round(accuracy)}m). Minimum requis : ${MAX_GPS_ACCURACY_M}m`);
-            resolve(false);
-            return;
-          }
-
-          // Check proximity
-          const distKm = haversineKm(latitude, longitude, dropoffLat, dropoffLng);
-          if (distKm > MAX_PROXIMITY_KM) {
-            setGpsStatus("too_far");
-            toast.error(`Vous êtes à ${(distKm * 1000).toFixed(0)}m du point de livraison. Maximum autorisé : ${MAX_PROXIMITY_KM * 1000}m`);
-            resolve(false);
-            return;
-          }
-
-          setGpsStatus("ok");
-          resolve(true);
-        },
-        (err) => {
-          setGpsStatus("unavailable");
-          toast.error("Impossible d'obtenir la position GPS");
+        if (pos.accuracy > MAX_GPS_ACCURACY_M) {
+          setGpsStatus("low_accuracy");
+          toast.error(`Précision GPS insuffisante (${Math.round(pos.accuracy)}m). Minimum requis : ${MAX_GPS_ACCURACY_M}m`);
           resolve(false);
-        },
-        { enableHighAccuracy: true, timeout: 10000, maximumAge: 30000 }
-      );
+          return;
+        }
+
+        const distKm = haversineKm(pos.lat, pos.lng, dropoffLat, dropoffLng);
+        if (distKm > MAX_PROXIMITY_KM) {
+          setGpsStatus("too_far");
+          toast.error(`Vous êtes à ${(distKm * 1000).toFixed(0)}m du point de livraison. Maximum autorisé : ${MAX_PROXIMITY_KM * 1000}m`);
+          resolve(false);
+          return;
+        }
+
+        setGpsStatus("ok");
+        resolve(true);
+      } catch {
+        setGpsStatus("unavailable");
+        toast.error("Impossible d'obtenir la position GPS");
+        resolve(false);
+      }
     });
   }, [dropoffLat, dropoffLng]);
 
