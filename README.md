@@ -29,3 +29,4 @@ Easy-Locs est une plateforme SaaS de gestion locative multi-pays permettant aux 
 npm install
 npm run dev
 ```
+fix: force rebuild cache
