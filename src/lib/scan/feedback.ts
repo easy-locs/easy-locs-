@@ -42,3 +42,7 @@ export function hapticPremiumSuccess() {
     // Silent fail
   }
 }
+
+/** Alias for use in scan flows */
+export const hapticSuccess = hapticPremiumSuccess;
+export const playScanBeep = playPremiumSuccessBeep;
