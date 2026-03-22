@@ -74,7 +74,7 @@ export function CallProvider({ children }: { children: ReactNode }) {
       .eq("id", normalized)
       .maybeSingle();
 
-    if (directProfile?.id) return directProfile.id;
+    if (directProfile?.id && directProfile.id !== user?.id) return directProfile.id;
 
     // Try org owner first
     const { data: ownerMembership } = await supabase
@@ -111,15 +111,9 @@ export function CallProvider({ children }: { children: ReactNode }) {
 
     if (otherMembers?.user_id) return otherMembers.user_id;
 
-    // Last resort: any member at all
-    const { data: anyMembership } = await supabase
-      .from("org_members")
-      .select("user_id")
-      .eq("org_id", normalized)
-      .limit(1)
-      .maybeSingle();
-
-    return anyMembership?.user_id || normalized;
+    // No other member found — return empty to trigger clear error
+    console.warn("[CallProvider] no callable target found (all resolved to self)", { rawTarget: rawTargetId, callerId: user?.id });
+    return "";
   }, [user?.id]);
 
   useEffect(() => {
@@ -250,15 +244,12 @@ export function CallProvider({ children }: { children: ReactNode }) {
 
         const receiverOrbitId = await resolveReceiverUserId(opts.orgId);
 
-        if (receiverOrbitId === authUser.id) {
-          toast.error(t("call.error.start_failed") || "Unable to start call");
-          console.warn("[CallProvider] blocked self-call", { receiverOrbitId });
-          return;
-        }
-
-        if (!receiverOrbitId) {
-          toast.error(t("call.error.start_failed") || "Unable to start call");
-          console.warn("[CallProvider] no resolved receiver for call", { rawTarget: opts.orgId });
+        if (!receiverOrbitId || receiverOrbitId === authUser.id) {
+          const reason = receiverOrbitId === authUser.id
+            ? "No other team member available to receive this call."
+            : "Could not find a callable contact for this business.";
+          toast.error(reason);
+          console.warn("[CallProvider] no callable target", { rawTarget: opts.orgId, resolved: receiverOrbitId, reason });
           return;
         }
 
