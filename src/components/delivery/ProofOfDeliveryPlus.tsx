@@ -154,39 +154,34 @@ export default function ProofOfDeliveryPlus({ jobId, orgId, className, onProofSu
   };
 
   // Real GPS capture with accuracy enforcement
-  const captureLocation = useCallback(() => {
+  const captureLocation = useCallback(async () => {
     setCapturing("location");
     haptic("light");
 
-    if (!navigator.geolocation) {
-      toast.error("GPS non disponible");
+    try {
+      const { getCurrentPositionHighAccuracy } = await import("@/lib/location/geolocation");
+      const pos = await getCurrentPositionHighAccuracy();
+      // Also write to canonical store
+      const { useLocationStore } = await import("@/stores/locationStore");
+      useLocationStore.getState().setCurrentLocation(pos);
+
+      setProof(p => ({
+        ...p,
+        geoLat: pos.lat,
+        geoLng: pos.lng,
+        geoAccuracy: Math.round(pos.accuracy),
+      }));
       setCapturing(null);
-      return;
+
+      if (pos.accuracy > MAX_GPS_ACCURACY_M) {
+        toast.warning(`Position capturée mais précision faible (±${Math.round(pos.accuracy)}m). Recommandé : ≤${MAX_GPS_ACCURACY_M}m`);
+      } else {
+        toast.success(`📍 Position GPS capturée (±${Math.round(pos.accuracy)}m)`);
+      }
+    } catch (err: any) {
+      setCapturing(null);
+      toast.error(`Erreur GPS : ${err?.message || "Unavailable"}`);
     }
-
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        const { latitude, longitude, accuracy } = pos.coords;
-        setProof(p => ({
-          ...p,
-          geoLat: latitude,
-          geoLng: longitude,
-          geoAccuracy: Math.round(accuracy),
-        }));
-        setCapturing(null);
-
-        if (accuracy > MAX_GPS_ACCURACY_M) {
-          toast.warning(`Position capturée mais précision faible (±${Math.round(accuracy)}m). Recommandé : ≤${MAX_GPS_ACCURACY_M}m`);
-        } else {
-          toast.success(`📍 Position GPS capturée (±${Math.round(accuracy)}m)`);
-        }
-      },
-      (err) => {
-        setCapturing(null);
-        toast.error(`Erreur GPS : ${err.message}`);
-      },
-      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
-    );
   }, []);
 
   const submitProof = async () => {
