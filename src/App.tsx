@@ -731,6 +731,7 @@ const App = () => (
            <UpdateNotification />
                 <AppInit />
                 <GeoBootstrap />
+                <PermissionBootstrap />
              <AppBootstrapGuardDirect />
            
            <SkipLink />
