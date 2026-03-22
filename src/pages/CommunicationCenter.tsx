@@ -15,7 +15,6 @@ import CommNavBar, { type CommSection } from "@/components/communication-hub/Com
 import CommPlaceholderSection from "@/components/communication-hub/CommPlaceholderSection";
 import CommCallsSection from "@/components/communication-hub/CommCallsSection";
 import CommContactsSection from "@/components/communication-hub/CommContactsSection";
-import CommPaymentsSection from "@/components/communication-hub/CommPaymentsSection";
 import CommGroupsSection from "@/components/communication-hub/CommGroupsSection";
 import HudConversationList from "@/components/communication-hub/HudConversationList";
 import HudChatPanel from "@/components/communication-hub/HudChatPanel";
@@ -177,7 +176,6 @@ export const CommunicationCenter = () => {
     switch (activeSection) {
       case "calls": return <CommCallsSection />;
       case "contacts": return <CommContactsSection />;
-      case "payments": return <CommPaymentsSection />;
       case "groups": return <CommGroupsSection />;
       case "you":
         return <OrbitAccountSection />;
@@ -333,7 +331,24 @@ export const CommunicationCenter = () => {
       )}
 
       {showNewConversation && (
-        <AddContactByEmail onSaved={() => setShowNewConversation(false)} />
+        <Sheet open={showNewConversation} onOpenChange={setShowNewConversation}>
+          <SheetContent side="bottom" className="h-[60dvh] p-0 rounded-t-2xl" style={{ background: "hsl(var(--background))", zIndex: 70 }}>
+            <SheetHeader className="px-4 py-3" style={{ borderBottom: "1px solid hsl(var(--border) / 0.1)" }}>
+              <SheetTitle className="text-sm font-bold" style={{ color: "hsl(var(--foreground))" }}>
+                New Conversation
+              </SheetTitle>
+            </SheetHeader>
+            <div className="p-4">
+              <AddContactByEmail
+                onSaved={() => { setShowNewConversation(false); loadThreads(); }}
+                onConversationReady={(conversation, peer) => {
+                  setShowNewConversation(false);
+                  loadThreads();
+                }}
+              />
+            </div>
+          </SheetContent>
+        </Sheet>
       )}
     </>
   );
