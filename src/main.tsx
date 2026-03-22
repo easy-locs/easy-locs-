@@ -38,9 +38,10 @@ if (typeof window !== "undefined") {
       console.warn("[Build] failed to purge legacy caches", error);
     });
 
-  void enforceVersionConsistencyOnBoot().then((reloadedForFreshBuild) => {
-    console.info("[Build] stale HTML detected", reloadedForFreshBuild);
-  });
+  // DISABLED — was causing infinite reload loop in preview/deploy environments
+  // void enforceVersionConsistencyOnBoot().then((reloadedForFreshBuild) => {
+  //   console.info("[Build] stale HTML detected", reloadedForFreshBuild);
+  // });
 }
 
 // Remove the static loading fallback as soon as the app bundle starts executing.
