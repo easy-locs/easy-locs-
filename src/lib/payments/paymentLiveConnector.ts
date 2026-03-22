@@ -122,10 +122,10 @@ export async function refundLivePayment(params: {
 
   if (updateError) throw updateError;
 
-  await platformBus.emit(
+  platformBus.emit(
     "ORDER_REFUNDED",
     { orderId: params.orderId, reason: params.reason ?? "admin_refund" },
-    { source: "paymentLiveConnector:refund" }
+    "system"
   );
 
   return data;
