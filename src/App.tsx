@@ -1,4 +1,4 @@
-import EmergencyRenderTestPage from "@/pages/EmergencyRenderTestPage";
+// EmergencyRenderTestPage removed (Batch A purge)
 import MainBottomNav from "@/components/navigation/MainBottomNav";
 import SwipeableMain from "@/components/navigation/SwipeableMain";
 import { Toaster } from "@/components/ui/toaster";
