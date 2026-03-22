@@ -59,7 +59,7 @@ const CityMarketplacePage = () => {
           </CardContent></Card>
           <Card><CardContent className="p-4 text-center">
             <Users className="h-5 w-5 mx-auto text-yellow-500 mb-1" />
-            <p className="text-xl font-bold text-foreground">{comingSoon.length}</p>
+            <p className="text-xl font-bold text-foreground">{comingSoon}</p>
             <p className="text-xs text-muted-foreground">Coming Soon</p>
           </CardContent></Card>
         </div>
