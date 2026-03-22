@@ -53,9 +53,7 @@ if (typeof window !== "undefined") {
 rootElement.innerHTML = "";
 
 ReactDOM.createRoot(rootElement).render(
-  <React.StrictMode>
-    <HashRouter>
-      <App />
-    </HashRouter>
-  </React.StrictMode>
+  <HashRouter>
+    <App />
+  </HashRouter>
 );
