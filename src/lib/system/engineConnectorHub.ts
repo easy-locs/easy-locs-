@@ -1,5 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-import { platformBus } from "@/lib/orchestration/platformBus";
+import { platformBus } from "@/lib/shared/platform-bus";
 import { assignMatchedDriver } from "@/lib/core/driverMatchingEngine";
 import { createOrderEscrow, releaseOrderEscrow, refundOrderEscrow } from "@/lib/core/orderEscrowEngine";
 import { moveOrderToNextState } from "@/lib/core/realtimeOrderStateEngine";
