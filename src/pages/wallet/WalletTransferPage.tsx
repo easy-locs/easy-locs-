@@ -5,11 +5,12 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
-import { walletTransfer } from "@/payments/wallet-hooks";
+import { walletTransfer, useWalletBalance } from "@/payments/wallet-hooks";
 
 export default function WalletTransferPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { reload: reloadBalance } = useWalletBalance();
   const [targetUserId, setTargetUserId] = useState("");
   const [amount, setAmount] = useState("25");
   const [note, setNote] = useState("");
@@ -31,6 +32,7 @@ export default function WalletTransferPage() {
         contextType: "manual_transfer",
         title: note.trim() || "Transfer",
       });
+      await reloadBalance();
       toast.success("Transfer completed");
       navigate("/wallet/hub");
     } catch (err: any) {
