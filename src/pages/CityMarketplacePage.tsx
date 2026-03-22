@@ -19,17 +19,18 @@ const CityMarketplacePage = () => {
     (async () => {
       const { data } = await (supabase as any)
         .from("storefront_pages")
-        .select("id, name, slug, city, vertical, status")
+        .select("id, name, slug, city, vertical, category, launch_status")
         .ilike("city", cityName)
-        .order("name")
+        .eq("launch_status", "launched")
+        .order("ranking_score", { ascending: false })
         .limit(100);
       setMerchants(data ?? []);
       setLoading(false);
     })();
   }, [citySlug]);
 
-  const active = merchants.filter((m) => m.status === "active" || m.status === "live");
-  const comingSoon = merchants.filter((m) => m.status === "coming_soon");
+  const active = merchants.length;
+  const comingSoon = 0;
   const seo = generateCitySEO({ city: cityName, countryName: "", merchantCount: merchants.length });
 
   return (
