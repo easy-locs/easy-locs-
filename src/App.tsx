@@ -22,7 +22,7 @@ import EasyLocsLogo from "@/components/brand/EasyLocsLogo";
 import UpdateNotification from "@/components/UpdateNotification";
 import { SkipLink } from "@/components/ui/a11y";
 import SmartInstallBanner from "@/components/pwa/SmartInstallBanner";
-// Call system: CallProvider is the single authoritative engine (call_logs table)
+// Geo: GeoBoot is the single GPS lifecycle manager
 import { GeoBoot } from "@/lib/geo/GeoBoot";
 import { PermissionBootstrap } from "@/components/boot/PermissionBootstrap";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
