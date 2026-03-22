@@ -59,7 +59,7 @@ export function PermissionBootstrap() {
             camera: (await probePermission("camera" as PermissionName)) === "granted",
             microphone: (await probePermission("microphone" as PermissionName)) === "granted",
             notifications: "Notification" in window ? Notification.permission === "granted" : false,
-            geolocation: (await probePermission("geolocation")).state === "granted",
+            geolocation: (await probePermission("geolocation")) === "granted",
           };
           await (supabase as any)
             .from("orbit_profiles_v2")
