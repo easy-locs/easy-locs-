@@ -11,10 +11,11 @@ export default function UpdateNotification() {
   const [visible, setVisible] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
-  useEffect(() => {
-    const stop = startVersionPolling(() => setVisible(true));
-    return stop;
-  }, []);
+  // DISABLED — version polling was compounding the reload loop
+  // useEffect(() => {
+  //   const stop = startVersionPolling(() => setVisible(true));
+  //   return stop;
+  // }, []);
 
   const handleRefresh = async () => {
     setRefreshing(true);
