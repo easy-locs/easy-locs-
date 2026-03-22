@@ -61,17 +61,22 @@ export function useCurrentLocation(opts?: { watch?: boolean }) {
           message: err?.message,
         });
 
-        if (err?.code === 1) {
+        // KEY FIX: If we already have a valid location, NEVER regress to error/fallback state
+        const existing = store().currentLocation;
+        const hasValidLive = existing && existing.accuracy < 5000;
+
+        if (hasValidLive) {
+          console.log("[useCurrentLocation] error ignored — valid live location already exists", existing);
+          // Keep current good state, don't touch permission/fallback/error
+        } else if (err?.code === 1) {
           store().setPermissionState("denied");
+          store().setIsFallback(true);
+          if (!existing) {
+            store().setCurrentLocation(store().lastKnownLocation || DUBAI_FALLBACK);
+          }
         } else {
           store().setPermissionState("prompt");
           store().setError(err?.message || "Location unavailable");
-        }
-
-        // Only enter fallback state if NO valid live location exists yet
-        const existing = store().currentLocation;
-        const hasValidLive = existing && !store().isFallback && existing.accuracy < 5000;
-        if (!hasValidLive) {
           store().setIsFallback(true);
           if (!existing) {
             store().setCurrentLocation(store().lastKnownLocation || DUBAI_FALLBACK);
