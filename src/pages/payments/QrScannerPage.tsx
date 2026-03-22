@@ -9,6 +9,7 @@ import { Html5Qrcode } from "html5-qrcode";
 import { decodeQr, resolveRoute, isExpired, type UniversalQrPayload } from "@/lib/qr-engine";
 import { playScanBeep } from "@/lib/audio/scan-beep";
 import { haptic } from "@/lib/haptics";
+import { platformBus } from "@/lib/shared/platform-bus";
 import { resolvePayTarget, type ResolvedPayTarget } from "@/lib/wallet/resolvePayTarget";
 import { supabase } from "@/integrations/supabase/client";
 import { useUnifiedPayment } from "@/payments/UnifiedPaymentSystem";
