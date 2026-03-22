@@ -14,6 +14,7 @@ import { haptic } from "@/lib/haptics";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import QRCodeLib from "qrcode";
+import { requestMediaStream } from "@/lib/device/permissions";
 
 interface Props {
   open: boolean;
