@@ -47,6 +47,9 @@ const TYPE_FALLBACKS: Record<string, string> = {
   rent_call: "/dashboard/rental",
   request: "/dashboard/interventions",
   receipt: "/dashboard/receipts",
+  order: "/my-orders",
+  order_update: "/my-orders",
+  delivery: "/my-orders",
   info: "/dashboard",
 };
 
