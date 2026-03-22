@@ -30,7 +30,7 @@ export async function executeEngineAction(action: string) {
           customerUserId: "test-user",
           paymentMethodType: "card",
         },
-        { source: "central-control-panel" }
+        "system"
       );
 
     case "emit_test_support_ticket":
