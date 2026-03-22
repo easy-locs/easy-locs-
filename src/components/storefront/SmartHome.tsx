@@ -229,7 +229,6 @@ export default function SmartHome() {
       {sections.slice(0, 3).map((sec, i) => (
         <DynamicSection key={sec.key} section={sec} index={i} />
       ))}
-      <UtilityRow />
     </div>
   );
 }

@@ -1061,9 +1061,7 @@ const App = () => (
               {/* Admin */}
               <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
               <Route path="/admin/ai-quality" element={<ProtectedRoute><AIQualityDashboard /></ProtectedRoute>} />
-              <Route path="/admin/ghost-call" element={<ProtectedRoute><GhostCallPage /></ProtectedRoute>} />
-
-              {/* Ghost V2/V3 routes — removed (Batch B purge) */}
+              {/* Ghost call route removed — calls go through CallProvider */}
               <Route path="/admin/sales-sequences" element={<ProtectedRoute><SalesSequencePage /></ProtectedRoute>} />
               <Route path="/admin/workspace-bootstrap" element={<ProtectedRoute><WorkspaceBootstrapPage /></ProtectedRoute>} />
               <Route path="/admin/menu" element={<ProtectedRoute><MenuAdminPage /></ProtectedRoute>} />
