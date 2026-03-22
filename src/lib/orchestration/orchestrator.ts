@@ -217,7 +217,8 @@ export function installOrchestrationEngine() {
   });
 
   // ── ORDER_DELIVERED ──
-  platformBus.on<OrderDeliveredPayload>("ORDER_DELIVERED", async (payload) => {
+  platformBus.on("ORDER_DELIVERED", async (event) => {
+    const payload = event.payload as OrderDeliveredPayload;
     await updateOrderStatus(payload.orderId, "completed");
 
     await createNotification({
@@ -235,7 +236,8 @@ export function installOrchestrationEngine() {
   });
 
   // ── REFUND_REQUESTED ──
-  platformBus.on<RefundRequestedPayload>("REFUND_REQUESTED", async (payload) => {
+  platformBus.on("REFUND_REQUESTED", async (event) => {
+    const payload = event.payload as RefundRequestedPayload;
     await createSupportTicket(payload);
     await updateOrderStatus(payload.orderId, "disputed");
 
@@ -254,7 +256,8 @@ export function installOrchestrationEngine() {
   });
 
   // ── ISSUE_CREATED ──
-  platformBus.on<IssueCreatedPayload>("ISSUE_CREATED", async (payload) => {
+  platformBus.on("ISSUE_CREATED", async (event) => {
+    const payload = event.payload as IssueCreatedPayload;
     await createSupportTicket(payload);
 
     await createNotification({
@@ -272,7 +275,8 @@ export function installOrchestrationEngine() {
   });
 
   // ── USER_OPEN_HOME ──
-  platformBus.on<UserOpenHomePayload>("USER_OPEN_HOME", async (payload) => {
+  platformBus.on("USER_OPEN_HOME", async (event) => {
+    const payload = event.payload as UserOpenHomePayload;
     await logOrchestrationEvent({
       eventType: "orch_user_open_home",
       entityId: payload.userId ?? "anonymous",
@@ -282,7 +286,8 @@ export function installOrchestrationEngine() {
   });
 
   // ── USER_SEARCH ──
-  platformBus.on<UserSearchPayload>("USER_SEARCH", async (payload) => {
+  platformBus.on("USER_SEARCH", async (event) => {
+    const payload = event.payload as UserSearchPayload;
     await logOrchestrationEvent({
       eventType: "orch_user_search",
       entityId: payload.userId ?? "anonymous",
