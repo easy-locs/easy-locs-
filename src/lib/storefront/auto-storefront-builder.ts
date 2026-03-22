@@ -33,10 +33,10 @@ export async function autoCreateStorefront(params: {
   if (profile?.shop_id) {
     const { data: shop } = await (supabase as any)
       .from("storefront_pages")
-      .select("id, public_slug")
+      .select("id, slug")
       .eq("id", profile.shop_id)
       .maybeSingle();
-    if (shop) return { shopId: shop.id, slug: shop.public_slug };
+    if (shop) return { shopId: shop.id, slug: shop.slug };
   }
 
   const slug = generateSlug(params.merchantName, params.city);
