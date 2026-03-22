@@ -1046,11 +1046,8 @@ const App = () => (
               {/* /admin/wallet-test removed — legacy test page */}
               <Route path="/admin/wallet-diagnostics" element={<ProtectedRoute><AdminWalletDiagnosticsPage /></ProtectedRoute>} />
               <Route path="/driver/earnings" element={<ProtectedRoute><DriverEarningsPage /></ProtectedRoute>} />
-              <Route path="/driver/mission/:dispatchJobId" element={<ProtectedRoute><DriverActiveMissionPage /></ProtectedRoute>} />
-              <Route path="/tracking/order/:orderId" element={<CustomerDeliveryTrackingPage />} />
               <Route path="/admin/review-queue" element={<ProtectedRoute><AdminReviewQueuePage /></ProtectedRoute>} />
               <Route path="/admin/growth" element={<ProtectedRoute><AdminGrowthDashboard /></ProtectedRoute>} />
-              <Route path="/coming-soon/:slug" element={<ComingSoonMerchantPage />} />
               <Route path="/city-market/:citySlug" element={<CityMarketplacePage />} />
               <Route path="/admin/qr-generate" element={<ProtectedRoute><QrGeneratePage /></ProtectedRoute>} />
               <Route path="/admin/route-audit" element={<ProtectedRoute><RouteAuditPage /></ProtectedRoute>} />
@@ -1330,11 +1327,6 @@ const App = () => (
                 <Route path="/admin/notification-campaigns" element={<ProtectedRoute><AdminNotificationCampaignsPage /></ProtectedRoute>} />
                 <Route path="/admin/customer-segments" element={<ProtectedRoute><AdminCustomerSegmentsPage /></ProtectedRoute>} />
                 <Route path="/admin/merchant-segments" element={<ProtectedRoute><AdminMerchantSegmentsPage /></ProtectedRoute>} />
-                <Route path="/v1/restaurant/:restaurantId" element={<V1RestaurantRoute />} />
-                <Route path="/v1/tracking/:orderId" element={<V1TrackingRoute />} />
-                <Route path="/v1/driver/missions" element={<V1DriverMissionBoardPage />} />
-                <Route path="/v1/driver/proof/:orderId" element={<V1DriverProofPage />} />
-              <Route path="/city/:countryCode/:city/:vertical/:locale" element={<CityVerticalPage />} />
 
               {/* Guest / Public */}
               <Route path="/guest/checkout/:cartId" element={<GuestCheckoutPage />} />
