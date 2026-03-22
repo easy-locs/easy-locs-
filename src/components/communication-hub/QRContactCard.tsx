@@ -136,8 +136,9 @@ export default function QRContactCard({ open, onOpenChange, onContactAdded }: Pr
     setShowManualInput(false);
     haptic("medium");
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: { ideal: "environment" }, width: { ideal: 640 }, height: { ideal: 640 } },
+      const stream = await requestMediaStream({
+        camera: true,
+        videoConstraints: { facingMode: { ideal: "environment" }, width: { ideal: 640 }, height: { ideal: 640 } },
       });
       streamRef.current = stream;
       if (videoRef.current) {
