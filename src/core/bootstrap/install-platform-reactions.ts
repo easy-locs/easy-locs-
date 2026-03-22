@@ -1,4 +1,4 @@
-import { platformBus } from "@/app/events/platform-bus";
+import { platformBus } from "@/lib/shared/platform-bus";
 import { useWalletStore } from "@/stores/walletStore";
 import { useOrbitStore } from "@/stores/orbitStore";
 import { installBookingReactions } from "@/core/bootstrap/install-booking-reactions";

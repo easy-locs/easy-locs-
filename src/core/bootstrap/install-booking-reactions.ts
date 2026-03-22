@@ -1,4 +1,4 @@
-import { platformBus } from "@/app/events/platform-bus";
+import { platformBus } from "@/lib/shared/platform-bus";
 import { useBookingStore } from "@/stores/bookingStore";
 import { useWalletStore } from "@/stores/walletStore";
 import { usePropertyManagementStore } from "@/stores/propertyManagementStore";
