@@ -78,7 +78,7 @@ export async function assignBestDriverToOrder(params: {
 
   if (error) throw error;
 
-  await platformBus.emit(
+  platformBus.emit(
     "MISSION_ACCEPTED",
     {
       orderId: params.orderId,
@@ -87,7 +87,7 @@ export async function assignBestDriverToOrder(params: {
       city: params.city ?? "Dubai",
       zone: params.zone ?? "",
     },
-    { source: "dispatchEngine:assignBestDriverToOrder" }
+    "system"
   );
 
   return best;

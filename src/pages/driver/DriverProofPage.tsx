@@ -31,10 +31,10 @@ export default function DriverProofPage() {
       });
       if (error) throw error;
 
-      await platformBus.emit("MISSION_COMPLETED", {
+      platformBus.emit("MISSION_COMPLETED", {
         orderId,
         driverId: user?.id ?? "",
-      }, { source: "driver-proof-page" });
+      }, "system");
 
       setSubmitted(true);
       toast.success("Delivery proof submitted");

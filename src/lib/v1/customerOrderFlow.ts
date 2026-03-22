@@ -92,7 +92,7 @@ export async function markV1OrderPaid(params: {
   if (error) throw error;
 
   if (params.paymentMethodType !== "cash") {
-    await platformBus.emit(
+    platformBus.emit(
       "PAYMENT_SUCCESS",
       {
         orderId: params.orderId,
@@ -102,7 +102,7 @@ export async function markV1OrderPaid(params: {
         customerUserId: params.customerUserId,
         paymentMethodType: params.paymentMethodType,
       },
-      { source: "customerOrderFlow:markV1OrderPaid" }
+      "system"
     );
   }
 

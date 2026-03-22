@@ -138,27 +138,32 @@ export function installEngineConnectorHub() {
   if (hubInstalled) return;
   hubInstalled = true;
 
-  platformBus.on("PAYMENT_SUCCESS", async (payload: any) => {
+  platformBus.on("PAYMENT_SUCCESS", async (event) => {
+    const payload = event.payload as any;
     if (!payload?.orderId) return;
     await syncOrderPaymentToEscrow(payload.orderId).catch(() => {});
   });
 
-  platformBus.on("ORDER_READY", async (payload: any) => {
+  platformBus.on("ORDER_READY", async (event) => {
+    const payload = event.payload as any;
     if (!payload?.orderId) return;
     await syncReadyOrderToDriver(payload.orderId).catch(() => {});
   });
 
-  platformBus.on("ORDER_DELIVERED", async (payload: any) => {
+  platformBus.on("ORDER_DELIVERED", async (event) => {
+    const payload = event.payload as any;
     if (!payload?.orderId) return;
     await moveOrderToNextState(payload.orderId).catch(() => {});
   });
 
-  platformBus.on("ORDER_COMPLETED", async (payload: any) => {
+  platformBus.on("ORDER_COMPLETED", async (event) => {
+    const payload = event.payload as any;
     if (!payload?.orderId) return;
     await syncCompletedOrderToSettlement(payload.orderId).catch(() => {});
   });
 
-  platformBus.on("ORDER_REFUNDED", async (payload: any) => {
+  platformBus.on("ORDER_REFUNDED", async (event) => {
+    const payload = event.payload as any;
     if (!payload?.orderId) return;
     await syncRefundedOrder(payload.orderId).catch(() => {});
   });

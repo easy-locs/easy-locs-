@@ -15,7 +15,7 @@ export async function createLiveCheckoutSession(params: {
 
   if (params.paymentMethod === "wallet") {
     await markOrderPaymentPending(params.orderId, "wallet");
-    await platformBus.emit(
+    platformBus.emit(
       "PAYMENT_SUCCESS",
       {
         orderId: params.orderId,
@@ -25,7 +25,7 @@ export async function createLiveCheckoutSession(params: {
         merchantId: params.merchantId ?? null,
         paymentMethodType: "wallet",
       },
-      { source: "paymentLiveConnector:wallet" }
+      "system"
     );
 
     await markOrderPaymentCaptured(params.orderId, "wallet_local");

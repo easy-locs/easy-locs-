@@ -38,13 +38,13 @@ export async function setOrderStatus(params: {
   }
 
   if (params.nextStatus === "ready_for_pickup") {
-    await platformBus.emit("ORDER_READY", {
+    platformBus.emit("ORDER_READY", {
       orderId: params.orderId,
       merchantId: params.merchantId ?? "",
       city: params.city ?? "Dubai",
       pickupLat: params.pickupLat ?? 0,
       pickupLng: params.pickupLng ?? 0,
       zone: params.zone ?? "",
-    }, { source: "orderActions" });
+    }, "system");
   }
 }

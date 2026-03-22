@@ -63,10 +63,10 @@ export async function advanceMerchantOrderStatus(params: {
   }
 
   if (params.nextStatus === "completed") {
-    await platformBus.emit(
+    platformBus.emit(
       "ORDER_DELIVERED",
       { orderId: params.orderId },
-      { source: "merchantOrderFlow:advanceMerchantOrderStatus" }
+      "system"
     );
   }
 

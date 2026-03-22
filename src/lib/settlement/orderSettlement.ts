@@ -100,7 +100,7 @@ export async function refundDisputedOrder(params: {
 
   if (error) throw error;
 
-  await platformBus.emit(
+  platformBus.emit(
     "ORDER_REFUNDED",
     {
       orderId: params.orderId,
@@ -109,7 +109,7 @@ export async function refundDisputedOrder(params: {
       currency,
       reason: params.reason ?? "",
     },
-    { source: "orderSettlement:refundDisputedOrder" }
+    "system"
   );
 
   return { orderId: params.orderId, amount: params.amount, currency };
