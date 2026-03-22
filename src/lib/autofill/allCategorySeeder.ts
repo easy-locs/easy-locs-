@@ -289,16 +289,24 @@ function logoUrl(name: string): string {
   return `https://ui-avatars.com/api/?name=${encoded}&background=${color}&color=fff&size=256&bold=true&format=png`;
 }
 
-function coverUrl(category: string, index: number): string {
-  const queries: Record<string, string> = {
-    food: "restaurant+food", grocery: "supermarket+grocery", services: "home+services",
-    beauty: "beauty+salon", coffee: "coffee+shop", dineout: "fine+dining+restaurant",
-    mobility: "taxi+ride", property: "real+estate+dubai", delivery: "delivery+logistics",
-    stays: "luxury+hotel+dubai", travel: "dubai+travel", concierge: "concierge+luxury",
-    rentals: "car+rental", wallet: "fintech+payment",
+function coverUrl(category: string, _index: number): string {
+  const photos: Record<string, string> = {
+    food: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=800&q=80&fit=crop",
+    grocery: "https://images.unsplash.com/photo-1542838132-92c53300491e?w=800&q=80&fit=crop",
+    services: "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=800&q=80&fit=crop",
+    beauty: "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=800&q=80&fit=crop",
+    coffee: "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=800&q=80&fit=crop",
+    dineout: "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=800&q=80&fit=crop",
+    mobility: "https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=800&q=80&fit=crop",
+    property: "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800&q=80&fit=crop",
+    delivery: "https://images.unsplash.com/photo-1586880244406-556ebe35f282?w=800&q=80&fit=crop",
+    stays: "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&q=80&fit=crop",
+    travel: "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=800&q=80&fit=crop",
+    concierge: "https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?w=800&q=80&fit=crop",
+    rentals: "https://images.unsplash.com/photo-1502877338535-766e1452684a?w=800&q=80&fit=crop",
+    wallet: "https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=800&q=80&fit=crop",
   };
-  const q = queries[category] || "business";
-  return `https://images.unsplash.com/photo-${1550000000000 + index * 11111}?w=800&q=80&fit=crop`;
+  return photos[category] || photos.food;
 }
 
 function jitter(base: number, range = 0.008): number {
@@ -323,7 +331,7 @@ export function generateAllCategorySeeds(): ShopSeed[] {
         lat: jitter(coords.lat),
         lng: jitter(coords.lng),
         logo_url: logoUrl(brand),
-        cover_url: `https://source.unsplash.com/800x400/?${encodeURIComponent(catKey + " business")}`,
+        cover_url: coverUrl(catKey, i),
         menu_items: config.menu,
       });
     }
