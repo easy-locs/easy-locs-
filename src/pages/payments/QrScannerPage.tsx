@@ -9,6 +9,7 @@ import { Html5Qrcode } from "html5-qrcode";
 import { decodeQr, resolveRoute, isExpired, type UniversalQrPayload } from "@/lib/qr-engine";
 import { playScanBeep } from "@/lib/audio/scan-beep";
 import { haptic } from "@/lib/haptics";
+import { platformBus } from "@/lib/shared/platform-bus";
 import { resolvePayTarget, type ResolvedPayTarget } from "@/lib/wallet/resolvePayTarget";
 import { supabase } from "@/integrations/supabase/client";
 import { useUnifiedPayment } from "@/payments/UnifiedPaymentSystem";
@@ -115,10 +116,19 @@ export default function QrScannerPage() {
   // ── HANDLE QR RESULT ──
   const handleQrResult = useCallback(async (raw: string) => {
     const payload = decodeQr(raw);
-    if (!payload) { setE("Unsupported QR format"); setS("error"); return; }
-    if (isExpired(payload)) { setE("QR code expired"); setS("error"); return; }
+    if (!payload) {
+      platformBus.emit("qr.scan.failed", { raw, reason: "unsupported_format" }, "system");
+      setE("Unsupported QR format"); setS("error"); return;
+    }
+    if (isExpired(payload)) {
+      platformBus.emit("qr.scan.expired", { action: payload.action }, "system");
+      setE("QR code expired"); setS("error"); return;
+    }
+
+    platformBus.emit("qr.scan.decoded", { action: payload.action, raw }, "system");
 
     if (payload.action === "pay_user") {
+      platformBus.emit("qr.payment.initiated", { action: "pay_user", userId: payload.userId }, "wallet");
       setS("paying");
       let resolved: ResolvedPayTarget;
       try {
@@ -142,8 +152,10 @@ export default function QrScannerPage() {
         setTxId(result.transactionId || "");
         setState("paid");
         haptic("success"); playScanBeep();
+        platformBus.emit("qr.payment.completed", { action: "pay_user", txId: result.transactionId }, "wallet");
       } else if (result.error !== "Cancelled") {
         setError(result.error || "Payment failed"); setState("error");
+        platformBus.emit("qr.payment.failed", { action: "pay_user", error: result.error }, "wallet");
       } else {
         setState("idle"); handledRef.current = false;
       }
@@ -181,7 +193,10 @@ export default function QrScannerPage() {
     }
 
     const route = resolveRoute(payload);
-    if (route) { navigateRef.current(route, { replace: true }); return; }
+    if (route) {
+      platformBus.emit("qr.navigation", { action: payload.action, route }, "system");
+      navigateRef.current(route, { replace: true }); return;
+    }
     setE("Unsupported QR format"); setS("error");
   }, [setE, setS]);
 

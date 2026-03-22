@@ -297,6 +297,7 @@ export function CallProvider({ children }: { children: ReactNode }) {
         activeCallRef.current = { callId: callId as string, threadId: opts.threadId, orgId: opts.orgId, contextId: opts.contextId };
 
         console.log("[CallProvider] call manager initialized", { callId });
+        platformBus.emit("call.started", { callId, role: "caller", isVideo: opts.isVideo || false, peerName: opts.peerName }, "orbit");
         await manager.startCall(opts.isVideo || false);
       } catch (err) {
         console.error("Failed to start call:", err);
@@ -420,6 +421,7 @@ export function CallProvider({ children }: { children: ReactNode }) {
     }
     activeCallRef.current = null;
     callManager?.cleanup("provider-close");
+    platformBus.emit("call.ended", { status: callState.status || "ended" }, "orbit");
     setCallManager(null);
     setShowCallDialog(false);
     setCallState({});
