@@ -11,6 +11,55 @@ export const APP_VERSION = import.meta.env.VITE_APP_VERSION || __BUILD_TIMESTAMP
 
 declare const __BUILD_TIMESTAMP__: string;
 
+function normalizeAssetPath(value: string | null | undefined): string | null {
+  if (!value) return null;
+
+  try {
+    const url = new URL(value, window.location.origin);
+    return `${url.pathname}${url.search}`;
+  } catch {
+    return value;
+  }
+}
+
+function extractAssetPathsFromHtml(html: string): string[] {
+  return Array.from(
+    new Set(Array.from(html.matchAll(/(?:src|href)="(\/assets\/[^\"]+)"/g), (match) => match[1])),
+  );
+}
+
+function getLoadedAssetPaths(): string[] {
+  return Array.from(
+    new Set(
+      Array.from(
+        document.querySelectorAll<HTMLScriptElement | HTMLLinkElement>(
+          'script[src*="/assets/"], link[href*="/assets/"]',
+        ),
+      )
+        .map((element) => normalizeAssetPath(element.getAttribute("src") ?? element.getAttribute("href")))
+        .filter((value): value is string => Boolean(value)),
+    ),
+  );
+}
+
+async function fetchServedHtml(): Promise<string | null> {
+  const url = new URL(window.location.href);
+  url.hash = "";
+  url.searchParams.set("_html", Date.now().toString());
+
+  const res = await fetch(url.toString(), {
+    cache: "no-store",
+    headers: {
+      Accept: "text/html",
+      "Cache-Control": "no-cache, no-store, max-age=0",
+      Pragma: "no-cache",
+    },
+  });
+
+  if (!res.ok) return null;
+  return await res.text();
+}
+
 /**
  * Checks if the app version has changed since last load.
  * Returns true if an update is available.
@@ -31,21 +80,66 @@ export function acknowledgeUpdate(): void {
   localStorage.setItem(VERSION_KEY, APP_VERSION);
 }
 
+export async function purgeLegacyServiceWorkersAndCaches(): Promise<number> {
+  let registrationCount = 0;
+
+  if ("serviceWorker" in navigator) {
+    const registrations = await navigator.serviceWorker.getRegistrations();
+    registrationCount = registrations.length;
+
+    if (registrationCount > 0) {
+      await Promise.all(registrations.map((registration) => registration.unregister()));
+    }
+  }
+
+  if ("caches" in window) {
+    const cacheNames = await caches.keys();
+    if (cacheNames.length > 0) {
+      await Promise.all(cacheNames.map((name) => caches.delete(name)));
+    }
+  }
+
+  return registrationCount;
+}
+
+export async function enforceVersionConsistencyOnBoot(): Promise<boolean> {
+  try {
+    const servedHtml = await fetchServedHtml();
+    if (!servedHtml) return false;
+
+    const servedAssetPaths = extractAssetPathsFromHtml(servedHtml);
+    const loadedAssetPaths = getLoadedAssetPaths();
+
+    if (servedAssetPaths.length === 0 || loadedAssetPaths.length === 0) {
+      return false;
+    }
+
+    const staleAssetLoaded = loadedAssetPaths.some(
+      (assetPath) => assetPath.includes("/assets/") && !servedAssetPaths.includes(assetPath),
+    );
+
+    console.info("[Build] asset consistency", {
+      buildId: APP_VERSION,
+      loadedAssetPaths,
+      servedAssetPaths,
+      staleAssetLoaded,
+    });
+
+    if (!staleAssetLoaded) return false;
+
+    await forceCleanRefresh();
+    return true;
+  } catch (error) {
+    console.warn("[Build] asset consistency check failed", error);
+    return false;
+  }
+}
+
 /**
  * Forces a clean refresh, clearing service worker caches.
  */
 export async function forceCleanRefresh(): Promise<void> {
-  // Unregister all service workers
-  if ("serviceWorker" in navigator) {
-    const registrations = await navigator.serviceWorker.getRegistrations();
-    await Promise.all(registrations.map((r) => r.unregister()));
-  }
-
-  // Clear caches
-  if ("caches" in window) {
-    const cacheNames = await caches.keys();
-    await Promise.all(cacheNames.map((name) => caches.delete(name)));
-  }
+  await purgeLegacyServiceWorkersAndCaches();
 
   // Update stored version
   acknowledgeUpdate();
@@ -66,22 +160,14 @@ export function startVersionPolling(onUpdateAvailable: () => void): () => void {
   const check = async () => {
     if (!active) return;
     try {
-      // Fetch the HTML to check for new asset hashes
-      const res = await fetch("/?_v=" + Date.now(), {
-        cache: "no-store",
-        headers: { Accept: "text/html" },
-      });
-      if (!res.ok) return;
+      const html = await fetchServedHtml();
+      if (!html) return;
 
-      const html = await res.text();
-      // Extract script src hashes from the HTML
-      const scriptMatches = html.match(/src="\/assets\/[^"]+"/g);
-      const currentScripts = Array.from(document.querySelectorAll('script[src*="/assets/"]'))
-        .map((s) => s.getAttribute("src"));
+      const servedAssetPaths = extractAssetPathsFromHtml(html);
+      const currentAssets = getLoadedAssetPaths();
 
-      if (scriptMatches && currentScripts.length > 0) {
-        const newSrcs = scriptMatches.map((m) => m.replace('src="', "").replace('"', ""));
-        const hasNewAssets = newSrcs.some((src) => !currentScripts.includes(src));
+      if (servedAssetPaths.length > 0 && currentAssets.length > 0) {
+        const hasNewAssets = servedAssetPaths.some((src) => !currentAssets.includes(src));
         if (hasNewAssets) {
           onUpdateAvailable();
         }
@@ -92,7 +178,6 @@ export function startVersionPolling(onUpdateAvailable: () => void): () => void {
   };
 
   const interval = setInterval(check, CHECK_INTERVAL);
-  // First check after 30s
   const timeout = setTimeout(check, 30_000);
 
   return () => {
