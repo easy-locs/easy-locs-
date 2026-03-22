@@ -23,9 +23,9 @@ export const useAppHydrationStore = create<AppHydrationStore>((set) => ({
     await useListingStore.getState().hydratePublished();
     useMapStore.getState().buildListingMarkers();
 
-    if (orbit?.userId) {
+    if (orbit?.id) {
       await Promise.all([
-        useUnifiedNotificationStore.getState().hydrate(orbit.userId),
+        useUnifiedNotificationStore.getState().hydrate(orbit.id),
         useChatStore.getState().hydrateConversations(orbit.orbitId),
       ]);
     }
