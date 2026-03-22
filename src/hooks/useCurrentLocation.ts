@@ -7,6 +7,7 @@
  */
 import { useEffect, useRef } from "react";
 import { useLocationStore } from "@/stores/locationStore";
+import { platformBus } from "@/lib/shared/platform-bus";
 import {
   getCurrentPositionHighAccuracy,
   getGeoPermissionState,
