@@ -1642,6 +1642,75 @@ export type Database = {
         }
         Relationships: []
       }
+      business_videos: {
+        Row: {
+          area: string | null
+          city: string | null
+          created_at: string
+          duration_sec: number | null
+          ends_at: string | null
+          id: string
+          is_featured: boolean
+          product_id: string | null
+          public_url: string
+          shop_id: string
+          starts_at: string | null
+          status: string
+          thumbnail_url: string | null
+          updated_at: string
+          video_type: string
+        }
+        Insert: {
+          area?: string | null
+          city?: string | null
+          created_at?: string
+          duration_sec?: number | null
+          ends_at?: string | null
+          id?: string
+          is_featured?: boolean
+          product_id?: string | null
+          public_url: string
+          shop_id: string
+          starts_at?: string | null
+          status?: string
+          thumbnail_url?: string | null
+          updated_at?: string
+          video_type?: string
+        }
+        Update: {
+          area?: string | null
+          city?: string | null
+          created_at?: string
+          duration_sec?: number | null
+          ends_at?: string | null
+          id?: string
+          is_featured?: boolean
+          product_id?: string | null
+          public_url?: string
+          shop_id?: string
+          starts_at?: string | null
+          status?: string
+          thumbnail_url?: string | null
+          updated_at?: string
+          video_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "business_videos_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "business_videos_shop_id_fkey"
+            columns: ["shop_id"]
+            isOneToOne: false
+            referencedRelation: "storefront_pages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       call_auth_tokens: {
         Row: {
           created_at: string
@@ -13093,6 +13162,62 @@ export type Database = {
           },
         ]
       }
+      products: {
+        Row: {
+          category: string | null
+          created_at: string
+          currency: string
+          description: string | null
+          id: string
+          image_url: string | null
+          is_available: boolean
+          name: string
+          price: number
+          shop_id: string
+          sort_order: number
+          subcategory: string | null
+          updated_at: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          currency?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_available?: boolean
+          name: string
+          price?: number
+          shop_id: string
+          sort_order?: number
+          subcategory?: string | null
+          updated_at?: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          currency?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_available?: boolean
+          name?: string
+          price?: number
+          shop_id?: string
+          sort_order?: number
+          subcategory?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "products_shop_id_fkey"
+            columns: ["shop_id"]
+            isOneToOne: false
+            referencedRelation: "storefront_pages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           access_tier: string
@@ -19261,6 +19386,7 @@ export type Database = {
           banner_url: string | null
           boost_expiry: string | null
           boost_multiplier: number
+          category: string | null
           city: string | null
           contact_email: string | null
           contact_phone: string | null
@@ -19326,6 +19452,7 @@ export type Database = {
           banner_url?: string | null
           boost_expiry?: string | null
           boost_multiplier?: number
+          category?: string | null
           city?: string | null
           contact_email?: string | null
           contact_phone?: string | null
@@ -19391,6 +19518,7 @@ export type Database = {
           banner_url?: string | null
           boost_expiry?: string | null
           boost_multiplier?: number
+          category?: string | null
           city?: string | null
           contact_email?: string | null
           contact_phone?: string | null
