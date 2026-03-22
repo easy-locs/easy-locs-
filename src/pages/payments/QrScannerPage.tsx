@@ -19,6 +19,8 @@ import { UserProfileQr } from "@/components/qr/UniversalQrWidgets";
 import { toast } from "sonner";
 import { requestMediaStream } from "@/lib/device/permissions";
 import { motion, AnimatePresence } from "framer-motion";
+import { PremiumPaymentSuccess } from "@/components/pay/PremiumPaymentSuccess";
+import { playPremiumSuccessBeep, hapticPremiumSuccess } from "@/lib/scan/feedback";
 
 type ScanState = "idle" | "starting" | "scanning" | "paying" | "paid" | "stopped" | "error" | "resolved";
 type TabMode = "scan" | "myqr";
