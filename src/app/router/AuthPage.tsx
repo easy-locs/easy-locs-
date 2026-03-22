@@ -10,6 +10,7 @@ export default function AuthPage() {
   const [success, setSuccess] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
+  const navigate = useNavigate();
   const signIn = useV2AuthStore((s) => s.signIn);
   const signUp = useV2AuthStore((s) => s.signUp);
 
