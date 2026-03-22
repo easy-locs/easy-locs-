@@ -139,8 +139,7 @@ function ReceiveMode() {
     <div className="space-y-5">
       {/* QR Code */}
       <div className="flex justify-center">
-          <BrandedQR value={qrValue} size={200} />
-      </div>
+        <BrandedQR value={qrValue} size={200} />
       </div>
 
       {/* Amount + Currency */}
