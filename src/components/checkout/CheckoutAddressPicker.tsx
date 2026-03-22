@@ -65,7 +65,7 @@ export default function CheckoutAddressPicker({
 
   const { data: rows = [], isLoading, refetch } = useQuery({
     queryKey: ["checkout-address-picker", user?.id],
-    queryFn: () => listSavedAddresses(user!.id),
+    queryFn: () => listSavedAddresses(),
     enabled: !!user?.id,
     staleTime: 5000,
   });
