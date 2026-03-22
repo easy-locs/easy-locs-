@@ -55,7 +55,7 @@ export async function settleDeliveredOrder(params: {
 
   if (error) throw error;
 
-  await platformBus.emit(
+  platformBus.emit(
     "ORDER_SETTLED",
     {
       orderId: params.orderId,
@@ -66,7 +66,7 @@ export async function settleDeliveredOrder(params: {
       platformFee,
       currency,
     },
-    { source: "orderSettlement:settleDeliveredOrder" }
+    "system"
   );
 
   return { orderId: params.orderId, merchantNet, driverFee, platformFee, currency };
