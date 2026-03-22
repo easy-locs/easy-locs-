@@ -4,7 +4,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { canTransition, type OrderStatus } from "./order-status";
-import { platformBus } from "@/lib/orchestration/platformBus";
+import { platformBus } from "@/lib/shared/platform-bus";
 
 export async function setOrderStatus(params: {
   orderId: string;
