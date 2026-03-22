@@ -115,13 +115,9 @@ export class WebRtcCallManager {
       if (video) {
         stream = await this.tryVideoWithFallback();
       } else {
-        stream = await navigator.mediaDevices.getUserMedia({
-          audio: {
-            echoCancellation: true,
-            noiseSuppression: true,
-            autoGainControl: true,
-          },
-          video: false,
+        stream = await requestMediaStream({
+          microphone: true,
+          videoConstraints: undefined,
         });
         setMediaStatus({ audioReady: true });
       }
