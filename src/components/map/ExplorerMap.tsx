@@ -23,7 +23,6 @@ const CATEGORIES = [
   { key: "grocery", label: "Grocery", icon: ShoppingCart },
   { key: "service", label: "Services", icon: Wrench },
   { key: "property", label: "Property", icon: Building2 },
-  { key: "real_estate", label: "Real Estate", icon: Building2 },
 ] as const;
 
 const MARKER_COLORS: Record<string, string> = {
