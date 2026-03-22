@@ -24,8 +24,8 @@ export default function DeliveryProofPage() {
         driverUserId: user.id,
         proofType: "photo",
         photoUrl: photoUrl || undefined,
-        geoLat: coords?.latitude,
-        geoLng: coords?.longitude,
+        geoLat: point?.lat,
+        geoLng: point?.lng,
         notes: notes || undefined,
       });
       setSubmitted(true);
