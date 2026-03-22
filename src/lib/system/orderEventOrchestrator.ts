@@ -43,10 +43,10 @@ export async function emitOrderReady(orderId: string) {
 }
 
 export async function emitOrderCompleted(orderId: string) {
-  await platformBus.emit(
+  platformBus.emit(
     "ORDER_COMPLETED",
     { orderId },
-    { source: "orderEventOrchestrator:emitOrderCompleted" }
+    "system"
   );
 
   return true;
