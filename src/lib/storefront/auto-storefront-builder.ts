@@ -45,16 +45,16 @@ export async function autoCreateStorefront(params: {
     .from("storefront_pages")
     .insert({
       name: params.merchantName,
-      public_slug: slug,
+      slug,
       city: params.city,
       country: params.countryCode,
-      status: "coming_soon",
+      launch_status: "draft",
       user_id: params.userId,
       org_id: params.orgId,
       vertical: params.category ?? "food",
       metadata_json: { auto_generated: true, source: "auto_storefront_builder" },
     } as any)
-    .select("id, public_slug")
+    .select("id, slug")
     .single();
 
   if (error) throw error;
