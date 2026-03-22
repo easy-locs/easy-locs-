@@ -284,12 +284,7 @@ const MerchantOnboardingPage = safeLazy(() => import("./pages/MerchantOnboarding
 const MerchantOnboardingAdminPage = safeLazy(() => import("./pages/MerchantOnboardingAdminPage"), "MerchantOnboardingAdminPage");
 const ExecutiveDashboard = safeLazy(() => import("./pages/ExecutiveDashboard"), "ExecutiveDashboard");
 const GhostCallPage = safeLazy(() => import("./pages/GhostCallPage"), "GhostCallPage");
-// Ghost V2/V3 pages
-const GhostInboxPage = safeLazy(() => import("./pages/ghost/GhostInboxPage"), "GhostInboxPage");
-const GhostThreadPage = safeLazy(() => import("./pages/ghost/GhostThreadPage"), "GhostThreadPage");
-const GhostCallPageV2 = safeLazy(() => import("./pages/ghost/GhostCallPageV2"), "GhostCallPageV2");
-const GhostSettingsPage = safeLazy(() => import("./pages/ghost/GhostSettingsPage"), "GhostSettingsPage");
-const GhostContactsPage = safeLazy(() => import("./pages/ghost/GhostContactsPage"), "GhostContactsPage");
+// Ghost V2/V3 pages — removed (Batch B purge)
 const SalesSequencePage = safeLazy(() => import("./pages/SalesSequencePage"), "SalesSequencePage");
 const WorkspaceBootstrapPage = safeLazy(() => import("./pages/WorkspaceBootstrapPage"), "WorkspaceBootstrapPage");
 const MenuAdminPage = safeLazy(() => import("./pages/MenuAdminPage"), "MenuAdminPage");
