@@ -77,14 +77,16 @@ export default function AppPreferencesSection() {
   // Auto-enable location on mount if pref is on
   useEffect(() => {
     if (prefs.autoLocation && locationStatus === "prompt") {
-      navigator.geolocation?.getCurrentPosition(
-        () => {
-          setLocationStatus("granted");
-          toast.success(t("settings.location_enabled") || "📍 Location enabled");
-        },
-        () => setLocationStatus("denied"),
-        { timeout: 8000 }
-      );
+      import("@/lib/location/requestLocation").then(({ requestLocation }) => {
+        requestLocation().then((pos) => {
+          if (pos) {
+            setLocationStatus("granted");
+            toast.success(t("settings.location_enabled") || "📍 Location enabled");
+          } else {
+            setLocationStatus("denied");
+          }
+        });
+      });
     }
   }, [prefs.autoLocation, locationStatus]);
 
