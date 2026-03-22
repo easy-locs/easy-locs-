@@ -4,7 +4,7 @@ import {
   postRefundToCustomer,
   postWalletTransaction,
 } from "@/lib/wallet/ledger";
-import { platformBus } from "@/lib/orchestration/platformBus";
+import { platformBus } from "@/lib/shared/platform-bus";
 
 export async function settleDeliveredOrder(params: {
   orderId: string;
