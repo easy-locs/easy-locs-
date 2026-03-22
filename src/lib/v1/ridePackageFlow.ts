@@ -58,13 +58,13 @@ export async function assignDriverToMission(params: {
 
   if (error) throw error;
 
-  await platformBus.emit(
+  platformBus.emit(
     "MISSION_ACCEPTED",
     {
       orderId: params.orderId,
       driverId: params.driverId,
     },
-    { source: "ridePackageFlow:assignDriverToMission" }
+    "system"
   );
 
   return true;
