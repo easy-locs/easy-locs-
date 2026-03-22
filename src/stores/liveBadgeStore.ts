@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { useNotificationsStore } from "@/stores/notificationsStore";
+import { useUnifiedNotificationStore } from "@/stores/unifiedNotificationStore";
 import { useBookingStore } from "@/stores/bookingStore";
 
 type LiveBadgeStore = {
@@ -13,11 +13,11 @@ export const useLiveBadgeStore = create<LiveBadgeStore>((set) => ({
   pendingBookingCount: 0,
 
   refresh: () => {
-    const notifications = useNotificationsStore.getState().items;
+    const unreadCount = useUnifiedNotificationStore.getState().unreadCount();
     const bookings = useBookingStore.getState().bookings;
 
     set({
-      notificationCount: notifications.filter((x) => !x.read).length,
+      notificationCount: unreadCount,
       pendingBookingCount: bookings.filter((x) =>
         ["pending_confirmation", "pending_payment"].includes(x.status)
       ).length,

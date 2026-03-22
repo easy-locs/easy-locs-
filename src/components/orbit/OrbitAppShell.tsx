@@ -6,7 +6,7 @@ import { Outlet } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useOrbitEngine } from "@/stores/orbit-engine";
 import { useEffect, lazy, Suspense } from "react";
-import { startNotificationDispatcher, stopNotificationDispatcher } from "@/lib/orbit/notification-dispatcher";
+import { startUnifiedNotificationDispatcher, stopUnifiedNotificationDispatcher } from "@/lib/notifications/dispatcher";
 
 const OrbitFAB = lazy(() => import("./OrbitFAB"));
 const CartSheet = lazy(() => import("@/components/cart/CartSheet"));
@@ -24,8 +24,8 @@ export default function OrbitAppShell({ children }: { children?: React.ReactNode
 
   useEffect(() => {
     if (!user?.id) return;
-    startNotificationDispatcher({ userId: user.id });
-    return () => stopNotificationDispatcher();
+    startUnifiedNotificationDispatcher(user.id);
+    return () => stopUnifiedNotificationDispatcher();
   }, [user?.id]);
 
   useEffect(() => {
