@@ -796,8 +796,7 @@ const App = () => (
            <Suspense fallback={<PageLoader />}>
             <SwipeableMain className="pb-[calc(56px+env(safe-area-inset-bottom,0px))]">
             <Routes>
-              {/* Emergency render test — no wrappers */}
-              <Route path="/emergency-test" element={<EmergencyRenderTestPage />} />
+              {/* Emergency render test — removed (Batch A purge) */}
 
               {/* ══════ PUBLIC WEBSITE ══════ */}
               {/* Homepage */}

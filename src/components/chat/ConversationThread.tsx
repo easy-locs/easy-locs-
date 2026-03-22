@@ -2,7 +2,7 @@ import { useMemo, useState, useRef, useEffect, useCallback } from "react";
 import { useChatStore } from "@/stores/chatStore";
 import { useOrbitStore } from "@/stores/orbitStore";
 import { useCall } from "@/components/call/CallProvider";
-import { useDebugCommsStore } from "@/stores/debugCommsStore";
+// debugCommsStore removed (Batch A purge)
 import { Send, Mic, Plus, Check, CheckCheck, Phone, Video } from "lucide-react";
 import { CallMessageBubble } from "@/components/chat/CallMessageBubble";
 
