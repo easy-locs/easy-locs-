@@ -43,7 +43,6 @@ export async function getCurrentPositionHighAccuracy(): Promise<GeoResult> {
       source: "gps",
     };
   }
-  // Force retry and wait
   geoService.forceRetry();
   return new Promise((resolve, reject) => {
     const unsub = useGeoStore.subscribe((state) => {
@@ -70,12 +69,19 @@ export async function getCurrentPositionHighAccuracy(): Promise<GeoResult> {
   });
 }
 
-/** @deprecated — GPS watching is now handled by geoService.start() */
+// ── Safe multi-watcher support ──
+const _activeWatchers = new Map<number, () => void>();
+let _watcherIdCounter = 0;
+
+/**
+ * @deprecated — GPS watching is handled by geoService.start().
+ * This shim bridges legacy callers safely with multi-watcher support.
+ */
 export function watchCurrentPosition(
   onUpdate: (result: GeoResult) => void,
   _onError?: (err: GeoError) => void,
-): void {
-  // Bridge: subscribe to geoStore and forward updates
+): number {
+  const id = ++_watcherIdCounter;
   const unsub = useGeoStore.subscribe((state) => {
     if (state.point) {
       onUpdate({
@@ -87,21 +93,20 @@ export function watchCurrentPosition(
       });
     }
   });
-  // Store unsub for cleanup — caller should use stopWatchingPosition
-  (watchCurrentPosition as any)._unsub = unsub;
+  _activeWatchers.set(id, unsub);
+  return id;
 }
 
-export function stopWatchingPosition(): void {
-  if ((watchCurrentPosition as any)?._unsub) {
-    (watchCurrentPosition as any)._unsub();
-    (watchCurrentPosition as any)._unsub = null;
+export function stopWatchingPosition(watcherId?: number): void {
+  if (watcherId != null) {
+    const unsub = _activeWatchers.get(watcherId);
+    if (unsub) {
+      unsub();
+      _activeWatchers.delete(watcherId);
+    }
+  } else {
+    // Stop all watchers (legacy compat)
+    _activeWatchers.forEach((unsub) => unsub());
+    _activeWatchers.clear();
   }
-}
-
-/** Classify accuracy level */
-export function classifyAccuracy(meters: number): "excellent" | "good" | "approximate" | "poor" {
-  if (meters <= 10) return "excellent";
-  if (meters <= 50) return "good";
-  if (meters <= 500) return "approximate";
-  return "poor";
 }

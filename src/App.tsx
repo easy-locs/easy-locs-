@@ -23,7 +23,7 @@ import UpdateNotification from "@/components/UpdateNotification";
 import { SkipLink } from "@/components/ui/a11y";
 import SmartInstallBanner from "@/components/pwa/SmartInstallBanner";
 // Call system: CallProvider is the single authoritative engine (call_logs table)
-import { GeoBootstrap } from "@/components/map/GeoBootstrap";
+import { GeoBoot } from "@/lib/geo/GeoBoot";
 import { PermissionBootstrap } from "@/components/boot/PermissionBootstrap";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import ErrorBoundary from "@/components/ErrorBoundary";
@@ -733,7 +733,7 @@ const App = () => (
            <NotificationsRealtimeGuard />
            <UpdateNotification />
                 <AppInit />
-                <GeoBootstrap />
+                <GeoBoot />
                 <PermissionBootstrap />
              <AppBootstrapGuardDirect />
            
