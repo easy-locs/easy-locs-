@@ -133,7 +133,7 @@ export default memo(function RadarView({ initialType, radiusKm = 20, showMap = t
                     )}
                     {selected.distance != null && (
                       <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">
-                        <Navigation className="w-2.5 h-2.5" />{formatGeoDistance(selected.distance)}
+                        <Navigation className="w-2.5 h-2.5" />{formatGeoDistance((selected.distance ?? 0) * 1000)}
                       </span>
                     )}
                   </div>
