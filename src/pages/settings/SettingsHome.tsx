@@ -1,102 +1,136 @@
 /**
- * SettingsHome — "Me" page: Premium card-based hub.
- * Includes Business & Tools, all settings categories.
+ * SettingsHome — "Me" Hub: Premium, smart, future-proof layout.
+ * Organized by user priority: Identity → Finance → Business → Communication → Preferences → Support.
  */
 import { useNavigate } from "react-router-dom";
 import {
-  ArrowLeft, User, CreditCard, MapPin, Bell, Shield, Store,
+  User, CreditCard, MapPin, Bell, Shield, Store,
   Palette, Globe, ChevronRight, FileText, Headphones, Heart,
-  MessageCircle, Wallet, LogOut, Lock, Phone, Briefcase,
-  QrCode, Package, BarChart3, Settings,
+  Wallet, LogOut, Lock, Phone, Briefcase,
+  QrCode, Package, BarChart3, Settings, Building2,
+  Scan, Receipt, TrendingUp, Users, MessageCircle,
+  Banknote, Crown, HelpCircle, Scale,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { motion } from "framer-motion";
 
-const SETTINGS_CARDS = [
+interface MeItem {
+  key: string;
+  icon: React.ComponentType<{ className?: string; style?: React.CSSProperties }>;
+  label: string;
+  path: string;
+  badge?: string;
+}
+
+interface MeSection {
+  title: string;
+  icon: React.ComponentType<{ className?: string; style?: React.CSSProperties }>;
+  accent: string;
+  items: MeItem[];
+}
+
+const ME_SECTIONS: MeSection[] = [
   {
-    title: "Account",
+    title: "Account & Identity",
     icon: User,
-    color: "hsl(210 80% 52%)",
+    accent: "hsl(210 80% 52%)",
     items: [
       { key: "profile", icon: User, label: "Personal Info", path: "/settings/account" },
       { key: "security", icon: Lock, label: "Security & PIN", path: "/settings/security" },
       { key: "phone", icon: Phone, label: "Phone Number", path: "/settings/account" },
+      { key: "verification", icon: Shield, label: "Verification", path: "/settings/security" },
     ],
   },
   {
-    title: "Business & Tools",
-    icon: Briefcase,
-    color: "hsl(38 65% 50%)",
+    title: "Wallet & Finance",
+    icon: Wallet,
+    accent: "hsl(270 60% 55%)",
     items: [
-      { key: "seller", icon: Store, label: "Seller Hub", path: "/seller" },
-      { key: "my-shops", icon: Package, label: "My Shops", path: "/dashboard/my-shops" },
-      { key: "pos", icon: QrCode, label: "POS & QR Menu", path: "/pos" },
-      { key: "analytics", icon: BarChart3, label: "Analytics", path: "/dashboard/reporting" },
+      { key: "wallet", icon: Wallet, label: "Wallet Pro", path: "/wallet/hub" },
+      { key: "cards", icon: CreditCard, label: "Payment Methods", path: "/settings/payment-methods" },
+      { key: "payouts", icon: Banknote, label: "Payouts", path: "/wallet/payouts" },
+      { key: "transactions", icon: Receipt, label: "Transactions", path: "/wallet/history" },
     ],
   },
   {
-    title: "Orbit",
+    title: "Seller Hub",
+    icon: Store,
+    accent: "hsl(38 65% 50%)",
+    items: [
+      { key: "seller", icon: Store, label: "My Storefront", path: "/seller" },
+      { key: "shops", icon: Package, label: "My Shops", path: "/dashboard/my-shops" },
+      { key: "pos", icon: QrCode, label: "POS & QR Menu", path: "/pos" },
+      { key: "orders", icon: Receipt, label: "Orders", path: "/dashboard/orders" },
+    ],
+  },
+  {
+    title: "Analytics & Growth",
+    icon: TrendingUp,
+    accent: "hsl(160 55% 42%)",
+    items: [
+      { key: "analytics", icon: BarChart3, label: "Analytics", path: "/dashboard/reporting" },
+      { key: "boost", icon: Crown, label: "Boost & Ads", path: "/dashboard/boost" },
+    ],
+  },
+  {
+    title: "Property Management",
+    icon: Building2,
+    accent: "hsl(200 60% 50%)",
+    items: [
+      { key: "properties", icon: Building2, label: "Properties", path: "/properties" },
+      { key: "tenants", icon: Users, label: "Tenants", path: "/tenants" },
+    ],
+  },
+  {
+    title: "Communication",
     icon: MessageCircle,
-    color: "hsl(142 60% 45%)",
+    accent: "hsl(142 60% 45%)",
     items: [
       { key: "chat", icon: MessageCircle, label: "Chat Settings", path: "/settings/orbit" },
-      { key: "contacts", icon: User, label: "Contacts", path: "/orbit/contacts" },
+      { key: "contacts", icon: Users, label: "Contacts", path: "/orbit/contacts" },
+      { key: "notifications", icon: Bell, label: "Push & Alerts", path: "/settings/notifications" },
     ],
   },
   {
-    title: "Wallet & Payments",
-    icon: Wallet,
-    color: "hsl(270 60% 55%)",
-    items: [
-      { key: "wallet", icon: Wallet, label: "Wallet", path: "/wallet/hub" },
-      { key: "cards", icon: CreditCard, label: "Payment Methods", path: "/settings/payment-methods" },
-    ],
-  },
-  {
-    title: "Addresses",
+    title: "Addresses & Favorites",
     icon: MapPin,
-    color: "hsl(16 85% 55%)",
+    accent: "hsl(16 85% 55%)",
     items: [
       { key: "addresses", icon: MapPin, label: "Saved Addresses", path: "/settings/addresses" },
       { key: "favorites", icon: Heart, label: "Favorites", path: "/favorites" },
     ],
   },
   {
-    title: "Notifications",
-    icon: Bell,
-    color: "hsl(196 80% 50%)",
-    items: [
-      { key: "notifs", icon: Bell, label: "Push & Alerts", path: "/settings/notifications" },
-    ],
-  },
-  {
-    title: "Security",
-    icon: Shield,
-    color: "hsl(0 70% 55%)",
-    items: [
-      { key: "privacy", icon: Shield, label: "Privacy & Security", path: "/settings/security" },
-    ],
-  },
-  {
     title: "Preferences",
     icon: Settings,
-    color: "hsl(200 60% 50%)",
+    accent: "hsl(220 50% 55%)",
     items: [
       { key: "language", icon: Globe, label: "Language & Region", path: "/settings/orbit" },
       { key: "theme", icon: Palette, label: "Appearance", path: "/settings/preferences" },
     ],
   },
   {
-    title: "Support",
-    icon: Headphones,
-    color: "hsl(145 60% 42%)",
+    title: "Help & Legal",
+    icon: HelpCircle,
+    accent: "hsl(280 50% 50%)",
     items: [
       { key: "help", icon: Headphones, label: "Help & Support", path: "/settings/support" },
-      { key: "legal", icon: FileText, label: "Legal", path: "/legal" },
+      { key: "legal", icon: Scale, label: "Legal & Privacy", path: "/legal" },
     ],
   },
 ];
+
+const stagger = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.04 } },
+};
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 12 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.25, ease: "easeOut" } },
+};
 
 export default function SettingsHome() {
   const navigate = useNavigate();
@@ -108,91 +142,95 @@ export default function SettingsHome() {
     navigate("/login", { replace: true });
   };
 
-  return (
-    <div className="min-h-[100dvh] flex flex-col bg-background pb-20">
-      {/* Header */}
-      <header className="flex items-center gap-3 px-4 pt-4 pb-3">
-        <button
-          onClick={() => navigate("/")}
-          className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-95 transition-transform"
-          style={{ background: "hsl(var(--muted))" }}
-        >
-          <ArrowLeft className="w-4 h-4 text-foreground" />
-        </button>
-        <h1 className="text-lg font-bold text-foreground">Me</h1>
-      </header>
+  const initials = (user?.user_metadata?.display_name || user?.email || "U")[0].toUpperCase();
+  const displayName = user?.user_metadata?.display_name || user?.email?.split("@")[0] || "User";
 
-      {/* User Profile Card */}
+  return (
+    <div className="min-h-[100dvh] flex flex-col bg-background pb-24">
+      {/* Profile Header */}
       {user && (
-        <div className="px-4 mb-4">
+        <div className="px-4 pt-6 pb-2">
           <button
             onClick={() => navigate("/settings/account")}
-            className="w-full flex items-center gap-3 p-4 rounded-2xl active:scale-[0.98] transition-transform"
-            style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border) / 0.12)" }}
+            className="w-full flex items-center gap-4 p-4 rounded-2xl bg-card border border-border/10 active:scale-[0.98] transition-transform shadow-sm"
           >
-            <div
-              className="w-14 h-14 rounded-2xl flex items-center justify-center text-xl font-bold shrink-0"
-              style={{ background: "hsl(var(--primary) / 0.1)", color: "hsl(var(--primary))" }}
-            >
-              {(user.user_metadata?.display_name || user.email || "U")[0].toUpperCase()}
+            <div className="w-16 h-16 rounded-2xl flex items-center justify-center text-xl font-bold shrink-0 bg-primary/10 text-primary">
+              {initials}
             </div>
             <div className="flex-1 min-w-0 text-left">
-              <p className="text-base font-bold text-foreground truncate">
-                {user.user_metadata?.display_name || user.email?.split("@")[0] || "User"}
-              </p>
+              <p className="text-lg font-bold text-foreground truncate">{displayName}</p>
               <p className="text-xs text-muted-foreground truncate">{user.email}</p>
-              <p className="text-[10px] text-muted-foreground mt-0.5">Tap to edit profile</p>
+              <p className="text-[10px] text-muted-foreground/60 mt-0.5">Edit profile →</p>
             </div>
             <ChevronRight className="w-4 h-4 shrink-0 text-muted-foreground/30" />
           </button>
         </div>
       )}
 
-      {/* Settings Cards */}
-      <div className="flex-1 px-4 space-y-3">
-        {SETTINGS_CARDS.map((card) => (
-          <div
-            key={card.title}
-            className="rounded-2xl overflow-hidden"
-            style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border) / 0.1)" }}
+      {/* Sections */}
+      <motion.div
+        className="flex-1 px-4 pt-2 space-y-2.5"
+        variants={stagger}
+        initial="hidden"
+        animate="show"
+      >
+        {ME_SECTIONS.map((section) => (
+          <motion.div
+            key={section.title}
+            variants={fadeUp}
+            className="rounded-2xl overflow-hidden bg-card border border-border/8"
           >
-            {/* Card header */}
-            <div className="flex items-center gap-2.5 px-4 pt-3.5 pb-2">
+            {/* Section header */}
+            <div className="flex items-center gap-2.5 px-4 pt-3.5 pb-1.5">
               <div
-                className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
-                style={{ background: `${card.color.replace(")", " / 0.1)")}` }}
+                className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0"
+                style={{ background: section.accent.replace(")", " / 0.12)") }}
               >
-                <card.icon className="w-4 h-4" style={{ color: card.color }} />
+                <section.icon className="w-3.5 h-3.5" style={{ color: section.accent }} />
               </div>
-              <h2 className="text-[13px] font-bold text-foreground">{card.title}</h2>
+              <h2 className="text-xs font-bold uppercase tracking-wide text-muted-foreground/70">
+                {section.title}
+              </h2>
             </div>
 
-            {/* Card items — same height rows */}
-            {card.items.map((item, idx) => (
+            {/* Items */}
+            {section.items.map((item, idx) => (
               <button
                 key={item.key}
                 onClick={() => navigate(item.path)}
-                className="w-full h-12 px-4 flex items-center gap-3 active:bg-muted/20 transition-colors text-left"
-                style={idx < card.items.length - 1 ? { borderBottom: "1px solid hsl(var(--border) / 0.06)" } : undefined}
+                className="w-full h-[46px] px-4 flex items-center gap-3 active:bg-muted/30 transition-colors text-left"
+                style={
+                  idx < section.items.length - 1
+                    ? { borderBottom: "1px solid hsl(var(--border) / 0.06)" }
+                    : undefined
+                }
               >
-                <item.icon className="w-4 h-4 text-muted-foreground shrink-0" />
-                <span className="text-sm font-medium text-foreground flex-1">{item.label}</span>
-                <ChevronRight className="w-3.5 h-3.5 text-muted-foreground/30 shrink-0" />
+                <item.icon className="w-[18px] h-[18px] text-muted-foreground/60 shrink-0" />
+                <span className="text-[13px] font-medium text-foreground flex-1">{item.label}</span>
+                {item.badge && (
+                  <span className="text-[10px] font-bold text-primary bg-primary/10 px-1.5 py-0.5 rounded-md">
+                    {item.badge}
+                  </span>
+                )}
+                <ChevronRight className="w-3.5 h-3.5 text-muted-foreground/20 shrink-0" />
               </button>
             ))}
-          </div>
+          </motion.div>
         ))}
 
-        {/* Logout */}
-        <button
+        {/* Sign Out */}
+        <motion.button
+          variants={fadeUp}
           onClick={handleLogout}
-          className="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl active:scale-[0.98] transition-transform"
-          style={{ background: "hsl(var(--destructive) / 0.06)", border: "1px solid hsl(var(--destructive) / 0.1)" }}
+          className="w-full flex items-center justify-center gap-2 px-4 py-3.5 rounded-2xl bg-destructive/6 border border-destructive/10 active:scale-[0.98] transition-transform"
         >
-          <LogOut className="w-4 h-4" style={{ color: "hsl(var(--destructive))" }} />
-          <span className="text-sm font-semibold" style={{ color: "hsl(var(--destructive))" }}>Sign Out</span>
-        </button>
-      </div>
+          <LogOut className="w-4 h-4 text-destructive" />
+          <span className="text-sm font-semibold text-destructive">Sign Out</span>
+        </motion.button>
+
+        {/* App version — minimal */}
+        <p className="text-center text-[10px] text-muted-foreground/30 pt-2 pb-4">Easy-Locs</p>
+      </motion.div>
     </div>
   );
 }
