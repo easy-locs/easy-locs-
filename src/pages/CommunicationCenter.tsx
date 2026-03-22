@@ -27,7 +27,7 @@ import type { ConversationThread } from "@/components/communication-hub/types";
 // useOrbitCallSync removed — centralized in RealtimeHubGuard
 import { useAuth } from "@/contexts/AuthContext";
 
-const VALID_SECTIONS: CommSection[] = ["chats", "calls", "contacts", "payments", "groups", "nearby", "meetings", "files", "settings", "you"];
+const VALID_SECTIONS: CommSection[] = ["chats", "calls", "contacts", "groups", "you"];
 
 export const CommunicationCenter = () => {
   const { orgId, user } = useAuth();
