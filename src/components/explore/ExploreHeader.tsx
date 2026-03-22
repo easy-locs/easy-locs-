@@ -232,6 +232,7 @@ function MobileUserSheet() {
 
   const dash = getDashboardPath(activeRole);
   const initials = (user.user_metadata?.name || user.email || "U").slice(0, 2).toUpperCase();
+  const displayName = user.user_metadata?.name || user.email || "User";
   const isLandlord = activeRole === "landlord";
   const isTenant = activeRole === "tenant";
   const isClient = activeRole === "client";
@@ -247,69 +248,58 @@ function MobileUserSheet() {
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
-        <button className="flex items-center gap-1 rounded-full border border-border bg-card p-1.5 shadow-sm min-h-[40px] min-w-[40px] justify-center">
+        <button className="flex items-center gap-1 rounded-full border border-border bg-card p-1.5 shadow-sm min-h-[40px] min-w-[40px] justify-center active:scale-95 transition-transform">
           <Avatar className="h-7 w-7">
             <AvatarFallback className="bg-accent text-accent-foreground text-[10px] font-bold">{initials}</AvatarFallback>
           </Avatar>
         </button>
       </SheetTrigger>
-      <SheetContent side="right" className="w-[300px] p-0 flex flex-col">
-        {/* Identity */}
-        <div className="px-5 pt-6 pb-4 bg-muted/30">
+      <SheetContent side="right" className="w-[300px] p-0 flex flex-col bg-background/95 backdrop-blur-xl">
+        {/* Identity — Premium header */}
+        <div className="px-5 pt-6 pb-5" style={{ background: "linear-gradient(135deg, hsl(var(--muted) / 0.5), hsl(var(--muted) / 0.2))" }}>
           <div className="flex items-center gap-3">
-            <Avatar className="h-12 w-12 ring-2 ring-accent/20">
-              <AvatarFallback className="bg-accent text-accent-foreground text-base font-bold">{initials}</AvatarFallback>
+            <Avatar className="h-12 w-12 ring-2 ring-primary/20">
+              <AvatarFallback className="bg-primary/10 text-primary text-base font-black">{initials}</AvatarFallback>
             </Avatar>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold truncate">{user.user_metadata?.name || user.email}</p>
-              <Badge variant="secondary" className="text-[10px] px-1.5 py-0 mt-1">{getRoleLabel(activeRole)}</Badge>
+              <p className="text-sm font-bold truncate text-foreground">{displayName}</p>
+              <Badge variant="secondary" className="text-[10px] px-2 py-0.5 mt-1 font-semibold">{getRoleLabel(activeRole)}</Badge>
             </div>
           </div>
         </div>
 
         <Separator />
 
-        <nav className="flex-1 overflow-y-auto py-2">
-          {/* Universal */}
+        <nav className="flex-1 overflow-y-auto py-1">
+          {/* Primary actions */}
           <MobileNavItem icon={Plus} label="Post a listing" onClick={() => go("/dashboard/create-listing")} accent />
           <MobileNavItem icon={LayoutDashboard} label="Dashboard" onClick={() => go(dash)} />
           <MobileNavItem icon={MessageSquare} label="Messages" onClick={() => go("/dashboard/communication")} />
           <MobileNavItem icon={Heart} label="Saved" onClick={() => go("/saved")} />
 
-          {/* Landlord/Pro */}
+          {/* Business — Landlord */}
           {isLandlord && (
             <>
-              <Separator className="my-2" />
-              <p className="px-5 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">My business</p>
+              <Separator className="my-1.5" />
+              <p className="px-5 py-1.5 text-[9px] font-black uppercase tracking-widest text-muted-foreground">My Business</p>
               <MobileNavItem icon={Store} label="My Shop" onClick={() => go("/dashboard/my-shop")} />
-              <MobileNavItem icon={CalendarCheck} label="Bookings" onClick={() => go("/dashboard/seasonal")} />
-              <MobileNavItem icon={Building2} label="Properties" onClick={() => go("/dashboard/rental")} />
-              <MobileNavItem icon={FileText} label="Documents" onClick={() => go("/dashboard/documents")} />
-              <MobileNavItem icon={Receipt} label="Finances" onClick={() => go("/dashboard/finances")} />
-              <Separator className="my-2" />
-              <p className="px-5 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Company</p>
-              <MobileNavItem icon={Briefcase} label="My company" onClick={() => go("/dashboard/company")} />
-              <MobileNavItem icon={Users} label="Team" onClick={() => go("/dashboard/collaboration")} />
-              <MobileNavItem icon={CreditCard} label="Subscription" onClick={() => go("/dashboard/billing")} />
-              
             </>
           )}
 
           {/* Tenant */}
           {isTenant && (
             <>
-              <Separator className="my-2" />
-              <p className="px-5 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Rental</p>
+              <Separator className="my-1.5" />
+              <p className="px-5 py-1.5 text-[9px] font-black uppercase tracking-widest text-muted-foreground">Rental</p>
               <MobileNavItem icon={Bookmark} label="My documents" onClick={() => go("/tenant/documents")} />
               <MobileNavItem icon={Globe} label="Payments" onClick={() => go("/tenant/pay")} />
-              <MobileNavItem icon={CalendarCheck} label="Requests" onClick={() => go("/tenant/requests")} />
             </>
           )}
 
           {/* Client */}
           {isClient && (
             <>
-              <Separator className="my-2" />
+              <Separator className="my-1.5" />
               <MobileNavItem icon={CalendarCheck} label="My bookings" onClick={() => go("/client/bookings")} />
             </>
           )}
@@ -317,22 +307,19 @@ function MobileUserSheet() {
           {/* Role switcher */}
           {switchTargets.length > 0 && (
             <>
-              <Separator className="my-2" />
+              <Separator className="my-1.5" />
               {switchTargets.map(st => (
                 <MobileNavItem key={st.role} icon={ArrowLeftRight} label={`Switch to ${st.label}`}
                   onClick={() => { switchRole(st.role); go(getDashboardPath(st.role)); }} />
               ))}
             </>
           )}
-
-          <Separator className="my-2" />
-          <MobileNavItem icon={Settings} label="Settings" onClick={() => go(`${dash}/settings`)} />
         </nav>
 
         <Separator />
         <div className="p-3">
           <button onClick={async () => { setOpen(false); await signOut(); navigate("/explore"); }}
-            className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-destructive hover:bg-destructive/10 transition-colors">
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-destructive hover:bg-destructive/10 transition-colors active:scale-[0.97]">
             <LogOut className="h-4 w-4" /> Log out
           </button>
         </div>
@@ -344,7 +331,7 @@ function MobileUserSheet() {
 function MobileNavItem({ icon: Icon, label, onClick, accent }: { icon: any; label: string; onClick: () => void; accent?: boolean }) {
   return (
     <button onClick={onClick}
-      className={`w-full flex items-center gap-3 px-5 py-3 text-sm transition-colors hover:bg-muted/50 min-h-[44px] ${accent ? "text-accent font-semibold" : "text-foreground"}`}>
+      className={`w-full flex items-center gap-3 px-5 py-3 text-sm transition-all hover:bg-muted/50 min-h-[44px] active:scale-[0.98] ${accent ? "text-accent font-bold" : "text-foreground font-medium"}`}>
       <Icon className="h-4 w-4 text-muted-foreground shrink-0" />
       {label}
     </button>
