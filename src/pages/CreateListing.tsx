@@ -159,11 +159,13 @@ const CreateListing = () => {
   // Auto-capture geolocation + prefill country/currency
   useEffect(() => {
     // GPS-based prefill from canonical locationStore
-    const loc = (await import("@/stores/locationStore")).useLocationStore.getState().currentLocation;
-    if (loc) {
-      setGeoLat(loc.lat);
-      setGeoLng(loc.lng);
-    }
+    import("@/stores/locationStore").then(({ useLocationStore }) => {
+      const loc = useLocationStore.getState().currentLocation;
+      if (loc) {
+        setGeoLat(loc.lat);
+        setGeoLng(loc.lng);
+      }
+    });
     // Timezone-based country/currency prefill
     if (!userCountry || userCountry === "FR") {
       const loc = detectLocationFromTimezone();
