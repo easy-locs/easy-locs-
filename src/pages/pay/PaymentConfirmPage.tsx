@@ -25,6 +25,7 @@ export default function PaymentConfirmPage() {
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
+  const [showPremiumSuccess, setShowPremiumSuccess] = useState(false);
 
   useEffect(() => {
     void (async () => {
