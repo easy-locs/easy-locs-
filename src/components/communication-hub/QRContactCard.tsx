@@ -14,6 +14,7 @@ import { haptic } from "@/lib/haptics";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import QRCodeLib from "qrcode";
+import { requestMediaStream } from "@/lib/device/permissions";
 
 interface Props {
   open: boolean;
@@ -135,8 +136,9 @@ export default function QRContactCard({ open, onOpenChange, onContactAdded }: Pr
     setShowManualInput(false);
     haptic("medium");
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: { ideal: "environment" }, width: { ideal: 640 }, height: { ideal: 640 } },
+      const stream = await requestMediaStream({
+        camera: true,
+        videoConstraints: { facingMode: { ideal: "environment" }, width: { ideal: 640 }, height: { ideal: 640 } },
       });
       streamRef.current = stream;
       if (videoRef.current) {

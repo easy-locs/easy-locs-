@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { platformBus } from "@/app/events/platform-bus";
+import { requestMediaStream } from "@/lib/device/permissions";
 
 type CameraMode = "qr" | "call" | "proof" | "avatar";
 
@@ -18,17 +19,16 @@ export const useCameraStore = create<CameraStore>((set, get) => ({
   isOpen: false,
 
   openCamera: async (mode) => {
-    // Force rear/environment camera for QR/proof modes, front for avatar/call
     const useRear = mode === "qr" || mode === "proof";
     const videoConstraints: MediaTrackConstraints = useRear
       ? { facingMode: { ideal: "environment" }, width: { ideal: 1280 }, height: { ideal: 720 } }
       : { facingMode: "user" };
-    const constraints: MediaStreamConstraints =
-      mode === "call"
-        ? { video: videoConstraints, audio: true }
-        : { video: videoConstraints, audio: false };
 
-    const stream = await navigator.mediaDevices.getUserMedia(constraints);
+    const stream = await requestMediaStream({
+      camera: true,
+      microphone: mode === "call",
+      videoConstraints,
+    });
 
     set({
       stream,

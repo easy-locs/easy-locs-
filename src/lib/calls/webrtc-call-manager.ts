@@ -3,6 +3,7 @@ import { debugLog } from "@/lib/debug/runtime-debug-bus";
 import { safeErrorMessage } from "@/lib/debug/debug-helpers";
 import { clearFrameEncryptionKey } from "@/lib/calls/call-media-key";
 import { resetReplayGuard } from "@/lib/calls/call-replay-guard";
+import { requestMediaStream } from "@/lib/device/permissions";
 
 export interface MediaStatus {
   cameraReady: boolean;
@@ -114,13 +115,9 @@ export class WebRtcCallManager {
       if (video) {
         stream = await this.tryVideoWithFallback();
       } else {
-        stream = await navigator.mediaDevices.getUserMedia({
-          audio: {
-            echoCancellation: true,
-            noiseSuppression: true,
-            autoGainControl: true,
-          },
-          video: false,
+        stream = await requestMediaStream({
+          microphone: true,
+          videoConstraints: undefined,
         });
         setMediaStatus({ audioReady: true });
       }
@@ -160,13 +157,10 @@ export class WebRtcCallManager {
   private async tryVideoWithFallback(): Promise<MediaStream> {
     // Step 1: Optimal constraints
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        audio: {
-          echoCancellation: true,
-          noiseSuppression: true,
-          autoGainControl: true,
-        },
-        video: {
+      const stream = await requestMediaStream({
+        camera: true,
+        microphone: true,
+        videoConstraints: {
           facingMode: "user",
           width: { ideal: 1280 },
           height: { ideal: 720 },
@@ -180,9 +174,9 @@ export class WebRtcCallManager {
 
     // Step 2: Simple constraints
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        audio: true,
-        video: true,
+      const stream = await requestMediaStream({
+        camera: true,
+        microphone: true,
       });
       debugLog.success("call", "camera_request_success", "Simple video constraints OK");
       return stream;
@@ -194,13 +188,8 @@ export class WebRtcCallManager {
     setMediaStatus({ fallbackActive: true, error: "Camera unavailable, continuing with audio only" });
     debugLog.warn("call", "camera_request_fallback", "Audio-only fallback active");
 
-    return navigator.mediaDevices.getUserMedia({
-      audio: {
-        echoCancellation: true,
-        noiseSuppression: true,
-        autoGainControl: true,
-      },
-      video: false,
+    return requestMediaStream({
+      microphone: true,
     });
   }
 
@@ -232,8 +221,9 @@ export class WebRtcCallManager {
     if (!this.pc) return false;
     try {
       debugLog.info("call", "camera_request_start", "Adding video track dynamically");
-      const videoStream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: "user", width: { ideal: 640 }, height: { ideal: 480 } },
+      const videoStream = await requestMediaStream({
+        camera: true,
+        videoConstraints: { facingMode: "user", width: { ideal: 640 }, height: { ideal: 480 } },
       });
       const videoTrack = videoStream.getVideoTracks()[0];
       if (!videoTrack) return false;

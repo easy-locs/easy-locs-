@@ -15,6 +15,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { QrResolvedCard } from "@/components/qr/QrResolvedCard";
 import { UserProfileQr } from "@/components/qr/UniversalQrWidgets";
 import { toast } from "sonner";
+import { requestMediaStream } from "@/lib/device/permissions";
 
 type ScanState = "idle" | "starting" | "scanning" | "paying" | "paid" | "stopped" | "error" | "resolved";
 type TabMode = "scan" | "myqr";
@@ -351,7 +352,10 @@ export default function QrScannerPage() {
       let tempStream: MediaStream | null = null;
       let grantedDeviceId = "";
       try {
-        tempStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: "environment" }, width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false });
+        tempStream = await requestMediaStream({
+          camera: true,
+          videoConstraints: { facingMode: { ideal: "environment" }, width: { ideal: 1280 }, height: { ideal: 720 } },
+        });
         grantedDeviceId = tempStream.getVideoTracks()[0]?.getSettings().deviceId || "";
         console.log("[QrScannerPage] getUserMedia success", { grantedDeviceId });
         if (mountedRef.current) setCameraPermission("granted");
