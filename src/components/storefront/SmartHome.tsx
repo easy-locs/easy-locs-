@@ -41,17 +41,22 @@ const CATEGORY_IMAGES: Record<string, string> = {
 /* ═══ Compact Header ═══ */
 const CompactHeader = memo(({ city, greeting, onSearch }: { city: string | null; greeting: string; onSearch: () => void }) => {
   const engine = useOrbitEngine();
+  const handleLocationTap = () => {
+    if (!city) {
+      import("@/lib/location/requestLocation").then(({ requestLocation }) => requestLocation());
+    }
+  };
   return (
     <div className="flex items-center gap-2 mb-2">
-      <Link to="/dashboard/settings" className="flex items-center gap-1.5 min-w-0 shrink">
+      <button onClick={handleLocationTap} className="flex items-center gap-1.5 min-w-0 shrink text-left">
         <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
           <MapPin className="h-3.5 w-3.5 text-primary" />
         </div>
         <div className="min-w-0">
           <p className="text-[10px] text-muted-foreground leading-none">{greeting}</p>
-          <p className="text-xs font-bold text-foreground truncate">{city || "Set location"}</p>
+          <p className="text-xs font-bold text-foreground truncate">{city || "📍 Géolocalisation"}</p>
         </div>
-      </Link>
+      </button>
       <button
         onClick={onSearch}
         className="flex-1 flex items-center gap-2 h-8 px-3 rounded-xl bg-muted/40 border border-border/20 text-muted-foreground text-[11px] active:scale-[0.97] transition-transform"
