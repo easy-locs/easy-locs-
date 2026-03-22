@@ -1,5 +1,6 @@
 /**
  * WalletTransferPage — Uses unified walletTransfer (wallet_accounts engine)
+ * Optimistic UI: balance deducted instantly, rolled back on error.
  */
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -10,7 +11,7 @@ import { walletTransfer, useWalletBalance } from "@/payments/wallet-hooks";
 export default function WalletTransferPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { reload: reloadBalance } = useWalletBalance();
+  const { balance, currency, reload: reloadBalance, optimisticAdjust } = useWalletBalance();
   const [targetUserId, setTargetUserId] = useState("");
   const [amount, setAmount] = useState("25");
   const [note, setNote] = useState("");
@@ -21,9 +22,13 @@ export default function WalletTransferPage() {
     if (!targetUserId.trim()) { toast.error("Enter target user id"); return; }
     const numAmount = Number(amount ?? 0);
     if (!numAmount || numAmount <= 0) { toast.error("Enter a valid amount"); return; }
+    if (numAmount > balance) { toast.error("Insufficient balance"); return; }
+
+    // Optimistic: deduct immediately
+    optimisticAdjust(-numAmount);
+    setSaving(true);
 
     try {
-      setSaving(true);
       await walletTransfer({
         senderId: user.id,
         recipientId: targetUserId.trim(),
@@ -32,10 +37,13 @@ export default function WalletTransferPage() {
         contextType: "manual_transfer",
         title: note.trim() || "Transfer",
       });
+      // Sync with server truth
       await reloadBalance();
       toast.success("Transfer completed");
       navigate("/wallet/hub");
     } catch (err: any) {
+      // Rollback optimistic update
+      optimisticAdjust(numAmount);
       toast.error(err.message || "Transfer failed");
     } finally {
       setSaving(false);
@@ -51,6 +59,15 @@ export default function WalletTransferPage() {
           <p className="text-xs text-muted-foreground">Send balance to another user</p>
         </div>
       </div>
+
+      {/* Live balance chip */}
+      <div className="px-4 mb-4">
+        <div className="inline-flex items-center gap-1.5 rounded-full bg-muted px-3 py-1.5 text-xs font-semibold text-foreground">
+          <span className="text-muted-foreground">Balance</span>
+          <span>{balance.toFixed(2)} {currency}</span>
+        </div>
+      </div>
+
       <div className="px-4 space-y-4">
         <input value={targetUserId} onChange={(e) => setTargetUserId(e.target.value)} placeholder="Target user id" className="w-full rounded-xl border border-border/20 bg-background px-3 py-3 text-sm" />
         <input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="Amount" className="w-full rounded-xl border border-border/20 bg-background px-3 py-3 text-sm" />
