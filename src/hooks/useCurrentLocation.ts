@@ -31,14 +31,21 @@ export function useCurrentLocation(opts?: { watch?: boolean }) {
       store().setPermissionState(perm);
 
       if (perm === "denied") {
-        store().setIsFallback(true);
-        store().setError("Location permission denied");
-        // Only set fallback if no real location exists yet
-        if (!store().currentLocation) {
-          store().setCurrentLocation(store().lastKnownLocation || DUBAI_FALLBACK);
+        // If we already have a valid position, don't block the UI
+        const existing = store().currentLocation;
+        if (existing && existing.accuracy < 5000) {
+          console.log("[useCurrentLocation] perm=denied but valid location exists, skipping fallback");
+          store().setLoading(false);
+          // Still try to get position — browser may allow it despite permissions API
+        } else {
+          store().setIsFallback(true);
+          store().setError("Location permission denied");
+          if (!existing) {
+            store().setCurrentLocation(store().lastKnownLocation || DUBAI_FALLBACK);
+          }
+          store().setLoading(false);
+          return;
         }
-        store().setLoading(false);
-        return;
       }
 
       try {
@@ -54,17 +61,22 @@ export function useCurrentLocation(opts?: { watch?: boolean }) {
           message: err?.message,
         });
 
-        if (err?.code === 1) {
+        // KEY FIX: If we already have a valid location, NEVER regress to error/fallback state
+        const existing = store().currentLocation;
+        const hasValidLive = existing && existing.accuracy < 5000;
+
+        if (hasValidLive) {
+          console.log("[useCurrentLocation] error ignored — valid live location already exists", existing);
+          // Keep current good state, don't touch permission/fallback/error
+        } else if (err?.code === 1) {
           store().setPermissionState("denied");
+          store().setIsFallback(true);
+          if (!existing) {
+            store().setCurrentLocation(store().lastKnownLocation || DUBAI_FALLBACK);
+          }
         } else {
           store().setPermissionState("prompt");
           store().setError(err?.message || "Location unavailable");
-        }
-
-        // Only enter fallback state if NO valid live location exists yet
-        const existing = store().currentLocation;
-        const hasValidLive = existing && !store().isFallback && existing.accuracy < 5000;
-        if (!hasValidLive) {
           store().setIsFallback(true);
           if (!existing) {
             store().setCurrentLocation(store().lastKnownLocation || DUBAI_FALLBACK);
@@ -85,8 +97,13 @@ export function useCurrentLocation(opts?: { watch?: boolean }) {
           },
           (geoErr) => {
             console.error("[useCurrentLocation] GPS watch error", geoErr);
+            // KEY FIX: Only set denied if NO valid position exists
+            const current = store().currentLocation;
+            if (current && current.accuracy < 5000) {
+              console.log("[useCurrentLocation] watch error ignored — valid position exists");
+              return;
+            }
             if (geoErr?.code === 1) store().setPermissionState("denied");
-            // Do NOT overwrite currentLocation on watch errors — keep last known good
           },
         );
       }
