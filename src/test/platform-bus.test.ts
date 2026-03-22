@@ -41,7 +41,7 @@ describe("Platform Bus", () => {
   });
 
   it("getLog returns recent events", () => {
-    platformBus.emit("deal:created", { id: "d1" }, "orbit");
+    platformBus.emit("deal:created", { id: "d1" }, "marketplace");
     const log = platformBus.getLog();
     expect(log.length).toBeGreaterThan(0);
     expect(log.some((e: any) => e.type === "deal:created")).toBe(true);
