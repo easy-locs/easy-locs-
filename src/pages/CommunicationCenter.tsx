@@ -331,7 +331,24 @@ export const CommunicationCenter = () => {
       )}
 
       {showNewConversation && (
-        <AddContactByEmail onSaved={() => setShowNewConversation(false)} />
+        <Sheet open={showNewConversation} onOpenChange={setShowNewConversation}>
+          <SheetContent side="bottom" className="h-[60dvh] p-0 rounded-t-2xl" style={{ background: "hsl(var(--background))", zIndex: 70 }}>
+            <SheetHeader className="px-4 py-3" style={{ borderBottom: "1px solid hsl(var(--border) / 0.1)" }}>
+              <SheetTitle className="text-sm font-bold" style={{ color: "hsl(var(--foreground))" }}>
+                New Conversation
+              </SheetTitle>
+            </SheetHeader>
+            <div className="p-4">
+              <AddContactByEmail
+                onSaved={() => { setShowNewConversation(false); loadThreads(); }}
+                onConversationReady={(conversation, peer) => {
+                  setShowNewConversation(false);
+                  loadThreads();
+                }}
+              />
+            </div>
+          </SheetContent>
+        </Sheet>
       )}
     </>
   );
