@@ -3,13 +3,14 @@
  * Dense, action-first, contextual, visually powerful.
  * Categories scroll horizontally for unlimited discovery.
  */
-import { memo, useMemo } from "react";
+import { memo, useMemo, lazy, Suspense } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Search, MapPin, Bell, Wallet, QrCode, Send, ChevronRight, Star, Clock } from "lucide-react";
 import { useLocationStore } from "@/stores/locationStore";
 import { useOrbitEngine } from "@/stores/orbit-engine";
 import { getSmartCategories, getSmartHero, getTimeGreeting, getSmartSections, getTimeSlot, type SmartCategory } from "@/lib/smart-home-engine";
 import { motion } from "framer-motion";
+import GeoForcePrompt from "@/components/location/GeoForcePrompt";
 
 // Category images map
 import foodImg from "@/assets/categories/food.png";
