@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { platformBus } from "@/app/events/platform-bus";
+import { platformBus } from "@/lib/shared/platform-bus";
 import { requestMediaStream } from "@/lib/device/permissions";
 
 type CameraMode = "qr" | "call" | "proof" | "avatar";
@@ -36,10 +36,7 @@ export const useCameraStore = create<CameraStore>((set, get) => ({
       isOpen: true,
     });
 
-    platformBus.emit({
-      type: "camera.opened",
-      payload: { mode },
-    });
+    platformBus.emit("camera.opened", { mode }, "system");
   },
 
   closeCamera: () => {
@@ -52,9 +49,6 @@ export const useCameraStore = create<CameraStore>((set, get) => ({
       isOpen: false,
     });
 
-    platformBus.emit({
-      type: "camera.closed",
-      payload: {},
-    });
+    platformBus.emit("camera.closed", {}, "system");
   },
 }));

@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { platformBus } from "@/app/events/platform-bus";
+import { platformBus } from "@/lib/shared/platform-bus";
 import type { WalletStateModel, WalletTransaction, CurrencyCode } from "@/lib/types/domain";
 import { walletRepo } from "@/lib/supabase/repositories";
 
@@ -42,10 +42,7 @@ export const useWalletStore = create<WalletStore>((set, get) => ({
 
     set({ wallet, loading: false });
 
-    platformBus.emit({
-      type: "wallet.loaded",
-      payload: { walletId: wallet.walletId, ownerOrbitId: wallet.ownerOrbitId },
-    });
+    platformBus.emit("wallet.loaded", { walletId: wallet.walletId, ownerOrbitId: wallet.ownerOrbitId }, "wallet");
   },
 
   createTransaction: async ({ type, amount, currency, status = "pending", reference }) => {
@@ -66,10 +63,7 @@ export const useWalletStore = create<WalletStore>((set, get) => ({
       transactions: [saved, ...state.transactions],
     }));
 
-    platformBus.emit({
-      type: "wallet.transaction.created",
-      payload: { transaction: saved },
-    });
+    platformBus.emit("wallet.transaction.created", { transaction: saved }, "wallet");
 
     return saved;
   },
@@ -84,14 +78,11 @@ export const useWalletStore = create<WalletStore>((set, get) => ({
       ),
     }));
 
-    platformBus.emit({
-      type: "wallet.payment.success",
-      payload: {
-        transactionId,
-        amount: tx.amount,
-        reference: tx.reference,
-      },
-    });
+    platformBus.emit("wallet.payment.success", {
+      transactionId,
+      amount: tx.amount,
+      reference: tx.reference,
+    }, "wallet");
   },
 
   markTransactionFailed: (transactionId, reason) => {
@@ -101,9 +92,6 @@ export const useWalletStore = create<WalletStore>((set, get) => ({
       ),
     }));
 
-    platformBus.emit({
-      type: "wallet.payment.failed",
-      payload: { transactionId, reason },
-    });
+    platformBus.emit("wallet.payment.failed", { transactionId, reason }, "wallet");
   },
 }));

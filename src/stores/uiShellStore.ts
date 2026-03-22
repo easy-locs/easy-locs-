@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { platformBus } from "@/app/events/platform-bus";
+import { platformBus } from "@/lib/shared/platform-bus";
 
 type PanelName =
   | "chat"
@@ -41,22 +41,19 @@ export const useUiShellStore = create<UiShellStore>((set) => ({
       leftPanel: leftPanel ?? state.leftPanel,
       rightPanel: rightPanel ?? state.rightPanel,
     }));
-    platformBus.emit({
-      type: "ui.panel.changed",
-      payload: { leftPanel: leftPanel ?? undefined, rightPanel: rightPanel ?? undefined },
-    });
+    platformBus.emit("ui.panel.changed", { leftPanel: leftPanel ?? undefined, rightPanel: rightPanel ?? undefined }, "system");
   },
 
   setActiveOverlay: (overlay) => set({ activeOverlay: overlay }),
 
   openCamera: (mode) => {
     set({ cameraMode: mode });
-    platformBus.emit({ type: "camera.opened", payload: { mode } });
+    platformBus.emit("camera.opened", { mode }, "system");
   },
 
   closeCamera: () => {
     set({ cameraMode: null });
-    platformBus.emit({ type: "camera.closed", payload: {} });
+    platformBus.emit("camera.closed", {}, "system");
   },
 
   setCallFullscreen: (value) => set({ callFullscreen: value }),
