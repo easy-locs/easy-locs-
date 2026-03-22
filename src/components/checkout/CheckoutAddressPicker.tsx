@@ -93,7 +93,7 @@ export default function CheckoutAddressPicker({
     try {
       setSaving(true);
       const row = await createSavedAddress({
-        userId: user.id, label, line1, city, area: area || null, isDefault: true,
+        label, line1, city, area: area || undefined, isDefault: true,
       });
       onChange({ id: row.id, label: row.label, line1: row.line1, city: row.city, area: row.area });
       setLine1(""); setArea(""); setOpen(false); refetch();
