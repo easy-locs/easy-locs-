@@ -117,7 +117,7 @@ const HERO_BY_TIME: Record<TimeSlot, SmartHero> = {
     subtitle: "Dine out or order in — your pick",
     emoji: "🍣",
     cta: "Find dinner",
-    route: "/discover?rail=dineout",
+    route: "/radar?category=dineout",
     gradient: "linear-gradient(135deg, hsl(280 60% 45%), hsl(320 65% 50%))",
   },
   latenight: {
