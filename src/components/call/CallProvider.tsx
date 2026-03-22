@@ -74,7 +74,7 @@ export function CallProvider({ children }: { children: ReactNode }) {
       .eq("id", normalized)
       .maybeSingle();
 
-    if (directProfile?.id) return directProfile.id;
+    if (directProfile?.id && directProfile.id !== user?.id) return directProfile.id;
 
     // Try org owner first
     const { data: ownerMembership } = await supabase
