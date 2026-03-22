@@ -48,13 +48,29 @@ export const useUnifiedNotificationStore = create<NotificationStoreState>((set, 
   hydrate: async (userId) => {
     set({ loading: true });
     try {
+      // app_notifications is the canonical notification table (in DB types)
       const { data } = await supabase
-        .from("notifications" as any)
+        .from("app_notifications")
         .select("*")
         .eq("user_id", userId)
-        .order("created_at", { ascending: false })
+        .order("createdAt", { ascending: false })
         .limit(100);
-      set({ notifications: (data || []) as any[], loading: false });
+      // Map app_notifications schema to AppNotification interface
+      const mapped = (data || []).map((n: any) => ({
+        id: n.id,
+        user_id: n.user_id,
+        type: n.type,
+        title: n.title,
+        message: n.body,
+        link: n.metadata?.link || null,
+        priority: n.metadata?.priority || "normal",
+        category: n.type,
+        read_at: n.read ? n.createdAt : null,
+        resolved: n.read,
+        payload: n.metadata,
+        created_at: n.createdAt,
+      }));
+      set({ notifications: mapped, loading: false });
     } catch {
       set({ loading: false });
     }
@@ -70,8 +86,8 @@ export const useUnifiedNotificationStore = create<NotificationStoreState>((set, 
 
   markAsRead: async (id) => {
     await supabase
-      .from("notifications" as any)
-      .update({ read_at: new Date().toISOString() } as any)
+      .from("app_notifications")
+      .update({ read: true } as any)
       .eq("id", id);
     set((s) => ({
       notifications: s.notifications.map((n) =>
@@ -82,10 +98,10 @@ export const useUnifiedNotificationStore = create<NotificationStoreState>((set, 
 
   markAllAsRead: async (userId) => {
     await supabase
-      .from("notifications" as any)
-      .update({ read_at: new Date().toISOString() } as any)
+      .from("app_notifications")
+      .update({ read: true } as any)
       .eq("user_id", userId)
-      .is("read_at", null);
+      .eq("read", false);
     set((s) => ({
       notifications: s.notifications.map((n) =>
         n.read_at ? n : { ...n, read_at: new Date().toISOString() }

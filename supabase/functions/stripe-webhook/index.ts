@@ -236,6 +236,9 @@ serve(async (req) => {
           logStep("PaymentIntent succeeded for marketplace booking", { bookingId: meta.marketplace_booking_id });
           await handleMarketplacePayment(supabase, meta, pi.id);
         }
+
+        // ── Canonical post-payment automation ──
+        await runPostPaymentAutomation(supabase, pi, meta);
         break;
       }
       case "payment_intent.payment_failed": {
@@ -300,6 +303,110 @@ serve(async (req) => {
     });
   }
 });
+
+/* ── Post-payment automation: commission-split, notification, QR session close ── */
+async function runPostPaymentAutomation(supabase: any, pi: Stripe.PaymentIntent, meta: Record<string, string>) {
+  const amount = pi.amount / 100;
+  const currency = (pi.currency || "aed").toUpperCase();
+  const userId = meta.user_id || meta.buyer_user_id || null;
+  const merchantId = meta.merchant_id || meta.shop_id || meta.owner_user_id || null;
+  const paymentType = meta.type || "payment";
+  const qrSessionId = meta.qr_session_id || null;
+
+  // 1. Commission split (idempotent — keyed by payment_intent_id)
+  if (merchantId && amount > 0) {
+    try {
+      logStep("Triggering commission-split", { amount, merchantId });
+      await supabase.from("commission_splits").insert({
+        id: crypto.randomUUID(),
+        payment_intent_id: pi.id,
+        merchant_id: merchantId,
+        total_amount: amount,
+        currency,
+        platform_rate: 0.10,
+        merchant_rate: 0.80,
+        driver_rate: 0.10,
+        platform_amount: +(amount * 0.10).toFixed(2),
+        merchant_amount: +(amount * 0.80).toFixed(2),
+        driver_amount: +(amount * 0.10).toFixed(2),
+        driver_id: meta.driver_id || null,
+        status: "completed",
+        created_at: new Date().toISOString(),
+      });
+      logStep("Commission split recorded");
+    } catch (err: any) {
+      // Ignore duplicate key (idempotent)
+      if (!err?.message?.includes("duplicate")) {
+        console.error("[STRIPE-WEBHOOK] Commission split error:", err?.message);
+      }
+    }
+  }
+
+  // 2. Bank-style payment notification (writes to app_notifications — canonical UI table)
+  if (userId) {
+    try {
+      const merchantName = meta.merchant_name || meta.shop_name || null;
+      const typeLabels: Record<string, string> = {
+        payment: "Payment Completed", topup: "Wallet Top Up", transfer: "Money Sent",
+        rent_payment: "Rent Paid", seasonal_booking: "Booking Confirmed",
+        marketplace_booking: "Booking Confirmed", qr_payment: "QR Payment",
+        storefront_order: "Order Paid", wallet_topup: "Wallet Top Up",
+      };
+      const title = typeLabels[paymentType] || "Transaction Update";
+      let body = `${amount.toFixed(2)} ${currency}`;
+      if (merchantName) body += ` at ${merchantName}`;
+      const timeStr = new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
+      body += ` · ${timeStr}`;
+
+      await supabase.from("app_notifications").insert({
+        id: crypto.randomUUID(),
+        user_id: userId,
+        title,
+        body,
+        type: "wallet_" + paymentType,
+        orbitId: userId,
+        read: false,
+        metadata: {
+          amount, currency, merchant_name: merchantName,
+          payment_type: paymentType, payment_intent_id: pi.id,
+          timestamp: new Date().toISOString(),
+        },
+      });
+      logStep("Payment notification created", { title });
+    } catch (err: any) {
+      console.error("[STRIPE-WEBHOOK] Notification error:", err?.message);
+    }
+  }
+
+  // 3. Close QR session if applicable
+  if (qrSessionId) {
+    try {
+      await supabase.from("qr_payment_sessions").update({
+        status: "completed",
+        completed_at: new Date().toISOString(),
+        payment_intent_id: pi.id,
+      }).eq("id", qrSessionId).eq("status", "pending");
+      logStep("QR session marked completed", { qrSessionId });
+    } catch (err: any) {
+      console.error("[STRIPE-WEBHOOK] QR session update error:", err?.message);
+    }
+  }
+
+  // 4. Record in payment_provider_events for audit trail
+  try {
+    await supabase.from("payment_provider_events").insert({
+      provider: "stripe",
+      event_type: "payment_automation_complete",
+      event_id: crypto.randomUUID(),
+      payment_intent_id: pi.id,
+      payload_json: {
+        user_id: userId, amount, currency, payment_type: paymentType,
+        commission_split: !!merchantId, notification_sent: !!userId,
+        qr_session_closed: !!qrSessionId,
+      },
+    });
+  } catch { /* non-critical */ }
+}
 
 /* ── Handle checkout.session.completed for booking & rent payments ── */
 async function handleCheckoutCompleted(supabase: any, stripe: Stripe, session: Stripe.Checkout.Session) {
