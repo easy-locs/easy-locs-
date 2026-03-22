@@ -4,7 +4,7 @@
  */
 import { MapPin, RefreshCw } from "lucide-react";
 import { useLocationStore } from "@/stores/locationStore";
-import { getCurrentPositionHighAccuracy } from "@/lib/location/geolocation";
+import { requestLocation } from "@/lib/location/requestLocation";
 import { useState } from "react";
 
 export function GeoPermissionRecovery() {
@@ -21,18 +21,14 @@ export function GeoPermissionRecovery() {
   const handleRetry = async () => {
     setRetrying(true);
     try {
-      const pos = await getCurrentPositionHighAccuracy();
-      setCurrentLocation(pos);
-      setIsFallback(false);
-      setPermissionState("granted");
-      setError(null);
-      console.log("[GeoRecovery] retry success", pos);
-    } catch (err: any) {
-      console.warn("[GeoRecovery] retry failed", { code: err?.code, message: err?.message });
-      if (err?.code === 1) {
-        setPermissionState("denied");
+      const result = await requestLocation();
+      if (result) {
+        console.log("[GeoRecovery] retry success", result);
+      } else {
+        console.warn("[GeoRecovery] retry returned null — still denied or unavailable");
       }
-      setError(err?.message || "Location unavailable");
+    } catch (err: any) {
+      console.warn("[GeoRecovery] retry failed", err);
     } finally {
       setRetrying(false);
     }

@@ -97,8 +97,19 @@ export function useTrackingStreamer(sessionId: string | null) {
   const PUSH_INTERVAL_MS = 3000; // push every 3s max
 
   const startStreaming = useCallback(async () => {
-    if (!sessionId || !user?.id || !navigator.geolocation) {
-      setError("Geolocation not available");
+    if (!sessionId || !user?.id) {
+      setError("Session or user not available");
+      return;
+    }
+
+    // Use canonical geo pipeline
+    const { watchCurrentPosition } = await import("@/lib/location/geolocation");
+    const { requestLocation } = await import("@/lib/location/requestLocation");
+
+    // Force a fresh GPS fix first
+    const initialPos = await requestLocation();
+    if (!initialPos) {
+      setError("Location unavailable — please enable GPS");
       return;
     }
 
@@ -110,13 +121,15 @@ export function useTrackingStreamer(sessionId: string | null) {
 
     setStreaming(true);
 
-    watchRef.current = navigator.geolocation.watchPosition(
-      async (pos) => {
+    watchCurrentPosition(
+      async (geoResult) => {
         const now = Date.now();
         if (now - lastPushRef.current < PUSH_INTERVAL_MS) return;
         lastPushRef.current = now;
 
-        const { latitude: lat, longitude: lng, speed, heading, accuracy } = pos.coords;
+        const { lat, lng, accuracy } = geoResult;
+        const speed: number | null = null;
+        const heading: number | null = null;
 
         // Get destination for ETA
         const { data: sess } = await supabase
@@ -169,15 +182,12 @@ export function useTrackingStreamer(sessionId: string | null) {
         platformBus.emit("tracking:position_updated", { sessionId, lat, lng, eta }, "tracking");
       },
       (err) => setError(err.message),
-      { enableHighAccuracy: true, maximumAge: 2000, timeout: 10000 }
     );
   }, [sessionId, user?.id]);
 
-  const stopStreaming = useCallback(() => {
-    if (watchRef.current !== null) {
-      navigator.geolocation.clearWatch(watchRef.current);
-      watchRef.current = null;
-    }
+  const stopStreaming = useCallback(async () => {
+    const { stopWatchingPosition } = await import("@/lib/location/geolocation");
+    stopWatchingPosition();
     setStreaming(false);
   }, []);
 
@@ -201,7 +211,7 @@ export function useTrackingStreamer(sessionId: string | null) {
 
   // Cleanup on unmount
   useEffect(() => {
-    return () => stopStreaming();
+    return () => { stopStreaming(); };
   }, [stopStreaming]);
 
   return { streaming, error, startStreaming, stopStreaming, markArrived, markCompleted };
