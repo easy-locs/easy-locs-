@@ -176,7 +176,6 @@ export const CommunicationCenter = () => {
     switch (activeSection) {
       case "calls": return <CommCallsSection />;
       case "contacts": return <CommContactsSection />;
-      case "payments": return <CommPaymentsSection />;
       case "groups": return <CommGroupsSection />;
       case "you":
         return <OrbitAccountSection />;
