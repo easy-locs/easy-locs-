@@ -1327,11 +1327,6 @@ const App = () => (
                 <Route path="/admin/notification-campaigns" element={<ProtectedRoute><AdminNotificationCampaignsPage /></ProtectedRoute>} />
                 <Route path="/admin/customer-segments" element={<ProtectedRoute><AdminCustomerSegmentsPage /></ProtectedRoute>} />
                 <Route path="/admin/merchant-segments" element={<ProtectedRoute><AdminMerchantSegmentsPage /></ProtectedRoute>} />
-                <Route path="/v1/restaurant/:restaurantId" element={<V1RestaurantRoute />} />
-                <Route path="/v1/tracking/:orderId" element={<V1TrackingRoute />} />
-                <Route path="/v1/driver/missions" element={<V1DriverMissionBoardPage />} />
-                <Route path="/v1/driver/proof/:orderId" element={<V1DriverProofPage />} />
-              <Route path="/city/:countryCode/:city/:vertical/:locale" element={<CityVerticalPage />} />
 
               {/* Guest / Public */}
               <Route path="/guest/checkout/:cartId" element={<GuestCheckoutPage />} />

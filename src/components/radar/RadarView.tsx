@@ -181,10 +181,10 @@ export default memo(function RadarView({ initialType, radiusKm = 20, showMap = t
                       </span>
                     )}
                     {entity.distance != null && (
-                      <span className="text-[10px] text-muted-foreground">{formatGeoDistance(entity.distance)}</span>
+                      <span className="text-[10px] text-muted-foreground">{formatGeoDistance((entity.distance ?? 0) * 1000)}</span>
                     )}
                     {entity.distance != null && (
-                      <span className="text-[10px] text-muted-foreground">{formatGeoETA(entity.distance)}</span>
+                      <span className="text-[10px] text-muted-foreground">{formatGeoETA((entity.distance ?? 0) * 1000)}</span>
                     )}
                   </div>
                 </div>

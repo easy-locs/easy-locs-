@@ -293,7 +293,7 @@ const CreateListing = () => {
       // Duplicate detection before insert
       const dupCheck = await checkServiceDuplicate(form.title.trim(), geoLat, geoLng, form.contact_whatsapp);
       if (dupCheck.blocked) {
-        toast({ title: "Duplicate detected", description: `Similar listing "${dupCheck.existingMatch?.name ?? "unknown" ?? "unknown"}" already exists nearby.`, variant: "destructive" });
+        toast({ title: "Duplicate detected", description: `Similar listing "${dupCheck.existingMatch?.name ?? "unknown"}" already exists nearby.`, variant: "destructive" });
         setSaving(false);
         return;
       }
