@@ -1,15 +1,15 @@
 /**
- * SettingsHome — "Me" Hub: Premium, smart, future-proof layout.
- * Organized by user priority: Identity → Finance → Business → Communication → Preferences → Support.
+ * SettingsHome — "Me" Hub: Ultra-premium, smart, simple layout.
+ * Streamlined categories with visual polish for pro onboarding experience.
  */
 import { useNavigate } from "react-router-dom";
 import {
   User, CreditCard, MapPin, Bell, Shield, Store,
-  Palette, Globe, ChevronRight, FileText, Headphones, Heart,
-  Wallet, LogOut, Lock, Phone, Briefcase,
-  QrCode, Package, BarChart3, Settings, Building2,
-  Scan, Receipt, TrendingUp, Users, MessageCircle,
-  Banknote, Crown, HelpCircle, Scale,
+  Palette, Globe, ChevronRight, Headphones, Heart,
+  Wallet, LogOut, Lock, Phone,
+  QrCode, Package, BarChart3, Building2,
+  Receipt, TrendingUp, Users, MessageCircle,
+  Banknote, Crown, Scale,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -20,117 +20,110 @@ interface MeItem {
   key: string;
   icon: React.ComponentType<{ className?: string; style?: React.CSSProperties }>;
   label: string;
+  subtitle?: string;
   path: string;
   badge?: string;
 }
 
 interface MeSection {
   title: string;
-  icon: React.ComponentType<{ className?: string; style?: React.CSSProperties }>;
+  emoji: string;
   accent: string;
   items: MeItem[];
 }
 
 const ME_SECTIONS: MeSection[] = [
   {
-    title: "Account & Identity",
-    icon: User,
+    title: "Account",
+    emoji: "👤",
     accent: "hsl(210 80% 52%)",
     items: [
-      { key: "profile", icon: User, label: "Personal Info", path: "/settings/account" },
-      { key: "security", icon: Lock, label: "Security & PIN", path: "/settings/security" },
-      { key: "phone", icon: Phone, label: "Phone Number", path: "/settings/account" },
-      { key: "verification", icon: Shield, label: "Verification", path: "/settings/security" },
-      { key: "orbit-security", icon: Shield, label: "Chat Privacy & Encryption", path: "/settings/orbit" },
+      { key: "profile", icon: User, label: "Personal Info", subtitle: "Name, email, photo", path: "/settings/account" },
+      { key: "security", icon: Lock, label: "Security", subtitle: "PIN, password, 2FA", path: "/settings/security" },
+      { key: "phone", icon: Phone, label: "Phone", subtitle: "Verify number", path: "/settings/account" },
+      { key: "privacy", icon: Shield, label: "Privacy", subtitle: "Chat encryption", path: "/settings/orbit" },
     ],
   },
   {
-    title: "Wallet & Finance",
-    icon: Wallet,
+    title: "Money",
+    emoji: "💳",
     accent: "hsl(270 60% 55%)",
     items: [
-      { key: "wallet", icon: Wallet, label: "Wallet Pro", path: "/wallet/hub" },
-      { key: "cards", icon: CreditCard, label: "Payment Methods", path: "/settings/payment-methods" },
-      { key: "payouts", icon: Banknote, label: "Payouts", path: "/wallet/payouts" },
-      { key: "transactions", icon: Receipt, label: "Transactions", path: "/wallet/history" },
+      { key: "wallet", icon: Wallet, label: "Wallet", subtitle: "Balance & top-up", path: "/wallet/hub" },
+      { key: "cards", icon: CreditCard, label: "Payment Methods", subtitle: "Cards & accounts", path: "/settings/payment-methods" },
+      { key: "payouts", icon: Banknote, label: "Payouts", subtitle: "Withdrawals", path: "/wallet/payouts" },
+      { key: "history", icon: Receipt, label: "History", subtitle: "All transactions", path: "/wallet/history" },
     ],
   },
   {
-    title: "Seller Hub",
-    icon: Store,
+    title: "Business",
+    emoji: "🏪",
     accent: "hsl(38 65% 50%)",
     items: [
-      { key: "seller", icon: Store, label: "My Storefront", path: "/seller" },
-      { key: "shops", icon: Package, label: "My Shops", path: "/dashboard/my-shops" },
-      { key: "pos", icon: QrCode, label: "POS & QR Menu", path: "/pos" },
-      { key: "orders", icon: Receipt, label: "Orders", path: "/dashboard/orders" },
+      { key: "seller", icon: Store, label: "My Storefront", subtitle: "Manage your shop", path: "/seller" },
+      { key: "shops", icon: Package, label: "My Shops", subtitle: "All stores", path: "/dashboard/my-shops" },
+      { key: "pos", icon: QrCode, label: "POS & QR", subtitle: "In-store tools", path: "/pos" },
+      { key: "orders", icon: Receipt, label: "Orders", subtitle: "Track & manage", path: "/dashboard/orders" },
+      { key: "analytics", icon: BarChart3, label: "Analytics", subtitle: "Performance", path: "/dashboard/reporting" },
+      { key: "boost", icon: Crown, label: "Boost", subtitle: "Ads & promotions", path: "/dashboard/boost", badge: "PRO" },
     ],
   },
   {
-    title: "Analytics & Growth",
-    icon: TrendingUp,
-    accent: "hsl(160 55% 42%)",
-    items: [
-      { key: "analytics", icon: BarChart3, label: "Analytics", path: "/dashboard/reporting" },
-      { key: "boost", icon: Crown, label: "Boost & Ads", path: "/dashboard/boost" },
-    ],
-  },
-  {
-    title: "Property Management",
-    icon: Building2,
+    title: "Property",
+    emoji: "🏢",
     accent: "hsl(200 60% 50%)",
     items: [
-      { key: "properties", icon: Building2, label: "Properties", path: "/properties" },
-      { key: "tenants", icon: Users, label: "Tenants", path: "/tenants" },
+      { key: "properties", icon: Building2, label: "Properties", subtitle: "Manage units", path: "/properties" },
+      { key: "tenants", icon: Users, label: "Tenants", subtitle: "Lease & contacts", path: "/tenants" },
     ],
   },
   {
     title: "Communication",
-    icon: MessageCircle,
+    emoji: "💬",
     accent: "hsl(142 60% 45%)",
     items: [
-      { key: "chat", icon: MessageCircle, label: "Chat Settings", path: "/settings/orbit" },
-      { key: "contacts", icon: Users, label: "Contacts", path: "/orbit/contacts" },
-      { key: "notifications", icon: Bell, label: "Push & Alerts", path: "/settings/notifications" },
+      { key: "chat", icon: MessageCircle, label: "Chat", subtitle: "Settings & privacy", path: "/settings/orbit" },
+      { key: "contacts", icon: Users, label: "Contacts", subtitle: "Directory", path: "/orbit/contacts" },
+      { key: "notifications", icon: Bell, label: "Notifications", subtitle: "Push & alerts", path: "/settings/notifications" },
     ],
   },
   {
-    title: "Addresses & Favorites",
-    icon: MapPin,
+    title: "Saved",
+    emoji: "📌",
     accent: "hsl(16 85% 55%)",
     items: [
-      { key: "addresses", icon: MapPin, label: "Saved Addresses", path: "/settings/addresses" },
-      { key: "favorites", icon: Heart, label: "Favorites", path: "/favorites" },
+      { key: "addresses", icon: MapPin, label: "Addresses", subtitle: "Home, work, saved", path: "/settings/addresses" },
+      { key: "favorites", icon: Heart, label: "Favorites", subtitle: "Shops & items", path: "/favorites" },
     ],
   },
   {
-    title: "Preferences",
-    icon: Settings,
+    title: "Settings",
+    emoji: "⚙️",
     accent: "hsl(220 50% 55%)",
     items: [
-      { key: "language", icon: Globe, label: "Language & Region", path: "/settings/orbit" },
-      { key: "theme", icon: Palette, label: "Appearance", path: "/settings/preferences" },
+      { key: "language", icon: Globe, label: "Language", subtitle: "Region & format", path: "/settings/orbit" },
+      { key: "theme", icon: Palette, label: "Appearance", subtitle: "Dark, light, auto", path: "/settings/preferences" },
     ],
   },
   {
-    title: "Help & Legal",
-    icon: HelpCircle,
+    title: "Support",
+    emoji: "🛟",
     accent: "hsl(280 50% 50%)",
     items: [
-      { key: "help", icon: Headphones, label: "Help & Support", path: "/settings/support" },
-      { key: "legal", icon: Scale, label: "Legal & Privacy", path: "/legal" },
+      { key: "help", icon: Headphones, label: "Help Center", subtitle: "FAQ & live chat", path: "/settings/support" },
+      { key: "legal", icon: Scale, label: "Legal", subtitle: "Terms & privacy", path: "/legal" },
     ],
   },
 ];
 
 const stagger = {
   hidden: {},
-  show: { transition: { staggerChildren: 0.04 } },
+  show: { transition: { staggerChildren: 0.03 } },
 };
 
 const fadeUp = {
-  hidden: { opacity: 0, y: 12 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.25, ease: [0.25, 0.1, 0.25, 1] as const } },
+  hidden: { opacity: 0, y: 10 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.22, ease: [0.25, 0.1, 0.25, 1] as const } },
 };
 
 export default function SettingsHome() {
@@ -143,34 +136,41 @@ export default function SettingsHome() {
     navigate("/login", { replace: true });
   };
 
-  const initials = (user?.user_metadata?.display_name || user?.email || "U")[0].toUpperCase();
-  const displayName = user?.user_metadata?.display_name || user?.email?.split("@")[0] || "User";
+  const avatarUrl = user?.user_metadata?.avatar_url;
+  const displayName = user?.user_metadata?.display_name || user?.user_metadata?.name || user?.email?.split("@")[0] || "User";
+  const initials = displayName[0].toUpperCase();
 
   return (
     <div className="min-h-[100dvh] flex flex-col bg-background pb-24">
-      {/* Profile Header */}
+      {/* Premium Profile Header */}
       {user && (
-        <div className="px-4 pt-6 pb-2">
+        <div className="px-4 pt-6 pb-3">
           <button
             onClick={() => navigate("/settings/account")}
-            className="w-full flex items-center gap-4 p-4 rounded-2xl bg-card border border-border/10 active:scale-[0.98] transition-transform shadow-sm"
+            className="w-full flex items-center gap-4 p-4 rounded-3xl bg-gradient-to-br from-primary/8 to-primary/3 border border-primary/10 active:scale-[0.98] transition-all duration-200"
           >
-            <div className="w-16 h-16 rounded-2xl flex items-center justify-center text-xl font-bold shrink-0 bg-primary/10 text-primary">
-              {initials}
-            </div>
+            {avatarUrl ? (
+              <img src={avatarUrl} alt="" className="w-16 h-16 rounded-2xl object-cover shrink-0 ring-2 ring-primary/20" />
+            ) : (
+              <div className="w-16 h-16 rounded-2xl flex items-center justify-center text-xl font-black shrink-0 bg-primary text-primary-foreground shadow-lg">
+                {initials}
+              </div>
+            )}
             <div className="flex-1 min-w-0 text-left">
-              <p className="text-lg font-bold text-foreground truncate">{displayName}</p>
+              <p className="text-lg font-black text-foreground truncate">{displayName}</p>
               <p className="text-xs text-muted-foreground truncate">{user.email}</p>
-              <p className="text-[10px] text-muted-foreground/60 mt-0.5">Edit profile →</p>
+              <div className="flex items-center gap-1 mt-1">
+                <span className="text-[10px] font-semibold text-primary/80 bg-primary/8 px-2 py-0.5 rounded-full">Edit profile</span>
+              </div>
             </div>
-            <ChevronRight className="w-4 h-4 shrink-0 text-muted-foreground/30" />
+            <ChevronRight className="w-5 h-5 shrink-0 text-primary/40" />
           </button>
         </div>
       )}
 
       {/* Sections */}
       <motion.div
-        className="flex-1 px-4 pt-2 space-y-2.5"
+        className="flex-1 px-4 space-y-2"
         variants={stagger}
         initial="hidden"
         animate="show"
@@ -179,37 +179,42 @@ export default function SettingsHome() {
           <motion.div
             key={section.title}
             variants={fadeUp}
-            className="rounded-2xl overflow-hidden bg-card border border-border/8"
+            className="rounded-2xl overflow-hidden bg-card border border-border/8 shadow-sm"
           >
-            {/* Section header */}
-            <div className="flex items-center gap-2.5 px-4 pt-3.5 pb-1.5">
-              <div
-                className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0"
-                style={{ background: section.accent.replace(")", " / 0.12)") }}
-              >
-                <section.icon className="w-3.5 h-3.5" style={{ color: section.accent }} />
-              </div>
-              <h2 className="text-xs font-bold uppercase tracking-wide text-muted-foreground/70">
+            {/* Section header — compact with emoji */}
+            <div className="flex items-center gap-2 px-4 pt-3 pb-1">
+              <span className="text-sm">{section.emoji}</span>
+              <h2 className="text-[11px] font-extrabold uppercase tracking-widest text-muted-foreground/60">
                 {section.title}
               </h2>
             </div>
 
-            {/* Items */}
+            {/* Items — two-line with subtitle */}
             {section.items.map((item, idx) => (
               <button
                 key={item.key}
                 onClick={() => navigate(item.path)}
-                className="w-full h-[46px] px-4 flex items-center gap-3 active:bg-muted/30 transition-colors text-left"
+                className="w-full px-4 py-2.5 flex items-center gap-3 active:bg-muted/30 transition-colors text-left"
                 style={
                   idx < section.items.length - 1
-                    ? { borderBottom: "1px solid hsl(var(--border) / 0.06)" }
+                    ? { borderBottom: "1px solid hsl(var(--border) / 0.05)" }
                     : undefined
                 }
               >
-                <item.icon className="w-[18px] h-[18px] text-muted-foreground/60 shrink-0" />
-                <span className="text-[13px] font-medium text-foreground flex-1">{item.label}</span>
+                <div
+                  className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0"
+                  style={{ background: section.accent.replace(")", " / 0.08)") }}
+                >
+                  <item.icon className="w-4 h-4" style={{ color: section.accent }} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <span className="text-[13px] font-semibold text-foreground block leading-tight">{item.label}</span>
+                  {item.subtitle && (
+                    <span className="text-[10px] text-muted-foreground/70 leading-tight">{item.subtitle}</span>
+                  )}
+                </div>
                 {item.badge && (
-                  <span className="text-[10px] font-bold text-primary bg-primary/10 px-1.5 py-0.5 rounded-md">
+                  <span className="text-[9px] font-black text-primary bg-primary/10 px-1.5 py-0.5 rounded-md">
                     {item.badge}
                   </span>
                 )}
@@ -226,11 +231,10 @@ export default function SettingsHome() {
           className="w-full flex items-center justify-center gap-2 px-4 py-3.5 rounded-2xl bg-destructive/6 border border-destructive/10 active:scale-[0.98] transition-transform"
         >
           <LogOut className="w-4 h-4 text-destructive" />
-          <span className="text-sm font-semibold text-destructive">Sign Out</span>
+          <span className="text-sm font-bold text-destructive">Sign Out</span>
         </motion.button>
 
-        {/* App version — minimal */}
-        <p className="text-center text-[10px] text-muted-foreground/30 pt-2 pb-4">Easy-Locs</p>
+        <p className="text-center text-[10px] text-muted-foreground/25 pt-1 pb-4">Easy-Locs v2.0</p>
       </motion.div>
     </div>
   );
