@@ -6,7 +6,7 @@ import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { CATEGORY_HIERARCHY } from "@/lib/category-hierarchy";
-import { haversineKm } from "@/lib/geo-distance";
+import { haversineKm } from "@/lib/radar/radar-engine";
 import { batchGeocideCities, cityKey, type CityCoords } from "@/lib/city-geocoder";
 import type { AdvancedFilters } from "@/components/explore/ExploreAdvancedFilters";
 import { defaultAdvancedFilters } from "@/components/explore/ExploreAdvancedFilters";
