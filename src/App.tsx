@@ -723,8 +723,7 @@ const seoPublicPrefixes = [
 const OrbitSessionGuard = () => { useOrbitSessionInit(); return null; };
 /** Centralized realtime: replaces usePresence, useOrbitCallSync, RealtimeMessageToast */
 const RealtimeHubGuard = () => { useRealtimeHub(); return null; };
-/** Install orchestration engine */
-const OrchestrationGuard = () => { useOrchestration(); return null; };
+/** Orchestration now handled by AppBootstrapGuard via useMasterAppBootstrap */
 /** Subscribe to realtime notifications — useEffect to avoid re-subscribing on every render */
 const NotificationsRealtimeGuard = () => {
   useEffect(() => {
