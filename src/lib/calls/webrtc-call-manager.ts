@@ -221,8 +221,9 @@ export class WebRtcCallManager {
     if (!this.pc) return false;
     try {
       debugLog.info("call", "camera_request_start", "Adding video track dynamically");
-      const videoStream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: "user", width: { ideal: 640 }, height: { ideal: 480 } },
+      const videoStream = await requestMediaStream({
+        camera: true,
+        videoConstraints: { facingMode: "user", width: { ideal: 640 }, height: { ideal: 480 } },
       });
       const videoTrack = videoStream.getVideoTracks()[0];
       if (!videoTrack) return false;
