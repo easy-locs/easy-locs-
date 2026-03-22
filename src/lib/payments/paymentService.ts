@@ -56,7 +56,7 @@ export async function confirmWalletOrCashOrder(params: {
   );
 
   if (paymentMethodType === "wallet") {
-    await platformBus.emit(
+    platformBus.emit(
       "PAYMENT_SUCCESS",
       {
         orderId,
@@ -66,7 +66,7 @@ export async function confirmWalletOrCashOrder(params: {
         customerUserId,
         paymentMethodType,
       },
-      { source: "paymentService:confirmWalletOrCashOrder" }
+      "system"
     );
   }
 
