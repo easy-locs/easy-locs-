@@ -2,6 +2,7 @@
  * geolocation.ts — Real GPS helpers. Single source of truth for raw position access.
  * Enhanced with accuracy classification and explicit fallback policy.
  */
+import { getGeoAccessErrorMessage } from "@/lib/device/permissions";
 
 export interface GeoResult {
   lat: number;
@@ -49,7 +50,7 @@ function readCurrentPositionOnce(options: PositionOptions): Promise<GeoResult> {
         });
       },
       (err) => {
-        reject({ code: err.code, message: err.message } as GeoError);
+        reject({ code: err.code, message: getGeoAccessErrorMessage(err) } as GeoError);
       },
       options,
     );
