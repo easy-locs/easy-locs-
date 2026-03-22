@@ -340,7 +340,6 @@ export default function SmartHome() {
   return (
     <div className="space-y-0">
       <CompactHeader city={city} greeting={greeting} onSearch={() => navigate("/radar")} />
-      <GeoForcePrompt />
       <QuickActions />
 
       <div className="overflow-x-auto scrollbar-none mb-3 -mx-1 px-1 touch-pan-x">
