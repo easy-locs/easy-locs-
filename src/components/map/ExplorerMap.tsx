@@ -266,7 +266,7 @@ export function ExplorerMapInner({
           <div className="flex gap-1">
             {compact && (
               <Link
-                to="/map"
+                to="/radar"
                 className="p-1.5 rounded-lg text-muted-foreground"
                 aria-label="Open full map"
               >
