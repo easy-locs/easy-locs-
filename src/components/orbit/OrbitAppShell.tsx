@@ -42,17 +42,15 @@ export default function OrbitAppShell({ children }: { children?: React.ReactNode
   }, []);
 
   return (
-    <div className="min-h-[100dvh] flex flex-col bg-background">
-      <main className="flex-1 overflow-y-auto pb-[calc(56px+env(safe-area-inset-bottom,0px))]">
-        {children}
-        <Outlet />
-      </main>
+    <>
+      {children}
+      <Outlet />
       <Suspense fallback={null}>
         <OrbitFAB />
       </Suspense>
       <Suspense fallback={null}>
         <CartSheet />
       </Suspense>
-    </div>
+    </>
   );
 }

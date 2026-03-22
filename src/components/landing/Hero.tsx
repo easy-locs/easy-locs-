@@ -191,7 +191,7 @@ const Hero = () => {
                 </Link>
               </motion.div>
               <motion.div whileHover={{ scale: 1.03, y: -1 }} whileTap={{ scale: 0.97 }}>
-                <Link to="/explore" className="inline-flex items-center justify-center gap-2 h-11 sm:h-12 px-6 sm:px-7 rounded-2xl text-sm font-semibold border w-full sm:w-auto" style={{ borderColor: "hsl(220 15% 75% / 0.1)", color: "hsl(220 15% 75%)", background: "hsl(220 15% 75% / 0.04)" }}>
+                <Link to="/business" className="inline-flex items-center justify-center gap-2 h-11 sm:h-12 px-6 sm:px-7 rounded-2xl text-sm font-semibold border w-full sm:w-auto" style={{ borderColor: "hsl(220 15% 75% / 0.1)", color: "hsl(220 15% 75%)", background: "hsl(220 15% 75% / 0.04)" }}>
                   Launch your business in minutes
                 </Link>
               </motion.div>
