@@ -5,7 +5,7 @@
  */
 import { memo, useMemo, useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Search, MapPin, Bell, Wallet, QrCode, Send, ChevronRight, Star, Clock } from "lucide-react";
+import { Search, MapPin, Bell, Wallet, QrCode, Send, ChevronRight, Star } from "lucide-react";
 import { useLocationStore } from "@/stores/locationStore";
 import { useOrbitEngine } from "@/stores/orbit-engine";
 import { supabase } from "@/integrations/supabase/client";
