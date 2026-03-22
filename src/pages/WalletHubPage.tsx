@@ -1,7 +1,6 @@
 /**
- * WalletHubPage — Wallet Pro with Fiat, QR Pay, Security tabs.
+ * WalletHubPage — Futuristic Wallet Pro with glassmorphic cards.
  * Single authoritative wallet page. Route: /wallet/hub + /wallet
- * Uses ONLY: wallet_accounts + wallet_ledger_entries + unified_wallet_transactions
  */
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -12,7 +11,7 @@ import { createWalletAccount } from "@/lib/wallet/wallet-account";
 import { createLedgerEntry, getOrCreateWalletAccount, recomputeWalletBalance } from "@/lib/wallet/ledger";
 import {
   ArrowLeft, Plus, ArrowUpRight, ArrowDownLeft, QrCode, Eye, EyeOff,
-  CreditCard, Wallet, Shield, ScanLine, Settings,
+  CreditCard, Wallet, Shield, ScanLine, Settings, TrendingUp, Sparkles,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
@@ -36,11 +35,12 @@ export default function WalletHubPage() {
   const mainCurrency = rows[0]?.currency || "AED";
 
   const quickActions = [
-    { label: "Top up", icon: Plus, action: () => navigate("/wallet/top-up") },
-    { label: "Send", icon: ArrowUpRight, action: () => navigate("/wallet/transfer") },
-    { label: "Request", icon: ArrowDownLeft, action: () => navigate("/wallet/request") },
-    { label: "Scan", icon: ScanLine, action: () => { console.log("[WalletHub] Scan clicked — navigating to /pay/scan"); navigate("/pay/scan"); } },
+    { label: "Top up", icon: Plus, gradient: "from-emerald-500/20 to-emerald-600/10" },
+    { label: "Send", icon: ArrowUpRight, gradient: "from-blue-500/20 to-blue-600/10" },
+    { label: "Request", icon: ArrowDownLeft, gradient: "from-violet-500/20 to-violet-600/10" },
+    { label: "Scan", icon: ScanLine, gradient: "from-amber-500/20 to-amber-600/10" },
   ];
+  const quickRoutes = ["/wallet/top-up", "/wallet/transfer", "/wallet/request", "/pay/scan"];
 
   const filteredTx = txHistory.filter((tx) => {
     if (filter === "all") return true;
@@ -52,10 +52,8 @@ export default function WalletHubPage() {
     if (!user?.id) return;
     try {
       await createWalletAccount({ ownerUserId: user.id, ownerType: "user", currency: "AED", accountType: "fiat" });
-      console.log("[WalletHubPage] wallet created", { userId: user.id });
       toast.success("Wallet created");
-    } catch (err) {
-      console.error("[WalletHubPage] wallet create failed", err);
+    } catch {
       toast.error("Could not create wallet");
     }
   };
@@ -63,7 +61,6 @@ export default function WalletHubPage() {
   const handleTestTopUp = async () => {
     if (!user?.id) return;
     try {
-      // Credit wallet_balances_v2 — the table wallet_transfer RPC actually uses
       const { error } = await supabase
         .from("wallet_balances_v2" as any)
         .upsert(
@@ -71,33 +68,22 @@ export default function WalletHubPage() {
           { onConflict: "user_id" }
         );
       if (error) throw error;
-
-      // Also credit wallet_accounts for UI display
       const wallet = await getOrCreateWalletAccount({ ownerUserId: user.id, currency: mainCurrency || "AED" });
       await createLedgerEntry({
-        walletAccountId: wallet.id,
-        direction: "in",
-        amount: 100,
-        currency: wallet.currency || "AED",
-        entryType: "top_up",
-        referenceType: "test_credit",
-        note: "Runtime test top-up",
+        walletAccountId: wallet.id, direction: "in", amount: 100,
+        currency: wallet.currency || "AED", entryType: "top_up",
+        referenceType: "test_credit", note: "Runtime test top-up",
       });
       await recomputeWalletBalance(wallet.id);
-
-      console.log("[WalletHubPage] test top-up success — wallet_balances_v2 + wallet_accounts credited");
       toast.success("Test top-up added: 100 AED");
       window.location.reload();
-    } catch (err) {
-      console.error("[WalletHubPage] test top-up failed", err);
+    } catch {
       toast.error("Test top-up failed");
     }
   };
 
   useEffect(() => {
-    if (!loading && rows.length === 0 && user?.id) {
-      createDefaultWallet();
-    }
+    if (!loading && rows.length === 0 && user?.id) createDefaultWallet();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loading, rows.length, user?.id]);
 
@@ -109,25 +95,30 @@ export default function WalletHubPage() {
 
   return (
     <div className="min-h-[100dvh] flex flex-col bg-background" data-wallet-page>
-      <header className="flex items-center justify-between px-4 pt-4 pb-3">
+      {/* Header */}
+      <header className="flex items-center justify-between px-4 pt-4 pb-2">
         <div className="flex items-center gap-3">
-          <button onClick={() => navigate(-1)} className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-95 transition-transform bg-muted">
+          <button onClick={() => navigate(-1)} className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-95 transition-transform bg-muted/60 backdrop-blur-sm">
             <ArrowLeft className="w-4.5 h-4.5" />
           </button>
-          <h1 className="text-lg font-bold text-foreground">Wallet Pro</h1>
+          <div className="flex items-center gap-2">
+            <Sparkles className="w-4 h-4 text-primary" />
+            <h1 className="text-lg font-black text-foreground tracking-tight">Wallet Pro</h1>
+          </div>
         </div>
         <div className="flex items-center gap-1">
-          <button onClick={() => setShowBalance(v => !v)} className="w-9 h-9 rounded-xl flex items-center justify-center bg-muted">
+          <button onClick={() => setShowBalance(v => !v)} className="w-9 h-9 rounded-xl flex items-center justify-center bg-muted/60 backdrop-blur-sm active:scale-95 transition-transform">
             {showBalance ? <Eye className="w-4 h-4 text-muted-foreground" /> : <EyeOff className="w-4 h-4 text-muted-foreground" />}
           </button>
-          <button onClick={() => navigate("/settings/payment-methods")} className="w-9 h-9 rounded-xl flex items-center justify-center bg-muted">
+          <button onClick={() => navigate("/settings/payment-methods")} className="w-9 h-9 rounded-xl flex items-center justify-center bg-muted/60 backdrop-blur-sm active:scale-95 transition-transform">
             <Settings className="w-4 h-4 text-muted-foreground" />
           </button>
         </div>
       </header>
 
-      <div className="px-4 pb-3">
-        <div className="flex gap-1 p-1 rounded-2xl bg-muted/50">
+      {/* Tab bar */}
+      <div className="px-4 pb-2">
+        <div className="flex gap-1 p-1 rounded-2xl bg-muted/40 backdrop-blur-sm">
           {TABS.map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.key;
@@ -135,11 +126,11 @@ export default function WalletHubPage() {
               <button
                 key={tab.key}
                 onClick={() => setActiveTab(tab.key)}
-                className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-[11px] font-bold transition-all"
+                className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-[11px] font-bold transition-all active:scale-[0.97]"
                 style={{
                   background: isActive ? "hsl(var(--card))" : "transparent",
                   color: isActive ? "hsl(var(--foreground))" : "hsl(var(--muted-foreground))",
-                  boxShadow: isActive ? "var(--shadow-card)" : "none",
+                  boxShadow: isActive ? "0 2px 12px hsl(var(--primary) / 0.1)" : "none",
                 }}
               >
                 <Icon className="w-3.5 h-3.5" />
@@ -150,68 +141,96 @@ export default function WalletHubPage() {
         </div>
       </div>
 
+      {/* Content */}
       <div className="flex-1 overflow-y-auto px-4 pb-24">
         <AnimatePresence mode="wait">
           {activeTab === "fiat" && (
-            <motion.div key="fiat" initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 8 }} className="space-y-6">
-              {/* Balance Card */}
-              <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="rounded-2xl p-5" style={{ background: "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary) / 0.7))" }}>
-                <p className="text-xs font-medium text-primary-foreground/70">Total Balance</p>
-                <p className="text-3xl font-black text-primary-foreground mt-1">
-                  {showBalance ? `${totalBalance.toFixed(2)} ${mainCurrency}` : "••••••"}
-                </p>
-                {rows.length === 0 && !loading && (
-                  <p className="text-xs text-primary-foreground/60 mt-2">No wallet yet</p>
-                )}
-                {rows.length > 0 && totalBalance <= 0 && (
-                  <button onClick={handleTestTopUp} className="mt-3 rounded-xl bg-primary-foreground/15 px-3 py-2 text-xs font-bold text-primary-foreground">
-                    Add test top-up (100 AED)
-                  </button>
-                )}
+            <motion.div key="fiat" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.2 }} className="space-y-5">
+
+              {/* ── Hero Balance Card ── */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.97 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.05 }}
+                className="relative rounded-3xl p-6 overflow-hidden"
+                style={{ background: "linear-gradient(145deg, hsl(var(--primary)), hsl(var(--primary) / 0.75))" }}
+              >
+                {/* Decorative orbs */}
+                <div className="absolute -top-10 -right-10 w-40 h-40 rounded-full opacity-20" style={{ background: "radial-gradient(circle, hsl(var(--primary-foreground) / 0.3), transparent)" }} />
+                <div className="absolute -bottom-8 -left-8 w-32 h-32 rounded-full opacity-10" style={{ background: "radial-gradient(circle, hsl(var(--primary-foreground) / 0.4), transparent)" }} />
+
+                <div className="relative z-10">
+                  <div className="flex items-center justify-between mb-1">
+                    <p className="text-xs font-medium text-primary-foreground/60 uppercase tracking-wider">Total Balance</p>
+                    <TrendingUp className="w-4 h-4 text-primary-foreground/40" />
+                  </div>
+                  <p className="text-4xl font-black text-primary-foreground tracking-tight">
+                    {showBalance ? `${totalBalance.toFixed(2)}` : "••••••"}
+                  </p>
+                  <p className="text-sm font-semibold text-primary-foreground/50 mt-0.5">{mainCurrency}</p>
+
+                  {rows.length === 0 && !loading && (
+                    <p className="text-xs text-primary-foreground/40 mt-3">No wallet yet</p>
+                  )}
+                  {rows.length > 0 && totalBalance <= 0 && (
+                    <button onClick={handleTestTopUp} className="mt-4 rounded-xl bg-primary-foreground/15 backdrop-blur-sm px-4 py-2.5 text-xs font-bold text-primary-foreground active:scale-95 transition-transform">
+                      Add test top-up (100 AED)
+                    </button>
+                  )}
+                </div>
               </motion.div>
 
-              {/* Quick Actions */}
+              {/* ── Quick Actions Grid ── */}
               <div className="grid grid-cols-4 gap-3">
-                {quickActions.map(a => (
-                  <button key={a.label} onClick={a.action} className="flex flex-col items-center gap-1.5 active:scale-90 transition-transform">
-                    <div className="w-12 h-12 rounded-2xl flex items-center justify-center bg-muted">
+                {quickActions.map((a, i) => (
+                  <motion.button
+                    key={a.label}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.1 + i * 0.04 }}
+                    onClick={() => navigate(quickRoutes[i])}
+                    className="flex flex-col items-center gap-2 active:scale-90 transition-transform"
+                  >
+                    <div className={`w-14 h-14 rounded-2xl flex items-center justify-center bg-gradient-to-br ${a.gradient} border border-border/10 backdrop-blur-sm`}>
                       <a.icon className="w-5 h-5 text-foreground" />
                     </div>
-                    <span className="text-[10px] font-semibold text-muted-foreground">{a.label}</span>
-                  </button>
+                    <span className="text-[10px] font-bold text-muted-foreground">{a.label}</span>
+                  </motion.button>
                 ))}
               </div>
 
-              {/* Accounts */}
+              {/* ── Accounts ── */}
               {rows.length > 0 && (
-                <div>
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-3">Accounts</p>
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-3">Accounts</p>
                   <div className="space-y-2">
                     {rows.map((acc: any) => (
-                      <div key={acc.id} className="flex items-center gap-3 rounded-2xl p-4 bg-muted border border-border/10">
-                        <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: "hsl(var(--primary) / 0.1)" }}>
+                      <div key={acc.id} className="flex items-center gap-3 rounded-2xl p-4 bg-card/80 backdrop-blur-sm border border-border/10">
+                        <div className="w-11 h-11 rounded-xl flex items-center justify-center" style={{ background: "hsl(var(--primary) / 0.08)" }}>
                           <Wallet className="w-5 h-5 text-primary" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-semibold text-foreground capitalize">{acc.account_type || "Main"}</p>
+                          <p className="text-sm font-bold text-foreground capitalize">{acc.account_type || "Main"}</p>
                           <p className="text-[10px] text-muted-foreground">{acc.currency}</p>
                         </div>
-                        <span className="text-sm font-bold text-foreground">
+                        <span className="text-sm font-black text-foreground tabular-nums">
                           {showBalance ? `${(acc.balance || 0).toFixed(2)}` : "••••"}
                         </span>
                       </div>
                     ))}
                   </div>
-                </div>
+                </motion.div>
               )}
 
               {/* No wallet state */}
               {rows.length === 0 && !loading && (
-                <div className="rounded-2xl p-6 flex flex-col items-center gap-3 text-center bg-muted border border-border/10">
-                  <Wallet className="w-10 h-10 text-muted-foreground" />
-                  <p className="text-sm font-semibold text-foreground">No wallet yet</p>
+                <div className="rounded-3xl p-8 flex flex-col items-center gap-3 text-center bg-card/60 backdrop-blur-sm border border-border/10">
+                  <div className="w-16 h-16 rounded-2xl flex items-center justify-center bg-muted/50">
+                    <Wallet className="w-8 h-8 text-muted-foreground" />
+                  </div>
+                  <p className="text-sm font-bold text-foreground">No wallet yet</p>
                   <p className="text-xs text-muted-foreground">Create a wallet to start transacting</p>
-                  <button onClick={createDefaultWallet} className="mt-2 px-4 py-2 rounded-xl text-xs font-bold bg-primary text-primary-foreground active:scale-95 transition-transform">
+                  <button onClick={createDefaultWallet} className="mt-2 px-6 py-2.5 rounded-xl text-xs font-bold bg-primary text-primary-foreground active:scale-95 transition-transform">
                     Create Wallet
                   </button>
                 </div>
@@ -224,19 +243,20 @@ export default function WalletHubPage() {
                 </div>
               )}
 
-              {/* Transaction History from unified_wallet_transactions */}
-              <div>
+              {/* ── Transaction History ── */}
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.25 }}>
                 <div className="flex items-center justify-between mb-3">
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Recent Activity</p>
-                  <div className="flex gap-1">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Recent Activity</p>
+                  <div className="flex gap-0.5 p-0.5 rounded-lg bg-muted/40">
                     {(["all", "in", "out"] as const).map(f => (
                       <button
                         key={f}
                         onClick={() => setFilter(f)}
-                        className="px-2.5 py-1 rounded-lg text-[10px] font-bold transition-colors"
+                        className="px-3 py-1.5 rounded-md text-[10px] font-bold transition-all active:scale-95"
                         style={{
-                          background: filter === f ? "hsl(var(--primary) / 0.12)" : "transparent",
-                          color: filter === f ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))",
+                          background: filter === f ? "hsl(var(--card))" : "transparent",
+                          color: filter === f ? "hsl(var(--foreground))" : "hsl(var(--muted-foreground))",
+                          boxShadow: filter === f ? "0 1px 4px hsl(var(--primary) / 0.08)" : "none",
                         }}
                       >
                         {f === "all" ? "All" : f === "in" ? "In" : "Out"}
@@ -246,12 +266,12 @@ export default function WalletHubPage() {
                 </div>
 
                 {filteredTx.length === 0 ? (
-                  <div className="rounded-2xl p-6 flex flex-col items-center gap-2 text-center bg-muted border border-border/10">
-                    <CreditCard className="w-8 h-8 text-muted-foreground" />
+                  <div className="rounded-2xl p-8 flex flex-col items-center gap-2 text-center bg-card/60 backdrop-blur-sm border border-border/10">
+                    <CreditCard className="w-8 h-8 text-muted-foreground/50" />
                     <p className="text-sm text-muted-foreground">{txLoading ? "Loading..." : "No transactions yet"}</p>
                   </div>
                 ) : (
-                  <div className="rounded-2xl overflow-hidden bg-muted border border-border/10">
+                  <div className="rounded-2xl overflow-hidden bg-card/80 backdrop-blur-sm border border-border/10">
                     {filteredTx.map((tx, i) => (
                       <div key={tx.id ?? i}>
                         <TransactionRow
@@ -263,21 +283,21 @@ export default function WalletHubPage() {
                           status={tx.status === "completed" ? "completed" : tx.status === "pending" ? "pending" : "completed"}
                           timestamp={tx.created_at}
                         />
-                        {i < filteredTx.length - 1 && <div className="mx-4 border-t" style={{ borderColor: "hsl(var(--border) / 0.06)" }} />}
+                        {i < filteredTx.length - 1 && <div className="mx-4 border-t" style={{ borderColor: "hsl(var(--border) / 0.05)" }} />}
                       </div>
                     ))}
                   </div>
                 )}
-              </div>
+              </motion.div>
             </motion.div>
           )}
 
           {activeTab === "qr" && (
-            <motion.div key="qr" initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 8 }} className="space-y-4">
+            <motion.div key="qr" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.2 }} className="space-y-4">
               <ReceiveQrPanel />
               <button
                 onClick={() => navigate("/pay/scan")}
-                className="w-full flex items-center justify-center gap-2 rounded-2xl p-4 bg-primary text-primary-foreground font-bold text-sm active:scale-[0.98] transition-transform"
+                className="w-full flex items-center justify-center gap-2 rounded-2xl p-4 bg-primary text-primary-foreground font-bold text-sm active:scale-[0.97] transition-transform"
               >
                 <ScanLine className="w-5 h-5" />
                 Scan to Pay
@@ -286,7 +306,7 @@ export default function WalletHubPage() {
           )}
 
           {activeTab === "security" && (
-            <motion.div key="security" initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 8 }}>
+            <motion.div key="security" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.2 }}>
               <WalletSecurityPanel />
             </motion.div>
           )}
