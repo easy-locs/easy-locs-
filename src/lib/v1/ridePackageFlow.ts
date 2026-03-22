@@ -28,7 +28,7 @@ export async function createRidePackageMission(params: {
 
   if (error) throw error;
 
-  await platformBus.emit(
+  platformBus.emit(
     "MISSION_CREATED",
     {
       orderId: data.id,
@@ -37,7 +37,7 @@ export async function createRidePackageMission(params: {
       pickupLat: 0,
       pickupLng: 0,
     },
-    { source: "ridePackageFlow:createRidePackageMission" }
+    "system"
   );
 
   return data;
