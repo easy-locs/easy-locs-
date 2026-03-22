@@ -77,7 +77,12 @@ export default function PaymentConfirmPage() {
   };
 
   return (
-    <div className="min-h-[100dvh] bg-background pb-24">
+    <div className="min-h-[100dvh] bg-background pb-24 relative">
+      <PremiumPaymentSuccess
+        open={showPremiumSuccess}
+        logoUrl="/easylocs-logo.png"
+        amount={`${amount} ${currency}`}
+      />
       <div className="flex items-center gap-3 px-4 pt-6 pb-4">
         <button
           onClick={() => navigate(-1)}
