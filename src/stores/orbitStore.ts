@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { supabase } from "@/integrations/supabase/client";
-import { platformBus } from "@/app/events/platform-bus";
+import { platformBus } from "@/lib/shared/platform-bus";
 import type { AppRole } from "@/lib/types/domain";
 
 // V2 OrbitProfile aligned with orbit_profiles_v2 table
@@ -93,10 +93,7 @@ export const useOrbitStore = create<OrbitStore>((set, get) => ({
 
     set({ profile, loading: false });
 
-    platformBus.emit({
-      type: "orbit.profile.loaded",
-      payload: { orbitId: profile.orbitId, userId: profile.id },
-    });
+    platformBus.emit("orbit.profile.loaded", { orbitId: profile.orbitId, userId: profile.id }, "orbit");
   },
 
   updateRole: async (role: AppRole) => {

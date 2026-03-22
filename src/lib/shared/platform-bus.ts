@@ -14,12 +14,19 @@ type PlatformEventType =
   | "wallet:transfer_sent"
   | "wallet:transfer_received"
   | "wallet:payment_requested"
+  // Wallet (dot-notation — emitted by walletStore)
+  | "wallet.loaded"
+  | "wallet.transaction.created"
+  | "wallet.payment.success"
+  | "wallet.payment.failed"
   // Orbit / Communication
   | "orbit:message_sent"
   | "orbit:call_started"
   | "orbit:call_ended"
   | "orbit:thread_created"
   | "orbit:notification_created"
+  // Orbit (dot-notation — emitted by orbitStore)
+  | "orbit.profile.loaded"
   // Marketplace
   | "marketplace:listing_published"
   | "marketplace:listing_paused"
@@ -95,6 +102,38 @@ type PlatformEventType =
   | "pm:receipt_generated"
   | "pm:intervention_created"
   | "pm:document_shared"
+  // Listing (dot-notation — emitted by listingStore)
+  | "listing.created"
+  | "listing.updated"
+  | "listing.published"
+  // Booking (dot-notation — emitted by bookingStore/reactions)
+  | "booking.requested"
+  | "booking.payment.required"
+  | "booking.confirmation.required"
+  | "booking.confirmed"
+  | "booking.cancelled"
+  | "booking.completed"
+  // Conversation / Message (dot-notation — emitted by chatStore)
+  | "conversation.created"
+  | "message.sent"
+  | "contact.opened"
+  // Property Management (dot-notation — emitted by propertyManagementStore)
+  | "property.unit.created"
+  | "lease.created"
+  | "rent.payment.created"
+  | "rent.payment.required"
+  | "rent.payment.paid"
+  // Geo (dot-notation)
+  | "geo.permission.changed"
+  | "geo.position.updated"
+  // Call (dot-notation)
+  | "call.started"
+  | "call.ended"
+  | "call.request"
+  // UI (dot-notation — emitted by uiShellStore/cameraStore)
+  | "ui.panel.changed"
+  | "camera.opened"
+  | "camera.closed"
   // Deals
   | "deal:created"
   | "deal:offer_sent"

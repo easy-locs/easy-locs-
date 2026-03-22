@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { platformBus } from "@/app/events/platform-bus";
+import { platformBus } from "@/lib/shared/platform-bus";
 import type {
   ConversationParticipant,
   ConversationRecord,
@@ -98,10 +98,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       conversations: [saved, ...state.conversations.filter((c) => c.id !== saved.id)],
     }));
 
-    platformBus.emit({
-      type: "conversation.created",
-      payload: { conversation: saved },
-    });
+    platformBus.emit("conversation.created", { conversation: saved }, "orbit");
 
     return saved;
   },
@@ -134,10 +131,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       ),
     }));
 
-    platformBus.emit({
-      type: "message.sent",
-      payload: { message: saved },
-    });
+    platformBus.emit("message.sent", { message: saved }, "orbit");
 
     return saved;
   },
