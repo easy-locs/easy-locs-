@@ -180,7 +180,7 @@ export default function AdminBulkSeedPage() {
           <button
             onClick={bulkLaunch}
             disabled={launched}
-            className="w-full rounded-2xl bg-emerald-600 text-white px-4 py-3 text-sm font-bold disabled:opacity-50"
+            className="w-full rounded-2xl bg-green-600 dark:bg-green-700 text-white px-4 py-3 text-sm font-bold disabled:opacity-50"
           >
             {launched ? "Launching..." : "🚀 Bulk Launch All Ready Shops"}
           </button>
