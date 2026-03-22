@@ -96,23 +96,22 @@ export function useDriverSession() {
   }, [user?.id]);
 
   const startGPSTracking = useCallback(() => {
-    // Use canonical locationStore — subscribe to watch updates
-    const { useLocationStore } = require("@/stores/locationStore");
+    const { useGeoStore } = require("@/lib/geo/geo-store");
     
     // Initial position from store
-    const loc = useLocationStore.getState().currentLocation;
-    if (loc) updatePosition(loc.lat, loc.lng);
+    const pt = useGeoStore.getState().point;
+    if (pt) updatePosition(pt.lat, pt.lng);
     
-    // Subscribe to store updates for live tracking
-    const unsub = useLocationStore.subscribe((state: any) => {
-      if (state.currentLocation) {
-        updatePosition(state.currentLocation.lat, state.currentLocation.lng);
+    // Subscribe to geoStore updates for live tracking
+    const unsub = useGeoStore.subscribe((state: any) => {
+      if (state.point) {
+        updatePosition(state.point.lat, state.point.lng);
       }
     });
     
     // Heartbeat every 30s from store
     heartbeatRef.current = setInterval(() => {
-      const current = useLocationStore.getState().currentLocation;
+      const current = useGeoStore.getState().point;
       if (current) updatePosition(current.lat, current.lng);
     }, 30000);
     
