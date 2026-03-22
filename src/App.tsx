@@ -33,10 +33,7 @@ import V1BootBridge from "@/app/V1BootBridge";
 import { useNotificationsStore } from "@/stores/notificationsStore";
 import AppBootstrapGuardDirect from "@/components/app/AppBootstrapGuard";
 
-// V2 test pages
-const V2TestPage = safeLazy(() => import("./app/router/V2TestPage"), "V2TestPage");
-const V2BookingTestPage = safeLazy(() => import("./app/router/V2BookingTestPage"), "V2BookingTestPage");
-const V2MegaPage = safeLazy(() => import("./app/router/V2MegaPage"), "V2MegaPage");
+// V2 test pages — removed (Batch B purge)
 
 // V2 Suite 4 pages
 const V2HomePage = safeLazy(() => import("./app/router/HomePage"), "V2HomePage");
