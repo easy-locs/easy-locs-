@@ -1,6 +1,7 @@
 /**
  * AdminBulkSeedPage — Seeds 20 shops per category across Dubai.
  * All shops created with launch_status = 'waiting_launch'.
+ * Uses correct storefront_pages columns: slug (not public_slug), org_id, user_id.
  */
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -16,6 +17,29 @@ export default function AdminBulkSeedPage() {
 
   const runSeed = async () => {
     setLoading(true);
+
+    // Get current user for required fields
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      toast.error("You must be logged in to seed shops.");
+      setLoading(false);
+      return;
+    }
+
+    // Get user's org_id
+    const { data: orgMember } = await supabase
+      .from("org_members")
+      .select("org_id")
+      .eq("user_id", user.id)
+      .limit(1)
+      .maybeSingle();
+
+    if (!orgMember?.org_id) {
+      toast.error("No organization found for your account.");
+      setLoading(false);
+      return;
+    }
+
     const seeds = generateAllCategorySeeds();
     setProgress({ done: 0, total: seeds.length, errors: 0 });
 
@@ -24,12 +48,14 @@ export default function AdminBulkSeedPage() {
 
     for (const seed of seeds) {
       try {
-        // Create storefront page
+        const slug = seed.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").slice(0, 50) + "-" + Math.random().toString(36).slice(2, 6);
+
+        // Create storefront page with correct columns
         const { data: shop, error: shopErr } = await (supabase as any)
           .from("storefront_pages")
           .insert({
             name: seed.name,
-            public_slug: seed.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").slice(0, 50) + "-" + Math.random().toString(36).slice(2, 6),
+            slug, // correct column name
             vertical: seed.vertical,
             city: "Dubai",
             country: "AE",
@@ -37,8 +63,11 @@ export default function AdminBulkSeedPage() {
             latitude: seed.lat,
             longitude: seed.lng,
             logo_url: seed.logo_url,
-            status: "active",
+            banner_url: seed.cover_url,
             launch_status: "waiting_launch",
+            org_id: orgMember.org_id,
+            user_id: user.id,
+            subcategory: seed.subcategory,
             metadata_json: {
               category: seed.category,
               subcategory: seed.subcategory,
@@ -60,13 +89,13 @@ export default function AdminBulkSeedPage() {
             subcategory: seed.subcategory,
             city: "Dubai",
             area: seed.area,
-            cover_image: seed.logo_url,
+            cover_image: seed.cover_url,
             logo_image: seed.logo_url,
             is_active: true,
             is_open: true,
             is_featured: false,
             visibility_score: 70 + Math.floor(Math.random() * 25),
-            rating: 3.8 + Math.random() * 1.2,
+            rating: Number((3.8 + Math.random() * 1.2).toFixed(1)),
             review_count: Math.floor(Math.random() * 200),
             delivery_time_min: 15 + Math.floor(Math.random() * 20),
             delivery_time_max: 35 + Math.floor(Math.random() * 20),
