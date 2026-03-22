@@ -93,10 +93,10 @@ export default function SellerDashboard() {
     if (!user?.id) { toast.error("Please sign in first"); return; }
     setCreating(true);
     try {
-      const draft = await createOnboardingDraft({ userId: user.id });
+      const draftId = await createOnboardingDraft(user.id);
       qc.invalidateQueries({ queryKey: ["seller-shops"] });
       toast.success("Business draft created! Complete your setup.");
-      navigate(`/my-shop/${draft.id}`);
+      navigate(`/my-shop/${draftId}`);
     } catch (err) {
       console.error("[onboarding] draft creation failed", err);
       toast.error("Could not create business draft");

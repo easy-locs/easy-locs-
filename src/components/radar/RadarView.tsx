@@ -36,15 +36,17 @@ export default memo(function RadarView({ initialType, radiusKm = 20, showMap = t
   const [viewMode, setViewMode] = useState<"map" | "list">(showMap ? "map" : "list");
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
-  const types = activeType === "all" ? undefined : [activeType];
-  const { results, userLat, userLng } = useRadarResults({ types, radiusKm, sortBy });
+  const type = activeType === "all" ? undefined : activeType;
+  const { entities: results, loading: radarLoading, location } = useRadarResults({ type, radiusKm });
+  const userLat = location?.lat ?? 25.2;
+  const userLng = location?.lng ?? 55.27;
 
   const handleSelect = useCallback((entity: GeoEntity) => {
     setSelectedId(entity.id);
   }, []);
 
   const handleOpen = useCallback((entity: GeoEntity) => {
-    navigate(entity.route_path);
+    navigate(entity.route_path || `/s/${entity.slug || entity.id}`);
   }, [navigate]);
 
   const selected = results.find(e => e.id === selectedId);
@@ -129,9 +131,9 @@ export default memo(function RadarView({ initialType, radiusKm = 20, showMap = t
                         {selected.rating.toFixed(1)}
                       </span>
                     )}
-                    {selected.distance_m != null && (
+                    {selected.distance != null && (
                       <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">
-                        <Navigation className="w-2.5 h-2.5" />{formatGeoDistance(selected.distance_m)}
+                        <Navigation className="w-2.5 h-2.5" />{formatGeoDistance(selected.distance)}
                       </span>
                     )}
                   </div>
@@ -178,11 +180,11 @@ export default memo(function RadarView({ initialType, radiusKm = 20, showMap = t
                         {entity.rating.toFixed(1)}
                       </span>
                     )}
-                    {entity.distance_m != null && (
-                      <span className="text-[10px] text-muted-foreground">{formatGeoDistance(entity.distance_m)}</span>
+                    {entity.distance != null && (
+                      <span className="text-[10px] text-muted-foreground">{formatGeoDistance(entity.distance)}</span>
                     )}
-                    {entity.eta_min != null && (
-                      <span className="text-[10px] text-muted-foreground">{formatGeoETA(entity.eta_min)}</span>
+                    {entity.distance != null && (
+                      <span className="text-[10px] text-muted-foreground">{formatGeoETA(entity.distance)}</span>
                     )}
                   </div>
                 </div>
