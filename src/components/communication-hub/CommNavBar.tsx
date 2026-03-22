@@ -3,7 +3,7 @@
  * Clean bottom tabs (mobile) / slim sidebar (desktop).
  * Fully i18n'd.
  */
-import { MessageCircle, Phone, Wallet, UserCircle, BookUser, UsersRound } from "lucide-react";
+import { MessageCircle, Phone, UserCircle, BookUser, UsersRound } from "lucide-react";
 import { motion } from "framer-motion";
 import { useI18n } from "@/lib/i18n";
 
