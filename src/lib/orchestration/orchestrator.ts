@@ -2,7 +2,7 @@
  * Orchestration Engine — Connects all platform engines via the event bus.
  */
 
-import { platformBus } from "./platformBus";
+import { platformBus } from "@/lib/shared/platform-bus";
 import { logOrchestrationEvent } from "./logger";
 import type {
   IssueCreatedPayload,
