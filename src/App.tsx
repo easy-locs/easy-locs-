@@ -788,7 +788,7 @@ const App = () => (
               {/* V7 Public pillars — Radar is unified ecosystem */}
               <Route path="/discover" element={<Navigate to="/radar" replace />} />
               <Route path="/explore" element={<Navigate to="/radar" replace />} />
-              <Route path="/search" element={<DiscoverPage />} />
+              <Route path="/search" element={<Navigate to="/radar" replace />} />
 
               {/* Universe hubs */}
               <Route path="/food" element={<FoodHub />} />
