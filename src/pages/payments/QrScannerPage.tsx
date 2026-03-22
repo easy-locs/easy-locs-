@@ -6,6 +6,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Camera, CameraOff, RefreshCcw, CheckCircle2, ScanLine, QrCode, Upload } from "lucide-react";
 import { Html5Qrcode } from "html5-qrcode";
+import "@/styles/qr-scan-line.css";
 import { decodeQr, resolveRoute, isExpired, type UniversalQrPayload } from "@/lib/qr-engine";
 import { playScanBeep } from "@/lib/audio/scan-beep";
 import { haptic } from "@/lib/haptics";
