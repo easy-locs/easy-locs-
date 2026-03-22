@@ -98,7 +98,8 @@ export function installOrchestrationEngine() {
   });
 
   // ── PAYMENT_SUCCESS ──
-  platformBus.on<PaymentSuccessPayload>("PAYMENT_SUCCESS", async (payload) => {
+  platformBus.on("PAYMENT_SUCCESS", async (event) => {
+    const payload = event.payload as PaymentSuccessPayload;
     await updateOrderStatus(payload.orderId, "paid");
 
     await createNotification({
