@@ -11,7 +11,7 @@ import { useOrbitEngine } from "@/stores/orbit-engine";
 import { supabase } from "@/integrations/supabase/client";
 import { getSmartCategories, getSmartHero, getTimeGreeting, getTimeSlot, type SmartCategory } from "@/lib/smart-home-engine";
 import { motion } from "framer-motion";
-import GeoForcePrompt from "@/components/location/GeoForcePrompt";
+
 
 import foodImg from "@/assets/categories/food.png";
 import groceryImg from "@/assets/categories/grocery.png";
