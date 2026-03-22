@@ -1339,24 +1339,20 @@ const App = () => (
               <Route path="/app/orbit" element={<Navigate to="/" replace />} />
               <Route path="/app/*" element={<Navigate to="/" replace />} />
 
-              {/* V2 Auth */}
-              <Route path="/v2-auth" element={<V2AuthBridgeWrapper><V2AuthPage /></V2AuthBridgeWrapper>} />
-
-              {/* V2 test routes — removed (Batch B purge) */}
-
-              {/* V2 Suite 4 routes — auth protected */}
-              <Route path="/v2-home" element={<V2AuthBridgeWrapper><V2AuthGate fallback={<V2AuthPage />}><V2HomePage /></V2AuthGate></V2AuthBridgeWrapper>} />
-              <Route path="/v2-owner" element={<V2AuthBridgeWrapper><V2AuthGate fallback={<V2AuthPage />}><V2OwnerDashboardPage /></V2AuthGate></V2AuthBridgeWrapper>} />
-              <Route path="/v2-tenant" element={<V2AuthBridgeWrapper><V2AuthGate fallback={<V2AuthPage />}><V2TenantDashboardPage /></V2AuthGate></V2AuthBridgeWrapper>} />
-              <Route path="/v2-bookings" element={<V2AuthBridgeWrapper><V2AuthGate fallback={<V2AuthPage />}><V2BookingsPage /></V2AuthGate></V2AuthBridgeWrapper>} />
-              <Route path="/v2-properties" element={<V2AuthBridgeWrapper><V2AuthGate fallback={<V2AuthPage />}><V2PropertiesPage /></V2AuthGate></V2AuthBridgeWrapper>} />
-              <Route path="/v2-search" element={<V2AuthBridgeWrapper><V2AuthGate fallback={<V2AuthPage />}><V2SearchPage /></V2AuthGate></V2AuthBridgeWrapper>} />
-              <Route path="/v2-map" element={<V2AuthBridgeWrapper><V2AuthGate fallback={<V2AuthPage />}><V2MapPage /></V2AuthGate></V2AuthBridgeWrapper>} />
-              <Route path="/v2-messages" element={<V2AuthBridgeWrapper><V2AuthGate fallback={<V2AuthPage />}><V2MessagesPage /></V2AuthGate></V2AuthBridgeWrapper>} />
-              <Route path="/v2-notifications" element={<V2AuthBridgeWrapper><V2AuthGate fallback={<V2AuthPage />}><V2NotificationsPage /></V2AuthGate></V2AuthBridgeWrapper>} />
-              <Route path="/v2-payments" element={<V2AuthBridgeWrapper><V2AuthGate fallback={<V2AuthPage />}><V2PaymentsPage /></V2AuthGate></V2AuthBridgeWrapper>} />
-              <Route path="/v2-favorites" element={<V2AuthBridgeWrapper><V2AuthGate fallback={<V2AuthPage />}><V2FavoritesPage /></V2AuthGate></V2AuthBridgeWrapper>} />
-              <Route path="/v2-admin" element={<V2AuthBridgeWrapper><V2AuthGate fallback={<V2AuthPage />}><V2AdminPage /></V2AuthGate></V2AuthBridgeWrapper>} />
+              {/* V2 routes — all redirected to canonical paths */}
+              <Route path="/v2-auth" element={<Navigate to="/login" replace />} />
+              <Route path="/v2-home" element={<Navigate to="/" replace />} />
+              <Route path="/v2-owner" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/v2-tenant" element={<Navigate to="/tenant" replace />} />
+              <Route path="/v2-bookings" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/v2-properties" element={<Navigate to="/dashboard/properties" replace />} />
+              <Route path="/v2-search" element={<Navigate to="/radar" replace />} />
+              <Route path="/v2-map" element={<Navigate to="/radar" replace />} />
+              <Route path="/v2-messages" element={<Navigate to="/dashboard/communication" replace />} />
+              <Route path="/v2-notifications" element={<Navigate to="/notifications" replace />} />
+              <Route path="/v2-payments" element={<Navigate to="/wallet" replace />} />
+              <Route path="/v2-favorites" element={<Navigate to="/favorites" replace />} />
+              <Route path="/v2-admin" element={<Navigate to="/admin" replace />} />
 
               {/* SEO catch-all */}
               <Route path="/seo/*" element={<SEOCatchAll />} />
