@@ -1,5 +1,6 @@
 /**
- * QrScannerPage — Premium scanner with green laser, auto-camera, consistent sizing.
+ * QrScannerPage — Premium scanner with green laser, beep, haptic, success animation.
+ * Clean UX: no debug info, no env probes, fast startup.
  */
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -16,14 +17,14 @@ import { QrResolvedCard } from "@/components/qr/QrResolvedCard";
 import { UserProfileQr } from "@/components/qr/UniversalQrWidgets";
 import { toast } from "sonner";
 import { requestMediaStream } from "@/lib/device/permissions";
+import { motion, AnimatePresence } from "framer-motion";
 
 type ScanState = "idle" | "starting" | "scanning" | "paying" | "paid" | "stopped" | "error" | "resolved";
 type TabMode = "scan" | "myqr";
-type CameraPermissionState = "unknown" | "prompt" | "granted" | "denied" | "unsupported";
 
 const REGION_ID = "qr-reader-region";
 const QR_BOX_SIZE = 240;
-const CARD_SIZE = 300; // Consistent size for both Scan and MyQR
+const CARD_SIZE = 300;
 
 function isIOS() {
   if (typeof navigator === "undefined") return false;
@@ -43,14 +44,9 @@ function wait(ms: number) {
 
 async function withTimeout<T>(promise: Promise<T>, ms: number, message: string): Promise<T> {
   let timer: ReturnType<typeof setTimeout> | null = null;
-
   return Promise.race([
-    promise.finally(() => {
-      if (timer) clearTimeout(timer);
-    }),
-    new Promise<T>((_, reject) => {
-      timer = setTimeout(() => reject(new Error(message)), ms);
-    }),
+    promise.finally(() => { if (timer) clearTimeout(timer); }),
+    new Promise<T>((_, reject) => { timer = setTimeout(() => reject(new Error(message)), ms); }),
   ]);
 }
 
@@ -77,130 +73,34 @@ export default function QrScannerPage() {
   const [lastText, setLastText] = useState("");
   const [txId, setTxId] = useState("");
   const [resolvedPayload, setResolvedPayload] = useState<UniversalQrPayload | null>(null);
-  const [cameraPermission, setCameraPermission] = useState<CameraPermissionState>("unknown");
   const [cameraDevices, setCameraDevices] = useState<Array<{ id: string; label: string }>>([]);
   const [selectedCameraId, setSelectedCameraId] = useState("");
-  const [startStatus, setStartStatus] = useState<"idle" | "success" | "fail">("idle");
-  const [startErrorMessage, setStartErrorMessage] = useState("");
   const [cameraRequested, setCameraRequested] = useState(false);
-  const [cameraUnavailableReason, setCameraUnavailableReason] = useState("");
-  const [envInfo, setEnvInfo] = useState<Record<string, string>>({});
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const secure = typeof window === "undefined" ? true : window.isSecureContext;
-  // ── Deep environment probe on mount ──
-  useEffect(() => {
-    const info: Record<string, string> = {};
-    info["mediaDevices"] = typeof navigator !== "undefined" && !!navigator.mediaDevices ? "yes" : "no";
-    info["getUserMedia"] = typeof navigator !== "undefined" && !!navigator.mediaDevices?.getUserMedia ? "yes" : "no";
-    info["enumerateDevices"] = typeof navigator !== "undefined" && !!navigator.mediaDevices?.enumerateDevices ? "yes" : "no";
-    info["isSecureContext"] = typeof window !== "undefined" ? String(window.isSecureContext) : "N/A";
-    info["protocol"] = typeof window !== "undefined" ? window.location.protocol : "N/A";
-    info["userAgent"] = typeof navigator !== "undefined" ? navigator.userAgent : "N/A";
-    info["isIOS"] = String(isIOS());
-    info["isSafari"] = String(isSafariBrowser());
-    info["isIframe"] = typeof window !== "undefined" ? String(window.self !== window.top) : "N/A";
-
-    // Async probes
-    (async () => {
-      // Permission
-      if (navigator.permissions?.query) {
-        try {
-          const s = await navigator.permissions.query({ name: "camera" as PermissionName });
-          info["permissionState"] = s.state;
-        } catch (e) {
-          info["permissionState"] = `query failed: ${(e as Error).message}`;
-        }
-      } else {
-        info["permissionState"] = "permissions API unavailable";
-      }
-
-      // Enumerate
-      if (navigator.mediaDevices?.enumerateDevices) {
-        try {
-          const all = await navigator.mediaDevices.enumerateDevices();
-          const video = all.filter((d) => d.kind === "videoinput");
-          const audio = all.filter((d) => d.kind === "audioinput");
-          info["totalDevices"] = String(all.length);
-          info["videoinputCount"] = String(video.length);
-          info["audioinputCount"] = String(audio.length);
-          info["videoLabels"] = video.map((d) => d.label || "(empty)").join(" | ") || "(none)";
-        } catch (e) {
-          info["enumerateError"] = (e as Error).message;
-        }
-      }
-
-      if (mountedRef.current) setEnvInfo({ ...info });
-    })();
-
-    setEnvInfo(info);
-  }, []);
-
   const ios = isIOS();
   const safari = isSafariBrowser();
 
   const setStateSafe = useCallback((s: ScanState) => { if (mountedRef.current) setState(s); }, []);
   const setErrorSafe = useCallback((m: string) => { if (mountedRef.current) setError(m); }, []);
 
-  const readCameraPermission = useCallback(async (): Promise<CameraPermissionState> => {
-    if (typeof navigator === "undefined" || !navigator.mediaDevices?.getUserMedia) {
-      if (mountedRef.current) setCameraPermission("unsupported");
-      return "unsupported";
-    }
-
-    if (!navigator.permissions?.query) {
-      if (mountedRef.current) setCameraPermission("unknown");
-      return "unknown";
-    }
-
-    try {
-      const status = await navigator.permissions.query({ name: "camera" as PermissionName });
-      const next = (status.state as CameraPermissionState) || "unknown";
-      if (mountedRef.current) {
-        setCameraPermission(next);
-        status.onchange = () => {
-          if (mountedRef.current) {
-            setCameraPermission((status.state as CameraPermissionState) || "unknown");
-          }
-        };
-      }
-      return next;
-    } catch {
-      if (mountedRef.current) setCameraPermission("unknown");
-      return "unknown";
-    }
-  }, []);
-
   const refreshCameraDevices = useCallback(async () => {
-    if (typeof navigator === "undefined" || !navigator.mediaDevices?.enumerateDevices) {
-      if (mountedRef.current) setCameraDevices([]);
-      return [] as Array<{ id: string; label: string }>;
-    }
-
+    if (!navigator.mediaDevices?.enumerateDevices) return [];
     try {
       const devices = await navigator.mediaDevices.enumerateDevices();
-      const cameras = devices
-        .filter((device) => device.kind === "videoinput")
-        .map((device, index) => ({
-          id: device.deviceId,
-          label: device.label || `Camera ${index + 1}`,
-        }));
+      const cameras = devices.filter((d) => d.kind === "videoinput").map((d, i) => ({ id: d.deviceId, label: d.label || `Camera ${i + 1}` }));
       if (mountedRef.current) setCameraDevices(cameras);
       return cameras;
-    } catch {
-      if (mountedRef.current) setCameraDevices([]);
-      return [] as Array<{ id: string; label: string }>;
-    }
+    } catch { return []; }
   }, []);
 
   const chooseBestCamera = useCallback((cameras: Array<{ id: string; label: string }>, preferredId?: string | null) => {
     if (!cameras.length) return "";
-    if (preferredId && cameras.some((camera) => camera.id === preferredId)) return preferredId;
-    if (selectedCameraId && cameras.some((camera) => camera.id === selectedCameraId)) return selectedCameraId;
-
-    const rear = cameras.find((camera) => /back|rear|environment|wide|ultra/i.test(camera.label));
-    if (rear) return rear.id;
-    return cameras[cameras.length - 1]?.id || cameras[0].id;
+    if (preferredId && cameras.some((c) => c.id === preferredId)) return preferredId;
+    if (selectedCameraId && cameras.some((c) => c.id === selectedCameraId)) return selectedCameraId;
+    const rear = cameras.find((c) => /back|rear|environment|wide|ultra/i.test(c.label));
+    return rear?.id || cameras[cameras.length - 1]?.id || cameras[0].id;
   }, [selectedCameraId]);
 
   const resetRuntimeFlags = useCallback(() => {
@@ -211,7 +111,7 @@ export default function QrScannerPage() {
     scannerRef.current = null;
   }, []);
 
-  const clearScannerInstance = useCallback(async (reason: string, updateState = true) => {
+  const clearScannerInstance = useCallback(async (_reason: string, updateState = true) => {
     const scanner = scannerRef.current;
     ++opRef.current;
     if (!scanner) { resetRuntimeFlags(); if (updateState && mountedRef.current) setState("stopped"); return; }
@@ -230,22 +130,15 @@ export default function QrScannerPage() {
 
     if (payload.action === "pay_user") {
       setStateSafe("paying");
-
-      // ── EXPLICIT TARGET RESOLUTION before payment ──
       let resolved: ResolvedPayTarget;
       try {
         resolved = await resolvePayTarget({ userId: payload.userId, currency: payload.currency || "AED" });
-      } catch (resolveErr) {
+      } catch {
         setErrorSafe("Unresolved recipient — could not verify target");
         setStateSafe("error");
         return;
       }
-
-      if (resolved.walletStatus === "locked") {
-        setErrorSafe("Recipient wallet is locked");
-        setStateSafe("error");
-        return;
-      }
+      if (resolved.walletStatus === "locked") { setErrorSafe("Recipient wallet is locked"); setStateSafe("error"); return; }
 
       const result = await openPaymentRef.current({
         amount: payload.amount || 0, currency: resolved.currency || "AED",
@@ -257,9 +150,18 @@ export default function QrScannerPage() {
         metadata: { source: "qr_scan", qr_type: "pay_user", resolved_wallet_id: resolved.targetWalletId },
       });
       if (!mountedRef.current) return;
-      if (result.ok) { setTxId(result.transactionId || ""); setState("paid"); }
-      else if (result.error !== "Cancelled") { setError(result.error || "Payment failed"); setState("error"); }
-      else { setState("idle"); handledRef.current = false; }
+      if (result.ok) {
+        setTxId(result.transactionId || "");
+        setState("paid");
+        haptic("success");
+        playScanBeep();
+      } else if (result.error !== "Cancelled") {
+        setError(result.error || "Payment failed");
+        setState("error");
+      } else {
+        setState("idle");
+        handledRef.current = false;
+      }
       return;
     }
 
@@ -278,26 +180,36 @@ export default function QrScannerPage() {
         metadata: { source: "qr_scan", qr_type: "pay_shop", shopSlug: payload.shopSlug },
       });
       if (!mountedRef.current) return;
-      if (result.ok) { setTxId(result.transactionId || ""); setState("paid"); }
-      else if (result.error !== "Cancelled") { setError(result.error || "Payment failed"); setState("error"); }
-      else { setState("idle"); handledRef.current = false; }
+      if (result.ok) {
+        setTxId(result.transactionId || "");
+        setState("paid");
+        haptic("success");
+        playScanBeep();
+      } else if (result.error !== "Cancelled") {
+        setError(result.error || "Payment failed");
+        setState("error");
+      } else {
+        setState("idle");
+        handledRef.current = false;
+      }
       return;
     }
 
     if (payload.action === "profile" || payload.action === "add_contact" || payload.action === "shop") {
-      setResolvedPayload(payload); setStateSafe("resolved"); return;
+      setResolvedPayload(payload);
+      setStateSafe("resolved");
+      return;
     }
 
     const route = resolveRoute(payload);
     if (route) { navigateRef.current(route, { replace: true }); return; }
-    setErrorSafe("Unsupported QR format"); setStateSafe("error");
+    setErrorSafe("Unsupported QR format");
+    setStateSafe("error");
   }, [setErrorSafe, setStateSafe]);
 
-  // ── Upload QR image fallback ──
   const handleImageUpload = useCallback(async (file: File) => {
     setStateSafe("starting");
     setErrorSafe("");
-    setStartErrorMessage("");
     try {
       const scanner = new Html5Qrcode("qr-file-upload-region", { verbose: false });
       const result = await scanner.scanFile(file, false);
@@ -307,29 +219,14 @@ export default function QrScannerPage() {
       haptic("success");
       setLastText(result);
       await handleQrResult(result);
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : "Could not read QR from image";
-      setStartErrorMessage(msg);
-      // Don't set global error/state — allow user to retry or switch to live scan
-      toast.error("No QR code found in image. Try another image or use live scan.");
+    } catch {
+      toast.error("No QR code found in image. Try another or use live scan.");
     }
   }, [handleQrResult, setErrorSafe, setStateSafe]);
 
   const startScanner = useCallback(async (preferredDeviceId?: string) => {
-    if (!secure) {
-      const msg = "Camera scanning requires HTTPS.";
-      console.error("[QrScannerPage] getUserMedia blocked", { reason: msg });
-      setCameraUnavailableReason(msg);
-      setErrorSafe(msg);
-      setStateSafe("error");
-      return;
-    }
-    if (!navigator.mediaDevices?.getUserMedia) {
-      const msg = "getUserMedia is unavailable in this runtime.";
-      console.error("[QrScannerPage] getUserMedia unavailable", { mediaDevices: !!navigator.mediaDevices });
-      setCameraUnavailableReason(msg);
-      setCameraPermission("unsupported");
-      setErrorSafe(msg);
+    if (!secure || !navigator.mediaDevices?.getUserMedia) {
+      setErrorSafe("Camera requires HTTPS or is unavailable");
       setStateSafe("error");
       return;
     }
@@ -341,49 +238,27 @@ export default function QrScannerPage() {
     startingRef.current = true;
     handledRef.current = false;
     setErrorSafe(""); setLastText(""); setTxId("");
-    setStartErrorMessage("");
-    setCameraUnavailableReason("");
-    setStartStatus("idle");
     setStateSafe("starting");
 
     try {
-      await readCameraPermission();
-
-      let tempStream: MediaStream | null = null;
       let grantedDeviceId = "";
+      let tempStream: MediaStream | null = null;
       try {
         tempStream = await requestMediaStream({
           camera: true,
           videoConstraints: { facingMode: { ideal: "environment" }, width: { ideal: 1280 }, height: { ideal: 720 } },
         });
         grantedDeviceId = tempStream.getVideoTracks()[0]?.getSettings().deviceId || "";
-        console.log("[QrScannerPage] getUserMedia success", { grantedDeviceId });
-        if (mountedRef.current) setCameraPermission("granted");
       } catch (err) {
-        const domErr = err as DOMException & { constraint?: string };
-        const exactError = `${domErr?.name || "UnknownError"}: ${domErr?.message || "Unable to open camera."}`;
-        console.error("[QrScannerPage] getUserMedia failed", {
-          name: domErr?.name,
-          message: domErr?.message,
-          constraint: domErr?.constraint,
-        });
-        setCameraUnavailableReason(exactError);
-        if (domErr?.name === "NotAllowedError") {
-          if (mountedRef.current) setCameraPermission("denied");
-          throw new Error("Camera permission denied. Please allow camera access in your browser settings.");
-        }
+        const domErr = err as DOMException;
+        if (domErr?.name === "NotAllowedError") throw new Error("Camera permission denied. Allow camera in settings.");
         if (domErr?.name === "NotFoundError") {
-          // Immediately abort scanner — show upload fallback, don't proceed
-          if (mountedRef.current) {
-            setCameraPermission("unsupported");
-            setStateSafe("error");
-            setErrorSafe(exactError);
-          }
+          setErrorSafe("No camera found — use Upload QR image");
+          setStateSafe("error");
           startingRef.current = false;
-          return; // exit startScanner entirely — upload fallback is already visible
+          return;
         }
-        if (domErr?.name === "NotReadableError") throw new Error("Camera is busy or blocked by another app.");
-        throw new Error(exactError);
+        throw new Error(domErr?.message || "Camera unavailable");
       } finally {
         tempStream?.getTracks().forEach((t) => t.stop());
         if (ios || safari) await wait(250);
@@ -394,7 +269,6 @@ export default function QrScannerPage() {
       const cameras = await refreshCameraDevices();
       const preferredCameraId = chooseBestCamera(cameras, preferredDeviceId || grantedDeviceId);
       if (mountedRef.current) setSelectedCameraId(preferredCameraId);
-
       if (!mountedRef.current || opRef.current !== startOp) return;
 
       const scanner = new Html5Qrcode(REGION_ID, { verbose: false });
@@ -402,106 +276,63 @@ export default function QrScannerPage() {
       const scanConfig = { fps: ios ? 10 : 15, qrbox: { width: QR_BOX_SIZE, height: QR_BOX_SIZE }, disableFlip: false };
 
       const startWith = async (cfg: any, label: string) => {
-        try {
-          await withTimeout(scanner.start(cfg, scanConfig, async (text) => {
-            if (!mountedRef.current || handledRef.current) return;
-            handledRef.current = true;
-            playScanBeep();
-            haptic("success");
-            setLastText(text);
-            await clearScannerInstance("decode", false);
-            await handleQrResult(text);
-          }, () => {}), 12000, `Html5Qrcode.start timed out before camera preview appeared (${label}).`);
-        } catch (scannerErr) {
-          console.error("[QrScannerPage] scanner start failed", { label, error: scannerErr });
-          throw scannerErr;
-        }
+        await withTimeout(scanner.start(cfg, scanConfig, async (text) => {
+          if (!mountedRef.current || handledRef.current) return;
+          handledRef.current = true;
+          // ── BEEP + HAPTIC on scan ──
+          playScanBeep();
+          haptic("success");
+          setLastText(text);
+          await clearScannerInstance("decode", false);
+          await handleQrResult(text);
+        }, () => {}), 12000, `Camera start timed out (${label}).`);
       };
 
       try {
         if (preferredCameraId) await startWith({ deviceId: { exact: preferredCameraId } }, "preferred");
         else await startWith({ facingMode: { ideal: "environment" } }, "facingMode");
-      } catch (primaryErr) {
-        console.warn("[QrScannerPage] primary scanner config failed, trying fallback", primaryErr);
+      } catch {
         try {
           await Promise.resolve(scanner.clear()).catch(() => {});
           scannerRef.current = scanner;
           await wait(ios ? 250 : 100);
           await startWith({ facingMode: "environment" }, "fallback");
-        } catch (fallbackErr) {
-          // All camera configs failed — go straight to upload fallback
-          console.error("[QrScannerPage] all camera configs failed", fallbackErr);
+        } catch {
           resetRuntimeFlags();
-          const fbMsg = fallbackErr instanceof Error ? fallbackErr.message : "Camera unavailable";
-          if (mountedRef.current) {
-            setCameraPermission("unsupported");
-            setStartStatus("fail");
-            setStartErrorMessage(fbMsg);
-            setCameraUnavailableReason(fbMsg);
-            setErrorSafe("Camera unavailable — use Upload QR image below.");
-            setStateSafe("error");
-          }
-          return; // exit cleanly, upload fallback is visible
+          setErrorSafe("Camera unavailable — use Upload QR image below.");
+          setStateSafe("error");
+          return;
         }
       }
 
       if (!mountedRef.current || opRef.current !== startOp) { await clearScannerInstance("stale", false); return; }
       startedRef.current = true; startingRef.current = false; stoppingRef.current = false;
-      if (mountedRef.current) {
-        setStartStatus("success");
-        setStartErrorMessage("");
-      }
       setStateSafe("scanning");
     } catch (err) {
       resetRuntimeFlags();
-      const message = err instanceof Error ? err.message : "Unable to access camera.";
-      setStartStatus("fail");
-      setStartErrorMessage(message);
-      setCameraUnavailableReason((prev) => prev || message);
-      setErrorSafe(message);
+      setErrorSafe(err instanceof Error ? err.message : "Unable to access camera.");
       setStateSafe("error");
     }
-  }, [chooseBestCamera, clearScannerInstance, handleQrResult, ios, readCameraPermission, refreshCameraDevices, safari, secure, setErrorSafe, setStateSafe, resetRuntimeFlags]);
+  }, [chooseBestCamera, clearScannerInstance, handleQrResult, ios, refreshCameraDevices, safari, secure, setErrorSafe, setStateSafe, resetRuntimeFlags]);
 
-  // Auto-start scanner on mount when scan tab is active
+  // Auto-start scanner
   useEffect(() => {
     mountedRef.current = true;
-
-    void readCameraPermission();
-    void refreshCameraDevices();
-
-    // Auto-start camera when on scan tab (no manual button press required)
     if (tab === "scan" && secure) {
-      const autoStartTimer = setTimeout(() => {
+      const t = setTimeout(() => {
         if (mountedRef.current && !startingRef.current && !startedRef.current) {
           setCameraRequested(true);
           void startScanner();
         }
       }, 300);
-      return () => {
-        clearTimeout(autoStartTimer);
-        mountedRef.current = false;
-        void clearScannerInstance("unmount", false);
-      };
+      return () => { clearTimeout(t); mountedRef.current = false; void clearScannerInstance("unmount", false); };
     }
-
-    return () => {
-      mountedRef.current = false;
-      void clearScannerInstance("unmount", false);
-    };
-  }, [clearScannerInstance, readCameraPermission, refreshCameraDevices, tab, secure, startScanner]);
+    return () => { mountedRef.current = false; void clearScannerInstance("unmount", false); };
+  }, [clearScannerInstance, tab, secure, startScanner]);
 
   useEffect(() => {
-    if (tab === "myqr" && (startedRef.current || startingRef.current)) {
-      void clearScannerInstance("tab-switch");
-    }
+    if (tab === "myqr" && (startedRef.current || startingRef.current)) void clearScannerInstance("tab-switch");
   }, [tab, clearScannerInstance]);
-
-  useEffect(() => {
-    if (tab === "scan" && cameraRequested && !startingRef.current && !startedRef.current) {
-      void refreshCameraDevices();
-    }
-  }, [cameraRequested, refreshCameraDevices, tab]);
 
   const handleReset = () => {
     setError(""); setLastText(""); setTxId(""); setResolvedPayload(null);
@@ -515,13 +346,8 @@ export default function QrScannerPage() {
 
   const handleSwitchCamera = async () => {
     const cameras = cameraDevices.length ? cameraDevices : await refreshCameraDevices();
-    if (!cameras.length) {
-      setErrorSafe("No alternate camera found.");
-      setStateSafe("error");
-      return;
-    }
-
-    const currentIndex = cameras.findIndex((camera) => camera.id === selectedCameraId);
+    if (!cameras.length) { setErrorSafe("No alternate camera found."); setStateSafe("error"); return; }
+    const currentIndex = cameras.findIndex((c) => c.id === selectedCameraId);
     const nextCamera = cameras[(currentIndex + 1 + cameras.length) % cameras.length];
     await clearScannerInstance("switch-camera", false);
     handleReset();
@@ -541,25 +367,19 @@ export default function QrScannerPage() {
         </div>
       </div>
 
-      {/* Tab toggle — same size buttons */}
+      {/* Tab toggle */}
       <div className="flex border-b border-border/30">
-        <button
-          type="button"
-          onClick={() => { setTab("scan"); handleReset(); }}
-          className={`flex-1 flex items-center justify-center gap-2 py-3 text-sm font-semibold transition-colors active:scale-[0.97] ${tab === "scan" ? "text-primary border-b-2 border-primary" : "text-muted-foreground hover:text-foreground"}`}
-        >
+        <button type="button" onClick={() => { setTab("scan"); handleReset(); }}
+          className={`flex-1 flex items-center justify-center gap-2 py-3 text-sm font-semibold transition-colors active:scale-[0.97] ${tab === "scan" ? "text-primary border-b-2 border-primary" : "text-muted-foreground"}`}>
           <ScanLine className="h-4 w-4" /> Scan
         </button>
-        <button
-          type="button"
-          onClick={() => setTab("myqr")}
-          className={`flex-1 flex items-center justify-center gap-2 py-3 text-sm font-semibold transition-colors active:scale-[0.97] ${tab === "myqr" ? "text-primary border-b-2 border-primary" : "text-muted-foreground hover:text-foreground"}`}
-        >
+        <button type="button" onClick={() => setTab("myqr")}
+          className={`flex-1 flex items-center justify-center gap-2 py-3 text-sm font-semibold transition-colors active:scale-[0.97] ${tab === "myqr" ? "text-primary border-b-2 border-primary" : "text-muted-foreground"}`}>
           <QrCode className="h-4 w-4" /> My QR
         </button>
       </div>
 
-      {/* Content — consistent card sizing */}
+      {/* Content */}
       <div className="flex flex-1 flex-col items-center justify-center overflow-auto p-6">
         {tab === "myqr" ? (
           <div className="w-full flex flex-col items-center" style={{ maxWidth: CARD_SIZE }}>
@@ -571,146 +391,115 @@ export default function QrScannerPage() {
           </div>
         ) : (
           <>
-            {!secure && (
-              <p className="mb-4 px-4 text-center text-xs text-destructive">
-                Camera scanning requires HTTPS or a secure app context.
-              </p>
-            )}
+            <AnimatePresence mode="wait">
+              {state === "paid" ? (
+                <motion.div
+                  key="paid"
+                  initial={{ scale: 0.8, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 0.8, opacity: 0 }}
+                  className="space-y-4 text-center"
+                >
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ type: "spring", stiffness: 300, damping: 15, delay: 0.1 }}
+                    className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-primary/10"
+                  >
+                    <CheckCircle2 className="h-10 w-10 text-primary" />
+                  </motion.div>
+                  <p className="text-xl font-bold text-foreground">Payment sent!</p>
+                  {txId && <p className="text-[11px] text-muted-foreground font-mono">TX: {txId.slice(0, 16)}…</p>}
+                  <button type="button" onClick={() => navigate("/wallet/hub", { replace: true })} className="mt-5 rounded-2xl bg-primary px-8 py-3.5 text-sm font-bold text-primary-foreground active:scale-[0.97] transition-transform">
+                    Done
+                  </button>
+                </motion.div>
+              ) : state === "resolved" && resolvedPayload ? (
+                <motion.div key="resolved" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+                  <QrResolvedCard payload={resolvedPayload} openPayment={openPayment} currentUserId={user?.id} currentOrgId={orgId} onReset={handleReset} />
+                </motion.div>
+              ) : (
+                <motion.div key="scanner" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="w-full flex flex-col items-center">
+                  {/* Camera viewfinder */}
+                  <div className="relative aspect-square w-full overflow-hidden rounded-2xl border-2 border-border/50 bg-black/90" style={{ maxWidth: CARD_SIZE }}>
+                    <div id={REGION_ID} className="h-full w-full" />
 
-            {state === "paid" ? (
-              <div className="space-y-4 text-center">
-                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
-                  <CheckCircle2 className="h-8 w-8 text-primary" />
-                </div>
-                <p className="text-lg font-bold text-foreground">Payment sent!</p>
-                {txId && <p className="text-[11px] text-muted-foreground">TX: {txId.slice(0, 16)}…</p>}
-                <button type="button" onClick={() => navigate(-1)} className="mt-5 rounded-2xl bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground active:scale-[0.97] transition-transform">
-                  Done
-                </button>
-              </div>
-            ) : state === "resolved" && resolvedPayload ? (
-              <QrResolvedCard payload={resolvedPayload} openPayment={openPayment} currentUserId={user?.id} currentOrgId={orgId} onReset={handleReset} />
-            ) : (
-              <>
-                {/* Camera viewfinder — matched to CARD_SIZE */}
-                <div className="relative aspect-square w-full overflow-hidden rounded-2xl border-2 border-border/50 bg-black/90" style={{ maxWidth: CARD_SIZE }}>
-                  <div id={REGION_ID} className="h-full w-full" />
+                    {/* Corner markers */}
+                    <div className="absolute top-3 left-3 w-8 h-8 border-t-2 border-l-2 border-primary rounded-tl-lg pointer-events-none" />
+                    <div className="absolute top-3 right-3 w-8 h-8 border-t-2 border-r-2 border-primary rounded-tr-lg pointer-events-none" />
+                    <div className="absolute bottom-12 left-3 w-8 h-8 border-b-2 border-l-2 border-primary rounded-bl-lg pointer-events-none" />
+                    <div className="absolute bottom-12 right-3 w-8 h-8 border-b-2 border-r-2 border-primary rounded-br-lg pointer-events-none" />
 
-                  {/* Corner markers */}
-                  <div className="absolute top-3 left-3 w-8 h-8 border-t-2 border-l-2 border-primary rounded-tl-lg pointer-events-none" />
-                  <div className="absolute top-3 right-3 w-8 h-8 border-t-2 border-r-2 border-primary rounded-tr-lg pointer-events-none" />
-                  <div className="absolute bottom-12 left-3 w-8 h-8 border-b-2 border-l-2 border-primary rounded-bl-lg pointer-events-none" />
-                  <div className="absolute bottom-12 right-3 w-8 h-8 border-b-2 border-r-2 border-primary rounded-br-lg pointer-events-none" />
-
-                  {/* GREEN LASER SCAN LINE */}
-                  {(state === "scanning" || state === "starting") && (
-                    <div
-                      className="absolute left-3 right-3 h-0.5 pointer-events-none z-10"
-                      style={{
-                        background: "linear-gradient(90deg, transparent, hsl(142 70% 50%), hsl(142 80% 60%), hsl(142 70% 50%), transparent)",
-                        boxShadow: "0 0 8px hsl(142 70% 50% / 0.6), 0 0 20px hsl(142 70% 50% / 0.3)",
-                        animation: "qr-laser-scan 2.5s ease-in-out infinite",
-                      }}
-                    />
-                  )}
-
-                  {/* Status bar */}
-                  <div className="absolute inset-x-0 bottom-0 flex items-center justify-center gap-2 bg-background/80 py-2.5 backdrop-blur-sm">
-                    {state === "scanning" || state === "starting" ? (
-                      <Camera className="h-4 w-4 animate-pulse text-primary" />
-                    ) : state === "paying" ? (
-                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-                    ) : (
-                      <CameraOff className="h-4 w-4 text-muted-foreground" />
+                    {/* GREEN LASER SCAN LINE */}
+                    {(state === "scanning" || state === "starting") && (
+                      <div
+                        className="absolute left-3 right-3 h-0.5 pointer-events-none z-10"
+                        style={{
+                          background: "linear-gradient(90deg, transparent, hsl(142 70% 50%), hsl(142 80% 60%), hsl(142 70% 50%), transparent)",
+                          boxShadow: "0 0 8px hsl(142 70% 50% / 0.6), 0 0 20px hsl(142 70% 50% / 0.3)",
+                          animation: "qr-laser-scan 2.5s ease-in-out infinite",
+                        }}
+                      />
                     )}
-                    <span className="text-xs font-medium text-foreground">
-                      {state === "idle" && "Initializing camera…"}
-                      {state === "starting" && "Starting camera…"}
-                      {state === "scanning" && "Point at QR code"}
-                      {state === "paying" && "Processing…"}
-                      {state === "stopped" && "Scanner stopped"}
-                      {state === "error" && "Scanner error"}
-                    </span>
-                  </div>
-                </div>
 
-                 <div className="mt-4 w-full max-w-[320px] space-y-3">
-
-                   {error && <p className="text-center text-sm text-destructive">{error}</p>}
-
-                   {/* ── Action buttons ── */}
-                   <div className="flex flex-col gap-2">
-                     {!cameraRequested || state === "idle" ? (
-                       <button
-                         type="button"
-                         onClick={() => { handleReset(); void handleStartCamera(); }}
-                         className="flex items-center justify-center gap-2 rounded-2xl bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground active:scale-[0.97] transition-transform"
-                       >
-                         <Camera className="h-4 w-4" /> Start camera
-                       </button>
-                     ) : null}
-
-                     <button
-                       type="button"
-                       onClick={() => { handleReset(); void handleStartCamera(selectedCameraId || undefined); }}
-                       className="flex items-center justify-center gap-2 rounded-2xl bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground active:scale-[0.97] transition-transform"
-                     >
-                       <RefreshCcw className="h-4 w-4" /> Retry camera
-                     </button>
-
-                     {cameraDevices.length >= 2 && (
-                       <button
-                         type="button"
-                         onClick={() => void handleSwitchCamera()}
-                         className="flex items-center justify-center gap-2 rounded-2xl border border-border bg-card px-4 py-3 text-sm font-semibold text-foreground active:scale-[0.97] transition-transform"
-                       >
-                         <Camera className="h-4 w-4" /> Switch camera
-                       </button>
-                     )}
-
-                     {/* ── Upload QR image fallback ── */}
-                     <button
-                       type="button"
-                       onClick={() => fileInputRef.current?.click()}
-                       className="flex items-center justify-center gap-2 rounded-2xl border border-border bg-card px-4 py-3 text-sm font-semibold text-foreground active:scale-[0.97] transition-transform"
-                     >
-                       <Upload className="h-4 w-4" /> Upload QR image
-                     </button>
-                     <input
-                       ref={fileInputRef}
-                       type="file"
-                       accept="image/*"
-                       className="hidden"
-                       onChange={(e) => {
-                         const file = e.target.files?.[0];
-                         if (file) void handleImageUpload(file);
-                         e.target.value = "";
-                       }}
-                     />
-
-                      {(cameraPermission === "denied" || cameraPermission === "unsupported" || !secure || startStatus === "fail" || envInfo["videoinputCount"] === "0") && (
-                        <div className="rounded-2xl border border-border/50 bg-muted/50 p-3 text-center text-xs text-muted-foreground space-y-1">
-                          <p className="font-semibold text-foreground">Camera unavailable in this runtime</p>
-                          <p>{cameraUnavailableReason || startErrorMessage || "Live camera access is blocked or unavailable."}</p>
-                          <p>The Lovable preview iframe may not expose physical cameras. To use live scanning:</p>
-                          <a
-                            href={window.location.href}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 text-primary underline"
-                          >
-                            <ExternalLink className="h-3 w-3" /> Open in Safari / Chrome directly
-                          </a>
-                          <p>Or use <strong>Upload QR image</strong> above.</p>
-                        </div>
+                    {/* Status bar */}
+                    <div className="absolute inset-x-0 bottom-0 flex items-center justify-center gap-2 bg-background/80 py-2.5 backdrop-blur-sm">
+                      {state === "scanning" || state === "starting" ? (
+                        <Camera className="h-4 w-4 animate-pulse text-primary" />
+                      ) : state === "paying" ? (
+                        <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                      ) : (
+                        <CameraOff className="h-4 w-4 text-muted-foreground" />
                       )}
-                   </div>
-                 </div>
+                      <span className="text-xs font-medium text-foreground">
+                        {state === "idle" && "Initializing…"}
+                        {state === "starting" && "Starting camera…"}
+                        {state === "scanning" && "Point at QR code"}
+                        {state === "paying" && "Processing payment…"}
+                        {state === "stopped" && "Scanner stopped"}
+                        {state === "error" && "Scanner error"}
+                      </span>
+                    </div>
+                  </div>
 
-                 {/* Hidden region for file-based QR scan */}
-                 <div id="qr-file-upload-region" className="hidden" />
-              </>
-            )}
+                  <div className="mt-4 w-full max-w-[320px] space-y-3">
+                    {error && <p className="text-center text-sm text-destructive">{error}</p>}
+
+                    <div className="flex flex-col gap-2">
+                      {!cameraRequested || state === "idle" ? (
+                        <button type="button" onClick={() => { handleReset(); void handleStartCamera(); }}
+                          className="flex items-center justify-center gap-2 rounded-2xl bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground active:scale-[0.97] transition-transform">
+                          <Camera className="h-4 w-4" /> Start camera
+                        </button>
+                      ) : null}
+
+                      {(state === "error" || state === "stopped") && (
+                        <button type="button" onClick={() => { handleReset(); void handleStartCamera(selectedCameraId || undefined); }}
+                          className="flex items-center justify-center gap-2 rounded-2xl bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground active:scale-[0.97] transition-transform">
+                          <RefreshCcw className="h-4 w-4" /> Retry camera
+                        </button>
+                      )}
+
+                      {cameraDevices.length >= 2 && (
+                        <button type="button" onClick={() => void handleSwitchCamera()}
+                          className="flex items-center justify-center gap-2 rounded-2xl border border-border bg-card px-4 py-3 text-sm font-semibold text-foreground active:scale-[0.97] transition-transform">
+                          <Camera className="h-4 w-4" /> Switch camera
+                        </button>
+                      )}
+
+                      <button type="button" onClick={() => fileInputRef.current?.click()}
+                        className="flex items-center justify-center gap-2 rounded-2xl border border-border bg-card px-4 py-3 text-sm font-semibold text-foreground active:scale-[0.97] transition-transform">
+                        <Upload className="h-4 w-4" /> Upload QR image
+                      </button>
+                      <input ref={fileInputRef} type="file" accept="image/*" className="hidden"
+                        onChange={(e) => { const file = e.target.files?.[0]; if (file) void handleImageUpload(file); e.target.value = ""; }} />
+                    </div>
+                  </div>
+
+                  <div id="qr-file-upload-region" className="hidden" />
+                </motion.div>
+              )}
+            </AnimatePresence>
           </>
         )}
       </div>
