@@ -21,6 +21,7 @@ export default defineConfig(({ mode }) => ({
     react(),
     mode === "development" && componentTagger(),
     sitemapPlugin(),
+    VitePWA({ disable: true }),
   ].filter(Boolean),
   optimizeDeps: {
     include: [
