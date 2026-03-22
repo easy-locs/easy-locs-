@@ -78,7 +78,7 @@ export const HIDE_NAV_PREFIXES = [
 export const NAV_TABS = {
   dashboard: "/",
   explore: "/explore",
-  map: "/map",
+  radar: "/radar",
   wallet: "/wallet/hub",
   profile: "/settings",
 } as const;

@@ -99,7 +99,7 @@ function LiveEcosystemMap({ lat, lng, radius, entities, onSelect, heatmapPoints,
       attributionControl: false,
     });
 
-    map.addControl(new mapboxgl.NavigationControl({ showCompass: false }), "bottom-right");
+    // No NavigationControl — zoom via pinch/scroll only
     mapRef.current = map;
 
     return () => {
