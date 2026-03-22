@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { useOrbitStore } from "@/stores/orbitStore";
 import { useListingStore } from "@/stores/listingStore";
-import { useNotificationsStore } from "@/stores/notificationsStore";
+import { useUnifiedNotificationStore } from "@/stores/unifiedNotificationStore";
 import { useChatStore } from "@/stores/chatStore";
 import { useMapStore } from "@/stores/mapStore";
 
@@ -23,9 +23,9 @@ export const useAppHydrationStore = create<AppHydrationStore>((set) => ({
     await useListingStore.getState().hydratePublished();
     useMapStore.getState().buildListingMarkers();
 
-    if (orbit?.orbitId) {
+    if (orbit?.id) {
       await Promise.all([
-        useNotificationsStore.getState().hydrate(orbit.orbitId),
+        useUnifiedNotificationStore.getState().hydrate(orbit.id),
         useChatStore.getState().hydrateConversations(orbit.orbitId),
       ]);
     }
