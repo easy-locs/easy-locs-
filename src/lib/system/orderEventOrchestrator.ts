@@ -26,7 +26,7 @@ export async function emitOrderReady(orderId: string) {
   if (error) throw error;
   if (!data) throw new Error("Order not found");
 
-  await platformBus.emit(
+  platformBus.emit(
     "ORDER_READY",
     {
       orderId: data.id,
@@ -36,7 +36,7 @@ export async function emitOrderReady(orderId: string) {
       pickupLng: (data as any).pickup_lng ?? null,
       zone: (data as any).pickup_zone ?? null,
     },
-    { source: "orderEventOrchestrator:emitOrderReady" }
+    "system"
   );
 
   return true;
