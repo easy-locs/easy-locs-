@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useDebugCommsStore } from "@/stores/debugCommsStore";
+// debugCommsStore removed (Batch A purge)
 import { useOrbitStore } from "@/stores/orbitStore";
 import { useLocationStore } from "@/stores/locationStore";
 import { cn } from "@/lib/utils";
