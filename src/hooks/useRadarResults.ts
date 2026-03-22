@@ -25,9 +25,12 @@ export function useRadarResults(opts?: { type?: string; radiusKm?: number }) {
           id: s.id,
           type: (s.vertical === "food" ? "restaurant" : "shop") as GeoEntity["type"],
           name: s.name || "Business",
+          title: s.name || "Business",
+          subtitle: s.address || s.vertical || undefined,
           lat: s.latitude,
           lng: s.longitude,
           imageUrl: s.logo_url,
+          image_url: s.logo_url,
           slug: s.slug,
           address: s.address,
         }));
