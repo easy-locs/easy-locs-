@@ -4,7 +4,7 @@
  */
 import { MapPin, RefreshCw } from "lucide-react";
 import { useLocationStore } from "@/stores/locationStore";
-import { getCurrentPositionHighAccuracy } from "@/lib/location/geolocation";
+import { requestLocation } from "@/lib/location/requestLocation";
 import { useState } from "react";
 
 export function GeoPermissionRecovery() {
