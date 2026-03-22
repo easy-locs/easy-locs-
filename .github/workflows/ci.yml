@@ -1,4 +1,4 @@
-name: CI — Lint, Test & Build
+name: CI — Build & Deploy
 
 on:
   push:
@@ -12,10 +12,10 @@ env:
   VITE_SUPABASE_PUBLISHABLE_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.placeholder"
 
 jobs:
-  ci:
-    name: Lint → Test → Build
+  build:
+    name: Build
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 10
 
     steps:
       - name: Checkout
@@ -28,15 +28,6 @@ jobs:
 
       - name: Install dependencies
         run: npm install --legacy-peer-deps
-
-      - name: TypeScript check
-        run: echo "skip tsc"
-
-      - name: Lint
-        run: echo "skip lint"
-
-      - name: Run tests
-        run: echo "skip tests"
 
       - name: Build
         run: npm run build
@@ -48,27 +39,3 @@ jobs:
           name: dist
           path: dist/
           retention-days: 7
-
-  smoke:
-    name: Smoke Tests
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    needs: ci
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-
-      - name: Install dependencies
-        run: npm install --legacy-peer-deps
-
-      - name: Run smoke tests
-        run: echo "skip smoke tests"
-
-      - name: Run E2E flow tests
-        run: echo "skip e2e tests"
