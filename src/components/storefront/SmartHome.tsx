@@ -136,7 +136,7 @@ function CategoryCard({ cat, index }: { cat: SmartCategory; index: number }) {
     >
       <Link
         to={cat.route}
-        className="group flex flex-col items-center gap-1 rounded-2xl p-2 active:scale-[0.93] transition-all duration-150 border border-border/10 relative overflow-hidden w-[76px]"
+        className="group flex flex-col items-center gap-1 rounded-2xl p-2 active:scale-[0.93] transition-all duration-150 border border-border/10 relative overflow-hidden w-[76px] h-[96px]"
         style={{ background: `color-mix(in srgb, ${cat.color} 6%, hsl(var(--card)))` }}
       >
         <div className="w-14 h-14 rounded-xl flex items-center justify-center overflow-hidden relative"
