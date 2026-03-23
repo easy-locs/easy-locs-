@@ -115,6 +115,6 @@ function resolveRoute(t: ResolvedQrTarget): string {
 
     default:
       // Fallback to order page
-      return `/order/${encodeURIComponent(slug)}`;
+      return `/menu/${encodeURIComponent(slug)}`;
   }
 }
