@@ -32,13 +32,13 @@ export async function resolveSearch(
   // Build storefront query
   let sfQuery = db
     .from("storefront_pages")
-    .select("id, name, slug, vertical, category, subcategory, cluster, city, area, rating, reviews_count, banner_url, logo_url, launch_status, latitude, longitude, is_open, source_type, audit_score, readiness_status")
+    .select("id, name, slug, vertical, category, subcategory, cluster, city, address, region, rating, reviews_count, banner_url, logo_url, launch_status, latitude, longitude, is_open, source_type, audit_score, readiness_status")
     .in("launch_status", ["launched", "ready", "active"])
     .limit(state.limit);
 
   // Text search
   if (q) {
-    sfQuery = sfQuery.or(`name.ilike.%${q}%,subcategory.ilike.%${q}%,area.ilike.%${q}%,city.ilike.%${q}%,category.ilike.%${q}%`);
+    sfQuery = sfQuery.or(`name.ilike.%${q}%,subcategory.ilike.%${q}%,address.ilike.%${q}%,city.ilike.%${q}%,category.ilike.%${q}%`);
   }
 
   // Vertical filter
@@ -58,7 +58,7 @@ export async function resolveSearch(
 
   // District filter
   if (state.district) {
-    sfQuery = sfQuery.ilike("area", `%${state.district}%`);
+    sfQuery = sfQuery.ilike("address", `%${state.district}%`);
   }
 
   // Rating filter
@@ -140,11 +140,12 @@ export async function resolveSearch(
 }
 
 function mapStorefront(row: any, state: SearchState): SearchResult {
+  const district = row.region || row.address || row.city;
   return {
     id: row.id,
     type: "shop",
     title: row.name,
-    subtitle: [row.subcategory, row.area || row.city].filter(Boolean).join(" · "),
+    subtitle: [row.subcategory, district].filter(Boolean).join(" · "),
     imageUrl: row.banner_url || row.logo_url,
     lat: row.latitude,
     lng: row.longitude,
@@ -152,7 +153,7 @@ function mapStorefront(row: any, state: SearchState): SearchResult {
     reviewsCount: row.reviews_count,
     vertical: row.vertical,
     subcategory: row.subcategory,
-    district: row.area,
+    district,
     city: row.city,
     slug: row.slug,
     isOpen: row.is_open,
@@ -239,7 +240,7 @@ export async function resolveAutocomplete(
   // 2. Shop matches (from DB)
   const { data: shops } = await db
     .from("storefront_pages")
-    .select("id, name, slug, subcategory, area, city, logo_url, rating, vertical")
+    .select("id, name, slug, subcategory, address, region, city, logo_url, rating, vertical")
     .in("launch_status", ["launched", "ready", "active"])
     .ilike("name", `%${q}%`)
     .limit(5);
@@ -252,7 +253,7 @@ export async function resolveAutocomplete(
         id: s.id,
         type: "shop" as const,
         title: s.name,
-        subtitle: [s.subcategory, s.area || s.city].filter(Boolean).join(" · "),
+        subtitle: [s.subcategory, s.region || s.address || s.city].filter(Boolean).join(" · "),
         imageUrl: s.logo_url,
         slug: s.slug,
         rating: s.rating,

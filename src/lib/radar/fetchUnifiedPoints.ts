@@ -72,7 +72,7 @@ export async function fetchUnifiedPoints(opts?: FetchUnifiedPointsOpts): Promise
   // Build queries
   let storefrontQuery = (supabase as any)
     .from("storefront_pages")
-    .select("id, name, slug, vertical, category, subcategory, address, logo_url, banner_url, latitude, longitude, rating, reviews_count, ranking_score, city, area")
+    .select("id, name, slug, vertical, category, subcategory, address, logo_url, banner_url, latitude, longitude, rating, reviews_count, ranking_score, city, region")
     .eq("launch_status", "launched")
     .not("latitude", "is", null)
     .not("longitude", "is", null)
@@ -120,7 +120,7 @@ export async function fetchUnifiedPoints(opts?: FetchUnifiedPointsOpts): Promise
     points.push({
       id: s.id,
       title: s.name || "Business",
-      subtitle: s.area || s.address || s.category || undefined,
+      subtitle: s.region || s.address || s.category || undefined,
       imageUrl: s.banner_url || s.logo_url,
       category: cat,
       subcategory: sub,
@@ -131,7 +131,7 @@ export async function fetchUnifiedPoints(opts?: FetchUnifiedPointsOpts): Promise
       distanceKm: dist,
       timeScore,
       slug: s.slug || null,
-      district: s.area || null,
+      district: s.region || s.address || null,
       cityName: s.city || null,
     });
   }

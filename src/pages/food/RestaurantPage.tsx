@@ -32,7 +32,7 @@ export default function RestaurantPage() {
       // Try storefront_pages first
       const { data: sf } = await (supabase as any)
         .from("storefront_pages")
-        .select("id, name, slug, vertical, category, subcategory, city, area, address, rating, reviews_count, banner_url, logo_url, latitude, longitude, contact_phone, contact_whatsapp, website_url")
+        .select("id, name, slug, vertical, category, subcategory, city, address, region, rating, reviews_count, banner_url, logo_url, latitude, longitude, contact_phone, contact_whatsapp, website_url")
         .eq("id", restaurantId)
         .maybeSingle();
       if (sf) {
