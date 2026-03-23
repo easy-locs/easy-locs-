@@ -19568,7 +19568,9 @@ export type Database = {
           address: string | null
           anchor_lat: number | null
           anchor_lng: number | null
+          audit_score: number | null
           banner_url: string | null
+          blocking_reason: string | null
           boost_expiry: string | null
           boost_multiplier: number
           category: string | null
@@ -19587,7 +19589,10 @@ export type Database = {
           description: string | null
           entity_type: string
           geo_scope: string | null
+          has_menu: boolean | null
+          has_photo: boolean | null
           id: string
+          is_auto_generated: boolean | null
           is_claimed: boolean
           is_order_enabled: boolean
           is_payment_enabled: boolean
@@ -19608,9 +19613,11 @@ export type Database = {
           onboarding_step: number | null
           org_id: string
           presence_mode: string
+          products_count: number | null
           radius_km: number | null
           ranking_score: number
           rating: number | null
+          readiness_status: string | null
           region: string | null
           reviews_count: number | null
           scheduled_publish_at: string | null
@@ -19618,6 +19625,8 @@ export type Database = {
           seo_title: string | null
           shop_visibility: string | null
           slug: string
+          source_confidence: number | null
+          source_type: string | null
           subcategory: string | null
           tagline: string | null
           tags: string[] | null
@@ -19634,7 +19643,9 @@ export type Database = {
           address?: string | null
           anchor_lat?: number | null
           anchor_lng?: number | null
+          audit_score?: number | null
           banner_url?: string | null
+          blocking_reason?: string | null
           boost_expiry?: string | null
           boost_multiplier?: number
           category?: string | null
@@ -19653,7 +19664,10 @@ export type Database = {
           description?: string | null
           entity_type?: string
           geo_scope?: string | null
+          has_menu?: boolean | null
+          has_photo?: boolean | null
           id?: string
+          is_auto_generated?: boolean | null
           is_claimed?: boolean
           is_order_enabled?: boolean
           is_payment_enabled?: boolean
@@ -19674,9 +19688,11 @@ export type Database = {
           onboarding_step?: number | null
           org_id: string
           presence_mode?: string
+          products_count?: number | null
           radius_km?: number | null
           ranking_score?: number
           rating?: number | null
+          readiness_status?: string | null
           region?: string | null
           reviews_count?: number | null
           scheduled_publish_at?: string | null
@@ -19684,6 +19700,8 @@ export type Database = {
           seo_title?: string | null
           shop_visibility?: string | null
           slug: string
+          source_confidence?: number | null
+          source_type?: string | null
           subcategory?: string | null
           tagline?: string | null
           tags?: string[] | null
@@ -19700,7 +19718,9 @@ export type Database = {
           address?: string | null
           anchor_lat?: number | null
           anchor_lng?: number | null
+          audit_score?: number | null
           banner_url?: string | null
+          blocking_reason?: string | null
           boost_expiry?: string | null
           boost_multiplier?: number
           category?: string | null
@@ -19719,7 +19739,10 @@ export type Database = {
           description?: string | null
           entity_type?: string
           geo_scope?: string | null
+          has_menu?: boolean | null
+          has_photo?: boolean | null
           id?: string
+          is_auto_generated?: boolean | null
           is_claimed?: boolean
           is_order_enabled?: boolean
           is_payment_enabled?: boolean
@@ -19740,9 +19763,11 @@ export type Database = {
           onboarding_step?: number | null
           org_id?: string
           presence_mode?: string
+          products_count?: number | null
           radius_km?: number | null
           ranking_score?: number
           rating?: number | null
+          readiness_status?: string | null
           region?: string | null
           reviews_count?: number | null
           scheduled_publish_at?: string | null
@@ -19750,6 +19775,8 @@ export type Database = {
           seo_title?: string | null
           shop_visibility?: string | null
           slug?: string
+          source_confidence?: number | null
+          source_type?: string | null
           subcategory?: string | null
           tagline?: string | null
           tags?: string[] | null
