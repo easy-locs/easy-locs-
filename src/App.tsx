@@ -783,6 +783,8 @@ const App = () => (
               <Route path="/qr/pay/:code" element={<QrPayResolver />} />
               <Route path="/qr/:code" element={<QrResolvePage />} />
               <Route path="/qr/entry/:targetCode" element={<QrEntryPage />} />
+              <Route path="/qr/track" element={<QrTrackingPage />} />
+              <Route path="/qr/pickup" element={<QrPickupPage />} />
               <Route path="/claim/:token" element={<ClaimPage />} />
 
               {/* V7 Public pillars — Radar is unified ecosystem */}
