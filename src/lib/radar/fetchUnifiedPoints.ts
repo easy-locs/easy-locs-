@@ -1,11 +1,16 @@
 /**
  * fetchUnifiedPoints — Pulls from BOTH storefront_pages AND seed_merchants,
  * normalizes into RadarPoint[], computes distances, applies time-based ranking.
- * Single source of truth for all radar/discovery/hub data.
+ * Uses CANONICAL TAXONOMY for all category/subcategory normalization.
  */
 import { supabase } from "@/integrations/supabase/client";
 import { haversineKm } from "@/lib/radar/geo";
 import { getTimeContext, timeRelevanceScore } from "@/lib/discovery/timeContext";
+import {
+  verticalToRadarCategory,
+  normalizeVertical,
+  normalizeSubcategory,
+} from "@/lib/taxonomy/canonical";
 import type { RadarPoint, RadarCategory, UserGeoPoint } from "@/lib/radar/types";
 
 /** Approximate coordinates for Dubai areas (seed_merchants have no lat/lng) */
@@ -15,11 +20,13 @@ const AREA_COORDS: Record<string, { lat: number; lng: number }> = {
   "jlt": { lat: 25.0772, lng: 55.1536 },
   "al barsha": { lat: 25.1134, lng: 55.2007 },
   "downtown": { lat: 25.1972, lng: 55.2744 },
+  "downtown dubai": { lat: 25.1972, lng: 55.2744 },
   "business bay": { lat: 25.1850, lng: 55.2650 },
   "deira": { lat: 25.2697, lng: 55.3095 },
   "bur dubai": { lat: 25.2510, lng: 55.2967 },
   "jumeirah": { lat: 25.2100, lng: 55.2500 },
   "silicon oasis": { lat: 25.1275, lng: 55.3775 },
+  "dubai silicon oasis": { lat: 25.1275, lng: 55.3775 },
   "motor city": { lat: 25.0505, lng: 55.2393 },
   "sports city": { lat: 25.0420, lng: 55.2237 },
   "al quoz": { lat: 25.1590, lng: 55.2350 },
@@ -30,6 +37,14 @@ const AREA_COORDS: Record<string, { lat: number; lng: number }> = {
   "tecom": { lat: 25.1000, lng: 55.1740 },
   "discovery gardens": { lat: 25.0380, lng: 55.1350 },
   "dubailand": { lat: 25.0750, lng: 55.3000 },
+  "palm jumeirah": { lat: 25.1124, lng: 55.1390 },
+  "al nahda": { lat: 25.2900, lng: 55.3700 },
+  "al qusais": { lat: 25.2700, lng: 55.3850 },
+  "rashidiya": { lat: 25.2350, lng: 55.3900 },
+  "jumeirah lake towers": { lat: 25.0772, lng: 55.1536 },
+  "difc": { lat: 25.2100, lng: 55.2800 },
+  "city walk": { lat: 25.2070, lng: 55.2650 },
+  "al mamzar": { lat: 25.2890, lng: 55.3450 },
 };
 
 function areaToCoords(area: string): { lat: number; lng: number } {
@@ -37,27 +52,6 @@ function areaToCoords(area: string): { lat: number; lng: number } {
   const base = AREA_COORDS[key] ?? { lat: 25.2048, lng: 55.2708 };
   const jitter = () => (Math.random() - 0.5) * 0.008;
   return { lat: base.lat + jitter(), lng: base.lng + jitter() };
-}
-
-function mapVerticalToCategory(vertical: string): RadarCategory {
-  const map: Record<string, RadarCategory> = {
-    food: "food", restaurant: "food", cafe: "food",
-    retail: "shops", fashion: "shops",
-    grocery: "grocery", supermarket: "grocery", mini_mart: "grocery", organic_store: "grocery",
-    property: "property", realestate: "property", real_estate: "property",
-    services: "services", beauty: "services", health: "services",
-    cleaning: "services", handyman: "services", laundry: "services", salon: "services",
-    healthcare: "services", electronics: "shops", gifts: "shops", pets: "shops",
-  };
-  return map[vertical?.toLowerCase()] || "shops";
-}
-
-function seedSubcategoryToCategory(sub: string): RadarCategory {
-  const serviceTypes = ["cleaning", "handyman", "laundry", "salon"];
-  const groceryTypes = ["mini_mart", "supermarket", "organic_store"];
-  if (serviceTypes.includes(sub)) return "services";
-  if (groceryTypes.includes(sub)) return "grocery";
-  return "food";
 }
 
 export interface FetchUnifiedPointsOpts {
@@ -109,12 +103,13 @@ export async function fetchUnifiedPoints(opts?: FetchUnifiedPointsOpts): Promise
   const points: RadarPoint[] = [];
   const seenIds = new Set<string>();
 
-  // 1) Normalize storefront_pages
+  // 1) Normalize storefront_pages through CANONICAL taxonomy
   for (const s of storefrontRes.data ?? []) {
     seenIds.add(s.id);
-    const cat = mapVerticalToCategory(s.vertical || s.category);
+    const normVertical = normalizeVertical(s.vertical || s.category);
+    const cat = verticalToRadarCategory(normVertical);
     if (category && category !== "all" && cat !== category) continue;
-    const sub = s.subcategory || s.category || undefined;
+    const sub = normalizeSubcategory(s.subcategory || s.category);
     const lat = Number(s.latitude);
     const lng = Number(s.longitude);
     const dist = userLocation ? haversineKm(userLocation.lat, userLocation.lng, lat, lng) : undefined;
@@ -136,14 +131,16 @@ export async function fetchUnifiedPoints(opts?: FetchUnifiedPointsOpts): Promise
     });
   }
 
-  // 2) Normalize seed_merchants
+  // 2) Normalize seed_merchants through CANONICAL taxonomy
   for (const m of seedRes.data ?? []) {
     if (seenIds.has(m.id)) continue;
     const coords = areaToCoords(m.area);
-    const cat = seedSubcategoryToCategory(m.subcategory);
+    const normVertical = normalizeVertical(m.category);
+    const cat = verticalToRadarCategory(normVertical);
     if (category && category !== "all" && cat !== category) continue;
+    const sub = normalizeSubcategory(m.subcategory);
     const dist = userLocation ? haversineKm(userLocation.lat, userLocation.lng, coords.lat, coords.lng) : undefined;
-    const timeScore = timeRelevanceScore(m.subcategory, timeCtx);
+    const timeScore = timeRelevanceScore(sub, timeCtx);
 
     points.push({
       id: m.id,
@@ -151,7 +148,7 @@ export async function fetchUnifiedPoints(opts?: FetchUnifiedPointsOpts): Promise
       subtitle: `${m.area}, ${m.city}`,
       imageUrl: m.cover_image || m.logo_image,
       category: cat,
-      subcategory: m.subcategory,
+      subcategory: sub,
       lat: coords.lat,
       lng: coords.lng,
       rating: m.rating ? Number(m.rating) : undefined,
