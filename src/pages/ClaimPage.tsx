@@ -5,7 +5,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { verifyClaimToken, executeClaim } from "@/lib/import/claimService";
+import { verifyClaimToken, executeClaim, resolveClaimToken } from "@/lib/import/claimService";
 import { toast } from "sonner";
 import { Store, CheckCircle2, AlertCircle, MapPin } from "lucide-react";
 
