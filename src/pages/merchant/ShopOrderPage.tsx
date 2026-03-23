@@ -44,7 +44,7 @@ export default function ShopOrderPage() {
       // Try by slug first, then by ID
       let query = (supabase as any)
         .from("storefront_pages")
-        .select("id, name, slug, description, logo_url, banner_url, city, address, rating, reviews_count, vertical, currency, country, contact_phone, active, is_published, user_id");
+        .select("id, name, slug, description, logo_url, banner_url, city, address, rating, reviews_count, vertical, currency, country, contact_phone, active, user_id");
 
       const isUuid = shopSlug && /^[0-9a-f-]{36}$/i.test(shopSlug);
       if (isUuid) {
