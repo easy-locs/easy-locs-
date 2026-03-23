@@ -25,7 +25,9 @@ export function V2AppShell({
   callLayer,
   cameraLayer,
 }: Props) {
-  const { mapFullscreen, callFullscreen, cameraMode } = useUiShellStore();
+  const mapFullscreen = useUiShellStore((s) => s.mapFullscreen);
+  const callFullscreen = useUiShellStore((s) => s.callFullscreen);
+  const cameraMode = useUiShellStore((s) => s.cameraMode);
 
   return (
     <div className="relative min-h-[100dvh] flex flex-col bg-background" style={{ zIndex: Z.base }}>

@@ -49,7 +49,8 @@ const ActivitiesMarketplace = () => {
   const [filterCountry, setFilterCountry] = useState("");
   const [activeTab, setActiveTab] = useState("browse");
   const [revenueOpen, setRevenueOpen] = useState(false);
-  const { displayCurrency, setDisplayCurrency } = useAppStore();
+  const displayCurrency = useAppStore((s) => s.displayCurrency);
+  const setDisplayCurrency = useAppStore((s) => s.setDisplayCurrency);
   const [deepLinkedBookingId, setDeepLinkedBookingId] = useState<string | null>(null);
   const [lastAppliedBookingId, setLastAppliedBookingId] = useState<string | null>(null);
 
