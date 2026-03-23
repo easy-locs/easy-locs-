@@ -6496,6 +6496,7 @@ export type Database = {
           order_count: number | null
           org_id: string | null
           owner_user_id: string | null
+          parent_entity_id: string | null
           partner_network_id: string | null
           phone: string | null
           rating: number | null
@@ -6542,6 +6543,7 @@ export type Database = {
           order_count?: number | null
           org_id?: string | null
           owner_user_id?: string | null
+          parent_entity_id?: string | null
           partner_network_id?: string | null
           phone?: string | null
           rating?: number | null
@@ -6588,6 +6590,7 @@ export type Database = {
           order_count?: number | null
           org_id?: string | null
           owner_user_id?: string | null
+          parent_entity_id?: string | null
           partner_network_id?: string | null
           phone?: string | null
           rating?: number | null
@@ -6605,7 +6608,15 @@ export type Database = {
           website?: string | null
           whatsapp?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "entities_parent_entity_id_fkey"
+            columns: ["parent_entity_id"]
+            isOneToOne: false
+            referencedRelation: "entities"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       escrow_payments: {
         Row: {
