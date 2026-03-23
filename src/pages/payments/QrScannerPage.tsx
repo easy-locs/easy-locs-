@@ -553,11 +553,19 @@ export default function QrScannerPage() {
                       {state === "idle" && "Initializing…"}
                       {state === "starting" && "Starting…"}
                       {state === "scanning" && "Point at QR code"}
-                      {state === "paying" && "Processing…"}
+                      {state === "paying" && (payStepLabel || "Processing…")}
                       {state === "stopped" && "Stopped"}
                       {state === "error" && "Error"}
                     </span>
                   </div>
+
+                  {/* Cancel button during paying */}
+                  {state === "paying" && (
+                    <button type="button" onClick={() => { handleReset(); }}
+                      className="mt-2 text-xs font-semibold text-muted-foreground underline active:scale-95 transition-transform">
+                      Cancel
+                    </button>
+                  )}
 
                   {/* Actions */}
                   <div className="mt-4 w-full space-y-2" style={{ maxWidth: 320 }}>
