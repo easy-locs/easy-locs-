@@ -29,7 +29,7 @@ export function generateMerchantSEO(params: {
       "@type": "Restaurant",
       name: params.merchantName,
       address: { "@type": "PostalAddress", addressLocality: params.city },
-      url: `${base}/shop/${params.slug}`,
+      url: `${base}/s/${params.slug}`,
     },
   };
 }

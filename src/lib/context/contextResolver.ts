@@ -33,7 +33,7 @@ export function resolveQrContext(payload: Record<string, string>): ResolvedConte
     case "shop":
       return {
         type: "qr",
-        targetRoute: `/shop/${id}`,
+        targetRoute: `/s/${id}`,
         params: { shop_id: id },
       };
     case "wallet":
