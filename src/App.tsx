@@ -350,6 +350,8 @@ const PayRequestPage = safeLazy(() => import("./pages/deep-link/PayRequestPage")
 const QrScannerPage = safeLazy(() => import("./pages/payments/QrScannerPage"), "QrScannerPage");
 const GuestPaymentSuccess = safeLazy(() => import("./pages/deep-link/GuestPaymentSuccess"), "GuestPaymentSuccess");
 const QrEntryPage = safeLazy(() => import("./pages/QrEntryPage"), "QrEntryPage");
+const QrTrackingPage = safeLazy(() => import("./pages/qr/QrTrackingPage"), "QrTrackingPage");
+const QrPickupPage = safeLazy(() => import("./pages/qr/QrPickupPage"), "QrPickupPage");
 const AppNotFoundPage = safeLazy(() => import("./pages/AppNotFoundPage"), "AppNotFoundPage");
 const QrGeneratePage = safeLazy(() => import("./pages/QrGeneratePage"), "QrGeneratePage");
 const RouteAuditPage = safeLazy(() => import("./pages/RouteAuditPage"), "RouteAuditPage");
@@ -781,6 +783,8 @@ const App = () => (
               <Route path="/qr/pay/:code" element={<QrPayResolver />} />
               <Route path="/qr/:code" element={<QrResolvePage />} />
               <Route path="/qr/entry/:targetCode" element={<QrEntryPage />} />
+              <Route path="/qr/track" element={<QrTrackingPage />} />
+              <Route path="/qr/pickup" element={<QrPickupPage />} />
               <Route path="/claim/:token" element={<ClaimPage />} />
 
               {/* V7 Public pillars — Radar is unified ecosystem */}
