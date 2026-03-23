@@ -1,12 +1,8 @@
 /**
- * MeCommandCenter — Intelligent Merchant OS cockpit.
- * Replaces static CustomerProfilePage with:
- * - Smart header with business status
- * - Real-time KPIs
- * - AI Assistant recommendations
- * - Quick actions (1-tap)
- * - Module cards with live state
+ * MeCommandCenter — Merchant OS cockpit with multi-shop support.
+ * Real-time KPIs, AI assistant, shop switcher, quick actions, module cards.
  */
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useOrbitStore } from "@/stores/orbitStore";
@@ -14,74 +10,70 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useQuery } from "@tanstack/react-query";
+import { loadMyShops, getSmartSuggestions, type ShopContext } from "@/lib/merchant/shop-os-engine";
+import ShopSwitcher from "@/components/merchant/ShopSwitcher";
 import {
-  Store, ShoppingBag, QrCode, Receipt, BarChart3,
-  Wallet, CreditCard, Building2, Home, Users,
-  MessageSquare, Bell, Shield, LogOut, Zap,
-  Clock, TrendingUp, Bot, ChevronRight,
+  Store, QrCode, Receipt, BarChart3,
+  Wallet, Building2,
+  Bot, ChevronRight,
   Power, FileEdit, Megaphone, Eye,
   HelpCircle, Truck, Rocket, DollarSign,
-  User, Settings, KeyRound,
+  User, Settings, Shield, Bell, MessageSquare, LogOut, Clock,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 /* ═══ KPI fetch ═══ */
-function useMerchantKpis(userId: string | undefined) {
+function useMerchantKpis(userId: string | undefined, activeShopId?: string) {
   return useQuery({
-    queryKey: ["me-kpis", userId],
+    queryKey: ["me-kpis", userId, activeShopId],
     enabled: !!userId,
     staleTime: 30_000,
     queryFn: async () => {
       const today = new Date().toISOString().slice(0, 10);
-      const [ordersRes, shopsRes] = await Promise.all([
+      const [ordersRes] = await Promise.all([
         (supabase as any)
           .from("orders")
           .select("id,total_amount,status,created_at")
           .gte("created_at", today + "T00:00:00")
           .limit(500),
-        (supabase as any)
-          .from("storefront_pages")
-          .select("id,name,status,is_published")
-          .eq("owner_id", userId)
-          .limit(20),
       ]);
       const orders = ordersRes?.data ?? [];
-      const shops = shopsRes?.data ?? [];
       const revenue = orders.reduce((s: number, o: any) => s + Number(o.total_amount || 0), 0);
       const activeOrders = orders.filter((o: any) =>
         ["paid", "confirmed", "preparing"].includes(o.status)
       ).length;
-      const liveShops = shops.filter((s: any) => s.is_published).length;
       return {
         ordersToday: orders.length,
         revenue: Number(revenue.toFixed(2)),
         activeOrders,
-        totalShops: shops.length,
-        liveShops,
         conversionRate: orders.length > 0 ? Math.round((activeOrders / Math.max(1, orders.length)) * 100) : 0,
       };
     },
   });
 }
 
-/* ═══ AI Suggestions (static for now, will connect to edge function) ═══ */
-const AI_SUGGESTIONS = [
-  { text: "Activate a promo between 7pm–10pm to boost evening orders", icon: "🎯", action: "promo" },
-  { text: "Your store photos reduce conversion — update them", icon: "📸", action: "photos" },
-  { text: "QR code not visible on your storefront page", icon: "⚠️", action: "qr" },
-  { text: "Underexploited radar zone — boost your visibility", icon: "📡", action: "boost" },
-];
-
 /* ═══ Component ═══ */
 export default function MeCommandCenter() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const profile = useOrbitStore((s) => s.profile);
-  const { data: kpis, isLoading } = useMerchantKpis(user?.id);
+  const [activeShopId, setActiveShopId] = useState<string | undefined>();
+
+  const { data: shops, isLoading: shopsLoading } = useQuery({
+    queryKey: ["my-shops-os", user?.id],
+    enabled: !!user?.id,
+    staleTime: 60_000,
+    queryFn: () => loadMyShops(user!.id),
+  });
+
+  const { data: kpis, isLoading: kpisLoading } = useMerchantKpis(user?.id, activeShopId);
+
+  const activeShop = shops?.find((s) => s.id === activeShopId) ?? shops?.[0];
+  const suggestions = activeShop ? getSmartSuggestions(activeShop) : [];
 
   const initials = (profile?.displayName || user?.email || "U")
     .split(/[\s@]/)
-    .map((w) => w[0]?.toUpperCase())
+    .map((w: string) => w[0]?.toUpperCase())
     .join("")
     .slice(0, 2);
 
@@ -91,7 +83,9 @@ export default function MeCommandCenter() {
     navigate("/login");
   };
 
-  const businessStatus = kpis?.liveShops && kpis.liveShops > 0 ? "live" : kpis?.totalShops ? "paused" : "setup";
+  const liveShops = shops?.filter((s) => s.isPublished).length ?? 0;
+  const totalShops = shops?.length ?? 0;
+  const businessStatus = liveShops > 0 ? "live" : totalShops > 0 ? "paused" : "setup";
   const statusConfig = {
     live: { label: "Live", color: "bg-emerald-500", textColor: "text-emerald-400" },
     paused: { label: "Paused", color: "bg-amber-500", textColor: "text-amber-400" },
@@ -118,11 +112,9 @@ export default function MeCommandCenter() {
                 <span className={cn("w-2 h-2 rounded-full animate-pulse", statusConfig.color)} />
                 {statusConfig.label}
               </span>
-              {profile?.role && (
-                <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-px rounded-full bg-accent/15 text-accent">
-                  {profile.role}
-                </span>
-              )}
+              <span className="text-[9px] text-muted-foreground">
+                {liveShops}/{totalShops} shops live
+              </span>
             </div>
           </div>
           <button
@@ -143,40 +135,62 @@ export default function MeCommandCenter() {
         ].map((kpi) => (
           <div key={kpi.label} className="rounded-2xl border border-border/15 bg-card p-3 text-center">
             <div className="flex justify-center text-primary mb-1">{kpi.icon}</div>
-            <p className="text-lg font-bold text-foreground">{isLoading ? "…" : kpi.value}</p>
+            <p className="text-lg font-bold text-foreground">{kpisLoading ? "…" : kpi.value}</p>
             <p className="text-[9px] text-muted-foreground uppercase tracking-wider">{kpi.label}</p>
           </div>
         ))}
       </div>
 
-      {/* ── C. AI Assistant ── */}
-      <div className="rounded-2xl border border-primary/20 bg-primary/5 p-3 space-y-2">
-        <div className="flex items-center gap-2">
-          <Bot className="w-4 h-4 text-primary" />
-          <span className="text-xs font-bold text-foreground">AI Assistant</span>
-          <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-primary/15 text-primary font-semibold">Smart</span>
-        </div>
-        <div className="space-y-1.5">
-          {AI_SUGGESTIONS.slice(0, 2).map((s, i) => (
-            <div key={i} className="flex items-start gap-2 p-2 rounded-xl bg-background/50 active:scale-[0.98] transition-transform">
-              <span className="text-sm shrink-0">{s.icon}</span>
-              <p className="text-[11px] text-foreground flex-1">{s.text}</p>
-              <button className="text-[9px] font-bold text-primary px-2 py-0.5 rounded-full bg-primary/10 shrink-0">
-                Fix
-              </button>
-            </div>
-          ))}
-        </div>
-      </div>
+      {/* ── C. Multi-Shop Switcher ── */}
+      <ShopSwitcher
+        shops={shops ?? []}
+        activeShopId={activeShop?.id}
+        onSelectShop={setActiveShopId}
+        loading={shopsLoading}
+      />
 
-      {/* ── D. Quick Actions ── */}
+      {/* ── D. AI Assistant ── */}
+      {suggestions.length > 0 && (
+        <div className="rounded-2xl border border-primary/20 bg-primary/5 p-3 space-y-2">
+          <div className="flex items-center gap-2">
+            <Bot className="w-4 h-4 text-primary" />
+            <span className="text-xs font-bold text-foreground">AI Assistant</span>
+            <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-primary/15 text-primary font-semibold">Smart</span>
+          </div>
+          <div className="space-y-1.5">
+            {suggestions.slice(0, 3).map((s, i) => (
+              <div key={i} className="flex items-start gap-2 p-2 rounded-xl bg-background/50 active:scale-[0.98] transition-transform">
+                <span className={cn(
+                  "text-[8px] font-bold px-1.5 py-0.5 rounded-full shrink-0 mt-0.5",
+                  s.severity === "critical" ? "bg-destructive/15 text-destructive" :
+                  s.severity === "warning" ? "bg-amber-500/15 text-amber-400" :
+                  "bg-muted text-muted-foreground"
+                )}>
+                  {s.severity === "critical" ? "!" : s.severity === "warning" ? "⚠" : "ℹ"}
+                </span>
+                <p className="text-[11px] text-foreground flex-1">{s.message}</p>
+                {s.action && (
+                  <button
+                    onClick={() => s.fixRoute && navigate(s.fixRoute)}
+                    className="text-[9px] font-bold text-primary px-2 py-0.5 rounded-full bg-primary/10 shrink-0"
+                  >
+                    Fix
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ── E. Quick Actions ── */}
       <div className="space-y-1.5">
         <p className="text-xs font-bold text-foreground px-1">Quick Actions</p>
         <div className="grid grid-cols-4 gap-2">
           {[
             { icon: <Power className="w-5 h-5" />, label: "Open/Close", path: "/seller/hub", color: "text-emerald-400" },
             { icon: <FileEdit className="w-5 h-5" />, label: "Edit Menu", path: "/seller/products", color: "text-blue-400" },
-            { icon: <QrCode className="w-5 h-5" />, label: "QR Code", path: "/merchant/pos", color: "text-violet-400" },
+            { icon: <QrCode className="w-5 h-5" />, label: "QR Codes", path: activeShop ? `/merchant/qr/${activeShop.id}` : "/my-shops", color: "text-violet-400" },
             { icon: <Megaphone className="w-5 h-5" />, label: "Promo", path: "/merchant/coupons", color: "text-amber-400" },
             { icon: <Eye className="w-5 h-5" />, label: "Live Orders", path: "/merchant/orders", color: "text-primary" },
             { icon: <Bot className="w-5 h-5" />, label: "AI Chat", path: "/orbit", color: "text-cyan-400" },
@@ -195,17 +209,16 @@ export default function MeCommandCenter() {
         </div>
       </div>
 
-      {/* ── E. Module Cards ── */}
+      {/* ── F. Module Cards ── */}
       <div className="space-y-2">
         <p className="text-xs font-bold text-foreground px-1">Business Modules</p>
-
         <ModuleCard
           icon={<Store className="w-5 h-5 text-primary" />}
           title="Storefront"
-          subtitle={`${kpis?.liveShops ?? 0} live of ${kpis?.totalShops ?? 0}`}
-          badge={kpis?.liveShops ? "Active" : "Setup"}
-          badgeColor={kpis?.liveShops ? "emerald" : "amber"}
-          onClick={() => navigate("/seller/hub")}
+          subtitle={`${liveShops} live of ${totalShops}`}
+          badge={liveShops > 0 ? "Active" : "Setup"}
+          badgeColor={liveShops > 0 ? "emerald" : "amber"}
+          onClick={() => navigate("/my-shops")}
         />
         <ModuleCard
           icon={<QrCode className="w-5 h-5 text-violet-400" />}
