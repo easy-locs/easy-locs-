@@ -559,6 +559,95 @@ export default function QrScannerPage() {
                     Done
                   </button>
                 </motion.div>
+              ) : state === "resolved" && pendingPayment ? (
+                <motion.div key="manual-pay" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-[320px] rounded-[28px] border border-border bg-card p-5 shadow-xl">
+                  <div className="space-y-4">
+                    <div>
+                      <p className="text-lg font-black text-foreground">Enter amount</p>
+                      <p className="text-sm text-muted-foreground">{pendingPayment.recipientName}</p>
+                    </div>
+                    <input
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      inputMode="decimal"
+                      value={manualAmount}
+                      onChange={(e) => setManualAmount(e.target.value)}
+                      placeholder="0.00"
+                      className="w-full rounded-2xl border border-border bg-background px-4 py-3 text-lg font-semibold text-foreground outline-none"
+                    />
+                    <div className="grid grid-cols-2 gap-3">
+                      <button
+                        type="button"
+                        onClick={handleReset}
+                        className="rounded-2xl border border-border bg-background px-4 py-3 text-sm font-bold text-foreground"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          const amount = Number(manualAmount);
+                          if (!Number.isFinite(amount) || amount <= 0) {
+                            setE("Missing amount");
+                            return;
+                          }
+                          setError("");
+                          setPayStepLabel("Opening payment…");
+                          setState("paying");
+                          const tPayStart = performance.now();
+                          const result = await openPaymentRef.current({
+                            amount,
+                            currency: pendingPayment.currency,
+                            title: `Pay ${pendingPayment.recipientName}`,
+                            subtitle: pendingPayment.kind === "shop" ? "Merchant payment" : "QR payment",
+                            recipientId: pendingPayment.recipientId,
+                            recipientName: pendingPayment.recipientName,
+                            contextType: pendingPayment.kind === "shop" ? "shop" : "generic",
+                            contextId: pendingPayment.contextId,
+                            metadata: { source: "qr_scan", qr_type: pendingPayment.payload.action, resolved_wallet_id: pendingPayment.walletId, qr_branch: "manual_amount" },
+                          });
+                          const openPaymentMs = performance.now() - tPayStart;
+                          const totalMs = performance.now() - pendingPayment.startedAt;
+                          console.log("[QR] runtime truth", {
+                            scannedPayload: lastText,
+                            resolvedRecipientName: pendingPayment.recipientName,
+                            resolvedWalletId: pendingPayment.walletId,
+                            resolvedAmount: amount,
+                            branchTaken: "manual_amount",
+                            decodeMs: pendingPayment.timings.decodeMs,
+                            recipientResolveMs: pendingPayment.timings.recipientResolveMs,
+                            walletResolveMs: pendingPayment.timings.walletResolveMs,
+                            openPaymentMs,
+                            totalMs,
+                          });
+                          if (result.ok) {
+                            setPendingPayment(null);
+                            setManualAmount("");
+                            setSuccessAmount(`${amount} ${pendingPayment.currency}`);
+                            playPremiumSuccessBeep();
+                            hapticPremiumSuccess();
+                            setShowPremiumSuccess(true);
+                            setTimeout(() => {
+                              setShowPremiumSuccess(false);
+                              setTxId(result.transactionId || "");
+                              setState("paid");
+                            }, 1600);
+                          } else if (result.error !== "Cancelled") {
+                            setError(result.error || "Payment failed");
+                            setState("error");
+                          } else {
+                            setState("idle");
+                            handledRef.current = false;
+                          }
+                        }}
+                        className="rounded-2xl bg-primary px-4 py-3 text-sm font-bold text-primary-foreground"
+                      >
+                        Continue
+                      </button>
+                    </div>
+                  </div>
+                </motion.div>
               ) : state === "resolved" && resolvedPayload ? (
                 <motion.div key="resolved" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
                   <QrResolvedCard payload={resolvedPayload} openPayment={openPayment} currentUserId={user?.id} currentOrgId={orgId} onReset={handleReset} />
