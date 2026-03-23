@@ -72,7 +72,7 @@ export async function fetchUnifiedPoints(opts?: FetchUnifiedPointsOpts): Promise
   // Build queries
   let storefrontQuery = (supabase as any)
     .from("storefront_pages")
-    .select("id, name, slug, vertical, category, subcategory, address, logo_url, banner_url, latitude, longitude, rating, reviews_count, ranking_score")
+    .select("id, name, slug, vertical, category, subcategory, address, logo_url, banner_url, latitude, longitude, rating, reviews_count, ranking_score, city, area")
     .eq("launch_status", "launched")
     .not("latitude", "is", null)
     .not("longitude", "is", null)
