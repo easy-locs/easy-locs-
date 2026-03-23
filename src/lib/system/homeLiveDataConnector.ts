@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 export async function getHomeLiveSnapshot() {
   const [{ data: merchants }, { data: promos }, { data: orders }] = await Promise.all([
     (supabase as any)
-      .from("marketplace_listings")
+      .from("seed_merchants")
       .select("*")
       .eq("category", "food")
       .eq("is_open", true)

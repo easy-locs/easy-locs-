@@ -4,7 +4,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 import { listFavoriteMerchants } from "@/lib/favorites/favorites";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, MapPin } from "lucide-react";
+import { entityUrl } from "@/lib/entity/entity-url";
 
 export default function FavoritesPage() {
   const navigate = useNavigate();
@@ -26,13 +27,33 @@ export default function FavoritesPage() {
     queryKey: ["favorite-merchants-details", merchantIds],
     queryFn: async () => {
       if (!merchantIds.length) return [];
-      const { data, error } = await (supabase as any)
-        .from("marketplace_listings")
-        .select("*")
+      // Try storefront_pages first, then seed_merchants for remaining
+      const { data: sfData } = await (supabase as any)
+        .from("storefront_pages")
+        .select("id, name, slug, vertical, category, subcategory, city, area, rating, reviews_count, banner_url, logo_url")
         .in("id", merchantIds);
 
-      if (error) throw error;
-      return data ?? [];
+      const foundIds = new Set((sfData ?? []).map((r: any) => r.id));
+      const missingIds = merchantIds.filter((id: string) => !foundIds.has(id));
+
+      let seedData: any[] = [];
+      if (missingIds.length > 0) {
+        const { data } = await (supabase as any)
+          .from("seed_merchants")
+          .select("id, name, category, subcategory, city, area, rating, review_count, cover_image")
+          .in("id", missingIds);
+        seedData = data ?? [];
+      }
+
+      return [
+        ...(sfData ?? []).map((r: any) => ({
+          ...r,
+          cover_image: r.banner_url || r.logo_url,
+          review_count: r.reviews_count,
+          _slug: r.slug,
+        })),
+        ...seedData,
+      ];
     },
     enabled: merchantIds.length > 0,
     staleTime: 5000,
@@ -72,7 +93,7 @@ export default function FavoritesPage() {
             {merchants.map((merchant: any) => (
               <button
                 key={merchant.id}
-                onClick={() => navigate(`/food/restaurant/${merchant.id}`)}
+                onClick={() => navigate(entityUrl({ slug: merchant._slug || merchant.slug, id: merchant.id }))}
                 className="w-full rounded-2xl border border-border/20 bg-card overflow-hidden text-left active:scale-[0.99] transition-transform"
               >
                 <div className="h-28 w-full bg-muted/30">
