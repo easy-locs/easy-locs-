@@ -17,13 +17,13 @@ export default function CuisineListPage() {
   const { data: restaurants = [], isLoading } = useQuery({
     queryKey: ["cuisine-restaurants", cuisine],
     queryFn: async () => {
-      const { data } = await (supabase as any)
+      let q = (supabase as any)
         .from("storefront_pages")
-        .select("id, name, slug, city, vertical, subcategory, description, latitude, longitude, rating, display_priority, visibility_mode, route_status")
-        .neq("route_status", "broken")
-        .or("visibility_mode.eq.live,visibility_mode.eq.ready,visibility_mode.eq.coming_soon,visibility_mode.eq.search_only,visibility_mode.is.null")
+        .select("id, name, slug, city, vertical, subcategory, description, latitude, longitude, rating, display_priority")
         .order("display_priority", { ascending: false, nullsFirst: false })
         .limit(30);
+      q = governStorefrontQuery(q, "discover");
+      const { data } = await q;
       const all = (data || []) as any[];
       if (!cuisine) return all;
       const filtered = all.filter((r: any) =>

@@ -33,24 +33,25 @@ export default function FavoritesPage() {
     queryFn: async () => {
       if (!merchantIds.length) return [];
 
-      // Storefront pages with canonical visibility + route enforcement
-      const { data: sfData } = await (supabase as any)
+      // Storefront pages with canonical governance
+      let sfQ = (supabase as any)
         .from("storefront_pages")
-        .select("id, name, slug, vertical, category, subcategory, city, address, region, rating, reviews_count, banner_url, logo_url, visibility_mode, route_status, display_priority")
-        .in("id", merchantIds)
-        .neq("route_status", "broken")
-        .or(ALLOWED_VISIBILITY.map(m => `visibility_mode.eq.${m}`).join(",") + ",visibility_mode.is.null");
+        .select("id, name, slug, vertical, category, subcategory, city, address, region, rating, reviews_count, banner_url, logo_url, display_priority")
+        .in("id", merchantIds);
+      sfQ = governStorefrontQuery(sfQ, "favorites");
+      const { data: sfData } = await sfQ;
 
       const foundIds = new Set((sfData ?? []).map((r: any) => r.id));
       const missingIds = merchantIds.filter((id: string) => !foundIds.has(id));
 
       let seedData: any[] = [];
       if (missingIds.length > 0) {
-        const { data } = await (supabase as any)
+        let seedQ = (supabase as any)
           .from("seed_merchants")
           .select("id, name, category, subcategory, city, area, rating, review_count, cover_image")
-          .in("id", missingIds)
-          .eq("is_active", true); // Seed hygiene: only active
+          .in("id", missingIds);
+        seedQ = governSeedQuery(seedQ);
+        const { data } = await seedQ;
         seedData = data ?? [];
       }
 
