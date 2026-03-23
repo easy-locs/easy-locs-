@@ -163,10 +163,11 @@ export default function OrbitHome() {
     queryKey: ["home-featured-seed"],
     queryFn: async () => {
       const { data } = await (supabase as any)
-        .from("marketplace_listings")
+        .from("seed_merchants")
         .select("*")
         .eq("category", "food")
         .eq("is_featured", true)
+        .eq("is_active", true)
         .order("visibility_score", { ascending: false })
         .limit(8);
       return (data || []).map((r: any) => ({
@@ -182,10 +183,11 @@ export default function OrbitHome() {
     queryKey: ["home-nearby-seed"],
     queryFn: async () => {
       const { data } = await (supabase as any)
-        .from("marketplace_listings")
+        .from("seed_merchants")
         .select("*")
         .eq("category", "food")
         .eq("is_open", true)
+        .eq("is_active", true)
         .order("visibility_score", { ascending: false })
         .limit(10);
       return (data || []).map((r: any) => ({

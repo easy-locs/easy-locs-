@@ -44,7 +44,7 @@ export default function CheckoutPage() {
     setPlacing(true);
 
     try {
-      // Resolve actual seller/owner — try storefront_pages first, then marketplace_listings
+      // Resolve actual seller/owner — try storefront_pages first, then seed_merchants
       const { supabase } = await import("@/integrations/supabase/client");
       let sellerId = user.id;
       const { data: sfData } = await (supabase as any)
@@ -55,13 +55,14 @@ export default function CheckoutPage() {
       if (sfData?.user_id) {
         sellerId = sfData.user_id;
       } else {
-        // Fallback: check marketplace_listings for seeded restaurants
-        const { data: mlData } = await (supabase as any)
-          .from("marketplace_listings")
-          .select("owner_id")
+        // Fallback: check seed_merchants for seeded restaurants
+        const { data: seedData } = await (supabase as any)
+          .from("seed_merchants")
+          .select("id")
           .eq("id", cart.restaurantId)
           .maybeSingle();
-        if (mlData?.owner_id) sellerId = mlData.owner_id;
+        // seed_merchants have no owner — keep current user as seller
+        if (seedData) sellerId = user.id;
       }
 
       const { order, alreadyExists } = await createStorefrontOrder({
