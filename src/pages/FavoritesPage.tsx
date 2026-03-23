@@ -1,6 +1,6 @@
 /**
- * FavoritesPage — Uses canonical visibility rules for displaying favorites.
- * Hidden and broken-route shops are excluded.
+ * FavoritesPage — Uses canonical query-governance for displaying favorites.
+ * Hidden and broken-route shops are excluded via shared governance.
  */
 import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
@@ -8,11 +8,9 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 import { listFavoriteMerchants } from "@/lib/favorites/favorites";
 import { supabase } from "@/integrations/supabase/client";
+import { governStorefrontQuery, governSeedQuery } from "@/lib/discovery/query-governance";
 import { ArrowLeft } from "lucide-react";
 import { entityUrl } from "@/lib/entity/entity-url";
-
-// Canonical visibility modes allowed for favorites
-const ALLOWED_VISIBILITY = ["live", "ready", "coming_soon", "search_only", "map_only"];
 
 export default function FavoritesPage() {
   const navigate = useNavigate();
