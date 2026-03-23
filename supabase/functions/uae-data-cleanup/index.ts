@@ -1,8 +1,3 @@
-/**
- * UAE Data Cleanup — Server-side batch pipeline.
- * Deduplication, taxonomy correction, visibility assignment, cover repair, audit scoring.
- * POST /uae-data-cleanup { action: "run" | "report", limit?: number }
- */
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 
 const corsHeaders = {
@@ -14,20 +9,37 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    console.log("[uae-data-cleanup] Starting...");
+    const supabaseUrl = Deno.env.get("SUPABASE_URL");
+    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    if (!supabaseUrl || !supabaseKey) {
+      console.error("[uae-data-cleanup] Missing env vars");
+      return new Response(JSON.stringify({ success: false, error: "Missing env" }), {
+        status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const sb = createClient(supabaseUrl, supabaseKey);
 
-    const { action = "report", limit = 500 } = await req.json().catch(() => ({}));
+    let body: Record<string, unknown> = {};
+    try { body = await req.json(); } catch { /* empty body ok */ }
+    const action = (body.action as string) || "report";
+    const limit = (body.limit as number) || 500;
 
-    // Fetch all shops
+    console.log(`[uae-data-cleanup] action=${action}, limit=${limit}`);
+
     const { data: shops, error } = await sb
       .from("storefront_pages")
-      .select("id, name, slug, city, country, vertical, subcategory, cluster, visibility_mode, route_status, display_priority, audit_score, readiness_status, banner_url, logo_url, cover_auto_url, cover_owner_url, source_type, source_confidence, latitude, longitude, address, is_claimed, has_photo, has_menu, products_count, rating, reviews_count")
+      .select("id, name, slug, city, country, vertical, subcategory, visibility_mode, route_status, display_priority, audit_score, readiness_status, banner_url, logo_url, cover_auto_url, cover_owner_url, source_type, source_confidence, is_claimed, has_photo, has_menu, products_count, rating, reviews_count, blocking_reason")
       .order("created_at", { ascending: false })
       .limit(limit);
 
-    if (error) throw error;
+    if (error) {
+      console.error("[uae-data-cleanup] Query error:", error.message);
+      throw error;
+    }
+
+    console.log(`[uae-data-cleanup] Fetched ${shops?.length || 0} shops`);
 
     const report = {
       total: shops?.length || 0,
@@ -43,12 +55,12 @@ Deno.serve(async (req) => {
     };
 
     if (!shops?.length) {
-      return new Response(JSON.stringify({ success: true, report }), {
+      return new Response(JSON.stringify({ success: true, action, report }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    // ── STEP 1: Deduplication (name+city) ──
+    // STEP 1: Deduplication (name+city)
     const nameCity = new Map<string, typeof shops>();
     for (const s of shops) {
       const key = `${(s.name || "").toLowerCase().trim()}__${(s.city || "").toLowerCase().trim()}`;
@@ -59,43 +71,40 @@ Deno.serve(async (req) => {
     for (const [, group] of nameCity) {
       if (group.length <= 1) continue;
       report.duplicatesFound += group.length - 1;
-      // Keep best: claimed > highest audit_score > first
-      group.sort((a, b) => {
+      group.sort((a: any, b: any) => {
         if (a.is_claimed !== b.is_claimed) return a.is_claimed ? -1 : 1;
         return (b.audit_score || 0) - (a.audit_score || 0);
       });
       for (let i = 1; i < group.length; i++) {
         if (action === "run") {
-          await sb.from("storefront_pages").update({
+          const { error: upErr } = await sb.from("storefront_pages").update({
             visibility_mode: "hidden",
             readiness_status: "draft",
             blocking_reason: "duplicate",
-          }).eq("id", group[i].id);
+          } as any).eq("id", group[i].id);
+          if (upErr) report.errors.push(`dup ${group[i].id}: ${upErr.message}`);
         }
         report.duplicatesHidden++;
       }
     }
 
-    // ── STEP 2: Taxonomy + Visibility + Priority per shop ──
+    // STEP 2: Per-shop checks
     const VALID_VERTICALS = ["food", "grocery", "shops", "services", "property", "healthcare", "mobility", "experiences"];
     const VALID_VISIBILITY = ["live", "ready", "coming_soon", "search_only", "map_only", "hidden"];
 
     for (const shop of shops) {
       const updates: Record<string, unknown> = {};
 
-      // Taxonomy check
       if (shop.vertical && !VALID_VERTICALS.includes(shop.vertical)) {
         updates.vertical = "services";
         report.taxonomyCorrected++;
       }
 
-      // Visibility mode check
       if (!shop.visibility_mode || !VALID_VISIBILITY.includes(shop.visibility_mode)) {
         updates.visibility_mode = "coming_soon";
         report.visibilityCorrected++;
       }
 
-      // Route status check
       if (!shop.route_status) {
         updates.route_status = shop.slug ? "valid" : "broken";
         report.routeStatusFixed++;
@@ -105,12 +114,10 @@ Deno.serve(async (req) => {
         report.routeStatusFixed++;
       }
 
-      // Cover repair
       if (!shop.banner_url && !shop.cover_auto_url && !shop.cover_owner_url) {
         report.coverRepaired++;
       }
 
-      // Recalculate display_priority
       let priority = 0;
       if (shop.is_claimed) priority += 30;
       if (shop.has_photo) priority += 15;
@@ -123,7 +130,6 @@ Deno.serve(async (req) => {
         report.priorityRecalculated++;
       }
 
-      // Hide broken shops
       if (shop.route_status === "broken" && shop.visibility_mode !== "hidden") {
         updates.visibility_mode = "hidden";
         updates.blocking_reason = "broken_route";
@@ -131,16 +137,19 @@ Deno.serve(async (req) => {
       }
 
       if (action === "run" && Object.keys(updates).length > 0) {
-        const { error: upErr } = await sb.from("storefront_pages").update(updates).eq("id", shop.id);
+        const { error: upErr } = await sb.from("storefront_pages").update(updates as any).eq("id", shop.id);
         if (upErr) report.errors.push(`${shop.id}: ${upErr.message}`);
       }
     }
+
+    console.log(`[uae-data-cleanup] Report:`, JSON.stringify(report));
 
     return new Response(JSON.stringify({ success: true, action, report }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (err) {
-    const msg = err instanceof Error ? err.message : "Unknown error";
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error("[uae-data-cleanup] Fatal:", msg);
     return new Response(JSON.stringify({ success: false, error: msg }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
