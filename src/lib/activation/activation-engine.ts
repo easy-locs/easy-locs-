@@ -176,7 +176,7 @@ function getAllowedActions(
 function buildChecklist(
   shop: any,
   audit: ShopAuditResult,
-  catalog: CatalogAuditResult,
+  catalog: MenuAuditResult,
   sourceType: SourceType,
   isClaimed: boolean
 ): ActivationCheckItem[] {
