@@ -94,7 +94,7 @@ function resolveRoute(t: ResolvedQrTarget): string {
       // Front desk — opens ordering with desk context
       qs.set("mode", "desk");
       qs.set("qr", t.targetCode);
-      return `/order/${encodeURIComponent(slug)}?${qs}`;
+      return `/menu/${encodeURIComponent(slug)}?${qs}`;
 
     case "review":
       // Review page
