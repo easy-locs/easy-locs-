@@ -6474,6 +6474,7 @@ export type Database = {
           boost_tier: string | null
           boost_until: string | null
           cap_booking: boolean | null
+          cap_call: boolean | null
           cap_chat: boolean | null
           cap_delivery: boolean | null
           cap_qr: boolean | null
@@ -6481,11 +6482,16 @@ export type Database = {
           cap_wallet: boolean | null
           city: string | null
           city_code: string | null
+          city_name: string | null
           cluster: string | null
           country_code: string | null
+          country_name: string | null
           coverage_type: string | null
           created_at: string
+          currency: string | null
+          default_language: string | null
           district_code: string | null
+          district_name: string | null
           email: string | null
           entity_type: Database["public"]["Enums"]["entity_type"]
           id: string
@@ -6493,6 +6499,7 @@ export type Database = {
           logo_url: string | null
           longitude: number | null
           name: string
+          opening_hours: Json | null
           order_count: number | null
           org_id: string | null
           owner_user_id: string | null
@@ -6500,14 +6507,18 @@ export type Database = {
           partner_network_id: string | null
           phone: string | null
           rating: number | null
+          region_code: string | null
+          region_name: string | null
           review_count: number | null
           seed_merchant_id: string | null
           service_modes: string[] | null
           slug: string | null
+          social_links: Json | null
           status: string
           storefront_page_id: string | null
           subcategory: string | null
           tags: string[] | null
+          timezone: string | null
           updated_at: string
           verified: boolean | null
           vertical: string | null
@@ -6521,6 +6532,7 @@ export type Database = {
           boost_tier?: string | null
           boost_until?: string | null
           cap_booking?: boolean | null
+          cap_call?: boolean | null
           cap_chat?: boolean | null
           cap_delivery?: boolean | null
           cap_qr?: boolean | null
@@ -6528,11 +6540,16 @@ export type Database = {
           cap_wallet?: boolean | null
           city?: string | null
           city_code?: string | null
+          city_name?: string | null
           cluster?: string | null
           country_code?: string | null
+          country_name?: string | null
           coverage_type?: string | null
           created_at?: string
+          currency?: string | null
+          default_language?: string | null
           district_code?: string | null
+          district_name?: string | null
           email?: string | null
           entity_type?: Database["public"]["Enums"]["entity_type"]
           id?: string
@@ -6540,6 +6557,7 @@ export type Database = {
           logo_url?: string | null
           longitude?: number | null
           name: string
+          opening_hours?: Json | null
           order_count?: number | null
           org_id?: string | null
           owner_user_id?: string | null
@@ -6547,14 +6565,18 @@ export type Database = {
           partner_network_id?: string | null
           phone?: string | null
           rating?: number | null
+          region_code?: string | null
+          region_name?: string | null
           review_count?: number | null
           seed_merchant_id?: string | null
           service_modes?: string[] | null
           slug?: string | null
+          social_links?: Json | null
           status?: string
           storefront_page_id?: string | null
           subcategory?: string | null
           tags?: string[] | null
+          timezone?: string | null
           updated_at?: string
           verified?: boolean | null
           vertical?: string | null
@@ -6568,6 +6590,7 @@ export type Database = {
           boost_tier?: string | null
           boost_until?: string | null
           cap_booking?: boolean | null
+          cap_call?: boolean | null
           cap_chat?: boolean | null
           cap_delivery?: boolean | null
           cap_qr?: boolean | null
@@ -6575,11 +6598,16 @@ export type Database = {
           cap_wallet?: boolean | null
           city?: string | null
           city_code?: string | null
+          city_name?: string | null
           cluster?: string | null
           country_code?: string | null
+          country_name?: string | null
           coverage_type?: string | null
           created_at?: string
+          currency?: string | null
+          default_language?: string | null
           district_code?: string | null
+          district_name?: string | null
           email?: string | null
           entity_type?: Database["public"]["Enums"]["entity_type"]
           id?: string
@@ -6587,6 +6615,7 @@ export type Database = {
           logo_url?: string | null
           longitude?: number | null
           name?: string
+          opening_hours?: Json | null
           order_count?: number | null
           org_id?: string | null
           owner_user_id?: string | null
@@ -6594,14 +6623,18 @@ export type Database = {
           partner_network_id?: string | null
           phone?: string | null
           rating?: number | null
+          region_code?: string | null
+          region_name?: string | null
           review_count?: number | null
           seed_merchant_id?: string | null
           service_modes?: string[] | null
           slug?: string | null
+          social_links?: Json | null
           status?: string
           storefront_page_id?: string | null
           subcategory?: string | null
           tags?: string[] | null
+          timezone?: string | null
           updated_at?: string
           verified?: boolean | null
           vertical?: string | null
