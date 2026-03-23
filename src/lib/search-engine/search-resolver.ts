@@ -83,9 +83,11 @@ export async function resolveSearch(
   if (q) {
     seedPromise = db
       .from("seed_merchants")
-      .select("id, name, category, subcategory, city, area, rating, review_count, cover_image, is_open, latitude, longitude")
+      .select("id, name, category, subcategory, city, area, rating, review_count, cover_image, is_open, latitude, longitude, visibility_score")
       .eq("is_active", true)
+      .not("is_flagged", "eq", true)
       .or(`name.ilike.%${q}%,subcategory.ilike.%${q}%,area.ilike.%${q}%`)
+      .order("visibility_score", { ascending: false })
       .limit(20);
   }
 
