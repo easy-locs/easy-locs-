@@ -120,7 +120,7 @@ export async function fetchUnifiedPoints(opts?: FetchUnifiedPointsOpts): Promise
     points.push({
       id: s.id,
       title: s.name || "Business",
-      subtitle: s.address || s.category || undefined,
+      subtitle: s.area || s.address || s.category || undefined,
       imageUrl: s.banner_url || s.logo_url,
       category: cat,
       subcategory: sub,
@@ -131,6 +131,8 @@ export async function fetchUnifiedPoints(opts?: FetchUnifiedPointsOpts): Promise
       distanceKm: dist,
       timeScore,
       slug: s.slug || null,
+      district: s.area || null,
+      cityName: s.city || null,
     });
   }
 
