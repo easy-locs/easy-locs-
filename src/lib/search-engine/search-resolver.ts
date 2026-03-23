@@ -140,11 +140,12 @@ export async function resolveSearch(
 }
 
 function mapStorefront(row: any, state: SearchState): SearchResult {
+  const district = row.region || row.address || row.city;
   return {
     id: row.id,
     type: "shop",
     title: row.name,
-    subtitle: [row.subcategory, row.area || row.city].filter(Boolean).join(" · "),
+    subtitle: [row.subcategory, district].filter(Boolean).join(" · "),
     imageUrl: row.banner_url || row.logo_url,
     lat: row.latitude,
     lng: row.longitude,
@@ -152,7 +153,7 @@ function mapStorefront(row: any, state: SearchState): SearchResult {
     reviewsCount: row.reviews_count,
     vertical: row.vertical,
     subcategory: row.subcategory,
-    district: row.area,
+    district,
     city: row.city,
     slug: row.slug,
     isOpen: row.is_open,
