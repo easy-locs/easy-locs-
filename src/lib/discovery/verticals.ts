@@ -170,10 +170,10 @@ export const VERTICALS: VerticalDef[] = [
       { value: "phones", label: "Phones", icon: "📱" },
       { value: "laptops", label: "Laptops", icon: "💻" },
       { value: "gaming", label: "Gaming", icon: "🎮" },
-      { value: "accessories", label: "Accessories", icon: "🎧" },
+      { value: "tech_accessories", label: "Accessories", icon: "🎧" },
       { value: "home_appliances", label: "Appliances", icon: "🔌" },
       { value: "tablets", label: "Tablets", icon: "📱" },
-      { value: "personal_care", label: "Personal Care", icon: "💇" },
+      { value: "smart_home", label: "Smart Home", icon: "🏠" },
     ],
   },
   {
