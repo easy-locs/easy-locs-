@@ -12,6 +12,8 @@ export interface CanonicalSubcategory {
   value: string;
   label: string;
   emoji: string;
+  /** Alias for emoji — backward compat with old SubcategoryDef.icon */
+  icon: string;
   /** Optional cluster for UI grouping (e.g. "Cuisine", "Drinks") */
   cluster?: string;
 }
