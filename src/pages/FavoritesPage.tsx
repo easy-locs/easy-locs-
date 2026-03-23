@@ -50,7 +50,7 @@ export default function FavoritesPage() {
           .from("seed_merchants")
           .select("id, name, category, subcategory, city, area, rating, review_count, cover_image")
           .in("id", missingIds);
-        seedQ = governSeedQuery(seedQ);
+        seedQ = governSeedQuery(seedQ, "favorites");
         const { data } = await seedQ;
         seedData = data ?? [];
       }

@@ -13,13 +13,13 @@ export async function runUnifiedSearch(query: string) {
     .limit(20);
   sfQ = governStorefrontQuery(sfQ, "search");
 
-  // Seed query — governed
+  // Seed query — governed (uses DB-native visibility_mode, route_status, display_priority)
   let seedQ = (supabase as any)
     .from("seed_merchants")
-    .select("id, name, category, subcategory, city, area, rating, review_count, cover_image, is_open, visibility_score")
+    .select("id, name, category, subcategory, city, area, rating, review_count, cover_image, is_open, visibility_score, display_priority")
     .or(`name.ilike.%${q}%,subcategory.ilike.%${q}%,area.ilike.%${q}%`)
     .limit(20);
-  seedQ = governSeedQuery(seedQ);
+  seedQ = governSeedQuery(seedQ, "search");
 
   const [sfRes, seedRes, { data: products }] = await Promise.all([
     sfQ,

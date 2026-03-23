@@ -25,12 +25,12 @@ export async function getHomeEngineSnapshot(params?: {
 }) {
   const limit = params?.limit ?? 12;
 
-  // Governed seed query — same rules as canonical pipeline
+  // Governed seed query — DB-native visibility_mode, route_status, display_priority
   let merchantQuery = (supabase as any)
     .from("seed_merchants")
     .select("*")
     .limit(120);
-  merchantQuery = governSeedQuery(merchantQuery);
+  merchantQuery = governSeedQuery(merchantQuery, "home");
 
   if (params?.category) {
     merchantQuery = merchantQuery.eq("category", params.category);
