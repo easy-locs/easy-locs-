@@ -40,6 +40,7 @@ const FOOD_SUBCATEGORIES: CanonicalSubcategory[] = [
   { value: "wraps", label: "Wraps & Shawarma", emoji: "🌯", icon: "🌯", cluster: "Quick Bites" },
   { value: "shawarma", label: "Shawarma", emoji: "🌯", icon: "🌯", cluster: "Quick Bites" },
 
+  { value: "pasta", label: "Pasta", emoji: "🍝", icon: "🍝", cluster: "Cuisine" },
   { value: "italian", label: "Italian", emoji: "🍝", icon: "🍝", cluster: "Cuisine" },
   { value: "japanese", label: "Japanese", emoji: "🍣", icon: "🍣", cluster: "Cuisine" },
   { value: "sushi", label: "Sushi", emoji: "🍣", icon: "🍣", cluster: "Cuisine" },
