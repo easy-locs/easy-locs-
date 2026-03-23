@@ -15,14 +15,12 @@ import "@/styles/radar-pro.css";
 
 const UnifiedMap = lazy(() => import("@/components/map/UnifiedMap"));
 
-const CATEGORIES: { cat: RadarCategory; icon: string; label: string }[] = [
-  { cat: "all", icon: "✨", label: "All" },
-  { cat: "food", icon: "🍕", label: "Food" },
-  { cat: "grocery", icon: "🛒", label: "Grocery" },
-  { cat: "shops", icon: "🛍️", label: "Shops" },
-  { cat: "services", icon: "🔧", label: "Services" },
-  { cat: "property", icon: "🏠", label: "Property" },
-];
+// Categories now come from canonical taxonomy
+const CATEGORIES = RADAR_CATEGORIES.map((c) => ({
+  cat: c.value as RadarCategory,
+  icon: c.emoji,
+  label: c.label,
+}));
 
 const SORT_MODES: { key: SortMode; label: string }[] = [
   { key: "smart", label: "🧠 Smart" },
