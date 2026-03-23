@@ -1,13 +1,14 @@
 /**
  * SmartHome — Production-clean super-app home with data-driven sections.
  * Careem-style category grid with 3D icons + geo-aware delivery area.
+ * Uses canonical discovery pipeline for all sections.
  */
-import { memo, useMemo, useState, useEffect } from "react";
+import { memo, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Search, MapPin, Bell, Wallet, QrCode, Send, ChevronRight, Star, Navigation } from "lucide-react";
 import { useLocationStore } from "@/stores/locationStore";
 import { useOrbitEngine } from "@/stores/orbit-engine";
-import { supabase } from "@/integrations/supabase/client";
+import { useHomeSections } from "@/hooks/useHomeSections";
 import { getSmartCategories, getSmartHero, getTimeGreeting, getTimeSlot, type SmartCategory } from "@/lib/smart-home-engine";
 import { motion } from "framer-motion";
 
@@ -45,26 +46,7 @@ const CATEGORY_IMAGES: Record<string, string> = {
   pets: petsImg, flowers: flowersImg,
 };
 
-interface ShopPreview {
-  id: string;
-  name: string;
-  logo_url: string | null;
-  banner_url: string | null;
-  vertical: string | null;
-  address: string | null;
-  slug: string;
-  ranking_score?: number;
-  rating?: number;
-  reviews_count?: number;
-  created_at?: string;
-}
-
-interface HomeSections {
-  trending: ShopPreview[];
-  bestRated: ShopPreview[];
-  newest: ShopPreview[];
-  nearYou: ShopPreview[];
-}
+type HomeShopPreview = ReturnType<typeof useHomeSections>["data"] extends infer T ? T extends { trending: (infer U)[] } ? U : never : never;
 
 const SECTION_DEFS = [
   { key: "trending", title: "Trending", icon: "🔥" },
@@ -146,13 +128,11 @@ function CategoryCard({ cat, index }: { cat: SmartCategory; index: number }) {
         className="group flex flex-col items-center justify-between rounded-2xl active:scale-[0.92] transition-all duration-150 relative overflow-hidden w-[80px] h-[100px] p-1.5 border border-border/8"
         style={{ background: "hsl(var(--muted) / 0.35)" }}
       >
-        {/* Badge slot */}
         {cat.subtitle && (
           <span className="absolute top-0.5 right-0.5 text-[7px] font-bold px-1 py-0.5 rounded-md bg-primary/10 text-primary leading-none z-10">
             {cat.subtitle}
           </span>
         )}
-        {/* Image */}
         <div className="flex-1 flex items-center justify-center w-full">
           {imgSrc ? (
             <img src={imgSrc} alt={cat.label} className="w-14 h-14 object-contain drop-shadow-md" loading="lazy" />
@@ -160,7 +140,6 @@ function CategoryCard({ cat, index }: { cat: SmartCategory; index: number }) {
             <span className="text-3xl">{cat.icon}</span>
           )}
         </div>
-        {/* Label */}
         <p className="text-[10px] font-bold text-foreground leading-tight text-center truncate w-full mt-0.5">{cat.label}</p>
       </Link>
     </motion.div>
@@ -197,7 +176,7 @@ function SmartHeroCard({ timezone, city }: { timezone?: string; city: string | n
 }
 
 /* ═══ Data-Driven Section ═══ */
-function DynamicSection({ section, shops, index }: { section: { key: string; title: string; icon: string }; shops: ShopPreview[]; index: number }) {
+function DynamicSection({ section, shops, index }: { section: { key: string; title: string; icon: string }; shops: any[]; index: number }) {
   if (shops.length === 0) return null;
   return (
     <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 + index * 0.04 }} className="mb-3">
@@ -210,10 +189,10 @@ function DynamicSection({ section, shops, index }: { section: { key: string; tit
         </Link>
       </div>
       <div className="flex gap-2.5 overflow-x-auto pb-1 scrollbar-none">
-        {shops.map((shop) => (
+        {shops.map((shop: any) => (
           <Link
             key={shop.id}
-            to={shop.slug ? `/s/${shop.slug}` : `/s/${shop.id}`}
+            to={`/s/${shop.slug}`}
             className="shrink-0 w-[148px] rounded-2xl border border-border/15 bg-card/50 overflow-hidden active:scale-[0.96] transition-transform"
           >
             <div className="h-[92px] bg-muted/10 flex items-center justify-center relative overflow-hidden">
@@ -227,7 +206,7 @@ function DynamicSection({ section, shops, index }: { section: { key: string; tit
               <p className="text-[11px] font-bold text-foreground truncate">{shop.name}</p>
               <div className="flex items-center gap-1">
                 {shop.rating != null && shop.rating > 0 && (
-                  <span className="text-[9px] text-amber-500 font-semibold">★ {shop.rating.toFixed(1)}</span>
+                  <span className="text-[9px] text-amber-500 font-semibold">★ {Number(shop.rating).toFixed(1)}</span>
                 )}
                 <p className="text-[9px] text-muted-foreground truncate">{shop.address || shop.vertical || "Dubai"}</p>
               </div>
@@ -244,7 +223,10 @@ export default function SmartHome() {
   const navigate = useNavigate();
   const currentLocation = useLocationStore((s) => s.currentLocation);
   const isFallback = useLocationStore((s) => s.isFallback);
-  const [sections, setSections] = useState<HomeSections>({ trending: [], bestRated: [], newest: [], nearYou: [] });
+
+  // Canonical pipeline-backed sections
+  const { data: sections } = useHomeSections();
+  const safeSections = sections ?? { trending: [], bestRated: [], newest: [], nearYou: [] };
 
   const city = useMemo(() => {
     try {
@@ -290,50 +272,6 @@ export default function SmartHome() {
   const categories = useMemo(() => getSmartCategories(timezone, countryCode), [timezone, countryCode]);
   const greeting = useMemo(() => getTimeGreeting(timezone), [timezone]);
 
-  // Fetch real data-driven sections
-  useEffect(() => {
-    (async () => {
-      try {
-        const baseSelect = "id, name, logo_url, banner_url, vertical, category, subcategory, address, slug, ranking_score, rating, reviews_count, created_at";
-        // Canonical visibility enforcement: exclude hidden + broken routes
-        const homeVisibility = "visibility_mode.eq.live,visibility_mode.eq.ready,visibility_mode.eq.coming_soon,visibility_mode.is.null";
-        const buildQ = (q: any) => q.neq("route_status", "broken").or(homeVisibility);
-        const [trendingRes, bestRatedRes, newestRes, nearYouRes] = await Promise.all([
-          buildQ((supabase as any).from("storefront_pages").select(baseSelect).eq("launch_status", "launched").not("latitude", "is", null)).order("ranking_score", { ascending: false }).limit(10),
-          buildQ((supabase as any).from("storefront_pages").select(baseSelect).eq("launch_status", "launched").not("latitude", "is", null).gt("reviews_count", 0)).order("rating", { ascending: false }).limit(10),
-          buildQ((supabase as any).from("storefront_pages").select(baseSelect).eq("launch_status", "launched").not("latitude", "is", null)).order("created_at", { ascending: false }).limit(10),
-          buildQ((supabase as any).from("storefront_pages").select(baseSelect + ", latitude, longitude").eq("launch_status", "launched").not("latitude", "is", null).not("longitude", "is", null)).limit(30),
-        ]);
-
-        let nearYouSorted = (nearYouRes.data ?? []) as any[];
-        if (currentLocation && !isFallback) {
-          nearYouSorted = nearYouSorted
-            .map((s: any) => ({
-              ...s,
-              _dist: Math.sqrt(
-                Math.pow((s.latitude - currentLocation.lat) * 111, 2) +
-                Math.pow((s.longitude - currentLocation.lng) * 111 * Math.cos(currentLocation.lat * Math.PI / 180), 2)
-              ),
-            }))
-            .sort((a: any, b: any) => a._dist - b._dist)
-            .slice(0, 8);
-        } else {
-          nearYouSorted = nearYouSorted.slice(0, 8);
-        }
-
-        setSections({
-          trending: (trendingRes.data ?? []) as ShopPreview[],
-          bestRated: (bestRatedRes.data ?? []) as ShopPreview[],
-          newest: (newestRes.data ?? []) as ShopPreview[],
-          nearYou: nearYouSorted as ShopPreview[],
-        });
-      } catch (err) {
-        console.error("[SmartHome] Failed to load sections:", err);
-      }
-    })();
-  }, [currentLocation?.lat, isFallback]);
-
-  // Two-row horizontal scroll grid — Careem style
   const half = Math.ceil(categories.length / 2);
   const row1 = categories.slice(0, half);
   const row2 = categories.slice(half);
@@ -343,7 +281,6 @@ export default function SmartHome() {
       <CompactHeader city={city} greeting={greeting} onSearch={() => navigate("/radar")} />
       <QuickActions />
 
-      {/* Category grid — 2-row horizontal scroll */}
       <div className="overflow-x-auto scrollbar-none mb-3 -mx-1 px-1 touch-pan-x">
         <div className="flex flex-col gap-1.5" style={{ width: "max-content" }}>
           <div className="flex gap-1.5">
@@ -357,7 +294,7 @@ export default function SmartHome() {
 
       <SmartHeroCard timezone={timezone} city={city} />
       {SECTION_DEFS.map((sec, i) => (
-        <DynamicSection key={sec.key} section={sec} shops={sections[sec.key as keyof HomeSections]} index={i} />
+        <DynamicSection key={sec.key} section={sec} shops={safeSections[sec.key as keyof typeof safeSections]} index={i} />
       ))}
     </div>
   );

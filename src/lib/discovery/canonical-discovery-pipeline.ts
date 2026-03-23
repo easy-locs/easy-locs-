@@ -168,22 +168,32 @@ export async function fetchCanonicalDiscovery(opts: CanonicalDiscoveryOpts): Pro
     storefrontQuery = storefrontQuery.ilike("name", `%${searchQuery.trim()}%`);
   }
 
-  // Seed merchants query (always included for discovery breadth)
-  let seedQuery = (supabase as any)
-    .from("seed_merchants")
-    .select("id, name, category, subcategory, city, area, rating, review_count, cover_image, logo_image, visibility_score, is_open, is_featured, promo_active, delivery_time_min, delivery_time_max")
-    .eq("is_active", true)
-    .order("visibility_score", { ascending: false })
-    .limit(limit);
+  // ── SEED MERCHANT GOVERNANCE ──
+  // seed_merchants lacks visibility_mode/route_status/display_priority.
+  // We treat all active seeds as "coming_soon" visibility.
+  // Surfaces that do NOT include "coming_soon" will exclude seeds.
+  const seedAllowed = allowedModes.includes("coming_soon");
 
-  if (subcategory) {
-    seedQuery = seedQuery.eq("subcategory", subcategory);
-  }
-  if (searchQuery?.trim()) {
-    seedQuery = seedQuery.ilike("name", `%${searchQuery.trim()}%`);
-  }
+  // Build seed query (but only execute if allowed)
+  const seedQueryPromise = seedAllowed ? (() => {
+    let seedQuery = (supabase as any)
+      .from("seed_merchants")
+      .select("id, name, category, subcategory, city, area, rating, review_count, cover_image, logo_image, visibility_score, is_open, is_featured, promo_active, delivery_time_min, delivery_time_max")
+      .eq("is_active", true)
+      .order("visibility_score", { ascending: false })
+      .limit(limit);
 
-  const [storefrontRes, seedRes] = await Promise.all([storefrontQuery, seedQuery]);
+    if (subcategory) {
+      seedQuery = seedQuery.eq("subcategory", subcategory);
+    }
+    if (searchQuery?.trim()) {
+      seedQuery = seedQuery.ilike("name", `%${searchQuery.trim()}%`);
+    }
+    return seedQuery;
+  })() : Promise.resolve({ data: [] });
+
+  const [storefrontRes, seedRes] = await Promise.all([storefrontQuery, seedQueryPromise]);
+  let seedResults: any[] = seedRes.data ?? [];
 
   const points: RadarPoint[] = [];
   const seenIds = new Set<string>();
@@ -223,8 +233,9 @@ export async function fetchCanonicalDiscovery(opts: CanonicalDiscoveryOpts): Pro
     });
   }
 
-  // ── Normalize seed_merchants ──
-  for (const m of seedRes.data ?? []) {
+  // ── Normalize seed_merchants (governed: treated as coming_soon, no route issues) ──
+  // display_priority projection: visibility_score / 100 * 50 (seeds rank below claimed storefronts)
+  for (const m of seedResults) {
     if (seenIds.has(m.id)) continue;
     const coords = areaToCoords(m.area);
     const normVertical = normalizeVertical(m.category);
@@ -237,6 +248,8 @@ export async function fetchCanonicalDiscovery(opts: CanonicalDiscoveryOpts): Pro
     if (radiusKm && dist !== undefined && dist > radiusKm) continue;
 
     const timeScore = timeRelevanceScore(sub, timeCtx);
+    // Projected display_priority: seeds rank lower than claimed storefronts
+    const seedPriority = Math.round((m.visibility_score ?? 50) * 0.5);
 
     points.push({
       id: m.id,
@@ -249,7 +262,7 @@ export async function fetchCanonicalDiscovery(opts: CanonicalDiscoveryOpts): Pro
       lng: coords.lng,
       rating: m.rating ? Number(m.rating) : undefined,
       reviewsCount: m.review_count ?? undefined,
-      isSponsored: m.is_featured || m.promo_active || (m.visibility_score ?? 0) > 80,
+      isSponsored: m.is_featured || m.promo_active || seedPriority > 40,
       distanceKm: dist,
       timeScore,
       district: m.area || null,
