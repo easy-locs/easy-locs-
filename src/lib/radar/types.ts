@@ -30,6 +30,8 @@ export type RadarPoint = {
   reviewsCount?: number | null;
   isSponsored?: boolean;
   distanceKm?: number;
+  /** Time-based relevance score (0 = neutral, 1 = boosted) */
+  timeScore?: number;
 };
 
 export type UserGeoPoint = {
