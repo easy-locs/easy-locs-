@@ -1,17 +1,15 @@
 /**
  * SmartHome — Production-clean super-app home with data-driven sections.
- * All sections pull from real DB fields: ranking_score, rating, created_at, active status.
- * No random shuffling. No fake data distribution.
+ * Careem-style category grid with 3D icons + geo-aware delivery area.
  */
 import { memo, useMemo, useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Search, MapPin, Bell, Wallet, QrCode, Send, ChevronRight, Star } from "lucide-react";
+import { Search, MapPin, Bell, Wallet, QrCode, Send, ChevronRight, Star, Navigation } from "lucide-react";
 import { useLocationStore } from "@/stores/locationStore";
 import { useOrbitEngine } from "@/stores/orbit-engine";
 import { supabase } from "@/integrations/supabase/client";
 import { getSmartCategories, getSmartHero, getTimeGreeting, getTimeSlot, type SmartCategory } from "@/lib/smart-home-engine";
 import { motion } from "framer-motion";
-
 
 import foodImg from "@/assets/categories/food.png";
 import groceryImg from "@/assets/categories/grocery.png";
@@ -30,19 +28,28 @@ import mobilityImg from "@/assets/categories/mobility.png";
 import rentalsImg from "@/assets/categories/rentals.png";
 import staysImg from "@/assets/categories/stays.png";
 import travelImg from "@/assets/categories/travel.png";
+import healthcareImg from "@/assets/categories/healthcare.png";
+import electronicsImg from "@/assets/categories/electronics.png";
+import giftsImg from "@/assets/categories/gifts.png";
+import pharmacyImg from "@/assets/categories/pharmacy.png";
+import petsImg from "@/assets/categories/pets.png";
+import flowersImg from "@/assets/categories/flowers.png";
 
 const CATEGORY_IMAGES: Record<string, string> = {
   food: foodImg, grocery: groceryImg, shops: shopsImg, services: servicesImg,
   taxi: taxiImg, delivery: deliveryImg, property: propertyImg, wallet: walletImg,
   coffee: coffeeImg, bakery: bakeryImg, dineout: dineoutImg, beauty: beautyImg,
   concierge: conciergeImg, mobility: mobilityImg, rentals: rentalsImg,
-  stays: staysImg, travel: travelImg,
+  stays: staysImg, travel: travelImg, healthcare: healthcareImg,
+  electronics: electronicsImg, gifts: giftsImg, pharmacy: pharmacyImg,
+  pets: petsImg, flowers: flowersImg,
 };
 
 interface ShopPreview {
   id: string;
   name: string;
   logo_url: string | null;
+  banner_url: string | null;
   vertical: string | null;
   address: string | null;
   slug: string;
@@ -76,13 +83,13 @@ const CompactHeader = memo(({ city, greeting, onSearch }: { city: string | null;
   };
   return (
     <div className="flex items-center gap-2 mb-2">
-      <button onClick={handleLocationTap} className="flex items-center gap-1.5 min-w-0 shrink text-left">
+      <button onClick={handleLocationTap} className="flex items-center gap-1.5 min-w-0 shrink text-left active:scale-95 transition-transform">
         <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-          <MapPin className="h-3.5 w-3.5 text-primary" />
+          {city ? <MapPin className="h-3.5 w-3.5 text-primary" /> : <Navigation className="h-3.5 w-3.5 text-primary animate-pulse" />}
         </div>
         <div className="min-w-0">
           <p className="text-[10px] text-muted-foreground leading-none">{greeting}</p>
-          <p className="text-xs font-bold text-foreground truncate">{city || "📍 Géolocalisation"}</p>
+          <p className="text-xs font-bold text-foreground truncate">{city || "📍 Set location"}</p>
         </div>
       </button>
       <button
@@ -124,32 +131,37 @@ const QuickActions = memo(() => (
   </div>
 ));
 
-/* ═══ Category Card ═══ */
+/* ═══ Category Card — Careem-style with 3D image ═══ */
 function CategoryCard({ cat, index }: { cat: SmartCategory; index: number }) {
   const imgSrc = cat.image ? CATEGORY_IMAGES[cat.image] : null;
   return (
     <motion.div
-      initial={{ opacity: 0, y: 8 }}
+      initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.02 * index, duration: 0.2 }}
+      transition={{ delay: 0.015 * index, duration: 0.2 }}
       className="shrink-0"
     >
       <Link
         to={cat.route}
-        className="group flex flex-col items-center gap-1 rounded-2xl p-2 active:scale-[0.93] transition-all duration-150 border border-border/10 relative overflow-hidden w-[76px] h-[96px]"
-        style={{ background: `color-mix(in srgb, ${cat.color} 6%, hsl(var(--card)))` }}
+        className="group flex flex-col items-center justify-between rounded-2xl active:scale-[0.92] transition-all duration-150 relative overflow-hidden w-[80px] h-[100px] p-1.5 border border-border/8"
+        style={{ background: "hsl(var(--muted) / 0.35)" }}
       >
-        <div className="w-14 h-14 rounded-xl flex items-center justify-center overflow-hidden relative"
-          style={{ background: `color-mix(in srgb, ${cat.color} 8%, transparent)` }}
-        >
+        {/* Badge slot */}
+        {cat.subtitle && (
+          <span className="absolute top-0.5 right-0.5 text-[7px] font-bold px-1 py-0.5 rounded-md bg-primary/10 text-primary leading-none z-10">
+            {cat.subtitle}
+          </span>
+        )}
+        {/* Image */}
+        <div className="flex-1 flex items-center justify-center w-full">
           {imgSrc ? (
-            <img src={imgSrc} alt={cat.label} className="w-12 h-12 object-contain drop-shadow-sm" loading="lazy" />
+            <img src={imgSrc} alt={cat.label} className="w-14 h-14 object-contain drop-shadow-md" loading="lazy" />
           ) : (
-            <span className="text-2xl">{cat.icon}</span>
+            <span className="text-3xl">{cat.icon}</span>
           )}
         </div>
-        <p className="text-[10px] font-semibold text-foreground leading-tight text-center truncate w-full">{cat.label}</p>
-        {cat.subtitle && <p className="text-[8px] text-muted-foreground leading-none truncate w-full text-center">{cat.subtitle}</p>}
+        {/* Label */}
+        <p className="text-[10px] font-bold text-foreground leading-tight text-center truncate w-full mt-0.5">{cat.label}</p>
       </Link>
     </motion.div>
   );
@@ -205,8 +217,8 @@ function DynamicSection({ section, shops, index }: { section: { key: string; tit
             className="shrink-0 w-[148px] rounded-2xl border border-border/15 bg-card/50 overflow-hidden active:scale-[0.96] transition-transform"
           >
             <div className="h-[92px] bg-muted/10 flex items-center justify-center relative overflow-hidden">
-              {shop.logo_url ? (
-                <img src={shop.logo_url} alt={shop.name} className="w-full h-full object-cover" loading="lazy" />
+              {(shop.banner_url || shop.logo_url) ? (
+                <img src={shop.banner_url || shop.logo_url!} alt={shop.name} className="w-full h-full object-cover" loading="lazy" />
               ) : (
                 <Star className="h-5 w-5 text-muted-foreground/30" />
               )}
@@ -243,7 +255,6 @@ export default function SmartHome() {
       }
     } catch {}
     if (currentLocation && !isFallback) {
-      // Trigger reverse geocode to populate city
       import("@/lib/mapbox/geocoding").then(({ reverseGeocode }) => {
         reverseGeocode(currentLocation.lat, currentLocation.lng).then(res => {
           const place = res?.features?.[0];
@@ -279,49 +290,18 @@ export default function SmartHome() {
   const categories = useMemo(() => getSmartCategories(timezone, countryCode), [timezone, countryCode]);
   const greeting = useMemo(() => getTimeGreeting(timezone), [timezone]);
 
-  // Fetch real data-driven sections from storefront_pages
+  // Fetch real data-driven sections
   useEffect(() => {
     (async () => {
       try {
-        // Parallel queries for each section with real ordering
         const baseSelect = "id, name, logo_url, banner_url, vertical, category, subcategory, address, slug, ranking_score, rating, reviews_count, created_at";
         const [trendingRes, bestRatedRes, newestRes, nearYouRes] = await Promise.all([
-          // Trending: ORDER BY ranking_score DESC
-          (supabase as any)
-            .from("storefront_pages")
-            .select(baseSelect)
-            .eq("launch_status", "launched")
-            .not("latitude", "is", null)
-            .order("ranking_score", { ascending: false })
-            .limit(10),
-          // Best Rated: ORDER BY rating DESC WHERE reviews_count > 0
-          (supabase as any)
-            .from("storefront_pages")
-            .select(baseSelect)
-            .eq("launch_status", "launched")
-            .not("latitude", "is", null)
-            .gt("reviews_count", 0)
-            .order("rating", { ascending: false })
-            .limit(10),
-          // Newest: ORDER BY created_at DESC
-          (supabase as any)
-            .from("storefront_pages")
-            .select(baseSelect)
-            .eq("launch_status", "launched")
-            .not("latitude", "is", null)
-            .order("created_at", { ascending: false })
-            .limit(10),
-          // Near You: all launched with coords
-          (supabase as any)
-            .from("storefront_pages")
-            .select(baseSelect + ", latitude, longitude")
-            .eq("launch_status", "launched")
-            .not("latitude", "is", null)
-            .not("longitude", "is", null)
-            .limit(30),
+          (supabase as any).from("storefront_pages").select(baseSelect).eq("launch_status", "launched").not("latitude", "is", null).order("ranking_score", { ascending: false }).limit(10),
+          (supabase as any).from("storefront_pages").select(baseSelect).eq("launch_status", "launched").not("latitude", "is", null).gt("reviews_count", 0).order("rating", { ascending: false }).limit(10),
+          (supabase as any).from("storefront_pages").select(baseSelect).eq("launch_status", "launched").not("latitude", "is", null).order("created_at", { ascending: false }).limit(10),
+          (supabase as any).from("storefront_pages").select(baseSelect + ", latitude, longitude").eq("launch_status", "launched").not("latitude", "is", null).not("longitude", "is", null).limit(30),
         ]);
 
-        // Near You: sort by distance if we have user location
         let nearYouSorted = (nearYouRes.data ?? []) as any[];
         if (currentLocation && !isFallback) {
           nearYouSorted = nearYouSorted
@@ -350,6 +330,7 @@ export default function SmartHome() {
     })();
   }, [currentLocation?.lat, isFallback]);
 
+  // Two-row horizontal scroll grid — Careem style
   const half = Math.ceil(categories.length / 2);
   const row1 = categories.slice(0, half);
   const row2 = categories.slice(half);
@@ -359,6 +340,7 @@ export default function SmartHome() {
       <CompactHeader city={city} greeting={greeting} onSearch={() => navigate("/radar")} />
       <QuickActions />
 
+      {/* Category grid — 2-row horizontal scroll */}
       <div className="overflow-x-auto scrollbar-none mb-3 -mx-1 px-1 touch-pan-x">
         <div className="flex flex-col gap-1.5" style={{ width: "max-content" }}>
           <div className="flex gap-1.5">
