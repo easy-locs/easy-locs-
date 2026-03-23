@@ -32,7 +32,7 @@ export async function createMerchantDraft(params: {
     subcategory: params.subcategory ?? null,
     city: params.city ?? "Dubai",
     area: params.area ?? "Business Bay",
-    cover_image: params.coverImage ?? null,
+    cover_image: params.coverImage ?? null, // Will be overridden below if needed
     logo_image: params.coverImage ?? null,
     is_active: true,
     is_open: false,
