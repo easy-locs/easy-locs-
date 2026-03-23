@@ -365,9 +365,19 @@ export type QrProcessResult =
 /**
  * processQr — the ONE function every QR entry point should call after obtaining raw text.
  * Returns a typed result. Never throws. Never hangs.
+ * Also handles Merchant QR payloads (MQR: prefix) by routing to /pay/merchant.
  */
 export function processQr(raw: string): QrProcessResult {
   if (!raw?.trim()) return { status: "invalid", reason: "Empty QR data" };
+
+  // Check for Merchant QR (MQR: prefix) — route to merchant payment resolver
+  if (raw.startsWith("MQR:")) {
+    return {
+      status: "route",
+      route: `/pay/merchant?data=${encodeURIComponent(raw)}`,
+      payload: { action: "deep_link", v: 1, path: `/pay/merchant?data=${encodeURIComponent(raw)}` },
+    };
+  }
 
   const payload = decodeQr(raw);
   if (!payload) return { status: "unsupported", raw };
