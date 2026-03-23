@@ -317,6 +317,7 @@ const HealthcareHub = safeLazy(() => import("./pages/universe/HealthcareHub"), "
 const ElectronicsHub = safeLazy(() => import("./pages/universe/ElectronicsHub"), "ElectronicsHub");
 const GiftsHub = safeLazy(() => import("./pages/universe/GiftsHub"), "GiftsHub");
 const PetsHub = safeLazy(() => import("./pages/universe/PetsHub"), "PetsHub");
+const BrowseVerticalPage = safeLazy(() => import("./pages/universe/BrowseVerticalPage"), "BrowseVerticalPage");
 
 // Food sub-pages (Careem-style drill-down)
 const FoodTypePage = safeLazy(() => import("./pages/food/FoodTypePage"), "FoodTypePage");
