@@ -75,13 +75,13 @@ function resolveRoute(t: ResolvedQrTarget): string {
   switch (t.qrPurpose) {
     case "order":
       // Customer menu ordering
-      return `/order/${encodeURIComponent(slug)}`;
+      return `/menu/${encodeURIComponent(slug)}`;
 
     case "table":
       // Table-specific ordering — same menu but with table context
       qs.set("table", t.tableNumber || "1");
       qs.set("qr", t.targetCode);
-      return `/order/${encodeURIComponent(slug)}?${qs}`;
+      return `/menu/${encodeURIComponent(slug)}?${qs}`;
 
     case "pay":
       // Open payment screen
@@ -94,7 +94,7 @@ function resolveRoute(t: ResolvedQrTarget): string {
       // Front desk — opens ordering with desk context
       qs.set("mode", "desk");
       qs.set("qr", t.targetCode);
-      return `/order/${encodeURIComponent(slug)}?${qs}`;
+      return `/menu/${encodeURIComponent(slug)}?${qs}`;
 
     case "review":
       // Review page
@@ -115,6 +115,6 @@ function resolveRoute(t: ResolvedQrTarget): string {
 
     default:
       // Fallback to order page
-      return `/order/${encodeURIComponent(slug)}`;
+      return `/menu/${encodeURIComponent(slug)}`;
   }
 }
