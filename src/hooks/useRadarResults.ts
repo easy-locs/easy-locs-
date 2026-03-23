@@ -1,6 +1,7 @@
 /**
  * useRadarResults — Returns nearby entities for radar/discovery views.
  * Uses CANONICAL discovery pipeline — visibility, routing, radius enforced.
+ * Enriches GeoEntity with isSponsored + reviewsCount for filters/ranking.
  */
 import { useState, useEffect } from "react";
 import { useLocationStore } from "@/stores/locationStore";
@@ -14,10 +15,13 @@ const CATEGORY_TO_TYPE: Record<string, GeoEntity["type"]> = {
   services: "service",
   shops: "shop",
   property: "property",
+  healthcare: "service",
+  mobility: "service",
+  experiences: "service",
 };
 
 export function useRadarResults(opts?: { type?: string; radiusKm?: number; surface?: "radar" | "map" | "search" | "discover" | "home" }) {
-  const [entities, setEntities] = useState<GeoEntity[]>([]);
+  const [entities, setEntities] = useState<(GeoEntity & { isSponsored?: boolean; reviewsCount?: number })[]>([]);
   const [loading, setLoading] = useState(true);
   const location = useLocationStore((s) => s.currentLocation);
   const radiusKm = useDiscoveryStore((s) => s.radiusKm);
@@ -32,7 +36,7 @@ export function useRadarResults(opts?: { type?: string; radiusKm?: number; surfa
     })
       .then((points) => {
         if (cancelled) return;
-        const mapped: GeoEntity[] = points.map((p) => ({
+        const mapped = points.map((p) => ({
           id: p.id,
           type: (CATEGORY_TO_TYPE[p.category] || "shop") as GeoEntity["type"],
           name: p.title,
@@ -46,6 +50,9 @@ export function useRadarResults(opts?: { type?: string; radiusKm?: number; surfa
           category: p.subcategory || p.category,
           address: p.subtitle || undefined,
           slug: p.slug || undefined,
+          distance: p.distanceKm,
+          isSponsored: p.isSponsored ?? false,
+          reviewsCount: p.reviewsCount ?? 0,
         }));
         setEntities(
           opts?.type && opts.type !== "all"
