@@ -2,6 +2,9 @@
  * unifiedResolver — SINGLE source of truth for all payment target resolution.
  * Used by: QR scan, PaymentConfirmPage, WalletTransferPage, PayActionSheet.
  * Resolves userId / orbitId / email → enriched target with wallet validation.
+ *
+ * IMPORTANT: profiles table uses columns: id, email, name, first_name, last_name
+ * NOT full_name, username, avatar_url, orbit_id — those do NOT exist.
  */
 import { supabase } from "@/integrations/supabase/client";
 
@@ -20,35 +23,65 @@ export interface UnifiedPayTarget {
   };
 }
 
+/**
+ * Build display name from profiles table columns.
+ */
+function buildDisplayName(row: any): string | null {
+  if (row.first_name || row.last_name) {
+    return [row.first_name, row.last_name].filter(Boolean).join(" ").trim() || null;
+  }
+  return row.name?.trim() || null;
+}
+
 async function findProfile(input: {
   userId?: string | null;
   orbitId?: string | null;
   email?: string | null;
-}): Promise<{ id: string; full_name: string | null; username: string | null; avatar_url: string | null; email: string | null } | null> {
+}): Promise<{ id: string; display_name: string | null; email: string | null } | null> {
+  // profiles table columns: id, email, name, first_name, last_name
+  const selectCols = "id, email, name, first_name, last_name";
+
   if (input.userId) {
-    const { data } = await (supabase as any)
+    console.log("[resolver] findProfile by userId:", input.userId);
+    const { data, error } = await (supabase as any)
       .from("profiles")
-      .select("id, full_name, username, avatar_url, email")
+      .select(selectCols)
       .eq("id", input.userId)
       .maybeSingle();
-    if (data) return data;
+    console.log("[resolver] profile by userId result:", { data: !!data, error: error?.message });
+    if (data) return { id: data.id, display_name: buildDisplayName(data), email: data.email };
   }
+
   if (input.orbitId) {
-    const { data } = await (supabase as any)
-      .from("profiles")
-      .select("id, full_name, username, avatar_url, email")
+    // Try orbit_profiles_v2 table which has the orbit_id → user_id mapping
+    console.log("[resolver] findProfile by orbitId:", input.orbitId);
+    const { data: orbitRow } = await (supabase as any)
+      .from("orbit_profiles_v2")
+      .select("user_id")
       .eq("orbit_id", input.orbitId)
       .maybeSingle();
-    if (data) return data;
+    if (orbitRow?.user_id) {
+      const { data } = await (supabase as any)
+        .from("profiles")
+        .select(selectCols)
+        .eq("id", orbitRow.user_id)
+        .maybeSingle();
+      if (data) return { id: data.id, display_name: buildDisplayName(data), email: data.email };
+    }
   }
+
   if (input.email) {
+    console.log("[resolver] findProfile by email:", input.email);
     const { data } = await (supabase as any)
       .from("profiles")
-      .select("id, full_name, username, avatar_url, email")
+      .select(selectCols)
       .eq("email", input.email.trim().toLowerCase())
       .maybeSingle();
-    if (data) return data;
+    console.log("[resolver] profile by email result:", { data: !!data });
+    if (data) return { id: data.id, display_name: buildDisplayName(data), email: data.email };
   }
+
+  console.warn("[resolver] findProfile FAILED — no match for:", input);
   return null;
 }
 
@@ -60,7 +93,9 @@ export async function resolveUnifiedTarget(input: {
   currency?: string;
 }): Promise<UnifiedPayTarget | null> {
   const currency = input.currency || "AED";
+  console.log("[resolver] resolveUnifiedTarget input:", JSON.stringify(input));
 
+  // Path A: resolve by walletId first
   if (input.walletId && !input.userId) {
     const walletStart = performance.now();
     const { data: wallet } = await supabase
@@ -69,6 +104,7 @@ export async function resolveUnifiedTarget(input: {
       .eq("id", input.walletId)
       .maybeSingle();
     const walletResolveMs = performance.now() - walletStart;
+    console.log("[resolver] wallet by id:", { found: !!wallet, status: wallet?.status });
 
     if (!wallet?.owner_user_id) return null;
 
@@ -78,9 +114,9 @@ export async function resolveUnifiedTarget(input: {
 
     return {
       id: wallet.owner_user_id,
-      display_name: profile?.full_name || profile?.username || null,
+      display_name: profile?.display_name || null,
       email: profile?.email || null,
-      avatar_url: profile?.avatar_url || null,
+      avatar_url: null,
       orbit_id: null,
       wallet_id: wallet.id,
       wallet_status: wallet.status ?? "missing",
@@ -89,6 +125,7 @@ export async function resolveUnifiedTarget(input: {
     };
   }
 
+  // Path B: resolve by userId
   if (input.userId) {
     const recipientStart = performance.now();
     const walletStart = performance.now();
@@ -107,14 +144,18 @@ export async function resolveUnifiedTarget(input: {
 
     const recipientResolveMs = performance.now() - recipientStart;
     const walletResolveMs = performance.now() - walletStart;
+    console.log("[resolver] path B:", { profileFound: !!profile, walletFound: !!wallet, walletStatus: wallet?.status });
 
-    if (!profile) return null;
+    if (!profile) {
+      console.error("[resolver] CRITICAL: userId exists in QR but NOT in profiles table:", input.userId);
+      return null;
+    }
 
     return {
       id: profile.id,
-      display_name: profile.full_name || profile.username || null,
+      display_name: profile.display_name || null,
       email: profile.email || null,
-      avatar_url: profile.avatar_url || null,
+      avatar_url: null,
       orbit_id: input.orbitId || null,
       wallet_id: wallet?.id ?? null,
       wallet_status: wallet?.status ?? "missing",
@@ -123,6 +164,7 @@ export async function resolveUnifiedTarget(input: {
     };
   }
 
+  // Path C: resolve by orbitId or email
   const recipientStart = performance.now();
   const profile = await findProfile(input);
   const recipientResolveMs = performance.now() - recipientStart;
@@ -140,9 +182,9 @@ export async function resolveUnifiedTarget(input: {
 
   return {
     id: profile.id,
-    display_name: profile.full_name || profile.username || null,
+    display_name: profile.display_name || null,
     email: profile.email || null,
-    avatar_url: profile.avatar_url || null,
+    avatar_url: null,
     orbit_id: input.orbitId || null,
     wallet_id: wallet?.id ?? null,
     wallet_status: wallet?.status ?? "missing",
