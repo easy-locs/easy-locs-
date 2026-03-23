@@ -1,6 +1,7 @@
 /**
- * qrPayload — Normalized QR payment payload format.
- * Single source of truth for QR encode/decode across the app.
+ * @deprecated — Use src/lib/qr-engine.ts (UniversalQrPayload) instead.
+ * This file is kept only for backward compatibility with legacy imports.
+ * All new code MUST use qr-engine.
  */
 export type PaymentQrPayload = {
   type: "wallet_pay";
