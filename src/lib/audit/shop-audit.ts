@@ -1,6 +1,7 @@
 /**
  * Shop Audit Engine — Full publication gatekeeper.
  * Validates completeness, taxonomy coherence, per-vertical rules.
+ * Integrates source-based visibility caps.
  * Returns score, status, blockers, warnings, and gate flags.
  */
 import {
@@ -9,6 +10,7 @@ import {
   getClusterForSubcategory,
   type Vertical,
 } from "@/lib/taxonomy/world-class-taxonomy";
+import { applySourceVisibility } from "@/lib/source/source-hygiene";
 
 export type ShopAuditResult = {
   score: number;
