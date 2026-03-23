@@ -1,25 +1,18 @@
 import { useRadarStore } from "@/stores/radarStore";
-import type { RadarCategory, RadarSubCategory } from "@/lib/radar/types";
+import type { RadarCategory } from "@/lib/radar/types";
 import { RadarSweep } from "@/components/radar/RadarSweep";
 import { ultraHaptic } from "@/lib/performance/useUltraFast";
 import { eventBus } from "@/lib/events/eventBus";
+import { VERTICALS } from "@/lib/discovery/verticals";
 
-const CATEGORIES: { cat: RadarCategory; icon: string; pos: string }[] = [
-  { cat: "food", icon: "🍕", pos: "absolute top-2 left-1/2 -translate-x-1/2" },
-  { cat: "shops", icon: "🛍️", pos: "absolute right-2 top-1/2 -translate-y-1/2" },
-  { cat: "property", icon: "🏠", pos: "absolute bottom-2 left-1/2 -translate-x-1/2" },
-  { cat: "services", icon: "🧰", pos: "absolute left-2 top-1/2 -translate-y-1/2" },
-  { cat: "grocery", icon: "🥬", pos: "absolute top-[18%] right-[14%]" },
+const CATEGORIES: { cat: RadarCategory; icon: string; label: string }[] = [
+  { cat: "all", icon: "✨", label: "All" },
+  { cat: "food", icon: "🍕", label: "Food" },
+  { cat: "grocery", icon: "🛒", label: "Grocery" },
+  { cat: "shops", icon: "🛍️", label: "Shops" },
+  { cat: "services", icon: "🔧", label: "Services" },
+  { cat: "property", icon: "🏠", label: "Property" },
 ];
-
-const SUB_MAP: Record<RadarCategory, RadarSubCategory[]> = {
-  all: [],
-  food: ["pizza", "burger", "sushi"],
-  shops: ["market", "pharmacy"],
-  grocery: ["market"],
-  property: ["apartment"],
-  services: ["repair", "cleaning"],
-};
 
 export function RadarFilterMenu() {
   const menuOpen = useRadarStore((s) => s.menuOpen);
@@ -30,64 +23,82 @@ export function RadarFilterMenu() {
 
   if (!menuOpen) return null;
 
-  const subs = SUB_MAP[category] ?? [];
+  // Get subcategories from canonical verticals
+  const verticalMap: Record<string, string> = {
+    food: "food",
+    grocery: "grocery",
+    shops: "retail",
+    services: "services",
+    property: "real_estate",
+  };
+  const verticalDef = VERTICALS.find((v) => v.value === verticalMap[category]);
+  const subs = verticalDef?.subcategories ?? [];
 
   const pickCategory = (cat: RadarCategory) => {
     ultraHaptic("light");
     setCategory(cat);
+    setSubCategory(null);
     eventBus.emit("RADAR_FILTER_CHANGED", { category: cat });
-    closeMenu();
+    if (cat === "all") closeMenu();
   };
 
-  const pickSub = (sub: RadarSubCategory) => {
+  const pickSub = (subValue: string) => {
     ultraHaptic("light");
-    setSubCategory(sub);
-    eventBus.emit("RADAR_FILTER_CHANGED", { category, subcategory: sub });
+    setSubCategory(subValue);
+    eventBus.emit("RADAR_FILTER_CHANGED", { category, subcategory: subValue });
     closeMenu();
   };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center animate-fade-in">
-      <div
-        className="absolute inset-0 bg-black/65 backdrop-blur-xl"
-        onClick={closeMenu}
-      />
+      <div className="absolute inset-0 bg-black/65 backdrop-blur-xl" onClick={closeMenu} />
 
-      <div className="relative flex flex-col items-center gap-5 z-10">
-        <div className="relative w-[260px] h-[260px] rounded-full border border-emerald-400/20">
+      <div className="relative flex flex-col items-center gap-5 z-10 max-w-[90vw]">
+        {/* Radar circle with category ring */}
+        <div className="relative w-[260px] h-[260px] rounded-full border border-primary/20">
           <RadarSweep />
 
-          {CATEGORIES.map(({ cat, icon, pos }) => (
-            <button
-              key={cat}
-              onClick={() => pickCategory(cat)}
-              className={`${pos} z-10 flex h-12 w-12 items-center justify-center rounded-full text-xl active:scale-[0.90] transition-transform duration-75 ${
-                category === cat
-                  ? "bg-emerald-500/30 shadow-[0_0_16px_hsl(var(--primary)/0.4)]"
-                  : "bg-slate-900/70"
-              }`}
-            >
-              {icon}
-            </button>
-          ))}
-
+          {/* Center — ALL button */}
           <button
-            onClick={() => { ultraHaptic("light"); setCategory("all"); setSubCategory(null); closeMenu(); }}
+            onClick={() => { pickCategory("all"); closeMenu(); }}
             className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 flex h-14 w-14 items-center justify-center rounded-full bg-primary/20 text-xs font-bold text-primary-foreground active:scale-[0.90] transition-transform duration-75"
           >
             ALL
           </button>
+
+          {/* Category buttons positioned in circle */}
+          {CATEGORIES.filter(c => c.cat !== "all").map(({ cat, icon }, i) => {
+            const angle = (i * 72 - 90) * (Math.PI / 180);
+            const r = 95;
+            const x = 130 + r * Math.cos(angle) - 24;
+            const y = 130 + r * Math.sin(angle) - 24;
+            return (
+              <button
+                key={cat}
+                onClick={() => pickCategory(cat)}
+                style={{ position: "absolute", left: x, top: y }}
+                className={`z-10 flex h-12 w-12 items-center justify-center rounded-full text-xl active:scale-[0.90] transition-transform duration-75 ${
+                  category === cat
+                    ? "bg-primary/30 shadow-[0_0_16px_hsl(var(--primary)/0.4)] ring-2 ring-primary/40"
+                    : "bg-muted/70"
+                }`}
+              >
+                {icon}
+              </button>
+            );
+          })}
         </div>
 
+        {/* Subcategory chips — from canonical verticals */}
         {subs.length > 0 && (
-          <div className="flex flex-wrap justify-center gap-2">
-            {subs.map((sub) => (
+          <div className="flex flex-wrap justify-center gap-2 max-w-[300px]">
+            {subs.slice(0, 8).map((sub) => (
               <button
-                key={sub}
-                onClick={() => pickSub(sub)}
-                className="rounded-full border border-white/10 bg-muted/60 px-3 py-1 text-[11px] capitalize text-foreground active:scale-[0.95] transition-transform duration-75"
+                key={sub.value}
+                onClick={() => pickSub(sub.value)}
+                className="flex items-center gap-1 rounded-full border border-border/20 bg-muted/60 px-3 py-1.5 text-[11px] text-foreground active:scale-[0.95] transition-transform duration-75"
               >
-                {sub}
+                <span>{sub.icon}</span> {sub.label}
               </button>
             ))}
           </div>
@@ -95,7 +106,7 @@ export function RadarFilterMenu() {
 
         <button
           onClick={closeMenu}
-          className="rounded-full border border-white/10 bg-muted/40 px-6 py-2 text-xs text-muted-foreground active:scale-[0.95] transition-transform duration-75"
+          className="rounded-full border border-border/20 bg-muted/40 px-6 py-2 text-xs text-muted-foreground active:scale-[0.95] transition-transform duration-75"
         >
           Close
         </button>
