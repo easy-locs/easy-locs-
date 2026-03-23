@@ -4,6 +4,7 @@
  * World-ready: supports full canonical layers (identity, geo, taxonomy, capabilities).
  */
 import { supabase } from "@/integrations/supabase/client";
+import { canonicalTaxonomyPayload } from "@/lib/taxonomy/taxonomy-guard";
 
 function generateSlug(name: string, city: string): string {
   const base = `${name}-${city}`
