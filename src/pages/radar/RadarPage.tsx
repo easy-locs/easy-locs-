@@ -2,21 +2,21 @@ import { useEffect, useState, useCallback, useMemo, lazy, Suspense } from "react
 import { useNavigate } from "react-router-dom";
 import { useRadarGeo } from "@/hooks/useRadarGeo";
 import { useRadarStore, type SortMode } from "@/stores/radarStore";
+import { useDiscoveryStore } from "@/stores/discoveryStore";
 import { RadarFilterMenu } from "@/components/radar/RadarFilterMenu";
 import { RadarResultsList } from "@/components/radar/RadarResultsList";
 import { ultraHaptic } from "@/lib/performance/useUltraFast";
 import { useGeoStore } from "@/lib/geo/geo-store";
 import { geoService } from "@/lib/geo/geo-service";
-import { fetchUnifiedPoints } from "@/lib/radar/fetchUnifiedPoints";
+import { fetchCanonicalDiscovery } from "@/lib/discovery/canonical-discovery-pipeline";
 import { getTimeContext } from "@/lib/discovery/timeContext";
 import { RADAR_CATEGORIES, getSubcategoriesForRadarCategory, type RadarMainCategory } from "@/lib/taxonomy/world-class-taxonomy";
 import type { RadarCategory } from "@/lib/radar/types";
-import { Search, MapPin, Navigation, Loader2 } from "lucide-react";
+import { Search, MapPin, Navigation, Loader2, Flame } from "lucide-react";
 import "@/styles/radar-pro.css";
 
 const UnifiedMap = lazy(() => import("@/components/map/UnifiedMap"));
 
-// Categories now come from canonical taxonomy
 const CATEGORIES = RADAR_CATEGORIES.map((c) => ({
   cat: c.value as RadarCategory,
   icon: c.emoji,
@@ -30,6 +30,15 @@ const SORT_MODES: { key: SortMode; label: string }[] = [
   { key: "trending", label: "🔥 Trending" },
 ];
 
+const RADIUS_OPTIONS = [
+  { label: "1 km", value: 1 },
+  { label: "3 km", value: 3 },
+  { label: "5 km", value: 5 },
+  { label: "10 km", value: 10 },
+  { label: "25 km", value: 25 },
+  { label: "All", value: 0 },
+];
+
 export default function RadarPage() {
   useRadarGeo();
   const navigate = useNavigate();
@@ -38,7 +47,6 @@ export default function RadarPage() {
   const setPoints = useRadarStore((s) => s.setPoints);
   const setSortMode = useRadarStore((s) => s.setSortMode);
   const sortMode = useRadarStore((s) => s.sortMode);
-  const mapMode = useRadarStore((s) => s.mapMode);
   const setMapMode = useRadarStore((s) => s.setMapMode);
   const category = useRadarStore((s) => s.category);
   const setCategory = useRadarStore((s) => s.setCategory);
@@ -48,13 +56,16 @@ export default function RadarPage() {
   const geoLoading = useGeoStore((s) => s.loading);
   const geoPermission = useGeoStore((s) => s.permission);
 
-  const [searchQuery, setSearchQuery] = useState("");
-  const [loadingListings, setLoadingListings] = useState(true);
+  // Shared discovery state
+  const searchQuery = useDiscoveryStore((s) => s.searchQuery);
+  const setSearchQuery = useDiscoveryStore((s) => s.setSearchQuery);
+  const radiusKm = useDiscoveryStore((s) => s.radiusKm);
+  const setRadiusKm = useDiscoveryStore((s) => s.setRadiusKm);
 
+  const [loadingListings, setLoadingListings] = useState(true);
+  const [mapMode, setLocalMapMode] = useState<"list" | "map" | "heatmap">("list");
   const timeCtx = useMemo(() => getTimeContext(), []);
 
-  // Get subcategories for selected category
-  // Get subcategories from canonical taxonomy
   const subcategories = useMemo(() => {
     return getSubcategoriesForRadarCategory(category as RadarMainCategory);
   }, [category]);
@@ -65,15 +76,17 @@ export default function RadarPage() {
     if (!pt) geoService.forceRetry();
   }, []);
 
-  // Fetch unified listings
+  // Fetch via CANONICAL pipeline — with visibility, routing, and radius enforcement
   const fetchListings = useCallback(async () => {
     setLoadingListings(true);
     try {
-      const points = await fetchUnifiedPoints({
-        searchQuery,
+      const points = await fetchCanonicalDiscovery({
+        surface: "radar",
+        searchQuery: searchQuery || undefined,
         userLocation: userLocation ?? undefined,
         category: category !== "all" ? category : undefined,
         subcategory: subcategory ?? undefined,
+        radiusKm: radiusKm || undefined,
       });
       setPoints(points);
     } catch (err) {
@@ -81,13 +94,18 @@ export default function RadarPage() {
     } finally {
       setLoadingListings(false);
     }
-  }, [searchQuery, setPoints, userLocation?.lat, userLocation?.lng, category, subcategory]);
+  }, [searchQuery, setPoints, userLocation?.lat, userLocation?.lng, category, subcategory, radiusKm]);
 
   useEffect(() => { fetchListings(); }, [fetchListings]);
 
   const handleLocate = () => {
     ultraHaptic("light");
     geoService.forceRetry();
+  };
+
+  const handleSetMapMode = (mode: "list" | "map" | "heatmap") => {
+    setLocalMapMode(mode);
+    if (mode !== "heatmap") setMapMode(mode as "list" | "map");
   };
 
   return (
@@ -121,7 +139,7 @@ export default function RadarPage() {
           </button>
         </div>
 
-        {/* Search */}
+        {/* Search — shared state */}
         <div className="relative mb-3">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <input
@@ -133,7 +151,25 @@ export default function RadarPage() {
           />
         </div>
 
-        {/* Level 1 — Main category chips */}
+        {/* Radius control — REAL radius filtering */}
+        <div className="flex gap-1.5 overflow-x-auto no-scrollbar pb-2">
+          <MapPin className="w-3.5 h-3.5 text-muted-foreground shrink-0 mt-1" />
+          {RADIUS_OPTIONS.map(({ label, value }) => (
+            <button
+              key={value}
+              onClick={() => { ultraHaptic("light"); setRadiusKm(value === 0 ? null : value); }}
+              className={`shrink-0 rounded-full px-3 py-1 text-[11px] font-medium transition-all active:scale-95 ${
+                (radiusKm === value) || (value === 0 && !radiusKm)
+                  ? "bg-primary text-primary-foreground shadow-sm"
+                  : "bg-muted/30 text-muted-foreground"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+
+        {/* Category chips */}
         <div className="flex gap-2 overflow-x-auto no-scrollbar pb-2">
           {CATEGORIES.map(({ cat, icon, label }) => (
             <button
@@ -150,7 +186,7 @@ export default function RadarPage() {
           ))}
         </div>
 
-        {/* Level 2 — Subcategory chips (when category selected) */}
+        {/* Subcategory chips */}
         {subcategories.length > 0 && (
           <div className="flex gap-1.5 overflow-x-auto no-scrollbar pb-2 mt-1">
             <button
@@ -197,11 +233,11 @@ export default function RadarPage() {
         </div>
       </div>
 
-      {/* View toggle */}
+      {/* View toggle — now includes heatmap */}
       <div className="flex items-center justify-between px-4 pb-3">
         <div className="flex rounded-xl bg-muted/30 p-0.5">
           <button
-            onClick={() => { ultraHaptic("light"); setMapMode("list"); }}
+            onClick={() => { ultraHaptic("light"); handleSetMapMode("list"); }}
             className={`rounded-lg px-4 py-1.5 text-xs font-medium active:scale-[0.95] transition-all duration-75 ${
               mapMode === "list" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"
             }`}
@@ -209,21 +245,29 @@ export default function RadarPage() {
             ☰ List
           </button>
           <button
-            onClick={() => { ultraHaptic("light"); setMapMode("map"); }}
+            onClick={() => { ultraHaptic("light"); handleSetMapMode("map"); }}
             className={`rounded-lg px-4 py-1.5 text-xs font-medium active:scale-[0.95] transition-all duration-75 ${
               mapMode === "map" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"
             }`}
           >
             🗺 Map
           </button>
+          <button
+            onClick={() => { ultraHaptic("light"); handleSetMapMode("heatmap"); }}
+            className={`rounded-lg px-4 py-1.5 text-xs font-medium active:scale-[0.95] transition-all duration-75 ${
+              mapMode === "heatmap" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"
+            }`}
+          >
+            <Flame className="h-3 w-3 inline mr-0.5" /> Heat
+          </button>
         </div>
         <p className="text-[10px] text-muted-foreground">
-          {filtered.length} results
+          {filtered.length} results{radiusKm ? ` • ${radiusKm}km` : ""}
         </p>
       </div>
 
       {/* Content */}
-      {mapMode === "map" ? (
+      {mapMode === "map" || mapMode === "heatmap" ? (
         <div className="relative mx-4 h-[400px] rounded-2xl overflow-hidden">
           <Suspense fallback={<div className="w-full h-full bg-muted/20 flex items-center justify-center"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>}>
             <UnifiedMap
@@ -248,6 +292,7 @@ export default function RadarPage() {
               userLng={userLocation?.lng}
               showUserLocation={!!userLocation}
               zoom={13}
+              showHeatmap={mapMode === "heatmap"}
             />
           </Suspense>
         </div>
