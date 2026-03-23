@@ -152,7 +152,7 @@ export async function ingestShop(
     sourceName: input.sourceName,
     sourceType: input.sourceType || "import_ai",
     sourceExternalId: input.sourceExternalId,
-    confidence: input.sourceType === "google" ? 40 : 60,
+    confidence: input.sourceConfidence ?? (input.sourceType === "google" ? 40 : 60),
   });
 
   // Determine cover with diversity
