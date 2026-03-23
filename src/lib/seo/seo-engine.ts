@@ -23,7 +23,7 @@ export function generateMerchantSEO(params: {
   return {
     title: `${params.merchantName} — Order from ${cat} in ${params.city} | Easy-Locs`,
     description: `Order from ${params.merchantName} in ${params.city}. Fast delivery, easy ordering. Browse the menu and order now on Easy-Locs.`,
-    canonicalUrl: `${base}/shop/${params.slug}`,
+    canonicalUrl: `${base}/s/${params.slug}`,
     jsonLd: {
       "@context": "https://schema.org",
       "@type": "Restaurant",
