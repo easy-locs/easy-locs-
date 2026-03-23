@@ -73,6 +73,18 @@ export async function autoCreateStorefront(params: AutoStorefrontParams): Promis
 
   const slug = generateSlug(params.merchantName, params.city);
 
+  // ── Intelligent Classification Engine ──
+  const classificationInput: ClassificationInput = {
+    businessName: params.merchantName,
+    sourceCategory: params.category,
+    sourceSubcategory: params.subcategory,
+    tags: params.tags,
+  };
+  const classification = classifyBusiness(classificationInput);
+
+  // Use explicit vertical if provided, otherwise use engine result
+  const resolvedVertical = params.vertical ?? classification.canonical_vertical;
+
   const insertPayload: Record<string, any> = {
     name: params.merchantName,
     slug,
@@ -81,16 +93,23 @@ export async function autoCreateStorefront(params: AutoStorefrontParams): Promis
     visibility_mode: "coming_soon",
     user_id: params.userId,
     org_id: params.orgId,
-    vertical: params.vertical ?? resolveVerticalFromSubcategory(params.subcategory) ?? canonicalTaxonomyPayload(params.category ?? "food", undefined, params.subcategory).vertical,
+    vertical: resolvedVertical,
     metadata_json: { auto_generated: true, source: "auto_storefront_builder" },
     source_type: "import_ai",
-    source_confidence: 60,
+    source_confidence: classification.confidence_score,
     readiness_status: "draft",
     is_auto_generated: true,
     is_claimed: false,
     has_photo: false,
     has_menu: false,
     products_count: 0,
+    // Classification engine fields
+    classification_confidence: classification.confidence_score,
+    classification_reason: classification.classification_reason,
+    classification_version: classification.classification_version,
+    classification_signals: classification.source_signals_used,
+    requires_review: classification.requires_review,
+    last_classified_at: new Date().toISOString(),
   };
 
   // Canonical taxonomy
