@@ -44,13 +44,18 @@ export function scoreOffer(offer: CommercialEntity, ctx: OfferMatchContext): num
   ) / 3;
   score += hierarchy * 0.4;
 
-  // Geo match
-  if (offer.scope === "global") {
-    score += 0.1; // slight boost for global
-  } else if (offer.scope === "country" && offer.countryCode === ctx.countryCode) {
-    score += 0.2;
+  // Geo match (cascading specificity)
+  if (offer.scope === "entity") {
+    // Entity-scoped: only relevant when viewing that entity
+    score += 0.05; // low base — must match entityId in filter layer
+  } else if (offer.scope === "district" && (offer as any).districtCode === ctx.districtCode) {
+    score += 0.25;
   } else if (offer.scope === "city" && offer.citySlug === ctx.city) {
     score += 0.3;
+  } else if (offer.scope === "country" && offer.countryCode === ctx.countryCode) {
+    score += 0.2;
+  } else if (offer.scope === "global") {
+    score += 0.1;
   }
 
   // Active and valid
