@@ -71,10 +71,12 @@ export default function ShopPage() {
   const { shopSlug } = useParams<{ shopSlug: string }>();
   const [searchParams] = useSearchParams();
   const inviteToken = searchParams.get("invite");
+  const actionParam = searchParams.get("action");
   const { user } = useAuth();
   const [cartOpen, setCartOpen] = useState(false);
   const [couponCode, setCouponCode] = useState("");
   const [checkoutMode, setCheckoutMode] = useState(false);
+  const [reviewMode, setReviewMode] = useState(actionParam === "review");
 
   const isUuid = !!shopSlug && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(shopSlug);
 
@@ -472,7 +474,13 @@ export default function ShopPage() {
               <DigitalProducts shopId={shop.id} mode="buyer" />
               <PeerMarketplace shopId={shop.id} mode="buyer" />
               <LiveShopping shopId={shop.id} mode="buyer" catalogItems={catalogItems} />
-              <ShopReviews shopId={shop.id} shopOwnerId={shop.user_id} />
+              <div id="shop-reviews-section" ref={(el) => {
+                if (el && reviewMode) {
+                  setTimeout(() => el.scrollIntoView({ behavior: "smooth", block: "start" }), 300);
+                }
+              }}>
+                <ShopReviews shopId={shop.id} shopOwnerId={shop.user_id} />
+              </div>
             </div>
           </Suspense>
         </div>
