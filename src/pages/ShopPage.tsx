@@ -82,19 +82,46 @@ export default function ShopPage() {
     queryKey: ["storefront-page", shopSlug],
     queryFn: async () => {
       console.log("[ShopPage] fetching shop, param:", shopSlug, "isUuid:", isUuid);
+      // Try storefront_pages first (primary source)
       let query = (supabase as any)
         .from("storefront_pages")
         .select("*");
-
       if (isUuid) {
         query = query.eq("id", shopSlug!);
       } else {
         query = query.eq("slug", shopSlug!);
       }
-
       const { data, error } = await query.maybeSingle();
-      console.log("[ShopPage] DB result:", data ? `found: ${data.name}` : "not found", error || "");
-      return data;
+      if (data) {
+        console.log("[ShopPage] storefront found:", data.name);
+        return data;
+      }
+
+      // Fallback: try seed_merchants by ID
+      if (isUuid) {
+        const { data: seed } = await (supabase as any)
+          .from("seed_merchants")
+          .select("*")
+          .eq("id", shopSlug!)
+          .maybeSingle();
+        if (seed) {
+          console.log("[ShopPage] seed_merchant found:", seed.name);
+          // Normalize seed to storefront-like shape
+          return {
+            ...seed,
+            slug: seed.id,
+            vertical: seed.category,
+            banner_url: seed.cover_image,
+            logo_url: seed.logo_image,
+            address: seed.area,
+            visibility_mode: seed.visibility_mode || "coming_soon",
+            _isSeed: true,
+          };
+        }
+      }
+
+      console.log("[ShopPage] not found", error || "");
+      return null;
     },
     enabled: !!shopSlug,
   });
