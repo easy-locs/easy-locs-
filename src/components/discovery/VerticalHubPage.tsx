@@ -2,8 +2,8 @@
  * VerticalHubPage — Reusable hub page for any vertical.
  * Booking/Deliveroo/Talabat-style: hero, subcategory chips, filters, listings grouped by subcategory.
  */
-import { useState, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useMemo, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Star, Clock, MapPin, ChevronRight } from "lucide-react";
 import { motion } from "framer-motion";
 import UniversePageShell from "@/components/universe/UniversePageShell";
