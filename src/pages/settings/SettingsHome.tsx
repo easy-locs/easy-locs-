@@ -4,11 +4,11 @@
  */
 import { useNavigate } from "react-router-dom";
 import {
-  User, CreditCard, MapPin, Bell, Shield, Store,
+  User, CreditCard, MapPin, Bell, Store,
   Palette, Globe, ChevronRight, Headphones, Heart,
-  Wallet, LogOut, Lock, Phone,
+  Wallet, LogOut, Lock,
   QrCode, Package, BarChart3, Building2,
-  Receipt, TrendingUp, Users, MessageCircle,
+  Receipt, Users,
   Banknote, Crown, Scale,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
