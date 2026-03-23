@@ -1,6 +1,5 @@
 /**
- * DiscoveryHeatmapLayer — Canvas-based heatmap overlay for discovery map.
- * Uses leaflet.heat-style rendering via Mapbox heatmap layer.
+ * DiscoveryHeatmapLayer — Mapbox heatmap with real intensity from density + rating + reviews.
  */
 import { useEffect } from "react";
 import type mapboxgl from "mapbox-gl";
@@ -24,9 +23,7 @@ export default function DiscoveryHeatmapLayer({ map, points, visible }: Props) {
   useEffect(() => {
     if (!map) return;
 
-    // Wait for map style to load
     const setup = () => {
-      // Clean up existing
       if (map.getLayer(LAYER_ID)) map.removeLayer(LAYER_ID);
       if (map.getSource(SOURCE_ID)) map.removeSource(SOURCE_ID);
 
@@ -48,19 +45,22 @@ export default function DiscoveryHeatmapLayer({ map, points, visible }: Props) {
         type: "heatmap",
         source: SOURCE_ID,
         paint: {
+          // Use real intensity from data (rating + reviews + activity)
           "heatmap-weight": ["get", "intensity"],
-          "heatmap-intensity": ["interpolate", ["linear"], ["zoom"], 0, 1, 15, 3],
+          "heatmap-intensity": ["interpolate", ["linear"], ["zoom"], 0, 0.8, 12, 2, 15, 3.5],
           "heatmap-color": [
             "interpolate", ["linear"], ["heatmap-density"],
-            0, "rgba(0,0,255,0)",
-            0.2, "rgb(0,255,128)",
-            0.4, "rgb(128,255,0)",
-            0.6, "rgb(255,255,0)",
-            0.8, "rgb(255,128,0)",
-            1, "rgb(255,0,0)",
+            0, "rgba(0,0,0,0)",
+            0.1, "hsla(240, 60%, 50%, 0.4)",
+            0.25, "hsla(200, 70%, 50%, 0.5)",
+            0.4, "hsla(160, 60%, 50%, 0.6)",
+            0.55, "hsla(80, 70%, 55%, 0.7)",
+            0.7, "hsla(45, 90%, 55%, 0.8)",
+            0.85, "hsla(25, 85%, 55%, 0.85)",
+            1, "hsla(0, 80%, 55%, 0.9)",
           ],
-          "heatmap-radius": ["interpolate", ["linear"], ["zoom"], 0, 4, 15, 25],
-          "heatmap-opacity": 0.7,
+          "heatmap-radius": ["interpolate", ["linear"], ["zoom"], 0, 5, 12, 20, 15, 30],
+          "heatmap-opacity": ["interpolate", ["linear"], ["zoom"], 0, 0.8, 15, 0.6],
         },
       });
     };
