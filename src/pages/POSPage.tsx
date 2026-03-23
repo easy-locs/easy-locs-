@@ -6,6 +6,7 @@
  * Flow: Browse catalog → Cart → Total → QR Payment → Wallet settlement → Auto delivery
  */
 import { useState, useCallback, useMemo } from "react";
+import { encodeQr, qr } from "@/lib/qr-engine";
 import { useAuth } from "@/contexts/AuthContext";
 import { useWalletBalance } from "@/payments/wallet-hooks";
 import { walletTransfer } from "@/payments/wallet-hooks";
@@ -112,19 +113,11 @@ export default function POSPage() {
     setCustomPrice("");
   };
 
-  /* ─── QR Payload ─── */
+  /* ─── QR Payload (canonical qr-engine format) ─── */
   const qrPayload = useMemo(() => {
     if (total <= 0 || !user?.id) return "";
-    return JSON.stringify({
-      type: "pos_payment",
-      seller_id: user.id,
-      amount: total,
-      currency: "LOCS",
-      requires_delivery: requiresDelivery,
-      items: cart.map(i => ({ t: i.title, p: i.price, q: i.quantity })),
-      ts: Date.now(),
-    });
-  }, [total, user?.id, requiresDelivery, cart]);
+    return encodeQr(qr.payUser(user.id, { amount: total, currency: "AED", name: "POS Order" }));
+  }, [total, user?.id, cart]);
 
   /* ─── Process wallet payment ─── */
   const processPayment = async () => {

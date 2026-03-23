@@ -350,3 +350,30 @@ export const qr = {
   deepLink: (path: string): DeepLinkQr =>
     ({ action: "deep_link", v: 1, path }),
 } as const;
+
+/* ═══════════════════════════════════════════════════════════════
+   7. UNIFIED QR PROCESSOR — single entry point after decode
+   ═══════════════════════════════════════════════════════════════ */
+
+export type QrProcessResult =
+  | { status: "route"; route: string; payload: UniversalQrPayload }
+  | { status: "inline"; payload: UniversalQrPayload }
+  | { status: "invalid"; reason: string }
+  | { status: "expired"; payload: UniversalQrPayload }
+  | { status: "unsupported"; raw: string };
+
+/**
+ * processQr — the ONE function every QR entry point should call after obtaining raw text.
+ * Returns a typed result. Never throws. Never hangs.
+ */
+export function processQr(raw: string): QrProcessResult {
+  if (!raw?.trim()) return { status: "invalid", reason: "Empty QR data" };
+
+  const payload = decodeQr(raw);
+  if (!payload) return { status: "unsupported", raw };
+  if (isExpired(payload)) return { status: "expired", payload };
+
+  const route = resolveRoute(payload);
+  if (route) return { status: "route", route, payload };
+  return { status: "inline", payload };
+}
