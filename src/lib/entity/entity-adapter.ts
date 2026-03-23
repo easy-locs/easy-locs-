@@ -167,6 +167,7 @@ function rowToEntity(row: any): PlatformEntity {
       wallet: row.cap_wallet ?? false,
       qr: row.cap_qr ?? false,
       chat: row.cap_chat ?? false,
+      call: row.cap_call ?? false,
       booking: row.cap_booking ?? false,
       delivery: row.cap_delivery ?? false,
       subscription: row.cap_subscription ?? false,
