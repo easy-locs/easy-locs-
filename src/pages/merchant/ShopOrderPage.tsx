@@ -1,21 +1,22 @@
 /**
  * ShopOrderPage — Auto-generated customer order page per shop.
  * Route: /order/:shopSlug
+ * Supports query params: ?table=X&qr=CODE&mode=desk
  *
  * Mobile-first, conversion-optimized, SEO-ready.
- * Header + status + structured menu + cart + checkout.
+ * Header + status + structured menu + cart + checkout → creates real order in DB.
  */
-import { useParams } from "react-router-dom";
+import { useParams, useSearchParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useStorefrontCart } from "@/hooks/useStorefrontCart";
 import { useState, useMemo } from "react";
-import { Loader2, MapPin, Clock, Star, ShoppingCart, Plus, Minus, Trash2, ChevronRight } from "lucide-react";
+import { Loader2, MapPin, Clock, Star, ShoppingCart, Plus, Minus, Trash2, ChevronRight, ArrowLeft, UtensilsCrossed } from "lucide-react";
 import { cn } from "@/lib/utils";
 import SEOHead from "@/components/SEOHead";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
 
 const fmtPrice = (n: number, c = "AED") => {
   try { return new Intl.NumberFormat(undefined, { style: "currency", currency: c, minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(n); }
@@ -24,18 +25,35 @@ const fmtPrice = (n: number, c = "AED") => {
 
 export default function ShopOrderPage() {
   const { shopSlug } = useParams<{ shopSlug: string }>();
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const { user } = useAuth();
+
+  const tableNumber = searchParams.get("table");
+  const qrCode = searchParams.get("qr");
+  const mode = searchParams.get("mode"); // "desk" for front desk
+
   const [activeCategory, setActiveCategory] = useState("All");
   const [cartOpen, setCartOpen] = useState(false);
+  const [placing, setPlacing] = useState(false);
 
   // Fetch shop
   const { data: shop, isLoading: shopLoading } = useQuery({
     queryKey: ["order-shop", shopSlug],
     queryFn: async () => {
-      const { data } = await (supabase as any)
+      // Try by slug first, then by ID
+      let query = (supabase as any)
         .from("storefront_pages")
-        .select("id, name, slug, description, logo_url, banner_url, city, address, rating, reviews_count, vertical, currency, country, contact_phone, active, is_published")
-        .eq("slug", shopSlug)
-        .maybeSingle();
+        .select("id, name, slug, description, logo_url, banner_url, city, address, rating, reviews_count, vertical, currency, country, contact_phone, active, is_published, user_id");
+
+      const isUuid = shopSlug && /^[0-9a-f-]{36}$/i.test(shopSlug);
+      if (isUuid) {
+        query = query.eq("id", shopSlug);
+      } else {
+        query = query.eq("slug", shopSlug);
+      }
+
+      const { data } = await query.maybeSingle();
       return data;
     },
     enabled: !!shopSlug,
@@ -45,13 +63,28 @@ export default function ShopOrderPage() {
   const { data: products } = useQuery({
     queryKey: ["order-products", shop?.id],
     queryFn: async () => {
-      const { data } = await (supabase as any)
+      // Try products table first
+      const { data: prods } = await (supabase as any)
         .from("products")
         .select("id, name, description, price, image_url, category, available")
         .eq("shop_id", shop.id)
         .eq("available", true)
         .order("sort_order", { ascending: true });
-      return data ?? [];
+
+      if (prods && prods.length > 0) return prods;
+
+      // Fallback to seed_products
+      const { data: seeds } = await (supabase as any)
+        .from("seed_products")
+        .select("id, name, description, price, image_url, category, is_available")
+        .eq("merchant_id", shop.id)
+        .eq("is_available", true)
+        .order("name", { ascending: true });
+
+      return (seeds ?? []).map((s: any) => ({
+        ...s,
+        available: s.is_available,
+      }));
     },
     enabled: !!shop?.id,
   });
@@ -64,10 +97,10 @@ export default function ShopOrderPage() {
     if (!products) return [];
     return Object.entries(cart)
       .map(([id, qty]) => ({ ...products.find((p: any) => p.id === id), qty }))
-      .filter((i) => i.id && i.qty > 0);
+      .filter((i: any) => i.id && i.qty > 0);
   }, [cart, products]);
-  const cartTotal = cartItems.reduce((s, i) => s + (i.price || 0) * i.qty, 0);
-  const cartCount = cartItems.reduce((s, i) => s + i.qty, 0);
+  const cartTotal = cartItems.reduce((s: number, i: any) => s + (i.price || 0) * i.qty, 0);
+  const cartCount = cartItems.reduce((s: number, i: any) => s + i.qty, 0);
 
   const addToCart = (id: string) => setCart((prev) => ({ ...prev, [id]: (prev[id] || 0) + 1 }));
   const removeFromCart = (id: string) => setCart((prev) => {
@@ -88,6 +121,55 @@ export default function ShopOrderPage() {
     ? products ?? []
     : (products ?? []).filter((p: any) => (p.category || "Other") === activeCategory);
 
+  // Place order — writes to storefront_orders
+  async function placeOrder() {
+    if (cartCount === 0) return;
+    setPlacing(true);
+
+    try {
+      const itemsJson = cartItems.map((i: any) => ({
+        product_id: i.id,
+        name: i.name,
+        price: i.price,
+        qty: i.qty,
+        subtotal: (i.price || 0) * i.qty,
+      }));
+
+      const orderPayload: Record<string, any> = {
+        shop_id: shop.id,
+        seller_id: shop.user_id || shop.id,
+        buyer_id: user?.id || null,
+        status: "pending",
+        total: cartTotal,
+        subtotal: cartTotal,
+        currency,
+        fulfillment_type: mode === "desk" ? "counter" : tableNumber ? "dine_in" : "takeaway",
+        notes: qrCode ? `QR: ${qrCode}` : null,
+      };
+
+      if (tableNumber) orderPayload.table_code = tableNumber;
+
+      const { data: order, error } = await (supabase as any)
+        .from("storefront_orders")
+        .insert(orderPayload)
+        .select("id, status")
+        .single();
+
+      if (error) throw error;
+
+      toast.success("Order placed! 🎉", { description: `Order #${order.id.slice(0, 8)}` });
+      setCart({});
+      setCartOpen(false);
+
+      // Navigate to tracking
+      navigate(`/qr/track?shop=${shop.slug || shop.id}&order=${order.id}`);
+    } catch (e: any) {
+      toast.error(e?.message || "Failed to place order");
+    } finally {
+      setPlacing(false);
+    }
+  }
+
   if (shopLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -99,8 +181,12 @@ export default function ShopOrderPage() {
   if (!shop) {
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
+        <UtensilsCrossed className="w-12 h-12 text-muted-foreground/30 mb-4" />
         <p className="text-lg font-bold text-foreground">Shop not found</p>
         <p className="text-sm text-muted-foreground mt-1">This shop doesn't exist or has been removed.</p>
+        <button onClick={() => navigate("/")} className="mt-4 px-5 py-2.5 rounded-xl text-sm font-bold bg-primary text-primary-foreground">
+          Go Home
+        </button>
       </div>
     );
   }
@@ -115,6 +201,15 @@ export default function ShopOrderPage() {
       />
 
       <div className="min-h-screen bg-background pb-24">
+        {/* Table / desk context banner */}
+        {(tableNumber || mode === "desk") && (
+          <div className="bg-primary/10 px-4 py-2 flex items-center gap-2 text-xs font-medium text-primary">
+            {tableNumber && <span>🍽️ Table {tableNumber}</span>}
+            {mode === "desk" && <span>🏪 Front Desk Order</span>}
+            {qrCode && <span className="ml-auto text-[10px] text-muted-foreground">QR: {qrCode.slice(0, 12)}…</span>}
+          </div>
+        )}
+
         {/* Hero header */}
         <div className="relative">
           {shop.banner_url ? (
@@ -124,7 +219,10 @@ export default function ShopOrderPage() {
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent" />
 
-          {/* Logo + info overlay */}
+          <button onClick={() => navigate(-1)} className="absolute top-3 left-3 w-9 h-9 rounded-xl flex items-center justify-center bg-background/80 backdrop-blur active:scale-95">
+            <ArrowLeft className="w-4 h-4 text-foreground" />
+          </button>
+
           <div className="absolute bottom-0 left-0 right-0 px-4 pb-4">
             <div className="flex items-end gap-3">
               {shop.logo_url ? (
@@ -162,9 +260,9 @@ export default function ShopOrderPage() {
 
         {/* Service modes */}
         <div className="px-4 py-3 flex gap-2">
-          {["Delivery", "Pickup", "Dine-in"].map((mode) => (
-            <span key={mode} className="text-[10px] font-medium text-muted-foreground bg-muted rounded-full px-2.5 py-1">
-              {mode}
+          {["Delivery", "Pickup", "Dine-in"].map((m) => (
+            <span key={m} className="text-[10px] font-medium text-muted-foreground bg-muted rounded-full px-2.5 py-1">
+              {m}
             </span>
           ))}
           <span className="flex items-center gap-1 text-[10px] text-muted-foreground ml-auto">
@@ -234,6 +332,7 @@ export default function ShopOrderPage() {
 
           {filtered.length === 0 && (
             <div className="text-center py-12">
+              <UtensilsCrossed className="w-10 h-10 text-muted-foreground/20 mx-auto mb-3" />
               <p className="text-sm text-muted-foreground">No products available</p>
             </div>
           )}
@@ -254,7 +353,7 @@ export default function ShopOrderPage() {
             </SheetTrigger>
             <SheetContent side="bottom" className="rounded-t-3xl max-h-[80vh]">
               <SheetHeader>
-                <SheetTitle>Your Order</SheetTitle>
+                <SheetTitle>Your Order{tableNumber ? ` — Table ${tableNumber}` : ""}</SheetTitle>
               </SheetHeader>
               <div className="space-y-3 mt-4 overflow-y-auto max-h-[50vh]">
                 {cartItems.map((item: any) => (
@@ -285,13 +384,14 @@ export default function ShopOrderPage() {
                 </div>
                 <Button
                   className="w-full h-14 text-base font-bold rounded-2xl"
-                  onClick={() => {
-                    toast.success("Order placed! 🎉");
-                    setCart({});
-                    setCartOpen(false);
-                  }}
+                  disabled={placing}
+                  onClick={placeOrder}
                 >
-                  Place Order — {fmtPrice(cartTotal, currency)}
+                  {placing ? (
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                  ) : (
+                    `Place Order — ${fmtPrice(cartTotal, currency)}`
+                  )}
                 </Button>
               </div>
             </SheetContent>
