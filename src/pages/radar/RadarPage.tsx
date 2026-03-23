@@ -3,7 +3,6 @@ import { useRadarGeo } from "@/hooks/useRadarGeo";
 import { useRadarStore } from "@/stores/radarStore";
 import { RadarFilterMenu } from "@/components/radar/RadarFilterMenu";
 import { RadarResultsList } from "@/components/radar/RadarResultsList";
-import { RadarUserPulse } from "@/components/radar/RadarUserPulse";
 import { ultraHaptic } from "@/lib/performance/useUltraFast";
 import { useGeoStore } from "@/lib/geo/geo-store";
 import { geoService } from "@/lib/geo/geo-service";

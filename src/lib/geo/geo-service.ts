@@ -100,10 +100,16 @@ class GeoService {
   /** Force a fresh GPS attempt — stops current watch and restarts */
   forceRetry() {
     this.stop();
-    useGeoStore.getState().setStatePartial({
-      error: null,
-      permission: "unknown",
-    });
+    const current = useGeoStore.getState();
+    // Only reset permission if not already granted (avoid losing valid state)
+    if (current.permission !== "granted") {
+      useGeoStore.getState().setStatePartial({
+        error: null,
+        permission: "unknown",
+      });
+    } else {
+      useGeoStore.getState().setStatePartial({ error: null });
+    }
     this.start();
   }
 
