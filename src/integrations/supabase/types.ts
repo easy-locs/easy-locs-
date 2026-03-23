@@ -19587,6 +19587,9 @@ export type Database = {
           contact_telegram: string | null
           contact_whatsapp: string | null
           country: string | null
+          cover_auto_url: string | null
+          cover_owner_url: string | null
+          cover_source: string | null
           coverage_mode: string
           coverage_radius_m: number | null
           created_at: string | null
@@ -19613,6 +19616,8 @@ export type Database = {
           live_lat: number | null
           live_lng: number | null
           live_updated_at: string | null
+          logo_auto_url: string | null
+          logo_owner_url: string | null
           logo_url: string | null
           longitude: number | null
           menu_quality_score: number | null
@@ -19624,6 +19629,7 @@ export type Database = {
           org_id: string
           presence_mode: string
           products_count: number | null
+          provenance_json: Json | null
           radius_km: number | null
           ranking_score: number
           rating: number | null
@@ -19674,6 +19680,9 @@ export type Database = {
           contact_telegram?: string | null
           contact_whatsapp?: string | null
           country?: string | null
+          cover_auto_url?: string | null
+          cover_owner_url?: string | null
+          cover_source?: string | null
           coverage_mode?: string
           coverage_radius_m?: number | null
           created_at?: string | null
@@ -19700,6 +19709,8 @@ export type Database = {
           live_lat?: number | null
           live_lng?: number | null
           live_updated_at?: string | null
+          logo_auto_url?: string | null
+          logo_owner_url?: string | null
           logo_url?: string | null
           longitude?: number | null
           menu_quality_score?: number | null
@@ -19711,6 +19722,7 @@ export type Database = {
           org_id: string
           presence_mode?: string
           products_count?: number | null
+          provenance_json?: Json | null
           radius_km?: number | null
           ranking_score?: number
           rating?: number | null
@@ -19761,6 +19773,9 @@ export type Database = {
           contact_telegram?: string | null
           contact_whatsapp?: string | null
           country?: string | null
+          cover_auto_url?: string | null
+          cover_owner_url?: string | null
+          cover_source?: string | null
           coverage_mode?: string
           coverage_radius_m?: number | null
           created_at?: string | null
@@ -19787,6 +19802,8 @@ export type Database = {
           live_lat?: number | null
           live_lng?: number | null
           live_updated_at?: string | null
+          logo_auto_url?: string | null
+          logo_owner_url?: string | null
           logo_url?: string | null
           longitude?: number | null
           menu_quality_score?: number | null
@@ -19798,6 +19815,7 @@ export type Database = {
           org_id?: string
           presence_mode?: string
           products_count?: number | null
+          provenance_json?: Json | null
           radius_km?: number | null
           ranking_score?: number
           rating?: number | null
