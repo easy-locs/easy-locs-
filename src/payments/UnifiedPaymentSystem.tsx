@@ -94,6 +94,14 @@ export function UnifiedPaymentProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const handleConfirm = useCallback(async () => {
+    // Anti-double-payment debounce
+    const now = Date.now();
+    if (now - lastConfirmRef.current < DEBOUNCE_MS) {
+      console.warn("[Payment] debounce: confirm blocked (too fast)");
+      return;
+    }
+    lastConfirmRef.current = now;
+
     if (!request || loading) return;
     if (!user?.id) {
       setError("You must sign in to pay.");
