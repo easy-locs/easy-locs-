@@ -31,8 +31,10 @@ export default function NotificationCenter() {
   const { user } = useAuth();
   const { t } = useI18n();
   const notifications = useUnifiedNotificationStore((s) => s.notifications);
+  const loading = useUnifiedNotificationStore((s) => s.loading);
   const hydrate = useUnifiedNotificationStore((s) => s.hydrate);
   const markAsRead = useUnifiedNotificationStore((s) => s.markAsRead);
+  const markAllAsRead = useUnifiedNotificationStore((s) => s.markAllAsRead);
   const unreadCount = useUnifiedNotificationStore((s) => s.unreadCount);
 
   useEffect(() => {
