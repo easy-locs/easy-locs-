@@ -4,6 +4,7 @@
  * World-ready: supports full canonical layers (identity, geo, taxonomy, capabilities).
  */
 import { supabase } from "@/integrations/supabase/client";
+import { canonicalTaxonomyPayload } from "@/lib/taxonomy/taxonomy-guard";
 
 function generateSlug(name: string, city: string): string {
   const base = `${name}-${city}`
@@ -79,7 +80,7 @@ export async function autoCreateStorefront(params: AutoStorefrontParams): Promis
     launch_status: "draft",
     user_id: params.userId,
     org_id: params.orgId,
-    vertical: params.vertical ?? params.category ?? "food",
+    vertical: canonicalTaxonomyPayload(params.vertical ?? params.category ?? "food", undefined, params.subcategory).vertical,
     metadata_json: { auto_generated: true, source: "auto_storefront_builder" },
     source_type: "import_ai",
     source_confidence: 60,
@@ -90,6 +91,10 @@ export async function autoCreateStorefront(params: AutoStorefrontParams): Promis
     has_menu: false,
     products_count: 0,
   };
+
+  // Canonical taxonomy
+  const tax = canonicalTaxonomyPayload(params.vertical ?? params.category, params.cluster, params.subcategory);
+  if (tax.cluster) insertPayload.cluster = tax.cluster;
 
   // Taxonomy (nullable/safe)
   if (params.subcategory) insertPayload.subcategory = params.subcategory;
