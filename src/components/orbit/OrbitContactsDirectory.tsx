@@ -229,8 +229,16 @@ export default function OrbitContactsDirectory() {
     if (isInCall || isStartingCall) { toast.info("Already in a call"); return; }
     haptic("medium");
     try {
+      // Resolve the contact's org membership for proper call routing
+      const { data: contactOrg } = await supabase
+        .from("org_members")
+        .select("org_id")
+        .eq("user_id", contact.contact_user_id)
+        .limit(1)
+        .maybeSingle();
+
       await startCall({
-        orgId: contact.contact_user_id,
+        orgId: contactOrg?.org_id || orgId || contact.contact_user_id,
         peerName: contact.name,
         contextType: "contact",
         contextId: contact.id,
@@ -239,7 +247,7 @@ export default function OrbitContactsDirectory() {
     } catch {
       toast.error("Failed to start call");
     }
-  }, [startCall, isInCall, isStartingCall]);
+  }, [startCall, isInCall, isStartingCall, orgId]);
 
   const handlePay = useCallback((contact: OrbitContact) => {
     if (!contact.contact_user_id) return;

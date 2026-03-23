@@ -127,6 +127,17 @@ const STALE_THRESHOLD_MS = 5_000;
 async function refreshCommunication(userId: string, orgId?: string) {
   const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString();
 
+  // Resolve user's orbit_id for call log filtering
+  let userOrbitId: string | null = null;
+  try {
+    const { data: orbitProfile } = await (supabase as any)
+      .from("orbit_profiles_v2")
+      .select("orbit_id")
+      .eq("id", userId)
+      .maybeSingle();
+    userOrbitId = orbitProfile?.orbit_id || null;
+  } catch { /* silent */ }
+
   const [unreadMessages, missedCalls, activeContacts] = await Promise.all([
     safeCount("messages", (q) => {
       let query = q.eq("read", false).neq("sender_id", userId);
@@ -135,7 +146,8 @@ async function refreshCommunication(userId: string, orgId?: string) {
     }),
     safeCount("call_logs", (q) => {
       let query = q.eq("status", "missed").gt("created_at", weekAgo);
-      if (orgId) query = query.eq("receiver_orbit_id", orgId);
+      // Filter by the user's actual orbit_id, not the orgId
+      if (userOrbitId) query = query.eq("receiver_orbit_id", userOrbitId);
       return query;
     }),
     safeCount("contacts", (q) => q.eq("owner_id", userId)),
@@ -168,10 +180,11 @@ async function refreshNotifications(userId: string) {
 async function refreshWallet(userId: string) {
   try {
     const { data } = await supabase
-      .from("wallet_balances")
+      .from("wallet_accounts")
       .select("balance")
-      .eq("user_id", userId)
-      .eq("currency", "LOCS")
+      .eq("owner_user_id", userId)
+      .eq("status", "active")
+      .limit(1)
       .maybeSingle();
     return { walletBalance: (data as any)?.balance ?? 0 };
   } catch {
