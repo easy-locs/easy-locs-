@@ -1,6 +1,6 @@
 /**
  * AdminBulkSeedPage — Seeds 20 shops per category across Dubai.
- * All shops created with launch_status = 'waiting_launch'.
+ * All shops created with visibility_mode = 'coming_soon'.
  * Products go into canonical `products` table linked by shop_id.
  */
 import { useState } from "react";
