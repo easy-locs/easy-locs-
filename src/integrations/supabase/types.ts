@@ -6473,10 +6473,19 @@ export type Database = {
           banner_url: string | null
           boost_tier: string | null
           boost_until: string | null
+          cap_booking: boolean | null
+          cap_chat: boolean | null
+          cap_delivery: boolean | null
+          cap_qr: boolean | null
+          cap_subscription: boolean | null
+          cap_wallet: boolean | null
           city: string | null
+          city_code: string | null
           cluster: string | null
           country_code: string | null
+          coverage_type: string | null
           created_at: string
+          district_code: string | null
           email: string | null
           entity_type: Database["public"]["Enums"]["entity_type"]
           id: string
@@ -6492,6 +6501,7 @@ export type Database = {
           rating: number | null
           review_count: number | null
           seed_merchant_id: string | null
+          service_modes: string[] | null
           slug: string | null
           status: string
           storefront_page_id: string | null
@@ -6509,10 +6519,19 @@ export type Database = {
           banner_url?: string | null
           boost_tier?: string | null
           boost_until?: string | null
+          cap_booking?: boolean | null
+          cap_chat?: boolean | null
+          cap_delivery?: boolean | null
+          cap_qr?: boolean | null
+          cap_subscription?: boolean | null
+          cap_wallet?: boolean | null
           city?: string | null
+          city_code?: string | null
           cluster?: string | null
           country_code?: string | null
+          coverage_type?: string | null
           created_at?: string
+          district_code?: string | null
           email?: string | null
           entity_type?: Database["public"]["Enums"]["entity_type"]
           id?: string
@@ -6528,6 +6547,7 @@ export type Database = {
           rating?: number | null
           review_count?: number | null
           seed_merchant_id?: string | null
+          service_modes?: string[] | null
           slug?: string | null
           status?: string
           storefront_page_id?: string | null
@@ -6545,10 +6565,19 @@ export type Database = {
           banner_url?: string | null
           boost_tier?: string | null
           boost_until?: string | null
+          cap_booking?: boolean | null
+          cap_chat?: boolean | null
+          cap_delivery?: boolean | null
+          cap_qr?: boolean | null
+          cap_subscription?: boolean | null
+          cap_wallet?: boolean | null
           city?: string | null
+          city_code?: string | null
           cluster?: string | null
           country_code?: string | null
+          coverage_type?: string | null
           created_at?: string
+          district_code?: string | null
           email?: string | null
           entity_type?: Database["public"]["Enums"]["entity_type"]
           id?: string
@@ -6564,6 +6593,7 @@ export type Database = {
           rating?: number | null
           review_count?: number | null
           seed_merchant_id?: string | null
+          service_modes?: string[] | null
           slug?: string | null
           status?: string
           storefront_page_id?: string | null
