@@ -17,6 +17,11 @@ export async function sendTextMessage(input: {
   receiverOrbitId?: string;
   body: string;
 }): Promise<ChatMessageRow> {
+  // GUARD: prevent sending message to self
+  if (input.receiverOrbitId && input.senderOrbitId === input.receiverOrbitId) {
+    throw new Error("Cannot send a message to yourself");
+  }
+
   const userId = await getCurrentUserId();
 
   const safeBody = DOMPurify.sanitize(input.body, {
