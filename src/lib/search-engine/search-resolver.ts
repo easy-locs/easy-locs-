@@ -161,7 +161,7 @@ function mapStorefront(row: any, state: SearchState): SearchResult {
     city: row.city,
     slug: row.slug,
     isOpen: row.is_open,
-    score: row.audit_score,
+    score: row.display_priority ?? row.audit_score ?? 0,
   };
 }
 
