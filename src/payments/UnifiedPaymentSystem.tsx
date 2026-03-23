@@ -62,6 +62,10 @@ export function UnifiedPaymentProvider({ children }: { children: ReactNode }) {
     resolve: (value: PaymentResult) => void;
   } | null>(null);
 
+  // Anti-double-payment: track last confirmed txId and debounce timestamp
+  const lastConfirmRef = useRef<number>(0);
+  const DEBOUNCE_MS = 2000;
+
   const closePayment = useCallback(() => {
     if (loading) return;
     // Resolve the pending promise so callers don't hang forever
