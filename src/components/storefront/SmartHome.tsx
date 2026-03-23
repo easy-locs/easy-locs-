@@ -213,7 +213,7 @@ function DynamicSection({ section, shops, index }: { section: { key: string; tit
         {shops.map((shop) => (
           <Link
             key={shop.id}
-            to={`/shop/${shop.slug}`}
+            to={shop.slug ? `/s/${shop.slug}` : `/s/${shop.id}`}
             className="shrink-0 w-[148px] rounded-2xl border border-border/15 bg-card/50 overflow-hidden active:scale-[0.96] transition-transform"
           >
             <div className="h-[92px] bg-muted/10 flex items-center justify-center relative overflow-hidden">
