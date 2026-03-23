@@ -23,10 +23,10 @@ export async function resolveQrTarget(targetCode: string): Promise<ResolvedQrTar
   debugLog.info("qr", "resolve_qr_start", `targetCode=${targetCode}`);
 
   try {
-    // Fetch QR target with shop slug in one query
+    // Step 1: Fetch QR target WITHOUT join to avoid RLS recursion on storefront_pages
     const { data, error } = await (supabase as any)
       .from("qr_order_targets")
-      .select("*, storefront_pages!qr_order_targets_storefront_page_id_fkey(slug, name)")
+      .select("*")
       .eq("target_code", targetCode)
       .eq("active", true)
       .maybeSingle();
@@ -40,7 +40,28 @@ export async function resolveQrTarget(targetCode: string): Promise<ResolvedQrTar
       throw new Error("QR target not found");
     }
 
-    // Increment scan count
+    // Step 2: Resolve shop slug separately if we have a storefront_page_id
+    let shopSlug: string | null = null;
+    let shopName: string | null = null;
+
+    if (data.storefront_page_id) {
+      try {
+        const { data: shop } = await (supabase as any)
+          .from("storefront_pages")
+          .select("slug, name")
+          .eq("id", data.storefront_page_id)
+          .maybeSingle();
+        if (shop) {
+          shopSlug = shop.slug ?? null;
+          shopName = shop.name ?? null;
+        }
+      } catch {
+        // If storefront lookup fails due to RLS, use fallback
+        debugLog.warn("qr", "resolve_qr_shop_fallback", "Could not resolve shop slug, using target_code");
+      }
+    }
+
+    // Increment scan count (fire-and-forget)
     (supabase as any)
       .from("qr_order_targets")
       .update({ 
@@ -52,8 +73,6 @@ export async function resolveQrTarget(targetCode: string): Promise<ResolvedQrTar
 
     debugLog.success("qr", "resolve_qr_success", "QR target loaded", serializeForDebug(data));
 
-    const shop = data.storefront_pages;
-
     return {
       targetCode: data.target_code,
       merchantProfileId: data.merchant_profile_id,
@@ -64,8 +83,8 @@ export async function resolveQrTarget(targetCode: string): Promise<ResolvedQrTar
       tableNumber: data.table_number ?? null,
       terminalId: data.terminal_id ?? null,
       active: !!data.active,
-      shopSlug: shop?.slug ?? null,
-      shopName: shop?.name ?? null,
+      shopSlug,
+      shopName,
     };
   } catch (e) {
     debugLog.error("qr", "resolve_qr_exception", safeErrorMessage(e));
