@@ -60,7 +60,7 @@ export interface ActivationCheckItem {
 // ── Main activation evaluator ──
 export function evaluateActivation(shop: any, products?: any[]): ActivationResult {
   const audit = auditShop(shop);
-  const catalogAudit = auditCatalog(shop, products);
+  const catalogAudit = auditMenu(products ?? [], shop.vertical);
   const sourceType = (shop.source_type || "manual") as SourceType;
   const sourceRules = getSourceRules(sourceType);
   const isClaimed = !!shop.claimed_by_owner || !!shop.is_claimed;
