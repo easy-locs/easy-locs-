@@ -7,6 +7,8 @@ import { useParams, useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import SEOHead from "@/components/SEOHead";
+import { resolveCoverImage, resolveLogoImage } from "@/lib/image/dual-layer-image";
+import { getRequiredAttribution } from "@/lib/image/source-policy";
 import { buildAppUrl } from "@/lib/app-domain";
 import ShareButtons from "@/components/public/ShareButtons";
 import { useStorefrontCart } from "@/hooks/useStorefrontCart";
