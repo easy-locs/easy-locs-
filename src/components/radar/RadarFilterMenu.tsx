@@ -3,16 +3,7 @@ import type { RadarCategory } from "@/lib/radar/types";
 import { RadarSweep } from "@/components/radar/RadarSweep";
 import { ultraHaptic } from "@/lib/performance/useUltraFast";
 import { eventBus } from "@/lib/events/eventBus";
-import { VERTICALS } from "@/lib/discovery/verticals";
-
-const CATEGORIES: { cat: RadarCategory; icon: string; label: string }[] = [
-  { cat: "all", icon: "✨", label: "All" },
-  { cat: "food", icon: "🍕", label: "Food" },
-  { cat: "grocery", icon: "🛒", label: "Grocery" },
-  { cat: "shops", icon: "🛍️", label: "Shops" },
-  { cat: "services", icon: "🔧", label: "Services" },
-  { cat: "property", icon: "🏠", label: "Property" },
-];
+import { RADAR_CATEGORIES, getSubcategoriesForRadarCategory, type RadarMainCategory } from "@/lib/taxonomy/canonical";
 
 export function RadarFilterMenu() {
   const menuOpen = useRadarStore((s) => s.menuOpen);
@@ -23,16 +14,7 @@ export function RadarFilterMenu() {
 
   if (!menuOpen) return null;
 
-  // Get subcategories from canonical verticals
-  const verticalMap: Record<string, string> = {
-    food: "food",
-    grocery: "grocery",
-    shops: "retail",
-    services: "services",
-    property: "real_estate",
-  };
-  const verticalDef = VERTICALS.find((v) => v.value === verticalMap[category]);
-  const subs = verticalDef?.subcategories ?? [];
+  const subs = getSubcategoriesForRadarCategory(category as RadarMainCategory);
 
   const pickCategory = (cat: RadarCategory) => {
     ultraHaptic("light");
@@ -54,11 +36,9 @@ export function RadarFilterMenu() {
       <div className="absolute inset-0 bg-black/65 backdrop-blur-xl" onClick={closeMenu} />
 
       <div className="relative flex flex-col items-center gap-5 z-10 max-w-[90vw]">
-        {/* Radar circle with category ring */}
         <div className="relative w-[260px] h-[260px] rounded-full border border-primary/20">
           <RadarSweep />
 
-          {/* Center — ALL button */}
           <button
             onClick={() => { pickCategory("all"); closeMenu(); }}
             className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 flex h-14 w-14 items-center justify-center rounded-full bg-primary/20 text-xs font-bold text-primary-foreground active:scale-[0.90] transition-transform duration-75"
@@ -66,30 +46,28 @@ export function RadarFilterMenu() {
             ALL
           </button>
 
-          {/* Category buttons positioned in circle */}
-          {CATEGORIES.filter(c => c.cat !== "all").map(({ cat, icon }, i) => {
+          {RADAR_CATEGORIES.filter(c => c.value !== "all").map(({ value, emoji }, i) => {
             const angle = (i * 72 - 90) * (Math.PI / 180);
             const r = 95;
             const x = 130 + r * Math.cos(angle) - 24;
             const y = 130 + r * Math.sin(angle) - 24;
             return (
               <button
-                key={cat}
-                onClick={() => pickCategory(cat)}
+                key={value}
+                onClick={() => pickCategory(value as RadarCategory)}
                 style={{ position: "absolute", left: x, top: y }}
                 className={`z-10 flex h-12 w-12 items-center justify-center rounded-full text-xl active:scale-[0.90] transition-transform duration-75 ${
-                  category === cat
+                  category === value
                     ? "bg-primary/30 shadow-[0_0_16px_hsl(var(--primary)/0.4)] ring-2 ring-primary/40"
                     : "bg-muted/70"
                 }`}
               >
-                {icon}
+                {emoji}
               </button>
             );
           })}
         </div>
 
-        {/* Subcategory chips — from canonical verticals */}
         {subs.length > 0 && (
           <div className="flex flex-wrap justify-center gap-2 max-w-[300px]">
             {subs.slice(0, 8).map((sub) => (
@@ -98,7 +76,7 @@ export function RadarFilterMenu() {
                 onClick={() => pickSub(sub.value)}
                 className="flex items-center gap-1 rounded-full border border-border/20 bg-muted/60 px-3 py-1.5 text-[11px] text-foreground active:scale-[0.95] transition-transform duration-75"
               >
-                <span>{sub.icon}</span> {sub.label}
+                <span>{sub.emoji}</span> {sub.label}
               </button>
             ))}
           </div>
