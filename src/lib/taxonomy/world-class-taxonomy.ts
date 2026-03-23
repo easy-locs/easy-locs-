@@ -441,3 +441,62 @@ export function getSubcategoriesForCluster(
 }
 
 export const ALL_SUBCATEGORY_VALUES = [...ALL_SUBS];
+
+// ═══════════════════════════════════════════════════════════
+//  DEEP HIERARCHY HELPERS
+// ═══════════════════════════════════════════════════════════
+
+/**
+ * Returns hierarchy depth-match score for a point against a target filter.
+ * exact subcategory = 3, same cluster = 2, same vertical = 1, no match = 0.
+ */
+export function hierarchyMatchScore(
+  pointSub: string | null | undefined,
+  targetSub?: string | null,
+  targetVertical?: string | null
+): number {
+  if (!pointSub) return 0;
+  const normPoint = normalizeSubcategory(pointSub);
+  if (!normPoint) return 0;
+
+  // Exact subcategory match
+  if (targetSub) {
+    const normTarget = normalizeSubcategory(targetSub);
+    if (normPoint === normTarget) return 3;
+  }
+
+  // Find parent info for the point's subcategory
+  const pointVertical = getParentVertical(normPoint);
+  if (!pointVertical) return 0;
+
+  // Cluster match: same cluster within same vertical as the target subcategory
+  if (targetSub) {
+    const normTarget = normalizeSubcategory(targetSub);
+    if (normTarget) {
+      const targetInfo = pointVertical.subcategories.find((s) => s.value === normTarget);
+      const pointInfo = pointVertical.subcategories.find((s) => s.value === normPoint);
+      if (targetInfo && pointInfo && targetInfo.cluster === pointInfo.cluster) return 2;
+    }
+  }
+
+  // Vertical match
+  if (targetVertical) {
+    const normVert = normalizeVertical(targetVertical);
+    if (pointVertical.value === normVert) return 1;
+  }
+
+  return 0;
+}
+
+/**
+ * Get the cluster value for a given subcategory.
+ */
+export function getClusterForSubcategory(subValue: string): string | null {
+  const norm = normalizeSubcategory(subValue);
+  if (!norm) return null;
+  for (const v of CANONICAL_VERTICALS) {
+    const found = v.subcategories.find((s) => s.value === norm);
+    if (found) return found.cluster;
+  }
+  return null;
+}
