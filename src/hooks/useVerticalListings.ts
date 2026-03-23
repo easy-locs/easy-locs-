@@ -1,11 +1,11 @@
 /**
- * useVerticalListings — Fetches UNIFIED data (storefront_pages + seed_merchants)
- * for a given vertical with optional subcategory filter.
- * Uses CANONICAL TAXONOMY for normalization.
+ * useVerticalListings — Fetches UNIFIED data for a given vertical.
+ * Uses CANONICAL discovery pipeline — visibility, routing, radius enforced.
  */
 import { useQuery } from "@tanstack/react-query";
 import { useGeoStore } from "@/lib/geo/geo-store";
-import { fetchUnifiedPoints } from "@/lib/radar/fetchUnifiedPoints";
+import { useDiscoveryStore } from "@/stores/discoveryStore";
+import { fetchCanonicalDiscovery } from "@/lib/discovery/canonical-discovery-pipeline";
 import { verticalToRadarCategory } from "@/lib/taxonomy/world-class-taxonomy";
 
 export interface ListingItem {
@@ -27,16 +27,19 @@ export interface ListingItem {
 
 export function useVerticalListings(vertical: string, subcategory?: string | null) {
   const geoPoint = useGeoStore((s) => s.point);
+  const radiusKm = useDiscoveryStore((s) => s.radiusKm);
 
   return useQuery({
-    queryKey: ["vertical-listings", vertical, subcategory ?? "all", geoPoint?.lat?.toFixed(2)],
+    queryKey: ["vertical-listings", vertical, subcategory ?? "all", geoPoint?.lat?.toFixed(2), radiusKm],
     queryFn: async () => {
       const radarCategory = verticalToRadarCategory(vertical);
-      const points = await fetchUnifiedPoints({
+      const points = await fetchCanonicalDiscovery({
+        surface: "vertical",
         userLocation: geoPoint ? { lat: geoPoint.lat, lng: geoPoint.lng } : undefined,
         category: radarCategory,
         subcategory: subcategory ?? undefined,
         vertical,
+        radiusKm: radiusKm ?? undefined,
         limit: 100,
       });
 
