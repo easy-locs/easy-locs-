@@ -112,7 +112,6 @@ export default function ShopOrderPage() {
       <SEOHead
         title={`${shop.name} — Order Online`}
         description={shop.description || `Order from ${shop.name} in ${shop.city}`}
-        keywords={`${shop.name}, order online, ${shop.city}, ${shop.vertical}`}
       />
 
       <div className="min-h-screen bg-background pb-24">
