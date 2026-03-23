@@ -3,7 +3,7 @@
  * Searches storefronts, seed merchants, and products.
  * Returns unified SearchResult[] with taxonomy-aware ranking.
  * 
- * GOVERNANCE: All queries go through query-governance.ts — no launch_status filtering.
+ * GOVERNANCE: All queries go through query-governance.ts.
  */
 import { supabase } from "@/integrations/supabase/client";
 import type { SearchState, SearchResult, AutocompleteGroup } from "./search-types";
