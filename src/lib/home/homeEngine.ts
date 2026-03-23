@@ -24,9 +24,10 @@ export async function getHomeEngineSnapshot(params?: {
 }) {
   const limit = params?.limit ?? 12;
 
-  let merchantQuery = supabase
-    .from("marketplace_listings")
+  let merchantQuery = (supabase as any)
+    .from("seed_merchants")
     .select("*")
+    .eq("is_active", true)
     .order("visibility_score", { ascending: false })
     .limit(120);
 

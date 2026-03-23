@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { haversineKm } from "@/lib/geo/distance";
 
 export interface MapMerchantPin {
   id: string;
@@ -12,9 +13,9 @@ export interface MapMerchantPin {
   area?: string | null;
   city?: string | null;
   coverImage?: string | null;
+  slug?: string | null;
 }
 
-import { haversineKm } from "@/lib/geo/distance";
 export { haversineKm as haversineDistanceKm } from "@/lib/geo/distance";
 
 export async function getMapMerchantPins(params?: {
@@ -24,28 +25,65 @@ export async function getMapMerchantPins(params?: {
 }) {
   const limit = params?.limit ?? 300;
 
-  let query = supabase.from("marketplace_listings").select("*").limit(limit);
-  if (params?.category) query = query.eq("category", params.category);
-  if (params?.city) query = query.eq("city", params.city);
+  // Primary source: storefront_pages (launched entities)
+  let sfQuery = (supabase as any)
+    .from("storefront_pages")
+    .select("id, name, slug, vertical, category, subcategory, latitude, longitude, rating, city, area, banner_url, logo_url, launch_status")
+    .eq("launch_status", "launched")
+    .limit(limit);
+  if (params?.category) sfQuery = sfQuery.eq("vertical", params.category);
+  if (params?.city) sfQuery = sfQuery.eq("city", params.city);
 
-  const { data, error } = await query;
-  if (error) throw error;
+  // Secondary source: seed_merchants
+  let seedQuery = (supabase as any)
+    .from("seed_merchants")
+    .select("id, name, category, subcategory, city, area, rating, cover_image, is_open")
+    .eq("is_active", true)
+    .limit(limit);
+  if (params?.category) seedQuery = seedQuery.eq("category", params.category);
+  if (params?.city) seedQuery = seedQuery.eq("city", params.city);
 
-  return ((data ?? []) as any[]).map(
-    (row): MapMerchantPin => ({
+  const [sfRes, seedRes] = await Promise.all([sfQuery, seedQuery]);
+  const pins: MapMerchantPin[] = [];
+  const seenIds = new Set<string>();
+
+  for (const row of sfRes.data ?? []) {
+    seenIds.add(row.id);
+    pins.push({
+      id: row.id,
+      name: row.name,
+      category: row.vertical || row.category || "food",
+      subcategory: row.subcategory ?? null,
+      lat: row.latitude ? Number(row.latitude) : null,
+      lng: row.longitude ? Number(row.longitude) : null,
+      rating: row.rating ? Number(row.rating) : null,
+      isOpen: true,
+      area: row.area ?? null,
+      city: row.city ?? null,
+      coverImage: row.banner_url || row.logo_url || null,
+      slug: row.slug ?? null,
+    });
+  }
+
+  for (const row of seedRes.data ?? []) {
+    if (seenIds.has(row.id)) continue;
+    pins.push({
       id: row.id,
       name: row.name,
       category: row.category,
       subcategory: row.subcategory ?? null,
-      lat: row.latitude ?? row.lat ?? null,
-      lng: row.longitude ?? row.lng ?? null,
-      rating: row.rating ?? null,
+      lat: null,
+      lng: null,
+      rating: row.rating ? Number(row.rating) : null,
       isOpen: !!row.is_open,
       area: row.area ?? null,
       city: row.city ?? null,
       coverImage: row.cover_image ?? null,
-    })
-  );
+      slug: null,
+    });
+  }
+
+  return pins;
 }
 
 export async function getNearbyMerchants(params: {

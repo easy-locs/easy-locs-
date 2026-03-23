@@ -1,6 +1,7 @@
 /**
  * RestaurantPage — Merchant detail with menu from seed_products.
  * Route: /food/restaurant/:restaurantId
+ * Queries storefront_pages first, falls back to seed_merchants.
  */
 import { useState, useRef, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
@@ -26,14 +27,30 @@ export default function RestaurantPage() {
   const sectionRefs = useRef<Record<string, HTMLElement | null>>({});
 
   const { data: shop, isLoading } = useQuery({
-    queryKey: ["restaurant-seed", restaurantId],
+    queryKey: ["restaurant-detail", restaurantId],
     queryFn: async () => {
-      const { data } = await (supabase as any)
-        .from("marketplace_listings")
+      // Try storefront_pages first
+      const { data: sf } = await (supabase as any)
+        .from("storefront_pages")
+        .select("id, name, slug, vertical, category, subcategory, city, area, address, rating, reviews_count, banner_url, logo_url, latitude, longitude, contact_phone, contact_whatsapp, website_url")
+        .eq("id", restaurantId)
+        .maybeSingle();
+      if (sf) {
+        return {
+          ...sf,
+          cover_image: sf.banner_url || sf.logo_url,
+          review_count: sf.reviews_count,
+          delivery_time_min: null,
+          delivery_time_max: null,
+        };
+      }
+      // Fallback to seed_merchants
+      const { data: seed } = await (supabase as any)
+        .from("seed_merchants")
         .select("*")
         .eq("id", restaurantId)
         .maybeSingle();
-      return data;
+      return seed;
     },
     enabled: !!restaurantId,
     staleTime: 60_000,
@@ -120,14 +137,14 @@ export default function RestaurantPage() {
             <span className="flex items-center gap-1 text-xs font-semibold">
               <Star className="w-3.5 h-3.5" style={{ color: "hsl(45 90% 50%)", fill: "hsl(45 90% 50%)" }} />
               {Number(shop.rating).toFixed(1)}
-              <span className="text-muted-foreground">({shop.review_count})</span>
+              <span className="text-muted-foreground">({shop.review_count ?? shop.reviews_count})</span>
             </span>
           )}
           {shop?.subcategory && (
             <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full" style={{ background: "hsl(var(--primary) / 0.1)", color: "hsl(var(--primary))" }}>{shop.subcategory}</span>
           )}
-          {shop?.area && (
-            <span className="flex items-center gap-1 text-[11px] text-muted-foreground"><MapPin className="w-3 h-3" />{shop.area}</span>
+          {(shop?.area || shop?.city) && (
+            <span className="flex items-center gap-1 text-[11px] text-muted-foreground"><MapPin className="w-3 h-3" />{shop.area}{shop.area && shop.city ? `, ${shop.city}` : shop.city}</span>
           )}
           {shop?.delivery_time_min != null && (
             <span className="flex items-center gap-1 text-[11px] text-muted-foreground"><Clock className="w-3 h-3" />{shop.delivery_time_min}–{shop.delivery_time_max} min</span>
