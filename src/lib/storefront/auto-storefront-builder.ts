@@ -5,7 +5,7 @@
  */
 import { supabase } from "@/integrations/supabase/client";
 import { canonicalTaxonomyPayload } from "@/lib/taxonomy/taxonomy-guard";
-import { resolveVerticalFromSubcategory } from "@/lib/taxonomy/subcategory-vertical-map";
+import { classifyBusiness, type ClassificationInput } from "@/lib/taxonomy/classification-engine";
 
 function generateSlug(name: string, city: string): string {
   const base = `${name}-${city}`
