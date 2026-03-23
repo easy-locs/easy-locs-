@@ -200,17 +200,37 @@ export function auditShop(shop: any): ShopAuditResult {
     status = "needs_review";
   }
 
-  // Gate flags: blocker → never live/publishable
-  const isPublishable = blockers.length === 0 && score >= 75;
-  const isSearchable = blockers.length === 0 && score >= 50;
-  const isMapVisible = isSearchable && !!(shop.city || shop.latitude);
-  const isOrderable = isPublishable && (rule.requiresCatalog || rule.requiresMenu ? shopHasMenu : true);
-  const isBookable = isPublishable && rule.requiresBooking;
+  // Raw gate flags (before source caps)
+  const rawPublishable = blockers.length === 0 && score >= 75;
+  const rawSearchable = blockers.length === 0 && score >= 50;
+  const rawMapVisible = rawSearchable && !!(shop.city || shop.latitude);
+  const rawOrderable = rawPublishable && (rule.requiresCatalog || rule.requiresMenu ? shopHasMenu : true);
+  const rawBookable = rawPublishable && rule.requiresBooking;
+
+  // Apply source-based visibility caps
+  const sourceCapped = applySourceVisibility(shop.source_type, shop.is_claimed, {
+    isPublishable: rawPublishable,
+    isSearchable: rawSearchable,
+    isOrderable: rawOrderable,
+    isMapVisible: rawMapVisible,
+    isBookable: rawBookable,
+    status,
+  });
+
+  // Override status if source caps it
+  if (sourceCapped.effectiveStatus !== status) {
+    status = sourceCapped.effectiveStatus as ShopAuditResult["status"];
+  }
 
   const issues = [...blockers, ...warnings];
 
   return {
-    score, status, isPublishable, isSearchable, isMapVisible, isOrderable, isBookable,
+    score, status,
+    isPublishable: sourceCapped.isPublishable,
+    isSearchable: sourceCapped.isSearchable,
+    isMapVisible: sourceCapped.isMapVisible,
+    isOrderable: sourceCapped.isOrderable,
+    isBookable: sourceCapped.isBookable,
     breakdown: { identity, photos, taxonomy, location, contact, catalog, rating },
     blockers, warnings, issues,
   };
