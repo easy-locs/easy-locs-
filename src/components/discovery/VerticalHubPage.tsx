@@ -83,11 +83,10 @@ export default function VerticalHubPage({ vertical }: { vertical: VerticalDef })
   return (
     <UniversePageShell
       title={vertical.label}
-      subtitle={vertical.seoDescription.slice(0, 60)}
+      subtitle={`Discover ${vertical.label.toLowerCase()} near you`}
       icon={iconElement}
-      gradient={vertical.gradient}
-      seoTitle={vertical.seoTitle}
-      seoDescription={vertical.seoDescription}
+      seoTitle={`${vertical.label} — Easy-Locs`}
+      seoDescription={`Browse ${vertical.label.toLowerCase()} near you on Easy-Locs.`}
       search={
         <UniverseSearch
           placeholder={`Search ${vertical.label.toLowerCase()}…`}
