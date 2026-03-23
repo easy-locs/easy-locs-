@@ -24,7 +24,7 @@ const PERIOD_CONFIG: Record<TimePeriod, { label: string; emoji: string; boostedS
   lunch: {
     label: "Lunch",
     emoji: "☀️",
-    boostedSubs: ["fast_food", "lebanese", "indian", "chinese", "arabic", "asian", "healthy", "restaurant"],
+    boostedSubs: ["fast_food", "lebanese", "indian", "chinese", "arabic", "asian", "healthy", "restaurant", "shawarma", "wraps", "pasta"],
   },
   snack: {
     label: "Snack Time",
@@ -34,12 +34,12 @@ const PERIOD_CONFIG: Record<TimePeriod, { label: string; emoji: string; boostedS
   dinner: {
     label: "Dinner",
     emoji: "🌙",
-    boostedSubs: ["italian", "japanese", "seafood", "turkish", "dineout", "restaurant", "indian", "lebanese"],
+    boostedSubs: ["italian", "japanese", "seafood", "turkish", "dineout", "restaurant", "indian", "lebanese", "pasta", "sushi"],
   },
   lateNight: {
     label: "Late Night",
     emoji: "🌃",
-    boostedSubs: ["fast_food", "american", "ready_to_eat"],
+    boostedSubs: ["fast_food", "american", "ready_to_eat", "burger", "shawarma", "pizza"],
   },
 };
 

@@ -4,7 +4,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, ArrowRight, Loader2 } from "lucide-react";
-import { parsePaymentQrPayload } from "@/lib/pay/qrPayload";
+import { decodeQr } from "@/lib/qr-engine";
 import { AppCard } from "@/components/ui/AppCard";
 import { AppActionButton } from "@/components/ui/AppActionButton";
 import { toast } from "sonner";
@@ -20,18 +20,26 @@ export default function PaymentLinkResolverPage() {
     setLoading(true);
 
     try {
-      // Try as QR JSON payload
-      const parsed = parsePaymentQrPayload(trimmed);
-      if (parsed) {
-        const params = new URLSearchParams();
-        if (parsed.recipientUserId) params.set("userId", parsed.recipientUserId);
-        if (parsed.recipientOrbitId) params.set("orbitId", parsed.recipientOrbitId);
-        if (parsed.recipientEmail) params.set("email", parsed.recipientEmail);
-        if (parsed.amount) params.set("amount", String(parsed.amount));
-        if (parsed.currency) params.set("currency", parsed.currency);
-        if (parsed.note) params.set("note", parsed.note);
-        navigate(`/pay/confirm?${params.toString()}`);
-        return;
+      // Try as QR/JSON payload via unified qr-engine
+      const payload = decodeQr(trimmed);
+      if (payload) {
+        if (payload.action === "pay_user") {
+          const params = new URLSearchParams();
+          params.set("userId", payload.userId);
+          if (payload.amount) params.set("amount", String(payload.amount));
+          if (payload.currency) params.set("currency", payload.currency);
+          if (payload.name) params.set("note", payload.name);
+          navigate(`/pay/confirm?${params.toString()}`);
+          return;
+        }
+        if (payload.action === "pay_shop") {
+          navigate(`/s/${payload.shopSlug}`);
+          return;
+        }
+        if (payload.action === "payment_request") {
+          navigate(`/pay/request/${payload.requestId}`);
+          return;
+        }
       }
 
       // Try as email
