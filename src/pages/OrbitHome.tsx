@@ -7,6 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { governSeedQuery } from "@/lib/discovery/query-governance";
 import MarketplaceSection from "@/components/marketplace/MarketplaceSection";
 import { useWalletBalance } from "@/payments/wallet-hooks";
 import {
