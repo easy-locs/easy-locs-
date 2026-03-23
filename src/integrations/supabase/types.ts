@@ -26261,7 +26261,15 @@ export type Database = {
         Args: { _org_id: string; _user_id: string }
         Returns: boolean
       }
+      is_workspace_admin_direct: {
+        Args: { p_workspace_id: string }
+        Returns: boolean
+      }
       is_workspace_member: { Args: { _workspace_id: string }; Returns: boolean }
+      is_workspace_member_direct: {
+        Args: { p_workspace_id: string }
+        Returns: boolean
+      }
       purchase_boost: {
         Args: {
           _duration_days?: number
