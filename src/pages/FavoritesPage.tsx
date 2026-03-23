@@ -30,8 +30,10 @@ export default function FavoritesPage() {
       // Try storefront_pages first, then seed_merchants for remaining
       const { data: sfData } = await (supabase as any)
         .from("storefront_pages")
-        .select("id, name, slug, vertical, category, subcategory, city, address, region, rating, reviews_count, banner_url, logo_url")
-        .in("id", merchantIds);
+        .select("id, name, slug, vertical, category, subcategory, city, address, region, rating, reviews_count, banner_url, logo_url, visibility_mode, route_status")
+        .in("id", merchantIds)
+        .neq("route_status", "broken")
+        .or("visibility_mode.eq.live,visibility_mode.eq.ready,visibility_mode.eq.coming_soon,visibility_mode.eq.search_only,visibility_mode.eq.map_only,visibility_mode.is.null");
 
       const foundIds = new Set((sfData ?? []).map((r: any) => r.id));
       const missingIds = merchantIds.filter((id: string) => !foundIds.has(id));
