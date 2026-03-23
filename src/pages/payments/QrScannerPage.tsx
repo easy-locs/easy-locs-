@@ -117,10 +117,16 @@ export default function QrScannerPage() {
     if (updateState && mountedRef.current) setState("stopped");
   }, [resetFlags]);
 
+  const [payStepLabel, setPayStepLabel] = useState("");
+
   const handleQrResult = useCallback(async (raw: string) => {
-    console.log("[QR RAW]", raw);
+    const t0 = performance.now();
+    console.log("[QR] ── PIPELINE START ──");
+    console.log("[QR] raw:", raw);
+
     const payload = decodeQr(raw);
-    console.log("[QR PAYLOAD]", payload);
+    const t1 = performance.now();
+    console.log(`[QR] decode: ${(t1 - t0).toFixed(0)}ms`, payload);
 
     if (!payload) {
       platformBus.emit("qr.scan.failed", { raw, reason: "unsupported_format" }, "system");
@@ -135,40 +141,67 @@ export default function QrScannerPage() {
 
     if (payload.action === "pay_user") {
       platformBus.emit("qr.payment.initiated", { action: "pay_user", userId: payload.userId }, "wallet");
+      setPayStepLabel("Verifying recipient…");
       setS("paying");
 
-      // Timeout fallback — never stay stuck
-      const timeoutId = setTimeout(() => {
-        if (mountedRef.current && !handledRef.current) {
-          console.warn("[QR] Resolution timed out after 8s");
-          setE("QR not recognized or network issue"); setS("error");
-        }
-      }, 8000);
+      // ── HARD VALIDATION: userId must exist ──
+      if (!payload.userId?.trim()) {
+        console.error("[QR] HARD FAIL: missing userId in pay_user payload");
+        setE("Invalid QR — no recipient ID"); setS("error"); return;
+      }
 
+      const tResolveStart = performance.now();
       let resolved: ResolvedPayTarget;
       try {
-        resolved = await resolvePayTarget({ userId: payload.userId, currency: payload.currency || "AED" });
-        console.log("[QR RESOLVED]", resolved);
+        resolved = await withTimeout(
+          resolvePayTarget({ userId: payload.userId, currency: payload.currency || "AED" }),
+          6000,
+          "Recipient lookup timed out"
+        );
+        const tResolveEnd = performance.now();
+        console.log(`[QR] resolvePayTarget: ${(tResolveEnd - tResolveStart).toFixed(0)}ms`, resolved);
       } catch (err) {
-        clearTimeout(timeoutId);
         console.error("[QR] resolvePayTarget failed:", err);
-        setE("Could not verify recipient"); setS("error"); return;
+        setE(err instanceof Error ? err.message : "Could not verify recipient");
+        setS("error"); return;
       }
-      clearTimeout(timeoutId);
 
       if (!mountedRef.current) return;
-      if (resolved.walletStatus === "locked") { setE("Recipient wallet is locked"); setS("error"); return; }
 
+      // ── HARD FAIL GATES — never open payment with bad data ──
+      if (!resolved.targetUserId) {
+        console.error("[QR] HARD FAIL: recipient not found");
+        setE("Recipient not found"); setS("error"); return;
+      }
+      if (resolved.walletStatus === "locked") {
+        setE("Recipient wallet is locked"); setS("error"); return;
+      }
+      if (resolved.walletStatus === "missing" || !resolved.targetWalletId) {
+        setE("Recipient has no active wallet"); setS("error"); return;
+      }
+      if (user?.id && resolved.targetUserId === user.id) {
+        setE("Cannot pay yourself"); setS("error"); return;
+      }
+
+      setPayStepLabel("Opening payment…");
+
+      const tPayStart = performance.now();
       try {
         const result = await openPaymentRef.current({
-          amount: payload.amount || 0, currency: resolved.currency || "AED",
-          title: `Pay ${resolved.displayName || payload.name || "User"}`,
+          amount: payload.amount || 0,
+          currency: resolved.currency || payload.currency || "AED",
+          title: `Pay ${resolved.displayName || payload.name || ""}`.trim() || "Payment",
           subtitle: "QR Payment",
           recipientId: resolved.targetUserId,
-          recipientName: resolved.displayName || payload.name || "QR Recipient",
-          contextType: "generic", contextId: resolved.targetUserId,
+          recipientName: resolved.displayName || payload.name || null,
+          contextType: "qr_payment",
+          contextId: resolved.targetUserId,
           metadata: { source: "qr_scan", qr_type: "pay_user", resolved_wallet_id: resolved.targetWalletId },
         });
+        const tPayEnd = performance.now();
+        console.log(`[QR] openPayment: ${(tPayEnd - tPayStart).toFixed(0)}ms`, result);
+        console.log(`[QR] ── PIPELINE TOTAL: ${(tPayEnd - t0).toFixed(0)}ms ──`);
+
         if (!mountedRef.current) return;
         if (result.ok) {
           setSuccessAmount(`${payload.amount || 0} ${resolved.currency || "AED"}`);
@@ -195,29 +228,44 @@ export default function QrScannerPage() {
     }
 
     if (payload.action === "pay_shop") {
+      setPayStepLabel("Looking up shop…");
       setS("paying");
 
-      const timeoutId = setTimeout(() => {
-        if (mountedRef.current && !handledRef.current) {
-          setE("QR not recognized or network issue"); setS("error");
-        }
-      }, 8000);
+      if (!payload.shopSlug?.trim()) {
+        console.error("[QR] HARD FAIL: missing shopSlug");
+        setE("Invalid QR — no shop identifier"); setS("error"); return;
+      }
 
+      const tShopStart = performance.now();
       let shopOwnerId: string | undefined;
       try {
-        const { data: shop } = await supabase.from("storefront_pages").select("user_id").eq("slug", payload.shopSlug).maybeSingle();
+        const { data: shop } = await withTimeout(
+          supabase.from("storefront_pages").select("user_id, name").eq("slug", payload.shopSlug).maybeSingle(),
+          5000,
+          "Shop lookup timed out"
+        );
         shopOwnerId = shop?.user_id || undefined;
-      } catch {}
-      clearTimeout(timeoutId);
+        const tShopEnd = performance.now();
+        console.log(`[QR] shop lookup: ${(tShopEnd - tShopStart).toFixed(0)}ms`, { shopOwnerId, name: shop?.name });
+      } catch (err) {
+        console.error("[QR] shop lookup failed:", err);
+        setE(err instanceof Error ? err.message : "Shop lookup failed"); setS("error"); return;
+      }
 
       if (!mountedRef.current) return;
       if (!shopOwnerId) { setE("Shop not found"); setS("error"); return; }
 
+      setPayStepLabel("Opening payment…");
+
       try {
         const result = await openPaymentRef.current({
-          amount: payload.amount || 0, currency: payload.currency || "AED",
-          title: `Pay ${payload.name || "Shop"}`, subtitle: "QR shop payment",
-          recipientId: shopOwnerId, contextType: "shop", contextId: payload.shopSlug,
+          amount: payload.amount || 0,
+          currency: payload.currency || "AED",
+          title: `Pay ${payload.name || "Shop"}`,
+          subtitle: "QR shop payment",
+          recipientId: shopOwnerId,
+          contextType: "shop",
+          contextId: payload.shopSlug,
           metadata: { source: "qr_scan", qr_type: "pay_shop", shopSlug: payload.shopSlug },
         });
         if (!mountedRef.current) return;
@@ -252,7 +300,7 @@ export default function QrScannerPage() {
       navigateRef.current(route, { replace: true }); return;
     }
     setE("Unsupported QR format"); setS("error");
-  }, [setE, setS]);
+  }, [setE, setS, user?.id]);
 
   const handleImageUpload = useCallback(async (file: File) => {
     setS("starting"); setE("");
