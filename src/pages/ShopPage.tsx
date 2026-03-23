@@ -74,14 +74,24 @@ export default function ShopPage() {
   const [couponCode, setCouponCode] = useState("");
   const [checkoutMode, setCheckoutMode] = useState(false);
 
+  const isUuid = !!shopSlug && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(shopSlug);
+
   const { data: shop, isLoading } = useQuery({
     queryKey: ["storefront-page", shopSlug],
     queryFn: async () => {
-      const { data } = await (supabase as any)
+      console.log("[ShopPage] fetching shop, param:", shopSlug, "isUuid:", isUuid);
+      let query = (supabase as any)
         .from("storefront_pages")
-        .select("*")
-        .eq("slug", shopSlug!)
-        .maybeSingle();
+        .select("*");
+
+      if (isUuid) {
+        query = query.eq("id", shopSlug!);
+      } else {
+        query = query.eq("slug", shopSlug!);
+      }
+
+      const { data, error } = await query.maybeSingle();
+      console.log("[ShopPage] DB result:", data ? `found: ${data.name}` : "not found", error || "");
       return data;
     },
     enabled: !!shopSlug,
