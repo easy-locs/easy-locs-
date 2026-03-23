@@ -322,13 +322,19 @@ export async function checkNewShopDuplicate(candidate: DedupCandidate): Promise<
   const brand = extractBrand(candidate.name);
   const { data: potentials } = await (supabase as any)
     .from("storefront_pages")
-    .select("id, name, city, address, phone, latitude, longitude, source_id, website, instagram_url")
+    .select("id, name, city, address, contact_phone, latitude, longitude, source_external_id")
     .eq("city", candidate.city)
     .ilike("name", `%${brand}%`)
     .is("duplicate_of", null)
     .limit(50);
 
   if (!potentials?.length) return null;
+
+  const mapped = potentials.map((p: any) => ({
+    ...p,
+    phone: p.contact_phone,
+    source_id: p.source_external_id,
+  }));
 
   let bestMatch: DedupMatch | null = null;
   for (const p of potentials) {
