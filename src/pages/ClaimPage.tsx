@@ -5,7 +5,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { verifyClaimToken, executeClaim } from "@/lib/import/claimService";
+import { verifyClaimToken, executeClaim, resolveClaimToken } from "@/lib/import/claimService";
 import { toast } from "sonner";
 import { Store, CheckCircle2, AlertCircle, MapPin } from "lucide-react";
 
@@ -43,7 +43,9 @@ export default function ClaimPage() {
 
     setClaiming(true);
     try {
-      const result = await executeClaim(token, user.id, user.id);
+      const resolved = await resolveClaimToken(token);
+      const shopId = (resolved as any).shopId || token;
+      const result = await executeClaim({ shopId, userId: user.id, orgId: user.id });
       if (result.success) {
         setClaimed(true);
         toast.success("Business claimed successfully!");
