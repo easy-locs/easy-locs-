@@ -253,7 +253,7 @@ export async function resolveAutocomplete(
         id: s.id,
         type: "shop" as const,
         title: s.name,
-        subtitle: [s.subcategory, s.area || s.city].filter(Boolean).join(" · "),
+        subtitle: [s.subcategory, s.region || s.address || s.city].filter(Boolean).join(" · "),
         imageUrl: s.logo_url,
         slug: s.slug,
         rating: s.rating,
