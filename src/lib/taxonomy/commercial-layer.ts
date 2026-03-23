@@ -90,6 +90,11 @@ export interface CategoryBundle {
   title: string;
   description: string;
 
+  // Taxonomy (optional for bundles — they span multiple verticals)
+  vertical?: string;
+  cluster?: string | null;
+  subcategory?: string | null;
+
   // Contains
   includedOfferIds?: string[];
   includedPassIds?: string[];
