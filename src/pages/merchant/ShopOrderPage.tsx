@@ -66,9 +66,9 @@ export default function ShopOrderPage() {
       // Try products table first
       const { data: prods } = await (supabase as any)
         .from("products")
-        .select("id, name, description, price, image_url, category, available")
+        .select("id, name, description, price, image_url, category, is_available")
         .eq("shop_id", shop.id)
-        .eq("available", true)
+        .eq("is_available", true)
         .order("sort_order", { ascending: true });
 
       if (prods && prods.length > 0) return prods;
