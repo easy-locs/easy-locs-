@@ -8,7 +8,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { walletTransfer, useWalletBalance } from "@/payments/wallet-hooks";
-import { resolvePayTarget, type ResolvedTarget } from "@/lib/pay/resolvePayTarget";
+import { resolvePayTarget, type ResolvedPayTarget } from "@/lib/wallet/resolvePayTarget";
 import { AppCard } from "@/components/ui/AppCard";
 import { AppActionButton } from "@/components/ui/AppActionButton";
 import { ArrowLeft, User, Search, AlertTriangle } from "lucide-react";
@@ -20,7 +20,7 @@ export default function WalletTransferPage() {
   const { balance, currency, reload: reloadBalance, optimisticAdjust } = useWalletBalance();
 
   const [recipient, setRecipient] = useState(searchParams.get("to") || searchParams.get("email") || "");
-  const [target, setTarget] = useState<ResolvedTarget | null>(null);
+  const [target, setTarget] = useState<ResolvedPayTarget | null>(null);
   const [amount, setAmount] = useState("25");
   const [note, setNote] = useState("");
   const [saving, setSaving] = useState(false);
@@ -36,10 +36,10 @@ export default function WalletTransferPage() {
     void (async () => {
       setSearching(true);
       try {
-        const resolved = await resolvePayTarget({ userId: to, email, orbitId });
+        const resolved = await resolvePayTarget({ userId: to ?? undefined, email: email ?? undefined, orbitId: orbitId ?? undefined });
         if (resolved) {
           setTarget(resolved);
-          setRecipient(resolved.display_name || resolved.email || resolved.id);
+          setRecipient(resolved.displayName || resolved.targetUserId);
         }
       } catch (e) {
         console.error("[WalletTransfer] prefill resolve failed", e);
@@ -56,9 +56,9 @@ export default function WalletTransferPage() {
 
     try {
       const resolved = await resolvePayTarget({
-        userId: trimmed.includes("@") || trimmed.startsWith("orbit_") ? null : trimmed,
-        email: trimmed.includes("@") ? trimmed.toLowerCase() : null,
-        orbitId: trimmed.startsWith("orbit_") ? trimmed : null,
+        userId: trimmed.includes("@") || trimmed.startsWith("orbit_") ? undefined : trimmed,
+        email: trimmed.includes("@") ? trimmed.toLowerCase() : undefined,
+        orbitId: trimmed.startsWith("orbit_") ? trimmed : undefined,
       });
       if (resolved) {
         setTarget(resolved);
@@ -72,17 +72,17 @@ export default function WalletTransferPage() {
     }
   };
 
-  const walletWarning = target && target.wallet_status !== "active";
+  const walletWarning = target && target.walletStatus !== "active";
 
   const submit = async () => {
     if (!user?.id) { toast.error("Please sign in first"); return; }
-    if (!target?.id) { toast.error("Find a recipient first"); return; }
-    if (target.wallet_status === "missing") { toast.error("Recipient has no active wallet"); return; }
-    if (target.wallet_status === "locked") { toast.error("Recipient wallet is locked"); return; }
+    if (!target?.targetUserId) { toast.error("Find a recipient first"); return; }
+    if (target.walletStatus === "missing") { toast.error("Recipient has no active wallet"); return; }
+    if (target.walletStatus === "locked") { toast.error("Recipient wallet is locked"); return; }
     const numAmount = Number(amount ?? 0);
     if (!numAmount || numAmount <= 0) { toast.error("Enter a valid amount"); return; }
     if (numAmount > balance) { toast.error("Insufficient balance"); return; }
-    if (target.id === user.id) { toast.error("Cannot send to yourself"); return; }
+    if (target.targetUserId === user.id) { toast.error("Cannot send to yourself"); return; }
 
     optimisticAdjust(-numAmount);
     setSaving(true);
@@ -90,9 +90,9 @@ export default function WalletTransferPage() {
     try {
       await walletTransfer({
         senderId: user.id,
-        recipientId: target.id,
+        recipientId: target.targetUserId,
         amount: numAmount,
-        currency: "AED",
+        currency,
         contextType: "manual_transfer",
         title: note.trim() || "Transfer",
       });
@@ -145,15 +145,15 @@ export default function WalletTransferPage() {
         {target && (
           <AppCard variant="elevated" padding="sm" className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden">
-              {target.avatar_url ? (
-                <img src={target.avatar_url} alt="" className="w-full h-full object-cover" />
+              {target.avatarUrl ? (
+                <img src={target.avatarUrl} alt="" className="w-full h-full object-cover" />
               ) : (
                 <User className="h-4 w-4 text-primary" />
               )}
             </div>
             <div className="min-w-0 flex-1">
-              <p className="text-sm font-bold text-foreground truncate">{target.display_name || "Unknown"}</p>
-              <p className="text-[11px] text-muted-foreground truncate">{target.email || target.id}</p>
+              <p className="text-sm font-bold text-foreground truncate">{target.displayName || "Unknown"}</p>
+              <p className="text-[11px] text-muted-foreground truncate">{target.targetUserId}</p>
             </div>
           </AppCard>
         )}
@@ -163,7 +163,7 @@ export default function WalletTransferPage() {
           <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-destructive/10 border border-destructive/20">
             <AlertTriangle className="h-4 w-4 text-destructive shrink-0" />
             <p className="text-xs text-destructive font-medium">
-              {target!.wallet_status === "locked"
+              {target!.walletStatus === "locked"
                 ? "Recipient's wallet is locked"
                 : "Recipient has no active wallet — transfer will fail"}
             </p>
