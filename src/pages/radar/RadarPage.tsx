@@ -6,16 +6,11 @@ import { RadarResultsList } from "@/components/radar/RadarResultsList";
 import { ultraHaptic } from "@/lib/performance/useUltraFast";
 import { useGeoStore } from "@/lib/geo/geo-store";
 import { geoService } from "@/lib/geo/geo-service";
-import { supabase } from "@/integrations/supabase/client";
-import { haversineKm } from "@/lib/radar/geo";
-import type { RadarPoint } from "@/lib/radar/types";
+import { fetchUnifiedPoints } from "@/lib/radar/fetchUnifiedPoints";
 import { Search, MapPin, Navigation, Loader2 } from "lucide-react";
 import "@/styles/radar-pro.css";
 
 const UnifiedMap = lazy(() => import("@/components/map/UnifiedMap"));
-
-const BASE_SELECT =
-  "id, name, slug, vertical, category, subcategory, address, logo_url, banner_url, latitude, longitude, rating, reviews_count, ranking_score";
 
 export default function RadarPage() {
   useRadarGeo();
@@ -38,53 +33,25 @@ export default function RadarPage() {
     if (!pt) geoService.forceRetry();
   }, []);
 
-  // Fetch real listings
+  // Fetch unified listings (storefront_pages + seed_merchants)
   const fetchListings = useCallback(async () => {
     setLoadingListings(true);
     try {
-      let query = (supabase as any)
-        .from("storefront_pages")
-        .select(BASE_SELECT)
-        .eq("launch_status", "launched")
-        .not("latitude", "is", null)
-        .not("longitude", "is", null)
-        .order("ranking_score", { ascending: false })
-        .limit(100);
-
-      if (searchQuery.trim()) {
-        query = query.ilike("name", `%${searchQuery.trim()}%`);
-      }
-
-      const { data, error } = await query;
-      if (error) throw error;
-
-      const loc = useRadarStore.getState().userLocation;
-      const points: RadarPoint[] = (data ?? []).map((s: any) => ({
-        id: s.id,
-        title: s.name,
-        subtitle: s.address,
-        imageUrl: s.banner_url || s.logo_url,
-        category: mapVerticalToCategory(s.vertical || s.category),
-        subcategory: s.subcategory,
-        lat: s.latitude,
-        lng: s.longitude,
-        rating: s.rating,
-        reviewsCount: s.reviews_count,
-        isSponsored: (s.ranking_score ?? 0) > 80,
-        distanceKm: loc ? haversineKm(loc.lat, loc.lng, s.latitude, s.longitude) : undefined,
-      }));
-
+      const points = await fetchUnifiedPoints({
+        searchQuery,
+        userLocation: userLocation ?? undefined,
+      });
       setPoints(points);
     } catch (err) {
       console.error("[Radar] fetch failed:", err);
     } finally {
       setLoadingListings(false);
     }
-  }, [searchQuery, setPoints]);
+  }, [searchQuery, setPoints, userLocation?.lat, userLocation?.lng]);
 
   useEffect(() => {
     fetchListings();
-  }, [fetchListings, userLocation?.lat]);
+  }, [fetchListings]);
 
   const handleLocate = () => {
     ultraHaptic("light");
@@ -221,22 +188,4 @@ export default function RadarPage() {
       )}
     </div>
   );
-}
-
-function mapVerticalToCategory(vertical: string): RadarPoint["category"] {
-  const map: Record<string, RadarPoint["category"]> = {
-    food: "food",
-    restaurant: "food",
-    cafe: "food",
-    retail: "shops",
-    fashion: "shops",
-    grocery: "grocery",
-    supermarket: "grocery",
-    property: "property",
-    realestate: "property",
-    services: "services",
-    beauty: "services",
-    health: "services",
-  };
-  return map[vertical?.toLowerCase()] || "shops";
 }
