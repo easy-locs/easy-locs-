@@ -41,6 +41,7 @@ export function useRadarResults(opts?: { type?: string; radiusKm?: number }) {
           rating: p.rating ?? undefined,
           category: p.subcategory || p.category,
           address: p.subtitle || undefined,
+          slug: p.slug || undefined,
         }));
         setEntities(
           opts?.type && opts.type !== "all"
