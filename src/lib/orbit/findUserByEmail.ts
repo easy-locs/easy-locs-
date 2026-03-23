@@ -1,10 +1,19 @@
 /**
  * findUserByEmail — Resolves email to user identity.
- * Uses public.profiles (authoritative identity source) instead of orbit_profiles_v2.
+ * Uses public.profiles (authoritative identity source) and resolves the real orbit_id
+ * from orbit_profiles_v2 to ensure consistency with the orbit ID format.
  */
 import { supabase } from "@/integrations/supabase/client";
 
 const db = supabase as any;
+
+/**
+ * Generates the canonical orbit_id from a user UUID.
+ * Must match ensureOrbitProfile.ts logic: `orbit_${userId.slice(0, 12)}`
+ */
+function toOrbitId(userId: string): string {
+  return `orbit_${userId.slice(0, 12)}`;
+}
 
 export async function findUserByEmail(email: string) {
   const normalizedEmail = email.trim().toLowerCase();
@@ -24,10 +33,24 @@ export async function findUserByEmail(email: string) {
 
   if (!data) return null;
 
-  // Normalize to the shape consumers expect
+  // Also try to get the real orbit_id from orbit_profiles_v2
+  let orbitId = toOrbitId(data.id);
+  try {
+    const { data: orbitRow } = await db
+      .from("orbit_profiles_v2")
+      .select("orbit_id")
+      .eq("id", data.id)
+      .maybeSingle();
+    if (orbitRow?.orbit_id) {
+      orbitId = orbitRow.orbit_id;
+    }
+  } catch {
+    // Fallback to generated orbit_id
+  }
+
   return {
     id: data.id,
-    orbit_id: data.id, // profiles.id IS the user_id / orbit_id
+    orbit_id: orbitId,
     email: data.email,
     display_name: data.full_name || data.username || null,
     avatar_url: data.avatar_url || null,
@@ -51,7 +74,7 @@ export async function searchUsersByEmail(query: string, limit = 10) {
 
   return (data ?? []).map((d: any) => ({
     id: d.id,
-    orbit_id: d.id,
+    orbit_id: toOrbitId(d.id),
     email: d.email,
     display_name: d.full_name || d.username || null,
     avatar_url: d.avatar_url || null,
