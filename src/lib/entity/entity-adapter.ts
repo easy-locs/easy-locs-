@@ -101,6 +101,12 @@ export interface PlatformEntity extends EntityIdentity {
   whatsapp?: string | null;
   email?: string | null;
   website?: string | null;
+  // World-readiness
+  defaultLanguage?: string | null;
+  timezone?: string | null;
+  currency?: string | null;
+  openingHours?: Record<string, any> | null;
+  socialLinks?: Record<string, string> | null;
   // Commercial
   boostTier?: string | null;
   boostUntil?: string | null;
