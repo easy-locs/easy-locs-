@@ -37,9 +37,9 @@ export default function QrTrackingPage() {
       // Get recent orders for this customer at this shop
       const { data: orderData } = await (supabase as any)
         .from("storefront_orders")
-        .select("id, status, total_amount, currency, created_at, items_json")
+        .select("id, status, total, currency, created_at, table_code")
         .eq("shop_id", shop.id)
-        .eq("customer_user_id", user?.id || "anon")
+        .eq("buyer_id", user?.id || "anon")
         .order("created_at", { ascending: false })
         .limit(5);
 
