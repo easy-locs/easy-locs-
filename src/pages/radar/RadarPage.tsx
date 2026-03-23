@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback, useMemo, lazy, Suspense } from "react";
+import { useNavigate } from "react-router-dom";
 import { useRadarGeo } from "@/hooks/useRadarGeo";
 import { useRadarStore, type SortMode } from "@/stores/radarStore";
 import { RadarFilterMenu } from "@/components/radar/RadarFilterMenu";
@@ -31,6 +32,7 @@ const SORT_MODES: { key: SortMode; label: string }[] = [
 
 export default function RadarPage() {
   useRadarGeo();
+  const navigate = useNavigate();
 
   const userLocation = useRadarStore((s) => s.userLocation);
   const setPoints = useRadarStore((s) => s.setPoints);
@@ -235,7 +237,13 @@ export default function RadarPage() {
                 lng: p.lng,
                 imageUrl: p.imageUrl,
                 image_url: p.imageUrl,
+                slug: p.slug || undefined,
               }))}
+              onSelectEntity={(entity) => {
+                ultraHaptic("light");
+                const slug = (entity as any).slug;
+                navigate(slug ? `/s/${slug}` : `/shop/${entity.id}`);
+              }}
               userLat={userLocation?.lat}
               userLng={userLocation?.lng}
               showUserLocation={!!userLocation}
