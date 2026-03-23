@@ -849,7 +849,7 @@ const App = () => (
               <Route path="/super-map" element={<Navigate to="/radar" replace />} />
               <Route path="/map" element={<Navigate to="/radar" replace />} />
               <Route path="/radar" element={<GlobalRadarPage />} />
-              <Route path="/shops" element={<ShopsPage />} />
+              {/* /shops already routed to RetailHub above — ShopsPage is legacy */}
               <Route path="/s/:slug" element={<ShopPage />} />
               <Route path="/s/:slug/:categorySlug" element={<ShopCategoryPage />} />
               <Route path="/business" element={<MyBusinessHub />} />
