@@ -4,7 +4,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, ArrowRight, Loader2 } from "lucide-react";
-import { parsePaymentQrPayload } from "@/lib/pay/qrPayload";
+import { decodeQr } from "@/lib/qr-engine";
 import { AppCard } from "@/components/ui/AppCard";
 import { AppActionButton } from "@/components/ui/AppActionButton";
 import { toast } from "sonner";
