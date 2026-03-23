@@ -53,6 +53,12 @@ export function AddContactByEmail(props: {
         return;
       }
 
+      // Also check by orbit_id to catch edge cases
+      if (myOrbit?.orbitId && foundUser.orbit_id === myOrbit.orbitId) {
+        setError("Tu ne peux pas t'ajouter toi-même");
+        return;
+      }
+
       setResult(foundUser as FoundUser);
       props.onSelect?.(foundUser as FoundUser);
     } catch {

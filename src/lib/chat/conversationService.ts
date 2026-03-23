@@ -15,6 +15,11 @@ export async function createOrGetDirectConversation(input: {
   peerEmail?: string | null;
   peerDisplayName?: string | null;
 }): Promise<ConversationRow> {
+  // GUARD: prevent self-conversations
+  if (input.myOrbitId === input.peerOrbitId) {
+    throw new Error("Cannot create a conversation with yourself");
+  }
+
   const p1: ConversationParticipant = {
     orbitId: input.myOrbitId,
     email: input.myEmail ?? null,
