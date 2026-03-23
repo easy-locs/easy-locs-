@@ -26,7 +26,8 @@ export function governStorefrontQuery(query: any, surface: "search" | "discover"
 
   return query
     .or(modeFilter)
-    .neq("route_status", "broken");
+    .neq("route_status", "broken")
+    .not("is_flagged", "eq", true);
 }
 
 /**
