@@ -29,43 +29,11 @@ export interface RadarResult {
   totalCount: number;
 }
 
-/** Haversine distance in km */
-export function haversine(lat1: number, lon1: number, lat2: number, lon2: number): number {
-  const R = 6371;
-  const dLat = ((lat2 - lat1) * Math.PI) / 180;
-  const dLon = ((lon2 - lon1) * Math.PI) / 180;
-  const a =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos((lat1 * Math.PI) / 180) *
-    Math.cos((lat2 * Math.PI) / 180) *
-    Math.sin(dLon / 2) ** 2;
-  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-}
-
-/** Estimate ETA in minutes from distance in km */
-export function estimateETA(distanceKm: number, avgSpeedKmh = 30): number {
-  return Math.round((distanceKm / avgSpeedKmh) * 60);
-}
-
-/** Format ETA for display */
-export function formatETA(minutes: number | null): string {
-  if (minutes === null) return "—";
-  if (minutes < 1) return "< 1 min";
-  return `${minutes} min`;
-}
-
-/** Format distance for display */
-export function formatDistance(km: number): string {
-  if (km < 1) return `${Math.round(km * 1000)} m`;
-  return `${km.toFixed(1)} km`;
-}
-
-/** Proximity badge */
-export function proximityBadge(km: number): { label: string; tier: "nearby" | "medium" | "far" } {
-  if (km < 2) return { label: "Nearby", tier: "nearby" };
-  if (km < 8) return { label: "Medium", tier: "medium" };
-  return { label: "Far", tier: "far" };
-}
+// Re-export canonical geo functions for backward compatibility
+export { haversineKm, formatETA, formatDistance, proximityBadge } from "@/lib/geo/distance";
+import { haversineKm as _hkm } from "@/lib/geo/distance";
+export const haversine = _hkm;
+export const estimateETA = (distanceKm: number, avgSpeedKmh = 30) => Math.round((distanceKm / avgSpeedKmh) * 60);
 
 /**
  * Core radar computation.
@@ -120,10 +88,7 @@ export function selectBestDriver(drivers: DriverWithDistance[]): DriverWithDista
     })[0] || null;
 }
 
-// ── Aliases for migration from duplicate modules ──
-
-/** Alias: same as haversine, for consumers that used haversineKm */
-export const haversineKm = haversine;
+// ── Aliases removed — haversineKm now re-exported from @/lib/geo/distance ──
 
 /** Radius filter presets (migrated from geo-distance.ts) */
 export const RADIUS_OPTIONS = [

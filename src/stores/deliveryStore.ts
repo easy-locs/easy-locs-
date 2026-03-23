@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { supabase } from "@/integrations/supabase/client";
-import { haversine } from "@/lib/radar/radar-engine";
+import { haversineKm as haversine } from "@/lib/geo/distance";
 import { useOrbitStore } from "@/stores/orbitStore";
 
 type DeliveryJobStatus =

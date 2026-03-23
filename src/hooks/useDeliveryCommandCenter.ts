@@ -7,7 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import type { DeliveryJob } from "@/hooks/useDriverMissions";
 import type { DriverSession } from "@/hooks/useDriverSession";
-import { haversineDistance, estimateETA } from "@/lib/delivery/geo-utils";
+import { haversineKm as haversineDistance, estimateETA } from "@/lib/geo/distance";
 import type { MissionFilter } from "@/lib/delivery/mission-config";
 import { filterMissions } from "@/lib/delivery/mission-config";
 

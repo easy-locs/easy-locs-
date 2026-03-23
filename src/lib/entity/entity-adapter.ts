@@ -43,10 +43,14 @@ export type EntityType = "business" | "brand" | "driver" | "partner_network" | "
 
 export interface EntityGeography {
   countryCode: string;   // ISO 3166-1 alpha-2
+  countryName?: string | null;
+  regionCode?: string | null;
+  regionName?: string | null;
   cityCode?: string | null;     // normalized slug e.g. "dubai", "abu-dhabi"
+  cityName?: string | null;
   districtCode?: string | null; // normalized slug e.g. "marina", "downtown"
+  districtName?: string | null;
   area?: string | null;
-  city?: string | null;
   address?: string | null;
   latitude?: number | null;
   longitude?: number | null;
@@ -74,6 +78,7 @@ export interface EntityCapability {
   wallet: boolean;
   qr: boolean;
   chat: boolean;
+  call: boolean;
   booking: boolean;
   delivery: boolean;
   subscription: boolean;
@@ -96,6 +101,12 @@ export interface PlatformEntity extends EntityIdentity {
   whatsapp?: string | null;
   email?: string | null;
   website?: string | null;
+  // World-readiness
+  defaultLanguage?: string | null;
+  timezone?: string | null;
+  currency?: string | null;
+  openingHours?: Record<string, any> | null;
+  socialLinks?: Record<string, string> | null;
   // Commercial
   boostTier?: string | null;
   boostUntil?: string | null;
@@ -128,10 +139,14 @@ function rowToEntity(row: any): PlatformEntity {
     // Layer 2: Geography
     geo: {
       countryCode: row.country_code ?? "AE",
+      countryName: row.country_name ?? null,
+      regionCode: row.region_code ?? null,
+      regionName: row.region_name ?? null,
       cityCode: row.city_code ?? null,
+      cityName: row.city_name ?? row.city ?? null,
       districtCode: row.district_code ?? null,
+      districtName: row.district_name ?? null,
       area: row.area ?? null,
-      city: row.city ?? null,
       address: row.address ?? null,
       latitude: row.latitude ? Number(row.latitude) : null,
       longitude: row.longitude ? Number(row.longitude) : null,
@@ -152,6 +167,7 @@ function rowToEntity(row: any): PlatformEntity {
       wallet: row.cap_wallet ?? false,
       qr: row.cap_qr ?? false,
       chat: row.cap_chat ?? false,
+      call: row.cap_call ?? false,
       booking: row.cap_booking ?? false,
       delivery: row.cap_delivery ?? false,
       subscription: row.cap_subscription ?? false,
@@ -167,6 +183,13 @@ function rowToEntity(row: any): PlatformEntity {
     whatsapp: row.whatsapp,
     email: row.email,
     website: row.website,
+
+    // World-readiness
+    defaultLanguage: row.default_language ?? "en",
+    timezone: row.timezone ?? null,
+    currency: row.currency ?? "AED",
+    openingHours: row.opening_hours ?? null,
+    socialLinks: row.social_links ?? null,
 
     // Commercial
     boostTier: row.boost_tier,
@@ -195,6 +218,7 @@ export function toRankable(e: PlatformEntity): RankableEntity {
     orderCount: e.orderCount,
     lat: e.geo.latitude,
     lng: e.geo.longitude,
+    districtCode: e.geo.districtCode,
     boostTier: e.boostTier,
     boostUntil: e.boostUntil,
     isSponsored: !!e.boostTier,

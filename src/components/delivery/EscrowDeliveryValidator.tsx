@@ -14,6 +14,7 @@ import { Shield, Lock, Unlock, CheckCircle, AlertTriangle, Loader2, MapPin } fro
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
+import { haversineKm } from "@/lib/geo/distance";
 
 interface Props {
   jobId: string;
@@ -35,16 +36,8 @@ const STATUS_CONFIG: Record<string, { icon: typeof Lock; color: string; label: s
   pending: { icon: Shield, color: "hsl(var(--muted-foreground))", label: "En attente" },
 };
 
-const MAX_PROXIMITY_KM = 0.5; // 500m
+const MAX_PROXIMITY_KM = 0.5;
 const MAX_GPS_ACCURACY_M = 100;
-
-function haversineKm(lat1: number, lng1: number, lat2: number, lng2: number): number {
-  const R = 6371;
-  const dLat = (lat2 - lat1) * Math.PI / 180;
-  const dLng = (lng2 - lng1) * Math.PI / 180;
-  const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLng / 2) ** 2;
-  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-}
 
 export default function EscrowDeliveryValidator({
   jobId,

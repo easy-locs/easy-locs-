@@ -5,7 +5,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { formatDistance, formatETA, haversineDistance, estimateETA } from "@/lib/delivery/geo-utils";
+import { formatDistance, formatETA, haversineKm as haversineDistance, estimateETA } from "@/lib/geo/distance";
 import { Truck, MapPin, Package } from "lucide-react";
 
 interface Props {

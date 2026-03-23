@@ -1,7 +1,7 @@
 /**
  * Live ETA — Compute real-time ETA from driver position to pickup.
  */
-import { haversine } from "@/lib/radar/radar-engine";
+import { haversineKm as haversine } from "@/lib/geo/distance";
 
 export function computeLiveETA(
   driverLat: number,

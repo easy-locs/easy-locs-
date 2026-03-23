@@ -14,19 +14,8 @@ export interface MapMerchantPin {
   coverImage?: string | null;
 }
 
-function toRad(v: number) {
-  return (v * Math.PI) / 180;
-}
-
-export function haversineDistanceKm(lat1: number, lng1: number, lat2: number, lng2: number) {
-  const R = 6371;
-  const dLat = toRad(lat2 - lat1);
-  const dLng = toRad(lng2 - lng1);
-  const a =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) * Math.sin(dLng / 2);
-  return 2 * R * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-}
+import { haversineKm } from "@/lib/geo/distance";
+export { haversineKm as haversineDistanceKm } from "@/lib/geo/distance";
 
 export async function getMapMerchantPins(params?: {
   category?: "food" | "grocery" | "services" | null;
@@ -74,7 +63,7 @@ export async function getNearbyMerchants(params: {
     .filter((pin) => pin.lat != null && pin.lng != null)
     .map((pin) => ({
       ...pin,
-      distanceKm: haversineDistanceKm(params.lat, params.lng, Number(pin.lat), Number(pin.lng)),
+      distanceKm: haversineKm(params.lat, params.lng, Number(pin.lat), Number(pin.lng)),
     }))
     .filter((pin) => pin.distanceKm <= radiusKm)
     .sort((a, b) => a.distanceKm - b.distanceKm)
