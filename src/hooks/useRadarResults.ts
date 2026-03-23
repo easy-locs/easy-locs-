@@ -1,10 +1,11 @@
 /**
  * useRadarResults — Returns nearby entities for radar/discovery views.
- * Uses unified pipeline: storefront_pages + seed_merchants.
+ * Uses CANONICAL discovery pipeline — visibility, routing, radius enforced.
  */
 import { useState, useEffect } from "react";
 import { useLocationStore } from "@/stores/locationStore";
-import { fetchUnifiedPoints } from "@/lib/radar/fetchUnifiedPoints";
+import { useDiscoveryStore } from "@/stores/discoveryStore";
+import { fetchCanonicalDiscovery } from "@/lib/discovery/canonical-discovery-pipeline";
 import type { GeoEntity } from "@/lib/geo/geoEntityAdapter";
 
 const CATEGORY_TO_TYPE: Record<string, GeoEntity["type"]> = {
@@ -15,16 +16,19 @@ const CATEGORY_TO_TYPE: Record<string, GeoEntity["type"]> = {
   property: "property",
 };
 
-export function useRadarResults(opts?: { type?: string; radiusKm?: number }) {
+export function useRadarResults(opts?: { type?: string; radiusKm?: number; surface?: "radar" | "map" | "search" | "discover" | "home" }) {
   const [entities, setEntities] = useState<GeoEntity[]>([]);
   const [loading, setLoading] = useState(true);
   const location = useLocationStore((s) => s.currentLocation);
+  const radiusKm = useDiscoveryStore((s) => s.radiusKm);
 
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
-    fetchUnifiedPoints({
+    fetchCanonicalDiscovery({
+      surface: opts?.surface ?? "discover",
       userLocation: location ? { lat: location.lat, lng: location.lng } : undefined,
+      radiusKm: opts?.radiusKm ?? radiusKm ?? undefined,
     })
       .then((points) => {
         if (cancelled) return;
@@ -57,7 +61,7 @@ export function useRadarResults(opts?: { type?: string; radiusKm?: number }) {
         }
       });
     return () => { cancelled = true; };
-  }, [location?.lat, opts?.type]);
+  }, [location?.lat, opts?.type, radiusKm]);
 
   return { entities, loading, location };
 }
