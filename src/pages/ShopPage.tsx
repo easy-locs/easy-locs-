@@ -127,8 +127,29 @@ export default function ShopPage() {
   });
 
   const { data: catalogItems = [] } = useQuery({
-    queryKey: ["storefront-catalog", shop?.id],
+    queryKey: ["storefront-catalog", shop?.id, shop?._isSeed],
     queryFn: async () => {
+      // For seed merchants, load from seed_products
+      if (shop._isSeed) {
+        const { data } = await (supabase as any)
+          .from("seed_products")
+          .select("*")
+          .eq("merchant_id", shop.id)
+          .eq("is_available", true)
+          .order("sort_order");
+        return (data || []).map((p: any) => ({
+          id: p.id,
+          name: p.name,
+          description: p.description,
+          price: p.price,
+          image_url: p.image,
+          category_id: p.category,
+          category_name: p.category,
+          available: p.is_available,
+          sort_order: p.sort_order,
+        }));
+      }
+      // Standard storefront catalog
       const { data } = await (supabase as any)
         .from("catalog_items")
         .select("*, storefront_catalog_categories(name)")
