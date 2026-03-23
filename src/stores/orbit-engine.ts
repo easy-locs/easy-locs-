@@ -168,10 +168,11 @@ async function refreshNotifications(userId: string) {
 async function refreshWallet(userId: string) {
   try {
     const { data } = await supabase
-      .from("wallet_balances")
+      .from("wallet_accounts")
       .select("balance")
-      .eq("user_id", userId)
-      .eq("currency", "LOCS")
+      .eq("owner_user_id", userId)
+      .eq("status", "active")
+      .limit(1)
       .maybeSingle();
     return { walletBalance: (data as any)?.balance ?? 0 };
   } catch {
