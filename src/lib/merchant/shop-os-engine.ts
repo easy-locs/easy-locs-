@@ -146,7 +146,7 @@ export function generateShopQrSet(shop: {
   const origin = typeof window !== "undefined" ? window.location.origin : "https://easy-locs.lovable.app";
 
   // 1. Order page QR
-  const orderUrl = `${origin}/order/${shop.slug}`;
+  const orderUrl = `${origin}/menu/${shop.slug}`;
 
   // 2. Free payment QR
   const staticQr = createStaticMerchantQr({
