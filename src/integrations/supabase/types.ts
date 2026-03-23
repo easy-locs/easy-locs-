@@ -2611,6 +2611,45 @@ export type Database = {
           },
         ]
       }
+      classification_learning: {
+        Row: {
+          corrected_by: string | null
+          corrected_subcategory: string | null
+          corrected_vertical: string
+          correction_count: number | null
+          created_at: string | null
+          id: string
+          old_vertical: string
+          pattern_key: string
+          source_subcategory: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          corrected_by?: string | null
+          corrected_subcategory?: string | null
+          corrected_vertical: string
+          correction_count?: number | null
+          created_at?: string | null
+          id?: string
+          old_vertical: string
+          pattern_key: string
+          source_subcategory?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          corrected_by?: string | null
+          corrected_subcategory?: string | null
+          corrected_vertical?: string
+          correction_count?: number | null
+          created_at?: string | null
+          id?: string
+          old_vertical?: string
+          pattern_key?: string
+          source_subcategory?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       collaboration_invitations: {
         Row: {
           accepted_at: string | null
@@ -19591,10 +19630,16 @@ export type Database = {
           category: string | null
           city: string | null
           claimed_by_owner: boolean | null
+          classification_confidence: number | null
+          classification_reason: string | null
+          classification_signals: string[] | null
+          classification_version: string | null
           contact_email: string | null
           contact_phone: string | null
           contact_telegram: string | null
           contact_whatsapp: string | null
+          corrected_by_human: boolean | null
+          correction_count: number | null
           country: string | null
           cover_auto_url: string | null
           cover_owner_url: string | null
@@ -19620,6 +19665,7 @@ export type Database = {
           is_qr_enabled: boolean
           is_test: boolean
           is_verified: boolean | null
+          last_classified_at: string | null
           last_reviewed_at: string | null
           latitude: number | null
           launch_status: string
@@ -19645,6 +19691,7 @@ export type Database = {
           rating: number | null
           readiness_status: string | null
           region: string | null
+          requires_review: boolean | null
           reviews_count: number | null
           route_status: string | null
           scheduled_publish_at: string | null
@@ -19687,10 +19734,16 @@ export type Database = {
           category?: string | null
           city?: string | null
           claimed_by_owner?: boolean | null
+          classification_confidence?: number | null
+          classification_reason?: string | null
+          classification_signals?: string[] | null
+          classification_version?: string | null
           contact_email?: string | null
           contact_phone?: string | null
           contact_telegram?: string | null
           contact_whatsapp?: string | null
+          corrected_by_human?: boolean | null
+          correction_count?: number | null
           country?: string | null
           cover_auto_url?: string | null
           cover_owner_url?: string | null
@@ -19716,6 +19769,7 @@ export type Database = {
           is_qr_enabled?: boolean
           is_test?: boolean
           is_verified?: boolean | null
+          last_classified_at?: string | null
           last_reviewed_at?: string | null
           latitude?: number | null
           launch_status?: string
@@ -19741,6 +19795,7 @@ export type Database = {
           rating?: number | null
           readiness_status?: string | null
           region?: string | null
+          requires_review?: boolean | null
           reviews_count?: number | null
           route_status?: string | null
           scheduled_publish_at?: string | null
@@ -19783,10 +19838,16 @@ export type Database = {
           category?: string | null
           city?: string | null
           claimed_by_owner?: boolean | null
+          classification_confidence?: number | null
+          classification_reason?: string | null
+          classification_signals?: string[] | null
+          classification_version?: string | null
           contact_email?: string | null
           contact_phone?: string | null
           contact_telegram?: string | null
           contact_whatsapp?: string | null
+          corrected_by_human?: boolean | null
+          correction_count?: number | null
           country?: string | null
           cover_auto_url?: string | null
           cover_owner_url?: string | null
@@ -19812,6 +19873,7 @@ export type Database = {
           is_qr_enabled?: boolean
           is_test?: boolean
           is_verified?: boolean | null
+          last_classified_at?: string | null
           last_reviewed_at?: string | null
           latitude?: number | null
           launch_status?: string
@@ -19837,6 +19899,7 @@ export type Database = {
           rating?: number | null
           readiness_status?: string | null
           region?: string | null
+          requires_review?: boolean | null
           reviews_count?: number | null
           route_status?: string | null
           scheduled_publish_at?: string | null
