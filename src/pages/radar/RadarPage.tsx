@@ -32,6 +32,7 @@ const SORT_MODES: { key: SortMode; label: string }[] = [
 
 export default function RadarPage() {
   useRadarGeo();
+  const navigate = useNavigate();
 
   const userLocation = useRadarStore((s) => s.userLocation);
   const setPoints = useRadarStore((s) => s.setPoints);
