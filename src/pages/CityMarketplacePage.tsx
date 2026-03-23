@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { MapPin, Store, TrendingUp, Users } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { governStorefrontQuery } from "@/lib/discovery/query-governance";
 import { generateCitySEO } from "@/lib/seo/seo-engine";
 
 const CityMarketplacePage = () => {
