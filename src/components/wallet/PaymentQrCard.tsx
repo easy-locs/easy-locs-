@@ -1,9 +1,10 @@
 /**
  * PaymentQrCard — QR code display with Easy-Locs logo at center.
+ * Uses qr-engine canonical format (UniversalQrPayload).
  */
 import { QRCodeSVG } from "qrcode.react";
 import { AppCard } from "@/components/ui/AppCard";
-import { buildPaymentQrPayload } from "@/lib/pay/qrPayload";
+import { encodeQr, qr } from "@/lib/qr-engine";
 
 interface PaymentQrCardProps {
   recipientUserId?: string | null;
@@ -15,14 +16,14 @@ interface PaymentQrCardProps {
 }
 
 export function PaymentQrCard(props: PaymentQrCardProps) {
-  const value = buildPaymentQrPayload({
-    recipientUserId: props.recipientUserId,
-    recipientOrbitId: props.recipientOrbitId,
-    recipientEmail: props.recipientEmail,
-    amount: props.amount,
-    currency: props.currency,
-    note: props.note,
-  });
+  const userId = props.recipientUserId || props.recipientOrbitId || props.recipientEmail || "";
+  const value = encodeQr(
+    qr.payUser(userId, {
+      amount: props.amount ?? undefined,
+      currency: props.currency ?? "AED",
+      name: props.note ?? undefined,
+    })
+  );
 
   return (
     <AppCard variant="elevated" padding="lg" className="flex flex-col items-center gap-4">
