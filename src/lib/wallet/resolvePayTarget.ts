@@ -1,8 +1,9 @@
 /**
- * resolvePayTarget — DELEGATES to unified resolver.
- * Backward-compatible wrapper for QrScannerPage and legacy wallet flows.
+ * resolvePayTarget — CANONICAL resolver wrapper.
+ * Single source of truth delegating to unifiedResolver.
+ * Used by: QrScannerPage, WalletTransferPage, PaymentConfirmPage.
  */
-import { resolveUnifiedTarget, type UnifiedPayTarget } from "@/lib/pay/unifiedResolver";
+import { resolveUnifiedTarget, validatePayTarget, type UnifiedPayTarget } from "@/lib/pay/unifiedResolver";
 
 export interface ResolvedPayTarget {
   targetType: "user" | "shop";
@@ -18,21 +19,7 @@ export interface ResolvedPayTarget {
   };
 }
 
-export async function resolvePayTarget(params: {
-  userId?: string;
-  walletId?: string;
-  currency?: string;
-}): Promise<ResolvedPayTarget> {
-  const result = await resolveUnifiedTarget({
-    userId: params.userId,
-    walletId: params.walletId,
-    currency: params.currency,
-  });
-
-  if (!result) {
-    throw new Error("Cannot resolve pay target — recipient not found");
-  }
-
+function toResolvedPayTarget(result: UnifiedPayTarget): ResolvedPayTarget {
   return {
     targetType: "user",
     targetUserId: result.id,
@@ -45,6 +32,26 @@ export async function resolvePayTarget(params: {
   };
 }
 
-export async function resolveLegacyWalletTarget(walletId: string, currency?: string): Promise<ResolvedPayTarget> {
-  return resolvePayTarget({ walletId, currency });
+export async function resolvePayTarget(params: {
+  userId?: string;
+  walletId?: string;
+  email?: string;
+  orbitId?: string;
+  currency?: string;
+}): Promise<ResolvedPayTarget> {
+  const result = await resolveUnifiedTarget({
+    userId: params.userId,
+    orbitId: params.orbitId,
+    email: params.email,
+    walletId: params.walletId,
+    currency: params.currency,
+  });
+
+  if (!result) {
+    throw new Error("Cannot resolve pay target — recipient not found");
+  }
+
+  return toResolvedPayTarget(result);
 }
+
+export { validatePayTarget, type UnifiedPayTarget };
