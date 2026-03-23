@@ -5,7 +5,7 @@
 import { MapPin, Navigation, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLocationStore } from "@/stores/locationStore";
-import { haversineDistance, estimateETA, formatDistance, formatETA } from "@/lib/delivery/geo-utils";
+import { haversineKm as haversineDistance, estimateETA, formatDistance, formatETA } from "@/lib/geo/distance";
 
 type ProximityLevel = "nearby" | "medium" | "far";
 

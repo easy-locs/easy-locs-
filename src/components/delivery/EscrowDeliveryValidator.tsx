@@ -14,37 +14,7 @@ import { Shield, Lock, Unlock, CheckCircle, AlertTriangle, Loader2, MapPin } fro
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-
-interface Props {
-  jobId: string;
-  jobStatus: string;
-  escrowStatus?: string;
-  escrowAmount?: number;
-  escrowCurrency?: string;
-  confirmationCode?: string;
-  dropoffLat?: number;
-  dropoffLng?: number;
-  role: "seller" | "buyer" | "driver";
-  onStatusChange?: () => void;
-}
-
-const STATUS_CONFIG: Record<string, { icon: typeof Lock; color: string; label: string }> = {
-  held: { icon: Lock, color: "hsl(var(--warning))", label: "Fonds bloqués" },
-  released: { icon: Unlock, color: "hsl(var(--success))", label: "Fonds libérés" },
-  refunded: { icon: AlertTriangle, color: "hsl(var(--destructive))", label: "Remboursé" },
-  pending: { icon: Shield, color: "hsl(var(--muted-foreground))", label: "En attente" },
-};
-
-const MAX_PROXIMITY_KM = 0.5; // 500m
-const MAX_GPS_ACCURACY_M = 100;
-
-function haversineKm(lat1: number, lng1: number, lat2: number, lng2: number): number {
-  const R = 6371;
-  const dLat = (lat2 - lat1) * Math.PI / 180;
-  const dLng = (lng2 - lng1) * Math.PI / 180;
-  const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLng / 2) ** 2;
-  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-}
+import { haversineKm } from "@/lib/geo/distance";
 
 export default function EscrowDeliveryValidator({
   jobId,
