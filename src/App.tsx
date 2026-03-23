@@ -882,8 +882,8 @@ const App = () => (
               <Route path="/account/:orgId" element={<AccountShowcase />} />
               <Route path="/properties" element={<PropertiesShowcase />} />
 
-              {/* Real Estate Module */}
-              <Route path="/real-estate" element={<RealEstateModulePage />}>
+              {/* Real Estate Module — nested under /property-management to avoid /real-estate conflict */}
+              <Route path="/property-management" element={<RealEstateModulePage />}>
                 <Route index element={<REPropertiesPage />} />
                 <Route path="units" element={<REUnitsPage />} />
                 <Route path="tenants" element={<RETenantsPage />} />
