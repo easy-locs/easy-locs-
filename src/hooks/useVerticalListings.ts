@@ -6,7 +6,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useGeoStore } from "@/lib/geo/geo-store";
 import { fetchUnifiedPoints } from "@/lib/radar/fetchUnifiedPoints";
-import { verticalToRadarCategory } from "@/lib/taxonomy/canonical";
+import { verticalToRadarCategory } from "@/lib/taxonomy/world-class-taxonomy";
 
 export interface ListingItem {
   id: string;
