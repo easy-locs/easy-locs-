@@ -10,7 +10,7 @@ import {
   verticalToRadarCategory,
   normalizeVertical,
   normalizeSubcategory,
-} from "@/lib/taxonomy/canonical";
+} from "@/lib/taxonomy/world-class-taxonomy";
 import type { RadarPoint, RadarCategory, UserGeoPoint } from "@/lib/radar/types";
 
 /** Approximate coordinates for Dubai areas (seed_merchants have no lat/lng) */

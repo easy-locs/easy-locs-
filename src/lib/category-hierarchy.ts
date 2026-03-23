@@ -1,30 +1,27 @@
 /**
- * BACKWARD COMPATIBILITY — Re-exports from canonical taxonomy.
- * All new code should import from "@/lib/taxonomy/canonical" directly.
- * @deprecated Use @/lib/taxonomy/canonical instead.
+ * BACKWARD COMPATIBILITY — Re-exports from world-class-taxonomy.
+ * @deprecated Use @/lib/taxonomy/world-class-taxonomy instead.
  */
 import {
   CANONICAL_VERTICALS,
+  ALL_SUBCATEGORY_VALUES as CANONICAL_ALL_SUBS,
   getCanonicalSubcategory,
   getParentVertical,
-  ALL_SUBCATEGORY_VALUES as CANONICAL_ALL_SUBS,
-} from "@/lib/taxonomy/canonical";
-import type { CanonicalSubcategory, CanonicalVertical } from "@/lib/taxonomy/canonical";
+} from "@/lib/taxonomy/world-class-taxonomy";
 
-export interface SubCategory {
+export type SubCategory = {
   value: string;
   label: string;
   emoji: string;
-}
+};
 
-export interface CategoryGroup {
+export type CategoryGroup = {
   value: string;
   label: string;
   emoji: string;
   subcategories: SubCategory[];
-}
+};
 
-/** Maps canonical verticals → old CATEGORY_HIERARCHY format for backward compat */
 export const CATEGORY_HIERARCHY: CategoryGroup[] = CANONICAL_VERTICALS.map((v) => ({
   value: v.value,
   label: v.label,
@@ -47,5 +44,9 @@ export function getParentGroup(subValue: string): CategoryGroup | undefined {
 export function getSubcategoryInfo(value: string): SubCategory | undefined {
   const found = getCanonicalSubcategory(value);
   if (!found) return undefined;
-  return { value: found.value, label: found.label, emoji: found.emoji };
+  return {
+    value: found.value,
+    label: found.label,
+    emoji: found.emoji,
+  };
 }

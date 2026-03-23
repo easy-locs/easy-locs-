@@ -3,7 +3,7 @@ import type { RadarCategory } from "@/lib/radar/types";
 import { RadarSweep } from "@/components/radar/RadarSweep";
 import { ultraHaptic } from "@/lib/performance/useUltraFast";
 import { eventBus } from "@/lib/events/eventBus";
-import { RADAR_CATEGORIES, getSubcategoriesForRadarCategory, type RadarMainCategory } from "@/lib/taxonomy/canonical";
+import { RADAR_CATEGORIES, getSubcategoriesForRadarCategory, type RadarMainCategory } from "@/lib/taxonomy/world-class-taxonomy";
 
 export function RadarFilterMenu() {
   const menuOpen = useRadarStore((s) => s.menuOpen);
