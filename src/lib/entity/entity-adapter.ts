@@ -78,6 +78,7 @@ export interface EntityCapability {
   wallet: boolean;
   qr: boolean;
   chat: boolean;
+  call: boolean;
   booking: boolean;
   delivery: boolean;
   subscription: boolean;
