@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { governSeedQuery } from "@/lib/discovery/query-governance";
 
 export async function getSmartRecommendations(params: {
   userId?: string | null;
@@ -6,13 +7,13 @@ export async function getSmartRecommendations(params: {
 }) {
   const limit = params.limit ?? 12;
 
-  // Use seed_merchants directly instead of marketplace_listings view
-  const { data: merchants, error: merchantErr } = await (supabase as any)
+  // Governed seed query — canonical pipeline
+  let seedQ = (supabase as any)
     .from("seed_merchants")
     .select("*")
-    .eq("is_active", true)
-    .order("visibility_score", { ascending: false })
     .limit(80);
+  seedQ = governSeedQuery(seedQ, "discover");
+  const { data: merchants, error: merchantErr } = await seedQ;
 
   if (merchantErr) throw merchantErr;
 

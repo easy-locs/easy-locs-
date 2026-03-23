@@ -35,12 +35,12 @@ export async function getMapMerchantPins(params?: {
   if (params?.category) sfQuery = sfQuery.eq("vertical", params.category);
   if (params?.city) sfQuery = sfQuery.eq("city", params.city);
 
-  // Secondary source: seed_merchants — governed
+  // Secondary source: seed_merchants — governed (DB-native columns)
   let seedQuery = (supabase as any)
     .from("seed_merchants")
-    .select("id, name, category, subcategory, city, area, rating, cover_image, is_open, visibility_score")
+    .select("id, name, category, subcategory, city, area, rating, cover_image, is_open, visibility_score, display_priority")
     .limit(limit);
-  seedQuery = governSeedQuery(seedQuery);
+  seedQuery = governSeedQuery(seedQuery, "map");
   if (params?.category) seedQuery = seedQuery.eq("category", params.category);
   if (params?.city) seedQuery = seedQuery.eq("city", params.city);
 
