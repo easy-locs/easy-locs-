@@ -13,6 +13,7 @@ import { checkStorefrontDuplicate } from "@/lib/geo/duplicateGuard";
 import { assignZoneToStorefront } from "@/lib/zones/autoAssignZone";
 import { applyGeoDefaults } from "@/lib/geo/geo-defaults";
 import { normalizeVertical, normalizeSubcategory } from "@/lib/taxonomy/world-class-taxonomy";
+import { canonicalTaxonomyPayload } from "@/lib/taxonomy/taxonomy-guard";
 import TaxonomySelector from "@/components/storefront/TaxonomySelector";
 import CapabilityToggles, { type CapabilityFlags } from "@/components/storefront/CapabilityToggles";
 import { Button } from "@/components/ui/button";
@@ -129,9 +130,11 @@ export default function ShopCreator() {
         default_language: finalDefaults.defaultLanguage,
       };
 
-      // Taxonomy depth
-      if (cluster) insertPayload.cluster = cluster;
-      if (subcategory) insertPayload.subcategory = normalizeSubcategory(subcategory) || subcategory;
+      // Taxonomy depth — enforced canonical
+      const tax = canonicalTaxonomyPayload(vertical, cluster, subcategory);
+      insertPayload.vertical = tax.vertical;
+      if (tax.cluster) insertPayload.cluster = tax.cluster;
+      if (tax.subcategory) insertPayload.subcategory = tax.subcategory;
 
       // Geography
       if (district.trim()) insertPayload.area = district.trim();

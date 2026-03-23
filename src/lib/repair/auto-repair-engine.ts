@@ -8,9 +8,10 @@
  */
 import { supabase } from "@/integrations/supabase/client";
 import { auditShop, type ShopAuditResult } from "@/lib/audit/shop-audit";
-import { getAutoFixProducts } from "@/lib/audit/catalog-audit";
+import { getAutoFixProducts, auditMenu } from "@/lib/audit/catalog-audit";
 import { applyGeoDefaults } from "@/lib/geo/geo-defaults";
 import { normalizeVertical, getClusterForSubcategory } from "@/lib/taxonomy/world-class-taxonomy";
+import { canonicalTaxonomyPayload } from "@/lib/taxonomy/taxonomy-guard";
 
 export interface RepairResult {
   shopId: string;
@@ -78,14 +79,12 @@ export async function repairShop(shop: any): Promise<RepairResult> {
       if (!shop.timezone && defaults.timezone) { updates.timezone = defaults.timezone; fixes.push(`Set timezone: ${defaults.timezone}`); }
     }
 
-    // 3. Fix taxonomy
-    if (shop.vertical) {
-      const norm = normalizeVertical(shop.vertical);
-      if (norm !== shop.vertical) { updates.vertical = norm; fixes.push(`Normalized vertical: ${norm}`); }
-      if (shop.subcategory && !shop.cluster) {
-        const cluster = getClusterForSubcategory(shop.subcategory);
-        if (cluster) { updates.cluster = cluster; fixes.push(`Inferred cluster: ${cluster}`); }
-      }
+    // 3. Fix taxonomy — enforce canonical coherence
+    if (shop.vertical || shop.cluster || shop.subcategory) {
+      const tax = canonicalTaxonomyPayload(shop.vertical, shop.cluster, shop.subcategory);
+      if (tax.vertical !== shop.vertical) { updates.vertical = tax.vertical; fixes.push(`Normalized vertical: ${tax.vertical}`); }
+      if (tax.cluster && tax.cluster !== shop.cluster) { updates.cluster = tax.cluster; fixes.push(`Fixed cluster: ${tax.cluster}`); }
+      if (tax.subcategory && tax.subcategory !== shop.subcategory) { updates.subcategory = tax.subcategory; fixes.push(`Fixed subcategory: ${tax.subcategory}`); }
     }
 
     // 4. Generate missing images
@@ -146,11 +145,25 @@ export async function repairShop(shop: any): Promise<RepairResult> {
     const mergedShop = { ...shop, ...updates };
     const afterAudit = auditShop(mergedShop);
 
-    // 8. Store audit results
+    // 7b. Catalog quality score
+    let menuQuality = 0;
+    if (updates.products_count > 0 || shop.products_count > 0) {
+      const { data: prods } = await (supabase as any)
+        .from("products")
+        .select("*")
+        .eq("shop_id", shop.id);
+      if (prods?.length) {
+        const menuAudit = auditMenu(prods, mergedShop.vertical);
+        menuQuality = menuAudit.qualityScore;
+      }
+    }
+
+    // 8. Store audit results — all fields persisted
     const auditUpdates: Record<string, any> = {
       audit_score: afterAudit.score,
       audit_status: afterAudit.status,
       readiness_status: afterAudit.status,
+      menu_quality_score: menuQuality,
       has_photo: !!(mergedShop.logo_url || mergedShop.logo_image || mergedShop.cover_url || mergedShop.banner_url || mergedShop.cover_image),
     };
 
@@ -158,7 +171,6 @@ export async function repairShop(shop: any): Promise<RepairResult> {
     let autoPublished = false;
     if (afterAudit.isPublishable && afterAudit.blockers.length === 0 && shop.readiness_status !== "live") {
       auditUpdates.readiness_status = "ready";
-      // Only auto-set to ready, not live — live requires manual approval
       autoPublished = true;
       fixes.push("Auto-set to ready for publication");
     }

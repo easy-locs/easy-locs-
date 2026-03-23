@@ -1,5 +1,5 @@
 /**
- * Source Hygiene — Rules, deduplication, and claim flow for shop provenance.
+ * Source Hygiene — Rules, deduplication, visibility matrix, and claim flow.
  */
 import { supabase } from "@/integrations/supabase/client";
 
@@ -11,19 +11,102 @@ export interface SourceRules {
   autoPublish: boolean;
   requiresClaim: boolean;
   allowedCapsBefore: string[];
+  // Visibility matrix
+  canBeLive: boolean;
+  canBeSearchable: boolean;
+  canBeOrderable: boolean;
+  canBeMapVisible: boolean;
+  maxReadinessWithoutClaim: "draft" | "needs_review" | "ready";
+  label: string;
 }
 
 export const SOURCE_RULES: Record<SourceType, SourceRules> = {
-  onboarding:     { defaultConfidence: 100, autoPublish: false, requiresClaim: false, allowedCapsBefore: ["cap_wallet", "cap_qr", "cap_chat", "cap_call", "cap_booking", "cap_delivery", "cap_subscription"] },
-  manual:         { defaultConfidence: 100, autoPublish: false, requiresClaim: false, allowedCapsBefore: ["cap_wallet", "cap_qr", "cap_chat", "cap_call", "cap_booking", "cap_delivery", "cap_subscription"] },
-  google:         { defaultConfidence: 40,  autoPublish: false, requiresClaim: true,  allowedCapsBefore: [] },
-  aggregator:     { defaultConfidence: 50,  autoPublish: false, requiresClaim: true,  allowedCapsBefore: [] },
-  import_ai:      { defaultConfidence: 60,  autoPublish: false, requiresClaim: false, allowedCapsBefore: ["cap_delivery"] },
-  internal_seed:  { defaultConfidence: 70,  autoPublish: false, requiresClaim: false, allowedCapsBefore: ["cap_delivery", "cap_qr"] },
+  onboarding: {
+    defaultConfidence: 100, autoPublish: false, requiresClaim: false,
+    allowedCapsBefore: ["cap_wallet", "cap_qr", "cap_chat", "cap_call", "cap_booking", "cap_delivery", "cap_subscription"],
+    canBeLive: true, canBeSearchable: true, canBeOrderable: true, canBeMapVisible: true,
+    maxReadinessWithoutClaim: "ready",
+    label: "Owner Onboarded",
+  },
+  manual: {
+    defaultConfidence: 100, autoPublish: false, requiresClaim: false,
+    allowedCapsBefore: ["cap_wallet", "cap_qr", "cap_chat", "cap_call", "cap_booking", "cap_delivery", "cap_subscription"],
+    canBeLive: true, canBeSearchable: true, canBeOrderable: true, canBeMapVisible: true,
+    maxReadinessWithoutClaim: "ready",
+    label: "Manual Entry",
+  },
+  internal_seed: {
+    defaultConfidence: 70, autoPublish: false, requiresClaim: false,
+    allowedCapsBefore: ["cap_delivery", "cap_qr"],
+    canBeLive: true, canBeSearchable: true, canBeOrderable: true, canBeMapVisible: true,
+    maxReadinessWithoutClaim: "ready",
+    label: "Internal Seed",
+  },
+  import_ai: {
+    defaultConfidence: 60, autoPublish: false, requiresClaim: false,
+    allowedCapsBefore: ["cap_delivery"],
+    canBeLive: false, canBeSearchable: true, canBeOrderable: false, canBeMapVisible: true,
+    maxReadinessWithoutClaim: "needs_review",
+    label: "AI Import",
+  },
+  aggregator: {
+    defaultConfidence: 50, autoPublish: false, requiresClaim: true,
+    allowedCapsBefore: [],
+    canBeLive: false, canBeSearchable: true, canBeOrderable: false, canBeMapVisible: true,
+    maxReadinessWithoutClaim: "draft",
+    label: "Aggregator Import",
+  },
+  google: {
+    defaultConfidence: 40, autoPublish: false, requiresClaim: true,
+    allowedCapsBefore: [],
+    canBeLive: false, canBeSearchable: false, canBeOrderable: false, canBeMapVisible: true,
+    maxReadinessWithoutClaim: "draft",
+    label: "Google Import",
+  },
 };
 
-export function getSourceRules(type: SourceType): SourceRules {
-  return SOURCE_RULES[type] ?? SOURCE_RULES.manual;
+export function getSourceRules(type: SourceType | string): SourceRules {
+  return SOURCE_RULES[type as SourceType] ?? SOURCE_RULES.manual;
+}
+
+/**
+ * Apply source-based visibility caps to audit gate flags.
+ * Call after audit to enforce source restrictions.
+ */
+export function applySourceVisibility(
+  sourceType: string | null | undefined,
+  isClaimed: boolean | null | undefined,
+  auditFlags: {
+    isPublishable: boolean;
+    isSearchable: boolean;
+    isOrderable: boolean;
+    isMapVisible: boolean;
+    isBookable: boolean;
+    status: string;
+  }
+) {
+  const rules = getSourceRules(sourceType || "manual");
+  const claimed = !!isClaimed;
+
+  return {
+    isPublishable: auditFlags.isPublishable && (claimed || !rules.requiresClaim) && rules.canBeLive,
+    isSearchable: auditFlags.isSearchable && rules.canBeSearchable,
+    isOrderable: auditFlags.isOrderable && (claimed || !rules.requiresClaim) && rules.canBeOrderable,
+    isMapVisible: auditFlags.isMapVisible && rules.canBeMapVisible,
+    isBookable: auditFlags.isBookable && (claimed || !rules.requiresClaim),
+    // Cap readiness status based on source
+    effectiveStatus: !claimed && rules.requiresClaim
+      ? clampStatus(auditFlags.status, rules.maxReadinessWithoutClaim)
+      : auditFlags.status,
+  };
+}
+
+function clampStatus(status: string, max: "draft" | "needs_review" | "ready"): string {
+  const ORDER = ["draft", "needs_review", "ready", "live"];
+  const statusIdx = ORDER.indexOf(status);
+  const maxIdx = ORDER.indexOf(max);
+  if (statusIdx <= maxIdx) return status;
+  return max;
 }
 
 // ── Cross-source deduplication ──
@@ -43,7 +126,6 @@ export async function findDuplicateShops(params: {
 }): Promise<DedupeMatch[]> {
   const matches: DedupeMatch[] = [];
 
-  // External ID match (highest confidence)
   if (params.sourceExternalId) {
     const { data } = await (supabase as any)
       .from("storefront_pages")
@@ -59,7 +141,6 @@ export async function findDuplicateShops(params: {
     }
   }
 
-  // Name match (fuzzy via ilike)
   if (params.name?.trim()) {
     const { data } = await (supabase as any)
       .from("storefront_pages")
@@ -75,7 +156,6 @@ export async function findDuplicateShops(params: {
     }
   }
 
-  // Phone match
   if (params.phone?.trim()) {
     const cleanPhone = params.phone.replace(/\D/g, "");
     if (cleanPhone.length >= 7) {
@@ -104,7 +184,6 @@ export async function claimShop(params: {
   orgId: string;
   verificationMethod: "phone" | "email" | "manual";
 }): Promise<{ success: boolean; error?: string }> {
-  // Check if shop exists and is claimable
   const { data: shop, error: fetchErr } = await (supabase as any)
     .from("storefront_pages")
     .select("id, name, is_claimed, claimed_by_owner, user_id, source_type")
@@ -114,7 +193,6 @@ export async function claimShop(params: {
   if (fetchErr || !shop) return { success: false, error: "Shop not found" };
   if (shop.is_claimed && shop.claimed_by_owner) return { success: false, error: "Shop already claimed" };
 
-  // Transfer ownership
   const { error: updateErr } = await (supabase as any)
     .from("storefront_pages")
     .update({
