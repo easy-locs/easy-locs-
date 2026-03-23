@@ -45,22 +45,21 @@ export default function DiscoveryHeatmapLayer({ map, points, visible }: Props) {
         type: "heatmap",
         source: SOURCE_ID,
         paint: {
-          // Use real intensity from data (rating + reviews + activity)
           "heatmap-weight": ["get", "intensity"],
-          "heatmap-intensity": ["interpolate", ["linear"], ["zoom"], 0, 0.8, 12, 2, 15, 3.5],
+          "heatmap-intensity": ["interpolate", ["linear"], ["zoom"], 0, 1, 12, 2.5, 15, 4],
           "heatmap-color": [
             "interpolate", ["linear"], ["heatmap-density"],
             0, "rgba(0,0,0,0)",
-            0.1, "hsla(240, 60%, 50%, 0.4)",
-            0.25, "hsla(200, 70%, 50%, 0.5)",
-            0.4, "hsla(160, 60%, 50%, 0.6)",
-            0.55, "hsla(80, 70%, 55%, 0.7)",
-            0.7, "hsla(45, 90%, 55%, 0.8)",
-            0.85, "hsla(25, 85%, 55%, 0.85)",
+            0.1, "hsla(250, 50%, 45%, 0.3)",
+            0.2, "hsla(220, 60%, 50%, 0.45)",
+            0.35, "hsla(180, 55%, 50%, 0.55)",
+            0.5, "hsla(120, 50%, 55%, 0.6)",
+            0.65, "hsla(60, 70%, 55%, 0.7)",
+            0.8, "hsla(30, 85%, 55%, 0.8)",
             1, "hsla(0, 80%, 55%, 0.9)",
           ],
-          "heatmap-radius": ["interpolate", ["linear"], ["zoom"], 0, 5, 12, 20, 15, 30],
-          "heatmap-opacity": ["interpolate", ["linear"], ["zoom"], 0, 0.8, 15, 0.6],
+          "heatmap-radius": ["interpolate", ["linear"], ["zoom"], 0, 6, 12, 25, 15, 35],
+          "heatmap-opacity": ["interpolate", ["linear"], ["zoom"], 0, 0.85, 15, 0.65],
         },
       });
     };

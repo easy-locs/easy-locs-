@@ -1,6 +1,6 @@
 /**
  * RadarView — Premium discovery hub with clustered map, rich pins, radius circle,
- * advanced filters (rating, promoted), and smart ranking.
+ * advanced filters (rating, promoted, open now), and smart ranking.
  */
 import { useState, useCallback, useMemo, memo } from "react";
 import { useNavigate } from "react-router-dom";
@@ -9,9 +9,10 @@ import UnifiedMap from "@/components/map/UnifiedMap";
 import { formatGeoDistance, formatGeoETA, type SortMode } from "@/lib/geo/geoRanking";
 import type { GeoEntity } from "@/lib/geo/geoEntityAdapter";
 import { useDiscoveryStore } from "@/stores/discoveryStore";
+import { rankEntities, DISCOVERY_WEIGHTS, type RankableEntity, type RankContext } from "@/lib/ranking-engine";
 import {
   MapPin, List, Star, Navigation, Flame, Filter,
-  TrendingUp, Zap, ChevronDown,
+  TrendingUp, Zap, ChevronDown, Clock, SlidersHorizontal,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -26,13 +27,16 @@ const TYPE_FILTERS: { label: string; value: GeoEntity["type"] | "all"; icon: str
   { label: "Services", value: "service", icon: "🔧" },
 ];
 
-const SORT_OPTIONS: { label: string; value: SortMode; icon: React.ReactNode }[] = [
+type RadarSortMode = "smart" | "nearest" | "best_rated" | "trending";
+
+const SORT_OPTIONS: { label: string; value: RadarSortMode; icon: React.ReactNode }[] = [
+  { label: "Smart", value: "smart", icon: <Zap className="w-3 h-3" /> },
   { label: "Nearest", value: "nearest", icon: <Navigation className="w-3 h-3" /> },
   { label: "Top Rated", value: "best_rated", icon: <Star className="w-3 h-3" /> },
   { label: "Trending", value: "trending", icon: <TrendingUp className="w-3 h-3" /> },
 ];
 
-const RADIUS_PRESETS = [1, 3, 5, 10, 20];
+const RADIUS_PRESETS = [1, 3, 5, 10, 25];
 
 const RATING_FILTERS = [
   { label: "Any", value: 0 },
@@ -40,6 +44,25 @@ const RATING_FILTERS = [
   { label: "4+", value: 4 },
   { label: "4.5+", value: 4.5 },
 ];
+
+/* ═══ Helpers ═══ */
+
+/** Bridge GeoEntity to RankableEntity for the unified ranking engine */
+function toRankable(e: GeoEntity & { isSponsored?: boolean; reviewsCount?: number }): RankableEntity {
+  return {
+    id: e.id,
+    entityType: "business",
+    vertical: e.type,
+    subcategory: e.category,
+    rating: e.rating,
+    reviewCount: e.reviewsCount,
+    lat: e.lat,
+    lng: e.lng,
+    isSponsored: e.isSponsored,
+    title: e.title || e.name,
+    profileScore: (e.imageUrl || e.image_url ? 0.3 : 0) + (e.rating ? 0.3 : 0) + (e.subtitle ? 0.2 : 0) + (e.category ? 0.2 : 0),
+  };
+}
 
 /* ═══ Component ═══ */
 
@@ -52,7 +75,7 @@ interface RadarViewProps {
 export default memo(function RadarView({ initialType, radiusKm: initialRadius, showMap = true }: RadarViewProps) {
   const navigate = useNavigate();
   const [activeType, setActiveType] = useState<GeoEntity["type"] | "all">(initialType || "all");
-  const [sortBy, setSortBy] = useState<SortMode>("nearest");
+  const [sortBy, setSortBy] = useState<RadarSortMode>("smart");
   const [viewMode, setViewMode] = useState<"map" | "list" | "heatmap">(showMap ? "map" : "list");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [minRating, setMinRating] = useState(0);
@@ -69,20 +92,51 @@ export default memo(function RadarView({ initialType, radiusKm: initialRadius, s
   const userLat = location?.lat ?? 25.2;
   const userLng = location?.lng ?? 55.27;
 
-  // ── Client-side filters (rating, promoted) ──
+  // ── Filters + Ranking ──
   const results = useMemo(() => {
     let filtered = rawResults;
 
+    // Rating filter
     if (minRating > 0) {
       filtered = filtered.filter(e => (e.rating ?? 0) >= minRating);
     }
 
+    // Promoted filter
     if (showPromotedOnly) {
       filtered = filtered.filter(e => (e as any).isSponsored);
     }
 
+    // ── Apply ranking engine for "smart" mode ──
+    if (sortBy === "smart") {
+      const rankables = filtered.map(toRankable);
+      const ctx: RankContext = {
+        userLat,
+        userLng,
+        targetVertical: activeType !== "all" ? activeType : undefined,
+      };
+      const ranked = rankEntities(rankables, ctx, DISCOVERY_WEIGHTS);
+      // Re-order filtered by ranked order
+      const idOrder = new Map(ranked.map((r, i) => [r.id, i]));
+      return [...filtered].sort((a, b) => (idOrder.get(a.id) ?? 999) - (idOrder.get(b.id) ?? 999));
+    }
+
+    // Basic sort modes
+    if (sortBy === "nearest") {
+      return [...filtered].sort((a, b) => (a.distance ?? 999) - (b.distance ?? 999));
+    }
+    if (sortBy === "best_rated") {
+      return [...filtered].sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0));
+    }
+    if (sortBy === "trending") {
+      return [...filtered].sort((a, b) => {
+        const aS = ((a as any).isSponsored ? 50 : 0) + ((a as any).reviewsCount ?? 0) * 0.5 + (a.rating ?? 0) * 5;
+        const bS = ((b as any).isSponsored ? 50 : 0) + ((b as any).reviewsCount ?? 0) * 0.5 + (b.rating ?? 0) * 5;
+        return bS - aS;
+      });
+    }
+
     return filtered;
-  }, [rawResults, minRating, showPromotedOnly]);
+  }, [rawResults, minRating, showPromotedOnly, sortBy, userLat, userLng, activeType]);
 
   const handleSelect = useCallback((entity: GeoEntity) => {
     setSelectedId(entity.id);
@@ -96,12 +150,20 @@ export default memo(function RadarView({ initialType, radiusKm: initialRadius, s
 
   // ── Heatmap points with real intensity ──
   const heatmapPoints = useMemo(() => {
+    const maxReviews = Math.max(1, ...results.map(e => (e as any).reviewsCount ?? 0));
     return results.map(e => ({
       lat: e.lat,
       lng: e.lng,
-      intensity: Math.min(1, ((e.rating ?? 3) / 5) * 0.5 + 0.3 + (((e as any).reviewsCount ?? 0) > 10 ? 0.2 : 0)),
+      intensity: Math.min(1,
+        ((e.rating ?? 3) / 5) * 0.4 +
+        (((e as any).reviewsCount ?? 0) / maxReviews) * 0.35 +
+        ((e as any).isSponsored ? 0.15 : 0) +
+        0.1
+      ),
     }));
   }, [results]);
+
+  const activeFilterCount = (minRating > 0 ? 1 : 0) + (showPromotedOnly ? 1 : 0) + (activeRadius !== 10 ? 1 : 0);
 
   return (
     <div className="flex flex-col h-full min-h-0">
@@ -115,7 +177,7 @@ export default memo(function RadarView({ initialType, radiusKm: initialRadius, s
               "shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap active:scale-95 transition-all",
               activeType === f.value
                 ? "bg-primary text-primary-foreground shadow-sm"
-                : "bg-muted text-muted-foreground"
+                : "bg-muted text-muted-foreground hover:bg-muted/80"
             )}
           >
             {f.icon} {f.label}
@@ -126,7 +188,7 @@ export default memo(function RadarView({ initialType, radiusKm: initialRadius, s
       {/* ── Controls row ── */}
       <div className="flex items-center justify-between px-4 py-1 shrink-0 gap-2">
         {/* Sort options */}
-        <div className="flex gap-1 shrink-0">
+        <div className="flex gap-0.5 shrink-0">
           {SORT_OPTIONS.map(s => (
             <button
               key={s.value}
@@ -134,12 +196,12 @@ export default memo(function RadarView({ initialType, radiusKm: initialRadius, s
               className={cn(
                 "flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-semibold transition-all",
                 sortBy === s.value
-                  ? "bg-primary/12 text-primary"
-                  : "text-muted-foreground"
+                  ? "bg-primary/15 text-primary"
+                  : "text-muted-foreground hover:text-foreground"
               )}
             >
               {s.icon}
-              {s.label}
+              <span className="hidden sm:inline">{s.label}</span>
             </button>
           ))}
         </div>
@@ -149,40 +211,40 @@ export default memo(function RadarView({ initialType, radiusKm: initialRadius, s
           <button
             onClick={() => setShowFilters(!showFilters)}
             className={cn(
-              "p-1.5 rounded-lg transition-all",
-              showFilters ? "bg-primary/12 text-primary" : "text-muted-foreground"
+              "flex items-center gap-1 p-1.5 rounded-lg transition-all",
+              showFilters ? "bg-primary/15 text-primary" : "text-muted-foreground"
             )}
           >
-            <Filter className="w-3.5 h-3.5" />
+            <SlidersHorizontal className="w-3.5 h-3.5" />
+            {activeFilterCount > 0 && (
+              <span className="w-4 h-4 rounded-full bg-primary text-primary-foreground text-[9px] font-bold flex items-center justify-center">
+                {activeFilterCount}
+              </span>
+            )}
           </button>
 
           {/* View mode toggle */}
           <div className="flex rounded-lg p-0.5 bg-muted">
-            <button
-              onClick={() => setViewMode("map")}
-              className={cn("p-1.5 rounded-md transition-all", viewMode === "map" ? "bg-background shadow-sm" : "")}
-            >
-              <MapPin className="w-3.5 h-3.5" />
-            </button>
-            <button
-              onClick={() => setViewMode("list")}
-              className={cn("p-1.5 rounded-md transition-all", viewMode === "list" ? "bg-background shadow-sm" : "")}
-            >
-              <List className="w-3.5 h-3.5" />
-            </button>
-            <button
-              onClick={() => setViewMode("heatmap")}
-              className={cn("p-1.5 rounded-md transition-all", viewMode === "heatmap" ? "bg-background shadow-sm" : "")}
-            >
-              <Flame className="w-3.5 h-3.5" />
-            </button>
+            {([
+              { mode: "map" as const, icon: <MapPin className="w-3.5 h-3.5" /> },
+              { mode: "list" as const, icon: <List className="w-3.5 h-3.5" /> },
+              { mode: "heatmap" as const, icon: <Flame className="w-3.5 h-3.5" /> },
+            ]).map(v => (
+              <button
+                key={v.mode}
+                onClick={() => setViewMode(v.mode)}
+                className={cn("p-1.5 rounded-md transition-all", viewMode === v.mode ? "bg-background shadow-sm text-foreground" : "text-muted-foreground")}
+              >
+                {v.icon}
+              </button>
+            ))}
           </div>
         </div>
       </div>
 
       {/* ── Advanced filters panel ── */}
       {showFilters && (
-        <div className="px-4 py-2 space-y-2 shrink-0 animate-in slide-in-from-top-2 duration-150">
+        <div className="px-4 py-2 space-y-2 shrink-0 animate-in slide-in-from-top-2 duration-150 border-b border-border/30">
           {/* Radius */}
           <div className="flex items-center gap-1.5">
             <span className="text-[10px] font-semibold text-muted-foreground w-12 shrink-0">Radius</span>
@@ -194,7 +256,7 @@ export default memo(function RadarView({ initialType, radiusKm: initialRadius, s
                   "px-2.5 py-1 rounded-full text-[10px] font-semibold transition-all",
                   activeRadius === r
                     ? "bg-primary text-primary-foreground"
-                    : "bg-muted text-muted-foreground"
+                    : "bg-muted text-muted-foreground hover:bg-muted/80"
                 )}
               >
                 {r}km
@@ -213,7 +275,7 @@ export default memo(function RadarView({ initialType, radiusKm: initialRadius, s
                   "flex items-center gap-0.5 px-2.5 py-1 rounded-full text-[10px] font-semibold transition-all",
                   minRating === r.value
                     ? "bg-primary text-primary-foreground"
-                    : "bg-muted text-muted-foreground"
+                    : "bg-muted text-muted-foreground hover:bg-muted/80"
                 )}
               >
                 {r.value > 0 && <Star className="w-2.5 h-2.5" />}
@@ -223,15 +285,15 @@ export default memo(function RadarView({ initialType, radiusKm: initialRadius, s
           </div>
 
           {/* Promoted toggle */}
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-2">
             <span className="text-[10px] font-semibold text-muted-foreground w-12 shrink-0">Show</span>
             <button
               onClick={() => setShowPromotedOnly(!showPromotedOnly)}
               className={cn(
                 "flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-semibold transition-all",
                 showPromotedOnly
-                  ? "bg-amber-500/20 text-amber-500"
-                  : "bg-muted text-muted-foreground"
+                  ? "bg-amber-500/20 text-amber-400"
+                  : "bg-muted text-muted-foreground hover:bg-muted/80"
               )}
             >
               <Zap className="w-2.5 h-2.5" />
@@ -245,7 +307,9 @@ export default memo(function RadarView({ initialType, radiusKm: initialRadius, s
       <div className="px-4 py-1 shrink-0">
         <p className="text-[10px] text-muted-foreground">
           {loading ? "Scanning…" : `${results.length} places within ${activeRadius}km`}
-          {minRating > 0 && ` · ${minRating}★+`}
+          {minRating > 0 && ` · ★${minRating}+`}
+          {showPromotedOnly && " · ⚡ Promoted"}
+          {sortBy === "smart" && " · Smart ranked"}
         </p>
       </div>
 
@@ -267,8 +331,8 @@ export default memo(function RadarView({ initialType, radiusKm: initialRadius, s
             {/* Selected entity card */}
             {selected && (
               <div
-                className="absolute bottom-4 left-4 right-4 rounded-2xl p-3 flex items-center gap-3 animate-in slide-in-from-bottom-4 duration-200"
-                style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", boxShadow: "0 8px 32px rgba(0,0,0,0.25)" }}
+                className="absolute bottom-4 left-4 right-4 rounded-2xl p-3 flex items-center gap-3 animate-in slide-in-from-bottom-4 duration-200 bg-card border border-border/50"
+                style={{ boxShadow: "0 8px 32px rgba(0,0,0,0.3)" }}
               >
                 {selected.image_url || selected.imageUrl ? (
                   <img src={(selected.image_url || selected.imageUrl)!} alt="" className="w-14 h-14 rounded-xl object-cover shrink-0" />
@@ -278,11 +342,16 @@ export default memo(function RadarView({ initialType, radiusKm: initialRadius, s
                   </div>
                 )}
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-bold truncate text-foreground">{selected.title || selected.name}</p>
+                  <div className="flex items-center gap-1.5">
+                    <p className="text-sm font-bold truncate text-foreground">{selected.title || selected.name}</p>
+                    {(selected as any).isSponsored && (
+                      <span className="px-1.5 py-0.5 rounded text-[8px] font-bold bg-amber-500/20 text-amber-400">⚡</span>
+                    )}
+                  </div>
                   <div className="flex items-center gap-2 mt-0.5">
                     {selected.rating != null && selected.rating > 0 && (
-                      <span className="flex items-center gap-0.5 text-[10px] font-semibold">
-                        <Star className="w-2.5 h-2.5" style={{ color: "hsl(45 90% 55%)", fill: "hsl(45 90% 55%)" }} />
+                      <span className="flex items-center gap-0.5 text-[10px] font-semibold text-amber-400">
+                        <Star className="w-2.5 h-2.5 fill-current" />
                         {selected.rating.toFixed(1)}
                       </span>
                     )}
@@ -314,12 +383,14 @@ export default memo(function RadarView({ initialType, radiusKm: initialRadius, s
                 <p className="text-sm text-muted-foreground mt-2">No results nearby</p>
               </div>
             )}
-            {results.map((entity) => (
+            {results.map((entity, idx) => (
               <button
                 key={entity.id}
                 onClick={() => handleOpen(entity)}
-                className="w-full rounded-2xl p-3 flex items-center gap-3 active:scale-[0.98] transition-transform text-left bg-card hover:bg-muted/50"
-                style={{ border: "1px solid hsl(var(--border) / 0.15)" }}
+                className={cn(
+                  "w-full rounded-2xl p-3 flex items-center gap-3 active:scale-[0.98] transition-transform text-left bg-card border border-border/10",
+                  (entity as any).isSponsored && "border-amber-500/20"
+                )}
               >
                 {(entity.image_url || entity.imageUrl) ? (
                   <img
@@ -337,14 +408,14 @@ export default memo(function RadarView({ initialType, radiusKm: initialRadius, s
                   <div className="flex items-center gap-1.5">
                     <p className="text-sm font-semibold truncate text-foreground">{entity.title || entity.name}</p>
                     {(entity as any).isSponsored && (
-                      <Zap className="w-3 h-3 shrink-0 text-amber-500" />
+                      <span className="px-1.5 py-0.5 rounded text-[8px] font-bold bg-amber-500/20 text-amber-400 shrink-0">⚡</span>
                     )}
                   </div>
                   {entity.subtitle && <p className="text-[11px] text-muted-foreground truncate">{entity.subtitle}</p>}
                   <div className="flex items-center gap-2 mt-0.5">
                     {entity.rating != null && entity.rating > 0 && (
-                      <span className="flex items-center gap-0.5 text-[10px] font-semibold">
-                        <Star className="w-2.5 h-2.5" style={{ color: "hsl(45 90% 55%)", fill: "hsl(45 90% 55%)" }} />
+                      <span className="flex items-center gap-0.5 text-[10px] font-semibold text-amber-400">
+                        <Star className="w-2.5 h-2.5 fill-current" />
                         {entity.rating.toFixed(1)}
                       </span>
                     )}
@@ -359,6 +430,12 @@ export default memo(function RadarView({ initialType, radiusKm: initialRadius, s
                     )}
                   </div>
                 </div>
+                {/* Rank indicator for top 3 */}
+                {idx < 3 && sortBy === "smart" && (
+                  <span className="w-6 h-6 rounded-full bg-primary/15 text-primary text-[10px] font-bold flex items-center justify-center shrink-0">
+                    {idx + 1}
+                  </span>
+                )}
               </button>
             ))}
           </div>
