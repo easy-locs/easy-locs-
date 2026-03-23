@@ -12,6 +12,10 @@ export interface ResolvedPayTarget {
   avatarUrl: string | null;
   walletStatus: "active" | "locked" | "missing" | string;
   currency: string;
+  timings?: {
+    recipientResolveMs: number;
+    walletResolveMs: number;
+  };
 }
 
 export async function resolvePayTarget(params: {
@@ -37,6 +41,7 @@ export async function resolvePayTarget(params: {
     avatarUrl: result.avatar_url,
     walletStatus: result.wallet_status,
     currency: result.currency,
+    timings: result.timings,
   };
 }
 

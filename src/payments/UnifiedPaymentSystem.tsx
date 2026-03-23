@@ -183,7 +183,7 @@ export function UnifiedPaymentProvider({ children }: { children: ReactNode }) {
                           {request.recipientName || "Payment"}
                         </div>
                         <div className="text-xs text-muted-foreground">
-                          {request.contextType || "generic"}
+                          {request.contextType === "shop" ? "Merchant payment" : "QR payment"}
                         </div>
                       </div>
                     </div>
