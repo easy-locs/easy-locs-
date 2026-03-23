@@ -284,22 +284,24 @@ export default memo(function RadarView({ initialType, radiusKm: initialRadius, s
             ))}
           </div>
 
-          {/* Promoted toggle */}
-          <div className="flex items-center gap-2">
-            <span className="text-[10px] font-semibold text-muted-foreground w-12 shrink-0">Show</span>
-            <button
-              onClick={() => setShowPromotedOnly(!showPromotedOnly)}
-              className={cn(
-                "flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-semibold transition-all",
-                showPromotedOnly
-                  ? "bg-amber-500/20 text-amber-400"
-                  : "bg-muted text-muted-foreground hover:bg-muted/80"
-              )}
-            >
-              <Zap className="w-2.5 h-2.5" />
-              Promoted only
-            </button>
-          </div>
+          {/* Promoted toggle — hidden until sponsored data exists */}
+          {results.some((e: any) => e.isSponsored) && (
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] font-semibold text-muted-foreground w-12 shrink-0">Show</span>
+              <button
+                onClick={() => setShowPromotedOnly(!showPromotedOnly)}
+                className={cn(
+                  "flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-semibold transition-all",
+                  showPromotedOnly
+                    ? "bg-amber-500/20 text-amber-400"
+                    : "bg-muted text-muted-foreground hover:bg-muted/80"
+                )}
+              >
+                <Zap className="w-2.5 h-2.5" />
+                Promoted only
+              </button>
+            </div>
+          )}
         </div>
       )}
 
