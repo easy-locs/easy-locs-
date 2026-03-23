@@ -1,36 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-
-export type DriverCandidate = {
-  user_id: string;
-  is_online?: boolean | null;
-  is_available?: boolean | null;
-  current_lat?: number | null;
-  current_lng?: number | null;
-  acceptance_rate?: number | null;
-  reliability_score?: number | null;
-  jobs_completed?: number | null;
-  zone?: string | null;
-};
-
-export type MatchDriverInput = {
-  orderId: string;
-  pickupLat?: number | null;
-  pickupLng?: number | null;
-  zone?: string | null;
-};
-
-function haversineKm(lat1: number, lng1: number, lat2: number, lng2: number) {
-  const toRad = (v: number) => (v * Math.PI) / 180;
-  const R = 6371;
-  const dLat = toRad(lat2 - lat1);
-  const dLng = toRad(lng2 - lng1);
-  const a =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos(toRad(lat1)) *
-      Math.cos(toRad(lat2)) *
-      Math.sin(dLng / 2) ** 2;
-  return 2 * R * Math.asin(Math.sqrt(a));
-}
+import { haversineKm } from "@/lib/geo/distance";
 
 function scoreDriver(driver: DriverCandidate, pickupLat?: number | null, pickupLng?: number | null, zone?: string | null) {
   const onlineBoost = driver.is_online ? 25 : -1000;

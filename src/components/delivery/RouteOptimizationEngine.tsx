@@ -9,28 +9,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
-
-interface Props {
-  orgId: string;
-  className?: string;
-}
-
-interface OptimizedRoute {
-  id: string;
-  stops: { address: string; lat: number; lng: number; type: "pickup" | "dropoff"; jobId: string }[];
-  totalDistanceKm: number;
-  estimatedTimeMin: number;
-  savingsPercent: number;
-}
-
-// Haversine distance
-function haversineKm(lat1: number, lng1: number, lat2: number, lng2: number): number {
-  const R = 6371;
-  const dLat = (lat2 - lat1) * Math.PI / 180;
-  const dLng = (lng2 - lng1) * Math.PI / 180;
-  const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLng / 2) ** 2;
-  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-}
+import { haversineKm } from "@/lib/geo/distance";
 
 // Nearest-neighbor TSP approximation
 function optimizeStopOrder(stops: OptimizedRoute["stops"]): OptimizedRoute["stops"] {

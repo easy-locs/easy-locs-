@@ -2,7 +2,7 @@
  * Real Estate Ranking Engine
  * Score = freshness + proximity + boost + engagement.
  */
-import { haversine } from "@/lib/radar/radar-engine";
+import { haversineKm as haversine } from "@/lib/geo/distance";
 import { computeFreshnessScore } from "./listingLifecycle";
 
 export interface RankableListing {
