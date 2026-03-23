@@ -128,6 +128,7 @@ export async function fetchUnifiedPoints(opts?: FetchUnifiedPointsOpts): Promise
       isSponsored: (s.ranking_score ?? 0) > 80,
       distanceKm: dist,
       timeScore,
+      slug: s.slug || null,
     });
   }
 
