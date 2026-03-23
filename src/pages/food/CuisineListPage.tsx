@@ -1,10 +1,12 @@
 /**
  * CuisineListPage — Step 3: Restaurant list for a cuisine
  * Route: /food/:type/:cuisine
+ * Uses canonical query-governance for visibility/route filtering.
  */
 import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { governStorefrontQuery } from "@/lib/discovery/query-governance";
 import UniversePageShell from "@/components/universe/UniversePageShell";
 import UniverseCard from "@/components/universe/UniverseCard";
 import { UtensilsCrossed } from "lucide-react";
