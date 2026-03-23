@@ -35,9 +35,10 @@ export function RadarResultsList() {
                 alt={item.title}
                 className="w-full h-full object-cover"
                 loading="lazy"
+                onError={(e) => { (e.target as HTMLImageElement).src = "/placeholder.svg"; }}
               />
             ) : (
-              <div className="w-full h-full flex items-center justify-center">
+              <div className="w-full h-full flex items-center justify-center bg-muted">
                 <MapPin className="h-5 w-5 text-muted-foreground/30" />
               </div>
             )}
