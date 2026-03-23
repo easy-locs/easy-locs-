@@ -23,7 +23,10 @@ export interface OfferMatchContext {
   subcategory?: string | null;
   /** User's location */
   city?: string | null;
+  districtCode?: string | null;
   countryCode?: string | null;
+  /** Entity being viewed (for entity-scoped offers) */
+  entityId?: string | null;
 }
 
 /**
