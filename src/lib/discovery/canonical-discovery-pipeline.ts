@@ -174,8 +174,8 @@ export async function fetchCanonicalDiscovery(opts: CanonicalDiscoveryOpts): Pro
   // Surfaces that do NOT include "coming_soon" will exclude seeds.
   const seedAllowed = allowedModes.includes("coming_soon");
 
-  let seedResults: any[] = [];
-  if (seedAllowed) {
+  // Build seed query (but only execute if allowed)
+  const seedQueryPromise = seedAllowed ? (() => {
     let seedQuery = (supabase as any)
       .from("seed_merchants")
       .select("id, name, category, subcategory, city, area, rating, review_count, cover_image, logo_image, visibility_score, is_open, is_featured, promo_active, delivery_time_min, delivery_time_max")
@@ -189,12 +189,11 @@ export async function fetchCanonicalDiscovery(opts: CanonicalDiscoveryOpts): Pro
     if (searchQuery?.trim()) {
       seedQuery = seedQuery.ilike("name", `%${searchQuery.trim()}%`);
     }
+    return seedQuery;
+  })() : Promise.resolve({ data: [] });
 
-    const seedRes = await seedQuery;
-    seedResults = seedRes.data ?? [];
-  }
-
-  const [storefrontRes] = await Promise.all([storefrontQuery]);
+  const [storefrontRes, seedRes] = await Promise.all([storefrontQuery, seedQueryPromise]);
+  let seedResults: any[] = seedRes.data ?? [];
 
   const points: RadarPoint[] = [];
   const seenIds = new Set<string>();
