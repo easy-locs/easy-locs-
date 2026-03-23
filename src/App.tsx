@@ -313,6 +313,10 @@ const ServicesHub = safeLazy(() => import("./pages/universe/ServicesHub"), "Serv
 const RetailHub = safeLazy(() => import("./pages/universe/RetailHub"), "RetailHub");
 const PropertyHubUniverse = safeLazy(() => import("./pages/universe/PropertyHub"), "PropertyHubUniverse");
 const DiscoverPage = safeLazy(() => import("./pages/universe/DiscoverPage"), "DiscoverPage");
+const HealthcareHub = safeLazy(() => import("./pages/universe/HealthcareHub"), "HealthcareHub");
+const ElectronicsHub = safeLazy(() => import("./pages/universe/ElectronicsHub"), "ElectronicsHub");
+const GiftsHub = safeLazy(() => import("./pages/universe/GiftsHub"), "GiftsHub");
+const PetsHub = safeLazy(() => import("./pages/universe/PetsHub"), "PetsHub");
 
 // Food sub-pages (Careem-style drill-down)
 const FoodTypePage = safeLazy(() => import("./pages/food/FoodTypePage"), "FoodTypePage");
@@ -789,6 +793,10 @@ const App = () => (
               <Route path="/shops" element={<RetailHub />} />
               <Route path="/real-estate" element={<PropertyHubUniverse />} />
               <Route path="/browse" element={<DiscoverPage />} />
+              <Route path="/healthcare" element={<HealthcareHub />} />
+              <Route path="/electronics" element={<ElectronicsHub />} />
+              <Route path="/gifts" element={<GiftsHub />} />
+              <Route path="/pets" element={<PetsHub />} />
 
               {/* Settings sub-pages */}
               <Route path="/settings" element={<SettingsHomePage />} />
@@ -841,7 +849,7 @@ const App = () => (
               <Route path="/super-map" element={<Navigate to="/radar" replace />} />
               <Route path="/map" element={<Navigate to="/radar" replace />} />
               <Route path="/radar" element={<GlobalRadarPage />} />
-              <Route path="/shops" element={<ShopsPage />} />
+              {/* /shops already routed to RetailHub above — ShopsPage is legacy */}
               <Route path="/s/:slug" element={<ShopPage />} />
               <Route path="/s/:slug/:categorySlug" element={<ShopCategoryPage />} />
               <Route path="/business" element={<MyBusinessHub />} />
@@ -874,8 +882,8 @@ const App = () => (
               <Route path="/account/:orgId" element={<AccountShowcase />} />
               <Route path="/properties" element={<PropertiesShowcase />} />
 
-              {/* Real Estate Module */}
-              <Route path="/real-estate" element={<RealEstateModulePage />}>
+              {/* Real Estate Module — nested under /property-management to avoid /real-estate conflict */}
+              <Route path="/property-management" element={<RealEstateModulePage />}>
                 <Route index element={<REPropertiesPage />} />
                 <Route path="units" element={<REUnitsPage />} />
                 <Route path="tenants" element={<RETenantsPage />} />
