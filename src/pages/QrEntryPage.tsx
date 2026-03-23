@@ -75,7 +75,7 @@ function resolveRoute(t: ResolvedQrTarget): string {
   switch (t.qrPurpose) {
     case "order":
       // Customer menu ordering
-      return `/order/${encodeURIComponent(slug)}`;
+      return `/menu/${encodeURIComponent(slug)}`;
 
     case "table":
       // Table-specific ordering — same menu but with table context
