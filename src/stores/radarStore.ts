@@ -2,7 +2,7 @@ import { create } from "zustand";
 import type { RadarCategory, RadarPoint, RadarSubCategory, UserGeoPoint } from "@/lib/radar/types";
 import { sortRadarPoints } from "@/lib/radar/geo";
 
-type SortMode = "nearest" | "best" | "trending";
+export type SortMode = "nearest" | "best" | "trending" | "smart";
 
 type RadarStore = {
   userLocation: UserGeoPoint | null;
@@ -30,7 +30,7 @@ export const useRadarStore = create<RadarStore>((set, get) => ({
   userLocation: null,
   category: "all",
   subcategory: null,
-  sortMode: "nearest",
+  sortMode: "smart",
   points: [],
   filtered: [],
   loading: false,
