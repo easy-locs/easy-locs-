@@ -1,6 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { Vertical } from "@/lib/taxonomy/world-class-taxonomy";
 import { checkNewShopDuplicate } from "@/lib/dedup/dedup-engine";
+import { pickDiverseHero } from "@/lib/image/hero-diversity-guard";
 
 function slugify(input: string) {
   return input
