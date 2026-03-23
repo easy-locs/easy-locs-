@@ -58,7 +58,7 @@ export async function resolveSearch(
 
   // District filter
   if (state.district) {
-    sfQuery = sfQuery.ilike("area", `%${state.district}%`);
+    sfQuery = sfQuery.ilike("address", `%${state.district}%`);
   }
 
   // Rating filter
