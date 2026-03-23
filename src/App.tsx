@@ -350,6 +350,8 @@ const PayRequestPage = safeLazy(() => import("./pages/deep-link/PayRequestPage")
 const QrScannerPage = safeLazy(() => import("./pages/payments/QrScannerPage"), "QrScannerPage");
 const GuestPaymentSuccess = safeLazy(() => import("./pages/deep-link/GuestPaymentSuccess"), "GuestPaymentSuccess");
 const QrEntryPage = safeLazy(() => import("./pages/QrEntryPage"), "QrEntryPage");
+const QrTrackingPage = safeLazy(() => import("./pages/qr/QrTrackingPage"), "QrTrackingPage");
+const QrPickupPage = safeLazy(() => import("./pages/qr/QrPickupPage"), "QrPickupPage");
 const AppNotFoundPage = safeLazy(() => import("./pages/AppNotFoundPage"), "AppNotFoundPage");
 const QrGeneratePage = safeLazy(() => import("./pages/QrGeneratePage"), "QrGeneratePage");
 const RouteAuditPage = safeLazy(() => import("./pages/RouteAuditPage"), "RouteAuditPage");
