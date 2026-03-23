@@ -42,15 +42,15 @@ export type EntityType = "business" | "brand" | "driver" | "partner_network" | "
 // ═══════════════════════════════════════════════════════════
 
 export interface EntityGeography {
-  countryCode: string;
-  cityCode?: string | null;
-  districtCode?: string | null;
+  countryCode: string;   // ISO 3166-1 alpha-2
+  cityCode?: string | null;     // normalized slug e.g. "dubai", "abu-dhabi"
+  districtCode?: string | null; // normalized slug e.g. "marina", "downtown"
   area?: string | null;
   city?: string | null;
   address?: string | null;
   latitude?: number | null;
   longitude?: number | null;
-  /** hyperlocal | city_service | wide_search | unrestricted */
+  /** point | district | city | country */
   coverageType: string;
 }
 
