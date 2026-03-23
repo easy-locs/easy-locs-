@@ -291,6 +291,8 @@ const AdminOutreachPage = safeLazy(() => import("./pages/AdminOutreachPage"), "A
 const MerchantPosPage = safeLazy(() => import("./pages/MerchantPosPage"), "MerchantPosPage");
 const MerchantKitchenPage = safeLazy(() => import("./pages/MerchantKitchenPage"), "MerchantKitchenPage");
 const MerchantOrdersPage = safeLazy(() => import("./pages/MerchantOrdersPage"), "MerchantOrdersPage");
+const ShopQrCenterPage = safeLazy(() => import("./pages/merchant/ShopQrCenterPage"), "ShopQrCenterPage");
+const ShopOrderPage = safeLazy(() => import("./pages/merchant/ShopOrderPage"), "ShopOrderPage");
 // WalletCommerceTestPage removed — legacy test page
 const AdminWalletDiagnosticsPage = safeLazy(() => import("./pages/AdminWalletDiagnosticsPage"), "AdminWalletDiagnosticsPage");
 const DriverEarningsPage = safeLazy(() => import("./pages/DriverEarningsPage"), "DriverEarningsPage");
@@ -1055,6 +1057,8 @@ const App = () => (
               <Route path="/merchant/pos" element={<ProtectedRoute><MerchantPosPage /></ProtectedRoute>} />
               <Route path="/merchant/kitchen" element={<ProtectedRoute><MerchantKitchenPage /></ProtectedRoute>} />
               <Route path="/merchant/orders" element={<ProtectedRoute><MerchantOrdersPage /></ProtectedRoute>} />
+              <Route path="/merchant/qr/:shopId" element={<ProtectedRoute><ShopQrCenterPage /></ProtectedRoute>} />
+              <Route path="/order/:shopSlug" element={<ShopOrderPage />} />
               {/* /admin/wallet-test removed — legacy test page */}
               <Route path="/admin/wallet-diagnostics" element={<ProtectedRoute><AdminWalletDiagnosticsPage /></ProtectedRoute>} />
               <Route path="/driver/earnings" element={<ProtectedRoute><DriverEarningsPage /></ProtectedRoute>} />
