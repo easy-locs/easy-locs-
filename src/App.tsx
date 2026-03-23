@@ -197,7 +197,8 @@ const ShopsPage = safeLazy(() => import("./pages/ShopsPage"), "ShopsPage");
 // SuperMapRadarPage — duplicate of /radar. Removed.
 // MapTabPage — dead, unused. Removed.
 const AdminUiEnginePage = safeLazy(() => import("./pages/admin/AdminUiEnginePage"), "AdminUiEnginePage");
-const GlobalRadarPage = safeLazy(() => import("./pages/GlobalRadarPage"), "GlobalRadarPage");
+// GlobalRadarPage — archived, replaced by RadarView
+const RadarViewPage = safeLazy(() => import("./pages/RadarViewPage"), "RadarViewPage");
 const MyBusinessHub = safeLazy(() => import("./pages/MyBusinessHub"), "MyBusinessHub");
 const MyShopsPage = safeLazy(() => import("./pages/MyShopsPage"), "MyShopsPage");
 const MyOrdersPage = safeLazy(() => import("./pages/MyOrdersPage"), "MyOrdersPage");
