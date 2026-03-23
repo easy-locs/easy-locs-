@@ -255,7 +255,7 @@ export async function runDedupScan(): Promise<{
         else if (match.action === "review") review.push(match);
       }
     }
-  }
+  });
 
   return {
     autoHide,
