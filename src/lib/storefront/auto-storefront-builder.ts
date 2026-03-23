@@ -81,6 +81,14 @@ export async function autoCreateStorefront(params: AutoStorefrontParams): Promis
     org_id: params.orgId,
     vertical: params.vertical ?? params.category ?? "food",
     metadata_json: { auto_generated: true, source: "auto_storefront_builder" },
+    source_type: "import_ai",
+    source_confidence: 60,
+    readiness_status: "draft",
+    is_auto_generated: true,
+    is_claimed: false,
+    has_photo: false,
+    has_menu: false,
+    products_count: 0,
   };
 
   // Taxonomy (nullable/safe)

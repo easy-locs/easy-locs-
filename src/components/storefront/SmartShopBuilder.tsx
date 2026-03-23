@@ -169,6 +169,15 @@ Return: {"vertical":"food|grocery|shops|services|property|healthcare|mobility|ex
       if (caps.capBooking != null) insertPayload.cap_booking = caps.capBooking;
       if (caps.capDelivery != null) insertPayload.cap_delivery = caps.capDelivery;
 
+      // Source tracking + readiness
+      insertPayload.source_type = suggestion ? "import_ai" : "manual";
+      insertPayload.source_confidence = suggestion ? 80 : 100;
+      insertPayload.readiness_status = "draft";
+      insertPayload.is_auto_generated = false;
+      insertPayload.has_photo = false;
+      insertPayload.has_menu = false;
+      insertPayload.products_count = 0;
+
       const { error } = await (supabase as any)
         .from("storefront_pages")
         .insert(insertPayload)
