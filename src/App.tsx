@@ -197,7 +197,8 @@ const ShopsPage = safeLazy(() => import("./pages/ShopsPage"), "ShopsPage");
 // SuperMapRadarPage — duplicate of /radar. Removed.
 // MapTabPage — dead, unused. Removed.
 const AdminUiEnginePage = safeLazy(() => import("./pages/admin/AdminUiEnginePage"), "AdminUiEnginePage");
-const GlobalRadarPage = safeLazy(() => import("./pages/GlobalRadarPage"), "GlobalRadarPage");
+// GlobalRadarPage — archived, replaced by RadarView
+const RadarViewPage = safeLazy(() => import("./pages/RadarViewPage"), "RadarViewPage");
 const MyBusinessHub = safeLazy(() => import("./pages/MyBusinessHub"), "MyBusinessHub");
 const MyShopsPage = safeLazy(() => import("./pages/MyShopsPage"), "MyShopsPage");
 const MyOrdersPage = safeLazy(() => import("./pages/MyOrdersPage"), "MyOrdersPage");
@@ -383,7 +384,7 @@ const AdminContentOpsPage = safeLazy(() => import("./pages/admin/AdminContentOps
 const ReorderPage = safeLazy(() => import("./pages/ReorderPage"), "ReorderPage");
 const MerchantOrderBoardPage = safeLazy(() => import("./pages/merchant/MerchantOrderBoardPage"), "MerchantOrderBoardPage");
 const AdminAnalyticsOpsPage = safeLazy(() => import("./pages/admin/AdminAnalyticsOpsPage"), "AdminAnalyticsOpsPage");
-const CustomerProfilePage = safeLazy(() => import("./pages/CustomerProfilePage"), "CustomerProfilePage");
+const MeCommandCenter = safeLazy(() => import("./pages/MeCommandCenter"), "MeCommandCenter");
 const NotificationPreferencesPage = safeLazy(() => import("./pages/settings/NotificationPreferencesPage"), "NotificationPreferencesPage");
 const AdminQualityOpsPage = safeLazy(() => import("./pages/admin/AdminQualityOpsPage"), "AdminQualityOpsPage");
 const AdminUaeOpsDashboard = safeLazy(() => import("./pages/admin/AdminUaeOpsDashboard"), "AdminUaeOpsDashboard");
@@ -855,7 +856,7 @@ const App = () => (
 
               <Route path="/super-map" element={<Navigate to="/radar" replace />} />
               <Route path="/map" element={<Navigate to="/radar" replace />} />
-              <Route path="/radar" element={<GlobalRadarPage />} />
+              <Route path="/radar" element={<RadarViewPage />} />
               {/* /shops already routed to RetailHub above — ShopsPage is legacy */}
               <Route path="/s/:slug" element={<ShopPage />} />
               <Route path="/s/:slug/:categorySlug" element={<ShopCategoryPage />} />
@@ -1097,7 +1098,7 @@ const App = () => (
                 <Route path="/order/reorder/:orderId" element={<ProtectedRoute><ReorderPage /></ProtectedRoute>} />
                 <Route path="/merchant/orders/:merchantId" element={<ProtectedRoute><MerchantOrderBoardPage /></ProtectedRoute>} />
                 <Route path="/admin/analytics-ops" element={<ProtectedRoute><AdminAnalyticsOpsPage /></ProtectedRoute>} />
-                <Route path="/me" element={<ProtectedRoute><CustomerProfilePage /></ProtectedRoute>} />
+                <Route path="/me" element={<ProtectedRoute><MeCommandCenter /></ProtectedRoute>} />
                 <Route path="/settings/notification-preferences" element={<ProtectedRoute><NotificationPreferencesPage /></ProtectedRoute>} />
                 <Route path="/admin/quality-ops" element={<ProtectedRoute><AdminQualityOpsPage /></ProtectedRoute>} />
                 <Route path="/merchant/reviews/:merchantId" element={<ProtectedRoute><MerchantReviewRepliesPage /></ProtectedRoute>} />
