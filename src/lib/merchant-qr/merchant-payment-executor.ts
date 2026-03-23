@@ -32,7 +32,7 @@ async function resolveMerchant(merchantId: string): Promise<ResolvedMerchant | n
   // Try storefront_pages first (most merchants)
   const { data: shop } = await supabase
     .from("storefront_pages")
-    .select("id, shop_name, user_id, slug, logo_url, currency")
+    .select("id, name, user_id, slug, logo_url, currency")
     .eq("id", merchantId)
     .maybeSingle();
 
@@ -48,7 +48,7 @@ async function resolveMerchant(merchantId: string): Promise<ResolvedMerchant | n
 
   return {
     merchantId: shop.id,
-    merchantName: shop.shop_name || "Merchant",
+    merchantName: shop.name || "Merchant",
     ownerUserId: shop.user_id,
     walletId: wallet?.id || "",
     walletStatus: wallet ? (wallet.status as "active" | "locked") : "missing",
