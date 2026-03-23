@@ -299,12 +299,12 @@ export const CANONICAL_VERTICALS: CanonicalVertical[] = [
 export type RadarMainCategory = "all" | "food" | "grocery" | "shops" | "services" | "property";
 
 export const RADAR_CATEGORIES: { value: RadarMainCategory; label: string; emoji: string }[] = [
-  { value: "all", label: "All", emoji: "✨", icon: "✨" },
-  { value: "food", label: "Food", emoji: "🍕", icon: "🍕" },
-  { value: "grocery", label: "Grocery", emoji: "🛒", icon: "🛒" },
-  { value: "shops", label: "Shops", emoji: "🛍️", icon: "🛍️" },
-  { value: "services", label: "Services", emoji: "🔧", icon: "🔧" },
-  { value: "property", label: "Property", emoji: "🏠", icon: "🏠" },
+  { value: "all", label: "All", emoji: "✨" },
+  { value: "food", label: "Food", emoji: "🍕" },
+  { value: "grocery", label: "Grocery", emoji: "🛒" },
+  { value: "shops", label: "Shops", emoji: "🛍️" },
+  { value: "services", label: "Services", emoji: "🔧" },
+  { value: "property", label: "Property", emoji: "🏠" },
 ];
 
 // ═══════════════════════════════════════════════════════════
