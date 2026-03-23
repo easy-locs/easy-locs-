@@ -240,7 +240,7 @@ export async function resolveAutocomplete(
   // 2. Shop matches (from DB)
   const { data: shops } = await db
     .from("storefront_pages")
-    .select("id, name, slug, subcategory, area, city, logo_url, rating, vertical")
+    .select("id, name, slug, subcategory, address, region, city, logo_url, rating, vertical")
     .in("launch_status", ["launched", "ready", "active"])
     .ilike("name", `%${q}%`)
     .limit(5);
