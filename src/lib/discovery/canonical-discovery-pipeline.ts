@@ -143,8 +143,8 @@ export async function fetchCanonicalDiscovery(opts: CanonicalDiscoveryOpts): Pro
     allowedModes.map(m => `visibility_mode.eq.${m}`).join(",") + ",visibility_mode.is.null"
   );
 
-  // Also accept launched shops that have no visibility_mode set yet
-  storefrontQuery = storefrontQuery.or("launch_status.eq.launched,readiness_status.eq.ready,readiness_status.eq.live");
+  // NOTE: Removed dangerous second .or() that could re-include excluded shops.
+  // Launched/ready shops without visibility_mode are already covered by the null clause above.
 
   // ── STAGE 3: Route validity filtering ──
   storefrontQuery = storefrontQuery.neq("route_status", "broken");
