@@ -266,10 +266,13 @@ export async function computeShopHealth(shopId: string): Promise<ShopHealthScore
   const finalVis = visScore + (shop.is_published ? 50 : 0);
   if (!shop.is_published) issues.push({ key: "not_published", severity: "critical", message: "Shop is not published", action: "Publish now" });
 
-  // Conversion (placeholder — will connect to analytics)
-  const conversionScore = products.length > 3 ? 60 : products.length > 0 ? 30 : 0;
+  // Conversion — honest: not enough data yet
+  const conversionScore = -1; // -1 = "not enough data" sentinel
 
-  const overall = Math.round((menuScore + photoScore + paymentScore + seoScore + finalVis + conversionScore) / 6);
+  const scoredModules = [menuScore, photoScore, paymentScore, seoScore, finalVis];
+  const validConversion = conversionScore >= 0 ? conversionScore : null;
+  if (validConversion !== null) scoredModules.push(validConversion);
+  const overall = Math.round(scoredModules.reduce((a, b) => a + b, 0) / scoredModules.length);
 
   return {
     overall,
