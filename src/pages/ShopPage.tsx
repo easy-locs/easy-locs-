@@ -474,7 +474,13 @@ export default function ShopPage() {
               <DigitalProducts shopId={shop.id} mode="buyer" />
               <PeerMarketplace shopId={shop.id} mode="buyer" />
               <LiveShopping shopId={shop.id} mode="buyer" catalogItems={catalogItems} />
-              <ShopReviews shopId={shop.id} shopOwnerId={shop.user_id} />
+              <div id="shop-reviews-section" ref={(el) => {
+                if (el && reviewMode) {
+                  setTimeout(() => el.scrollIntoView({ behavior: "smooth", block: "start" }), 300);
+                }
+              }}>
+                <ShopReviews shopId={shop.id} shopOwnerId={shop.user_id} />
+              </div>
             </div>
           </Suspense>
         </div>
