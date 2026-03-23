@@ -19564,6 +19564,11 @@ export type Database = {
       }
       storefront_pages: {
         Row: {
+          activated_at: string | null
+          activated_by: string | null
+          activation_channel: string | null
+          activation_notes: string | null
+          activation_status: string | null
           active: boolean | null
           address: string | null
           anchor_lat: number | null
@@ -19602,6 +19607,7 @@ export type Database = {
           is_qr_enabled: boolean
           is_test: boolean
           is_verified: boolean | null
+          last_reviewed_at: string | null
           latitude: number | null
           launch_status: string
           live_lat: number | null
@@ -19645,6 +19651,11 @@ export type Database = {
           zone_id: string | null
         }
         Insert: {
+          activated_at?: string | null
+          activated_by?: string | null
+          activation_channel?: string | null
+          activation_notes?: string | null
+          activation_status?: string | null
           active?: boolean | null
           address?: string | null
           anchor_lat?: number | null
@@ -19683,6 +19694,7 @@ export type Database = {
           is_qr_enabled?: boolean
           is_test?: boolean
           is_verified?: boolean | null
+          last_reviewed_at?: string | null
           latitude?: number | null
           launch_status?: string
           live_lat?: number | null
@@ -19726,6 +19738,11 @@ export type Database = {
           zone_id?: string | null
         }
         Update: {
+          activated_at?: string | null
+          activated_by?: string | null
+          activation_channel?: string | null
+          activation_notes?: string | null
+          activation_status?: string | null
           active?: boolean | null
           address?: string | null
           anchor_lat?: number | null
@@ -19764,6 +19781,7 @@ export type Database = {
           is_qr_enabled?: boolean
           is_test?: boolean
           is_verified?: boolean | null
+          last_reviewed_at?: string | null
           latitude?: number | null
           launch_status?: string
           live_lat?: number | null
