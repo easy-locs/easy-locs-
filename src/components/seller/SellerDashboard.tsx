@@ -67,7 +67,7 @@ export default function SellerDashboard() {
         photo_url: s.logo_url,
         status,
         editPath: `/my-shop/${s.id}`,
-        viewPath: s.active ? `/shop/${s.slug || s.id}` : undefined,
+        viewPath: s.active ? `/s/${s.slug || s.id}` : undefined,
         slug: s.slug,
         requirements,
       };
