@@ -14,6 +14,7 @@ export interface MapMerchantPin {
   coverImage?: string | null;
 }
 
+import { haversineKm } from "@/lib/geo/distance";
 export { haversineKm as haversineDistanceKm } from "@/lib/geo/distance";
 
 export async function getMapMerchantPins(params?: {
