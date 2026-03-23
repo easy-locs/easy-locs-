@@ -28,9 +28,9 @@ export default function QrPickupPage() {
 
       const { data: orders } = await (supabase as any)
         .from("storefront_orders")
-        .select("id, status, total_amount, currency, created_at")
+        .select("id, status, total, currency, created_at")
         .eq("shop_id", shop.id)
-        .eq("customer_user_id", user?.id || "anon")
+        .eq("buyer_id", user?.id || "anon")
         .in("status", ["ready", "preparing"])
         .order("created_at", { ascending: false })
         .limit(5);
