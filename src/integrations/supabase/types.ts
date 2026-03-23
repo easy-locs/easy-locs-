@@ -6466,6 +6466,117 @@ export type Database = {
         }
         Relationships: []
       }
+      entities: {
+        Row: {
+          address: string | null
+          area: string | null
+          banner_url: string | null
+          boost_tier: string | null
+          boost_until: string | null
+          city: string | null
+          cluster: string | null
+          country_code: string | null
+          created_at: string
+          email: string | null
+          entity_type: Database["public"]["Enums"]["entity_type"]
+          id: string
+          latitude: number | null
+          logo_url: string | null
+          longitude: number | null
+          name: string
+          order_count: number | null
+          org_id: string | null
+          owner_user_id: string | null
+          partner_network_id: string | null
+          phone: string | null
+          rating: number | null
+          review_count: number | null
+          seed_merchant_id: string | null
+          slug: string | null
+          status: string
+          storefront_page_id: string | null
+          subcategory: string | null
+          tags: string[] | null
+          updated_at: string
+          verified: boolean | null
+          vertical: string | null
+          website: string | null
+          whatsapp: string | null
+        }
+        Insert: {
+          address?: string | null
+          area?: string | null
+          banner_url?: string | null
+          boost_tier?: string | null
+          boost_until?: string | null
+          city?: string | null
+          cluster?: string | null
+          country_code?: string | null
+          created_at?: string
+          email?: string | null
+          entity_type?: Database["public"]["Enums"]["entity_type"]
+          id?: string
+          latitude?: number | null
+          logo_url?: string | null
+          longitude?: number | null
+          name: string
+          order_count?: number | null
+          org_id?: string | null
+          owner_user_id?: string | null
+          partner_network_id?: string | null
+          phone?: string | null
+          rating?: number | null
+          review_count?: number | null
+          seed_merchant_id?: string | null
+          slug?: string | null
+          status?: string
+          storefront_page_id?: string | null
+          subcategory?: string | null
+          tags?: string[] | null
+          updated_at?: string
+          verified?: boolean | null
+          vertical?: string | null
+          website?: string | null
+          whatsapp?: string | null
+        }
+        Update: {
+          address?: string | null
+          area?: string | null
+          banner_url?: string | null
+          boost_tier?: string | null
+          boost_until?: string | null
+          city?: string | null
+          cluster?: string | null
+          country_code?: string | null
+          created_at?: string
+          email?: string | null
+          entity_type?: Database["public"]["Enums"]["entity_type"]
+          id?: string
+          latitude?: number | null
+          logo_url?: string | null
+          longitude?: number | null
+          name?: string
+          order_count?: number | null
+          org_id?: string | null
+          owner_user_id?: string | null
+          partner_network_id?: string | null
+          phone?: string | null
+          rating?: number | null
+          review_count?: number | null
+          seed_merchant_id?: string | null
+          slug?: string | null
+          status?: string
+          storefront_page_id?: string | null
+          subcategory?: string | null
+          tags?: string[] | null
+          updated_at?: string
+          verified?: boolean | null
+          vertical?: string | null
+          website?: string | null
+          whatsapp?: string | null
+        }
+        Relationships: []
+      }
       escrow_payments: {
         Row: {
           amount: number
@@ -25762,6 +25873,12 @@ export type Database = {
         | "confirmed"
         | "completed"
         | "cancelled"
+      entity_type:
+        | "business"
+        | "brand"
+        | "driver"
+        | "partner_network"
+        | "individual"
       listing_status:
         | "draft"
         | "pending_review"
@@ -25910,6 +26027,13 @@ export const Constants = {
         "confirmed",
         "completed",
         "cancelled",
+      ],
+      entity_type: [
+        "business",
+        "brand",
+        "driver",
+        "partner_network",
+        "individual",
       ],
       listing_status: [
         "draft",
