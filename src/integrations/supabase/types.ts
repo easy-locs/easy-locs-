@@ -19569,12 +19569,14 @@ export type Database = {
           anchor_lat: number | null
           anchor_lng: number | null
           audit_score: number | null
+          audit_status: string | null
           banner_url: string | null
           blocking_reason: string | null
           boost_expiry: string | null
           boost_multiplier: number
           category: string | null
           city: string | null
+          claimed_by_owner: boolean | null
           contact_email: string | null
           contact_phone: string | null
           contact_telegram: string | null
@@ -19585,6 +19587,7 @@ export type Database = {
           created_at: string | null
           created_by_test: boolean
           currency: string | null
+          data_freshness_at: string | null
           default_currency: string | null
           description: string | null
           entity_type: string
@@ -19606,6 +19609,7 @@ export type Database = {
           live_updated_at: string | null
           logo_url: string | null
           longitude: number | null
+          menu_quality_score: number | null
           merchant_profile_id: string | null
           name: string
           og_image_url: string | null
@@ -19626,6 +19630,8 @@ export type Database = {
           shop_visibility: string | null
           slug: string
           source_confidence: number | null
+          source_external_id: string | null
+          source_name: string | null
           source_type: string | null
           subcategory: string | null
           tagline: string | null
@@ -19644,12 +19650,14 @@ export type Database = {
           anchor_lat?: number | null
           anchor_lng?: number | null
           audit_score?: number | null
+          audit_status?: string | null
           banner_url?: string | null
           blocking_reason?: string | null
           boost_expiry?: string | null
           boost_multiplier?: number
           category?: string | null
           city?: string | null
+          claimed_by_owner?: boolean | null
           contact_email?: string | null
           contact_phone?: string | null
           contact_telegram?: string | null
@@ -19660,6 +19668,7 @@ export type Database = {
           created_at?: string | null
           created_by_test?: boolean
           currency?: string | null
+          data_freshness_at?: string | null
           default_currency?: string | null
           description?: string | null
           entity_type?: string
@@ -19681,6 +19690,7 @@ export type Database = {
           live_updated_at?: string | null
           logo_url?: string | null
           longitude?: number | null
+          menu_quality_score?: number | null
           merchant_profile_id?: string | null
           name: string
           og_image_url?: string | null
@@ -19701,6 +19711,8 @@ export type Database = {
           shop_visibility?: string | null
           slug: string
           source_confidence?: number | null
+          source_external_id?: string | null
+          source_name?: string | null
           source_type?: string | null
           subcategory?: string | null
           tagline?: string | null
@@ -19719,12 +19731,14 @@ export type Database = {
           anchor_lat?: number | null
           anchor_lng?: number | null
           audit_score?: number | null
+          audit_status?: string | null
           banner_url?: string | null
           blocking_reason?: string | null
           boost_expiry?: string | null
           boost_multiplier?: number
           category?: string | null
           city?: string | null
+          claimed_by_owner?: boolean | null
           contact_email?: string | null
           contact_phone?: string | null
           contact_telegram?: string | null
@@ -19735,6 +19749,7 @@ export type Database = {
           created_at?: string | null
           created_by_test?: boolean
           currency?: string | null
+          data_freshness_at?: string | null
           default_currency?: string | null
           description?: string | null
           entity_type?: string
@@ -19756,6 +19771,7 @@ export type Database = {
           live_updated_at?: string | null
           logo_url?: string | null
           longitude?: number | null
+          menu_quality_score?: number | null
           merchant_profile_id?: string | null
           name?: string
           og_image_url?: string | null
@@ -19776,6 +19792,8 @@ export type Database = {
           shop_visibility?: string | null
           slug?: string
           source_confidence?: number | null
+          source_external_id?: string | null
+          source_name?: string | null
           source_type?: string | null
           subcategory?: string | null
           tagline?: string | null
