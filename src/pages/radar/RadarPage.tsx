@@ -242,7 +242,7 @@ export default function RadarPage() {
               onSelectEntity={(entity) => {
                 ultraHaptic("light");
                 const slug = (entity as any).slug;
-                navigate(slug ? `/s/${slug}` : `/shop/${entity.id}`);
+                navigate(slug ? `/s/${slug}` : `/s/${entity.id}`);
               }}
               userLat={userLocation?.lat}
               userLng={userLocation?.lng}
