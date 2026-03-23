@@ -80,7 +80,7 @@ export default function NotificationCenter() {
 
       {/* List */}
       <div className="flex-1 overflow-y-auto">
-        {store.loading && (
+        {loading && (
           <div className="space-y-3 px-4 pt-4">
             {[1, 2, 3].map((i) => (
               <div key={i} className="h-16 rounded-2xl bg-muted animate-pulse" />
@@ -88,7 +88,7 @@ export default function NotificationCenter() {
           </div>
         )}
 
-        {!store.loading && store.notifications.length === 0 && (
+        {!loading && notifications.length === 0 && (
           <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
             <BellOff className="h-10 w-10 mb-3 opacity-30" />
             <p className="text-sm font-medium">{t("notifications.empty_title") || "No notifications yet"}</p>
@@ -96,9 +96,9 @@ export default function NotificationCenter() {
           </div>
         )}
 
-        {!store.loading && store.notifications.length > 0 && (
+        {!loading && notifications.length > 0 && (
           <div className="px-4 py-3 space-y-2 pb-24">
-            {store.notifications.map((notif, i) => {
+            {notifications.map((notif, i) => {
               const Icon = CATEGORY_ICONS[notif.category] || Bell;
               const isUnread = !notif.read_at;
               return (
