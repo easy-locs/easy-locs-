@@ -43,10 +43,14 @@ export type EntityType = "business" | "brand" | "driver" | "partner_network" | "
 
 export interface EntityGeography {
   countryCode: string;   // ISO 3166-1 alpha-2
+  countryName?: string | null;
+  regionCode?: string | null;
+  regionName?: string | null;
   cityCode?: string | null;     // normalized slug e.g. "dubai", "abu-dhabi"
+  cityName?: string | null;
   districtCode?: string | null; // normalized slug e.g. "marina", "downtown"
+  districtName?: string | null;
   area?: string | null;
-  city?: string | null;
   address?: string | null;
   latitude?: number | null;
   longitude?: number | null;
