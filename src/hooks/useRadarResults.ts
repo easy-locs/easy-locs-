@@ -1,17 +1,18 @@
 /**
- * useRadarResults — Returns nearby entities for radar view.
- * Only shows launched shops from storefront_pages.
+ * useRadarResults — Returns nearby entities for radar/discovery views.
+ * Uses unified pipeline: storefront_pages + seed_merchants.
  */
 import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { useLocationStore } from "@/stores/locationStore";
+import { fetchUnifiedPoints } from "@/lib/radar/fetchUnifiedPoints";
 import type { GeoEntity } from "@/lib/geo/geoEntityAdapter";
 
-const VERTICAL_TO_TYPE: Record<string, GeoEntity["type"]> = {
+const CATEGORY_TO_TYPE: Record<string, GeoEntity["type"]> = {
   food: "restaurant",
   grocery: "grocery",
   services: "service",
   shops: "shop",
+  property: "property",
 };
 
 export function useRadarResults(opts?: { type?: string; radiusKm?: number }) {
@@ -21,31 +22,33 @@ export function useRadarResults(opts?: { type?: string; radiusKm?: number }) {
 
   useEffect(() => {
     setLoading(true);
-    (supabase as any)
-      .from("storefront_pages")
-      .select("id, name, latitude, longitude, logo_url, banner_url, slug, vertical, category, subcategory, address, rating, ranking_score")
-      .eq("launch_status", "launched")
-      .not("latitude", "is", null)
-      .not("longitude", "is", null)
-      .order("ranking_score", { ascending: false })
-      .limit(100)
-      .then(({ data }: any) => {
-        const mapped: GeoEntity[] = (data ?? []).map((s: any) => ({
-          id: s.id,
-          type: (VERTICAL_TO_TYPE[s.vertical] || "shop") as GeoEntity["type"],
-          name: s.name || "Business",
-          title: s.name || "Business",
-          subtitle: s.address || s.category || s.vertical || undefined,
-          lat: Number(s.latitude),
-          lng: Number(s.longitude),
-          imageUrl: s.logo_url || s.banner_url,
-          image_url: s.logo_url || s.banner_url,
-          slug: s.slug,
-          address: s.address,
-          rating: s.rating ? Number(s.rating) : undefined,
-          category: s.category,
+    fetchUnifiedPoints({
+      userLocation: location ? { lat: location.lat, lng: location.lng } : undefined,
+    })
+      .then((points) => {
+        const mapped: GeoEntity[] = points.map((p) => ({
+          id: p.id,
+          type: (CATEGORY_TO_TYPE[p.category] || "shop") as GeoEntity["type"],
+          name: p.title,
+          title: p.title,
+          subtitle: p.subtitle || undefined,
+          lat: p.lat,
+          lng: p.lng,
+          imageUrl: p.imageUrl || undefined,
+          image_url: p.imageUrl || undefined,
+          rating: p.rating ?? undefined,
+          category: p.subcategory || p.category,
+          address: p.subtitle || undefined,
         }));
-        setEntities(opts?.type && opts.type !== "all" ? mapped.filter((e) => e.type === opts.type) : mapped);
+        setEntities(
+          opts?.type && opts.type !== "all"
+            ? mapped.filter((e) => e.type === opts.type)
+            : mapped
+        );
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error("[useRadarResults] fetch error:", err);
         setLoading(false);
       });
   }, [location?.lat, opts?.type]);
