@@ -87,12 +87,21 @@ export interface IngestionShopInput {
   city: string;
   emirate: EmirateCode;
   address?: string;
+  area?: string;
   latitude?: number;
   longitude?: number;
   phone?: string;
+  website?: string;
+  instagram?: string;
+  rating?: number;
+  reviewCount?: number;
+  openingHours?: Record<string, any>;
+  menuText?: string;
   sourceType?: string;
   sourceName?: string;
   sourceExternalId?: string;
+  sourceConfidence?: number;
+  capturedAt?: string;
   coverUrl?: string;
   logoUrl?: string;
 }
