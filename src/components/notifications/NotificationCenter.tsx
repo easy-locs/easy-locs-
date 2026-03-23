@@ -36,14 +36,14 @@ export default function NotificationCenter() {
   const unreadCount = useUnifiedNotificationStore((s) => s.unreadCount);
 
   useEffect(() => {
-    if (user?.id) store.hydrate(user.id);
+    if (user?.id) hydrate(user.id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
 
-  const unread = store.unreadCount();
+  const unread = unreadCount();
 
-  const handleTap = async (notif: typeof store.notifications[0]) => {
-    if (!notif.read_at) await store.markAsRead(notif.id);
+  const handleTap = async (notif: (typeof notifications)[0]) => {
+    if (!notif.read_at) await markAsRead(notif.id);
     const route = resolveDeepLink(notif.type, notif.link);
     navigate(route);
   };
