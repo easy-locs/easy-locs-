@@ -32,8 +32,10 @@ export async function resolveSearch(
   // Build storefront query
   let sfQuery = db
     .from("storefront_pages")
-    .select("id, name, slug, vertical, category, subcategory, cluster, city, address, region, rating, reviews_count, banner_url, logo_url, launch_status, latitude, longitude, is_open, source_type, audit_score, readiness_status")
+    .select("id, name, slug, vertical, category, subcategory, cluster, city, address, region, rating, reviews_count, banner_url, logo_url, launch_status, visibility_mode, route_status, display_priority, latitude, longitude, is_open, source_type, audit_score, readiness_status")
     .in("launch_status", ["launched", "ready", "active"])
+    .not("visibility_mode", "eq", "hidden")
+    .not("route_status", "eq", "broken")
     .limit(state.limit);
 
   // Text search
