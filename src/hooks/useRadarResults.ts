@@ -21,11 +21,13 @@ export function useRadarResults(opts?: { type?: string; radiusKm?: number }) {
   const location = useLocationStore((s) => s.currentLocation);
 
   useEffect(() => {
+    let cancelled = false;
     setLoading(true);
     fetchUnifiedPoints({
       userLocation: location ? { lat: location.lat, lng: location.lng } : undefined,
     })
       .then((points) => {
+        if (cancelled) return;
         const mapped: GeoEntity[] = points.map((p) => ({
           id: p.id,
           type: (CATEGORY_TO_TYPE[p.category] || "shop") as GeoEntity["type"],
@@ -48,9 +50,12 @@ export function useRadarResults(opts?: { type?: string; radiusKm?: number }) {
         setLoading(false);
       })
       .catch((err) => {
-        console.error("[useRadarResults] fetch error:", err);
-        setLoading(false);
+        if (!cancelled) {
+          console.error("[useRadarResults] fetch error:", err);
+          setLoading(false);
+        }
       });
+    return () => { cancelled = true; };
   }, [location?.lat, opts?.type]);
 
   return { entities, loading, location };
