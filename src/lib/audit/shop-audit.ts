@@ -61,15 +61,15 @@ function getVerticalRule(vertical?: string): VerticalRule {
 
 // ── Unified photo check ──
 function hasAnyPhoto(shop: any): boolean {
-  return !!(shop.logo_url || shop.logo_image || shop.cover_url || shop.banner_url || shop.cover_image);
+  return !!(shop.logo_owner_url || shop.logo_auto_url || shop.logo_url || shop.logo_image || shop.cover_owner_url || shop.cover_auto_url || shop.cover_url || shop.banner_url || shop.cover_image);
 }
 
 function hasLogo(shop: any): boolean {
-  return !!(shop.logo_url || shop.logo_image);
+  return !!(shop.logo_owner_url || shop.logo_auto_url || shop.logo_url || shop.logo_image);
 }
 
 function hasCover(shop: any): boolean {
-  return !!(shop.cover_url || shop.banner_url || shop.cover_image);
+  return !!(shop.cover_owner_url || shop.cover_auto_url || shop.cover_url || shop.banner_url || shop.cover_image);
 }
 
 function getProductCount(shop: any): number {

@@ -7,6 +7,8 @@ import { useParams, useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import SEOHead from "@/components/SEOHead";
+import { resolveCoverImage, resolveLogoImage } from "@/lib/image/dual-layer-image";
+import { getRequiredAttribution } from "@/lib/image/source-policy";
 import { buildAppUrl } from "@/lib/app-domain";
 import ShareButtons from "@/components/public/ShareButtons";
 import { useStorefrontCart } from "@/hooks/useStorefrontCart";
@@ -189,17 +191,21 @@ export default function ShopPage() {
     );
   }
 
+  // ── Dual-layer image resolution ──
+  const coverImage = resolveCoverImage(shop);
+  const logoImage = resolveLogoImage(shop);
+  const attribution = getRequiredAttribution(shop.source_type);
+
   return (
     <>
       <SEOHead
         title={`${shop.name} | Shop`}
         description={shop.description || `Browse ${shop.name}'s catalog`}
-        ogImage={shop.banner_url || shop.logo_url}
+        ogImage={coverImage.url}
         canonical={buildAppUrl(`/s/${shop.slug}`)}
       />
 
       <div className="min-h-screen bg-background pb-20">
-        {/* PASS137: Sticky header with back nav */}
         <MobilePageHeader
           title={shop.name}
           subtitle={shop.city ? `${shop.city}${shop.country ? `, ${shop.country}` : ""}` : undefined}
@@ -213,18 +219,21 @@ export default function ShopPage() {
           }
         />
 
-        {/* Banner */}
-        {shop.banner_url && (
-          <div className="h-40 sm:h-56 bg-muted overflow-hidden">
-            <img src={shop.banner_url} alt="" className="w-full h-full object-cover" />
-          </div>
-        )}
+        {/* Cover — always visible via dual-layer fallback */}
+        <div className="h-40 sm:h-56 bg-muted overflow-hidden relative">
+          <img src={coverImage.url} alt="" className="w-full h-full object-cover" />
+          {attribution && (
+            <span className="absolute bottom-1 right-2 text-[9px] text-white/60 bg-black/30 px-1.5 py-0.5 rounded">
+              {attribution}
+            </span>
+          )}
+        </div>
 
         {/* Shop header */}
         <div className="max-w-2xl mx-auto px-4 -mt-10 relative z-10">
           <div className="flex items-end gap-4 mb-4">
-            {shop.logo_url ? (
-              <img src={shop.logo_url} alt={shop.name} className="w-20 h-20 rounded-2xl border-4 border-background object-cover shadow-md" />
+            {logoImage ? (
+              <img src={logoImage.url} alt={shop.name} className="w-20 h-20 rounded-2xl border-4 border-background object-cover shadow-md" />
             ) : (
               <div className="w-20 h-20 rounded-2xl border-4 border-background bg-primary/10 flex items-center justify-center shadow-md">
                 <Store className="h-8 w-8 text-primary" />
