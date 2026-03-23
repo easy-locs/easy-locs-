@@ -161,6 +161,8 @@ export async function fetchUnifiedPoints(opts?: FetchUnifiedPointsOpts): Promise
       isSponsored: m.is_featured || m.promo_active || (m.visibility_score ?? 0) > 80,
       distanceKm: dist,
       timeScore,
+      district: m.area || null,
+      cityName: m.city || null,
     });
   }
 
