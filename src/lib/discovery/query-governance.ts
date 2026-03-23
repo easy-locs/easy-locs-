@@ -9,7 +9,7 @@
  * Apply canonical governance filters to a storefront_pages query.
  * Replaces all launch_status-based filtering.
  */
-export function governStorefrontQuery(query: any, surface: "search" | "discover" | "home" | "map" | "autocomplete" = "search") {
+export function governStorefrontQuery(query: any, surface: "search" | "discover" | "home" | "map" | "autocomplete" | "favorites" = "search") {
   // Stage 1: Exclude hidden shops — visibility_mode is the SOLE authority
   // Accept null visibility_mode as "coming_soon" (legacy data)
   const allowedModes: Record<string, string[]> = {
@@ -18,6 +18,7 @@ export function governStorefrontQuery(query: any, surface: "search" | "discover"
     home:         ["live", "ready", "coming_soon"],
     map:          ["live", "ready", "coming_soon", "map_only"],
     autocomplete: ["live", "ready", "coming_soon", "search_only"],
+    favorites:    ["live", "ready", "coming_soon", "search_only", "map_only"],
   };
 
   const modes = allowedModes[surface] ?? allowedModes.search;
