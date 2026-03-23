@@ -497,15 +497,15 @@ export default function AdminUaeOpsDashboard() {
                           {s.readiness_status || "—"}
                         </Badge>
                       </td>
-                      <td className="px-2 py-1.5">{s.is_claimed ? <CheckCircle2 className="h-3 w-3 text-green-500" /> : "—"}</td>
+                      <td className="px-2 py-1.5">{s.is_claimed ? <CheckCircle2 className="h-3 w-3 text-primary" /> : "—"}</td>
                       <td className="px-2 py-1.5">{s.has_menu || (s.products_count ?? 0) > 0 ? "✓" : "—"}</td>
                       <td className="px-2 py-1.5">{s.cover_url || s.cover_auto_url || s.cover_owner_url ? "✓" : "—"}</td>
-                      <td className="px-2 py-1.5">{isDup ? <AlertTriangle className="h-3 w-3 text-yellow-500" /> : "—"}</td>
+                      <td className="px-2 py-1.5">{isDup ? <AlertTriangle className="h-3 w-3 text-accent-foreground" /> : "—"}</td>
                       <td className="px-2 py-1.5">
                         {blockers.length > 0 ? (
                           <Badge variant="destructive" className="text-[9px]">{blockers.length}</Badge>
                         ) : (
-                          <CheckCircle2 className="h-3 w-3 text-green-500" />
+                          <CheckCircle2 className="h-3 w-3 text-primary" />
                         )}
                       </td>
                     </tr>
