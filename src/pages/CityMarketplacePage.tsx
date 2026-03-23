@@ -19,9 +19,11 @@ const CityMarketplacePage = () => {
     (async () => {
       const { data } = await (supabase as any)
         .from("storefront_pages")
-        .select("id, name, slug, city, vertical, category, launch_status")
+        .select("id, name, slug, city, vertical, category, launch_status, visibility_mode, route_status, display_priority")
         .ilike("city", cityName)
-        .eq("launch_status", "launched")
+        .neq("route_status", "broken")
+        .or("visibility_mode.eq.live,visibility_mode.eq.ready,visibility_mode.eq.coming_soon,visibility_mode.eq.search_only,visibility_mode.is.null")
+        .order("display_priority", { ascending: false, nullsFirst: false })
         .order("ranking_score", { ascending: false })
         .limit(100);
       setMerchants(data ?? []);
