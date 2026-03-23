@@ -1,15 +1,17 @@
 /**
- * BACKWARD COMPATIBILITY — Re-exports from canonical taxonomy.
- * All new code should import from "@/lib/taxonomy/canonical" directly.
- * @deprecated Use @/lib/taxonomy/canonical instead.
+ * BACKWARD COMPATIBILITY — Re-exports from world-class-taxonomy.
+ * @deprecated Use @/lib/taxonomy/world-class-taxonomy instead.
  */
 export {
   CANONICAL_VERTICALS as VERTICALS,
   getCanonicalVertical as getVertical,
-} from "@/lib/taxonomy/canonical";
-export type { CanonicalVertical as VerticalDef, CanonicalSubcategory as SubcategoryDef } from "@/lib/taxonomy/canonical";
+} from "@/lib/taxonomy/world-class-taxonomy";
+export type {
+  TaxonomyVertical as VerticalDef,
+  TaxonomySubcategory as SubcategoryDef,
+} from "@/lib/taxonomy/world-class-taxonomy";
 
-import { getCanonicalSubcategory } from "@/lib/taxonomy/canonical";
+import { getCanonicalSubcategory } from "@/lib/taxonomy/world-class-taxonomy";
 
 export function getSubcategoryLabel(vertical: string, sub: string): string {
   const info = getCanonicalSubcategory(sub);
