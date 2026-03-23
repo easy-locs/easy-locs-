@@ -75,7 +75,7 @@ export default function QrTrackingPage() {
             <p className="text-xs text-muted-foreground mt-1">Place an order to track it here</p>
             {shopSlug && (
               <button
-                onClick={() => navigate(`/order/${shopSlug}`)}
+                onClick={() => navigate(`/menu/${shopSlug}`)}
                 className="mt-4 px-5 py-2.5 rounded-xl text-sm font-bold bg-primary text-primary-foreground"
               >
                 View Menu
