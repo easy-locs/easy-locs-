@@ -6,9 +6,11 @@ export async function getSmartRecommendations(params: {
 }) {
   const limit = params.limit ?? 12;
 
-  const { data: merchants, error: merchantErr } = await supabase
-    .from("marketplace_listings")
+  // Use seed_merchants directly instead of marketplace_listings view
+  const { data: merchants, error: merchantErr } = await (supabase as any)
+    .from("seed_merchants")
     .select("*")
+    .eq("is_active", true)
     .order("visibility_score", { ascending: false })
     .limit(80);
 
