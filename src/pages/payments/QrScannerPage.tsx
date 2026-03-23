@@ -419,7 +419,7 @@ export default function QrScannerPage() {
 
   const handleReset = () => {
     setError(""); setLastText(""); setTxId(""); setResolvedPayload(null);
-    setState("idle"); handledRef.current = false;
+    setPayStepLabel(""); setState("idle"); handledRef.current = false;
   };
 
   const handleStartCamera = async (pid?: string) => {
