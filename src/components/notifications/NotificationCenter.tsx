@@ -30,17 +30,22 @@ export default function NotificationCenter() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { t } = useI18n();
-  const store = useUnifiedNotificationStore();
+  const notifications = useUnifiedNotificationStore((s) => s.notifications);
+  const loading = useUnifiedNotificationStore((s) => s.loading);
+  const hydrate = useUnifiedNotificationStore((s) => s.hydrate);
+  const markAsRead = useUnifiedNotificationStore((s) => s.markAsRead);
+  const markAllAsRead = useUnifiedNotificationStore((s) => s.markAllAsRead);
+  const unreadCount = useUnifiedNotificationStore((s) => s.unreadCount);
 
   useEffect(() => {
-    if (user?.id) store.hydrate(user.id);
+    if (user?.id) hydrate(user.id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
 
-  const unread = store.unreadCount();
+  const unread = unreadCount();
 
-  const handleTap = async (notif: typeof store.notifications[0]) => {
-    if (!notif.read_at) await store.markAsRead(notif.id);
+  const handleTap = async (notif: (typeof notifications)[0]) => {
+    if (!notif.read_at) await markAsRead(notif.id);
     const route = resolveDeepLink(notif.type, notif.link);
     navigate(route);
   };
@@ -64,7 +69,7 @@ export default function NotificationCenter() {
         </div>
         {unread > 0 && (
           <button
-            onClick={() => user?.id && store.markAllAsRead(user.id)}
+            onClick={() => user?.id && markAllAsRead(user.id)}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-xs font-medium active:scale-95 transition-transform"
           >
             <CheckCheck className="h-3.5 w-3.5" />
@@ -75,7 +80,7 @@ export default function NotificationCenter() {
 
       {/* List */}
       <div className="flex-1 overflow-y-auto">
-        {store.loading && (
+        {loading && (
           <div className="space-y-3 px-4 pt-4">
             {[1, 2, 3].map((i) => (
               <div key={i} className="h-16 rounded-2xl bg-muted animate-pulse" />
@@ -83,7 +88,7 @@ export default function NotificationCenter() {
           </div>
         )}
 
-        {!store.loading && store.notifications.length === 0 && (
+        {!loading && notifications.length === 0 && (
           <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
             <BellOff className="h-10 w-10 mb-3 opacity-30" />
             <p className="text-sm font-medium">{t("notifications.empty_title") || "No notifications yet"}</p>
@@ -91,9 +96,9 @@ export default function NotificationCenter() {
           </div>
         )}
 
-        {!store.loading && store.notifications.length > 0 && (
+        {!loading && notifications.length > 0 && (
           <div className="px-4 py-3 space-y-2 pb-24">
-            {store.notifications.map((notif, i) => {
+            {notifications.map((notif, i) => {
               const Icon = CATEGORY_ICONS[notif.category] || Bell;
               const isUnread = !notif.read_at;
               return (
