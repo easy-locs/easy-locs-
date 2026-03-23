@@ -78,7 +78,7 @@ export async function executeMerchantPayment(opts: {
   // Step 2: Validate QR payload
   const validation = validateMerchantQr(payload);
   if (!validation.valid) {
-    return { ok: false, error: validation.reason };
+    return { ok: false, error: (validation as { valid: false; reason: string }).reason };
   }
 
   // Step 3: Self-payment block
