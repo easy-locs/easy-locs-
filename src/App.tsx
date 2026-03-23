@@ -291,6 +291,8 @@ const AdminOutreachPage = safeLazy(() => import("./pages/AdminOutreachPage"), "A
 const MerchantPosPage = safeLazy(() => import("./pages/MerchantPosPage"), "MerchantPosPage");
 const MerchantKitchenPage = safeLazy(() => import("./pages/MerchantKitchenPage"), "MerchantKitchenPage");
 const MerchantOrdersPage = safeLazy(() => import("./pages/MerchantOrdersPage"), "MerchantOrdersPage");
+const ShopQrCenterPage = safeLazy(() => import("./pages/merchant/ShopQrCenterPage"), "ShopQrCenterPage");
+const ShopOrderPage = safeLazy(() => import("./pages/merchant/ShopOrderPage"), "ShopOrderPage");
 // WalletCommerceTestPage removed — legacy test page
 const AdminWalletDiagnosticsPage = safeLazy(() => import("./pages/AdminWalletDiagnosticsPage"), "AdminWalletDiagnosticsPage");
 const DriverEarningsPage = safeLazy(() => import("./pages/DriverEarningsPage"), "DriverEarningsPage");
