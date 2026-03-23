@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import type { Vertical } from "@/lib/taxonomy/world-class-taxonomy";
 
 function slugify(input: string) {
   return input
@@ -10,32 +11,45 @@ function slugify(input: string) {
 
 export async function createMerchantDraft(params: {
   name: string;
-  category: "food" | "grocery" | "services";
+  category: Vertical;
   subcategory?: string;
+  cluster?: string;
   city?: string;
   area?: string;
+  country?: string;
   ownerUserId?: string | null;
   coverImage?: string | null;
+  currency?: string;
+  defaultLanguage?: string;
+  timezone?: string;
+  tags?: string[];
 }) {
+  const insertPayload: Record<string, any> = {
+    name: params.name,
+    category: params.category,
+    subcategory: params.subcategory ?? null,
+    city: params.city ?? "Dubai",
+    area: params.area ?? "Business Bay",
+    cover_image: params.coverImage ?? null,
+    logo_image: params.coverImage ?? null,
+    is_active: true,
+    is_open: false,
+    is_featured: false,
+    visibility_score: 50,
+    rating: 4.2,
+    review_count: 0,
+    delivery_time_min: 20,
+    delivery_time_max: 40,
+  };
+
+  // World-ready optional fields (nullable/safe)
+  if (params.country) insertPayload.country = params.country;
+  if (params.cluster) insertPayload.cluster = params.cluster;
+  if (params.tags?.length) insertPayload.tags = params.tags;
+
   const { data, error } = await supabase
     .from("seed_merchants")
-    .insert({
-      name: params.name,
-      category: params.category,
-      subcategory: params.subcategory ?? null,
-      city: params.city ?? "Dubai",
-      area: params.area ?? "Business Bay",
-      cover_image: params.coverImage ?? null,
-      logo_image: params.coverImage ?? null,
-      is_active: true,
-      is_open: false,
-      is_featured: false,
-      visibility_score: 50,
-      rating: 4.2,
-      review_count: 0,
-      delivery_time_min: 20,
-      delivery_time_max: 40,
-    } as any)
+    .insert(insertPayload as any)
     .select("*")
     .single();
 
@@ -45,7 +59,7 @@ export async function createMerchantDraft(params: {
 
 export async function bulkCreateMerchantProducts(params: {
   merchantId: string;
-  category: "food" | "grocery" | "services";
+  category: string;
   items: Array<{
     name: string;
     description?: string;
@@ -98,12 +112,18 @@ export async function activateMerchantStore(params: {
 
 export async function autoOnboardMerchant(params: {
   name: string;
-  category: "food" | "grocery" | "services";
+  category: Vertical;
   subcategory?: string;
+  cluster?: string;
   city?: string;
   area?: string;
+  country?: string;
   ownerUserId?: string | null;
   coverImage?: string | null;
+  currency?: string;
+  defaultLanguage?: string;
+  timezone?: string;
+  tags?: string[];
   items: Array<{
     name: string;
     description?: string;
@@ -116,10 +136,16 @@ export async function autoOnboardMerchant(params: {
     name: params.name,
     category: params.category,
     subcategory: params.subcategory,
+    cluster: params.cluster,
     city: params.city,
     area: params.area,
+    country: params.country,
     ownerUserId: params.ownerUserId ?? null,
     coverImage: params.coverImage ?? null,
+    currency: params.currency,
+    defaultLanguage: params.defaultLanguage,
+    timezone: params.timezone,
+    tags: params.tags,
   });
 
   await bulkCreateMerchantProducts({

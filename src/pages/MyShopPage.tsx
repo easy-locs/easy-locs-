@@ -380,19 +380,58 @@ export default function MyShopPage() {
                 <Card>
                   <CardContent className="p-4 space-y-3">
                     <h4 className="text-sm font-semibold">Global Settings</h4>
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="grid grid-cols-3 gap-3">
                       <div>
                         <Label className="text-xs">Currency</Label>
-                        <Input defaultValue={shop.currency || "AED"} onBlur={e => updateShop("currency", e.target.value || "AED")} className="mt-1" placeholder="AED" />
+                        <Select value={shop.currency || "AED"} onValueChange={v => updateShop("currency", v)}>
+                          <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            {["AED","USD","EUR","GBP","SAR","MAD","XOF","EGP","INR","TRY"].map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                          </SelectContent>
+                        </Select>
                       </div>
                       <div>
-                        <Label className="text-xs">Default Language</Label>
-                        <Input defaultValue={shop.default_language || "en"} onBlur={e => updateShop("default_language", e.target.value || "en")} className="mt-1" placeholder="en" />
+                        <Label className="text-xs">Language</Label>
+                        <Select value={shop.default_language || "en"} onValueChange={v => updateShop("default_language", v)}>
+                          <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            {[{v:"en",l:"English"},{v:"fr",l:"Français"},{v:"ar",l:"العربية"},{v:"es",l:"Español"},{v:"pt",l:"Português"},{v:"tr",l:"Türkçe"},{v:"hi",l:"हिन्दी"}].map(o => <SelectItem key={o.v} value={o.v}>{o.l}</SelectItem>)}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label className="text-xs">Timezone</Label>
+                        <Input defaultValue={shop.timezone || ""} onBlur={e => updateShop("timezone", e.target.value || null)} className="mt-1" placeholder="Asia/Dubai" />
                       </div>
                     </div>
                     <div>
-                      <Label className="text-xs">Timezone</Label>
-                      <Input defaultValue={shop.timezone || ""} onBlur={e => updateShop("timezone", e.target.value || null)} className="mt-1" placeholder="e.g. Asia/Dubai, Europe/Paris" />
+                      <Label className="text-xs">Opening Hours</Label>
+                      <Input defaultValue={typeof shop.opening_hours === 'string' ? shop.opening_hours : ""} onBlur={e => updateShop("opening_hours", e.target.value || null)} className="mt-1" placeholder="e.g. Mon-Sat 9:00-22:00" />
+                    </div>
+                    <div>
+                      <Label className="text-xs">Social Links</Label>
+                      <Input defaultValue={typeof shop.social_links === 'string' ? shop.social_links : ""} onBlur={e => updateShop("social_links", e.target.value || null)} className="mt-1" placeholder="e.g. instagram.com/yourshop" />
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardContent className="p-4 space-y-3">
+                    <h4 className="text-sm font-semibold">Capabilities</h4>
+                    <div className="grid grid-cols-2 gap-2">
+                      {[
+                        { key: "cap_delivery", label: "🚚 Delivery", val: shop.cap_delivery },
+                        { key: "cap_booking", label: "📅 Booking", val: shop.cap_booking },
+                        { key: "cap_chat", label: "💬 Chat", val: shop.cap_chat },
+                        { key: "cap_call", label: "📞 Call", val: shop.cap_call },
+                        { key: "cap_wallet", label: "💰 Wallet", val: shop.cap_wallet },
+                        { key: "cap_qr", label: "📱 QR", val: shop.cap_qr },
+                      ].map(c => (
+                        <label key={c.key} className="flex items-center gap-2 rounded-lg border border-border/50 px-3 py-2 cursor-pointer">
+                          <input type="checkbox" checked={!!c.val} onChange={e => updateShop(c.key, e.target.checked)} className="rounded" />
+                          <span className="text-xs">{c.label}</span>
+                        </label>
+                      ))}
                     </div>
                   </CardContent>
                 </Card>
