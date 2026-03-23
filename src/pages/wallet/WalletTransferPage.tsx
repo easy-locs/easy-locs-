@@ -1,7 +1,7 @@
 /**
  * WalletTransferPage — Send balance to another user.
  * Supports ?to=, ?email=, ?orbitId= prefill.
- * Optimistic UI with real-time balance.
+ * Validates recipient wallet before allowing transfer.
  */
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -11,7 +11,7 @@ import { walletTransfer, useWalletBalance } from "@/payments/wallet-hooks";
 import { resolvePayTarget, type ResolvedTarget } from "@/lib/pay/resolvePayTarget";
 import { AppCard } from "@/components/ui/AppCard";
 import { AppActionButton } from "@/components/ui/AppActionButton";
-import { ArrowLeft, User, Search, Loader2 } from "lucide-react";
+import { ArrowLeft, User, Search, AlertTriangle } from "lucide-react";
 
 export default function WalletTransferPage() {
   const navigate = useNavigate();
@@ -72,9 +72,13 @@ export default function WalletTransferPage() {
     }
   };
 
+  const walletWarning = target && target.wallet_status !== "active";
+
   const submit = async () => {
     if (!user?.id) { toast.error("Please sign in first"); return; }
     if (!target?.id) { toast.error("Find a recipient first"); return; }
+    if (target.wallet_status === "missing") { toast.error("Recipient has no active wallet"); return; }
+    if (target.wallet_status === "locked") { toast.error("Recipient wallet is locked"); return; }
     const numAmount = Number(amount ?? 0);
     if (!numAmount || numAmount <= 0) { toast.error("Enter a valid amount"); return; }
     if (numAmount > balance) { toast.error("Insufficient balance"); return; }
@@ -154,10 +158,22 @@ export default function WalletTransferPage() {
           </AppCard>
         )}
 
+        {/* Wallet status warning */}
+        {walletWarning && (
+          <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-destructive/10 border border-destructive/20">
+            <AlertTriangle className="h-4 w-4 text-destructive shrink-0" />
+            <p className="text-xs text-destructive font-medium">
+              {target!.wallet_status === "locked"
+                ? "Recipient's wallet is locked"
+                : "Recipient has no active wallet — transfer will fail"}
+            </p>
+          </div>
+        )}
+
         <input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="Amount" className="w-full rounded-xl border border-border/20 bg-card px-3 py-3 text-sm text-foreground outline-none focus:ring-2 focus:ring-primary/20" />
         <textarea value={note} onChange={(e) => setNote(e.target.value)} rows={3} placeholder="Note (optional)" className="w-full rounded-xl border border-border/20 bg-card px-3 py-3 text-sm text-foreground resize-none outline-none focus:ring-2 focus:ring-primary/20" />
 
-        <AppActionButton full onClick={submit} loading={saving} disabled={!target}>
+        <AppActionButton full onClick={submit} loading={saving} disabled={!target || !!walletWarning}>
           {saving ? "Sending…" : "Send Transfer"}
         </AppActionButton>
       </div>

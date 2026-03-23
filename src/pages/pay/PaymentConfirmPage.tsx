@@ -1,10 +1,10 @@
 /**
  * PaymentConfirmPage — End-to-end payment confirmation.
- * Resolves target from URL params, shows profile, confirms transfer.
+ * Resolves target from URL params, validates wallet, confirms transfer.
  */
 import { useEffect, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, CheckCircle2, User, Loader2 } from "lucide-react";
+import { ArrowLeft, CheckCircle2, User, Loader2, AlertTriangle } from "lucide-react";
 import { AppCard } from "@/components/ui/AppCard";
 import { AppActionButton } from "@/components/ui/AppActionButton";
 import { resolvePayTarget, type ResolvedTarget } from "@/lib/pay/resolvePayTarget";
@@ -49,6 +49,8 @@ export default function PaymentConfirmPage() {
     const numAmount = Number(amount);
     if (!numAmount || numAmount <= 0) { toast.error("Enter a valid amount"); return; }
     if (target.id === user.id) { toast.error("Cannot pay yourself"); return; }
+    if (target.wallet_status === "missing") { toast.error("Recipient has no active wallet"); return; }
+    if (target.wallet_status === "locked") { toast.error("Recipient wallet is locked"); return; }
 
     setSending(true);
     try {
@@ -75,6 +77,8 @@ export default function PaymentConfirmPage() {
       setSending(false);
     }
   };
+
+  const walletWarning = target && target.wallet_status !== "active";
 
   return (
     <div className="min-h-[100dvh] bg-background pb-24 relative">
@@ -127,6 +131,18 @@ export default function PaymentConfirmPage() {
               </div>
             </AppCard>
 
+            {/* Wallet status warning */}
+            {walletWarning && (
+              <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-destructive/10 border border-destructive/20">
+                <AlertTriangle className="h-4 w-4 text-destructive shrink-0" />
+                <p className="text-xs text-destructive font-medium">
+                  {target.wallet_status === "locked"
+                    ? "Recipient's wallet is locked"
+                    : "Recipient has no active wallet"}
+                </p>
+              </div>
+            )}
+
             {/* Amount */}
             <div className="space-y-1.5">
               <label className="text-xs font-medium text-muted-foreground">Amount ({currency})</label>
@@ -150,7 +166,12 @@ export default function PaymentConfirmPage() {
               />
             </div>
 
-            <AppActionButton full loading={sending} onClick={confirm} disabled={!amount || Number(amount) <= 0}>
+            <AppActionButton
+              full
+              loading={sending}
+              onClick={confirm}
+              disabled={!amount || Number(amount) <= 0 || !!walletWarning}
+            >
               {sending ? "Sending…" : `Pay ${amount || "0"} ${currency}`}
             </AppActionButton>
           </>
