@@ -63,7 +63,7 @@ export async function getNearbyMerchants(params: {
     .filter((pin) => pin.lat != null && pin.lng != null)
     .map((pin) => ({
       ...pin,
-      distanceKm: haversineDistanceKm(params.lat, params.lng, Number(pin.lat), Number(pin.lng)),
+      distanceKm: haversineKm(params.lat, params.lng, Number(pin.lat), Number(pin.lng)),
     }))
     .filter((pin) => pin.distanceKm <= radiusKm)
     .sort((a, b) => a.distanceKm - b.distanceKm)

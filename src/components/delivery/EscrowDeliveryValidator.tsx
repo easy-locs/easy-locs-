@@ -16,6 +16,29 @@ import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { haversineKm } from "@/lib/geo/distance";
 
+interface Props {
+  jobId: string;
+  jobStatus: string;
+  escrowStatus?: string;
+  escrowAmount?: number;
+  escrowCurrency?: string;
+  confirmationCode?: string;
+  dropoffLat?: number;
+  dropoffLng?: number;
+  role: "seller" | "buyer" | "driver";
+  onStatusChange?: () => void;
+}
+
+const STATUS_CONFIG: Record<string, { icon: typeof Lock; color: string; label: string }> = {
+  held: { icon: Lock, color: "hsl(var(--warning))", label: "Fonds bloqués" },
+  released: { icon: Unlock, color: "hsl(var(--success))", label: "Fonds libérés" },
+  refunded: { icon: AlertTriangle, color: "hsl(var(--destructive))", label: "Remboursé" },
+  pending: { icon: Shield, color: "hsl(var(--muted-foreground))", label: "En attente" },
+};
+
+const MAX_PROXIMITY_KM = 0.5;
+const MAX_GPS_ACCURACY_M = 100;
+
 export default function EscrowDeliveryValidator({
   jobId,
   jobStatus,

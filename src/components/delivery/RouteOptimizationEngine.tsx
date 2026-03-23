@@ -11,6 +11,19 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { haversineKm } from "@/lib/geo/distance";
 
+interface Props {
+  orgId: string;
+  className?: string;
+}
+
+interface OptimizedRoute {
+  id: string;
+  stops: { address: string; lat: number; lng: number; type: "pickup" | "dropoff"; jobId: string }[];
+  totalDistanceKm: number;
+  estimatedTimeMin: number;
+  savingsPercent: number;
+}
+
 // Nearest-neighbor TSP approximation
 function optimizeStopOrder(stops: OptimizedRoute["stops"]): OptimizedRoute["stops"] {
   if (stops.length <= 2) return stops;
