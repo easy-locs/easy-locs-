@@ -238,15 +238,14 @@ export default function QrScannerPage() {
 
       const tShopStart = performance.now();
       let shopOwnerId: string | undefined;
+      let shopName: string | undefined;
       try {
-        const { data: shop } = await withTimeout(
-          supabase.from("storefront_pages").select("user_id, name").eq("slug", payload.shopSlug).maybeSingle(),
-          5000,
-          "Shop lookup timed out"
-        );
-        shopOwnerId = shop?.user_id || undefined;
+        const shopQuery = supabase.from("storefront_pages").select("user_id, name").eq("slug", payload.shopSlug).maybeSingle();
+        const { data: shop } = await withTimeout(shopQuery as any, 5000, "Shop lookup timed out");
+        shopOwnerId = (shop as any)?.user_id || undefined;
+        shopName = (shop as any)?.name || undefined;
         const tShopEnd = performance.now();
-        console.log(`[QR] shop lookup: ${(tShopEnd - tShopStart).toFixed(0)}ms`, { shopOwnerId, name: shop?.name });
+        console.log(`[QR] shop lookup: ${(tShopEnd - tShopStart).toFixed(0)}ms`, { shopOwnerId, name: shopName });
       } catch (err) {
         console.error("[QR] shop lookup failed:", err);
         setE(err instanceof Error ? err.message : "Shop lookup failed"); setS("error"); return;
