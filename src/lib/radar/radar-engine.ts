@@ -88,10 +88,7 @@ export function selectBestDriver(drivers: DriverWithDistance[]): DriverWithDista
     })[0] || null;
 }
 
-// ── Aliases for migration from duplicate modules ──
-
-/** Alias: same as haversine, for consumers that used haversineKm */
-export const haversineKm = haversine;
+// ── Aliases removed — haversineKm now re-exported from @/lib/geo/distance ──
 
 /** Radius filter presets (migrated from geo-distance.ts) */
 export const RADIUS_OPTIONS = [
