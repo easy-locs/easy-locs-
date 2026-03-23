@@ -187,6 +187,8 @@ export interface RankContext {
   /** User location for proximity */
   userLat?: number | null;
   userLng?: number | null;
+  /** User's current district for local relevance */
+  userDistrictCode?: string | null;
   /** Search query for text relevance */
   searchQuery?: string | null;
 }

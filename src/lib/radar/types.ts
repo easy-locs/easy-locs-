@@ -34,6 +34,10 @@ export type RadarPoint = {
   timeScore?: number;
   /** Storefront slug for navigation (storefront_pages only) */
   slug?: string | null;
+  /** District / neighborhood for display and ranking */
+  district?: string | null;
+  /** City name for display */
+  cityName?: string | null;
 };
 
 export type UserGeoPoint = {
