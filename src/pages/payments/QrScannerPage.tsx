@@ -241,7 +241,7 @@ export default function QrScannerPage() {
       let shopName: string | undefined;
       try {
         const shopResult: any = await withTimeout(
-          supabase.from("storefront_pages").select("user_id, name").eq("slug", payload.shopSlug).maybeSingle(),
+          Promise.resolve(supabase.from("storefront_pages").select("user_id, name").eq("slug", payload.shopSlug).maybeSingle()),
           5000,
           "Shop lookup timed out"
         );
