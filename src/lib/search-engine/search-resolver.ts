@@ -246,6 +246,8 @@ export async function resolveAutocomplete(
     .from("storefront_pages")
     .select("id, name, slug, subcategory, address, region, city, logo_url, rating, vertical")
     .in("launch_status", ["launched", "ready", "active"])
+    .not("visibility_mode", "eq", "hidden")
+    .not("route_status", "eq", "broken")
     .ilike("name", `%${q}%`)
     .limit(5);
 

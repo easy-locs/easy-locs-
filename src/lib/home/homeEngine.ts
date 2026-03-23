@@ -28,6 +28,7 @@ export async function getHomeEngineSnapshot(params?: {
     .from("seed_merchants")
     .select("*")
     .eq("is_active", true)
+    .not("is_flagged", "eq", true)
     .order("visibility_score", { ascending: false })
     .limit(120);
 
