@@ -1,11 +1,18 @@
+/**
+ * FavoritesPage — Uses canonical visibility rules for displaying favorites.
+ * Hidden and broken-route shops are excluded.
+ */
 import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 import { listFavoriteMerchants } from "@/lib/favorites/favorites";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowLeft, MapPin } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { entityUrl } from "@/lib/entity/entity-url";
+
+// Canonical visibility modes allowed for favorites
+const ALLOWED_VISIBILITY = ["live", "ready", "coming_soon", "search_only", "map_only"];
 
 export default function FavoritesPage() {
   const navigate = useNavigate();
@@ -27,13 +34,14 @@ export default function FavoritesPage() {
     queryKey: ["favorite-merchants-details", merchantIds],
     queryFn: async () => {
       if (!merchantIds.length) return [];
-      // Try storefront_pages first, then seed_merchants for remaining
+
+      // Storefront pages with canonical visibility + route enforcement
       const { data: sfData } = await (supabase as any)
         .from("storefront_pages")
-        .select("id, name, slug, vertical, category, subcategory, city, address, region, rating, reviews_count, banner_url, logo_url, visibility_mode, route_status")
+        .select("id, name, slug, vertical, category, subcategory, city, address, region, rating, reviews_count, banner_url, logo_url, visibility_mode, route_status, display_priority")
         .in("id", merchantIds)
         .neq("route_status", "broken")
-        .or("visibility_mode.eq.live,visibility_mode.eq.ready,visibility_mode.eq.coming_soon,visibility_mode.eq.search_only,visibility_mode.eq.map_only,visibility_mode.is.null");
+        .or(ALLOWED_VISIBILITY.map(m => `visibility_mode.eq.${m}`).join(",") + ",visibility_mode.is.null");
 
       const foundIds = new Set((sfData ?? []).map((r: any) => r.id));
       const missingIds = merchantIds.filter((id: string) => !foundIds.has(id));
@@ -43,19 +51,22 @@ export default function FavoritesPage() {
         const { data } = await (supabase as any)
           .from("seed_merchants")
           .select("id, name, category, subcategory, city, area, rating, review_count, cover_image")
-          .in("id", missingIds);
+          .in("id", missingIds)
+          .eq("is_active", true); // Seed hygiene: only active
         seedData = data ?? [];
       }
 
-      return [
-        ...(sfData ?? []).map((r: any) => ({
+      // Sort by display_priority for storefront, then merge seeds
+      const sfNormalized = (sfData ?? [])
+        .sort((a: any, b: any) => (b.display_priority ?? 0) - (a.display_priority ?? 0))
+        .map((r: any) => ({
           ...r,
           cover_image: r.banner_url || r.logo_url,
           review_count: r.reviews_count,
           _slug: r.slug,
-        })),
-        ...seedData,
-      ];
+        }));
+
+      return [...sfNormalized, ...seedData];
     },
     enabled: merchantIds.length > 0,
     staleTime: 5000,
@@ -100,7 +111,7 @@ export default function FavoritesPage() {
               >
                 <div className="h-28 w-full bg-muted/30">
                   {merchant.cover_image ? (
-                    <img src={merchant.cover_image} alt={merchant.name} className="w-full h-full object-cover" />
+                    <img src={merchant.cover_image} alt={merchant.name} className="w-full h-full object-cover" loading="lazy" />
                   ) : null}
                 </div>
                 <div className="p-3 space-y-1">
