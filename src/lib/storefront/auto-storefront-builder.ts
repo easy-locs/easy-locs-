@@ -1,6 +1,7 @@
 /**
  * Auto Storefront Builder
  * Creates storefront pages for imported merchants automatically.
+ * World-ready: supports full canonical layers (identity, geo, taxonomy, capabilities).
  */
 import { supabase } from "@/integrations/supabase/client";
 
@@ -14,7 +15,7 @@ function generateSlug(name: string, city: string): string {
   return `${base}-${suffix}`;
 }
 
-export async function autoCreateStorefront(params: {
+export interface AutoStorefrontParams {
   merchantProfileId: string;
   merchantName: string;
   city: string;
@@ -22,7 +23,36 @@ export async function autoCreateStorefront(params: {
   category?: string;
   userId: string;
   orgId: string;
-}): Promise<{ shopId: string; slug: string }> {
+  // Taxonomy
+  vertical?: string;
+  cluster?: string;
+  subcategory?: string;
+  tags?: string[];
+  serviceModes?: string[];
+  // Geography
+  cityCode?: string;
+  districtCode?: string;
+  districtName?: string;
+  coverageType?: string;
+  latitude?: number;
+  longitude?: number;
+  address?: string;
+  // World-readiness
+  defaultLanguage?: string;
+  timezone?: string;
+  currency?: string;
+  openingHours?: Record<string, any>;
+  // Capabilities
+  capWallet?: boolean;
+  capQr?: boolean;
+  capChat?: boolean;
+  capCall?: boolean;
+  capBooking?: boolean;
+  capDelivery?: boolean;
+  capSubscription?: boolean;
+}
+
+export async function autoCreateStorefront(params: AutoStorefrontParams): Promise<{ shopId: string; slug: string }> {
   // Check if storefront already exists
   const { data: profile } = await (supabase as any)
     .from("merchant_onboarding_profiles")
@@ -41,19 +71,48 @@ export async function autoCreateStorefront(params: {
 
   const slug = generateSlug(params.merchantName, params.city);
 
+  const insertPayload: Record<string, any> = {
+    name: params.merchantName,
+    slug,
+    city: params.city,
+    country: params.countryCode,
+    launch_status: "draft",
+    user_id: params.userId,
+    org_id: params.orgId,
+    vertical: params.vertical ?? params.category ?? "food",
+    metadata_json: { auto_generated: true, source: "auto_storefront_builder" },
+  };
+
+  // Taxonomy (nullable/safe)
+  if (params.subcategory) insertPayload.subcategory = params.subcategory;
+  if (params.tags?.length) insertPayload.tags = params.tags;
+
+  // Geography
+  if (params.cityCode) insertPayload.city_code = params.cityCode;
+  if (params.districtCode) insertPayload.district_code = params.districtCode;
+  if (params.districtName) insertPayload.area = params.districtName;
+  if (params.coverageType) insertPayload.coverage_type = params.coverageType;
+  if (params.latitude != null) insertPayload.latitude = params.latitude;
+  if (params.longitude != null) insertPayload.longitude = params.longitude;
+  if (params.address) insertPayload.address = params.address;
+
+  // World-readiness
+  if (params.defaultLanguage) insertPayload.default_language = params.defaultLanguage;
+  if (params.timezone) insertPayload.timezone = params.timezone;
+  if (params.currency) insertPayload.currency = params.currency;
+  if (params.openingHours) insertPayload.opening_hours = params.openingHours;
+
+  // Capabilities
+  if (params.capWallet != null) insertPayload.cap_wallet = params.capWallet;
+  if (params.capQr != null) insertPayload.cap_qr = params.capQr;
+  if (params.capChat != null) insertPayload.cap_chat = params.capChat;
+  if (params.capCall != null) insertPayload.cap_call = params.capCall;
+  if (params.capBooking != null) insertPayload.cap_booking = params.capBooking;
+  if (params.capDelivery != null) insertPayload.cap_delivery = params.capDelivery;
+
   const { data: shop, error } = await (supabase as any)
     .from("storefront_pages")
-    .insert({
-      name: params.merchantName,
-      slug,
-      city: params.city,
-      country: params.countryCode,
-      launch_status: "draft",
-      user_id: params.userId,
-      org_id: params.orgId,
-      vertical: params.category ?? "food",
-      metadata_json: { auto_generated: true, source: "auto_storefront_builder" },
-    } as any)
+    .insert(insertPayload)
     .select("id, slug")
     .single();
 
