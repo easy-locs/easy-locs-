@@ -44,7 +44,7 @@ export default function ShopOrderPage() {
       // Try by slug first, then by ID
       let query = (supabase as any)
         .from("storefront_pages")
-        .select("id, name, slug, description, logo_url, banner_url, city, address, rating, reviews_count, vertical, currency, country, contact_phone, active, is_published, user_id");
+        .select("id, name, slug, description, logo_url, banner_url, city, address, rating, reviews_count, vertical, currency, country, contact_phone, active, user_id");
 
       const isUuid = shopSlug && /^[0-9a-f-]{36}$/i.test(shopSlug);
       if (isUuid) {
@@ -66,9 +66,9 @@ export default function ShopOrderPage() {
       // Try products table first
       const { data: prods } = await (supabase as any)
         .from("products")
-        .select("id, name, description, price, image_url, category, available")
+        .select("id, name, description, price, image_url, category, is_available")
         .eq("shop_id", shop.id)
-        .eq("available", true)
+        .eq("is_available", true)
         .order("sort_order", { ascending: true });
 
       if (prods && prods.length > 0) return prods;
@@ -191,7 +191,7 @@ export default function ShopOrderPage() {
     );
   }
 
-  const isOpen = shop.active && shop.is_published;
+  const isOpen = !!shop.active;
 
   return (
     <>
