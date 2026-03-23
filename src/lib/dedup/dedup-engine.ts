@@ -337,7 +337,7 @@ export async function checkNewShopDuplicate(candidate: DedupCandidate): Promise<
   }));
 
   let bestMatch: DedupMatch | null = null;
-  for (const p of potentials) {
+  for (const p of mapped) {
     const match = computeDedupScore(candidate, p);
     if (!bestMatch || match.confidence > bestMatch.confidence) {
       bestMatch = match;
