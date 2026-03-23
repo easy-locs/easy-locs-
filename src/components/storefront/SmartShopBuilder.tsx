@@ -1,13 +1,14 @@
 /**
- * SmartShopBuilder — PASS102: AI-powered shop creation.
- * Auto-generates slug, categories, tags, SEO from name+description.
- * World-ready: full taxonomy depth, capabilities, district, timezone, currency, language.
+ * SmartShopBuilder — AI-powered shop creation.
+ * World-ready: full taxonomy depth, capabilities, geo-defaults prefill.
  */
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEnsureOrg } from "@/hooks/useEnsureOrg";
+import { applyGeoDefaults } from "@/lib/geo/geo-defaults";
+import { normalizeVertical, normalizeSubcategory } from "@/lib/taxonomy/world-class-taxonomy";
 import TaxonomySelector from "@/components/storefront/TaxonomySelector";
 import CapabilityToggles, { type CapabilityFlags } from "@/components/storefront/CapabilityToggles";
 import { Button } from "@/components/ui/button";
@@ -63,16 +64,23 @@ export default function SmartShopBuilder() {
   const [city, setCity] = useState("");
   const [country, setCountry] = useState("");
   const [district, setDistrict] = useState("");
-  const [currency, setCurrency] = useState("AED");
-  const [defaultLanguage, setDefaultLanguage] = useState("en");
+  const [currency, setCurrency] = useState("");
+  const [defaultLanguage, setDefaultLanguage] = useState("");
   const [timezone, setTimezone] = useState("");
-  // Taxonomy depth
   const [vertical, setVertical] = useState("food");
   const [cluster, setCluster] = useState("");
   const [subcategory, setSubcategory] = useState("");
-  // Capabilities
   const [caps, setCaps] = useState<CapabilityFlags>({ capDelivery: true, capChat: true });
   const [suggestion, setSuggestion] = useState<AISuggestion | null>(null);
+
+  // Auto-prefill currency/language/timezone when country changes
+  const handleCountryChange = useCallback((val: string) => {
+    setCountry(val);
+    const defaults = applyGeoDefaults(val, { currency, defaultLanguage, timezone });
+    if (!currency) setCurrency(defaults.currency);
+    if (!defaultLanguage) setDefaultLanguage(defaults.defaultLanguage);
+    if (!timezone) setTimezone(defaults.timezone);
+  }, [currency, defaultLanguage, timezone]);
 
   const handleAISuggest = async () => {
     if (!name.trim()) { toast.error("Enter a shop name first"); return; }
@@ -95,10 +103,15 @@ Return: {"vertical":"food|grocery|shops|services|property|healthcare|mobility|ex
       const jsonMatch = text.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
         const parsed = JSON.parse(jsonMatch[0]);
-        setSuggestion(parsed);
-        if (parsed.vertical) setVertical(parsed.vertical);
+        // Normalize AI output to canonical taxonomy
+        const normVertical = normalizeVertical(parsed.vertical) || "shops";
+        const normSubcategory = parsed.subcategory ? (normalizeSubcategory(parsed.subcategory) || parsed.subcategory) : "";
+        const normTags = (parsed.tags || []).map((t: string) => t.toLowerCase().trim()).filter(Boolean);
+
+        setSuggestion({ ...parsed, vertical: normVertical, subcategory: normSubcategory, tags: normTags });
+        setVertical(normVertical);
         if (parsed.category) setCluster(parsed.category);
-        if (parsed.subcategory) setSubcategory(parsed.subcategory);
+        if (normSubcategory) setSubcategory(normSubcategory);
         if (!description && parsed.tagline) setDescription(parsed.tagline);
         toast.success("AI suggestions ready!");
       }
@@ -119,6 +132,9 @@ Return: {"vertical":"food|grocery|shops|services|property|healthcare|mobility|ex
 
       const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 
+      // Resolve final defaults for any still-empty fields
+      const finalDefaults = applyGeoDefaults(country, { currency, defaultLanguage, timezone });
+
       const insertPayload: Record<string, any> = {
         org_id: orgId,
         user_id: user.id,
@@ -130,20 +146,20 @@ Return: {"vertical":"food|grocery|shops|services|property|healthcare|mobility|ex
         country: country.trim() || "",
         contact_email: user.email || "",
         shop_visibility: "public",
-        vertical: vertical || "shops",
+        vertical: normalizeVertical(vertical) || "shops",
         tags: suggestion?.tags || [],
         seo_description: suggestion?.seo_description || "",
-        currency: currency || "AED",
-        default_language: defaultLanguage || "en",
+        currency: finalDefaults.currency,
+        default_language: finalDefaults.defaultLanguage,
       };
 
       // Taxonomy depth
       if (cluster) insertPayload.cluster = cluster;
-      if (subcategory) insertPayload.subcategory = subcategory;
+      if (subcategory) insertPayload.subcategory = normalizeSubcategory(subcategory) || subcategory;
 
       // Geography
       if (district.trim()) insertPayload.area = district.trim();
-      if (timezone.trim()) insertPayload.timezone = timezone.trim();
+      if (finalDefaults.timezone) insertPayload.timezone = finalDefaults.timezone;
 
       // Capability flags
       if (caps.capWallet != null) insertPayload.cap_wallet = caps.capWallet;
@@ -207,18 +223,18 @@ Return: {"vertical":"food|grocery|shops|services|property|healthcare|mobility|ex
         {/* Location */}
         <div className="grid grid-cols-2 gap-3">
           <div><Label className="text-xs">City</Label><Input value={city} onChange={e => setCity(e.target.value)} placeholder="Dubai" className="mt-1" /></div>
-          <div><Label className="text-xs">Country</Label><Input value={country} onChange={e => setCountry(e.target.value)} placeholder="UAE" className="mt-1" /></div>
+          <div><Label className="text-xs">Country</Label><Input value={country} onChange={e => handleCountryChange(e.target.value)} placeholder="UAE" className="mt-1" /></div>
         </div>
         <div>
           <Label className="text-xs">District / Neighborhood</Label>
           <Input value={district} onChange={e => setDistrict(e.target.value)} placeholder="e.g. Marina, Downtown, Médina..." className="mt-1" />
         </div>
 
-        {/* World-readiness */}
+        {/* World-readiness (auto-prefilled by country) */}
         <div className="grid grid-cols-2 gap-3">
           <div>
             <Label className="text-xs">Currency</Label>
-            <Select value={currency} onValueChange={setCurrency}>
+            <Select value={currency || "AED"} onValueChange={setCurrency}>
               <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
               <SelectContent>
                 {CURRENCY_OPTIONS.map(c => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}
@@ -227,7 +243,7 @@ Return: {"vertical":"food|grocery|shops|services|property|healthcare|mobility|ex
           </div>
           <div>
             <Label className="text-xs">Language</Label>
-            <Select value={defaultLanguage} onValueChange={setDefaultLanguage}>
+            <Select value={defaultLanguage || "en"} onValueChange={setDefaultLanguage}>
               <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
               <SelectContent>
                 {LANGUAGE_OPTIONS.map(l => <SelectItem key={l.value} value={l.value}>{l.label}</SelectItem>)}
