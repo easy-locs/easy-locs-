@@ -19,7 +19,7 @@ import {
   MISSION_STATUS_CONFIG, getMissionCTAs, MISSION_FILTERS,
   type DeliveryMissionStatus, type MissionFilter,
 } from "@/lib/delivery/mission-config";
-import { formatDistance, formatETA, haversineDistance, estimateETA } from "@/lib/delivery/geo-utils";
+import { formatDistance, formatETA, haversineKm as haversineDistance, estimateETA } from "@/lib/geo/distance";
 import type { DeliveryJob } from "@/hooks/useDriverMissions";
 import { toast } from "sonner";
 import { useLocationStore } from "@/stores/locationStore";

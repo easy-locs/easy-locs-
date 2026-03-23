@@ -29,43 +29,14 @@ export interface RadarResult {
   totalCount: number;
 }
 
-/** Haversine distance in km */
-export function haversine(lat1: number, lon1: number, lat2: number, lon2: number): number {
-  const R = 6371;
-  const dLat = ((lat2 - lat1) * Math.PI) / 180;
-  const dLon = ((lon2 - lon1) * Math.PI) / 180;
-  const a =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos((lat1 * Math.PI) / 180) *
-    Math.cos((lat2 * Math.PI) / 180) *
-    Math.sin(dLon / 2) ** 2;
-  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-}
-
-/** Estimate ETA in minutes from distance in km */
-export function estimateETA(distanceKm: number, avgSpeedKmh = 30): number {
-  return Math.round((distanceKm / avgSpeedKmh) * 60);
-}
-
-/** Format ETA for display */
-export function formatETA(minutes: number | null): string {
-  if (minutes === null) return "—";
-  if (minutes < 1) return "< 1 min";
-  return `${minutes} min`;
-}
-
-/** Format distance for display */
-export function formatDistance(km: number): string {
-  if (km < 1) return `${Math.round(km * 1000)} m`;
-  return `${km.toFixed(1)} km`;
-}
-
-/** Proximity badge */
-export function proximityBadge(km: number): { label: string; tier: "nearby" | "medium" | "far" } {
-  if (km < 2) return { label: "Nearby", tier: "nearby" };
-  if (km < 8) return { label: "Medium", tier: "medium" };
-  return { label: "Far", tier: "far" };
-}
+// Re-export canonical geo functions for backward compatibility
+import { haversineKm, estimateETA as _estimateETA, formatETA as _formatETA, formatDistance as _formatDistance, proximityBadge as _proximityBadge } from "@/lib/geo/distance";
+export const haversine = haversineKm;
+export { haversineKm } from "@/lib/geo/distance";
+export const estimateETA = (distanceKm: number, avgSpeedKmh = 30) => Math.round((distanceKm / avgSpeedKmh) * 60);
+export const formatETA = _formatETA;
+export const formatDistance = _formatDistance;
+export const proximityBadge = _proximityBadge;
 
 /**
  * Core radar computation.
