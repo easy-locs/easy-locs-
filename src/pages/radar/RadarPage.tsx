@@ -237,7 +237,13 @@ export default function RadarPage() {
                 lng: p.lng,
                 imageUrl: p.imageUrl,
                 image_url: p.imageUrl,
+                slug: p.slug || undefined,
               }))}
+              onSelectEntity={(entity) => {
+                ultraHaptic("light");
+                const slug = (entity as any).slug;
+                navigate(slug ? `/s/${slug}` : `/shop/${entity.id}`);
+              }}
               userLat={userLocation?.lat}
               userLng={userLocation?.lng}
               showUserLocation={!!userLocation}
