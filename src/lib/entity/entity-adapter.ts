@@ -28,6 +28,8 @@ export interface EntityIdentity {
   verified: boolean;
   createdAt: string;
   updatedAt: string;
+  /** Parent entity for multi-location (brand → locations) */
+  parentEntityId?: string | null;
   // Backward compat links (phase-out over time)
   storefrontPageId?: string | null;
   seedMerchantId?: string | null;
@@ -40,15 +42,15 @@ export type EntityType = "business" | "brand" | "driver" | "partner_network" | "
 // ═══════════════════════════════════════════════════════════
 
 export interface EntityGeography {
-  countryCode: string;
-  cityCode?: string | null;
-  districtCode?: string | null;
+  countryCode: string;   // ISO 3166-1 alpha-2
+  cityCode?: string | null;     // normalized slug e.g. "dubai", "abu-dhabi"
+  districtCode?: string | null; // normalized slug e.g. "marina", "downtown"
   area?: string | null;
   city?: string | null;
   address?: string | null;
   latitude?: number | null;
   longitude?: number | null;
-  /** hyperlocal | city_service | wide_search | unrestricted */
+  /** point | district | city | country */
   coverageType: string;
 }
 
@@ -117,6 +119,7 @@ function rowToEntity(row: any): PlatformEntity {
     orgId: row.org_id,
     storefrontPageId: row.storefront_page_id,
     seedMerchantId: row.seed_merchant_id,
+    parentEntityId: row.parent_entity_id ?? null,
     status: row.status ?? "active",
     verified: row.verified ?? false,
     createdAt: row.created_at,
