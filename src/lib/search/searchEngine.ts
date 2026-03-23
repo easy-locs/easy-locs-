@@ -5,7 +5,7 @@ export async function runUnifiedSearch(query: string) {
   const q = query.trim().toLowerCase();
   if (!q) return { merchants: [], products: [] };
 
-  // Storefront query — governed (no launch_status)
+  // Storefront query — governed
   let sfQ = (supabase as any)
     .from("storefront_pages")
     .select("id, name, slug, vertical, category, subcategory, city, address, region, rating, reviews_count, banner_url, logo_url, display_priority")

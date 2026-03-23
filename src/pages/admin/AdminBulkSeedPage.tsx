@@ -1,6 +1,6 @@
 /**
  * AdminBulkSeedPage — Seeds 20 shops per category across Dubai.
- * All shops created with launch_status = 'waiting_launch'.
+ * All shops created with visibility_mode = 'coming_soon'.
  * Products go into canonical `products` table linked by shop_id.
  */
 import { useState } from "react";
@@ -64,7 +64,7 @@ export default function AdminBulkSeedPage() {
             longitude: seed.lng,
             logo_url: seed.logo_url,
             banner_url: seed.cover_url,
-            launch_status: "waiting_launch",
+            visibility_mode: "coming_soon",
             ranking_score: 50 + Math.floor(Math.random() * 45),
             rating: Number((3.5 + Math.random() * 1.5).toFixed(1)),
             reviews_count: Math.floor(Math.random() * 300),
@@ -111,8 +111,8 @@ export default function AdminBulkSeedPage() {
     setLaunched(true);
     const { error } = await (supabase as any)
       .from("storefront_pages")
-      .update({ launch_status: "launched" })
-      .eq("launch_status", "waiting_launch");
+      .update({ visibility_mode: "live" })
+      .eq("visibility_mode", "coming_soon");
 
     if (error) {
       toast.error("Launch failed: " + error.message);

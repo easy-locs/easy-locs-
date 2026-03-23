@@ -1,19 +1,19 @@
 /**
  * Automation Engine — trigger onboarding, outreach, and reminders automatically.
- * RULE: No outbound messages unless shop launch_status = 'launched'.
+ * RULE: No outbound messages unless shop visibility_mode = 'live'.
  */
 import { platformBus } from "@/lib/shared/platform-bus";
 import { supabase } from "@/integrations/supabase/client";
 
-/** Check if a shop is launched before sending any outbound message */
+/** Check if a shop is live before sending any outbound message */
 async function isShopLaunched(shopId: string): Promise<boolean> {
   if (!shopId) return false;
   const { data } = await (supabase as any)
     .from("storefront_pages")
-    .select("launch_status")
+    .select("visibility_mode")
     .eq("id", shopId)
     .maybeSingle();
-  return data?.launch_status === "launched";
+  return data?.visibility_mode === "live";
 }
 
 /** Install automation listeners. Called once at app startup. */
