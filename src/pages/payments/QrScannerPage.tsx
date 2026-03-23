@@ -25,6 +25,18 @@ import { playPremiumSuccessBeep, hapticPremiumSuccess } from "@/lib/scan/feedbac
 
 type ScanState = "idle" | "starting" | "scanning" | "paying" | "paid" | "stopped" | "error" | "resolved";
 type TabMode = "scan" | "myqr";
+type PendingQrPayment = {
+  kind: "user" | "shop";
+  recipientId: string;
+  recipientName: string;
+  walletId: string;
+  currency: string;
+  amount: number | null;
+  contextId: string;
+  payload: UniversalQrPayload;
+  startedAt: number;
+  timings: { decodeMs: number; recipientResolveMs: number; walletResolveMs: number };
+};
 
 const REGION_ID = "qr-reader-region";
 const QR_BOX = 260;
