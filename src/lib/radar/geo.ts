@@ -17,36 +17,41 @@ export function haversineKm(
 
 /**
  * Premium ranking formula for "smart" mode.
- * Combines: proximity (30%), hierarchy relevance (15%), time (15%),
- * rating quality (20%), review volume (10%), sponsorship (10%).
+ * Combines: proximity (25%), hierarchy relevance (15%), time (12%),
+ * rating quality (18%), review volume (8%), sponsorship (10%),
+ * profile completeness (12%).
  */
 function smartScore(p: {
   distanceKm: number;
   _timeScore: number;
   _hierarchyScore: number;
+  _profileScore: number;
   rating?: number | null;
   reviewsCount?: number | null;
   isSponsored?: boolean;
 }): number {
-  // Proximity: 0–30 (closer = higher, decays over 13km)
-  const proxScore = Math.max(0, 30 - p.distanceKm * 2.3);
+  // Proximity: 0–25 (closer = higher, decays over 11km)
+  const proxScore = Math.max(0, 25 - p.distanceKm * 2.3);
 
   // Hierarchy relevance: 0–15 (exact sub=15, cluster=10, vertical=5, none=0)
-  const hierarchyScore = p._hierarchyScore * 5; // 3*5=15, 2*5=10, 1*5=5
+  const hierarchyScore = p._hierarchyScore * 5;
 
-  // Time relevance: 0–15
-  const timeScore = p._timeScore * 15;
+  // Time relevance: 0–12
+  const timeScore = p._timeScore * 12;
 
-  // Rating quality: 0–20 (rating out of 5 → scaled)
-  const ratingScore = ((p.rating ?? 0) / 5) * 20;
+  // Rating quality: 0–18
+  const ratingScore = ((p.rating ?? 0) / 5) * 18;
 
-  // Review volume: 0–10 (logarithmic, caps around 200 reviews)
-  const reviewScore = Math.min(10, Math.log2((p.reviewsCount ?? 0) + 1) * 1.3);
+  // Review volume: 0–8
+  const reviewScore = Math.min(8, Math.log2((p.reviewsCount ?? 0) + 1) * 1.1);
 
   // Sponsorship boost: 0 or 10
   const sponsorScore = p.isSponsored ? 10 : 0;
 
-  return proxScore + hierarchyScore + timeScore + ratingScore + reviewScore + sponsorScore;
+  // Profile completeness: 0–12
+  const profileScore = p._profileScore * 12;
+
+  return proxScore + hierarchyScore + timeScore + ratingScore + reviewScore + sponsorScore + profileScore;
 }
 
 export interface SortRadarOpts {
@@ -63,6 +68,8 @@ export function sortRadarPoints<T extends {
   isSponsored?: boolean;
   subcategory?: string | null;
   timeScore?: number;
+  imageUrl?: string | null;
+  subtitle?: string | null;
 }>(
   points: T[],
   user: { lat: number; lng: number } | null,
@@ -72,12 +79,23 @@ export function sortRadarPoints<T extends {
   const timeCtx = getTimeContext();
   const { targetSubcategory, targetVertical } = opts ?? {};
 
-  const enriched = points.map((p) => ({
-    ...p,
-    distanceKm: user ? haversineKm(user.lat, user.lng, p.lat, p.lng) : 9999,
-    _timeScore: p.timeScore ?? timeRelevanceScore(p.subcategory, timeCtx),
-    _hierarchyScore: hierarchyMatchScore(p.subcategory, targetSubcategory, targetVertical),
-  }));
+  const enriched = points.map((p) => {
+    // Profile completeness: 0–1 based on how many fields are populated
+    let completeness = 0;
+    if (p.rating && p.rating > 0) completeness += 0.25;
+    if (p.reviewsCount && p.reviewsCount > 0) completeness += 0.2;
+    if (p.imageUrl) completeness += 0.25;
+    if (p.subtitle) completeness += 0.15;
+    if (p.subcategory) completeness += 0.15;
+
+    return {
+      ...p,
+      distanceKm: user ? haversineKm(user.lat, user.lng, p.lat, p.lng) : 9999,
+      _timeScore: p.timeScore ?? timeRelevanceScore(p.subcategory, timeCtx),
+      _hierarchyScore: hierarchyMatchScore(p.subcategory, targetSubcategory, targetVertical),
+      _profileScore: completeness,
+    };
+  });
 
   if (mode === "best") {
     return enriched.sort((a, b) =>
