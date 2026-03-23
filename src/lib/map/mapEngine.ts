@@ -58,7 +58,7 @@ export async function getMapMerchantPins(params?: {
       lng: row.longitude ? Number(row.longitude) : null,
       rating: row.rating ? Number(row.rating) : null,
       isOpen: true,
-      area: row.area ?? null,
+      area: row.region || row.address || null,
       city: row.city ?? null,
       coverImage: row.banner_url || row.logo_url || null,
       slug: row.slug ?? null,
