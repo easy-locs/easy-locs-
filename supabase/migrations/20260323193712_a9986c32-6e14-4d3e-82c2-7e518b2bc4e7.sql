@@ -1,0 +1,1 @@
+ALTER TABLE public.qr_order_targets ALTER COLUMN merchant_profile_id DROP NOT NULL;

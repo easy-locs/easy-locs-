@@ -14289,7 +14289,7 @@ export type Database = {
           expires_at: string | null
           id: string
           last_scanned_at: string | null
-          merchant_profile_id: string
+          merchant_profile_id: string | null
           payload_json: Json | null
           qr_purpose: string | null
           scan_count: number | null
@@ -14308,7 +14308,7 @@ export type Database = {
           expires_at?: string | null
           id?: string
           last_scanned_at?: string | null
-          merchant_profile_id: string
+          merchant_profile_id?: string | null
           payload_json?: Json | null
           qr_purpose?: string | null
           scan_count?: number | null
@@ -14327,7 +14327,7 @@ export type Database = {
           expires_at?: string | null
           id?: string
           last_scanned_at?: string | null
-          merchant_profile_id?: string
+          merchant_profile_id?: string | null
           payload_json?: Json | null
           qr_purpose?: string | null
           scan_count?: number | null
