@@ -7,7 +7,7 @@ import { useSearchParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, CheckCircle2, User, Loader2, AlertTriangle } from "lucide-react";
 import { AppCard } from "@/components/ui/AppCard";
 import { AppActionButton } from "@/components/ui/AppActionButton";
-import { resolvePayTarget, type ResolvedTarget } from "@/lib/pay/resolvePayTarget";
+import { resolvePayTarget, type ResolvedPayTarget } from "@/lib/wallet/resolvePayTarget";
 import { walletTransfer } from "@/payments/wallet-hooks";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
@@ -18,7 +18,7 @@ export default function PaymentConfirmPage() {
   const [params] = useSearchParams();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [target, setTarget] = useState<ResolvedTarget | null>(null);
+  const [target, setTarget] = useState<ResolvedPayTarget | null>(null);
   const [amount, setAmount] = useState(params.get("amount") ?? "");
   const [currency] = useState(params.get("currency") ?? "AED");
   const [note, setNote] = useState(params.get("note") ?? "");
@@ -31,9 +31,9 @@ export default function PaymentConfirmPage() {
     void (async () => {
       try {
         const resolved = await resolvePayTarget({
-          userId: params.get("userId"),
-          orbitId: params.get("orbitId"),
-          email: params.get("email"),
+          userId: params.get("userId") ?? undefined,
+          orbitId: params.get("orbitId") ?? undefined,
+          email: params.get("email") ?? undefined,
         });
         setTarget(resolved);
       } catch (e) {
@@ -45,22 +45,22 @@ export default function PaymentConfirmPage() {
   }, [params]);
 
   const confirm = async () => {
-    if (!target?.id || !user?.id) return;
+    if (!target?.targetUserId || !user?.id) return;
     const numAmount = Number(amount);
     if (!numAmount || numAmount <= 0) { toast.error("Enter a valid amount"); return; }
-    if (target.id === user.id) { toast.error("Cannot pay yourself"); return; }
-    if (target.wallet_status === "missing") { toast.error("Recipient has no active wallet"); return; }
-    if (target.wallet_status === "locked") { toast.error("Recipient wallet is locked"); return; }
+    if (target.targetUserId === user.id) { toast.error("Cannot pay yourself"); return; }
+    if (target.walletStatus === "missing") { toast.error("Recipient has no active wallet"); return; }
+    if (target.walletStatus === "locked") { toast.error("Recipient wallet is locked"); return; }
 
     setSending(true);
     try {
       await walletTransfer({
         senderId: user.id,
-        recipientId: target.id,
+        recipientId: target.targetUserId,
         amount: numAmount,
         currency,
         contextType: "qr_payment",
-        title: note.trim() || `Pay ${target.display_name || "user"}`,
+        title: note.trim() || `Pay ${target.displayName || "user"}`,
       });
       playPremiumSuccessBeep();
       hapticPremiumSuccess();
@@ -78,7 +78,7 @@ export default function PaymentConfirmPage() {
     }
   };
 
-  const walletWarning = target && target.wallet_status !== "active";
+  const walletWarning = target && target.walletStatus !== "active";
 
   return (
     <div className="min-h-[100dvh] bg-background pb-24 relative">
@@ -106,7 +106,7 @@ export default function PaymentConfirmPage() {
           <AppCard variant="elevated" padding="lg" className="flex flex-col items-center gap-3 py-8">
             <CheckCircle2 className="h-14 w-14 text-primary" />
             <p className="text-lg font-bold text-foreground">Payment Sent</p>
-            <p className="text-sm text-muted-foreground">{amount} {currency} to {target?.display_name || "user"}</p>
+            <p className="text-sm text-muted-foreground">{amount} {currency} to {target?.displayName || "user"}</p>
           </AppCard>
         ) : !target ? (
           <AppCard variant="base" padding="lg" className="text-center py-8">
@@ -119,15 +119,15 @@ export default function PaymentConfirmPage() {
             {/* Recipient card */}
             <AppCard variant="elevated" padding="md" className="flex items-center gap-3">
               <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden">
-                {target.avatar_url ? (
-                  <img src={target.avatar_url} alt="" className="w-full h-full object-cover" />
+                {target.avatarUrl ? (
+                  <img src={target.avatarUrl} alt="" className="w-full h-full object-cover" />
                 ) : (
                   <User className="h-5 w-5 text-primary" />
                 )}
               </div>
               <div className="min-w-0 flex-1">
-                <p className="text-sm font-bold text-foreground truncate">{target.display_name || "Unknown"}</p>
-                <p className="text-xs text-muted-foreground truncate">{target.email || target.id}</p>
+                <p className="text-sm font-bold text-foreground truncate">{target.displayName || "Unknown"}</p>
+                <p className="text-xs text-muted-foreground truncate">{target.targetUserId}</p>
               </div>
             </AppCard>
 
@@ -136,7 +136,7 @@ export default function PaymentConfirmPage() {
               <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-destructive/10 border border-destructive/20">
                 <AlertTriangle className="h-4 w-4 text-destructive shrink-0" />
                 <p className="text-xs text-destructive font-medium">
-                  {target.wallet_status === "locked"
+                  {target.walletStatus === "locked"
                     ? "Recipient's wallet is locked"
                     : "Recipient has no active wallet"}
                 </p>

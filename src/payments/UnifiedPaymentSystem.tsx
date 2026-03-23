@@ -7,6 +7,7 @@ import React, {
   useCallback,
   useContext,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from "react";
@@ -61,6 +62,10 @@ export function UnifiedPaymentProvider({ children }: { children: ReactNode }) {
     resolve: (value: PaymentResult) => void;
   } | null>(null);
 
+  // Anti-double-payment: track last confirmed txId and debounce timestamp
+  const lastConfirmRef = useRef<number>(0);
+  const DEBOUNCE_MS = 2000;
+
   const closePayment = useCallback(() => {
     if (loading) return;
     // Resolve the pending promise so callers don't hang forever
@@ -89,6 +94,14 @@ export function UnifiedPaymentProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const handleConfirm = useCallback(async () => {
+    // Anti-double-payment debounce
+    const now = Date.now();
+    if (now - lastConfirmRef.current < DEBOUNCE_MS) {
+      console.warn("[Payment] debounce: confirm blocked (too fast)");
+      return;
+    }
+    lastConfirmRef.current = now;
+
     if (!request || loading) return;
     if (!user?.id) {
       setError("You must sign in to pay.");
