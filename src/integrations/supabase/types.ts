@@ -19598,6 +19598,7 @@ export type Database = {
           data_freshness_at: string | null
           default_currency: string | null
           description: string | null
+          display_priority: number | null
           entity_type: string
           geo_scope: string | null
           has_menu: boolean | null
@@ -19636,6 +19637,7 @@ export type Database = {
           readiness_status: string | null
           region: string | null
           reviews_count: number | null
+          route_status: string | null
           scheduled_publish_at: string | null
           seo_description: string | null
           seo_title: string | null
@@ -19654,6 +19656,7 @@ export type Database = {
           user_id: string
           vertical: string | null
           views_count: number | null
+          visibility_mode: string | null
           zone_id: string | null
         }
         Insert: {
@@ -19691,6 +19694,7 @@ export type Database = {
           data_freshness_at?: string | null
           default_currency?: string | null
           description?: string | null
+          display_priority?: number | null
           entity_type?: string
           geo_scope?: string | null
           has_menu?: boolean | null
@@ -19729,6 +19733,7 @@ export type Database = {
           readiness_status?: string | null
           region?: string | null
           reviews_count?: number | null
+          route_status?: string | null
           scheduled_publish_at?: string | null
           seo_description?: string | null
           seo_title?: string | null
@@ -19747,6 +19752,7 @@ export type Database = {
           user_id: string
           vertical?: string | null
           views_count?: number | null
+          visibility_mode?: string | null
           zone_id?: string | null
         }
         Update: {
@@ -19784,6 +19790,7 @@ export type Database = {
           data_freshness_at?: string | null
           default_currency?: string | null
           description?: string | null
+          display_priority?: number | null
           entity_type?: string
           geo_scope?: string | null
           has_menu?: boolean | null
@@ -19822,6 +19829,7 @@ export type Database = {
           readiness_status?: string | null
           region?: string | null
           reviews_count?: number | null
+          route_status?: string | null
           scheduled_publish_at?: string | null
           seo_description?: string | null
           seo_title?: string | null
@@ -19840,6 +19848,7 @@ export type Database = {
           user_id?: string
           vertical?: string | null
           views_count?: number | null
+          visibility_mode?: string | null
           zone_id?: string | null
         }
         Relationships: [
