@@ -1681,3 +1681,24 @@ html {
 .lightweight-mode .easylocs-radar-sweep {
   display: none !important;
 }
+
+/* ══════ Mapbox Rich Pin Popups ══════ */
+.radar-pin-popup .mapboxgl-popup-content {
+  background: hsl(var(--card));
+  color: hsl(var(--foreground));
+  border: 1px solid hsl(var(--border) / 0.3);
+  border-radius: 12px;
+  padding: 8px 10px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+.radar-pin-popup .mapboxgl-popup-tip {
+  border-top-color: hsl(var(--card));
+}
+
+.radar-pin-popup .mapboxgl-popup-close-button {
+  color: hsl(var(--muted-foreground));
+  font-size: 14px;
+  padding: 2px 6px;
+}
