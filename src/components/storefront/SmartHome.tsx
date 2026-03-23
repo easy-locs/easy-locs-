@@ -295,11 +295,14 @@ export default function SmartHome() {
     (async () => {
       try {
         const baseSelect = "id, name, logo_url, banner_url, vertical, category, subcategory, address, slug, ranking_score, rating, reviews_count, created_at";
+        // Canonical visibility enforcement: exclude hidden + broken routes
+        const homeVisibility = "visibility_mode.eq.live,visibility_mode.eq.ready,visibility_mode.eq.coming_soon,visibility_mode.is.null";
+        const buildQ = (q: any) => q.neq("route_status", "broken").or(homeVisibility);
         const [trendingRes, bestRatedRes, newestRes, nearYouRes] = await Promise.all([
-          (supabase as any).from("storefront_pages").select(baseSelect).eq("launch_status", "launched").not("latitude", "is", null).order("ranking_score", { ascending: false }).limit(10),
-          (supabase as any).from("storefront_pages").select(baseSelect).eq("launch_status", "launched").not("latitude", "is", null).gt("reviews_count", 0).order("rating", { ascending: false }).limit(10),
-          (supabase as any).from("storefront_pages").select(baseSelect).eq("launch_status", "launched").not("latitude", "is", null).order("created_at", { ascending: false }).limit(10),
-          (supabase as any).from("storefront_pages").select(baseSelect + ", latitude, longitude").eq("launch_status", "launched").not("latitude", "is", null).not("longitude", "is", null).limit(30),
+          buildQ((supabase as any).from("storefront_pages").select(baseSelect).eq("launch_status", "launched").not("latitude", "is", null)).order("ranking_score", { ascending: false }).limit(10),
+          buildQ((supabase as any).from("storefront_pages").select(baseSelect).eq("launch_status", "launched").not("latitude", "is", null).gt("reviews_count", 0)).order("rating", { ascending: false }).limit(10),
+          buildQ((supabase as any).from("storefront_pages").select(baseSelect).eq("launch_status", "launched").not("latitude", "is", null)).order("created_at", { ascending: false }).limit(10),
+          buildQ((supabase as any).from("storefront_pages").select(baseSelect + ", latitude, longitude").eq("launch_status", "launched").not("latitude", "is", null).not("longitude", "is", null)).limit(30),
         ]);
 
         let nearYouSorted = (nearYouRes.data ?? []) as any[];
