@@ -2,6 +2,8 @@
  * Search Resolver — Executes unified search against Supabase.
  * Searches storefronts, seed merchants, and products.
  * Returns unified SearchResult[] with taxonomy-aware ranking.
+ * 
+ * GOVERNANCE: All queries go through query-governance.ts — no launch_status filtering.
  */
 import { supabase } from "@/integrations/supabase/client";
 import type { SearchState, SearchResult, AutocompleteGroup } from "./search-types";
@@ -11,6 +13,7 @@ import {
   getCanonicalVertical,
   CANONICAL_VERTICALS,
 } from "@/lib/taxonomy/world-class-taxonomy";
+import { governStorefrontQuery, governSeedQuery } from "@/lib/discovery/query-governance";
 
 const db = supabase as any;
 
@@ -29,14 +32,14 @@ export async function resolveSearch(
 ): Promise<{ results: SearchResult[]; totalCount: number }> {
   const q = state.query.trim().toLowerCase();
 
-  // Build storefront query
+  // Build storefront query — governed by canonical visibility rules
   let sfQuery = db
     .from("storefront_pages")
-    .select("id, name, slug, vertical, category, subcategory, cluster, city, address, region, rating, reviews_count, banner_url, logo_url, launch_status, visibility_mode, route_status, display_priority, latitude, longitude, is_open, source_type, audit_score, readiness_status")
-    .in("launch_status", ["launched", "ready", "active"])
-    .not("visibility_mode", "eq", "hidden")
-    .not("route_status", "eq", "broken")
+    .select("id, name, slug, vertical, category, subcategory, cluster, city, address, region, rating, reviews_count, banner_url, logo_url, visibility_mode, route_status, display_priority, latitude, longitude, is_open, source_type, audit_score, readiness_status")
     .limit(state.limit);
+
+  // Apply governance (visibility_mode + route_status)
+  sfQuery = governStorefrontQuery(sfQuery, "search");
 
   // Text search
   if (q) {
@@ -78,17 +81,16 @@ export async function resolveSearch(
       .limit(20);
   }
 
-  // Seed merchants search (parallel)
+  // Seed merchants search (parallel) — governed
   let seedPromise: Promise<any> = Promise.resolve({ data: [] });
   if (q) {
-    seedPromise = db
+    let seedQ = db
       .from("seed_merchants")
       .select("id, name, category, subcategory, city, area, rating, review_count, cover_image, is_open, latitude, longitude, visibility_score")
-      .eq("is_active", true)
-      .not("is_flagged", "eq", true)
       .or(`name.ilike.%${q}%,subcategory.ilike.%${q}%,area.ilike.%${q}%`)
-      .order("visibility_score", { ascending: false })
       .limit(20);
+    seedQ = governSeedQuery(seedQ);
+    seedPromise = seedQ;
   }
 
   const [sfRes, seedRes, prodRes] = await Promise.all([sfQuery, seedPromise, productPromise]);
@@ -180,6 +182,7 @@ function mapSeed(row: any, state: SearchState): SearchResult {
     district: row.area,
     city: row.city,
     isOpen: row.is_open,
+    score: row.visibility_score ?? 0,
   };
 }
 
@@ -194,9 +197,9 @@ function sortResults(results: SearchResult[], state: SearchState): SearchResult[
         return (b.reviewsCount ?? 0) - (a.reviewsCount ?? 0);
       case "relevance":
       default: {
-        // Composite: sponsored boost + rating + distance penalty
-        const scoreA = (a.isSponsored ? 10 : 0) + (a.rating ?? 0) - (a.distanceKm ?? 5) * 0.3;
-        const scoreB = (b.isSponsored ? 10 : 0) + (b.rating ?? 0) - (b.distanceKm ?? 5) * 0.3;
+        // Composite: score (display_priority or visibility_score) + rating + distance penalty
+        const scoreA = (a.score ?? 0) * 0.3 + (a.isSponsored ? 10 : 0) + (a.rating ?? 0) - (a.distanceKm ?? 5) * 0.3;
+        const scoreB = (b.score ?? 0) * 0.3 + (b.isSponsored ? 10 : 0) + (b.rating ?? 0) - (b.distanceKm ?? 5) * 0.3;
         return scoreB - scoreA;
       }
     }
@@ -241,15 +244,15 @@ export async function resolveAutocomplete(
     groups.push({ type: "categories", label: "Categories", items: taxonomyMatches.slice(0, 5) });
   }
 
-  // 2. Shop matches (from DB)
-  const { data: shops } = await db
+  // 2. Shop matches — governed (no launch_status)
+  let shopQuery = db
     .from("storefront_pages")
     .select("id, name, slug, subcategory, address, region, city, logo_url, rating, vertical")
-    .in("launch_status", ["launched", "ready", "active"])
-    .not("visibility_mode", "eq", "hidden")
-    .not("route_status", "eq", "broken")
     .ilike("name", `%${q}%`)
     .limit(5);
+  shopQuery = governStorefrontQuery(shopQuery, "autocomplete");
+
+  const { data: shops } = await shopQuery;
 
   if (shops?.length) {
     groups.push({

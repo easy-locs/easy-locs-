@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { governSeedQuery } from "@/lib/discovery/query-governance";
 
 export interface HomeEngineSnapshot {
   featuredMerchants: any[];
@@ -24,13 +25,12 @@ export async function getHomeEngineSnapshot(params?: {
 }) {
   const limit = params?.limit ?? 12;
 
+  // Governed seed query — same rules as canonical pipeline
   let merchantQuery = (supabase as any)
     .from("seed_merchants")
     .select("*")
-    .eq("is_active", true)
-    .not("is_flagged", "eq", true)
-    .order("visibility_score", { ascending: false })
     .limit(120);
+  merchantQuery = governSeedQuery(merchantQuery);
 
   if (params?.category) {
     merchantQuery = merchantQuery.eq("category", params.category);

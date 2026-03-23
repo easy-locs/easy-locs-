@@ -1,5 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import { haversineKm } from "@/lib/geo/distance";
+import { governStorefrontQuery, governSeedQuery } from "@/lib/discovery/query-governance";
 
 export interface MapMerchantPin {
   id: string;
@@ -25,21 +26,21 @@ export async function getMapMerchantPins(params?: {
 }) {
   const limit = params?.limit ?? 300;
 
-  // Primary source: storefront_pages (launched entities)
+  // Primary source: storefront_pages — governed
   let sfQuery = (supabase as any)
     .from("storefront_pages")
-    .select("id, name, slug, vertical, category, subcategory, latitude, longitude, rating, city, address, region, banner_url, logo_url, launch_status")
-    .eq("launch_status", "launched")
+    .select("id, name, slug, vertical, category, subcategory, latitude, longitude, rating, city, address, region, banner_url, logo_url")
     .limit(limit);
+  sfQuery = governStorefrontQuery(sfQuery, "map");
   if (params?.category) sfQuery = sfQuery.eq("vertical", params.category);
   if (params?.city) sfQuery = sfQuery.eq("city", params.city);
 
-  // Secondary source: seed_merchants
+  // Secondary source: seed_merchants — governed
   let seedQuery = (supabase as any)
     .from("seed_merchants")
-    .select("id, name, category, subcategory, city, area, rating, cover_image, is_open")
-    .eq("is_active", true)
+    .select("id, name, category, subcategory, city, area, rating, cover_image, is_open, visibility_score")
     .limit(limit);
+  seedQuery = governSeedQuery(seedQuery);
   if (params?.category) seedQuery = seedQuery.eq("category", params.category);
   if (params?.city) seedQuery = seedQuery.eq("city", params.city);
 
