@@ -184,19 +184,26 @@ export default function RadarPage() {
 
       {/* Content */}
       {mapMode === "map" ? (
-        <div className="relative mx-4 h-[320px] rounded-2xl bg-muted/20 border border-border/20 overflow-hidden flex items-center justify-center ultra-smooth">
-          <div className="relative w-[200px] h-[200px] rounded-full border border-primary/10">
-            <RadarUserPulse />
-          </div>
-          {userLocation ? (
-            <p className="absolute bottom-3 left-1/2 -translate-x-1/2 text-[10px] text-muted-foreground">
-              {userLocation.lat.toFixed(5)}, {userLocation.lng.toFixed(5)}
-            </p>
-          ) : (
-            <p className="absolute bottom-3 left-1/2 -translate-x-1/2 text-[10px] text-muted-foreground animate-pulse">
-              Locating…
-            </p>
-          )}
+        <div className="relative mx-4 h-[400px] rounded-2xl overflow-hidden">
+          <Suspense fallback={<div className="w-full h-full bg-muted/20 flex items-center justify-center"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>}>
+            <UnifiedMap
+              entities={useRadarStore.getState().filtered.map((p) => ({
+                id: p.id,
+                type: (p.category === "food" ? "restaurant" : p.category === "shops" ? "shop" : p.category === "grocery" ? "grocery" : p.category === "property" ? "property" : "service") as any,
+                name: p.title,
+                title: p.title,
+                subtitle: p.subtitle || undefined,
+                lat: p.lat,
+                lng: p.lng,
+                imageUrl: p.imageUrl,
+                image_url: p.imageUrl,
+              }))}
+              userLat={userLocation?.lat}
+              userLng={userLocation?.lng}
+              showUserLocation={!!userLocation}
+              zoom={13}
+            />
+          </Suspense>
         </div>
       ) : (
         <div className="px-4">
