@@ -30,7 +30,7 @@ export default function FavoritesPage() {
       // Try storefront_pages first, then seed_merchants for remaining
       const { data: sfData } = await (supabase as any)
         .from("storefront_pages")
-        .select("id, name, slug, vertical, category, subcategory, city, area, rating, reviews_count, banner_url, logo_url")
+        .select("id, name, slug, vertical, category, subcategory, city, address, region, rating, reviews_count, banner_url, logo_url")
         .in("id", merchantIds);
 
       const foundIds = new Set((sfData ?? []).map((r: any) => r.id));

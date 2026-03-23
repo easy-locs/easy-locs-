@@ -103,7 +103,7 @@ export async function autoCreateStorefront(params: AutoStorefrontParams): Promis
   // Geography
   if (params.cityCode) insertPayload.city_code = params.cityCode;
   if (params.districtCode) insertPayload.district_code = params.districtCode;
-  if (params.districtName) insertPayload.area = params.districtName;
+  if (params.districtName) insertPayload.region = params.districtName;
   if (params.coverageType) insertPayload.coverage_type = params.coverageType;
   if (params.latitude != null) insertPayload.latitude = params.latitude;
   if (params.longitude != null) insertPayload.longitude = params.longitude;
