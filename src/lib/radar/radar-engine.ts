@@ -30,13 +30,10 @@ export interface RadarResult {
 }
 
 // Re-export canonical geo functions for backward compatibility
-import { haversineKm, estimateETA as _estimateETA, formatETA as _formatETA, formatDistance as _formatDistance, proximityBadge as _proximityBadge } from "@/lib/geo/distance";
-export const haversine = haversineKm;
-export { haversineKm } from "@/lib/geo/distance";
+export { haversineKm, formatETA, formatDistance, proximityBadge } from "@/lib/geo/distance";
+import { haversineKm as _hkm } from "@/lib/geo/distance";
+export const haversine = _hkm;
 export const estimateETA = (distanceKm: number, avgSpeedKmh = 30) => Math.round((distanceKm / avgSpeedKmh) * 60);
-export const formatETA = _formatETA;
-export const formatDistance = _formatDistance;
-export const proximityBadge = _proximityBadge;
 
 /**
  * Core radar computation.
