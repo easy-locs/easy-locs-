@@ -65,10 +65,13 @@ export const useRadarStore = create<RadarStore>((set, get) => ({
     const { points, category, subcategory, userLocation, sortMode } = get();
     const categoryFiltered = points.filter((p) => {
       if (category !== "all" && p.category !== category) return false;
-      if (subcategory && p.subcategory !== subcategory) return false;
+      // Don't hard-filter subcategory here — let hierarchy scoring handle relevance
       return true;
     });
-    const sorted = sortRadarPoints(categoryFiltered, userLocation, sortMode);
+    const sorted = sortRadarPoints(categoryFiltered, userLocation, sortMode, {
+      targetSubcategory: subcategory,
+      targetVertical: category !== "all" ? category : undefined,
+    });
     set({ filtered: sorted });
   },
 }));
