@@ -1,10 +1,11 @@
 /**
- * GlobalSearch — PASS109: Unified search across shops, products, services.
- * Floating search bar with real-time results, mobile-first.
+ * GlobalSearch — Unified search across shops, products, services.
+ * Uses canonical query-governance for visibility/route filtering.
  */
 import { useState, useCallback, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { governStorefrontQuery } from "@/lib/discovery/query-governance";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -39,13 +40,14 @@ export default function GlobalSearch() {
     if (q.length < 2) { setResults([]); return; }
     setLoading(true);
     try {
+      let shopQ = (supabase as any).from("storefront_pages")
+          .select("id, name, slug, logo_url, city, vertical")
+          .or(`name.ilike.%${q}%,city.ilike.%${q}%`)
+          .limit(5);
+      shopQ = governStorefrontQuery(shopQ, "search");
+
       const [shopsRes, productsRes] = await Promise.all([
-        (supabase as any).from("storefront_pages")
-          .select("id, name, slug, logo_url, city, vertical, visibility_mode, route_status")
-          .neq("route_status", "broken")
-          .or("visibility_mode.eq.live,visibility_mode.eq.ready,visibility_mode.eq.coming_soon,visibility_mode.eq.search_only,visibility_mode.is.null")
-          .or(`name.ilike.%${q}%,description.ilike.%${q}%,city.ilike.%${q}%`)
-          .limit(5),
+        shopQ,
         (supabase as any).from("catalog_items")
           .select("id, title, photo_url, price, currency, shop_id, storefront_pages!catalog_items_shop_id_fkey(slug)")
           .eq("available", true)

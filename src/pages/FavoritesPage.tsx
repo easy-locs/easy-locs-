@@ -1,6 +1,6 @@
 /**
- * FavoritesPage — Uses canonical visibility rules for displaying favorites.
- * Hidden and broken-route shops are excluded.
+ * FavoritesPage — Uses canonical query-governance for displaying favorites.
+ * Hidden and broken-route shops are excluded via shared governance.
  */
 import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
@@ -8,11 +8,9 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 import { listFavoriteMerchants } from "@/lib/favorites/favorites";
 import { supabase } from "@/integrations/supabase/client";
+import { governStorefrontQuery, governSeedQuery } from "@/lib/discovery/query-governance";
 import { ArrowLeft } from "lucide-react";
 import { entityUrl } from "@/lib/entity/entity-url";
-
-// Canonical visibility modes allowed for favorites
-const ALLOWED_VISIBILITY = ["live", "ready", "coming_soon", "search_only", "map_only"];
 
 export default function FavoritesPage() {
   const navigate = useNavigate();
@@ -35,24 +33,25 @@ export default function FavoritesPage() {
     queryFn: async () => {
       if (!merchantIds.length) return [];
 
-      // Storefront pages with canonical visibility + route enforcement
-      const { data: sfData } = await (supabase as any)
+      // Storefront pages with canonical governance
+      let sfQ = (supabase as any)
         .from("storefront_pages")
-        .select("id, name, slug, vertical, category, subcategory, city, address, region, rating, reviews_count, banner_url, logo_url, visibility_mode, route_status, display_priority")
-        .in("id", merchantIds)
-        .neq("route_status", "broken")
-        .or(ALLOWED_VISIBILITY.map(m => `visibility_mode.eq.${m}`).join(",") + ",visibility_mode.is.null");
+        .select("id, name, slug, vertical, category, subcategory, city, address, region, rating, reviews_count, banner_url, logo_url, display_priority")
+        .in("id", merchantIds);
+      sfQ = governStorefrontQuery(sfQ, "favorites");
+      const { data: sfData } = await sfQ;
 
       const foundIds = new Set((sfData ?? []).map((r: any) => r.id));
       const missingIds = merchantIds.filter((id: string) => !foundIds.has(id));
 
       let seedData: any[] = [];
       if (missingIds.length > 0) {
-        const { data } = await (supabase as any)
+        let seedQ = (supabase as any)
           .from("seed_merchants")
           .select("id, name, category, subcategory, city, area, rating, review_count, cover_image")
-          .in("id", missingIds)
-          .eq("is_active", true); // Seed hygiene: only active
+          .in("id", missingIds);
+        seedQ = governSeedQuery(seedQ);
+        const { data } = await seedQ;
         seedData = data ?? [];
       }
 

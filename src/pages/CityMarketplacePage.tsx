@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { MapPin, Store, TrendingUp, Users } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { governStorefrontQuery } from "@/lib/discovery/query-governance";
 import { generateCitySEO } from "@/lib/seo/seo-engine";
 
 const CityMarketplacePage = () => {
@@ -17,15 +18,15 @@ const CityMarketplacePage = () => {
   useEffect(() => {
     if (!citySlug) return;
     (async () => {
-      const { data } = await (supabase as any)
+      let q = (supabase as any)
         .from("storefront_pages")
-        .select("id, name, slug, city, vertical, category, launch_status, visibility_mode, route_status, display_priority")
+        .select("id, name, slug, city, vertical, category, display_priority")
         .ilike("city", cityName)
-        .neq("route_status", "broken")
-        .or("visibility_mode.eq.live,visibility_mode.eq.ready,visibility_mode.eq.coming_soon,visibility_mode.eq.search_only,visibility_mode.is.null")
         .order("display_priority", { ascending: false, nullsFirst: false })
         .order("ranking_score", { ascending: false })
         .limit(100);
+      q = governStorefrontQuery(q, "discover");
+      const { data } = await q;
       setMerchants(data ?? []);
       setLoading(false);
     })();
