@@ -32,8 +32,10 @@ export async function resolveSearch(
   // Build storefront query
   let sfQuery = db
     .from("storefront_pages")
-    .select("id, name, slug, vertical, category, subcategory, cluster, city, address, region, rating, reviews_count, banner_url, logo_url, launch_status, latitude, longitude, is_open, source_type, audit_score, readiness_status")
+    .select("id, name, slug, vertical, category, subcategory, cluster, city, address, region, rating, reviews_count, banner_url, logo_url, launch_status, visibility_mode, route_status, display_priority, latitude, longitude, is_open, source_type, audit_score, readiness_status")
     .in("launch_status", ["launched", "ready", "active"])
+    .not("visibility_mode", "eq", "hidden")
+    .not("route_status", "eq", "broken")
     .limit(state.limit);
 
   // Text search
@@ -81,9 +83,11 @@ export async function resolveSearch(
   if (q) {
     seedPromise = db
       .from("seed_merchants")
-      .select("id, name, category, subcategory, city, area, rating, review_count, cover_image, is_open, latitude, longitude")
+      .select("id, name, category, subcategory, city, area, rating, review_count, cover_image, is_open, latitude, longitude, visibility_score")
       .eq("is_active", true)
+      .not("is_flagged", "eq", true)
       .or(`name.ilike.%${q}%,subcategory.ilike.%${q}%,area.ilike.%${q}%`)
+      .order("visibility_score", { ascending: false })
       .limit(20);
   }
 
@@ -157,7 +161,7 @@ function mapStorefront(row: any, state: SearchState): SearchResult {
     city: row.city,
     slug: row.slug,
     isOpen: row.is_open,
-    score: row.audit_score,
+    score: row.display_priority ?? row.audit_score ?? 0,
   };
 }
 
@@ -242,6 +246,8 @@ export async function resolveAutocomplete(
     .from("storefront_pages")
     .select("id, name, slug, subcategory, address, region, city, logo_url, rating, vertical")
     .in("launch_status", ["launched", "ready", "active"])
+    .not("visibility_mode", "eq", "hidden")
+    .not("route_status", "eq", "broken")
     .ilike("name", `%${q}%`)
     .limit(5);
 
