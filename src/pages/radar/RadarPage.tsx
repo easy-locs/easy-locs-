@@ -8,21 +8,19 @@ import { useGeoStore } from "@/lib/geo/geo-store";
 import { geoService } from "@/lib/geo/geo-service";
 import { fetchUnifiedPoints } from "@/lib/radar/fetchUnifiedPoints";
 import { getTimeContext } from "@/lib/discovery/timeContext";
-import { VERTICALS } from "@/lib/discovery/verticals";
+import { RADAR_CATEGORIES, getSubcategoriesForRadarCategory, type RadarMainCategory } from "@/lib/taxonomy/canonical";
 import type { RadarCategory } from "@/lib/radar/types";
 import { Search, MapPin, Navigation, Loader2 } from "lucide-react";
 import "@/styles/radar-pro.css";
 
 const UnifiedMap = lazy(() => import("@/components/map/UnifiedMap"));
 
-const CATEGORIES: { cat: RadarCategory; icon: string; label: string }[] = [
-  { cat: "all", icon: "✨", label: "All" },
-  { cat: "food", icon: "🍕", label: "Food" },
-  { cat: "grocery", icon: "🛒", label: "Grocery" },
-  { cat: "shops", icon: "🛍️", label: "Shops" },
-  { cat: "services", icon: "🔧", label: "Services" },
-  { cat: "property", icon: "🏠", label: "Property" },
-];
+// Categories now come from canonical taxonomy
+const CATEGORIES = RADAR_CATEGORIES.map((c) => ({
+  cat: c.value as RadarCategory,
+  icon: c.emoji,
+  label: c.label,
+}));
 
 const SORT_MODES: { key: SortMode; label: string }[] = [
   { key: "smart", label: "🧠 Smart" },
@@ -54,14 +52,9 @@ export default function RadarPage() {
   const timeCtx = useMemo(() => getTimeContext(), []);
 
   // Get subcategories for selected category
+  // Get subcategories from canonical taxonomy
   const subcategories = useMemo(() => {
-    if (category === "all") return [];
-    const verticalMap: Record<string, string> = {
-      food: "food", grocery: "grocery", shops: "retail",
-      services: "services", property: "real_estate",
-    };
-    const vDef = VERTICALS.find((v) => v.value === verticalMap[category]);
-    return vDef?.subcategories ?? [];
+    return getSubcategoriesForRadarCategory(category as RadarMainCategory);
   }, [category]);
 
   // Force geo on mount

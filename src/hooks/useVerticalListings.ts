@@ -1,11 +1,12 @@
 /**
  * useVerticalListings — Fetches UNIFIED data (storefront_pages + seed_merchants)
  * for a given vertical with optional subcategory filter.
- * Single reusable hook for all hub pages.
+ * Uses CANONICAL TAXONOMY for normalization.
  */
 import { useQuery } from "@tanstack/react-query";
 import { useGeoStore } from "@/lib/geo/geo-store";
 import { fetchUnifiedPoints } from "@/lib/radar/fetchUnifiedPoints";
+import { verticalToRadarCategory } from "@/lib/taxonomy/canonical";
 
 export interface ListingItem {
   id: string;
@@ -24,25 +25,13 @@ export interface ListingItem {
   distanceKm?: number;
 }
 
-const VERTICAL_TO_CATEGORY: Record<string, string> = {
-  food: "food",
-  grocery: "grocery",
-  retail: "shops",
-  services: "services",
-  real_estate: "property",
-  healthcare: "services",
-  electronics: "shops",
-  gifts: "shops",
-  pets: "shops",
-};
-
 export function useVerticalListings(vertical: string, subcategory?: string | null) {
   const geoPoint = useGeoStore((s) => s.point);
 
   return useQuery({
     queryKey: ["vertical-listings", vertical, subcategory ?? "all", geoPoint?.lat?.toFixed(2)],
     queryFn: async () => {
-      const radarCategory = VERTICAL_TO_CATEGORY[vertical] as any;
+      const radarCategory = verticalToRadarCategory(vertical);
       const points = await fetchUnifiedPoints({
         userLocation: geoPoint ? { lat: geoPoint.lat, lng: geoPoint.lng } : undefined,
         category: radarCategory,
@@ -51,11 +40,10 @@ export function useVerticalListings(vertical: string, subcategory?: string | nul
         limit: 100,
       });
 
-      // Map RadarPoint[] → ListingItem[]
       return points.map((p) => ({
         id: p.id,
         name: p.title,
-        slug: p.id, // Use id as slug fallback
+        slug: p.id,
         vertical,
         subcategory: p.subcategory ?? null,
         address: p.subtitle ?? null,
