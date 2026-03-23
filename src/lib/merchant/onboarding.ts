@@ -1,6 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { Vertical } from "@/lib/taxonomy/world-class-taxonomy";
 import { checkNewShopDuplicate } from "@/lib/dedup/dedup-engine";
+import { pickDiverseHero } from "@/lib/image/hero-diversity-guard";
 
 function slugify(input: string) {
   return input
@@ -31,7 +32,7 @@ export async function createMerchantDraft(params: {
     subcategory: params.subcategory ?? null,
     city: params.city ?? "Dubai",
     area: params.area ?? "Business Bay",
-    cover_image: params.coverImage ?? null,
+    cover_image: params.coverImage ?? null, // Will be overridden below if needed
     logo_image: params.coverImage ?? null,
     is_active: true,
     is_open: false,
@@ -44,6 +45,21 @@ export async function createMerchantDraft(params: {
     source_type: "import_ai",
     source_confidence: 70,
   };
+
+  // Hero diversity guard: auto-pick diverse image if none provided or if duplicate
+  if (!insertPayload.cover_image && params.subcategory) {
+    const diverseHero = await pickDiverseHero(params.subcategory);
+    insertPayload.cover_image = diverseHero;
+    insertPayload.logo_image = diverseHero;
+  } else if (insertPayload.cover_image && params.subcategory) {
+    const { validateHeroUniqueness } = await import("@/lib/image/hero-diversity-guard");
+    const check = await validateHeroUniqueness(insertPayload.cover_image, params.subcategory);
+    if (!check.ok && check.suggestedAlternative) {
+      console.warn(`[HERO-GUARD] Replacing duplicate hero for "${params.name}" with diverse alternative`);
+      insertPayload.cover_image = check.suggestedAlternative;
+      insertPayload.logo_image = check.suggestedAlternative;
+    }
+  }
 
   // World-ready optional fields (nullable/safe)
   if (params.country) insertPayload.country = params.country;
