@@ -209,29 +209,29 @@ export default function MeCommandCenter() {
         </div>
       </div>
 
-      {/* ── F. Module Cards ── */}
+      {/* ── F. Module Cards — real state, no fakes ── */}
       <div className="space-y-2">
         <p className="text-xs font-bold text-foreground px-1">Business Modules</p>
         <ModuleCard
           icon={<Store className="w-5 h-5 text-primary" />}
           title="Storefront"
-          subtitle={`${liveShops} live of ${totalShops}`}
-          badge={liveShops > 0 ? "Active" : "Setup"}
+          subtitle={totalShops > 0 ? `${liveShops} live of ${totalShops}` : "No shops yet"}
+          badge={liveShops > 0 ? "Active" : totalShops > 0 ? "Setup required" : "Not configured"}
           badgeColor={liveShops > 0 ? "emerald" : "amber"}
           onClick={() => navigate("/my-shops")}
         />
         <ModuleCard
           icon={<QrCode className="w-5 h-5 text-violet-400" />}
           title="POS & QR Payments"
-          subtitle="Accept payments instantly"
-          badge="Ready"
-          badgeColor="emerald"
-          onClick={() => navigate("/merchant/pos")}
+          subtitle={activeShop ? "QR auto-generated" : "Create a shop first"}
+          badge={activeShop ? "Available" : "Not configured"}
+          badgeColor={activeShop ? "emerald" : "amber"}
+          onClick={() => navigate(activeShop ? `/merchant/qr/${activeShop.id}` : "/my-shops")}
         />
         <ModuleCard
           icon={<Receipt className="w-5 h-5 text-blue-400" />}
           title="Orders"
-          subtitle={`${kpis?.activeOrders ?? 0} active`}
+          subtitle={kpis?.activeOrders ? `${kpis.activeOrders} active` : "No active orders"}
           badge={kpis?.activeOrders ? `${kpis.activeOrders} pending` : "Clear"}
           badgeColor={kpis?.activeOrders ? "amber" : "emerald"}
           onClick={() => navigate("/merchant/orders")}
@@ -239,31 +239,41 @@ export default function MeCommandCenter() {
         <ModuleCard
           icon={<BarChart3 className="w-5 h-5 text-cyan-400" />}
           title="Analytics"
-          subtitle="Performance & conversion"
+          subtitle={kpis?.ordersToday ? "Data available" : "Not enough data"}
+          badge={kpis?.ordersToday ? "Active" : "No data yet"}
+          badgeColor={kpis?.ordersToday ? "emerald" : "amber"}
           onClick={() => navigate("/seller/analytics")}
         />
         <ModuleCard
           icon={<Rocket className="w-5 h-5 text-orange-400" />}
           title="Boost & Ads"
           subtitle="Radar & map visibility"
+          badge="Not configured"
+          badgeColor="amber"
           onClick={() => navigate("/seller/boost")}
         />
         <ModuleCard
           icon={<Truck className="w-5 h-5 text-emerald-400" />}
           title="Delivery"
           subtitle="Drivers & logistics"
+          badge="Not configured"
+          badgeColor="amber"
           onClick={() => navigate("/dashboard/driver")}
         />
         <ModuleCard
           icon={<Wallet className="w-5 h-5 text-amber-400" />}
           title="Money & Payouts"
-          subtitle={`Today: ${kpis?.revenue ?? 0} AED`}
+          subtitle={kpis?.revenue ? `Today: ${kpis.revenue} AED` : "No transactions yet"}
+          badge={kpis?.revenue ? "Active" : "No data yet"}
+          badgeColor={kpis?.revenue ? "emerald" : "amber"}
           onClick={() => navigate("/wallet/hub")}
         />
         <ModuleCard
           icon={<Building2 className="w-5 h-5 text-violet-400" />}
           title="Property"
           subtitle="Listings & bookings"
+          badge="Not configured"
+          badgeColor="amber"
           onClick={() => navigate("/real-estate")}
         />
       </div>
