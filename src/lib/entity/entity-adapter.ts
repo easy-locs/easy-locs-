@@ -218,6 +218,7 @@ export function toRankable(e: PlatformEntity): RankableEntity {
     orderCount: e.orderCount,
     lat: e.geo.latitude,
     lng: e.geo.longitude,
+    districtCode: e.geo.districtCode,
     boostTier: e.boostTier,
     boostUntil: e.boostUntil,
     isSponsored: !!e.boostTier,
