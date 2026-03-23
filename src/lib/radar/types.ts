@@ -32,6 +32,8 @@ export type RadarPoint = {
   distanceKm?: number;
   /** Time-based relevance score (0 = neutral, 1 = boosted) */
   timeScore?: number;
+  /** Storefront slug for navigation (storefront_pages only) */
+  slug?: string | null;
 };
 
 export type UserGeoPoint = {
