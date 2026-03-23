@@ -39,6 +39,47 @@ const TAXONOMY_COVERS: Record<string, string[]> = {
     "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=800&q=80",
     "https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=800&q=80",
   ],
+  indian: [
+    "https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=800&q=80",
+    "https://images.unsplash.com/photo-1596797038530-2c107229654b?w=800&q=80",
+  ],
+  chinese: [
+    "https://images.unsplash.com/photo-1563245372-f21724e3856d?w=800&q=80",
+    "https://images.unsplash.com/photo-1525755662778-989d0524087e?w=800&q=80",
+  ],
+  shawarma: [
+    "https://images.unsplash.com/photo-1529006557810-274b9b2fc783?w=800&q=80",
+    "https://images.unsplash.com/photo-1561651188-d207bbec4ec3?w=800&q=80",
+  ],
+  mexican: [
+    "https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=800&q=80",
+    "https://images.unsplash.com/photo-1552332386-f8dd00dc2f85?w=800&q=80",
+  ],
+  pasta: [
+    "https://images.unsplash.com/photo-1621996346565-e3dbc646d9a9?w=800&q=80",
+    "https://images.unsplash.com/photo-1563379926898-05f4575a45d8?w=800&q=80",
+  ],
+  healthy: [
+    "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=800&q=80",
+    "https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=800&q=80",
+  ],
+  breakfast: [
+    "https://images.unsplash.com/photo-1533089860892-a7c6f0a88666?w=800&q=80",
+    "https://images.unsplash.com/photo-1504754524776-8f4f37790ca0?w=800&q=80",
+  ],
+  desserts: [
+    "https://images.unsplash.com/photo-1551024601-bec78aea704b?w=800&q=80",
+    "https://images.unsplash.com/photo-1488477181946-6428a0291777?w=800&q=80",
+  ],
+  thai: [
+    "https://images.unsplash.com/photo-1562565652-a0d8f0c59eb4?w=800&q=80",
+  ],
+  seafood: [
+    "https://images.unsplash.com/photo-1615141982883-c7ad0e69fd62?w=800&q=80",
+  ],
+  lebanese: [
+    "https://images.unsplash.com/photo-1529006557810-274b9b2fc783?w=800&q=80",
+  ],
   salon: [
     "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=800&q=80",
     "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=800&q=80",
