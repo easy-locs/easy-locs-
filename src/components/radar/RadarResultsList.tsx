@@ -54,7 +54,13 @@ export function RadarResultsList() {
             {item.subtitle && (
               <p className="text-[11px] text-muted-foreground truncate mt-0.5">{item.subtitle}</p>
             )}
-            <div className="flex items-center gap-2 mt-1.5">
+            <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+              {item.district && (
+                <span className="flex items-center gap-0.5 text-[10px] text-muted-foreground">
+                  <MapPin className="h-2.5 w-2.5" />
+                  {item.district}
+                </span>
+              )}
               {item.rating != null && item.rating > 0 && (
                 <span className="flex items-center gap-0.5 text-[10px] font-semibold text-amber-500">
                   <Star className="h-3 w-3 fill-amber-500 text-amber-500" />

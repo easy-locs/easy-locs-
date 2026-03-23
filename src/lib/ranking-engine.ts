@@ -40,6 +40,7 @@ export interface RankableEntity {
   // Geo
   lat?: number | null;
   lng?: number | null;
+  districtCode?: string | null;
 
   // Time
   createdAt?: string | null;
@@ -186,19 +187,13 @@ export interface RankContext {
   /** User location for proximity */
   userLat?: number | null;
   userLng?: number | null;
+  /** User's current district for local relevance */
+  userDistrictCode?: string | null;
   /** Search query for text relevance */
   searchQuery?: string | null;
 }
 
-function haversineKm(lat1: number, lng1: number, lat2: number, lng2: number): number {
-  const toRad = (v: number) => (v * Math.PI) / 180;
-  const R = 6371;
-  const dLat = toRad(lat2 - lat1);
-  const dLng = toRad(lng2 - lng1);
-  const a = Math.sin(dLat / 2) ** 2 +
-    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
-  return 2 * R * Math.asin(Math.sqrt(a));
-}
+import { haversineKm } from "@/lib/geo/distance";
 
 /** Compute all normalized signals for an entity. */
 export function computeSignals(entity: RankableEntity, ctx: RankContext = {}): RankSignals {
@@ -209,10 +204,15 @@ export function computeSignals(entity: RankableEntity, ctx: RankContext = {}): R
   const hierarchy = rawHierarchy / 3; // normalize 0-3 → 0-1
 
   // Proximity: 0–1 (closer = higher, decays over ~15km)
+  // District match provides a bonus for same-neighborhood relevance
   let proximity = 0;
   if (entity.lat != null && entity.lng != null && ctx.userLat != null && ctx.userLng != null) {
     const distKm = haversineKm(ctx.userLat, ctx.userLng, entity.lat, entity.lng);
     proximity = Math.max(0, 1 - distKm / 15);
+  }
+  // Same-district bonus: +0.15 when entity is in the user's district
+  if (ctx.userDistrictCode && entity.districtCode && ctx.userDistrictCode === entity.districtCode) {
+    proximity = Math.min(1, proximity + 0.15);
   }
 
   // Rating: 0–1
