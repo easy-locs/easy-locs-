@@ -39,7 +39,7 @@ const PERIOD_CONFIG: Record<TimePeriod, { label: string; emoji: string; boostedS
   lateNight: {
     label: "Late Night",
     emoji: "🌃",
-    boostedSubs: ["fast_food", "american", "ready_to_eat"],
+    boostedSubs: ["fast_food", "american", "ready_to_eat", "burger", "shawarma", "pizza"],
   },
 };
 
