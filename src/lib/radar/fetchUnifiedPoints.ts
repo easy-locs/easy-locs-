@@ -1,10 +1,11 @@
 /**
  * fetchUnifiedPoints — Pulls from BOTH storefront_pages AND seed_merchants,
- * normalizes into RadarPoint[], computes distances from user location.
- * Single source of truth for all radar/discovery data.
+ * normalizes into RadarPoint[], computes distances, applies time-based ranking.
+ * Single source of truth for all radar/discovery/hub data.
  */
 import { supabase } from "@/integrations/supabase/client";
 import { haversineKm } from "@/lib/radar/geo";
+import { getTimeContext, timeRelevanceScore } from "@/lib/discovery/timeContext";
 import type { RadarPoint, RadarCategory, UserGeoPoint } from "@/lib/radar/types";
 
 /** Approximate coordinates for Dubai areas (seed_merchants have no lat/lng) */
@@ -21,13 +22,20 @@ const AREA_COORDS: Record<string, { lat: number; lng: number }> = {
   "silicon oasis": { lat: 25.1275, lng: 55.3775 },
   "motor city": { lat: 25.0505, lng: 55.2393 },
   "sports city": { lat: 25.0420, lng: 55.2237 },
+  "al quoz": { lat: 25.1590, lng: 55.2350 },
+  "international city": { lat: 25.1650, lng: 55.4050 },
+  "mirdif": { lat: 25.2230, lng: 55.4100 },
+  "karama": { lat: 25.2450, lng: 55.3010 },
+  "satwa": { lat: 25.2320, lng: 55.2720 },
+  "tecom": { lat: 25.1000, lng: 55.1740 },
+  "discovery gardens": { lat: 25.0380, lng: 55.1350 },
+  "dubailand": { lat: 25.0750, lng: 55.3000 },
 };
 
 function areaToCoords(area: string): { lat: number; lng: number } {
   const key = area?.toLowerCase().trim();
-  // Add small random jitter so pins don't stack
-  const base = AREA_COORDS[key] ?? { lat: 25.2048, lng: 55.2708 }; // Dubai center fallback
-  const jitter = () => (Math.random() - 0.5) * 0.008; // ~400m spread
+  const base = AREA_COORDS[key] ?? { lat: 25.2048, lng: 55.2708 };
+  const jitter = () => (Math.random() - 0.5) * 0.008;
   return { lat: base.lat + jitter(), lng: base.lng + jitter() };
 }
 
@@ -35,17 +43,15 @@ function mapVerticalToCategory(vertical: string): RadarCategory {
   const map: Record<string, RadarCategory> = {
     food: "food", restaurant: "food", cafe: "food",
     retail: "shops", fashion: "shops",
-    grocery: "grocery", supermarket: "grocery", mini_mart: "grocery",
-    organic_store: "grocery",
-    property: "property", realestate: "property",
+    grocery: "grocery", supermarket: "grocery", mini_mart: "grocery", organic_store: "grocery",
+    property: "property", realestate: "property", real_estate: "property",
     services: "services", beauty: "services", health: "services",
-    cleaning: "services", handyman: "services", laundry: "services",
-    salon: "services",
+    cleaning: "services", handyman: "services", laundry: "services", salon: "services",
+    healthcare: "services", electronics: "shops", gifts: "shops", pets: "shops",
   };
   return map[vertical?.toLowerCase()] || "shops";
 }
 
-/** Maps seed_merchant subcategory into RadarCategory */
 function seedSubcategoryToCategory(sub: string): RadarCategory {
   const serviceTypes = ["cleaning", "handyman", "laundry", "salon"];
   const groceryTypes = ["mini_mart", "supermarket", "organic_store"];
@@ -57,12 +63,17 @@ function seedSubcategoryToCategory(sub: string): RadarCategory {
 export interface FetchUnifiedPointsOpts {
   searchQuery?: string;
   userLocation?: UserGeoPoint | null;
+  category?: RadarCategory;
+  subcategory?: string | null;
+  vertical?: string;
+  limit?: number;
 }
 
 export async function fetchUnifiedPoints(opts?: FetchUnifiedPointsOpts): Promise<RadarPoint[]> {
-  const { searchQuery, userLocation } = opts ?? {};
+  const { searchQuery, userLocation, category, subcategory, vertical, limit = 200 } = opts ?? {};
+  const timeCtx = getTimeContext();
 
-  // Fetch both sources in parallel
+  // Build queries
   let storefrontQuery = (supabase as any)
     .from("storefront_pages")
     .select("id, name, slug, vertical, category, subcategory, address, logo_url, banner_url, latitude, longitude, rating, reviews_count, ranking_score")
@@ -70,14 +81,23 @@ export async function fetchUnifiedPoints(opts?: FetchUnifiedPointsOpts): Promise
     .not("latitude", "is", null)
     .not("longitude", "is", null)
     .order("ranking_score", { ascending: false })
-    .limit(200);
+    .limit(limit);
 
   let seedQuery = (supabase as any)
     .from("seed_merchants")
     .select("id, name, category, subcategory, city, area, rating, review_count, cover_image, logo_image, visibility_score, is_open, is_featured, promo_active, delivery_time_min, delivery_time_max")
     .eq("is_active", true)
     .order("visibility_score", { ascending: false })
-    .limit(200);
+    .limit(limit);
+
+  // Apply vertical filter at DB level when possible
+  if (vertical) {
+    storefrontQuery = storefrontQuery.eq("vertical", vertical);
+  }
+  if (subcategory) {
+    storefrontQuery = storefrontQuery.eq("subcategory", subcategory);
+    seedQuery = seedQuery.eq("subcategory", subcategory);
+  }
 
   if (searchQuery?.trim()) {
     storefrontQuery = storefrontQuery.ilike("name", `%${searchQuery.trim()}%`);
@@ -93,29 +113,38 @@ export async function fetchUnifiedPoints(opts?: FetchUnifiedPointsOpts): Promise
   for (const s of storefrontRes.data ?? []) {
     seenIds.add(s.id);
     const cat = mapVerticalToCategory(s.vertical || s.category);
+    if (category && category !== "all" && cat !== category) continue;
+    const sub = s.subcategory || s.category || undefined;
+    const lat = Number(s.latitude);
+    const lng = Number(s.longitude);
+    const dist = userLocation ? haversineKm(userLocation.lat, userLocation.lng, lat, lng) : undefined;
+    const timeScore = timeRelevanceScore(sub, timeCtx);
+
     points.push({
       id: s.id,
       title: s.name || "Business",
       subtitle: s.address || s.category || undefined,
       imageUrl: s.banner_url || s.logo_url,
       category: cat,
-      subcategory: s.subcategory || s.category || undefined,
-      lat: Number(s.latitude),
-      lng: Number(s.longitude),
+      subcategory: sub,
+      lat, lng,
       rating: s.rating ? Number(s.rating) : undefined,
       reviewsCount: s.reviews_count ?? undefined,
       isSponsored: (s.ranking_score ?? 0) > 80,
-      distanceKm: userLocation
-        ? haversineKm(userLocation.lat, userLocation.lng, Number(s.latitude), Number(s.longitude))
-        : undefined,
+      distanceKm: dist,
+      timeScore,
     });
   }
 
-  // 2) Normalize seed_merchants (with geocoded area coordinates)
+  // 2) Normalize seed_merchants
   for (const m of seedRes.data ?? []) {
-    if (seenIds.has(m.id)) continue; // dedupe
+    if (seenIds.has(m.id)) continue;
     const coords = areaToCoords(m.area);
     const cat = seedSubcategoryToCategory(m.subcategory);
+    if (category && category !== "all" && cat !== category) continue;
+    const dist = userLocation ? haversineKm(userLocation.lat, userLocation.lng, coords.lat, coords.lng) : undefined;
+    const timeScore = timeRelevanceScore(m.subcategory, timeCtx);
+
     points.push({
       id: m.id,
       title: m.name,
@@ -128,9 +157,8 @@ export async function fetchUnifiedPoints(opts?: FetchUnifiedPointsOpts): Promise
       rating: m.rating ? Number(m.rating) : undefined,
       reviewsCount: m.review_count ?? undefined,
       isSponsored: m.is_featured || m.promo_active || (m.visibility_score ?? 0) > 80,
-      distanceKm: userLocation
-        ? haversineKm(userLocation.lat, userLocation.lng, coords.lat, coords.lng)
-        : undefined,
+      distanceKm: dist,
+      timeScore,
     });
   }
 

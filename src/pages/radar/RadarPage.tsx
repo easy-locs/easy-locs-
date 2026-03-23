@@ -1,16 +1,35 @@
-import { useEffect, useState, useCallback, lazy, Suspense } from "react";
+import { useEffect, useState, useCallback, useMemo, lazy, Suspense } from "react";
 import { useRadarGeo } from "@/hooks/useRadarGeo";
-import { useRadarStore } from "@/stores/radarStore";
+import { useRadarStore, type SortMode } from "@/stores/radarStore";
 import { RadarFilterMenu } from "@/components/radar/RadarFilterMenu";
 import { RadarResultsList } from "@/components/radar/RadarResultsList";
 import { ultraHaptic } from "@/lib/performance/useUltraFast";
 import { useGeoStore } from "@/lib/geo/geo-store";
 import { geoService } from "@/lib/geo/geo-service";
 import { fetchUnifiedPoints } from "@/lib/radar/fetchUnifiedPoints";
+import { getTimeContext } from "@/lib/discovery/timeContext";
+import { VERTICALS } from "@/lib/discovery/verticals";
+import type { RadarCategory } from "@/lib/radar/types";
 import { Search, MapPin, Navigation, Loader2 } from "lucide-react";
 import "@/styles/radar-pro.css";
 
 const UnifiedMap = lazy(() => import("@/components/map/UnifiedMap"));
+
+const CATEGORIES: { cat: RadarCategory; icon: string; label: string }[] = [
+  { cat: "all", icon: "✨", label: "All" },
+  { cat: "food", icon: "🍕", label: "Food" },
+  { cat: "grocery", icon: "🛒", label: "Grocery" },
+  { cat: "shops", icon: "🛍️", label: "Shops" },
+  { cat: "services", icon: "🔧", label: "Services" },
+  { cat: "property", icon: "🏠", label: "Property" },
+];
+
+const SORT_MODES: { key: SortMode; label: string }[] = [
+  { key: "smart", label: "🧠 Smart" },
+  { key: "nearest", label: "📍 Nearest" },
+  { key: "best", label: "⭐ Best rated" },
+  { key: "trending", label: "🔥 Trending" },
+];
 
 export default function RadarPage() {
   useRadarGeo();
@@ -21,25 +40,45 @@ export default function RadarPage() {
   const sortMode = useRadarStore((s) => s.sortMode);
   const mapMode = useRadarStore((s) => s.mapMode);
   const setMapMode = useRadarStore((s) => s.setMapMode);
+  const category = useRadarStore((s) => s.category);
+  const setCategory = useRadarStore((s) => s.setCategory);
+  const subcategory = useRadarStore((s) => s.subcategory);
+  const setSubCategory = useRadarStore((s) => s.setSubCategory);
+  const filtered = useRadarStore((s) => s.filtered);
   const geoLoading = useGeoStore((s) => s.loading);
   const geoPermission = useGeoStore((s) => s.permission);
 
   const [searchQuery, setSearchQuery] = useState("");
   const [loadingListings, setLoadingListings] = useState(true);
 
-  // Force geolocation on mount
+  const timeCtx = useMemo(() => getTimeContext(), []);
+
+  // Get subcategories for selected category
+  const subcategories = useMemo(() => {
+    if (category === "all") return [];
+    const verticalMap: Record<string, string> = {
+      food: "food", grocery: "grocery", shops: "retail",
+      services: "services", property: "real_estate",
+    };
+    const vDef = VERTICALS.find((v) => v.value === verticalMap[category]);
+    return vDef?.subcategories ?? [];
+  }, [category]);
+
+  // Force geo on mount
   useEffect(() => {
     const pt = useGeoStore.getState().point;
     if (!pt) geoService.forceRetry();
   }, []);
 
-  // Fetch unified listings (storefront_pages + seed_merchants)
+  // Fetch unified listings
   const fetchListings = useCallback(async () => {
     setLoadingListings(true);
     try {
       const points = await fetchUnifiedPoints({
         searchQuery,
         userLocation: userLocation ?? undefined,
+        category: category !== "all" ? category : undefined,
+        subcategory: subcategory ?? undefined,
       });
       setPoints(points);
     } catch (err) {
@@ -47,22 +86,14 @@ export default function RadarPage() {
     } finally {
       setLoadingListings(false);
     }
-  }, [searchQuery, setPoints, userLocation?.lat, userLocation?.lng]);
+  }, [searchQuery, setPoints, userLocation?.lat, userLocation?.lng, category, subcategory]);
 
-  useEffect(() => {
-    fetchListings();
-  }, [fetchListings]);
+  useEffect(() => { fetchListings(); }, [fetchListings]);
 
   const handleLocate = () => {
     ultraHaptic("light");
     geoService.forceRetry();
   };
-
-  const SORT_MODES = [
-    { key: "nearest" as const, label: "📍 Nearest" },
-    { key: "best" as const, label: "⭐ Best rated" },
-    { key: "trending" as const, label: "🔥 Trending" },
-  ];
 
   return (
     <div className="min-h-[100dvh] bg-background pb-24">
@@ -79,12 +110,11 @@ export default function RadarPage() {
               ) : userLocation ? (
                 <><MapPin className="h-3 w-3 text-primary" /> {userLocation.lat.toFixed(4)}, {userLocation.lng.toFixed(4)}</>
               ) : geoPermission === "denied" ? (
-                <button onClick={handleLocate} className="text-primary font-semibold">
-                  📍 Enable location
-                </button>
+                <button onClick={handleLocate} className="text-primary font-semibold">📍 Enable location</button>
               ) : (
                 "Searching location…"
               )}
+              <span className="ml-2 text-[9px] text-primary/70">{timeCtx.emoji} {timeCtx.label}</span>
             </p>
           </div>
           <button
@@ -96,7 +126,7 @@ export default function RadarPage() {
           </button>
         </div>
 
-        {/* Search bar */}
+        {/* Search */}
         <div className="relative mb-3">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <input
@@ -108,16 +138,62 @@ export default function RadarPage() {
           />
         </div>
 
+        {/* Level 1 — Main category chips */}
+        <div className="flex gap-2 overflow-x-auto no-scrollbar pb-2">
+          {CATEGORIES.map(({ cat, icon, label }) => (
+            <button
+              key={cat}
+              onClick={() => { ultraHaptic("light"); setCategory(cat); }}
+              className={`flex items-center gap-1.5 rounded-2xl px-3.5 py-1.5 text-xs whitespace-nowrap active:scale-[0.95] transition-transform duration-75 ${
+                category === cat
+                  ? "bg-primary/15 text-primary font-semibold border border-primary/20"
+                  : "bg-muted/30 text-muted-foreground"
+              }`}
+            >
+              <span>{icon}</span> {label}
+            </button>
+          ))}
+        </div>
+
+        {/* Level 2 — Subcategory chips (when category selected) */}
+        {subcategories.length > 0 && (
+          <div className="flex gap-1.5 overflow-x-auto no-scrollbar pb-2 mt-1">
+            <button
+              onClick={() => { ultraHaptic("light"); setSubCategory(null); }}
+              className={`rounded-full px-3 py-1 text-[11px] whitespace-nowrap active:scale-[0.95] transition-transform duration-75 ${
+                !subcategory
+                  ? "bg-primary/10 text-primary font-semibold"
+                  : "bg-muted/20 text-muted-foreground"
+              }`}
+            >
+              All
+            </button>
+            {subcategories.map((sub) => (
+              <button
+                key={sub.value}
+                onClick={() => { ultraHaptic("light"); setSubCategory(subcategory === sub.value ? null : sub.value); }}
+                className={`flex items-center gap-1 rounded-full px-3 py-1 text-[11px] whitespace-nowrap active:scale-[0.95] transition-transform duration-75 ${
+                  subcategory === sub.value
+                    ? "bg-primary/10 text-primary font-semibold"
+                    : "bg-muted/20 text-muted-foreground"
+                }`}
+              >
+                <span>{sub.icon}</span> {sub.label}
+              </button>
+            ))}
+          </div>
+        )}
+
         {/* Sort pills */}
-        <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
+        <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1 mt-1">
           {SORT_MODES.map(({ key, label }) => (
             <button
               key={key}
               onClick={() => { ultraHaptic("light"); setSortMode(key); }}
-              className={`rounded-2xl px-3.5 py-1.5 text-xs whitespace-nowrap active:scale-[0.95] transition-transform duration-75 ${
+              className={`rounded-2xl px-3 py-1 text-[10px] whitespace-nowrap active:scale-[0.95] transition-transform duration-75 ${
                 sortMode === key
-                  ? "bg-primary/15 text-primary font-semibold border border-primary/20"
-                  : "bg-muted/30 text-muted-foreground"
+                  ? "bg-primary/10 text-primary font-medium"
+                  : "bg-muted/20 text-muted-foreground"
               }`}
             >
               {label}
@@ -147,7 +223,7 @@ export default function RadarPage() {
           </button>
         </div>
         <p className="text-[10px] text-muted-foreground">
-          {useRadarStore.getState().filtered.length} results
+          {filtered.length} results
         </p>
       </div>
 
@@ -156,7 +232,7 @@ export default function RadarPage() {
         <div className="relative mx-4 h-[400px] rounded-2xl overflow-hidden">
           <Suspense fallback={<div className="w-full h-full bg-muted/20 flex items-center justify-center"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>}>
             <UnifiedMap
-              entities={useRadarStore.getState().filtered.map((p) => ({
+              entities={filtered.map((p) => ({
                 id: p.id,
                 type: (p.category === "food" ? "restaurant" : p.category === "shops" ? "shop" : p.category === "grocery" ? "grocery" : p.category === "property" ? "property" : "service") as any,
                 name: p.title,
