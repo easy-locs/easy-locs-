@@ -7,9 +7,9 @@ export async function runUnifiedSearch(query: string) {
   const [sfRes, seedRes, { data: products }] = await Promise.all([
     (supabase as any)
       .from("storefront_pages")
-      .select("id, name, slug, vertical, category, subcategory, city, area, rating, reviews_count, banner_url, logo_url, launch_status")
+      .select("id, name, slug, vertical, category, subcategory, city, address, region, rating, reviews_count, banner_url, logo_url, launch_status")
       .eq("launch_status", "launched")
-      .or(`name.ilike.%${q}%,subcategory.ilike.%${q}%,area.ilike.%${q}%`)
+      .or(`name.ilike.%${q}%,subcategory.ilike.%${q}%,address.ilike.%${q}%`)
       .limit(20),
     (supabase as any)
       .from("seed_merchants")

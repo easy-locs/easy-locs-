@@ -28,7 +28,7 @@ export async function getMapMerchantPins(params?: {
   // Primary source: storefront_pages (launched entities)
   let sfQuery = (supabase as any)
     .from("storefront_pages")
-    .select("id, name, slug, vertical, category, subcategory, latitude, longitude, rating, city, area, banner_url, logo_url, launch_status")
+    .select("id, name, slug, vertical, category, subcategory, latitude, longitude, rating, city, address, region, banner_url, logo_url, launch_status")
     .eq("launch_status", "launched")
     .limit(limit);
   if (params?.category) sfQuery = sfQuery.eq("vertical", params.category);
