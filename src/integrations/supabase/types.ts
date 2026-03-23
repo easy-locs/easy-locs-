@@ -19627,6 +19627,8 @@ export type Database = {
           blocking_reason: string | null
           boost_expiry: string | null
           boost_multiplier: number
+          branch_label: string | null
+          brand_name: string | null
           category: string | null
           city: string | null
           claimed_by_owner: boolean | null
@@ -19653,6 +19655,8 @@ export type Database = {
           default_currency: string | null
           description: string | null
           display_priority: number | null
+          duplicate_confidence: number | null
+          duplicate_of: string | null
           entity_type: string
           geo_scope: string | null
           has_menu: boolean | null
@@ -19692,6 +19696,7 @@ export type Database = {
           readiness_status: string | null
           region: string | null
           requires_review: boolean | null
+          review_required: boolean | null
           reviews_count: number | null
           route_status: string | null
           scheduled_publish_at: string | null
@@ -19731,6 +19736,8 @@ export type Database = {
           blocking_reason?: string | null
           boost_expiry?: string | null
           boost_multiplier?: number
+          branch_label?: string | null
+          brand_name?: string | null
           category?: string | null
           city?: string | null
           claimed_by_owner?: boolean | null
@@ -19757,6 +19764,8 @@ export type Database = {
           default_currency?: string | null
           description?: string | null
           display_priority?: number | null
+          duplicate_confidence?: number | null
+          duplicate_of?: string | null
           entity_type?: string
           geo_scope?: string | null
           has_menu?: boolean | null
@@ -19796,6 +19805,7 @@ export type Database = {
           readiness_status?: string | null
           region?: string | null
           requires_review?: boolean | null
+          review_required?: boolean | null
           reviews_count?: number | null
           route_status?: string | null
           scheduled_publish_at?: string | null
@@ -19835,6 +19845,8 @@ export type Database = {
           blocking_reason?: string | null
           boost_expiry?: string | null
           boost_multiplier?: number
+          branch_label?: string | null
+          brand_name?: string | null
           category?: string | null
           city?: string | null
           claimed_by_owner?: boolean | null
@@ -19861,6 +19873,8 @@ export type Database = {
           default_currency?: string | null
           description?: string | null
           display_priority?: number | null
+          duplicate_confidence?: number | null
+          duplicate_of?: string | null
           entity_type?: string
           geo_scope?: string | null
           has_menu?: boolean | null
@@ -19900,6 +19914,7 @@ export type Database = {
           readiness_status?: string | null
           region?: string | null
           requires_review?: boolean | null
+          review_required?: boolean | null
           reviews_count?: number | null
           route_status?: string | null
           scheduled_publish_at?: string | null
@@ -19924,6 +19939,13 @@ export type Database = {
           zone_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "storefront_pages_duplicate_of_fkey"
+            columns: ["duplicate_of"]
+            isOneToOne: false
+            referencedRelation: "storefront_pages"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "storefront_pages_merchant_profile_id_fkey"
             columns: ["merchant_profile_id"]
