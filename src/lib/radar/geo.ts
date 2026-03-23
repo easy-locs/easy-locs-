@@ -14,7 +14,44 @@ export function haversineKm(
   return 2 * R * Math.asin(Math.sqrt(a));
 }
 
-export function sortRadarPoints<T extends { lat: number; lng: number; rating?: number | null; isSponsored?: boolean; subcategory?: string | null; timeScore?: number }>(
+/**
+ * Premium ranking formula for "smart" mode.
+ * Combines: proximity (35%), time relevance (20%), rating quality (25%),
+ * review volume (10%), sponsorship (10%).
+ */
+function smartScore(p: {
+  distanceKm: number;
+  _timeScore: number;
+  rating?: number | null;
+  reviewsCount?: number | null;
+  isSponsored?: boolean;
+}): number {
+  // Proximity: 0–35 (closer = higher, decays over 15km)
+  const proxScore = Math.max(0, 35 - p.distanceKm * 2.3);
+
+  // Time relevance: 0–20
+  const timeScore = p._timeScore * 20;
+
+  // Rating quality: 0–25 (rating out of 5 → scaled)
+  const ratingScore = ((p.rating ?? 0) / 5) * 25;
+
+  // Review volume: 0–10 (logarithmic, caps around 200 reviews)
+  const reviewScore = Math.min(10, Math.log2((p.reviewsCount ?? 0) + 1) * 1.3);
+
+  // Sponsorship boost: 0 or 10
+  const sponsorScore = p.isSponsored ? 10 : 0;
+
+  return proxScore + timeScore + ratingScore + reviewScore + sponsorScore;
+}
+
+export function sortRadarPoints<T extends {
+  lat: number; lng: number;
+  rating?: number | null;
+  reviewsCount?: number | null;
+  isSponsored?: boolean;
+  subcategory?: string | null;
+  timeScore?: number;
+}>(
   points: T[],
   user: { lat: number; lng: number } | null,
   mode: "nearest" | "best" | "trending" | "smart" = "nearest"
@@ -28,18 +65,21 @@ export function sortRadarPoints<T extends { lat: number; lng: number; rating?: n
   }));
 
   if (mode === "best") {
-    return enriched.sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0) || a.distanceKm - b.distanceKm);
+    return enriched.sort((a, b) =>
+      (b.rating ?? 0) - (a.rating ?? 0) ||
+      (b.reviewsCount ?? 0) - (a.reviewsCount ?? 0) ||
+      a.distanceKm - b.distanceKm
+    );
   }
   if (mode === "trending") {
-    return enriched.sort((a, b) => (b.isSponsored ? 1 : 0) - (a.isSponsored ? 1 : 0) || a.distanceKm - b.distanceKm);
+    return enriched.sort((a, b) => {
+      const aT = (a.isSponsored ? 50 : 0) + (a.reviewsCount ?? 0) * 0.5 + (a.rating ?? 0) * 3;
+      const bT = (b.isSponsored ? 50 : 0) + (b.reviewsCount ?? 0) * 0.5 + (b.rating ?? 0) * 3;
+      return bT - aT || a.distanceKm - b.distanceKm;
+    });
   }
   if (mode === "smart") {
-    // Smart: boost time-relevant nearby results
-    return enriched.sort((a, b) => {
-      const aScore = a._timeScore * 5 - a.distanceKm + (a.rating ?? 0);
-      const bScore = b._timeScore * 5 - b.distanceKm + (b.rating ?? 0);
-      return bScore - aScore;
-    });
+    return enriched.sort((a, b) => smartScore(b) - smartScore(a));
   }
   // nearest
   return enriched.sort((a, b) => a.distanceKm - b.distanceKm);
