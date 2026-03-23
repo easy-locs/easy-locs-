@@ -69,7 +69,7 @@ export default function NotificationCenter() {
         </div>
         {unread > 0 && (
           <button
-            onClick={() => user?.id && store.markAllAsRead(user.id)}
+            onClick={() => user?.id && markAllAsRead(user.id)}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-xs font-medium active:scale-95 transition-transform"
           >
             <CheckCheck className="h-3.5 w-3.5" />
