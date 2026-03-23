@@ -8,7 +8,7 @@ import { useGeoStore } from "@/lib/geo/geo-store";
 import { geoService } from "@/lib/geo/geo-service";
 import { fetchUnifiedPoints } from "@/lib/radar/fetchUnifiedPoints";
 import { getTimeContext } from "@/lib/discovery/timeContext";
-import { VERTICALS } from "@/lib/discovery/verticals";
+import { RADAR_CATEGORIES, getSubcategoriesForRadarCategory, type RadarMainCategory } from "@/lib/taxonomy/canonical";
 import type { RadarCategory } from "@/lib/radar/types";
 import { Search, MapPin, Navigation, Loader2 } from "lucide-react";
 import "@/styles/radar-pro.css";
