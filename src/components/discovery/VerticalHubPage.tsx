@@ -38,9 +38,17 @@ function sortItems(items: ListingItem[], mode: SortMode): ListingItem[] {
 
 export default function VerticalHubPage({ vertical }: { vertical: VerticalDef }) {
   const [search, setSearch] = useState("");
-  const [activeSub, setActiveSub] = useState<string | null>(null);
+  const [searchParams] = useSearchParams();
+  const initialSub = searchParams.get("sub");
+  const [activeSub, setActiveSub] = useState<string | null>(initialSub);
   const [sortMode, setSortMode] = useState<SortMode>("relevance");
   const navigate = useNavigate();
+
+  // Sync with URL sub param changes
+  useEffect(() => {
+    const sub = searchParams.get("sub");
+    if (sub !== activeSub) setActiveSub(sub);
+  }, [searchParams]);
 
   const { data: listings = [], isLoading } = useVerticalListings(vertical.value, activeSub);
 
