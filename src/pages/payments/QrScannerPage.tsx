@@ -194,7 +194,7 @@ export default function QrScannerPage() {
           subtitle: "QR Payment",
           recipientId: resolved.targetUserId,
           recipientName: resolved.displayName || payload.name || null,
-          contextType: "qr_payment",
+          contextType: "generic",
           contextId: resolved.targetUserId,
           metadata: { source: "qr_scan", qr_type: "pay_user", resolved_wallet_id: resolved.targetWalletId },
         });
