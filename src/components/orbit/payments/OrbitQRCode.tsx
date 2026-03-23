@@ -1,26 +1,24 @@
 /**
- * OrbitQRCode — Generate and display payment QR codes (static & dynamic)
- * Uses server-side signing via orbit-payment edge function
- * Real QR rendering via qrcode.react
+ * OrbitQRCode — Generate and display payment QR codes.
+ * UNIFIED: Uses qr-engine canonical format.
  */
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { motion } from "framer-motion";
 import { Copy, Share2, Clock, Shield, Check, Loader2 } from "lucide-react";
 import BrandedQR from "@/components/qr/BrandedQR";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
-import { formatCurrency, formatLocs } from "@/lib/orbit-payments";
-import type { QRPayload, StaticQRPayload, DynamicQRPayload } from "@/lib/orbit-payments/types";
+import { encodeQr, toResolveUrl, qr } from "@/lib/qr-engine";
+import { formatMoney } from "@/lib/format";
 
 interface OrbitQRCodeProps {
   type: "static" | "dynamic";
-  recipientType?: StaticQRPayload["recipient_type"];
+  recipientType?: "user" | "business" | "provider" | "store";
   amount?: number;
   currency?: string;
   locsEquivalent?: number;
-  referenceType?: DynamicQRPayload["reference_type"];
+  referenceType?: string;
   referenceId?: string;
   description?: string;
   expiresInMinutes?: number;
@@ -31,7 +29,7 @@ export default function OrbitQRCode({
   type,
   recipientType = "user",
   amount,
-  currency = "EUR",
+  currency = "AED",
   locsEquivalent,
   referenceType,
   referenceId,
@@ -41,72 +39,48 @@ export default function OrbitQRCode({
 }: OrbitQRCodeProps) {
   const { user } = useAuth();
   const { toast } = useToast();
-  const [qrData, setQrData] = useState<string | null>(null);
-  const [payload, setPayload] = useState<QRPayload | null>(null);
   const [copied, setCopied] = useState(false);
-  const [loading, setLoading] = useState(true);
 
-  const generateQR = useCallback(async () => {
-    if (!user?.id) return;
-    setLoading(true);
+  const displayName = user?.user_metadata?.name || user?.email?.split("@")[0] || "Me";
 
-    try {
-      const { data, error } = await supabase.functions.invoke("orbit-payment", {
-        body: {
-          action: "generate_qr",
-          qr_type: type,
-          recipient_type: recipientType,
-          amount,
-          currency,
-          locs_equivalent: locsEquivalent,
-          reference_type: referenceType,
-          reference_id: referenceId,
-          description,
-          expires_in_minutes: expiresInMinutes,
-          org_id: orgId,
-        },
-      });
-
-      if (error) throw error;
-      if (data?.payload) {
-        setPayload(data.payload as QRPayload);
-        setQrData(data.encoded);
-      }
-    } catch (err) {
-      console.error("QR generation failed:", err);
-      toast({ title: "QR generation failed", variant: "destructive" });
-    } finally {
-      setLoading(false);
+  const qrData = useMemo(() => {
+    if (!user?.id) return null;
+    if (type === "dynamic" && amount && amount > 0) {
+      return encodeQr(qr.payUser(user.id, { amount, currency, name: description || displayName }));
     }
-  }, [user, type, recipientType, amount, currency, locsEquivalent, referenceType, referenceId, description, expiresInMinutes, orgId, toast]);
+    return encodeQr(qr.receive(user.id, displayName));
+  }, [user?.id, type, amount, currency, description, displayName]);
 
-  useEffect(() => {
-    generateQR();
-  }, [generateQR]);
+  const shareUrl = useMemo(() => {
+    if (!user?.id) return "";
+    if (type === "dynamic" && amount && amount > 0) {
+      return toResolveUrl(qr.payUser(user.id, { amount, currency, name: description || displayName }));
+    }
+    return toResolveUrl(qr.receive(user.id, displayName));
+  }, [user?.id, type, amount, currency, description, displayName]);
 
   const handleCopy = async () => {
-    if (!qrData) return;
-    await navigator.clipboard.writeText(qrData);
+    if (!shareUrl) return;
+    try { await navigator.clipboard.writeText(shareUrl); } catch {
+      const ta = document.createElement("textarea");
+      ta.value = shareUrl; ta.style.position = "fixed"; ta.style.opacity = "0";
+      document.body.appendChild(ta); ta.select(); document.execCommand("copy"); document.body.removeChild(ta);
+    }
     setCopied(true);
-    toast({ title: "QR data copied!" });
+    toast({ title: "QR link copied!" });
     setTimeout(() => setCopied(false), 2000);
   };
 
   const handleShare = async () => {
-    if (!qrData || !navigator.share) return;
+    if (!shareUrl || !navigator.share) return;
     try {
-      const name = payload?.recipient_name || "me";
       await navigator.share({
-        title: "Orbit Payment QR",
-        text: `Pay ${name} via Orbit`,
-        url: `${window.location.origin}/pay?qr=${encodeURIComponent(qrData)}`,
+        title: "Payment QR",
+        text: `Pay ${displayName}`,
+        url: shareUrl,
       });
-    } catch {
-      // User cancelled
-    }
+    } catch {}
   };
-
-  const expiresAt = payload?.qr_type === "dynamic" ? new Date(payload.expires_at) : null;
 
   return (
     <motion.div
@@ -117,12 +91,10 @@ export default function OrbitQRCode({
       {/* QR Display */}
       <div className="relative p-6 rounded-2xl bg-card border border-border shadow-sm">
         <div className="w-52 h-52 flex items-center justify-center">
-          {loading ? (
-            <Loader2 className="w-8 h-8 text-muted-foreground animate-spin" />
-          ) : qrData ? (
+          {qrData ? (
             <BrandedQR value={qrData} size={200} darkMode />
           ) : (
-            <p className="text-sm text-muted-foreground">Failed to generate QR</p>
+            <Loader2 className="w-8 h-8 text-muted-foreground animate-spin" />
           )}
         </div>
 
@@ -141,26 +113,13 @@ export default function OrbitQRCode({
       </div>
 
       {/* Payment info (dynamic only) */}
-      {type === "dynamic" && payload?.qr_type === "dynamic" && (
+      {type === "dynamic" && amount && amount > 0 && (
         <div className="w-full space-y-2 text-center">
           <p className="text-2xl font-black text-foreground">
-            {formatCurrency(payload.amount, payload.currency)}
+            {formatMoney(amount, currency)}
           </p>
-          {payload.locs_equivalent && (
-            <p className="text-sm text-muted-foreground">
-              ≈ {formatLocs(payload.locs_equivalent)}
-            </p>
-          )}
-          {payload.description && (
-            <p className="text-sm text-muted-foreground italic">"{payload.description}"</p>
-          )}
-          {expiresAt && (
-            <div className="flex items-center justify-center gap-1.5 text-xs text-warning">
-              <Clock className="w-3 h-3" />
-              <span>
-                Expires {expiresAt.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-              </span>
-            </div>
+          {description && (
+            <p className="text-sm text-muted-foreground italic">"{description}"</p>
           )}
         </div>
       )}
@@ -182,7 +141,7 @@ export default function OrbitQRCode({
       {/* Security */}
       <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
         <Shield className="w-3 h-3" />
-        <span>Server-signed • Anti-replay • Orbit Secure</span>
+        <span>Canonical QR • Versioned • Orbit Secure</span>
       </div>
     </motion.div>
   );
