@@ -30,7 +30,10 @@ export default function NotificationCenter() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { t } = useI18n();
-  const store = useUnifiedNotificationStore();
+  const notifications = useUnifiedNotificationStore((s) => s.notifications);
+  const hydrate = useUnifiedNotificationStore((s) => s.hydrate);
+  const markAsRead = useUnifiedNotificationStore((s) => s.markAsRead);
+  const unreadCount = useUnifiedNotificationStore((s) => s.unreadCount);
 
   useEffect(() => {
     if (user?.id) store.hydrate(user.id);
