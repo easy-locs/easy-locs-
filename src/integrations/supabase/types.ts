@@ -13026,6 +13026,89 @@ export type Database = {
           },
         ]
       }
+      payment_sessions: {
+        Row: {
+          amount: number
+          completed_at: string | null
+          created_at: string | null
+          currency: string | null
+          expires_at: string | null
+          id: string
+          metadata_json: Json | null
+          order_id: string | null
+          payer_id: string | null
+          payment_method: string | null
+          qr_target_id: string | null
+          shop_id: string
+          status: string | null
+          terminal_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          amount: number
+          completed_at?: string | null
+          created_at?: string | null
+          currency?: string | null
+          expires_at?: string | null
+          id?: string
+          metadata_json?: Json | null
+          order_id?: string | null
+          payer_id?: string | null
+          payment_method?: string | null
+          qr_target_id?: string | null
+          shop_id: string
+          status?: string | null
+          terminal_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          amount?: number
+          completed_at?: string | null
+          created_at?: string | null
+          currency?: string | null
+          expires_at?: string | null
+          id?: string
+          metadata_json?: Json | null
+          order_id?: string | null
+          payer_id?: string | null
+          payment_method?: string | null
+          qr_target_id?: string | null
+          shop_id?: string
+          status?: string | null
+          terminal_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_sessions_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "storefront_orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payment_sessions_qr_target_id_fkey"
+            columns: ["qr_target_id"]
+            isOneToOne: false
+            referencedRelation: "qr_order_targets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payment_sessions_shop_id_fkey"
+            columns: ["shop_id"]
+            isOneToOne: false
+            referencedRelation: "storefront_pages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payment_sessions_terminal_id_fkey"
+            columns: ["terminal_id"]
+            isOneToOne: false
+            referencedRelation: "shop_terminals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       payments: {
         Row: {
           amount: number
@@ -14203,37 +14286,58 @@ export type Database = {
         Row: {
           active: boolean
           created_at: string
+          expires_at: string | null
           id: string
+          last_scanned_at: string | null
           merchant_profile_id: string
+          payload_json: Json | null
+          qr_purpose: string | null
+          scan_count: number | null
+          shop_table_id: string | null
           storefront_page_id: string
           table_number: string | null
           target_code: string
           target_label: string
           target_type: string
+          terminal_id: string | null
           updated_at: string
         }
         Insert: {
           active?: boolean
           created_at?: string
+          expires_at?: string | null
           id?: string
+          last_scanned_at?: string | null
           merchant_profile_id: string
+          payload_json?: Json | null
+          qr_purpose?: string | null
+          scan_count?: number | null
+          shop_table_id?: string | null
           storefront_page_id: string
           table_number?: string | null
           target_code: string
           target_label: string
           target_type: string
+          terminal_id?: string | null
           updated_at?: string
         }
         Update: {
           active?: boolean
           created_at?: string
+          expires_at?: string | null
           id?: string
+          last_scanned_at?: string | null
           merchant_profile_id?: string
+          payload_json?: Json | null
+          qr_purpose?: string | null
+          scan_count?: number | null
+          shop_table_id?: string | null
           storefront_page_id?: string
           table_number?: string | null
           target_code?: string
           target_label?: string
           target_type?: string
+          terminal_id?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -14245,10 +14349,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "qr_order_targets_shop_table_id_fkey"
+            columns: ["shop_table_id"]
+            isOneToOne: false
+            referencedRelation: "shop_tables"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "qr_order_targets_storefront_page_id_fkey"
             columns: ["storefront_page_id"]
             isOneToOne: false
             referencedRelation: "storefront_pages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "qr_order_targets_terminal_id_fkey"
+            columns: ["terminal_id"]
+            isOneToOne: false
+            referencedRelation: "shop_terminals"
             referencedColumns: ["id"]
           },
         ]
@@ -16181,6 +16299,8 @@ export type Database = {
       seed_merchants: {
         Row: {
           area: string
+          branch_label: string | null
+          brand_name: string | null
           category: string
           city: string
           cover_image: string | null
@@ -16190,9 +16310,12 @@ export type Database = {
           delivery_time_min: number
           delivery_zones: Json | null
           display_priority: number | null
+          duplicate_confidence: number | null
+          duplicate_of: string | null
           id: string
           is_active: boolean
           is_featured: boolean
+          is_flagged: boolean | null
           is_open: boolean
           logo_image: string | null
           minimum_order_amount: number | null
@@ -16203,6 +16326,7 @@ export type Database = {
           promo_text: string | null
           rating: number
           review_count: number
+          review_required: boolean | null
           route_status: string | null
           subcategory: string
           support_email: string | null
@@ -16213,6 +16337,8 @@ export type Database = {
         }
         Insert: {
           area: string
+          branch_label?: string | null
+          brand_name?: string | null
           category: string
           city?: string
           cover_image?: string | null
@@ -16222,9 +16348,12 @@ export type Database = {
           delivery_time_min?: number
           delivery_zones?: Json | null
           display_priority?: number | null
+          duplicate_confidence?: number | null
+          duplicate_of?: string | null
           id?: string
           is_active?: boolean
           is_featured?: boolean
+          is_flagged?: boolean | null
           is_open?: boolean
           logo_image?: string | null
           minimum_order_amount?: number | null
@@ -16235,6 +16364,7 @@ export type Database = {
           promo_text?: string | null
           rating?: number
           review_count?: number
+          review_required?: boolean | null
           route_status?: string | null
           subcategory: string
           support_email?: string | null
@@ -16245,6 +16375,8 @@ export type Database = {
         }
         Update: {
           area?: string
+          branch_label?: string | null
+          brand_name?: string | null
           category?: string
           city?: string
           cover_image?: string | null
@@ -16254,9 +16386,12 @@ export type Database = {
           delivery_time_min?: number
           delivery_zones?: Json | null
           display_priority?: number | null
+          duplicate_confidence?: number | null
+          duplicate_of?: string | null
           id?: string
           is_active?: boolean
           is_featured?: boolean
+          is_flagged?: boolean | null
           is_open?: boolean
           logo_image?: string | null
           minimum_order_amount?: number | null
@@ -16267,6 +16402,7 @@ export type Database = {
           promo_text?: string | null
           rating?: number
           review_count?: number
+          review_required?: boolean | null
           route_status?: string | null
           subcategory?: string
           support_email?: string | null
@@ -16747,6 +16883,110 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "shop_follows_shop_id_fkey"
+            columns: ["shop_id"]
+            isOneToOne: false
+            referencedRelation: "storefront_pages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      shop_tables: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          label: string
+          qr_target_id: string | null
+          seats: number | null
+          shop_id: string
+          status: string | null
+          table_number: number | null
+          updated_at: string | null
+          zone: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          label: string
+          qr_target_id?: string | null
+          seats?: number | null
+          shop_id: string
+          status?: string | null
+          table_number?: number | null
+          updated_at?: string | null
+          zone?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          label?: string
+          qr_target_id?: string | null
+          seats?: number | null
+          shop_id?: string
+          status?: string | null
+          table_number?: number | null
+          updated_at?: string | null
+          zone?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shop_tables_qr_target_id_fkey"
+            columns: ["qr_target_id"]
+            isOneToOne: false
+            referencedRelation: "qr_order_targets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "shop_tables_shop_id_fkey"
+            columns: ["shop_id"]
+            isOneToOne: false
+            referencedRelation: "storefront_pages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      shop_terminals: {
+        Row: {
+          created_at: string | null
+          device_info: Json | null
+          id: string
+          is_active: boolean | null
+          label: string | null
+          last_seen_at: string | null
+          shop_id: string
+          terminal_code: string
+          terminal_type: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          device_info?: Json | null
+          id?: string
+          is_active?: boolean | null
+          label?: string | null
+          last_seen_at?: string | null
+          shop_id: string
+          terminal_code: string
+          terminal_type?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          device_info?: Json | null
+          id?: string
+          is_active?: boolean | null
+          label?: string | null
+          last_seen_at?: string | null
+          shop_id?: string
+          terminal_code?: string
+          terminal_type?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shop_terminals_shop_id_fkey"
             columns: ["shop_id"]
             isOneToOne: false
             referencedRelation: "storefront_pages"
@@ -19328,10 +19568,12 @@ export type Database = {
       }
       storefront_orders: {
         Row: {
+          accepted_at: string | null
           buyer_email: string | null
           buyer_id: string | null
           buyer_name: string | null
           buyer_phone: string | null
+          completed_at: string | null
           created_at: string | null
           currency: string | null
           deal_id: string | null
@@ -19343,11 +19585,15 @@ export type Database = {
           delivery_requested: boolean | null
           delivery_source: string | null
           delivery_status: string | null
+          estimated_ready_at: string | null
+          fulfillment_type: string | null
           id: string
           idempotency_key: string | null
           notes: string | null
           payment_method: string | null
           payment_status: string | null
+          preparing_at: string | null
+          ready_at: string | null
           requires_delivery: boolean | null
           seller_id: string
           shipped_at: string | null
@@ -19371,10 +19617,12 @@ export type Database = {
           wallet_reference_code: string | null
         }
         Insert: {
+          accepted_at?: string | null
           buyer_email?: string | null
           buyer_id?: string | null
           buyer_name?: string | null
           buyer_phone?: string | null
+          completed_at?: string | null
           created_at?: string | null
           currency?: string | null
           deal_id?: string | null
@@ -19386,11 +19634,15 @@ export type Database = {
           delivery_requested?: boolean | null
           delivery_source?: string | null
           delivery_status?: string | null
+          estimated_ready_at?: string | null
+          fulfillment_type?: string | null
           id?: string
           idempotency_key?: string | null
           notes?: string | null
           payment_method?: string | null
           payment_status?: string | null
+          preparing_at?: string | null
+          ready_at?: string | null
           requires_delivery?: boolean | null
           seller_id: string
           shipped_at?: string | null
@@ -19414,10 +19666,12 @@ export type Database = {
           wallet_reference_code?: string | null
         }
         Update: {
+          accepted_at?: string | null
           buyer_email?: string | null
           buyer_id?: string | null
           buyer_name?: string | null
           buyer_phone?: string | null
+          completed_at?: string | null
           created_at?: string | null
           currency?: string | null
           deal_id?: string | null
@@ -19429,11 +19683,15 @@ export type Database = {
           delivery_requested?: boolean | null
           delivery_source?: string | null
           delivery_status?: string | null
+          estimated_ready_at?: string | null
+          fulfillment_type?: string | null
           id?: string
           idempotency_key?: string | null
           notes?: string | null
           payment_method?: string | null
           payment_status?: string | null
+          preparing_at?: string | null
+          ready_at?: string | null
           requires_delivery?: boolean | null
           seller_id?: string
           shipped_at?: string | null

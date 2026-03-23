@@ -197,6 +197,13 @@ function computeDedupScore(a: DedupCandidate, b: DedupCandidate): DedupMatch {
     finalConfidence = Math.min(finalConfidence, 65);
   }
 
+  // LOW NAME SIMILARITY → cap at 65 (dark kitchen / multi-concept protection)
+  // Same phone + same GPS but different concept name = NOT a duplicate
+  // Threshold at 0.75 catches "Cloud Kitchen Burgers" vs "Cloud Kitchen Sushi" (71%)
+  if (nameSim < 0.75) {
+    finalConfidence = Math.min(finalConfidence, 65);
+  }
+
   const action: DedupMatch["action"] =
     finalConfidence > 95 ? "auto_hide" :
     finalConfidence >= 70 ? "review" :
@@ -227,13 +234,18 @@ export async function runDedupScan(): Promise<{
 }> {
   const { data: shops } = await (supabase as any)
     .from("storefront_pages")
-    .select("id, name, city, address, phone, latitude, longitude, source_id, website, instagram_url, brand_name, branch_label")
+    .select("id, name, city, address, contact_phone, latitude, longitude, source_external_id, brand_name, branch_label")
     .is("duplicate_of", null) // skip already-deduped
     .limit(1000);
 
   if (!shops?.length) return { autoHide: [], review: [], safe: 0, scanned: 0 };
 
-  const candidates: DedupCandidate[] = shops;
+  // Map DB columns to candidate interface
+  const candidates: DedupCandidate[] = shops.map((s: any) => ({
+    ...s,
+    phone: s.contact_phone,
+    source_id: s.source_external_id,
+  }));
   const autoHide: DedupMatch[] = [];
   const review: DedupMatch[] = [];
 
@@ -317,7 +329,7 @@ export async function checkNewShopDuplicate(candidate: DedupCandidate): Promise<
   const brand = extractBrand(candidate.name);
   const { data: potentials } = await (supabase as any)
     .from("storefront_pages")
-    .select("id, name, city, address, phone, latitude, longitude, source_id, website, instagram_url")
+    .select("id, name, city, address, contact_phone, latitude, longitude, source_external_id")
     .eq("city", candidate.city)
     .ilike("name", `%${brand}%`)
     .is("duplicate_of", null)
@@ -325,8 +337,14 @@ export async function checkNewShopDuplicate(candidate: DedupCandidate): Promise<
 
   if (!potentials?.length) return null;
 
+  const mapped = potentials.map((p: any) => ({
+    ...p,
+    phone: p.contact_phone,
+    source_id: p.source_external_id,
+  }));
+
   let bestMatch: DedupMatch | null = null;
-  for (const p of potentials) {
+  for (const p of mapped) {
     const match = computeDedupScore(candidate, p);
     if (!bestMatch || match.confidence > bestMatch.confidence) {
       bestMatch = match;
