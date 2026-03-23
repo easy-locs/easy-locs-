@@ -5,7 +5,7 @@
  */
 import { auditShop, type ShopAuditResult } from "@/lib/audit/shop-audit";
 import { getSourceRules, type SourceType } from "@/lib/source/source-hygiene";
-import { auditCatalog, type CatalogAuditResult } from "@/lib/audit/catalog-audit";
+import { auditMenu, type MenuAuditResult } from "@/lib/audit/catalog-audit";
 
 // ── Activation status ──
 export type ActivationStatus =
