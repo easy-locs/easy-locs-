@@ -118,10 +118,13 @@ export default function QrScannerPage() {
   }, [resetFlags]);
 
   const handleQrResult = useCallback(async (raw: string) => {
+    console.log("[QR RAW]", raw);
     const payload = decodeQr(raw);
+    console.log("[QR PAYLOAD]", payload);
+
     if (!payload) {
       platformBus.emit("qr.scan.failed", { raw, reason: "unsupported_format" }, "system");
-      setE("Unsupported QR format"); setS("error"); return;
+      setE("Unsupported QR code"); setS("error"); return;
     }
     if (isExpired(payload)) {
       platformBus.emit("qr.scan.expired", { action: payload.action }, "system");
@@ -133,72 +136,108 @@ export default function QrScannerPage() {
     if (payload.action === "pay_user") {
       platformBus.emit("qr.payment.initiated", { action: "pay_user", userId: payload.userId }, "wallet");
       setS("paying");
+
+      // Timeout fallback — never stay stuck
+      const timeoutId = setTimeout(() => {
+        if (mountedRef.current && !handledRef.current) {
+          console.warn("[QR] Resolution timed out after 8s");
+          setE("QR not recognized or network issue"); setS("error");
+        }
+      }, 8000);
+
       let resolved: ResolvedPayTarget;
       try {
         resolved = await resolvePayTarget({ userId: payload.userId, currency: payload.currency || "AED" });
-      } catch {
+        console.log("[QR RESOLVED]", resolved);
+      } catch (err) {
+        clearTimeout(timeoutId);
+        console.error("[QR] resolvePayTarget failed:", err);
         setE("Could not verify recipient"); setS("error"); return;
       }
+      clearTimeout(timeoutId);
+
+      if (!mountedRef.current) return;
       if (resolved.walletStatus === "locked") { setE("Recipient wallet is locked"); setS("error"); return; }
 
-      const result = await openPaymentRef.current({
-        amount: payload.amount || 0, currency: resolved.currency || "AED",
-        title: `Pay ${resolved.displayName || payload.name || "User"}`,
-        subtitle: "QR Payment",
-        recipientId: resolved.targetUserId,
-        recipientName: resolved.displayName || payload.name || "QR Recipient",
-        contextType: "generic", contextId: resolved.targetUserId,
-        metadata: { source: "qr_scan", qr_type: "pay_user", resolved_wallet_id: resolved.targetWalletId },
-      });
-      if (!mountedRef.current) return;
-      if (result.ok) {
-        setSuccessAmount(`${payload.amount || 0} ${resolved.currency || "AED"}`);
-        playPremiumSuccessBeep();
-        hapticPremiumSuccess();
-        setShowPremiumSuccess(true);
-        platformBus.emit("qr.payment.completed", { action: "pay_user", txId: result.transactionId }, "wallet");
-        setTimeout(() => {
-          setShowPremiumSuccess(false);
-          setTxId(result.transactionId || "");
-          setState("paid");
-        }, 1600);
-      } else if (result.error !== "Cancelled") {
-        setError(result.error || "Payment failed"); setState("error");
-        platformBus.emit("qr.payment.failed", { action: "pay_user", error: result.error }, "wallet");
-      } else {
-        setState("idle"); handledRef.current = false;
+      try {
+        const result = await openPaymentRef.current({
+          amount: payload.amount || 0, currency: resolved.currency || "AED",
+          title: `Pay ${resolved.displayName || payload.name || "User"}`,
+          subtitle: "QR Payment",
+          recipientId: resolved.targetUserId,
+          recipientName: resolved.displayName || payload.name || "QR Recipient",
+          contextType: "generic", contextId: resolved.targetUserId,
+          metadata: { source: "qr_scan", qr_type: "pay_user", resolved_wallet_id: resolved.targetWalletId },
+        });
+        if (!mountedRef.current) return;
+        if (result.ok) {
+          setSuccessAmount(`${payload.amount || 0} ${resolved.currency || "AED"}`);
+          playPremiumSuccessBeep();
+          hapticPremiumSuccess();
+          setShowPremiumSuccess(true);
+          platformBus.emit("qr.payment.completed", { action: "pay_user", txId: result.transactionId }, "wallet");
+          setTimeout(() => {
+            setShowPremiumSuccess(false);
+            setTxId(result.transactionId || "");
+            setState("paid");
+          }, 1600);
+        } else if (result.error !== "Cancelled") {
+          setError(result.error || "Payment failed"); setState("error");
+          platformBus.emit("qr.payment.failed", { action: "pay_user", error: result.error }, "wallet");
+        } else {
+          setState("idle"); handledRef.current = false;
+        }
+      } catch (err) {
+        console.error("[QR] openPayment failed:", err);
+        setE("Payment processing failed"); setS("error");
       }
       return;
     }
 
     if (payload.action === "pay_shop") {
       setS("paying");
+
+      const timeoutId = setTimeout(() => {
+        if (mountedRef.current && !handledRef.current) {
+          setE("QR not recognized or network issue"); setS("error");
+        }
+      }, 8000);
+
       let shopOwnerId: string | undefined;
       try {
         const { data: shop } = await supabase.from("storefront_pages").select("user_id").eq("slug", payload.shopSlug).maybeSingle();
         shopOwnerId = shop?.user_id || undefined;
       } catch {}
-      if (!shopOwnerId) { setE("Shop not found"); setS("error"); return; }
-      const result = await openPaymentRef.current({
-        amount: payload.amount || 0, currency: payload.currency || "AED",
-        title: `Pay ${payload.name || "Shop"}`, subtitle: "QR shop payment",
-        recipientId: shopOwnerId, contextType: "shop", contextId: payload.shopSlug,
-        metadata: { source: "qr_scan", qr_type: "pay_shop", shopSlug: payload.shopSlug },
-      });
+      clearTimeout(timeoutId);
+
       if (!mountedRef.current) return;
-      if (result.ok) {
-        setSuccessAmount(`${payload.amount || 0} ${payload.currency || "AED"}`);
-        playPremiumSuccessBeep();
-        hapticPremiumSuccess();
-        setShowPremiumSuccess(true);
-        setTimeout(() => {
-          setShowPremiumSuccess(false);
-          setTxId(result.transactionId || ""); setState("paid");
-        }, 1600);
-      } else if (result.error !== "Cancelled") {
-        setError(result.error || "Payment failed"); setState("error");
-      } else {
-        setState("idle"); handledRef.current = false;
+      if (!shopOwnerId) { setE("Shop not found"); setS("error"); return; }
+
+      try {
+        const result = await openPaymentRef.current({
+          amount: payload.amount || 0, currency: payload.currency || "AED",
+          title: `Pay ${payload.name || "Shop"}`, subtitle: "QR shop payment",
+          recipientId: shopOwnerId, contextType: "shop", contextId: payload.shopSlug,
+          metadata: { source: "qr_scan", qr_type: "pay_shop", shopSlug: payload.shopSlug },
+        });
+        if (!mountedRef.current) return;
+        if (result.ok) {
+          setSuccessAmount(`${payload.amount || 0} ${payload.currency || "AED"}`);
+          playPremiumSuccessBeep();
+          hapticPremiumSuccess();
+          setShowPremiumSuccess(true);
+          setTimeout(() => {
+            setShowPremiumSuccess(false);
+            setTxId(result.transactionId || ""); setState("paid");
+          }, 1600);
+        } else if (result.error !== "Cancelled") {
+          setError(result.error || "Payment failed"); setState("error");
+        } else {
+          setState("idle"); handledRef.current = false;
+        }
+      } catch (err) {
+        console.error("[QR] shop payment failed:", err);
+        setE("Payment processing failed"); setS("error");
       }
       return;
     }
