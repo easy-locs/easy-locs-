@@ -4,7 +4,7 @@
  * Uses CANONICAL TAXONOMY for all category/subcategory normalization.
  */
 import { supabase } from "@/integrations/supabase/client";
-import { haversineKm } from "@/lib/radar/geo";
+import { haversineKm } from "@/lib/geo/distance";
 import { getTimeContext, timeRelevanceScore } from "@/lib/discovery/timeContext";
 import {
   verticalToRadarCategory,
