@@ -192,7 +192,7 @@ function buildChecklist(
     { key: "logo", label: "Logo image", passed: !!(shop.logo_url || shop.logo_image), required: true, category: "content" },
     { key: "cover", label: "Cover image", passed: !!(shop.cover_url || shop.banner_url || shop.cover_image), required: false, category: "content" },
     { key: "description", label: "Description", passed: !!shop.description && shop.description.length > 10, required: false, category: "content" },
-    { key: "catalog", label: "Menu / catalog", passed: catalog.score >= 40, required: audit.isOrderable, category: "content" },
+    { key: "catalog", label: "Menu / catalog", passed: catalog.qualityScore >= 40, required: audit.isOrderable, category: "content" },
 
     // Commerce
     { key: "location", label: "Address / coordinates", passed: !!(shop.latitude && shop.longitude) || !!shop.address, required: true, category: "commerce" },
