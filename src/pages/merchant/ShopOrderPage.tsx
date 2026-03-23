@@ -137,18 +137,17 @@ export default function ShopOrderPage() {
 
       const orderPayload: Record<string, any> = {
         shop_id: shop.id,
-        customer_user_id: user?.id || null,
+        seller_id: shop.user_id || shop.id,
+        buyer_id: user?.id || null,
         status: "pending",
-        total_amount: cartTotal,
+        total: cartTotal,
+        subtotal: cartTotal,
         currency,
-        items_json: itemsJson,
-        item_count: cartCount,
-        source: qrCode ? "qr" : "web",
         fulfillment_type: mode === "desk" ? "counter" : tableNumber ? "dine_in" : "takeaway",
+        notes: qrCode ? `QR: ${qrCode}` : null,
       };
 
-      if (tableNumber) orderPayload.table_number = tableNumber;
-      if (qrCode) orderPayload.qr_code = qrCode;
+      if (tableNumber) orderPayload.table_code = tableNumber;
 
       const { data: order, error } = await (supabase as any)
         .from("storefront_orders")

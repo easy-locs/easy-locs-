@@ -94,7 +94,7 @@ export default function QrTrackingPage() {
                         {new Date(order.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                       </p>
                       <p className="text-sm font-bold text-foreground mt-0.5">
-                        {order.total_amount} {order.currency || "AED"}
+                        {order.total} {order.currency || "AED"}
                       </p>
                     </div>
                     <span className={cn(
