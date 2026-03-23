@@ -31,11 +31,26 @@ export function governStorefrontQuery(query: any, surface: "search" | "discover"
 
 /**
  * Apply canonical governance filters to a seed_merchants query.
- * Ensures seeds follow the same quality rules as storefronts.
+ * Now uses real DB columns: visibility_mode, route_status, display_priority.
+ * Zero projection — same enforcement model as storefront_pages.
  */
-export function governSeedQuery(query: any) {
+export function governSeedQuery(query: any, surface: "search" | "discover" | "home" | "map" | "autocomplete" | "favorites" = "search") {
+  const allowedModes: Record<string, string[]> = {
+    search:       ["live", "ready", "coming_soon", "search_only"],
+    discover:     ["live", "ready", "coming_soon", "search_only"],
+    home:         ["live", "ready", "coming_soon"],
+    map:          ["live", "ready", "coming_soon", "map_only"],
+    autocomplete: ["live", "ready", "coming_soon", "search_only"],
+    favorites:    ["live", "ready", "coming_soon", "search_only", "map_only"],
+  };
+
+  const modes = allowedModes[surface] ?? allowedModes.search;
+  const modeFilter = modes.map(m => `visibility_mode.eq.${m}`).join(",");
+
   return query
     .eq("is_active", true)
     .not("is_flagged", "eq", true)
-    .order("visibility_score", { ascending: false });
+    .or(modeFilter)
+    .neq("route_status", "broken")
+    .order("display_priority", { ascending: false });
 }
