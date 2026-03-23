@@ -191,7 +191,7 @@ export default function ShopOrderPage() {
     );
   }
 
-  const isOpen = shop.active && shop.is_published;
+  const isOpen = !!shop.active;
 
   return (
     <>
