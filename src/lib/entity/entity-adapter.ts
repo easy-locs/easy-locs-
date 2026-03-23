@@ -139,10 +139,14 @@ function rowToEntity(row: any): PlatformEntity {
     // Layer 2: Geography
     geo: {
       countryCode: row.country_code ?? "AE",
+      countryName: row.country_name ?? null,
+      regionCode: row.region_code ?? null,
+      regionName: row.region_name ?? null,
       cityCode: row.city_code ?? null,
+      cityName: row.city_name ?? row.city ?? null,
       districtCode: row.district_code ?? null,
+      districtName: row.district_name ?? null,
       area: row.area ?? null,
-      city: row.city ?? null,
       address: row.address ?? null,
       latitude: row.latitude ? Number(row.latitude) : null,
       longitude: row.longitude ? Number(row.longitude) : null,
