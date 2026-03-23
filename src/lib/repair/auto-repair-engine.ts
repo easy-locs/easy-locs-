@@ -8,9 +8,10 @@
  */
 import { supabase } from "@/integrations/supabase/client";
 import { auditShop, type ShopAuditResult } from "@/lib/audit/shop-audit";
-import { getAutoFixProducts } from "@/lib/audit/catalog-audit";
+import { getAutoFixProducts, auditMenu } from "@/lib/audit/catalog-audit";
 import { applyGeoDefaults } from "@/lib/geo/geo-defaults";
 import { normalizeVertical, getClusterForSubcategory } from "@/lib/taxonomy/world-class-taxonomy";
+import { canonicalTaxonomyPayload } from "@/lib/taxonomy/taxonomy-guard";
 
 export interface RepairResult {
   shopId: string;
