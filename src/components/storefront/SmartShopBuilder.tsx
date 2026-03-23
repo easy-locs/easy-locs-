@@ -9,6 +9,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useEnsureOrg } from "@/hooks/useEnsureOrg";
 import { applyGeoDefaults } from "@/lib/geo/geo-defaults";
 import { normalizeVertical, normalizeSubcategory } from "@/lib/taxonomy/world-class-taxonomy";
+import { canonicalTaxonomyPayload } from "@/lib/taxonomy/taxonomy-guard";
 import TaxonomySelector from "@/components/storefront/TaxonomySelector";
 import CapabilityToggles, { type CapabilityFlags } from "@/components/storefront/CapabilityToggles";
 import { Button } from "@/components/ui/button";
