@@ -359,6 +359,10 @@ export default function MyShopPage() {
                       </div>
                     </div>
                     <div>
+                      <Label className="text-xs">District / Area</Label>
+                      <Input defaultValue={shop.area || ""} onBlur={e => updateShop("area", e.target.value || null)} className="mt-1" placeholder="e.g. Marina, Downtown..." />
+                    </div>
+                    <div>
                       <Label className="text-xs">Geo Scope</Label>
                       <Select value={shop.geo_scope || "city"} onValueChange={v => updateShop("geo_scope", v)}>
                         <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
@@ -369,6 +373,26 @@ export default function MyShopPage() {
                           <SelectItem value="radius">📍 Radius</SelectItem>
                         </SelectContent>
                       </Select>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardContent className="p-4 space-y-3">
+                    <h4 className="text-sm font-semibold">Global Settings</h4>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <Label className="text-xs">Currency</Label>
+                        <Input defaultValue={shop.currency || "AED"} onBlur={e => updateShop("currency", e.target.value || "AED")} className="mt-1" placeholder="AED" />
+                      </div>
+                      <div>
+                        <Label className="text-xs">Default Language</Label>
+                        <Input defaultValue={shop.default_language || "en"} onBlur={e => updateShop("default_language", e.target.value || "en")} className="mt-1" placeholder="en" />
+                      </div>
+                    </div>
+                    <div>
+                      <Label className="text-xs">Timezone</Label>
+                      <Input defaultValue={shop.timezone || ""} onBlur={e => updateShop("timezone", e.target.value || null)} className="mt-1" placeholder="e.g. Asia/Dubai, Europe/Paris" />
                     </div>
                   </CardContent>
                 </Card>

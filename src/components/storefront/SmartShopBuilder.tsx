@@ -1,7 +1,7 @@
 /**
  * SmartShopBuilder — PASS102: AI-powered shop creation.
  * Auto-generates slug, categories, tags, SEO from name+description.
- * Uses Lovable AI (Gemini Flash) for instant business classification.
+ * World-ready: includes district, timezone, currency, language defaults.
  */
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -14,6 +14,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Store, Loader2, Sparkles, Zap, Check, Tag } from "lucide-react";
 import { toast } from "sonner";
 
@@ -25,6 +26,29 @@ interface AISuggestion {
   seo_description: string;
 }
 
+const CURRENCY_OPTIONS = [
+  { value: "AED", label: "AED — Dirham" },
+  { value: "USD", label: "USD — Dollar" },
+  { value: "EUR", label: "EUR — Euro" },
+  { value: "GBP", label: "GBP — Pound" },
+  { value: "SAR", label: "SAR — Riyal" },
+  { value: "MAD", label: "MAD — Dirham" },
+  { value: "XOF", label: "XOF — CFA" },
+  { value: "EGP", label: "EGP — Pound" },
+  { value: "INR", label: "INR — Rupee" },
+  { value: "TRY", label: "TRY — Lira" },
+];
+
+const LANGUAGE_OPTIONS = [
+  { value: "en", label: "English" },
+  { value: "fr", label: "Français" },
+  { value: "ar", label: "العربية" },
+  { value: "es", label: "Español" },
+  { value: "pt", label: "Português" },
+  { value: "tr", label: "Türkçe" },
+  { value: "hi", label: "हिन्दी" },
+];
+
 export default function SmartShopBuilder() {
   const { user } = useAuth();
   const { ensureOrg, creating: orgCreating } = useEnsureOrg();
@@ -35,6 +59,10 @@ export default function SmartShopBuilder() {
   const [description, setDescription] = useState("");
   const [city, setCity] = useState("");
   const [country, setCountry] = useState("");
+  const [district, setDistrict] = useState("");
+  const [currency, setCurrency] = useState("AED");
+  const [defaultLanguage, setDefaultLanguage] = useState("en");
+  const [timezone, setTimezone] = useState("");
   const [suggestion, setSuggestion] = useState<AISuggestion | null>(null);
 
   const handleAISuggest = async () => {
@@ -79,23 +107,31 @@ Return: {"vertical":"food|shops|services|health|beauty|tech|fashion|home|sports|
 
       const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 
+      const insertPayload: Record<string, any> = {
+        org_id: orgId,
+        user_id: user.id,
+        slug,
+        name: name.trim(),
+        tagline: suggestion?.tagline || "",
+        description: description.trim() || suggestion?.seo_description || "",
+        city: city.trim() || "",
+        country: country.trim() || "",
+        contact_email: user.email || "",
+        shop_visibility: "public",
+        vertical: suggestion?.vertical || "shops",
+        tags: suggestion?.tags || [],
+        seo_description: suggestion?.seo_description || "",
+        currency: currency || "AED",
+        default_language: defaultLanguage || "en",
+      };
+
+      // World-ready optional fields
+      if (district.trim()) insertPayload.area = district.trim();
+      if (timezone.trim()) insertPayload.timezone = timezone.trim();
+
       const { error } = await (supabase as any)
         .from("storefront_pages")
-        .insert({
-          org_id: orgId,
-          user_id: user.id,
-          slug,
-          name: name.trim(),
-          tagline: suggestion?.tagline || "",
-          description: description.trim() || suggestion?.seo_description || "",
-          city: city.trim() || "",
-          country: country.trim() || "",
-          contact_email: user.email || "",
-          shop_visibility: "public",
-          vertical: suggestion?.vertical || "shops",
-          tags: suggestion?.tags || [],
-          seo_description: suggestion?.seo_description || "",
-        })
+        .insert(insertPayload)
         .select("slug")
         .single();
 
@@ -132,9 +168,37 @@ Return: {"vertical":"food|shops|services|health|beauty|tech|fashion|home|sports|
           <Label className="text-xs">Description</Label>
           <Textarea value={description} onChange={e => setDescription(e.target.value)} placeholder="Tell customers about your business..." className="mt-1" rows={3} />
         </div>
+
+        {/* Location */}
         <div className="grid grid-cols-2 gap-3">
           <div><Label className="text-xs">City</Label><Input value={city} onChange={e => setCity(e.target.value)} placeholder="Dubai" className="mt-1" /></div>
           <div><Label className="text-xs">Country</Label><Input value={country} onChange={e => setCountry(e.target.value)} placeholder="UAE" className="mt-1" /></div>
+        </div>
+        <div>
+          <Label className="text-xs">District / Neighborhood</Label>
+          <Input value={district} onChange={e => setDistrict(e.target.value)} placeholder="e.g. Marina, Downtown, Médina..." className="mt-1" />
+        </div>
+
+        {/* World-readiness */}
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <Label className="text-xs">Currency</Label>
+            <Select value={currency} onValueChange={setCurrency}>
+              <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {CURRENCY_OPTIONS.map(c => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label className="text-xs">Language</Label>
+            <Select value={defaultLanguage} onValueChange={setDefaultLanguage}>
+              <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {LANGUAGE_OPTIONS.map(l => <SelectItem key={l.value} value={l.value}>{l.label}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
 
         {/* AI Suggest Button */}
