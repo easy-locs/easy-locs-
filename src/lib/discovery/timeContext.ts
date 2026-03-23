@@ -34,7 +34,7 @@ const PERIOD_CONFIG: Record<TimePeriod, { label: string; emoji: string; boostedS
   dinner: {
     label: "Dinner",
     emoji: "🌙",
-    boostedSubs: ["italian", "japanese", "seafood", "turkish", "dineout", "restaurant", "indian", "lebanese"],
+    boostedSubs: ["italian", "japanese", "seafood", "turkish", "dineout", "restaurant", "indian", "lebanese", "pasta", "sushi"],
   },
   lateNight: {
     label: "Late Night",
