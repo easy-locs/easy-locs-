@@ -41,8 +41,9 @@ export default function GlobalSearch() {
     try {
       const [shopsRes, productsRes] = await Promise.all([
         (supabase as any).from("storefront_pages")
-          .select("id, name, slug, logo_url, city, vertical")
-          .eq("shop_visibility", "public")
+          .select("id, name, slug, logo_url, city, vertical, visibility_mode, route_status")
+          .neq("route_status", "broken")
+          .or("visibility_mode.eq.live,visibility_mode.eq.ready,visibility_mode.eq.coming_soon,visibility_mode.eq.search_only,visibility_mode.is.null")
           .or(`name.ilike.%${q}%,description.ilike.%${q}%,city.ilike.%${q}%`)
           .limit(5),
         (supabase as any).from("catalog_items")
