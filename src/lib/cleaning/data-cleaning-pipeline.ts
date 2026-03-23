@@ -154,7 +154,7 @@ export type VisibilityMode = "hidden" | "map_only" | "search_only" | "coming_soo
 export function computeVisibilityMode(shop: any, auditResult: any): VisibilityMode {
   const blockers = auditResult.blockers || [];
   const score = auditResult.score ?? 0;
-  if (shop.launch_status === "hidden" || shop.readiness_status === "blocked") return "hidden";
+  if (shop.visibility_mode === "hidden" || shop.readiness_status === "blocked") return "hidden";
   if (shop.is_claimed && blockers.length === 0 && score >= 70 && auditResult.isPublishable) return "live";
   if (blockers.length === 0 && score >= 50 && auditResult.isPublishable) return "ready";
   if (shop.name && shop.city && score >= 30) return "coming_soon";

@@ -163,7 +163,7 @@ export async function ingestShop(
     vertical: tax.vertical,
     cluster: tax.cluster,
     subcategory: tax.subcategory,
-    launch_status: "draft",
+    visibility_mode: "coming_soon",
     readiness_status: "draft",
     activation_status: "draft",
     user_id: userId,
