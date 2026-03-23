@@ -472,6 +472,7 @@ export default function QrScannerPage() {
 
   const handleReset = () => {
     setError(""); setLastText(""); setTxId(""); setResolvedPayload(null);
+    setPendingPayment(null); setManualAmount("");
     setPayStepLabel(""); setState("idle"); handledRef.current = false;
   };
 
