@@ -28,6 +28,8 @@ export interface EntityIdentity {
   verified: boolean;
   createdAt: string;
   updatedAt: string;
+  /** Parent entity for multi-location (brand → locations) */
+  parentEntityId?: string | null;
   // Backward compat links (phase-out over time)
   storefrontPageId?: string | null;
   seedMerchantId?: string | null;
