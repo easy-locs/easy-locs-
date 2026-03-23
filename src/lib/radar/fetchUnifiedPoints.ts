@@ -131,7 +131,7 @@ export async function fetchUnifiedPoints(opts?: FetchUnifiedPointsOpts): Promise
       distanceKm: dist,
       timeScore,
       slug: s.slug || null,
-      district: s.area || null,
+      district: s.region || s.address || null,
       cityName: s.city || null,
     });
   }
