@@ -1,6 +1,25 @@
 import { supabase } from "@/integrations/supabase/client";
 import { haversineKm } from "@/lib/geo/distance";
 
+export type DriverCandidate = {
+  user_id: string;
+  is_online?: boolean | null;
+  is_available?: boolean | null;
+  current_lat?: number | null;
+  current_lng?: number | null;
+  acceptance_rate?: number | null;
+  reliability_score?: number | null;
+  jobs_completed?: number | null;
+  zone?: string | null;
+};
+
+export type MatchDriverInput = {
+  orderId: string;
+  pickupLat?: number | null;
+  pickupLng?: number | null;
+  zone?: string | null;
+};
+
 function scoreDriver(driver: DriverCandidate, pickupLat?: number | null, pickupLng?: number | null, zone?: string | null) {
   const onlineBoost = driver.is_online ? 25 : -1000;
   const availableBoost = driver.is_available ? 25 : -1000;

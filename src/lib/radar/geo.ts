@@ -1,6 +1,7 @@
 import { getTimeContext, timeRelevanceScore } from "@/lib/discovery/timeContext";
 import { hierarchyMatchScore } from "@/lib/taxonomy/world-class-taxonomy";
 
+import { haversineKm } from "@/lib/geo/distance";
 export { haversineKm } from "@/lib/geo/distance";
 
 /**

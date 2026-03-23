@@ -11,6 +11,29 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { haversineKm } from "@/lib/geo/distance";
 
+interface PendingJob {
+  id: string;
+  pickup_address: string;
+  dropoff_address: string;
+  dropoff_lat: number | null;
+  dropoff_lng: number | null;
+  pickup_lat: number | null;
+  pickup_lng: number | null;
+  package_description: string | null;
+  delivery_fee: number | null;
+  currency: string | null;
+  priority: string;
+  status: string;
+}
+
+interface Cluster {
+  id: number;
+  center: { lat: number; lng: number };
+  jobs: PendingJob[];
+  totalFees: number;
+  estimatedKm: number;
+}
+
 function clusterJobs(jobs: PendingJob[], radiusKm: number): Cluster[] {
   const geoJobs = jobs.filter(j => j.dropoff_lat && j.dropoff_lng);
   const used = new Set<string>();
