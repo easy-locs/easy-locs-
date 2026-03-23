@@ -87,18 +87,27 @@ export async function repairShop(shop: any): Promise<RepairResult> {
       if (tax.subcategory && tax.subcategory !== shop.subcategory) { updates.subcategory = tax.subcategory; fixes.push(`Fixed subcategory: ${tax.subcategory}`); }
     }
 
-    // 4. Generate missing images
-    const hasLogo = !!(shop.logo_url || shop.logo_image);
-    const hasCover = !!(shop.cover_url || shop.banner_url || shop.cover_image);
+    // 4. Generate missing images (dual-layer: auto URLs, never touch owner URLs)
+    const hasLogo = !!(shop.logo_owner_url || shop.logo_auto_url || shop.logo_url || shop.logo_image);
+    const hasCover = !!(shop.cover_owner_url || shop.cover_auto_url || shop.cover_url || shop.banner_url || shop.cover_image);
 
     if (!hasLogo && shop.name) {
       const logoUrl = await generateShopImage(shop.name, "logo", shop.vertical);
-      if (logoUrl) { updates.logo_url = logoUrl; fixes.push("Generated AI logo"); }
+      if (logoUrl) {
+        updates.logo_auto_url = logoUrl;
+        updates.logo_url = logoUrl; // legacy compat
+        fixes.push("Generated AI logo (auto layer)");
+      }
     }
 
     if (!hasCover && shop.name) {
       const coverUrl = await generateShopImage(shop.name, "cover", shop.vertical);
-      if (coverUrl) { updates.cover_url = coverUrl; fixes.push("Generated AI cover"); }
+      if (coverUrl) {
+        updates.cover_auto_url = coverUrl;
+        updates.cover_url = coverUrl; // legacy compat
+        updates.cover_source = "ai";
+        fixes.push("Generated AI cover (auto layer)");
+      }
     }
 
     // 5. Generate missing menu/catalog
