@@ -169,7 +169,7 @@ export default function VerticalHubPage({ vertical }: { vertical: VerticalDef })
             {filtered.map((item, i) => (
               <MerchantCard
                 key={item.id}
-                to={`/shop/${item.slug}`}
+                to={item.slug ? `/s/${item.slug}` : `/s/${item.id}`}
                 image={item.banner_url || item.logo_url}
                 name={item.name}
                 category={[
@@ -212,7 +212,7 @@ export default function VerticalHubPage({ vertical }: { vertical: VerticalDef })
               {items.slice(0, 6).map((item, i) => (
                 <div key={item.id} className="shrink-0 w-[200px]">
                   <MerchantCard
-                    to={`/shop/${item.slug}`}
+                    to={item.slug ? `/s/${item.slug}` : `/s/${item.id}`}
                     image={item.banner_url || item.logo_url}
                     name={item.name}
                     category={item.address || getSubcategoryLabel(vertical.value, item.subcategory || "")}

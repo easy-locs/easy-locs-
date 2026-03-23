@@ -139,7 +139,7 @@ export interface PartnerNetwork {
 //  SHARED TYPES
 // ═══════════════════════════════════════════════════════════
 
-export type OfferScope = "global" | "country" | "city" | "area";
+export type OfferScope = "global" | "country" | "city" | "district" | "entity";
 
 /** Union type for all commercial entities. */
 export type CommercialEntity =
