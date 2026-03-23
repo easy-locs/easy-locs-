@@ -247,7 +247,7 @@ export async function runDedupScan(): Promise<{
 
   // Score within each group
   groups.forEach((group) => {
-    if (group.length < 2) continue;
+    if (group.length < 2) return;
     for (let i = 0; i < group.length; i++) {
       for (let j = i + 1; j < group.length; j++) {
         const match = computeDedupScore(group[i], group[j]);
