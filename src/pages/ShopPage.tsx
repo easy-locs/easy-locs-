@@ -71,10 +71,12 @@ export default function ShopPage() {
   const { shopSlug } = useParams<{ shopSlug: string }>();
   const [searchParams] = useSearchParams();
   const inviteToken = searchParams.get("invite");
+  const actionParam = searchParams.get("action");
   const { user } = useAuth();
   const [cartOpen, setCartOpen] = useState(false);
   const [couponCode, setCouponCode] = useState("");
   const [checkoutMode, setCheckoutMode] = useState(false);
+  const [reviewMode, setReviewMode] = useState(actionParam === "review");
 
   const isUuid = !!shopSlug && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(shopSlug);
 
