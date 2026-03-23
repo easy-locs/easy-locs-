@@ -50,8 +50,11 @@ export default function ShopCreator() {
   const [description, setDescription] = useState("");
   const [city, setCity] = useState("");
   const [country, setCountry] = useState("");
+  const [district, setDistrict] = useState("");
   const [phone, setPhone] = useState("");
   const [logoUrl, setLogoUrl] = useState("");
+  const [currency, setCurrency] = useState("AED");
+  const [defaultLanguage, setDefaultLanguage] = useState("en");
 
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -89,9 +92,7 @@ export default function ShopCreator() {
       if (!orgId) { toast.error("Failed to set up organization"); return; }
       const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 
-      const { data: created, error } = await (supabase as any)
-        .from("storefront_pages")
-        .insert({
+      const insertPayload: Record<string, any> = {
           org_id: orgId,
           user_id: user.id,
           slug,
@@ -106,7 +107,14 @@ export default function ShopCreator() {
           shop_visibility: "private",
           active: false,
           onboarding_completed: false,
-        })
+          currency: currency || "AED",
+          default_language: defaultLanguage || "en",
+        };
+      if (district.trim()) insertPayload.area = district.trim();
+
+      const { data: created, error } = await (supabase as any)
+        .from("storefront_pages")
+        .insert(insertPayload)
         .select("id, latitude, longitude")
         .single();
 
@@ -278,8 +286,38 @@ export default function ShopCreator() {
               </div>
 
               <div>
+                <Label className="text-xs font-medium">District / Neighborhood</Label>
+                <Input value={district} onChange={e => setDistrict(e.target.value)} placeholder="e.g. Marina, Downtown..." className="mt-1.5 h-11" />
+              </div>
+
+              <div>
                 <Label className="text-xs font-medium">Phone Number</Label>
                 <Input value={phone} onChange={e => setPhone(e.target.value)} placeholder="+971 50 123 4567" className="mt-1.5 h-11" />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label className="text-xs font-medium">Currency</Label>
+                  <select value={currency} onChange={e => setCurrency(e.target.value)} className="mt-1.5 h-11 w-full rounded-md border border-input bg-background px-3 text-sm">
+                    <option value="AED">AED</option>
+                    <option value="USD">USD</option>
+                    <option value="EUR">EUR</option>
+                    <option value="GBP">GBP</option>
+                    <option value="SAR">SAR</option>
+                    <option value="MAD">MAD</option>
+                    <option value="XOF">XOF</option>
+                    <option value="EGP">EGP</option>
+                  </select>
+                </div>
+                <div>
+                  <Label className="text-xs font-medium">Language</Label>
+                  <select value={defaultLanguage} onChange={e => setDefaultLanguage(e.target.value)} className="mt-1.5 h-11 w-full rounded-md border border-input bg-background px-3 text-sm">
+                    <option value="en">English</option>
+                    <option value="fr">Français</option>
+                    <option value="ar">العربية</option>
+                    <option value="es">Español</option>
+                  </select>
+                </div>
               </div>
             </div>
           )}
