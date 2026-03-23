@@ -38,7 +38,9 @@ const FOOD_SUBCATEGORIES: CanonicalSubcategory[] = [
   { value: "pizza", label: "Pizza", emoji: "🍕", icon: "🍕", cluster: "Quick Bites" },
   { value: "fried_chicken", label: "Fried Chicken", emoji: "🍗", icon: "🍗", cluster: "Quick Bites" },
   { value: "wraps", label: "Wraps & Shawarma", emoji: "🌯", icon: "🌯", cluster: "Quick Bites" },
+  { value: "shawarma", label: "Shawarma", emoji: "🌯", icon: "🌯", cluster: "Quick Bites" },
 
+  { value: "pasta", label: "Pasta", emoji: "🍝", icon: "🍝", cluster: "Cuisine" },
   { value: "italian", label: "Italian", emoji: "🍝", icon: "🍝", cluster: "Cuisine" },
   { value: "japanese", label: "Japanese", emoji: "🍣", icon: "🍣", cluster: "Cuisine" },
   { value: "sushi", label: "Sushi", emoji: "🍣", icon: "🍣", cluster: "Cuisine" },
@@ -334,8 +336,10 @@ const SUBCATEGORY_ALIASES: Record<string, string> = {
   "fast food": "fast_food", fastfood: "fast_food",
   "fried chicken": "fried_chicken",
   "cafe lounge": "lounge_cafe", "lounge cafe": "lounge_cafe",
-  coffee: "cafe", "coffee shop": "cafe",
+  coffee: "coffee", "coffee shop": "coffee",
   "ice cream": "desserts",
+  shawarma: "shawarma", "wraps & shawarma": "shawarma",
+  pasta: "pasta",
 
   // Service aliases
   repair: "handyman", maintenance: "handyman",

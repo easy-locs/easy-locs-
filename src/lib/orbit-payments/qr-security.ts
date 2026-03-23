@@ -1,7 +1,6 @@
 /**
- * Orbit QR Security — Client utilities (signing moved server-side)
- * Client only handles encoding/decoding and basic checks.
- * All signing & nonce validation happens on the server.
+ * @deprecated — Use src/lib/qr-engine.ts instead.
+ * Orbit QR Security — kept for backward compatibility only.
  */
 import type { QRPayload } from "./types";
 

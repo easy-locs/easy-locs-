@@ -1,3 +1,4 @@
+/** @deprecated — Use qr-engine decodeQr() + resolveRoute() instead. */
 import { parsePaymentQrPayload } from "@/lib/pay/qrPayload";
 
 export type ScanProcessResult =
