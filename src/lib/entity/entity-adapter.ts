@@ -184,6 +184,13 @@ function rowToEntity(row: any): PlatformEntity {
     email: row.email,
     website: row.website,
 
+    // World-readiness
+    defaultLanguage: row.default_language ?? "en",
+    timezone: row.timezone ?? null,
+    currency: row.currency ?? "AED",
+    openingHours: row.opening_hours ?? null,
+    socialLinks: row.social_links ?? null,
+
     // Commercial
     boostTier: row.boost_tier,
     boostUntil: row.boost_until,
