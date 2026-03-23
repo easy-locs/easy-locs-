@@ -46,6 +46,21 @@ export async function createMerchantDraft(params: {
     source_confidence: 70,
   };
 
+  // Hero diversity guard: auto-pick diverse image if none provided or if duplicate
+  if (!insertPayload.cover_image && params.subcategory) {
+    const diverseHero = await pickDiverseHero(params.subcategory);
+    insertPayload.cover_image = diverseHero;
+    insertPayload.logo_image = diverseHero;
+  } else if (insertPayload.cover_image && params.subcategory) {
+    const { validateHeroUniqueness } = await import("@/lib/image/hero-diversity-guard");
+    const check = await validateHeroUniqueness(insertPayload.cover_image, params.subcategory);
+    if (!check.ok && check.suggestedAlternative) {
+      console.warn(`[HERO-GUARD] Replacing duplicate hero for "${params.name}" with diverse alternative`);
+      insertPayload.cover_image = check.suggestedAlternative;
+      insertPayload.logo_image = check.suggestedAlternative;
+    }
+  }
+
   // World-ready optional fields (nullable/safe)
   if (params.country) insertPayload.country = params.country;
   if (params.cluster) insertPayload.cluster = params.cluster;
