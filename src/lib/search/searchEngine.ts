@@ -1,26 +1,29 @@
 import { supabase } from "@/integrations/supabase/client";
+import { governStorefrontQuery, governSeedQuery } from "@/lib/discovery/query-governance";
 
 export async function runUnifiedSearch(query: string) {
   const q = query.trim().toLowerCase();
   if (!q) return { merchants: [], products: [] };
 
+  // Storefront query — governed (no launch_status)
+  let sfQ = (supabase as any)
+    .from("storefront_pages")
+    .select("id, name, slug, vertical, category, subcategory, city, address, region, rating, reviews_count, banner_url, logo_url, display_priority")
+    .or(`name.ilike.%${q}%,subcategory.ilike.%${q}%,address.ilike.%${q}%`)
+    .limit(20);
+  sfQ = governStorefrontQuery(sfQ, "search");
+
+  // Seed query — governed
+  let seedQ = (supabase as any)
+    .from("seed_merchants")
+    .select("id, name, category, subcategory, city, area, rating, review_count, cover_image, is_open, visibility_score")
+    .or(`name.ilike.%${q}%,subcategory.ilike.%${q}%,area.ilike.%${q}%`)
+    .limit(20);
+  seedQ = governSeedQuery(seedQ);
+
   const [sfRes, seedRes, { data: products }] = await Promise.all([
-    (supabase as any)
-      .from("storefront_pages")
-      .select("id, name, slug, vertical, category, subcategory, city, address, region, rating, reviews_count, banner_url, logo_url, launch_status")
-      .in("launch_status", ["launched", "ready", "active"])
-      .not("visibility_mode", "eq", "hidden")
-      .not("route_status", "eq", "broken")
-      .or(`name.ilike.%${q}%,subcategory.ilike.%${q}%,address.ilike.%${q}%`)
-      .limit(20),
-    (supabase as any)
-      .from("seed_merchants")
-      .select("id, name, category, subcategory, city, area, rating, review_count, cover_image, is_open, visibility_score")
-      .eq("is_active", true)
-      .not("is_flagged", "eq", true)
-      .or(`name.ilike.%${q}%,subcategory.ilike.%${q}%,area.ilike.%${q}%`)
-      .order("visibility_score", { ascending: false })
-      .limit(20),
+    sfQ,
+    seedQ,
     (supabase as any)
       .from("seed_products")
       .select("*")
