@@ -256,7 +256,7 @@ export default function BuyerOrderTracker({ orderId, buyerEmail }: BuyerOrderTra
               <div className="flex items-center gap-2">
                 {shop?.slug && (
                   <Link
-                    to={`/shop/${shop.slug}`}
+                    to={`/s/${shop.slug}`}
                     className="text-[11px] text-primary hover:underline flex items-center gap-1"
                   >
                     <ArrowLeft className="h-3 w-3" /> Visit shop
