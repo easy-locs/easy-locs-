@@ -1,6 +1,6 @@
 /**
  * NotificationCenter — Production notification center UI.
- * Reads from unifiedNotificationStore, supports read/unread, deep links, categories.
+ * Uses optimized Zustand selectors for minimal rerenders.
  * Authoritative source: `notifications` table via unifiedNotificationStore.
  */
 import { useEffect } from "react";
