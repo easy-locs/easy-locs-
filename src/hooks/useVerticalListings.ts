@@ -46,7 +46,7 @@ export function useVerticalListings(vertical: string, subcategory?: string | nul
       return points.map((p) => ({
         id: p.id,
         name: p.title,
-        slug: p.id,
+        slug: p.slug || p.id,
         vertical,
         subcategory: p.subcategory ?? null,
         address: p.subtitle ?? null,
