@@ -135,6 +135,23 @@ export async function autoOnboardMerchant(params: {
     category?: string | null;
   }>;
 }) {
+  // ── DEDUP CHECK BEFORE INSERTION ──
+  const dedupResult = await checkNewShopDuplicate({
+    id: crypto.randomUUID(),
+    name: params.name,
+    city: params.city ?? "Dubai",
+    address: params.area ?? undefined,
+  });
+
+  if (dedupResult && dedupResult.action === "auto_hide") {
+    console.warn(`[DEDUP] Blocked: "${params.name}" is duplicate of "${dedupResult.matchName}" (confidence: ${dedupResult.confidence}%)`);
+    throw new Error(`Duplicate detected: "${params.name}" matches existing "${dedupResult.matchName}" (${dedupResult.confidence}% confidence). Use a different name or location.`);
+  }
+
+  if (dedupResult && dedupResult.action === "review") {
+    console.warn(`[DEDUP] Review needed: "${params.name}" similar to "${dedupResult.matchName}" (confidence: ${dedupResult.confidence}%)`);
+  }
+
   const merchant = await createMerchantDraft({
     name: params.name,
     category: params.category,
@@ -150,6 +167,18 @@ export async function autoOnboardMerchant(params: {
     timezone: params.timezone,
     tags: params.tags,
   });
+
+  // If review needed, flag the merchant
+  if (dedupResult && dedupResult.action === "review") {
+    await supabase
+      .from("seed_merchants" as any)
+      .update({
+        review_required: true,
+        duplicate_confidence: dedupResult.confidence,
+        duplicate_of: dedupResult.matchId,
+      } as any)
+      .eq("id", merchant.id);
+  }
 
   await bulkCreateMerchantProducts({
     merchantId: merchant.id,
