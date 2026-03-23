@@ -19922,6 +19922,7 @@ export type Database = {
           id: string
           is_auto_generated: boolean | null
           is_claimed: boolean
+          is_flagged: boolean | null
           is_order_enabled: boolean
           is_payment_enabled: boolean
           is_qr_enabled: boolean
@@ -20031,6 +20032,7 @@ export type Database = {
           id?: string
           is_auto_generated?: boolean | null
           is_claimed?: boolean
+          is_flagged?: boolean | null
           is_order_enabled?: boolean
           is_payment_enabled?: boolean
           is_qr_enabled?: boolean
@@ -20140,6 +20142,7 @@ export type Database = {
           id?: string
           is_auto_generated?: boolean | null
           is_claimed?: boolean
+          is_flagged?: boolean | null
           is_order_enabled?: boolean
           is_payment_enabled?: boolean
           is_qr_enabled?: boolean
