@@ -40,6 +40,7 @@ export interface RankableEntity {
   // Geo
   lat?: number | null;
   lng?: number | null;
+  districtCode?: string | null;
 
   // Time
   createdAt?: string | null;
