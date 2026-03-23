@@ -23,7 +23,7 @@ export function RadarResultsList() {
       {filtered.map((item) => (
         <Link
           key={item.id}
-          to={item.slug ? `/s/${item.slug}` : `/shop/${item.id}`}
+          to={item.slug ? `/s/${item.slug}` : `/s/${item.id}`}
           onClick={() => ultraHaptic("light")}
           className="flex gap-3 rounded-2xl border border-border/15 bg-card overflow-hidden active:scale-[0.97] transition-transform duration-75 will-change-transform"
         >

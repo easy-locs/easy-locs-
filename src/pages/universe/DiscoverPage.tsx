@@ -267,7 +267,7 @@ export default function DiscoverPage() {
                 {filtered.map((item: any, i: number) => (
                   <MerchantCard
                     key={item.id}
-                    to={item.slug ? `/s/${item.slug}` : `/shop/${item.id}`}
+                    to={item.slug ? `/s/${item.slug}` : `/s/${item.id}`}
                     image={item.banner_url || item.logo_url}
                     name={item.name}
                     category={[
