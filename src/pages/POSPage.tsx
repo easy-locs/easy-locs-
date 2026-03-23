@@ -116,7 +116,6 @@ export default function POSPage() {
   /* ─── QR Payload (canonical qr-engine format) ─── */
   const qrPayload = useMemo(() => {
     if (total <= 0 || !user?.id) return "";
-    const { encodeQr, qr } = require("@/lib/qr-engine");
     return encodeQr(qr.payUser(user.id, { amount: total, currency: "AED", name: "POS Order" }));
   }, [total, user?.id, cart]);
 
