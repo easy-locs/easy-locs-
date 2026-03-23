@@ -214,6 +214,6 @@ export function getActivationUpdatePayload(result: ActivationResult): Record<str
     audit_score: result.audit.score,
     readiness_status: result.status,
     blocking_reason: result.blockers.length > 0 ? result.blockers.join("; ") : null,
-    menu_quality_score: result.catalogAudit.score,
+    menu_quality_score: result.catalogAudit.qualityScore,
   };
 }
