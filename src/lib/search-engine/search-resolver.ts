@@ -32,13 +32,13 @@ export async function resolveSearch(
   // Build storefront query
   let sfQuery = db
     .from("storefront_pages")
-    .select("id, name, slug, vertical, category, subcategory, cluster, city, area, rating, reviews_count, banner_url, logo_url, launch_status, latitude, longitude, is_open, source_type, audit_score, readiness_status")
+    .select("id, name, slug, vertical, category, subcategory, cluster, city, address, region, rating, reviews_count, banner_url, logo_url, launch_status, latitude, longitude, is_open, source_type, audit_score, readiness_status")
     .in("launch_status", ["launched", "ready", "active"])
     .limit(state.limit);
 
   // Text search
   if (q) {
-    sfQuery = sfQuery.or(`name.ilike.%${q}%,subcategory.ilike.%${q}%,area.ilike.%${q}%,city.ilike.%${q}%,category.ilike.%${q}%`);
+    sfQuery = sfQuery.or(`name.ilike.%${q}%,subcategory.ilike.%${q}%,address.ilike.%${q}%,city.ilike.%${q}%,category.ilike.%${q}%`);
   }
 
   // Vertical filter
