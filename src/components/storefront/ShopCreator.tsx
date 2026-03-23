@@ -92,9 +92,7 @@ export default function ShopCreator() {
       if (!orgId) { toast.error("Failed to set up organization"); return; }
       const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 
-      const { data: created, error } = await (supabase as any)
-        .from("storefront_pages")
-        .insert({
+      const insertPayload: Record<string, any> = {
           org_id: orgId,
           user_id: user.id,
           slug,
@@ -109,7 +107,14 @@ export default function ShopCreator() {
           shop_visibility: "private",
           active: false,
           onboarding_completed: false,
-        })
+          currency: currency || "AED",
+          default_language: defaultLanguage || "en",
+        };
+      if (district.trim()) insertPayload.area = district.trim();
+
+      const { data: created, error } = await (supabase as any)
+        .from("storefront_pages")
+        .insert(insertPayload)
         .select("id, latitude, longitude")
         .single();
 
