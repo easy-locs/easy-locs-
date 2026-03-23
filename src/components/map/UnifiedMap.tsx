@@ -1,6 +1,6 @@
 /**
  * UnifiedMap — Premium Mapbox-powered discovery map.
- * Features: native clustering, rich pins, radius circle, heatmap overlay.
+ * Features: native clustering, rich pins with badges, radius circle, heatmap overlay.
  */
 import { useEffect, useRef, useCallback, memo, useState } from "react";
 import mapboxgl from "mapbox-gl";
@@ -17,9 +17,11 @@ const CLUSTER_SOURCE = "discovery-cluster-source";
 const CLUSTER_LAYER = "discovery-clusters";
 const CLUSTER_COUNT_LAYER = "discovery-cluster-count";
 const UNCLUSTERED_LAYER = "discovery-unclustered";
+const UNCLUSTERED_GLOW_LAYER = "discovery-unclustered-glow";
 const RADIUS_SOURCE = "radius-circle-source";
 const RADIUS_LAYER = "radius-circle-layer";
 const RADIUS_BORDER_LAYER = "radius-circle-border";
+const RADIUS_PULSE_LAYER = "radius-circle-pulse";
 
 const VERTICAL_COLORS: Record<string, string> = {
   restaurant: "#f97316",
@@ -56,7 +58,7 @@ const VERTICAL_ICONS: Record<string, string> = {
 };
 
 interface UnifiedMapProps {
-  entities: GeoEntity[];
+  entities: (GeoEntity & { isSponsored?: boolean; reviewsCount?: number })[];
   center?: [number, number];
   zoom?: number;
   className?: string;
@@ -69,6 +71,34 @@ interface UnifiedMapProps {
   heatmapPoints?: { lat: number; lng: number; intensity: number }[];
   /** Radius in km — renders a visual circle on map */
   radiusKm?: number;
+}
+
+/** Build rich popup HTML */
+function buildPopupHTML(props: Record<string, any>): string {
+  const rating = props.rating ? Number(props.rating) : 0;
+  const stars = rating > 0 ? `<span class="radar-popup-rating">★ ${rating.toFixed(1)}</span>` : "";
+  const badges: string[] = [];
+  if (props.isSponsored === true || props.isSponsored === "true") badges.push('<span class="radar-popup-badge promoted">⚡ Promoted</span>');
+  if (rating >= 4.3 && (props.reviewsCount ?? 0) > 50) badges.push('<span class="radar-popup-badge trending">🔥 Trending</span>');
+
+  const img = props.imageUrl
+    ? `<img src="${props.imageUrl}" class="radar-popup-img" />`
+    : `<div class="radar-popup-img-placeholder">${props.icon || "📍"}</div>`;
+
+  const distance = props.distanceKm != null
+    ? `<span class="radar-popup-dist">${Number(props.distanceKm) < 1 ? `${Math.round(Number(props.distanceKm) * 1000)}m` : `${Number(props.distanceKm).toFixed(1)}km`}</span>`
+    : "";
+
+  return `
+    <div class="radar-popup-card">
+      ${img}
+      <div class="radar-popup-content">
+        <div class="radar-popup-title">${props.title || ""}</div>
+        <div class="radar-popup-meta">${stars}${distance}</div>
+        ${badges.length ? `<div class="radar-popup-badges">${badges.join("")}</div>` : ""}
+      </div>
+    </div>
+  `;
 }
 
 export default memo(function UnifiedMap({
@@ -90,7 +120,7 @@ export default memo(function UnifiedMap({
   const userMarkerRef = useRef<mapboxgl.Marker | null>(null);
   const popupRef = useRef<mapboxgl.Popup | null>(null);
   const [mapReady, setMapReady] = useState(false);
-  const entitiesRef = useRef<GeoEntity[]>(entities);
+  const entitiesRef = useRef(entities);
   entitiesRef.current = entities;
   const onSelectRef = useRef(onSelectEntity);
   onSelectRef.current = onSelectEntity;
@@ -102,7 +132,7 @@ export default memo(function UnifiedMap({
   const effectiveHeatmap = heatmapPoints ?? (showHeatmap ? entities.map(e => ({
     lat: e.lat,
     lng: e.lng,
-    intensity: Math.min(1, ((e.rating ?? 3) / 5) * 0.6 + 0.4),
+    intensity: Math.min(1, ((e.rating ?? 3) / 5) * 0.5 + 0.3 + ((e.reviewsCount ?? 0) > 10 ? 0.2 : 0)),
   })) : []);
 
   // ── Init map ──
@@ -122,16 +152,48 @@ export default memo(function UnifiedMap({
     mapRef.current = map;
 
     map.on("load", () => {
-      // ── Cluster source (empty initially) ──
+      // ── Radius circle source (below everything) ──
+      map.addSource(RADIUS_SOURCE, {
+        type: "geojson",
+        data: { type: "FeatureCollection", features: [] },
+      });
+
+      map.addLayer({
+        id: RADIUS_LAYER,
+        type: "fill",
+        source: RADIUS_SOURCE,
+        paint: {
+          "fill-color": "hsl(220, 70%, 55%)",
+          "fill-opacity": 0.08,
+        },
+      });
+
+      map.addLayer({
+        id: RADIUS_BORDER_LAYER,
+        type: "line",
+        source: RADIUS_SOURCE,
+        paint: {
+          "line-color": "hsl(220, 70%, 60%)",
+          "line-width": 2,
+          "line-opacity": 0.4,
+          "line-dasharray": [4, 3],
+        },
+      });
+
+      // ── Cluster source ──
       map.addSource(CLUSTER_SOURCE, {
         type: "geojson",
         data: { type: "FeatureCollection", features: [] },
         cluster: true,
         clusterMaxZoom: 14,
-        clusterRadius: 50,
+        clusterRadius: 60,
+        clusterProperties: {
+          sumRating: ["+", ["get", "rating"]],
+          hasSponsored: ["any", ["get", "isSponsored"]],
+        },
       });
 
-      // ── Cluster circles ──
+      // ── Cluster circles — glassmorphic premium look ──
       map.addLayer({
         id: CLUSTER_LAYER,
         type: "circle",
@@ -140,18 +202,18 @@ export default memo(function UnifiedMap({
         paint: {
           "circle-color": [
             "step", ["get", "point_count"],
-            "hsl(220, 70%, 55%)", 10,
-            "hsl(200, 70%, 50%)", 30,
-            "hsl(45, 90%, 55%)", 100,
-            "hsl(15, 80%, 55%)",
+            "hsla(220, 60%, 50%, 0.85)", 10,
+            "hsla(200, 65%, 45%, 0.85)", 30,
+            "hsla(45, 80%, 50%, 0.85)", 100,
+            "hsla(15, 75%, 50%, 0.85)",
           ],
           "circle-radius": [
             "step", ["get", "point_count"],
-            18, 10, 24, 30, 32, 100, 40,
+            20, 10, 28, 30, 36, 100, 44,
           ],
-          "circle-stroke-width": 2,
-          "circle-stroke-color": "rgba(255,255,255,0.3)",
-          "circle-opacity": 0.9,
+          "circle-stroke-width": 3,
+          "circle-stroke-color": "rgba(255,255,255,0.25)",
+          "circle-blur": 0.15,
         },
       });
 
@@ -164,14 +226,35 @@ export default memo(function UnifiedMap({
         layout: {
           "text-field": ["get", "point_count_abbreviated"],
           "text-font": ["DIN Offc Pro Bold", "Arial Unicode MS Bold"],
-          "text-size": 13,
+          "text-size": 14,
+          "text-allow-overlap": true,
         },
         paint: {
           "text-color": "#ffffff",
         },
       });
 
-      // ── Unclustered points (rich pins) ──
+      // ── Unclustered glow (sponsored/selected) ──
+      map.addLayer({
+        id: UNCLUSTERED_GLOW_LAYER,
+        type: "circle",
+        source: CLUSTER_SOURCE,
+        filter: ["all",
+          ["!", ["has", "point_count"]],
+          ["any", ["get", "isSponsored"], ["get", "isSelected"]],
+        ],
+        paint: {
+          "circle-color": [
+            "case",
+            ["get", "isSelected"], "hsla(220, 70%, 55%, 0.4)",
+            "hsla(45, 90%, 55%, 0.3)",
+          ],
+          "circle-radius": 20,
+          "circle-blur": 0.8,
+        },
+      });
+
+      // ── Unclustered points ──
       map.addLayer({
         id: UNCLUSTERED_LAYER,
         type: "circle",
@@ -181,9 +264,10 @@ export default memo(function UnifiedMap({
           "circle-color": ["coalesce", ["get", "color"], "#6b7280"],
           "circle-radius": [
             "case",
-            ["get", "isSelected"], 14,
+            ["get", "isSelected"], 13,
             ["get", "isSponsored"], 11,
-            9,
+            [">=", ["get", "rating"], 4.3], 10,
+            8,
           ],
           "circle-stroke-width": [
             "case",
@@ -195,39 +279,11 @@ export default memo(function UnifiedMap({
             "case",
             ["get", "isSelected"], "#ffffff",
             ["get", "isSponsored"], "hsl(45, 90%, 65%)",
-            "rgba(255,255,255,0.5)",
+            "rgba(255,255,255,0.4)",
           ],
           "circle-opacity": 0.95,
         },
       });
-
-      // ── Radius circle source ──
-      map.addSource(RADIUS_SOURCE, {
-        type: "geojson",
-        data: { type: "FeatureCollection", features: [] },
-      });
-
-      map.addLayer({
-        id: RADIUS_LAYER,
-        type: "fill",
-        source: RADIUS_SOURCE,
-        paint: {
-          "fill-color": "hsl(220, 70%, 55%)",
-          "fill-opacity": 0.06,
-        },
-      }, CLUSTER_LAYER); // below clusters
-
-      map.addLayer({
-        id: RADIUS_BORDER_LAYER,
-        type: "line",
-        source: RADIUS_SOURCE,
-        paint: {
-          "line-color": "hsl(220, 70%, 55%)",
-          "line-width": 1.5,
-          "line-opacity": 0.35,
-          "line-dasharray": [3, 2],
-        },
-      }, CLUSTER_LAYER);
 
       // ── Click handlers ──
       map.on("click", CLUSTER_LAYER, (e) => {
@@ -238,7 +294,7 @@ export default memo(function UnifiedMap({
         src.getClusterExpansionZoom(clusterId, (err, zoomLevel) => {
           if (err) return;
           const coords = (features[0].geometry as GeoJSON.Point).coordinates as [number, number];
-          map.easeTo({ center: coords, zoom: zoomLevel ?? 14 });
+          map.easeTo({ center: coords, zoom: zoomLevel ?? 14, duration: 400 });
         });
       });
 
@@ -250,37 +306,22 @@ export default memo(function UnifiedMap({
         if (entity) onSelectRef.current?.(entity);
       });
 
-      // ── Popup on hover for rich pin info ──
+      // ── Rich popup on hover ──
       map.on("mouseenter", UNCLUSTERED_LAYER, (e) => {
         map.getCanvas().style.cursor = "pointer";
         const f = e.features?.[0];
         if (!f) return;
-        const props = f.properties!;
         const coords = (f.geometry as GeoJSON.Point).coordinates.slice() as [number, number];
-
-        const ratingHtml = props.rating
-          ? `<span style="color:#facc15">★</span> ${Number(props.rating).toFixed(1)}`
-          : "";
-        const badges: string[] = [];
-        if (props.isSponsored) badges.push("⚡ Promoted");
-
         popupRef.current?.remove();
         popupRef.current = new mapboxgl.Popup({
           closeButton: false,
           closeOnClick: false,
-          offset: 14,
+          offset: 16,
           className: "radar-pin-popup",
+          maxWidth: "240px",
         })
           .setLngLat(coords)
-          .setHTML(`
-            <div style="display:flex;align-items:center;gap:8px;max-width:200px">
-              ${props.imageUrl ? `<img src="${props.imageUrl}" style="width:36px;height:36px;border-radius:8px;object-fit:cover" />` : ""}
-              <div style="min-width:0">
-                <div style="font-weight:700;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${props.title || ""}</div>
-                <div style="font-size:10px;opacity:0.7">${ratingHtml} ${badges.join(" ")}</div>
-              </div>
-            </div>
-          `)
+          .setHTML(buildPopupHTML(f.properties!))
           .addTo(map);
       });
 
@@ -289,32 +330,23 @@ export default memo(function UnifiedMap({
         popupRef.current?.remove();
       });
 
-      // Touch: tap shows popup too
+      // Touch: tap shows popup
       map.on("touchstart", UNCLUSTERED_LAYER, (e) => {
         const f = e.features?.[0];
         if (!f) return;
-        const props = f.properties!;
         const coords = (f.geometry as GeoJSON.Point).coordinates.slice() as [number, number];
         popupRef.current?.remove();
         popupRef.current = new mapboxgl.Popup({
           closeButton: true,
-          offset: 14,
+          offset: 16,
           className: "radar-pin-popup",
+          maxWidth: "240px",
         })
           .setLngLat(coords)
-          .setHTML(`
-            <div style="display:flex;align-items:center;gap:8px;max-width:200px">
-              ${props.imageUrl ? `<img src="${props.imageUrl}" style="width:36px;height:36px;border-radius:8px;object-fit:cover" />` : ""}
-              <div style="min-width:0">
-                <div style="font-weight:700;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${props.title || ""}</div>
-                <div style="font-size:10px;opacity:0.7">${props.rating ? `★ ${Number(props.rating).toFixed(1)}` : ""}</div>
-              </div>
-            </div>
-          `)
+          .setHTML(buildPopupHTML(f.properties!))
           .addTo(map);
       });
 
-      // Cursor
       map.on("mouseenter", CLUSTER_LAYER, () => { map.getCanvas().style.cursor = "pointer"; });
       map.on("mouseleave", CLUSTER_LAYER, () => { map.getCanvas().style.cursor = ""; });
 
@@ -339,7 +371,6 @@ export default memo(function UnifiedMap({
     if (!src) return;
 
     if (showHeatmap) {
-      // Clear pins in heatmap mode
       src.setData({ type: "FeatureCollection", features: [] });
       return;
     }
@@ -350,12 +381,15 @@ export default memo(function UnifiedMap({
         entityId: e.id,
         title: e.title || e.name,
         type: e.type,
-        color: VERTICAL_COLORS[e.type] || "#6b7280",
-        icon: VERTICAL_ICONS[e.type] || "📍",
-        rating: e.rating ?? null,
+        color: VERTICAL_COLORS[e.type] || VERTICAL_COLORS[e.category ?? ""] || "#6b7280",
+        icon: VERTICAL_ICONS[e.type] || VERTICAL_ICONS[e.category ?? ""] || "📍",
+        rating: e.rating ?? 0,
         imageUrl: e.imageUrl || e.image_url || null,
         isSelected: e.id === selectedId,
-        isSponsored: false, // enriched from pipeline
+        isSponsored: !!(e as any).isSponsored,
+        reviewsCount: (e as any).reviewsCount ?? 0,
+        distanceKm: e.distance ?? null,
+        category: e.category ?? null,
       },
       geometry: {
         type: "Point",
@@ -366,11 +400,11 @@ export default memo(function UnifiedMap({
     src.setData({ type: "FeatureCollection", features });
 
     // Fit bounds
-    if (entities.length > 0) {
+    if (entities.length > 0 && !showHeatmap) {
       const bounds = new mapboxgl.LngLatBounds();
       if (userLat && userLng) bounds.extend([userLng, userLat]);
       entities.forEach(e => bounds.extend([e.lng, e.lat]));
-      map.fitBounds(bounds, { padding: 60, maxZoom: 15 });
+      map.fitBounds(bounds, { padding: 60, maxZoom: 15, duration: 300 });
     }
   }, [entities, selectedId, showHeatmap, mapReady]);
 
@@ -383,7 +417,8 @@ export default memo(function UnifiedMap({
 
     if (showUserLocation && userLat && userLng) {
       const el = document.createElement("div");
-      el.innerHTML = `<div style="width:16px;height:16px;border-radius:50%;background:#3b82f6;border:3px solid white;box-shadow:0 0 12px rgba(59,130,246,0.5)"></div>`;
+      el.className = "radar-user-marker";
+      el.innerHTML = `<div class="radar-user-dot"></div><div class="radar-user-pulse"></div>`;
       userMarkerRef.current = new mapboxgl.Marker(el).setLngLat([userLng, userLat]).addTo(map);
     }
   }, [userLat, userLng, showUserLocation, mapReady]);
@@ -401,8 +436,7 @@ export default memo(function UnifiedMap({
       return;
     }
 
-    // Generate circle polygon
-    const steps = 64;
+    const steps = 72;
     const coords: [number, number][] = [];
     for (let i = 0; i <= steps; i++) {
       const angle = (i / steps) * 2 * Math.PI;
@@ -418,10 +452,7 @@ export default memo(function UnifiedMap({
       features: [{
         type: "Feature",
         properties: {},
-        geometry: {
-          type: "Polygon",
-          coordinates: [coords],
-        },
+        geometry: { type: "Polygon", coordinates: [coords] },
       }],
     });
   }, [radiusKm, userLat, userLng, mapReady]);
