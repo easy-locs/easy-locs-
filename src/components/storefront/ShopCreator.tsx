@@ -1,9 +1,9 @@
 /**
  * ShopCreator — Smart pro onboarding with photo/logo upload, AI category, futuristic UX.
  * Enforces duplicate detection + auto zone assignment on creation.
- * World-ready: full taxonomy depth, capabilities, currency, language, timezone.
+ * World-ready: full taxonomy depth, capabilities, geo-defaults prefill.
  */
-import { useState, useRef } from "react";
+import { useState, useRef, useCallback } from "react";
 import { validateShop } from "@/lib/validation/marketplace-validators";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -11,6 +11,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useEnsureOrg } from "@/hooks/useEnsureOrg";
 import { checkStorefrontDuplicate } from "@/lib/geo/duplicateGuard";
 import { assignZoneToStorefront } from "@/lib/zones/autoAssignZone";
+import { applyGeoDefaults } from "@/lib/geo/geo-defaults";
+import { normalizeVertical, normalizeSubcategory } from "@/lib/taxonomy/world-class-taxonomy";
 import TaxonomySelector from "@/components/storefront/TaxonomySelector";
 import CapabilityToggles, { type CapabilityFlags } from "@/components/storefront/CapabilityToggles";
 import { Button } from "@/components/ui/button";
@@ -49,22 +51,27 @@ export default function ShopCreator() {
 
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
-  // Taxonomy
   const [vertical, setVertical] = useState("food");
   const [cluster, setCluster] = useState("");
   const [subcategory, setSubcategory] = useState("");
-  // Location
   const [city, setCity] = useState("");
   const [country, setCountry] = useState("");
   const [district, setDistrict] = useState("");
   const [phone, setPhone] = useState("");
-  // World-ready
-  const [currency, setCurrency] = useState("AED");
-  const [defaultLanguage, setDefaultLanguage] = useState("en");
+  const [currency, setCurrency] = useState("");
+  const [defaultLanguage, setDefaultLanguage] = useState("");
   const [timezone, setTimezone] = useState("");
-  // Capabilities
   const [caps, setCaps] = useState<CapabilityFlags>({ capDelivery: true, capChat: true });
   const [logoUrl, setLogoUrl] = useState("");
+
+  // Auto-prefill on country change
+  const handleCountryChange = useCallback((val: string) => {
+    setCountry(val);
+    const defaults = applyGeoDefaults(val, { currency, defaultLanguage, timezone });
+    if (!currency) setCurrency(defaults.currency);
+    if (!defaultLanguage) setDefaultLanguage(defaults.defaultLanguage);
+    if (!timezone) setTimezone(defaults.timezone);
+  }, [currency, defaultLanguage, timezone]);
 
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -101,6 +108,8 @@ export default function ShopCreator() {
       if (!orgId) { toast.error("Failed to set up organization"); return; }
       const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 
+      const finalDefaults = applyGeoDefaults(country, { currency, defaultLanguage, timezone });
+
       const insertPayload: Record<string, any> = {
         org_id: orgId,
         user_id: user.id,
@@ -112,21 +121,21 @@ export default function ShopCreator() {
         country: country.trim() || "",
         contact_email: user.email || "",
         contact_phone: phone.trim() || null,
-        vertical: vertical || "other",
+        vertical: normalizeVertical(vertical) || "other",
         shop_visibility: "private",
         active: false,
         onboarding_completed: false,
-        currency: currency || "AED",
-        default_language: defaultLanguage || "en",
+        currency: finalDefaults.currency,
+        default_language: finalDefaults.defaultLanguage,
       };
 
       // Taxonomy depth
       if (cluster) insertPayload.cluster = cluster;
-      if (subcategory) insertPayload.subcategory = subcategory;
+      if (subcategory) insertPayload.subcategory = normalizeSubcategory(subcategory) || subcategory;
 
       // Geography
       if (district.trim()) insertPayload.area = district.trim();
-      if (timezone.trim()) insertPayload.timezone = timezone.trim();
+      if (finalDefaults.timezone) insertPayload.timezone = finalDefaults.timezone;
 
       // Capability flags
       if (caps.capWallet != null) insertPayload.cap_wallet = caps.capWallet;
@@ -265,7 +274,7 @@ export default function ShopCreator() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div><Label className="text-xs font-medium">City</Label><Input value={city} onChange={e => setCity(e.target.value)} placeholder="Dubai" className="mt-1.5 h-11" /></div>
-                <div><Label className="text-xs font-medium">Country</Label><Input value={country} onChange={e => setCountry(e.target.value)} placeholder="UAE" className="mt-1.5 h-11" /></div>
+                <div><Label className="text-xs font-medium">Country</Label><Input value={country} onChange={e => handleCountryChange(e.target.value)} placeholder="UAE" className="mt-1.5 h-11" /></div>
               </div>
 
               <div>
@@ -281,7 +290,7 @@ export default function ShopCreator() {
               <div className="grid grid-cols-3 gap-3">
                 <div>
                   <Label className="text-xs font-medium">Currency</Label>
-                  <Select value={currency} onValueChange={setCurrency}>
+                  <Select value={currency || "AED"} onValueChange={setCurrency}>
                     <SelectTrigger className="mt-1.5 h-11"><SelectValue /></SelectTrigger>
                     <SelectContent>
                       {CURRENCY_OPTIONS.map(c => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}
@@ -290,7 +299,7 @@ export default function ShopCreator() {
                 </div>
                 <div>
                   <Label className="text-xs font-medium">Language</Label>
-                  <Select value={defaultLanguage} onValueChange={setDefaultLanguage}>
+                  <Select value={defaultLanguage || "en"} onValueChange={setDefaultLanguage}>
                     <SelectTrigger className="mt-1.5 h-11"><SelectValue /></SelectTrigger>
                     <SelectContent>
                       {LANGUAGE_OPTIONS.map(l => <SelectItem key={l.value} value={l.value}>{l.label}</SelectItem>)}
