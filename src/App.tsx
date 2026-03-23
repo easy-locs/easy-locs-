@@ -793,6 +793,10 @@ const App = () => (
               <Route path="/shops" element={<RetailHub />} />
               <Route path="/real-estate" element={<PropertyHubUniverse />} />
               <Route path="/browse" element={<DiscoverPage />} />
+              <Route path="/healthcare" element={<HealthcareHub />} />
+              <Route path="/electronics" element={<ElectronicsHub />} />
+              <Route path="/gifts" element={<GiftsHub />} />
+              <Route path="/pets" element={<PetsHub />} />
 
               {/* Settings sub-pages */}
               <Route path="/settings" element={<SettingsHomePage />} />
