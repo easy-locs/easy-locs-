@@ -1,6 +1,7 @@
 /**
  * ShopCreator — Smart pro onboarding with photo/logo upload, AI category, futuristic UX.
  * Enforces duplicate detection + auto zone assignment on creation.
+ * World-ready: full taxonomy depth, capabilities, currency, language, timezone.
  */
 import { useState, useRef } from "react";
 import { validateShop } from "@/lib/validation/marketplace-validators";
@@ -10,29 +11,30 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useEnsureOrg } from "@/hooks/useEnsureOrg";
 import { checkStorefrontDuplicate } from "@/lib/geo/duplicateGuard";
 import { assignZoneToStorefront } from "@/lib/zones/autoAssignZone";
+import TaxonomySelector from "@/components/storefront/TaxonomySelector";
+import CapabilityToggles, { type CapabilityFlags } from "@/components/storefront/CapabilityToggles";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Store, Loader2, Sparkles, Camera, Upload, CheckCircle2, ArrowRight } from "lucide-react";
+import { Store, Loader2, Sparkles, Camera, CheckCircle2, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
 
-const CATEGORIES = [
-  { value: "food", label: "🍕 Restaurant / Food" },
-  { value: "cafe", label: "☕ Café / Coffee" },
-  { value: "beauty", label: "💇 Beauty / Salon" },
-  { value: "fashion", label: "👗 Fashion / Clothing" },
-  { value: "tech", label: "📱 Tech / Electronics" },
-  { value: "health", label: "🏥 Health / Pharmacy" },
-  { value: "home", label: "🏠 Home / Décor" },
-  { value: "sports", label: "⚽ Sports / Fitness" },
-  { value: "education", label: "📚 Education / Tutoring" },
-  { value: "automotive", label: "🚗 Automotive" },
-  { value: "grocery", label: "🛒 Grocery / Market" },
-  { value: "services", label: "🔧 Services / Freelance" },
-  { value: "other", label: "📦 Other" },
+const CURRENCY_OPTIONS = [
+  { value: "AED", label: "AED" }, { value: "USD", label: "USD" },
+  { value: "EUR", label: "EUR" }, { value: "GBP", label: "GBP" },
+  { value: "SAR", label: "SAR" }, { value: "MAD", label: "MAD" },
+  { value: "XOF", label: "XOF" }, { value: "EGP", label: "EGP" },
+  { value: "INR", label: "INR" }, { value: "TRY", label: "TRY" },
+];
+
+const LANGUAGE_OPTIONS = [
+  { value: "en", label: "English" }, { value: "fr", label: "Français" },
+  { value: "ar", label: "العربية" }, { value: "es", label: "Español" },
+  { value: "pt", label: "Português" }, { value: "tr", label: "Türkçe" },
+  { value: "hi", label: "हिन्दी" },
 ];
 
 export default function ShopCreator() {
@@ -46,15 +48,23 @@ export default function ShopCreator() {
   const [uploading, setUploading] = useState(false);
 
   const [name, setName] = useState("");
-  const [category, setCategory] = useState("");
   const [description, setDescription] = useState("");
+  // Taxonomy
+  const [vertical, setVertical] = useState("food");
+  const [cluster, setCluster] = useState("");
+  const [subcategory, setSubcategory] = useState("");
+  // Location
   const [city, setCity] = useState("");
   const [country, setCountry] = useState("");
   const [district, setDistrict] = useState("");
   const [phone, setPhone] = useState("");
-  const [logoUrl, setLogoUrl] = useState("");
+  // World-ready
   const [currency, setCurrency] = useState("AED");
   const [defaultLanguage, setDefaultLanguage] = useState("en");
+  const [timezone, setTimezone] = useState("");
+  // Capabilities
+  const [caps, setCaps] = useState<CapabilityFlags>({ capDelivery: true, capChat: true });
+  const [logoUrl, setLogoUrl] = useState("");
 
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -81,7 +91,6 @@ export default function ShopCreator() {
     if (!user) { toast.error("Please sign in first"); return; }
     setLoading(true);
     try {
-      // Duplicate guard
       const dupCheck = await checkStorefrontDuplicate(name.trim(), null, null, phone.trim() || null);
       if (dupCheck.blocked) {
         toast.error(`Duplicate detected: "${dupCheck.existingMatch?.name ?? "unknown"}". ${dupCheck.result?.reasons?.join(", ") ?? ""}`);
@@ -93,24 +102,39 @@ export default function ShopCreator() {
       const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 
       const insertPayload: Record<string, any> = {
-          org_id: orgId,
-          user_id: user.id,
-          slug,
-          name: name.trim(),
-          description: description.trim() || null,
-          logo_url: logoUrl.trim() || null,
-          city: city.trim() || "",
-          country: country.trim() || "",
-          contact_email: user.email || "",
-          contact_phone: phone.trim() || null,
-          vertical: category || "other",
-          shop_visibility: "private",
-          active: false,
-          onboarding_completed: false,
-          currency: currency || "AED",
-          default_language: defaultLanguage || "en",
-        };
+        org_id: orgId,
+        user_id: user.id,
+        slug,
+        name: name.trim(),
+        description: description.trim() || null,
+        logo_url: logoUrl.trim() || null,
+        city: city.trim() || "",
+        country: country.trim() || "",
+        contact_email: user.email || "",
+        contact_phone: phone.trim() || null,
+        vertical: vertical || "other",
+        shop_visibility: "private",
+        active: false,
+        onboarding_completed: false,
+        currency: currency || "AED",
+        default_language: defaultLanguage || "en",
+      };
+
+      // Taxonomy depth
+      if (cluster) insertPayload.cluster = cluster;
+      if (subcategory) insertPayload.subcategory = subcategory;
+
+      // Geography
       if (district.trim()) insertPayload.area = district.trim();
+      if (timezone.trim()) insertPayload.timezone = timezone.trim();
+
+      // Capability flags
+      if (caps.capWallet != null) insertPayload.cap_wallet = caps.capWallet;
+      if (caps.capQr != null) insertPayload.cap_qr = caps.capQr;
+      if (caps.capChat != null) insertPayload.cap_chat = caps.capChat;
+      if (caps.capCall != null) insertPayload.cap_call = caps.capCall;
+      if (caps.capBooking != null) insertPayload.cap_booking = caps.capBooking;
+      if (caps.capDelivery != null) insertPayload.cap_delivery = caps.capDelivery;
 
       const { data: created, error } = await (supabase as any)
         .from("storefront_pages")
@@ -124,7 +148,6 @@ export default function ShopCreator() {
         return;
       }
 
-      // Auto zone assignment if coordinates exist
       if (created?.latitude && created?.longitude) {
         await assignZoneToStorefront(created.id, created.latitude, created.longitude);
       }
@@ -138,11 +161,7 @@ export default function ShopCreator() {
     }
   };
 
-  const canProceed = step === 0
-    ? name.trim().length >= 2 && category
-    : step === 1
-    ? true
-    : true;
+  const canProceed = step === 0 ? name.trim().length >= 2 && vertical : true;
 
   return (
     <div className="max-w-lg mx-auto space-y-4">
@@ -164,7 +183,7 @@ export default function ShopCreator() {
 
       <Card className="border-border/40 shadow-lg">
         <CardContent className="p-5 space-y-5">
-          {/* Step 0: Name + Category */}
+          {/* Step 0: Name + Taxonomy */}
           {step === 0 && (
             <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
               <div className="text-center pb-2">
@@ -172,43 +191,26 @@ export default function ShopCreator() {
                   <Store className="w-7 h-7 text-primary" />
                 </div>
                 <h2 className="text-base font-bold text-foreground">Name your business</h2>
-                <p className="text-xs text-muted-foreground mt-1">Choose a name and category to get started</p>
+                <p className="text-xs text-muted-foreground mt-1">Choose a name and classify your business</p>
               </div>
 
               <div>
                 <Label className="text-xs font-medium">Business Name *</Label>
-                <Input
-                  value={name}
-                  onChange={e => setName(e.target.value)}
-                  placeholder="e.g. Pizza Roma, Studio Belle..."
-                  className="mt-1.5 h-11"
-                  autoFocus
-                />
+                <Input value={name} onChange={e => setName(e.target.value)} placeholder="e.g. Pizza Roma, Studio Belle..." className="mt-1.5 h-11" autoFocus />
               </div>
 
-              <div>
-                <Label className="text-xs font-medium">Category *</Label>
-                <Select value={category} onValueChange={setCategory}>
-                  <SelectTrigger className="mt-1.5 h-11">
-                    <SelectValue placeholder="Select your business type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {CATEGORIES.map(c => (
-                      <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+              <TaxonomySelector
+                vertical={vertical}
+                cluster={cluster}
+                subcategory={subcategory}
+                onVerticalChange={setVertical}
+                onClusterChange={setCluster}
+                onSubcategoryChange={setSubcategory}
+              />
 
               <div>
                 <Label className="text-xs font-medium">Short Description</Label>
-                <Textarea
-                  value={description}
-                  onChange={e => setDescription(e.target.value)}
-                  placeholder="What makes your business special?"
-                  className="mt-1.5"
-                  rows={2}
-                />
+                <Textarea value={description} onChange={e => setDescription(e.target.value)} placeholder="What makes your business special?" className="mt-1.5" rows={2} />
               </div>
             </div>
           )}
@@ -221,13 +223,7 @@ export default function ShopCreator() {
                 <p className="text-xs text-muted-foreground mt-1">Upload your business photo or logo</p>
               </div>
 
-              <input
-                ref={fileRef}
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={handleLogoUpload}
-              />
+              <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleLogoUpload} />
 
               <button
                 onClick={() => fileRef.current?.click()}
@@ -253,36 +249,23 @@ export default function ShopCreator() {
 
               {logoUrl && (
                 <div className="flex justify-center">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-xs"
-                    onClick={() => { setLogoUrl(""); }}
-                  >
-                    Change photo
-                  </Button>
+                  <Button variant="ghost" size="sm" className="text-xs" onClick={() => setLogoUrl("")}>Change photo</Button>
                 </div>
               )}
             </div>
           )}
 
-          {/* Step 2: Location + Contact */}
+          {/* Step 2: Location + Contact + World-ready + Capabilities */}
           {step === 2 && (
             <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
               <div className="text-center pb-2">
-                <h2 className="text-base font-bold text-foreground">Location & Contact</h2>
+                <h2 className="text-base font-bold text-foreground">Location & Settings</h2>
                 <p className="text-xs text-muted-foreground mt-1">Help customers find you</p>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <Label className="text-xs font-medium">City</Label>
-                  <Input value={city} onChange={e => setCity(e.target.value)} placeholder="Dubai" className="mt-1.5 h-11" />
-                </div>
-                <div>
-                  <Label className="text-xs font-medium">Country</Label>
-                  <Input value={country} onChange={e => setCountry(e.target.value)} placeholder="UAE" className="mt-1.5 h-11" />
-                </div>
+                <div><Label className="text-xs font-medium">City</Label><Input value={city} onChange={e => setCity(e.target.value)} placeholder="Dubai" className="mt-1.5 h-11" /></div>
+                <div><Label className="text-xs font-medium">Country</Label><Input value={country} onChange={e => setCountry(e.target.value)} placeholder="UAE" className="mt-1.5 h-11" /></div>
               </div>
 
               <div>
@@ -295,63 +278,48 @@ export default function ShopCreator() {
                 <Input value={phone} onChange={e => setPhone(e.target.value)} placeholder="+971 50 123 4567" className="mt-1.5 h-11" />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-3 gap-3">
                 <div>
                   <Label className="text-xs font-medium">Currency</Label>
-                  <select value={currency} onChange={e => setCurrency(e.target.value)} className="mt-1.5 h-11 w-full rounded-md border border-input bg-background px-3 text-sm">
-                    <option value="AED">AED</option>
-                    <option value="USD">USD</option>
-                    <option value="EUR">EUR</option>
-                    <option value="GBP">GBP</option>
-                    <option value="SAR">SAR</option>
-                    <option value="MAD">MAD</option>
-                    <option value="XOF">XOF</option>
-                    <option value="EGP">EGP</option>
-                  </select>
+                  <Select value={currency} onValueChange={setCurrency}>
+                    <SelectTrigger className="mt-1.5 h-11"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {CURRENCY_OPTIONS.map(c => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div>
                   <Label className="text-xs font-medium">Language</Label>
-                  <select value={defaultLanguage} onChange={e => setDefaultLanguage(e.target.value)} className="mt-1.5 h-11 w-full rounded-md border border-input bg-background px-3 text-sm">
-                    <option value="en">English</option>
-                    <option value="fr">Français</option>
-                    <option value="ar">العربية</option>
-                    <option value="es">Español</option>
-                  </select>
+                  <Select value={defaultLanguage} onValueChange={setDefaultLanguage}>
+                    <SelectTrigger className="mt-1.5 h-11"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {LANGUAGE_OPTIONS.map(l => <SelectItem key={l.value} value={l.value}>{l.label}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label className="text-xs font-medium">Timezone</Label>
+                  <Input value={timezone} onChange={e => setTimezone(e.target.value)} placeholder="Asia/Dubai" className="mt-1.5 h-11" />
                 </div>
               </div>
+
+              <CapabilityToggles flags={caps} onChange={(k, v) => setCaps(p => ({ ...p, [k]: v }))} />
             </div>
           )}
 
           {/* Navigation */}
           <div className="flex items-center gap-3 pt-2">
             {step > 0 && (
-              <Button
-                variant="outline"
-                className="flex-1 h-11"
-                onClick={() => setStep(s => s - 1)}
-              >
-                Back
-              </Button>
+              <Button variant="outline" className="flex-1 h-11" onClick={() => setStep(s => s - 1)}>Back</Button>
             )}
 
             {step < 2 ? (
-              <Button
-                className="flex-1 h-11 font-semibold gap-2"
-                onClick={() => setStep(s => s + 1)}
-                disabled={!canProceed}
-              >
+              <Button className="flex-1 h-11 font-semibold gap-2" onClick={() => setStep(s => s + 1)} disabled={!canProceed}>
                 Continue <ArrowRight className="w-4 h-4" />
               </Button>
             ) : (
-              <Button
-                className="flex-1 h-11 font-semibold gap-2"
-                onClick={handleCreate}
-                disabled={loading || orgCreating || !name.trim()}
-              >
-                {loading || orgCreating
-                  ? <Loader2 className="h-4 w-4 animate-spin" />
-                  : <Sparkles className="h-4 w-4" />
-                }
+              <Button className="flex-1 h-11 font-semibold gap-2" onClick={handleCreate} disabled={loading || orgCreating || !name.trim()}>
+                {loading || orgCreating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
                 Create Shop
               </Button>
             )}
