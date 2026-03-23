@@ -1,13 +1,15 @@
 /**
  * SmartShopBuilder — PASS102: AI-powered shop creation.
  * Auto-generates slug, categories, tags, SEO from name+description.
- * World-ready: includes district, timezone, currency, language defaults.
+ * World-ready: full taxonomy depth, capabilities, district, timezone, currency, language.
  */
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEnsureOrg } from "@/hooks/useEnsureOrg";
+import TaxonomySelector from "@/components/storefront/TaxonomySelector";
+import CapabilityToggles, { type CapabilityFlags } from "@/components/storefront/CapabilityToggles";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -21,6 +23,7 @@ import { toast } from "sonner";
 interface AISuggestion {
   vertical: string;
   category: string;
+  subcategory?: string;
   tags: string[];
   tagline: string;
   seo_description: string;
@@ -63,6 +66,12 @@ export default function SmartShopBuilder() {
   const [currency, setCurrency] = useState("AED");
   const [defaultLanguage, setDefaultLanguage] = useState("en");
   const [timezone, setTimezone] = useState("");
+  // Taxonomy depth
+  const [vertical, setVertical] = useState("food");
+  const [cluster, setCluster] = useState("");
+  const [subcategory, setSubcategory] = useState("");
+  // Capabilities
+  const [caps, setCaps] = useState<CapabilityFlags>({ capDelivery: true, capChat: true });
   const [suggestion, setSuggestion] = useState<AISuggestion | null>(null);
 
   const handleAISuggest = async () => {
@@ -78,7 +87,7 @@ export default function SmartShopBuilder() {
 Business: "${name}" — ${description || "no description"}
 City: ${city || "unknown"}, Country: ${country || "unknown"}
 
-Return: {"vertical":"food|shops|services|health|beauty|tech|fashion|home|sports|education|automotive|other","category":"specific category","tags":["tag1","tag2","tag3"],"tagline":"catchy tagline under 60 chars","seo_description":"SEO meta description under 155 chars"}`
+Return: {"vertical":"food|grocery|shops|services|property|healthcare|mobility|experiences","category":"cluster_value","subcategory":"specific_subcategory","tags":["tag1","tag2","tag3"],"tagline":"catchy tagline under 60 chars","seo_description":"SEO meta description under 155 chars"}`
           }],
         },
       });
@@ -87,6 +96,9 @@ Return: {"vertical":"food|shops|services|health|beauty|tech|fashion|home|sports|
       if (jsonMatch) {
         const parsed = JSON.parse(jsonMatch[0]);
         setSuggestion(parsed);
+        if (parsed.vertical) setVertical(parsed.vertical);
+        if (parsed.category) setCluster(parsed.category);
+        if (parsed.subcategory) setSubcategory(parsed.subcategory);
         if (!description && parsed.tagline) setDescription(parsed.tagline);
         toast.success("AI suggestions ready!");
       }
@@ -118,16 +130,28 @@ Return: {"vertical":"food|shops|services|health|beauty|tech|fashion|home|sports|
         country: country.trim() || "",
         contact_email: user.email || "",
         shop_visibility: "public",
-        vertical: suggestion?.vertical || "shops",
+        vertical: vertical || "shops",
         tags: suggestion?.tags || [],
         seo_description: suggestion?.seo_description || "",
         currency: currency || "AED",
         default_language: defaultLanguage || "en",
       };
 
-      // World-ready optional fields
+      // Taxonomy depth
+      if (cluster) insertPayload.cluster = cluster;
+      if (subcategory) insertPayload.subcategory = subcategory;
+
+      // Geography
       if (district.trim()) insertPayload.area = district.trim();
       if (timezone.trim()) insertPayload.timezone = timezone.trim();
+
+      // Capability flags
+      if (caps.capWallet != null) insertPayload.cap_wallet = caps.capWallet;
+      if (caps.capQr != null) insertPayload.cap_qr = caps.capQr;
+      if (caps.capChat != null) insertPayload.cap_chat = caps.capChat;
+      if (caps.capCall != null) insertPayload.cap_call = caps.capCall;
+      if (caps.capBooking != null) insertPayload.cap_booking = caps.capBooking;
+      if (caps.capDelivery != null) insertPayload.cap_delivery = caps.capDelivery;
 
       const { error } = await (supabase as any)
         .from("storefront_pages")
@@ -169,6 +193,17 @@ Return: {"vertical":"food|shops|services|health|beauty|tech|fashion|home|sports|
           <Textarea value={description} onChange={e => setDescription(e.target.value)} placeholder="Tell customers about your business..." className="mt-1" rows={3} />
         </div>
 
+        {/* Taxonomy depth */}
+        <TaxonomySelector
+          vertical={vertical}
+          cluster={cluster}
+          subcategory={subcategory}
+          onVerticalChange={setVertical}
+          onClusterChange={setCluster}
+          onSubcategoryChange={setSubcategory}
+          compact
+        />
+
         {/* Location */}
         <div className="grid grid-cols-2 gap-3">
           <div><Label className="text-xs">City</Label><Input value={city} onChange={e => setCity(e.target.value)} placeholder="Dubai" className="mt-1" /></div>
@@ -201,6 +236,9 @@ Return: {"vertical":"food|shops|services|health|beauty|tech|fashion|home|sports|
           </div>
         </div>
 
+        {/* Capabilities */}
+        <CapabilityToggles flags={caps} onChange={(k, v) => setCaps(p => ({ ...p, [k]: v }))} />
+
         {/* AI Suggest Button */}
         <Button variant="outline" className="w-full h-9 text-xs gap-2" onClick={handleAISuggest} disabled={aiLoading || !name.trim()}>
           {aiLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5 text-primary" />}
@@ -217,6 +255,7 @@ Return: {"vertical":"food|shops|services|health|beauty|tech|fashion|home|sports|
               <div className="flex flex-wrap gap-1.5">
                 <Badge variant="secondary" className="text-[10px]">{suggestion.vertical}</Badge>
                 <Badge variant="outline" className="text-[10px]">{suggestion.category}</Badge>
+                {suggestion.subcategory && <Badge variant="outline" className="text-[10px]">{suggestion.subcategory}</Badge>}
                 {suggestion.tags.map(t => (
                   <Badge key={t} variant="outline" className="text-[10px] gap-0.5">
                     <Tag className="h-2 w-2" /> {t}
