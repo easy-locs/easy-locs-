@@ -78,6 +78,8 @@ export default function QrScannerPage() {
   const [lastText, setLastText] = useState("");
   const [txId, setTxId] = useState("");
   const [resolvedPayload, setResolvedPayload] = useState<UniversalQrPayload | null>(null);
+  const [pendingPayment, setPendingPayment] = useState<PendingQrPayment | null>(null);
+  const [manualAmount, setManualAmount] = useState("");
   const [cameraDevices, setCameraDevices] = useState<Array<{ id: string; label: string }>>([]);
   const [selectedCameraId, setSelectedCameraId] = useState("");
   const [cameraRequested, setCameraRequested] = useState(false);
