@@ -7,7 +7,7 @@
 
 /**
  * Apply canonical governance filters to a storefront_pages query.
- * Replaces all launch_status-based filtering.
+ * Uses visibility_mode as sole authority for public surface filtering.
  */
 export function governStorefrontQuery(query: any, surface: "search" | "discover" | "home" | "map" | "autocomplete" | "favorites" = "search") {
   // Stage 1: Exclude hidden shops — visibility_mode is the SOLE authority

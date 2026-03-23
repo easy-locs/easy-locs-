@@ -244,7 +244,7 @@ export async function resolveAutocomplete(
     groups.push({ type: "categories", label: "Categories", items: taxonomyMatches.slice(0, 5) });
   }
 
-  // 2. Shop matches — governed (no launch_status)
+  // 2. Shop matches — governed
   let shopQuery = db
     .from("storefront_pages")
     .select("id, name, slug, subcategory, address, region, city, logo_url, rating, vertical")

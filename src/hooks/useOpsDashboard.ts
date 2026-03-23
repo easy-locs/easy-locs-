@@ -15,7 +15,7 @@ export interface ShopRow {
   id: string; name: string; slug: string; city: string; country: string;
   region: string; vertical: string; cluster: string; subcategory: string;
   source_type: string; source_confidence: number; audit_score: number;
-  readiness_status: string; activation_status: string; launch_status: string;
+  readiness_status: string; activation_status: string;
   visibility_mode: string; route_status: string; display_priority: number;
   blocking_reason: string;
   is_claimed: boolean; has_menu: boolean; has_photo: boolean;
