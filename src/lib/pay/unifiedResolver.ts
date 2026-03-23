@@ -14,6 +14,10 @@ export interface UnifiedPayTarget {
   wallet_id: string | null;
   wallet_status: "active" | "locked" | "missing" | string;
   currency: string;
+  timings?: {
+    recipientResolveMs: number;
+    walletResolveMs: number;
+  };
 }
 
 async function findProfile(input: {
@@ -57,17 +61,21 @@ export async function resolveUnifiedTarget(input: {
 }): Promise<UnifiedPayTarget | null> {
   const currency = input.currency || "AED";
 
-  // Case 1: resolve from walletId → find owner
   if (input.walletId && !input.userId) {
+    const walletStart = performance.now();
     const { data: wallet } = await supabase
       .from("wallet_accounts")
       .select("id, owner_user_id, currency, status")
       .eq("id", input.walletId)
       .maybeSingle();
+    const walletResolveMs = performance.now() - walletStart;
 
     if (!wallet?.owner_user_id) return null;
 
+    const recipientStart = performance.now();
     const profile = await findProfile({ userId: wallet.owner_user_id });
+    const recipientResolveMs = performance.now() - recipientStart;
+
     return {
       id: wallet.owner_user_id,
       display_name: profile?.full_name || profile?.username || null,
@@ -77,14 +85,50 @@ export async function resolveUnifiedTarget(input: {
       wallet_id: wallet.id,
       wallet_status: wallet.status ?? "missing",
       currency: wallet.currency ?? currency,
+      timings: { recipientResolveMs, walletResolveMs },
     };
   }
 
-  // Case 2: resolve from userId / orbitId / email
+  if (input.userId) {
+    const recipientStart = performance.now();
+    const walletStart = performance.now();
+
+    const [profile, wallet] = await Promise.all([
+      findProfile({ userId: input.userId }),
+      supabase
+        .from("wallet_accounts")
+        .select("id, status")
+        .eq("owner_user_id", input.userId)
+        .eq("status", "active")
+        .limit(1)
+        .maybeSingle()
+        .then(({ data }) => data),
+    ]);
+
+    const recipientResolveMs = performance.now() - recipientStart;
+    const walletResolveMs = performance.now() - walletStart;
+
+    if (!profile) return null;
+
+    return {
+      id: profile.id,
+      display_name: profile.full_name || profile.username || null,
+      email: profile.email || null,
+      avatar_url: profile.avatar_url || null,
+      orbit_id: input.orbitId || null,
+      wallet_id: wallet?.id ?? null,
+      wallet_status: wallet?.status ?? "missing",
+      currency,
+      timings: { recipientResolveMs, walletResolveMs },
+    };
+  }
+
+  const recipientStart = performance.now();
   const profile = await findProfile(input);
+  const recipientResolveMs = performance.now() - recipientStart;
   if (!profile) return null;
 
-  // Enrich with wallet
+  const walletStart = performance.now();
   const { data: wallet } = await supabase
     .from("wallet_accounts")
     .select("id, status")
@@ -92,6 +136,7 @@ export async function resolveUnifiedTarget(input: {
     .eq("status", "active")
     .limit(1)
     .maybeSingle();
+  const walletResolveMs = performance.now() - walletStart;
 
   return {
     id: profile.id,
@@ -102,6 +147,7 @@ export async function resolveUnifiedTarget(input: {
     wallet_id: wallet?.id ?? null,
     wallet_status: wallet?.status ?? "missing",
     currency,
+    timings: { recipientResolveMs, walletResolveMs },
   };
 }
 

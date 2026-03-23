@@ -73,6 +73,12 @@ export function UnifiedPaymentProvider({ children }: { children: ReactNode }) {
   }, [loading, resolver]);
 
   const openPayment = useCallback((req: PaymentRequest) => {
+    if (!req.recipientId) {
+      return Promise.resolve({ ok: false, error: "No recipient specified." });
+    }
+    if (!Number.isFinite(req.amount) || req.amount <= 0) {
+      return Promise.resolve({ ok: false, error: "Invalid payment amount." });
+    }
     setRequest(req);
     setSuccess(null);
     setError("");
@@ -177,7 +183,7 @@ export function UnifiedPaymentProvider({ children }: { children: ReactNode }) {
                           {request.recipientName || "Payment"}
                         </div>
                         <div className="text-xs text-muted-foreground">
-                          {request.contextType || "generic"}
+                          {request.contextType === "shop" ? "Merchant payment" : "QR payment"}
                         </div>
                       </div>
                     </div>
