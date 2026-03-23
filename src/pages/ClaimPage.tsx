@@ -43,7 +43,9 @@ export default function ClaimPage() {
 
     setClaiming(true);
     try {
-      const result = await executeClaim(token, user.id, user.id);
+      const resolved = await resolveClaimToken(token);
+      const shopId = (resolved as any).shopId || token;
+      const result = await executeClaim({ shopId, userId: user.id, orgId: user.id });
       if (result.success) {
         setClaimed(true);
         toast.success("Business claimed successfully!");
