@@ -6,6 +6,7 @@
  * Flow: Browse catalog → Cart → Total → QR Payment → Wallet settlement → Auto delivery
  */
 import { useState, useCallback, useMemo } from "react";
+import { encodeQr, qr } from "@/lib/qr-engine";
 import { useAuth } from "@/contexts/AuthContext";
 import { useWalletBalance } from "@/payments/wallet-hooks";
 import { walletTransfer } from "@/payments/wallet-hooks";
