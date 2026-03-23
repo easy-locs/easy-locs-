@@ -64,7 +64,7 @@ export default function AdminBulkSeedPage() {
             longitude: seed.lng,
             logo_url: seed.logo_url,
             banner_url: seed.cover_url,
-            launch_status: "waiting_launch",
+            visibility_mode: "coming_soon",
             ranking_score: 50 + Math.floor(Math.random() * 45),
             rating: Number((3.5 + Math.random() * 1.5).toFixed(1)),
             reviews_count: Math.floor(Math.random() * 300),
