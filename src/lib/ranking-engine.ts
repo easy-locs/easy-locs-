@@ -204,10 +204,15 @@ export function computeSignals(entity: RankableEntity, ctx: RankContext = {}): R
   const hierarchy = rawHierarchy / 3; // normalize 0-3 → 0-1
 
   // Proximity: 0–1 (closer = higher, decays over ~15km)
+  // District match provides a bonus for same-neighborhood relevance
   let proximity = 0;
   if (entity.lat != null && entity.lng != null && ctx.userLat != null && ctx.userLng != null) {
     const distKm = haversineKm(ctx.userLat, ctx.userLng, entity.lat, entity.lng);
     proximity = Math.max(0, 1 - distKm / 15);
+  }
+  // Same-district bonus: +0.15 when entity is in the user's district
+  if (ctx.userDistrictCode && entity.districtCode && ctx.userDistrictCode === entity.districtCode) {
+    proximity = Math.min(1, proximity + 0.15);
   }
 
   // Rating: 0–1
