@@ -197,9 +197,10 @@ function computeDedupScore(a: DedupCandidate, b: DedupCandidate): DedupMatch {
     finalConfidence = Math.min(finalConfidence, 65);
   }
 
-  // LOW NAME SIMILARITY → cap at 65 (dark kitchen protection)
-  // Same phone + same GPS but different concept = NOT a duplicate
-  if (nameSim < 0.5) {
+  // LOW NAME SIMILARITY → cap at 65 (dark kitchen / multi-concept protection)
+  // Same phone + same GPS but different concept name = NOT a duplicate
+  // Threshold at 0.75 catches "Cloud Kitchen Burgers" vs "Cloud Kitchen Sushi" (71%)
+  if (nameSim < 0.75) {
     finalConfidence = Math.min(finalConfidence, 65);
   }
 
