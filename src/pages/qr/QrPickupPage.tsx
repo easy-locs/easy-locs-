@@ -100,7 +100,7 @@ export default function QrPickupPage() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-foreground">
-                        {order.total_amount} {order.currency || "AED"}
+                        {order.total} {order.currency || "AED"}
                       </p>
                       <p className="text-[10px] text-muted-foreground">
                         {order.status === "ready" ? "Ready for pickup!" : "Being prepared…"}
