@@ -12,6 +12,8 @@ import type { RadarPoint } from "@/lib/radar/types";
 import { Search, MapPin, Navigation, Loader2 } from "lucide-react";
 import "@/styles/radar-pro.css";
 
+const UnifiedMap = lazy(() => import("@/components/map/UnifiedMap"));
+
 const BASE_SELECT =
   "id, name, slug, vertical, category, subcategory, address, logo_url, banner_url, latitude, longitude, rating, reviews_count, ranking_score";
 
