@@ -140,7 +140,22 @@ export default function QrScannerPage() {
 
     const payload = decodeQr(raw);
     const decodeMs = performance.now() - t0;
-    console.log(`[QR] decode: ${decodeMs.toFixed(0)}ms`, payload);
+
+    // ── STEP 1: Full diagnostic log ──
+    console.log("[QR] ═══ FULL PAYLOAD DIAGNOSTIC ═══");
+    console.log("[QR] raw string:", raw);
+    console.log("[QR] decoded payload:", JSON.stringify(payload, null, 2));
+    if (payload) {
+      console.log("[QR] action:", payload.action);
+      console.log("[QR] userId:", (payload as any).userId);
+      console.log("[QR] walletId:", (payload as any).walletId);
+      console.log("[QR] email:", (payload as any).email);
+      console.log("[QR] orbitId:", (payload as any).orbitId);
+      console.log("[QR] shopSlug:", (payload as any).shopSlug);
+      console.log("[QR] amount:", (payload as any).amount);
+      console.log("[QR] currency:", (payload as any).currency);
+    }
+    console.log(`[QR] decode time: ${decodeMs.toFixed(0)}ms`);
 
     if (!payload) {
       platformBus.emit("qr.scan.failed", { raw, reason: "unsupported_format" }, "system");
