@@ -1682,15 +1682,16 @@ html {
   display: none !important;
 }
 
-/* ══════ Mapbox Rich Pin Popups ══════ */
+/* ══════ Mapbox Rich Pin Popups — Premium ══════ */
 .radar-pin-popup .mapboxgl-popup-content {
   background: hsl(var(--card));
   color: hsl(var(--foreground));
   border: 1px solid hsl(var(--border) / 0.3);
-  border-radius: 12px;
-  padding: 8px 10px;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+  border-radius: 14px;
+  padding: 0;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.4);
   font-family: 'Plus Jakarta Sans', sans-serif;
+  overflow: hidden;
 }
 
 .radar-pin-popup .mapboxgl-popup-tip {
@@ -1699,6 +1700,125 @@ html {
 
 .radar-pin-popup .mapboxgl-popup-close-button {
   color: hsl(var(--muted-foreground));
-  font-size: 14px;
-  padding: 2px 6px;
+  font-size: 16px;
+  padding: 4px 8px;
+  z-index: 2;
+}
+
+.radar-popup-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  max-width: 240px;
+}
+
+.radar-popup-img {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.radar-popup-img-placeholder {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  background: hsl(var(--muted));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.radar-popup-content {
+  min-width: 0;
+  flex: 1;
+}
+
+.radar-popup-title {
+  font-weight: 700;
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.3;
+}
+
+.radar-popup-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  opacity: 0.75;
+  margin-top: 2px;
+}
+
+.radar-popup-rating {
+  color: hsl(45 90% 55%);
+  font-weight: 600;
+}
+
+.radar-popup-dist {
+  color: hsl(var(--muted-foreground));
+}
+
+.radar-popup-badges {
+  display: flex;
+  gap: 4px;
+  margin-top: 4px;
+  flex-wrap: wrap;
+}
+
+.radar-popup-badge {
+  font-size: 9px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 6px;
+  white-space: nowrap;
+}
+
+.radar-popup-badge.promoted {
+  background: hsla(45, 90%, 55%, 0.15);
+  color: hsl(45 90% 55%);
+}
+
+.radar-popup-badge.trending {
+  background: hsla(15, 80%, 55%, 0.15);
+  color: hsl(15 80% 60%);
+}
+
+/* ══════ User location marker ══════ */
+.radar-user-marker {
+  position: relative;
+  width: 20px;
+  height: 20px;
+}
+
+.radar-user-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: hsl(220 70% 55%);
+  border: 3px solid white;
+  box-shadow: 0 0 12px hsla(220, 70%, 55%, 0.5);
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  z-index: 2;
+}
+
+.radar-user-pulse {
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  background: hsla(220, 70%, 55%, 0.2);
+  animation: radar-pulse 2s ease-out infinite;
+}
+
+@keyframes radar-pulse {
+  0% { transform: scale(0.8); opacity: 0.6; }
+  100% { transform: scale(2.2); opacity: 0; }
 }
