@@ -784,20 +784,25 @@ const App = () => (
               <Route path="/explore" element={<Navigate to="/radar" replace />} />
               <Route path="/search" element={<Navigate to="/radar" replace />} />
 
-              {/* Universe hubs */}
-              <Route path="/food" element={<FoodHub />} />
+              {/* Universe hubs — unified browse route */}
+              <Route path="/browse/:vertical" element={<BrowseVerticalPage />} />
+              <Route path="/browse" element={<DiscoverPage />} />
+
+              {/* Legacy hub redirects → unified /browse/:vertical */}
+              <Route path="/food" element={<Navigate to="/browse/food" replace />} />
+              <Route path="/grocery" element={<Navigate to="/browse/grocery" replace />} />
+              <Route path="/services-hub" element={<Navigate to="/browse/services" replace />} />
+              <Route path="/shops" element={<Navigate to="/browse/retail" replace />} />
+              <Route path="/real-estate" element={<Navigate to="/browse/real_estate" replace />} />
+              <Route path="/healthcare" element={<Navigate to="/browse/healthcare" replace />} />
+              <Route path="/electronics" element={<Navigate to="/browse/electronics" replace />} />
+              <Route path="/gifts" element={<Navigate to="/browse/gifts" replace />} />
+              <Route path="/pets" element={<Navigate to="/browse/pets" replace />} />
+
+              {/* Food sub-pages */}
               <Route path="/food/restaurant/:restaurantId" element={<FoodRestaurantPage />} />
               <Route path="/food/:type" element={<FoodTypePage />} />
               <Route path="/food/:type/:cuisine" element={<CuisineListPage />} />
-              <Route path="/grocery" element={<GroceryHub />} />
-              <Route path="/services-hub" element={<ServicesHub />} />
-              <Route path="/shops" element={<RetailHub />} />
-              <Route path="/real-estate" element={<PropertyHubUniverse />} />
-              <Route path="/browse" element={<DiscoverPage />} />
-              <Route path="/healthcare" element={<HealthcareHub />} />
-              <Route path="/electronics" element={<ElectronicsHub />} />
-              <Route path="/gifts" element={<GiftsHub />} />
-              <Route path="/pets" element={<PetsHub />} />
 
               {/* Settings sub-pages */}
               <Route path="/settings" element={<SettingsHomePage />} />
