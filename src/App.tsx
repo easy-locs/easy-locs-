@@ -386,6 +386,7 @@ const AdminAnalyticsOpsPage = safeLazy(() => import("./pages/admin/AdminAnalytic
 const CustomerProfilePage = safeLazy(() => import("./pages/CustomerProfilePage"), "CustomerProfilePage");
 const NotificationPreferencesPage = safeLazy(() => import("./pages/settings/NotificationPreferencesPage"), "NotificationPreferencesPage");
 const AdminQualityOpsPage = safeLazy(() => import("./pages/admin/AdminQualityOpsPage"), "AdminQualityOpsPage");
+const AdminUaeOpsDashboard = safeLazy(() => import("./pages/admin/AdminUaeOpsDashboard"), "AdminUaeOpsDashboard");
 const MerchantReviewRepliesPage = safeLazy(() => import("./pages/merchant/MerchantReviewRepliesPage"), "MerchantReviewRepliesPage");
 const AdminCrmOpsPage = safeLazy(() => import("./pages/admin/AdminCrmOpsPage"), "AdminCrmOpsPage");
 const AdminHomeEnginePage = safeLazy(() => import("./pages/admin/AdminHomeEnginePage"), "AdminHomeEnginePage");
@@ -1045,6 +1046,7 @@ const App = () => (
               <Route path="/admin/audit-debug" element={<ProtectedRoute><AuditDebugPanelPage /></ProtectedRoute>} />
               <Route path="/admin/ops-wallboard" element={<ProtectedRoute><OpsWallboardPage /></ProtectedRoute>} />
               <Route path="/admin/outreach" element={<ProtectedRoute><AdminOutreachPage /></ProtectedRoute>} />
+              <Route path="/admin/uae-ops" element={<ProtectedRoute><AdminUaeOpsDashboard /></ProtectedRoute>} />
 
               {/* Merchant claim & dashboard */}
               <Route path="/merchant/claim" element={<MerchantClaimPage />} />
