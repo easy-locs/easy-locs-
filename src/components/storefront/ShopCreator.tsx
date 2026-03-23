@@ -130,9 +130,11 @@ export default function ShopCreator() {
         default_language: finalDefaults.defaultLanguage,
       };
 
-      // Taxonomy depth
-      if (cluster) insertPayload.cluster = cluster;
-      if (subcategory) insertPayload.subcategory = normalizeSubcategory(subcategory) || subcategory;
+      // Taxonomy depth — enforced canonical
+      const tax = canonicalTaxonomyPayload(vertical, cluster, subcategory);
+      insertPayload.vertical = tax.vertical;
+      if (tax.cluster) insertPayload.cluster = tax.cluster;
+      if (tax.subcategory) insertPayload.subcategory = tax.subcategory;
 
       // Geography
       if (district.trim()) insertPayload.area = district.trim();
