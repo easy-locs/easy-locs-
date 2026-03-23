@@ -202,8 +202,8 @@ export const VERTICALS: VerticalDef[] = [
     seoDescription: "Shop pet food, accessories, grooming and vet services for your furry friends.",
     subcategories: [
       { value: "pet_food", label: "Pet Food", icon: "🦴" },
-      { value: "grooming", label: "Grooming", icon: "✂️" },
-      { value: "accessories", label: "Accessories", icon: "🎾" },
+      { value: "pet_grooming", label: "Grooming", icon: "✂️" },
+      { value: "pet_accessories", label: "Accessories", icon: "🎾" },
       { value: "vet", label: "Vet Services", icon: "🩺" },
     ],
   },
