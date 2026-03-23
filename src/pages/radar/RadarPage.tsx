@@ -52,14 +52,9 @@ export default function RadarPage() {
   const timeCtx = useMemo(() => getTimeContext(), []);
 
   // Get subcategories for selected category
+  // Get subcategories from canonical taxonomy
   const subcategories = useMemo(() => {
-    if (category === "all") return [];
-    const verticalMap: Record<string, string> = {
-      food: "food", grocery: "grocery", shops: "retail",
-      services: "services", property: "real_estate",
-    };
-    const vDef = VERTICALS.find((v) => v.value === verticalMap[category]);
-    return vDef?.subcategories ?? [];
+    return getSubcategoriesForRadarCategory(category as RadarMainCategory);
   }, [category]);
 
   // Force geo on mount
