@@ -5,6 +5,7 @@
  */
 import { supabase } from "@/integrations/supabase/client";
 import { canonicalTaxonomyPayload } from "@/lib/taxonomy/taxonomy-guard";
+import { resolveVerticalFromSubcategory } from "@/lib/taxonomy/subcategory-vertical-map";
 
 function generateSlug(name: string, city: string): string {
   const base = `${name}-${city}`
@@ -80,7 +81,7 @@ export async function autoCreateStorefront(params: AutoStorefrontParams): Promis
     visibility_mode: "coming_soon",
     user_id: params.userId,
     org_id: params.orgId,
-    vertical: canonicalTaxonomyPayload(params.vertical ?? params.category ?? "food", undefined, params.subcategory).vertical,
+    vertical: params.vertical ?? resolveVerticalFromSubcategory(params.subcategory) ?? canonicalTaxonomyPayload(params.category ?? "food", undefined, params.subcategory).vertical,
     metadata_json: { auto_generated: true, source: "auto_storefront_builder" },
     source_type: "import_ai",
     source_confidence: 60,
