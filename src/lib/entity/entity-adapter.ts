@@ -119,6 +119,7 @@ function rowToEntity(row: any): PlatformEntity {
     orgId: row.org_id,
     storefrontPageId: row.storefront_page_id,
     seedMerchantId: row.seed_merchant_id,
+    parentEntityId: row.parent_entity_id ?? null,
     status: row.status ?? "active",
     verified: row.verified ?? false,
     createdAt: row.created_at,
