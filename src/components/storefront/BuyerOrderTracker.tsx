@@ -263,7 +263,7 @@ export default function BuyerOrderTracker({ orderId, buyerEmail }: BuyerOrderTra
                   </Link>
                 )}
                 {shop?.slug && order.status !== "completed" && order.status !== "cancelled" && (
-                  <Link to={`/shop/${shop.slug}`}>
+                  <Link to={`/s/${shop.slug}`}>
                     <Button size="sm" variant="outline" className="h-7 text-[10px] gap-1">
                       <MessageCircle className="h-3 w-3" /> Contact Seller
                     </Button>
