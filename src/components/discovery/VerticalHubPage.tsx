@@ -169,7 +169,7 @@ export default function VerticalHubPage({ vertical }: { vertical: VerticalDef })
             {filtered.map((item, i) => (
               <MerchantCard
                 key={item.id}
-                to={`/shop/${item.slug}`}
+                to={item.slug ? `/s/${item.slug}` : `/s/${item.id}`}
                 image={item.banner_url || item.logo_url}
                 name={item.name}
                 category={[
