@@ -1,7 +1,6 @@
 /**
- * Catalog / Menu Audit Engine
- * Detects incomplete menus, missing prices, bad products.
- * Provides auto-fix templates and quality scoring.
+ * Catalog / Menu Audit Engine — Universal per-vertical offer audit.
+ * Covers all 8 verticals with specific rules.
  */
 
 export type MenuAuditSeverity = "blocker" | "warning" | "info";
@@ -31,18 +30,47 @@ export interface MenuAuditResult {
   };
 }
 
+// Per-vertical catalog requirements
+interface VerticalCatalogRule {
+  minItems: number;
+  requiresPrice: boolean;
+  requiresImages: boolean;
+  requiresDescription: boolean;
+  catalogLabel: string;
+  emptyMessage: string;
+}
+
+const VERTICAL_CATALOG_RULES: Record<string, VerticalCatalogRule> = {
+  food:        { minItems: 3, requiresPrice: true,  requiresImages: false, requiresDescription: false, catalogLabel: "Menu",       emptyMessage: "Food shop needs at least 3 menu items" },
+  grocery:     { minItems: 5, requiresPrice: true,  requiresImages: false, requiresDescription: false, catalogLabel: "Products",   emptyMessage: "Grocery needs at least 5 products" },
+  shops:       { minItems: 1, requiresPrice: true,  requiresImages: true,  requiresDescription: false, catalogLabel: "Products",   emptyMessage: "Shop needs at least 1 product" },
+  services:    { minItems: 1, requiresPrice: true,  requiresImages: false, requiresDescription: true,  catalogLabel: "Services",   emptyMessage: "Add at least 1 service offering" },
+  property:    { minItems: 1, requiresPrice: true,  requiresImages: true,  requiresDescription: true,  catalogLabel: "Listings",   emptyMessage: "Add at least 1 property listing" },
+  healthcare:  { minItems: 1, requiresPrice: false, requiresImages: false, requiresDescription: true,  catalogLabel: "Services",   emptyMessage: "Add at least 1 healthcare service" },
+  mobility:    { minItems: 0, requiresPrice: false, requiresImages: false, requiresDescription: false, catalogLabel: "Options",    emptyMessage: "No catalog required" },
+  experiences: { minItems: 1, requiresPrice: true,  requiresImages: true,  requiresDescription: true,  catalogLabel: "Experiences", emptyMessage: "Add at least 1 experience" },
+};
+
+function getRule(vertical?: string): VerticalCatalogRule {
+  return VERTICAL_CATALOG_RULES[vertical || "services"] ?? VERTICAL_CATALOG_RULES.services;
+}
+
 export function auditMenu(products: any[], vertical?: string): MenuAuditResult {
   const issues: MenuAuditIssue[] = [];
   const blockers: string[] = [];
+  const rule = getRule(vertical);
 
   if (!products.length) {
-    blockers.push("No products in catalog");
+    if (rule.minItems > 0) {
+      blockers.push(rule.emptyMessage);
+      issues.push({ severity: "blocker", field: "products", message: rule.emptyMessage });
+    }
     return {
-      qualityScore: 0,
+      qualityScore: rule.minItems === 0 ? 100 : 0,
       totalProducts: 0,
-      issues: [{ severity: "blocker", field: "products", message: "Empty catalog" }],
+      issues,
       blockers,
-      isPublishable: false,
+      isPublishable: rule.minItems === 0,
       breakdown: { hasProducts: false, avgPrice: 0, withImages: 0, withDescriptions: 0, withCategories: 0, emptyPrices: 0, duplicateNames: 0 },
     };
   }
@@ -58,69 +86,62 @@ export function auditMenu(products: any[], vertical?: string): MenuAuditResult {
   for (const p of products) {
     const name = (p.name || "").trim().toLowerCase();
 
-    // Duplicate name
     if (nameSet.has(name)) {
       duplicateNames++;
-      issues.push({ severity: "warning", field: "name", message: `Duplicate product name: "${p.name}"`, productId: p.id, productName: p.name });
+      issues.push({ severity: "warning", field: "name", message: `Duplicate: "${p.name}"`, productId: p.id, productName: p.name });
     }
     nameSet.add(name);
 
-    // Missing name
     if (!p.name?.trim()) {
       issues.push({ severity: "blocker", field: "name", message: "Product without name", productId: p.id });
     }
 
-    // Price
-    if (p.price == null || p.price <= 0) {
+    if (rule.requiresPrice && (p.price == null || p.price <= 0)) {
       emptyPrices++;
-      issues.push({ severity: "blocker", field: "price", message: `Missing or invalid price`, productId: p.id, productName: p.name });
-    } else {
+      issues.push({ severity: "blocker", field: "price", message: "Missing price", productId: p.id, productName: p.name });
+    } else if (p.price != null && p.price > 0) {
       totalPrice += p.price;
-      // Suspiciously low/high
       if (p.price < 1) issues.push({ severity: "warning", field: "price", message: `Very low price: ${p.price}`, productId: p.id, productName: p.name });
-      if (p.price > 5000) issues.push({ severity: "warning", field: "price", message: `Very high price: ${p.price}`, productId: p.id, productName: p.name });
+      if (p.price > 10000) issues.push({ severity: "warning", field: "price", message: `Very high price: ${p.price}`, productId: p.id, productName: p.name });
     }
 
-    // Image
     if (p.image_url || p.image) withImages++;
-
-    // Description
     if (p.description?.trim()) withDescriptions++;
-
-    // Category
     if (p.category?.trim()) withCategories++;
   }
 
-  // Scoring (0–100)
   const n = products.length;
   let score = 0;
 
-  // Has enough products (30 pts)
-  const minRequired = vertical === "food" ? 3 : vertical === "grocery" ? 5 : 1;
-  if (n >= minRequired * 2) score += 30;
-  else if (n >= minRequired) score += 20;
-  else { score += 5; blockers.push(`Too few products: ${n} (min ${minRequired})`); }
+  // Quantity (30 pts)
+  if (n >= rule.minItems * 2) score += 30;
+  else if (n >= rule.minItems) score += 20;
+  else { score += 5; blockers.push(`Too few ${rule.catalogLabel.toLowerCase()}: ${n} (min ${rule.minItems})`); }
 
   // Images (20 pts)
   const imgRatio = n > 0 ? withImages / n : 0;
   score += Math.round(imgRatio * 20);
-  if (imgRatio < 0.3) issues.push({ severity: "warning", field: "images", message: `Only ${Math.round(imgRatio * 100)}% of products have images` });
+  if (rule.requiresImages && imgRatio < 0.5) {
+    issues.push({ severity: "warning", field: "images", message: `Only ${Math.round(imgRatio * 100)}% have images` });
+  }
 
   // Descriptions (15 pts)
   const descRatio = n > 0 ? withDescriptions / n : 0;
   score += Math.round(descRatio * 15);
+  if (rule.requiresDescription && descRatio < 0.5) {
+    issues.push({ severity: "warning", field: "descriptions", message: `Only ${Math.round(descRatio * 100)}% have descriptions` });
+  }
 
   // Categories (15 pts)
   const catRatio = n > 0 ? withCategories / n : 0;
   score += Math.round(catRatio * 15);
 
-  // No empty prices (10 pts)
-  if (emptyPrices === 0) score += 10;
-  else blockers.push(`${emptyPrices} products without valid price`);
+  // Pricing (10 pts)
+  if (!rule.requiresPrice || emptyPrices === 0) score += 10;
+  else blockers.push(`${emptyPrices} items without price`);
 
   // No duplicates (10 pts)
   if (duplicateNames === 0) score += 10;
-  else issues.push({ severity: "warning", field: "duplicates", message: `${duplicateNames} duplicate product names` });
 
   const isPublishable = blockers.length === 0 && score >= 40;
 
@@ -132,7 +153,7 @@ export function auditMenu(products: any[], vertical?: string): MenuAuditResult {
     isPublishable,
     breakdown: {
       hasProducts: n > 0,
-      avgPrice: n > 0 ? Math.round(totalPrice / (n - emptyPrices) || 0) : 0,
+      avgPrice: n > 0 && (n - emptyPrices) > 0 ? Math.round(totalPrice / (n - emptyPrices)) : 0,
       withImages,
       withDescriptions,
       withCategories,
@@ -150,44 +171,62 @@ export interface AutoFixProduct {
   category: string;
 }
 
-const FOOD_TEMPLATES: AutoFixProduct[] = [
-  { name: "Margherita Pizza", description: "Classic tomato, mozzarella and basil", price: 35, category: "Pizza" },
-  { name: "Caesar Salad", description: "Romaine lettuce, croutons, parmesan", price: 28, category: "Salads" },
-  { name: "Grilled Chicken", description: "Marinated grilled chicken breast", price: 42, category: "Mains" },
-  { name: "French Fries", description: "Crispy golden fries", price: 15, category: "Sides" },
-  { name: "Soft Drink", description: "330ml can", price: 8, category: "Beverages" },
-  { name: "Water", description: "500ml bottle", price: 5, category: "Beverages" },
-];
-
-const GROCERY_TEMPLATES: AutoFixProduct[] = [
-  { name: "Fresh Milk 1L", description: "Full cream milk", price: 8, category: "Dairy" },
-  { name: "White Bread", description: "Sliced bread loaf", price: 5, category: "Bakery" },
-  { name: "Eggs (12 pack)", description: "Free-range eggs", price: 15, category: "Essentials" },
-  { name: "Bananas 1kg", description: "Fresh bananas", price: 7, category: "Fruits" },
-  { name: "Rice 2kg", description: "Basmati rice", price: 18, category: "Grains" },
-  { name: "Mineral Water 1.5L", description: "Still water", price: 3, category: "Beverages" },
-];
-
-const GENERIC_TEMPLATES: AutoFixProduct[] = [
-  { name: "Basic Service", description: "Standard offering", price: 50, category: "General" },
-  { name: "Premium Service", description: "Enhanced offering", price: 100, category: "General" },
-];
-
 export function getAutoFixProducts(vertical?: string): AutoFixProduct[] {
   switch (vertical) {
-    case "food": return FOOD_TEMPLATES;
-    case "grocery": return GROCERY_TEMPLATES;
-    default: return GENERIC_TEMPLATES;
+    case "food": return [
+      { name: "Margherita Pizza", description: "Classic tomato, mozzarella and basil", price: 35, category: "Pizza" },
+      { name: "Caesar Salad", description: "Romaine lettuce, croutons, parmesan", price: 28, category: "Salads" },
+      { name: "Grilled Chicken", description: "Marinated grilled chicken breast", price: 42, category: "Mains" },
+      { name: "French Fries", description: "Crispy golden fries", price: 15, category: "Sides" },
+      { name: "Soft Drink", description: "330ml can", price: 8, category: "Beverages" },
+      { name: "Water", description: "500ml bottle", price: 5, category: "Beverages" },
+    ];
+    case "grocery": return [
+      { name: "Fresh Milk 1L", description: "Full cream milk", price: 8, category: "Dairy" },
+      { name: "White Bread", description: "Sliced bread loaf", price: 5, category: "Bakery" },
+      { name: "Eggs (12 pack)", description: "Free-range eggs", price: 15, category: "Essentials" },
+      { name: "Bananas 1kg", description: "Fresh bananas", price: 7, category: "Fruits" },
+      { name: "Rice 2kg", description: "Basmati rice", price: 18, category: "Grains" },
+      { name: "Mineral Water 1.5L", description: "Still water", price: 3, category: "Beverages" },
+    ];
+    case "shops": return [
+      { name: "Featured Product", description: "Our best seller", price: 99, category: "Best Sellers" },
+      { name: "New Arrival", description: "Latest addition", price: 149, category: "New Arrivals" },
+    ];
+    case "services": return [
+      { name: "Standard Service", description: "Our core service offering", price: 150, category: "Services" },
+      { name: "Premium Service", description: "Enhanced service with priority", price: 300, category: "Premium" },
+      { name: "Consultation", description: "Initial consultation session", price: 100, category: "Consultation" },
+    ];
+    case "property": return [
+      { name: "Studio Apartment", description: "Furnished studio, city view", price: 3500, category: "Apartments" },
+      { name: "1BR Apartment", description: "One bedroom, modern finish", price: 5500, category: "Apartments" },
+    ];
+    case "healthcare": return [
+      { name: "General Consultation", description: "30-minute doctor consultation", price: 200, category: "Consultations" },
+      { name: "Follow-up Visit", description: "15-minute follow-up", price: 100, category: "Consultations" },
+    ];
+    case "experiences": return [
+      { name: "City Tour", description: "Guided 3-hour city tour", price: 250, category: "Tours" },
+      { name: "Workshop", description: "Interactive 2-hour workshop", price: 180, category: "Activities" },
+    ];
+    default: return [
+      { name: "Basic Service", description: "Standard offering", price: 50, category: "General" },
+      { name: "Premium Service", description: "Enhanced offering", price: 100, category: "General" },
+    ];
   }
 }
 
-// ── Standard categories per vertical ──
 export function getStandardCategories(vertical?: string): string[] {
   switch (vertical) {
     case "food": return ["Appetizers", "Mains", "Pizza", "Burgers", "Salads", "Sides", "Desserts", "Beverages"];
     case "grocery": return ["Fruits", "Vegetables", "Dairy", "Bakery", "Meat", "Beverages", "Snacks", "Essentials"];
     case "shops": return ["New Arrivals", "Best Sellers", "Sale", "Accessories"];
-    case "services": return ["Basic", "Premium", "Packages"];
+    case "services": return ["Services", "Premium", "Packages", "Consultation"];
+    case "property": return ["Apartments", "Villas", "Offices", "Rooms"];
+    case "healthcare": return ["Consultations", "Procedures", "Tests", "Packages"];
+    case "mobility": return ["Rides", "Rentals", "Packages"];
+    case "experiences": return ["Tours", "Activities", "Workshops", "Events"];
     default: return ["General", "Featured"];
   }
 }
