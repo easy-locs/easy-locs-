@@ -81,7 +81,7 @@ function resolveRoute(t: ResolvedQrTarget): string {
       // Table-specific ordering — same menu but with table context
       qs.set("table", t.tableNumber || "1");
       qs.set("qr", t.targetCode);
-      return `/order/${encodeURIComponent(slug)}?${qs}`;
+      return `/menu/${encodeURIComponent(slug)}?${qs}`;
 
     case "pay":
       // Open payment screen
