@@ -2,8 +2,8 @@
  * VerticalHubPage — Reusable hub page for any vertical.
  * Booking/Deliveroo/Talabat-style: hero, subcategory chips, filters, listings grouped by subcategory.
  */
-import { useState, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useMemo, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Star, Clock, MapPin, ChevronRight } from "lucide-react";
 import { motion } from "framer-motion";
 import UniversePageShell from "@/components/universe/UniversePageShell";
@@ -38,9 +38,17 @@ function sortItems(items: ListingItem[], mode: SortMode): ListingItem[] {
 
 export default function VerticalHubPage({ vertical }: { vertical: VerticalDef }) {
   const [search, setSearch] = useState("");
-  const [activeSub, setActiveSub] = useState<string | null>(null);
+  const [searchParams] = useSearchParams();
+  const initialSub = searchParams.get("sub");
+  const [activeSub, setActiveSub] = useState<string | null>(initialSub);
   const [sortMode, setSortMode] = useState<SortMode>("relevance");
   const navigate = useNavigate();
+
+  // Sync with URL sub param changes
+  useEffect(() => {
+    const sub = searchParams.get("sub");
+    if (sub !== activeSub) setActiveSub(sub);
+  }, [searchParams]);
 
   const { data: listings = [], isLoading } = useVerticalListings(vertical.value, activeSub);
 
