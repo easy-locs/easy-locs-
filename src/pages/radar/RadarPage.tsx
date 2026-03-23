@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback, useMemo, lazy, Suspense } from "react";
+import { useNavigate } from "react-router-dom";
 import { useRadarGeo } from "@/hooks/useRadarGeo";
 import { useRadarStore, type SortMode } from "@/stores/radarStore";
 import { RadarFilterMenu } from "@/components/radar/RadarFilterMenu";
