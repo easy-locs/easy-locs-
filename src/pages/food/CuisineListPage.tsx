@@ -17,8 +17,10 @@ export default function CuisineListPage() {
     queryFn: async () => {
       const { data } = await (supabase as any)
         .from("storefront_pages")
-        .select("id, name, slug, city, vertical, subcategory, description, latitude, longitude, rating")
-        .eq("active", true)
+        .select("id, name, slug, city, vertical, subcategory, description, latitude, longitude, rating, display_priority, visibility_mode, route_status")
+        .neq("route_status", "broken")
+        .or("visibility_mode.eq.live,visibility_mode.eq.ready,visibility_mode.eq.coming_soon,visibility_mode.eq.search_only,visibility_mode.is.null")
+        .order("display_priority", { ascending: false, nullsFirst: false })
         .limit(30);
       const all = (data || []) as any[];
       if (!cuisine) return all;
