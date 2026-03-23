@@ -79,14 +79,12 @@ export async function repairShop(shop: any): Promise<RepairResult> {
       if (!shop.timezone && defaults.timezone) { updates.timezone = defaults.timezone; fixes.push(`Set timezone: ${defaults.timezone}`); }
     }
 
-    // 3. Fix taxonomy
-    if (shop.vertical) {
-      const norm = normalizeVertical(shop.vertical);
-      if (norm !== shop.vertical) { updates.vertical = norm; fixes.push(`Normalized vertical: ${norm}`); }
-      if (shop.subcategory && !shop.cluster) {
-        const cluster = getClusterForSubcategory(shop.subcategory);
-        if (cluster) { updates.cluster = cluster; fixes.push(`Inferred cluster: ${cluster}`); }
-      }
+    // 3. Fix taxonomy — enforce canonical coherence
+    if (shop.vertical || shop.cluster || shop.subcategory) {
+      const tax = canonicalTaxonomyPayload(shop.vertical, shop.cluster, shop.subcategory);
+      if (tax.vertical !== shop.vertical) { updates.vertical = tax.vertical; fixes.push(`Normalized vertical: ${tax.vertical}`); }
+      if (tax.cluster && tax.cluster !== shop.cluster) { updates.cluster = tax.cluster; fixes.push(`Fixed cluster: ${tax.cluster}`); }
+      if (tax.subcategory && tax.subcategory !== shop.subcategory) { updates.subcategory = tax.subcategory; fixes.push(`Fixed subcategory: ${tax.subcategory}`); }
     }
 
     // 4. Generate missing images
