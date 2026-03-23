@@ -195,13 +195,23 @@ export async function ingestShop(
     currency: geo.currency || "AED",
     default_language: geo.defaultLanguage || "en",
     timezone: geo.timezone || "Asia/Dubai",
-    metadata_json: { auto_generated: true, source: "uae_ingestion", emirate: input.emirate },
+    metadata_json: {
+      auto_generated: true, source: "uae_ingestion", emirate: input.emirate,
+      captured_at: input.capturedAt || new Date().toISOString(),
+      menu_text: input.menuText || null,
+    },
   };
 
   if (input.address) insertPayload.address = input.address;
+  if (input.area) insertPayload.region = input.area;
   if (input.latitude != null) insertPayload.latitude = input.latitude;
   if (input.longitude != null) insertPayload.longitude = input.longitude;
   if (input.phone) insertPayload.phone = input.phone;
+  if (input.website) insertPayload.website_url = input.website;
+  if (input.instagram) insertPayload.social_instagram = input.instagram;
+  if (input.rating != null) insertPayload.rating = input.rating;
+  if (input.reviewCount != null) insertPayload.reviews_count = input.reviewCount;
+  if (input.openingHours) insertPayload.opening_hours = input.openingHours;
 
   try {
     const { data: shop, error } = await (supabase as any)
