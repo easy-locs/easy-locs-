@@ -197,6 +197,12 @@ function computeDedupScore(a: DedupCandidate, b: DedupCandidate): DedupMatch {
     finalConfidence = Math.min(finalConfidence, 65);
   }
 
+  // LOW NAME SIMILARITY → cap at 65 (dark kitchen protection)
+  // Same phone + same GPS but different concept = NOT a duplicate
+  if (nameSim < 0.5) {
+    finalConfidence = Math.min(finalConfidence, 65);
+  }
+
   const action: DedupMatch["action"] =
     finalConfidence > 95 ? "auto_hide" :
     finalConfidence >= 70 ? "review" :
