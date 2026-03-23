@@ -40,6 +40,8 @@ export async function createMerchantDraft(params: {
     review_count: 0,
     delivery_time_min: 20,
     delivery_time_max: 40,
+    source_type: "import_ai",
+    source_confidence: 70,
   };
 
   // World-ready optional fields (nullable/safe)
