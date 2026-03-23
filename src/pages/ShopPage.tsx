@@ -170,9 +170,13 @@ export default function ShopPage() {
   );
 
   if (!shop) return (
-    <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4">
+    <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4 px-6 text-center">
       <Store className="h-12 w-12 text-muted-foreground/50" />
-      <p className="text-muted-foreground">Shop not found</p>
+      <p className="text-muted-foreground font-medium">Shop not found</p>
+      <p className="text-xs text-muted-foreground">The shop "{shopSlug}" doesn't exist or has been removed.</p>
+      <Button variant="outline" size="sm" onClick={() => window.history.back()}>
+        Go back
+      </Button>
     </div>
   );
 
