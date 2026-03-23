@@ -18,13 +18,24 @@ const db = supabase as any;
 
 export const orbitRepo = {
   async getByOrbitId(orbitId: string): Promise<OrbitProfile | null> {
-    const { data, error } = await db.from("orbit_profiles").select("*").eq("orbitId", orbitId).maybeSingle();
-    if (error) throw error;
+    const { data, error } = await db
+      .from("orbit_profiles_v2")
+      .select("*")
+      .eq("orbit_id", orbitId)
+      .maybeSingle();
+    if (error) {
+      console.warn("[orbitRepo] getByOrbitId error:", error.message);
+      return null;
+    }
     return data as OrbitProfile | null;
   },
 
   async upsert(profile: OrbitProfile): Promise<OrbitProfile> {
-    const { data, error } = await db.from("orbit_profiles").upsert(profile).select().single();
+    const { data, error } = await db
+      .from("orbit_profiles_v2")
+      .upsert(profile, { onConflict: "id" })
+      .select()
+      .single();
     if (error) throw error;
     return data as OrbitProfile;
   },
@@ -44,7 +55,6 @@ export const walletRepo = {
       return null;
     }
     if (!data) return null;
-    // Map DB columns to domain model
     return {
       walletId: data.id,
       ownerOrbitId: data.owner_user_id,
@@ -57,10 +67,8 @@ export const walletRepo = {
   },
 
   async upsert(wallet: WalletStateModel): Promise<WalletStateModel> {
-    // wallet_accounts already exists via ensureWalletAccount — just reload
     const existing = await walletRepo.getByOwnerOrbitId(wallet.ownerOrbitId);
     if (existing) return existing;
-    // Fallback: return input as-is (account was already created by AppInit)
     return wallet;
   },
 
@@ -117,27 +125,77 @@ export const bookingRepo = {
   },
 };
 
+/**
+ * chatRepo — uses real tables: conversations_v2 + chat_messages_v2.
+ * For extended operations, use chatRepoExtended from ./chat-repo-extended.ts
+ */
 export const chatRepo = {
   async createConversation(conversation: ConversationRecord): Promise<ConversationRecord> {
-    const { data, error } = await db.from("conversations").insert(conversation).select().single();
+    const { data, error } = await db
+      .from("conversations_v2")
+      .insert({
+        id: conversation.id,
+        type: conversation.type || "direct",
+        title: conversation.title || null,
+        participants: conversation.participants || [],
+        listing_id: conversation.listingId || null,
+        booking_id: conversation.bookingId || null,
+        lease_id: conversation.leaseId || null,
+        last_message_at: conversation.lastMessageAt || null,
+        created_at: conversation.createdAt,
+        updated_at: conversation.updatedAt,
+      })
+      .select()
+      .single();
     if (error) throw error;
-    return data as ConversationRecord;
+    return {
+      ...conversation,
+      id: data.id,
+    };
   },
 
   async createMessage(message: ChatMessageRecord): Promise<ChatMessageRecord> {
-    const { data, error } = await db.from("chat_messages").insert(message).select().single();
+    // Get current user id for sender_user_id (required NOT NULL column)
+    const { data: authData } = await supabase.auth.getUser();
+    const userId = authData?.user?.id;
+    if (!userId) throw new Error("Not authenticated");
+
+    const { data, error } = await db
+      .from("chat_messages_v2")
+      .insert({
+        conversation_id: message.conversationId,
+        sender_orbit_id: message.senderOrbitId,
+        sender_user_id: userId,
+        type: message.type || "text",
+        body: message.body,
+        metadata: message.metadata || null,
+      })
+      .select()
+      .single();
     if (error) throw error;
-    return data as ChatMessageRecord;
+    return {
+      ...message,
+      id: data.id,
+      createdAt: data.created_at,
+    };
   },
 
   async getMessages(conversationId: string): Promise<ChatMessageRecord[]> {
     const { data, error } = await db
-      .from("chat_messages")
+      .from("chat_messages_v2")
       .select("*")
-      .eq("conversationId", conversationId)
-      .order("createdAt", { ascending: true });
+      .eq("conversation_id", conversationId)
+      .order("created_at", { ascending: true });
     if (error) throw error;
-    return (data ?? []) as ChatMessageRecord[];
+    return (data ?? []).map((row: any) => ({
+      id: row.id,
+      conversationId: row.conversation_id,
+      senderOrbitId: row.sender_orbit_id,
+      body: row.body,
+      type: row.type || "text",
+      metadata: row.metadata,
+      createdAt: row.created_at,
+    })) as ChatMessageRecord[];
   },
 };
 

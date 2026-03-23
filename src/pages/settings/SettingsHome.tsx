@@ -40,8 +40,6 @@ const ME_SECTIONS: MeSection[] = [
     items: [
       { key: "profile", icon: User, label: "Personal Info", subtitle: "Name, email, photo", path: "/settings/account" },
       { key: "security", icon: Lock, label: "Security", subtitle: "PIN, password, 2FA", path: "/settings/security" },
-      { key: "phone", icon: Phone, label: "Phone", subtitle: "Verify number", path: "/settings/account" },
-      { key: "privacy", icon: Shield, label: "Privacy", subtitle: "Chat encryption", path: "/settings/orbit" },
     ],
   },
   {
@@ -82,27 +80,19 @@ const ME_SECTIONS: MeSection[] = [
     emoji: "💬",
     accent: "hsl(142 60% 45%)",
     items: [
-      { key: "chat", icon: MessageCircle, label: "Chat", subtitle: "Settings & privacy", path: "/settings/orbit" },
       { key: "contacts", icon: Users, label: "Contacts", subtitle: "Directory", path: "/orbit/contacts" },
       { key: "notifications", icon: Bell, label: "Notifications", subtitle: "Push & alerts", path: "/settings/notifications" },
     ],
   },
   {
-    title: "Saved",
-    emoji: "📌",
-    accent: "hsl(16 85% 55%)",
-    items: [
-      { key: "addresses", icon: MapPin, label: "Addresses", subtitle: "Home, work, saved", path: "/settings/addresses" },
-      { key: "favorites", icon: Heart, label: "Favorites", subtitle: "Shops & items", path: "/favorites" },
-    ],
-  },
-  {
-    title: "Settings",
+    title: "Preferences",
     emoji: "⚙️",
     accent: "hsl(220 50% 55%)",
     items: [
-      { key: "language", icon: Globe, label: "Language", subtitle: "Region & format", path: "/settings/orbit" },
+      { key: "language", icon: Globe, label: "Language & Region", subtitle: "Language, currency", path: "/settings/orbit" },
       { key: "theme", icon: Palette, label: "Appearance", subtitle: "Dark, light, auto", path: "/settings/preferences" },
+      { key: "addresses", icon: MapPin, label: "Addresses", subtitle: "Home, work, saved", path: "/settings/addresses" },
+      { key: "favorites", icon: Heart, label: "Favorites", subtitle: "Shops & items", path: "/favorites" },
     ],
   },
   {
