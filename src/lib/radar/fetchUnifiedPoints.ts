@@ -162,5 +162,81 @@ export async function fetchUnifiedPoints(opts?: FetchUnifiedPointsOpts): Promise
     });
   }
 
+  // ═══════════════════════════════════════════════════════════
+  // INTELLIGENT FALLBACK: if exact subcategory yields < 5 results,
+  // expand to same cluster, then same vertical — tagged with hierarchy tier.
+  // ═══════════════════════════════════════════════════════════
+  if (subcategory && points.length < 5 && !searchQuery) {
+    const cluster = getClusterForSubcategory(subcategory);
+    const parentVert = getParentVertical(subcategory);
+
+    if (cluster && parentVert) {
+      // Re-fetch without subcategory filter, then client-filter to cluster
+      const fallbackStorefront = (supabase as any)
+        .from("storefront_pages")
+        .select("id, name, slug, vertical, category, subcategory, address, logo_url, banner_url, latitude, longitude, rating, reviews_count, ranking_score")
+        .eq("launch_status", "launched")
+        .eq("vertical", parentVert.value)
+        .not("latitude", "is", null)
+        .not("longitude", "is", null)
+        .order("ranking_score", { ascending: false })
+        .limit(50);
+
+      const fallbackSeed = (supabase as any)
+        .from("seed_merchants")
+        .select("id, name, category, subcategory, city, area, rating, review_count, cover_image, logo_image, visibility_score, is_open, is_featured, promo_active, delivery_time_min, delivery_time_max")
+        .eq("is_active", true)
+        .eq("category", parentVert.value)
+        .order("visibility_score", { ascending: false })
+        .limit(50);
+
+      const [fbSf, fbSd] = await Promise.all([fallbackStorefront, fallbackSeed]);
+
+      for (const s of fbSf.data ?? []) {
+        if (seenIds.has(s.id)) continue;
+        seenIds.add(s.id);
+        const sub = normalizeSubcategory(s.subcategory || s.category);
+        const subCluster = sub ? getClusterForSubcategory(sub) : null;
+        if (subCluster !== cluster) continue; // only same-cluster items
+        const lat = Number(s.latitude);
+        const lng = Number(s.longitude);
+        points.push({
+          id: s.id, title: s.name || "Business",
+          subtitle: s.address || s.category || undefined,
+          imageUrl: s.banner_url || s.logo_url,
+          category: verticalToRadarCategory(normalizeVertical(s.vertical || s.category)),
+          subcategory: sub, lat, lng,
+          rating: s.rating ? Number(s.rating) : undefined,
+          reviewsCount: s.reviews_count ?? undefined,
+          isSponsored: (s.ranking_score ?? 0) > 80,
+          distanceKm: userLocation ? haversineKm(userLocation.lat, userLocation.lng, lat, lng) : undefined,
+          timeScore: timeRelevanceScore(sub, timeCtx),
+          slug: s.slug || null,
+        });
+      }
+      for (const m of fbSd.data ?? []) {
+        if (seenIds.has(m.id)) continue;
+        seenIds.add(m.id);
+        const sub = normalizeSubcategory(m.subcategory);
+        const subCluster = sub ? getClusterForSubcategory(sub) : null;
+        if (subCluster !== cluster) continue;
+        const coords = areaToCoords(m.area);
+        points.push({
+          id: m.id, title: m.name,
+          subtitle: `${m.area}, ${m.city}`,
+          imageUrl: m.cover_image || m.logo_image,
+          category: verticalToRadarCategory(normalizeVertical(m.category)),
+          subcategory: sub,
+          lat: coords.lat, lng: coords.lng,
+          rating: m.rating ? Number(m.rating) : undefined,
+          reviewsCount: m.review_count ?? undefined,
+          isSponsored: m.is_featured || m.promo_active || (m.visibility_score ?? 0) > 80,
+          distanceKm: userLocation ? haversineKm(userLocation.lat, userLocation.lng, coords.lat, coords.lng) : undefined,
+          timeScore: timeRelevanceScore(sub, timeCtx),
+        });
+      }
+    }
+  }
+
   return points;
 }
