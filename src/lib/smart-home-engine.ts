@@ -1,10 +1,15 @@
 /**
  * Smart Home Engine — Time/location/country-aware homepage intelligence.
  * Drives category priority, hero content, and section ordering.
+ * Expanded with Careem-style super-app categories.
  */
 
 export type TimeSlot = "morning" | "lunch" | "afternoon" | "dinner" | "latenight";
-export type CategoryKey = "food" | "grocery" | "shops" | "services" | "taxi" | "delivery" | "property" | "wallet" | "coffee" | "bakery" | "dineout" | "beauty" | "concierge" | "mobility" | "rentals" | "stays" | "travel";
+export type CategoryKey =
+  | "food" | "grocery" | "shops" | "services" | "taxi" | "delivery"
+  | "property" | "wallet" | "coffee" | "bakery" | "dineout" | "beauty"
+  | "concierge" | "mobility" | "rentals" | "stays" | "travel"
+  | "healthcare" | "electronics" | "gifts" | "pharmacy" | "pets" | "flowers";
 
 export interface SmartCategory {
   key: CategoryKey;
@@ -44,46 +49,52 @@ export function getTimeSlot(timezone?: string): TimeSlot {
 
 /* ═══ All Categories ═══ */
 const ALL_CATEGORIES: Record<CategoryKey, SmartCategory> = {
-  food:      { key: "food",      label: "Food",        icon: "🍕", image: "food",      color: "hsl(var(--warning))",  size: "normal", route: "/radar?category=food",     subtitle: "Order now" },
-  grocery:   { key: "grocery",   label: "Grocery",     icon: "🛒", image: "grocery",   color: "hsl(var(--success))",  size: "normal", route: "/radar?category=grocery",   subtitle: "Fresh & fast" },
-  shops:     { key: "shops",     label: "Shops",       icon: "🏪", image: "shops",     color: "hsl(var(--primary))",  size: "normal", route: "/radar?category=shops",     subtitle: "Browse stores" },
-  services:  { key: "services",  label: "Services",    icon: "🔧", image: "services",  color: "hsl(var(--info))",     size: "normal", route: "/radar?category=services",  subtitle: "Near you" },
-  taxi:      { key: "taxi",      label: "Taxi",        icon: "🚕", image: "taxi",      color: "hsl(var(--accent))",   size: "normal", route: "/ride",                     subtitle: "Book a ride" },
-  delivery:  { key: "delivery",  label: "Delivery",    icon: "🚚", image: "delivery",  color: "hsl(var(--info))",     size: "normal", route: "/send",                     subtitle: "Send & track" },
-  property:  { key: "property",  label: "Property",    icon: "🏠", image: "property",  color: "hsl(var(--primary))",  size: "normal", route: "/property-hub",             subtitle: "Rent & buy" },
-  wallet:    { key: "wallet",    label: "Pay",         icon: "💳", image: "wallet",    color: "hsl(var(--success))",  size: "normal", route: "/dashboard/wallet",         subtitle: "Pay & send" },
-  coffee:    { key: "coffee",    label: "Coffee",      icon: "☕", image: "coffee",    color: "hsl(var(--warning))",  size: "normal", route: "/radar?category=coffee",    subtitle: "Wake up" },
-  bakery:    { key: "bakery",    label: "Bakery",      icon: "🥐", image: "bakery",    color: "hsl(var(--warning))",  size: "normal", route: "/radar?category=bakery" },
-  dineout:   { key: "dineout",   label: "Dine Out",    icon: "🍽️", image: "dineout",   color: "hsl(var(--accent))",   size: "normal", route: "/radar?category=dineout",   subtitle: "Restaurants" },
-  beauty:    { key: "beauty",    label: "Beauty",      icon: "💅", image: "beauty",    color: "hsl(var(--accent))",   size: "normal", route: "/radar?category=beauty" },
-  concierge: { key: "concierge", label: "Concierge",   icon: "🎯", image: "concierge", color: "hsl(var(--primary))",  size: "normal", route: "/radar?category=concierge" },
-  mobility:  { key: "mobility",  label: "Rides",       icon: "🏍️", image: "mobility",  color: "hsl(var(--info))",     size: "normal", route: "/ride" },
-  rentals:   { key: "rentals",   label: "Rentals",     icon: "🔑", image: "rentals",   color: "hsl(var(--primary))",  size: "normal", route: "/property-hub",  subtitle: "Long-term" },
-  stays:     { key: "stays",     label: "Stays",       icon: "🏨", image: "stays",     color: "hsl(var(--accent))",   size: "normal", route: "/radar?category=stays",     subtitle: "Short-term" },
-  travel:    { key: "travel",    label: "Travel",      icon: "✈️", image: "travel",    color: "hsl(var(--info))",     size: "normal", route: "/radar?category=travel",    subtitle: "Flights & hotels" },
+  food:        { key: "food",        label: "Food",         icon: "🍕", image: "food",        color: "hsl(var(--warning))",  size: "normal", route: "/food",                     subtitle: "Order now" },
+  grocery:     { key: "grocery",     label: "Grocery",      icon: "🛒", image: "grocery",     color: "hsl(var(--success))",  size: "normal", route: "/grocery",                  subtitle: "Fresh & fast" },
+  shops:       { key: "shops",       label: "Shops",        icon: "🏪", image: "shops",       color: "hsl(var(--primary))",  size: "normal", route: "/shops",                    subtitle: "Browse stores" },
+  services:    { key: "services",    label: "Services",     icon: "🔧", image: "services",    color: "hsl(var(--info))",     size: "normal", route: "/services-hub",             subtitle: "Near you" },
+  taxi:        { key: "taxi",        label: "Taxi",         icon: "🚕", image: "taxi",        color: "hsl(var(--accent))",   size: "normal", route: "/ride",                     subtitle: "Book a ride" },
+  delivery:    { key: "delivery",    label: "Delivery",     icon: "🚚", image: "delivery",    color: "hsl(var(--info))",     size: "normal", route: "/send",                     subtitle: "Send & track" },
+  property:    { key: "property",    label: "Property",     icon: "🏠", image: "property",    color: "hsl(var(--primary))",  size: "normal", route: "/real-estate",              subtitle: "Rent & buy" },
+  wallet:      { key: "wallet",      label: "Pay",          icon: "💳", image: "wallet",      color: "hsl(var(--success))",  size: "normal", route: "/wallet/hub",               subtitle: "Pay & send" },
+  coffee:      { key: "coffee",      label: "Coffee",       icon: "☕", image: "coffee",      color: "hsl(var(--warning))",  size: "normal", route: "/food?sub=cafe",            subtitle: "Wake up" },
+  bakery:      { key: "bakery",      label: "Bakery",       icon: "🥐", image: "bakery",      color: "hsl(var(--warning))",  size: "normal", route: "/food?sub=bakery" },
+  dineout:     { key: "dineout",     label: "Dine Out",     icon: "🍽️", image: "dineout",     color: "hsl(var(--accent))",   size: "normal", route: "/food?sub=dineout",         subtitle: "Restaurants" },
+  beauty:      { key: "beauty",      label: "Beauty",       icon: "💅", image: "beauty",      color: "hsl(var(--accent))",   size: "normal", route: "/services-hub?sub=beauty" },
+  concierge:   { key: "concierge",   label: "Concierge",    icon: "🎯", image: "concierge",   color: "hsl(var(--primary))",  size: "normal", route: "/services-hub" },
+  mobility:    { key: "mobility",    label: "Rides",        icon: "🏍️", image: "mobility",    color: "hsl(var(--info))",     size: "normal", route: "/ride" },
+  rentals:     { key: "rentals",     label: "Rentals",      icon: "🔑", image: "rentals",     color: "hsl(var(--primary))",  size: "normal", route: "/real-estate",              subtitle: "Long-term" },
+  stays:       { key: "stays",       label: "Stays",        icon: "🏨", image: "stays",       color: "hsl(var(--accent))",   size: "normal", route: "/travel/stays",             subtitle: "Short-term" },
+  travel:      { key: "travel",      label: "Travel",       icon: "✈️", image: "travel",      color: "hsl(var(--info))",     size: "normal", route: "/travel",                   subtitle: "Flights & hotels" },
+  healthcare:  { key: "healthcare",  label: "Healthcare",   icon: "💊", image: "healthcare",  color: "hsl(var(--success))",  size: "normal", route: "/healthcare",               subtitle: "Clinics & meds" },
+  electronics: { key: "electronics", label: "Electronics",  icon: "📱", image: "electronics", color: "hsl(var(--info))",     size: "normal", route: "/electronics",              subtitle: "Gadgets" },
+  gifts:       { key: "gifts",       label: "Gifts",        icon: "🎁", image: "gifts",       color: "hsl(var(--accent))",   size: "normal", route: "/gifts",                    subtitle: "Send love" },
+  pharmacy:    { key: "pharmacy",    label: "Pharmacy",     icon: "💊", image: "pharmacy",    color: "hsl(var(--success))",  size: "normal", route: "/healthcare?sub=pharmacy",   subtitle: "Medicines" },
+  pets:        { key: "pets",        label: "Pets",         icon: "🐾", image: "pets",        color: "hsl(var(--warning))",  size: "normal", route: "/pets",                     subtitle: "Pet supplies" },
+  flowers:     { key: "flowers",     label: "Flowers",      icon: "🌹", image: "flowers",     color: "hsl(var(--accent))",   size: "normal", route: "/gifts?sub=flowers",        subtitle: "Bouquets" },
 };
 
 /* ═══ Time-based priority ═══ */
 const TIME_PRIORITY: Record<TimeSlot, CategoryKey[]> = {
-  morning:   ["coffee", "bakery", "food", "grocery", "taxi", "services", "travel", "shops", "property"],
-  lunch:     ["food", "delivery", "coffee", "shops", "services", "grocery", "travel", "taxi", "property"],
-  afternoon: ["shops", "services", "grocery", "beauty", "delivery", "travel", "property", "food", "wallet"],
-  dinner:    ["food", "dineout", "grocery", "delivery", "taxi", "travel", "shops", "services", "property"],
-  latenight: ["food", "delivery", "taxi", "mobility", "shops", "travel", "wallet", "property", "services"],
+  morning:   ["coffee", "bakery", "food", "grocery", "pharmacy", "taxi", "services", "healthcare", "travel", "shops", "property"],
+  lunch:     ["food", "delivery", "coffee", "shops", "services", "grocery", "travel", "taxi", "property", "electronics"],
+  afternoon: ["shops", "services", "grocery", "beauty", "delivery", "electronics", "travel", "property", "food", "wallet", "gifts"],
+  dinner:    ["food", "dineout", "grocery", "delivery", "taxi", "travel", "shops", "services", "property", "flowers"],
+  latenight: ["food", "delivery", "taxi", "mobility", "pharmacy", "shops", "travel", "wallet", "property", "services"],
 };
 
 /* ═══ Country priority overrides ═══ */
 const COUNTRY_BOOSTS: Record<string, CategoryKey[]> = {
-  AE: ["food", "grocery", "taxi", "beauty", "concierge", "property"],
-  FR: ["property", "services", "food", "shops", "bakery"],
-  MA: ["food", "services", "mobility", "property"],
-  US: ["food", "grocery", "delivery", "taxi", "shops"],
+  AE: ["food", "grocery", "taxi", "beauty", "healthcare", "concierge", "property", "electronics"],
+  FR: ["property", "services", "food", "shops", "bakery", "pharmacy"],
+  MA: ["food", "services", "mobility", "property", "pharmacy"],
+  US: ["food", "grocery", "delivery", "taxi", "shops", "healthcare"],
   GB: ["food", "shops", "property", "delivery", "services"],
   DE: ["property", "services", "shops", "food", "delivery"],
   ES: ["food", "property", "services", "dineout", "shops"],
   IT: ["food", "dineout", "property", "services", "shops"],
-  SA: ["food", "grocery", "taxi", "concierge", "beauty"],
-  JP: ["food", "shops", "services", "delivery", "mobility"],
+  SA: ["food", "grocery", "taxi", "concierge", "beauty", "healthcare"],
+  JP: ["food", "shops", "services", "delivery", "mobility", "electronics"],
 };
 
 /* ═══ Hero content by time ═══ */
@@ -93,7 +104,7 @@ const HERO_BY_TIME: Record<TimeSlot, SmartHero> = {
     subtitle: "Breakfast, coffee & bakery near you",
     emoji: "🥐",
     cta: "Order breakfast",
-    route: "/radar?category=food",
+    route: "/food?sub=bakery",
     gradient: "linear-gradient(135deg, hsl(35 90% 55%), hsl(45 95% 65%))",
   },
   lunch: {
@@ -101,7 +112,7 @@ const HERO_BY_TIME: Record<TimeSlot, SmartHero> = {
     subtitle: "Fast delivery from top spots",
     emoji: "🍕",
     cta: "Order lunch",
-    route: "/radar?category=food",
+    route: "/food",
     gradient: "linear-gradient(135deg, hsl(15 85% 55%), hsl(25 90% 60%))",
   },
   afternoon: {
@@ -117,7 +128,7 @@ const HERO_BY_TIME: Record<TimeSlot, SmartHero> = {
     subtitle: "Dine out or order in — your pick",
     emoji: "🍣",
     cta: "Find dinner",
-    route: "/radar?category=dineout",
+    route: "/food?sub=dineout",
     gradient: "linear-gradient(135deg, hsl(280 60% 45%), hsl(320 65% 50%))",
   },
   latenight: {
@@ -125,7 +136,7 @@ const HERO_BY_TIME: Record<TimeSlot, SmartHero> = {
     subtitle: "Late-night eats, rides & delivery",
     emoji: "🌮",
     cta: "Order now",
-    route: "/radar?category=food",
+    route: "/food",
     gradient: "linear-gradient(135deg, hsl(240 50% 25%), hsl(260 55% 35%))",
   },
 };
@@ -137,11 +148,9 @@ export function getSmartCategories(timezone?: string, countryCode?: string): Sma
   const timePriority = TIME_PRIORITY[slot];
   const countryBoost = countryCode ? COUNTRY_BOOSTS[countryCode.toUpperCase()] : undefined;
 
-  // Merge: country boost first, then time-based, deduplicated
   const ordered: CategoryKey[] = [];
   const seen = new Set<CategoryKey>();
 
-  // Country-boosted items first (interleaved with time)
   if (countryBoost) {
     for (const key of countryBoost) {
       if (!seen.has(key)) { ordered.push(key); seen.add(key); }
@@ -150,9 +159,6 @@ export function getSmartCategories(timezone?: string, countryCode?: string): Sma
   for (const key of timePriority) {
     if (!seen.has(key)) { ordered.push(key); seen.add(key); }
   }
-
-  // Return all unique categories for horizontal scroll (no limit)
-  // Fill remaining from ALL_CATEGORIES
   for (const key of Object.keys(ALL_CATEGORIES) as CategoryKey[]) {
     if (!seen.has(key)) { ordered.push(key); seen.add(key); }
   }
@@ -184,7 +190,6 @@ export function getSmartSections(timezone?: string): { key: string; title: strin
     { key: "fastest",   title: "Fastest delivery",    icon: "⚡" },
     { key: "offers",    title: "Deals in your area",  icon: "🎉" },
   ];
-  // Reorder based on time
   if (slot === "latenight") {
     const open = base.find(s => s.key === "opennow")!;
     return [open, ...base.filter(s => s.key !== "opennow")];
