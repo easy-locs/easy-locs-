@@ -16150,6 +16150,7 @@ export type Database = {
           delivery_time_max: number
           delivery_time_min: number
           delivery_zones: Json | null
+          display_priority: number | null
           id: string
           is_active: boolean
           is_featured: boolean
@@ -16163,10 +16164,12 @@ export type Database = {
           promo_text: string | null
           rating: number
           review_count: number
+          route_status: string | null
           subcategory: string
           support_email: string | null
           support_phone: string | null
           tier: string
+          visibility_mode: string | null
           visibility_score: number
         }
         Insert: {
@@ -16179,6 +16182,7 @@ export type Database = {
           delivery_time_max?: number
           delivery_time_min?: number
           delivery_zones?: Json | null
+          display_priority?: number | null
           id?: string
           is_active?: boolean
           is_featured?: boolean
@@ -16192,10 +16196,12 @@ export type Database = {
           promo_text?: string | null
           rating?: number
           review_count?: number
+          route_status?: string | null
           subcategory: string
           support_email?: string | null
           support_phone?: string | null
           tier?: string
+          visibility_mode?: string | null
           visibility_score?: number
         }
         Update: {
@@ -16208,6 +16214,7 @@ export type Database = {
           delivery_time_max?: number
           delivery_time_min?: number
           delivery_zones?: Json | null
+          display_priority?: number | null
           id?: string
           is_active?: boolean
           is_featured?: boolean
@@ -16221,10 +16228,12 @@ export type Database = {
           promo_text?: string | null
           rating?: number
           review_count?: number
+          route_status?: string | null
           subcategory?: string
           support_email?: string | null
           support_phone?: string | null
           tier?: string
+          visibility_mode?: string | null
           visibility_score?: number
         }
         Relationships: []
