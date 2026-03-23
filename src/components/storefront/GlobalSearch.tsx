@@ -1,10 +1,11 @@
 /**
- * GlobalSearch — PASS109: Unified search across shops, products, services.
- * Floating search bar with real-time results, mobile-first.
+ * GlobalSearch — Unified search across shops, products, services.
+ * Uses canonical query-governance for visibility/route filtering.
  */
 import { useState, useCallback, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { governStorefrontQuery } from "@/lib/discovery/query-governance";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
