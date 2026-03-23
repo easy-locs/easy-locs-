@@ -33,7 +33,7 @@ export interface ActivationResult {
   status: ActivationStatus;
   previousStatus?: string;
   audit: ShopAuditResult;
-  catalogAudit: CatalogAuditResult;
+  catalogAudit: MenuAuditResult;
   sourceType: SourceType;
   isClaimed: boolean;
   // Gate flags
