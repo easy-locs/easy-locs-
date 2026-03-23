@@ -87,12 +87,21 @@ export interface IngestionShopInput {
   city: string;
   emirate: EmirateCode;
   address?: string;
+  area?: string;
   latitude?: number;
   longitude?: number;
   phone?: string;
+  website?: string;
+  instagram?: string;
+  rating?: number;
+  reviewCount?: number;
+  openingHours?: Record<string, any>;
+  menuText?: string;
   sourceType?: string;
   sourceName?: string;
   sourceExternalId?: string;
+  sourceConfidence?: number;
+  capturedAt?: string;
   coverUrl?: string;
   logoUrl?: string;
 }
@@ -143,7 +152,7 @@ export async function ingestShop(
     sourceName: input.sourceName,
     sourceType: input.sourceType || "import_ai",
     sourceExternalId: input.sourceExternalId,
-    confidence: input.sourceType === "google" ? 40 : 60,
+    confidence: input.sourceConfidence ?? (input.sourceType === "google" ? 40 : 60),
   });
 
   // Determine cover with diversity
@@ -163,7 +172,7 @@ export async function ingestShop(
     vertical: tax.vertical,
     cluster: tax.cluster,
     subcategory: tax.subcategory,
-    launch_status: "draft",
+    visibility_mode: "coming_soon",
     readiness_status: "draft",
     activation_status: "draft",
     user_id: userId,
@@ -186,13 +195,23 @@ export async function ingestShop(
     currency: geo.currency || "AED",
     default_language: geo.defaultLanguage || "en",
     timezone: geo.timezone || "Asia/Dubai",
-    metadata_json: { auto_generated: true, source: "uae_ingestion", emirate: input.emirate },
+    metadata_json: {
+      auto_generated: true, source: "uae_ingestion", emirate: input.emirate,
+      captured_at: input.capturedAt || new Date().toISOString(),
+      menu_text: input.menuText || null,
+    },
   };
 
   if (input.address) insertPayload.address = input.address;
+  if (input.area) insertPayload.region = input.area;
   if (input.latitude != null) insertPayload.latitude = input.latitude;
   if (input.longitude != null) insertPayload.longitude = input.longitude;
   if (input.phone) insertPayload.phone = input.phone;
+  if (input.website) insertPayload.website_url = input.website;
+  if (input.instagram) insertPayload.social_instagram = input.instagram;
+  if (input.rating != null) insertPayload.rating = input.rating;
+  if (input.reviewCount != null) insertPayload.reviews_count = input.reviewCount;
+  if (input.openingHours) insertPayload.opening_hours = input.openingHours;
 
   try {
     const { data: shop, error } = await (supabase as any)

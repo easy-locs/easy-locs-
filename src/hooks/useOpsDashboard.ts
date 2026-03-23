@@ -15,7 +15,7 @@ export interface ShopRow {
   id: string; name: string; slug: string; city: string; country: string;
   region: string; vertical: string; cluster: string; subcategory: string;
   source_type: string; source_confidence: number; audit_score: number;
-  readiness_status: string; activation_status: string; launch_status: string;
+  readiness_status: string; activation_status: string;
   visibility_mode: string; route_status: string; display_priority: number;
   blocking_reason: string;
   is_claimed: boolean; has_menu: boolean; has_photo: boolean;
@@ -65,11 +65,11 @@ export function computeKpis(shops: ShopRow[]) {
     draft: shops.filter(s => s.readiness_status === "draft").length,
     needsReview: shops.filter(s => s.readiness_status === "needs_review").length,
     ready: shops.filter(s => s.readiness_status === "ready").length,
-    live: shops.filter(s => s.readiness_status === "live" || s.launch_status === "live").length,
+    live: shops.filter(s => s.readiness_status === "live" || s.visibility_mode === "live").length,
     comingSoon: shops.filter(s => s.visibility_mode === "coming_soon").length,
     searchOnly: shops.filter(s => s.visibility_mode === "search_only").length,
     mapOnly: shops.filter(s => s.visibility_mode === "map_only").length,
-    hidden: shops.filter(s => s.visibility_mode === "hidden" || s.launch_status === "hidden").length,
+    hidden: shops.filter(s => s.visibility_mode === "hidden").length,
     publishable: shops.filter(s => auditShop(s).isPublishable).length,
     blocked: shops.filter(s => getBlockers(s).length > 0).length,
     claimed: shops.filter(s => s.is_claimed).length,

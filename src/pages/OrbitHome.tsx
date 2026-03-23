@@ -7,6 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { governSeedQuery } from "@/lib/discovery/query-governance";
 import MarketplaceSection from "@/components/marketplace/MarketplaceSection";
 import { useWalletBalance } from "@/payments/wallet-hooks";
 import {
@@ -162,14 +163,14 @@ export default function OrbitHome() {
   const { data: featured = [] } = useQuery({
     queryKey: ["home-featured-seed"],
     queryFn: async () => {
-      const { data } = await (supabase as any)
+      let q = (supabase as any)
         .from("seed_merchants")
         .select("*")
         .eq("category", "food")
         .eq("is_featured", true)
-        .eq("is_active", true)
-        .order("visibility_score", { ascending: false })
         .limit(8);
+      q = governSeedQuery(q, "home");
+      const { data } = await q;
       return (data || []).map((r: any) => ({
         id: r.id, name: r.name, image: r.cover_image,
         category: `${r.subcategory} · ${r.area}`, rating: Number(r.rating),
@@ -182,14 +183,14 @@ export default function OrbitHome() {
   const { data: nearby = [] } = useQuery({
     queryKey: ["home-nearby-seed"],
     queryFn: async () => {
-      const { data } = await (supabase as any)
+      let q = (supabase as any)
         .from("seed_merchants")
         .select("*")
         .eq("category", "food")
         .eq("is_open", true)
-        .eq("is_active", true)
-        .order("visibility_score", { ascending: false })
         .limit(10);
+      q = governSeedQuery(q, "home");
+      const { data } = await q;
       return (data || []).map((r: any) => ({
         id: r.id, name: r.name, image: r.cover_image,
         category: `${r.subcategory} · ${r.area}`, rating: Number(r.rating),

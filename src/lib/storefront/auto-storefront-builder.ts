@@ -77,7 +77,7 @@ export async function autoCreateStorefront(params: AutoStorefrontParams): Promis
     slug,
     city: params.city,
     country: params.countryCode,
-    launch_status: "draft",
+    visibility_mode: "coming_soon",
     user_id: params.userId,
     org_id: params.orgId,
     vertical: canonicalTaxonomyPayload(params.vertical ?? params.category ?? "food", undefined, params.subcategory).vertical,

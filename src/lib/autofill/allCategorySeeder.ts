@@ -1,7 +1,7 @@
 /**
  * Dubai Full Category Seeder — 20 shops per vertical across all Dubai areas.
- * Each shop = production-ready but launch_status = 'waiting_launch'.
- * No outbound messages until explicit launch trigger.
+ * Each shop = production-ready but visibility_mode = 'coming_soon'.
+ * No outbound messages until explicit activation trigger.
  */
 
 const DUBAI_AREAS = [
