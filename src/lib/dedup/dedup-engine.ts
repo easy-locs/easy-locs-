@@ -227,13 +227,18 @@ export async function runDedupScan(): Promise<{
 }> {
   const { data: shops } = await (supabase as any)
     .from("storefront_pages")
-    .select("id, name, city, address, phone, latitude, longitude, source_id, website, instagram_url, brand_name, branch_label")
+    .select("id, name, city, address, contact_phone, latitude, longitude, source_external_id, brand_name, branch_label")
     .is("duplicate_of", null) // skip already-deduped
     .limit(1000);
 
   if (!shops?.length) return { autoHide: [], review: [], safe: 0, scanned: 0 };
 
-  const candidates: DedupCandidate[] = shops;
+  // Map DB columns to candidate interface
+  const candidates: DedupCandidate[] = shops.map((s: any) => ({
+    ...s,
+    phone: s.contact_phone,
+    source_id: s.source_external_id,
+  }));
   const autoHide: DedupMatch[] = [];
   const review: DedupMatch[] = [];
 
