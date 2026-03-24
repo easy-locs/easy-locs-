@@ -10,6 +10,7 @@
 import { WORLD_TAXONOMY, type Vertical, type TaxonomyVertical } from "@/lib/taxonomy/world-class-taxonomy";
 import { getVerticalTheme } from "@/lib/discovery/vertical-themes";
 import { getSubcategoryTheme } from "@/lib/discovery/subcategory-themes";
+import { td, getVerticalI18n, getSubcategoryI18n } from "@/lib/i18n-discovery";
 
 // ═══════════════════════════════════════════════════════════
 //  TYPES
