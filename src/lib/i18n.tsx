@@ -1339,6 +1339,10 @@ const pageFr: Record<string, string> = {
   "landing.join.agency_desc": "Gérez vos biens et équipes",
   "landing.join.provider": "Prestataire de services",
   "landing.join.provider_desc": "Proposez vos services",
+  "landing.menu.tagline": "Votre super-app pour tout le local",
+  "landing.menu.discover": "Découvrir",
+  "landing.menu.join_platform": "Rejoindre la plateforme",
+  "landing.menu.trust": "Paiements sécurisés • Vendeurs vérifiés • Support 24/7",
   "landing.nav.popular": "Populaire",
   "landing.nav.more_languages": "Plus de langues",
 
