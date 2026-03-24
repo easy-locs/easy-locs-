@@ -183,7 +183,7 @@ export default function VerticalHubPage({ vertical }: { vertical: TaxonomyVertic
 
         {/* ═══ SUBCATEGORY CHIPS ═══ */}
         <div className="mb-5">
-          <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none -mx-1 px-1">
+          <div className="flex gap-2.5 overflow-x-auto pb-2 scrollbar-none -mx-1 px-1 snap-x snap-mandatory">
             <button
               onClick={() => handleSubSelect(null)}
               className="shrink-0 flex flex-col items-center gap-1.5 active:scale-90 transition-transform"
