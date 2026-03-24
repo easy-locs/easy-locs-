@@ -297,6 +297,7 @@ const AdminOpsExceptionsPage = safeLazy(() => import("./pages/AdminOpsExceptions
 const AdminReviewQueuePage = safeLazy(() => import("./pages/AdminReviewQueuePage"), "AdminReviewQueuePage");
 const AdminGrowthDashboard = safeLazy(() => import("./pages/AdminGrowthDashboard"), "AdminGrowthDashboard");
 const CityMarketplacePage = safeLazy(() => import("./pages/CityMarketplacePage"), "CityMarketplacePage");
+const BoostDashboardPage = safeLazy(() => import("./pages/boost/BoostDashboardPage"), "BoostDashboardPage");
 
 // Travel universe
 const TravelHub = safeLazy(() => import("./pages/travel/TravelHub"), "TravelHub");
