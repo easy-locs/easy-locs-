@@ -161,7 +161,8 @@ export async function resolveUnifiedTarget(input: {
           .rpc("ensure_wallet_account", { target_user_id: profile.id, target_currency: currency });
         if (rpcErr) {
           console.error("[resolver] RPC ensure_wallet_account FAILED:", rpcErr.message, rpcErr.code, rpcErr.details);
-          // Surface error to UI via toast import would add coupling; log is sufficient for debugging
+          // Expose structured error for callers to handle
+          throw new Error(`Wallet provisioning failed: ${rpcErr.message}`);
         } else if (rpcResult && rpcResult.length > 0) {
           finalWallet = { id: rpcResult[0].wallet_id, status: rpcResult[0].wallet_status };
           console.log("[resolver] wallet provisioned:", { walletId: finalWallet.id, status: finalWallet.status, action: "auto_created_or_existing" });
