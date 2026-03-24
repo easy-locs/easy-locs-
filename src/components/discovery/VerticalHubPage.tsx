@@ -143,7 +143,7 @@ export default function VerticalHubPage({ vertical }: { vertical: TaxonomyVertic
         </motion.div>
       </AnimatePresence>
 
-      <div className="px-4 mt-8">
+      <div className="px-4 mt-10">
         {/* ═══ BREADCRUMBS — from canonical engine ═══ */}
         <nav className="flex items-center gap-1.5 mb-4 text-[11px] overflow-x-auto scrollbar-none">
           {ui.breadcrumbs.map((crumb, i) => (
