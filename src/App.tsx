@@ -219,6 +219,7 @@ const RentalManagementSoftwarePage = safeLazy(() => import("./pages/seo/CoreSEOP
 const LocationsPage = safeLazy(() => import("./pages/seo/LocationsPage"), "LocationsPage");
 const CountryHubPage = safeLazy(() => import("./pages/seo/CountryHubPage"), "CountryHubPage");
 const CityHubPage = safeLazy(() => import("./pages/seo/CityHubPage"), "CityHubPage");
+const DynamicCityCategoryPage = safeLazy(() => import("./pages/seo/CityCategoryPage"), "DynamicCityCategoryPage");
 const MarketplaceHubPage = safeLazy(() => import("./pages/seo/MarketplaceCityPage").then(m => ({ default: m.MarketplaceHubPage })), "MarketplaceHubPage");
 const MarketplaceCityPage = safeLazy(() => import("./pages/seo/MarketplaceCityPage").then(m => ({ default: m.MarketplaceCityPage })), "MarketplaceCityPage");
 const MarketplaceServiceCityPage = safeLazy(() => import("./pages/seo/MarketplaceCityPage").then(m => ({ default: m.MarketplaceServiceCityPage })), "MarketplaceServiceCityPage");
@@ -940,6 +941,7 @@ const App = () => (
               <Route path="/city/:citySlug/services" element={<CityServicesPage />} />
               <Route path="/city/:citySlug/activities" element={<CityActivitiesPage />} />
               <Route path="/city/:citySlug/concierge" element={<CityConciergePage />} />
+              <Route path="/city/:citySlug/:categorySlug" element={<DynamicCityCategoryPage />} />
               <Route path="/marketplace" element={<MarketplaceHubPage />} />
               <Route path="/marketplace/:citySlug" element={<MarketplaceCityPage />} />
               <Route path="/marketplace/:citySlug/:serviceSlug" element={<MarketplaceServiceCityPage />} />
