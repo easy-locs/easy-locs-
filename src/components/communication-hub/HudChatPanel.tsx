@@ -37,6 +37,7 @@ import OrbitSafetyNumber from "@/components/orbit/OrbitSafetyNumber";
 import OrbitSecurityPanel from "@/components/orbit/OrbitSecurityPanel";
 import { isE2EEncrypted, getEncryptedPreview } from "@/lib/orbit-metadata-guard";
 import { useOfflineMessages } from "@/hooks/useOfflineMessages";
+import { useOrbitStore } from "@/stores/orbitStore";
 import { WifiOff, Wifi, CloudUpload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -77,6 +78,7 @@ interface Props {
 
 export default function HudChatPanel({ thread, onBack, onToggleContext, showContext, onThreadUpdate }: Props) {
   const { user, orgId } = useAuth();
+  const myOrbitId = useOrbitStore((s) => s.profile?.orbitId ?? null);
   const { t, locale } = useI18n();
   const { startCall, isInCall, isStartingCall } = useCall();
   const { ready: e2eReady, encrypt, decrypt } = useOrbitEncryption(user?.id);
@@ -440,7 +442,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
           .insert({
             conversation_id: thread.v2ConversationId,
             sender_user_id: authUserId,
-            sender_orbit_id: null,
+            sender_orbit_id: myOrbitId || `orbit_${authUserId.slice(0, 12)}`,
             receiver_orbit_id: thread.peerOrbitId ?? null,
             type: isMedia ? "media" : "file",
             body: content,
@@ -516,7 +518,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
           .insert({
             conversation_id: thread.v2ConversationId,
             sender_user_id: authUserId,
-            sender_orbit_id: null,
+            sender_orbit_id: myOrbitId || `orbit_${authUserId.slice(0, 12)}`,
             receiver_orbit_id: thread.peerOrbitId ?? null,
             type: "media",
             body: "📷 View-once photo",
@@ -640,7 +642,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
           .insert({
             conversation_id: thread.v2ConversationId,
             sender_user_id: authUserId,
-            sender_orbit_id: null,
+            sender_orbit_id: myOrbitId || `orbit_${authUserId.slice(0, 12)}`,
             receiver_orbit_id: thread.peerOrbitId ?? null,
             type: "text",
             body: storedContent,
