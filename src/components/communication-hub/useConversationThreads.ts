@@ -371,13 +371,13 @@ export function useConversationThreads() {
                 .select("id, orbit_id, display_name, avatar_url, email")
                 .in("id", Array.from(peerIds));
 
-              const profileMap = new Map((peerProfiles || []).map((p: any) => [p.id, p]));
-              const orbitMap = new Map((peerOrbitProfiles || []).map((p: any) => [p.id, p]));
+              const profileMap = new Map<string, any>((peerProfiles || []).map((p: any) => [p.id, p]));
+              const orbitMap = new Map<string, any>((peerOrbitProfiles || []).map((p: any) => [p.id, p]));
 
               for (const thread of threadMap.values()) {
                 if (!thread.isV2 || !thread.peerUserId) continue;
-                const base = profileMap.get(thread.peerUserId);
-                const orbit = orbitMap.get(thread.peerUserId);
+                const base: any = profileMap.get(thread.peerUserId);
+                const orbit: any = orbitMap.get(thread.peerUserId);
                 const fullName = [base?.first_name, base?.last_name].filter(Boolean).join(" ").trim();
                 thread.name = orbit?.display_name || fullName || base?.name || thread.name || "Contact";
                 thread.email = orbit?.email || base?.email || thread.email || null;
