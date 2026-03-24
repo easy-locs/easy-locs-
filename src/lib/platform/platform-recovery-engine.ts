@@ -1,12 +1,13 @@
 /**
  * PLATFORM AUTO RECOVERY ENGINE
- * Central trigger that checks, reconnects, audits, and auto-fixes the platform.
- * Can be run at boot, after deploy, manually from admin, or via cron.
+ * Central trigger that checks, reconnects, audits, auto-fixes, and heals the platform.
  */
 
 import { supabase } from "@/integrations/supabase/client";
 import { setEngineHealth } from "@/lib/engine/centralEngineRuntime";
 import { getEngineRegistry } from "@/lib/engine/centralEngineRuntime";
+import { runAutoFix, type AutoFixResult } from "./platform-auto-fix";
+import { runAllHealthChecks, type HealthCheckResult } from "./platform-health-checks";
 
 // ─── Types ───────────────────────────────────────────────────────
 
@@ -14,7 +15,7 @@ export type ModuleStatus = "ok" | "error" | "skipped" | "fixed";
 
 export interface ModuleCheckResult {
   module: string;
-  group: "core" | "backend" | "state" | "audit" | "fix";
+  group: "core" | "backend" | "state" | "audit" | "fix" | "health" | "autofix";
   status: ModuleStatus;
   detail: string;
   durationMs: number;
@@ -27,20 +28,23 @@ export interface RecoveryRunReport {
   totalMs: number;
   trigger: "boot" | "manual" | "cron" | "deploy";
   modules: ModuleCheckResult[];
+  autoFixes: AutoFixResult[];
+  healthChecks: HealthCheckResult[];
   summary: {
     total: number;
     ok: number;
     error: number;
     fixed: number;
     skipped: number;
+    autoFixesApplied: number;
+    healthIssues: number;
   };
 }
 
-// ─── Execution history (in-memory, persisted to localStorage) ───
+// ─── Execution history ──────────────────────────────────────────
 
 const STORAGE_KEY = "platform_recovery_runs_v1";
 const MAX_RUNS = 50;
-
 let runs: RecoveryRunReport[] = [];
 
 function loadRuns(): RecoveryRunReport[] {
@@ -73,13 +77,7 @@ async function checkTable(name: string, table: string): Promise<ModuleCheckResul
   const t = Date.now();
   try {
     const { error } = await (supabase as any).from(table).select("id").limit(1);
-    return {
-      module: name,
-      group: "backend",
-      status: error ? "error" : "ok",
-      detail: error ? error.message : "reachable",
-      durationMs: Date.now() - t,
-    };
+    return { module: name, group: "backend", status: error ? "error" : "ok", detail: error ? error.message : "reachable", durationMs: Date.now() - t };
   } catch (e: any) {
     return { module: name, group: "backend", status: "error", detail: e?.message ?? "unknown", durationMs: Date.now() - t };
   }
@@ -88,17 +86,9 @@ async function checkTable(name: string, table: string): Promise<ModuleCheckResul
 async function checkRpc(name: string, rpcName: string): Promise<ModuleCheckResult> {
   const t = Date.now();
   try {
-    // Just verify the RPC exists by calling with dummy params that will fail gracefully
     const { error } = await supabase.rpc(rpcName as any, {} as any);
-    // Even a parameter error means the RPC endpoint is reachable
     const reachable = !error || !error.message?.includes("Could not find the function");
-    return {
-      module: name,
-      group: "backend",
-      status: reachable ? "ok" : "error",
-      detail: reachable ? "rpc reachable" : error?.message ?? "not found",
-      durationMs: Date.now() - t,
-    };
+    return { module: name, group: "backend", status: reachable ? "ok" : "error", detail: reachable ? "rpc reachable" : error?.message ?? "not found", durationMs: Date.now() - t };
   } catch (e: any) {
     return { module: name, group: "backend", status: "error", detail: e?.message ?? "unknown", durationMs: Date.now() - t };
   }
@@ -124,57 +114,6 @@ function checkStore(name: string, storeFn: () => any): ModuleCheckResult {
   }
 }
 
-// ─── Audit checks ───────────────────────────────────────────────
-
-function auditRawI18nKeys(): ModuleCheckResult {
-  const t = Date.now();
-  if (typeof document === "undefined") return { module: "i18n_raw_keys", group: "audit", status: "skipped", detail: "no DOM", durationMs: 0 };
-  
-  const allText = document.body?.innerText ?? "";
-  const rawKeyPattern = /(?:discovery|common|travel|orbit|wallet|settings|admin)\.[a-z_]+\.[a-z_]+/gi;
-  const matches = allText.match(rawKeyPattern) ?? [];
-  
-  return {
-    module: "i18n_raw_keys",
-    group: "audit",
-    status: matches.length > 0 ? "error" : "ok",
-    detail: matches.length > 0 ? `${matches.length} raw keys visible: ${matches.slice(0, 3).join(", ")}` : "no raw keys detected",
-    durationMs: Date.now() - t,
-  };
-}
-
-function auditDeadRoutes(): ModuleCheckResult {
-  const t = Date.now();
-  const path = window.location.hash?.replace("#", "") || window.location.pathname;
-  const deadPatterns = ["/explore", "/dispatch", "/growth", "/dino"];
-  const hit = deadPatterns.find((d) => path.startsWith(d));
-  return {
-    module: "dead_routes",
-    group: "audit",
-    status: hit ? "error" : "ok",
-    detail: hit ? `on dead route: ${hit}` : "current route is valid",
-    durationMs: Date.now() - t,
-  };
-}
-
-function auditHardcodedCurrency(): ModuleCheckResult {
-  const t = Date.now();
-  if (typeof document === "undefined") return { module: "hardcoded_currency", group: "audit", status: "skipped", detail: "no DOM", durationMs: 0 };
-  
-  const allText = document.body?.innerText ?? "";
-  // Look for "AED" preceded by a number (like "100 AED" or "AED 100")
-  const aedPattern = /\bAED\s+\d|\d+\s+AED\b/g;
-  const matches = allText.match(aedPattern) ?? [];
-  
-  return {
-    module: "hardcoded_currency",
-    group: "audit",
-    status: matches.length > 3 ? "error" : "ok", // Allow some legitimate AED usage
-    detail: matches.length > 0 ? `${matches.length} AED occurrences in DOM` : "no hardcoded AED",
-    durationMs: Date.now() - t,
-  };
-}
-
 // ─── Main execution ─────────────────────────────────────────────
 
 export async function runPlatformRecovery(
@@ -187,7 +126,7 @@ export async function runPlatformRecovery(
   console.group(`%c🔧 Platform Recovery [${trigger}]`, "color: #3b82f6; font-weight: bold");
 
   // ── A. Backend connectivity ──
-  console.log("[recovery] Checking backend tables...");
+  console.log("[recovery] Checking backend...");
   const tableChecks = await Promise.all([
     checkTable("db.storefront_pages", "storefront_pages"),
     checkTable("db.seed_merchants", "seed_merchants"),
@@ -206,7 +145,6 @@ export async function runPlatformRecovery(
   ]);
   results.push(...tableChecks);
 
-  // Update engine health registry from table checks
   const engineTableMap: Record<string, string> = {
     "db.orders": "orders",
     "db.wallet_accounts": "wallet",
@@ -222,14 +160,12 @@ export async function runPlatformRecovery(
   }
 
   // ── B. RPC checks ──
-  console.log("[recovery] Checking RPCs...");
   const rpcChecks = await Promise.all([
     checkRpc("rpc.ensure_wallet_account", "ensure_wallet_account"),
   ]);
   results.push(...rpcChecks);
 
-  // ── C. Canonical core modules (in-memory) ──
-  console.log("[recovery] Checking canonical core modules...");
+  // ── C. Canonical core ──
   results.push(
     checkCanonicalModule("canonical.entity_resolver", () => {
       try { return typeof require("@/lib/entity/canonical-entity-resolver") !== "undefined"; } catch { return false; }
@@ -239,8 +175,7 @@ export async function runPlatformRecovery(
     }),
   );
 
-  // ── D. Store checks ──
-  console.log("[recovery] Checking stores...");
+  // ── D. Stores ──
   try {
     const { useLocationStore } = await import("@/stores/locationStore");
     results.push(checkStore("store.geo", () => useLocationStore.getState()));
@@ -260,19 +195,41 @@ export async function runPlatformRecovery(
     results.push({ module: "store.wallet", group: "state", status: "error", detail: "import failed", durationMs: 0 });
   }
 
-  // ── E. Runtime audits ──
-  console.log("[recovery] Running runtime audits...");
-  results.push(auditRawI18nKeys());
-  results.push(auditDeadRoutes());
-  results.push(auditHardcodedCurrency());
+  // ── E. Auto-fix engine ──
+  console.log("[recovery] Running auto-fix...");
+  const autoFixes = await runAutoFix();
+  for (const fix of autoFixes) {
+    results.push({
+      module: `autofix.${fix.fix}`,
+      group: "autofix",
+      status: fix.applied ? "fixed" : "ok",
+      detail: fix.detail,
+      durationMs: 0,
+    });
+  }
+
+  // ── F. Health checks ──
+  console.log("[recovery] Running health checks...");
+  const healthChecks = await runAllHealthChecks();
+  for (const hc of healthChecks) {
+    results.push({
+      module: `health.${hc.module}`,
+      group: "health",
+      status: hc.healthy ? "ok" : "error",
+      detail: hc.detail,
+      durationMs: 0,
+    });
+  }
 
   // ── Summarize ──
   const summary = {
     total: results.length,
-    ok: results.filter((r) => r.status === "ok").length,
-    error: results.filter((r) => r.status === "error").length,
-    fixed: results.filter((r) => r.status === "fixed").length,
-    skipped: results.filter((r) => r.status === "skipped").length,
+    ok: results.filter(r => r.status === "ok").length,
+    error: results.filter(r => r.status === "error").length,
+    fixed: results.filter(r => r.status === "fixed").length,
+    skipped: results.filter(r => r.status === "skipped").length,
+    autoFixesApplied: autoFixes.filter(f => f.applied).length,
+    healthIssues: healthChecks.filter(h => !h.healthy).length,
   };
 
   const report: RecoveryRunReport = {
@@ -282,19 +239,19 @@ export async function runPlatformRecovery(
     totalMs: Date.now() - start,
     trigger,
     modules: results,
+    autoFixes,
+    healthChecks,
     summary,
   };
 
-  // Log results
   for (const r of results) {
     const icon = r.status === "ok" ? "✅" : r.status === "error" ? "❌" : r.status === "fixed" ? "🔧" : "⏭️";
     console.log(`${icon} [${r.group}] ${r.module}: ${r.detail} (${r.durationMs}ms)`);
   }
-  console.log(`%c📊 Summary: ${summary.ok}/${summary.total} OK, ${summary.error} errors, ${summary.fixed} fixed`, 
+  console.log(`%c📊 Summary: ${summary.ok}/${summary.total} OK | ${summary.error} errors | ${summary.fixed} fixed | ${summary.autoFixesApplied} auto-fixes | ${summary.healthIssues} health issues`,
     summary.error > 0 ? "color: #ef4444" : "color: #22c55e");
   console.groupEnd();
 
-  // Persist
   runs = [report, ...runs].slice(0, MAX_RUNS);
   saveRuns();
 
