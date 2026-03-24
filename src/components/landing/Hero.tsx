@@ -89,18 +89,18 @@ const Hero = () => {
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="flex items-center justify-center gap-3 sm:gap-5 mb-6 sm:mb-8 flex-wrap"
+          className="flex items-center justify-center gap-2 sm:gap-4 mb-5 sm:mb-8 flex-wrap overflow-hidden"
         >
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border" style={{ background: "hsl(220 40% 8% / 0.6)", borderColor: "hsl(220 15% 90% / 0.06)" }}>
-            <Users className="h-3 w-3" style={{ color: "hsl(var(--accent) / 0.6)" }} />
-            <span className="text-[10px] sm:text-[11px] font-bold" style={{ color: "hsl(var(--accent))" }}>
-              Trusted by {liveStats.users.toLocaleString()}+ users
+          <div className="flex items-center gap-1.5 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full border shrink-0 max-w-[48%] sm:max-w-none" style={{ background: "hsl(220 40% 8% / 0.6)", borderColor: "hsl(220 15% 90% / 0.06)" }}>
+            <Users className="h-3 w-3 shrink-0" style={{ color: "hsl(var(--accent) / 0.6)" }} />
+            <span className="text-[9px] sm:text-[11px] font-bold truncate" style={{ color: "hsl(var(--accent))" }}>
+              {liveStats.users.toLocaleString()}+ users
             </span>
           </div>
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border" style={{ background: "hsl(220 40% 8% / 0.6)", borderColor: "hsl(var(--success) / 0.1)" }}>
-            <TrendingUp className="h-3 w-3" style={{ color: "hsl(var(--success))" }} />
-            <span className="text-[10px] sm:text-[11px] font-bold" style={{ color: "hsl(var(--success))" }}>
-              ${liveStats.processed}M processed this month
+          <div className="flex items-center gap-1.5 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full border shrink-0 max-w-[48%] sm:max-w-none" style={{ background: "hsl(220 40% 8% / 0.6)", borderColor: "hsl(var(--success) / 0.1)" }}>
+            <TrendingUp className="h-3 w-3 shrink-0" style={{ color: "hsl(var(--success))" }} />
+            <span className="text-[9px] sm:text-[11px] font-bold truncate" style={{ color: "hsl(var(--success))" }}>
+              ${liveStats.processed}M processed
             </span>
           </div>
         </motion.div>
@@ -152,32 +152,31 @@ const Hero = () => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.35 }}
-              className="flex items-center justify-center lg:justify-start gap-3 flex-wrap"
+              className="flex items-center justify-center lg:justify-start gap-2 flex-wrap overflow-hidden"
             >
               {SPEED_STATS.map((s) => (
-                <span key={s.label} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-semibold"
+                <span key={s.label} className="inline-flex items-center gap-1 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full border text-[10px] sm:text-xs font-semibold shrink-0"
                   style={{ background: "hsl(220 40% 8% / 0.5)", borderColor: "hsl(220 15% 90% / 0.06)", color: s.color }}>
                   {s.emoji} {s.label}
                 </span>
               ))}
-              {/* Live radar stat */}
               {radar && radar.availableCount > 0 && (
                 <motion.span
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-semibold"
+                  className="inline-flex items-center gap-1 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full border text-[10px] sm:text-xs font-semibold shrink-0"
                   style={{ background: "hsl(var(--success) / 0.08)", borderColor: "hsl(var(--success) / 0.15)", color: "hsl(var(--success))" }}
                 >
-                  🚕 {radar.availableCount} taxis nearby · ⚡ fastest: {formatETA(radar.etaMinutes)}
+                  🚕 {radar.availableCount} nearby
                 </motion.span>
               )}
             </motion.div>
 
             {/* Universe chips */}
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }} className="flex flex-wrap justify-center lg:justify-start gap-1.5">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }} className="flex flex-wrap justify-center lg:justify-start gap-1 sm:gap-1.5 overflow-hidden">
               {UNIVERSES.map((u, i) => (
-                <motion.span key={u.label} initial={{ opacity: 0, scale: 0.85 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.45 + i * 0.03 }} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-semibold border" style={{ background: u.bg, borderColor: `${u.color}25`, color: u.color }}>
-                  <u.icon className="h-2.5 w-2.5" />{u.label}
+                <motion.span key={u.label} initial={{ opacity: 0, scale: 0.85 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.45 + i * 0.03 }} className="inline-flex items-center gap-0.5 sm:gap-1 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full text-[9px] sm:text-[10px] font-semibold border shrink-0" style={{ background: u.bg, borderColor: `${u.color}25`, color: u.color }}>
+                  <u.icon className="h-2.5 w-2.5 shrink-0" />{u.label}
                 </motion.span>
               ))}
             </motion.div>
@@ -213,12 +212,12 @@ const Hero = () => {
             </motion.div>
 
             {/* Intent selector */}
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.8 }} className="flex items-center justify-center lg:justify-start gap-1">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.8 }} className="flex items-center justify-center lg:justify-start gap-1 overflow-x-auto scrollbar-none pb-1">
               {INTENTS.map((it, i) => (
                 <button
                   key={it.key}
                   onClick={() => setIntentIdx(i)}
-                  className="px-2.5 py-1 rounded-full text-[10px] font-semibold border transition-all duration-200"
+                  className="px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full text-[9px] sm:text-[10px] font-semibold border transition-all duration-200 shrink-0 whitespace-nowrap"
                   style={{
                     background: i === intentIdx ? "hsl(var(--accent) / 0.12)" : "transparent",
                     borderColor: i === intentIdx ? "hsl(var(--accent) / 0.3)" : "hsl(220 15% 90% / 0.06)",
