@@ -156,13 +156,20 @@ export async function resolveUnifiedTarget(input: {
     if (!wallet && profile.id) {
       console.log("[resolver] auto-provisioning wallet via RPC for recipient:", profile.id);
       const provStart = performance.now();
-      const { data: rpcResult, error: rpcErr } = await supabase
-        .rpc("ensure_wallet_account", { target_user_id: profile.id, target_currency: currency });
-      if (rpcErr) {
-        console.error("[resolver] RPC ensure_wallet_account FAILED:", rpcErr.message, rpcErr.code);
-      } else if (rpcResult && rpcResult.length > 0) {
-        finalWallet = { id: rpcResult[0].wallet_id, status: rpcResult[0].wallet_status };
-        console.log("[resolver] RPC wallet provisioned:", finalWallet);
+      try {
+        const { data: rpcResult, error: rpcErr } = await supabase
+          .rpc("ensure_wallet_account", { target_user_id: profile.id, target_currency: currency });
+        if (rpcErr) {
+          console.error("[resolver] RPC ensure_wallet_account FAILED:", rpcErr.message, rpcErr.code, rpcErr.details);
+          // Surface error to UI via toast import would add coupling; log is sufficient for debugging
+        } else if (rpcResult && rpcResult.length > 0) {
+          finalWallet = { id: rpcResult[0].wallet_id, status: rpcResult[0].wallet_status };
+          console.log("[resolver] wallet provisioned:", { walletId: finalWallet.id, status: finalWallet.status, action: "auto_created_or_existing" });
+        } else {
+          console.error("[resolver] RPC returned empty result for:", profile.id);
+        }
+      } catch (e: any) {
+        console.error("[resolver] RPC exception:", e?.message);
       }
       walletResolveMs = performance.now() - provStart;
     }
