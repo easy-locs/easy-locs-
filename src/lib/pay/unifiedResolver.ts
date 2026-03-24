@@ -198,13 +198,35 @@ export async function resolveUnifiedTarget(input: {
   if (!profile) return null;
 
   const walletStart = performance.now();
-  const { data: wallet } = await supabase
+  let { data: wallet } = await supabase
     .from("wallet_accounts")
     .select("id, status")
     .eq("owner_user_id", profile.id)
     .eq("status", "active")
     .limit(1)
     .maybeSingle();
+
+  // Auto-provision wallet for known recipients
+  if (!wallet) {
+    console.log("[resolver] path C auto-provisioning wallet for:", profile.id);
+    const { data: created, error: createErr } = await supabase
+      .from("wallet_accounts")
+      .insert({ owner_user_id: profile.id, currency, balance: 0, status: "active" } as any)
+      .select("id, status")
+      .maybeSingle();
+    if (createErr && createErr.code === "23505") {
+      const { data: refetched } = await supabase
+        .from("wallet_accounts")
+        .select("id, status")
+        .eq("owner_user_id", profile.id)
+        .eq("status", "active")
+        .limit(1)
+        .maybeSingle();
+      wallet = refetched;
+    } else if (created) {
+      wallet = created;
+    }
+  }
   const walletResolveMs = performance.now() - walletStart;
 
   return {
