@@ -55,7 +55,23 @@ async function persistRanking(
     .from("merchant_onboarding_state")
     .update({ visibility_status: result.visibilityClass })
     .eq("entity_id", entityId);
-}
+
+  // Sync visibility_mode on seed_merchants for discovery governance
+  if (entityType === "seed") {
+    const modeMap: Record<string, string> = {
+      hidden: "coming_soon",
+      indexed_not_public: "coming_soon",
+      public_seed: "live",
+      ready_for_claim: "live",
+      priority_public: "live",
+      boost_ready: "live",
+    };
+    const newMode = modeMap[result.visibilityClass] ?? "coming_soon";
+    await (supabase as any)
+      .from("seed_merchants")
+      .update({ visibility_mode: newMode })
+      .eq("id", entityId);
+  }
 
 export async function rerankCandidates(limit = 500): Promise<number> {
   const { data: candidates } = await (supabase as any)
