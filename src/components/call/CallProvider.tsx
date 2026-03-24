@@ -189,9 +189,12 @@ export function CallProvider({ children }: { children: ReactNode }) {
         }
       )
       .subscribe((status, err) => {
-        console.log("[CallProvider] realtime subscription status:", status, err ? JSON.stringify({ message: err.message, name: (err as any).name, code: (err as any).code, stack: (err as any).stack?.slice(0, 200) }) : "");
-        if (status === "CHANNEL_ERROR") {
-          console.error("[CallProvider] CHANNEL_ERROR — full error object:", err);
+        if (status === "SUBSCRIBED") {
+          console.log("[CallProvider] realtime subscription active");
+        } else if (status === "CHANNEL_ERROR") {
+          console.warn("[CallProvider] channel error, will auto-retry on next mount");
+        } else if (status === "TIMED_OUT") {
+          console.warn("[CallProvider] subscription timed out");
         }
       });
 
