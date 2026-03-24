@@ -1,25 +1,71 @@
 /**
  * Direct user-to-user thread utilities.
- * Creates a deterministic context_id from two user UUIDs for 1:1 conversations.
+ * CANONICAL V2 PATH: Creates conversations_v2 entries for direct messaging.
+ * Legacy conversation_threads are only used as fallback for business contexts.
  */
 import { supabase } from "@/integrations/supabase/client";
 
 /** Generate a deterministic direct-thread context_id from two user IDs */
 export function getDirectContextId(userA: string, userB: string): string {
-  // Sort to ensure the same ID regardless of who initiates
   const sorted = [userA, userB].sort();
   return `direct:${sorted[0]}:${sorted[1]}`;
 }
 
-/** Find or create a conversation thread for direct messaging between two users */
+/** Self-conversation guard */
+function assertNotSelf(currentUserId: string, targetUserId: string): void {
+  if (currentUserId === targetUserId) {
+    throw new Error("[direct-thread] BLOCKED: Cannot create self-conversation");
+  }
+}
+
+/**
+ * Find or create a V2 direct conversation between two users.
+ * Returns the V2 conversation ID and metadata.
+ */
 export async function getOrCreateDirectThread(opts: {
   currentUserId: string;
   targetUserId: string;
   targetName: string;
-}): Promise<{ contextId: string; orgId: string; threadId?: string } | null> {
+}): Promise<{ contextId: string; orgId: string; threadId?: string; v2ConversationId?: string; isV2?: boolean } | null> {
+  assertNotSelf(opts.currentUserId, opts.targetUserId);
+  
   const contextId = getDirectContextId(opts.currentUserId, opts.targetUserId);
 
-  // Check if a conversation_threads row already exists for this context
+  // ── 1. Check V2 conversations first (canonical) ──
+  try {
+    const { data: v2Existing } = await (supabase as any)
+      .from("conversations_v2")
+      .select("id, participants")
+      .eq("type", "direct")
+      .limit(200);
+
+    if (v2Existing?.length) {
+      for (const conv of v2Existing) {
+        const participants = conv.participants as any[];
+        if (!Array.isArray(participants)) continue;
+        const userIds = participants
+          .map((p: any) => p?.userId || p?.user_id || p?.id || (typeof p === "string" ? p : null))
+          .filter(Boolean);
+        if (
+          userIds.includes(opts.currentUserId) &&
+          userIds.includes(opts.targetUserId) &&
+          userIds.length === 2
+        ) {
+          return {
+            contextId,
+            orgId: "",
+            threadId: conv.id,
+            v2ConversationId: conv.id,
+            isV2: true,
+          };
+        }
+      }
+    }
+  } catch (e) {
+    console.warn("[direct-thread] V2 lookup failed:", e);
+  }
+
+  // ── 2. Check legacy conversation_threads (backward compat) ──
   const { data: existingThread } = await supabase
     .from("conversation_threads")
     .select("id, org_id, context_id")
@@ -31,15 +77,7 @@ export async function getOrCreateDirectThread(opts: {
     return { contextId: existingThread.context_id!, orgId: existingThread.org_id, threadId: existingThread.id };
   }
 
-  // Also check by messages (legacy fallback)
-  const { data: existingMsg } = await supabase
-    .from("messages")
-    .select("context_id, org_id")
-    .eq("context_id", contextId)
-    .limit(1)
-    .maybeSingle();
-
-  // Get the current user's org (or target user's org) as the org_id anchor
+  // ── 3. Resolve org_id ──
   const { data: membership } = await supabase
     .from("org_members")
     .select("org_id")
@@ -47,7 +85,6 @@ export async function getOrCreateDirectThread(opts: {
     .limit(1)
     .maybeSingle();
 
-  // Fallback: try target user's org
   let orgId = membership?.org_id;
   if (!orgId) {
     const { data: targetMembership } = await supabase
@@ -61,21 +98,63 @@ export async function getOrCreateDirectThread(opts: {
 
   if (!orgId) return null;
 
-  // If we found existing messages but no thread row, create the thread row
-  if (existingMsg) {
-    const threadId = await ensureConversationThread(orgId, contextId, opts);
-    return { contextId, orgId, threadId: threadId || undefined };
+  // ── 4. Create V2 conversation (canonical path) ──
+  try {
+    // Get orbit profiles for both users
+    const { data: orbitProfiles } = await (supabase as any)
+      .from("orbit_profiles_v2")
+      .select("id, orbit_id, display_name, email, avatar_url")
+      .in("id", [opts.currentUserId, opts.targetUserId]);
+
+    const profileMap = new Map((orbitProfiles || []).map((p: any) => [p.id, p]));
+    const currentProfile = profileMap.get(opts.currentUserId);
+    const targetProfile = profileMap.get(opts.targetUserId);
+
+    const participants = [
+      {
+        userId: opts.currentUserId,
+        orbitId: currentProfile?.orbit_id || null,
+        displayName: currentProfile?.display_name || "You",
+        email: currentProfile?.email || null,
+        avatarUrl: currentProfile?.avatar_url || null,
+      },
+      {
+        userId: opts.targetUserId,
+        orbitId: targetProfile?.orbit_id || null,
+        displayName: targetProfile?.display_name || opts.targetName,
+        email: targetProfile?.email || null,
+        avatarUrl: targetProfile?.avatar_url || null,
+      },
+    ];
+
+    const { data: v2Conv, error: v2Err } = await (supabase as any)
+      .from("conversations_v2")
+      .insert({
+        type: "direct",
+        participants,
+        title: null,
+        created_by: opts.currentUserId,
+        last_message_at: new Date().toISOString(),
+      })
+      .select("id")
+      .maybeSingle();
+
+    if (v2Conv && !v2Err) {
+      return {
+        contextId,
+        orgId,
+        threadId: v2Conv.id,
+        v2ConversationId: v2Conv.id,
+        isV2: true,
+      };
+    }
+    console.warn("[direct-thread] V2 create failed, falling back to legacy:", v2Err);
+  } catch (e) {
+    console.warn("[direct-thread] V2 creation error:", e);
   }
 
-  // Create conversation_threads row first
+  // ── 5. Legacy fallback — create conversation_threads ──
   const threadId = await ensureConversationThread(orgId, contextId, opts);
-
-  // Then create a system message to seed the conversation
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("name, email")
-    .eq("id", opts.currentUserId)
-    .maybeSingle();
 
   await supabase
     .from("messages")
@@ -86,8 +165,7 @@ export async function getOrCreateDirectThread(opts: {
       context_id: contextId,
       context_type: "direct",
       message_type: "system",
-      contact_email: profile?.email || "",
-      contact_name: profile?.name || "User",
+      contact_name: opts.targetName,
       conversation_status: "active",
     } as any);
 
@@ -113,7 +191,6 @@ async function ensureConversationThread(
     }).select("id").maybeSingle();
     return data?.id || null;
   } catch (e) {
-    // May already exist (race condition) — fetch existing
     console.warn("[direct-thread] conversation_threads insert:", e);
     const { data: existing } = await supabase
       .from("conversation_threads")
