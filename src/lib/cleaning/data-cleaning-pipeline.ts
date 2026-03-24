@@ -78,11 +78,11 @@ export async function dedupeShops(shops: any[], result: CleaningResult, onProgre
   for (const group of groups) {
     for (const dupId of group.duplicateIds) {
       try {
-        await (supabase as any).from("storefront_pages").update({
-          readiness_status: "draft", visibility_mode: "hidden",
+        await batchSafeAutoWrite(dupId, {
+          readiness_status: "draft",
+          visibility_mode: "hidden",
           blocking_reason: "duplicate",
-          metadata_json: { hidden_reason: "duplicate", kept_version: group.bestId },
-        }).eq("id", dupId);
+        }, "dedup_engine");
         result.duplicatesHidden++;
       } catch (e: any) { result.errors.push(`Dedup error ${dupId}: ${e.message}`); }
     }
