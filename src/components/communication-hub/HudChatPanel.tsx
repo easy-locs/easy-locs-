@@ -433,28 +433,47 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
         });
       }
 
-      const fileInsertPayload: any = {
-        org_id: orgId,
-        sender_id: authUserId,
-        tenant_id: thread.tenantId || null,
-        booking_id: thread.bookingId || null,
-        booking_type: thread.bookingType || null,
-        contact_name: thread.conversationType !== "property" ? thread.name : undefined,
-        contact_email: thread.conversationType !== "property" ? thread.email : undefined,
-        content,
-        category: "general",
-        attachment_url: fileMetaJson ? undefined : finalUrl,
-        message_type: "user",
-        sender_locale: locale,
-        context_type: thread.contextType,
-        context_id: thread.contextId,
-        encrypted: !!fileMetaJson,
-      };
-      if (thread.threadId) fileInsertPayload.thread_id = thread.threadId;
-
-      const { error: insertError } = await supabase.from("messages").insert(fileInsertPayload);
-
-      if (insertError) throw insertError;
+      // ── V2 CANONICAL FILE SEND ──
+      if (thread.isV2 && thread.v2ConversationId) {
+        const { error: v2FileErr } = await (supabase as any)
+          .from("chat_messages_v2")
+          .insert({
+            conversation_id: thread.v2ConversationId,
+            sender_user_id: authUserId,
+            sender_orbit_id: null,
+            receiver_orbit_id: thread.peerOrbitId ?? null,
+            type: isMedia ? "media" : "file",
+            body: content,
+            metadata: fileMetaJson ? { encrypted_file: fileMetaJson, url: finalUrl } : { url: finalUrl },
+          });
+        if (v2FileErr) throw v2FileErr;
+        await (supabase as any)
+          .from("conversations_v2")
+          .update({ last_message_at: new Date().toISOString(), updated_at: new Date().toISOString() })
+          .eq("id", thread.v2ConversationId);
+      } else {
+        // ── LEGACY FILE SEND ──
+        const fileInsertPayload: any = {
+          org_id: orgId,
+          sender_id: authUserId,
+          tenant_id: thread.tenantId || null,
+          booking_id: thread.bookingId || null,
+          booking_type: thread.bookingType || null,
+          contact_name: thread.conversationType !== "property" ? thread.name : undefined,
+          contact_email: thread.conversationType !== "property" ? thread.email : undefined,
+          content,
+          category: "general",
+          attachment_url: fileMetaJson ? undefined : finalUrl,
+          message_type: "user",
+          sender_locale: locale,
+          context_type: thread.contextType,
+          context_id: thread.contextId,
+          encrypted: !!fileMetaJson,
+        };
+        if (thread.threadId) fileInsertPayload.thread_id = thread.threadId;
+        const { error: insertError } = await supabase.from("messages").insert(fileInsertPayload);
+        if (insertError) throw insertError;
+      }
       toast.success(fileMetaJson ? "🔒 Encrypted file sent" : "File sent");
       // Platform bus: file sent
       platformBus.emit("orbit:message_sent", {
@@ -490,16 +509,35 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
       const effectiveTTL = disappearTTL !== "off" ? disappearTTL : privacySettings.defaultDisappearTtl;
       const disappearAt = computeDisappearAt(effectiveTTL);
 
-      const viewOncePayload: any = {
-        org_id: orgId, sender_id: authUserId, tenant_id: thread.tenantId || null,
-        booking_id: thread.bookingId || null, booking_type: thread.bookingType || null,
-        content: "📷 View-once photo", attachment_url: finalUrl,
-        category: "general", message_type: "user", sender_locale: locale,
-        context_type: thread.contextType, context_id: thread.contextId,
-        view_once: true, disappear_at: disappearAt,
-      };
-      if (thread.threadId) viewOncePayload.thread_id = thread.threadId;
-      await supabase.from("messages").insert(viewOncePayload);
+      // ── V2 VIEW-ONCE ──
+      if (thread.isV2 && thread.v2ConversationId) {
+        await (supabase as any)
+          .from("chat_messages_v2")
+          .insert({
+            conversation_id: thread.v2ConversationId,
+            sender_user_id: authUserId,
+            sender_orbit_id: null,
+            receiver_orbit_id: thread.peerOrbitId ?? null,
+            type: "media",
+            body: "📷 View-once photo",
+            metadata: { url: finalUrl, view_once: true },
+          });
+        await (supabase as any)
+          .from("conversations_v2")
+          .update({ last_message_at: new Date().toISOString() })
+          .eq("id", thread.v2ConversationId);
+      } else {
+        const viewOncePayload: any = {
+          org_id: orgId, sender_id: authUserId, tenant_id: thread.tenantId || null,
+          booking_id: thread.bookingId || null, booking_type: thread.bookingType || null,
+          content: "📷 View-once photo", attachment_url: finalUrl,
+          category: "general", message_type: "user", sender_locale: locale,
+          context_type: thread.contextType, context_id: thread.contextId,
+          view_once: true, disappear_at: disappearAt,
+        };
+        if (thread.threadId) viewOncePayload.thread_id = thread.threadId;
+        await supabase.from("messages").insert(viewOncePayload);
+      }
       toast.success("📷 View-once photo sent");
     } catch (e: any) { toast.error(e?.message || "Upload failed"); }
     setUploading(false);
