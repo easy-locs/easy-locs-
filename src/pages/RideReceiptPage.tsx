@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { BackCard } from "@/components/ui/back-card";
 import { supabase } from "@/integrations/supabase/client";
+import { formatMoneyByCountry } from "@/lib/currency-engine";
 
 export default function RideReceiptPage() {
   const { rideRequestId } = useParams();
