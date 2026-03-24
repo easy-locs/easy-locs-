@@ -20,6 +20,7 @@ import SEOHead from "@/components/SEOHead";
 import PremiumMerchantCard from "@/components/discovery/PremiumMerchantCard";
 import { useVerticalListings, type ListingItem } from "@/hooks/useVerticalListings";
 import { getSubcategoryLabel } from "@/lib/discovery/verticals";
+import { resolveCanonicalUI } from "@/lib/ui-engine";
 
 type StayTab = "hotel" | "resort" | "short_stay" | "serviced_apartment";
 type SortMode = "rating" | "price" | "distance" | "reviews";
@@ -53,6 +54,9 @@ export default function TravelStayHub() {
   const [sortBy, setSortBy] = useState<SortMode>("rating");
   const [activeAmenities, setActiveAmenities] = useState<string[]>([]);
   const [showFilters, setShowFilters] = useState(false);
+
+  // ═══ CANONICAL UI ENGINE — drives hero, wording, CTA ═══
+  const ui = useMemo(() => resolveCanonicalUI("property", activeTab), [activeTab]);
 
   const { data: listings = [], isLoading } = useVerticalListings("property", activeTab);
 
