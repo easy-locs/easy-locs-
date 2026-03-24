@@ -318,7 +318,7 @@ export default function TravelStayHub() {
 
         {/* Tab selector */}
         <div className="flex gap-1.5 mb-5 overflow-x-auto scrollbar-none -mx-1 px-1">
-          {STAY_TABS.map(({ key, label, emoji }) => (
+          {STAY_TABS.map(({ key, labelKey, emoji }) => (
             <button
               key={key}
               onClick={() => setActiveTab(key)}
@@ -336,7 +336,7 @@ export default function TravelStayHub() {
               }}
             >
               <span className="text-base">{emoji}</span>
-              <span className="text-[12px]">{label}</span>
+              <span className="text-[12px]">{tc(labelKey)}</span>
             </button>
           ))}
         </div>
