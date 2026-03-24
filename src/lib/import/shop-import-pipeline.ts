@@ -544,8 +544,9 @@ export async function runImportPipeline(config: BatchConfig, items: RawShopInput
       result.quality_distribution[candidateStatus as keyof typeof result.quality_distribution]++;
       const visibilityStatus = qualityScore >= 70 ? "indexed_not_public" : "hidden_imported";
 
-      // Structure menu if available
-      const menuData = item.menu?.length ? structureMenu(item.menu) : null;
+      // Structure menu if available (with full analysis)
+      const menuAnalysis = item.menu?.length ? analyzeMenu(item.menu) : null;
+      const menuData = menuAnalysis ? { categories: menuAnalysis.categories, totalItems: menuAnalysis.totalItems } : null;
 
       // Extract vertical-specific attributes
       const verticalAttrs = extractVerticalAttributes(item, vertical);
