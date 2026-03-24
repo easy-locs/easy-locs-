@@ -273,7 +273,7 @@ function calculateQualityScore(item: RawShopInput, completeness: CompletenessSco
   return Math.min(score, 100);
 }
 
-// ─── STEP 7: Menu structuring ───
+// ─── STEP 7: Menu structuring + display scoring ───
 interface StructuredMenuItem {
   name: string;
   category?: string;
@@ -283,9 +283,44 @@ interface StructuredMenuItem {
   image?: string;
   tags?: string[];
   available?: boolean;
+  is_bestseller?: boolean;
 }
 
-function structureMenu(rawMenu: any[]): { categories: Record<string, StructuredMenuItem[]>; totalItems: number } {
+interface MenuDisplayAnalysis {
+  categories: Record<string, StructuredMenuItem[]>;
+  totalItems: number;
+  menu_display_score: number;
+  bestseller_count: number;
+  missing_image_count: number;
+  missing_price_count: number;
+  empty_category_count: number;
+  optimal_category_order: string[];
+  flags: string[];
+}
+
+const CATEGORY_PRIORITY: Record<string, number> = {
+  bestsellers: 1, "best sellers": 1, popular: 1, "most ordered": 1,
+  combos: 2, meals: 2, "value meals": 2,
+  appetizers: 3, starters: 3,
+  mains: 4, "main course": 4, entrees: 4,
+  burgers: 5, pizza: 5, sandwiches: 5, wraps: 5,
+  sides: 6,
+  salads: 7,
+  soups: 8,
+  desserts: 9, sweets: 9,
+  drinks: 10, beverages: 10, juice: 10, coffee: 10,
+  extras: 11, "add-ons": 11, sauces: 11,
+  general: 99,
+};
+
+function detectBestseller(item: any): boolean {
+  const tags = (item.tags || []).map((t: string) => t.toLowerCase());
+  const name = (item.name || "").toLowerCase();
+  return tags.includes("bestseller") || tags.includes("popular") || tags.includes("best seller")
+    || name.includes("bestseller") || item.is_bestseller === true || item.popular === true;
+}
+
+function analyzeMenu(rawMenu: any[]): MenuDisplayAnalysis {
   const categories: Record<string, StructuredMenuItem[]> = {};
   let totalItems = 0;
 
