@@ -35,7 +35,6 @@ interface OrderReceiptProps {
 }
 
 function fmtPrice(n: number, c?: string) {
-  const { formatMoneyByCountry } = require("@/lib/currency-engine");
   return formatMoneyByCountry(Number(n || 0), null, c);
 }
 
