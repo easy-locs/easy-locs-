@@ -1,15 +1,16 @@
 import { useNavigate } from "react-router-dom";
+import { tc } from "@/lib/i18n-canonical";
 
 export function FinalQuickActionLauncher() {
   const navigate = useNavigate();
 
   const items = [
-    { label: "Food", path: "/food", emoji: "🍕" },
-    { label: "Grocery", path: "/grocery", emoji: "🛒" },
-    { label: "Orders", path: "/my-orders", emoji: "📦" },
-    { label: "Wallet", path: "/wallet/hub", emoji: "💳" },
-    { label: "Favorites", path: "/favorites", emoji: "❤️" },
-    { label: "Support", path: "/support/tickets", emoji: "🎧" },
+    { label: tc("discovery.vertical.food.cta_secondary"), path: "/food", emoji: "🍕" },
+    { label: tc("discovery.vertical.grocery.title"), path: "/grocery", emoji: "🛒" },
+    { label: tc("nav.orders"), path: "/my-orders", emoji: "📦" },
+    { label: tc("nav.wallet"), path: "/wallet/hub", emoji: "💳" },
+    { label: tc("nav.favorites"), path: "/favorites", emoji: "❤️" },
+    { label: tc("nav.support"), path: "/support/tickets", emoji: "🎧" },
   ];
 
   return (
