@@ -11,6 +11,7 @@ import { useLocationStore } from "@/stores/locationStore";
 import { useOrbitEngine } from "@/stores/orbit-engine";
 import { useHomeSections } from "@/hooks/useHomeSections";
 import { getSmartCategories, getSmartHero, getTimeGreeting, getTimeSlot, type SmartCategory } from "@/lib/smart-home-engine";
+import { eventBus } from "@/lib/events/eventBus";
 import { motion } from "framer-motion";
 
 import foodImg from "@/assets/categories/food.png";
