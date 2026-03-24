@@ -5,7 +5,8 @@
  */
 import { memo, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Search, MapPin, Bell, Wallet, QrCode, Send, ChevronRight, Star, Navigation } from "lucide-react";
+import { MapPin, Bell, Wallet, QrCode, Send, ChevronRight, Star, Navigation } from "lucide-react";
+import UnifiedSearchBar from "@/components/search/UnifiedSearchBar";
 import { useLocationStore } from "@/stores/locationStore";
 import { useOrbitEngine } from "@/stores/orbit-engine";
 import { useHomeSections } from "@/hooks/useHomeSections";
