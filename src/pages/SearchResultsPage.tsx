@@ -1,9 +1,14 @@
-import { useEffect } from "react";
+/**
+ * SearchResultsPage — Canonical search results, driven by UI engine per vertical.
+ */
+import { useEffect, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { ArrowLeft, Star, MapPin, Clock } from "lucide-react";
+import { motion } from "framer-motion";
 import { useUnifiedSearchStore } from "@/lib/search-engine/search-store";
 import UnifiedSearchBar from "@/components/search/UnifiedSearchBar";
 import UnifiedMapControls from "@/components/map/UnifiedMapControls";
+import { resolveCanonicalUI } from "@/lib/ui-engine";
 import type { SearchResult } from "@/lib/search-engine/search-types";
 
 export default function SearchResultsPage() {
@@ -26,12 +31,23 @@ export default function SearchResultsPage() {
 
   const shops = results.filter((r) => r.type === "shop");
   const products = results.filter((r) => r.type === "product");
-  const categories = results.filter((r) => r.type === "category");
 
-  // Group shops by vertical
-  const foodShops = shops.filter((s) => s.vertical === "food");
-  const serviceShops = shops.filter((s) => s.vertical === "services");
-  const otherShops = shops.filter((s) => s.vertical !== "food" && s.vertical !== "services");
+  // Group shops by vertical using canonical engine
+  const groupedByVertical = useMemo(() => {
+    const map = new Map<string, SearchResult[]>();
+    shops.forEach((s) => {
+      const v = s.vertical || "other";
+      if (!map.has(v)) map.set(v, []);
+      map.get(v)!.push(s);
+    });
+    return Array.from(map.entries())
+      .map(([vertical, items]) => ({
+        vertical,
+        items,
+        ui: resolveCanonicalUI(vertical),
+      }))
+      .sort((a, b) => b.items.length - a.items.length);
+  }, [shops]);
 
   const handleResultClick = (result: SearchResult) => {
     if (result.type === "shop") {
@@ -39,7 +55,6 @@ export default function SearchResultsPage() {
     } else if (result.type === "product" && result.shopId) {
       navigate(`/s/${result.shopId}`);
     } else if (result.type === "category") {
-      // Navigate to radar with filter
       navigate("/radar");
     }
   };
@@ -70,46 +85,19 @@ export default function SearchResultsPage() {
 
         {!loading && (
           <>
-            {/* Summary */}
             <p className="text-xs text-muted-foreground">
               {shops.length + products.length} results for "{q}"
             </p>
 
-            {/* Food */}
-            {foodShops.length > 0 && (
-              <ResultSection title="🍕 Food & Restaurants" count={foodShops.length}>
-                {foodShops.map((row) => (
-                  <ShopCard key={row.id} row={row} onClick={() => handleResultClick(row)} />
-                ))}
-              </ResultSection>
-            )}
-
-            {/* Services */}
-            {serviceShops.length > 0 && (
-              <ResultSection title="🔧 Services" count={serviceShops.length}>
-                {serviceShops.map((row) => (
-                  <ShopCard key={row.id} row={row} onClick={() => handleResultClick(row)} />
-                ))}
-              </ResultSection>
-            )}
-
-            {/* Other shops */}
-            {otherShops.length > 0 && (
-              <ResultSection title="🏪 Shops & More" count={otherShops.length}>
-                {otherShops.map((row) => (
-                  <ShopCard key={row.id} row={row} onClick={() => handleResultClick(row)} />
-                ))}
-              </ResultSection>
-            )}
-
-            {/* All shops fallback if no vertical grouping */}
-            {foodShops.length === 0 && serviceShops.length === 0 && otherShops.length === 0 && shops.length > 0 && (
-              <ResultSection title="🏪 Merchants" count={shops.length}>
-                {shops.map((row) => (
-                  <ShopCard key={row.id} row={row} onClick={() => handleResultClick(row)} />
-                ))}
-              </ResultSection>
-            )}
+            {/* Vertical-grouped results — each section styled by canonical engine */}
+            {groupedByVertical.map(({ vertical, items, ui }) => (
+              <VerticalResultSection
+                key={vertical}
+                ui={ui}
+                items={items}
+                onClick={handleResultClick}
+              />
+            ))}
 
             {/* Products */}
             {products.length > 0 && (
@@ -152,6 +140,41 @@ export default function SearchResultsPage() {
   );
 }
 
+/** Vertical-aware result section with accent from canonical engine */
+function VerticalResultSection({
+  ui,
+  items,
+  onClick,
+}: {
+  ui: ReturnType<typeof resolveCanonicalUI>;
+  items: SearchResult[];
+  onClick: (r: SearchResult) => void;
+}) {
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-2">
+        <p className="text-xs font-bold text-foreground uppercase tracking-wide flex items-center gap-1.5">
+          <span className="w-2 h-2 rounded-full" style={{ background: `hsl(${ui.accentHsl})` }} />
+          {ui.emoji} {ui.displayTitle}
+        </p>
+        <span className="text-[10px] text-muted-foreground bg-muted rounded-full px-2 py-0.5">{items.length}</span>
+      </div>
+      <div className="space-y-2">
+        {items.map((row, i) => (
+          <motion.div
+            key={row.id}
+            initial={{ opacity: 0, y: 4 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: i * 0.03 }}
+          >
+            <ShopCard row={row} onClick={() => onClick(row)} accentHsl={ui.accentHsl} ctaLabel={ui.button.primaryCta} />
+          </motion.div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function ResultSection({ title, count, children }: { title: string; count: number; children: React.ReactNode }) {
   return (
     <div>
@@ -164,7 +187,17 @@ function ResultSection({ title, count, children }: { title: string; count: numbe
   );
 }
 
-function ShopCard({ row, onClick }: { row: SearchResult; onClick: () => void }) {
+function ShopCard({
+  row,
+  onClick,
+  accentHsl,
+  ctaLabel,
+}: {
+  row: SearchResult;
+  onClick: () => void;
+  accentHsl?: string;
+  ctaLabel?: string;
+}) {
   return (
     <button
       onClick={onClick}
@@ -181,7 +214,7 @@ function ShopCard({ row, onClick }: { row: SearchResult; onClick: () => void }) 
         <div className="flex items-center gap-2 mt-0.5">
           {row.rating != null && (
             <span className="flex items-center gap-0.5 text-[11px] text-muted-foreground">
-              <Star className="w-3 h-3 text-amber-500 fill-amber-500" />
+              <Star className="w-3 h-3 fill-current" style={{ color: "hsl(45 90% 50%)" }} />
               {row.rating.toFixed(1)}
             </span>
           )}
@@ -198,6 +231,14 @@ function ShopCard({ row, onClick }: { row: SearchResult; onClick: () => void }) 
           )}
         </div>
       </div>
+      {ctaLabel && accentHsl && (
+        <span
+          className="text-[9px] font-bold px-2 py-1 rounded-lg shrink-0"
+          style={{ background: `hsl(${accentHsl} / 0.1)`, color: `hsl(${accentHsl})` }}
+        >
+          {ctaLabel}
+        </span>
+      )}
     </button>
   );
 }
