@@ -439,6 +439,7 @@ const AdminWalletWatchPage = safeLazy(() => import("./pages/admin/AdminWalletWat
 const AdminPlatformRecoveryPage = safeLazy(() => import("./pages/admin/AdminPlatformRecoveryPage"), "AdminPlatformRecoveryPage");
 const AdminShopImportPage = safeLazy(() => import("./pages/admin/AdminShopImportPage"), "AdminShopImportPage");
 const AdminVisualQualityPage = safeLazy(() => import("./pages/admin/AdminVisualQualityPage"), "AdminVisualQualityPage");
+const AdminRankingControlPage = safeLazy(() => import("./pages/admin/AdminRankingControlPage"), "AdminRankingControlPage");
 const CustomerReorderPage = safeLazy(() => import("./pages/customer/CustomerReorderPage"), "CustomerReorderPage");
 const MerchantAutoAcceptSettingsPage = safeLazy(() => import("./pages/merchant/MerchantAutoAcceptSettingsPage"), "MerchantAutoAcceptSettingsPage");
 const AdminSystemHealthPage = safeLazy(() => import("./pages/admin/AdminSystemHealthPage"), "AdminSystemHealthPage");
