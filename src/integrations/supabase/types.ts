@@ -27232,10 +27232,7 @@ export type Database = {
       }
       ensure_wallet_account: {
         Args: { target_currency?: string; target_user_id: string }
-        Returns: {
-          wallet_id: string
-          wallet_status: string
-        }[]
+        Returns: Json
       }
       geocode_city_approx: {
         Args: { _city: string }
