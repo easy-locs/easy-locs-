@@ -4183,6 +4183,10 @@ const pageEn: Record<string, string> = {
   "landing.join.agency_desc": "Manage properties & teams",
   "landing.join.provider": "Service Provider",
   "landing.join.provider_desc": "Offer your services",
+  "landing.menu.tagline": "Your super-app for everything local",
+  "landing.menu.discover": "Discover",
+  "landing.menu.join_platform": "Join the platform",
+  "landing.menu.trust": "Secure payments • Verified sellers • 24/7 support",
   "landing.nav.popular": "Popular",
   "landing.nav.more_languages": "More languages",
 
