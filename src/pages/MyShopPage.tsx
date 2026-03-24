@@ -20,6 +20,8 @@ import { Store, Package, ShoppingBag, Settings, ExternalLink, Copy, Check, Loade
 import { toast } from "sonner";
 import { haptic } from "@/lib/haptics";
 import { assignZoneToStorefront } from "@/lib/zones/autoAssignZone";
+import { setMerchantValue } from "@/lib/engines/merchant-override-engine";
+import { isValidFieldKey } from "@/lib/engines/override-field-registry";
 
 // Lazy-loaded tab modules — only loaded when the tab is active
 const CatalogManager = lazy(() => import("@/components/storefront/CatalogManager"));
