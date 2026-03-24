@@ -2584,6 +2584,135 @@ export type Database = {
           },
         ]
       }
+      canonical_categories: {
+        Row: {
+          active: boolean
+          created_at: string | null
+          emoji: string | null
+          family_id: string
+          icon: string | null
+          id: string
+          image_url: string | null
+          key: string
+          label: string
+          sort_order: number
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string | null
+          emoji?: string | null
+          family_id: string
+          icon?: string | null
+          id?: string
+          image_url?: string | null
+          key: string
+          label: string
+          sort_order?: number
+        }
+        Update: {
+          active?: boolean
+          created_at?: string | null
+          emoji?: string | null
+          family_id?: string
+          icon?: string | null
+          id?: string
+          image_url?: string | null
+          key?: string
+          label?: string
+          sort_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "canonical_categories_family_id_fkey"
+            columns: ["family_id"]
+            isOneToOne: false
+            referencedRelation: "canonical_families"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      canonical_families: {
+        Row: {
+          active: boolean
+          created_at: string | null
+          emoji: string | null
+          id: string
+          key: string
+          label: string
+          sort_order: number
+          vertical_id: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string | null
+          emoji?: string | null
+          id?: string
+          key: string
+          label: string
+          sort_order?: number
+          vertical_id: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string | null
+          emoji?: string | null
+          id?: string
+          key?: string
+          label?: string
+          sort_order?: number
+          vertical_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "canonical_families_vertical_id_fkey"
+            columns: ["vertical_id"]
+            isOneToOne: false
+            referencedRelation: "canonical_verticals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      canonical_subcategories: {
+        Row: {
+          active: boolean
+          category_id: string
+          created_at: string | null
+          description: string | null
+          id: string
+          key: string
+          label: string
+          sort_order: number
+        }
+        Insert: {
+          active?: boolean
+          category_id: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          key: string
+          label: string
+          sort_order?: number
+        }
+        Update: {
+          active?: boolean
+          category_id?: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          key?: string
+          label?: string
+          sort_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "canonical_subcategories_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "canonical_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       canonical_synonyms: {
         Row: {
           active: boolean | null
@@ -2706,6 +2835,36 @@ export type Database = {
           },
         ]
       }
+      canonical_verticals: {
+        Row: {
+          active: boolean
+          created_at: string | null
+          emoji: string | null
+          id: string
+          key: string
+          label: string
+          sort_order: number
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string | null
+          emoji?: string | null
+          id?: string
+          key: string
+          label: string
+          sort_order?: number
+        }
+        Update: {
+          active?: boolean
+          created_at?: string | null
+          emoji?: string | null
+          id?: string
+          key?: string
+          label?: string
+          sort_order?: number
+        }
+        Relationships: []
+      }
       catalog_items: {
         Row: {
           available: boolean | null
@@ -2715,26 +2874,37 @@ export type Database = {
           canonical_subcategory: string | null
           canonical_vertical: string | null
           category_id: string | null
+          category_ref_id: string | null
           compare_at_price: number | null
           completeness_score: number | null
+          conversion_score: number | null
+          cover_image_url: string | null
           created_at: string | null
           created_by_test: boolean
           currency: string | null
+          data_quality_score: number | null
           default_unit: string | null
           description: string | null
           dimensions_json: Json | null
+          family_id: string | null
+          freshness_score: number | null
           gallery_urls: Json | null
+          hero_image_url: string | null
           id: string
           is_test: boolean
           item_type: string | null
+          merchandising_score: number | null
           metadata_json: Json | null
           moderation_status: string | null
           origin_country: string | null
+          packshot_image_url: string | null
           photo_url: string | null
           photo_urls: Json | null
           price: number | null
           product_type: string | null
           quality_score: number | null
+          readiness_score: number | null
+          search_quality_score: number | null
           searchable_text: unknown
           seo_description: string | null
           seo_title: string | null
@@ -2745,14 +2915,19 @@ export type Database = {
           sort_order: number | null
           specifications: Json | null
           stock_quantity: number | null
+          subcategory_ref_id: string | null
           tags: string[] | null
           tax_code: string | null
+          taxonomy_quality_score: number | null
           test_batch_id: string | null
           title: string
           track_inventory: boolean | null
           updated_at: string | null
           user_id: string
+          vertical_id: string | null
           video_url: string | null
+          visibility_score: number | null
+          visual_quality_score: number | null
           warranty_info: string | null
           weight_grams: number | null
         }
@@ -2764,26 +2939,37 @@ export type Database = {
           canonical_subcategory?: string | null
           canonical_vertical?: string | null
           category_id?: string | null
+          category_ref_id?: string | null
           compare_at_price?: number | null
           completeness_score?: number | null
+          conversion_score?: number | null
+          cover_image_url?: string | null
           created_at?: string | null
           created_by_test?: boolean
           currency?: string | null
+          data_quality_score?: number | null
           default_unit?: string | null
           description?: string | null
           dimensions_json?: Json | null
+          family_id?: string | null
+          freshness_score?: number | null
           gallery_urls?: Json | null
+          hero_image_url?: string | null
           id?: string
           is_test?: boolean
           item_type?: string | null
+          merchandising_score?: number | null
           metadata_json?: Json | null
           moderation_status?: string | null
           origin_country?: string | null
+          packshot_image_url?: string | null
           photo_url?: string | null
           photo_urls?: Json | null
           price?: number | null
           product_type?: string | null
           quality_score?: number | null
+          readiness_score?: number | null
+          search_quality_score?: number | null
           searchable_text?: unknown
           seo_description?: string | null
           seo_title?: string | null
@@ -2794,14 +2980,19 @@ export type Database = {
           sort_order?: number | null
           specifications?: Json | null
           stock_quantity?: number | null
+          subcategory_ref_id?: string | null
           tags?: string[] | null
           tax_code?: string | null
+          taxonomy_quality_score?: number | null
           test_batch_id?: string | null
           title: string
           track_inventory?: boolean | null
           updated_at?: string | null
           user_id: string
+          vertical_id?: string | null
           video_url?: string | null
+          visibility_score?: number | null
+          visual_quality_score?: number | null
           warranty_info?: string | null
           weight_grams?: number | null
         }
@@ -2813,26 +3004,37 @@ export type Database = {
           canonical_subcategory?: string | null
           canonical_vertical?: string | null
           category_id?: string | null
+          category_ref_id?: string | null
           compare_at_price?: number | null
           completeness_score?: number | null
+          conversion_score?: number | null
+          cover_image_url?: string | null
           created_at?: string | null
           created_by_test?: boolean
           currency?: string | null
+          data_quality_score?: number | null
           default_unit?: string | null
           description?: string | null
           dimensions_json?: Json | null
+          family_id?: string | null
+          freshness_score?: number | null
           gallery_urls?: Json | null
+          hero_image_url?: string | null
           id?: string
           is_test?: boolean
           item_type?: string | null
+          merchandising_score?: number | null
           metadata_json?: Json | null
           moderation_status?: string | null
           origin_country?: string | null
+          packshot_image_url?: string | null
           photo_url?: string | null
           photo_urls?: Json | null
           price?: number | null
           product_type?: string | null
           quality_score?: number | null
+          readiness_score?: number | null
+          search_quality_score?: number | null
           searchable_text?: unknown
           seo_description?: string | null
           seo_title?: string | null
@@ -2843,14 +3045,19 @@ export type Database = {
           sort_order?: number | null
           specifications?: Json | null
           stock_quantity?: number | null
+          subcategory_ref_id?: string | null
           tags?: string[] | null
           tax_code?: string | null
+          taxonomy_quality_score?: number | null
           test_batch_id?: string | null
           title?: string
           track_inventory?: boolean | null
           updated_at?: string | null
           user_id?: string
+          vertical_id?: string | null
           video_url?: string | null
+          visibility_score?: number | null
+          visual_quality_score?: number | null
           warranty_info?: string | null
           weight_grams?: number | null
         }
@@ -2863,10 +3070,38 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "catalog_items_category_ref_id_fkey"
+            columns: ["category_ref_id"]
+            isOneToOne: false
+            referencedRelation: "canonical_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "catalog_items_family_id_fkey"
+            columns: ["family_id"]
+            isOneToOne: false
+            referencedRelation: "canonical_families"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "catalog_items_shop_id_fkey"
             columns: ["shop_id"]
             isOneToOne: false
             referencedRelation: "storefront_pages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "catalog_items_subcategory_ref_id_fkey"
+            columns: ["subcategory_ref_id"]
+            isOneToOne: false
+            referencedRelation: "canonical_subcategories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "catalog_items_vertical_id_fkey"
+            columns: ["vertical_id"]
+            isOneToOne: false
+            referencedRelation: "canonical_verticals"
             referencedColumns: ["id"]
           },
         ]
@@ -2875,6 +3110,7 @@ export type Database = {
         Row: {
           active: boolean | null
           alt_text: string | null
+          background_removed: boolean | null
           created_at: string | null
           entity_id: string | null
           height: number | null
@@ -2893,6 +3129,7 @@ export type Database = {
         Insert: {
           active?: boolean | null
           alt_text?: string | null
+          background_removed?: boolean | null
           created_at?: string | null
           entity_id?: string | null
           height?: number | null
@@ -2911,6 +3148,7 @@ export type Database = {
         Update: {
           active?: boolean | null
           alt_text?: string | null
+          background_removed?: boolean | null
           created_at?: string | null
           entity_id?: string | null
           height?: number | null
@@ -27591,6 +27829,10 @@ export type Database = {
       }
       cleanup_expired_messages: { Args: never; Returns: number }
       cleanup_expired_nonces: { Args: never; Returns: number }
+      compute_product_quality_scores: {
+        Args: { p_product_id: string }
+        Returns: undefined
+      }
       compute_trust_score: { Args: { p_shop_id: string }; Returns: number }
       create_api_key: {
         Args: { _name: string; _org_id: string; _scopes: string[] }
@@ -27937,6 +28179,10 @@ export type Database = {
       }
       purge_expired_sessions: { Args: never; Returns: undefined }
       purge_old_login_events: { Args: never; Returns: undefined }
+      rebuild_product_search_index: {
+        Args: { p_product_id: string }
+        Returns: undefined
+      }
       ride_complete: {
         Args: {
           p_driver_id: string
@@ -27952,6 +28198,30 @@ export type Database = {
       ride_mark_arrived: {
         Args: { p_driver_id: string; p_ride_request_id: string }
         Returns: Json
+      }
+      search_global_products_v2: {
+        Args: {
+          limit_count?: number
+          p_category?: string
+          p_city?: string
+          p_country?: string
+          p_vertical?: string
+          q: string
+        }
+        Returns: {
+          brand: string
+          category: string
+          currency: string
+          description: string
+          entity_id: string
+          photo_url: string
+          price: number
+          product_id: string
+          rank_score: number
+          subcategory: string
+          title: string
+          vertical: string
+        }[]
       }
       search_nearby_items: {
         Args: {
@@ -28002,6 +28272,14 @@ export type Database = {
           slug: string
           tagline: string
           vertical: string
+        }[]
+      }
+      suggest_onboarding_template: {
+        Args: { p_city?: string; p_subcategory?: string; p_vertical: string }
+        Returns: {
+          priority: number
+          template_id: string
+          template_name: string
         }[]
       }
       transfer_locs: {
