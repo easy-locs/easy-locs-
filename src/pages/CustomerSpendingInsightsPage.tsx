@@ -66,7 +66,7 @@ export default function CustomerSpendingInsightsPage() {
       {!isLoading && data && (
         <>
           <div className="grid grid-cols-3 gap-3 px-4 pb-4">
-            <Metric title="Total Spent" value={`${data.totalSpent.toFixed(2)} AED`} />
+            <Metric title="Total Spent" value={formatMoneyByCountry(data.totalSpent, null, "AED")} />
             <Metric title="Orders" value={String(data.orderCount)} />
             <Metric title="Avg Order" value={`${data.averageOrder.toFixed(2)} AED`} />
           </div>
