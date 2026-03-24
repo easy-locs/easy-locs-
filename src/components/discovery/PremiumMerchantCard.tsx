@@ -38,6 +38,7 @@ export default function PremiumMerchantCard({
   verticalType = "food",
 }: PremiumMerchantCardProps) {
   const [imgError, setImgError] = useState(false);
+  const ui = useMemo(() => resolveCanonicalUI(verticalType), [verticalType]);
 
   const fallback = FALLBACK_EMOJIS[verticalType] || "🏪";
 
