@@ -207,11 +207,11 @@ export function computeCentralRank(input: RankingInput): RankingResult {
 
   // Visibility class
   let visibilityClass: VisibilityClass = "hidden";
-  if (globalRankScore >= 92) visibilityClass = "boost_ready";
-  else if (globalRankScore >= 82) visibilityClass = "priority_public";
-  else if (globalRankScore >= 70) visibilityClass = "ready_for_claim";
-  else if (globalRankScore >= 55) visibilityClass = "public_seed";
-  else if (globalRankScore >= 35) visibilityClass = "indexed_not_public";
+  if (globalRankScore >= 90) visibilityClass = "boost_ready";
+  else if (globalRankScore >= 78) visibilityClass = "priority_public";
+  else if (globalRankScore >= 65) visibilityClass = "ready_for_claim";
+  else if (globalRankScore >= 45) visibilityClass = "public_seed";
+  else if (globalRankScore >= 25) visibilityClass = "indexed_not_public";
 
   // Readiness gates
   const claimReady =
