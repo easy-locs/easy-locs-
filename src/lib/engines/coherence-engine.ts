@@ -216,6 +216,39 @@ export function isTemplateAllowedForEntity(
   return true;
 }
 
+/** Persist coherence result to DB for a candidate/storefront */
+export async function persistCoherenceResult(
+  entityId: string,
+  table: "onboarding_shop_candidates" | "merchant_onboarding_state" | "storefront_pages" | "seed_merchants",
+  result: CoherenceResult
+) {
+  const { supabase } = await import("@/integrations/supabase/client");
+  const db = supabase as any;
+
+  const update: Record<string, any> = {
+    coherence_score: result.entity_menu_match_score,
+    coherence_status: result.status,
+  };
+
+  if (table === "onboarding_shop_candidates") {
+    update.coherence_conflicts_json = result.conflicts;
+    update.coherence_checked_at = new Date().toISOString();
+    update.coherence_quarantined = result.status === "blocked";
+    update.coherence_quarantine_reason = result.quarantine_reason || null;
+  } else if (table === "merchant_onboarding_state") {
+    update.coherence_quarantined = result.status === "blocked";
+  }
+
+  const { error } = await db.from(table).update(update).eq("id", entityId);
+  if (error) console.error(`[CoherenceEngine] Failed to persist for ${table}/${entityId}:`, error);
+  return !error;
+}
+
+/** Check if entity passes coherence gate for publishing */
+export function passesCoherenceGate(score: number, status: string): boolean {
+  return score >= 50 && status !== "blocked";
+}
+
 /** Get expected menu categories for a subcategory */
 export function getExpectedMenuCategories(subcategory: string): string[] {
   const sub = subcategory?.toLowerCase() ?? "";
