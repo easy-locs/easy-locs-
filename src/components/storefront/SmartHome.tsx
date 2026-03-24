@@ -3,7 +3,7 @@
  * Careem-style category grid with 3D icons + geo-aware delivery area.
  * Uses canonical discovery pipeline for all sections.
  */
-import { memo, useMemo } from "react";
+import { memo, useMemo, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { MapPin, Bell, Wallet, QrCode, Send, ChevronRight, Star, Navigation } from "lucide-react";
 import UnifiedSearchBar from "@/components/search/UnifiedSearchBar";
@@ -11,6 +11,7 @@ import { useLocationStore } from "@/stores/locationStore";
 import { useOrbitEngine } from "@/stores/orbit-engine";
 import { useHomeSections } from "@/hooks/useHomeSections";
 import { getSmartCategories, getSmartHero, getTimeGreeting, getTimeSlot, type SmartCategory } from "@/lib/smart-home-engine";
+import { eventBus } from "@/lib/events/eventBus";
 import { motion } from "framer-motion";
 
 import foodImg from "@/assets/categories/food.png";
@@ -225,6 +226,13 @@ export default function SmartHome() {
   // Canonical pipeline-backed sections
   const { data: sections } = useHomeSections();
   const safeSections = sections ?? { trending: [], bestRated: [], newest: [], nearYou: [] };
+
+  useEffect(() => {
+    if (sections) {
+      const count = Object.values(sections).filter((arr) => arr.length > 0).length;
+      eventBus.emit("HOME_SECTIONS_REFRESHED", { sectionCount: count });
+    }
+  }, [sections]);
 
   const city = useMemo(() => {
     try {

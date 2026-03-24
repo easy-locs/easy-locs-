@@ -3,18 +3,21 @@
  * advanced filters (rating, promoted, open now), and smart ranking.
  * Uses Canonical UI Engine for vertical-aware wording and accents.
  */
-import { useState, useCallback, useMemo, memo } from "react";
+import { useState, useCallback, useMemo, memo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useRadarResults } from "@/hooks/useRadarResults";
+import { contactFromDiscovery } from "@/lib/radar/contactBridge";
+import { eventBus } from "@/lib/events/eventBus";
 import UnifiedMap from "@/components/map/UnifiedMap";
 import { formatGeoDistance, formatGeoETA, type SortMode } from "@/lib/geo/geoRanking";
 import type { GeoEntity } from "@/lib/geo/geoEntityAdapter";
 import { useDiscoveryStore } from "@/stores/discoveryStore";
 import { rankEntities, DISCOVERY_WEIGHTS, type RankableEntity, type RankContext } from "@/lib/ranking-engine";
 import { useCanonicalUI } from "@/hooks/useCanonicalUI";
+import { useV2AuthStore } from "@/stores/v2AuthStore";
 import {
   MapPin, List, Star, Navigation, Flame, Filter,
-  TrendingUp, Zap, ChevronDown, Clock, SlidersHorizontal,
+  TrendingUp, Zap, ChevronDown, Clock, SlidersHorizontal, MessageCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -83,6 +86,7 @@ export default memo(function RadarView({ initialType, radiusKm: initialRadius, s
   const [minRating, setMinRating] = useState(0);
   const [showPromotedOnly, setShowPromotedOnly] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
+  const currentUser = useV2AuthStore((s) => s.user);
 
   // Canonical UI for active vertical
   const activeVertical = activeType === "all" ? undefined : activeType === "restaurant" ? "food" : activeType === "shop" ? "shops" : activeType === "grocery" ? "grocery" : activeType === "property" ? "property" : activeType === "service" ? "services" : undefined;
@@ -144,13 +148,39 @@ export default memo(function RadarView({ initialType, radiusKm: initialRadius, s
     return filtered;
   }, [rawResults, minRating, showPromotedOnly, sortBy, userLat, userLng, activeType]);
 
+  // Emit scan completed event when results change
+  useEffect(() => {
+    if (!loading && rawResults.length > 0) {
+      eventBus.emit("RADAR_SCAN_COMPLETED", {
+        count: results.length,
+        radiusKm: activeRadius,
+        lat: userLat,
+        lng: userLng,
+      });
+    }
+  }, [loading, results.length, activeRadius, userLat, userLng]);
+
   const handleSelect = useCallback((entity: GeoEntity) => {
     setSelectedId(entity.id);
   }, []);
 
   const handleOpen = useCallback((entity: GeoEntity) => {
+    eventBus.emit("ENTITY_OPENED", { id: entity.id, type: entity.type, source: "radar" });
     navigate(entity.route_path || `/s/${entity.slug || entity.id}`);
   }, [navigate]);
+
+  const handleContact = useCallback((entity: GeoEntity) => {
+    if (!currentUser?.id) return;
+    contactFromDiscovery({
+      currentUserId: currentUser.id,
+      entityId: entity.id,
+      entityType: "shop",
+      entityName: entity.title || entity.name || "",
+      navigate,
+      source: "radar",
+      autoMessage: `Hi, I found your business "${entity.title || entity.name}" on the platform and I'd like to know more.`,
+    });
+  }, [currentUser?.id, navigate]);
 
   const selected = results.find(e => e.id === selectedId);
 
@@ -374,12 +404,23 @@ export default memo(function RadarView({ initialType, radiusKm: initialRadius, s
                     )}
                   </div>
                 </div>
-                <button
-                  onClick={() => handleOpen(selected)}
-                  className="px-4 py-2 rounded-xl text-xs font-bold shrink-0 active:scale-95 bg-primary text-primary-foreground"
-                >
-                  Open
-                </button>
+                <div className="flex gap-1.5 shrink-0">
+                  {currentUser?.id && (
+                    <button
+                      onClick={() => handleContact(selected)}
+                      className="p-2 rounded-xl active:scale-95 bg-muted text-foreground"
+                      title="Chat"
+                    >
+                      <MessageCircle className="w-4 h-4" />
+                    </button>
+                  )}
+                  <button
+                    onClick={() => handleOpen(selected)}
+                    className="px-4 py-2 rounded-xl text-xs font-bold active:scale-95 bg-primary text-primary-foreground"
+                  >
+                    Open
+                  </button>
+                </div>
               </div>
             )}
           </div>
