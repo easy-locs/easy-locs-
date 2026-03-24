@@ -3,6 +3,7 @@
  * Every visual decision (hero, cards, motion, wording) comes from taxonomy.
  */
 import { useState, useMemo, useEffect } from "react";
+import { BoostSlotRenderer } from "@/components/boost/BoostSlotRenderer";
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { ChevronRight, Home } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
