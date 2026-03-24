@@ -61,19 +61,29 @@ export default function AdminShopImportPage() {
   }, []);
 
   async function loadDashboard() {
-    const [batchRes, candRes] = await Promise.all([
+    const [batchRes, candRes, stateRes] = await Promise.all([
       (supabase as any).from("import_batches").select("*").order("created_at", { ascending: false }).limit(20),
       (supabase as any).from("onboarding_shop_candidates").select("*").order("created_at", { ascending: false }).limit(200),
+      (supabase as any).from("merchant_onboarding_state").select("entity_id, ui_quality_status, menu_visual_status, storefront_ready_status, menu_display_score, visual_completeness_score, storefront_readiness_score, visual_flags_json").limit(500),
     ]);
     setBatches(batchRes.data ?? []);
     const cands = candRes.data ?? [];
     setCandidates(cands);
+    const states = stateRes.data ?? [];
+    setOnboardingStates(states);
     setStats({
       total: cands.length,
       approved: cands.filter((c: any) => c.candidate_status === "approved").length,
       review: cands.filter((c: any) => c.candidate_status === "review").length,
       low: cands.filter((c: any) => c.candidate_status === "low_quality").length,
       duplicates: cands.filter((c: any) => c.duplicate_group_id).length,
+    });
+    setVisualStats({
+      needsAssets: states.filter((s: any) => s.ui_quality_status === "needs_assets").length,
+      goodUi: states.filter((s: any) => s.ui_quality_status === "good").length,
+      poorMenu: states.filter((s: any) => s.menu_visual_status === "poor").length,
+      emptyMenu: states.filter((s: any) => s.menu_visual_status === "empty").length,
+      storefrontReady: states.filter((s: any) => s.storefront_ready_status === "ready").length,
     });
   }
 
