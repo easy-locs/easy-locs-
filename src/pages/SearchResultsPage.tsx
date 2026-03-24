@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Star, MapPin, Clock } from "lucide-react";
 import { useUnifiedSearchStore } from "@/lib/search-engine/search-store";
 import UnifiedSearchBar from "@/components/search/UnifiedSearchBar";
 import UnifiedMapControls from "@/components/map/UnifiedMapControls";
@@ -17,7 +17,6 @@ export default function SearchResultsPage() {
   const search = useUnifiedSearchStore((s) => s.search);
   const state = useUnifiedSearchStore((s) => s.state);
 
-  // Sync URL query → store on mount
   useEffect(() => {
     if (q && q !== state.query) {
       setQuery(q);
@@ -27,12 +26,21 @@ export default function SearchResultsPage() {
 
   const shops = results.filter((r) => r.type === "shop");
   const products = results.filter((r) => r.type === "product");
+  const categories = results.filter((r) => r.type === "category");
+
+  // Group shops by vertical
+  const foodShops = shops.filter((s) => s.vertical === "food");
+  const serviceShops = shops.filter((s) => s.vertical === "services");
+  const otherShops = shops.filter((s) => s.vertical !== "food" && s.vertical !== "services");
 
   const handleResultClick = (result: SearchResult) => {
     if (result.type === "shop") {
       navigate(result.slug ? `/s/${result.slug}` : `/food/restaurant/${result.id}`);
     } else if (result.type === "product" && result.shopId) {
       navigate(`/food/restaurant/${result.shopId}`);
+    } else if (result.type === "category") {
+      // Navigate to radar with filter
+      navigate("/radar");
     }
   };
 
@@ -51,78 +59,145 @@ export default function SearchResultsPage() {
 
       {/* Controls */}
       <div className="px-4 pb-2">
-        <UnifiedMapControls
-          compact
-          showHeatmap={false}
-          showViewSwitch={false}
-          showRadius
-          showCategories
-        />
+        <UnifiedMapControls compact showHeatmap={false} showViewSwitch={false} showRadius showCategories />
       </div>
 
       {/* Results */}
-      <div className="px-4 space-y-3 pb-20">
+      <div className="px-4 space-y-4 pb-20">
         {loading && [1, 2, 3].map((i) => (
           <div key={i} className="rounded-2xl bg-muted/30 h-16 animate-pulse" />
         ))}
 
         {!loading && (
           <>
-            {/* Shops */}
-            <p className="text-xs font-bold text-muted-foreground uppercase tracking-wide pt-1">
-              Merchants ({shops.length})
+            {/* Summary */}
+            <p className="text-xs text-muted-foreground">
+              {shops.length + products.length} results for "{q}"
             </p>
 
-            {shops.length === 0 && (
-              <p className="text-xs text-muted-foreground text-center py-4">
-                No merchants found
-              </p>
+            {/* Food */}
+            {foodShops.length > 0 && (
+              <ResultSection title="🍕 Food & Restaurants" count={foodShops.length}>
+                {foodShops.map((row) => (
+                  <ShopCard key={row.id} row={row} onClick={() => handleResultClick(row)} />
+                ))}
+              </ResultSection>
             )}
 
-            {shops.map((row) => (
-              <button
-                key={row.id}
-                onClick={() => handleResultClick(row)}
-                className="w-full rounded-2xl border border-border/20 bg-card p-4 text-left active:scale-[0.99] transition-transform flex items-center gap-3"
-              >
-                {row.imageUrl ? (
-                  <img src={row.imageUrl} alt="" className="w-12 h-12 rounded-xl object-cover bg-muted shrink-0" />
-                ) : (
-                  <div className="w-12 h-12 rounded-xl bg-muted shrink-0" />
-                )}
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-bold text-foreground truncate">{row.title}</p>
-                  <p className="text-[11px] text-muted-foreground truncate">{row.subtitle}</p>
-                  <div className="flex items-center gap-2 mt-0.5">
-                    {row.rating != null && (
-                      <span className="text-[11px] text-muted-foreground">⭐ {row.rating.toFixed(1)}</span>
-                    )}
-                    {row.distanceKm != null && (
-                      <span className="text-[11px] text-muted-foreground">{row.distanceKm.toFixed(1)} km</span>
-                    )}
-                  </div>
-                </div>
-              </button>
-            ))}
+            {/* Services */}
+            {serviceShops.length > 0 && (
+              <ResultSection title="🔧 Services" count={serviceShops.length}>
+                {serviceShops.map((row) => (
+                  <ShopCard key={row.id} row={row} onClick={() => handleResultClick(row)} />
+                ))}
+              </ResultSection>
+            )}
+
+            {/* Other shops */}
+            {otherShops.length > 0 && (
+              <ResultSection title="🏪 Shops & More" count={otherShops.length}>
+                {otherShops.map((row) => (
+                  <ShopCard key={row.id} row={row} onClick={() => handleResultClick(row)} />
+                ))}
+              </ResultSection>
+            )}
+
+            {/* All shops fallback if no vertical grouping */}
+            {foodShops.length === 0 && serviceShops.length === 0 && otherShops.length === 0 && shops.length > 0 && (
+              <ResultSection title="🏪 Merchants" count={shops.length}>
+                {shops.map((row) => (
+                  <ShopCard key={row.id} row={row} onClick={() => handleResultClick(row)} />
+                ))}
+              </ResultSection>
+            )}
 
             {/* Products */}
             {products.length > 0 && (
-              <>
-                <p className="text-xs font-bold text-muted-foreground uppercase tracking-wide pt-2">
-                  Products ({products.length})
-                </p>
+              <ResultSection title="📦 Products" count={products.length}>
                 {products.map((row) => (
-                  <div key={row.id} className="rounded-2xl border border-border/20 bg-card p-4">
-                    <p className="text-sm font-bold text-foreground">{row.title}</p>
-                    <p className="text-[11px] text-muted-foreground">{row.subtitle}</p>
-                    <p className="text-xs font-bold text-primary">{Number(row.price ?? 0).toFixed(2)} AED</p>
-                  </div>
+                  <button
+                    key={row.id}
+                    onClick={() => handleResultClick(row)}
+                    className="w-full rounded-2xl border border-border/20 bg-card p-3 text-left flex items-center gap-3 active:scale-[0.99] transition-transform"
+                  >
+                    {row.imageUrl ? (
+                      <img src={row.imageUrl} alt="" className="w-10 h-10 rounded-xl object-cover bg-muted shrink-0" />
+                    ) : (
+                      <div className="w-10 h-10 rounded-xl bg-muted shrink-0" />
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-foreground truncate">{row.title}</p>
+                      <p className="text-[11px] text-muted-foreground truncate">{row.subtitle}</p>
+                    </div>
+                    <span className="text-xs font-bold text-primary shrink-0">
+                      {Number(row.price ?? 0).toFixed(2)} AED
+                    </span>
+                  </button>
                 ))}
-              </>
+              </ResultSection>
+            )}
+
+            {/* Empty */}
+            {shops.length === 0 && products.length === 0 && (
+              <div className="text-center py-12">
+                <p className="text-lg">😕</p>
+                <p className="text-sm text-muted-foreground mt-2">No results found</p>
+                <p className="text-xs text-muted-foreground mt-1">Try "Pizza", "Salon", or "Pharmacy"</p>
+              </div>
             )}
           </>
         )}
       </div>
     </div>
+  );
+}
+
+function ResultSection({ title, count, children }: { title: string; count: number; children: React.ReactNode }) {
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-2">
+        <p className="text-xs font-bold text-foreground uppercase tracking-wide">{title}</p>
+        <span className="text-[10px] text-muted-foreground bg-muted rounded-full px-2 py-0.5">{count}</span>
+      </div>
+      <div className="space-y-2">{children}</div>
+    </div>
+  );
+}
+
+function ShopCard({ row, onClick }: { row: SearchResult; onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      className="w-full rounded-2xl border border-border/20 bg-card p-3 text-left active:scale-[0.99] transition-transform flex items-center gap-3"
+    >
+      {row.imageUrl ? (
+        <img src={row.imageUrl} alt="" className="w-12 h-12 rounded-xl object-cover bg-muted shrink-0" />
+      ) : (
+        <div className="w-12 h-12 rounded-xl bg-muted shrink-0 flex items-center justify-center text-lg">🏪</div>
+      )}
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-bold text-foreground truncate">{row.title}</p>
+        <p className="text-[11px] text-muted-foreground truncate">{row.subtitle}</p>
+        <div className="flex items-center gap-2 mt-0.5">
+          {row.rating != null && (
+            <span className="flex items-center gap-0.5 text-[11px] text-muted-foreground">
+              <Star className="w-3 h-3 text-amber-500 fill-amber-500" />
+              {row.rating.toFixed(1)}
+            </span>
+          )}
+          {row.distanceKm != null && (
+            <span className="flex items-center gap-0.5 text-[11px] text-muted-foreground">
+              <MapPin className="w-3 h-3" />
+              {row.distanceKm.toFixed(1)} km
+            </span>
+          )}
+          {row.isOpen != null && (
+            <span className={`text-[10px] font-medium ${row.isOpen ? "text-emerald-500" : "text-muted-foreground"}`}>
+              {row.isOpen ? "Open" : "Closed"}
+            </span>
+          )}
+        </div>
+      </div>
+    </button>
   );
 }
