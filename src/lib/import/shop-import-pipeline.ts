@@ -273,7 +273,7 @@ function calculateQualityScore(item: RawShopInput, completeness: CompletenessSco
   return Math.min(score, 100);
 }
 
-// ─── STEP 7: Menu structuring ───
+// ─── STEP 7: Menu structuring + display scoring ───
 interface StructuredMenuItem {
   name: string;
   category?: string;
@@ -283,29 +283,114 @@ interface StructuredMenuItem {
   image?: string;
   tags?: string[];
   available?: boolean;
+  is_bestseller?: boolean;
 }
 
-function structureMenu(rawMenu: any[]): { categories: Record<string, StructuredMenuItem[]>; totalItems: number } {
+interface MenuDisplayAnalysis {
+  categories: Record<string, StructuredMenuItem[]>;
+  totalItems: number;
+  menu_display_score: number;
+  bestseller_count: number;
+  missing_image_count: number;
+  missing_price_count: number;
+  empty_category_count: number;
+  optimal_category_order: string[];
+  flags: string[];
+}
+
+const CATEGORY_PRIORITY: Record<string, number> = {
+  bestsellers: 1, "best sellers": 1, popular: 1, "most ordered": 1,
+  combos: 2, meals: 2, "value meals": 2,
+  appetizers: 3, starters: 3,
+  mains: 4, "main course": 4, entrees: 4,
+  burgers: 5, pizza: 5, sandwiches: 5, wraps: 5,
+  sides: 6,
+  salads: 7,
+  soups: 8,
+  desserts: 9, sweets: 9,
+  drinks: 10, beverages: 10, juice: 10, coffee: 10,
+  extras: 11, "add-ons": 11, sauces: 11,
+  general: 99,
+};
+
+function detectBestseller(item: any): boolean {
+  const tags = (item.tags || []).map((t: string) => t.toLowerCase());
+  const name = (item.name || "").toLowerCase();
+  return tags.includes("bestseller") || tags.includes("popular") || tags.includes("best seller")
+    || name.includes("bestseller") || item.is_bestseller === true || item.popular === true;
+}
+
+function analyzeMenu(rawMenu: any[]): MenuDisplayAnalysis {
   const categories: Record<string, StructuredMenuItem[]> = {};
   let totalItems = 0;
+  let bestseller_count = 0;
+  let missing_image_count = 0;
+  let missing_price_count = 0;
+  const flags: string[] = [];
 
   for (const item of rawMenu) {
     const cat = (item.category || item.section || "General").trim();
     if (!categories[cat]) categories[cat] = [];
+    const isBestseller = detectBestseller(item);
+    if (isBestseller) bestseller_count++;
+    const hasImage = !!(item.image || item.image_url || item.photo);
+    const hasPrice = item.price != null && !isNaN(parseFloat(item.price));
+    if (!hasImage) missing_image_count++;
+    if (!hasPrice) missing_price_count++;
+
     categories[cat].push({
       name: (item.name || item.title || "").trim(),
       category: cat,
       description: item.description || item.desc || undefined,
-      price: typeof item.price === "number" ? item.price : parseFloat(item.price) || undefined,
+      price: hasPrice ? (typeof item.price === "number" ? item.price : parseFloat(item.price)) : undefined,
       currency: item.currency || "AED",
-      image: item.image || item.image_url || item.photo || undefined,
+      image: hasImage ? (item.image || item.image_url || item.photo) : undefined,
       tags: item.tags || [],
       available: item.available !== false,
+      is_bestseller: isBestseller,
     });
     totalItems++;
   }
 
-  return { categories, totalItems };
+  // Empty categories
+  const empty_category_count = Object.entries(categories).filter(([, items]) => items.length === 0).length;
+
+  // Optimal order
+  const optimal_category_order = Object.keys(categories).sort((a, b) => {
+    const pa = CATEGORY_PRIORITY[a.toLowerCase()] ?? 50;
+    const pb = CATEGORY_PRIORITY[b.toLowerCase()] ?? 50;
+    return pa - pb;
+  });
+
+  // Flags
+  if (bestseller_count === 0 && totalItems > 5) flags.push("no_bestsellers_detected");
+  if (missing_image_count > totalItems * 0.5) flags.push("majority_missing_images");
+  if (missing_price_count > totalItems * 0.3) flags.push("many_missing_prices");
+  if (empty_category_count > 0) flags.push("empty_categories");
+  if (Object.keys(categories).length < 2 && totalItems > 10) flags.push("single_category_dump");
+
+  // Menu display score (0-100)
+  let menu_display_score = 40; // base
+  if (totalItems >= 5) menu_display_score += 10;
+  if (totalItems >= 15) menu_display_score += 5;
+  if (Object.keys(categories).length >= 3) menu_display_score += 10;
+  if (bestseller_count > 0) menu_display_score += 10;
+  if (missing_image_count < totalItems * 0.3) menu_display_score += 10;
+  if (missing_price_count === 0) menu_display_score += 10;
+  if (empty_category_count === 0) menu_display_score += 5;
+  menu_display_score = Math.min(menu_display_score, 100);
+
+  return {
+    categories, totalItems, menu_display_score, bestseller_count,
+    missing_image_count, missing_price_count, empty_category_count,
+    optimal_category_order, flags,
+  };
+}
+
+// Backward compat wrapper
+function structureMenu(rawMenu: any[]): { categories: Record<string, StructuredMenuItem[]>; totalItems: number } {
+  const analysis = analyzeMenu(rawMenu);
+  return { categories: analysis.categories, totalItems: analysis.totalItems };
 }
 
 // ─── STEP 8: Vertical-specific attributes ───
@@ -459,8 +544,9 @@ export async function runImportPipeline(config: BatchConfig, items: RawShopInput
       result.quality_distribution[candidateStatus as keyof typeof result.quality_distribution]++;
       const visibilityStatus = qualityScore >= 70 ? "indexed_not_public" : "hidden_imported";
 
-      // Structure menu if available
-      const menuData = item.menu?.length ? structureMenu(item.menu) : null;
+      // Structure menu if available (with full analysis)
+      const menuAnalysis = item.menu?.length ? analyzeMenu(item.menu) : null;
+      const menuData = menuAnalysis ? { categories: menuAnalysis.categories, totalItems: menuAnalysis.totalItems } : null;
 
       // Extract vertical-specific attributes
       const verticalAttrs = extractVerticalAttributes(item, vertical);
@@ -473,10 +559,16 @@ export async function runImportPipeline(config: BatchConfig, items: RawShopInput
       }
       reasonJson.completeness = completeness;
       reasonJson.vertical_attributes = verticalAttrs;
-      if (menuData) {
+      if (menuAnalysis) {
         reasonJson.menu_summary = {
-          total_items: menuData.totalItems,
-          categories: Object.keys(menuData.categories),
+          total_items: menuAnalysis.totalItems,
+          categories: Object.keys(menuAnalysis.categories),
+          menu_display_score: menuAnalysis.menu_display_score,
+          bestseller_count: menuAnalysis.bestseller_count,
+          missing_images: menuAnalysis.missing_image_count,
+          missing_prices: menuAnalysis.missing_price_count,
+          optimal_order: menuAnalysis.optimal_category_order,
+          flags: menuAnalysis.flags,
         };
       }
 
@@ -529,7 +621,25 @@ export async function runImportPipeline(config: BatchConfig, items: RawShopInput
         await (supabase as any).from("imported_shop_assets").insert(assetRows);
       }
 
-      // Create onboarding state
+      // Compute visual quality flags
+      const hasLogo = !!item.logo_url;
+      const hasCover = !!item.cover_url || (item.images?.length ?? 0) > 0;
+      const galleryCount = item.images?.length ?? 0;
+      const menuScore = menuAnalysis?.menu_display_score ?? 0;
+      const visualFlags: Record<string, any> = {};
+      if (!hasLogo) visualFlags.missing_logo = true;
+      if (!hasCover) visualFlags.missing_cover = true;
+      if (galleryCount === 0) visualFlags.no_gallery = true;
+      if (menuAnalysis?.flags?.length) visualFlags.menu_flags = menuAnalysis.flags;
+
+      const uiQuality = (!hasLogo || !hasCover) ? "needs_assets" : galleryCount < 3 ? "basic" : "good";
+      const menuVisual = menuScore >= 70 ? "good" : menuScore >= 40 ? "basic" : item.menu?.length ? "poor" : "empty";
+      const storefrontScore = Math.round(
+        (completeness.overall * 0.4) + (completeness.media * 0.3) + (menuScore * 0.3)
+      );
+      const storefrontReady = storefrontScore >= 60 ? "ready" : storefrontScore >= 35 ? "needs_work" : "not_ready";
+
+      // Create onboarding state with visual columns
       await (supabase as any).from("merchant_onboarding_state").insert({
         entity_id: candidate.id,
         onboarding_mode: "imported_draft",
@@ -543,6 +653,13 @@ export async function runImportPipeline(config: BatchConfig, items: RawShopInput
         menu_status: menuData ? "imported" : "empty",
         seo_status: "pending",
         review_status: "pending",
+        ui_quality_status: uiQuality,
+        menu_visual_status: menuVisual,
+        storefront_ready_status: storefrontReady,
+        menu_display_score: menuScore,
+        visual_completeness_score: completeness.media,
+        storefront_readiness_score: storefrontScore,
+        visual_flags_json: visualFlags,
       });
 
       result.total_created++;

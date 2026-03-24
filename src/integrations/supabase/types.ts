@@ -11643,13 +11643,20 @@ export type Database = {
           id: string
           import_source: string | null
           last_checked_at: string | null
+          menu_display_score: number | null
           menu_status: string
+          menu_visual_status: string | null
           onboarding_mode: string
           review_status: string
           seo_status: string
+          storefront_readiness_score: number | null
+          storefront_ready_status: string | null
           taxonomy_status: string
+          ui_quality_status: string | null
           updated_at: string
           visibility_status: string
+          visual_completeness_score: number | null
+          visual_flags_json: Json | null
         }
         Insert: {
           activation_status?: string
@@ -11661,13 +11668,20 @@ export type Database = {
           id?: string
           import_source?: string | null
           last_checked_at?: string | null
+          menu_display_score?: number | null
           menu_status?: string
+          menu_visual_status?: string | null
           onboarding_mode?: string
           review_status?: string
           seo_status?: string
+          storefront_readiness_score?: number | null
+          storefront_ready_status?: string | null
           taxonomy_status?: string
+          ui_quality_status?: string | null
           updated_at?: string
           visibility_status?: string
+          visual_completeness_score?: number | null
+          visual_flags_json?: Json | null
         }
         Update: {
           activation_status?: string
@@ -11679,13 +11693,20 @@ export type Database = {
           id?: string
           import_source?: string | null
           last_checked_at?: string | null
+          menu_display_score?: number | null
           menu_status?: string
+          menu_visual_status?: string | null
           onboarding_mode?: string
           review_status?: string
           seo_status?: string
+          storefront_readiness_score?: number | null
+          storefront_ready_status?: string | null
           taxonomy_status?: string
+          ui_quality_status?: string | null
           updated_at?: string
           visibility_status?: string
+          visual_completeness_score?: number | null
+          visual_flags_json?: Json | null
         }
         Relationships: []
       }
@@ -25139,6 +25160,45 @@ export type Database = {
           name?: string
           slug?: string
           sort_order?: number | null
+        }
+        Relationships: []
+      }
+      visual_audit_reports: {
+        Row: {
+          category_breakdown: Json | null
+          created_at: string | null
+          engine_type: string
+          entity_id: string | null
+          entity_type: string | null
+          fixed_count: number | null
+          id: string
+          issues_json: Json | null
+          page_route: string | null
+          score: number | null
+        }
+        Insert: {
+          category_breakdown?: Json | null
+          created_at?: string | null
+          engine_type: string
+          entity_id?: string | null
+          entity_type?: string | null
+          fixed_count?: number | null
+          id?: string
+          issues_json?: Json | null
+          page_route?: string | null
+          score?: number | null
+        }
+        Update: {
+          category_breakdown?: Json | null
+          created_at?: string | null
+          engine_type?: string
+          entity_id?: string | null
+          entity_type?: string | null
+          fixed_count?: number | null
+          id?: string
+          issues_json?: Json | null
+          page_route?: string | null
+          score?: number | null
         }
         Relationships: []
       }

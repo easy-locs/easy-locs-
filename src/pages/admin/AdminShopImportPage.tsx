@@ -53,26 +53,37 @@ export default function AdminShopImportPage() {
   const [batches, setBatches] = useState<any[]>([]);
   const [candidates, setCandidates] = useState<any[]>([]);
   const [stats, setStats] = useState({ total: 0, approved: 0, review: 0, low: 0, duplicates: 0 });
+  const [visualStats, setVisualStats] = useState({ needsAssets: 0, goodUi: 0, poorMenu: 0, emptyMenu: 0, storefrontReady: 0 });
   const [filter, setFilter] = useState({ city: "", vertical: "", status: "" });
-
+  const [onboardingStates, setOnboardingStates] = useState<any[]>([]);
   useEffect(() => {
     loadDashboard();
   }, []);
 
   async function loadDashboard() {
-    const [batchRes, candRes] = await Promise.all([
+    const [batchRes, candRes, stateRes] = await Promise.all([
       (supabase as any).from("import_batches").select("*").order("created_at", { ascending: false }).limit(20),
       (supabase as any).from("onboarding_shop_candidates").select("*").order("created_at", { ascending: false }).limit(200),
+      (supabase as any).from("merchant_onboarding_state").select("entity_id, ui_quality_status, menu_visual_status, storefront_ready_status, menu_display_score, visual_completeness_score, storefront_readiness_score, visual_flags_json").limit(500),
     ]);
     setBatches(batchRes.data ?? []);
     const cands = candRes.data ?? [];
     setCandidates(cands);
+    const states = stateRes.data ?? [];
+    setOnboardingStates(states);
     setStats({
       total: cands.length,
       approved: cands.filter((c: any) => c.candidate_status === "approved").length,
       review: cands.filter((c: any) => c.candidate_status === "review").length,
       low: cands.filter((c: any) => c.candidate_status === "low_quality").length,
       duplicates: cands.filter((c: any) => c.duplicate_group_id).length,
+    });
+    setVisualStats({
+      needsAssets: states.filter((s: any) => s.ui_quality_status === "needs_assets").length,
+      goodUi: states.filter((s: any) => s.ui_quality_status === "good").length,
+      poorMenu: states.filter((s: any) => s.menu_visual_status === "poor").length,
+      emptyMenu: states.filter((s: any) => s.menu_visual_status === "empty").length,
+      storefrontReady: states.filter((s: any) => s.storefront_ready_status === "ready").length,
     });
   }
 
@@ -139,6 +150,31 @@ export default function AdminShopImportPage() {
         ))}
       </div>
 
+      {/* Visual Quality Stats */}
+      <div className="rounded-2xl bg-card border border-border p-4 space-y-2">
+        <h2 className="text-sm font-bold">🎨 Visual Quality</h2>
+        <div className="grid grid-cols-5 gap-2">
+          {[
+            { label: "Needs Assets", value: visualStats.needsAssets, color: "text-amber-500" },
+            { label: "Good UI", value: visualStats.goodUi, color: "text-emerald-500" },
+            { label: "Poor Menu", value: visualStats.poorMenu, color: "text-destructive" },
+            { label: "Empty Menu", value: visualStats.emptyMenu, color: "text-muted-foreground" },
+            { label: "SF Ready", value: visualStats.storefrontReady, color: "text-primary" },
+          ].map((s) => (
+            <div key={s.label} className="rounded-lg bg-muted p-2 text-center">
+              <div className={`text-sm font-bold ${s.color}`}>{s.value}</div>
+              <div className="text-[9px] text-muted-foreground">{s.label}</div>
+            </div>
+          ))}
+        </div>
+        {onboardingStates.length > 0 && (
+          <div className="text-[10px] text-muted-foreground mt-1">
+            Avg menu score: {Math.round(onboardingStates.reduce((s: number, o: any) => s + (o.menu_display_score || 0), 0) / onboardingStates.length)} · 
+            Avg visual: {Math.round(onboardingStates.reduce((s: number, o: any) => s + (o.visual_completeness_score || 0), 0) / onboardingStates.length)} · 
+            Avg storefront: {Math.round(onboardingStates.reduce((s: number, o: any) => s + (o.storefront_readiness_score || 0), 0) / onboardingStates.length)}
+          </div>
+        )}
+      </div>
       {/* Import Form */}
       <div className="rounded-2xl bg-card border border-border p-4 space-y-3">
         <h2 className="text-sm font-bold">New Import Batch</h2>
@@ -260,6 +296,24 @@ export default function AdminShopImportPage() {
                 <div className="text-[10px] text-muted-foreground">
                   Score: {c.quality_score} · {c.phone || "no phone"} · {c.rating ? `★${c.rating}` : "no rating"}
                 </div>
+                {(() => {
+                  const state = onboardingStates.find((s: any) => s.entity_id === c.id);
+                  if (!state) return null;
+                  return (
+                    <div className="text-[10px] flex gap-1.5 mt-0.5 flex-wrap">
+                      <span className={state.ui_quality_status === "good" ? "text-emerald-500" : state.ui_quality_status === "needs_assets" ? "text-amber-500" : "text-muted-foreground"}>
+                        UI:{state.ui_quality_status}
+                      </span>
+                      <span className={state.menu_visual_status === "good" ? "text-emerald-500" : state.menu_visual_status === "poor" ? "text-destructive" : "text-muted-foreground"}>
+                        Menu:{state.menu_visual_status}
+                      </span>
+                      <span className={state.storefront_ready_status === "ready" ? "text-emerald-500" : "text-muted-foreground"}>
+                        SF:{state.storefront_ready_status}
+                      </span>
+                      {state.menu_display_score > 0 && <span className="text-muted-foreground">MDS:{state.menu_display_score}</span>}
+                    </div>
+                  );
+                })()}
               </div>
               <div className={`text-[10px] px-2 py-0.5 rounded-full ${
                 c.candidate_status === "approved" ? "bg-emerald-500/10 text-emerald-500"
