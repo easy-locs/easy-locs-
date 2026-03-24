@@ -86,7 +86,7 @@ function MainBottomNav() {
                   fontWeight: active ? 700 : 500,
                 }}
               >
-                {tab.label}
+                {tc(`nav.${tab.key === "profile" ? "me" : tab.key}`)}
               </span>
             </button>
           );
