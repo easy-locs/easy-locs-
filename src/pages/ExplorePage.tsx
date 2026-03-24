@@ -7,6 +7,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Globe, MapPin, ChevronRight, Search, TrendingUp, Star } from "lucide-react";
 import UnifiedSearchBar from "@/components/search/UnifiedSearchBar";
+import { BoostSlotRenderer } from "@/components/boost/BoostSlotRenderer";
 import { useHomeSections } from "@/hooks/useHomeSections";
 import { useLocationStore } from "@/stores/locationStore";
 import { useCanonicalUI } from "@/hooks/useCanonicalUI";
