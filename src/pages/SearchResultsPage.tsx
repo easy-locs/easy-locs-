@@ -2,6 +2,7 @@
  * SearchResultsPage — Canonical search results, driven by UI engine per vertical.
  */
 import { useEffect, useMemo } from "react";
+import { BoostSlotRenderer } from "@/components/boost/BoostSlotRenderer";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { tc } from "@/lib/i18n-canonical";
 import { ArrowLeft, Star, MapPin, Clock } from "lucide-react";
