@@ -86,3 +86,35 @@ eventBus.on("boost.purchased", async (p) => {
     metadata: { shopId: p.shopId },
   });
 });
+
+// Support / SAV events
+eventBus.on("support.ticket_created", async (p) => {
+  console.log("[notification] support ticket created", p.ticketId, p.issueType);
+});
+
+eventBus.on("support.ticket_escalated", async (p) => {
+  console.log("[notification] support ticket ESCALATED", p.ticketId, p.reason);
+});
+
+// Delivery events
+eventBus.on("delivery.started", async (p) => {
+  if (!p.userId) return;
+  await sendNotification({
+    user_id: p.userId,
+    title: "Delivery on the way",
+    body: `Your driver ${p.driverName ?? ""} is on the way${p.etaMin ? ` — ETA ~${p.etaMin} min` : ""}`,
+    type: "delivery",
+    metadata: { orderId: p.orderId },
+  });
+});
+
+eventBus.on("delivery.completed", async (p) => {
+  if (!p.userId) return;
+  await sendNotification({
+    user_id: p.userId,
+    title: "Delivered! 🎉",
+    body: "Your order has arrived. Enjoy!",
+    type: "delivery",
+    metadata: { orderId: p.orderId },
+  });
+});
