@@ -234,9 +234,12 @@ export function resolveCanonicalUI(
   const heroImage = subTheme?.heroImage || baseTheme.heroImage;
   const heroOverlay = subTheme?.heroOverlay || baseTheme.heroOverlay;
   const accentHsl = subTheme?.accentHsl || baseTheme.accentHsl;
-  const searchPlaceholder = subTheme?.searchPlaceholder || baseTheme.searchPlaceholder;
+  // i18n-aware search placeholder and display title
+  const subI18n = subcategoryKey ? getSubcategoryI18n(subcategoryKey) : null;
+  const vertI18n = getVerticalI18n(vert.value);
+  const searchPlaceholder = subI18n?.searchPlaceholder || vertI18n.searchPlaceholder || subTheme?.searchPlaceholder || baseTheme.searchPlaceholder;
 
-  const displayTitle = subDef?.label || vert.label;
+  const displayTitle = subI18n?.title || subDef?.label || vertI18n.title || vert.label;
   const emoji = subTheme?.emoji || subDef?.emoji || vert.emoji;
 
   return {
