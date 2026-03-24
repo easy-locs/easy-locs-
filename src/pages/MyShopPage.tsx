@@ -20,6 +20,8 @@ import { Store, Package, ShoppingBag, Settings, ExternalLink, Copy, Check, Loade
 import { toast } from "sonner";
 import { haptic } from "@/lib/haptics";
 import { assignZoneToStorefront } from "@/lib/zones/autoAssignZone";
+import { setMerchantValue } from "@/lib/engines/merchant-override-engine";
+import { isValidFieldKey } from "@/lib/engines/override-field-registry";
 
 // Lazy-loaded tab modules — only loaded when the tab is active
 const CatalogManager = lazy(() => import("@/components/storefront/CatalogManager"));
@@ -121,6 +123,25 @@ export default function MyShopPage() {
 
   const updateShop = async (field: string, value: any) => {
     if (!shop) return;
+    
+    // Map DB column to override field key
+    const fieldKeyMap: Record<string, string> = {
+      name: "shop_title", description: "shop_description",
+      logo_url: "shop_logo", cover_url: "shop_cover", banner_url: "shop_banner",
+      vertical: "shop_category", subcategory: "shop_subcategory",
+      tags: "shop_tags", slug: "shop_slug",
+      phone: "shop_phone", email: "shop_email", website: "shop_website",
+      address: "shop_address", latitude: "shop_lat", longitude: "shop_lng",
+      seo_title: "seo_title", seo_description: "seo_description",
+    };
+    const overrideKey = fieldKeyMap[field];
+    
+    // If piloted field, route through merchant override engine
+    if (overrideKey && isValidFieldKey(overrideKey)) {
+      await setMerchantValue(shop.id, overrideKey, value, user?.id);
+    }
+    
+    // Always update the actual table for immediate effect
     await (supabase as any).from("storefront_pages").update({ [field]: value, updated_at: new Date().toISOString() }).eq("id", shop.id);
     
     // Recalculate zone when coordinates or address change
