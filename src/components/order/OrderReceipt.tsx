@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Receipt, Store } from "lucide-react";
+import { formatMoneyByCountry } from "@/lib/currency-engine";
 
 interface ReceiptItem {
   id: string;
