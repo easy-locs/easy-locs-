@@ -453,11 +453,11 @@ export function getLearningStats() {
   return {
     total_patterns: learnedPatterns.size,
     by_source: {
-      admin: [...learnedPatterns.values()].filter(p => p.validated_by === "admin").length,
-      merchant: [...learnedPatterns.values()].filter(p => p.validated_by === "merchant").length,
-      auto: [...learnedPatterns.values()].filter(p => p.validated_by === "auto_high_confidence").length,
-      usage: [...learnedPatterns.values()].filter(p => p.validated_by === "usage").length,
+      admin: Array.from(learnedPatterns.values()).filter(p => p.validated_by === "admin").length,
+      merchant: Array.from(learnedPatterns.values()).filter(p => p.validated_by === "merchant").length,
+      auto: Array.from(learnedPatterns.values()).filter(p => p.validated_by === "auto_high_confidence").length,
+      usage: Array.from(learnedPatterns.values()).filter(p => p.validated_by === "usage").length,
     },
-    patterns: [...learnedPatterns.values()].slice(0, 50),
+    patterns: Array.from(learnedPatterns.values()).slice(0, 50),
   };
 }
