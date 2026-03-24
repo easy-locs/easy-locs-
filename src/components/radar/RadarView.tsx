@@ -148,13 +148,39 @@ export default memo(function RadarView({ initialType, radiusKm: initialRadius, s
     return filtered;
   }, [rawResults, minRating, showPromotedOnly, sortBy, userLat, userLng, activeType]);
 
+  // Emit scan completed event when results change
+  useEffect(() => {
+    if (!loading && rawResults.length > 0) {
+      eventBus.emit("RADAR_SCAN_COMPLETED", {
+        count: results.length,
+        radiusKm: activeRadius,
+        lat: userLat,
+        lng: userLng,
+      });
+    }
+  }, [loading, results.length, activeRadius, userLat, userLng]);
+
   const handleSelect = useCallback((entity: GeoEntity) => {
     setSelectedId(entity.id);
   }, []);
 
   const handleOpen = useCallback((entity: GeoEntity) => {
+    eventBus.emit("ENTITY_OPENED", { id: entity.id, type: entity.type, source: "radar" });
     navigate(entity.route_path || `/s/${entity.slug || entity.id}`);
   }, [navigate]);
+
+  const handleContact = useCallback((entity: GeoEntity) => {
+    if (!currentUser?.id) return;
+    contactFromDiscovery({
+      currentUserId: currentUser.id,
+      entityId: entity.id,
+      entityType: "shop",
+      entityName: entity.title || entity.name || "",
+      navigate,
+      source: "radar",
+      autoMessage: `Hi, I found your business "${entity.title || entity.name}" on the platform and I'd like to know more.`,
+    });
+  }, [currentUser?.id, navigate]);
 
   const selected = results.find(e => e.id === selectedId);
 
