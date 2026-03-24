@@ -70,7 +70,7 @@ export default function MerchantMenuPage() {
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold truncate">{product.name}</p>
                 <p className="text-xs text-muted-foreground">{product.category}</p>
-                <p className="text-xs font-bold mt-1">{Number(product.price).toFixed(2)} AED</p>
+                <p className="text-xs font-bold mt-1">{formatMoneyByCountry(Number(product.price), null, product.currency)}</p>
               </div>
               <button
                 onClick={() => toggleAvailability(product)}

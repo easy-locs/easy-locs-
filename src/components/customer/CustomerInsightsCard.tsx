@@ -68,7 +68,7 @@ export default function CustomerInsightsCard() {
       ) : (
         <div className="grid grid-cols-2 gap-2">
           <MiniMetric title="Orders" value={String(data?.totalOrders ?? 0)} />
-          <MiniMetric title="Spent" value={`${Number(data?.totalSpent ?? 0).toFixed(2)} AED`} />
+          <MiniMetric title="Spent" value={formatMoneyByCountry(Number(data?.totalSpent ?? 0))} />
           <MiniMetric title="Favorites" value={String(data?.favorites ?? 0)} />
           <MiniMetric title="Points" value={`${data?.points ?? 0} (${data?.tier})`} />
         </div>

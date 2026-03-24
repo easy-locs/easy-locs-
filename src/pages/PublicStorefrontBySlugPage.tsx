@@ -114,7 +114,7 @@ export default function PublicStorefrontBySlugPage() {
                       )}
                       {/* Only show price when not null */}
                       {item.price != null && (
-                        <p className="text-xs font-semibold text-primary">{item.price} AED</p>
+                        <p className="text-xs font-semibold text-primary">{formatMoneyByCountry(item.price, shop?.country, shop?.currency)}</p>
                       )}
                     </div>
                     <button className="shrink-0 ml-3 bg-primary text-primary-foreground text-xs font-medium px-3 py-1.5 rounded-lg">

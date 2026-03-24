@@ -52,7 +52,7 @@ export default function LoyaltyRedeemPage() {
         {[50, 100, 250, 500].map((pts) => (
           <Button key={pts} onClick={() => redeem(pts)} variant="outline" className="w-full rounded-xl justify-between">
             <span className="flex items-center gap-2"><Gift className="h-4 w-4" /> Redeem {pts} pts</span>
-            <span className="text-xs text-muted-foreground">{(pts * 0.01).toFixed(2)} AED</span>
+            <span className="text-xs text-muted-foreground">{formatMoneyByCountry(pts * 0.01, account?.country)}</span>
           </Button>
         ))}
       </div>
