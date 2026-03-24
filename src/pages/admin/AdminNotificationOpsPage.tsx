@@ -20,9 +20,9 @@ export default function AdminNotificationOpsPage() {
     staleTime: 5000,
   });
 
-  const pending = rows.filter((r: any) => String(r.status ?? "") === "pending").length;
-  const sent = rows.filter((r: any) => String(r.status ?? "") === "sent").length;
-  const failed = rows.filter((r: any) => String(r.status ?? "") === "failed").length;
+  const pending = rows.filter((r: any) => !r.read_at && !r.resolved).length;
+  const sent = rows.filter((r: any) => !!r.read_at).length;
+  const failed = rows.filter((r: any) => !!r.resolved).length;
 
   return (
     <div className="min-h-[100dvh] bg-background pb-24">
