@@ -9,7 +9,7 @@ import { useSavedSearchStore } from "@/stores/savedSearchStore";
 
 /**
  * AppInit — initializes V2 auth, hydrates orbit profile, wallet, favorites and saved searches.
- * Mount once at the top of the app tree.
+ * Wallet loads in parallel with Orbit (not sequential).
  */
 export function AppInit() {
   const init = useV2AuthStore((s) => s.init);
@@ -33,18 +33,19 @@ export function AppInit() {
       return;
     }
 
-    void (async () => {
-      await ensureOrbitProfile();
-      await ensureWalletAccount(user.id);
-      await loadProfile(user.id);
-      const orbit = useOrbitStore.getState().profile;
-      if (!orbit) return;
-
-      await useWalletStore.getState().loadWallet({
-        walletId: `wallet_${orbit.orbitId}`,
+    // Wallet loads independently — no dependency on Orbit profile
+    void ensureWalletAccount(user.id).then(() => {
+      void useWalletStore.getState().loadWallet({
+        walletId: `wallet_${user.id.slice(0, 12)}`,
         ownerOrbitId: user.id,
         currency: "AED",
       });
+    });
+
+    // Orbit + dependent systems load in parallel
+    void (async () => {
+      await ensureOrbitProfile();
+      await loadProfile(user.id);
 
       await Promise.all([
         useFavoritesStore.getState().hydrate(),
