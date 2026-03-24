@@ -3,6 +3,7 @@
  * Route: /my-orders
  */
 import SEOHead from "@/components/SEOHead";
+import { tc } from "@/lib/i18n-canonical";
 import BuyerOrderTracker from "@/components/storefront/BuyerOrderTracker";
 import BuyerDashboard from "@/components/storefront/BuyerDashboard";
 import { useAuth } from "@/contexts/AuthContext";
@@ -17,7 +18,7 @@ export default function MyOrdersPage() {
 
   return (
     <>
-      <SEOHead title="My Orders" description="Track your orders in real time." />
+      <SEOHead title={tc("nav.orders")} description={tc("commerce.track_order")} />
       <div className="min-h-[100dvh] flex flex-col bg-background" data-orders-page>
         <header className="flex items-center gap-3 px-4 pt-4 pb-3">
           <button
@@ -27,7 +28,7 @@ export default function MyOrdersPage() {
           >
             <ArrowLeft className="w-4.5 h-4.5" />
           </button>
-          <h1 className="text-lg font-bold text-foreground">My Orders</h1>
+          <h1 className="text-lg font-bold text-foreground">{tc("nav.orders")}</h1>
         </header>
 
         <div className="flex-1 px-4 pb-24 space-y-4">

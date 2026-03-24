@@ -4,6 +4,7 @@
  */
 import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
+import { tc } from "@/lib/i18n-canonical";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 import { listFavoriteMerchants } from "@/lib/favorites/favorites";
@@ -81,8 +82,8 @@ export default function FavoritesPage() {
           <ArrowLeft className="w-4.5 h-4.5" />
         </button>
         <div>
-          <h1 className="text-lg font-bold text-foreground">Favorites</h1>
-          <p className="text-xs text-muted-foreground">Saved merchants</p>
+          <h1 className="text-lg font-bold text-foreground">{tc("nav.favorites")}</h1>
+          <p className="text-xs text-muted-foreground">{tc("common.saved_merchants")}</p>
         </div>
       </header>
 
@@ -93,9 +94,9 @@ export default function FavoritesPage() {
 
         {!isLoading && merchants.length === 0 && (
           <div className="text-center py-16">
-            <p className="text-sm font-bold text-foreground">No favorites yet</p>
+            <p className="text-sm font-bold text-foreground">{tc("common.no_favorites")}</p>
             <p className="text-xs text-muted-foreground mt-1">
-              Save your favorite restaurants and stores to access them faster.
+              {tc("common.no_favorites_sub")}
             </p>
           </div>
         )}

@@ -161,6 +161,15 @@ const translations: Record<DiscoveryLocale, Record<string, string>> = {
     "travel.total_stay": "Total stay",
     "travel.available": "Available",
     "travel.sold_out": "Sold out",
+    "travel.hero_title": "Where to escape?",
+    "travel.hero_subtitle": "Luxury hotels, beach resorts & cozy stays across UAE",
+    "travel.stays": "Stays",
+    "travel.wifi": "Free WiFi",
+    "travel.pool": "Pool",
+    "travel.parking": "Parking",
+    "travel.gym": "Gym",
+    "travel.breakfast": "Breakfast",
+    "travel.spa": "Spa",
   },
 
   fr: {
@@ -304,6 +313,15 @@ const translations: Record<DiscoveryLocale, Record<string, string>> = {
     "travel.total_stay": "Séjour total",
     "travel.available": "Disponible",
     "travel.sold_out": "Complet",
+    "travel.hero_title": "Où s'évader ?",
+    "travel.hero_subtitle": "Hôtels de luxe, resorts et séjours cosy aux EAU",
+    "travel.stays": "Séjours",
+    "travel.wifi": "WiFi gratuit",
+    "travel.pool": "Piscine",
+    "travel.parking": "Parking",
+    "travel.gym": "Salle de sport",
+    "travel.breakfast": "Petit-déjeuner",
+    "travel.spa": "Spa",
   },
 
   ar: {
@@ -438,6 +456,15 @@ const translations: Record<DiscoveryLocale, Record<string, string>> = {
     "travel.total_stay": "إجمالي الإقامة",
     "travel.available": "متاح",
     "travel.sold_out": "نفذ",
+    "travel.hero_title": "إلى أين تريد الهروب؟",
+    "travel.hero_subtitle": "فنادق فاخرة ومنتجعات شاطئية وإقامات مريحة في الإمارات",
+    "travel.stays": "الإقامات",
+    "travel.wifi": "واي فاي مجاني",
+    "travel.pool": "مسبح",
+    "travel.parking": "موقف سيارات",
+    "travel.gym": "صالة رياضية",
+    "travel.breakfast": "إفطار",
+    "travel.spa": "سبا",
   },
 };
 

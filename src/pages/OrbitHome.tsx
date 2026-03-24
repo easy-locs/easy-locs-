@@ -18,17 +18,18 @@ import {
 import { motion } from "framer-motion";
 import SEOHead from "@/components/SEOHead";
 import { useState, useEffect } from "react";
+import { tc } from "@/lib/i18n-canonical";
 
 /* ── Categories ── */
 const CATEGORIES = [
-  { id: "food", icon: "🍕", label: "Food", path: "/food" },
-  { id: "grocery", icon: "🛒", label: "Grocery", path: "/grocery" },
-  { id: "shops", icon: "🛍️", label: "Shops", path: "/shops" },
-  { id: "services", icon: "🔧", label: "Services", path: "/services-hub" },
-  { id: "ride", icon: "🚗", label: "Ride", path: "/ride" },
-  { id: "send", icon: "📦", label: "Send", path: "/send" },
-  { id: "property", icon: "🏠", label: "Property", path: "/real-estate" },
-  { id: "travel", icon: "✈️", label: "Travel", path: "/travel" },
+  { id: "food", icon: "🍕", labelKey: "discovery.vertical.food.title", path: "/food" },
+  { id: "grocery", icon: "🛒", labelKey: "discovery.vertical.grocery.title", path: "/grocery" },
+  { id: "shops", icon: "🛍️", labelKey: "discovery.vertical.shops.title", path: "/shops" },
+  { id: "services", icon: "🔧", labelKey: "discovery.vertical.services.title", path: "/services-hub" },
+  { id: "ride", icon: "🚗", labelKey: "nav.radar", path: "/ride" },
+  { id: "send", icon: "📦", labelKey: "commerce.delivery", path: "/send" },
+  { id: "property", icon: "🏠", labelKey: "discovery.vertical.property.title", path: "/real-estate" },
+  { id: "travel", icon: "✈️", labelKey: "discovery.vertical.travel.title", path: "/travel" },
 ] as const;
 
 /* ── Dynamic banners ── */
@@ -74,10 +75,10 @@ function useDynamicBanners() {
 
 /* ── Orbit actions ── */
 const ORBIT_ACTIONS = [
-  { key: "chat", icon: MessageCircle, label: "Chat", path: "/orbit", color: "hsl(210 80% 52%)" },
-  { key: "call", icon: Phone, label: "Call", path: "/orbit", color: "hsl(142 60% 45%)" },
-  { key: "pay", icon: CreditCard, label: "Pay", path: "/wallet/hub", color: "hsl(38 65% 50%)" },
-  { key: "scan", icon: QrCode, label: "Scan", path: "/pay/scan", color: "hsl(270 60% 55%)" },
+  { key: "chat", icon: MessageCircle, labelKey: "orbit.conversations", path: "/orbit", color: "hsl(210 80% 52%)" },
+  { key: "call", icon: Phone, labelKey: "orbit.call", path: "/orbit", color: "hsl(142 60% 45%)" },
+  { key: "pay", icon: CreditCard, labelKey: "commerce.pay_now", path: "/wallet/hub", color: "hsl(38 65% 50%)" },
+  { key: "scan", icon: QrCode, labelKey: "commerce.scan_qr", path: "/pay/scan", color: "hsl(270 60% 55%)" },
 ];
 
 /* ── Category item ── */
@@ -93,7 +94,7 @@ const CategoryBubble = memo(function CategoryBubble({ cat, onNav }: { cat: typeo
       >
         <span className="text-2xl">{cat.icon}</span>
       </div>
-      <span className="text-[11px] font-semibold text-foreground leading-tight">{cat.label}</span>
+      <span className="text-[11px] font-semibold text-foreground leading-tight">{tc(cat.labelKey)}</span>
     </button>
   );
 });
@@ -262,7 +263,7 @@ export default function OrbitHome() {
                   >
                     <a.icon className="w-5 h-5" style={{ color: a.color }} />
                   </div>
-                  <span className="text-[11px] font-semibold text-foreground">{a.label}</span>
+                  <span className="text-[11px] font-semibold text-foreground">{tc(a.labelKey)}</span>
                 </button>
               ))}
             </div>

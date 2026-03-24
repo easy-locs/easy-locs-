@@ -3,6 +3,7 @@
  */
 import { useEffect, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { tc } from "@/lib/i18n-canonical";
 import { ArrowLeft, Star, MapPin, Clock } from "lucide-react";
 import { motion } from "framer-motion";
 import { useUnifiedSearchStore } from "@/lib/search-engine/search-store";
@@ -86,7 +87,7 @@ export default function SearchResultsPage() {
         {!loading && (
           <>
             <p className="text-xs text-muted-foreground">
-              {shops.length + products.length} results for "{q}"
+              {tc("common.results", { count: shops.length + products.length })} — "{q}"
             </p>
 
             {/* Vertical-grouped results — each section styled by canonical engine */}
@@ -129,8 +130,8 @@ export default function SearchResultsPage() {
             {shops.length === 0 && products.length === 0 && (
               <div className="text-center py-12">
                 <p className="text-lg">😕</p>
-                <p className="text-sm text-muted-foreground mt-2">No results found</p>
-                <p className="text-xs text-muted-foreground mt-1">Try "Pizza", "Salon", or "Pharmacy"</p>
+                <p className="text-sm text-muted-foreground mt-2">{tc("common.no_results")}</p>
+                <p className="text-xs text-muted-foreground mt-1">{tc("common.search_suggestions")}</p>
               </div>
             )}
           </>
@@ -226,7 +227,7 @@ function ShopCard({
           )}
           {row.isOpen != null && (
             <span className={`text-[10px] font-medium ${row.isOpen ? "text-emerald-500" : "text-muted-foreground"}`}>
-              {row.isOpen ? "Open" : "Closed"}
+              {row.isOpen ? tc("common.open") : tc("common.closed")}
             </span>
           )}
         </div>

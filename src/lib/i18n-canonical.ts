@@ -27,6 +27,10 @@ const nav = {
     "nav.logout": "Log out",
     "nav.login": "Log in",
     "nav.signup": "Sign up",
+    "nav.quick_access": "Quick Access",
+    "nav.quick_actions": "Quick Actions",
+    "nav.explore": "Explore",
+    "nav.categories": "Categories",
   },
   fr: {
     "nav.dashboard": "Tableau de bord",
@@ -45,6 +49,10 @@ const nav = {
     "nav.logout": "Se déconnecter",
     "nav.login": "Se connecter",
     "nav.signup": "S'inscrire",
+    "nav.quick_access": "Accès rapide",
+    "nav.quick_actions": "Actions rapides",
+    "nav.explore": "Explorer",
+    "nav.categories": "Catégories",
   },
   ar: {
     "nav.dashboard": "لوحة التحكم",
@@ -63,6 +71,10 @@ const nav = {
     "nav.logout": "تسجيل الخروج",
     "nav.login": "تسجيل الدخول",
     "nav.signup": "إنشاء حساب",
+    "nav.quick_access": "وصول سريع",
+    "nav.quick_actions": "إجراءات سريعة",
+    "nav.explore": "استكشف",
+    "nav.categories": "الفئات",
   },
 };
 
@@ -277,6 +289,8 @@ const commerce = {
     "commerce.scan_qr": "Scan QR",
     "commerce.scan_to_order": "Scan to order",
     "commerce.scan_to_pay": "Scan to pay",
+    "commerce.saved_carts": "Saved Carts",
+    "commerce.auto_repeat": "Auto Repeat",
   },
   fr: {
     "commerce.add_to_cart": "Ajouter au panier",
@@ -336,6 +350,8 @@ const commerce = {
     "commerce.scan_qr": "Scanner QR",
     "commerce.scan_to_order": "Scanner pour commander",
     "commerce.scan_to_pay": "Scanner pour payer",
+    "commerce.saved_carts": "Paniers sauvegardés",
+    "commerce.auto_repeat": "Répétition auto",
   },
   ar: {
     "commerce.add_to_cart": "أضف إلى السلة",
@@ -395,6 +411,8 @@ const commerce = {
     "commerce.scan_qr": "مسح QR",
     "commerce.scan_to_order": "امسح للطلب",
     "commerce.scan_to_pay": "امسح للدفع",
+    "commerce.saved_carts": "السلات المحفوظة",
+    "commerce.auto_repeat": "تكرار تلقائي",
   },
 };
 
@@ -425,6 +443,8 @@ const wallet = {
     "wallet.rewards": "Rewards",
     "wallet.earn": "Earn",
     "wallet.redeem": "Redeem",
+    "wallet.quick_actions": "Quick Actions",
+    "wallet.hub": "Wallet Hub",
   },
   fr: {
     "wallet.balance": "Solde",
@@ -451,6 +471,8 @@ const wallet = {
     "wallet.rewards": "Récompenses",
     "wallet.earn": "Gagner",
     "wallet.redeem": "Utiliser",
+    "wallet.quick_actions": "Actions rapides",
+    "wallet.hub": "Hub Portefeuille",
   },
   ar: {
     "wallet.balance": "الرصيد",
@@ -477,6 +499,8 @@ const wallet = {
     "wallet.rewards": "المكافآت",
     "wallet.earn": "اكسب",
     "wallet.redeem": "استبدل",
+    "wallet.quick_actions": "إجراءات سريعة",
+    "wallet.hub": "مركز المحفظة",
   },
 };
 
@@ -589,6 +613,7 @@ const common = {
     "common.copied": "Copied!",
     "common.search": "Search…",
     "common.no_results": "No results found",
+    "common.search_suggestions": 'Try "Pizza", "Salon", or "Pharmacy"',
     "common.see_all": "See all",
     "common.see_more": "See more",
     "common.show_less": "Show less",
@@ -636,6 +661,21 @@ const common = {
     "common.back_online": "Back online",
     "common.update_available": "Update available",
     "common.refresh": "Refresh",
+    "common.saved_merchants": "Saved merchants",
+    "common.no_favorites": "No favorites yet",
+    "common.no_favorites_sub": "Save your favorite restaurants and stores to access them faster.",
+    "common.products": "Products",
+    "common.near_you": "Near you",
+    "common.top_rated": "Top rated",
+    "common.best_price": "Best price",
+    "common.nearest": "Nearest",
+    "common.most_reviewed": "Most reviewed",
+    "common.nights": "{count} nights",
+    "common.night": "{count} night",
+    "common.guests": "{count} guests",
+    "common.guest": "{count} guest",
+    "common.rooms": "Rooms",
+    "common.add_date": "Add date",
   },
   fr: {
     "common.loading": "Chargement…",
@@ -659,6 +699,7 @@ const common = {
     "common.copied": "Copié !",
     "common.search": "Rechercher…",
     "common.no_results": "Aucun résultat",
+    "common.search_suggestions": 'Essayez "Pizza", "Salon" ou "Pharmacie"',
     "common.see_all": "Voir tout",
     "common.see_more": "Voir plus",
     "common.show_less": "Voir moins",
@@ -706,6 +747,21 @@ const common = {
     "common.back_online": "De retour en ligne",
     "common.update_available": "Mise à jour disponible",
     "common.refresh": "Actualiser",
+    "common.saved_merchants": "Commerces sauvegardés",
+    "common.no_favorites": "Aucun favori",
+    "common.no_favorites_sub": "Sauvegardez vos restaurants et magasins préférés pour y accéder plus rapidement.",
+    "common.products": "Produits",
+    "common.near_you": "Près de vous",
+    "common.top_rated": "Mieux notés",
+    "common.best_price": "Meilleur prix",
+    "common.nearest": "Les plus proches",
+    "common.most_reviewed": "Les plus commentés",
+    "common.nights": "{count} nuits",
+    "common.night": "{count} nuit",
+    "common.guests": "{count} voyageurs",
+    "common.guest": "{count} voyageur",
+    "common.rooms": "Chambres",
+    "common.add_date": "Ajouter date",
   },
   ar: {
     "common.loading": "جارٍ التحميل…",
@@ -729,6 +785,7 @@ const common = {
     "common.copied": "تم النسخ!",
     "common.search": "بحث…",
     "common.no_results": "لا نتائج",
+    "common.search_suggestions": 'جرّب "بيتزا"، "صالون" أو "صيدلية"',
     "common.see_all": "عرض الكل",
     "common.see_more": "عرض المزيد",
     "common.show_less": "عرض أقل",
@@ -776,6 +833,21 @@ const common = {
     "common.back_online": "متصل مجدداً",
     "common.update_available": "تحديث متاح",
     "common.refresh": "تحديث",
+    "common.saved_merchants": "المتاجر المحفوظة",
+    "common.no_favorites": "لا مفضلات بعد",
+    "common.no_favorites_sub": "احفظ مطاعمك ومتاجرك المفضلة للوصول إليها بسرعة.",
+    "common.products": "المنتجات",
+    "common.near_you": "بالقرب منك",
+    "common.top_rated": "الأعلى تقييماً",
+    "common.best_price": "أفضل سعر",
+    "common.nearest": "الأقرب",
+    "common.most_reviewed": "الأكثر مراجعة",
+    "common.nights": "{count} ليالٍ",
+    "common.night": "{count} ليلة",
+    "common.guests": "{count} ضيوف",
+    "common.guest": "{count} ضيف",
+    "common.rooms": "الغرف",
+    "common.add_date": "أضف تاريخ",
   },
 };
 
@@ -874,6 +946,11 @@ export function getAppLocale(): AppLocale {
 export function setAppLocale(locale: AppLocale): void {
   _locale = locale;
   try { localStorage.setItem("app-locale", locale); } catch {}
+  // Apply RTL globally
+  try {
+    document.documentElement.dir = locale === "ar" ? "rtl" : "ltr";
+    document.documentElement.lang = locale;
+  } catch {}
 }
 
 export function resetAppLocale(): void { _locale = null; }
