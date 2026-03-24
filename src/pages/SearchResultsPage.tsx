@@ -130,8 +130,8 @@ export default function SearchResultsPage() {
             {shops.length === 0 && products.length === 0 && (
               <div className="text-center py-12">
                 <p className="text-lg">😕</p>
-                <p className="text-sm text-muted-foreground mt-2">No results found</p>
-                <p className="text-xs text-muted-foreground mt-1">Try "Pizza", "Salon", or "Pharmacy"</p>
+                <p className="text-sm text-muted-foreground mt-2">{tc("common.no_results")}</p>
+                <p className="text-xs text-muted-foreground mt-1">{tc("common.search_suggestions")}</p>
               </div>
             )}
           </>
