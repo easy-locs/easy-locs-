@@ -82,7 +82,7 @@ export default function DriverEarningsPageNew() {
               data.payouts.map((row: any) => (
                 <div key={row.id} className="rounded-2xl border border-border/20 bg-card p-4">
                   <p className="text-sm font-bold text-foreground">
-                    +{Number(row.amount ?? 0).toFixed(2)} {row.currency ?? "AED"}
+                    +{formatMoneyByCountry(Number(row.amount ?? 0), null, row.currency)}
                   </p>
                   <p className="text-[11px] text-muted-foreground">
                     {row.note || "Driver payout"}

@@ -51,7 +51,7 @@ export default function CustomerOrderStatsCard() {
           <MiniMetric title="Total" value={String(data?.totalOrders ?? 0)} />
           <MiniMetric title="Active" value={String(data?.activeOrders ?? 0)} />
           <MiniMetric title="Completed" value={String(data?.completedOrders ?? 0)} />
-          <MiniMetric title="Spent" value={`${Number(data?.totalSpent ?? 0).toFixed(2)} AED`} />
+          <MiniMetric title="Spent" value={formatMoneyByCountry(Number(data?.totalSpent ?? 0))} />
         </div>
       )}
     </div>

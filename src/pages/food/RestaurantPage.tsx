@@ -236,7 +236,7 @@ export default function RestaurantPage() {
               <div className="w-7 h-7 rounded-full flex items-center justify-center" style={{ background: "hsl(0 0% 100% / 0.2)" }}><ShoppingCart className="w-4 h-4 text-primary-foreground" /></div>
               <span className="text-sm font-bold text-primary-foreground">{itemCount} item{itemCount > 1 ? "s" : ""}</span>
             </div>
-            <span className="text-sm font-bold text-primary-foreground">View Cart · {total.toFixed(2)} AED</span>
+            <span className="text-sm font-bold text-primary-foreground">View Cart · {formatMoneyByCountry(total, shop?.country, shop?.currency)}</span>
           </button>
         </motion.div>
       )}
