@@ -14,6 +14,7 @@ import type { GeoEntity } from "@/lib/geo/geoEntityAdapter";
 import { useDiscoveryStore } from "@/stores/discoveryStore";
 import { rankEntities, DISCOVERY_WEIGHTS, type RankableEntity, type RankContext } from "@/lib/ranking-engine";
 import { useCanonicalUI } from "@/hooks/useCanonicalUI";
+import { useV2AuthStore } from "@/stores/v2AuthStore";
 import {
   MapPin, List, Star, Navigation, Flame, Filter,
   TrendingUp, Zap, ChevronDown, Clock, SlidersHorizontal,
