@@ -68,9 +68,10 @@ const PRODUCTION_READINESS: ReadinessRow[] = [
   { module: "Wallet RPC (ensure_wallet)", status: "coded-wired", validation: "RPC exists, reachable", production: "blocked", productionNote: "Needs live QR test" },
   { module: "Orbit V2 realtime", status: "coded-wired", validation: "1 conversation in DB", production: "blocked", productionNote: "Needs A→B live test" },
   { module: "Geo engine", status: "coded-wired", validation: "Retry logic wired", production: "blocked", productionNote: "Needs real device" },
-  { module: "i18n engine", status: "build-controlled", validation: "tc()/td() wired, audit done — no raw keys in checkout/home/search", production: "controlled", productionNote: "Some admin pages remain" },
-  { module: "Currency engine", status: "build-controlled", validation: "Checkout/KDS/MerchantOS migrated to formatMoneyByCountry()", production: "controlled", productionNote: "~15 P1 pages remain" },
+  { module: "i18n engine", status: "build-controlled", validation: "tc()/td() wired, audit done — no raw keys in critical flows", production: "controlled", productionNote: "Near ready" },
+  { module: "Currency engine", status: "build-controlled", validation: "All P0+P1 customer-facing migrated to formatMoneyByCountry()", production: "controlled", productionNote: "Near ready — admin P2 remain" },
   { module: "Boost slot renderer", status: "coded-wired", validation: "Surfaces connected", production: "controlled", productionNote: "No real campaigns" },
+  { module: "UAE Import Engine", status: "proven-runtime", validation: "215 shops ingested, dedup+seed verified", production: "controlled", productionNote: "Visibility engine wired" },
   { module: "Lead pipeline auto", status: "proven-runtime", validation: "Stale→cold auto proved", production: "controlled", productionNote: "Needs real leads" },
   { module: "QR scan & pay", status: "coded-wired", validation: "RPC built, resolver patched", production: "blocked", productionNote: "Needs live device scan" },
 ];
