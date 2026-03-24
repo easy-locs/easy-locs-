@@ -79,7 +79,7 @@ export default function CustomerSpendingInsightsPage() {
               data.monthly.map(([month, amount]: any) => (
                 <div key={month} className="flex items-center justify-between text-sm">
                   <span className="text-muted-foreground">{month}</span>
-                  <span className="font-bold text-foreground">{Number(amount).toFixed(2)} AED</span>
+                  <span className="font-bold text-foreground">{formatMoneyByCountry(Number(amount), null, "AED")}</span>
                 </div>
               ))
             )}

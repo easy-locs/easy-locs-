@@ -38,7 +38,7 @@ export default function ExecutiveDashboard() {
       {revenue !== null && (
         <div className="mt-4 rounded-2xl border border-border bg-card p-4">
           <p className="text-xs text-muted-foreground">30-day platform fee revenue</p>
-          <p className="text-2xl font-bold text-foreground">{revenue.toFixed(2)} AED</p>
+          <p className="text-2xl font-bold text-foreground">{formatMoneyByCountry(revenue, null, "AED")}</p>
         </div>
       )}
     </div>

@@ -247,7 +247,7 @@ export default function CheckoutPage() {
           className="w-full rounded-2xl h-13 text-sm font-bold"
         >
           {placing ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
-          Place Order · {grandTotal.toFixed(2)} AED
+          Place Order · {fmt(grandTotal)}
         </Button>
       </div>
     </div>
