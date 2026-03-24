@@ -5,8 +5,8 @@ import { getLoyaltySnapshot, spendLoyaltyPoints } from "@/lib/loyalty/loyaltyEng
 import { toast } from "sonner";
 
 const REWARDS = [
-  { id: "r1", title: "5 AED Credit", points: 250 },
-  { id: "r2", title: "15 AED Credit", points: 700 },
+  { id: "r1", title: "5 Credit", points: 250 },
+  { id: "r2", title: "15 Credit", points: 700 },
   { id: "r3", title: "Free Delivery", points: 350 },
   { id: "r4", title: "VIP Priority", points: 1200 },
 ];
