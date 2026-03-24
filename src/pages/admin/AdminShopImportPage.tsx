@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { runImportPipeline, parseImportJson, type PipelineResult } from "@/lib/import/shop-import-pipeline";
+import { publishCandidateAsSeed, autoClassifyVisibility } from "@/lib/import/visibility-engine";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 
