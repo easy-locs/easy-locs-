@@ -51,9 +51,9 @@ async function getRecentSearches(userId?: string | null): Promise<SearchSuggesti
 
   try {
     const { data } = await db
-      .from("dino_learning_events")
-      .select("metadata_json")
-      .eq("event_type", "search_history_saved")
+      .from("activity_logs")
+      .select("metadata")
+      .eq("action", "search_history_saved")
       .eq("entity_id", userId)
       .order("created_at", { ascending: false })
       .limit(20);
