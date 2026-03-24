@@ -291,26 +291,92 @@ export default function SmartHome() {
   const row1 = categories.slice(0, half);
   const row2 = categories.slice(half);
 
+  const living = useLivingPage({ country: countryCode, city: city || undefined, maxSections: 6 });
+  const globalCtx = useGlobalContext({ country: countryCode, city: city || undefined });
+  const contextBanners = useMemo(
+    () => getTopBanners({ country: countryCode, city, hour: globalCtx.localHour }, 1),
+    [countryCode, city, globalCtx.localHour],
+  );
+
   return (
     <div className="space-y-0">
       <CompactHeader city={city} greeting={greeting} />
       <QuickActions />
 
       <div className="overflow-x-auto scrollbar-none mb-3 -mx-1 px-1 touch-pan-x">
-        <div className="flex flex-col gap-1.5" style={{ width: "max-content" }}>
+        <motion.div
+          variants={staggerContainer}
+          initial="hidden"
+          animate="visible"
+          className="flex flex-col gap-1.5"
+          style={{ width: "max-content" }}
+        >
           <div className="flex gap-1.5">
             {row1.map((cat, i) => <CategoryCard key={cat.key} cat={cat} index={i} />)}
           </div>
           <div className="flex gap-1.5">
             {row2.map((cat, i) => <CategoryCard key={cat.key} cat={cat} index={i + half} />)}
           </div>
-        </div>
+        </motion.div>
       </div>
+
+      {/* ═══ Context Banner — dynamic by time/country/event ═══ */}
+      {contextBanners.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={TRANSITIONS.smooth}
+          className="px-4 mb-3"
+        >
+          <Link
+            to={contextBanners[0].route || "/radar"}
+            className="block rounded-2xl p-4 border border-border/10 active:scale-[0.98] transition-transform"
+            style={{ background: contextBanners[0].gradient }}
+          >
+            <p className="text-sm font-bold text-foreground">
+              {contextBanners[0].emoji} {contextBanners[0].title}
+            </p>
+            <p className="text-xs text-muted-foreground mt-0.5">{contextBanners[0].subtitle}</p>
+            {contextBanners[0].cta && (
+              <span className="inline-flex items-center gap-1 mt-2 text-[11px] font-semibold text-primary">
+                {contextBanners[0].cta} <ChevronRight className="h-3 w-3" />
+              </span>
+            )}
+          </Link>
+        </motion.div>
+      )}
 
       {/* ═══ BOOST SLOT — Home Hero ═══ */}
       <BoostSlotRenderer surface="home" slotKey="hero_primary" variant="hero" className="px-4 mb-3" />
 
       <SmartHeroCard timezone={timezone} city={city} />
+
+      {/* ═══ Living Commerce Sections (dynamic by context) ═══ */}
+      {living.activeSections.slice(0, 2).map((sec, i) => (
+        <motion.div
+          key={sec.id}
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 + i * 0.05, ...TRANSITIONS.smooth }}
+          className="mb-3 px-4"
+        >
+          <div className="flex items-center justify-between mb-1.5">
+            <h3 className="text-xs font-bold text-foreground flex items-center gap-1">
+              <span>{sec.emoji}</span> {sec.title}
+            </h3>
+            <Link to="/radar" className="text-[10px] font-medium text-primary flex items-center gap-0.5 active:opacity-70">
+              Explore <ChevronRight className="h-3 w-3" />
+            </Link>
+          </div>
+          {sec.gradient && (
+            <div className="rounded-xl p-3 border border-border/10 mb-2" style={{ background: sec.gradient }}>
+              <p className="text-[11px] text-muted-foreground">
+                {sec.targetSubs.slice(0, 4).join(" · ")}
+              </p>
+            </div>
+          )}
+        </motion.div>
+      ))}
 
       {SECTION_DEFS.map((sec, i) => (
         <DynamicSection key={sec.key} section={sec} shops={safeSections[sec.key as keyof typeof safeSections]} index={i} />
