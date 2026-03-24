@@ -28004,6 +28004,14 @@ export type Database = {
           vertical: string
         }[]
       }
+      suggest_onboarding_template: {
+        Args: { p_city?: string; p_subcategory?: string; p_vertical: string }
+        Returns: {
+          priority: number
+          template_id: string
+          template_name: string
+        }[]
+      }
       transfer_locs: {
         Args: {
           _amount: number
