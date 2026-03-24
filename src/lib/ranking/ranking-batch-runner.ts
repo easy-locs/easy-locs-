@@ -74,7 +74,7 @@ export async function rerankCandidates(limit = 500): Promise<number> {
     const coherenceOk = passesCoherenceGate(c.coherence_score ?? 0, c.coherence_status ?? "pending");
     if (!coherenceOk && result.visibilityClass !== "hidden") {
       result.visibilityClass = "hidden";
-      result.reasons.push("Blocked by coherence gate");
+      result.penalties.push("Blocked by coherence gate");
     }
 
     await persistRanking(c.id, "candidate", input, result);
