@@ -8,7 +8,7 @@ import { useNavigate } from "react-router-dom";
 import { useCart } from "@/hooks/useCart";
 import { useAuth } from "@/contexts/AuthContext";
 import { createStorefrontOrder } from "@/lib/orders/orderEngine";
-import { resolveDisplayCurrency } from "@/lib/currency-engine";
+import { resolveDisplayCurrency, formatMoneyByCountry } from "@/lib/currency-engine";
 import { ArrowLeft, MapPin, CreditCard, Wallet, Banknote, Loader2, Plus, Minus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -38,6 +38,8 @@ export default function CheckoutPage() {
 
   const deliveryFee = mode === "delivery" ? 5 : 0;
   const grandTotal = total + deliveryFee;
+  const cur = resolveDisplayCurrency({ country: "AE" });
+  const fmt = (n: number) => formatMoneyByCountry(n, null, cur);
 
   const placeOrder = async () => {
     if (!user) { toast.error("Please sign in to place an order"); return; }
@@ -163,7 +165,7 @@ export default function CheckoutPage() {
               >
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold text-foreground truncate">{item.name}</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">{(item.unitPrice * item.quantity).toFixed(2)} AED</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">{fmt(item.unitPrice * item.quantity)}</p>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <button
@@ -190,15 +192,15 @@ export default function CheckoutPage() {
         <div className="rounded-2xl p-4 space-y-2 bg-card border border-border/20">
           <div className="flex justify-between text-sm">
             <span className="text-muted-foreground">Subtotal</span>
-            <span className="font-semibold text-foreground">{total.toFixed(2)} AED</span>
+            <span className="font-semibold text-foreground">{fmt(total)}</span>
           </div>
           <div className="flex justify-between text-sm">
             <span className="text-muted-foreground">Delivery fee</span>
-            <span className="font-semibold text-foreground">{deliveryFee === 0 ? "Free" : `${deliveryFee.toFixed(2)} AED`}</span>
+            <span className="font-semibold text-foreground">{deliveryFee === 0 ? "Free" : fmt(deliveryFee)}</span>
           </div>
           <div className="flex justify-between text-sm font-bold pt-2 border-t border-border/20">
             <span className="text-foreground">Total</span>
-            <span className="text-foreground">{grandTotal.toFixed(2)} AED</span>
+            <span className="text-foreground">{fmt(grandTotal)}</span>
           </div>
         </div>
 
@@ -245,7 +247,7 @@ export default function CheckoutPage() {
           className="w-full rounded-2xl h-13 text-sm font-bold"
         >
           {placing ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
-          Place Order · {grandTotal.toFixed(2)} AED
+          Place Order · {fmt(grandTotal)}
         </Button>
       </div>
     </div>

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { formatMoneyByCountry } from "@/lib/currency-engine";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -146,10 +147,10 @@ export default function MerchantCouponManagerPage() {
                   <p className="text-[11px] text-muted-foreground">
                     {row.discount_type === "percent"
                       ? `${Number(row.discount_value ?? 0)}% off`
-                      : `${Number(row.discount_value ?? 0).toFixed(2)} AED off`}
+                      : `${formatMoneyByCountry(Number(row.discount_value ?? 0), null, "AED")} off`}
                   </p>
                   <p className="text-[11px] text-muted-foreground/70">
-                    Min {Number(row.minimum_order_amount ?? 0).toFixed(2)} AED
+                    Min {formatMoneyByCountry(Number(row.minimum_order_amount ?? 0), null, "AED")}
                   </p>
                 </div>
                 <button

@@ -3,6 +3,7 @@
  * Real-time KPIs, AI assistant, shop switcher, quick actions, module cards.
  */
 import { useState } from "react";
+import { formatMoneyByCountry } from "@/lib/currency-engine";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useOrbitStore } from "@/stores/orbitStore";
@@ -130,7 +131,7 @@ export default function MeCommandCenter() {
       <div className="grid grid-cols-3 gap-2">
         {[
           { label: "Orders today", value: kpis?.ordersToday ?? "—", icon: <Receipt className="w-3.5 h-3.5" /> },
-          { label: "Revenue", value: kpis?.revenue ? `${kpis.revenue} AED` : "—", icon: <DollarSign className="w-3.5 h-3.5" /> },
+          { label: "Revenue", value: kpis?.revenue ? formatMoneyByCountry(kpis.revenue, null, "AED") : "—", icon: <DollarSign className="w-3.5 h-3.5" /> },
           { label: "Active", value: kpis?.activeOrders ?? "—", icon: <Clock className="w-3.5 h-3.5" /> },
         ].map((kpi) => (
           <div key={kpi.label} className="rounded-2xl border border-border/15 bg-card p-3 text-center">
@@ -263,7 +264,7 @@ export default function MeCommandCenter() {
         <ModuleCard
           icon={<Wallet className="w-5 h-5 text-amber-400" />}
           title="Money & Payouts"
-          subtitle={kpis?.revenue ? `Today: ${kpis.revenue} AED` : "No transactions yet"}
+          subtitle={kpis?.revenue ? `Today: ${formatMoneyByCountry(kpis.revenue, null, "AED")}` : "No transactions yet"}
           badge={kpis?.revenue ? "Active" : "No data yet"}
           badgeColor={kpis?.revenue ? "emerald" : "amber"}
           onClick={() => navigate("/wallet/hub")}

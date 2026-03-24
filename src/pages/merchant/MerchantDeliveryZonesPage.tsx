@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import { formatMoneyByCountry } from "@/lib/currency-engine";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -47,7 +48,7 @@ export default function MerchantDeliveryZonesPage() {
         {rows.map((row) => (
           <div key={row.id} className="rounded-[28px] border border-border/20 bg-card p-4">
             <div className="text-sm font-bold text-foreground">{row.name}</div>
-            <div className="text-xs text-muted-foreground mt-1">Fee {row.fee.toFixed(2)} AED · {row.eta}</div>
+            <div className="text-xs text-muted-foreground mt-1">Fee {formatMoneyByCountry(row.fee, null, "AED")} · {row.eta}</div>
           </div>
         ))}
       </div>
