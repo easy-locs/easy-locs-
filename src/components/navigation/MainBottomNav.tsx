@@ -8,6 +8,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { motion } from "framer-motion";
 import { NAV_TABS_CONFIG, HIDE_NAV_PREFIXES } from "@/config/navigation";
+import { tc } from "@/lib/i18n-canonical";
 
 function MainBottomNav() {
   const navigate = useNavigate();
