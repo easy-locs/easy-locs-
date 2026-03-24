@@ -23,7 +23,7 @@ export function checkGeoHealth(): HealthCheckResult {
     return { module: "geo", healthy: false, detail: "Permission denied by user", action: "none" };
   }
 
-  if (!geo.point && !geo.loading && geo.permission !== "denied") {
+  if (!geo.point && !geo.loading && (geo.permission as string) !== "denied") {
     // Geo is not tracking and has no point — auto retry
     geoService.forceRetry();
     return { module: "geo", healthy: false, detail: "No position, triggered retry", action: "retry" };
