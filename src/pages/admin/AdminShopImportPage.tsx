@@ -296,6 +296,24 @@ export default function AdminShopImportPage() {
                 <div className="text-[10px] text-muted-foreground">
                   Score: {c.quality_score} · {c.phone || "no phone"} · {c.rating ? `★${c.rating}` : "no rating"}
                 </div>
+                {(() => {
+                  const state = onboardingStates.find((s: any) => s.entity_id === c.id);
+                  if (!state) return null;
+                  return (
+                    <div className="text-[10px] flex gap-1.5 mt-0.5 flex-wrap">
+                      <span className={state.ui_quality_status === "good" ? "text-emerald-500" : state.ui_quality_status === "needs_assets" ? "text-amber-500" : "text-muted-foreground"}>
+                        UI:{state.ui_quality_status}
+                      </span>
+                      <span className={state.menu_visual_status === "good" ? "text-emerald-500" : state.menu_visual_status === "poor" ? "text-destructive" : "text-muted-foreground"}>
+                        Menu:{state.menu_visual_status}
+                      </span>
+                      <span className={state.storefront_ready_status === "ready" ? "text-emerald-500" : "text-muted-foreground"}>
+                        SF:{state.storefront_ready_status}
+                      </span>
+                      {state.menu_display_score > 0 && <span className="text-muted-foreground">MDS:{state.menu_display_score}</span>}
+                    </div>
+                  );
+                })()}
               </div>
               <div className={`text-[10px] px-2 py-0.5 rounded-full ${
                 c.candidate_status === "approved" ? "bg-emerald-500/10 text-emerald-500"
