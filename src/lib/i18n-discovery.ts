@@ -456,6 +456,15 @@ const translations: Record<DiscoveryLocale, Record<string, string>> = {
     "travel.total_stay": "إجمالي الإقامة",
     "travel.available": "متاح",
     "travel.sold_out": "نفذ",
+    "travel.hero_title": "إلى أين تريد الهروب؟",
+    "travel.hero_subtitle": "فنادق فاخرة ومنتجعات شاطئية وإقامات مريحة في الإمارات",
+    "travel.stays": "الإقامات",
+    "travel.wifi": "واي فاي مجاني",
+    "travel.pool": "مسبح",
+    "travel.parking": "موقف سيارات",
+    "travel.gym": "صالة رياضية",
+    "travel.breakfast": "إفطار",
+    "travel.spa": "سبا",
   },
 };
 
