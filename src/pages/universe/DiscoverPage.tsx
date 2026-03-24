@@ -1,6 +1,6 @@
 /**
  * DiscoverPage — Unified discovery hub with all verticals.
- * Uses canonical discovery pipeline — visibility, routing, display_priority enforced.
+ * Uses canonical UI engine for vertical-aware accents and wording.
  */
 import { useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
@@ -10,6 +10,7 @@ import MerchantCard from "@/components/marketplace/MerchantCard";
 import { VERTICALS, getSubcategoryLabel } from "@/lib/discovery/verticals";
 import { useDiscoverListings } from "@/hooks/useDiscoverListings";
 import { useDiscoveryStore } from "@/stores/discoveryStore";
+import { resolveCanonicalUI } from "@/lib/ui-engine";
 
 export default function DiscoverPage() {
   const navigate = useNavigate();
