@@ -113,6 +113,7 @@ const FurnitureInventory = safeLazy(() => import("./pages/FurnitureInventory"), 
 const Buildings = safeLazy(() => import("./pages/Buildings"), "Buildings");
 const Vault = safeLazy(() => import("./pages/Vault"), "Vault");
 const NotFound = safeLazy(() => import("./pages/NotFound"), "NotFound");
+const ExplorePage = safeLazy(() => import("./pages/ExplorePage"), "ExplorePage");
 const DataImport = safeLazy(() => import("./pages/DataImport"), "DataImport");
 const TenantDashboard = safeLazy(() => import("./pages/tenant/TenantDashboard"), "TenantDashboard");
 const TenantReceipts = safeLazy(() => import("./pages/tenant/TenantReceipts"), "TenantReceipts");
@@ -785,7 +786,7 @@ const App = () => (
 
               {/* V7 Public pillars — Radar is unified ecosystem */}
               <Route path="/discover" element={<Navigate to="/radar" replace />} />
-              <Route path="/explore" element={<Navigate to="/radar" replace />} />
+              <Route path="/explore" element={<ExplorePage />} />
               <Route path="/search" element={<Navigate to="/radar" replace />} />
 
               {/* Universe hubs — unified browse route */}
