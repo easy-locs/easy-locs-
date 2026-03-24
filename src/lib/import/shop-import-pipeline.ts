@@ -559,10 +559,16 @@ export async function runImportPipeline(config: BatchConfig, items: RawShopInput
       }
       reasonJson.completeness = completeness;
       reasonJson.vertical_attributes = verticalAttrs;
-      if (menuData) {
+      if (menuAnalysis) {
         reasonJson.menu_summary = {
-          total_items: menuData.totalItems,
-          categories: Object.keys(menuData.categories),
+          total_items: menuAnalysis.totalItems,
+          categories: Object.keys(menuAnalysis.categories),
+          menu_display_score: menuAnalysis.menu_display_score,
+          bestseller_count: menuAnalysis.bestseller_count,
+          missing_images: menuAnalysis.missing_image_count,
+          missing_prices: menuAnalysis.missing_price_count,
+          optimal_order: menuAnalysis.optimal_category_order,
+          flags: menuAnalysis.flags,
         };
       }
 
