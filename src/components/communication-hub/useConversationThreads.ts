@@ -288,6 +288,89 @@ export function useConversationThreads() {
         console.warn("[comm-threads] conversation_threads query failed:", e);
       }
 
+      // ── 11. V2 Direct Conversations (canonical stack) ──
+      try {
+        const { data: v2Convs } = await supabase
+          .from("conversations_v2")
+          .select("id, type, participants, last_message_at, last_message_body, created_at")
+          .eq("type", "direct")
+          .order("last_message_at", { ascending: false, nullsFirst: false })
+          .limit(100);
+
+        if (v2Convs?.length && user?.id) {
+          for (const conv of v2Convs) {
+            const participants = conv.participants as any[];
+            if (!Array.isArray(participants)) continue;
+            // Only include conversations where current user is a participant
+            const isParticipant = participants.some((p: any) => 
+              p?.userId === user.id || p?.orbitId?.includes(user.id.slice(0, 8))
+            );
+            if (!isParticipant) continue;
+            // Skip if only 1 participant (self-thread)
+            if (participants.length < 2) continue;
+            
+            // Find the other participant
+            const peer = participants.find((p: any) => 
+              p?.userId !== user.id && !p?.orbitId?.includes(user.id.slice(0, 8))
+            );
+            const peerName = peer?.displayName || peer?.name || "Contact";
+            const v2Key = `v2-direct-${conv.id}`;
+            
+            // Don't overwrite if a legacy thread already covers this conversation
+            if (!threadMap.has(v2Key)) {
+              threadMap.set(v2Key, {
+                id: v2Key,
+                conversationType: "direct",
+                sourceModule: "direct",
+                contextType: "direct",
+                contextId: conv.id,
+                name: peerName,
+                email: peer?.email || null,
+                avatarUrl: peer?.avatarUrl || null,
+                threadId: conv.id,
+                v2ConversationId: conv.id,
+                isV2: true,
+                unreadCount: 0,
+                lastMessage: conv.last_message_body || undefined,
+                lastMessageTime: conv.last_message_at || conv.created_at,
+              });
+            }
+          }
+
+          // Load unread counts for V2 conversations
+          const v2Ids = Array.from(threadMap.values())
+            .filter(t => t.isV2 && t.v2ConversationId)
+            .map(t => t.v2ConversationId!);
+          
+          if (v2Ids.length > 0) {
+            const { data: v2Msgs } = await supabase
+              .from("chat_messages_v2")
+              .select("conversation_id, sender_user_id, read_at, body, created_at")
+              .in("conversation_id", v2Ids)
+              .is("read_at", null)
+              .neq("sender_user_id", user.id)
+              .order("created_at", { ascending: false })
+              .limit(500);
+
+            if (v2Msgs?.length) {
+              for (const msg of v2Msgs) {
+                const key = `v2-direct-${msg.conversation_id}`;
+                const thread = threadMap.get(key);
+                if (thread) {
+                  thread.unreadCount++;
+                  if (!thread.lastMessage) {
+                    thread.lastMessage = msg.body;
+                    thread.lastMessageTime = msg.created_at;
+                  }
+                }
+              }
+            }
+          }
+        }
+      } catch (e) {
+        console.warn("[comm-threads] conversations_v2 query failed:", e);
+      }
+
       // ── 8. Deal rooms ──
       try {
         const { data: deals } = await supabase
