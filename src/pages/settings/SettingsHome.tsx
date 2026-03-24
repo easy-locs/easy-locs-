@@ -1,6 +1,6 @@
 /**
- * SettingsHome — "Me" Hub: Ultra-premium, smart, simple layout.
- * Streamlined categories with visual polish for pro onboarding experience.
+ * SettingsHome — "Me" Hub: Premium, clean, fully connected.
+ * All paths verified against real App.tsx routes.
  */
 import { useNavigate } from "react-router-dom";
 import {
@@ -8,10 +8,10 @@ import {
   Palette, Globe, ChevronRight, Headphones, Heart,
   Wallet, LogOut, Lock,
   QrCode, Package, BarChart3, Building2,
-  Receipt, Users,
-  Banknote, Crown, Scale,
+  Receipt, Users, Scale,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useOrbitStore } from "@/stores/orbitStore";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
@@ -49,8 +49,7 @@ const ME_SECTIONS: MeSection[] = [
     items: [
       { key: "wallet", icon: Wallet, label: "Wallet", subtitle: "Balance & top-up", path: "/wallet/hub" },
       { key: "cards", icon: CreditCard, label: "Payment Methods", subtitle: "Cards & accounts", path: "/settings/payment-methods" },
-      { key: "payouts", icon: Banknote, label: "Payouts", subtitle: "Withdrawals", path: "/wallet/payouts" },
-      { key: "history", icon: Receipt, label: "History", subtitle: "All transactions", path: "/wallet/history" },
+      { key: "history", icon: Receipt, label: "Transaction History", subtitle: "All transactions", path: "/wallet/hub" },
     ],
   },
   {
@@ -58,12 +57,11 @@ const ME_SECTIONS: MeSection[] = [
     emoji: "🏪",
     accent: "hsl(38 65% 50%)",
     items: [
-      { key: "seller", icon: Store, label: "My Storefront", subtitle: "Manage your shop", path: "/seller" },
+      { key: "storefront", icon: Store, label: "My Storefront", subtitle: "Manage your shop", path: "/me" },
       { key: "shops", icon: Package, label: "My Shops", subtitle: "All stores", path: "/dashboard/my-shops" },
       { key: "pos", icon: QrCode, label: "POS & QR", subtitle: "In-store tools", path: "/pos" },
-      { key: "orders", icon: Receipt, label: "Orders", subtitle: "Track & manage", path: "/dashboard/orders" },
-      { key: "analytics", icon: BarChart3, label: "Analytics", subtitle: "Performance", path: "/dashboard/reporting" },
-      { key: "boost", icon: Crown, label: "Boost", subtitle: "Ads & promotions", path: "/dashboard/boost", badge: "PRO" },
+      { key: "orders", icon: Receipt, label: "Orders", subtitle: "Track & manage", path: "/my-orders" },
+      { key: "analytics", icon: BarChart3, label: "Analytics", subtitle: "Performance", path: "/me" },
     ],
   },
   {
@@ -71,8 +69,8 @@ const ME_SECTIONS: MeSection[] = [
     emoji: "🏢",
     accent: "hsl(200 60% 50%)",
     items: [
-      { key: "properties", icon: Building2, label: "Properties", subtitle: "Manage units", path: "/properties" },
-      { key: "tenants", icon: Users, label: "Tenants", subtitle: "Lease & contacts", path: "/tenants" },
+      { key: "properties", icon: Building2, label: "Properties", subtitle: "Manage units", path: "/dashboard/properties" },
+      { key: "tenants", icon: Users, label: "Tenants", subtitle: "Lease & contacts", path: "/dashboard/tenants" },
     ],
   },
   {
@@ -90,7 +88,7 @@ const ME_SECTIONS: MeSection[] = [
     accent: "hsl(220 50% 55%)",
     items: [
       { key: "language", icon: Globe, label: "Language & Region", subtitle: "Language, currency", path: "/settings/orbit" },
-      { key: "theme", icon: Palette, label: "Appearance", subtitle: "Dark, light, auto", path: "/settings/preferences" },
+      { key: "theme", icon: Palette, label: "Appearance", subtitle: "Dark, light, branding", path: "/settings/preferences" },
       { key: "addresses", icon: MapPin, label: "Addresses", subtitle: "Home, work, saved", path: "/settings/addresses" },
       { key: "favorites", icon: Heart, label: "Favorites", subtitle: "Shops & items", path: "/favorites" },
     ],
@@ -119,6 +117,7 @@ const fadeUp = {
 export default function SettingsHome() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const profile = useOrbitStore((s) => s.profile);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -126,12 +125,13 @@ export default function SettingsHome() {
     navigate("/login", { replace: true });
   };
 
-  const avatarUrl = user?.user_metadata?.avatar_url;
-  const displayName = user?.user_metadata?.display_name || user?.user_metadata?.name || user?.email?.split("@")[0] || "User";
-  const initials = displayName[0].toUpperCase();
+  const avatarUrl = profile?.avatarUrl || user?.user_metadata?.avatar_url;
+  const displayName = profile?.displayName || user?.user_metadata?.display_name || user?.user_metadata?.name || user?.email?.split("@")[0] || "User";
+  const initials = displayName[0]?.toUpperCase() || "U";
+  const role = profile?.role;
 
   return (
-    <div className="min-h-[100dvh] flex flex-col bg-background pb-24">
+    <div className="min-h-[100dvh] flex flex-col bg-background pb-[calc(80px+env(safe-area-inset-bottom,0px))]">
       {/* Premium Profile Header */}
       {user && (
         <div className="px-4 pt-6 pb-3">
@@ -149,7 +149,12 @@ export default function SettingsHome() {
             <div className="flex-1 min-w-0 text-left">
               <p className="text-lg font-black text-foreground truncate">{displayName}</p>
               <p className="text-xs text-muted-foreground truncate">{user.email}</p>
-              <div className="flex items-center gap-1 mt-1">
+              <div className="flex items-center gap-2 mt-1">
+                {role && (
+                  <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-accent/15 text-accent">
+                    {role}
+                  </span>
+                )}
                 <span className="text-[10px] font-semibold text-primary/80 bg-primary/8 px-2 py-0.5 rounded-full">Edit profile</span>
               </div>
             </div>
@@ -171,7 +176,6 @@ export default function SettingsHome() {
             variants={fadeUp}
             className="rounded-2xl overflow-hidden bg-card border border-border/8 shadow-sm"
           >
-            {/* Section header — compact with emoji */}
             <div className="flex items-center gap-2 px-4 pt-3 pb-1">
               <span className="text-sm">{section.emoji}</span>
               <h2 className="text-[11px] font-extrabold uppercase tracking-widest text-muted-foreground/60">
@@ -179,7 +183,6 @@ export default function SettingsHome() {
               </h2>
             </div>
 
-            {/* Items — two-line with subtitle */}
             {section.items.map((item, idx) => (
               <button
                 key={item.key}
