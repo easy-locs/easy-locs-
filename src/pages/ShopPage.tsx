@@ -129,6 +129,7 @@ export default function ShopPage() {
   const analytics = useStorefrontAnalytics(shop?.id);
   const shopT = useShopTranslation(shop?.id);
   const fx = useStorefrontCurrency(shop?.currency || shop?.default_currency || "AED");
+  const verticalUI = useCanonicalUI(shop?.vertical, shop?.subcategory);
 
   const filteredItems = activeCategory
     ? catalogItems.filter((i: any) => i.category_id === activeCategory)
