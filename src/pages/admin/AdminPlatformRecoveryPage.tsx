@@ -14,16 +14,16 @@ import {
 } from "@/lib/platform/platform-recovery-engine";
 
 const statusIcon: Record<ModuleStatus, React.ReactNode> = {
-  ok: <CheckCircle className="h-4 w-4 text-green-500" />,
-  error: <XCircle className="h-4 w-4 text-red-500" />,
-  fixed: <Wrench className="h-4 w-4 text-amber-500" />,
+  ok: <CheckCircle className="h-4 w-4 text-emerald-500" />,
+  error: <XCircle className="h-4 w-4 text-destructive" />,
+  fixed: <Wrench className="h-4 w-4 text-warning" />,
   skipped: <SkipForward className="h-4 w-4 text-muted-foreground" />,
 };
 
 const statusColor: Record<ModuleStatus, string> = {
-  ok: "bg-green-500/10 text-green-700 border-green-200",
-  error: "bg-red-500/10 text-red-700 border-red-200",
-  fixed: "bg-amber-500/10 text-amber-700 border-amber-200",
+  ok: "bg-emerald-500/10 text-emerald-700 border-emerald-200 dark:text-emerald-400",
+  error: "bg-destructive/10 text-destructive border-destructive/30",
+  fixed: "bg-warning/10 text-warning border-warning/30",
   skipped: "bg-muted text-muted-foreground border-border",
 };
 
