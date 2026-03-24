@@ -149,6 +149,7 @@ export default function ShopPage() {
   const { data: catalogItems = [] } = useQuery({
     queryKey: ["storefront-catalog", shop?.id, shop?._isSeed],
     queryFn: async () => {
+      if (!shop) return [];
       // For seed merchants, load from seed_products
       if (shop._isSeed) {
         const { data } = await (supabase as any)
@@ -184,6 +185,7 @@ export default function ShopPage() {
   const { data: categories = [] } = useQuery({
     queryKey: ["storefront-categories", shop?.id],
     queryFn: async () => {
+      if (!shop) return [];
       const { data } = await (supabase as any)
         .from("storefront_catalog_categories")
         .select("*")
