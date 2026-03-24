@@ -1,7 +1,7 @@
 /**
  * SmartHome — Production-clean super-app home with data-driven sections.
  * Careem-style category grid with 3D icons + geo-aware delivery area.
- * Uses canonical discovery pipeline for all sections.
+ * Uses canonical discovery pipeline + Living Commerce Engine for all sections.
  */
 import { memo, useMemo, useEffect } from "react";
 import { GeoStatusIndicator } from "@/components/geo/GeoStatusIndicator";
@@ -15,6 +15,10 @@ import { useHomeSections } from "@/hooks/useHomeSections";
 import { getSmartCategories, getSmartHero, getTimeGreeting, getTimeSlot, type SmartCategory } from "@/lib/smart-home-engine";
 import { eventBus } from "@/lib/events/eventBus";
 import { motion } from "framer-motion";
+import { useLivingPage } from "@/hooks/useLivingPage";
+import { useGlobalContext } from "@/hooks/useGlobalContext";
+import { staggerContainer, staggerItem, fadeSlideUp, TRANSITIONS } from "@/lib/motion/motion-system";
+import { getTopBanners } from "@/lib/context-banner/context-banner-engine";
 
 import foodImg from "@/assets/categories/food.png";
 import groceryImg from "@/assets/categories/grocery.png";
