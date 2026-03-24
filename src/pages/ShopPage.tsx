@@ -68,7 +68,7 @@ const SectionLoader = () => (
 );
 
 export default function ShopPage() {
-  const { shopSlug } = useParams<{ shopSlug: string }>();
+  const { slug: shopSlug } = useParams<{ slug: string }>();
   const [searchParams] = useSearchParams();
   const inviteToken = searchParams.get("invite");
   const actionParam = searchParams.get("action");
