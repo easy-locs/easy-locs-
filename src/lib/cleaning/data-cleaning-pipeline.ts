@@ -272,7 +272,7 @@ export async function runFullCleaningPipeline(
 
       if (Object.keys(allUpdates).length > 0) {
         try {
-          await (supabase as any).from("storefront_pages").update(allUpdates).eq("id", shop.id);
+          await batchSafeAutoWrite(shop.id, allUpdates, "cleaning_pipeline");
         } catch (e: any) { result.errors.push(`Update error ${shop.id}: ${e.message}`); }
       }
     }

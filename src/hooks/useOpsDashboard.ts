@@ -8,6 +8,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { auditShop, type ShopAuditResult } from "@/lib/audit/shop-audit";
 import { runFullCleaningPipeline, type CleaningResult } from "@/lib/cleaning/data-cleaning-pipeline";
+import { batchSafeAutoWrite } from "@/lib/engines/override-write-gate";
 import { toast } from "sonner";
 
 // ── Types ──
