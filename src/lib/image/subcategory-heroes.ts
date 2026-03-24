@@ -1,5 +1,5 @@
 /**
- * Curated hero images per subcategory — 3 variations each.
+ * Curated hero images per subcategory — expanded pools for visual diversity.
  * Used by hero-diversity-guard to rotate images and prevent duplication.
  */
 export const SUBCATEGORY_HERO_MAP: Record<string, string[]> = {
@@ -7,11 +7,18 @@ export const SUBCATEGORY_HERO_MAP: Record<string, string[]> = {
     "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=800&q=80",
     "https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=800&q=80",
     "https://images.unsplash.com/photo-1513104890138-7c749659a591?w=800&q=80",
+    "https://images.unsplash.com/photo-1604382354936-07c5d9983bd3?w=800&q=80",
+    "https://images.unsplash.com/photo-1571407970349-bc81e7e96d47?w=800&q=80",
   ],
   burger: [
     "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=800&q=80",
     "https://images.unsplash.com/photo-1550547660-d9450f859349?w=800&q=80",
     "https://images.unsplash.com/photo-1586190848861-99aa4a171e90?w=800&q=80",
+    "https://images.unsplash.com/photo-1572802419224-296b0aeee0d9?w=800&q=80",
+    "https://images.unsplash.com/photo-1553979459-d2229ba7433b?w=800&q=80",
+    "https://images.unsplash.com/photo-1594212699903-ec8a3eca50f5?w=800&q=80",
+    "https://images.unsplash.com/photo-1571091718767-18b5b1457add?w=800&q=80",
+    "https://images.unsplash.com/photo-1551615593-ef5fe247e8f7?w=800&q=80",
   ],
   sushi: [
     "https://images.unsplash.com/photo-1579871494447-9811cf80d66c?w=800&q=80",
@@ -42,11 +49,14 @@ export const SUBCATEGORY_HERO_MAP: Record<string, string[]> = {
     "https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=800&q=80",
     "https://images.unsplash.com/photo-1596797038530-2c107229654b?w=800&q=80",
     "https://images.unsplash.com/photo-1505253758473-96b7015fcd40?w=800&q=80",
+    "https://images.unsplash.com/photo-1631452180519-c014fe946bc7?w=800&q=80",
+    "https://images.unsplash.com/photo-1567337710282-00832b415979?w=800&q=80",
   ],
   lebanese: [
-    "https://images.unsplash.com/photo-1529006557810-274b9b2fc783?w=800&q=80",
     "https://images.unsplash.com/photo-1544027993-37dbfe43562a?w=800&q=80",
     "https://images.unsplash.com/photo-1623428187969-5da2dcea5ebf?w=800&q=80",
+    "https://images.unsplash.com/photo-1540914124281-342587941389?w=800&q=80",
+    "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=800&q=80",
   ],
   thai: [
     "https://images.unsplash.com/photo-1562565652-a0d8f0c59eb4?w=800&q=80",
@@ -59,9 +69,25 @@ export const SUBCATEGORY_HERO_MAP: Record<string, string[]> = {
     "https://images.unsplash.com/photo-1599974579688-8dbdd335c77f?w=800&q=80",
   ],
   shawarma: [
-    "https://images.unsplash.com/photo-1529006557810-274b9b2fc783?w=800&q=80",
     "https://images.unsplash.com/photo-1561651823-34feb02f2c20?w=800&q=80",
     "https://images.unsplash.com/photo-1628840042765-356cda07504e?w=800&q=80",
+    "https://images.unsplash.com/photo-1547592180-85f173990554?w=800&q=80",
+    "https://images.unsplash.com/photo-1530469912745-a215c6b256ea?w=800&q=80",
+    "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=800&q=80",
+  ],
+  nutrition: [
+    "https://images.unsplash.com/photo-1498837167922-ddd27525d352?w=800&q=80",
+    "https://images.unsplash.com/photo-1490818387583-1baba5e638af?w=800&q=80",
+    "https://images.unsplash.com/photo-1511690743698-d9d18f7e20f1?w=800&q=80",
+  ],
+  healthy: [
+    "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=800&q=80",
+    "https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=800&q=80",
+    "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800&q=80",
+    "https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?w=800&q=80",
+    "https://images.unsplash.com/photo-1543339308-d595e3aaf189?w=800&q=80",
+    "https://images.unsplash.com/photo-1607532941433-304659e8198a?w=800&q=80",
+    "https://images.unsplash.com/photo-1547592166-23ac45744acd?w=800&q=80",
   ],
   fried_chicken: [
     "https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?w=800&q=80",
@@ -72,11 +98,6 @@ export const SUBCATEGORY_HERO_MAP: Record<string, string[]> = {
     "https://images.unsplash.com/photo-1615141982883-c7ad0e69fd62?w=800&q=80",
     "https://images.unsplash.com/photo-1534604973900-c43ab4c2e0ab?w=800&q=80",
     "https://images.unsplash.com/photo-1559737558-2f5a35f4523b?w=800&q=80",
-  ],
-  healthy: [
-    "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=800&q=80",
-    "https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=800&q=80",
-    "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800&q=80",
   ],
   breakfast: [
     "https://images.unsplash.com/photo-1533089860892-a7c6f0a88666?w=800&q=80",
