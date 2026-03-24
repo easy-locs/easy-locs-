@@ -388,8 +388,9 @@ export default memo(function RadarView({ initialType, radiusKm: initialRadius, s
           <div className="h-full overflow-y-auto px-4 pb-24 space-y-2">
             {results.length === 0 && !loading && (
               <div className="text-center py-12">
-                <span className="text-3xl">📡</span>
-                <p className="text-sm text-muted-foreground mt-2">No results nearby</p>
+                <span className="text-3xl">{canonicalUI.emoji}</span>
+                <p className="text-sm font-semibold text-foreground mt-2">{canonicalUI.wording.emptyTitle}</p>
+                <p className="text-xs text-muted-foreground mt-1">{canonicalUI.wording.emptySubtitle}</p>
               </div>
             )}
             {results.map((entity, idx) => (
