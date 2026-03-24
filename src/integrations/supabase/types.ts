@@ -26551,6 +26551,13 @@ export type Database = {
         Args: { p_items: Json; p_order: Json }
         Returns: Json
       }
+      ensure_wallet_account: {
+        Args: { target_currency?: string; target_user_id: string }
+        Returns: {
+          wallet_id: string
+          wallet_status: string
+        }[]
+      }
       geocode_city_approx: {
         Args: { _city: string }
         Returns: {
