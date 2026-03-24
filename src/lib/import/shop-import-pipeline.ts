@@ -621,7 +621,25 @@ export async function runImportPipeline(config: BatchConfig, items: RawShopInput
         await (supabase as any).from("imported_shop_assets").insert(assetRows);
       }
 
-      // Create onboarding state
+      // Compute visual quality flags
+      const hasLogo = !!item.logo_url;
+      const hasCover = !!item.cover_url || (item.images?.length ?? 0) > 0;
+      const galleryCount = item.images?.length ?? 0;
+      const menuScore = menuAnalysis?.menu_display_score ?? 0;
+      const visualFlags: Record<string, any> = {};
+      if (!hasLogo) visualFlags.missing_logo = true;
+      if (!hasCover) visualFlags.missing_cover = true;
+      if (galleryCount === 0) visualFlags.no_gallery = true;
+      if (menuAnalysis?.flags?.length) visualFlags.menu_flags = menuAnalysis.flags;
+
+      const uiQuality = (!hasLogo || !hasCover) ? "needs_assets" : galleryCount < 3 ? "basic" : "good";
+      const menuVisual = menuScore >= 70 ? "good" : menuScore >= 40 ? "basic" : item.menu?.length ? "poor" : "empty";
+      const storefrontScore = Math.round(
+        (completeness.overall * 0.4) + (completeness.media * 0.3) + (menuScore * 0.3)
+      );
+      const storefrontReady = storefrontScore >= 60 ? "ready" : storefrontScore >= 35 ? "needs_work" : "not_ready";
+
+      // Create onboarding state with visual columns
       await (supabase as any).from("merchant_onboarding_state").insert({
         entity_id: candidate.id,
         onboarding_mode: "imported_draft",
@@ -635,6 +653,13 @@ export async function runImportPipeline(config: BatchConfig, items: RawShopInput
         menu_status: menuData ? "imported" : "empty",
         seo_status: "pending",
         review_status: "pending",
+        ui_quality_status: uiQuality,
+        menu_visual_status: menuVisual,
+        storefront_ready_status: storefrontReady,
+        menu_display_score: menuScore,
+        visual_completeness_score: completeness.media,
+        storefront_readiness_score: storefrontScore,
+        visual_flags_json: visualFlags,
       });
 
       result.total_created++;
