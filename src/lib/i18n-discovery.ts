@@ -161,6 +161,15 @@ const translations: Record<DiscoveryLocale, Record<string, string>> = {
     "travel.total_stay": "Total stay",
     "travel.available": "Available",
     "travel.sold_out": "Sold out",
+    "travel.hero_title": "Where to escape?",
+    "travel.hero_subtitle": "Luxury hotels, beach resorts & cozy stays across UAE",
+    "travel.stays": "Stays",
+    "travel.wifi": "Free WiFi",
+    "travel.pool": "Pool",
+    "travel.parking": "Parking",
+    "travel.gym": "Gym",
+    "travel.breakfast": "Breakfast",
+    "travel.spa": "Spa",
   },
 
   fr: {
