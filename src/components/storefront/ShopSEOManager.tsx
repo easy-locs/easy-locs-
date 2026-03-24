@@ -4,6 +4,7 @@
  */
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { setMerchantValue } from "@/lib/engines/merchant-override-engine";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -44,6 +45,13 @@ export default function ShopSEOManager({ shopId, shopSlug, currentData }: ShopSE
   const save = async () => {
     setSaving(true);
     try {
+      // Register merchant overrides for SEO fields
+      await Promise.all([
+        seoTitle && setMerchantValue(shopId, "seo_title", seoTitle),
+        seoDesc && setMerchantValue(shopId, "seo_description", seoDesc),
+        ogImage && setMerchantValue(shopId, "og_image_url", ogImage),
+      ]);
+      // Also write directly for immediate effect
       await (supabase as any).from("storefront_pages").update({
         seo_title: seoTitle || null,
         seo_description: seoDesc || null,

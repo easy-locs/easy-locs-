@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { canonicalTaxonomyPayload } from "@/lib/taxonomy/taxonomy-guard";
 import { auditShop } from "@/lib/audit/shop-audit";
 import { getTaxonomyFallbackCover } from "@/lib/image/dual-layer-image";
+import { batchSafeAutoWrite } from "@/lib/engines/override-write-gate";
 
 export interface CleaningResult {
   totalProcessed: number;
@@ -77,11 +78,11 @@ export async function dedupeShops(shops: any[], result: CleaningResult, onProgre
   for (const group of groups) {
     for (const dupId of group.duplicateIds) {
       try {
-        await (supabase as any).from("storefront_pages").update({
-          readiness_status: "draft", visibility_mode: "hidden",
+        await batchSafeAutoWrite(dupId, {
+          readiness_status: "draft",
+          visibility_mode: "hidden",
           blocking_reason: "duplicate",
-          metadata_json: { hidden_reason: "duplicate", kept_version: group.bestId },
-        }).eq("id", dupId);
+        }, "dedup_engine");
         result.duplicatesHidden++;
       } catch (e: any) { result.errors.push(`Dedup error ${dupId}: ${e.message}`); }
     }
@@ -271,7 +272,7 @@ export async function runFullCleaningPipeline(
 
       if (Object.keys(allUpdates).length > 0) {
         try {
-          await (supabase as any).from("storefront_pages").update(allUpdates).eq("id", shop.id);
+          await batchSafeAutoWrite(shop.id, allUpdates, "cleaning_pipeline");
         } catch (e: any) { result.errors.push(`Update error ${shop.id}: ${e.message}`); }
       }
     }

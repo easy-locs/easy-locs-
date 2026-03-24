@@ -8,6 +8,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { auditShop, type ShopAuditResult } from "@/lib/audit/shop-audit";
 import { runFullCleaningPipeline, type CleaningResult } from "@/lib/cleaning/data-cleaning-pipeline";
+import { batchSafeAutoWrite } from "@/lib/engines/override-write-gate";
 import { toast } from "sonner";
 
 // ── Types ──
@@ -275,9 +276,10 @@ export function useOpsDashboard() {
     let count = 0;
     for (const shop of filtered) {
       const audit = auditShop(shop);
-      await (supabase as any).from("storefront_pages").update({
-        audit_score: audit.score, readiness_status: audit.status,
-      }).eq("id", shop.id);
+      await batchSafeAutoWrite(shop.id, {
+        audit_score: audit.score,
+        readiness_status: audit.status,
+      }, "ops_bulk_audit");
       count++;
     }
     toast.success(`Audit recalculated for ${count} shops`);
@@ -289,9 +291,10 @@ export function useOpsDashboard() {
     let count = 0;
     for (const shop of filtered) {
       if (getBlockers(shop).length > 0 && shop.visibility_mode !== "hidden") {
-        await (supabase as any).from("storefront_pages").update({
-          visibility_mode: "hidden", blocking_reason: getBlockers(shop).slice(0, 3).join("; ")
-        }).eq("id", shop.id);
+        await batchSafeAutoWrite(shop.id, {
+          visibility_mode: "hidden",
+          blocking_reason: getBlockers(shop).slice(0, 3).join("; "),
+        }, "ops_hide_blocked");
         count++;
       }
     }
