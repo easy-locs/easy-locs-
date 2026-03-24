@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { runImportPipeline, parseImportJson, type PipelineResult } from "@/lib/import/shop-import-pipeline";
+import { publishCandidateAsSeed, autoClassifyVisibility } from "@/lib/import/visibility-engine";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 
@@ -169,6 +170,16 @@ export default function AdminShopImportPage() {
         >
           {running ? "Importing..." : "🚀 Run Import Pipeline"}
         </button>
+        <button
+          onClick={async () => {
+            const res = await autoClassifyVisibility();
+            toast.success(`Auto-classified ${res.updated} candidates`);
+            loadDashboard();
+          }}
+          className="w-full rounded-2xl bg-muted text-foreground px-4 py-2.5 text-xs font-bold"
+        >
+          🔄 Auto-Classify Visibility
+        </button>
       </div>
 
       {/* Pipeline Result */}
@@ -261,10 +272,16 @@ export default function AdminShopImportPage() {
             {c.duplicate_group_id && (
               <div className="text-[10px] text-amber-500">⚠️ Potential duplicate</div>
             )}
-            <div className="flex gap-1.5">
+            <div className="flex gap-1.5 flex-wrap">
               <button onClick={() => updateCandidateStatus(c.id, "approved")} className="text-[10px] px-2 py-1 rounded-lg bg-emerald-500/10 text-emerald-500">Approve</button>
               <button onClick={() => updateCandidateStatus(c.id, "review")} className="text-[10px] px-2 py-1 rounded-lg bg-amber-500/10 text-amber-500">Review</button>
               <button onClick={() => updateCandidateStatus(c.id, "rejected")} className="text-[10px] px-2 py-1 rounded-lg bg-destructive/10 text-destructive">Reject</button>
+              <button onClick={async () => {
+                const res = await publishCandidateAsSeed(c.id);
+                if (res.success) { toast.success("Published as seed"); loadDashboard(); }
+                else toast.error(res.error || "Publish failed");
+              }} className="text-[10px] px-2 py-1 rounded-lg bg-primary/10 text-primary font-bold">Publish Seed</button>
+              <button onClick={() => updateCandidateStatus(c.id, "ready_for_claim")} className="text-[10px] px-2 py-1 rounded-lg bg-blue-500/10 text-blue-500">Ready Claim</button>
             </div>
           </div>
         ))}

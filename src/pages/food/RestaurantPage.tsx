@@ -9,6 +9,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { ArrowLeft, Star, MapPin, Clock, Plus, Minus, ShoppingCart } from "lucide-react";
 import FavoriteMerchantButton from "@/components/favorites/FavoriteMerchantButton";
+import { formatMoneyByCountry } from "@/lib/currency-engine";
 import ReviewList from "@/components/reviews/ReviewList";
 import ReviewComposer from "@/components/reviews/ReviewComposer";
 import { useAnalyticsPageView } from "@/hooks/useAnalyticsPageView";
@@ -198,7 +199,7 @@ export default function RestaurantPage() {
                           {item.description && <p className="text-[11px] text-muted-foreground line-clamp-2 mt-0.5 leading-relaxed">{item.description}</p>}
                         </div>
                         <div className="flex items-center justify-between mt-1">
-                          <span className="text-sm font-bold text-foreground">{Number(item.price).toFixed(2)} AED</span>
+                          <span className="text-sm font-bold text-foreground">{formatMoneyByCountry(Number(item.price), shop?.country, shop?.currency)}</span>
                           {qty === 0 ? (
                             <button data-add-to-cart onClick={() => handleAdd(item)} className="h-8 px-4 rounded-full flex items-center gap-1.5 active:scale-90 transition-transform text-xs font-bold" style={{ background: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}>
                               <Plus className="w-3.5 h-3.5" /> Add
@@ -235,7 +236,7 @@ export default function RestaurantPage() {
               <div className="w-7 h-7 rounded-full flex items-center justify-center" style={{ background: "hsl(0 0% 100% / 0.2)" }}><ShoppingCart className="w-4 h-4 text-primary-foreground" /></div>
               <span className="text-sm font-bold text-primary-foreground">{itemCount} item{itemCount > 1 ? "s" : ""}</span>
             </div>
-            <span className="text-sm font-bold text-primary-foreground">View Cart · {total.toFixed(2)} AED</span>
+            <span className="text-sm font-bold text-primary-foreground">View Cart · {formatMoneyByCountry(total, shop?.country, shop?.currency)}</span>
           </button>
         </motion.div>
       )}

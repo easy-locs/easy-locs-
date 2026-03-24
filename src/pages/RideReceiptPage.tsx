@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { BackCard } from "@/components/ui/back-card";
 import { supabase } from "@/integrations/supabase/client";
+import { formatMoneyByCountry } from "@/lib/currency-engine";
 
 export default function RideReceiptPage() {
   const { rideRequestId } = useParams();
@@ -38,7 +39,7 @@ export default function RideReceiptPage() {
             <div className="flex justify-between">
               <span className="text-muted-foreground">Final amount</span>
               <span className="font-semibold text-foreground">
-                {ride?.final_amount != null ? `${ride.final_amount} AED` : "—"}
+                {ride?.final_amount != null ? formatMoneyByCountry(ride.final_amount, ride?.country, ride?.currency) : "—"}
               </span>
             </div>
             <div className="flex justify-between">

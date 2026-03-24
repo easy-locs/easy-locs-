@@ -4,6 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { listSavedCarts, deleteSavedCart } from "@/lib/cart/savedCarts";
 import { useCart } from "@/hooks/useCart";
 import { toast } from "sonner";
+import { formatMoneyByCountry } from "@/lib/currency-engine";
 
 export default function CustomerSavedCartsPage() {
   const navigate = useNavigate();
@@ -80,7 +81,7 @@ export default function CustomerSavedCartsPage() {
                 <div className="text-xs text-muted-foreground mt-1">
                   {row.merchant_name || "Merchant"} · {items.length} items
                 </div>
-                <div className="text-sm font-semibold mt-2">{total.toFixed(2)} AED</div>
+                <div className="text-sm font-semibold mt-2">{formatMoneyByCountry(total, row.country, row.currency)}</div>
 
                 <div className="grid grid-cols-2 gap-2 mt-3">
                   <button onClick={() => restoreCart(row)} className="rounded-2xl bg-primary text-primary-foreground px-4 py-3 text-sm font-bold">

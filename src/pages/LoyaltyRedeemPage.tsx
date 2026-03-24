@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { BackCard } from "@/components/ui/back-card";
 import { getOrCreateLoyaltyAccount } from "@/lib/loyalty/loyalty-core";
 import { redeemPoints } from "@/lib/loyalty/redeem";
+import { formatMoneyByCountry } from "@/lib/currency-engine";
 import { Button } from "@/components/ui/button";
 import { Gift, Star } from "lucide-react";
 import { toast } from "sonner";
@@ -44,14 +45,14 @@ export default function LoyaltyRedeemPage() {
             <Star className="h-3.5 w-3.5" /> Points: <span className="font-bold text-foreground">{account.points_balance}</span>
           </p>
           <p className="text-sm text-muted-foreground">Tier: <span className="font-bold text-foreground capitalize">{account.tier}</span></p>
-          <p className="text-sm text-muted-foreground">Cashback: <span className="font-bold text-foreground">{account.total_cashback} AED</span></p>
+          <p className="text-sm text-muted-foreground">Cashback: <span className="font-bold text-foreground">{formatMoneyByCountry(account.total_cashback, account.country)}</span></p>
         </div>
       )}
       <div className="space-y-2">
         {[50, 100, 250, 500].map((pts) => (
           <Button key={pts} onClick={() => redeem(pts)} variant="outline" className="w-full rounded-xl justify-between">
             <span className="flex items-center gap-2"><Gift className="h-4 w-4" /> Redeem {pts} pts</span>
-            <span className="text-xs text-muted-foreground">{(pts * 0.01).toFixed(2)} AED</span>
+            <span className="text-xs text-muted-foreground">{formatMoneyByCountry(pts * 0.01, account?.country)}</span>
           </Button>
         ))}
       </div>
