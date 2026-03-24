@@ -16994,6 +16994,129 @@ export type Database = {
           },
         ]
       }
+      stay_availability: {
+        Row: {
+          available: boolean
+          blackout: boolean
+          created_at: string | null
+          currency: string
+          date: string
+          id: string
+          max_guests: number
+          merchant_id: string
+          min_nights: number
+          notes: string | null
+          price_per_night: number | null
+          room_type: string
+          rooms_booked: number
+          rooms_total: number
+          updated_at: string | null
+        }
+        Insert: {
+          available?: boolean
+          blackout?: boolean
+          created_at?: string | null
+          currency?: string
+          date: string
+          id?: string
+          max_guests?: number
+          merchant_id: string
+          min_nights?: number
+          notes?: string | null
+          price_per_night?: number | null
+          room_type?: string
+          rooms_booked?: number
+          rooms_total?: number
+          updated_at?: string | null
+        }
+        Update: {
+          available?: boolean
+          blackout?: boolean
+          created_at?: string | null
+          currency?: string
+          date?: string
+          id?: string
+          max_guests?: number
+          merchant_id?: string
+          min_nights?: number
+          notes?: string | null
+          price_per_night?: number | null
+          room_type?: string
+          rooms_booked?: number
+          rooms_total?: number
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      stay_bookings: {
+        Row: {
+          check_in: string
+          check_out: string
+          created_at: string | null
+          currency: string
+          guest_email: string
+          guest_name: string
+          guest_phone: string | null
+          guest_user_id: string | null
+          guests_count: number
+          id: string
+          merchant_id: string
+          nights: number
+          payment_intent_id: string | null
+          price_per_night: number
+          room_type: string
+          rooms_count: number
+          special_requests: string | null
+          status: string
+          total_amount: number
+          updated_at: string | null
+        }
+        Insert: {
+          check_in: string
+          check_out: string
+          created_at?: string | null
+          currency?: string
+          guest_email: string
+          guest_name: string
+          guest_phone?: string | null
+          guest_user_id?: string | null
+          guests_count?: number
+          id?: string
+          merchant_id: string
+          nights: number
+          payment_intent_id?: string | null
+          price_per_night: number
+          room_type?: string
+          rooms_count?: number
+          special_requests?: string | null
+          status?: string
+          total_amount: number
+          updated_at?: string | null
+        }
+        Update: {
+          check_in?: string
+          check_out?: string
+          created_at?: string | null
+          currency?: string
+          guest_email?: string
+          guest_name?: string
+          guest_phone?: string | null
+          guest_user_id?: string | null
+          guests_count?: number
+          id?: string
+          merchant_id?: string
+          nights?: number
+          payment_intent_id?: string | null
+          price_per_night?: number
+          room_type?: string
+          rooms_count?: number
+          special_requests?: string | null
+          status?: string
+          total_amount?: number
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       stealth_notification_routes: {
         Row: {
           created_at: string | null
