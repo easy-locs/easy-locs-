@@ -3,6 +3,7 @@
  * Real-time KPIs, AI assistant, shop switcher, quick actions, module cards.
  */
 import { useState } from "react";
+import { formatMoneyByCountry } from "@/lib/currency-engine";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useOrbitStore } from "@/stores/orbitStore";
