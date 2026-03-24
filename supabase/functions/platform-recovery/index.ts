@@ -28,7 +28,6 @@ async function checkRpc(supabase: any, name: string, rpcName: string): Promise<M
   const t = Date.now();
   try {
     const { error } = await supabase.rpc(rpcName, {});
-    // "Could not find the function ... without parameters" means the function exists but needs params — that's OK
     const notFound = error?.message?.includes("Could not find the function") && !error?.message?.includes("without parameters");
     const reachable = !error || !notFound;
     return { module: name, group: "backend", status: reachable ? "ok" : "error", detail: reachable ? "rpc reachable" : error?.message ?? "not found", durationMs: Date.now() - t };
@@ -45,7 +44,7 @@ async function aggregateBoostAnalytics(supabase: any): Promise<ModuleCheck> {
       .from("boost_campaigns").select("id").eq("status", "active");
     
     if (campErr || !campaigns?.length) {
-      return { module: "boost_analytics_daily", group: "analytics", status: "ok", detail: `No active campaigns`, durationMs: Date.now() - t };
+      return { module: "boost_analytics_daily", group: "analytics", status: "ok", detail: "No active campaigns", durationMs: Date.now() - t };
     }
 
     let aggregated = 0;
@@ -89,7 +88,6 @@ async function runLeadPipelineCheck(supabase: any): Promise<ModuleCheck> {
 async function runMasterAuditServer(supabase: any): Promise<ModuleCheck> {
   const t = Date.now();
   try {
-    // Quick audit: check critical tables exist and have data integrity
     const checks = await Promise.all([
       supabase.from("storefront_pages").select("id", { count: "exact", head: true }),
       supabase.from("seed_merchants").select("id", { count: "exact", head: true }),
@@ -104,7 +102,7 @@ async function runMasterAuditServer(supabase: any): Promise<ModuleCheck> {
       module: "master_audit",
       group: "audit",
       status: errors > 0 ? "error" : "ok",
-      detail: `storefronts:${counts[0]} seeds:${counts[1]} profiles:${counts[2]} wallets:${counts[3]} errors:${errors}`,
+      detail: `storefronts:${counts[0]} seeds:${counts[1]} profiles:${counts[2]} wallets:${counts[3]}`,
       durationMs: Date.now() - t,
     };
   } catch (e: any) {
@@ -115,7 +113,6 @@ async function runMasterAuditServer(supabase: any): Promise<ModuleCheck> {
 async function cleanupStaleData(supabase: any): Promise<ModuleCheck> {
   const t = Date.now();
   try {
-    // Cleanup old recovery runs (keep last 200)
     const { data: oldRuns } = await supabase
       .from("platform_recovery_runs").select("id")
       .order("started_at", { ascending: true });
@@ -132,6 +129,100 @@ async function cleanupStaleData(supabase: any): Promise<ModuleCheck> {
     return { module: "stale_cleanup", group: "maintenance", status: "ok", detail: `Cleaned ${cleaned} old runs`, durationMs: Date.now() - t };
   } catch (e: any) {
     return { module: "stale_cleanup", group: "maintenance", status: "error", detail: e?.message ?? "unknown", durationMs: Date.now() - t };
+  }
+}
+
+// ── Server-side auto-fixes ──────────────────────────────────
+
+async function runServerAutoFixes(supabase: any): Promise<ModuleCheck[]> {
+  const results: ModuleCheck[] = [];
+  const t = Date.now();
+
+  // Fix: expired boost campaigns still marked active
+  try {
+    const now = new Date().toISOString();
+    const { data: expired } = await supabase
+      .from("boost_campaigns")
+      .select("id")
+      .eq("status", "active")
+      .lt("end_at", now);
+    
+    if (expired && expired.length > 0) {
+      await supabase.from("boost_campaigns")
+        .update({ status: "completed" })
+        .in("id", expired.map((c: any) => c.id));
+      results.push({ module: "autofix.expired_campaigns", group: "autofix", status: "fixed", detail: `Completed ${expired.length} expired campaigns`, durationMs: Date.now() - t });
+    } else {
+      results.push({ module: "autofix.expired_campaigns", group: "autofix", status: "ok", detail: "No expired campaigns", durationMs: Date.now() - t });
+    }
+  } catch (e: any) {
+    results.push({ module: "autofix.expired_campaigns", group: "autofix", status: "error", detail: e?.message ?? "unknown", durationMs: Date.now() - t });
+  }
+
+  // Fix: stale new leads older than 7 days → mark as cold
+  try {
+    const t2 = Date.now();
+    const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+    const { data: staleLeads } = await supabase
+      .from("boost_leads")
+      .select("id")
+      .eq("status", "new")
+      .lt("created_at", weekAgo);
+    
+    if (staleLeads && staleLeads.length > 0) {
+      await supabase.from("boost_leads")
+        .update({ status: "cold" })
+        .in("id", staleLeads.map((l: any) => l.id));
+      results.push({ module: "autofix.stale_leads", group: "autofix", status: "fixed", detail: `Marked ${staleLeads.length} stale leads as cold`, durationMs: Date.now() - t2 });
+    } else {
+      results.push({ module: "autofix.stale_leads", group: "autofix", status: "ok", detail: "No stale leads", durationMs: Date.now() - t2 });
+    }
+  } catch (e: any) {
+    results.push({ module: "autofix.stale_leads", group: "autofix", status: "error", detail: e?.message ?? "unknown", durationMs: Date.now() - t });
+  }
+
+  return results;
+}
+
+// ── Geo health server-side (check geo defaults table) ───────
+
+async function checkGeoDefaults(supabase: any): Promise<ModuleCheck> {
+  const t = Date.now();
+  try {
+    const { count, error } = await supabase
+      .from("storefront_pages").select("id", { count: "exact", head: true })
+      .is("latitude", null);
+    
+    return {
+      module: "geo_coverage",
+      group: "health",
+      status: error ? "error" : "ok",
+      detail: error ? error.message : `${count ?? 0} storefronts missing coordinates`,
+      durationMs: Date.now() - t,
+    };
+  } catch (e: any) {
+    return { module: "geo_coverage", group: "health", status: "error", detail: e?.message ?? "unknown", durationMs: Date.now() - t };
+  }
+}
+
+// ── Wallet pipeline health ──────────────────────────────────
+
+async function checkWalletPipeline(supabase: any): Promise<ModuleCheck> {
+  const t = Date.now();
+  try {
+    const { count, error } = await supabase
+      .from("wallet_accounts").select("id", { count: "exact", head: true })
+      .eq("status", "active");
+    
+    return {
+      module: "wallet_pipeline",
+      group: "health",
+      status: error ? "error" : "ok",
+      detail: error ? error.message : `${count ?? 0} active wallets`,
+      durationMs: Date.now() - t,
+    };
+  } catch (e: any) {
+    return { module: "wallet_pipeline", group: "health", status: "error", detail: e?.message ?? "unknown", durationMs: Date.now() - t };
   }
 }
 
@@ -178,6 +269,10 @@ serve(async (req) => {
   // ── RPC checks ──
   results.push(await checkRpc(supabase, "rpc.ensure_wallet_account", "ensure_wallet_account"));
 
+  // ── Health pipeline checks ──
+  results.push(await checkGeoDefaults(supabase));
+  results.push(await checkWalletPipeline(supabase));
+
   // ── Job-specific modules ──
   if (jobType === "full" || jobType === "analytics") {
     results.push(await aggregateBoostAnalytics(supabase));
@@ -190,6 +285,12 @@ serve(async (req) => {
 
   if (jobType === "full" || jobType === "cleanup") {
     results.push(await cleanupStaleData(supabase));
+  }
+
+  // ── Server-side auto-fixes (full or autofix job) ──
+  if (jobType === "full" || jobType === "autofix") {
+    const fixes = await runServerAutoFixes(supabase);
+    results.push(...fixes);
   }
 
   // ── Summary ──
