@@ -20,6 +20,7 @@ import SEOHead from "@/components/SEOHead";
 import PremiumMerchantCard from "@/components/discovery/PremiumMerchantCard";
 import { useVerticalListings, type ListingItem } from "@/hooks/useVerticalListings";
 import { getSubcategoryLabel } from "@/lib/discovery/verticals";
+import { resolveCanonicalUI } from "@/lib/ui-engine";
 
 type StayTab = "hotel" | "resort" | "short_stay" | "serviced_apartment";
 type SortMode = "rating" | "price" | "distance" | "reviews";
