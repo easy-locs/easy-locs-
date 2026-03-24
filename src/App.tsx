@@ -286,6 +286,7 @@ const AuditDebugPanelPage = safeLazy(() => import("./pages/AuditDebugPanelPage")
 const OpsWallboardPage = safeLazy(() => import("./pages/OpsWallboardPage"), "OpsWallboardPage");
 const MerchantClaimPage = safeLazy(() => import("./pages/MerchantClaimPage"), "MerchantClaimPage");
 const MerchantDashboardPage = safeLazy(() => import("./pages/MerchantDashboardPage"), "MerchantDashboardPage");
+const MerchantFinancePage = safeLazy(() => import("./pages/merchant/MerchantFinancePage"), "MerchantFinancePage");
 const AdminOutreachPage = safeLazy(() => import("./pages/AdminOutreachPage"), "AdminOutreachPage");
 const MerchantPosPage = safeLazy(() => import("./pages/MerchantPosPage"), "MerchantPosPage");
 const MerchantKitchenPage = safeLazy(() => import("./pages/MerchantKitchenPage"), "MerchantKitchenPage");
