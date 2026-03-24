@@ -240,7 +240,18 @@ export async function resolveBoostsForSurface(
 
     if (!campaigns?.length) return results;
 
-    const campaignIds = campaigns.map((c: any) => c.id);
+    // Filter budget-exhausted campaigns
+    const viable = campaigns.filter((c: any) => {
+      if (c.total_budget > 0 && c.spent >= c.total_budget) return false;
+      if (c.daily_budget > 0) {
+        const daySpent = c.spent / Math.max(1, Math.ceil((new Date(c.end_at).getTime() - new Date(c.start_at).getTime()) / 86400000));
+        if (daySpent >= c.daily_budget) return false;
+      }
+      return true;
+    });
+    if (!viable.length) return results;
+
+    const campaignIds = viable.map((c: any) => c.id);
     const { data: creatives } = await (supabase as any)
       .from("boost_creatives")
       .select("*")
@@ -256,7 +267,7 @@ export async function resolveBoostsForSurface(
       let bestMatch: BoostMatch | null = null;
       let bestScore = -1;
 
-      for (const campaign of campaigns) {
+      for (const campaign of viable) {
         if (usedCampaignIds.has(campaign.id)) continue; // Anti-duplication
         const cCreatives = creatives.filter((c: any) => c.campaign_id === campaign.id);
         for (const creative of cCreatives) {

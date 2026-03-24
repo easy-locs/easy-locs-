@@ -4,6 +4,7 @@
  * Uses canonical discovery pipeline for all sections.
  */
 import { memo, useMemo, useEffect } from "react";
+import { BoostSlotRenderer } from "@/components/boost/BoostSlotRenderer";
 import { Link, useNavigate } from "react-router-dom";
 import { MapPin, Bell, Wallet, QrCode, Send, ChevronRight, Star, Navigation } from "lucide-react";
 import UnifiedSearchBar from "@/components/search/UnifiedSearchBar";
