@@ -296,6 +296,24 @@ export function startContinuousEngine() {
     console.log(`[continuous] CRM reactivation: ${result.candidates.length} candidates (${result.abandonedCarts} abandoned carts)`);
   }, "commerce");
 
+  // G) SLA Breach Check (5min)
+  registerJob("sla-breach-check", 5 * 60_000, async () => {
+    const { checkSlaBreaches } = await import("@/lib/support/global-support-engine");
+    const result = await checkSlaBreaches();
+    const job = jobs.find(j => j.name === "sla-breach-check");
+    if (job) job.itemsProcessed = result.checked;
+    if (result.breached > 0) console.log(`[continuous] SLA: ${result.breached} breaches escalated`);
+  }, "system");
+
+  // H) Self-Healing Health Scan (10min)
+  registerJob("self-healing-scan", 10 * 60_000, async () => {
+    const { runHealthScan } = await import("@/lib/platform/self-healing-engine");
+    const result = await runHealthScan();
+    const job = jobs.find(j => j.name === "self-healing-scan");
+    if (job) job.itemsProcessed = result.emptyPages + result.missingImages + result.brokenScores;
+    console.log(`[continuous] Self-healing: ${result.emptyPages} empty, ${result.missingImages} no-img, ${result.autoFixed} fixed`);
+  }, "quality");
+
   // Start all intervals staggered
   for (const job of jobs) {
     const idx = jobs.indexOf(job);
