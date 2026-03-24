@@ -1,7 +1,7 @@
 /**
  * Radar → Orbit Contact Bridge
  * Opens a V2 direct thread from any discovery surface (Radar, Listing, Home).
- * Injects business context (listing/service/property) into the conversation.
+ * Injects business context into the conversation.
  */
 import { getOrCreateDirectThread } from "@/lib/direct-thread";
 import { supabase } from "@/integrations/supabase/client";
@@ -10,27 +10,17 @@ import { toast } from "sonner";
 import type { NavigateFunction } from "react-router-dom";
 
 export interface ContactBridgeOpts {
-  /** Current authenticated user ID */
   currentUserId: string;
-  /** Target entity (shop/listing/service) */
   entityId: string;
   entityType: "shop" | "listing" | "service" | "property" | "hotel";
   entityName: string;
-  /** Optional: resolve owner from storefront/seed */
   ownerUserId?: string;
-  /** Navigation function */
   navigate: NavigateFunction;
-  /** Source surface for analytics */
   source: "radar" | "listing" | "home" | "search" | "map";
-  /** Optional auto-message */
   autoMessage?: string;
 }
 
-/**
- * Resolve the owner user_id of a storefront or seed merchant.
- */
 async function resolveOwner(entityId: string): Promise<string | null> {
-  // Try storefront first
   const { data: sf } = await supabase
     .from("storefront_pages")
     .select("user_id")
@@ -38,7 +28,6 @@ async function resolveOwner(entityId: string): Promise<string | null> {
     .maybeSingle();
   if (sf?.user_id) return sf.user_id;
 
-  // Try seed_merchants (may not have user_id)
   const { data: seed } = await (supabase as any)
     .from("seed_merchants")
     .select("user_id")
@@ -49,24 +38,19 @@ async function resolveOwner(entityId: string): Promise<string | null> {
   return null;
 }
 
-/**
- * Open a direct Orbit V2 conversation with the entity owner.
- * Resolves owner, creates thread, optionally sends context message.
- */
+async function resolveOwnerName(userId: string): Promise<string> {
+  const { data } = await supabase
+    .from("profiles")
+    .select("display_name, email")
+    .eq("id", userId)
+    .maybeSingle();
+  return data?.display_name || data?.email || "Business";
+}
+
 export async function contactFromDiscovery(opts: ContactBridgeOpts): Promise<void> {
-  const {
-    currentUserId,
-    entityId,
-    entityType,
-    entityName,
-    navigate,
-    source,
-    autoMessage,
-  } = opts;
+  const { currentUserId, entityId, entityName, navigate, source, autoMessage } = opts;
 
   let targetUserId = opts.ownerUserId || null;
-
-  // Resolve owner if not provided
   if (!targetUserId) {
     targetUserId = await resolveOwner(entityId);
   }
@@ -82,41 +66,42 @@ export async function contactFromDiscovery(opts: ContactBridgeOpts): Promise<voi
   }
 
   try {
+    const targetName = await resolveOwnerName(targetUserId);
     const thread = await getOrCreateDirectThread({
       currentUserId,
       targetUserId,
+      targetName,
     });
 
-    if (!thread?.conversationId) {
+    const convId = thread?.v2ConversationId || thread?.contextId;
+    if (!convId) {
       toast.error("Could not open conversation");
       return;
     }
 
-    // Send auto-message with business context if provided
+    // Send auto-message with business context
     if (autoMessage) {
-      await supabase.from("chat_messages_v2").insert({
-        conversation_id: thread.conversationId,
-        sender_id: currentUserId,
-        content: autoMessage,
-        message_type: "text",
+      await (supabase as any).from("chat_messages_v2").insert({
+        conversation_id: convId,
+        sender_user_id: currentUserId,
+        sender_orbit_id: `orbit_${currentUserId.slice(0, 8)}`,
+        body: autoMessage,
+        type: "text",
       });
 
-      // Update conversation timestamp
-      await supabase
+      await (supabase as any)
         .from("conversations_v2")
         .update({ last_message_at: new Date().toISOString() })
-        .eq("id", thread.conversationId);
+        .eq("id", convId);
     }
 
-    // Emit event for analytics/sync
     eventBus.emit("CONTACT_INITIATED", {
       targetUserId,
       source,
       entityId,
     });
 
-    // Navigate to the thread
-    navigate(`/orbit?thread=${thread.conversationId}`);
+    navigate(`/orbit?thread=${convId}`);
   } catch (err) {
     console.error("[contactBridge] error:", err);
     toast.error("Failed to open conversation");
