@@ -509,16 +509,35 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
       const effectiveTTL = disappearTTL !== "off" ? disappearTTL : privacySettings.defaultDisappearTtl;
       const disappearAt = computeDisappearAt(effectiveTTL);
 
-      const viewOncePayload: any = {
-        org_id: orgId, sender_id: authUserId, tenant_id: thread.tenantId || null,
-        booking_id: thread.bookingId || null, booking_type: thread.bookingType || null,
-        content: "📷 View-once photo", attachment_url: finalUrl,
-        category: "general", message_type: "user", sender_locale: locale,
-        context_type: thread.contextType, context_id: thread.contextId,
-        view_once: true, disappear_at: disappearAt,
-      };
-      if (thread.threadId) viewOncePayload.thread_id = thread.threadId;
-      await supabase.from("messages").insert(viewOncePayload);
+      // ── V2 VIEW-ONCE ──
+      if (thread.isV2 && thread.v2ConversationId) {
+        await (supabase as any)
+          .from("chat_messages_v2")
+          .insert({
+            conversation_id: thread.v2ConversationId,
+            sender_user_id: authUserId,
+            sender_orbit_id: null,
+            receiver_orbit_id: thread.peerOrbitId ?? null,
+            type: "media",
+            body: "📷 View-once photo",
+            metadata: { url: finalUrl, view_once: true },
+          });
+        await (supabase as any)
+          .from("conversations_v2")
+          .update({ last_message_at: new Date().toISOString() })
+          .eq("id", thread.v2ConversationId);
+      } else {
+        const viewOncePayload: any = {
+          org_id: orgId, sender_id: authUserId, tenant_id: thread.tenantId || null,
+          booking_id: thread.bookingId || null, booking_type: thread.bookingType || null,
+          content: "📷 View-once photo", attachment_url: finalUrl,
+          category: "general", message_type: "user", sender_locale: locale,
+          context_type: thread.contextType, context_id: thread.contextId,
+          view_once: true, disappear_at: disappearAt,
+        };
+        if (thread.threadId) viewOncePayload.thread_id = thread.threadId;
+        await supabase.from("messages").insert(viewOncePayload);
+      }
       toast.success("📷 View-once photo sent");
     } catch (e: any) { toast.error(e?.message || "Upload failed"); }
     setUploading(false);
