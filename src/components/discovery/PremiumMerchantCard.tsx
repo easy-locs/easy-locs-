@@ -1,11 +1,13 @@
 /**
  * PremiumMerchantCard — Enhanced card with vertical-aware styling.
+ * Consumes the Canonical UI Engine for per-vertical card behavior.
  * Supports: horizontal (list), vertical (carousel), and featured (large hero card).
  */
 import { Link } from "react-router-dom";
-import { Star, Clock, MapPin, Wifi } from "lucide-react";
+import { Star, Clock, MapPin } from "lucide-react";
 import { motion } from "framer-motion";
-import { useState } from "react";
+import { useState, useMemo } from "react";
+import { resolveCanonicalUI } from "@/lib/ui-engine";
 
 interface PremiumMerchantCardProps {
   to: string;
