@@ -165,7 +165,7 @@ export default function CheckoutPage() {
               >
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold text-foreground truncate">{item.name}</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">{(item.unitPrice * item.quantity).toFixed(2)} AED</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">{fmt(item.unitPrice * item.quantity)}</p>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <button
