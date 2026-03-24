@@ -7135,6 +7135,78 @@ export type Database = {
           },
         ]
       }
+      entity_ai_scores: {
+        Row: {
+          conversion_score: number
+          entity_id: string
+          entity_type: string
+          freshness_score: number
+          interest_score: number
+          momentum_score: number
+          recommendation_score: number
+          trust_score: number
+          updated_at: string
+        }
+        Insert: {
+          conversion_score?: number
+          entity_id: string
+          entity_type?: string
+          freshness_score?: number
+          interest_score?: number
+          momentum_score?: number
+          recommendation_score?: number
+          trust_score?: number
+          updated_at?: string
+        }
+        Update: {
+          conversion_score?: number
+          entity_id?: string
+          entity_type?: string
+          freshness_score?: number
+          interest_score?: number
+          momentum_score?: number
+          recommendation_score?: number
+          trust_score?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      entity_feedback_signals: {
+        Row: {
+          created_at: string
+          entity_id: string
+          entity_type: string
+          event_type: string
+          id: string
+          metadata_json: Json | null
+          session_id: string | null
+          user_id: string | null
+          weight: number
+        }
+        Insert: {
+          created_at?: string
+          entity_id: string
+          entity_type?: string
+          event_type: string
+          id?: string
+          metadata_json?: Json | null
+          session_id?: string | null
+          user_id?: string | null
+          weight?: number
+        }
+        Update: {
+          created_at?: string
+          entity_id?: string
+          entity_type?: string
+          event_type?: string
+          id?: string
+          metadata_json?: Json | null
+          session_id?: string | null
+          user_id?: string | null
+          weight?: number
+        }
+        Relationships: []
+      }
       entity_taxonomy_mapping: {
         Row: {
           canonical_id: string | null
