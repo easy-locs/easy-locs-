@@ -113,6 +113,7 @@ const FurnitureInventory = safeLazy(() => import("./pages/FurnitureInventory"), 
 const Buildings = safeLazy(() => import("./pages/Buildings"), "Buildings");
 const Vault = safeLazy(() => import("./pages/Vault"), "Vault");
 const NotFound = safeLazy(() => import("./pages/NotFound"), "NotFound");
+const ExplorePage = safeLazy(() => import("./pages/ExplorePage"), "ExplorePage");
 const DataImport = safeLazy(() => import("./pages/DataImport"), "DataImport");
 const TenantDashboard = safeLazy(() => import("./pages/tenant/TenantDashboard"), "TenantDashboard");
 const TenantReceipts = safeLazy(() => import("./pages/tenant/TenantReceipts"), "TenantReceipts");
