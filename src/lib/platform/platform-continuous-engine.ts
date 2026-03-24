@@ -113,6 +113,14 @@ export function startContinuousEngine() {
     } catch {}
   });
 
+  // 9. Global Experience refresh (5min)
+  registerJob("global-experience-refresh", 5 * 60_000, async () => {
+    try {
+      const { useGlobalExperienceStore } = await import("@/stores/globalExperienceStore");
+      useGlobalExperienceStore.getState().refresh();
+    } catch {}
+  });
+
   // 7. Backend reconnect check (5min)
   registerJob("backend-reconnect", 5 * 60_000, async () => {
     const { checkBackendReconnect } = await import("./platform-health-checks");
