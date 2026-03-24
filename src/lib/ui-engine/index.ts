@@ -19,3 +19,7 @@ export type {
 // Re-export vertical themes for backward compat
 export { getVerticalTheme, VERTICAL_THEMES } from "@/lib/discovery/vertical-themes";
 export { getSubcategoryTheme } from "@/lib/discovery/subcategory-themes";
+
+// Re-export canonical i18n for convenience
+export { tc } from "@/lib/i18n-canonical";
+export { td } from "@/lib/i18n-discovery";
