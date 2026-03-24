@@ -4,6 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { listSavedCarts, deleteSavedCart } from "@/lib/cart/savedCarts";
 import { useCart } from "@/hooks/useCart";
 import { toast } from "sonner";
+import { formatMoneyByCountry } from "@/lib/currency-engine";
 
 export default function CustomerSavedCartsPage() {
   const navigate = useNavigate();
