@@ -19,7 +19,7 @@ export interface HealthCheckResult {
 export function checkGeoHealth(): HealthCheckResult {
   const geo = useGeoStore.getState();
 
-  if (geo.permission === "denied") {
+  if ((geo.permission as string) === "denied") {
     return { module: "geo", healthy: false, detail: "Permission denied by user", action: "none" };
   }
 
