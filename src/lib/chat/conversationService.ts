@@ -5,7 +5,8 @@ const db = supabase as any;
 
 /**
  * Creates or retrieves a direct conversation between two orbit participants.
- * Searches by participant orbitIds using JSONB containment.
+ * Stores participants as JSONB objects: [{orbitId, email, displayName}]
+ * AND as a flat orbitId array for RLS containment matching.
  */
 export async function createOrGetDirectConversation(input: {
   myOrbitId: string;
@@ -35,6 +36,7 @@ export async function createOrGetDirectConversation(input: {
   const participants = [p1, p2].sort((a, b) => a.orbitId.localeCompare(b.orbitId));
 
   // Find existing direct conversation containing both participants
+  // Use JSONB containment on orbitId field inside array objects
   const { data: existingRows, error: findErr } = await db
     .from("conversations_v2")
     .select("*")
