@@ -105,7 +105,7 @@ export default function UnifiedSearchBar({
         navigate("/radar");
         break;
       case "product":
-        if (result.shopId) navigate(`/food/restaurant/${result.shopId}`);
+        if (result.shopId) navigate(`/s/${result.shopId}`);
         break;
     }
   }, [navigate, onResultSelect, setFilters, search]);

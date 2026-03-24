@@ -28,7 +28,7 @@ export default function HomePromoCarousel() {
           {rows.map((row: any) => (
             <button
               key={row.id}
-              onClick={() => navigate(`/food/restaurant/${row.merchant_id}`)}
+              onClick={() => navigate(`/s/${row.merchant_id}`)}
               className="min-w-[260px] rounded-2xl overflow-hidden border border-border/20 bg-card text-left active:scale-[0.98] transition-transform"
             >
               <div className="h-24 w-full bg-muted/30">
