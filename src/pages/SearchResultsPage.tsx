@@ -35,9 +35,9 @@ export default function SearchResultsPage() {
 
   const handleResultClick = (result: SearchResult) => {
     if (result.type === "shop") {
-      navigate(result.slug ? `/s/${result.slug}` : `/food/restaurant/${result.id}`);
+      navigate(result.slug ? `/s/${result.slug}` : `/s/${result.id}`);
     } else if (result.type === "product" && result.shopId) {
-      navigate(`/food/restaurant/${result.shopId}`);
+      navigate(`/s/${result.shopId}`);
     } else if (result.type === "category") {
       // Navigate to radar with filter
       navigate("/radar");

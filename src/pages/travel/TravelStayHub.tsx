@@ -3,7 +3,7 @@
  * Backend-connected calendar, real listings, Booking.com-level UX.
  */
 import { useState, useMemo, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import {
   Hotel, Home, Calendar as CalendarIcon, MapPin, Users, Search,
   Star, SlidersHorizontal, Wifi, Car, UtensilsCrossed,
@@ -300,6 +300,16 @@ export default function TravelStayHub() {
 
       {/* ═══ CONTENT ═══ */}
       <div className="px-4 mt-6">
+        {/* ═══ BREADCRUMB ═══ */}
+        <nav className="flex items-center gap-1.5 mb-4 text-[11px] overflow-x-auto scrollbar-none">
+          <Link to="/" className="text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1 shrink-0">
+            <Home className="h-3 w-3" /> Home
+          </Link>
+          <ChevronRight className="h-3 w-3 text-muted-foreground/50 shrink-0" />
+          <Link to="/travel" className="text-muted-foreground hover:text-foreground transition-colors shrink-0">Travel</Link>
+          <ChevronRight className="h-3 w-3 text-muted-foreground/50 shrink-0" />
+          <span className="font-bold shrink-0" style={{ color: "hsl(38 70% 52%)" }}>Stays</span>
+        </nav>
 
         {/* Tab selector */}
         <div className="flex gap-1.5 mb-5 overflow-x-auto scrollbar-none -mx-1 px-1">

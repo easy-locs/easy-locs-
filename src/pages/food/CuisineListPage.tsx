@@ -52,7 +52,7 @@ export default function CuisineListPage() {
         {restaurants.map((r: any, i: number) => (
           <UniverseCard
             key={r.id}
-            to={`/food/restaurant/${r.slug || r.id}`}
+            to={`/s/${r.slug || r.id}`}
             title={r.name || "Restaurant"}
             subtitle={r.city || r.subcategory || ""}
             rating={r.rating ?? 4.2}
