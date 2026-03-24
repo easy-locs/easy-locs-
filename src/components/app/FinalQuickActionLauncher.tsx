@@ -16,7 +16,7 @@ export function FinalQuickActionLauncher() {
   return (
     <div className="px-4 py-3">
       <p className="text-[11px] uppercase tracking-wide font-bold text-muted-foreground mb-3">
-        Quick Actions
+        {tc("nav.quick_actions")}
       </p>
 
       <div className="grid grid-cols-3 gap-3">

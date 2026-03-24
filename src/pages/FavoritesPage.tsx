@@ -94,9 +94,9 @@ export default function FavoritesPage() {
 
         {!isLoading && merchants.length === 0 && (
           <div className="text-center py-16">
-            <p className="text-sm font-bold text-foreground">No favorites yet</p>
+            <p className="text-sm font-bold text-foreground">{tc("common.no_favorites")}</p>
             <p className="text-xs text-muted-foreground mt-1">
-              Save your favorite restaurants and stores to access them faster.
+              {tc("common.no_favorites_sub")}
             </p>
           </div>
         )}
