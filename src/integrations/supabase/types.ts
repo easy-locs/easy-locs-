@@ -4033,6 +4033,39 @@ export type Database = {
         }
         Relationships: []
       }
+      current_ranking_state: {
+        Row: {
+          boost_ready: boolean
+          claim_ready: boolean
+          entity_id: string
+          entity_type: string
+          global_rank_score: number
+          ranking_reason_json: Json | null
+          updated_at: string | null
+          visibility_class: string
+        }
+        Insert: {
+          boost_ready?: boolean
+          claim_ready?: boolean
+          entity_id: string
+          entity_type: string
+          global_rank_score?: number
+          ranking_reason_json?: Json | null
+          updated_at?: string | null
+          visibility_class?: string
+        }
+        Update: {
+          boost_ready?: boolean
+          claim_ready?: boolean
+          entity_id?: string
+          entity_type?: string
+          global_rank_score?: number
+          ranking_reason_json?: Json | null
+          updated_at?: string | null
+          visibility_class?: string
+        }
+        Relationships: []
+      }
       customer_recommendations: {
         Row: {
           created_at: string | null
@@ -15328,6 +15361,69 @@ export type Database = {
           metadata?: Json | null
           target_id?: string | null
           type?: string
+        }
+        Relationships: []
+      }
+      ranking_snapshots: {
+        Row: {
+          boost_readiness_score: number
+          claim_readiness_score: number
+          conversion_score: number
+          created_at: string | null
+          data_quality_score: number
+          dedup_risk_score: number
+          entity_id: string
+          entity_type: string
+          freshness_score: number
+          geo_confidence_score: number
+          global_rank_score: number
+          id: string
+          menu_quality_score: number
+          ranking_reason_json: Json | null
+          reputation_score: number
+          taxonomy_confidence_score: number
+          visibility_class: string
+          visual_quality_score: number
+        }
+        Insert: {
+          boost_readiness_score?: number
+          claim_readiness_score?: number
+          conversion_score?: number
+          created_at?: string | null
+          data_quality_score?: number
+          dedup_risk_score?: number
+          entity_id: string
+          entity_type: string
+          freshness_score?: number
+          geo_confidence_score?: number
+          global_rank_score?: number
+          id?: string
+          menu_quality_score?: number
+          ranking_reason_json?: Json | null
+          reputation_score?: number
+          taxonomy_confidence_score?: number
+          visibility_class?: string
+          visual_quality_score?: number
+        }
+        Update: {
+          boost_readiness_score?: number
+          claim_readiness_score?: number
+          conversion_score?: number
+          created_at?: string | null
+          data_quality_score?: number
+          dedup_risk_score?: number
+          entity_id?: string
+          entity_type?: string
+          freshness_score?: number
+          geo_confidence_score?: number
+          global_rank_score?: number
+          id?: string
+          menu_quality_score?: number
+          ranking_reason_json?: Json | null
+          reputation_score?: number
+          taxonomy_confidence_score?: number
+          visibility_class?: string
+          visual_quality_score?: number
         }
         Relationships: []
       }
