@@ -184,7 +184,6 @@ export default function ShopPage() {
   const coverImage = resolveCoverImage(shop);
   const logoImage = resolveLogoImage(shop);
   const attribution = getRequiredAttribution(shop.source_type);
-  const verticalUI = useCanonicalUI(shop.vertical, shop.subcategory);
 
   // Context banners for this shop
   const contextBanners = getTopBanners({
