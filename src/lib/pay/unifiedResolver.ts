@@ -195,25 +195,15 @@ export async function resolveUnifiedTarget(input: {
     .limit(1)
     .maybeSingle();
 
-  // Auto-provision wallet for known recipients
+  // Auto-provision wallet via SECURITY DEFINER RPC
   if (!wallet) {
-    console.log("[resolver] path C auto-provisioning wallet for:", profile.id);
-    const { data: created, error: createErr } = await supabase
-      .from("wallet_accounts")
-      .insert({ owner_user_id: profile.id, currency, balance: 0, status: "active" } as any)
-      .select("id, status")
-      .maybeSingle();
-    if (createErr && createErr.code === "23505") {
-      const { data: refetched } = await supabase
-        .from("wallet_accounts")
-        .select("id, status")
-        .eq("owner_user_id", profile.id)
-        .eq("status", "active")
-        .limit(1)
-        .maybeSingle();
-      wallet = refetched;
-    } else if (created) {
-      wallet = created;
+    console.log("[resolver] path C auto-provisioning wallet via RPC for:", profile.id);
+    const { data: rpcResult, error: rpcErr } = await supabase
+      .rpc("ensure_wallet_account", { target_user_id: profile.id, target_currency: currency });
+    if (rpcErr) {
+      console.error("[resolver] path C RPC FAILED:", rpcErr.message);
+    } else if (rpcResult && rpcResult.length > 0) {
+      wallet = { id: rpcResult[0].wallet_id, status: rpcResult[0].wallet_status };
     }
   }
   const walletResolveMs = performance.now() - walletStart;
