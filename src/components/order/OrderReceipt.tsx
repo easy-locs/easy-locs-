@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Receipt, Store } from "lucide-react";
+import { formatMoneyByCountry } from "@/lib/currency-engine";
 
 interface ReceiptItem {
   id: string;
@@ -33,8 +34,8 @@ interface OrderReceiptProps {
   items: ReceiptItem[];
 }
 
-function fmtPrice(n: number, c = "AED") {
-  return `${Number(n || 0).toFixed(2)} ${c}`;
+function fmtPrice(n: number, c?: string) {
+  return formatMoneyByCountry(Number(n || 0), null, c);
 }
 
 export default function OrderReceipt({ order, items }: OrderReceiptProps) {

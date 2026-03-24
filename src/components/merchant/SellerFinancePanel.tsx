@@ -28,8 +28,10 @@ const KYC_LABELS: Record<string, { label: string; variant: "default" | "secondar
   rejected: { label: "Rejected", variant: "destructive" },
 };
 
-function fmtMoney(n: number, c = "AED") {
-  return `${Number(n || 0).toFixed(2)} ${c}`;
+function fmtMoney(n: number, c?: string) {
+  try {
+    return new Intl.NumberFormat(undefined, { style: "currency", currency: c || "AED", minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(Number(n || 0));
+  } catch { return `${Number(n || 0).toFixed(2)} ${c || "AED"}`; }
 }
 
 export default function SellerFinancePanel({ shopId }: SellerFinancePanelProps) {
