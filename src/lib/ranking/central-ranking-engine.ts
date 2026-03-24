@@ -153,10 +153,11 @@ export function computeCentralRank(input: RankingInput): RankingResult {
     penalties.push("high_duplicate_risk");
   }
   if (!input.hasGeo) {
-    penalty += 20;
+    // Lighter penalty for seeds — they often lack coordinates
+    const geoPenalty = input.entityType === "merchant" ? 20 : 10;
+    penalty += geoPenalty;
     penalties.push("missing_geo");
   }
-  // Menu/price penalties only for merchants (not seeds/candidates pre-claim)
   if (input.entityType === "merchant") {
     if (input.vertical === "food" && !input.hasMenu) {
       penalty += 25;
@@ -167,18 +168,20 @@ export function computeCentralRank(input: RankingInput): RankingResult {
       penalties.push("missing_prices_food");
     }
   } else {
-    // Lighter penalties for seeds/candidates
+    // Seeds: very light menu penalty — they're pre-claim
     if (input.vertical === "food" && !input.hasMenu) {
-      penalty += 8;
+      penalty += 5;
       penalties.push("seed_no_menu");
     }
   }
   if (!input.hasCover) {
-    penalty += 10;
+    const coverPenalty = input.entityType === "merchant" ? 10 : 5;
+    penalty += coverPenalty;
     penalties.push("missing_cover");
   }
   if (!input.hasLogo) {
-    penalty += 6;
+    const logoPenalty = input.entityType === "merchant" ? 6 : 3;
+    penalty += logoPenalty;
     penalties.push("missing_logo");
   }
   if (input.taxonomyConfidenceScore < 40) {
