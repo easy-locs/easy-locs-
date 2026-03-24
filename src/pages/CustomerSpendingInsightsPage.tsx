@@ -68,7 +68,7 @@ export default function CustomerSpendingInsightsPage() {
           <div className="grid grid-cols-3 gap-3 px-4 pb-4">
             <Metric title="Total Spent" value={formatMoneyByCountry(data.totalSpent, null, "AED")} />
             <Metric title="Orders" value={String(data.orderCount)} />
-            <Metric title="Avg Order" value={`${data.averageOrder.toFixed(2)} AED`} />
+            <Metric title="Avg Order" value={formatMoneyByCountry(data.averageOrder, null, "AED")} />
           </div>
 
           <div className="mx-4 rounded-2xl border border-border/20 bg-card p-4 space-y-2">
