@@ -200,7 +200,7 @@ export default function CheckoutPage() {
           </div>
           <div className="flex justify-between text-sm font-bold pt-2 border-t border-border/20">
             <span className="text-foreground">Total</span>
-            <span className="text-foreground">{grandTotal.toFixed(2)} AED</span>
+            <span className="text-foreground">{fmt(grandTotal)}</span>
           </div>
         </div>
 
