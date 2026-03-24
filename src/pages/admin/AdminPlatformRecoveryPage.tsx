@@ -3,7 +3,7 @@ import { AppPageShell } from "@/components/layout/AppPageShell";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { RefreshCw, Play, Shield, Clock, CheckCircle, XCircle, SkipForward, Wrench, Timer, Database } from "lucide-react";
+import { RefreshCw, Play, Clock, CheckCircle, XCircle, SkipForward, Wrench, Timer, Database, Zap, Activity } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import {
   runPlatformRecovery,
@@ -11,6 +11,7 @@ import {
   type ModuleCheckResult,
   type ModuleStatus,
 } from "@/lib/platform/platform-recovery-engine";
+import { getContinuousEngineStatus } from "@/lib/platform/platform-continuous-engine";
 
 const statusIcon: Record<ModuleStatus, React.ReactNode> = {
   ok: <CheckCircle className="h-4 w-4 text-emerald-500" />,
@@ -40,9 +41,12 @@ interface DbRun {
 }
 
 const CRON_JOBS = [
-  { name: "platform-recovery-health", schedule: "*/10 * * * *", desc: "Backend health check", job: "health" },
-  { name: "platform-recovery-daily-full", schedule: "0 3 * * * (UTC)", desc: "Full recovery + analytics", job: "full" },
-  { name: "platform-boost-analytics", schedule: "0 */6 * * *", desc: "Boost analytics aggregation", job: "analytics" },
+  { name: "recovery-health-5min", schedule: "*/5 * * * *", desc: "Backend health + RPC check", job: "health" },
+  { name: "recovery-full-10min", schedule: "*/10 * * * *", desc: "Full recovery + audit", job: "full" },
+  { name: "boost-analytics-6h", schedule: "0 */6 * * *", desc: "Boost analytics aggregation", job: "analytics" },
+  { name: "daily-full-3am", schedule: "0 3 * * *", desc: "Full recovery + cleanup + analytics", job: "full" },
+  { name: "lead-pipeline-10min", schedule: "*/10 * * * *", desc: "Lead pipeline health check", job: "analytics" },
+  { name: "stale-cleanup-daily", schedule: "0 4 * * *", desc: "Cleanup old runs + stale data", job: "cleanup" },
 ];
 
 function ModuleRow({ m }: { m: ModuleCheckResult }) {
@@ -66,6 +70,7 @@ export default function AdminPlatformRecoveryPage() {
   const [clientRun, setClientRun] = useState<RecoveryRunReport | null>(null);
   const [dbRuns, setDbRuns] = useState<DbRun[]>([]);
   const [loading, setLoading] = useState(true);
+  const [continuousStatus, setContinuousStatus] = useState<ReturnType<typeof getContinuousEngineStatus> | null>(null);
 
   const loadDbRuns = useCallback(async () => {
     const { data } = await (supabase as any)
@@ -79,6 +84,9 @@ export default function AdminPlatformRecoveryPage() {
 
   useEffect(() => {
     loadDbRuns();
+    setContinuousStatus(getContinuousEngineStatus());
+    const timer = setInterval(() => setContinuousStatus(getContinuousEngineStatus()), 10000);
+    return () => clearInterval(timer);
   }, [loadDbRuns]);
 
   const handleClientRun = useCallback(async () => {
@@ -88,13 +96,14 @@ export default function AdminPlatformRecoveryPage() {
       setClientRun(report);
     } finally {
       setRunning(false);
+      setContinuousStatus(getContinuousEngineStatus());
     }
   }, []);
 
-  const handleServerRun = useCallback(async () => {
+  const handleServerRun = useCallback(async (job = "full") => {
     setRunning(true);
     try {
-      await supabase.functions.invoke("platform-recovery", { body: { job: "full" } });
+      await supabase.functions.invoke("platform-recovery", { body: { job } });
       await new Promise(r => setTimeout(r, 2000));
       await loadDbRuns();
     } finally {
@@ -107,45 +116,80 @@ export default function AdminPlatformRecoveryPage() {
   const displaySummary = clientRun?.summary ?? latestDb?.summary_json;
 
   const groups = displayModules.length > 0
-    ? ["backend", "core", "state", "audit", "analytics", "fix"]
+    ? ["backend", "core", "state", "audit", "analytics", "maintenance", "fix"]
         .map(g => ({ group: g, items: displayModules.filter((m: any) => m.group === g) }))
         .filter(g => g.items.length > 0)
     : [];
 
   return (
-    <AppPageShell title="Platform Recovery">
+    <AppPageShell title="Platform Recovery & Automation">
       <div className="space-y-4 mt-4">
         {/* Controls */}
-        <div className="flex items-center gap-3 flex-wrap">
+        <div className="flex items-center gap-2 flex-wrap">
           <Button onClick={handleClientRun} disabled={running} size="sm" className="gap-2">
             {running ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Play className="h-4 w-4" />}
             Client Run
           </Button>
-          <Button onClick={handleServerRun} disabled={running} size="sm" variant="outline" className="gap-2">
-            <Database className="h-4 w-4" />
-            Server Run (Edge)
+          <Button onClick={() => handleServerRun("full")} disabled={running} size="sm" variant="outline" className="gap-2">
+            <Database className="h-4 w-4" /> Server Full
+          </Button>
+          <Button onClick={() => handleServerRun("health")} disabled={running} size="sm" variant="outline" className="gap-2">
+            <Activity className="h-4 w-4" /> Health Only
+          </Button>
+          <Button onClick={() => handleServerRun("analytics")} disabled={running} size="sm" variant="outline" className="gap-2">
+            <Zap className="h-4 w-4" /> Analytics
           </Button>
           <Button variant="outline" size="sm" onClick={loadDbRuns} className="gap-2">
-            <RefreshCw className="h-4 w-4" />
-            Refresh
+            <RefreshCw className="h-4 w-4" /> Refresh
           </Button>
         </div>
 
-        {/* Cron Jobs Status */}
+        {/* Continuous Engine Status */}
+        {continuousStatus && (
+          <Card>
+            <CardHeader className="py-3">
+              <CardTitle className="text-sm uppercase tracking-wider flex items-center gap-2">
+                <Activity className="h-4 w-4" /> Client Continuous Engine
+                <Badge className={continuousStatus.running ? "bg-emerald-500/10 text-emerald-700 border-emerald-200" : "bg-destructive/10 text-destructive"}>
+                  {continuousStatus.running ? "RUNNING" : "STOPPED"}
+                </Badge>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-1 pt-0">
+              {continuousStatus.jobs.map(job => (
+                <div key={job.name} className="flex items-center justify-between py-2 px-3 rounded-md border text-xs">
+                  <div className="flex items-center gap-2">
+                    {job.lastStatus === "ok" ? <CheckCircle className="h-4 w-4 text-emerald-500" /> : 
+                     job.lastStatus === "error" ? <XCircle className="h-4 w-4 text-destructive" /> :
+                     <Clock className="h-4 w-4 text-muted-foreground" />}
+                    <span className="font-mono font-medium">{job.name}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Badge variant="outline">every {job.intervalLabel}</Badge>
+                    <span className="text-muted-foreground">runs: {job.runCount}</span>
+                    {job.lastRun && <span className="text-muted-foreground">{new Date(job.lastRun).toLocaleTimeString()}</span>}
+                  </div>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Server Cron Jobs */}
         <Card>
           <CardHeader className="py-3">
             <CardTitle className="text-sm uppercase tracking-wider flex items-center gap-2">
-              <Timer className="h-4 w-4" /> Active Cron Jobs (pg_cron)
+              <Timer className="h-4 w-4" /> Server Cron Jobs (pg_cron → Edge Function)
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-2 pt-0">
+          <CardContent className="space-y-1 pt-0">
             {CRON_JOBS.map(job => (
               <div key={job.name} className="flex items-center justify-between py-2 px-3 rounded-md border text-xs">
                 <div className="flex items-center gap-2">
                   <CheckCircle className="h-4 w-4 text-emerald-500" />
                   <span className="font-mono font-medium">{job.name}</span>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2">
                   <span className="text-muted-foreground">{job.desc}</span>
                   <Badge variant="outline">{job.schedule}</Badge>
                   <Badge className="bg-emerald-500/10 text-emerald-700 border-emerald-200">ACTIVE</Badge>
@@ -188,7 +232,7 @@ export default function AdminPlatformRecoveryPage() {
               <CardTitle className="text-sm uppercase tracking-wider">{group}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-1 pt-0">
-              {items.map((m: any) => <ModuleRow key={m.module} m={m} />)}
+              {items.map((m: any, i: number) => <ModuleRow key={`${m.module}-${i}`} m={m} />)}
             </CardContent>
           </Card>
         ))}
@@ -198,7 +242,7 @@ export default function AdminPlatformRecoveryPage() {
           <Card>
             <CardHeader className="py-3">
               <CardTitle className="text-sm uppercase tracking-wider flex items-center gap-2">
-                <Clock className="h-4 w-4" /> Server Run History (DB persisted)
+                <Clock className="h-4 w-4" /> Server Run History
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-2 pt-0">
