@@ -86,6 +86,7 @@ export default memo(function RadarView({ initialType, radiusKm: initialRadius, s
   const [minRating, setMinRating] = useState(0);
   const [showPromotedOnly, setShowPromotedOnly] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
+  const currentUser = useV2AuthStore((s) => s.user);
 
   // Canonical UI for active vertical
   const activeVertical = activeType === "all" ? undefined : activeType === "restaurant" ? "food" : activeType === "shop" ? "shops" : activeType === "grocery" ? "grocery" : activeType === "property" ? "property" : activeType === "service" ? "services" : undefined;
