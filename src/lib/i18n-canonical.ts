@@ -443,6 +443,8 @@ const wallet = {
     "wallet.rewards": "Rewards",
     "wallet.earn": "Earn",
     "wallet.redeem": "Redeem",
+    "wallet.quick_actions": "Quick Actions",
+    "wallet.hub": "Wallet Hub",
   },
   fr: {
     "wallet.balance": "Solde",
@@ -469,6 +471,8 @@ const wallet = {
     "wallet.rewards": "Récompenses",
     "wallet.earn": "Gagner",
     "wallet.redeem": "Utiliser",
+    "wallet.quick_actions": "Actions rapides",
+    "wallet.hub": "Hub Portefeuille",
   },
   ar: {
     "wallet.balance": "الرصيد",
@@ -495,6 +499,8 @@ const wallet = {
     "wallet.rewards": "المكافآت",
     "wallet.earn": "اكسب",
     "wallet.redeem": "استبدل",
+    "wallet.quick_actions": "إجراءات سريعة",
+    "wallet.hub": "مركز المحفظة",
   },
 };
 
