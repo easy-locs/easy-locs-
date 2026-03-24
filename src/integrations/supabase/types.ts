@@ -2525,15 +2525,202 @@ export type Database = {
           },
         ]
       }
+      canonical_attribute_definitions: {
+        Row: {
+          active: boolean | null
+          category: string | null
+          created_at: string | null
+          filterable: boolean | null
+          id: string
+          key: string
+          label: string
+          required: boolean | null
+          searchable: boolean | null
+          sortable: boolean | null
+          subcategory: string | null
+          unit_group_id: string | null
+          value_type: string
+          vertical: string | null
+        }
+        Insert: {
+          active?: boolean | null
+          category?: string | null
+          created_at?: string | null
+          filterable?: boolean | null
+          id?: string
+          key: string
+          label: string
+          required?: boolean | null
+          searchable?: boolean | null
+          sortable?: boolean | null
+          subcategory?: string | null
+          unit_group_id?: string | null
+          value_type?: string
+          vertical?: string | null
+        }
+        Update: {
+          active?: boolean | null
+          category?: string | null
+          created_at?: string | null
+          filterable?: boolean | null
+          id?: string
+          key?: string
+          label?: string
+          required?: boolean | null
+          searchable?: boolean | null
+          sortable?: boolean | null
+          subcategory?: string | null
+          unit_group_id?: string | null
+          value_type?: string
+          vertical?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "canonical_attribute_definitions_unit_group_id_fkey"
+            columns: ["unit_group_id"]
+            isOneToOne: false
+            referencedRelation: "canonical_unit_groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      canonical_synonyms: {
+        Row: {
+          active: boolean | null
+          category: string | null
+          created_at: string | null
+          id: string
+          language: string
+          normalized_term: string
+          source_term: string
+          subcategory: string | null
+        }
+        Insert: {
+          active?: boolean | null
+          category?: string | null
+          created_at?: string | null
+          id?: string
+          language?: string
+          normalized_term: string
+          source_term: string
+          subcategory?: string | null
+        }
+        Update: {
+          active?: boolean | null
+          category?: string | null
+          created_at?: string | null
+          id?: string
+          language?: string
+          normalized_term?: string
+          source_term?: string
+          subcategory?: string | null
+        }
+        Relationships: []
+      }
+      canonical_tags: {
+        Row: {
+          active: boolean | null
+          created_at: string | null
+          id: string
+          key: string
+          label: string
+          tag_type: string
+        }
+        Insert: {
+          active?: boolean | null
+          created_at?: string | null
+          id?: string
+          key: string
+          label: string
+          tag_type?: string
+        }
+        Update: {
+          active?: boolean | null
+          created_at?: string | null
+          id?: string
+          key?: string
+          label?: string
+          tag_type?: string
+        }
+        Relationships: []
+      }
+      canonical_unit_groups: {
+        Row: {
+          created_at: string | null
+          id: string
+          key: string
+          label: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          key: string
+          label: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          key?: string
+          label?: string
+        }
+        Relationships: []
+      }
+      canonical_units: {
+        Row: {
+          active: boolean | null
+          conversion_factor: number | null
+          created_at: string | null
+          group_id: string
+          id: string
+          key: string
+          label: string
+          symbol: string
+        }
+        Insert: {
+          active?: boolean | null
+          conversion_factor?: number | null
+          created_at?: string | null
+          group_id: string
+          id?: string
+          key: string
+          label: string
+          symbol: string
+        }
+        Update: {
+          active?: boolean | null
+          conversion_factor?: number | null
+          created_at?: string | null
+          group_id?: string
+          id?: string
+          key?: string
+          label?: string
+          symbol?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "canonical_units_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "canonical_unit_groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       catalog_items: {
         Row: {
           available: boolean | null
           brand_name: string | null
+          canonical_category: string | null
+          canonical_family: string | null
+          canonical_subcategory: string | null
+          canonical_vertical: string | null
           category_id: string | null
           compare_at_price: number | null
+          completeness_score: number | null
           created_at: string | null
           created_by_test: boolean
           currency: string | null
+          default_unit: string | null
           description: string | null
           dimensions_json: Json | null
           gallery_urls: Json | null
@@ -2541,17 +2728,25 @@ export type Database = {
           is_test: boolean
           item_type: string | null
           metadata_json: Json | null
+          moderation_status: string | null
+          origin_country: string | null
           photo_url: string | null
           photo_urls: Json | null
           price: number | null
+          product_type: string | null
+          quality_score: number | null
+          searchable_text: unknown
           seo_description: string | null
           seo_title: string | null
           shop_id: string
+          short_description: string | null
           sku: string | null
+          slug: string | null
           sort_order: number | null
           specifications: Json | null
           stock_quantity: number | null
           tags: string[] | null
+          tax_code: string | null
           test_batch_id: string | null
           title: string
           track_inventory: boolean | null
@@ -2564,11 +2759,17 @@ export type Database = {
         Insert: {
           available?: boolean | null
           brand_name?: string | null
+          canonical_category?: string | null
+          canonical_family?: string | null
+          canonical_subcategory?: string | null
+          canonical_vertical?: string | null
           category_id?: string | null
           compare_at_price?: number | null
+          completeness_score?: number | null
           created_at?: string | null
           created_by_test?: boolean
           currency?: string | null
+          default_unit?: string | null
           description?: string | null
           dimensions_json?: Json | null
           gallery_urls?: Json | null
@@ -2576,17 +2777,25 @@ export type Database = {
           is_test?: boolean
           item_type?: string | null
           metadata_json?: Json | null
+          moderation_status?: string | null
+          origin_country?: string | null
           photo_url?: string | null
           photo_urls?: Json | null
           price?: number | null
+          product_type?: string | null
+          quality_score?: number | null
+          searchable_text?: unknown
           seo_description?: string | null
           seo_title?: string | null
           shop_id: string
+          short_description?: string | null
           sku?: string | null
+          slug?: string | null
           sort_order?: number | null
           specifications?: Json | null
           stock_quantity?: number | null
           tags?: string[] | null
+          tax_code?: string | null
           test_batch_id?: string | null
           title: string
           track_inventory?: boolean | null
@@ -2599,11 +2808,17 @@ export type Database = {
         Update: {
           available?: boolean | null
           brand_name?: string | null
+          canonical_category?: string | null
+          canonical_family?: string | null
+          canonical_subcategory?: string | null
+          canonical_vertical?: string | null
           category_id?: string | null
           compare_at_price?: number | null
+          completeness_score?: number | null
           created_at?: string | null
           created_by_test?: boolean
           currency?: string | null
+          default_unit?: string | null
           description?: string | null
           dimensions_json?: Json | null
           gallery_urls?: Json | null
@@ -2611,17 +2826,25 @@ export type Database = {
           is_test?: boolean
           item_type?: string | null
           metadata_json?: Json | null
+          moderation_status?: string | null
+          origin_country?: string | null
           photo_url?: string | null
           photo_urls?: Json | null
           price?: number | null
+          product_type?: string | null
+          quality_score?: number | null
+          searchable_text?: unknown
           seo_description?: string | null
           seo_title?: string | null
           shop_id?: string
+          short_description?: string | null
           sku?: string | null
+          slug?: string | null
           sort_order?: number | null
           specifications?: Json | null
           stock_quantity?: number | null
           tags?: string[] | null
+          tax_code?: string | null
           test_batch_id?: string | null
           title?: string
           track_inventory?: boolean | null
@@ -2648,39 +2871,263 @@ export type Database = {
           },
         ]
       }
+      catalog_media: {
+        Row: {
+          active: boolean | null
+          alt_text: string | null
+          created_at: string | null
+          entity_id: string | null
+          height: number | null
+          id: string
+          is_primary: boolean | null
+          media_type: string
+          moderation_status: string | null
+          product_id: string | null
+          quality_score: number | null
+          sort_order: number | null
+          source_type: string | null
+          url: string
+          variant_id: string | null
+          width: number | null
+        }
+        Insert: {
+          active?: boolean | null
+          alt_text?: string | null
+          created_at?: string | null
+          entity_id?: string | null
+          height?: number | null
+          id?: string
+          is_primary?: boolean | null
+          media_type?: string
+          moderation_status?: string | null
+          product_id?: string | null
+          quality_score?: number | null
+          sort_order?: number | null
+          source_type?: string | null
+          url: string
+          variant_id?: string | null
+          width?: number | null
+        }
+        Update: {
+          active?: boolean | null
+          alt_text?: string | null
+          created_at?: string | null
+          entity_id?: string | null
+          height?: number | null
+          id?: string
+          is_primary?: boolean | null
+          media_type?: string
+          moderation_status?: string | null
+          product_id?: string | null
+          quality_score?: number | null
+          sort_order?: number | null
+          source_type?: string | null
+          url?: string
+          variant_id?: string | null
+          width?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "catalog_media_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "catalog_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "catalog_media_variant_id_fkey"
+            columns: ["variant_id"]
+            isOneToOne: false
+            referencedRelation: "catalog_variants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      catalog_product_attributes: {
+        Row: {
+          attribute_definition_id: string
+          id: string
+          product_id: string
+          value_bool: boolean | null
+          value_json: Json | null
+          value_number: number | null
+          value_text: string | null
+        }
+        Insert: {
+          attribute_definition_id: string
+          id?: string
+          product_id: string
+          value_bool?: boolean | null
+          value_json?: Json | null
+          value_number?: number | null
+          value_text?: string | null
+        }
+        Update: {
+          attribute_definition_id?: string
+          id?: string
+          product_id?: string
+          value_bool?: boolean | null
+          value_json?: Json | null
+          value_number?: number | null
+          value_text?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "catalog_product_attributes_attribute_definition_id_fkey"
+            columns: ["attribute_definition_id"]
+            isOneToOne: false
+            referencedRelation: "canonical_attribute_definitions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "catalog_product_attributes_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "catalog_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      catalog_product_tags: {
+        Row: {
+          id: string
+          product_id: string
+          tag_id: string
+        }
+        Insert: {
+          id?: string
+          product_id: string
+          tag_id: string
+        }
+        Update: {
+          id?: string
+          product_id?: string
+          tag_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "catalog_product_tags_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "catalog_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "catalog_product_tags_tag_id_fkey"
+            columns: ["tag_id"]
+            isOneToOne: false
+            referencedRelation: "canonical_tags"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      catalog_translations: {
+        Row: {
+          created_at: string | null
+          entity_id: string | null
+          field_key: string
+          id: string
+          language: string
+          product_id: string | null
+          translated_value: string
+        }
+        Insert: {
+          created_at?: string | null
+          entity_id?: string | null
+          field_key: string
+          id?: string
+          language: string
+          product_id?: string | null
+          translated_value: string
+        }
+        Update: {
+          created_at?: string | null
+          entity_id?: string | null
+          field_key?: string
+          id?: string
+          language?: string
+          product_id?: string | null
+          translated_value?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "catalog_translations_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "catalog_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       catalog_variants: {
         Row: {
           available: boolean | null
+          barcode: string | null
+          compare_at_price: number | null
+          cost_price: number | null
           created_at: string | null
+          currency: string | null
           id: string
+          in_stock: boolean | null
           item_id: string
           name: string
+          pack_quantity: number | null
+          price: number | null
           price_adjustment: number | null
+          size: string | null
           sku: string | null
           sort_order: number | null
           stock_quantity: number | null
+          unit: string | null
+          variant_label: string | null
+          volume: number | null
+          weight: number | null
         }
         Insert: {
           available?: boolean | null
+          barcode?: string | null
+          compare_at_price?: number | null
+          cost_price?: number | null
           created_at?: string | null
+          currency?: string | null
           id?: string
+          in_stock?: boolean | null
           item_id: string
           name: string
+          pack_quantity?: number | null
+          price?: number | null
           price_adjustment?: number | null
+          size?: string | null
           sku?: string | null
           sort_order?: number | null
           stock_quantity?: number | null
+          unit?: string | null
+          variant_label?: string | null
+          volume?: number | null
+          weight?: number | null
         }
         Update: {
           available?: boolean | null
+          barcode?: string | null
+          compare_at_price?: number | null
+          cost_price?: number | null
           created_at?: string | null
+          currency?: string | null
           id?: string
+          in_stock?: boolean | null
           item_id?: string
           name?: string
+          pack_quantity?: number | null
+          price?: number | null
           price_adjustment?: number | null
+          size?: string | null
           sku?: string | null
           sort_order?: number | null
           stock_quantity?: number | null
+          unit?: string | null
+          variant_label?: string | null
+          volume?: number | null
+          weight?: number | null
         }
         Relationships: [
           {
@@ -14360,6 +14807,83 @@ export type Database = {
             columns: ["property_id"]
             isOneToOne: false
             referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      product_search_index: {
+        Row: {
+          availability_score: number | null
+          brand: string | null
+          category: string | null
+          city: string | null
+          country: string | null
+          entity_id: string | null
+          family: string | null
+          final_rank_score: number | null
+          freshness_score: number | null
+          language: string | null
+          popularity_score: number | null
+          product_id: string
+          quality_score: number | null
+          searchable_plain: string | null
+          searchable_text: unknown
+          subcategory: string | null
+          synonyms_json: Json | null
+          tags_json: Json | null
+          updated_at: string | null
+          vertical: string | null
+        }
+        Insert: {
+          availability_score?: number | null
+          brand?: string | null
+          category?: string | null
+          city?: string | null
+          country?: string | null
+          entity_id?: string | null
+          family?: string | null
+          final_rank_score?: number | null
+          freshness_score?: number | null
+          language?: string | null
+          popularity_score?: number | null
+          product_id: string
+          quality_score?: number | null
+          searchable_plain?: string | null
+          searchable_text?: unknown
+          subcategory?: string | null
+          synonyms_json?: Json | null
+          tags_json?: Json | null
+          updated_at?: string | null
+          vertical?: string | null
+        }
+        Update: {
+          availability_score?: number | null
+          brand?: string | null
+          category?: string | null
+          city?: string | null
+          country?: string | null
+          entity_id?: string | null
+          family?: string | null
+          final_rank_score?: number | null
+          freshness_score?: number | null
+          language?: string | null
+          popularity_score?: number | null
+          product_id?: string
+          quality_score?: number | null
+          searchable_plain?: string | null
+          searchable_text?: unknown
+          subcategory?: string | null
+          synonyms_json?: Json | null
+          tags_json?: Json | null
+          updated_at?: string | null
+          vertical?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_search_index_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: true
+            referencedRelation: "catalog_items"
             referencedColumns: ["id"]
           },
         ]
