@@ -1399,6 +1399,7 @@ const App = () => (
            </CallProvider>
         </AuthProvider>
     </TooltipProvider>
+    </GlobalExperienceProvider>
     </I18nProvider>
   </QueryClientProvider>
   </ThemeProvider>
