@@ -9,6 +9,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { ArrowLeft, Star, MapPin, Clock, Plus, Minus, ShoppingCart } from "lucide-react";
 import FavoriteMerchantButton from "@/components/favorites/FavoriteMerchantButton";
+import { formatMoneyByCountry } from "@/lib/currency-engine";
 import ReviewList from "@/components/reviews/ReviewList";
 import ReviewComposer from "@/components/reviews/ReviewComposer";
 import { useAnalyticsPageView } from "@/hooks/useAnalyticsPageView";
