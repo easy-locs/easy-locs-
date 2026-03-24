@@ -314,7 +314,7 @@ export async function resolveAutocomplete(
         subtitle: p.category,
         imageUrl: p.image_url,
         price: p.price,
-        currency: "AED",
+        currency: p.currency || undefined,
       })),
     });
   }
