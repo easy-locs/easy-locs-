@@ -257,7 +257,7 @@ export default function TravelStayHub() {
                 animate={{ opacity: 1, height: "auto" }}
               >
                 <BedDouble className="h-3.5 w-3.5" />
-                {nightCount} night{nightCount > 1 ? "s" : ""}
+                {nightCount} {nightCount > 1 ? tc("common.nights", { count: nightCount }) : tc("common.night", { count: nightCount })}
               </motion.div>
             )}
 
