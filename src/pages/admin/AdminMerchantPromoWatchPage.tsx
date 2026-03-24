@@ -51,7 +51,7 @@ export default function AdminMerchantPromoWatchPage() {
               <p className="text-xs text-muted-foreground">
                 {row.discount_type === "percent"
                   ? `${Number(row.discount_value ?? 0)}% off`
-                  : `${Number(row.discount_value ?? 0).toFixed(2)} AED off`}
+                  : `${formatMoneyByCountry(Number(row.discount_value ?? 0), null, "AED")} off`}
               </p>
               <p className={`text-[11px] font-bold mt-1 ${row.is_active ? "text-emerald-500" : "text-muted-foreground"}`}>
                 {row.is_active ? "Active" : "Inactive"}
