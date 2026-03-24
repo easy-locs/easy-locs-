@@ -366,6 +366,19 @@ const SUBCATEGORY_ALIASES: Record<string, string> = {
   organic: "organic_store",
   "cheese butter": "dairy",
   "cheese & butter": "dairy",
+  hotel: "hotel",
+  hotels: "hotel",
+  resort: "resort",
+  resorts: "resort",
+  "serviced apartment": "serviced_apartment",
+  "serviced apartments": "serviced_apartment",
+  "apart hotel": "serviced_apartment",
+  hostel: "hostel",
+  hostels: "hostel",
+  accommodation: "hotel",
+  lodging: "hotel",
+  "vacation rental": "short_stay",
+  "holiday home": "short_stay",
 };
 
 export function normalizeVertical(raw?: string | null): Vertical {
