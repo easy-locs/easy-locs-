@@ -182,7 +182,7 @@ export default function MerchantKitchenQueue({ shopId }: KitchenQueueProps) {
                           {order.payment_status === "secured" ? "💰 Paid" : "⏳ Unpaid"}
                         </Badge>
                         <span className="font-bold text-foreground">
-                          {Number(order.total || 0).toFixed(2)} {order.currency || "AED"}
+                          {formatMoneyByCountry(Number(order.total || 0), null, order.currency || "AED")}
                         </span>
                       </div>
 
