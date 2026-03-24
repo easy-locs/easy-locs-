@@ -163,8 +163,8 @@ export async function resolveUnifiedTarget(input: {
           console.error("[resolver] RPC ensure_wallet_account FAILED:", rpcErr.message, rpcErr.code, rpcErr.details);
           // Expose structured error for callers to handle
           throw new Error(`Wallet provisioning failed: ${rpcErr.message}`);
-        } else if (rpcResult && rpcResult.length > 0) {
-          finalWallet = { id: rpcResult[0].wallet_id, status: rpcResult[0].wallet_status };
+        } else if (rpcResult && (rpcResult as any).wallet_id) {
+          finalWallet = { id: (rpcResult as any).wallet_id, status: (rpcResult as any).status ?? "active" };
           console.log("[resolver] wallet provisioned:", { walletId: finalWallet.id, status: finalWallet.status, action: "auto_created_or_existing" });
         } else {
           console.error("[resolver] RPC returned empty result for:", profile.id);
@@ -212,9 +212,9 @@ export async function resolveUnifiedTarget(input: {
       if (rpcErr) {
         console.error("[resolver] path C RPC FAILED:", rpcErr.message, rpcErr.code, rpcErr.details);
         throw new Error(`Wallet provisioning failed: ${rpcErr.message}`);
-      } else if (rpcResult && rpcResult.length > 0) {
-        wallet = { id: rpcResult[0].wallet_id, status: rpcResult[0].wallet_status };
-        console.log("[resolver] path C wallet provisioned:", { walletId: wallet.id, status: wallet.status });
+      } else if (rpcResult && (rpcResult as any).wallet_id) {
+        wallet = { id: (rpcResult as any).wallet_id, status: (rpcResult as any).status ?? "active" };
+        console.log("[resolver] path C wallet provisioned:", { walletId: (wallet as any).id, status: (wallet as any).status });
       } else {
         console.error("[resolver] path C RPC returned empty for:", profile.id);
       }
