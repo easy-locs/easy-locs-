@@ -22,7 +22,7 @@ export default function CustomerReceiptVaultPage() {
         {RECEIPTS.map((row) => (
           <div key={row.id} className="rounded-2xl border border-border/20 bg-card p-4">
             <div className="text-sm font-bold text-foreground">{row.ref}</div>
-            <div className="text-xs text-muted-foreground mt-1">{row.amount.toFixed(2)} AED · {row.date}</div>
+            <div className="text-xs text-muted-foreground mt-1">{row.amount.toFixed(2)} · {row.date}</div>
             <button className="mt-3 w-full rounded-2xl bg-muted px-4 py-3 text-sm font-bold text-foreground">Open Receipt</button>
           </div>
         ))}
