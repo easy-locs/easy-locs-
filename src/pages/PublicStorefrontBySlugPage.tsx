@@ -6,6 +6,7 @@ import { getStorefrontCategories, getStorefrontItems } from "@/lib/storefront/pu
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Store } from "lucide-react";
+import { formatMoneyByCountry } from "@/lib/currency-engine";
 
 export default function PublicStorefrontBySlugPage() {
   const { publicSlug } = useParams();
