@@ -227,7 +227,7 @@ function ShopCard({
           )}
           {row.isOpen != null && (
             <span className={`text-[10px] font-medium ${row.isOpen ? "text-emerald-500" : "text-muted-foreground"}`}>
-              {row.isOpen ? "Open" : "Closed"}
+              {row.isOpen ? tc("common.open") : tc("common.closed")}
             </span>
           )}
         </div>
