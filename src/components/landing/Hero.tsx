@@ -21,7 +21,7 @@ const FLOATING_CARDS = [
   { title: "Pizza Napoli", sub: "⭐ 4.8 · Marina · 1.8 km · 7 min", emoji: "🍕", accent: "hsl(15 80% 55%)", badge: "🔥 Nearby" },
   { title: "Book a Stay", sub: "Dubai · 3 nights · from 89$/night", emoji: "🏨", accent: "hsl(250 65% 55%)" },
   { title: "Get a Ride", sub: "Pickup in 3 min", emoji: "🚗", accent: "hsl(270 60% 55%)", badge: "⚡ Fast" },
-  { title: "+ 45 AED received", sub: "Wallet · Instant transfer", emoji: "💸", accent: "hsl(152 60% 42%)", badge: "✅ Done" },
+  { title: "+ 45 received", sub: "Wallet · Instant transfer", emoji: "💸", accent: "hsl(152 60% 42%)", badge: "✅ Done" },
   { title: "Rent Property", sub: "Dakar · 450€/mo · 24h approval", emoji: "🏠", accent: "hsl(38 65% 50%)" },
   { title: "Plumber Pro", sub: "⭐ 4.9 · 1.2km · Available now", emoji: "🔧", accent: "hsl(220 70% 55%)", badge: "Nearby" },
 ];
