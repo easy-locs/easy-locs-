@@ -314,6 +314,15 @@ export function startContinuousEngine() {
     console.log(`[continuous] Self-healing: ${result.emptyPages} empty, ${result.missingImages} no-img, ${result.autoFixed} fixed`);
   }, "quality");
 
+  // I) Data Trust Scan (30min)
+  registerJob("data-trust-scan", 30 * 60_000, async () => {
+    const { runDataTrustScan } = await import("@/lib/engines/data-trust-engine");
+    const result = await runDataTrustScan(100);
+    const job = jobs.find(j => j.name === "data-trust-scan");
+    if (job) job.itemsProcessed = result.scanned;
+    if (result.flagged > 0) console.log(`[continuous] Data trust: ${result.flagged}/${result.scanned} flagged`);
+  }, "quality");
+
   // Start all intervals staggered
   for (const job of jobs) {
     const idx = jobs.indexOf(job);
