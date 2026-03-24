@@ -584,6 +584,44 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
     // ── ONLINE MODE: send in background (already shown optimistically) ──
     setSending(true);
     try {
+      // ── V2 CANONICAL SEND PATH ──
+      if (thread.isV2 && thread.v2ConversationId) {
+        const { error: v2Err } = await (supabase as any)
+          .from("chat_messages_v2")
+          .insert({
+            conversation_id: thread.v2ConversationId,
+            sender_user_id: authUserId,
+            sender_orbit_id: null,
+            receiver_orbit_id: null,
+            type: "text",
+            body: storedContent,
+          });
+        if (v2Err) {
+          console.error("[Orbit V2] Message insert failed:", v2Err);
+          setRawMessages(prev => prev.filter(m => m.id !== optimisticId));
+          toast.error("Failed to send: " + v2Err.message);
+          setNewMessage(msgText);
+          return;
+        }
+        // Update conversation timestamp
+        await (supabase as any)
+          .from("conversations_v2")
+          .update({ last_message_at: new Date().toISOString(), updated_at: new Date().toISOString() })
+          .eq("id", thread.v2ConversationId);
+
+        platformBus.emit("orbit:message_sent", {
+          threadId: thread.id,
+          contextId: thread.contextId,
+          recipientName: thread.name,
+          contentPreview: content.slice(0, 80),
+        }, "orbit", { userId: authUserId, orgId });
+
+        setSecurityLevel("normal");
+        setSending(false);
+        return;
+      }
+
+      // ── LEGACY SEND PATH ──
       let tenantLocale = "en";
       if (thread.tenantId) {
         const { data: tData } = await supabase.from("tenants").select("preferred_locale").eq("id", thread.tenantId).maybeSingle();
@@ -628,18 +666,15 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
 
       if (insertErr) {
         console.error("[Orbit] Message insert failed:", insertErr);
-        // Remove optimistic message on failure
         setRawMessages(prev => prev.filter(m => m.id !== optimisticId));
         toast.error("Failed to send message: " + insertErr.message);
-        setNewMessage(msgText); // Restore message for retry
+        setNewMessage(msgText);
         return;
       }
 
-      // Replace optimistic message with real one on next realtime event (auto via listener)
       setConvStatus("waiting_tenant");
-      setSecurityLevel("normal"); // Reset security level after successful send
+      setSecurityLevel("normal");
 
-      // Platform bus: emit message_sent for cross-module sync
       platformBus.emit("orbit:message_sent", {
         threadId: thread.threadId || thread.id,
         contextId: thread.contextId,
