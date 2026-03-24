@@ -143,12 +143,39 @@ export async function resolveUnifiedTarget(input: {
     ]);
 
     const recipientResolveMs = performance.now() - recipientStart;
-    const walletResolveMs = performance.now() - walletStart;
+    let walletResolveMs = performance.now() - walletStart;
     console.log("[resolver] path B:", { profileFound: !!profile, walletFound: !!wallet, walletStatus: wallet?.status });
 
     if (!profile) {
       console.error("[resolver] CRITICAL: userId exists in QR but NOT in profiles table:", input.userId);
       return null;
+    }
+
+    // Auto-provision wallet for known recipients who haven't opened the app yet
+    let finalWallet = wallet;
+    if (!wallet && profile.id) {
+      console.log("[resolver] auto-provisioning wallet for recipient:", profile.id);
+      const provStart = performance.now();
+      const { data: created, error: createErr } = await supabase
+        .from("wallet_accounts")
+        .insert({ owner_user_id: profile.id, currency, balance: 0, status: "active" } as any)
+        .select("id, status")
+        .maybeSingle();
+      if (createErr && createErr.code === "23505") {
+        // Race condition — re-fetch
+        const { data: refetched } = await supabase
+          .from("wallet_accounts")
+          .select("id, status")
+          .eq("owner_user_id", profile.id)
+          .eq("status", "active")
+          .limit(1)
+          .maybeSingle();
+        finalWallet = refetched;
+      } else if (created) {
+        finalWallet = created;
+      }
+      walletResolveMs = performance.now() - provStart;
+      console.log("[resolver] auto-provision result:", { created: !!finalWallet });
     }
 
     return {
@@ -157,8 +184,8 @@ export async function resolveUnifiedTarget(input: {
       email: profile.email || null,
       avatar_url: null,
       orbit_id: input.orbitId || null,
-      wallet_id: wallet?.id ?? null,
-      wallet_status: wallet?.status ?? "missing",
+      wallet_id: finalWallet?.id ?? null,
+      wallet_status: finalWallet?.status ?? "missing",
       currency,
       timings: { recipientResolveMs, walletResolveMs },
     };
@@ -171,13 +198,35 @@ export async function resolveUnifiedTarget(input: {
   if (!profile) return null;
 
   const walletStart = performance.now();
-  const { data: wallet } = await supabase
+  let { data: wallet } = await supabase
     .from("wallet_accounts")
     .select("id, status")
     .eq("owner_user_id", profile.id)
     .eq("status", "active")
     .limit(1)
     .maybeSingle();
+
+  // Auto-provision wallet for known recipients
+  if (!wallet) {
+    console.log("[resolver] path C auto-provisioning wallet for:", profile.id);
+    const { data: created, error: createErr } = await supabase
+      .from("wallet_accounts")
+      .insert({ owner_user_id: profile.id, currency, balance: 0, status: "active" } as any)
+      .select("id, status")
+      .maybeSingle();
+    if (createErr && createErr.code === "23505") {
+      const { data: refetched } = await supabase
+        .from("wallet_accounts")
+        .select("id, status")
+        .eq("owner_user_id", profile.id)
+        .eq("status", "active")
+        .limit(1)
+        .maybeSingle();
+      wallet = refetched;
+    } else if (created) {
+      wallet = created;
+    }
+  }
   const walletResolveMs = performance.now() - walletStart;
 
   return {
