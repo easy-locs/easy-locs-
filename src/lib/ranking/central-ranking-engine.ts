@@ -35,6 +35,7 @@ export interface RankingInput {
   claimReadinessScore: number;
   boostReadinessScore: number;
   freshnessScore: number;
+  aiRecommendationScore?: number;
   hasGeo: boolean;
   hasCover: boolean;
   hasLogo: boolean;
@@ -190,7 +191,7 @@ export function computeCentralRank(input: RankingInput): RankingResult {
   }
 
   // Weighted score
-  const raw =
+  const baseRaw =
     input.dataQualityScore * w.data +
     input.menuQualityScore * w.menu +
     input.visualQualityScore * w.visual +
@@ -200,8 +201,11 @@ export function computeCentralRank(input: RankingInput): RankingResult {
     input.conversionScore * w.conversion +
     input.claimReadinessScore * w.claim +
     input.boostReadinessScore * w.boost +
-    input.freshnessScore * w.freshness -
-    penalty;
+    input.freshnessScore * w.freshness;
+
+  // AI recommendation boost (up to 10% influence)
+  const aiBoost = (input.aiRecommendationScore ?? 0) * 0.1;
+  const raw = baseRaw + aiBoost - penalty;
 
   const globalRankScore = clamp(raw);
 
