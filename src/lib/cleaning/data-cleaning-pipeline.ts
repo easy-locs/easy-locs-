@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { canonicalTaxonomyPayload } from "@/lib/taxonomy/taxonomy-guard";
 import { auditShop } from "@/lib/audit/shop-audit";
 import { getTaxonomyFallbackCover } from "@/lib/image/dual-layer-image";
+import { batchSafeAutoWrite } from "@/lib/engines/override-write-gate";
 
 export interface CleaningResult {
   totalProcessed: number;
