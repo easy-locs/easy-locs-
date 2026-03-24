@@ -4,6 +4,7 @@
  * Uses Canonical UI Engine for vertical-aware wording and accents.
  */
 import { useState, useCallback, useMemo, memo, useEffect } from "react";
+import { BoostSlotRenderer } from "@/components/boost/BoostSlotRenderer";
 import { useNavigate } from "react-router-dom";
 import { useRadarResults } from "@/hooks/useRadarResults";
 import { contactFromDiscovery } from "@/lib/radar/contactBridge";
