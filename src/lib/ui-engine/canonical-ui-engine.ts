@@ -130,16 +130,19 @@ const VERTICAL_CARD: Record<string, CanonicalCardStyle> = {
   experiences: { radius: "3xl", imageAspect: "16/9", showEta: false, showDistance: false, showStatus: false, showPrice: true,  featuredAspect: "21/9" },
 };
 
-const VERTICAL_BUTTON: Record<string, CanonicalButtonStyle> = {
-  food:        { primaryCta: "Order Now",     secondaryCta: "View Menu",    ctaIcon: "cart" },
-  grocery:     { primaryCta: "Shop Now",      secondaryCta: "Browse",       ctaIcon: "cart" },
-  shops:       { primaryCta: "Visit Store",   secondaryCta: "Browse",       ctaIcon: "arrow" },
-  services:    { primaryCta: "Book Now",       secondaryCta: "Get Quote",   ctaIcon: "phone" },
-  property:    { primaryCta: "Book Stay",      secondaryCta: "View Details", ctaIcon: "calendar" },
-  healthcare:  { primaryCta: "Book Appointment", secondaryCta: "Call",      ctaIcon: "phone" },
-  mobility:    { primaryCta: "Book Ride",      secondaryCta: "Get Price",   ctaIcon: "map" },
-  experiences: { primaryCta: "Book Now",       secondaryCta: "Learn More",  ctaIcon: "heart" },
-};
+/** Build i18n-aware button styles — resolved at call time, not at module load */
+function getVerticalButton(vertical: string): CanonicalButtonStyle {
+  const icons: Record<string, CanonicalButtonStyle["ctaIcon"]> = {
+    food: "cart", grocery: "cart", shops: "arrow", services: "phone",
+    property: "calendar", healthcare: "phone", mobility: "map", experiences: "heart",
+  };
+  const vi = getVerticalI18n(vertical);
+  return {
+    primaryCta: vi.ctaPrimary,
+    secondaryCta: vi.ctaSecondary,
+    ctaIcon: icons[vertical] || "arrow",
+  };
+}
 
 const VERTICAL_TONE: Record<string, CanonicalWording["tone"]> = {
   food: "warm", grocery: "friendly", shops: "energetic", services: "professional",
