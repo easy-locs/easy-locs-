@@ -6,6 +6,7 @@ import { getStorefrontCategories, getStorefrontItems } from "@/lib/storefront/pu
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Store } from "lucide-react";
+import { formatMoneyByCountry } from "@/lib/currency-engine";
 
 export default function PublicStorefrontBySlugPage() {
   const { publicSlug } = useParams();
@@ -113,7 +114,7 @@ export default function PublicStorefrontBySlugPage() {
                       )}
                       {/* Only show price when not null */}
                       {item.price != null && (
-                        <p className="text-xs font-semibold text-primary">{item.price} AED</p>
+                        <p className="text-xs font-semibold text-primary">{formatMoneyByCountry(item.price, storefront?.country, storefront?.currency)}</p>
                       )}
                     </div>
                     <button className="shrink-0 ml-3 bg-primary text-primary-foreground text-xs font-medium px-3 py-1.5 rounded-lg">
