@@ -61,7 +61,7 @@ async function getRecentSearches(userId?: string | null): Promise<SearchSuggesti
     const seen = new Set<string>();
     const results: SearchSuggestion[] = [];
     for (const row of data ?? []) {
-      const q = String(row?.metadata_json?.queryText ?? "").trim();
+      const q = String((row as any)?.metadata?.queryText ?? "").trim();
       if (!q || seen.has(q.toLowerCase())) continue;
       seen.add(q.toLowerCase());
       results.push({ text: q, type: "recent", icon: "🕐" });
