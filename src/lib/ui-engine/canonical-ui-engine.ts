@@ -11,6 +11,7 @@ import { WORLD_TAXONOMY, type Vertical, type TaxonomyVertical } from "@/lib/taxo
 import { getVerticalTheme } from "@/lib/discovery/vertical-themes";
 import { getSubcategoryTheme } from "@/lib/discovery/subcategory-themes";
 import { td, getVerticalI18n, getSubcategoryI18n } from "@/lib/i18n-discovery";
+import { tc } from "@/lib/i18n-canonical";
 
 // ═══════════════════════════════════════════════════════════
 //  TYPES
@@ -129,16 +130,19 @@ const VERTICAL_CARD: Record<string, CanonicalCardStyle> = {
   experiences: { radius: "3xl", imageAspect: "16/9", showEta: false, showDistance: false, showStatus: false, showPrice: true,  featuredAspect: "21/9" },
 };
 
-const VERTICAL_BUTTON: Record<string, CanonicalButtonStyle> = {
-  food:        { primaryCta: "Order Now",     secondaryCta: "View Menu",    ctaIcon: "cart" },
-  grocery:     { primaryCta: "Shop Now",      secondaryCta: "Browse",       ctaIcon: "cart" },
-  shops:       { primaryCta: "Visit Store",   secondaryCta: "Browse",       ctaIcon: "arrow" },
-  services:    { primaryCta: "Book Now",       secondaryCta: "Get Quote",   ctaIcon: "phone" },
-  property:    { primaryCta: "Book Stay",      secondaryCta: "View Details", ctaIcon: "calendar" },
-  healthcare:  { primaryCta: "Book Appointment", secondaryCta: "Call",      ctaIcon: "phone" },
-  mobility:    { primaryCta: "Book Ride",      secondaryCta: "Get Price",   ctaIcon: "map" },
-  experiences: { primaryCta: "Book Now",       secondaryCta: "Learn More",  ctaIcon: "heart" },
-};
+/** Build i18n-aware button styles — resolved at call time, not at module load */
+function getVerticalButton(vertical: string): CanonicalButtonStyle {
+  const icons: Record<string, CanonicalButtonStyle["ctaIcon"]> = {
+    food: "cart", grocery: "cart", shops: "arrow", services: "phone",
+    property: "calendar", healthcare: "phone", mobility: "map", experiences: "heart",
+  };
+  const vi = getVerticalI18n(vertical);
+  return {
+    primaryCta: vi.ctaPrimary,
+    secondaryCta: vi.ctaSecondary,
+    ctaIcon: icons[vertical] || "arrow",
+  };
+}
 
 const VERTICAL_TONE: Record<string, CanonicalWording["tone"]> = {
   food: "warm", grocery: "friendly", shops: "energetic", services: "professional",
@@ -189,14 +193,16 @@ function buildBreadcrumbs(
   vertical: TaxonomyVertical,
   subcategory?: string | null,
 ): { label: string; path: string }[] {
+  const vertI18n = getVerticalI18n(vertical.value);
   const crumbs = [
-    { label: "Home", path: "/" },
-    { label: vertical.label, path: VERTICAL_ROUTES[vertical.value] || `/${vertical.value}` },
+    { label: tc("nav.home"), path: "/" },
+    { label: vertI18n.title, path: VERTICAL_ROUTES[vertical.value] || `/${vertical.value}` },
   ];
   if (subcategory) {
+    const subI18n = getSubcategoryI18n(subcategory);
     const sub = vertical.subcategories.find(s => s.value === subcategory);
     crumbs.push({
-      label: sub?.label || subcategory.replace(/_/g, " "),
+      label: subI18n?.title || sub?.label || subcategory.replace(/_/g, " "),
       path: buildCanonicalRoute(vertical.value, subcategory),
     });
   }
@@ -259,7 +265,7 @@ export function resolveCanonicalUI(
 
     motion: VERTICAL_MOTION[vert.value] || VERTICAL_MOTION.food,
     card: VERTICAL_CARD[vert.value] || VERTICAL_CARD.food,
-    button: VERTICAL_BUTTON[vert.value] || VERTICAL_BUTTON.food,
+    button: getVerticalButton(vert.value),
     wording: buildWording(vert.value, subcategoryKey),
   };
 }
