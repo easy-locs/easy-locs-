@@ -1,7 +1,6 @@
 /**
  * SettingsAddresses — Manage saved delivery & billing addresses.
- * Connected to DB via user_addresses table (with graceful fallback).
- * Route: /settings/addresses
+ * Connected to dedicated user_addresses table.
  */
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
@@ -37,35 +36,28 @@ export default function SettingsAddresses() {
     if (!user?.id) return;
     setLoading(true);
     try {
-      // Try profiles table metadata or a dedicated column
-      const { data: profileData } = await db
-        .from("profiles")
-        .select("id")
-        .eq("id", user.id)
-        .maybeSingle();
-
-      // Use activity_logs as lightweight address store via metadata
-      const { data } = await db
-        .from("activity_logs")
+      const { data, error } = await db
+        .from("user_addresses")
         .select("*")
         .eq("user_id", user.id)
-        .eq("entity_type", "user_address")
+        .order("is_default", { ascending: false })
         .order("created_at", { ascending: true });
+
+      if (error) throw error;
 
       if (data && data.length > 0) {
         const mapped: SavedAddress[] = data.map((row: any) => ({
           id: row.id,
-          label: row.metadata?.label || "Address",
-          icon: row.metadata?.icon || "other",
-          line1: row.metadata?.line1 || "",
-          line2: row.metadata?.line2 || "",
-          city: row.metadata?.city || "",
-          country: row.metadata?.country || "",
-          is_default: row.metadata?.is_default || false,
+          label: row.label || "Address",
+          icon: row.icon || "other",
+          line1: row.line1 || "",
+          line2: row.line2 || "",
+          city: row.city || "",
+          country: row.country || "",
+          is_default: row.is_default || false,
         }));
         setAddresses(mapped);
       } else {
-        // Seed default entries
         setAddresses([
           { id: "temp-home", label: "Home", icon: "home", line1: "", city: "", country: "", is_default: true },
           { id: "temp-work", label: "Work", icon: "work", line1: "", city: "", country: "", is_default: false },
@@ -84,27 +76,18 @@ export default function SettingsAddresses() {
     if (!user?.id) return;
     setSaving(true);
     try {
-      const metadata = {
-        label: addr.label,
-        icon: addr.icon,
-        line1: addr.line1,
-        line2: addr.line2 || "",
-        city: addr.city,
-        country: addr.country,
-        is_default: addr.is_default,
-      };
-
       if (addr.id.startsWith("temp-")) {
-        // Create new
         const { data, error } = await db
-          .from("activity_logs")
+          .from("user_addresses")
           .insert({
-            id: crypto.randomUUID(),
             user_id: user.id,
-            action: "address_saved",
-            entity_type: "user_address",
-            entity_id: user.id,
-            metadata: metadata,
+            label: addr.label,
+            icon: addr.icon,
+            line1: addr.line1,
+            line2: addr.line2 || "",
+            city: addr.city,
+            country: addr.country,
+            is_default: addr.is_default,
           })
           .select()
           .single();
@@ -112,10 +95,17 @@ export default function SettingsAddresses() {
         if (error) throw error;
         setAddresses(prev => prev.map(a => a.id === addr.id ? { ...addr, id: data.id } : a));
       } else {
-        // Update existing
         const { error } = await db
-          .from("activity_logs")
-          .update({ metadata: metadata })
+          .from("user_addresses")
+          .update({
+            label: addr.label,
+            line1: addr.line1,
+            line2: addr.line2 || "",
+            city: addr.city,
+            country: addr.country,
+            is_default: addr.is_default,
+            updated_at: new Date().toISOString(),
+          })
           .eq("id", addr.id);
 
         if (error) throw error;
@@ -158,7 +148,7 @@ export default function SettingsAddresses() {
 
   const removeAddr = async (id: string) => {
     if (!id.startsWith("temp-")) {
-      await db.from("activity_logs").delete().eq("id", id);
+      await db.from("user_addresses").delete().eq("id", id);
     }
     setAddresses(prev => prev.filter(a => a.id !== id));
     toast.success("Address removed");
@@ -202,10 +192,7 @@ export default function SettingsAddresses() {
 
               if (editing === addr.id) {
                 return (
-                  <div
-                    key={addr.id}
-                    className="rounded-2xl p-4 space-y-3 bg-card border border-primary/30"
-                  >
+                  <div key={addr.id} className="rounded-2xl p-4 space-y-3 bg-card border border-primary/30">
                     <p className="text-sm font-bold text-foreground">{addr.label}</p>
                     <input
                       type="text"
@@ -252,10 +239,7 @@ export default function SettingsAddresses() {
               }
 
               return (
-                <div
-                  key={addr.id}
-                  className="rounded-2xl p-4 flex items-center gap-3 bg-card border border-border/12"
-                >
+                <div key={addr.id} className="rounded-2xl p-4 flex items-center gap-3 bg-card border border-border/12">
                   <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 bg-primary/8">
                     <Icon className="w-4.5 h-4.5 text-primary" />
                   </div>
