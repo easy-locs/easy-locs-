@@ -4,6 +4,7 @@
  * Uses canonical discovery pipeline for all sections.
  */
 import { memo, useMemo, useEffect } from "react";
+import { GeoStatusIndicator } from "@/components/geo/GeoStatusIndicator";
 import { BoostSlotRenderer } from "@/components/boost/BoostSlotRenderer";
 import { Link, useNavigate } from "react-router-dom";
 import { MapPin, Bell, Wallet, QrCode, Send, ChevronRight, Star, Navigation } from "lucide-react";
@@ -75,7 +76,10 @@ const CompactHeader = memo(({ city, greeting }: { city: string | null; greeting:
         </div>
         <div className="min-w-0">
           <p className="text-[10px] text-muted-foreground leading-none">{greeting}</p>
-          <p className="text-xs font-bold text-foreground truncate">{city || "📍 Set location"}</p>
+          <div className="flex items-center gap-1.5">
+            <p className="text-xs font-bold text-foreground truncate">{city || "📍 Set location"}</p>
+            <GeoStatusIndicator compact showRetry={false} />
+          </div>
         </div>
       </button>
       <div className="flex-1">

@@ -244,8 +244,8 @@ export default function QrScannerPage() {
         const recipientName = resolved.displayName?.trim();
         if (!resolved.targetUserId) { setE("Recipient not found"); setS("error"); return; }
         if (!recipientName) { setE("Recipient name unavailable"); setS("error"); return; }
-        if (resolved.walletStatus === "locked") { setE("Recipient wallet is locked"); setS("error"); return; }
-        if (resolved.walletStatus === "missing" || !resolved.targetWalletId) { setE("Recipient has no active wallet"); setS("error"); return; }
+        if (resolved.walletStatus === "locked") { toast.error("Recipient's wallet is currently locked"); setE("Recipient wallet is locked"); setS("error"); return; }
+        if (resolved.walletStatus === "missing" || !resolved.targetWalletId) { toast.error("Could not set up payment — recipient wallet unavailable. Please try again."); setE("Recipient has no active wallet"); setS("error"); return; }
         if (user?.id && resolved.targetUserId === user.id) { setE("Cannot pay yourself"); setS("error"); return; }
 
         const draft: PendingQrPayment = {
