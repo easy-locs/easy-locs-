@@ -35,6 +35,8 @@ import { useShopTranslation } from "@/hooks/useShopTranslation";
 import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { getTopBanners } from "@/lib/context-banner/context-banner-engine";
+import { resolveCanonicalEntity } from "@/lib/entity/canonical-entity-resolver";
+import { debugLog } from "@/lib/debug/runtime-debug-bus";
 
 // Only essential lazy sections
 const ShopReviews = lazy(() => import("@/components/storefront/ShopReviews"));
@@ -62,30 +64,53 @@ export default function ShopPage() {
   const { data: shop, isLoading } = useQuery({
     queryKey: ["storefront-page", shopSlug],
     queryFn: async () => {
-      let query = (supabase as any).from("storefront_pages").select("*");
-      if (isUuid) query = query.eq("id", shopSlug!);
-      else query = query.eq("slug", shopSlug!);
-      const { data } = await query.maybeSingle();
-      if (data) return data;
+      const canonical = await resolveCanonicalEntity(shopSlug!);
+      debugLog.info(
+        "router",
+        "canonical.entity_resolver.used",
+        `Resolved ${shopSlug} via ${canonical.sourceTable}`,
+        canonical
+      );
 
-      // Fallback: seed_merchants
-      const seedQuery = (supabase as any).from("seed_merchants").select("*");
-      if (isUuid) seedQuery.eq("id", shopSlug!);
-      else {
-        const nameGuess = shopSlug!.replace(/-/g, " ");
-        seedQuery.ilike("name", `%${nameGuess}%`);
+      if (canonical.sourceTable === "storefront_pages") {
+        const { data } = await (supabase as any)
+          .from("storefront_pages")
+          .select("*")
+          .eq("id", canonical.canonicalId)
+          .maybeSingle();
+
+        if (data) {
+          return {
+            ...data,
+            _canonical: canonical,
+          };
+        }
       }
-      const { data: seedResults } = await seedQuery.limit(1).maybeSingle();
-      const seed = seedResults || (isUuid ? null : await (async () => {
-        const { data } = await (supabase as any).from("seed_merchants").select("*").eq("id", shopSlug!).maybeSingle();
-        return data;
-      })());
 
-      if (seed) return {
-        ...seed, slug: seed.id, vertical: seed.category,
-        banner_url: seed.cover_image, logo_url: seed.logo_image,
-        address: seed.area, visibility_mode: seed.visibility_mode || "coming_soon", _isSeed: true,
-      };
+      if (canonical.sourceTable === "seed_merchants") {
+        const { data: seed } = await (supabase as any)
+          .from("seed_merchants")
+          .select("*")
+          .eq("id", canonical.canonicalId)
+          .maybeSingle();
+
+        if (seed) return {
+          ...seed,
+          slug: seed.id,
+          vertical: seed.category,
+          banner_url: seed.cover_image,
+          logo_url: seed.logo_image,
+          address: seed.area,
+          visibility_mode: seed.visibility_mode || "coming_soon",
+          _isSeed: true,
+          _canonical: canonical,
+        };
+      }
+
+      debugLog.warn("router", "canonical.entity_resolver.miss", `No entity found for ${shopSlug}`, {
+        slugOrId: shopSlug,
+        isUuid,
+      });
       return null;
     },
     enabled: !!shopSlug,
@@ -139,6 +164,18 @@ export default function ShopPage() {
   const finalTotal = Math.max(0, cart.total - discount);
 
   useEffect(() => { if (shop?.id) analytics.trackPageView(); }, [shop?.id]);
+
+  useEffect(() => {
+    const routeTarget = (shop as any)?._canonical?.routeTarget;
+    if (!shopSlug || !routeTarget) return;
+    if (routeTarget === `/s/${shopSlug}`) return;
+
+    debugLog.success("router", "canonical.entity_resolver.redirect", `Redirecting to ${routeTarget}`, {
+      from: `/s/${shopSlug}`,
+      to: routeTarget,
+    });
+    navigate(routeTarget, { replace: true });
+  }, [shopSlug, navigate, (shop as any)?._canonical?.routeTarget]);
 
   const handleCheckout = () => {
     if (!user) { toast.error("Please sign in to checkout"); return; }
