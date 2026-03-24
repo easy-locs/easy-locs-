@@ -10618,6 +10618,72 @@ export type Database = {
         }
         Relationships: []
       }
+      live_status_snapshots: {
+        Row: {
+          actor_name: string | null
+          context_action_url: string | null
+          created_at: string | null
+          entity_id: string
+          entity_type: string
+          eta_max: number | null
+          eta_min: number | null
+          id: string
+          is_active: boolean | null
+          live_step_index: number | null
+          live_step_total: number | null
+          live_visual_type: string | null
+          metadata_json: Json | null
+          progress_percent: number | null
+          status_code: string
+          status_label: string
+          status_subtitle: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          actor_name?: string | null
+          context_action_url?: string | null
+          created_at?: string | null
+          entity_id: string
+          entity_type: string
+          eta_max?: number | null
+          eta_min?: number | null
+          id?: string
+          is_active?: boolean | null
+          live_step_index?: number | null
+          live_step_total?: number | null
+          live_visual_type?: string | null
+          metadata_json?: Json | null
+          progress_percent?: number | null
+          status_code: string
+          status_label: string
+          status_subtitle?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          actor_name?: string | null
+          context_action_url?: string | null
+          created_at?: string | null
+          entity_id?: string
+          entity_type?: string
+          eta_max?: number | null
+          eta_min?: number | null
+          id?: string
+          is_active?: boolean | null
+          live_step_index?: number | null
+          live_step_total?: number | null
+          live_visual_type?: string | null
+          metadata_json?: Json | null
+          progress_percent?: number | null
+          status_code?: string
+          status_label?: string
+          status_subtitle?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       live_tracking_points: {
         Row: {
           accuracy_m: number | null
