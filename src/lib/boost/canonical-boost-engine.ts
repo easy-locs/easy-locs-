@@ -169,6 +169,18 @@ export async function resolveBoostForSlot(ctx: SlotContext): Promise<BoostMatch 
     const { data: campaigns } = await query.limit(20);
     if (!campaigns?.length) return null;
 
+    // Filter out budget-exhausted campaigns
+    const viable = campaigns.filter((c: any) => {
+      if (c.total_budget > 0 && c.spent >= c.total_budget) return false;
+      if (c.daily_budget > 0) {
+        // Simple daily pacing check
+        const daySpent = c.spent / Math.max(1, Math.ceil((new Date(c.end_at).getTime() - new Date(c.start_at).getTime()) / 86400000));
+        if (daySpent >= c.daily_budget) return false;
+      }
+      return true;
+    });
+    if (!viable.length) return null;
+
     // 3. Get creatives for these campaigns
     const campaignIds = campaigns.map((c: any) => c.id);
     const { data: creatives } = await (supabase as any)
