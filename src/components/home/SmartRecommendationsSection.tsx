@@ -32,7 +32,7 @@ export default function SmartRecommendationsSection() {
           {rows.map((row: any) => (
             <button
               key={row.id}
-              onClick={() => navigate(`/food/restaurant/${row.id}`)}
+              onClick={() => navigate(`/s/${row.id}`)}
               className="rounded-2xl overflow-hidden border border-border/20 bg-card text-left active:scale-[0.98] transition-transform"
             >
               <div className="h-24 bg-muted">
