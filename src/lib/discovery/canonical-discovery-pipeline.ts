@@ -47,6 +47,7 @@ const VISIBLE_MODES_BY_SURFACE: Record<DiscoverySurface, string[]> = {
 // ═══════════════════════════════════════════════════
 
 const AREA_COORDS: Record<string, { lat: number; lng: number }> = {
+  // ── Dubai ──
   "dubai marina": { lat: 25.0805, lng: 55.1403 },
   "jvc": { lat: 25.0657, lng: 55.2094 },
   "jlt": { lat: 25.0772, lng: 55.1536 },
@@ -57,6 +58,8 @@ const AREA_COORDS: Record<string, { lat: number; lng: number }> = {
   "deira": { lat: 25.2697, lng: 55.3095 },
   "bur dubai": { lat: 25.2510, lng: 55.2967 },
   "jumeirah": { lat: 25.2100, lng: 55.2500 },
+  "jumeirah beach": { lat: 25.2050, lng: 55.2350 },
+  "jumeira bay": { lat: 25.1900, lng: 55.2300 },
   "silicon oasis": { lat: 25.1275, lng: 55.3775 },
   "dubai silicon oasis": { lat: 25.1275, lng: 55.3775 },
   "motor city": { lat: 25.0505, lng: 55.2393 },
@@ -77,6 +80,35 @@ const AREA_COORDS: Record<string, { lat: number; lng: number }> = {
   "difc": { lat: 25.2100, lng: 55.2800 },
   "city walk": { lat: 25.2070, lng: 55.2650 },
   "al mamzar": { lat: 25.2890, lng: 55.3450 },
+  "jbr": { lat: 25.0800, lng: 55.1350 },
+  "umm suqeim": { lat: 25.1580, lng: 55.2100 },
+  "sheikh zayed road": { lat: 25.2000, lng: 55.2700 },
+  "wafi": { lat: 25.2300, lng: 55.3150 },
+  "culture village": { lat: 25.2400, lng: 55.3250 },
+  // ── Abu Dhabi ──
+  "corniche": { lat: 24.4539, lng: 54.3773 },
+  "saadiyat island": { lat: 24.5400, lng: 54.4300 },
+  "yas island": { lat: 24.4900, lng: 54.6100 },
+  "eastern mangroves": { lat: 24.4500, lng: 54.4400 },
+  "khor al maqta": { lat: 24.4200, lng: 54.4500 },
+  // ── Sharjah ──
+  "al khan beach": { lat: 25.3300, lng: 55.3800 },
+  "heart of sharjah": { lat: 25.3600, lng: 55.3900 },
+  "al taawun": { lat: 25.3400, lng: 55.3900 },
+  // ── RAK ──
+  "al hamra": { lat: 25.7200, lng: 55.7800 },
+  "al marjan island": { lat: 25.7900, lng: 55.7300 },
+  "marjan island": { lat: 25.7900, lng: 55.7300 },
+  // ── Fujairah ──
+  "al aqah": { lat: 25.4900, lng: 56.3600 },
+  "al aqah beach": { lat: 25.4900, lng: 56.3600 },
+  // ── Ajman ──
+  "ajman corniche": { lat: 25.4100, lng: 55.4400 },
+  "sheikh humaid bin rashid": { lat: 25.4200, lng: 55.4500 },
+  // ── UAQ ──
+  "uaq beach": { lat: 25.5700, lng: 55.5500 },
+  // ── Mina Al Arab (RAK) ──
+  "mina al arab": { lat: 25.8100, lng: 55.7400 },
 };
 
 function areaToCoords(area: string): { lat: number; lng: number } {
@@ -169,10 +201,10 @@ export async function fetchCanonicalDiscovery(opts: CanonicalDiscoveryOpts): Pro
   }
 
   // ── SEED MERCHANT GOVERNANCE ──
-  // seed_merchants lacks visibility_mode/route_status/display_priority.
-  // We treat all active seeds as "coming_soon" visibility.
-  // Surfaces that do NOT include "coming_soon" will exclude seeds.
-  const seedAllowed = allowedModes.includes("coming_soon");
+  // Seeds with visibility_mode/route_status columns are now treated like storefronts.
+  // Seeds without those columns are treated as "coming_soon".
+  // Always load seeds — the post-filter handles visibility.
+  const seedAllowed = allowedModes.includes("coming_soon") || allowedModes.includes("live") || allowedModes.includes("ready");
 
   // Build seed query (but only execute if allowed)
   const seedQueryPromise = seedAllowed ? (() => {
