@@ -75,10 +75,10 @@ function useDynamicBanners() {
 
 /* ── Orbit actions ── */
 const ORBIT_ACTIONS = [
-  { key: "chat", icon: MessageCircle, label: "Chat", path: "/orbit", color: "hsl(210 80% 52%)" },
-  { key: "call", icon: Phone, label: "Call", path: "/orbit", color: "hsl(142 60% 45%)" },
-  { key: "pay", icon: CreditCard, label: "Pay", path: "/wallet/hub", color: "hsl(38 65% 50%)" },
-  { key: "scan", icon: QrCode, label: "Scan", path: "/pay/scan", color: "hsl(270 60% 55%)" },
+  { key: "chat", icon: MessageCircle, labelKey: "orbit.conversations", path: "/orbit", color: "hsl(210 80% 52%)" },
+  { key: "call", icon: Phone, labelKey: "orbit.call", path: "/orbit", color: "hsl(142 60% 45%)" },
+  { key: "pay", icon: CreditCard, labelKey: "commerce.pay_now", path: "/wallet/hub", color: "hsl(38 65% 50%)" },
+  { key: "scan", icon: QrCode, labelKey: "commerce.scan_qr", path: "/pay/scan", color: "hsl(270 60% 55%)" },
 ];
 
 /* ── Category item ── */
