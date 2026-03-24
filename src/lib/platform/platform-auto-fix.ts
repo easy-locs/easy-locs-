@@ -2,10 +2,12 @@
  * PLATFORM AUTO-FIX ENGINE
  * Detects and automatically corrects safe platform issues.
  * Never touches business data (wallet, payments, orders).
+ * Extended: visual quality checks for shops.
  */
 
 import { useGeoStore } from "@/lib/geo/geo-store";
 import { geoService } from "@/lib/geo/geo-service";
+import { supabase } from "@/integrations/supabase/client";
 
 export interface AutoFixResult {
   fix: string;
@@ -40,7 +42,6 @@ function fixRawI18nKeys(): AutoFixResult {
     const node = walker.currentNode;
     const text = node.textContent?.trim() ?? "";
     if (text && rawPattern.test(text)) {
-      // Humanize: take last segment, replace _ with space, capitalize
       const segments = text.split(".");
       const last = segments[segments.length - 1];
       const humanized = last
@@ -58,14 +59,13 @@ function fixRawI18nKeys(): AutoFixResult {
   };
 }
 
-/** Fix: hardcoded "AED" amounts in DOM — add locale formatting hint */
+/** Fix: hardcoded "AED" amounts in DOM — audit only */
 function auditHardcodedCurrency(): AutoFixResult {
   if (typeof document === "undefined") return { fix: "hardcoded_currency", applied: false, detail: "No DOM" };
 
   const allText = document.body?.innerText ?? "";
   const matches = allText.match(/\bAED\s+\d|\d+\s+AED\b/g) ?? [];
 
-  // We don't auto-replace currency in DOM (business risk), but we log
   return {
     fix: "hardcoded_currency",
     applied: false,
@@ -97,17 +97,44 @@ async function fixStoreHydration(): Promise<AutoFixResult> {
   }
 }
 
-/** Fix: dead route detection — redirect if on known dead route */
+/** Fix: dead route detection */
 function fixDeadRoute(): AutoFixResult {
   const path = window.location.hash?.replace("#", "") || window.location.pathname;
   const deadPatterns = ["/dispatch", "/growth", "/dino"];
   const hit = deadPatterns.find(d => path.startsWith(d));
 
   if (hit) {
-    // Don't auto-redirect (could break navigation), just flag
     return { fix: "dead_route", applied: false, detail: `⚠️ User on dead route: ${hit}` };
   }
   return { fix: "dead_route", applied: false, detail: "Route is valid" };
+}
+
+/** Visual check: shops missing cover, logo, or menu */
+async function auditShopVisualHealth(): Promise<AutoFixResult> {
+  try {
+    const { data: states } = await (supabase as any)
+      .from("merchant_onboarding_state")
+      .select("entity_id, ui_quality_status, menu_visual_status, storefront_ready_status, visual_flags_json")
+      .in("ui_quality_status", ["needs_assets", "pending"])
+      .limit(100);
+
+    if (!states?.length) {
+      return { fix: "shop_visual_health", applied: false, detail: "All shops have acceptable visual quality" };
+    }
+
+    const needsLogo = states.filter((s: any) => s.visual_flags_json?.missing_logo).length;
+    const needsCover = states.filter((s: any) => s.visual_flags_json?.missing_cover).length;
+    const poorMenu = states.filter((s: any) => s.menu_visual_status === "poor").length;
+    const emptyMenu = states.filter((s: any) => s.menu_visual_status === "empty").length;
+
+    return {
+      fix: "shop_visual_health",
+      applied: false,
+      detail: `Visual audit: ${needsLogo} missing logo, ${needsCover} missing cover, ${poorMenu} poor menus, ${emptyMenu} empty menus (${states.length} total flagged)`,
+    };
+  } catch (e: any) {
+    return { fix: "shop_visual_health", applied: false, detail: `Visual audit failed: ${e?.message}` };
+  }
 }
 
 // ── Main auto-fix orchestrator ──────────────────────────────
@@ -123,6 +150,7 @@ export async function runAutoFix(): Promise<AutoFixResult[]> {
 
   // Async fixes
   results.push(await fixStoreHydration());
+  results.push(await auditShopVisualHealth());
 
   const applied = results.filter(r => r.applied);
   if (applied.length > 0) {
