@@ -185,6 +185,7 @@ export default function ShopPage() {
   const { data: categories = [] } = useQuery({
     queryKey: ["storefront-categories", shop?.id],
     queryFn: async () => {
+      if (!shop) return [];
       const { data } = await (supabase as any)
         .from("storefront_catalog_categories")
         .select("*")
