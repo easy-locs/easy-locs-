@@ -28,7 +28,9 @@ async function checkRpc(supabase: any, name: string, rpcName: string): Promise<M
   const t = Date.now();
   try {
     const { error } = await supabase.rpc(rpcName, {});
-    const reachable = !error || !error.message?.includes("Could not find the function");
+    // "Could not find the function ... without parameters" means the function exists but needs params — that's OK
+    const notFound = error?.message?.includes("Could not find the function") && !error?.message?.includes("without parameters");
+    const reachable = !error || !notFound;
     return { module: name, group: "backend", status: reachable ? "ok" : "error", detail: reachable ? "rpc reachable" : error?.message ?? "not found", durationMs: Date.now() - t };
   } catch (e: any) {
     return { module: name, group: "backend", status: "error", detail: e?.message ?? "unknown", durationMs: Date.now() - t };
