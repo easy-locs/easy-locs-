@@ -19,7 +19,7 @@ export default function AdminSystemHealthPage() {
         supabase.from("orders").select("*", { count: "exact", head: true }),
         supabase.from("support_tickets").select("*", { count: "exact", head: true }),
         supabase.from("wallet_accounts").select("*", { count: "exact", head: true }),
-        supabase.from("dino_notifications").select("*", { count: "exact", head: true }),
+        (supabase as any).from("notifications").select("*", { count: "exact", head: true }),
       ]);
       return { users: users ?? 0, orders: orders ?? 0, tickets: tickets ?? 0, wallets: wallets ?? 0, notifications: notifications ?? 0 };
     },
