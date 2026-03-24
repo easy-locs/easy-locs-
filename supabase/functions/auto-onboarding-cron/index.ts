@@ -130,12 +130,13 @@ Deno.serve(async (req) => {
     report.elapsed_ms = elapsed;
     report.completed_at = new Date().toISOString();
 
-    await supabase.from("platform_recovery_runs").insert({
+    const { error: insertErr } = await supabase.from("platform_recovery_runs").insert({
       id: crypto.randomUUID(),
       trigger: "auto-onboarding-cron",
       status: "completed",
       report_json: report,
-    }).catch(() => {});
+    });
+    if (insertErr) console.warn("[auto-onboarding-cron] report insert failed:", insertErr.message);
 
     return new Response(
       JSON.stringify({ success: true, report }),
