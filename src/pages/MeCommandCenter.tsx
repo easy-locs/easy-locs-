@@ -263,7 +263,7 @@ export default function MeCommandCenter() {
         <ModuleCard
           icon={<Wallet className="w-5 h-5 text-amber-400" />}
           title="Money & Payouts"
-          subtitle={kpis?.revenue ? `Today: ${kpis.revenue} AED` : "No transactions yet"}
+          subtitle={kpis?.revenue ? `Today: ${formatMoneyByCountry(kpis.revenue, null, "AED")}` : "No transactions yet"}
           badge={kpis?.revenue ? "Active" : "No data yet"}
           badgeColor={kpis?.revenue ? "emerald" : "amber"}
           onClick={() => navigate("/wallet/hub")}
