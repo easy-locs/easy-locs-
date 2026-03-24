@@ -152,7 +152,7 @@ export async function resolveBoostForSlot(ctx: SlotContext): Promise<BoostMatch 
     const slot = slots?.[0];
     if (!slot) return null;
 
-    // 2. Find active campaigns with budget
+    // 2. Find active campaigns with budget remaining
     const now = new Date().toISOString();
     let query = (supabase as any)
       .from("boost_campaigns")
