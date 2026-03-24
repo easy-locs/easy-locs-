@@ -15,3 +15,7 @@ export type {
   CanonicalButtonStyle,
   CanonicalWording,
 } from "./canonical-ui-engine";
+
+// Re-export vertical themes for backward compat
+export { getVerticalTheme, VERTICAL_THEMES } from "@/lib/discovery/vertical-themes";
+export { getSubcategoryTheme } from "@/lib/discovery/subcategory-themes";

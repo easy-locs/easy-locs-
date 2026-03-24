@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import SEOHead from "@/components/SEOHead";
 import { resolveCoverImage, resolveLogoImage } from "@/lib/image/dual-layer-image";
 import { getRequiredAttribution } from "@/lib/image/source-policy";
+import { useCanonicalUI } from "@/hooks/useCanonicalUI";
 import { buildAppUrl } from "@/lib/app-domain";
 import ShareButtons from "@/components/public/ShareButtons";
 import { useStorefrontCart } from "@/hooks/useStorefrontCart";
@@ -263,10 +264,13 @@ export default function ShopPage() {
   const logoImage = resolveLogoImage(shop);
   const attribution = getRequiredAttribution(shop.source_type);
 
+  // ── Canonical UI identity from taxonomy ──
+  const verticalUI = useCanonicalUI(shop.vertical, shop.subcategory);
+
   return (
     <>
       <SEOHead
-        title={`${shop.name} | Shop`}
+        title={`${shop.name} | ${verticalUI.displayTitle}`}
         description={shop.description || `Browse ${shop.name}'s catalog`}
         ogImage={coverImage.url}
         canonical={buildAppUrl(`/s/${shop.slug}`)}
@@ -276,7 +280,7 @@ export default function ShopPage() {
         <MobilePageHeader
           title={shop.name}
           subtitle={shop.city ? `${shop.city}${shop.country ? `, ${shop.country}` : ""}` : undefined}
-          backTo="/discover"
+          backTo={verticalUI.canonicalRoute}
           actions={
             user?.id === shop.user_id ? (
               <Link to="/dashboard/my-shop" className="text-[11px] text-primary font-medium hover:underline">
@@ -286,9 +290,12 @@ export default function ShopPage() {
           }
         />
 
-        {/* Cover — always visible via dual-layer fallback */}
+        {/* Cover — with vertical accent overlay */}
         <div className="h-40 sm:h-56 bg-muted overflow-hidden relative">
           <img src={coverImage.url} alt="" className="w-full h-full object-cover" />
+          <div className="absolute inset-0" style={{
+            background: `linear-gradient(to top, hsl(${verticalUI.accentHsl} / 0.3) 0%, transparent 60%)`
+          }} />
           {attribution && (
             <span className="absolute bottom-1 right-2 text-[9px] text-white/60 bg-black/30 px-1.5 py-0.5 rounded">
               {attribution}
