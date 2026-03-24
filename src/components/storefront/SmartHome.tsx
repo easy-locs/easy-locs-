@@ -227,6 +227,13 @@ export default function SmartHome() {
   const { data: sections } = useHomeSections();
   const safeSections = sections ?? { trending: [], bestRated: [], newest: [], nearYou: [] };
 
+  useEffect(() => {
+    if (sections) {
+      const count = Object.values(sections).filter((arr) => arr.length > 0).length;
+      eventBus.emit("HOME_SECTIONS_REFRESHED", { sectionCount: count });
+    }
+  }, [sections]);
+
   const city = useMemo(() => {
     try {
       const raw = localStorage.getItem("orbit:last-geo");
