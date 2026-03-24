@@ -170,6 +170,16 @@ export default function AdminShopImportPage() {
         >
           {running ? "Importing..." : "🚀 Run Import Pipeline"}
         </button>
+        <button
+          onClick={async () => {
+            const res = await autoClassifyVisibility();
+            toast.success(`Auto-classified ${res.updated} candidates`);
+            loadDashboard();
+          }}
+          className="w-full rounded-2xl bg-muted text-foreground px-4 py-2.5 text-xs font-bold"
+        >
+          🔄 Auto-Classify Visibility
+        </button>
       </div>
 
       {/* Pipeline Result */}
