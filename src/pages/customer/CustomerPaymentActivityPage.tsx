@@ -64,7 +64,7 @@ export default function CustomerPaymentActivityPage() {
             <div key={row.id} className="rounded-2xl border border-border/20 bg-card p-4">
               <p className={`text-sm font-bold ${row.direction === "in" ? "text-emerald-500" : "text-destructive"}`}>
                 {row.direction === "in" ? "+" : "-"}
-                {Number(row.amount ?? 0).toFixed(2)} {row.currency ?? "AED"}
+                {Number(row.amount ?? 0).toFixed(2)} {row.currency ?? ""}
               </p>
               <p className="text-xs text-muted-foreground mt-1">
                 {row.entry_type || "transaction"}

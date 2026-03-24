@@ -143,7 +143,7 @@ export default function VerticalHubPage({ vertical }: { vertical: TaxonomyVertic
         </motion.div>
       </AnimatePresence>
 
-      <div className="px-4 mt-8">
+      <div className="px-4 mt-10">
         {/* ═══ BREADCRUMBS — from canonical engine ═══ */}
         <nav className="flex items-center gap-1.5 mb-4 text-[11px] overflow-x-auto scrollbar-none">
           {ui.breadcrumbs.map((crumb, i) => (
@@ -170,7 +170,7 @@ export default function VerticalHubPage({ vertical }: { vertical: TaxonomyVertic
         </nav>
 
         {/* ═══ SORT CHIPS ═══ */}
-        <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-none -mx-1 px-1 mb-4">
+        <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-none -mx-1 px-1 mb-4 snap-x snap-mandatory">
           {SORT_OPTIONS.map(opt => (
             <FilterChip
               key={opt.value}
@@ -183,10 +183,10 @@ export default function VerticalHubPage({ vertical }: { vertical: TaxonomyVertic
 
         {/* ═══ SUBCATEGORY CHIPS ═══ */}
         <div className="mb-5">
-          <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none -mx-1 px-1">
+          <div className="flex gap-2.5 overflow-x-auto pb-2 scrollbar-none -mx-1 px-1 snap-x snap-mandatory">
             <button
               onClick={() => handleSubSelect(null)}
-              className="shrink-0 flex flex-col items-center gap-1.5 active:scale-90 transition-transform"
+              className="shrink-0 snap-start flex flex-col items-center gap-1.5 active:scale-90 transition-transform"
             >
               <div
                 className="w-[52px] h-[52px] rounded-2xl flex items-center justify-center transition-all"
@@ -210,7 +210,7 @@ export default function VerticalHubPage({ vertical }: { vertical: TaxonomyVertic
               <button
                 key={sub.value}
                 onClick={() => handleSubSelect(activeSub === sub.value ? null : sub.value)}
-                className="shrink-0 flex flex-col items-center gap-1.5 active:scale-90 transition-transform"
+                className="shrink-0 snap-start flex flex-col items-center gap-1.5 active:scale-90 transition-transform"
               >
                 <div
                   className="w-[52px] h-[52px] rounded-2xl flex items-center justify-center transition-all"
@@ -339,9 +339,9 @@ export default function VerticalHubPage({ vertical }: { vertical: TaxonomyVertic
                 </button>
               </div>
 
-              <div className="flex gap-2.5 overflow-x-auto pb-1 scrollbar-none -mx-1 px-1">
+              <div className="flex gap-2.5 overflow-x-auto pb-2 scrollbar-none -mx-1 px-1 snap-x snap-mandatory">
                 {items.slice(0, 6).map((item, i) => (
-                  <div key={item.id} className="shrink-0 w-[180px]">
+                  <div key={item.id} className="shrink-0 w-[180px] snap-start">
                     <PremiumMerchantCard
                       to={item.slug ? `/s/${item.slug}` : `/s/${item.id}`}
                       image={item.banner_url || item.logo_url}
