@@ -216,7 +216,7 @@ export async function resolveAutocomplete(
 
   const groups: AutocompleteGroup[] = [];
 
-  // 1. Taxonomy matches (categories / subcategories)
+  // 1. Taxonomy matches (categories / subcategories / tags)
   const taxonomyMatches: SearchResult[] = [];
   for (const v of CANONICAL_VERTICALS) {
     if (v.label.toLowerCase().includes(q) || v.value.includes(q)) {
@@ -228,7 +228,8 @@ export async function resolveAutocomplete(
       });
     }
     for (const sub of v.subcategories) {
-      if (sub.label.toLowerCase().includes(q) || sub.value.includes(q)) {
+      const tagMatch = sub.tags?.some((t) => t.toLowerCase().includes(q));
+      if (sub.label.toLowerCase().includes(q) || sub.value.includes(q) || tagMatch) {
         taxonomyMatches.push({
           id: `sub_${sub.value}`,
           type: "category",
@@ -241,7 +242,7 @@ export async function resolveAutocomplete(
     }
   }
   if (taxonomyMatches.length) {
-    groups.push({ type: "categories", label: "Categories", items: taxonomyMatches.slice(0, 5) });
+    groups.push({ type: "categories", label: "Categories", items: taxonomyMatches.slice(0, 6) });
   }
 
   // 2. Shop matches — governed
