@@ -1,6 +1,5 @@
 /**
- * CategoryBanners — Big visual category cards for the 5 main verticals.
- * Horizontal scroll on mobile, grid on desktop.
+ * CategoryBanners — Premium category cards with glass overlay, live counters, depth.
  */
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
@@ -15,113 +14,115 @@ import servicesBanner from "@/assets/landing/services-banner.jpg";
 const CATEGORIES = [
   {
     title: "Food & Delivery",
-    sub: "Restaurants, grocery, bakery — delivered fast",
+    sub: "Restaurants, grocery, bakery",
     icon: UtensilsCrossed,
     image: foodBanner,
     to: "/food",
     accent: "hsl(15 80% 55%)",
     cta: "Order Now",
+    count: "3,200+ restaurants",
   },
   {
     title: "Travel & Stays",
-    sub: "Hotels, resorts, vacation rentals worldwide",
+    sub: "Hotels, resorts, vacation rentals",
     icon: Plane,
     image: travelBanner,
     to: "/travel",
     accent: "hsl(200 70% 50%)",
     cta: "Book a Stay",
+    count: "1,800+ properties",
   },
   {
-    title: "Transport & Rides",
-    sub: "Taxi, VTC, car rental — instant pickup",
+    title: "Transport",
+    sub: "Taxi, VTC, car rental",
     icon: Car,
     image: transportBanner,
     to: "/ride",
     accent: "hsl(270 60% 55%)",
     cta: "Get a Ride",
+    count: "500+ drivers",
   },
   {
     title: "Real Estate",
-    sub: "Buy, sell, rent — property management",
+    sub: "Buy, sell, rent, manage",
     icon: Building2,
     image: realestateBanner,
     to: "/property-hub",
     accent: "hsl(38 65% 50%)",
-    cta: "Explore Properties",
+    cta: "Explore",
+    count: "10K+ listings",
   },
   {
     title: "Services",
-    sub: "Plumber, electrician, cleaning & more",
+    sub: "Plumber, electrician, cleaning",
     icon: Wrench,
     image: servicesBanner,
     to: "/services-hub",
     accent: "hsl(220 70% 55%)",
     cta: "Find a Pro",
+    count: "2,100+ pros",
   },
 ];
 
 export default function CategoryBanners() {
   return (
-    <section className="py-10 sm:py-16 bg-background" aria-label="Main Categories">
+    <section className="py-10 sm:py-14 bg-background" aria-label="Main Categories">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-40px" }}
-          className="text-center mb-6 sm:mb-10"
+          className="text-center mb-6 sm:mb-8"
         >
-          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-foreground">
+          <h2 className="text-xl sm:text-2xl lg:text-3xl font-extrabold text-foreground">
             Everything You Need. <span className="text-accent">One App.</span>
           </h2>
-          <p className="text-sm sm:text-base text-muted-foreground mt-2 max-w-lg mx-auto">
-            From food to real estate — explore all verticals
-          </p>
         </motion.div>
 
-        {/* Horizontal scroll on mobile, 2-col grid on desktop */}
-        <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-none snap-x snap-mandatory sm:grid sm:grid-cols-2 lg:grid-cols-3 sm:overflow-visible sm:pb-0">
+        <div className="flex gap-3 overflow-x-auto pb-3 scrollbar-none snap-x snap-mandatory sm:grid sm:grid-cols-2 lg:grid-cols-3 sm:overflow-visible sm:pb-0 sm:gap-4">
           {CATEGORIES.map((cat, i) => (
             <motion.div
               key={cat.title}
               initial={{ opacity: 0, y: 16 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-30px" }}
-              transition={{ delay: i * 0.06, duration: 0.4 }}
-              className="snap-start shrink-0 w-[280px] sm:w-auto"
+              transition={{ delay: i * 0.05, duration: 0.4 }}
+              className="snap-start shrink-0 w-[260px] sm:w-auto"
             >
               <Link
                 to={cat.to}
-                className="group relative block rounded-2xl overflow-hidden border border-border/20 hover:border-accent/40 transition-all duration-300 hover:shadow-xl"
+                className="group relative block rounded-2xl overflow-hidden border border-border/10 hover:border-accent/30 transition-all duration-300 hover:shadow-xl hover:shadow-accent/5"
               >
                 <div className="aspect-[16/10] relative overflow-hidden">
                   <img
                     src={cat.image}
                     alt={cat.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                     loading="lazy"
                     width={1280}
                     height={720}
                   />
-                  {/* Dark overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
 
-                  {/* Content overlay */}
-                  <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-5">
-                    <div className="flex items-center gap-2 mb-1">
+                  {/* Glass content overlay */}
+                  <div className="absolute bottom-0 left-0 right-0 p-4">
+                    <div className="flex items-center gap-2 mb-1.5">
                       <div
-                        className="w-8 h-8 rounded-lg flex items-center justify-center backdrop-blur-sm"
-                        style={{ background: `${cat.accent}30` }}
+                        className="w-7 h-7 rounded-lg flex items-center justify-center backdrop-blur-md border border-white/10"
+                        style={{ background: `${cat.accent}25` }}
                       >
-                        <cat.icon className="h-4 w-4" style={{ color: cat.accent }} />
+                        <cat.icon className="h-3.5 w-3.5" style={{ color: cat.accent }} />
                       </div>
-                      <h3 className="text-base sm:text-lg font-bold text-white">{cat.title}</h3>
+                      <div>
+                        <h3 className="text-sm font-bold text-white leading-none">{cat.title}</h3>
+                        <p className="text-[9px] text-white/50 mt-0.5">{cat.count}</p>
+                      </div>
                     </div>
-                    <p className="text-xs text-white/70 mb-3">{cat.sub}</p>
                     <span
-                      className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold text-white backdrop-blur-sm group-hover:gap-2.5 transition-all"
-                      style={{ background: `${cat.accent}90` }}
+                      className="inline-flex items-center gap-1 px-3.5 py-1.5 rounded-xl text-[10px] font-bold text-white backdrop-blur-md border border-white/10 group-hover:gap-2 transition-all"
+                      style={{ background: `${cat.accent}80` }}
                     >
-                      {cat.cta} <ArrowRight className="h-3.5 w-3.5" />
+                      {cat.cta} <ArrowRight className="h-3 w-3" />
                     </span>
                   </div>
                 </div>
