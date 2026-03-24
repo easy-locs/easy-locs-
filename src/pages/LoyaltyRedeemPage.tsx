@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { BackCard } from "@/components/ui/back-card";
 import { getOrCreateLoyaltyAccount } from "@/lib/loyalty/loyalty-core";
 import { redeemPoints } from "@/lib/loyalty/redeem";
+import { formatMoneyByCountry } from "@/lib/currency-engine";
 import { Button } from "@/components/ui/button";
 import { Gift, Star } from "lucide-react";
 import { toast } from "sonner";
