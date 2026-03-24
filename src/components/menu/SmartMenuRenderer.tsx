@@ -109,7 +109,7 @@ function MenuItemCard({
                 {item.cleanName}
               </span>
               {item.isAutoBestseller && (
-                <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-amber-500/10 text-amber-600 text-[10px] font-semibold flex-shrink-0">
+                <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-semibold flex-shrink-0">
                   <Star className="w-2.5 h-2.5" />
                   Best
                 </span>
