@@ -4,6 +4,7 @@
  */
 import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
+import { tc } from "@/lib/i18n-canonical";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 import { listFavoriteMerchants } from "@/lib/favorites/favorites";
