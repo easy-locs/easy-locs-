@@ -69,17 +69,15 @@ function scoreImages(row: any): { score: number; flags: string[] } {
   const flags: string[] = [];
   let score = 50;
 
-  if (row.logo_url) score += 15;
-  else flags.push("missing_logo");
-
-  if (row.cover_url || row.cover_image_url) score += 15;
+  // seed_merchants uses cover_image, not logo_url/cover_url/gallery_urls
+  if (row.cover_image) score += 25;
   else flags.push("missing_cover");
 
-  if (row.gallery_urls && Array.isArray(row.gallery_urls) && row.gallery_urls.length > 0) {
-    score += 10;
-    if (row.gallery_urls.length > 3) score += 10;
-  } else {
-    flags.push("no_gallery");
+  // Check for any image field that might exist
+  if (row.photo_url || row.image_url) score += 15;
+
+  if (!row.cover_image && !row.photo_url && !row.image_url) {
+    flags.push("no_images");
   }
 
   return { score: Math.min(100, score), flags };
@@ -97,7 +95,7 @@ function scoreCompleteness(row: any): number {
 export async function runDataTrustScan(limit = 200): Promise<{ scanned: number; flagged: number; reports: TrustReport[] }> {
   const { data: merchants, error } = await db
     .from("seed_merchants")
-    .select("id, name, category, subcategory, city, country, phone, latitude, longitude, description, logo_url, cover_url, gallery_urls, menu_items_json, cuisine_tags, visibility_score")
+    .select("id, name, category, subcategory, city, country, phone, latitude, longitude, description, cover_image, menu_items_json, cuisine_tags, visibility_score")
     .limit(limit);
 
   if (error || !merchants) {
