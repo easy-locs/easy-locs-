@@ -49,6 +49,32 @@ const CRON_JOBS = [
   { name: "stale-cleanup-daily", schedule: "0 4 * * *", desc: "Cleanup old runs + stale data" },
 ];
 
+type ReadinessRow = {
+  module: string;
+  status: "proven-runtime" | "coded-wired" | "build-controlled" | "pending";
+  validation: string;
+  production: "yes" | "controlled" | "blocked";
+  productionNote: string;
+};
+
+const PRODUCTION_READINESS: ReadinessRow[] = [
+  { module: "pg_cron scheduler", status: "proven-runtime", validation: "11+ DB runs, timestamps verified", production: "yes", productionNote: "Active" },
+  { module: "Server auto-fix (campaigns)", status: "proven-runtime", validation: "active→completed proved in DB", production: "yes", productionNote: "Active" },
+  { module: "Server auto-fix (leads)", status: "proven-runtime", validation: "new→cold proved in DB", production: "yes", productionNote: "Active" },
+  { module: "Backend reconnect", status: "proven-runtime", validation: "14 tables verified healthy", production: "yes", productionNote: "Active" },
+  { module: "Platform recovery edge fn", status: "proven-runtime", validation: "Deployed, cron-triggered", production: "yes", productionNote: "Active" },
+  { module: "Boost analytics aggregation", status: "proven-runtime", validation: "2 rows aggregated via cron", production: "controlled", productionNote: "Needs real traffic" },
+  { module: "Client continuous engine", status: "coded-wired", validation: "7 jobs registered, boot+10s", production: "controlled", productionNote: "Needs client proof" },
+  { module: "Wallet RPC (ensure_wallet)", status: "coded-wired", validation: "RPC exists, reachable", production: "blocked", productionNote: "Needs live QR test" },
+  { module: "Orbit V2 realtime", status: "coded-wired", validation: "1 conversation in DB", production: "blocked", productionNote: "Needs A→B live test" },
+  { module: "Geo engine", status: "coded-wired", validation: "Retry logic wired", production: "blocked", productionNote: "Needs real device" },
+  { module: "i18n engine", status: "build-controlled", validation: "tc()/td() wired, partial audit", production: "blocked", productionNote: "Raw keys may remain" },
+  { module: "Currency engine", status: "build-controlled", validation: "Country resolver built", production: "blocked", productionNote: "AED hardcodes may remain" },
+  { module: "Boost slot renderer", status: "coded-wired", validation: "Surfaces connected", production: "controlled", productionNote: "No real campaigns" },
+  { module: "Lead pipeline auto", status: "proven-runtime", validation: "Stale→cold auto proved", production: "controlled", productionNote: "Needs real leads" },
+  { module: "QR scan & pay", status: "coded-wired", validation: "RPC built, resolver patched", production: "blocked", productionNote: "Needs live device scan" },
+];
+
 const CLIENT_JOBS_EXPECTED = [
   { name: "engine-health", interval: "5min", desc: "Engine health checks" },
   { name: "platform-recovery", interval: "10min", desc: "Full platform recovery" },
