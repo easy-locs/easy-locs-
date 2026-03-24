@@ -1,6 +1,7 @@
 /**
  * RadarView — Premium discovery hub with clustered map, rich pins, radius circle,
  * advanced filters (rating, promoted, open now), and smart ranking.
+ * Uses Canonical UI Engine for vertical-aware wording and accents.
  */
 import { useState, useCallback, useMemo, memo } from "react";
 import { useNavigate } from "react-router-dom";
@@ -10,6 +11,7 @@ import { formatGeoDistance, formatGeoETA, type SortMode } from "@/lib/geo/geoRan
 import type { GeoEntity } from "@/lib/geo/geoEntityAdapter";
 import { useDiscoveryStore } from "@/stores/discoveryStore";
 import { rankEntities, DISCOVERY_WEIGHTS, type RankableEntity, type RankContext } from "@/lib/ranking-engine";
+import { useCanonicalUI } from "@/hooks/useCanonicalUI";
 import {
   MapPin, List, Star, Navigation, Flame, Filter,
   TrendingUp, Zap, ChevronDown, Clock, SlidersHorizontal,
@@ -81,6 +83,10 @@ export default memo(function RadarView({ initialType, radiusKm: initialRadius, s
   const [minRating, setMinRating] = useState(0);
   const [showPromotedOnly, setShowPromotedOnly] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
+
+  // Canonical UI for active vertical
+  const activeVertical = activeType === "all" ? undefined : activeType === "restaurant" ? "food" : activeType === "shop" ? "shops" : activeType === "grocery" ? "grocery" : activeType === "property" ? "property" : activeType === "service" ? "services" : undefined;
+  const canonicalUI = useCanonicalUI(activeVertical);
 
   // Radius from global discovery store
   const globalRadius = useDiscoveryStore((s) => s.radiusKm);
@@ -305,10 +311,11 @@ export default memo(function RadarView({ initialType, radiusKm: initialRadius, s
         </div>
       )}
 
-      {/* ── Results count ── */}
+      {/* ── Results count — canonical wording ── */}
       <div className="px-4 py-1 shrink-0">
         <p className="text-[10px] text-muted-foreground">
-          {loading ? "Scanning…" : `${results.length} places within ${activeRadius}km`}
+          {loading ? canonicalUI.wording.loadingText : canonicalUI.wording.resultsFormat.replace("{count}", String(results.length))}
+          {!loading && ` within ${activeRadius}km`}
           {minRating > 0 && ` · ★${minRating}+`}
           {showPromotedOnly && " · ⚡ Promoted"}
           {sortBy === "smart" && " · Smart ranked"}
@@ -381,8 +388,9 @@ export default memo(function RadarView({ initialType, radiusKm: initialRadius, s
           <div className="h-full overflow-y-auto px-4 pb-24 space-y-2">
             {results.length === 0 && !loading && (
               <div className="text-center py-12">
-                <span className="text-3xl">📡</span>
-                <p className="text-sm text-muted-foreground mt-2">No results nearby</p>
+                <span className="text-3xl">{canonicalUI.emoji}</span>
+                <p className="text-sm font-semibold text-foreground mt-2">{canonicalUI.wording.emptyTitle}</p>
+                <p className="text-xs text-muted-foreground mt-1">{canonicalUI.wording.emptySubtitle}</p>
               </div>
             )}
             {results.map((entity, idx) => (
