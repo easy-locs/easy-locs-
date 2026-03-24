@@ -3,9 +3,11 @@
  * advanced filters (rating, promoted, open now), and smart ranking.
  * Uses Canonical UI Engine for vertical-aware wording and accents.
  */
-import { useState, useCallback, useMemo, memo } from "react";
+import { useState, useCallback, useMemo, memo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useRadarResults } from "@/hooks/useRadarResults";
+import { contactFromDiscovery } from "@/lib/radar/contactBridge";
+import { eventBus } from "@/lib/events/eventBus";
 import UnifiedMap from "@/components/map/UnifiedMap";
 import { formatGeoDistance, formatGeoETA, type SortMode } from "@/lib/geo/geoRanking";
 import type { GeoEntity } from "@/lib/geo/geoEntityAdapter";
