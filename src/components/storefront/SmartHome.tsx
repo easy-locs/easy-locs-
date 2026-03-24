@@ -75,13 +75,9 @@ const CompactHeader = memo(({ city, greeting }: { city: string | null; greeting:
           <p className="text-xs font-bold text-foreground truncate">{city || "📍 Set location"}</p>
         </div>
       </button>
-      <button
-        onClick={onSearch}
-        className="flex-1 flex items-center gap-2 h-8 px-3 rounded-xl bg-muted/40 border border-border/20 text-muted-foreground text-[11px] active:scale-[0.97] transition-transform"
-      >
-        <Search className="h-3.5 w-3.5 shrink-0 text-primary/60" />
-        <span className="truncate">Search anything…</span>
-      </button>
+      <div className="flex-1">
+        <UnifiedSearchBar variant="fullscreen" placeholder="Search anything…" />
+      </div>
       <Link to="/dashboard/notifications" className="relative shrink-0 w-8 h-8 rounded-full bg-muted/30 flex items-center justify-center active:scale-95 transition-transform">
         <Bell className="h-3.5 w-3.5 text-foreground" />
         {engine.pendingNotifications > 0 && (
