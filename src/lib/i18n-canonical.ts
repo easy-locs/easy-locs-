@@ -291,6 +291,8 @@ const commerce = {
     "commerce.scan_to_pay": "Scan to pay",
     "commerce.saved_carts": "Saved Carts",
     "commerce.auto_repeat": "Auto Repeat",
+    "commerce.processing": "Processing…",
+    "commerce.secure_checkout": "Secure checkout",
   },
   fr: {
     "commerce.add_to_cart": "Ajouter au panier",
