@@ -3,7 +3,7 @@ import { AppPageShell } from "@/components/layout/AppPageShell";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { RefreshCw, Play, Clock, CheckCircle, XCircle, SkipForward, Wrench, Timer, Database, Zap, Activity } from "lucide-react";
+import { RefreshCw, Play, Clock, CheckCircle, XCircle, SkipForward, Wrench, Timer, Database, Zap, Activity, Shield, Heart } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import {
   runPlatformRecovery,
@@ -41,12 +41,22 @@ interface DbRun {
 }
 
 const CRON_JOBS = [
-  { name: "recovery-health-5min", schedule: "*/5 * * * *", desc: "Backend health + RPC check", job: "health" },
-  { name: "recovery-full-10min", schedule: "*/10 * * * *", desc: "Full recovery + audit", job: "full" },
-  { name: "boost-analytics-6h", schedule: "0 */6 * * *", desc: "Boost analytics aggregation", job: "analytics" },
-  { name: "daily-full-3am", schedule: "0 3 * * *", desc: "Full recovery + cleanup + analytics", job: "full" },
-  { name: "lead-pipeline-10min", schedule: "*/10 * * * *", desc: "Lead pipeline health check", job: "analytics" },
-  { name: "stale-cleanup-daily", schedule: "0 4 * * *", desc: "Cleanup old runs + stale data", job: "cleanup" },
+  { name: "recovery-health-5min", schedule: "*/5 * * * *", desc: "Backend health + RPC + reconnect" },
+  { name: "recovery-full-10min", schedule: "*/10 * * * *", desc: "Full recovery + audit + auto-fix" },
+  { name: "boost-analytics-6h", schedule: "0 */6 * * *", desc: "Boost analytics aggregation" },
+  { name: "daily-full-3am", schedule: "0 3 * * *", desc: "Full recovery + cleanup + analytics" },
+  { name: "lead-pipeline-10min", schedule: "*/10 * * * *", desc: "Lead pipeline health check" },
+  { name: "stale-cleanup-daily", schedule: "0 4 * * *", desc: "Cleanup old runs + stale data" },
+];
+
+const CLIENT_JOBS_EXPECTED = [
+  { name: "engine-health", interval: "5min", desc: "Engine health checks" },
+  { name: "platform-recovery", interval: "10min", desc: "Full platform recovery" },
+  { name: "auto-fix", interval: "5min", desc: "Auto-fix (i18n, geo, stores)" },
+  { name: "health-checks", interval: "5min", desc: "Geo + wallet + lead health" },
+  { name: "store-consistency", interval: "5min", desc: "Store hydration verification" },
+  { name: "boost-slot-refresh", interval: "1h", desc: "Boost cache invalidation" },
+  { name: "backend-reconnect", interval: "5min", desc: "Backend reconnect verification" },
 ];
 
 function ModuleRow({ m }: { m: ModuleCheckResult }) {
@@ -116,7 +126,7 @@ export default function AdminPlatformRecoveryPage() {
   const displaySummary = clientRun?.summary ?? latestDb?.summary_json;
 
   const groups = displayModules.length > 0
-    ? ["backend", "core", "state", "audit", "analytics", "maintenance", "fix"]
+    ? ["backend", "core", "state", "health", "autofix", "audit", "analytics", "maintenance", "fix"]
         .map(g => ({ group: g, items: displayModules.filter((m: any) => m.group === g) }))
         .filter(g => g.items.length > 0)
     : [];
@@ -128,13 +138,16 @@ export default function AdminPlatformRecoveryPage() {
         <div className="flex items-center gap-2 flex-wrap">
           <Button onClick={handleClientRun} disabled={running} size="sm" className="gap-2">
             {running ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Play className="h-4 w-4" />}
-            Client Run
+            Client Run (All)
           </Button>
           <Button onClick={() => handleServerRun("full")} disabled={running} size="sm" variant="outline" className="gap-2">
             <Database className="h-4 w-4" /> Server Full
           </Button>
           <Button onClick={() => handleServerRun("health")} disabled={running} size="sm" variant="outline" className="gap-2">
-            <Activity className="h-4 w-4" /> Health Only
+            <Heart className="h-4 w-4" /> Health
+          </Button>
+          <Button onClick={() => handleServerRun("autofix")} disabled={running} size="sm" variant="outline" className="gap-2">
+            <Wrench className="h-4 w-4" /> Auto-Fix
           </Button>
           <Button onClick={() => handleServerRun("analytics")} disabled={running} size="sm" variant="outline" className="gap-2">
             <Zap className="h-4 w-4" /> Analytics
@@ -144,7 +157,27 @@ export default function AdminPlatformRecoveryPage() {
           </Button>
         </div>
 
-        {/* Continuous Engine Status */}
+        {/* Summary */}
+        {displaySummary && (
+          <div className="grid grid-cols-3 md:grid-cols-7 gap-2">
+            {[
+              { label: "Total", value: displaySummary.total, color: "" },
+              { label: "OK", value: displaySummary.ok, color: "text-emerald-600" },
+              { label: "Errors", value: displaySummary.error, color: "text-destructive" },
+              { label: "Fixed", value: displaySummary.fixed ?? 0, color: "text-amber-600" },
+              { label: "Auto-Fixes", value: displaySummary.autoFixesApplied ?? displaySummary.fixed ?? 0, color: "text-amber-600" },
+              { label: "Health Issues", value: displaySummary.healthIssues ?? 0, color: "text-orange-600" },
+              { label: "Duration", value: `${clientRun?.totalMs ?? latestDb?.total_ms ?? 0}ms`, color: "" },
+            ].map(({ label, value, color }) => (
+              <Card key={label}><CardContent className="pt-3 pb-2 text-center">
+                <p className={`text-xl font-bold ${color}`}>{value}</p>
+                <p className="text-[10px] text-muted-foreground">{label}</p>
+              </CardContent></Card>
+            ))}
+          </div>
+        )}
+
+        {/* Client Continuous Engine */}
         {continuousStatus && (
           <Card>
             <CardHeader className="py-3">
@@ -156,21 +189,36 @@ export default function AdminPlatformRecoveryPage() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-1 pt-0">
-              {continuousStatus.jobs.map(job => (
-                <div key={job.name} className="flex items-center justify-between py-2 px-3 rounded-md border text-xs">
-                  <div className="flex items-center gap-2">
-                    {job.lastStatus === "ok" ? <CheckCircle className="h-4 w-4 text-emerald-500" /> : 
-                     job.lastStatus === "error" ? <XCircle className="h-4 w-4 text-destructive" /> :
-                     <Clock className="h-4 w-4 text-muted-foreground" />}
-                    <span className="font-mono font-medium">{job.name}</span>
+              {CLIENT_JOBS_EXPECTED.map(expected => {
+                const actual = continuousStatus.jobs.find(j => j.name === expected.name);
+                return (
+                  <div key={expected.name} className="flex items-center justify-between py-2 px-3 rounded-md border text-xs">
+                    <div className="flex items-center gap-2">
+                      {actual ? (
+                        actual.lastStatus === "ok" ? <CheckCircle className="h-4 w-4 text-emerald-500" /> :
+                        actual.lastStatus === "error" ? <XCircle className="h-4 w-4 text-destructive" /> :
+                        <Clock className="h-4 w-4 text-muted-foreground" />
+                      ) : <XCircle className="h-4 w-4 text-muted-foreground/50" />}
+                      <span className="font-mono font-medium">{expected.name}</span>
+                      <span className="text-muted-foreground hidden md:inline">{expected.desc}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Badge variant="outline">{expected.interval}</Badge>
+                      {actual ? (
+                        <>
+                          <Badge className={actual.lastStatus === "ok" ? "bg-emerald-500/10 text-emerald-700" : actual.lastStatus === "error" ? "bg-destructive/10 text-destructive" : "bg-muted"}>
+                            {actual.lastStatus}
+                          </Badge>
+                          <span className="text-muted-foreground">×{actual.runCount}</span>
+                          {actual.lastRun && <span className="text-muted-foreground text-[10px]">{new Date(actual.lastRun).toLocaleTimeString()}</span>}
+                        </>
+                      ) : (
+                        <Badge className="bg-muted text-muted-foreground">pending</Badge>
+                      )}
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Badge variant="outline">every {job.intervalLabel}</Badge>
-                    <span className="text-muted-foreground">runs: {job.runCount}</span>
-                    {job.lastRun && <span className="text-muted-foreground">{new Date(job.lastRun).toLocaleTimeString()}</span>}
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </CardContent>
           </Card>
         )}
@@ -179,18 +227,18 @@ export default function AdminPlatformRecoveryPage() {
         <Card>
           <CardHeader className="py-3">
             <CardTitle className="text-sm uppercase tracking-wider flex items-center gap-2">
-              <Timer className="h-4 w-4" /> Server Cron Jobs (pg_cron → Edge Function)
+              <Timer className="h-4 w-4" /> Server Cron Jobs (pg_cron)
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-1 pt-0">
             {CRON_JOBS.map(job => (
               <div key={job.name} className="flex items-center justify-between py-2 px-3 rounded-md border text-xs">
                 <div className="flex items-center gap-2">
-                  <CheckCircle className="h-4 w-4 text-emerald-500" />
+                  <Shield className="h-4 w-4 text-emerald-500" />
                   <span className="font-mono font-medium">{job.name}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-muted-foreground">{job.desc}</span>
+                  <span className="text-muted-foreground hidden md:inline">{job.desc}</span>
                   <Badge variant="outline">{job.schedule}</Badge>
                   <Badge className="bg-emerald-500/10 text-emerald-700 border-emerald-200">ACTIVE</Badge>
                 </div>
@@ -199,33 +247,7 @@ export default function AdminPlatformRecoveryPage() {
           </CardContent>
         </Card>
 
-        {/* Summary */}
-        {displaySummary && (
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-            <Card><CardContent className="pt-4 text-center">
-              <p className="text-2xl font-bold">{displaySummary.total}</p>
-              <p className="text-xs text-muted-foreground">Total</p>
-            </CardContent></Card>
-            <Card><CardContent className="pt-4 text-center">
-              <p className="text-2xl font-bold text-emerald-600">{displaySummary.ok}</p>
-              <p className="text-xs text-muted-foreground">OK</p>
-            </CardContent></Card>
-            <Card><CardContent className="pt-4 text-center">
-              <p className="text-2xl font-bold text-destructive">{displaySummary.error}</p>
-              <p className="text-xs text-muted-foreground">Errors</p>
-            </CardContent></Card>
-            <Card><CardContent className="pt-4 text-center">
-              <p className="text-2xl font-bold text-amber-600">{displaySummary.fixed ?? 0}</p>
-              <p className="text-xs text-muted-foreground">Fixed</p>
-            </CardContent></Card>
-            <Card><CardContent className="pt-4 text-center">
-              <p className="text-2xl font-bold">{clientRun?.totalMs ?? latestDb?.total_ms ?? 0}ms</p>
-              <p className="text-xs text-muted-foreground">Duration</p>
-            </CardContent></Card>
-          </div>
-        )}
-
-        {/* Module details */}
+        {/* Module details by group */}
         {groups.map(({ group, items }) => (
           <Card key={group}>
             <CardHeader className="py-3">
@@ -256,6 +278,7 @@ export default function AdminPlatformRecoveryPage() {
                     <Badge className={run.status === "healthy" ? "bg-emerald-500/10 text-emerald-700" : "bg-destructive/10 text-destructive"}>
                       {run.status}
                     </Badge>
+                    {run.auto_fixes_count > 0 && <span className="text-amber-600">🔧{run.auto_fixes_count}</span>}
                     <span className="text-emerald-600">{run.summary_json?.ok ?? 0}✓</span>
                     <span className="text-destructive">{run.errors_count}✗</span>
                     <span className="text-muted-foreground">{run.total_ms}ms</span>
