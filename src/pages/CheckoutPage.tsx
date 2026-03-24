@@ -8,6 +8,7 @@ import { useNavigate } from "react-router-dom";
 import { useCart } from "@/hooks/useCart";
 import { useAuth } from "@/contexts/AuthContext";
 import { createStorefrontOrder } from "@/lib/orders/orderEngine";
+import { resolveDisplayCurrency } from "@/lib/currency-engine";
 import { ArrowLeft, MapPin, CreditCard, Wallet, Banknote, Loader2, Plus, Minus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -70,7 +71,7 @@ export default function CheckoutPage() {
         sellerId,
         items: cart.items,
         fulfillmentType: mode,
-        currency: "AED",
+        currency: resolveDisplayCurrency({ country: "AE" }),
         deliveryFee,
         notes: notes || undefined,
         paymentMethod: payment,

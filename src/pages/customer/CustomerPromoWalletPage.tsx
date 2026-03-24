@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom";
 
 const PROMOS = [
   { id: "1", title: "WELCOME10", desc: "10% off your next order" },
-  { id: "2", title: "PIZZA25", desc: "25 AED off above 80 AED" },
+  { id: "2", title: "PIZZA25", desc: "25 off above 80" },
 ];
 
 export default function CustomerPromoWalletPage() {
