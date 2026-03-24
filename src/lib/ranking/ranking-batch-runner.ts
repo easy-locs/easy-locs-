@@ -72,6 +72,7 @@ async function persistRanking(
       .update({ visibility_mode: newMode })
       .eq("id", entityId);
   }
+}
 
 export async function rerankCandidates(limit = 500): Promise<number> {
   const { data: candidates } = await (supabase as any)
