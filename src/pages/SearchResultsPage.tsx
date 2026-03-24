@@ -87,7 +87,7 @@ export default function SearchResultsPage() {
         {!loading && (
           <>
             <p className="text-xs text-muted-foreground">
-              {shops.length + products.length} results for "{q}"
+              {tc("common.results", { count: shops.length + products.length })} — "{q}"
             </p>
 
             {/* Vertical-grouped results — each section styled by canonical engine */}
