@@ -210,7 +210,7 @@ export default function VerticalHubPage({ vertical }: { vertical: TaxonomyVertic
               <button
                 key={sub.value}
                 onClick={() => handleSubSelect(activeSub === sub.value ? null : sub.value)}
-                className="shrink-0 flex flex-col items-center gap-1.5 active:scale-90 transition-transform"
+                className="shrink-0 snap-start flex flex-col items-center gap-1.5 active:scale-90 transition-transform"
               >
                 <div
                   className="w-[52px] h-[52px] rounded-2xl flex items-center justify-center transition-all"
