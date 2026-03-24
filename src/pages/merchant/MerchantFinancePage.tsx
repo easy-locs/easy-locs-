@@ -24,11 +24,12 @@ interface MerchantTx {
   amount: number;
   currency: string;
   status: string;
-  transaction_type: string;
   title: string | null;
+  subtitle: string | null;
   sender_id: string | null;
   recipient_id: string | null;
   context_type: string | null;
+  context_id: string | null;
   metadata: Record<string, any>;
 }
 
@@ -55,13 +56,16 @@ const FILTERS: { key: FilterType; label: string }[] = [
 ];
 
 function classifyTx(tx: MerchantTx, userId: string): TxType {
-  const t = (tx.transaction_type || "").toLowerCase();
-  if (t.includes("refund")) return "refund";
-  if (t.includes("boost")) return "boost";
-  if (t.includes("escrow")) return "escrow";
-  if (t.includes("payout")) return "payout";
-  if (t.includes("fee") || t.includes("commission")) return "fee";
-  if (t.includes("topup") || t.includes("top_up")) return "topup";
+  // Use context_type + title since unified_wallet_transactions has no transaction_type column
+  const ctx = (tx.context_type || "").toLowerCase();
+  const title = (tx.title || "").toLowerCase();
+  const combined = `${ctx} ${title}`;
+  if (combined.includes("refund")) return "refund";
+  if (combined.includes("boost")) return "boost";
+  if (combined.includes("escrow")) return "escrow";
+  if (combined.includes("payout")) return "payout";
+  if (combined.includes("fee") || combined.includes("commission")) return "fee";
+  if (combined.includes("topup") || combined.includes("top_up") || combined.includes("top up")) return "topup";
   if (tx.recipient_id === userId) return "credit";
   return "debit";
 }
