@@ -343,7 +343,7 @@ export default function TravelStayHub() {
 
         {/* Amenity filters */}
         <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-none -mx-1 px-1 mb-4">
-          {AMENITY_FILTERS.map(({ key, label, icon }) => (
+          {AMENITY_FILTERS.map(({ key, labelKey, icon }) => (
             <button
               key={key}
               onClick={() => toggleAmenity(key)}
@@ -358,7 +358,7 @@ export default function TravelStayHub() {
                 border: `1px solid ${activeAmenities.includes(key) ? "hsl(38 70% 52% / 0.3)" : "hsl(var(--border) / 0.15)"}`,
               }}
             >
-              {icon} {label}
+              {icon} {tc(labelKey)}
             </button>
           ))}
         </div>
