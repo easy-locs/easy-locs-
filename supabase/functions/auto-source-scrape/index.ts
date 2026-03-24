@@ -52,10 +52,10 @@ Deno.serve(async (req) => {
       // Find entities needing enrichment (low completeness or missing data)
       const { data: entities, error } = await supabase
         .from("seed_merchants")
-        .select("id, name, vertical, subcategory, city, country, source_key, source_url, completeness_score, menu_items_json, phone, website, cover_image")
-        .or("completeness_score.is.null,completeness_score.lt.60")
+        .select("id, name, category, subcategory, city, country, source_key, source_url, integrity_score, menu_items_json, phone, website, cover_image")
+        .or("integrity_score.is.null,integrity_score.lt.60")
         .eq("country", "AE")
-        .order("completeness_score", { ascending: true, nullsFirst: true })
+        .order("integrity_score", { ascending: true, nullsFirst: true })
         .limit(limit);
 
       if (error) throw error;
@@ -72,7 +72,7 @@ Deno.serve(async (req) => {
 
       for (const entity of entities) {
         try {
-          const vertical = entity.vertical ?? "food";
+          const vertical = entity.category ?? "food";
           const sources = SCRAPE_SOURCES[vertical] ?? SCRAPE_SOURCES.food;
           const query = `${entity.name} ${entity.city ?? "Dubai"}`;
 
@@ -134,7 +134,7 @@ Deno.serve(async (req) => {
               raw_name: entity.name,
               source: bestResult.source_platform,
               source_url: bestResult.source_url,
-              raw_category: entity.subcategory ?? entity.vertical,
+              raw_category: entity.subcategory ?? entity.category,
               city: entity.city ?? "Dubai",
               country: "AE",
               parsed_status: "scraped",
