@@ -323,24 +323,74 @@ function detectBestseller(item: any): boolean {
 function analyzeMenu(rawMenu: any[]): MenuDisplayAnalysis {
   const categories: Record<string, StructuredMenuItem[]> = {};
   let totalItems = 0;
+  let bestseller_count = 0;
+  let missing_image_count = 0;
+  let missing_price_count = 0;
+  const flags: string[] = [];
 
   for (const item of rawMenu) {
     const cat = (item.category || item.section || "General").trim();
     if (!categories[cat]) categories[cat] = [];
+    const isBestseller = detectBestseller(item);
+    if (isBestseller) bestseller_count++;
+    const hasImage = !!(item.image || item.image_url || item.photo);
+    const hasPrice = item.price != null && !isNaN(parseFloat(item.price));
+    if (!hasImage) missing_image_count++;
+    if (!hasPrice) missing_price_count++;
+
     categories[cat].push({
       name: (item.name || item.title || "").trim(),
       category: cat,
       description: item.description || item.desc || undefined,
-      price: typeof item.price === "number" ? item.price : parseFloat(item.price) || undefined,
+      price: hasPrice ? (typeof item.price === "number" ? item.price : parseFloat(item.price)) : undefined,
       currency: item.currency || "AED",
-      image: item.image || item.image_url || item.photo || undefined,
+      image: hasImage ? (item.image || item.image_url || item.photo) : undefined,
       tags: item.tags || [],
       available: item.available !== false,
+      is_bestseller: isBestseller,
     });
     totalItems++;
   }
 
-  return { categories, totalItems };
+  // Empty categories
+  const empty_category_count = Object.entries(categories).filter(([, items]) => items.length === 0).length;
+
+  // Optimal order
+  const optimal_category_order = Object.keys(categories).sort((a, b) => {
+    const pa = CATEGORY_PRIORITY[a.toLowerCase()] ?? 50;
+    const pb = CATEGORY_PRIORITY[b.toLowerCase()] ?? 50;
+    return pa - pb;
+  });
+
+  // Flags
+  if (bestseller_count === 0 && totalItems > 5) flags.push("no_bestsellers_detected");
+  if (missing_image_count > totalItems * 0.5) flags.push("majority_missing_images");
+  if (missing_price_count > totalItems * 0.3) flags.push("many_missing_prices");
+  if (empty_category_count > 0) flags.push("empty_categories");
+  if (Object.keys(categories).length < 2 && totalItems > 10) flags.push("single_category_dump");
+
+  // Menu display score (0-100)
+  let menu_display_score = 40; // base
+  if (totalItems >= 5) menu_display_score += 10;
+  if (totalItems >= 15) menu_display_score += 5;
+  if (Object.keys(categories).length >= 3) menu_display_score += 10;
+  if (bestseller_count > 0) menu_display_score += 10;
+  if (missing_image_count < totalItems * 0.3) menu_display_score += 10;
+  if (missing_price_count === 0) menu_display_score += 10;
+  if (empty_category_count === 0) menu_display_score += 5;
+  menu_display_score = Math.min(menu_display_score, 100);
+
+  return {
+    categories, totalItems, menu_display_score, bestseller_count,
+    missing_image_count, missing_price_count, empty_category_count,
+    optimal_category_order, flags,
+  };
+}
+
+// Backward compat wrapper
+function structureMenu(rawMenu: any[]): { categories: Record<string, StructuredMenuItem[]>; totalItems: number } {
+  const analysis = analyzeMenu(rawMenu);
+  return { categories: analysis.categories, totalItems: analysis.totalItems };
 }
 
 // ─── STEP 8: Vertical-specific attributes ───
