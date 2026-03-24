@@ -441,15 +441,21 @@ const translations: Record<DiscoveryLocale, Record<string, string>> = {
   },
 };
 
-/** Get current discovery locale from global i18n or fallback */
+/** Get current discovery locale — delegates to canonical i18n if available */
 function getDiscoveryLocale(): DiscoveryLocale {
   try {
-    const stored = localStorage.getItem("app-locale");
-    if (stored && (stored === "fr" || stored === "ar")) return stored;
-    const lang = navigator.language?.split("-")[0];
-    if (lang === "fr" || lang === "ar") return lang;
-  } catch {}
-  return "en";
+    // Use shared locale from canonical system
+    const { getAppLocale } = require("@/lib/i18n-canonical");
+    return getAppLocale() as DiscoveryLocale;
+  } catch {
+    try {
+      const stored = localStorage.getItem("app-locale");
+      if (stored && (stored === "fr" || stored === "ar")) return stored;
+      const lang = navigator.language?.split("-")[0];
+      if (lang === "fr" || lang === "ar") return lang;
+    } catch {}
+    return "en";
+  }
 }
 
 let _cachedLocale: DiscoveryLocale | null = null;
