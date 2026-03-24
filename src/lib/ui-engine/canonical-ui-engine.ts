@@ -140,40 +140,27 @@ const VERTICAL_BUTTON: Record<string, CanonicalButtonStyle> = {
   experiences: { primaryCta: "Book Now",       secondaryCta: "Learn More",  ctaIcon: "heart" },
 };
 
-const VERTICAL_WORDING: Record<string, CanonicalWording> = {
-  food: {
-    tone: "warm", emptyTitle: "No restaurants nearby", emptySubtitle: "Try expanding your search radius",
-    loadingText: "Finding delicious options…", resultsFormat: "{count} restaurants near you",
-  },
-  grocery: {
-    tone: "friendly", emptyTitle: "No stores nearby", emptySubtitle: "Try a different area",
-    loadingText: "Scanning nearby stores…", resultsFormat: "{count} stores near you",
-  },
-  shops: {
-    tone: "energetic", emptyTitle: "No shops found", emptySubtitle: "Explore a different category",
-    loadingText: "Discovering shops…", resultsFormat: "{count} shops near you",
-  },
-  services: {
-    tone: "professional", emptyTitle: "No services available", emptySubtitle: "Try a wider radius",
-    loadingText: "Finding trusted services…", resultsFormat: "{count} services near you",
-  },
-  property: {
-    tone: "luxurious", emptyTitle: "No properties found", emptySubtitle: "Adjust your filters",
-    loadingText: "Searching properties…", resultsFormat: "{count} properties available",
-  },
-  healthcare: {
-    tone: "professional", emptyTitle: "No providers nearby", emptySubtitle: "Expand your search area",
-    loadingText: "Finding healthcare providers…", resultsFormat: "{count} providers near you",
-  },
-  mobility: {
-    tone: "urgent", emptyTitle: "No rides available", emptySubtitle: "Try again shortly",
-    loadingText: "Searching for rides…", resultsFormat: "{count} options available",
-  },
-  experiences: {
-    tone: "energetic", emptyTitle: "No experiences found", emptySubtitle: "Check back soon for new events",
-    loadingText: "Discovering experiences…", resultsFormat: "{count} experiences near you",
-  },
+const VERTICAL_TONE: Record<string, CanonicalWording["tone"]> = {
+  food: "warm", grocery: "friendly", shops: "energetic", services: "professional",
+  property: "luxurious", healthcare: "professional", mobility: "urgent", experiences: "energetic",
 };
+
+/** Build i18n-aware wording for a vertical + optional subcategory */
+function buildWording(vertical: string, subcategory?: string | null): CanonicalWording {
+  const vi = getVerticalI18n(vertical);
+  const si = subcategory ? getSubcategoryI18n(subcategory) : null;
+  return {
+    tone: VERTICAL_TONE[vertical] || "friendly",
+    emptyTitle: vi.emptyTitle,
+    emptySubtitle: vi.emptySubtitle,
+    loadingText: vi.loading,
+    resultsFormat: td(`discovery.vertical.${vertical}.results`),
+    i18nTitle: si?.title || vi.title,
+    i18nTagline: si?.tagline || vi.tagline,
+    i18nCtaPrimary: vi.ctaPrimary,
+    i18nCtaSecondary: vi.ctaSecondary,
+  };
+}
 
 // ═══════════════════════════════════════════════════════════
 //  CANONICAL ROUTE MAP
