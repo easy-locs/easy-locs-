@@ -417,6 +417,8 @@ const commerce = {
     "commerce.scan_to_pay": "امسح للدفع",
     "commerce.saved_carts": "السلات المحفوظة",
     "commerce.auto_repeat": "تكرار تلقائي",
+    "commerce.processing": "جارٍ المعالجة…",
+    "commerce.secure_checkout": "دفع آمن",
   },
 };
 
