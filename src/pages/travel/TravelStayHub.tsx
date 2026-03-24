@@ -26,20 +26,20 @@ import { tc } from "@/lib/i18n-canonical";
 type StayTab = "hotel" | "resort" | "short_stay" | "serviced_apartment";
 type SortMode = "rating" | "price" | "distance" | "reviews";
 
-const STAY_TABS: { key: StayTab; label: string; emoji: string }[] = [
-  { key: "hotel", label: "Hotels", emoji: "🏨" },
-  { key: "resort", label: "Resorts", emoji: "🏖️" },
-  { key: "short_stay", label: "Short Stay", emoji: "🛏️" },
-  { key: "serviced_apartment", label: "Serviced", emoji: "🏢" },
+const STAY_TABS: { key: StayTab; labelKey: string; emoji: string }[] = [
+  { key: "hotel", labelKey: "discovery.subcategory.hotel.title", emoji: "🏨" },
+  { key: "resort", labelKey: "discovery.subcategory.resort.title", emoji: "🏖️" },
+  { key: "short_stay", labelKey: "discovery.subcategory.short_stay.title", emoji: "🛏️" },
+  { key: "serviced_apartment", labelKey: "discovery.subcategory.serviced_apartment.title", emoji: "🏢" },
 ];
 
 const AMENITY_FILTERS = [
-  { key: "wifi", label: "Free WiFi", icon: <Wifi className="h-3.5 w-3.5" /> },
-  { key: "pool", label: "Pool", icon: <Waves className="h-3.5 w-3.5" /> },
-  { key: "parking", label: "Parking", icon: <Car className="h-3.5 w-3.5" /> },
-  { key: "gym", label: "Gym", icon: <Dumbbell className="h-3.5 w-3.5" /> },
-  { key: "breakfast", label: "Breakfast", icon: <Coffee className="h-3.5 w-3.5" /> },
-  { key: "spa", label: "Spa", icon: <Bath className="h-3.5 w-3.5" /> },
+  { key: "wifi", labelKey: "travel.wifi", icon: <Wifi className="h-3.5 w-3.5" /> },
+  { key: "pool", labelKey: "travel.pool", icon: <Waves className="h-3.5 w-3.5" /> },
+  { key: "parking", labelKey: "travel.parking", icon: <Car className="h-3.5 w-3.5" /> },
+  { key: "gym", labelKey: "travel.gym", icon: <Dumbbell className="h-3.5 w-3.5" /> },
+  { key: "breakfast", labelKey: "travel.breakfast", icon: <Coffee className="h-3.5 w-3.5" /> },
+  { key: "spa", labelKey: "travel.spa", icon: <Bath className="h-3.5 w-3.5" /> },
 ];
 
 export default function TravelStayHub() {
