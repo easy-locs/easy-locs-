@@ -39,7 +39,7 @@ async function resolveOwner(entityId: string): Promise<string | null> {
 }
 
 async function resolveOwnerName(userId: string): Promise<string> {
-  const { data } = await supabase
+  const { data } = await (supabase as any)
     .from("profiles")
     .select("display_name, email")
     .eq("id", userId)
