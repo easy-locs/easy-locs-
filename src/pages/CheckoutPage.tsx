@@ -8,7 +8,7 @@ import { useNavigate } from "react-router-dom";
 import { useCart } from "@/hooks/useCart";
 import { useAuth } from "@/contexts/AuthContext";
 import { createStorefrontOrder } from "@/lib/orders/orderEngine";
-import { resolveDisplayCurrency } from "@/lib/currency-engine";
+import { resolveDisplayCurrency, formatMoneyByCountry } from "@/lib/currency-engine";
 import { ArrowLeft, MapPin, CreditCard, Wallet, Banknote, Loader2, Plus, Minus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
