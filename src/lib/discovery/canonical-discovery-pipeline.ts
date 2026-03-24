@@ -201,10 +201,10 @@ export async function fetchCanonicalDiscovery(opts: CanonicalDiscoveryOpts): Pro
   }
 
   // ── SEED MERCHANT GOVERNANCE ──
-  // seed_merchants lacks visibility_mode/route_status/display_priority.
-  // We treat all active seeds as "coming_soon" visibility.
-  // Surfaces that do NOT include "coming_soon" will exclude seeds.
-  const seedAllowed = allowedModes.includes("coming_soon");
+  // Seeds with visibility_mode/route_status columns are now treated like storefronts.
+  // Seeds without those columns are treated as "coming_soon".
+  // Always load seeds — the post-filter handles visibility.
+  const seedAllowed = allowedModes.includes("coming_soon") || allowedModes.includes("live") || allowedModes.includes("ready");
 
   // Build seed query (but only execute if allowed)
   const seedQueryPromise = seedAllowed ? (() => {
