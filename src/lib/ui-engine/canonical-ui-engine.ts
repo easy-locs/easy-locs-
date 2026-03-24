@@ -10,6 +10,7 @@
 import { WORLD_TAXONOMY, type Vertical, type TaxonomyVertical } from "@/lib/taxonomy/world-class-taxonomy";
 import { getVerticalTheme } from "@/lib/discovery/vertical-themes";
 import { getSubcategoryTheme } from "@/lib/discovery/subcategory-themes";
+import { td, getVerticalI18n, getSubcategoryI18n } from "@/lib/i18n-discovery";
 
 // ═══════════════════════════════════════════════════════════
 //  TYPES
@@ -62,6 +63,13 @@ export interface CanonicalWording {
   loadingText: string;
   /** Results count format */
   resultsFormat: string; // e.g. "{count} restaurants near you"
+  /** i18n-resolved title */
+  i18nTitle: string;
+  /** i18n-resolved tagline */
+  i18nTagline: string;
+  /** i18n-resolved CTA */
+  i18nCtaPrimary: string;
+  i18nCtaSecondary: string;
 }
 
 export interface CanonicalUISpec {
@@ -132,40 +140,27 @@ const VERTICAL_BUTTON: Record<string, CanonicalButtonStyle> = {
   experiences: { primaryCta: "Book Now",       secondaryCta: "Learn More",  ctaIcon: "heart" },
 };
 
-const VERTICAL_WORDING: Record<string, CanonicalWording> = {
-  food: {
-    tone: "warm", emptyTitle: "No restaurants nearby", emptySubtitle: "Try expanding your search radius",
-    loadingText: "Finding delicious options…", resultsFormat: "{count} restaurants near you",
-  },
-  grocery: {
-    tone: "friendly", emptyTitle: "No stores nearby", emptySubtitle: "Try a different area",
-    loadingText: "Scanning nearby stores…", resultsFormat: "{count} stores near you",
-  },
-  shops: {
-    tone: "energetic", emptyTitle: "No shops found", emptySubtitle: "Explore a different category",
-    loadingText: "Discovering shops…", resultsFormat: "{count} shops near you",
-  },
-  services: {
-    tone: "professional", emptyTitle: "No services available", emptySubtitle: "Try a wider radius",
-    loadingText: "Finding trusted services…", resultsFormat: "{count} services near you",
-  },
-  property: {
-    tone: "luxurious", emptyTitle: "No properties found", emptySubtitle: "Adjust your filters",
-    loadingText: "Searching properties…", resultsFormat: "{count} properties available",
-  },
-  healthcare: {
-    tone: "professional", emptyTitle: "No providers nearby", emptySubtitle: "Expand your search area",
-    loadingText: "Finding healthcare providers…", resultsFormat: "{count} providers near you",
-  },
-  mobility: {
-    tone: "urgent", emptyTitle: "No rides available", emptySubtitle: "Try again shortly",
-    loadingText: "Searching for rides…", resultsFormat: "{count} options available",
-  },
-  experiences: {
-    tone: "energetic", emptyTitle: "No experiences found", emptySubtitle: "Check back soon for new events",
-    loadingText: "Discovering experiences…", resultsFormat: "{count} experiences near you",
-  },
+const VERTICAL_TONE: Record<string, CanonicalWording["tone"]> = {
+  food: "warm", grocery: "friendly", shops: "energetic", services: "professional",
+  property: "luxurious", healthcare: "professional", mobility: "urgent", experiences: "energetic",
 };
+
+/** Build i18n-aware wording for a vertical + optional subcategory */
+function buildWording(vertical: string, subcategory?: string | null): CanonicalWording {
+  const vi = getVerticalI18n(vertical);
+  const si = subcategory ? getSubcategoryI18n(subcategory) : null;
+  return {
+    tone: VERTICAL_TONE[vertical] || "friendly",
+    emptyTitle: vi.emptyTitle,
+    emptySubtitle: vi.emptySubtitle,
+    loadingText: vi.loading,
+    resultsFormat: td(`discovery.vertical.${vertical}.results`),
+    i18nTitle: si?.title || vi.title,
+    i18nTagline: si?.tagline || vi.tagline,
+    i18nCtaPrimary: vi.ctaPrimary,
+    i18nCtaSecondary: vi.ctaSecondary,
+  };
+}
 
 // ═══════════════════════════════════════════════════════════
 //  CANONICAL ROUTE MAP
@@ -239,9 +234,12 @@ export function resolveCanonicalUI(
   const heroImage = subTheme?.heroImage || baseTheme.heroImage;
   const heroOverlay = subTheme?.heroOverlay || baseTheme.heroOverlay;
   const accentHsl = subTheme?.accentHsl || baseTheme.accentHsl;
-  const searchPlaceholder = subTheme?.searchPlaceholder || baseTheme.searchPlaceholder;
+  // i18n-aware search placeholder and display title
+  const subI18n = subcategoryKey ? getSubcategoryI18n(subcategoryKey) : null;
+  const vertI18n = getVerticalI18n(vert.value);
+  const searchPlaceholder = subI18n?.searchPlaceholder || vertI18n.searchPlaceholder || subTheme?.searchPlaceholder || baseTheme.searchPlaceholder;
 
-  const displayTitle = subDef?.label || vert.label;
+  const displayTitle = subI18n?.title || subDef?.label || vertI18n.title || vert.label;
   const emoji = subTheme?.emoji || subDef?.emoji || vert.emoji;
 
   return {
@@ -262,7 +260,7 @@ export function resolveCanonicalUI(
     motion: VERTICAL_MOTION[vert.value] || VERTICAL_MOTION.food,
     card: VERTICAL_CARD[vert.value] || VERTICAL_CARD.food,
     button: VERTICAL_BUTTON[vert.value] || VERTICAL_BUTTON.food,
-    wording: VERTICAL_WORDING[vert.value] || VERTICAL_WORDING.food,
+    wording: buildWording(vert.value, subcategoryKey),
   };
 }
 
