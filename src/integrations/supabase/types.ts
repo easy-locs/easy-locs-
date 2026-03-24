@@ -10618,6 +10618,72 @@ export type Database = {
         }
         Relationships: []
       }
+      live_status_snapshots: {
+        Row: {
+          actor_name: string | null
+          context_action_url: string | null
+          created_at: string | null
+          entity_id: string
+          entity_type: string
+          eta_max: number | null
+          eta_min: number | null
+          id: string
+          is_active: boolean | null
+          live_step_index: number | null
+          live_step_total: number | null
+          live_visual_type: string | null
+          metadata_json: Json | null
+          progress_percent: number | null
+          status_code: string
+          status_label: string
+          status_subtitle: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          actor_name?: string | null
+          context_action_url?: string | null
+          created_at?: string | null
+          entity_id: string
+          entity_type: string
+          eta_max?: number | null
+          eta_min?: number | null
+          id?: string
+          is_active?: boolean | null
+          live_step_index?: number | null
+          live_step_total?: number | null
+          live_visual_type?: string | null
+          metadata_json?: Json | null
+          progress_percent?: number | null
+          status_code: string
+          status_label: string
+          status_subtitle?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          actor_name?: string | null
+          context_action_url?: string | null
+          created_at?: string | null
+          entity_id?: string
+          entity_type?: string
+          eta_max?: number | null
+          eta_min?: number | null
+          id?: string
+          is_active?: boolean | null
+          live_step_index?: number | null
+          live_step_total?: number | null
+          live_visual_type?: string | null
+          metadata_json?: Json | null
+          progress_percent?: number | null
+          status_code?: string
+          status_label?: string
+          status_subtitle?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       live_tracking_points: {
         Row: {
           accuracy_m: number | null
@@ -12118,6 +12184,63 @@ export type Database = {
           },
         ]
       }
+      merchant_field_overrides: {
+        Row: {
+          auto_source: string | null
+          auto_value_json: Json | null
+          created_at: string | null
+          entity_id: string
+          entity_type: string
+          field_key: string
+          id: string
+          is_auto_generated: boolean
+          is_merchant_locked: boolean
+          last_auto_update_at: string | null
+          last_merchant_update_at: string | null
+          merchant_value_json: Json | null
+          override_source: string | null
+          suggested_value_json: Json | null
+          suggestion_available: boolean
+          updated_at: string | null
+        }
+        Insert: {
+          auto_source?: string | null
+          auto_value_json?: Json | null
+          created_at?: string | null
+          entity_id: string
+          entity_type?: string
+          field_key: string
+          id?: string
+          is_auto_generated?: boolean
+          is_merchant_locked?: boolean
+          last_auto_update_at?: string | null
+          last_merchant_update_at?: string | null
+          merchant_value_json?: Json | null
+          override_source?: string | null
+          suggested_value_json?: Json | null
+          suggestion_available?: boolean
+          updated_at?: string | null
+        }
+        Update: {
+          auto_source?: string | null
+          auto_value_json?: Json | null
+          created_at?: string | null
+          entity_id?: string
+          entity_type?: string
+          field_key?: string
+          id?: string
+          is_auto_generated?: boolean
+          is_merchant_locked?: boolean
+          last_auto_update_at?: string | null
+          last_merchant_update_at?: string | null
+          merchant_value_json?: Json | null
+          override_source?: string | null
+          suggested_value_json?: Json | null
+          suggestion_available?: boolean
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       merchant_menu_import_items: {
         Row: {
           category_name: string | null
@@ -12486,6 +12609,53 @@ export type Database = {
             columns: ["merchant_profile_id"]
             isOneToOne: false
             referencedRelation: "merchant_onboarding_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      merchant_override_history: {
+        Row: {
+          change_reason: string | null
+          change_source: string
+          changed_by: string | null
+          created_at: string | null
+          entity_id: string
+          field_key: string
+          id: string
+          new_value_json: Json | null
+          override_id: string | null
+          previous_value_json: Json | null
+        }
+        Insert: {
+          change_reason?: string | null
+          change_source: string
+          changed_by?: string | null
+          created_at?: string | null
+          entity_id: string
+          field_key: string
+          id?: string
+          new_value_json?: Json | null
+          override_id?: string | null
+          previous_value_json?: Json | null
+        }
+        Update: {
+          change_reason?: string | null
+          change_source?: string
+          changed_by?: string | null
+          created_at?: string | null
+          entity_id?: string
+          field_key?: string
+          id?: string
+          new_value_json?: Json | null
+          override_id?: string | null
+          previous_value_json?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "merchant_override_history_override_id_fkey"
+            columns: ["override_id"]
+            isOneToOne: false
+            referencedRelation: "merchant_field_overrides"
             referencedColumns: ["id"]
           },
         ]
@@ -12951,45 +13121,180 @@ export type Database = {
         }
         Relationships: []
       }
+      notification_templates: {
+        Row: {
+          active: boolean | null
+          body_template: string | null
+          cooldown_seconds: number | null
+          created_at: string | null
+          cta_label_template: string | null
+          cta_url_template: string | null
+          default_channel: string
+          event_type: string
+          group_key_template: string | null
+          groupable: boolean | null
+          icon_key: string | null
+          id: string
+          notification_type: string
+          priority: string
+          subtitle_template: string | null
+          template_key: string
+          title_template: string
+        }
+        Insert: {
+          active?: boolean | null
+          body_template?: string | null
+          cooldown_seconds?: number | null
+          created_at?: string | null
+          cta_label_template?: string | null
+          cta_url_template?: string | null
+          default_channel?: string
+          event_type: string
+          group_key_template?: string | null
+          groupable?: boolean | null
+          icon_key?: string | null
+          id?: string
+          notification_type?: string
+          priority?: string
+          subtitle_template?: string | null
+          template_key: string
+          title_template: string
+        }
+        Update: {
+          active?: boolean | null
+          body_template?: string | null
+          cooldown_seconds?: number | null
+          created_at?: string | null
+          cta_label_template?: string | null
+          cta_url_template?: string | null
+          default_channel?: string
+          event_type?: string
+          group_key_template?: string | null
+          groupable?: boolean | null
+          icon_key?: string | null
+          id?: string
+          notification_type?: string
+          priority?: string
+          subtitle_template?: string | null
+          template_key?: string
+          title_template?: string
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
+          body: string | null
+          channel: string | null
           created_at: string
+          cta_label: string | null
+          cta_url: string | null
+          dedup_key: string | null
+          entity_id: string | null
+          entity_type: string | null
+          eta_max: number | null
+          eta_min: number | null
+          event_type: string | null
+          expires_at: string | null
+          group_key: string | null
+          icon_key: string | null
           id: string
+          image_url: string | null
+          is_actioned: boolean | null
+          is_archived: boolean | null
+          is_seen: boolean | null
           link: string | null
           message: string
           metadata_json: Json | null
+          notification_type: string | null
           org_id: string | null
+          priority: string | null
+          progress_percent: number | null
           read: boolean
+          read_at: string | null
           resolved: boolean
           resolved_at: string | null
+          scheduled_at: string | null
+          sent_at: string | null
+          status_code: string | null
+          subtitle: string | null
           title: string
           type: string
           user_id: string
         }
         Insert: {
+          body?: string | null
+          channel?: string | null
           created_at?: string
+          cta_label?: string | null
+          cta_url?: string | null
+          dedup_key?: string | null
+          entity_id?: string | null
+          entity_type?: string | null
+          eta_max?: number | null
+          eta_min?: number | null
+          event_type?: string | null
+          expires_at?: string | null
+          group_key?: string | null
+          icon_key?: string | null
           id?: string
+          image_url?: string | null
+          is_actioned?: boolean | null
+          is_archived?: boolean | null
+          is_seen?: boolean | null
           link?: string | null
           message?: string
           metadata_json?: Json | null
+          notification_type?: string | null
           org_id?: string | null
+          priority?: string | null
+          progress_percent?: number | null
           read?: boolean
+          read_at?: string | null
           resolved?: boolean
           resolved_at?: string | null
+          scheduled_at?: string | null
+          sent_at?: string | null
+          status_code?: string | null
+          subtitle?: string | null
           title: string
           type?: string
           user_id: string
         }
         Update: {
+          body?: string | null
+          channel?: string | null
           created_at?: string
+          cta_label?: string | null
+          cta_url?: string | null
+          dedup_key?: string | null
+          entity_id?: string | null
+          entity_type?: string | null
+          eta_max?: number | null
+          eta_min?: number | null
+          event_type?: string | null
+          expires_at?: string | null
+          group_key?: string | null
+          icon_key?: string | null
           id?: string
+          image_url?: string | null
+          is_actioned?: boolean | null
+          is_archived?: boolean | null
+          is_seen?: boolean | null
           link?: string | null
           message?: string
           metadata_json?: Json | null
+          notification_type?: string | null
           org_id?: string | null
+          priority?: string | null
+          progress_percent?: number | null
           read?: boolean
+          read_at?: string | null
           resolved?: boolean
           resolved_at?: string | null
+          scheduled_at?: string | null
+          sent_at?: string | null
+          status_code?: string | null
+          subtitle?: string | null
           title?: string
           type?: string
           user_id?: string
