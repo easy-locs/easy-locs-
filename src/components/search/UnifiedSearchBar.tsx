@@ -88,7 +88,7 @@ export default function UnifiedSearchBar({
 
     switch (result.type) {
       case "shop":
-        navigate(result.slug ? `/s/${result.slug}` : `/food/restaurant/${result.id}`);
+        navigate(result.slug ? `/s/${result.slug}` : `/s/${result.id}`);
         break;
       case "category":
         if (result.subcategory) {
@@ -105,7 +105,7 @@ export default function UnifiedSearchBar({
         navigate("/radar");
         break;
       case "product":
-        if (result.shopId) navigate(`/food/restaurant/${result.shopId}`);
+        if (result.shopId) navigate(`/s/${result.shopId}`);
         break;
     }
   }, [navigate, onResultSelect, setFilters, search]);
