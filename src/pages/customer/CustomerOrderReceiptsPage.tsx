@@ -49,7 +49,7 @@ export default function CustomerOrderReceiptsPage() {
               <div className="flex items-start justify-between gap-3">
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-bold text-foreground">Receipt #{String(row.id).slice(0, 8)}</p>
-                  <p className="text-xs text-primary font-semibold mt-1">{Number(row.total_amount ?? 0).toFixed(2)} {row.currency ?? "AED"}</p>
+                  <p className="text-xs text-primary font-semibold mt-1">{Number(row.total_amount ?? 0).toFixed(2)} {row.currency ?? ""}</p>
                   <p className="text-[11px] text-muted-foreground/70 mt-1">{row.created_at ? new Date(row.created_at).toLocaleString() : ""}</p>
                 </div>
                 <div className="text-right">

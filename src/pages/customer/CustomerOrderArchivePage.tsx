@@ -50,7 +50,7 @@ export default function CustomerOrderArchivePage() {
               <div className="flex items-center justify-between gap-3">
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold text-foreground">Order #{String(row.id).slice(0, 8)}</p>
-                  <p className="text-xs text-muted-foreground">{Number(row.total_amount ?? 0).toFixed(2)} {row.currency ?? "AED"}</p>
+                  <p className="text-xs text-muted-foreground">{Number(row.total_amount ?? 0).toFixed(2)} {row.currency ?? ""}</p>
                   <p className="text-[11px] text-muted-foreground/70">{row.created_at ? new Date(row.created_at).toLocaleString() : ""}</p>
                 </div>
                 <OrderStatusBadge status={row.status || "draft"} />
