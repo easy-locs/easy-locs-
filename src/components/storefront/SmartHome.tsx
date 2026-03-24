@@ -56,8 +56,9 @@ const SECTION_DEFS = [
 ] as const;
 
 /* ═══ Compact Header ═══ */
-const CompactHeader = memo(({ city, greeting, onSearch }: { city: string | null; greeting: string; onSearch: () => void }) => {
+const CompactHeader = memo(({ city, greeting }: { city: string | null; greeting: string }) => {
   const engine = useOrbitEngine();
+  const navigate = useNavigate();
   const handleLocationTap = () => {
     if (!city) {
       import("@/lib/location/requestLocation").then(({ requestLocation }) => requestLocation());
