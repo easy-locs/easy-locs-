@@ -87,6 +87,17 @@ export function isValidFieldKey(key: string): key is OverrideFieldKey {
  */
 export const SYSTEM_ONLY_FIELDS = new Set<string>([
   "display_priority",
+  "audit_score",
+  "readiness_status",
+  "route_status",
+  "blocking_reason",
+  "coherence_score",
+  "coherence_status",
+  "vertical",
+  "cluster",
+  "subcategory",
+  "source_type",
+  "source_confidence",
 ]);
 
 /**
