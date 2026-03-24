@@ -1,6 +1,7 @@
 /**
  * RadarView — Premium discovery hub with clustered map, rich pins, radius circle,
  * advanced filters (rating, promoted, open now), and smart ranking.
+ * Uses Canonical UI Engine for vertical-aware wording and accents.
  */
 import { useState, useCallback, useMemo, memo } from "react";
 import { useNavigate } from "react-router-dom";
@@ -10,6 +11,7 @@ import { formatGeoDistance, formatGeoETA, type SortMode } from "@/lib/geo/geoRan
 import type { GeoEntity } from "@/lib/geo/geoEntityAdapter";
 import { useDiscoveryStore } from "@/stores/discoveryStore";
 import { rankEntities, DISCOVERY_WEIGHTS, type RankableEntity, type RankContext } from "@/lib/ranking-engine";
+import { useCanonicalUI } from "@/hooks/useCanonicalUI";
 import {
   MapPin, List, Star, Navigation, Flame, Filter,
   TrendingUp, Zap, ChevronDown, Clock, SlidersHorizontal,
