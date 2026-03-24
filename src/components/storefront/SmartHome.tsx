@@ -76,7 +76,10 @@ const CompactHeader = memo(({ city, greeting }: { city: string | null; greeting:
         </div>
         <div className="min-w-0">
           <p className="text-[10px] text-muted-foreground leading-none">{greeting}</p>
-          <p className="text-xs font-bold text-foreground truncate">{city || "📍 Set location"}</p>
+          <div className="flex items-center gap-1.5">
+            <p className="text-xs font-bold text-foreground truncate">{city || "📍 Set location"}</p>
+            <GeoStatusIndicator compact showRetry={false} />
+          </div>
         </div>
       </button>
       <div className="flex-1">
