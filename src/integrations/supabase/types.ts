@@ -8887,6 +8887,66 @@ export type Database = {
           },
         ]
       }
+      import_batches: {
+        Row: {
+          city: string
+          completed_at: string | null
+          country: string
+          created_at: string
+          created_by: string | null
+          id: string
+          notes: string | null
+          source_name: string
+          source_type: string
+          started_at: string
+          status: string
+          total_created: number
+          total_duplicates: number
+          total_failed: number
+          total_raw: number
+          total_skipped: number
+          total_updated: number
+        }
+        Insert: {
+          city?: string
+          completed_at?: string | null
+          country?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          notes?: string | null
+          source_name?: string
+          source_type?: string
+          started_at?: string
+          status?: string
+          total_created?: number
+          total_duplicates?: number
+          total_failed?: number
+          total_raw?: number
+          total_skipped?: number
+          total_updated?: number
+        }
+        Update: {
+          city?: string
+          completed_at?: string | null
+          country?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          notes?: string | null
+          source_name?: string
+          source_type?: string
+          started_at?: string
+          status?: string
+          total_created?: number
+          total_duplicates?: number
+          total_failed?: number
+          total_raw?: number
+          total_skipped?: number
+          total_updated?: number
+        }
+        Relationships: []
+      }
       import_test_batches: {
         Row: {
           batch_name: string
@@ -8928,6 +8988,139 @@ export type Database = {
           total_records?: number
         }
         Relationships: []
+      }
+      imported_shop_assets: {
+        Row: {
+          asset_source: string | null
+          asset_type: string
+          asset_url: string
+          candidate_id: string
+          created_at: string
+          id: string
+          is_primary: boolean | null
+          status: string | null
+        }
+        Insert: {
+          asset_source?: string | null
+          asset_type?: string
+          asset_url: string
+          candidate_id: string
+          created_at?: string
+          id?: string
+          is_primary?: boolean | null
+          status?: string | null
+        }
+        Update: {
+          asset_source?: string | null
+          asset_type?: string
+          asset_url?: string
+          candidate_id?: string
+          created_at?: string
+          id?: string
+          is_primary?: boolean | null
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "imported_shop_assets_candidate_id_fkey"
+            columns: ["candidate_id"]
+            isOneToOne: false
+            referencedRelation: "onboarding_shop_candidates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      imported_shop_raw: {
+        Row: {
+          batch_id: string
+          created_at: string
+          error_message: string | null
+          id: string
+          parsed_status: string
+          raw_address: string | null
+          raw_area: string | null
+          raw_category: string | null
+          raw_city: string | null
+          raw_country: string | null
+          raw_hours: Json | null
+          raw_images: Json | null
+          raw_lat: number | null
+          raw_lng: number | null
+          raw_menu_json: Json | null
+          raw_name: string | null
+          raw_payload_json: Json | null
+          raw_phone: string | null
+          raw_price_level: number | null
+          raw_rating: number | null
+          raw_reviews_count: number | null
+          raw_subcategory: string | null
+          raw_website: string | null
+          source_external_id: string | null
+          source_type: string
+        }
+        Insert: {
+          batch_id: string
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          parsed_status?: string
+          raw_address?: string | null
+          raw_area?: string | null
+          raw_category?: string | null
+          raw_city?: string | null
+          raw_country?: string | null
+          raw_hours?: Json | null
+          raw_images?: Json | null
+          raw_lat?: number | null
+          raw_lng?: number | null
+          raw_menu_json?: Json | null
+          raw_name?: string | null
+          raw_payload_json?: Json | null
+          raw_phone?: string | null
+          raw_price_level?: number | null
+          raw_rating?: number | null
+          raw_reviews_count?: number | null
+          raw_subcategory?: string | null
+          raw_website?: string | null
+          source_external_id?: string | null
+          source_type?: string
+        }
+        Update: {
+          batch_id?: string
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          parsed_status?: string
+          raw_address?: string | null
+          raw_area?: string | null
+          raw_category?: string | null
+          raw_city?: string | null
+          raw_country?: string | null
+          raw_hours?: Json | null
+          raw_images?: Json | null
+          raw_lat?: number | null
+          raw_lng?: number | null
+          raw_menu_json?: Json | null
+          raw_name?: string | null
+          raw_payload_json?: Json | null
+          raw_phone?: string | null
+          raw_price_level?: number | null
+          raw_rating?: number | null
+          raw_reviews_count?: number | null
+          raw_subcategory?: string | null
+          raw_website?: string | null
+          source_external_id?: string | null
+          source_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "imported_shop_raw_batch_id_fkey"
+            columns: ["batch_id"]
+            isOneToOne: false
+            referencedRelation: "import_batches"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       incident_case_events: {
         Row: {
@@ -11439,6 +11632,63 @@ export type Database = {
         }
         Relationships: []
       }
+      merchant_onboarding_state: {
+        Row: {
+          activation_status: string
+          claim_status: string
+          contact_status: string
+          created_at: string
+          entity_id: string
+          geo_status: string
+          id: string
+          import_source: string | null
+          last_checked_at: string | null
+          menu_status: string
+          onboarding_mode: string
+          review_status: string
+          seo_status: string
+          taxonomy_status: string
+          updated_at: string
+          visibility_status: string
+        }
+        Insert: {
+          activation_status?: string
+          claim_status?: string
+          contact_status?: string
+          created_at?: string
+          entity_id: string
+          geo_status?: string
+          id?: string
+          import_source?: string | null
+          last_checked_at?: string | null
+          menu_status?: string
+          onboarding_mode?: string
+          review_status?: string
+          seo_status?: string
+          taxonomy_status?: string
+          updated_at?: string
+          visibility_status?: string
+        }
+        Update: {
+          activation_status?: string
+          claim_status?: string
+          contact_status?: string
+          created_at?: string
+          entity_id?: string
+          geo_status?: string
+          id?: string
+          import_source?: string | null
+          last_checked_at?: string | null
+          menu_status?: string
+          onboarding_mode?: string
+          review_status?: string
+          seo_status?: string
+          taxonomy_status?: string
+          updated_at?: string
+          visibility_status?: string
+        }
+        Relationships: []
+      }
       merchant_outreach_campaigns: {
         Row: {
           activated_at: string | null
@@ -12039,6 +12289,111 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      onboarding_shop_candidates: {
+        Row: {
+          address: string | null
+          batch_id: string | null
+          candidate_status: string
+          canonical_name: string
+          canonical_slug: string | null
+          canonical_subcategory: string | null
+          canonical_vertical: string
+          city: string
+          country: string
+          created_at: string
+          duplicate_group_id: string | null
+          entity_id: string | null
+          id: string
+          latitude: number | null
+          longitude: number | null
+          phone: string | null
+          price_tier: number | null
+          quality_score: number | null
+          rating: number | null
+          raw_id: string | null
+          reason_json: Json | null
+          reviews_count: number | null
+          source_external_id: string | null
+          source_type: string
+          updated_at: string
+          website: string | null
+          zone: string | null
+        }
+        Insert: {
+          address?: string | null
+          batch_id?: string | null
+          candidate_status?: string
+          canonical_name: string
+          canonical_slug?: string | null
+          canonical_subcategory?: string | null
+          canonical_vertical?: string
+          city?: string
+          country?: string
+          created_at?: string
+          duplicate_group_id?: string | null
+          entity_id?: string | null
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          phone?: string | null
+          price_tier?: number | null
+          quality_score?: number | null
+          rating?: number | null
+          raw_id?: string | null
+          reason_json?: Json | null
+          reviews_count?: number | null
+          source_external_id?: string | null
+          source_type?: string
+          updated_at?: string
+          website?: string | null
+          zone?: string | null
+        }
+        Update: {
+          address?: string | null
+          batch_id?: string | null
+          candidate_status?: string
+          canonical_name?: string
+          canonical_slug?: string | null
+          canonical_subcategory?: string | null
+          canonical_vertical?: string
+          city?: string
+          country?: string
+          created_at?: string
+          duplicate_group_id?: string | null
+          entity_id?: string | null
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          phone?: string | null
+          price_tier?: number | null
+          quality_score?: number | null
+          rating?: number | null
+          raw_id?: string | null
+          reason_json?: Json | null
+          reviews_count?: number | null
+          source_external_id?: string | null
+          source_type?: string
+          updated_at?: string
+          website?: string | null
+          zone?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "onboarding_shop_candidates_batch_id_fkey"
+            columns: ["batch_id"]
+            isOneToOne: false
+            referencedRelation: "import_batches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "onboarding_shop_candidates_raw_id_fkey"
+            columns: ["raw_id"]
+            isOneToOne: false
+            referencedRelation: "imported_shop_raw"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       ops_live_metrics: {
         Row: {
