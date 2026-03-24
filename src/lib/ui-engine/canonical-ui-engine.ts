@@ -265,7 +265,7 @@ export function resolveCanonicalUI(
 
     motion: VERTICAL_MOTION[vert.value] || VERTICAL_MOTION.food,
     card: VERTICAL_CARD[vert.value] || VERTICAL_CARD.food,
-    button: VERTICAL_BUTTON[vert.value] || VERTICAL_BUTTON.food,
+    button: getVerticalButton(vert.value),
     wording: buildWording(vert.value, subcategoryKey),
   };
 }
