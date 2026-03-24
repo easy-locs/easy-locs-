@@ -95,3 +95,6 @@ verify_jwt = false
 
 [functions.admin-payout-reject]
 verify_jwt = false
+
+[functions.run-ingestion-pipeline]
+verify_jwt = false

@@ -16894,24 +16894,43 @@ export type Database = {
           city: string
           coherence_score: number | null
           coherence_status: string | null
+          country: string | null
           cover_image: string | null
           created_at: string
+          cuisine_tags: string[] | null
+          delivery_available: boolean | null
           delivery_radius_km: number | null
           delivery_time_max: number
           delivery_time_min: number
           delivery_zones: Json | null
+          description: string | null
           display_priority: number | null
           duplicate_confidence: number | null
           duplicate_of: string | null
+          field_sources_json: Json | null
+          freshness_score: number | null
+          halal: boolean | null
           id: string
+          images: string[] | null
+          ingestion_warnings: string[] | null
+          integrity_score: number | null
           is_active: boolean
           is_featured: boolean
           is_flagged: boolean | null
           is_open: boolean
+          last_seen_at: string | null
+          last_verified_at: string | null
+          latitude: number | null
           logo_image: string | null
+          longitude: number | null
+          menu_items_json: Json | null
+          menu_sections_json: Json | null
           minimum_order_amount: number | null
           name: string
           opening_hours: Json | null
+          phone: string | null
+          pipeline_last_run_at: string | null
+          pipeline_status: string | null
           price_level: number
           promo_active: boolean | null
           promo_text: string | null
@@ -16919,12 +16938,17 @@ export type Database = {
           review_count: number
           review_required: boolean | null
           route_status: string | null
+          source_confidence: number | null
+          source_key: string | null
+          source_updated_at: string | null
+          source_url: string | null
           subcategory: string
           support_email: string | null
           support_phone: string | null
           tier: string
           visibility_mode: string | null
           visibility_score: number
+          website: string | null
         }
         Insert: {
           area: string
@@ -16934,24 +16958,43 @@ export type Database = {
           city?: string
           coherence_score?: number | null
           coherence_status?: string | null
+          country?: string | null
           cover_image?: string | null
           created_at?: string
+          cuisine_tags?: string[] | null
+          delivery_available?: boolean | null
           delivery_radius_km?: number | null
           delivery_time_max?: number
           delivery_time_min?: number
           delivery_zones?: Json | null
+          description?: string | null
           display_priority?: number | null
           duplicate_confidence?: number | null
           duplicate_of?: string | null
+          field_sources_json?: Json | null
+          freshness_score?: number | null
+          halal?: boolean | null
           id?: string
+          images?: string[] | null
+          ingestion_warnings?: string[] | null
+          integrity_score?: number | null
           is_active?: boolean
           is_featured?: boolean
           is_flagged?: boolean | null
           is_open?: boolean
+          last_seen_at?: string | null
+          last_verified_at?: string | null
+          latitude?: number | null
           logo_image?: string | null
+          longitude?: number | null
+          menu_items_json?: Json | null
+          menu_sections_json?: Json | null
           minimum_order_amount?: number | null
           name: string
           opening_hours?: Json | null
+          phone?: string | null
+          pipeline_last_run_at?: string | null
+          pipeline_status?: string | null
           price_level?: number
           promo_active?: boolean | null
           promo_text?: string | null
@@ -16959,12 +17002,17 @@ export type Database = {
           review_count?: number
           review_required?: boolean | null
           route_status?: string | null
+          source_confidence?: number | null
+          source_key?: string | null
+          source_updated_at?: string | null
+          source_url?: string | null
           subcategory: string
           support_email?: string | null
           support_phone?: string | null
           tier?: string
           visibility_mode?: string | null
           visibility_score?: number
+          website?: string | null
         }
         Update: {
           area?: string
@@ -16974,24 +17022,43 @@ export type Database = {
           city?: string
           coherence_score?: number | null
           coherence_status?: string | null
+          country?: string | null
           cover_image?: string | null
           created_at?: string
+          cuisine_tags?: string[] | null
+          delivery_available?: boolean | null
           delivery_radius_km?: number | null
           delivery_time_max?: number
           delivery_time_min?: number
           delivery_zones?: Json | null
+          description?: string | null
           display_priority?: number | null
           duplicate_confidence?: number | null
           duplicate_of?: string | null
+          field_sources_json?: Json | null
+          freshness_score?: number | null
+          halal?: boolean | null
           id?: string
+          images?: string[] | null
+          ingestion_warnings?: string[] | null
+          integrity_score?: number | null
           is_active?: boolean
           is_featured?: boolean
           is_flagged?: boolean | null
           is_open?: boolean
+          last_seen_at?: string | null
+          last_verified_at?: string | null
+          latitude?: number | null
           logo_image?: string | null
+          longitude?: number | null
+          menu_items_json?: Json | null
+          menu_sections_json?: Json | null
           minimum_order_amount?: number | null
           name?: string
           opening_hours?: Json | null
+          phone?: string | null
+          pipeline_last_run_at?: string | null
+          pipeline_status?: string | null
           price_level?: number
           promo_active?: boolean | null
           promo_text?: string | null
@@ -16999,12 +17066,17 @@ export type Database = {
           review_count?: number
           review_required?: boolean | null
           route_status?: string | null
+          source_confidence?: number | null
+          source_key?: string | null
+          source_updated_at?: string | null
+          source_url?: string | null
           subcategory?: string
           support_email?: string | null
           support_phone?: string | null
           tier?: string
           visibility_mode?: string | null
           visibility_score?: number
+          website?: string | null
         }
         Relationships: []
       }
