@@ -61,6 +61,11 @@ export interface ConversationThread {
   dealId?: string;
   assignedTo?: string;
 
+  /** V2 canonical stack flag — when true, read/write uses conversations_v2 + chat_messages_v2 */
+  isV2?: boolean;
+  /** V2 conversation ID (UUID from conversations_v2) */
+  v2ConversationId?: string;
+
   // State
   unreadCount: number;
   lastMessage?: string;
