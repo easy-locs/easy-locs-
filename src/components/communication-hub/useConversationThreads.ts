@@ -331,7 +331,7 @@ export function useConversationThreads() {
                 v2ConversationId: conv.id,
                 isV2: true,
                 unreadCount: 0,
-                lastMessage: conv.last_message_body || undefined,
+                lastMessage: conv.title || undefined,
                 lastMessageTime: conv.last_message_at || conv.created_at,
               });
             }
