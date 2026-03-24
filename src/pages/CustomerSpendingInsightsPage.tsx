@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import { formatMoneyByCountry } from "@/lib/currency-engine";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -66,9 +67,9 @@ export default function CustomerSpendingInsightsPage() {
       {!isLoading && data && (
         <>
           <div className="grid grid-cols-3 gap-3 px-4 pb-4">
-            <Metric title="Total Spent" value={`${data.totalSpent.toFixed(2)} AED`} />
+            <Metric title="Total Spent" value={formatMoneyByCountry(data.totalSpent, null, "AED")} />
             <Metric title="Orders" value={String(data.orderCount)} />
-            <Metric title="Avg Order" value={`${data.averageOrder.toFixed(2)} AED`} />
+            <Metric title="Avg Order" value={formatMoneyByCountry(data.averageOrder, null, "AED")} />
           </div>
 
           <div className="mx-4 rounded-2xl border border-border/20 bg-card p-4 space-y-2">
@@ -79,7 +80,7 @@ export default function CustomerSpendingInsightsPage() {
               data.monthly.map(([month, amount]: any) => (
                 <div key={month} className="flex items-center justify-between text-sm">
                   <span className="text-muted-foreground">{month}</span>
-                  <span className="font-bold text-foreground">{Number(amount).toFixed(2)} AED</span>
+                  <span className="font-bold text-foreground">{formatMoneyByCountry(Number(amount), null, "AED")}</span>
                 </div>
               ))
             )}

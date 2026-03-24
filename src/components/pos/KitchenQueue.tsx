@@ -3,6 +3,7 @@
  * 4-column KDS: New → Accepted → Preparing → Ready
  */
 import { useState, useEffect } from "react";
+import { formatMoneyByCountry } from "@/lib/currency-engine";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -187,7 +188,7 @@ export default function KitchenQueue({ shopId }: KitchenQueueProps) {
 
                         <div className="flex items-center justify-between pt-1">
                           <span className="text-xs font-bold text-foreground">
-                            {Number(order.total_amount || 0).toFixed(2)} {order.currency || "AED"}
+                            {formatMoneyByCountry(Number(order.total_amount || 0), null, order.currency || "AED")}
                           </span>
                           {next && (
                             <Button
