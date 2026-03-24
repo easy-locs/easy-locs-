@@ -20,54 +20,36 @@ export async function trackAnalyticsEvent(params: {
   queryText?: string | null;
   metadata?: Record<string, unknown>;
 }) {
-  const payload = {
-    event_type: params.eventType,
-    entity_id:
-      params.orderId ??
-      params.merchantId ??
-      params.productId ??
-      params.userId ??
-      "anonymous",
-    entity_type:
-      params.orderId
-        ? "order"
-        : params.merchantId
-          ? "merchant"
-          : params.productId
-            ? "product"
-            : "user_session",
-    metric: "analytics",
-    metadata_json: {
-      userId: params.userId ?? null,
+  const entityId = params.orderId ?? params.merchantId ?? params.productId ?? params.userId ?? "anonymous";
+  const entityType = params.orderId ? "order" : params.merchantId ? "merchant" : params.productId ? "product" : "user_session";
+
+  const { error } = await (supabase as any).from("activity_logs").insert({
+    id: crypto.randomUUID(),
+    action: params.eventType,
+    entity_id: entityId,
+    entity_type: entityType,
+    user_id: params.userId ?? null,
+    metadata: {
       merchantId: params.merchantId ?? null,
       orderId: params.orderId ?? null,
       productId: params.productId ?? null,
       queryText: params.queryText ?? null,
       ...(params.metadata ?? {}),
-    } as any,
-    new_value: 1,
-    previous_value: 0,
-  };
-
-  const { error } = await supabase.from("dino_learning_events").insert(payload as any);
+    },
+  });
   if (error) throw error;
   return true;
 }
 
 export async function getAnalyticsSnapshot() {
-  const { data, error } = await supabase
-    .from("dino_learning_events")
-    .select("event_type, created_at, metadata_json")
-    .in("event_type", [
-      "home_view",
-      "search_used",
-      "merchant_view",
-      "product_add_to_cart",
-      "checkout_started",
-      "order_created",
-      "order_completed",
-      "favorite_added",
-      "favorite_removed",
+  const { data, error } = await (supabase as any)
+    .from("activity_logs")
+    .select("action, created_at, metadata")
+    .in("action", [
+      "home_view", "search_used", "merchant_view",
+      "product_add_to_cart", "checkout_started",
+      "order_created", "order_completed",
+      "favorite_added", "favorite_removed",
     ])
     .order("created_at", { ascending: false })
     .limit(1000);
@@ -75,7 +57,7 @@ export async function getAnalyticsSnapshot() {
   if (error) throw error;
 
   const rows = data ?? [];
-  const count = (key: string) => rows.filter((r: any) => r.event_type === key).length;
+  const count = (key: string) => rows.filter((r: any) => r.action === key).length;
 
   return {
     homeViews: count("home_view"),

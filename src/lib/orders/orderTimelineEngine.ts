@@ -29,8 +29,8 @@ export async function getOrderTimeline(orderId: string): Promise<OrderTimelineIt
   const [{ data: order, error: orderErr }, { data: events, error: eventErr }] =
     await Promise.all([
       supabase.from("orders").select("*").eq("id", orderId).maybeSingle(),
-      supabase
-        .from("dino_learning_events")
+      (supabase as any)
+        .from("activity_logs")
         .select("*")
         .eq("entity_id", orderId)
         .order("created_at", { ascending: true })

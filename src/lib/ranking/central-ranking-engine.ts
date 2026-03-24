@@ -156,13 +156,22 @@ export function computeCentralRank(input: RankingInput): RankingResult {
     penalty += 20;
     penalties.push("missing_geo");
   }
-  if (input.vertical === "food" && !input.hasMenu) {
-    penalty += 25;
-    penalties.push("missing_menu_food");
-  }
-  if (input.vertical === "food" && !input.hasPrices) {
-    penalty += 20;
-    penalties.push("missing_prices_food");
+  // Menu/price penalties only for merchants (not seeds/candidates pre-claim)
+  if (input.entityType === "merchant") {
+    if (input.vertical === "food" && !input.hasMenu) {
+      penalty += 25;
+      penalties.push("missing_menu_food");
+    }
+    if (input.vertical === "food" && !input.hasPrices) {
+      penalty += 20;
+      penalties.push("missing_prices_food");
+    }
+  } else {
+    // Lighter penalties for seeds/candidates
+    if (input.vertical === "food" && !input.hasMenu) {
+      penalty += 8;
+      penalties.push("seed_no_menu");
+    }
   }
   if (!input.hasCover) {
     penalty += 10;
@@ -256,25 +265,46 @@ export function buildRankingInputFromCandidate(c: Record<string, any>): RankingI
 }
 
 export function buildRankingInputFromSeed(s: Record<string, any>): RankingInput {
+  const hasLogo = !!(s.logo_image || s.logo_url);
+  const hasCover = !!(s.cover_image || s.cover_url);
+  const hasGeo = !!(s.latitude && s.longitude);
+  const hasSub = !!(s.subcategory && s.subcategory !== '');
+  const hasRating = (s.rating ?? 0) > 0;
+  const reviewCount = s.review_count ?? 0;
+
+  // Better data quality estimation from available fields
+  let dataScore = 30;
+  if (s.name) dataScore += 10;
+  if (hasSub) dataScore += 10;
+  if (s.support_phone || s.support_email) dataScore += 10;
+  if (s.opening_hours) dataScore += 10;
+  if (s.area || s.city) dataScore += 10;
+  if (hasRating) dataScore += 10;
+  dataScore = Math.min(100, dataScore);
+
+  const reputationScore = hasRating
+    ? Math.min(100, (s.rating / 5) * 80 + Math.min(20, reviewCount / 5))
+    : 20;
+
   return {
     entityId: s.id,
     entityType: "seed",
     vertical: s.category || "food",
-    dataQualityScore: s.visibility_score ?? 50,
-    menuQualityScore: 30,
-    visualQualityScore: s.cover_image ? 60 : 10,
-    geoConfidenceScore: (s.latitude && s.longitude) ? 80 : 0,
-    taxonomyConfidenceScore: s.subcategory ? 70 : 30,
-    dedupRiskScore: 0,
-    reputationScore: Math.min(100, ((s.rating ?? 0) / 5) * 100),
-    conversionScore: Math.min(100, (s.visibility_score ?? 50) * 0.8),
+    dataQualityScore: dataScore,
+    menuQualityScore: 20, // seeds rarely have structured menus
+    visualQualityScore: hasCover ? (hasLogo ? 70 : 50) : (hasLogo ? 30 : 10),
+    geoConfidenceScore: hasGeo ? 80 : (s.area ? 40 : 0),
+    taxonomyConfidenceScore: hasSub ? 70 : (s.category ? 40 : 10),
+    dedupRiskScore: s.duplicate_of ? 95 : (s.duplicate_confidence ?? 0),
+    reputationScore,
+    conversionScore: Math.min(100, dataScore * 0.6 + reputationScore * 0.4),
     claimReadinessScore: s.display_priority ?? 40,
-    boostReadinessScore: Math.min(100, ((s.rating ?? 0) / 5) * 100),
+    boostReadinessScore: reputationScore,
     freshnessScore: 70,
-    hasGeo: !!(s.latitude && s.longitude),
-    hasCover: !!s.cover_image,
-    hasLogo: false,
-    hasMenu: false,
+    hasGeo,
+    hasCover,
+    hasLogo,
+    hasMenu: false, // seeds don't have structured menus by default
     hasPrices: false,
   };
 }

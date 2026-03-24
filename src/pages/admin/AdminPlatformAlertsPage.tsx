@@ -10,13 +10,13 @@ export default function AdminPlatformAlertsPage() {
     queryFn: async () => {
       const [{ data: tickets }, { data: notifications }, { data: orders }] = await Promise.all([
         supabase.from("support_tickets").select("id,status").limit(2000),
-        supabase.from("dino_notifications").select("id,status").limit(2000),
+        (supabase as any).from("notifications").select("id,type").limit(2000),
         supabase.from("orders").select("id,status,payment_status").limit(3000),
       ]);
 
       return {
         openTickets: (tickets ?? []).filter((r: any) => r.status === "open").length,
-        failedNotifications: (notifications ?? []).filter((r: any) => r.status === "failed").length,
+        failedNotifications: (notifications ?? []).filter((r: any) => !r.read_at).length,
         disputedOrders: (orders ?? []).filter((r: any) => r.status === "disputed").length,
         unpaidOrders: (orders ?? []).filter((r: any) =>
           ["unpaid", "pending"].includes(String(r.payment_status ?? ""))

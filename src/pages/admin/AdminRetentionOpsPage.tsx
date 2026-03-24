@@ -13,10 +13,10 @@ export default function AdminRetentionOpsPage() {
           supabase.from("orders").select("customer_user_id,status,total_amount").limit(2000),
           supabase.from("user_favorites").select("user_id").limit(2000),
           (supabase as any).from("loyalty_accounts").select("*").limit(2000),
-          supabase
-            .from("dino_learning_events")
-            .select("entity_id,event_type")
-            .eq("event_type", "search_used")
+          (supabase as any)
+            .from("activity_logs")
+            .select("entity_id,action")
+            .eq("action", "search_used")
             .limit(2000),
         ]);
 
