@@ -1331,6 +1331,17 @@ const pageFr: Record<string, string> = {
   "landing.hero.tw_services": "Services & Conciergerie",
   "landing.hero.demo": "Voir la démo",
 
+  "landing.join.shop": "Ouvrir une boutique",
+  "landing.join.shop_desc": "Commencez à vendre en ligne",
+  "landing.join.restaurant": "Restaurant",
+  "landing.join.restaurant_desc": "Référencez votre restaurant",
+  "landing.join.agency": "Agence immobilière",
+  "landing.join.agency_desc": "Gérez vos biens et équipes",
+  "landing.join.provider": "Prestataire de services",
+  "landing.join.provider_desc": "Proposez vos services",
+  "landing.nav.popular": "Populaire",
+  "landing.nav.more_languages": "Plus de langues",
+
   "landing.nav.explore": "Explorer",
   "landing.nav.marketplace": "Marketplace",
   "landing.nav.properties": "Propriétés",
