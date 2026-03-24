@@ -157,10 +157,10 @@ export default function TravelStayHub() {
             </button>
 
             <h1 className="text-[28px] font-black text-white tracking-tight leading-tight">
-              Where to <span style={{ color: "hsl(38 70% 58%)" }}>escape</span>?
+              {tc("travel.hero_title")}
             </h1>
             <p className="text-[13px] text-white/55 mt-1 font-medium">
-              Luxury hotels, beach resorts & cozy stays across UAE
+              {tc("travel.hero_subtitle")}
             </p>
           </motion.div>
 
