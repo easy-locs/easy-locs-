@@ -21,24 +21,25 @@ import PremiumMerchantCard from "@/components/discovery/PremiumMerchantCard";
 import { useVerticalListings, type ListingItem } from "@/hooks/useVerticalListings";
 import { getSubcategoryLabel } from "@/lib/discovery/verticals";
 import { resolveCanonicalUI } from "@/lib/ui-engine";
+import { tc } from "@/lib/i18n-canonical";
 
 type StayTab = "hotel" | "resort" | "short_stay" | "serviced_apartment";
 type SortMode = "rating" | "price" | "distance" | "reviews";
 
-const STAY_TABS: { key: StayTab; label: string; emoji: string }[] = [
-  { key: "hotel", label: "Hotels", emoji: "🏨" },
-  { key: "resort", label: "Resorts", emoji: "🏖️" },
-  { key: "short_stay", label: "Short Stay", emoji: "🛏️" },
-  { key: "serviced_apartment", label: "Serviced", emoji: "🏢" },
+const STAY_TABS: { key: StayTab; labelKey: string; emoji: string }[] = [
+  { key: "hotel", labelKey: "discovery.subcategory.hotel.title", emoji: "🏨" },
+  { key: "resort", labelKey: "discovery.subcategory.resort.title", emoji: "🏖️" },
+  { key: "short_stay", labelKey: "discovery.subcategory.short_stay.title", emoji: "🛏️" },
+  { key: "serviced_apartment", labelKey: "discovery.subcategory.serviced_apartment.title", emoji: "🏢" },
 ];
 
 const AMENITY_FILTERS = [
-  { key: "wifi", label: "Free WiFi", icon: <Wifi className="h-3.5 w-3.5" /> },
-  { key: "pool", label: "Pool", icon: <Waves className="h-3.5 w-3.5" /> },
-  { key: "parking", label: "Parking", icon: <Car className="h-3.5 w-3.5" /> },
-  { key: "gym", label: "Gym", icon: <Dumbbell className="h-3.5 w-3.5" /> },
-  { key: "breakfast", label: "Breakfast", icon: <Coffee className="h-3.5 w-3.5" /> },
-  { key: "spa", label: "Spa", icon: <Bath className="h-3.5 w-3.5" /> },
+  { key: "wifi", labelKey: "travel.wifi", icon: <Wifi className="h-3.5 w-3.5" /> },
+  { key: "pool", labelKey: "travel.pool", icon: <Waves className="h-3.5 w-3.5" /> },
+  { key: "parking", labelKey: "travel.parking", icon: <Car className="h-3.5 w-3.5" /> },
+  { key: "gym", labelKey: "travel.gym", icon: <Dumbbell className="h-3.5 w-3.5" /> },
+  { key: "breakfast", labelKey: "travel.breakfast", icon: <Coffee className="h-3.5 w-3.5" /> },
+  { key: "spa", labelKey: "travel.spa", icon: <Bath className="h-3.5 w-3.5" /> },
 ];
 
 export default function TravelStayHub() {
@@ -156,10 +157,10 @@ export default function TravelStayHub() {
             </button>
 
             <h1 className="text-[28px] font-black text-white tracking-tight leading-tight">
-              Where to <span style={{ color: "hsl(38 70% 58%)" }}>escape</span>?
+              {tc("travel.hero_title")}
             </h1>
             <p className="text-[13px] text-white/55 mt-1 font-medium">
-              Luxury hotels, beach resorts & cozy stays across UAE
+              {tc("travel.hero_subtitle")}
             </p>
           </motion.div>
 
@@ -200,8 +201,8 @@ export default function TravelStayHub() {
                   >
                     <CalendarIcon className="h-4 w-4 shrink-0" style={{ color: "hsla(38,70%,58%,0.7)" }} />
                     <div className="flex flex-col">
-                      <span className="text-[9px] font-semibold uppercase tracking-wider" style={{ color: "hsla(38,70%,58%,0.6)" }}>Check-in</span>
-                      <span className="font-bold">{checkIn ? format(checkIn, "dd MMM") : "Add date"}</span>
+                      <span className="text-[9px] font-semibold uppercase tracking-wider" style={{ color: "hsla(38,70%,58%,0.6)" }}>{tc("travel.check_in")}</span>
+                      <span className="font-bold">{checkIn ? format(checkIn, "dd MMM") : tc("common.add_date")}</span>
                     </div>
                   </button>
                 </PopoverTrigger>
@@ -229,8 +230,8 @@ export default function TravelStayHub() {
                   >
                     <CalendarIcon className="h-4 w-4 shrink-0" style={{ color: "hsla(38,70%,58%,0.7)" }} />
                     <div className="flex flex-col">
-                      <span className="text-[9px] font-semibold uppercase tracking-wider" style={{ color: "hsla(38,70%,58%,0.6)" }}>Check-out</span>
-                      <span className="font-bold">{checkOut ? format(checkOut, "dd MMM") : "Add date"}</span>
+                      <span className="text-[9px] font-semibold uppercase tracking-wider" style={{ color: "hsla(38,70%,58%,0.6)" }}>{tc("travel.check_out")}</span>
+                      <span className="font-bold">{checkOut ? format(checkOut, "dd MMM") : tc("common.add_date")}</span>
                     </div>
                   </button>
                 </PopoverTrigger>
@@ -256,7 +257,7 @@ export default function TravelStayHub() {
                 animate={{ opacity: 1, height: "auto" }}
               >
                 <BedDouble className="h-3.5 w-3.5" />
-                {nightCount} night{nightCount > 1 ? "s" : ""}
+                {nightCount} {nightCount > 1 ? tc("common.nights", { count: nightCount }) : tc("common.night", { count: nightCount })}
               </motion.div>
             )}
 
@@ -273,7 +274,7 @@ export default function TravelStayHub() {
                   onClick={() => setGuestCount(g => Math.max(1, g === 4 ? 1 : g + 1))}
                 >
                   <Users className="h-3.5 w-3.5" style={{ color: "hsla(38,70%,58%,0.7)" }} />
-                  {guestCount} Guest{guestCount > 1 ? "s" : ""}
+                  {guestCount} {guestCount > 1 ? tc("common.guests", { count: guestCount }) : tc("common.guest", { count: guestCount })}
                 </button>
                 <button
                   className="flex items-center justify-center gap-1.5 h-12 px-3 rounded-xl text-[12px] font-bold transition-all"
@@ -307,17 +308,17 @@ export default function TravelStayHub() {
         {/* ═══ BREADCRUMB ═══ */}
         <nav className="flex items-center gap-1.5 mb-4 text-[11px] overflow-x-auto scrollbar-none">
           <Link to="/" className="text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1 shrink-0">
-            <Home className="h-3 w-3" /> Home
+            <Home className="h-3 w-3" /> {tc("nav.home")}
           </Link>
           <ChevronRight className="h-3 w-3 text-muted-foreground/50 shrink-0" />
-          <Link to="/travel" className="text-muted-foreground hover:text-foreground transition-colors shrink-0">Travel</Link>
+          <Link to="/travel" className="text-muted-foreground hover:text-foreground transition-colors shrink-0">{tc("discovery.vertical.travel.title")}</Link>
           <ChevronRight className="h-3 w-3 text-muted-foreground/50 shrink-0" />
-          <span className="font-bold shrink-0" style={{ color: "hsl(38 70% 52%)" }}>Stays</span>
+          <span className="font-bold shrink-0" style={{ color: "hsl(38 70% 52%)" }}>{tc("travel.stays")}</span>
         </nav>
 
         {/* Tab selector */}
         <div className="flex gap-1.5 mb-5 overflow-x-auto scrollbar-none -mx-1 px-1">
-          {STAY_TABS.map(({ key, label, emoji }) => (
+          {STAY_TABS.map(({ key, labelKey, emoji }) => (
             <button
               key={key}
               onClick={() => setActiveTab(key)}
@@ -335,14 +336,14 @@ export default function TravelStayHub() {
               }}
             >
               <span className="text-base">{emoji}</span>
-              <span className="text-[12px]">{label}</span>
+              <span className="text-[12px]">{tc(labelKey)}</span>
             </button>
           ))}
         </div>
 
         {/* Amenity filters */}
         <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-none -mx-1 px-1 mb-4">
-          {AMENITY_FILTERS.map(({ key, label, icon }) => (
+          {AMENITY_FILTERS.map(({ key, labelKey, icon }) => (
             <button
               key={key}
               onClick={() => toggleAmenity(key)}
@@ -357,7 +358,7 @@ export default function TravelStayHub() {
                 border: `1px solid ${activeAmenities.includes(key) ? "hsl(38 70% 52% / 0.3)" : "hsl(var(--border) / 0.15)"}`,
               }}
             >
-              {icon} {label}
+              {icon} {tc(labelKey)}
             </button>
           ))}
         </div>
@@ -374,7 +375,7 @@ export default function TravelStayHub() {
                 color: sortBy === s ? "hsl(var(--background))" : "hsl(var(--muted-foreground))",
               }}
             >
-              {s === "rating" ? "⭐ Top rated" : s === "price" ? "💰 Best price" : s === "distance" ? "📍 Nearest" : "💬 Most reviewed"}
+              {s === "rating" ? `⭐ ${tc("common.top_rated")}` : s === "price" ? `💰 ${tc("common.best_price")}` : s === "distance" ? `📍 ${tc("common.nearest")}` : `💬 ${tc("common.most_reviewed")}`}
             </button>
           ))}
         </div>

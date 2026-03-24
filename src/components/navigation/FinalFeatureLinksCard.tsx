@@ -1,21 +1,22 @@
 import { useNavigate } from "react-router-dom";
+import { tc } from "@/lib/i18n-canonical";
 
 export function FinalFeatureLinksCard() {
   const navigate = useNavigate();
 
   const rows = [
-    { label: "My Profile", path: "/me" },
-    { label: "Favorites", path: "/favorites" },
-    { label: "Saved Carts", path: "/me/saved-carts" },
-    { label: "Auto Repeat", path: "/me/auto-repeat" },
-    { label: "Redeem Rewards", path: "/me/redeem-rewards" },
-    { label: "Support Tickets", path: "/support/tickets" },
+    { label: tc("nav.me"), path: "/me" },
+    { label: tc("nav.favorites"), path: "/favorites" },
+    { label: tc("commerce.saved_carts"), path: "/me/saved-carts" },
+    { label: tc("commerce.auto_repeat"), path: "/me/auto-repeat" },
+    { label: tc("wallet.redeem"), path: "/me/redeem-rewards" },
+    { label: tc("nav.support"), path: "/support/tickets" },
   ];
 
   return (
     <div className="px-4 py-3">
       <p className="text-[11px] uppercase tracking-wide font-bold text-muted-foreground mb-3">
-        Quick Access
+        {tc("nav.quick_access")}
       </p>
 
       <div className="space-y-2">
