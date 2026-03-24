@@ -265,6 +265,16 @@ export default function VerticalHubPage({ vertical }: { vertical: TaxonomyVertic
           </div>
         )}
 
+        {/* ═══ BOOST SLOT — Vertical Hub Inline ═══ */}
+        <BoostSlotRenderer
+          surface="vertical"
+          slotKey="inline_banner_1"
+          variant="inline"
+          vertical={vertical.value}
+          subcategory={activeSub}
+          className="mb-4"
+        />
+
         {/* ═══ FLAT LIST — motion driven by canonical engine ═══ */}
         {!isLoading && (activeSub || !grouped) && filtered.length > 0 && (
           <>
