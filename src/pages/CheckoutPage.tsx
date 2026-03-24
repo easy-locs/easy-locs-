@@ -38,6 +38,8 @@ export default function CheckoutPage() {
 
   const deliveryFee = mode === "delivery" ? 5 : 0;
   const grandTotal = total + deliveryFee;
+  const cur = resolveDisplayCurrency({ country: "AE" });
+  const fmt = (n: number) => formatMoneyByCountry(n, null, cur);
 
   const placeOrder = async () => {
     if (!user) { toast.error("Please sign in to place an order"); return; }
