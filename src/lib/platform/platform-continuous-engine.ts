@@ -278,6 +278,15 @@ export function startContinuousEngine() {
     console.log("[continuous] Auto-onboarding cron triggered");
   }, "data");
 
+  // AI Feedback Recompute (15min)
+  registerJob("ai-feedback-recompute", 15 * 60_000, async () => {
+    const { recomputeEntityAiScores } = await import("@/lib/ai/ai-feedback-engine");
+    const result = await recomputeEntityAiScores(200);
+    const job = jobs.find(j => j.name === "ai-feedback-recompute");
+    if (job) job.itemsProcessed = result.updated;
+    if (result.updated > 0) console.log(`[continuous] AI feedback recomputed ${result.updated} entities`);
+  }, "commerce");
+
   // F) CRM Reactivation Engine (1h)
   registerJob("crm-reactivation", 60 * 60_000, async () => {
     const { runCrmReactivationEngine } = await import("@/lib/engines/crm-reactivation-engine");
