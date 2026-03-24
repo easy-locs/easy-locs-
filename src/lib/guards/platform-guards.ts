@@ -84,7 +84,29 @@ export function guardI18n(text: string, componentName?: string): void {
   }
 }
 
-// ── EventBus Guard — critical actions must emit events ──
+// ── Anti-Parallel Ads Guard ──
+const BANNED_AD_COMPONENTS = new Set([
+  "SponsoredSlot",
+  "SponsoredBanner",
+  "useAdTracking",
+  "ad-slots",
+  "sponsored-ranking",
+]);
+
+export function guardNoExternalAds(componentName: string): {
+  allowed: boolean;
+  reason?: string;
+} {
+  if (BANNED_AD_COMPONENTS.has(componentName)) {
+    return {
+      allowed: false,
+      reason: `[ADS GUARD] Component "${componentName}" is banned. Use Canonical Boost Engine only.`,
+    };
+  }
+  return { allowed: true };
+}
+
+
 const CRITICAL_ACTIONS = new Set([
   "send_message",
   "create_conversation",

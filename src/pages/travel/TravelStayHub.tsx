@@ -18,6 +18,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { format, addDays, differenceInDays } from "date-fns";
 import SEOHead from "@/components/SEOHead";
 import PremiumMerchantCard from "@/components/discovery/PremiumMerchantCard";
+import { BoostSlotRenderer } from "@/components/boost/BoostSlotRenderer";
 import { useVerticalListings, type ListingItem } from "@/hooks/useVerticalListings";
 import { getSubcategoryLabel } from "@/lib/discovery/verticals";
 import { resolveCanonicalUI } from "@/lib/ui-engine";
@@ -305,6 +306,15 @@ export default function TravelStayHub() {
 
       {/* ═══ CONTENT ═══ */}
       <div className="px-4 mt-6">
+        {/* ═══ BOOST SLOT — Travel Stays ═══ */}
+        <BoostSlotRenderer
+          surface="travel"
+          slotKey="hero_primary"
+          variant="inline"
+          vertical="travel"
+          subcategory={activeTab}
+          className="mb-4"
+        />
         {/* ═══ BREADCRUMB ═══ */}
         <nav className="flex items-center gap-1.5 mb-4 text-[11px] overflow-x-auto scrollbar-none">
           <Link to="/" className="text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1 shrink-0">
