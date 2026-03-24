@@ -1,6 +1,6 @@
 /**
- * UAE Auto Shop Import Pipeline
- * SOURCE → PARSE → NORMALIZE → TAXONOMY → GEO → DEDUP → SCORE → CREATE
+ * UAE Auto Shop Import Pipeline — ENRICHED
+ * SOURCE → PARSE → NORMALIZE → TAXONOMY → GEO → DEDUP → SCORE → ENRICH → CREATE
  * NO activation messages. NO merchant contact. Import only.
  */
 import { supabase } from "@/integrations/supabase/client";
@@ -25,7 +25,16 @@ export interface RawShopInput {
   hours?: any;
   menu?: any[];
   images?: string[];
+  logo_url?: string;
+  cover_url?: string;
   website?: string;
+  description?: string;
+  cuisine_tags?: string[];
+  amenities?: string[];
+  delivery_available?: boolean;
+  dine_in?: boolean;
+  takeaway?: boolean;
+  halal?: boolean;
   raw_payload?: any;
 }
 
@@ -45,6 +54,8 @@ export interface PipelineResult {
   total_duplicates: number;
   total_failed: number;
   errors: Array<{ name: string; error: string }>;
+  quality_distribution: { approved: number; review: number; low_quality: number };
+  avg_completeness: number;
 }
 
 // ─── STEP 1: Create batch ───
@@ -92,7 +103,6 @@ async function ingestRaw(batchId: string, sourceType: string, items: RawShopInpu
     parsed_status: "pending",
   }));
 
-  // Insert in chunks of 50
   for (let i = 0; i < rows.length; i += 50) {
     const chunk = rows.slice(i, i + 50);
     const { error } = await (supabase as any).from("imported_shop_raw").insert(chunk);
@@ -135,11 +145,24 @@ const CATEGORY_MAP: Record<string, { vertical: string; subcategory: string }> = 
   indian: { vertical: "food", subcategory: "indian" },
   chinese: { vertical: "food", subcategory: "chinese" },
   italian: { vertical: "food", subcategory: "italian" },
+  lebanese: { vertical: "food", subcategory: "lebanese" },
+  mexican: { vertical: "food", subcategory: "mexican" },
+  thai: { vertical: "food", subcategory: "thai" },
+  japanese: { vertical: "food", subcategory: "japanese" },
+  korean: { vertical: "food", subcategory: "korean" },
   fast_food: { vertical: "food", subcategory: "fast_food" },
+  seafood: { vertical: "food", subcategory: "seafood" },
+  shawarma: { vertical: "food", subcategory: "shawarma" },
+  desserts: { vertical: "food", subcategory: "desserts" },
+  juice: { vertical: "food", subcategory: "juice" },
+  coffee: { vertical: "food", subcategory: "cafe" },
   pharmacy: { vertical: "healthcare", subcategory: "pharmacy" },
   clinic: { vertical: "healthcare", subcategory: "clinic" },
   hospital: { vertical: "healthcare", subcategory: "hospital" },
+  dentist: { vertical: "healthcare", subcategory: "dentist" },
+  optician: { vertical: "healthcare", subcategory: "optician" },
   hotel: { vertical: "property", subcategory: "hotel" },
+  resort: { vertical: "property", subcategory: "resort" },
   salon: { vertical: "services", subcategory: "salon" },
   spa: { vertical: "services", subcategory: "spa" },
   gym: { vertical: "services", subcategory: "fitness" },
@@ -151,44 +174,190 @@ const CATEGORY_MAP: Record<string, { vertical: string; subcategory: string }> = 
   furniture: { vertical: "shops", subcategory: "furniture" },
   laundry: { vertical: "services", subcategory: "cleaning" },
   car_wash: { vertical: "services", subcategory: "car_wash" },
+  pet_shop: { vertical: "shops", subcategory: "pet" },
+  florist: { vertical: "shops", subcategory: "florist" },
 };
 
 function mapTaxonomy(rawCat?: string | null, rawSub?: string | null): { vertical: string; subcategory: string | null } {
   const normalized = (rawSub ?? rawCat ?? "").toLowerCase().trim().replace(/[\s-]+/g, "_");
-  
   if (CATEGORY_MAP[normalized]) return CATEGORY_MAP[normalized];
-  
   const vertical = resolveVerticalFromSubcategory(normalized);
   return { vertical, subcategory: normalized || null };
 }
 
-// ─── STEP 5: Quality scoring ───
-function calculateQualityScore(candidate: {
-  canonical_name: string;
-  phone?: string | null;
-  latitude?: number | null;
-  longitude?: number | null;
-  canonical_subcategory?: string | null;
-  rating?: number | null;
-  reviews_count?: number | null;
-  website?: string | null;
-  address?: string | null;
-}): number {
+// ─── STEP 5: Completeness scoring ───
+interface CompletenessScores {
+  profile: number;
+  media: number;
+  menu: number;
+  taxonomy: number;
+  geo: number;
+  overall: number;
+}
+
+function calculateCompleteness(item: RawShopInput, subcategory: string | null): CompletenessScores {
+  // Profile: name, phone, address, description, website, hours, rating
+  let profile = 0;
+  if (item.name?.length > 2) profile += 20;
+  if (item.phone) profile += 15;
+  if (item.address) profile += 15;
+  if (item.description) profile += 15;
+  if (item.website) profile += 10;
+  if (item.hours) profile += 15;
+  if (item.rating) profile += 10;
+  profile = Math.min(profile, 100);
+
+  // Media: logo, cover, gallery (3+), menu images
+  let media = 0;
+  if (item.logo_url) media += 25;
+  if (item.cover_url) media += 25;
+  const galleryCount = item.images?.length ?? 0;
+  if (galleryCount >= 1) media += 15;
+  if (galleryCount >= 3) media += 15;
+  if (galleryCount >= 5) media += 10;
+  if (item.menu?.some((m: any) => m.image)) media += 10;
+  media = Math.min(media, 100);
+
+  // Menu: categories, items, prices, descriptions
+  let menu = 0;
+  if (item.menu?.length) {
+    menu += 30; // has menu
+    const hasCategories = item.menu.some((m: any) => m.category);
+    if (hasCategories) menu += 20;
+    const hasDescriptions = item.menu.some((m: any) => m.description);
+    if (hasDescriptions) menu += 15;
+    const hasPrices = item.menu.some((m: any) => m.price != null);
+    if (hasPrices) menu += 25;
+    if (item.menu.length >= 10) menu += 10;
+  }
+  menu = Math.min(menu, 100);
+
+  // Taxonomy
+  let taxonomy = 0;
+  if (subcategory) taxonomy += 50;
+  if (item.cuisine_tags?.length) taxonomy += 30;
+  if (item.amenities?.length) taxonomy += 20;
+  taxonomy = Math.min(taxonomy, 100);
+
+  // Geo
+  let geo = 0;
+  if (item.lat && item.lng) geo += 50;
+  if (item.address) geo += 20;
+  if (item.city) geo += 15;
+  if (item.area) geo += 15;
+  geo = Math.min(geo, 100);
+
+  const overall = Math.round((profile * 0.3 + media * 0.2 + menu * 0.15 + taxonomy * 0.15 + geo * 0.2) * 100) / 100;
+
+  return { profile, media, menu, taxonomy, geo, overall };
+}
+
+// ─── STEP 6: Quality scoring (enhanced) ───
+function calculateQualityScore(item: RawShopInput, completeness: CompletenessScores): number {
   let score = 0;
-  if (candidate.canonical_name && candidate.canonical_name.length > 2) score += 20;
-  if (candidate.phone) score += 15;
-  if (candidate.latitude && candidate.longitude) score += 20;
-  if (candidate.canonical_subcategory) score += 10;
-  if (candidate.rating && candidate.rating > 0) score += 10;
-  if (candidate.reviews_count && candidate.reviews_count > 0) score += 10;
-  if (candidate.website) score += 5;
-  if (candidate.address && candidate.address.length > 5) score += 10;
+  if (item.name?.length > 2) score += 15;
+  if (item.phone) score += 10;
+  if (item.lat && item.lng) score += 15;
+  if (item.rating && item.rating > 0) score += 8;
+  if (item.reviews_count && item.reviews_count > 0) score += 7;
+  if (item.website) score += 5;
+  if (item.address?.length && item.address.length > 5) score += 8;
+  if (item.logo_url) score += 5;
+  if (item.cover_url) score += 5;
+  if ((item.images?.length ?? 0) >= 3) score += 5;
+  if (item.menu?.length) score += 7;
+  if (item.description) score += 5;
+  if (item.hours) score += 5;
+  // Bonus from completeness
+  score = Math.round(score * 0.7 + completeness.overall * 0.3);
   return Math.min(score, 100);
 }
 
-// ─── STEP 6: Dedup check ───
-async function checkDuplicate(name: string, phone: string | null, lat: number | null, lng: number | null): Promise<{ isDuplicate: boolean; existingId?: string; confidence: number }> {
-  // Check exact phone match first
+// ─── STEP 7: Menu structuring ───
+interface StructuredMenuItem {
+  name: string;
+  category?: string;
+  description?: string;
+  price?: number;
+  currency?: string;
+  image?: string;
+  tags?: string[];
+  available?: boolean;
+}
+
+function structureMenu(rawMenu: any[]): { categories: Record<string, StructuredMenuItem[]>; totalItems: number } {
+  const categories: Record<string, StructuredMenuItem[]> = {};
+  let totalItems = 0;
+
+  for (const item of rawMenu) {
+    const cat = (item.category || item.section || "General").trim();
+    if (!categories[cat]) categories[cat] = [];
+    categories[cat].push({
+      name: (item.name || item.title || "").trim(),
+      category: cat,
+      description: item.description || item.desc || undefined,
+      price: typeof item.price === "number" ? item.price : parseFloat(item.price) || undefined,
+      currency: item.currency || "AED",
+      image: item.image || item.image_url || item.photo || undefined,
+      tags: item.tags || [],
+      available: item.available !== false,
+    });
+    totalItems++;
+  }
+
+  return { categories, totalItems };
+}
+
+// ─── STEP 8: Vertical-specific attributes ───
+function extractVerticalAttributes(item: RawShopInput, vertical: string): Record<string, any> {
+  const attrs: Record<string, any> = {};
+
+  // Common
+  if (item.cuisine_tags?.length) attrs.cuisine_tags = item.cuisine_tags;
+  if (item.amenities?.length) attrs.amenities = item.amenities;
+  if (item.halal) attrs.halal = true;
+  if (item.delivery_available) attrs.delivery = true;
+  if (item.dine_in) attrs.dine_in = true;
+  if (item.takeaway) attrs.takeaway = true;
+  if (item.hours) attrs.opening_hours = item.hours;
+  if (item.price_level) attrs.price_tier = item.price_level;
+
+  // Vertical-specific extraction
+  switch (vertical) {
+    case "food":
+      attrs.service_modes = [
+        item.dine_in && "dine_in",
+        item.takeaway && "takeaway",
+        item.delivery_available && "delivery",
+      ].filter(Boolean);
+      break;
+    case "healthcare":
+      attrs.facility_type = item.subcategory || "clinic";
+      break;
+    case "property":
+      attrs.property_type = item.subcategory || "hotel";
+      break;
+    case "services":
+      attrs.service_type = item.subcategory || "general";
+      break;
+  }
+
+  return attrs;
+}
+
+// ─── STEP 9: Dedup check ───
+async function checkDuplicate(name: string, phone: string | null, lat: number | null, lng: number | null, sourceExtId?: string): Promise<{ isDuplicate: boolean; existingId?: string; confidence: number }> {
+  // Exact source_external_id match
+  if (sourceExtId) {
+    const { data } = await (supabase as any)
+      .from("onboarding_shop_candidates")
+      .select("id")
+      .eq("source_external_id", sourceExtId)
+      .limit(1);
+    if (data?.length) return { isDuplicate: true, existingId: data[0].id, confidence: 99 };
+  }
+
+  // Exact phone match
   if (phone) {
     const { data } = await (supabase as any)
       .from("onboarding_shop_candidates")
@@ -198,7 +367,7 @@ async function checkDuplicate(name: string, phone: string | null, lat: number | 
     if (data?.length) return { isDuplicate: true, existingId: data[0].id, confidence: 95 };
   }
 
-  // Check similar name + close geo
+  // Similar name + close geo
   if (lat && lng) {
     const { data } = await (supabase as any)
       .from("onboarding_shop_candidates")
@@ -211,8 +380,8 @@ async function checkDuplicate(name: string, phone: string | null, lat: number | 
         if (existing.latitude && existing.longitude) {
           const dist = haversineDistance(lat, lng, existing.latitude, existing.longitude);
           if (dist < 0.15) {
-            const nameSim = nameSimilarity(name, existing.canonical_name);
-            if (nameSim > 0.8) return { isDuplicate: true, existingId: existing.id, confidence: 85 };
+            const sim = nameSimilarity(name, existing.canonical_name);
+            if (sim > 0.8) return { isDuplicate: true, existingId: existing.id, confidence: 85 };
           }
         }
       }
@@ -237,11 +406,8 @@ function nameSimilarity(a: string, b: string): number {
   const longer = na.length > nb.length ? na : nb;
   const shorter = na.length > nb.length ? nb : na;
   if (longer.includes(shorter)) return shorter.length / longer.length;
-  // Simple character overlap
   let matches = 0;
-  for (const c of shorter) {
-    if (longer.includes(c)) matches++;
-  }
+  for (const c of shorter) { if (longer.includes(c)) matches++; }
   return matches / longer.length;
 }
 
@@ -256,23 +422,20 @@ export async function runImportPipeline(config: BatchConfig, items: RawShopInput
     total_duplicates: 0,
     total_failed: 0,
     errors: [],
+    quality_distribution: { approved: 0, review: 0, low_quality: 0 },
+    avg_completeness: 0,
   };
 
-  // Step 1: Create batch
   const batchId = await createBatch(config);
   result.batch_id = batchId;
-
-  // Step 2: Ingest raw
   await ingestRaw(batchId, config.source_type, items);
 
-  // Step 3-8: Process each item
+  let totalCompleteness = 0;
+
   for (const item of items) {
     try {
       const name = normalizeText(item.name);
-      if (!name) {
-        result.total_skipped++;
-        continue;
-      }
+      if (!name) { result.total_skipped++; continue; }
 
       const phone = normalizePhone(item.phone);
       const city = normalizeText(item.city) || config.city || "Dubai";
@@ -281,27 +444,41 @@ export async function runImportPipeline(config: BatchConfig, items: RawShopInput
       const { vertical, subcategory } = mapTaxonomy(item.category, item.subcategory);
 
       // Dedup
-      const dedup = await checkDuplicate(name, phone, item.lat ?? null, item.lng ?? null);
+      const dedup = await checkDuplicate(name, phone, item.lat ?? null, item.lng ?? null, item.source_external_id);
       if (dedup.isDuplicate && dedup.confidence > 90) {
         result.total_duplicates++;
         continue;
       }
 
       const slug = generateSlug(name, city, zone);
-      const qualityScore = calculateQualityScore({
-        canonical_name: name,
-        phone,
-        latitude: item.lat,
-        longitude: item.lng,
-        canonical_subcategory: subcategory,
-        rating: item.rating,
-        reviews_count: item.reviews_count,
-        website: item.website,
-        address: item.address,
-      });
+      const completeness = calculateCompleteness(item, subcategory);
+      const qualityScore = calculateQualityScore(item, completeness);
+      totalCompleteness += completeness.overall;
 
       const candidateStatus = qualityScore >= 60 ? "approved" : qualityScore >= 30 ? "review" : "low_quality";
+      result.quality_distribution[candidateStatus as keyof typeof result.quality_distribution]++;
       const visibilityStatus = qualityScore >= 70 ? "indexed_not_public" : "hidden_imported";
+
+      // Structure menu if available
+      const menuData = item.menu?.length ? structureMenu(item.menu) : null;
+
+      // Extract vertical-specific attributes
+      const verticalAttrs = extractVerticalAttributes(item, vertical);
+
+      // Build reason_json with enriched data
+      const reasonJson: Record<string, any> = {};
+      if (dedup.isDuplicate) {
+        reasonJson.duplicate_of = dedup.existingId;
+        reasonJson.confidence = dedup.confidence;
+      }
+      reasonJson.completeness = completeness;
+      reasonJson.vertical_attributes = verticalAttrs;
+      if (menuData) {
+        reasonJson.menu_summary = {
+          total_items: menuData.totalItems,
+          categories: Object.keys(menuData.categories),
+        };
+      }
 
       // Create candidate
       const { data: candidate, error: candErr } = await (supabase as any)
@@ -328,7 +505,7 @@ export async function runImportPipeline(config: BatchConfig, items: RawShopInput
           quality_score: qualityScore,
           duplicate_group_id: dedup.isDuplicate ? dedup.existingId : null,
           candidate_status: candidateStatus,
-          reason_json: dedup.isDuplicate ? { duplicate_of: dedup.existingId, confidence: dedup.confidence } : null,
+          reason_json: reasonJson,
         })
         .select("id")
         .single();
@@ -339,16 +516,17 @@ export async function runImportPipeline(config: BatchConfig, items: RawShopInput
         continue;
       }
 
-      // Create assets if images provided
-      if (item.images?.length && candidate) {
-        const assets = item.images.map((url, i) => ({
-          candidate_id: candidate.id,
-          asset_type: i === 0 ? "cover" : "gallery",
-          asset_url: url,
-          asset_source: config.source_type,
-          is_primary: i === 0,
-        }));
-        await (supabase as any).from("imported_shop_assets").insert(assets);
+      // Create assets (logo, cover, gallery)
+      const assetRows: any[] = [];
+      if (item.logo_url) assetRows.push({ candidate_id: candidate.id, asset_type: "logo", asset_url: item.logo_url, asset_source: config.source_type, is_primary: false });
+      if (item.cover_url) assetRows.push({ candidate_id: candidate.id, asset_type: "cover", asset_url: item.cover_url, asset_source: config.source_type, is_primary: true });
+      if (item.images?.length) {
+        item.images.forEach((url, i) => {
+          assetRows.push({ candidate_id: candidate.id, asset_type: i === 0 && !item.cover_url ? "cover" : "gallery", asset_url: url, asset_source: config.source_type, is_primary: i === 0 && !item.cover_url });
+        });
+      }
+      if (assetRows.length) {
+        await (supabase as any).from("imported_shop_assets").insert(assetRows);
       }
 
       // Create onboarding state
@@ -362,7 +540,9 @@ export async function runImportPipeline(config: BatchConfig, items: RawShopInput
         visibility_status: visibilityStatus,
         taxonomy_status: subcategory ? "mapped" : "pending",
         geo_status: item.lat && item.lng ? "resolved" : "pending",
-        menu_status: item.menu?.length ? "imported" : "empty",
+        menu_status: menuData ? "imported" : "empty",
+        seo_status: "pending",
+        review_status: "pending",
       });
 
       result.total_created++;
@@ -372,7 +552,8 @@ export async function runImportPipeline(config: BatchConfig, items: RawShopInput
     }
   }
 
-  // Update batch with results
+  result.avg_completeness = result.total_created > 0 ? Math.round(totalCompleteness / result.total_created) : 0;
+
   await (supabase as any).from("import_batches").update({
     status: "completed",
     completed_at: new Date().toISOString(),
@@ -387,7 +568,7 @@ export async function runImportPipeline(config: BatchConfig, items: RawShopInput
   return result;
 }
 
-// ─── Convenience: parse JSON/CSV into RawShopInput[] ───
+// ─── JSON parser ───
 export function parseImportJson(json: any[]): RawShopInput[] {
   return json.map((row) => ({
     source_external_id: row.id ?? row.external_id ?? row.source_id ?? undefined,
@@ -407,7 +588,16 @@ export function parseImportJson(json: any[]): RawShopInput[] {
     hours: row.hours ?? row.opening_hours ?? undefined,
     menu: row.menu ?? row.menu_items ?? undefined,
     images: row.images ?? (row.image ? [row.image] : undefined) ?? (row.cover_image ? [row.cover_image] : undefined),
+    logo_url: row.logo_url ?? row.logo ?? undefined,
+    cover_url: row.cover_url ?? row.cover_image ?? row.hero_image ?? undefined,
     website: row.website ?? row.url ?? undefined,
+    description: row.description ?? row.about ?? row.bio ?? undefined,
+    cuisine_tags: row.cuisine_tags ?? row.tags ?? row.cuisines ?? undefined,
+    amenities: row.amenities ?? row.features ?? undefined,
+    delivery_available: row.delivery ?? row.delivery_available ?? undefined,
+    dine_in: row.dine_in ?? row.dinein ?? undefined,
+    takeaway: row.takeaway ?? row.pickup ?? undefined,
+    halal: row.halal ?? undefined,
     raw_payload: row,
   }));
 }
