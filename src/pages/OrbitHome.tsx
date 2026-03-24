@@ -263,7 +263,7 @@ export default function OrbitHome() {
                   >
                     <a.icon className="w-5 h-5" style={{ color: a.color }} />
                   </div>
-                  <span className="text-[11px] font-semibold text-foreground">{a.label}</span>
+                  <span className="text-[11px] font-semibold text-foreground">{tc(a.labelKey)}</span>
                 </button>
               ))}
             </div>
