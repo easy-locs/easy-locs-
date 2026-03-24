@@ -289,6 +289,51 @@ export default function AdminPlatformRecoveryPage() {
           </Card>
         )}
 
+        {/* Production Readiness Matrix */}
+        <Card>
+          <CardHeader className="py-3">
+            <CardTitle className="text-sm uppercase tracking-wider flex items-center gap-2">
+              <Shield className="h-4 w-4" /> Production Readiness Matrix
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="pt-0">
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs">
+                <thead>
+                  <tr className="border-b">
+                    <th className="text-left py-2 px-2 font-semibold">Module</th>
+                    <th className="text-left py-2 px-2 font-semibold">Status</th>
+                    <th className="text-left py-2 px-2 font-semibold">Validation Level</th>
+                    <th className="text-center py-2 px-2 font-semibold">Production</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {PRODUCTION_READINESS.map(row => (
+                    <tr key={row.module} className="border-b border-border/50">
+                      <td className="py-2 px-2 font-mono font-medium">{row.module}</td>
+                      <td className="py-2 px-2">
+                        <Badge variant="outline" className={
+                          row.status === "proven-runtime" ? "bg-emerald-500/10 text-emerald-700 border-emerald-200" :
+                          row.status === "coded-wired" ? "bg-blue-500/10 text-blue-700 border-blue-200" :
+                          row.status === "build-controlled" ? "bg-amber-500/10 text-amber-700 border-amber-200" :
+                          "bg-muted text-muted-foreground"
+                        }>{row.status}</Badge>
+                      </td>
+                      <td className="py-2 px-2 text-muted-foreground">{row.validation}</td>
+                      <td className="py-2 px-2 text-center">
+                        {row.production === "yes" ? <CheckCircle className="h-4 w-4 text-emerald-500 mx-auto" /> :
+                         row.production === "blocked" ? <XCircle className="h-4 w-4 text-destructive mx-auto" /> :
+                         <Clock className="h-4 w-4 text-amber-500 mx-auto" />}
+                        <span className="text-[10px] block mt-0.5">{row.productionNote}</span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
+
         {loading && !displaySummary && (
           <Card>
             <CardContent className="py-12 text-center text-muted-foreground">
