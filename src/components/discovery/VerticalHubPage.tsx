@@ -1,11 +1,12 @@
 /**
  * VerticalHubPage — Premium hub page for any vertical.
- * Immersive hero with per-vertical theme, premium cards, subcategory chips.
+ * Immersive hero with per-vertical AND per-subcategory theming.
+ * Breadcrumb navigation, premium cards, subcategory chips.
  */
 import { useState, useMemo, useEffect } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
-import { ChevronRight } from "lucide-react";
-import { motion } from "framer-motion";
+import { useNavigate, useSearchParams, Link } from "react-router-dom";
+import { ChevronRight, Home } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import SEOHead from "@/components/SEOHead";
 import PremiumVerticalHero from "@/components/discovery/PremiumVerticalHero";
 import PremiumMerchantCard from "@/components/discovery/PremiumMerchantCard";
@@ -13,7 +14,8 @@ import UniverseSearch from "@/components/universe/UniverseSearch";
 import FilterChip from "@/components/universe/FilterChip";
 import { useVerticalListings, type ListingItem } from "@/hooks/useVerticalListings";
 import { type VerticalDef, getSubcategoryLabel } from "@/lib/discovery/verticals";
-import { getVerticalTheme } from "@/lib/discovery/vertical-themes";
+import { getVerticalTheme, type VerticalTheme } from "@/lib/discovery/vertical-themes";
+import { getSubcategoryTheme } from "@/lib/discovery/subcategory-themes";
 
 type SortMode = "relevance" | "rating" | "distance" | "newest";
 
@@ -36,17 +38,42 @@ function sortItems(items: ListingItem[], mode: SortMode): ListingItem[] {
 
 export default function VerticalHubPage({ vertical }: { vertical: VerticalDef }) {
   const [search, setSearch] = useState("");
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const initialSub = searchParams.get("sub");
   const [activeSub, setActiveSub] = useState<string | null>(initialSub);
   const [sortMode, setSortMode] = useState<SortMode>("relevance");
   const navigate = useNavigate();
-  const theme = getVerticalTheme(vertical.value);
+  const baseTheme = getVerticalTheme(vertical.value);
+
+  // Subcategory-specific theme override
+  const subTheme = activeSub ? getSubcategoryTheme(activeSub) : null;
+  const theme: VerticalTheme = subTheme ? {
+    ...baseTheme,
+    heroImage: subTheme.heroImage,
+    heroOverlay: subTheme.heroOverlay,
+    accentHsl: subTheme.accentHsl,
+    tagline: subTheme.tagline,
+    searchPlaceholder: subTheme.searchPlaceholder,
+  } : baseTheme;
+
+  const activeEmoji = subTheme?.emoji || vertical.emoji;
+  const activeTitle = activeSub
+    ? getSubcategoryLabel(vertical.value, activeSub)
+    : vertical.label;
 
   useEffect(() => {
     const sub = searchParams.get("sub");
     if (sub !== activeSub) setActiveSub(sub);
   }, [searchParams]);
+
+  const handleSubSelect = (sub: string | null) => {
+    setActiveSub(sub);
+    if (sub) {
+      setSearchParams({ sub });
+    } else {
+      setSearchParams({});
+    }
+  };
 
   const { data: listings = [], isLoading } = useVerticalListings(vertical.value, activeSub);
 
@@ -77,32 +104,64 @@ export default function VerticalHubPage({ vertical }: { vertical: VerticalDef })
   return (
     <div className="min-h-screen pb-24" style={{ background: "hsl(var(--background))" }}>
       <SEOHead
-        title={`${vertical.label} — Easy-Locs`}
-        description={`Discover ${vertical.label.toLowerCase()} near you on Easy-Locs.`}
+        title={`${activeTitle} — Easy-Locs`}
+        description={`Discover ${activeTitle.toLowerCase()} near you on Easy-Locs.`}
       />
 
-      {/* ═══ PREMIUM HERO ═══ */}
-      <PremiumVerticalHero
-        title={vertical.label}
-        tagline={theme.tagline}
-        emoji={vertical.emoji}
-        theme={theme}
-        search={
-          <div className="rounded-xl overflow-hidden" style={{
-            background: "hsl(var(--card))",
-            boxShadow: "var(--shadow-elevated)",
-            border: "1px solid hsl(var(--border) / 0.1)",
-          }}>
-            <UniverseSearch
-              placeholder={theme.searchPlaceholder}
-              value={search}
-              onChange={setSearch}
-            />
-          </div>
-        }
-      />
+      {/* ═══ PREMIUM HERO — changes with subcategory ═══ */}
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={activeSub || "base"}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.3 }}
+        >
+          <PremiumVerticalHero
+            title={activeTitle}
+            tagline={theme.tagline}
+            emoji={activeEmoji}
+            theme={theme}
+            search={
+              <div className="rounded-xl overflow-hidden" style={{
+                background: "hsl(var(--card))",
+                boxShadow: "var(--shadow-elevated)",
+                border: "1px solid hsl(var(--border) / 0.1)",
+              }}>
+                <UniverseSearch
+                  placeholder={theme.searchPlaceholder}
+                  value={search}
+                  onChange={setSearch}
+                />
+              </div>
+            }
+          />
+        </motion.div>
+      </AnimatePresence>
 
       <div className="px-4 mt-8">
+        {/* ═══ BREADCRUMB NAVIGATION ═══ */}
+        <nav className="flex items-center gap-1.5 mb-4 text-[11px] overflow-x-auto scrollbar-none">
+          <Link to="/" className="text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1 shrink-0">
+            <Home className="h-3 w-3" /> Home
+          </Link>
+          <ChevronRight className="h-3 w-3 text-muted-foreground/50 shrink-0" />
+          <button
+            onClick={() => handleSubSelect(null)}
+            className={`shrink-0 transition-colors ${!activeSub ? "font-bold text-foreground" : "text-muted-foreground hover:text-foreground"}`}
+          >
+            {vertical.label}
+          </button>
+          {activeSub && (
+            <>
+              <ChevronRight className="h-3 w-3 text-muted-foreground/50 shrink-0" />
+              <span className="font-bold shrink-0" style={{ color: `hsl(${theme.accentHsl})` }}>
+                {getSubcategoryLabel(vertical.value, activeSub)}
+              </span>
+            </>
+          )}
+        </nav>
+
         {/* ═══ SORT CHIPS ═══ */}
         <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-none -mx-1 px-1 mb-4">
           {SORT_OPTIONS.map(opt => (
@@ -119,48 +178,48 @@ export default function VerticalHubPage({ vertical }: { vertical: VerticalDef })
         <div className="mb-5">
           <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none -mx-1 px-1">
             <button
-              onClick={() => setActiveSub(null)}
+              onClick={() => handleSubSelect(null)}
               className="shrink-0 flex flex-col items-center gap-1.5 active:scale-90 transition-transform"
             >
               <div
                 className="w-[52px] h-[52px] rounded-2xl flex items-center justify-center transition-all"
                 style={{
                   background: !activeSub
-                    ? `hsl(${theme.accentHsl} / 0.15)`
+                    ? `hsl(${baseTheme.accentHsl} / 0.15)`
                     : "hsl(var(--muted))",
                   border: !activeSub
-                    ? `2px solid hsl(${theme.accentHsl})`
+                    ? `2px solid hsl(${baseTheme.accentHsl})`
                     : "2px solid transparent",
                 }}
               >
                 <span className="text-lg">✨</span>
               </div>
               <span className="text-[10px] font-semibold" style={{
-                color: !activeSub ? `hsl(${theme.accentHsl})` : "hsl(var(--foreground))"
+                color: !activeSub ? `hsl(${baseTheme.accentHsl})` : "hsl(var(--foreground))"
               }}>All</span>
             </button>
 
             {vertical.subcategories.map(sub => (
               <button
                 key={sub.value}
-                onClick={() => setActiveSub(activeSub === sub.value ? null : sub.value)}
+                onClick={() => handleSubSelect(activeSub === sub.value ? null : sub.value)}
                 className="shrink-0 flex flex-col items-center gap-1.5 active:scale-90 transition-transform"
               >
                 <div
                   className="w-[52px] h-[52px] rounded-2xl flex items-center justify-center transition-all"
                   style={{
                     background: activeSub === sub.value
-                      ? `hsl(${theme.accentHsl} / 0.15)`
+                      ? `hsl(${baseTheme.accentHsl} / 0.15)`
                       : "hsl(var(--muted))",
                     border: activeSub === sub.value
-                      ? `2px solid hsl(${theme.accentHsl})`
+                      ? `2px solid hsl(${baseTheme.accentHsl})`
                       : "2px solid transparent",
                   }}
                 >
                   <span className="text-xl">{sub.icon}</span>
                 </div>
                 <span className="text-[10px] font-semibold max-w-[52px] text-center truncate" style={{
-                  color: activeSub === sub.value ? `hsl(${theme.accentHsl})` : "hsl(var(--foreground))"
+                  color: activeSub === sub.value ? `hsl(${baseTheme.accentHsl})` : "hsl(var(--foreground))"
                 }}>{sub.label}</span>
               </button>
             ))}
@@ -183,8 +242,17 @@ export default function VerticalHubPage({ vertical }: { vertical: VerticalDef })
         {/* ═══ EMPTY ═══ */}
         {!isLoading && filtered.length === 0 && (
           <div className="flex flex-col items-center py-16 gap-3">
-            <span className="text-4xl">{theme.emptyEmoji}</span>
+            <span className="text-4xl">{subTheme?.emoji || theme.emptyEmoji}</span>
             <p className="text-sm font-bold text-foreground">{theme.emptyMessage}</p>
+            {activeSub && (
+              <button
+                onClick={() => handleSubSelect(null)}
+                className="text-xs font-semibold mt-2 px-4 py-2 rounded-xl transition-all active:scale-95"
+                style={{ color: `hsl(${baseTheme.accentHsl})`, background: `hsl(${baseTheme.accentHsl} / 0.1)` }}
+              >
+                ← View all {vertical.label}
+              </button>
+            )}
           </div>
         )}
 
@@ -197,7 +265,6 @@ export default function VerticalHubPage({ vertical }: { vertical: VerticalDef })
               </h2>
             </div>
             <div className="space-y-2.5">
-              {/* First item as featured */}
               {filtered.length > 0 && (
                 <PremiumMerchantCard
                   to={filtered[0].slug ? `/s/${filtered[0].slug}` : `/s/${filtered[0].id}`}
@@ -249,9 +316,9 @@ export default function VerticalHubPage({ vertical }: { vertical: VerticalDef })
                   <span className="text-[10px] font-normal text-muted-foreground ml-1">({items.length})</span>
                 </h2>
                 <button
-                  onClick={() => setActiveSub(subKey)}
+                  onClick={() => handleSubSelect(subKey)}
                   className="text-[11px] font-semibold flex items-center gap-0.5"
-                  style={{ color: `hsl(${theme.accentHsl})` }}
+                  style={{ color: `hsl(${baseTheme.accentHsl})` }}
                 >
                   See all <ChevronRight className="h-3 w-3" />
                 </button>
