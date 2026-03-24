@@ -311,10 +311,11 @@ export default memo(function RadarView({ initialType, radiusKm: initialRadius, s
         </div>
       )}
 
-      {/* ── Results count ── */}
+      {/* ── Results count — canonical wording ── */}
       <div className="px-4 py-1 shrink-0">
         <p className="text-[10px] text-muted-foreground">
-          {loading ? "Scanning…" : `${results.length} places within ${activeRadius}km`}
+          {loading ? canonicalUI.wording.loadingText : canonicalUI.wording.resultsFormat.replace("{count}", String(results.length))}
+          {!loading && ` within ${activeRadius}km`}
           {minRating > 0 && ` · ★${minRating}+`}
           {showPromotedOnly && " · ⚡ Promoted"}
           {sortBy === "smart" && " · Smart ranked"}
