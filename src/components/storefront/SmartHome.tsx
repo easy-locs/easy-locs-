@@ -3,7 +3,7 @@
  * Careem-style category grid with 3D icons + geo-aware delivery area.
  * Uses canonical discovery pipeline for all sections.
  */
-import { memo, useMemo } from "react";
+import { memo, useMemo, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { MapPin, Bell, Wallet, QrCode, Send, ChevronRight, Star, Navigation } from "lucide-react";
 import UnifiedSearchBar from "@/components/search/UnifiedSearchBar";
