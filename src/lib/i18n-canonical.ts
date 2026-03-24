@@ -946,6 +946,11 @@ export function getAppLocale(): AppLocale {
 export function setAppLocale(locale: AppLocale): void {
   _locale = locale;
   try { localStorage.setItem("app-locale", locale); } catch {}
+  // Apply RTL globally
+  try {
+    document.documentElement.dir = locale === "ar" ? "rtl" : "ltr";
+    document.documentElement.lang = locale;
+  } catch {}
 }
 
 export function resetAppLocale(): void { _locale = null; }

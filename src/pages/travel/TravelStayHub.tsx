@@ -375,7 +375,7 @@ export default function TravelStayHub() {
                 color: sortBy === s ? "hsl(var(--background))" : "hsl(var(--muted-foreground))",
               }}
             >
-              {s === "rating" ? "⭐ Top rated" : s === "price" ? "💰 Best price" : s === "distance" ? "📍 Nearest" : "💬 Most reviewed"}
+              {s === "rating" ? `⭐ ${tc("common.top_rated")}` : s === "price" ? `💰 ${tc("common.best_price")}` : s === "distance" ? `📍 ${tc("common.nearest")}` : `💬 ${tc("common.most_reviewed")}`}
             </button>
           ))}
         </div>
