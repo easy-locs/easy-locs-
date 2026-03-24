@@ -130,7 +130,7 @@ export default function MeCommandCenter() {
       <div className="grid grid-cols-3 gap-2">
         {[
           { label: "Orders today", value: kpis?.ordersToday ?? "—", icon: <Receipt className="w-3.5 h-3.5" /> },
-          { label: "Revenue", value: kpis?.revenue ? `${kpis.revenue} AED` : "—", icon: <DollarSign className="w-3.5 h-3.5" /> },
+          { label: "Revenue", value: kpis?.revenue ? formatMoneyByCountry(kpis.revenue, null, "AED") : "—", icon: <DollarSign className="w-3.5 h-3.5" /> },
           { label: "Active", value: kpis?.activeOrders ?? "—", icon: <Clock className="w-3.5 h-3.5" /> },
         ].map((kpi) => (
           <div key={kpi.label} className="rounded-2xl border border-border/15 bg-card p-3 text-center">
