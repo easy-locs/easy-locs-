@@ -82,8 +82,8 @@ export default function FavoritesPage() {
           <ArrowLeft className="w-4.5 h-4.5" />
         </button>
         <div>
-          <h1 className="text-lg font-bold text-foreground">Favorites</h1>
-          <p className="text-xs text-muted-foreground">Saved merchants</p>
+          <h1 className="text-lg font-bold text-foreground">{tc("nav.favorites")}</h1>
+          <p className="text-xs text-muted-foreground">{tc("common.saved_merchants")}</p>
         </div>
       </header>
 
