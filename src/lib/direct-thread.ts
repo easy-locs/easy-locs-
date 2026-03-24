@@ -107,8 +107,8 @@ export async function getOrCreateDirectThread(opts: {
       .in("id", [opts.currentUserId, opts.targetUserId]);
 
     const profileMap = new Map((orbitProfiles || []).map((p: any) => [p.id, p]));
-    const currentProfile = profileMap.get(opts.currentUserId);
-    const targetProfile = profileMap.get(opts.targetUserId);
+    const currentProfile: any = profileMap.get(opts.currentUserId);
+    const targetProfile: any = profileMap.get(opts.targetUserId);
 
     const participants = [
       {
