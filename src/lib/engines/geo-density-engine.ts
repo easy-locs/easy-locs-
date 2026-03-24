@@ -14,7 +14,7 @@ export interface ZoneDensity {
   topVerticals: string[];
   topSubcategories: string[];
   totalEntities: number;
-  densityScore: number; // 0-100
+  densityScore: number;
   computedAt: string;
 }
 
@@ -30,11 +30,10 @@ export async function runGeoDensityEngine(country = "AE", city?: string): Promis
   const cityTotals: Record<string, number> = {};
 
   try {
-    // Query seed_merchants grouped by city/district
     let query = (supabase as any)
       .from("seed_merchants")
-      .select("city, district, vertical, subcategory, visibility_mode")
-      .eq("country_code", country)
+      .select("city, area, category, subcategory, visibility_mode")
+      .eq("country", country)
       .neq("visibility_mode", "hidden")
       .limit(1000);
 
@@ -45,10 +44,9 @@ export async function runGeoDensityEngine(country = "AE", city?: string): Promis
       return { zones: [], cityTotals: {}, topCityVerticals: [], computedAt: new Date().toISOString() };
     }
 
-    // Group by district/zone
     const grouped: Record<string, typeof merchants> = {};
     for (const m of merchants) {
-      const zone = m.district || m.city || "unknown";
+      const zone = m.area || m.city || "unknown";
       const cityKey = m.city || "unknown";
       if (!grouped[zone]) grouped[zone] = [];
       grouped[zone].push(m);
@@ -60,7 +58,7 @@ export async function runGeoDensityEngine(country = "AE", city?: string): Promis
       const subCounts: Record<string, number> = {};
 
       for (const item of items) {
-        const v = item.vertical || "food";
+        const v = item.category || "food";
         const s = item.subcategory || "general";
         verticalCounts[v] = (verticalCounts[v] || 0) + 1;
         subCounts[s] = (subCounts[s] || 0) + 1;
@@ -91,10 +89,8 @@ export async function runGeoDensityEngine(country = "AE", city?: string): Promis
       });
     }
 
-    // Sort by density
     zones.sort((a, b) => b.densityScore - a.densityScore);
 
-    // City-level top verticals
     const allVerticals: Record<string, number> = {};
     for (const z of zones) {
       for (const [v, c] of Object.entries(z.verticalCounts)) {
