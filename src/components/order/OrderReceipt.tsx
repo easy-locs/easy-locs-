@@ -33,8 +33,9 @@ interface OrderReceiptProps {
   items: ReceiptItem[];
 }
 
-function fmtPrice(n: number, c = "AED") {
-  return `${Number(n || 0).toFixed(2)} ${c}`;
+function fmtPrice(n: number, c?: string) {
+  const { formatMoneyByCountry } = require("@/lib/currency-engine");
+  return formatMoneyByCountry(Number(n || 0), null, c);
 }
 
 export default function OrderReceipt({ order, items }: OrderReceiptProps) {

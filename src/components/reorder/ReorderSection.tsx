@@ -38,8 +38,7 @@ export default function ReorderSection() {
               <p className="text-sm font-bold text-foreground">Order #{String(row.order.id).slice(0, 8)}</p>
               <p className="text-xs text-muted-foreground mt-1">{row.label || "Previous order"}</p>
               <p className="text-[11px] text-muted-foreground mt-1">
-                {row.totalItems} items · {Number(row.order.total_amount ?? 0).toFixed(2)}{" "}
-                {row.order.currency ?? "AED"}
+                {row.totalItems} items · {new Intl.NumberFormat(undefined, { style: "currency", currency: row.order.currency || "AED", minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(Number(row.order.total_amount ?? 0))}
               </p>
             </button>
           ))}
