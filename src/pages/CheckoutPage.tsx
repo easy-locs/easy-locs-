@@ -196,7 +196,7 @@ export default function CheckoutPage() {
           </div>
           <div className="flex justify-between text-sm">
             <span className="text-muted-foreground">Delivery fee</span>
-            <span className="font-semibold text-foreground">{deliveryFee === 0 ? "Free" : `${deliveryFee.toFixed(2)} AED`}</span>
+            <span className="font-semibold text-foreground">{deliveryFee === 0 ? "Free" : fmt(deliveryFee)}</span>
           </div>
           <div className="flex justify-between text-sm font-bold pt-2 border-t border-border/20">
             <span className="text-foreground">Total</span>
