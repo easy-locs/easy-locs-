@@ -291,6 +291,8 @@ const commerce = {
     "commerce.scan_to_pay": "Scan to pay",
     "commerce.saved_carts": "Saved Carts",
     "commerce.auto_repeat": "Auto Repeat",
+    "commerce.processing": "Processing…",
+    "commerce.secure_checkout": "Secure checkout",
   },
   fr: {
     "commerce.add_to_cart": "Ajouter au panier",
@@ -352,6 +354,8 @@ const commerce = {
     "commerce.scan_to_pay": "Scanner pour payer",
     "commerce.saved_carts": "Paniers sauvegardés",
     "commerce.auto_repeat": "Répétition auto",
+    "commerce.processing": "En cours…",
+    "commerce.secure_checkout": "Paiement sécurisé",
   },
   ar: {
     "commerce.add_to_cart": "أضف إلى السلة",
@@ -413,6 +417,8 @@ const commerce = {
     "commerce.scan_to_pay": "امسح للدفع",
     "commerce.saved_carts": "السلات المحفوظة",
     "commerce.auto_repeat": "تكرار تلقائي",
+    "commerce.processing": "جارٍ المعالجة…",
+    "commerce.secure_checkout": "دفع آمن",
   },
 };
 

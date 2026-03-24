@@ -119,7 +119,7 @@ export async function resolveSearch(
     subtitle: p.category || "Product",
     imageUrl: p.image_url,
     price: p.price,
-    currency: "AED",
+    currency: p.currency || undefined,
     shopId: p.merchant_id,
   }));
 
@@ -314,7 +314,7 @@ export async function resolveAutocomplete(
         subtitle: p.category,
         imageUrl: p.image_url,
         price: p.price,
-        currency: "AED",
+        currency: p.currency || undefined,
       })),
     });
   }
