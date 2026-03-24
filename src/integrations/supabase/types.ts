@@ -25752,6 +25752,60 @@ export type Database = {
         }
         Relationships: []
       }
+      user_addresses: {
+        Row: {
+          city: string
+          country: string
+          country_code: string | null
+          created_at: string
+          delivery_notes: string | null
+          icon: string
+          id: string
+          is_default: boolean
+          label: string
+          lat: number | null
+          line1: string
+          line2: string | null
+          lng: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          city?: string
+          country?: string
+          country_code?: string | null
+          created_at?: string
+          delivery_notes?: string | null
+          icon?: string
+          id?: string
+          is_default?: boolean
+          label?: string
+          lat?: number | null
+          line1?: string
+          line2?: string | null
+          lng?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          city?: string
+          country?: string
+          country_code?: string | null
+          created_at?: string
+          delivery_notes?: string | null
+          icon?: string
+          id?: string
+          is_default?: boolean
+          label?: string
+          lat?: number | null
+          line1?: string
+          line2?: string | null
+          lng?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_favorites: {
         Row: {
           created_at: string
@@ -25901,6 +25955,33 @@ export type Database = {
           points?: number | null
           tier?: string | null
           updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_payment_preferences: {
+        Row: {
+          created_at: string
+          default_method: string
+          id: string
+          saved_methods_json: Json | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          default_method?: string
+          id?: string
+          saved_methods_json?: Json | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          default_method?: string
+          id?: string
+          saved_methods_json?: Json | null
+          updated_at?: string
           user_id?: string
         }
         Relationships: []
