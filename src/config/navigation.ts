@@ -32,7 +32,7 @@ export const NAV_TABS_CONFIG: NavTab[] = [
       p === "/radar" || p === "/map" || p.startsWith("/explore") ||
       p.startsWith("/search") || p.startsWith("/discover") ||
       p.startsWith("/listing/") || p.startsWith("/store/") ||
-      p.startsWith("/services-hub") || p.startsWith("/s/") ||
+      p.startsWith("/services-hub") ||
       p.startsWith("/real-estate") || p.startsWith("/travel") ||
       p.startsWith("/nearby") || p.startsWith("/top-rated") ||
       p.startsWith("/trending") || p.startsWith("/super-map") ||
