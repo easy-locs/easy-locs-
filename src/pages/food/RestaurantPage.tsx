@@ -199,7 +199,7 @@ export default function RestaurantPage() {
                           {item.description && <p className="text-[11px] text-muted-foreground line-clamp-2 mt-0.5 leading-relaxed">{item.description}</p>}
                         </div>
                         <div className="flex items-center justify-between mt-1">
-                          <span className="text-sm font-bold text-foreground">{Number(item.price).toFixed(2)} AED</span>
+                          <span className="text-sm font-bold text-foreground">{formatMoneyByCountry(Number(item.price), shop?.country, shop?.currency)}</span>
                           {qty === 0 ? (
                             <button data-add-to-cart onClick={() => handleAdd(item)} className="h-8 px-4 rounded-full flex items-center gap-1.5 active:scale-90 transition-transform text-xs font-bold" style={{ background: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}>
                               <Plus className="w-3.5 h-3.5" /> Add
