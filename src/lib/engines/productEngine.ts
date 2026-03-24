@@ -109,11 +109,11 @@ export async function getProductAttributes(globalProductId: string): Promise<Pro
   const defMap = new Map((defs ?? []).map((d: any) => [d.id, d]));
 
   return data.map((a: any) => {
-    const def = defMap.get(a.attribute_definition_id);
+    const def = defMap.get(a.attribute_definition_id) as any;
     return {
       id: a.id,
-      attribute_key: def?.key ?? "unknown",
-      attribute_label: def?.label ?? "Unknown",
+      attribute_key: (def?.key as string) ?? "unknown",
+      attribute_label: (def?.label as string) ?? "Unknown",
       value_text: a.value_text,
       value_number: a.value_number,
       value_bool: a.value_bool,
