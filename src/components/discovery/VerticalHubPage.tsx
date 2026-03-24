@@ -341,7 +341,7 @@ export default function VerticalHubPage({ vertical }: { vertical: TaxonomyVertic
 
               <div className="flex gap-2.5 overflow-x-auto pb-2 scrollbar-none -mx-1 px-1 snap-x snap-mandatory">
                 {items.slice(0, 6).map((item, i) => (
-                  <div key={item.id} className="shrink-0 w-[180px]">
+                  <div key={item.id} className="shrink-0 w-[180px] snap-start">
                     <PremiumMerchantCard
                       to={item.slug ? `/s/${item.slug}` : `/s/${item.id}`}
                       image={item.banner_url || item.logo_url}
