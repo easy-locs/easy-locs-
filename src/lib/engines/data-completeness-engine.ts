@@ -33,7 +33,7 @@ export async function runDataCompletenessEngine(limit = 50): Promise<DataComplet
   try {
     const { data: merchants } = await (supabase as any)
       .from("seed_merchants")
-      .select("id, name, logo_url, cover_image_url, latitude, longitude, vertical, subcategory, description, menu_items_json, visibility_mode")
+      .select("id, name, logo_image, cover_image, latitude, longitude, category, subcategory, description, menu_items_json, visibility_mode")
       .order("created_at", { ascending: false })
       .limit(limit);
 
@@ -44,8 +44,8 @@ export async function runDataCompletenessEngine(limit = 50): Promise<DataComplet
     for (const m of merchants) {
       const missing: string[] = [];
 
-      if (!m.logo_url) { missing.push("logo"); missingPhotos++; }
-      if (!m.cover_image_url) { missing.push("cover"); missingPhotos++; }
+      if (!m.logo_image) { missing.push("logo"); missingPhotos++; }
+      if (!m.cover_image) { missing.push("cover"); missingPhotos++; }
       if (!m.latitude || !m.longitude) { missing.push("geo"); missingGeo++; }
       if (!m.description) { missing.push("description"); missingDescription++; }
       if (!m.subcategory) { missing.push("subcategory"); missingCategory++; }
