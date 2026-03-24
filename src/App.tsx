@@ -436,6 +436,7 @@ const AdminDriverHeatmapPage = safeLazy(() => import("./pages/admin/AdminDriverH
 const CustomerOrderArchivePage = safeLazy(() => import("./pages/customer/CustomerOrderArchivePage"), "CustomerOrderArchivePage");
 const MerchantProductPerformancePage = safeLazy(() => import("./pages/merchant/MerchantProductPerformancePage"), "MerchantProductPerformancePage");
 const AdminWalletWatchPage = safeLazy(() => import("./pages/admin/AdminWalletWatchPage"), "AdminWalletWatchPage");
+const AdminPlatformRecoveryPage = safeLazy(() => import("./pages/admin/AdminPlatformRecoveryPage"), "AdminPlatformRecoveryPage");
 const CustomerReorderPage = safeLazy(() => import("./pages/customer/CustomerReorderPage"), "CustomerReorderPage");
 const MerchantAutoAcceptSettingsPage = safeLazy(() => import("./pages/merchant/MerchantAutoAcceptSettingsPage"), "MerchantAutoAcceptSettingsPage");
 const AdminSystemHealthPage = safeLazy(() => import("./pages/admin/AdminSystemHealthPage"), "AdminSystemHealthPage");
@@ -1126,6 +1127,7 @@ const App = () => (
                 <Route path="/admin/operations-launchpad" element={<ProtectedRoute><AdminOperationsLaunchpadPage /></ProtectedRoute>} />
                 <Route path="/merchant/customers/:merchantId" element={<ProtectedRoute><MerchantCustomersPage /></ProtectedRoute>} />
                 <Route path="/admin/merchant-health" element={<ProtectedRoute><AdminMerchantHealthPage /></ProtectedRoute>} />
+                <Route path="/admin/platform-recovery" element={<ProtectedRoute><AdminPlatformRecoveryPage /></ProtectedRoute>} />
                 <Route path="/wallet/top-up" element={<ProtectedRoute><WalletTopUpPage /></ProtectedRoute>} />
                 <Route path="/wallet/transfer" element={<ProtectedRoute><WalletTransferPage /></ProtectedRoute>} />
                 <Route path="/wallet/request" element={<ProtectedRoute><WalletRequestPage /></ProtectedRoute>} />
