@@ -49,6 +49,32 @@ const CRON_JOBS = [
   { name: "stale-cleanup-daily", schedule: "0 4 * * *", desc: "Cleanup old runs + stale data" },
 ];
 
+type ReadinessRow = {
+  module: string;
+  status: "proven-runtime" | "coded-wired" | "build-controlled" | "pending";
+  validation: string;
+  production: "yes" | "controlled" | "blocked";
+  productionNote: string;
+};
+
+const PRODUCTION_READINESS: ReadinessRow[] = [
+  { module: "pg_cron scheduler", status: "proven-runtime", validation: "11+ DB runs, timestamps verified", production: "yes", productionNote: "Active" },
+  { module: "Server auto-fix (campaigns)", status: "proven-runtime", validation: "active→completed proved in DB", production: "yes", productionNote: "Active" },
+  { module: "Server auto-fix (leads)", status: "proven-runtime", validation: "new→cold proved in DB", production: "yes", productionNote: "Active" },
+  { module: "Backend reconnect", status: "proven-runtime", validation: "14 tables verified healthy", production: "yes", productionNote: "Active" },
+  { module: "Platform recovery edge fn", status: "proven-runtime", validation: "Deployed, cron-triggered", production: "yes", productionNote: "Active" },
+  { module: "Boost analytics aggregation", status: "proven-runtime", validation: "2 rows aggregated via cron", production: "controlled", productionNote: "Needs real traffic" },
+  { module: "Client continuous engine", status: "coded-wired", validation: "7 jobs registered, boot+10s", production: "controlled", productionNote: "Needs client proof" },
+  { module: "Wallet RPC (ensure_wallet)", status: "coded-wired", validation: "RPC exists, reachable", production: "blocked", productionNote: "Needs live QR test" },
+  { module: "Orbit V2 realtime", status: "coded-wired", validation: "1 conversation in DB", production: "blocked", productionNote: "Needs A→B live test" },
+  { module: "Geo engine", status: "coded-wired", validation: "Retry logic wired", production: "blocked", productionNote: "Needs real device" },
+  { module: "i18n engine", status: "build-controlled", validation: "tc()/td() wired, partial audit", production: "blocked", productionNote: "Raw keys may remain" },
+  { module: "Currency engine", status: "build-controlled", validation: "Country resolver built", production: "blocked", productionNote: "AED hardcodes may remain" },
+  { module: "Boost slot renderer", status: "coded-wired", validation: "Surfaces connected", production: "controlled", productionNote: "No real campaigns" },
+  { module: "Lead pipeline auto", status: "proven-runtime", validation: "Stale→cold auto proved", production: "controlled", productionNote: "Needs real leads" },
+  { module: "QR scan & pay", status: "coded-wired", validation: "RPC built, resolver patched", production: "blocked", productionNote: "Needs live device scan" },
+];
+
 const CLIENT_JOBS_EXPECTED = [
   { name: "engine-health", interval: "5min", desc: "Engine health checks" },
   { name: "platform-recovery", interval: "10min", desc: "Full platform recovery" },
@@ -288,6 +314,51 @@ export default function AdminPlatformRecoveryPage() {
             </CardContent>
           </Card>
         )}
+
+        {/* Production Readiness Matrix */}
+        <Card>
+          <CardHeader className="py-3">
+            <CardTitle className="text-sm uppercase tracking-wider flex items-center gap-2">
+              <Shield className="h-4 w-4" /> Production Readiness Matrix
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="pt-0">
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs">
+                <thead>
+                  <tr className="border-b">
+                    <th className="text-left py-2 px-2 font-semibold">Module</th>
+                    <th className="text-left py-2 px-2 font-semibold">Status</th>
+                    <th className="text-left py-2 px-2 font-semibold">Validation Level</th>
+                    <th className="text-center py-2 px-2 font-semibold">Production</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {PRODUCTION_READINESS.map(row => (
+                    <tr key={row.module} className="border-b border-border/50">
+                      <td className="py-2 px-2 font-mono font-medium">{row.module}</td>
+                      <td className="py-2 px-2">
+                        <Badge variant="outline" className={
+                          row.status === "proven-runtime" ? "bg-emerald-500/10 text-emerald-700 border-emerald-200" :
+                          row.status === "coded-wired" ? "bg-blue-500/10 text-blue-700 border-blue-200" :
+                          row.status === "build-controlled" ? "bg-amber-500/10 text-amber-700 border-amber-200" :
+                          "bg-muted text-muted-foreground"
+                        }>{row.status}</Badge>
+                      </td>
+                      <td className="py-2 px-2 text-muted-foreground">{row.validation}</td>
+                      <td className="py-2 px-2 text-center">
+                        {row.production === "yes" ? <CheckCircle className="h-4 w-4 text-emerald-500 mx-auto" /> :
+                         row.production === "blocked" ? <XCircle className="h-4 w-4 text-destructive mx-auto" /> :
+                         <Clock className="h-4 w-4 text-amber-500 mx-auto" />}
+                        <span className="text-[10px] block mt-0.5">{row.productionNote}</span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
 
         {loading && !displaySummary && (
           <Card>
