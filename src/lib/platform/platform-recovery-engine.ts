@@ -140,7 +140,7 @@ export async function runPlatformRecovery(
     checkTable("db.boost_leads", "boost_leads"),
     checkTable("db.orders", "orders"),
     checkTable("db.driver_profiles", "driver_profiles"),
-    checkTable("db.dino_notifications", "dino_notifications"),
+    checkTable("db.notifications", "notifications"),
     checkTable("db.support_tickets", "support_tickets"),
   ]);
   results.push(...tableChecks);
@@ -149,7 +149,7 @@ export async function runPlatformRecovery(
     "db.orders": "orders",
     "db.wallet_accounts": "wallet",
     "db.driver_profiles": "dispatch",
-    "db.dino_notifications": "notifications",
+    "db.notifications": "notifications",
     "db.support_tickets": "support",
   };
   for (const check of tableChecks) {

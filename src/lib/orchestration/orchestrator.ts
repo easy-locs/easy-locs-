@@ -30,13 +30,12 @@ async function createNotification(params: {
   templateKey: string;
   payload?: Record<string, unknown>;
 }) {
-  const { error } = await supabase.from("dino_notifications").insert({
-    actor_type: params.actorType,
-    actor_id: params.actorId ?? null,
-    channel: params.channel ?? "push",
-    template_key: params.templateKey,
-    payload_json: (params.payload ?? {}) as Json,
-    status: "pending",
+  const { error } = await (supabase as any).from("notifications").insert({
+    user_id: params.actorId ?? null,
+    type: params.channel ?? "push",
+    title: params.templateKey,
+    message: JSON.stringify(params.payload ?? {}),
+    priority: "normal",
   });
 
   if (error) {
