@@ -4,7 +4,8 @@ import Hero from "@/components/landing/Hero";
 import SEOHead from "@/components/SEOHead";
 import { Loader2 } from "lucide-react";
 
-// Priority sections — loaded eagerly after hero
+// Priority sections
+const LiveActivityBar = lazy(() => import("@/components/landing/LiveActivityBar"));
 const CategoryBanners = lazy(() => import("@/components/landing/CategoryBanners"));
 const TrendingSection = lazy(() => import("@/components/landing/TrendingSection"));
 const RadarPreviewSection = lazy(() => import("@/components/landing/RadarPreviewSection"));
@@ -14,7 +15,12 @@ const ServicesSection = lazy(() => import("@/components/landing/ServicesSection"
 const OffersSection = lazy(() => import("@/components/landing/OffersSection"));
 const ForYouSection = lazy(() => import("@/components/landing/ForYouSection"));
 
-// Existing below-fold sections
+// Micro sections
+const MicroOpenNow = lazy(() => import("@/components/landing/MicroSections").then(m => ({ default: m.OpenNowStrip })));
+const MicroNearYou = lazy(() => import("@/components/landing/MicroSections").then(m => ({ default: m.NearYouStrip })));
+const MicroQuickStats = lazy(() => import("@/components/landing/MicroSections").then(m => ({ default: m.QuickStatsBar })));
+
+// Below-fold sections
 const SocialProofStrip = lazy(() => import("@/components/landing/SocialProofStrip"));
 const BrowseByCountry = lazy(() => import("@/components/landing/BrowseByCountry"));
 const PopularCities = lazy(() => import("@/components/landing/PopularCities"));
@@ -153,52 +159,72 @@ const Index = () => {
       {/* 1. Hero + Search */}
       <Hero />
 
-      {/* 2. Social proof */}
+      {/* 2. Live Activity Bar — real-time pulse */}
+      <Suspense fallback={null}>
+        <LiveActivityBar />
+      </Suspense>
+
+      {/* 3. Quick stats above fold */}
+      <Suspense fallback={null}>
+        <MicroQuickStats />
+      </Suspense>
+
+      {/* 4. Social proof counters */}
       <Suspense fallback={null}>
         <SocialProofStrip />
       </Suspense>
 
-      {/* 3. Main Category Banners — Food, Travel, Transport, Real Estate, Services */}
+      {/* 5. Main Category Banners */}
       <Suspense fallback={<SectionLoader />}>
         <CategoryBanners />
       </Suspense>
 
-      {/* 4. Trending / Popular */}
+      {/* 6. Trending / Popular — with LIVE badges */}
       <Suspense fallback={<SectionLoader />}>
         <TrendingSection />
       </Suspense>
 
-      {/* 5. Live Radar Preview */}
+      {/* 7. Open Now micro strip */}
+      <Suspense fallback={null}>
+        <MicroOpenNow />
+      </Suspense>
+
+      {/* 8. Live Radar Preview — signature feature */}
       <Suspense fallback={<SectionLoader />}>
         <RadarPreviewSection />
       </Suspense>
 
-      {/* 6. Food Section (priority) */}
+      {/* 9. Food Section (priority) */}
       <Suspense fallback={<SectionLoader />}>
         <FoodSection />
       </Suspense>
 
-      {/* 7. Travel / Rentals */}
+      {/* 10. Near You micro strip */}
+      <Suspense fallback={null}>
+        <MicroNearYou />
+      </Suspense>
+
+      {/* 11. Travel / Rentals */}
       <Suspense fallback={<SectionLoader />}>
         <TravelSection />
       </Suspense>
 
-      {/* 8. Services Marketplace */}
+      {/* 12. Services Marketplace */}
       <Suspense fallback={<SectionLoader />}>
         <ServicesSection />
       </Suspense>
 
-      {/* 9. Offers / Events / Seasonal */}
+      {/* 13. Offers / Events / Seasonal */}
       <Suspense fallback={<SectionLoader />}>
         <OffersSection />
       </Suspense>
 
-      {/* 10. For You (personalized) */}
+      {/* 14. For You (personalized) */}
       <Suspense fallback={<SectionLoader />}>
         <ForYouSection />
       </Suspense>
 
-      {/* 11. Browse by Country + Cities */}
+      {/* 15. Browse by Country + Cities */}
       <Suspense fallback={<SectionLoader />}>
         <BrowseByCountry />
       </Suspense>
@@ -206,32 +232,32 @@ const Index = () => {
         <PopularCities />
       </Suspense>
 
-      {/* 12. How it works */}
+      {/* 16. How it works */}
       <Suspense fallback={<SectionLoader />}>
         <HowItWorks />
       </Suspense>
 
-      {/* 13. World Map */}
+      {/* 17. World Map */}
       <Suspense fallback={<SectionLoader />}>
         <WorldMapSection />
       </Suspense>
 
-      {/* 14. Trust */}
+      {/* 18. Trust */}
       <Suspense fallback={<SectionLoader />}>
         <TrustSection />
       </Suspense>
 
-      {/* 15. Pricing */}
+      {/* 19. Pricing */}
       <Suspense fallback={<SectionLoader />}>
         <Pricing />
       </Suspense>
 
-      {/* 16. FAQ */}
+      {/* 20. FAQ */}
       <Suspense fallback={<SectionLoader />}>
         <LandingFAQ />
       </Suspense>
 
-      {/* 17. Newsletter */}
+      {/* 21. Newsletter */}
       <Suspense fallback={<SectionLoader />}>
         <Newsletter />
       </Suspense>
