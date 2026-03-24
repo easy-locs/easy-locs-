@@ -339,7 +339,7 @@ export default function VerticalHubPage({ vertical }: { vertical: TaxonomyVertic
                 </button>
               </div>
 
-              <div className="flex gap-2.5 overflow-x-auto pb-1 scrollbar-none -mx-1 px-1">
+              <div className="flex gap-2.5 overflow-x-auto pb-2 scrollbar-none -mx-1 px-1 snap-x snap-mandatory">
                 {items.slice(0, 6).map((item, i) => (
                   <div key={item.id} className="shrink-0 w-[180px]">
                     <PremiumMerchantCard
