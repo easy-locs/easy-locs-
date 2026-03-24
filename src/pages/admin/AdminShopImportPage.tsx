@@ -262,10 +262,16 @@ export default function AdminShopImportPage() {
             {c.duplicate_group_id && (
               <div className="text-[10px] text-amber-500">⚠️ Potential duplicate</div>
             )}
-            <div className="flex gap-1.5">
+            <div className="flex gap-1.5 flex-wrap">
               <button onClick={() => updateCandidateStatus(c.id, "approved")} className="text-[10px] px-2 py-1 rounded-lg bg-emerald-500/10 text-emerald-500">Approve</button>
               <button onClick={() => updateCandidateStatus(c.id, "review")} className="text-[10px] px-2 py-1 rounded-lg bg-amber-500/10 text-amber-500">Review</button>
               <button onClick={() => updateCandidateStatus(c.id, "rejected")} className="text-[10px] px-2 py-1 rounded-lg bg-destructive/10 text-destructive">Reject</button>
+              <button onClick={async () => {
+                const res = await publishCandidateAsSeed(c.id);
+                if (res.success) { toast.success("Published as seed"); loadDashboard(); }
+                else toast.error(res.error || "Publish failed");
+              }} className="text-[10px] px-2 py-1 rounded-lg bg-primary/10 text-primary font-bold">Publish Seed</button>
+              <button onClick={() => updateCandidateStatus(c.id, "ready_for_claim")} className="text-[10px] px-2 py-1 rounded-lg bg-blue-500/10 text-blue-500">Ready Claim</button>
             </div>
           </div>
         ))}
