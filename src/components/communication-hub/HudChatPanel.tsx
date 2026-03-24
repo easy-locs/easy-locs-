@@ -132,13 +132,56 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
 
   // ══ All business logic identical to ChatPanel.tsx ══
   const loadMessages = useCallback(async () => {
-    if (!orgId || !thread) return;
+    if (!thread) return;
+
+    // ── V2 CANONICAL PATH ──
+    if (thread.isV2 && thread.v2ConversationId) {
+      const { data } = await (supabase as any)
+        .from("chat_messages_v2")
+        .select("*")
+        .eq("conversation_id", thread.v2ConversationId)
+        .order("created_at", { ascending: true })
+        .limit(200);
+      if (data) {
+        const mapped = data.map((m: any) => ({
+          id: m.id,
+          sender_id: m.sender_user_id,
+          content: m.body,
+          created_at: m.created_at,
+          read: !!m.read_at,
+          category: "general",
+          tenant_id: null,
+          translated_content: null,
+          translated_locale: null,
+          language_detected: null,
+          message_type: m.type || "user",
+          context_type: "direct",
+          context_id: thread.v2ConversationId,
+        }));
+        setRawMessages(mapped as ChatMessage[]);
+        // Mark unread V2 messages as read
+        const unreadIds = data
+          .filter((m: any) => !m.read_at && m.sender_user_id !== user?.id)
+          .map((m: any) => m.id);
+        if (unreadIds.length > 0) {
+          await (supabase as any)
+            .from("chat_messages_v2")
+            .update({ read_at: new Date().toISOString() })
+            .in("id", unreadIds);
+          onThreadUpdate(thread.id, { unreadCount: 0 });
+        }
+      }
+      setPendingOffline([]);
+      return;
+    }
+
+    // ── LEGACY PATH ──
+    if (!orgId) return;
 
     // If offline, load from cache
     if (!offline.isOnline) {
       const cached = await offline.getCachedMessages();
       if (cached.length > 0) setRawMessages(cached as ChatMessage[]);
-      // Also load pending offline messages for display
       const pending = await offline.getThreadPending();
       setPendingOffline(pending);
       return;
@@ -152,13 +195,10 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
     else if (thread.tenantId) query = query.eq("tenant_id", thread.tenantId).is("booking_id", null);
     const { data } = await query;
     if (data) {
-      // Filter out messages before cleared_at (clear chat for current user only)
       const clearedAt = thread.clearedAt;
       const visible = clearedAt
         ? data.filter((m: any) => m.created_at > clearedAt)
         : data;
-
-      // Enrich reply_to_content for messages that have reply_to_id
       const enriched = visible.map((msg: any) => {
         if (msg.reply_to_id && !msg.reply_to_content) {
           const parent = visible.find((m: any) => m.id === msg.reply_to_id);
@@ -169,7 +209,6 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
         return msg;
       });
       setRawMessages(enriched as ChatMessage[]);
-      // Cache for offline reading
       offline.cacheMessages(enriched);
       const lastMsg = enriched[enriched.length - 1] as any;
       if (lastMsg?.conversation_status) setConvStatus(lastMsg.conversation_status);
@@ -178,11 +217,9 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
         await supabase.from("messages").update({ read: true } as any).in("id", unreadIds);
         onThreadUpdate(thread.id, { unreadCount: 0 });
       } else if (unreadIds.length > 0) {
-        // Still mark locally for UI but don't persist read status to DB
         onThreadUpdate(thread.id, { unreadCount: 0 });
       }
     }
-    // Clear pending display
     setPendingOffline([]);
   }, [orgId, thread, user, onThreadUpdate, offline]);
 
