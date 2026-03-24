@@ -95,6 +95,14 @@ export async function rerankSeeds(limit = 500): Promise<number> {
   for (const s of seeds) {
     const input = buildRankingInputFromSeed(s);
     const result = computeCentralRank(input);
+
+    // Coherence hard gate
+    const coherenceOk = passesCoherenceGate(s.coherence_score ?? 0, s.coherence_status ?? "pending");
+    if (!coherenceOk && result.visibilityClass !== "hidden") {
+      result.visibilityClass = "hidden";
+      result.reasons.push("Blocked by coherence gate");
+    }
+
     await persistRanking(s.id, "seed", input, result);
     updated++;
   }
