@@ -3,6 +3,7 @@
  */
 import { useEffect, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { tc } from "@/lib/i18n-canonical";
 import { ArrowLeft, Star, MapPin, Clock } from "lucide-react";
 import { motion } from "framer-motion";
 import { useUnifiedSearchStore } from "@/lib/search-engine/search-store";
