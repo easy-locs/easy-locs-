@@ -308,12 +308,12 @@ export default function TravelStayHub() {
         {/* ═══ BREADCRUMB ═══ */}
         <nav className="flex items-center gap-1.5 mb-4 text-[11px] overflow-x-auto scrollbar-none">
           <Link to="/" className="text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1 shrink-0">
-            <Home className="h-3 w-3" /> Home
+            <Home className="h-3 w-3" /> {tc("nav.home")}
           </Link>
           <ChevronRight className="h-3 w-3 text-muted-foreground/50 shrink-0" />
-          <Link to="/travel" className="text-muted-foreground hover:text-foreground transition-colors shrink-0">Travel</Link>
+          <Link to="/travel" className="text-muted-foreground hover:text-foreground transition-colors shrink-0">{tc("discovery.vertical.travel.title")}</Link>
           <ChevronRight className="h-3 w-3 text-muted-foreground/50 shrink-0" />
-          <span className="font-bold shrink-0" style={{ color: "hsl(38 70% 52%)" }}>Stays</span>
+          <span className="font-bold shrink-0" style={{ color: "hsl(38 70% 52%)" }}>{tc("travel.stays")}</span>
         </nav>
 
         {/* Tab selector */}
