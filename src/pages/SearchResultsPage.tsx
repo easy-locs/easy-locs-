@@ -2,6 +2,7 @@
  * SearchResultsPage — Canonical search results, driven by UI engine per vertical.
  */
 import { useEffect, useMemo } from "react";
+import { BoostSlotRenderer } from "@/components/boost/BoostSlotRenderer";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { tc } from "@/lib/i18n-canonical";
 import { ArrowLeft, Star, MapPin, Clock } from "lucide-react";
@@ -80,6 +81,8 @@ export default function SearchResultsPage() {
 
       {/* Results */}
       <div className="px-4 space-y-4 pb-20">
+        {/* ═══ BOOST SLOT — Search Top ═══ */}
+        <BoostSlotRenderer surface="search" slotKey="hero_primary" variant="inline" />
         {loading && [1, 2, 3].map((i) => (
           <div key={i} className="rounded-2xl bg-muted/30 h-16 animate-pulse" />
         ))}

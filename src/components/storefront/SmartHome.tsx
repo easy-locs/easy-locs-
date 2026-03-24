@@ -4,6 +4,7 @@
  * Uses canonical discovery pipeline for all sections.
  */
 import { memo, useMemo, useEffect } from "react";
+import { BoostSlotRenderer } from "@/components/boost/BoostSlotRenderer";
 import { Link, useNavigate } from "react-router-dom";
 import { MapPin, Bell, Wallet, QrCode, Send, ChevronRight, Star, Navigation } from "lucide-react";
 import UnifiedSearchBar from "@/components/search/UnifiedSearchBar";
@@ -298,10 +299,19 @@ export default function SmartHome() {
         </div>
       </div>
 
+      {/* ═══ BOOST SLOT — Home Hero ═══ */}
+      <BoostSlotRenderer surface="home" slotKey="hero_primary" variant="hero" className="px-4 mb-3" />
+
       <SmartHeroCard timezone={timezone} city={city} />
+
       {SECTION_DEFS.map((sec, i) => (
         <DynamicSection key={sec.key} section={sec} shops={safeSections[sec.key as keyof typeof safeSections]} index={i} />
       ))}
+
+      {/* ═══ BOOST SLOT — Home Inline ═══ */}
+      <div className="px-4 pb-4">
+        <BoostSlotRenderer surface="home" slotKey="inline_banner_1" variant="inline" />
+      </div>
     </div>
   );
 }

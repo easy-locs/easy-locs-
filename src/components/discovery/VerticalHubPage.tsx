@@ -3,6 +3,7 @@
  * Every visual decision (hero, cards, motion, wording) comes from taxonomy.
  */
 import { useState, useMemo, useEffect } from "react";
+import { BoostSlotRenderer } from "@/components/boost/BoostSlotRenderer";
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { ChevronRight, Home } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -263,6 +264,16 @@ export default function VerticalHubPage({ vertical }: { vertical: TaxonomyVertic
             )}
           </div>
         )}
+
+        {/* ═══ BOOST SLOT — Vertical Hub Inline ═══ */}
+        <BoostSlotRenderer
+          surface="vertical"
+          slotKey="inline_banner_1"
+          variant="inline"
+          vertical={vertical.value}
+          subcategory={activeSub}
+          className="mb-4"
+        />
 
         {/* ═══ FLAT LIST — motion driven by canonical engine ═══ */}
         {!isLoading && (activeSub || !grouped) && filtered.length > 0 && (

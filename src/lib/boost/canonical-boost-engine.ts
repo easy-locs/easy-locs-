@@ -152,7 +152,7 @@ export async function resolveBoostForSlot(ctx: SlotContext): Promise<BoostMatch 
     const slot = slots?.[0];
     if (!slot) return null;
 
-    // 2. Find active campaigns with budget
+    // 2. Find active campaigns with budget remaining
     const now = new Date().toISOString();
     let query = (supabase as any)
       .from("boost_campaigns")
@@ -169,8 +169,20 @@ export async function resolveBoostForSlot(ctx: SlotContext): Promise<BoostMatch 
     const { data: campaigns } = await query.limit(20);
     if (!campaigns?.length) return null;
 
-    // 3. Get creatives for these campaigns
-    const campaignIds = campaigns.map((c: any) => c.id);
+    // Filter out budget-exhausted campaigns
+    const viable = campaigns.filter((c: any) => {
+      if (c.total_budget > 0 && c.spent >= c.total_budget) return false;
+      if (c.daily_budget > 0) {
+        // Simple daily pacing check
+        const daySpent = c.spent / Math.max(1, Math.ceil((new Date(c.end_at).getTime() - new Date(c.start_at).getTime()) / 86400000));
+        if (daySpent >= c.daily_budget) return false;
+      }
+      return true;
+    });
+    if (!viable.length) return null;
+
+    // 3. Get creatives for viable campaigns
+    const campaignIds = viable.map((c: any) => c.id);
     const { data: creatives } = await (supabase as any)
       .from("boost_creatives")
       .select("*")
@@ -181,7 +193,7 @@ export async function resolveBoostForSlot(ctx: SlotContext): Promise<BoostMatch 
 
     // 4. Score each campaign+creative pair
     const matches: BoostMatch[] = [];
-    for (const campaign of campaigns) {
+    for (const campaign of viable) {
       const campaignCreatives = creatives.filter((c: any) => c.campaign_id === campaign.id);
       for (const creative of campaignCreatives) {
         const score = scoreCampaignForSlot(campaign, creative, ctx);
@@ -228,7 +240,18 @@ export async function resolveBoostsForSurface(
 
     if (!campaigns?.length) return results;
 
-    const campaignIds = campaigns.map((c: any) => c.id);
+    // Filter budget-exhausted campaigns
+    const viable = campaigns.filter((c: any) => {
+      if (c.total_budget > 0 && c.spent >= c.total_budget) return false;
+      if (c.daily_budget > 0) {
+        const daySpent = c.spent / Math.max(1, Math.ceil((new Date(c.end_at).getTime() - new Date(c.start_at).getTime()) / 86400000));
+        if (daySpent >= c.daily_budget) return false;
+      }
+      return true;
+    });
+    if (!viable.length) return results;
+
+    const campaignIds = viable.map((c: any) => c.id);
     const { data: creatives } = await (supabase as any)
       .from("boost_creatives")
       .select("*")
@@ -244,7 +267,7 @@ export async function resolveBoostsForSurface(
       let bestMatch: BoostMatch | null = null;
       let bestScore = -1;
 
-      for (const campaign of campaigns) {
+      for (const campaign of viable) {
         if (usedCampaignIds.has(campaign.id)) continue; // Anti-duplication
         const cCreatives = creatives.filter((c: any) => c.campaign_id === campaign.id);
         for (const creative of cCreatives) {
