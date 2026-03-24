@@ -150,7 +150,7 @@ export default function MerchantCouponManagerPage() {
                       : `${formatMoneyByCountry(Number(row.discount_value ?? 0), null, "AED")} off`}
                   </p>
                   <p className="text-[11px] text-muted-foreground/70">
-                    Min {Number(row.minimum_order_amount ?? 0).toFixed(2)} AED
+                    Min {formatMoneyByCountry(Number(row.minimum_order_amount ?? 0), null, "AED")}
                   </p>
                 </div>
                 <button
