@@ -9,9 +9,9 @@ export default function AdminActiveSessionsPage() {
     queryKey: ["admin-active-sessions"],
     queryFn: async () => {
       const { data, error } = await (supabase as any)
-        .from("dino_learning_events")
-        .select("event_type,created_at,entity_id,entity_type")
-        .in("event_type", ["home_view", "merchant_view", "search_used"])
+        .from("activity_logs")
+        .select("action,created_at,entity_id,entity_type")
+        .in("action", ["home_view", "merchant_view", "search_used"])
         .order("created_at", { ascending: false })
         .limit(300);
 

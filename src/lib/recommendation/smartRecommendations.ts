@@ -27,7 +27,7 @@ export async function getSmartRecommendations(params: {
 
   const preferredWords = new Map<string, number>();
   for (const row of recentEvents ?? []) {
-    const md = (row as any)?.metadata_json ?? {};
+    const md = (row as any)?.metadata ?? {};
     const text = [md.queryText, md.merchantName, md.subcategory, md.category]
       .filter(Boolean)
       .join(" ")

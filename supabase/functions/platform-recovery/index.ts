@@ -259,7 +259,7 @@ serve(async (req) => {
     ["db.orders", "orders"],
     ["db.orbit_profiles_v2", "orbit_profiles_v2"],
     ["db.driver_profiles", "driver_profiles"],
-    ["db.dino_notifications", "dino_notifications"],
+    ["db.notifications", "notifications"],
     ["db.support_tickets", "support_tickets"],
     ["db.loyalty_accounts", "loyalty_accounts"],
   ];
