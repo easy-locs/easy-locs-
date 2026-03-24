@@ -13,6 +13,7 @@ import { logCallEventToThread } from "@/lib/call-thread-logger";
 import { toast } from "sonner";
 import InAppCallDialog from "./InAppCallDialog";
 import IncomingCallDialog from "./IncomingCallDialog";
+import { debugLog } from "@/lib/debug/runtime-debug-bus";
 
 interface CallContextType {
   /** Start a call to an org (provider) */
@@ -129,6 +130,10 @@ export function CallProvider({ children }: { children: ReactNode }) {
       userId: user.id,
       receiverIds: [user.id],
     });
+    debugLog.info("realtime", "call.subscription.setup", "Creating incoming call subscription", {
+      userId: user.id,
+      filter: `receiver_orbit_id=eq.${user.id}`,
+    });
 
     const channel = supabase
       .channel(`incoming-calls-${user.id}-${Date.now()}`)
@@ -144,6 +149,7 @@ export function CallProvider({ children }: { children: ReactNode }) {
           try {
             const call = payload.new as any;
             console.log("[CallProvider] realtime INSERT received", { callId: call?.id, status: call?.status, receiver: call?.receiver_orbit_id });
+            debugLog.success("call", "call.signal.received", `INSERT ${call?.id || "unknown"}`, call);
             if (!call || call.status !== "ringing") return;
             if (call.caller_orbit_id === user.id) return; // skip self
 
@@ -179,6 +185,7 @@ export function CallProvider({ children }: { children: ReactNode }) {
           try {
             console.log("[CallProvider] realtime UPDATE received", payload.new);
             const call = payload.new as any;
+            debugLog.info("call", "call.signal.updated", `UPDATE ${call?.id || "unknown"}`, call);
             if (call && call.status !== "ringing" && call.id === incomingCallIdRef.current) {
               setShowIncoming(false);
               setIncomingCallId(null);
@@ -191,10 +198,22 @@ export function CallProvider({ children }: { children: ReactNode }) {
       .subscribe((status, err) => {
         if (status === "SUBSCRIBED") {
           console.log("[CallProvider] realtime subscription active");
+          debugLog.success("realtime", "call.subscription.subscribed", "CallProvider reached SUBSCRIBED", {
+            userId: user.id,
+          });
         } else if (status === "CHANNEL_ERROR") {
           console.warn("[CallProvider] channel error, will auto-retry on next mount");
+          debugLog.error("realtime", "call.subscription.error", err?.message || "CHANNEL_ERROR", {
+            userId: user.id,
+            err,
+          });
         } else if (status === "TIMED_OUT") {
           console.warn("[CallProvider] subscription timed out");
+          debugLog.warn("realtime", "call.subscription.timeout", "Subscription timed out", {
+            userId: user.id,
+          });
+        } else {
+          debugLog.info("realtime", "call.subscription.status", status, { userId: user.id, err });
         }
       });
 
