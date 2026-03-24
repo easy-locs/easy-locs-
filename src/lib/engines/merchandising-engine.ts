@@ -33,10 +33,10 @@ export async function runMerchandisingEngine(country = "AE", city?: string, limi
   try {
     let query = (supabase as any)
       .from("seed_merchants")
-      .select("id, name, subcategory, quality_tier, global_rank_score, is_open_now, visibility_mode")
-      .eq("country_code", country)
+      .select("id, name, subcategory, tier, visibility_score, is_open, visibility_mode")
+      .eq("country", country)
       .neq("visibility_mode", "hidden")
-      .order("global_rank_score", { ascending: false })
+      .order("visibility_score", { ascending: false, nullsFirst: false })
       .limit(200);
 
     if (city) query = query.eq("city", city);
@@ -49,32 +49,27 @@ export async function runMerchandisingEngine(country = "AE", city?: string, limi
     const toRow = (m: any, reason: string): MerchandisingRow => ({
       id: m.id, name: m.name || "Unknown",
       subcategory: m.subcategory || "general",
-      qualityTier: m.quality_tier || "acceptable",
-      score: m.global_rank_score || 0, reason,
+      qualityTier: m.tier || "acceptable",
+      score: m.visibility_score || 0, reason,
     });
 
-    // Best sellers = top ranked
     const bestSellers = merchants.slice(0, limit).map((m: any) => toRow(m, "top_ranked"));
 
-    // Premium picks
     const premiumPicks = merchants
-      .filter((m: any) => m.quality_tier === "premium" || m.quality_tier === "good")
+      .filter((m: any) => m.tier === "premium" || m.tier === "good")
       .slice(0, limit)
       .map((m: any) => toRow(m, "premium_quality"));
 
-    // Open now
     const openNow = merchants
-      .filter((m: any) => m.is_open_now)
+      .filter((m: any) => m.is_open)
       .slice(0, limit)
       .map((m: any) => toRow(m, "open_now"));
 
-    // Top rated = best quality tier
     const topRated = merchants
-      .filter((m: any) => m.quality_tier === "premium")
+      .filter((m: any) => m.tier === "premium")
       .slice(0, limit)
       .map((m: any) => toRow(m, "top_rated"));
 
-    // Contextual picks = matching current time slot recommendations
     const boostedSubs = ctx.recommendedSegments;
     const contextualPicks = merchants
       .filter((m: any) => boostedSubs.includes(m.subcategory))

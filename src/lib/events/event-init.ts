@@ -6,5 +6,6 @@ import "./handlers/notification.handler";
 import "./handlers/tracking.handler";
 import "./handlers/ai-feedback.handler";
 import "./handlers/business.handler";
+import "./handlers/user-behavior.handler";
 
 console.log("[event-init] All event handlers registered");

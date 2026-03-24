@@ -24702,6 +24702,39 @@ export type Database = {
         }
         Relationships: []
       }
+      user_ai_profiles: {
+        Row: {
+          activity_score: number | null
+          engagement_score: number | null
+          last_active_at: string | null
+          preferred_categories: Json | null
+          preferred_locations: Json | null
+          preferred_price_range: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          activity_score?: number | null
+          engagement_score?: number | null
+          last_active_at?: string | null
+          preferred_categories?: Json | null
+          preferred_locations?: Json | null
+          preferred_price_range?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          activity_score?: number | null
+          engagement_score?: number | null
+          last_active_at?: string | null
+          preferred_categories?: Json | null
+          preferred_locations?: Json | null
+          preferred_price_range?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_favorites: {
         Row: {
           created_at: string
