@@ -168,7 +168,7 @@ export function startContinuousEngine() {
     const { supabase } = await import("@/integrations/supabase/client");
     const { data: unchecked } = await (supabase as any)
       .from("seed_merchants")
-      .select("id, name, vertical, subcategory, menu_items_json")
+      .select("id, name, category, subcategory, menu_items_json")
       .is("coherence_status", null)
       .limit(20);
     if (unchecked?.length) {
@@ -177,7 +177,7 @@ export function startContinuousEngine() {
         const menuItems = Array.isArray(e.menu_items_json) ? e.menu_items_json : [];
         await runCoherenceGate(e.id, "seed_merchants", {
           entity_name: e.name ?? "",
-          entity_vertical: e.vertical ?? "food",
+          entity_vertical: e.category ?? "food",
           entity_subcategory: e.subcategory ?? "",
           menu_items: menuItems.map((i: any) => i?.name ?? ""),
         });
@@ -196,7 +196,7 @@ export function startContinuousEngine() {
     const { data: shops } = await (supabase as any)
       .from("seed_merchants")
       .select("*")
-      .is("quality_score", null)
+      .is("visibility_score", null)
       .limit(20);
     if (shops?.length) {
       let scored = 0;
@@ -204,7 +204,7 @@ export function startContinuousEngine() {
         const result = runShopQualityCheck(shop);
         await (supabase as any)
           .from("seed_merchants")
-          .update({ quality_score: result.globalQualityScore, quality_tier: result.qualityClass })
+          .update({ visibility_score: result.globalQualityScore, tier: result.qualityClass })
           .eq("id", shop.id);
         scored++;
       }

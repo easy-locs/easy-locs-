@@ -23,9 +23,9 @@ export async function runSocialProofEngine(country?: string, city?: string): Pro
   try {
     let baseQuery = (supabase as any)
       .from("seed_merchants")
-      .select("id, visibility_mode, is_open_now, quality_tier, created_at, country_code, city", { count: "exact" });
+      .select("id, visibility_mode, is_open, tier, created_at, country, city", { count: "exact" });
 
-    if (country) baseQuery = baseQuery.eq("country_code", country);
+    if (country) baseQuery = baseQuery.eq("country", country);
     if (city) baseQuery = baseQuery.eq("city", city);
 
     const { data: merchants, count } = await baseQuery
@@ -40,16 +40,14 @@ export async function runSocialProofEngine(country?: string, city?: string): Pro
       };
     }
 
-    const openNowCount = merchants.filter((m: any) => m.is_open_now).length;
-    const topRatedCount = merchants.filter((m: any) => m.quality_tier === "premium" || m.quality_tier === "good").length;
-    const premiumCount = merchants.filter((m: any) => m.quality_tier === "premium").length;
+    const openNowCount = merchants.filter((m: any) => m.is_open).length;
+    const topRatedCount = merchants.filter((m: any) => m.tier === "premium" || m.tier === "good").length;
+    const premiumCount = merchants.filter((m: any) => m.tier === "premium").length;
 
-    // Newly added = last 7 days
     const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString();
     const newlyAddedCount = merchants.filter((m: any) => m.created_at && m.created_at > weekAgo).length;
 
-    // Unique countries/cities
-    const countries = new Set(merchants.map((m: any) => m.country_code).filter(Boolean));
+    const countries = new Set(merchants.map((m: any) => m.country).filter(Boolean));
     const cities = new Set(merchants.map((m: any) => m.city).filter(Boolean));
 
     return {

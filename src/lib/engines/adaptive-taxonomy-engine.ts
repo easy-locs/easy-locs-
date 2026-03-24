@@ -26,7 +26,6 @@ export interface TaxonomyEngineOutput {
   computedAt: string;
 }
 
-// Keyword → subcategory mapping for fuzzy matching
 const KEYWORD_MAP: Record<string, string> = {
   maki: "sushi", nigiri: "sushi", sashimi: "sushi", roll: "sushi",
   pepperoni: "pizza", margherita: "pizza", calzone: "pizza",
@@ -69,10 +68,9 @@ export async function runAdaptiveTaxonomyEngine(limit = 50): Promise<TaxonomyEng
   let alreadyMapped = 0, newlyMapped = 0, unmappable = 0;
 
   try {
-    // Get entities with weak or missing taxonomy
     const { data: merchants } = await (supabase as any)
       .from("seed_merchants")
-      .select("id, name, vertical, subcategory, menu_items_json, tags")
+      .select("id, name, category, subcategory, menu_items_json, cuisine_tags")
       .or("subcategory.is.null,subcategory.eq.general,subcategory.eq.")
       .limit(limit);
 
@@ -81,25 +79,21 @@ export async function runAdaptiveTaxonomyEngine(limit = 50): Promise<TaxonomyEng
     }
 
     for (const m of merchants) {
-      // Skip if already well-mapped
       if (m.subcategory && m.subcategory !== "general" && m.subcategory !== "") {
         alreadyMapped++;
         continue;
       }
 
-      const vertical = normalizeVertical(m.vertical);
+      const vertical = normalizeVertical(m.category);
       const menuItems = Array.isArray(m.menu_items_json)
         ? m.menu_items_json.map((i: any) => i?.name || "").filter(Boolean)
         : [];
 
-      // Layer 1: Canonical matching
       const detection = detectSubcategoryFromContent(m.name || "", menuItems);
 
       if (detection.sub && detection.confidence >= 40) {
-        // Verify subcategory exists in canonical taxonomy
         const normalized = normalizeSubcategory(detection.sub);
         if (normalized) {
-          // Update entity with detected subcategory
           await (supabase as any)
             .from("seed_merchants")
             .update({ subcategory: normalized })
@@ -109,7 +103,6 @@ export async function runAdaptiveTaxonomyEngine(limit = 50): Promise<TaxonomyEng
         }
       }
 
-      // Layer 2: Gap detection — track unmapped patterns
       if (detection.keywords.length > 0 && !detection.sub) {
         gapCandidates.push({
           proposedName: detection.keywords[0],
@@ -125,7 +118,6 @@ export async function runAdaptiveTaxonomyEngine(limit = 50): Promise<TaxonomyEng
       }
     }
 
-    // Merge duplicate gap candidates
     const merged: Record<string, TaxonomyGapCandidate> = {};
     for (const gap of gapCandidates) {
       if (merged[gap.proposedSlug]) {
@@ -140,7 +132,7 @@ export async function runAdaptiveTaxonomyEngine(limit = 50): Promise<TaxonomyEng
       entitiesAnalyzed: merchants.length,
       alreadyMapped,
       newlyMapped,
-      gapCandidates: Object.values(merged).filter(g => g.entityCount >= 2), // Volume threshold
+      gapCandidates: Object.values(merged).filter(g => g.entityCount >= 2),
       unmappable,
       computedAt: new Date().toISOString(),
     };
