@@ -174,7 +174,10 @@ export function startContinuousEngine() {
           const result = runShopQualityCheck(shop);
           await (supabase as any)
             .from("seed_merchants")
-            .update({ quality_score: result.score, quality_tier: result.tier })
+            .update({
+              quality_score: result.globalQualityScore,
+              quality_tier: result.qualityClass,
+            })
             .eq("id", shop.id);
           scored++;
         }
@@ -186,8 +189,8 @@ export function startContinuousEngine() {
   // 12. Entity recovery engine (30min)
   registerJob("entity-recovery", 30 * 60_000, async () => {
     try {
-      const { runEntityRecoveryBatch } = await import("@/lib/engines/entity-recovery-engine");
-      const result = await runEntityRecoveryBatch(10);
+      const { recoverHiddenEntities } = await import("@/lib/engines/entity-recovery-engine");
+      const result = await recoverHiddenEntities(10);
       if (result.recovered > 0) {
         console.log(`[continuous] Recovered ${result.recovered}/${result.total} entities`);
       }
