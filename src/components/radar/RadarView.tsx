@@ -17,7 +17,7 @@ import { useCanonicalUI } from "@/hooks/useCanonicalUI";
 import { useV2AuthStore } from "@/stores/v2AuthStore";
 import {
   MapPin, List, Star, Navigation, Flame, Filter,
-  TrendingUp, Zap, ChevronDown, Clock, SlidersHorizontal,
+  TrendingUp, Zap, ChevronDown, Clock, SlidersHorizontal, MessageCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
