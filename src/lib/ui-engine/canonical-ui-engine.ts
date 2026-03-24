@@ -11,6 +11,7 @@ import { WORLD_TAXONOMY, type Vertical, type TaxonomyVertical } from "@/lib/taxo
 import { getVerticalTheme } from "@/lib/discovery/vertical-themes";
 import { getSubcategoryTheme } from "@/lib/discovery/subcategory-themes";
 import { td, getVerticalI18n, getSubcategoryI18n } from "@/lib/i18n-discovery";
+import { tc } from "@/lib/i18n-canonical";
 
 // ═══════════════════════════════════════════════════════════
 //  TYPES
