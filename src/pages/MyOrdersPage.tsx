@@ -3,6 +3,7 @@
  * Route: /my-orders
  */
 import SEOHead from "@/components/SEOHead";
+import { tc } from "@/lib/i18n-canonical";
 import BuyerOrderTracker from "@/components/storefront/BuyerOrderTracker";
 import BuyerDashboard from "@/components/storefront/BuyerDashboard";
 import { useAuth } from "@/contexts/AuthContext";
