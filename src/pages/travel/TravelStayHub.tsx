@@ -3,7 +3,7 @@
  * Backend-connected calendar, real listings, Booking.com-level UX.
  */
 import { useState, useMemo, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import {
   Hotel, Home, Calendar as CalendarIcon, MapPin, Users, Search,
   Star, SlidersHorizontal, Wifi, Car, UtensilsCrossed,
