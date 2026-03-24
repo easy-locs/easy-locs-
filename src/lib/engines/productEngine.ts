@@ -87,15 +87,10 @@ export async function getProductVariants(globalProductId: string): Promise<Produ
 // ── Attributes ──
 
 export async function getProductAttributes(globalProductId: string): Promise<ProductAttribute[]> {
-  const { data, error } = await supabase
+  // Use any cast since catalog_product_attributes uses a non-FK column name
+  const { data, error } = await (supabase as any)
     .from("catalog_product_attributes")
-    .select(`
-      id,
-      value_text,
-      value_number,
-      value_bool,
-      attribute_definition_id
-    `)
+    .select("id, value_text, value_number, value_bool, attribute_definition_id")
     .eq("global_product_id", globalProductId);
 
   if (error) {
@@ -103,11 +98,10 @@ export async function getProductAttributes(globalProductId: string): Promise<Pro
     return [];
   }
 
-  // Enrich with definition labels
   if (!data || data.length === 0) return [];
 
   const defIds = [...new Set(data.map((a: any) => a.attribute_definition_id))];
-  const { data: defs } = await supabase
+  const { data: defs } = await (supabase as any)
     .from("canonical_attribute_definitions")
     .select("id, key, label")
     .in("id", defIds);
@@ -156,7 +150,7 @@ export async function searchProductsV2(
     limit?: number;
   }
 ): Promise<ProductSearchResult[]> {
-  const { data, error } = await supabase.rpc("search_global_products_v2", {
+  const { data, error } = await (supabase.rpc as any)("search_global_products_v2", {
     q: query,
     p_country: filters?.country ?? null,
     p_city: filters?.city ?? null,
@@ -175,7 +169,7 @@ export async function searchProductsV2(
 // ── Quality Scoring ──
 
 export async function computeProductScores(productId: string): Promise<boolean> {
-  const { error } = await supabase.rpc("compute_product_quality_scores", {
+  const { error } = await (supabase.rpc as any)("compute_product_quality_scores", {
     p_product_id: productId,
   });
 
@@ -187,7 +181,7 @@ export async function computeProductScores(productId: string): Promise<boolean> 
 }
 
 export async function rebuildSearchIndex(productId: string): Promise<boolean> {
-  const { error } = await supabase.rpc("rebuild_product_search_index", {
+  const { error } = await (supabase.rpc as any)("rebuild_product_search_index", {
     p_product_id: productId,
   });
 
@@ -202,10 +196,10 @@ export async function rebuildSearchIndex(productId: string): Promise<boolean> {
 
 export async function getCanonicalTaxonomyHierarchy() {
   const [verticals, families, categories, subcategories] = await Promise.all([
-    supabase.from("canonical_verticals").select("*").eq("active", true).order("sort_order"),
-    supabase.from("canonical_families").select("*").eq("active", true).order("sort_order"),
-    supabase.from("canonical_categories").select("*").eq("active", true).order("sort_order"),
-    supabase.from("canonical_subcategories").select("*").eq("active", true).order("sort_order"),
+    (supabase as any).from("canonical_verticals").select("*").eq("active", true).order("sort_order"),
+    (supabase as any).from("canonical_families").select("*").eq("active", true).order("sort_order"),
+    (supabase as any).from("canonical_categories").select("*").eq("active", true).order("sort_order"),
+    (supabase as any).from("canonical_subcategories").select("*").eq("active", true).order("sort_order"),
   ]);
 
   return {
