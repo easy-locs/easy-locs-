@@ -17,17 +17,17 @@ export async function getSmartRecommendations(params: {
 
   if (merchantErr) throw merchantErr;
 
-  const { data: recentEvents } = await supabase
-    .from("dino_learning_events")
-    .select("event_type, metadata_json, created_at")
-    .in("event_type", ["merchant_view", "product_add_to_cart", "order_created", "search_used"])
+  const { data: recentEvents } = await (supabase as any)
+    .from("activity_logs")
+    .select("action, metadata, created_at")
+    .in("action", ["merchant_view", "product_add_to_cart", "order_created", "search_used"])
     .eq("entity_id", params.userId ?? "anonymous")
     .order("created_at", { ascending: false })
     .limit(50);
 
   const preferredWords = new Map<string, number>();
   for (const row of recentEvents ?? []) {
-    const md = (row as any)?.metadata_json ?? {};
+    const md = (row as any)?.metadata ?? {};
     const text = [md.queryText, md.merchantName, md.subcategory, md.category]
       .filter(Boolean)
       .join(" ")

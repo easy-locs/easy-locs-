@@ -8,8 +8,8 @@ export default function AdminNotificationOpsPage() {
   const { data: rows = [], isLoading } = useQuery({
     queryKey: ["admin-notification-ops"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("dino_notifications")
+      const { data, error } = await (supabase as any)
+        .from("notifications")
         .select("*")
         .order("created_at", { ascending: false })
         .limit(300);
@@ -20,9 +20,9 @@ export default function AdminNotificationOpsPage() {
     staleTime: 5000,
   });
 
-  const pending = rows.filter((r: any) => String(r.status ?? "") === "pending").length;
-  const sent = rows.filter((r: any) => String(r.status ?? "") === "sent").length;
-  const failed = rows.filter((r: any) => String(r.status ?? "") === "failed").length;
+  const pending = rows.filter((r: any) => !r.read_at && !r.resolved).length;
+  const sent = rows.filter((r: any) => !!r.read_at).length;
+  const failed = rows.filter((r: any) => !!r.resolved).length;
 
   return (
     <div className="min-h-[100dvh] bg-background pb-24">
@@ -53,9 +53,9 @@ export default function AdminNotificationOpsPage() {
         <div className="px-4 space-y-3">
           {rows.map((row: any) => (
             <div key={row.id} className="rounded-2xl border border-border/20 bg-card p-4 space-y-1">
-              <p className="text-sm font-bold text-foreground">{row.template_key || "notification"}</p>
+              <p className="text-sm font-bold text-foreground">{row.title || "notification"}</p>
               <p className="text-xs text-muted-foreground">
-                {row.channel || "push"} · {row.status || "pending"}
+                {row.type || "system"} · {row.read_at ? "read" : "unread"}
               </p>
               <p className="text-[11px] text-muted-foreground/70">
                 {row.created_at ? new Date(row.created_at).toLocaleString() : ""}

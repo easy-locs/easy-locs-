@@ -1,9 +1,7 @@
 /**
- * Orchestration event logger — persists events to dino_learning_events.
+ * Orchestration event logger — persists events to activity_logs (canonical).
  */
-
 import { supabase } from "@/integrations/supabase/client";
-import type { Json } from "@/integrations/supabase/types";
 
 export async function logOrchestrationEvent(params: {
   eventType: string;
@@ -15,19 +13,19 @@ export async function logOrchestrationEvent(params: {
   previousValue?: number;
 }) {
   try {
-    const { error } = await supabase.from("dino_learning_events").insert({
-      event_type: params.eventType,
+    const { error } = await (supabase as any).from("activity_logs").insert({
+      id: crypto.randomUUID(),
+      action: params.eventType,
       entity_id: params.entityId,
       entity_type: params.entityType,
-      metric: params.metric ?? "orchestration",
-      metadata_json: (params.metadata ?? {}) as Json,
-      new_value: params.newValue ?? 0,
-      previous_value: params.previousValue ?? 0,
+      metadata: {
+        metric: params.metric ?? "orchestration",
+        newValue: params.newValue ?? 0,
+        previousValue: params.previousValue ?? 0,
+        ...(params.metadata ?? {}),
+      },
     });
-
-    if (error) {
-      console.error("[orchestration] log failed", error);
-    }
+    if (error) console.error("[orchestration] log failed", error);
   } catch (err) {
     console.error("[orchestration] unexpected log error", err);
   }

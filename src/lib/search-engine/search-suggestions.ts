@@ -51,9 +51,9 @@ async function getRecentSearches(userId?: string | null): Promise<SearchSuggesti
 
   try {
     const { data } = await db
-      .from("dino_learning_events")
-      .select("metadata_json")
-      .eq("event_type", "search_history_saved")
+      .from("activity_logs")
+      .select("metadata")
+      .eq("action", "search_history_saved")
       .eq("entity_id", userId)
       .order("created_at", { ascending: false })
       .limit(20);
@@ -61,7 +61,7 @@ async function getRecentSearches(userId?: string | null): Promise<SearchSuggesti
     const seen = new Set<string>();
     const results: SearchSuggestion[] = [];
     for (const row of data ?? []) {
-      const q = String(row?.metadata_json?.queryText ?? "").trim();
+      const q = String((row as any)?.metadata?.queryText ?? "").trim();
       if (!q || seen.has(q.toLowerCase())) continue;
       seen.add(q.toLowerCase());
       results.push({ text: q, type: "recent", icon: "🕐" });
@@ -115,14 +115,12 @@ export async function saveToHistory(query: string, userId?: string | null) {
   if (!q) return;
 
   try {
-    await db.from("dino_learning_events").insert({
-      event_type: "search_history_saved",
+    await db.from("activity_logs").insert({
+      id: crypto.randomUUID(),
+      action: "search_history_saved",
       entity_id: userId ?? "anonymous",
       entity_type: "search",
-      metric: "query",
-      metadata_json: { userId: userId ?? null, queryText: q },
-      new_value: 1,
-      previous_value: 0,
+      metadata: { userId: userId ?? null, queryText: q },
     });
   } catch {
     // Silent fail
