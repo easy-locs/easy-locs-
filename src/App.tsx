@@ -443,6 +443,7 @@ const AdminVisualQualityPage = safeLazy(() => import("./pages/admin/AdminVisualQ
 const AdminRankingControlPage = safeLazy(() => import("./pages/admin/AdminRankingControlPage"), "AdminRankingControlPage");
 const AdminShopQualityPage = safeLazy(() => import("./pages/admin/AdminShopQualityPage"), "AdminShopQualityPage");
 const AdminCoherenceControlPage = safeLazy(() => import("./pages/admin/AdminCoherenceControlPage"), "AdminCoherenceControlPage");
+const AdminSourceAuditPage = safeLazy(() => import("./pages/admin/AdminSourceAuditPage"), "AdminSourceAuditPage");
 const CustomerReorderPage = safeLazy(() => import("./pages/customer/CustomerReorderPage"), "CustomerReorderPage");
 const MerchantAutoAcceptSettingsPage = safeLazy(() => import("./pages/merchant/MerchantAutoAcceptSettingsPage"), "MerchantAutoAcceptSettingsPage");
 const AdminSystemHealthPage = safeLazy(() => import("./pages/admin/AdminSystemHealthPage"), "AdminSystemHealthPage");
