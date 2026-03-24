@@ -52,10 +52,10 @@ Deno.serve(async (req) => {
       // Find entities needing enrichment (low completeness or missing data)
       const { data: entities, error } = await supabase
         .from("seed_merchants")
-        .select("id, name, category, subcategory, city, country, source_key, source_url, completeness_score, menu_items_json, phone, website, cover_image")
-        .or("completeness_score.is.null,completeness_score.lt.60")
+        .select("id, name, category, subcategory, city, country, source_key, source_url, integrity_score, menu_items_json, phone, website, cover_image")
+        .or("integrity_score.is.null,integrity_score.lt.60")
         .eq("country", "AE")
-        .order("completeness_score", { ascending: true, nullsFirst: true })
+        .order("integrity_score", { ascending: true, nullsFirst: true })
         .limit(limit);
 
       if (error) throw error;
