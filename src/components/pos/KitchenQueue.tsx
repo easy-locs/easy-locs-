@@ -3,6 +3,7 @@
  * 4-column KDS: New → Accepted → Preparing → Ready
  */
 import { useState, useEffect } from "react";
+import { formatMoneyByCountry } from "@/lib/currency-engine";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";

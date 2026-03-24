@@ -3,6 +3,7 @@
  * Uses storefront_orders as source of truth with realtime subscriptions.
  */
 import { useState, useEffect, useCallback } from "react";
+import { formatMoneyByCountry } from "@/lib/currency-engine";
 import { supabase } from "@/integrations/supabase/client";
 import { updateStorefrontOrderStatus } from "@/lib/orders/orderEngine";
 import { Badge } from "@/components/ui/badge";
