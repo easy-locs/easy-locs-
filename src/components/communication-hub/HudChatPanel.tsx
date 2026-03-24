@@ -586,13 +586,24 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
     try {
       // ── V2 CANONICAL SEND PATH ──
       if (thread.isV2 && thread.v2ConversationId) {
+        if (!thread.peerUserId || thread.peerUserId === authUserId) {
+          console.error("[Orbit V2] Invalid peer resolution", {
+            authUserId,
+            peerUserId: thread.peerUserId,
+            conversationId: thread.v2ConversationId,
+            threadId: thread.id,
+          });
+          setRawMessages(prev => prev.filter(m => m.id !== optimisticId));
+          toast.error("Destinataire invalide pour cette conversation.");
+          return;
+        }
         const { error: v2Err } = await (supabase as any)
           .from("chat_messages_v2")
           .insert({
             conversation_id: thread.v2ConversationId,
             sender_user_id: authUserId,
             sender_orbit_id: null,
-            receiver_orbit_id: null,
+            receiver_orbit_id: thread.peerOrbitId ?? null,
             type: "text",
             body: storedContent,
           });
@@ -615,6 +626,11 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
           recipientName: thread.name,
           contentPreview: content.slice(0, 80),
         }, "orbit", { userId: authUserId, orgId });
+
+        onThreadUpdate(thread.id, {
+          lastMessage: msgText,
+          lastMessageTime: new Date().toISOString(),
+        });
 
         setSecurityLevel("normal");
         setSending(false);

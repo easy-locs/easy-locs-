@@ -65,6 +65,10 @@ export interface ConversationThread {
   isV2?: boolean;
   /** V2 conversation ID (UUID from conversations_v2) */
   v2ConversationId?: string;
+  /** Canonical peer identity for V2 direct conversations */
+  peerUserId?: string | null;
+  peerOrbitId?: string | null;
+  participantUserIds?: string[];
 
   // State
   unreadCount: number;
