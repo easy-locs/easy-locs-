@@ -35,6 +35,7 @@ import { useUnifiedNotificationStore } from "@/stores/unifiedNotificationStore";
 import { startUnifiedNotificationDispatcher, stopUnifiedNotificationDispatcher } from "@/lib/notifications/dispatcher";
 import AppBootstrapGuardDirect from "@/components/app/AppBootstrapGuard";
 import { AppInit } from "@/components/system/AppInit";
+import { GlobalExperienceProvider } from "@/providers/GlobalExperienceProvider";
 
 // V2 test pages — removed (Batch B purge)
 
