@@ -193,14 +193,16 @@ function buildBreadcrumbs(
   vertical: TaxonomyVertical,
   subcategory?: string | null,
 ): { label: string; path: string }[] {
+  const vertI18n = getVerticalI18n(vertical.value);
   const crumbs = [
-    { label: "Home", path: "/" },
-    { label: vertical.label, path: VERTICAL_ROUTES[vertical.value] || `/${vertical.value}` },
+    { label: tc("nav.home"), path: "/" },
+    { label: vertI18n.title, path: VERTICAL_ROUTES[vertical.value] || `/${vertical.value}` },
   ];
   if (subcategory) {
+    const subI18n = getSubcategoryI18n(subcategory);
     const sub = vertical.subcategories.find(s => s.value === subcategory);
     crumbs.push({
-      label: sub?.label || subcategory.replace(/_/g, " "),
+      label: subI18n?.title || sub?.label || subcategory.replace(/_/g, " "),
       path: buildCanonicalRoute(vertical.value, subcategory),
     });
   }
