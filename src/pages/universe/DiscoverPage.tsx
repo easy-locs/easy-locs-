@@ -1,6 +1,6 @@
 /**
  * DiscoverPage — Unified discovery hub with all verticals.
- * Uses canonical discovery pipeline — visibility, routing, display_priority enforced.
+ * Uses canonical UI engine for vertical-aware accents and wording.
  */
 import { useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
@@ -10,6 +10,7 @@ import MerchantCard from "@/components/marketplace/MerchantCard";
 import { VERTICALS, getSubcategoryLabel } from "@/lib/discovery/verticals";
 import { useDiscoverListings } from "@/hooks/useDiscoverListings";
 import { useDiscoveryStore } from "@/stores/discoveryStore";
+import { resolveCanonicalUI } from "@/lib/ui-engine";
 
 export default function DiscoverPage() {
   const navigate = useNavigate();
@@ -67,20 +68,23 @@ export default function DiscoverPage() {
           >
             All ({allListings.length})
           </button>
-          {VERTICALS.map((v) => (
-            <button
-              key={v.value}
-              onClick={() => setVertical(vertical === v.value ? null : v.value)}
-              className="shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold transition-all flex items-center gap-1"
-              style={{
-                background: vertical === v.value ? "hsl(var(--primary))" : "hsl(var(--muted))",
-                color: vertical === v.value ? "hsl(var(--primary-foreground))" : "hsl(var(--foreground))",
-              }}
-            >
-              <span>{v.emoji}</span> {v.label}
-              <span className="opacity-60">({verticalCounts.get(v.value) || 0})</span>
-            </button>
-          ))}
+          {VERTICALS.map((v) => {
+            const ui = resolveCanonicalUI(v.value);
+            return (
+              <button
+                key={v.value}
+                onClick={() => setVertical(vertical === v.value ? null : v.value)}
+                className="shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold transition-all flex items-center gap-1"
+                style={{
+                  background: vertical === v.value ? `hsl(${ui.accentHsl})` : "hsl(var(--muted))",
+                  color: vertical === v.value ? "white" : "hsl(var(--foreground))",
+                }}
+              >
+                <span>{v.emoji}</span> {v.label}
+                <span className="opacity-60">({verticalCounts.get(v.value) || 0})</span>
+              </button>
+            );
+          })}
         </div>
       </div>
 
@@ -96,6 +100,7 @@ export default function DiscoverPage() {
             VERTICALS.map((v) => {
               const items = filtered.filter((l) => l.vertical === v.value);
               if (items.length === 0) return null;
+              const ui = resolveCanonicalUI(v.value);
               return (
                 <div key={v.value} className="mb-6">
                   <div className="flex items-center justify-between mb-2">
@@ -104,9 +109,9 @@ export default function DiscoverPage() {
                       <span className="text-[10px] font-normal text-muted-foreground">({items.length})</span>
                     </h2>
                     <button
-                      onClick={() => navigate(`/browse/${v.value}`)}
+                      onClick={() => navigate(ui.canonicalRoute)}
                       className="text-[11px] font-semibold flex items-center gap-0.5"
-                      style={{ color: "hsl(var(--primary))" }}
+                      style={{ color: `hsl(${ui.accentHsl})` }}
                     >
                       See all <ChevronRight className="h-3 w-3" />
                     </button>
