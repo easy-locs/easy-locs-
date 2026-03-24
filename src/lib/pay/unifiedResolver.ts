@@ -205,12 +205,19 @@ export async function resolveUnifiedTarget(input: {
   // Auto-provision wallet via SECURITY DEFINER RPC
   if (!wallet) {
     console.log("[resolver] path C auto-provisioning wallet via RPC for:", profile.id);
-    const { data: rpcResult, error: rpcErr } = await supabase
-      .rpc("ensure_wallet_account", { target_user_id: profile.id, target_currency: currency });
-    if (rpcErr) {
-      console.error("[resolver] path C RPC FAILED:", rpcErr.message);
-    } else if (rpcResult && rpcResult.length > 0) {
-      wallet = { id: rpcResult[0].wallet_id, status: rpcResult[0].wallet_status };
+    try {
+      const { data: rpcResult, error: rpcErr } = await supabase
+        .rpc("ensure_wallet_account", { target_user_id: profile.id, target_currency: currency });
+      if (rpcErr) {
+        console.error("[resolver] path C RPC FAILED:", rpcErr.message, rpcErr.code, rpcErr.details);
+      } else if (rpcResult && rpcResult.length > 0) {
+        wallet = { id: rpcResult[0].wallet_id, status: rpcResult[0].wallet_status };
+        console.log("[resolver] path C wallet provisioned:", { walletId: wallet.id, status: wallet.status });
+      } else {
+        console.error("[resolver] path C RPC returned empty for:", profile.id);
+      }
+    } catch (e: any) {
+      console.error("[resolver] path C RPC exception:", e?.message);
     }
   }
   const walletResolveMs = performance.now() - walletStart;
