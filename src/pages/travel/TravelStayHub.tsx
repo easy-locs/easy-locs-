@@ -274,7 +274,7 @@ export default function TravelStayHub() {
                   onClick={() => setGuestCount(g => Math.max(1, g === 4 ? 1 : g + 1))}
                 >
                   <Users className="h-3.5 w-3.5" style={{ color: "hsla(38,70%,58%,0.7)" }} />
-                  {guestCount} Guest{guestCount > 1 ? "s" : ""}
+                  {guestCount} {guestCount > 1 ? tc("common.guests", { count: guestCount }) : tc("common.guest", { count: guestCount })}
                 </button>
                 <button
                   className="flex items-center justify-center gap-1.5 h-12 px-3 rounded-xl text-[12px] font-bold transition-all"
