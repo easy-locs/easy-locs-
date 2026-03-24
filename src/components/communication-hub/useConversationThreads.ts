@@ -290,9 +290,9 @@ export function useConversationThreads() {
 
       // ── 11. V2 Direct Conversations (canonical stack) ──
       try {
-        const { data: v2Convs } = await supabase
+        const { data: v2Convs } = await (supabase as any)
           .from("conversations_v2")
-          .select("id, type, participants, last_message_at, last_message_body, created_at")
+          .select("id, type, participants, last_message_at, title, created_at")
           .eq("type", "direct")
           .order("last_message_at", { ascending: false, nullsFirst: false })
           .limit(100);
