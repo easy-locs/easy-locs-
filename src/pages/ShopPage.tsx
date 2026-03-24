@@ -65,6 +65,7 @@ export default function ShopPage() {
     queryKey: ["storefront-page", shopSlug],
     queryFn: async () => {
       const canonical = await resolveCanonicalEntity(shopSlug!);
+      console.info("[canonical.entity_resolver] resolved", canonical);
       debugLog.info(
         "router",
         "canonical.entity_resolver.used",
