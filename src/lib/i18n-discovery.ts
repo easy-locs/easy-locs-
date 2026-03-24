@@ -487,14 +487,28 @@ function getDiscoveryLocale(): DiscoveryLocale {
 
 let _cachedLocale: DiscoveryLocale | null = null;
 
+import { humanizeKey } from "@/lib/i18n-safe";
+
+const _missingDiscovery = new Set<string>();
+
 /**
  * Translate a discovery i18n key with optional interpolation.
- * Falls back to English if key is missing in current locale.
+ * Falls back to English, then humanizeKey. NEVER returns raw key.
  */
 export function td(key: string, params?: Record<string, string | number>): string {
   if (!_cachedLocale) _cachedLocale = getDiscoveryLocale();
   const locale = _cachedLocale;
-  let value = translations[locale]?.[key] || translations.en[key] || key;
+  const raw = translations[locale]?.[key] || translations.en[key];
+  let value: string;
+  if (raw) {
+    value = raw;
+  } else {
+    if (import.meta.env.DEV && !_missingDiscovery.has(key)) {
+      _missingDiscovery.add(key);
+      console.warn(`[td-missing] "${key}"`);
+    }
+    value = humanizeKey(key);
+  }
   if (params) {
     for (const [k, v] of Object.entries(params)) {
       value = value.replace(`{${k}}`, String(v));

@@ -958,12 +958,28 @@ export function resetAppLocale(): void { _locale = null; }
 export function isRTL(): boolean { return getAppLocale() === "ar"; }
 
 // ── Core translate function ──────────────────────────────────────────────────
+import { humanizeKey, looksLikeI18nKey } from "@/lib/i18n-safe";
+
+const _missingCanonical = new Set<string>();
+
 /**
  * Canonical translate: tc("commerce.add_to_cart") or tc("common.km_away", { distance: "2.3" })
+ * NEVER returns a raw key — humanizes as last resort.
  */
 export function tc(key: string, params?: Record<string, string | number>): string {
   const locale = getAppLocale();
-  let value = ALL_TRANSLATIONS[locale]?.[key] || ALL_TRANSLATIONS.en[key] || key;
+  const raw = ALL_TRANSLATIONS[locale]?.[key] || ALL_TRANSLATIONS.en[key];
+  let value: string;
+  if (raw) {
+    value = raw;
+  } else {
+    // Key missing — humanize, never show raw key
+    if (import.meta.env.DEV && !_missingCanonical.has(key)) {
+      _missingCanonical.add(key);
+      console.warn(`[tc-missing] "${key}"`);
+    }
+    value = humanizeKey(key);
+  }
   if (params) {
     for (const [k, v] of Object.entries(params)) {
       value = value.replace(`{${k}}`, String(v));
