@@ -181,8 +181,8 @@ export async function resolveBoostForSlot(ctx: SlotContext): Promise<BoostMatch 
     });
     if (!viable.length) return null;
 
-    // 3. Get creatives for these campaigns
-    const campaignIds = campaigns.map((c: any) => c.id);
+    // 3. Get creatives for viable campaigns
+    const campaignIds = viable.map((c: any) => c.id);
     const { data: creatives } = await (supabase as any)
       .from("boost_creatives")
       .select("*")
@@ -193,7 +193,7 @@ export async function resolveBoostForSlot(ctx: SlotContext): Promise<BoostMatch 
 
     // 4. Score each campaign+creative pair
     const matches: BoostMatch[] = [];
-    for (const campaign of campaigns) {
+    for (const campaign of viable) {
       const campaignCreatives = creatives.filter((c: any) => c.campaign_id === campaign.id);
       for (const creative of campaignCreatives) {
         const score = scoreCampaignForSlot(campaign, creative, ctx);
