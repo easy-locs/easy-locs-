@@ -191,13 +191,9 @@ const DriverDashboard = safeLazy(() => import("./pages/DriverDashboard"), "Drive
 const DeliveryCommandCenter = safeLazy(() => import("./pages/DeliveryCommandCenter"), "DeliveryCommandCenter");
 const ShopPage = safeLazy(() => import("./pages/ShopPage"), "ShopPage");
 const MyShopPage = safeLazy(() => import("./pages/MyShopPage"), "MyShopPage");
-// DiscoverPage — merged into /radar. Import removed.
 const OpsCenter = safeLazy(() => import("./pages/OpsCenter"), "OpsCenter");
 const ShopsPage = safeLazy(() => import("./pages/ShopsPage"), "ShopsPage");
-// SuperMapRadarPage — duplicate of /radar. Removed.
-// MapTabPage — dead, unused. Removed.
 const AdminUiEnginePage = safeLazy(() => import("./pages/admin/AdminUiEnginePage"), "AdminUiEnginePage");
-// GlobalRadarPage — DELETED. Replaced by RadarViewPage.
 const RadarViewPage = safeLazy(() => import("./pages/RadarViewPage"), "RadarViewPage");
 const MyBusinessHub = safeLazy(() => import("./pages/MyBusinessHub"), "MyBusinessHub");
 const MyShopsPage = safeLazy(() => import("./pages/MyShopsPage"), "MyShopsPage");
