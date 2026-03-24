@@ -10,7 +10,7 @@ export default function AdminPlatformAlertsPage() {
     queryFn: async () => {
       const [{ data: tickets }, { data: notifications }, { data: orders }] = await Promise.all([
         supabase.from("support_tickets").select("id,status").limit(2000),
-        supabase.from("dino_notifications").select("id,status").limit(2000),
+        (supabase as any).from("notifications").select("id,type").limit(2000),
         supabase.from("orders").select("id,status,payment_status").limit(3000),
       ]);
 

@@ -8,8 +8,8 @@ export default function AdminNotificationOpsPage() {
   const { data: rows = [], isLoading } = useQuery({
     queryKey: ["admin-notification-ops"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("dino_notifications")
+      const { data, error } = await (supabase as any)
+        .from("notifications")
         .select("*")
         .order("created_at", { ascending: false })
         .limit(300);

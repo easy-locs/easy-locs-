@@ -13,10 +13,10 @@ export default function AdminGrowthOpsPage() {
           (supabase as any).from("seed_merchants").select("*").limit(1000),
           (supabase as any).from("seed_merchant_promos").select("*").limit(1000),
           supabase.from("user_favorites").select("*").limit(2000),
-          supabase
-            .from("dino_learning_events")
-            .select("event_type")
-            .in("event_type", ["home_view", "merchant_view", "product_add_to_cart", "order_created"])
+          (supabase as any)
+            .from("activity_logs")
+            .select("action")
+            .in("action", ["home_view", "merchant_view", "product_add_to_cart", "order_created"])
             .limit(5000),
         ]);
 
