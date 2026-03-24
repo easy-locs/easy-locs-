@@ -228,9 +228,74 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
   useEffect(() => { if (offline.isOnline) loadMessages(); }, [offline.isOnline]);
   useEffect(() => { if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight; }, [messages]);
 
-  // Realtime messages + typing via centralized RealtimeManager
+  // Realtime messages + typing
   useEffect(() => {
-    if (!orgId || !thread) return;
+    if (!thread) return;
+
+    // ── V2 CANONICAL REALTIME ──
+    if (thread.isV2 && thread.v2ConversationId) {
+      const v2Channel = supabase
+        .channel(`rt:v2:${thread.v2ConversationId}`)
+        .on("postgres_changes", {
+          event: "INSERT", schema: "public", table: "chat_messages_v2",
+          filter: `conversation_id=eq.${thread.v2ConversationId}`,
+        }, (payload) => {
+          const msg = payload.new as any;
+          if (!msg?.id) return;
+          const mapped: ChatMessage = {
+            id: msg.id,
+            sender_id: msg.sender_user_id,
+            content: msg.body,
+            created_at: msg.created_at,
+            read: !!msg.read_at,
+            category: "general",
+            tenant_id: null,
+            translated_content: null,
+            translated_locale: null,
+            language_detected: null,
+            message_type: msg.type || "user",
+            context_type: "direct",
+            context_id: thread.v2ConversationId,
+          } as any;
+          setRawMessages(prev => prev.some(m => m.id === mapped.id) ? prev : [...prev, mapped]);
+          // Auto mark as read
+          if (msg.sender_user_id !== user?.id && !msg.read_at) {
+            (supabase as any).from("chat_messages_v2").update({ read_at: new Date().toISOString() }).eq("id", msg.id);
+            onThreadUpdate(thread.id, { unreadCount: 0 });
+          }
+        })
+        .on("postgres_changes", {
+          event: "UPDATE", schema: "public", table: "chat_messages_v2",
+          filter: `conversation_id=eq.${thread.v2ConversationId}`,
+        }, (payload) => {
+          const msg = payload.new as any;
+          if (!msg?.id) return;
+          setRawMessages(prev => prev.map(m => m.id === msg.id ? {
+            ...m, content: msg.body, read: !!msg.read_at,
+          } : m));
+        })
+        .subscribe();
+
+      const typChannel = supabase.channel(`rt:typing:v2:${thread.v2ConversationId}`);
+      typChannel
+        .on("presence", { event: "sync" }, () => {
+          const state = typChannel.presenceState();
+          const others = Object.values(state).flat().filter((p: any) => p.user_id !== user?.id);
+          setTypingIndicator(others.length > 0);
+        })
+        .subscribe();
+      typingChannelRef.current = typChannel;
+
+      return () => {
+        typingChannelRef.current = null;
+        if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+        supabase.removeChannel(v2Channel);
+        supabase.removeChannel(typChannel);
+      };
+    }
+
+    // ── LEGACY REALTIME ──
+    if (!orgId) return;
     const matchThread = (msg: any) => {
       const msgKey = msg.booking_id ? `booking-${msg.booking_id}` : msg.tenant_id ? `tenant-${msg.tenant_id}` : null;
       return msgKey === thread.id || msg.context_id === thread.contextId;
@@ -266,7 +331,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
       if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
       sub.unsubscribe();
     };
-  }, [orgId, thread, user, privacySettings.readReceipts]);
+  }, [orgId, thread, user, privacySettings.readReceipts, onThreadUpdate]);
 
   // Broadcast typing on input change (debounced, respects privacy)
   const broadcastTyping = useCallback(() => {
@@ -519,6 +584,44 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
     // ── ONLINE MODE: send in background (already shown optimistically) ──
     setSending(true);
     try {
+      // ── V2 CANONICAL SEND PATH ──
+      if (thread.isV2 && thread.v2ConversationId) {
+        const { error: v2Err } = await (supabase as any)
+          .from("chat_messages_v2")
+          .insert({
+            conversation_id: thread.v2ConversationId,
+            sender_user_id: authUserId,
+            sender_orbit_id: null,
+            receiver_orbit_id: null,
+            type: "text",
+            body: storedContent,
+          });
+        if (v2Err) {
+          console.error("[Orbit V2] Message insert failed:", v2Err);
+          setRawMessages(prev => prev.filter(m => m.id !== optimisticId));
+          toast.error("Failed to send: " + v2Err.message);
+          setNewMessage(msgText);
+          return;
+        }
+        // Update conversation timestamp
+        await (supabase as any)
+          .from("conversations_v2")
+          .update({ last_message_at: new Date().toISOString(), updated_at: new Date().toISOString() })
+          .eq("id", thread.v2ConversationId);
+
+        platformBus.emit("orbit:message_sent", {
+          threadId: thread.id,
+          contextId: thread.contextId,
+          recipientName: thread.name,
+          contentPreview: content.slice(0, 80),
+        }, "orbit", { userId: authUserId, orgId });
+
+        setSecurityLevel("normal");
+        setSending(false);
+        return;
+      }
+
+      // ── LEGACY SEND PATH ──
       let tenantLocale = "en";
       if (thread.tenantId) {
         const { data: tData } = await supabase.from("tenants").select("preferred_locale").eq("id", thread.tenantId).maybeSingle();
@@ -563,18 +666,15 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
 
       if (insertErr) {
         console.error("[Orbit] Message insert failed:", insertErr);
-        // Remove optimistic message on failure
         setRawMessages(prev => prev.filter(m => m.id !== optimisticId));
         toast.error("Failed to send message: " + insertErr.message);
-        setNewMessage(msgText); // Restore message for retry
+        setNewMessage(msgText);
         return;
       }
 
-      // Replace optimistic message with real one on next realtime event (auto via listener)
       setConvStatus("waiting_tenant");
-      setSecurityLevel("normal"); // Reset security level after successful send
+      setSecurityLevel("normal");
 
-      // Platform bus: emit message_sent for cross-module sync
       platformBus.emit("orbit:message_sent", {
         threadId: thread.threadId || thread.id,
         contextId: thread.contextId,
