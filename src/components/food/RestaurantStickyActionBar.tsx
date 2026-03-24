@@ -1,14 +1,18 @@
 import { useNavigate } from "react-router-dom";
+import { formatMoneyByCountry } from "@/lib/currency-engine";
+import { tc } from "@/lib/i18n-canonical";
 
 type RestaurantStickyActionBarProps = {
   itemCount: number;
   total: number;
+  currency?: string;
   restaurantId?: string | null;
 };
 
 export function RestaurantStickyActionBar({
   itemCount,
   total,
+  currency,
   restaurantId,
 }: RestaurantStickyActionBarProps) {
   const navigate = useNavigate();
@@ -24,12 +28,12 @@ export function RestaurantStickyActionBar({
         >
           <div className="flex items-center justify-between">
             <div className="text-left">
-              <div className="text-sm font-bold">View Cart</div>
+              <div className="text-sm font-bold">{tc("commerce.cart")}</div>
               <div className="text-[11px] opacity-80">
-                {itemCount} item{itemCount > 1 ? "s" : ""}
+                {tc(itemCount > 1 ? "commerce.items" : "commerce.item", { count: itemCount })}
               </div>
             </div>
-            <div className="text-sm font-bold">{total.toFixed(2)} AED</div>
+            <div className="text-sm font-bold">{formatMoneyByCountry(total, null, currency)}</div>
           </div>
         </button>
       </div>

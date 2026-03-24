@@ -130,6 +130,157 @@ const translations: Record<DiscoveryLocale, Record<string, string>> = {
     "discovery.subcategory.cleaning.tagline": "Spotless spaces, guaranteed",
     "discovery.subcategory.cleaning.search_placeholder": "Deep clean, move-out, regular…",
 
+    // ── Additional subcategories (full coverage) ──
+    "discovery.subcategory.shawarma.title": "Shawarma",
+    "discovery.subcategory.shawarma.tagline": "Perfectly wrapped, bursting with flavor",
+    "discovery.subcategory.shawarma.search_placeholder": "Chicken, beef, plate, wrap…",
+    "discovery.subcategory.bakery.title": "Bakery",
+    "discovery.subcategory.bakery.tagline": "Freshly baked, always warm",
+    "discovery.subcategory.bakery.search_placeholder": "Croissant, bread, pastry…",
+    "discovery.subcategory.chinese.title": "Chinese",
+    "discovery.subcategory.chinese.tagline": "Authentic flavors from the East",
+    "discovery.subcategory.chinese.search_placeholder": "Dim sum, noodles, fried rice…",
+    "discovery.subcategory.indian.title": "Indian",
+    "discovery.subcategory.indian.tagline": "Spices that tell a story",
+    "discovery.subcategory.indian.search_placeholder": "Biryani, curry, tandoori…",
+    "discovery.subcategory.italian.title": "Italian",
+    "discovery.subcategory.italian.tagline": "La dolce vita on your plate",
+    "discovery.subcategory.italian.search_placeholder": "Pasta, risotto, tiramisu…",
+    "discovery.subcategory.japanese.title": "Japanese",
+    "discovery.subcategory.japanese.tagline": "Precision, flavor, artistry",
+    "discovery.subcategory.japanese.search_placeholder": "Ramen, tempura, udon…",
+    "discovery.subcategory.lebanese.title": "Lebanese",
+    "discovery.subcategory.lebanese.tagline": "Mediterranean soul food",
+    "discovery.subcategory.lebanese.search_placeholder": "Hummus, falafel, manoushe…",
+    "discovery.subcategory.arabic.title": "Arabic",
+    "discovery.subcategory.arabic.tagline": "Traditional tastes, warm hospitality",
+    "discovery.subcategory.arabic.search_placeholder": "Mandi, machboos, grills…",
+    "discovery.subcategory.seafood.title": "Seafood",
+    "discovery.subcategory.seafood.tagline": "Ocean fresh, daily catch",
+    "discovery.subcategory.seafood.search_placeholder": "Fish, shrimp, lobster…",
+    "discovery.subcategory.desserts.title": "Desserts",
+    "discovery.subcategory.desserts.tagline": "Sweet endings, pure indulgence",
+    "discovery.subcategory.desserts.search_placeholder": "Cake, ice cream, kunafa…",
+    "discovery.subcategory.healthy.title": "Healthy",
+    "discovery.subcategory.healthy.tagline": "Fuel your body, nourish your soul",
+    "discovery.subcategory.healthy.search_placeholder": "Salads, bowls, smoothies…",
+    "discovery.subcategory.breakfast.title": "Breakfast",
+    "discovery.subcategory.breakfast.tagline": "Start your day right",
+    "discovery.subcategory.breakfast.search_placeholder": "Eggs, pancakes, avocado…",
+    "discovery.subcategory.brunch.title": "Brunch",
+    "discovery.subcategory.brunch.tagline": "The best of both meals",
+    "discovery.subcategory.brunch.search_placeholder": "Benedict, waffles, mimosa…",
+    "discovery.subcategory.fast_food.title": "Fast Food",
+    "discovery.subcategory.fast_food.tagline": "Quick bites, big flavors",
+    "discovery.subcategory.fast_food.search_placeholder": "Combo, fries, nuggets…",
+    "discovery.subcategory.dineout.title": "Dine Out",
+    "discovery.subcategory.dineout.tagline": "Fine dining experiences await",
+    "discovery.subcategory.dineout.search_placeholder": "Restaurants, fine dining…",
+
+    // Grocery subcategories
+    "discovery.subcategory.supermarket.title": "Supermarket",
+    "discovery.subcategory.supermarket.tagline": "Everything you need, one stop",
+    "discovery.subcategory.supermarket.search_placeholder": "Groceries, household…",
+    "discovery.subcategory.organic.title": "Organic",
+    "discovery.subcategory.organic.tagline": "Pure, natural, chemical-free",
+    "discovery.subcategory.organic.search_placeholder": "Organic vegetables, fruits…",
+    "discovery.subcategory.butcher.title": "Butcher",
+    "discovery.subcategory.butcher.tagline": "Premium cuts, fresh daily",
+    "discovery.subcategory.butcher.search_placeholder": "Beef, lamb, chicken…",
+    "discovery.subcategory.mini_mart.title": "Mini Mart",
+    "discovery.subcategory.mini_mart.tagline": "Quick essentials, always open",
+    "discovery.subcategory.mini_mart.search_placeholder": "Snacks, drinks, basics…",
+
+    // Shops subcategories
+    "discovery.subcategory.fashion.title": "Fashion",
+    "discovery.subcategory.fashion.tagline": "Style that speaks",
+    "discovery.subcategory.fashion.search_placeholder": "Clothing, shoes, accessories…",
+    "discovery.subcategory.electronics.title": "Electronics",
+    "discovery.subcategory.electronics.tagline": "Latest tech, best prices",
+    "discovery.subcategory.electronics.search_placeholder": "Phones, laptops, gadgets…",
+    "discovery.subcategory.flowers.title": "Flowers",
+    "discovery.subcategory.flowers.tagline": "Blooming beauty, delivered fresh",
+    "discovery.subcategory.flowers.search_placeholder": "Roses, bouquets, arrangements…",
+    "discovery.subcategory.pets.title": "Pets",
+    "discovery.subcategory.pets.tagline": "Everything for your furry friends",
+    "discovery.subcategory.pets.search_placeholder": "Food, toys, grooming…",
+
+    // Services subcategories
+    "discovery.subcategory.barber.title": "Barber",
+    "discovery.subcategory.barber.tagline": "Sharp cuts, clean lines",
+    "discovery.subcategory.barber.search_placeholder": "Haircut, beard, grooming…",
+    "discovery.subcategory.nail_salon.title": "Nail Salon",
+    "discovery.subcategory.nail_salon.tagline": "Perfect nails, every time",
+    "discovery.subcategory.nail_salon.search_placeholder": "Manicure, pedicure, gel…",
+    "discovery.subcategory.laundry.title": "Laundry",
+    "discovery.subcategory.laundry.tagline": "Fresh clothes, zero effort",
+    "discovery.subcategory.laundry.search_placeholder": "Wash, dry clean, iron…",
+    "discovery.subcategory.handyman.title": "Handyman",
+    "discovery.subcategory.handyman.tagline": "Fix anything, anytime",
+    "discovery.subcategory.handyman.search_placeholder": "Repair, install, assemble…",
+    "discovery.subcategory.movers.title": "Movers",
+    "discovery.subcategory.movers.tagline": "Move stress-free",
+    "discovery.subcategory.movers.search_placeholder": "Packing, moving, storage…",
+    "discovery.subcategory.moving.title": "Moving",
+    "discovery.subcategory.moving.tagline": "Seamless relocation services",
+    "discovery.subcategory.moving.search_placeholder": "Local, international, office…",
+    "discovery.subcategory.pest_control.title": "Pest Control",
+    "discovery.subcategory.pest_control.tagline": "Protect your home, guaranteed",
+    "discovery.subcategory.pest_control.search_placeholder": "Insects, termites, rodents…",
+    "discovery.subcategory.ac_repair.title": "AC Repair",
+    "discovery.subcategory.ac_repair.tagline": "Stay cool, we fix it fast",
+    "discovery.subcategory.ac_repair.search_placeholder": "AC service, maintenance…",
+
+    // Healthcare subcategories
+    "discovery.subcategory.clinic.title": "Clinic",
+    "discovery.subcategory.clinic.tagline": "Professional care, always near",
+    "discovery.subcategory.clinic.search_placeholder": "General, specialist, checkup…",
+    "discovery.subcategory.dentist.title": "Dentist",
+    "discovery.subcategory.dentist.tagline": "Healthy smiles, confident you",
+    "discovery.subcategory.dentist.search_placeholder": "Cleaning, implants, braces…",
+    "discovery.subcategory.physio.title": "Physiotherapy",
+    "discovery.subcategory.physio.tagline": "Move better, live better",
+    "discovery.subcategory.physio.search_placeholder": "Rehab, sports, back pain…",
+    "discovery.subcategory.spa.title": "Spa",
+    "discovery.subcategory.spa.tagline": "Relax, rejuvenate, restore",
+    "discovery.subcategory.spa.search_placeholder": "Massage, facial, body…",
+
+    // Property subcategories
+    "discovery.subcategory.apartment.title": "Apartments",
+    "discovery.subcategory.apartment.tagline": "Modern living spaces",
+    "discovery.subcategory.apartment.search_placeholder": "Studio, 1BR, 2BR, penthouse…",
+    "discovery.subcategory.villa.title": "Villas",
+    "discovery.subcategory.villa.tagline": "Spacious luxury living",
+    "discovery.subcategory.villa.search_placeholder": "3BR, 4BR, pool, garden…",
+    "discovery.subcategory.office.title": "Offices",
+    "discovery.subcategory.office.tagline": "Your next workspace awaits",
+    "discovery.subcategory.office.search_placeholder": "Coworking, private, furnished…",
+    "discovery.subcategory.serviced_apartment.title": "Serviced Apartments",
+    "discovery.subcategory.serviced_apartment.tagline": "Hotel comfort, home freedom",
+    "discovery.subcategory.serviced_apartment.search_placeholder": "Furnished, serviced, monthly…",
+    "discovery.subcategory.hostel.title": "Hostels",
+    "discovery.subcategory.hostel.tagline": "Budget stays, social vibes",
+    "discovery.subcategory.hostel.search_placeholder": "Dorm, shared, backpacker…",
+
+    // Mobility subcategories
+    "discovery.subcategory.taxi.title": "Taxi",
+    "discovery.subcategory.taxi.tagline": "Your ride, on demand",
+    "discovery.subcategory.taxi.search_placeholder": "Airport, city, long distance…",
+    "discovery.subcategory.car_rental.title": "Car Rental",
+    "discovery.subcategory.car_rental.tagline": "Drive anywhere, your way",
+    "discovery.subcategory.car_rental.search_placeholder": "Economy, luxury, SUV…",
+    "discovery.subcategory.chauffeur.title": "Chauffeur",
+    "discovery.subcategory.chauffeur.tagline": "Premium rides, personal driver",
+    "discovery.subcategory.chauffeur.search_placeholder": "Business, event, hourly…",
+
+    // Experiences subcategories
+    "discovery.subcategory.events.title": "Events",
+    "discovery.subcategory.events.tagline": "Unforgettable gatherings",
+    "discovery.subcategory.events.search_placeholder": "Concert, exhibition, show…",
+    "discovery.subcategory.activities.title": "Activities",
+    "discovery.subcategory.activities.tagline": "Adventures for everyone",
+    "discovery.subcategory.activities.search_placeholder": "Water sports, desert, tours…",
+
     // ── Common ──
     "discovery.common.open": "Open",
     "discovery.common.closed": "Closed",
@@ -487,14 +638,28 @@ function getDiscoveryLocale(): DiscoveryLocale {
 
 let _cachedLocale: DiscoveryLocale | null = null;
 
+import { humanizeKey } from "@/lib/i18n-safe";
+
+const _missingDiscovery = new Set<string>();
+
 /**
  * Translate a discovery i18n key with optional interpolation.
- * Falls back to English if key is missing in current locale.
+ * Falls back to English, then humanizeKey. NEVER returns raw key.
  */
 export function td(key: string, params?: Record<string, string | number>): string {
   if (!_cachedLocale) _cachedLocale = getDiscoveryLocale();
   const locale = _cachedLocale;
-  let value = translations[locale]?.[key] || translations.en[key] || key;
+  const raw = translations[locale]?.[key] || translations.en[key];
+  let value: string;
+  if (raw) {
+    value = raw;
+  } else {
+    if (import.meta.env.DEV && !_missingDiscovery.has(key)) {
+      _missingDiscovery.add(key);
+      console.warn(`[td-missing] "${key}"`);
+    }
+    value = humanizeKey(key);
+  }
   if (params) {
     for (const [k, v] of Object.entries(params)) {
       value = value.replace(`{${k}}`, String(v));
