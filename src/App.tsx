@@ -399,6 +399,7 @@ const AdminCrmOpsPage = safeLazy(() => import("./pages/admin/AdminCrmOpsPage"), 
 const AdminHomeEnginePage = safeLazy(() => import("./pages/admin/AdminHomeEnginePage"), "AdminHomeEnginePage");
 const AdminMapEnginePage = safeLazy(() => import("./pages/admin/AdminMapEnginePage"), "AdminMapEnginePage");
 const AdminNotificationEnginePage = safeLazy(() => import("./pages/admin/AdminNotificationEnginePage"), "AdminNotificationEnginePage");
+const OwnerCockpitPage = safeLazy(() => import("./pages/admin/OwnerCockpitPage"), "OwnerCockpitPage");
 const MerchantInventoryPage = safeLazy(() => import("./pages/merchant/MerchantInventoryPage"), "MerchantInventoryPage");
 const MerchantLiveControlPage = safeLazy(() => import("./pages/merchant/MerchantLiveControlPage"), "MerchantLiveControlPage");
 const MerchantCouponManagerPage = safeLazy(() => import("./pages/merchant/MerchantCouponManagerPage"), "MerchantCouponManagerPage");
@@ -1066,7 +1067,8 @@ const App = () => (
               <Route path="/admin/audit-debug" element={<ProtectedRoute><AuditDebugPanelPage /></ProtectedRoute>} />
               <Route path="/admin/ops-wallboard" element={<ProtectedRoute><OpsWallboardPage /></ProtectedRoute>} />
               <Route path="/admin/outreach" element={<ProtectedRoute><AdminOutreachPage /></ProtectedRoute>} />
-              <Route path="/admin/uae-ops" element={<ProtectedRoute><AdminUaeOpsDashboard /></ProtectedRoute>} />
+               <Route path="/admin/uae-ops" element={<ProtectedRoute><AdminUaeOpsDashboard /></ProtectedRoute>} />
+               <Route path="/admin/owner-cockpit" element={<ProtectedRoute><OwnerCockpitPage /></ProtectedRoute>} />
 
               {/* Merchant claim & dashboard */}
               <Route path="/merchant/claim" element={<MerchantClaimPage />} />
