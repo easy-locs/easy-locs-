@@ -5,7 +5,8 @@
  */
 import { memo, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Search, MapPin, Bell, Wallet, QrCode, Send, ChevronRight, Star, Navigation } from "lucide-react";
+import { MapPin, Bell, Wallet, QrCode, Send, ChevronRight, Star, Navigation } from "lucide-react";
+import UnifiedSearchBar from "@/components/search/UnifiedSearchBar";
 import { useLocationStore } from "@/stores/locationStore";
 import { useOrbitEngine } from "@/stores/orbit-engine";
 import { useHomeSections } from "@/hooks/useHomeSections";
@@ -56,8 +57,9 @@ const SECTION_DEFS = [
 ] as const;
 
 /* ═══ Compact Header ═══ */
-const CompactHeader = memo(({ city, greeting, onSearch }: { city: string | null; greeting: string; onSearch: () => void }) => {
+const CompactHeader = memo(({ city, greeting }: { city: string | null; greeting: string }) => {
   const engine = useOrbitEngine();
+  const navigate = useNavigate();
   const handleLocationTap = () => {
     if (!city) {
       import("@/lib/location/requestLocation").then(({ requestLocation }) => requestLocation());
@@ -74,13 +76,9 @@ const CompactHeader = memo(({ city, greeting, onSearch }: { city: string | null;
           <p className="text-xs font-bold text-foreground truncate">{city || "📍 Set location"}</p>
         </div>
       </button>
-      <button
-        onClick={onSearch}
-        className="flex-1 flex items-center gap-2 h-8 px-3 rounded-xl bg-muted/40 border border-border/20 text-muted-foreground text-[11px] active:scale-[0.97] transition-transform"
-      >
-        <Search className="h-3.5 w-3.5 shrink-0 text-primary/60" />
-        <span className="truncate">Search anything…</span>
-      </button>
+      <div className="flex-1">
+        <UnifiedSearchBar variant="fullscreen" placeholder="Search anything…" />
+      </div>
       <Link to="/dashboard/notifications" className="relative shrink-0 w-8 h-8 rounded-full bg-muted/30 flex items-center justify-center active:scale-95 transition-transform">
         <Bell className="h-3.5 w-3.5 text-foreground" />
         {engine.pendingNotifications > 0 && (
@@ -278,7 +276,7 @@ export default function SmartHome() {
 
   return (
     <div className="space-y-0">
-      <CompactHeader city={city} greeting={greeting} onSearch={() => navigate("/radar")} />
+      <CompactHeader city={city} greeting={greeting} />
       <QuickActions />
 
       <div className="overflow-x-auto scrollbar-none mb-3 -mx-1 px-1 touch-pan-x">
