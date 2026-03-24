@@ -115,14 +115,12 @@ export async function saveToHistory(query: string, userId?: string | null) {
   if (!q) return;
 
   try {
-    await db.from("dino_learning_events").insert({
-      event_type: "search_history_saved",
+    await db.from("activity_logs").insert({
+      id: crypto.randomUUID(),
+      action: "search_history_saved",
       entity_id: userId ?? "anonymous",
       entity_type: "search",
-      metric: "query",
-      metadata_json: { userId: userId ?? null, queryText: q },
-      new_value: 1,
-      previous_value: 0,
+      metadata: { userId: userId ?? null, queryText: q },
     });
   } catch {
     // Silent fail
