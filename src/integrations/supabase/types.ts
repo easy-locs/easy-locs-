@@ -2773,6 +2773,53 @@ export type Database = {
         }
         Relationships: []
       }
+      canonical_taxonomy: {
+        Row: {
+          canonical_name: string
+          created_at: string
+          depth_level: number
+          description: string | null
+          id: string
+          is_active: boolean
+          is_system: boolean
+          parent_id: string | null
+          slug: string
+          vertical: string
+        }
+        Insert: {
+          canonical_name: string
+          created_at?: string
+          depth_level?: number
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          is_system?: boolean
+          parent_id?: string | null
+          slug: string
+          vertical: string
+        }
+        Update: {
+          canonical_name?: string
+          created_at?: string
+          depth_level?: number
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          is_system?: boolean
+          parent_id?: string | null
+          slug?: string
+          vertical?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "canonical_taxonomy_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "canonical_taxonomy"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       canonical_unit_groups: {
         Row: {
           created_at: string | null
@@ -6870,6 +6917,39 @@ export type Database = {
         }
         Relationships: []
       }
+      engine_reports: {
+        Row: {
+          category: string
+          created_at: string
+          duration_ms: number | null
+          engine_name: string
+          id: string
+          items_processed: number | null
+          report_json: Json | null
+          status: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          duration_ms?: number | null
+          engine_name: string
+          id?: string
+          items_processed?: number | null
+          report_json?: Json | null
+          status?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          duration_ms?: number | null
+          engine_name?: string
+          id?: string
+          items_processed?: number | null
+          report_json?: Json | null
+          status?: string
+        }
+        Relationships: []
+      }
       entities: {
         Row: {
           address: string | null
@@ -7051,6 +7131,47 @@ export type Database = {
             columns: ["parent_entity_id"]
             isOneToOne: false
             referencedRelation: "entities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      entity_taxonomy_mapping: {
+        Row: {
+          canonical_id: string | null
+          confidence_score: number | null
+          created_at: string
+          entity_id: string
+          entity_type: string
+          id: string
+          match_type: string
+          needs_review: boolean | null
+        }
+        Insert: {
+          canonical_id?: string | null
+          confidence_score?: number | null
+          created_at?: string
+          entity_id: string
+          entity_type?: string
+          id?: string
+          match_type?: string
+          needs_review?: boolean | null
+        }
+        Update: {
+          canonical_id?: string | null
+          confidence_score?: number | null
+          created_at?: string
+          entity_id?: string
+          entity_type?: string
+          id?: string
+          match_type?: string
+          needs_review?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "entity_taxonomy_mapping_canonical_id_fkey"
+            columns: ["canonical_id"]
+            isOneToOne: false
+            referencedRelation: "canonical_taxonomy"
             referencedColumns: ["id"]
           },
         ]
@@ -23593,6 +23714,97 @@ export type Database = {
             columns: ["order_id"]
             isOneToOne: true
             referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      taxonomy_aliases: {
+        Row: {
+          alias: string
+          canonical_id: string
+          confidence: number | null
+          country_scope: string | null
+          created_at: string
+          id: string
+          language: string | null
+        }
+        Insert: {
+          alias: string
+          canonical_id: string
+          confidence?: number | null
+          country_scope?: string | null
+          created_at?: string
+          id?: string
+          language?: string | null
+        }
+        Update: {
+          alias?: string
+          canonical_id?: string
+          confidence?: number | null
+          country_scope?: string | null
+          created_at?: string
+          id?: string
+          language?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "taxonomy_aliases_canonical_id_fkey"
+            columns: ["canonical_id"]
+            isOneToOne: false
+            referencedRelation: "canonical_taxonomy"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      taxonomy_gap_candidates: {
+        Row: {
+          city_count: number | null
+          confidence_score: number | null
+          country_count: number | null
+          created_at: string
+          entity_count: number | null
+          id: string
+          proposed_name: string
+          proposed_parent_id: string | null
+          proposed_slug: string
+          source_keywords_json: Json | null
+          source_vertical: string
+          status: string
+        }
+        Insert: {
+          city_count?: number | null
+          confidence_score?: number | null
+          country_count?: number | null
+          created_at?: string
+          entity_count?: number | null
+          id?: string
+          proposed_name: string
+          proposed_parent_id?: string | null
+          proposed_slug: string
+          source_keywords_json?: Json | null
+          source_vertical: string
+          status?: string
+        }
+        Update: {
+          city_count?: number | null
+          confidence_score?: number | null
+          country_count?: number | null
+          created_at?: string
+          entity_count?: number | null
+          id?: string
+          proposed_name?: string
+          proposed_parent_id?: string | null
+          proposed_slug?: string
+          source_keywords_json?: Json | null
+          source_vertical?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "taxonomy_gap_candidates_proposed_parent_id_fkey"
+            columns: ["proposed_parent_id"]
+            isOneToOne: false
+            referencedRelation: "canonical_taxonomy"
             referencedColumns: ["id"]
           },
         ]
