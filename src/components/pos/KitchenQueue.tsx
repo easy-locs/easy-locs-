@@ -187,7 +187,7 @@ export default function KitchenQueue({ shopId }: KitchenQueueProps) {
 
                         <div className="flex items-center justify-between pt-1">
                           <span className="text-xs font-bold text-foreground">
-                            {Number(order.total_amount || 0).toFixed(2)} {order.currency || "AED"}
+                            {formatMoneyByCountry(Number(order.total_amount || 0), null, order.currency || "AED")}
                           </span>
                           {next && (
                             <Button
