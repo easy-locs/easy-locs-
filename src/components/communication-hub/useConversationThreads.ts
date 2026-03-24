@@ -343,7 +343,7 @@ export function useConversationThreads() {
             .map(t => t.v2ConversationId!);
           
           if (v2Ids.length > 0) {
-            const { data: v2Msgs } = await supabase
+            const { data: v2Msgs } = await (supabase as any)
               .from("chat_messages_v2")
               .select("conversation_id, sender_user_id, read_at, body, created_at")
               .in("conversation_id", v2Ids)
