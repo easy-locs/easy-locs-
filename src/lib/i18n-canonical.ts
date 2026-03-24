@@ -27,6 +27,10 @@ const nav = {
     "nav.logout": "Log out",
     "nav.login": "Log in",
     "nav.signup": "Sign up",
+    "nav.quick_access": "Quick Access",
+    "nav.quick_actions": "Quick Actions",
+    "nav.explore": "Explore",
+    "nav.categories": "Categories",
   },
   fr: {
     "nav.dashboard": "Tableau de bord",
@@ -45,6 +49,10 @@ const nav = {
     "nav.logout": "Se déconnecter",
     "nav.login": "Se connecter",
     "nav.signup": "S'inscrire",
+    "nav.quick_access": "Accès rapide",
+    "nav.quick_actions": "Actions rapides",
+    "nav.explore": "Explorer",
+    "nav.categories": "Catégories",
   },
   ar: {
     "nav.dashboard": "لوحة التحكم",
@@ -63,6 +71,10 @@ const nav = {
     "nav.logout": "تسجيل الخروج",
     "nav.login": "تسجيل الدخول",
     "nav.signup": "إنشاء حساب",
+    "nav.quick_access": "وصول سريع",
+    "nav.quick_actions": "إجراءات سريعة",
+    "nav.explore": "استكشف",
+    "nav.categories": "الفئات",
   },
 };
 
