@@ -289,6 +289,8 @@ const commerce = {
     "commerce.scan_qr": "Scan QR",
     "commerce.scan_to_order": "Scan to order",
     "commerce.scan_to_pay": "Scan to pay",
+    "commerce.saved_carts": "Saved Carts",
+    "commerce.auto_repeat": "Auto Repeat",
   },
   fr: {
     "commerce.add_to_cart": "Ajouter au panier",
@@ -348,6 +350,8 @@ const commerce = {
     "commerce.scan_qr": "Scanner QR",
     "commerce.scan_to_order": "Scanner pour commander",
     "commerce.scan_to_pay": "Scanner pour payer",
+    "commerce.saved_carts": "Paniers sauvegardés",
+    "commerce.auto_repeat": "Répétition auto",
   },
   ar: {
     "commerce.add_to_cart": "أضف إلى السلة",
@@ -407,6 +411,8 @@ const commerce = {
     "commerce.scan_qr": "مسح QR",
     "commerce.scan_to_order": "امسح للطلب",
     "commerce.scan_to_pay": "امسح للدفع",
+    "commerce.saved_carts": "السلات المحفوظة",
+    "commerce.auto_repeat": "تكرار تلقائي",
   },
 };
 
