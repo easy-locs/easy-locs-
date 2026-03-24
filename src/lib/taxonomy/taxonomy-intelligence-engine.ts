@@ -178,7 +178,7 @@ export function buildFingerprint(input: TaxonomyIntelligenceInput): TaxonomyFing
 
   return {
     name_tokens: nameTokens,
-    menu_tokens: [...new Set(menuTokens)].slice(0, 100),
+    menu_tokens: Array.from(new Set(menuTokens)).slice(0, 100),
     top_item_keywords: topKeywords,
     price_range: prices.length ? { min: Math.min(...prices), max: Math.max(...prices) } : null,
     item_count: input.menu_items?.length ?? 0,
