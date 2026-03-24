@@ -102,6 +102,17 @@ export function startContinuousEngine() {
     } catch {}
   });
 
+  // 8. Central ranking rerank (10min)
+  registerJob("central-ranking-rerank", 10 * 60_000, async () => {
+    try {
+      const { rerankAll } = await import("@/lib/ranking/ranking-batch-runner");
+      const result = await rerankAll();
+      if (result.candidates + result.seeds > 0) {
+        console.log(`[continuous] Reranked ${result.candidates} candidates + ${result.seeds} seeds`);
+      }
+    } catch {}
+  });
+
   // 7. Backend reconnect check (5min)
   registerJob("backend-reconnect", 5 * 60_000, async () => {
     const { checkBackendReconnect } = await import("./platform-health-checks");
