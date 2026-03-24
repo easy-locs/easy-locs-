@@ -404,12 +404,23 @@ export default memo(function RadarView({ initialType, radiusKm: initialRadius, s
                     )}
                   </div>
                 </div>
-                <button
-                  onClick={() => handleOpen(selected)}
-                  className="px-4 py-2 rounded-xl text-xs font-bold shrink-0 active:scale-95 bg-primary text-primary-foreground"
-                >
-                  Open
-                </button>
+                <div className="flex gap-1.5 shrink-0">
+                  {currentUser?.id && (
+                    <button
+                      onClick={() => handleContact(selected)}
+                      className="p-2 rounded-xl active:scale-95 bg-muted text-foreground"
+                      title="Chat"
+                    >
+                      <MessageCircle className="w-4 h-4" />
+                    </button>
+                  )}
+                  <button
+                    onClick={() => handleOpen(selected)}
+                    className="px-4 py-2 rounded-xl text-xs font-bold active:scale-95 bg-primary text-primary-foreground"
+                  >
+                    Open
+                  </button>
+                </div>
               </div>
             )}
           </div>
