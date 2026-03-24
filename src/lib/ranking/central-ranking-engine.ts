@@ -156,13 +156,22 @@ export function computeCentralRank(input: RankingInput): RankingResult {
     penalty += 20;
     penalties.push("missing_geo");
   }
-  if (input.vertical === "food" && !input.hasMenu) {
-    penalty += 25;
-    penalties.push("missing_menu_food");
-  }
-  if (input.vertical === "food" && !input.hasPrices) {
-    penalty += 20;
-    penalties.push("missing_prices_food");
+  // Menu/price penalties only for merchants (not seeds/candidates pre-claim)
+  if (input.entityType === "merchant") {
+    if (input.vertical === "food" && !input.hasMenu) {
+      penalty += 25;
+      penalties.push("missing_menu_food");
+    }
+    if (input.vertical === "food" && !input.hasPrices) {
+      penalty += 20;
+      penalties.push("missing_prices_food");
+    }
+  } else {
+    // Lighter penalties for seeds/candidates
+    if (input.vertical === "food" && !input.hasMenu) {
+      penalty += 8;
+      penalties.push("seed_no_menu");
+    }
   }
   if (!input.hasCover) {
     penalty += 10;
