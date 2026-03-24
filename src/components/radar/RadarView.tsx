@@ -84,6 +84,10 @@ export default memo(function RadarView({ initialType, radiusKm: initialRadius, s
   const [showPromotedOnly, setShowPromotedOnly] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
 
+  // Canonical UI for active vertical
+  const activeVertical = activeType === "all" ? undefined : activeType === "restaurant" ? "food" : activeType === "shop" ? "shops" : activeType === "grocery" ? "grocery" : activeType === "property" ? "property" : activeType === "service" ? "services" : undefined;
+  const canonicalUI = useCanonicalUI(activeVertical);
+
   // Radius from global discovery store
   const globalRadius = useDiscoveryStore((s) => s.radiusKm);
   const setGlobalRadius = useDiscoveryStore((s) => s.setRadiusKm);
