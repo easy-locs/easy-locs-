@@ -509,6 +509,15 @@ export default function ShopPage() {
                 <ShopReviews shopId={shop.id} shopOwnerId={shop.user_id} />
               </div>
             </div>
+            {/* ═══ BOOST SLOT — Shop Related ═══ */}
+            <BoostSlotRenderer
+              surface="shop"
+              slotKey="related_businesses_boost"
+              variant="inline"
+              vertical={shop.vertical || undefined}
+              subcategory={shop.subcategory || undefined}
+              className="mt-4"
+            />
           </Suspense>
         </div>
 
