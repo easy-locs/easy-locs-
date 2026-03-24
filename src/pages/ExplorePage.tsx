@@ -7,6 +7,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Globe, MapPin, ChevronRight, Search, TrendingUp, Star } from "lucide-react";
 import UnifiedSearchBar from "@/components/search/UnifiedSearchBar";
+import { BoostSlotRenderer } from "@/components/boost/BoostSlotRenderer";
 import { useHomeSections } from "@/hooks/useHomeSections";
 import { useLocationStore } from "@/stores/locationStore";
 import { useCanonicalUI } from "@/hooks/useCanonicalUI";
@@ -99,7 +100,12 @@ export default function ExplorePage() {
             <h1 className="text-lg font-black text-foreground">Explore the World</h1>
           </div>
           <UnifiedSearchBar variant="hero" placeholder="Search any city, category, or business..." />
-        </motion.div>
+      </motion.div>
+      </div>
+
+      {/* ═══ BOOST SLOT — Explore Hero ═══ */}
+      <div className="px-4 mb-4">
+        <BoostSlotRenderer surface="explore" slotKey="hero_primary" variant="inline" />
       </div>
 
       {/* Near You — dynamic */}
