@@ -131,6 +131,78 @@ export function startContinuousEngine() {
     }
   });
 
+  // 10. Coherence engine sweep (15min)
+  registerJob("coherence-sweep", 15 * 60_000, async () => {
+    try {
+      const { runCoherenceGate } = await import("@/lib/engines/coherence-gate");
+      const { supabase } = await import("@/integrations/supabase/client");
+      const { data: unchecked } = await (supabase as any)
+        .from("seed_merchants")
+        .select("id, name, vertical, subcategory, menu_items_json")
+        .is("coherence_status", null)
+        .limit(20);
+      if (unchecked?.length) {
+        let checked = 0;
+        for (const e of unchecked) {
+          const menuItems = Array.isArray(e.menu_items_json) ? e.menu_items_json : [];
+          await runCoherenceGate(e.id, "seed_merchants", {
+            entity_name: e.name ?? "",
+            entity_vertical: e.vertical ?? "food",
+            entity_subcategory: e.subcategory ?? "",
+            menu_items: menuItems.map((i: any) => i?.name ?? ""),
+          });
+          checked++;
+        }
+        if (checked > 0) console.log(`[continuous] Coherence checked ${checked} entities`);
+      }
+    } catch {}
+  });
+
+  // 11. Shop quality engine (15min)
+  registerJob("shop-quality", 15 * 60_000, async () => {
+    try {
+      const { runShopQualityCheck } = await import("@/lib/engines/shop-quality-engine");
+      const { supabase } = await import("@/integrations/supabase/client");
+      const { data: shops } = await (supabase as any)
+        .from("seed_merchants")
+        .select("*")
+        .is("quality_score", null)
+        .limit(20);
+      if (shops?.length) {
+        let scored = 0;
+        for (const shop of shops) {
+          const result = runShopQualityCheck(shop);
+          await (supabase as any)
+            .from("seed_merchants")
+            .update({ quality_score: result.score, quality_tier: result.tier })
+            .eq("id", shop.id);
+          scored++;
+        }
+        if (scored > 0) console.log(`[continuous] Quality scored ${scored} shops`);
+      }
+    } catch {}
+  });
+
+  // 12. Entity recovery engine (30min)
+  registerJob("entity-recovery", 30 * 60_000, async () => {
+    try {
+      const { runEntityRecoveryBatch } = await import("@/lib/engines/entity-recovery-engine");
+      const result = await runEntityRecoveryBatch(10);
+      if (result.recovered > 0) {
+        console.log(`[continuous] Recovered ${result.recovered}/${result.total} entities`);
+      }
+    } catch {}
+  });
+
+  // 13. Auto-source enrichment trigger (1h)
+  registerJob("auto-source-enrich", 60 * 60_000, async () => {
+    try {
+      const { supabase } = await import("@/integrations/supabase/client");
+      await (supabase as any).functions.invoke("auto-onboarding-cron", { body: {} });
+      console.log("[continuous] Auto-onboarding cron triggered");
+    } catch {}
+  });
+
   // Start all intervals staggered
   for (const job of jobs) {
     const idx = jobs.indexOf(job);
