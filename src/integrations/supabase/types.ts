@@ -1300,6 +1300,405 @@ export type Database = {
           },
         ]
       }
+      boost_analytics_daily: {
+        Row: {
+          campaign_id: string
+          clicks: number | null
+          cpl: number | null
+          created_at: string | null
+          ctr: number | null
+          day: string
+          id: string
+          impressions: number | null
+          leads: number | null
+          roi_proxy: number | null
+          spend: number | null
+          top_creative_id: string | null
+          top_geo: string | null
+          top_slot: string | null
+        }
+        Insert: {
+          campaign_id: string
+          clicks?: number | null
+          cpl?: number | null
+          created_at?: string | null
+          ctr?: number | null
+          day: string
+          id?: string
+          impressions?: number | null
+          leads?: number | null
+          roi_proxy?: number | null
+          spend?: number | null
+          top_creative_id?: string | null
+          top_geo?: string | null
+          top_slot?: string | null
+        }
+        Update: {
+          campaign_id?: string
+          clicks?: number | null
+          cpl?: number | null
+          created_at?: string | null
+          ctr?: number | null
+          day?: string
+          id?: string
+          impressions?: number | null
+          leads?: number | null
+          roi_proxy?: number | null
+          spend?: number | null
+          top_creative_id?: string | null
+          top_geo?: string | null
+          top_slot?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "boost_analytics_daily_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "boost_campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      boost_campaigns: {
+        Row: {
+          bidding_mode: string | null
+          campaign_type: string
+          canonical_subcategory: string | null
+          canonical_vertical: string | null
+          city: string | null
+          country: string | null
+          created_at: string | null
+          creative_set_id: string | null
+          currency: string
+          daily_budget: number | null
+          end_at: string | null
+          entity_id: string
+          entity_type: string
+          id: string
+          lead_goal: number | null
+          locale: string | null
+          objective: string
+          owner_user_id: string
+          spent: number | null
+          start_at: string | null
+          status: string
+          targeting_json: Json | null
+          total_budget: number | null
+          updated_at: string | null
+          zone: string | null
+        }
+        Insert: {
+          bidding_mode?: string | null
+          campaign_type?: string
+          canonical_subcategory?: string | null
+          canonical_vertical?: string | null
+          city?: string | null
+          country?: string | null
+          created_at?: string | null
+          creative_set_id?: string | null
+          currency?: string
+          daily_budget?: number | null
+          end_at?: string | null
+          entity_id: string
+          entity_type?: string
+          id?: string
+          lead_goal?: number | null
+          locale?: string | null
+          objective?: string
+          owner_user_id: string
+          spent?: number | null
+          start_at?: string | null
+          status?: string
+          targeting_json?: Json | null
+          total_budget?: number | null
+          updated_at?: string | null
+          zone?: string | null
+        }
+        Update: {
+          bidding_mode?: string | null
+          campaign_type?: string
+          canonical_subcategory?: string | null
+          canonical_vertical?: string | null
+          city?: string | null
+          country?: string | null
+          created_at?: string | null
+          creative_set_id?: string | null
+          currency?: string
+          daily_budget?: number | null
+          end_at?: string | null
+          entity_id?: string
+          entity_type?: string
+          id?: string
+          lead_goal?: number | null
+          locale?: string | null
+          objective?: string
+          owner_user_id?: string
+          spent?: number | null
+          start_at?: string | null
+          status?: string
+          targeting_json?: Json | null
+          total_budget?: number | null
+          updated_at?: string | null
+          zone?: string | null
+        }
+        Relationships: []
+      }
+      boost_clicks: {
+        Row: {
+          campaign_id: string | null
+          click_type: string | null
+          clicked_at: string | null
+          creative_id: string | null
+          id: string
+          session_id: string | null
+          slot_id: string | null
+          viewer_user_id: string | null
+        }
+        Insert: {
+          campaign_id?: string | null
+          click_type?: string | null
+          clicked_at?: string | null
+          creative_id?: string | null
+          id?: string
+          session_id?: string | null
+          slot_id?: string | null
+          viewer_user_id?: string | null
+        }
+        Update: {
+          campaign_id?: string | null
+          click_type?: string | null
+          clicked_at?: string | null
+          creative_id?: string | null
+          id?: string
+          session_id?: string | null
+          slot_id?: string | null
+          viewer_user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "boost_clicks_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "boost_campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "boost_clicks_creative_id_fkey"
+            columns: ["creative_id"]
+            isOneToOne: false
+            referencedRelation: "boost_creatives"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "boost_clicks_slot_id_fkey"
+            columns: ["slot_id"]
+            isOneToOne: false
+            referencedRelation: "boost_slots"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      boost_creatives: {
+        Row: {
+          campaign_id: string
+          canonical_subcategory: string | null
+          canonical_vertical: string | null
+          created_at: string | null
+          creative_type: string
+          cta_label: string | null
+          cta_target: string | null
+          id: string
+          image_url: string | null
+          locale: string | null
+          status: string
+          subtitle: string | null
+          theme_variant: string | null
+          title: string
+          video_url: string | null
+        }
+        Insert: {
+          campaign_id: string
+          canonical_subcategory?: string | null
+          canonical_vertical?: string | null
+          created_at?: string | null
+          creative_type?: string
+          cta_label?: string | null
+          cta_target?: string | null
+          id?: string
+          image_url?: string | null
+          locale?: string | null
+          status?: string
+          subtitle?: string | null
+          theme_variant?: string | null
+          title: string
+          video_url?: string | null
+        }
+        Update: {
+          campaign_id?: string
+          canonical_subcategory?: string | null
+          canonical_vertical?: string | null
+          created_at?: string | null
+          creative_type?: string
+          cta_label?: string | null
+          cta_target?: string | null
+          id?: string
+          image_url?: string | null
+          locale?: string | null
+          status?: string
+          subtitle?: string | null
+          theme_variant?: string | null
+          title?: string
+          video_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "boost_creatives_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "boost_campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      boost_impressions: {
+        Row: {
+          campaign_id: string | null
+          city: string | null
+          country: string | null
+          creative_id: string | null
+          entity_id: string | null
+          id: string
+          rendered_at: string | null
+          session_id: string | null
+          slot_id: string | null
+          surface: string | null
+          viewer_user_id: string | null
+        }
+        Insert: {
+          campaign_id?: string | null
+          city?: string | null
+          country?: string | null
+          creative_id?: string | null
+          entity_id?: string | null
+          id?: string
+          rendered_at?: string | null
+          session_id?: string | null
+          slot_id?: string | null
+          surface?: string | null
+          viewer_user_id?: string | null
+        }
+        Update: {
+          campaign_id?: string | null
+          city?: string | null
+          country?: string | null
+          creative_id?: string | null
+          entity_id?: string | null
+          id?: string
+          rendered_at?: string | null
+          session_id?: string | null
+          slot_id?: string | null
+          surface?: string | null
+          viewer_user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "boost_impressions_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "boost_campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "boost_impressions_creative_id_fkey"
+            columns: ["creative_id"]
+            isOneToOne: false
+            referencedRelation: "boost_creatives"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "boost_impressions_slot_id_fkey"
+            columns: ["slot_id"]
+            isOneToOne: false
+            referencedRelation: "boost_slots"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      boost_leads: {
+        Row: {
+          campaign_id: string | null
+          canonical_subcategory: string | null
+          canonical_vertical: string | null
+          city: string | null
+          contact_payload: Json | null
+          country: string | null
+          created_at: string | null
+          customer_user_id: string | null
+          guest_id: string | null
+          id: string
+          lead_type: string | null
+          score: number | null
+          source_slot: string | null
+          source_surface: string | null
+          status: string | null
+          target_entity_id: string | null
+          zone: string | null
+        }
+        Insert: {
+          campaign_id?: string | null
+          canonical_subcategory?: string | null
+          canonical_vertical?: string | null
+          city?: string | null
+          contact_payload?: Json | null
+          country?: string | null
+          created_at?: string | null
+          customer_user_id?: string | null
+          guest_id?: string | null
+          id?: string
+          lead_type?: string | null
+          score?: number | null
+          source_slot?: string | null
+          source_surface?: string | null
+          status?: string | null
+          target_entity_id?: string | null
+          zone?: string | null
+        }
+        Update: {
+          campaign_id?: string | null
+          canonical_subcategory?: string | null
+          canonical_vertical?: string | null
+          city?: string | null
+          contact_payload?: Json | null
+          country?: string | null
+          created_at?: string | null
+          customer_user_id?: string | null
+          guest_id?: string | null
+          id?: string
+          lead_type?: string | null
+          score?: number | null
+          source_slot?: string | null
+          source_surface?: string | null
+          status?: string | null
+          target_entity_id?: string | null
+          zone?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "boost_leads_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "boost_campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "boost_leads_source_slot_fkey"
+            columns: ["source_slot"]
+            isOneToOne: false
+            referencedRelation: "boost_slots"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       boost_purchases: {
         Row: {
           clicks: number | null
@@ -1361,6 +1760,54 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      boost_slots: {
+        Row: {
+          active: boolean | null
+          city: string | null
+          country: string | null
+          created_at: string | null
+          id: string
+          position_index: number | null
+          rules_json: Json | null
+          slot_key: string
+          slot_type: string | null
+          subcategory: string | null
+          surface: string
+          vertical: string | null
+          zone: string | null
+        }
+        Insert: {
+          active?: boolean | null
+          city?: string | null
+          country?: string | null
+          created_at?: string | null
+          id?: string
+          position_index?: number | null
+          rules_json?: Json | null
+          slot_key: string
+          slot_type?: string | null
+          subcategory?: string | null
+          surface: string
+          vertical?: string | null
+          zone?: string | null
+        }
+        Update: {
+          active?: boolean | null
+          city?: string | null
+          country?: string | null
+          created_at?: string | null
+          id?: string
+          position_index?: number | null
+          rules_json?: Json | null
+          slot_key?: string
+          slot_type?: string | null
+          subcategory?: string | null
+          surface?: string
+          vertical?: string | null
+          zone?: string | null
+        }
+        Relationships: []
       }
       branches: {
         Row: {
