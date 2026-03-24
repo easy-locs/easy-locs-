@@ -151,31 +151,20 @@ export async function resolveUnifiedTarget(input: {
       return null;
     }
 
-    // Auto-provision wallet for known recipients who haven't opened the app yet
+    // Auto-provision wallet via SECURITY DEFINER RPC (bypasses RLS)
     let finalWallet = wallet;
     if (!wallet && profile.id) {
-      console.log("[resolver] auto-provisioning wallet for recipient:", profile.id);
+      console.log("[resolver] auto-provisioning wallet via RPC for recipient:", profile.id);
       const provStart = performance.now();
-      const { data: created, error: createErr } = await supabase
-        .from("wallet_accounts")
-        .insert({ owner_user_id: profile.id, currency, balance: 0, status: "active" } as any)
-        .select("id, status")
-        .maybeSingle();
-      if (createErr && createErr.code === "23505") {
-        // Race condition — re-fetch
-        const { data: refetched } = await supabase
-          .from("wallet_accounts")
-          .select("id, status")
-          .eq("owner_user_id", profile.id)
-          .eq("status", "active")
-          .limit(1)
-          .maybeSingle();
-        finalWallet = refetched;
-      } else if (created) {
-        finalWallet = created;
+      const { data: rpcResult, error: rpcErr } = await supabase
+        .rpc("ensure_wallet_account", { target_user_id: profile.id, target_currency: currency });
+      if (rpcErr) {
+        console.error("[resolver] RPC ensure_wallet_account FAILED:", rpcErr.message, rpcErr.code);
+      } else if (rpcResult && rpcResult.length > 0) {
+        finalWallet = { id: rpcResult[0].wallet_id, status: rpcResult[0].wallet_status };
+        console.log("[resolver] RPC wallet provisioned:", finalWallet);
       }
       walletResolveMs = performance.now() - provStart;
-      console.log("[resolver] auto-provision result:", { created: !!finalWallet });
     }
 
     return {
