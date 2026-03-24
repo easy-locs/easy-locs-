@@ -100,6 +100,7 @@ export default function DiscoverPage() {
             VERTICALS.map((v) => {
               const items = filtered.filter((l) => l.vertical === v.value);
               if (items.length === 0) return null;
+              const ui = resolveCanonicalUI(v.value);
               return (
                 <div key={v.value} className="mb-6">
                   <div className="flex items-center justify-between mb-2">
@@ -108,9 +109,9 @@ export default function DiscoverPage() {
                       <span className="text-[10px] font-normal text-muted-foreground">({items.length})</span>
                     </h2>
                     <button
-                      onClick={() => navigate(`/browse/${v.value}`)}
+                      onClick={() => navigate(ui.canonicalRoute)}
                       className="text-[11px] font-semibold flex items-center gap-0.5"
-                      style={{ color: "hsl(var(--primary))" }}
+                      style={{ color: `hsl(${ui.accentHsl})` }}
                     >
                       See all <ChevronRight className="h-3 w-3" />
                     </button>
