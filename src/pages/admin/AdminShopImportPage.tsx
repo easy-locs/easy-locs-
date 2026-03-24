@@ -53,8 +53,9 @@ export default function AdminShopImportPage() {
   const [batches, setBatches] = useState<any[]>([]);
   const [candidates, setCandidates] = useState<any[]>([]);
   const [stats, setStats] = useState({ total: 0, approved: 0, review: 0, low: 0, duplicates: 0 });
+  const [visualStats, setVisualStats] = useState({ needsAssets: 0, goodUi: 0, poorMenu: 0, emptyMenu: 0, storefrontReady: 0 });
   const [filter, setFilter] = useState({ city: "", vertical: "", status: "" });
-
+  const [onboardingStates, setOnboardingStates] = useState<any[]>([]);
   useEffect(() => {
     loadDashboard();
   }, []);
