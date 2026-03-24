@@ -68,20 +68,23 @@ export default function DiscoverPage() {
           >
             All ({allListings.length})
           </button>
-          {VERTICALS.map((v) => (
-            <button
-              key={v.value}
-              onClick={() => setVertical(vertical === v.value ? null : v.value)}
-              className="shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold transition-all flex items-center gap-1"
-              style={{
-                background: vertical === v.value ? "hsl(var(--primary))" : "hsl(var(--muted))",
-                color: vertical === v.value ? "hsl(var(--primary-foreground))" : "hsl(var(--foreground))",
-              }}
-            >
-              <span>{v.emoji}</span> {v.label}
-              <span className="opacity-60">({verticalCounts.get(v.value) || 0})</span>
-            </button>
-          ))}
+          {VERTICALS.map((v) => {
+            const ui = resolveCanonicalUI(v.value);
+            return (
+              <button
+                key={v.value}
+                onClick={() => setVertical(vertical === v.value ? null : v.value)}
+                className="shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold transition-all flex items-center gap-1"
+                style={{
+                  background: vertical === v.value ? `hsl(${ui.accentHsl})` : "hsl(var(--muted))",
+                  color: vertical === v.value ? "white" : "hsl(var(--foreground))",
+                }}
+              >
+                <span>{v.emoji}</span> {v.label}
+                <span className="opacity-60">({verticalCounts.get(v.value) || 0})</span>
+              </button>
+            );
+          })}
         </div>
       </div>
 
