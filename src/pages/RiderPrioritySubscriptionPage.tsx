@@ -26,8 +26,8 @@ export default function RiderPrioritySubscriptionPage() {
 
   const cards = [
     { key: "free" as const, title: "Free", desc: "Standard dispatch", price: "0 AED" },
-    { key: "pro" as const, title: "Pro", desc: "Faster pickup and lower surge", price: "29 AED / month" },
-    { key: "vip" as const, title: "VIP", desc: "Top priority dispatch + premium support", price: "79 AED / month" },
+    { key: "pro" as const, title: "Pro", desc: "Faster pickup and lower surge", price: "29 / month" },
+    { key: "vip" as const, title: "VIP", desc: "Top priority dispatch + premium support", price: "79 / month" },
   ];
 
   return (
