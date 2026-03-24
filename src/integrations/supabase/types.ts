@@ -13739,6 +13739,7 @@ export type Database = {
           errors_count: number | null
           id: string
           modules_json: Json | null
+          report_json: Json | null
           started_at: string
           status: string
           summary_json: Json | null
@@ -13751,6 +13752,7 @@ export type Database = {
           errors_count?: number | null
           id?: string
           modules_json?: Json | null
+          report_json?: Json | null
           started_at?: string
           status?: string
           summary_json?: Json | null
@@ -13763,6 +13765,7 @@ export type Database = {
           errors_count?: number | null
           id?: string
           modules_json?: Json | null
+          report_json?: Json | null
           started_at?: string
           status?: string
           summary_json?: Json | null
