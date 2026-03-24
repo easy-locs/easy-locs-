@@ -246,7 +246,12 @@ export async function persistCoherenceResult(
 
 /** Check if entity passes coherence gate for publishing */
 export function passesCoherenceGate(score: number, status: string): boolean {
-  return score >= 50 && status !== "blocked";
+  // "pending" means never checked — don't block, allow through
+  if (status === "pending" || status === "publishable" || status === "premium_confident") return true;
+  // Only block if explicitly blocked
+  if (status === "blocked") return false;
+  // review_required with decent score passes
+  return score >= 50;
 }
 
 /** Get expected menu categories for a subcategory */
