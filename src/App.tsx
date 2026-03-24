@@ -304,7 +304,7 @@ const CityMarketplacePage = safeLazy(() => import("./pages/CityMarketplacePage")
 // Travel universe
 const TravelHub = safeLazy(() => import("./pages/travel/TravelHub"), "TravelHub");
 const TravelFlights = safeLazy(() => import("./pages/travel/TravelFlights"), "TravelFlights");
-const TravelStays = safeLazy(() => import("./pages/travel/TravelStays"), "TravelStays");
+const TravelStays = safeLazy(() => import("./pages/travel/TravelStayHub"), "TravelStayHub");
 const TravelHotelDetail = safeLazy(() => import("./pages/travel/TravelHotelDetail"), "TravelHotelDetail");
 const TravelStayDetail = safeLazy(() => import("./pages/travel/TravelStayDetail"), "TravelStayDetail");
 const TravelFlightDetail = safeLazy(() => import("./pages/travel/TravelFlightDetail"), "TravelFlightDetail");
