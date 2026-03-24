@@ -7,6 +7,10 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { FuturisticCard } from "@/components/ui/FuturisticCard";
+import { StatusPulse } from "@/components/ui/StatusPulse";
+import { AnimatedCounter } from "@/components/ui/AnimatedCounter";
+import { motion } from "framer-motion";
 import {
   Activity, Shield, Database, Zap, Eye, AlertTriangle, CheckCircle2,
   RefreshCw, Server, Cpu, BarChart3, Users, Store, Globe, Bell,
@@ -168,13 +172,15 @@ export default function OwnerCockpitPage() {
               { label: "Support Tickets", value: stats.supportTickets, icon: Shield },
               { label: "Reviews", value: stats.reviews, icon: CheckCircle2 },
             ].map((kpi) => (
-              <div key={kpi.label} className="rounded-2xl border border-border/20 bg-card p-4">
+              <FuturisticCard key={kpi.label} variant="kpi" glow>
                 <div className="flex items-center gap-2">
                   <kpi.icon className="w-4 h-4 text-muted-foreground" />
                   <span className="text-xs text-muted-foreground">{kpi.label}</span>
                 </div>
-                <div className="text-xl font-bold mt-1 text-foreground">{kpi.value ?? 0}</div>
-              </div>
+                <div className="text-xl font-bold mt-1 text-foreground">
+                  <AnimatedCounter value={kpi.value ?? 0} />
+                </div>
+              </FuturisticCard>
             ))}
           </div>
 
@@ -182,18 +188,23 @@ export default function OwnerCockpitPage() {
           <div className="space-y-2">
             <h2 className="text-sm font-bold text-foreground">Engine Status</h2>
             {engines.map((eng) => (
-              <div key={eng.name} className="flex items-center justify-between rounded-2xl border border-border/20 bg-card p-3">
-                <div className="flex items-center gap-3">
-                  <eng.icon className="w-4 h-4 text-muted-foreground" />
-                  <div>
-                    <div className="text-sm font-semibold text-foreground">{eng.name}</div>
-                    <div className="text-xs text-muted-foreground">{eng.note}</div>
+              <FuturisticCard key={eng.name} variant="engine" status={eng.status === "active" ? "active" : eng.status === "warning" ? "warning" : eng.status === "error" ? "error" : undefined}>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <eng.icon className="w-4 h-4 text-muted-foreground" />
+                    <div>
+                      <div className="text-sm font-semibold text-foreground">{eng.name}</div>
+                      <div className="text-xs text-muted-foreground">{eng.note}</div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <StatusPulse status={eng.status === "active" ? "active" : eng.status === "warning" ? "warning" : eng.status === "error" ? "error" : "idle"} size="md" />
+                    <span className={`text-[11px] font-bold capitalize ${statusColor(eng.status)}`}>
+                      {eng.status}
+                    </span>
                   </div>
                 </div>
-                <span className={`rounded-full px-3 py-1 text-[11px] font-bold ${statusColor(eng.status)}`}>
-                  {eng.status}
-                </span>
-              </div>
+              </FuturisticCard>
             ))}
           </div>
 
