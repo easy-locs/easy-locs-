@@ -55,6 +55,9 @@ export default function TravelStayHub() {
   const [activeAmenities, setActiveAmenities] = useState<string[]>([]);
   const [showFilters, setShowFilters] = useState(false);
 
+  // ═══ CANONICAL UI ENGINE — drives hero, wording, CTA ═══
+  const ui = useMemo(() => resolveCanonicalUI("property", activeTab), [activeTab]);
+
   const { data: listings = [], isLoading } = useVerticalListings("property", activeTab);
 
   const nightCount = checkIn && checkOut ? Math.max(1, differenceInDays(checkOut, checkIn)) : 0;
