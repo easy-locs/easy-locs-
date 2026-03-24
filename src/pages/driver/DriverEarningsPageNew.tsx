@@ -69,7 +69,7 @@ export default function DriverEarningsPageNew() {
           <div className="mx-4 rounded-2xl border border-border/20 bg-card p-6 text-center">
             <p className="text-xs text-muted-foreground">Total Earnings</p>
             <p className="text-2xl font-bold text-foreground">
-              {Number(data.total ?? 0).toFixed(2)} AED
+              {formatMoneyByCountry(Number(data.total ?? 0))}
             </p>
           </div>
 
