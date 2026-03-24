@@ -26,6 +26,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import { Loader2, MapPin, ShoppingCart, Plus, Minus, Trash2, Phone, Mail, MessageCircle, Send, CheckCircle2, Store, Tag, X, Heart, Globe, QrCode } from "lucide-react";
 import { ScanQrButton } from "@/components/qr/UniversalQrWidgets";
 import { useState, useEffect, lazy, Suspense } from "react";
+import { BoostSlotRenderer } from "@/components/boost/BoostSlotRenderer";
 import { toast } from "sonner";
 import { useStorefrontAnalytics } from "@/hooks/useStorefrontAnalytics";
 import { useShopTranslation } from "@/hooks/useShopTranslation";
@@ -508,6 +509,15 @@ export default function ShopPage() {
                 <ShopReviews shopId={shop.id} shopOwnerId={shop.user_id} />
               </div>
             </div>
+            {/* ═══ BOOST SLOT — Shop Related ═══ */}
+            <BoostSlotRenderer
+              surface="shop"
+              slotKey="related_businesses_boost"
+              variant="inline"
+              vertical={shop.vertical || undefined}
+              subcategory={shop.subcategory || undefined}
+              className="mt-4"
+            />
           </Suspense>
         </div>
 

@@ -4,6 +4,7 @@
  * Uses Canonical UI Engine for vertical-aware wording and accents.
  */
 import { useState, useCallback, useMemo, memo, useEffect } from "react";
+import { BoostSlotRenderer } from "@/components/boost/BoostSlotRenderer";
 import { useNavigate } from "react-router-dom";
 import { useRadarResults } from "@/hooks/useRadarResults";
 import { contactFromDiscovery } from "@/lib/radar/contactBridge";
@@ -427,6 +428,9 @@ export default memo(function RadarView({ initialType, radiusKm: initialRadius, s
         ) : (
           /* ── List view ── */
           <div className="h-full overflow-y-auto px-4 pb-24 space-y-2">
+            {/* ═══ BOOST SLOT — Radar Top ═══ */}
+            <BoostSlotRenderer surface="radar" slotKey="hero_primary" variant="inline" className="mb-2" />
+
             {results.length === 0 && !loading && (
               <div className="text-center py-12">
                 <span className="text-3xl">{canonicalUI.emoji}</span>
