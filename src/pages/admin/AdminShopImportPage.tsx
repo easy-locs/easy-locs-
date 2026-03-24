@@ -150,6 +150,31 @@ export default function AdminShopImportPage() {
         ))}
       </div>
 
+      {/* Visual Quality Stats */}
+      <div className="rounded-2xl bg-card border border-border p-4 space-y-2">
+        <h2 className="text-sm font-bold">🎨 Visual Quality</h2>
+        <div className="grid grid-cols-5 gap-2">
+          {[
+            { label: "Needs Assets", value: visualStats.needsAssets, color: "text-amber-500" },
+            { label: "Good UI", value: visualStats.goodUi, color: "text-emerald-500" },
+            { label: "Poor Menu", value: visualStats.poorMenu, color: "text-destructive" },
+            { label: "Empty Menu", value: visualStats.emptyMenu, color: "text-muted-foreground" },
+            { label: "SF Ready", value: visualStats.storefrontReady, color: "text-primary" },
+          ].map((s) => (
+            <div key={s.label} className="rounded-lg bg-muted p-2 text-center">
+              <div className={`text-sm font-bold ${s.color}`}>{s.value}</div>
+              <div className="text-[9px] text-muted-foreground">{s.label}</div>
+            </div>
+          ))}
+        </div>
+        {onboardingStates.length > 0 && (
+          <div className="text-[10px] text-muted-foreground mt-1">
+            Avg menu score: {Math.round(onboardingStates.reduce((s: number, o: any) => s + (o.menu_display_score || 0), 0) / onboardingStates.length)} · 
+            Avg visual: {Math.round(onboardingStates.reduce((s: number, o: any) => s + (o.visual_completeness_score || 0), 0) / onboardingStates.length)} · 
+            Avg storefront: {Math.round(onboardingStates.reduce((s: number, o: any) => s + (o.storefront_readiness_score || 0), 0) / onboardingStates.length)}
+          </div>
+        )}
+      </div>
       {/* Import Form */}
       <div className="rounded-2xl bg-card border border-border p-4 space-y-3">
         <h2 className="text-sm font-bold">New Import Batch</h2>
