@@ -63,6 +63,13 @@ export interface CanonicalWording {
   loadingText: string;
   /** Results count format */
   resultsFormat: string; // e.g. "{count} restaurants near you"
+  /** i18n-resolved title */
+  i18nTitle: string;
+  /** i18n-resolved tagline */
+  i18nTagline: string;
+  /** i18n-resolved CTA */
+  i18nCtaPrimary: string;
+  i18nCtaSecondary: string;
 }
 
 export interface CanonicalUISpec {
