@@ -174,14 +174,15 @@ export async function recoverHiddenEntities(limit = 500): Promise<{
         .eq("entity_id", ranking.entity_id);
 
       // Update coherence status if it was pending
-      if (entity.coherence_status === "pending" || !entity.coherence_status) {
+      const ent = entity as Record<string, any>;
+      if (ent.coherence_status === "pending" || !ent.coherence_status) {
         await db
           .from("seed_merchants")
           .update({
             coherence_status: diagnosis.qualityResult.coherence.status === "blocked" ? "blocked" : "publishable",
             coherence_score: diagnosis.qualityResult.coherence.entity_menu_match_score,
           })
-          .eq("id", entity.id);
+          .eq("id", ent.id);
       }
 
       recovered++;
