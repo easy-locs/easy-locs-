@@ -1,6 +1,6 @@
 /**
  * SettingsPaymentMethods — Payment methods management page.
- * Connected to DB via profiles.default_payment_method.
+ * Connected to dedicated user_payment_preferences table.
  */
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
@@ -29,13 +29,13 @@ export default function SettingsPaymentMethods() {
   useEffect(() => {
     if (!user?.id) return;
     setLoading(true);
-    db.from("profiles")
-      .select("id")
-      .eq("id", user.id)
+    db.from("user_payment_preferences")
+      .select("default_method")
+      .eq("user_id", user.id)
       .maybeSingle()
       .then(({ data }: any) => {
-        if (data?.default_payment_method) {
-          setDefaultMethod(data.default_payment_method);
+        if (data?.default_method) {
+          setDefaultMethod(data.default_method);
         }
         setLoading(false);
       })
@@ -46,18 +46,18 @@ export default function SettingsPaymentMethods() {
     if (!METHODS.find(m => m.id === id)?.enabled) return;
     setDefaultMethod(id);
     if (!user?.id) return;
-    
+
     setSaving(true);
     try {
-      // Persist preference — uses activity_logs as lightweight store
-      await db.from("activity_logs").insert({
-        id: crypto.randomUUID(),
-        user_id: user.id,
-        action: "payment_method_changed",
-        entity_type: "payment_preference",
-        entity_id: user.id,
-        metadata: { default_method: id, changed_at: new Date().toISOString() },
-      });
+      const { error } = await db
+        .from("user_payment_preferences")
+        .upsert({
+          user_id: user.id,
+          default_method: id,
+          updated_at: new Date().toISOString(),
+        }, { onConflict: "user_id" });
+
+      if (error) throw error;
       toast.success(`Default set to ${METHODS.find(m => m.id === id)?.label}`);
     } catch {
       toast.error("Failed to save preference");
@@ -77,7 +77,6 @@ export default function SettingsPaymentMethods() {
       </header>
 
       <div className="px-4 space-y-6">
-        {/* Default method */}
         <div>
           <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-3">Default payment method</p>
           {loading ? (
@@ -115,7 +114,6 @@ export default function SettingsPaymentMethods() {
           )}
         </div>
 
-        {/* Saved cards — real empty state */}
         <div>
           <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-3">Saved cards</p>
           <div className="rounded-2xl p-6 flex flex-col items-center gap-3 bg-muted border border-border/12">

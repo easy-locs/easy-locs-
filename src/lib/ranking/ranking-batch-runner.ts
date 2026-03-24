@@ -1,8 +1,10 @@
 /**
  * RANKING BATCH RUNNER — Recomputes central ranking for candidates, seeds, merchants.
  * Persists results to current_ranking_state + ranking_snapshots.
+ * Enforces coherence gate before allowing high visibility classes.
  */
 import { supabase } from "@/integrations/supabase/client";
+import { passesCoherenceGate } from "@/lib/engines/coherence-engine";
 import {
   computeCentralRank,
   buildRankingInputFromCandidate,
@@ -67,6 +69,14 @@ export async function rerankCandidates(limit = 500): Promise<number> {
   for (const c of candidates) {
     const input = buildRankingInputFromCandidate(c);
     const result = computeCentralRank(input);
+
+    // Coherence hard gate: downgrade visibility if coherence fails
+    const coherenceOk = passesCoherenceGate(c.coherence_score ?? 0, c.coherence_status ?? "pending");
+    if (!coherenceOk && result.visibilityClass !== "hidden") {
+      result.visibilityClass = "hidden";
+      result.penalties.push("Blocked by coherence gate");
+    }
+
     await persistRanking(c.id, "candidate", input, result);
     updated++;
   }
@@ -85,6 +95,14 @@ export async function rerankSeeds(limit = 500): Promise<number> {
   for (const s of seeds) {
     const input = buildRankingInputFromSeed(s);
     const result = computeCentralRank(input);
+
+    // Coherence hard gate
+    const coherenceOk = passesCoherenceGate(s.coherence_score ?? 0, s.coherence_status ?? "pending");
+    if (!coherenceOk && result.visibilityClass !== "hidden") {
+      result.visibilityClass = "hidden";
+      result.penalties.push("Blocked by coherence gate");
+    }
+
     await persistRanking(s.id, "seed", input, result);
     updated++;
   }
