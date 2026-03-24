@@ -220,6 +220,7 @@ export const WORLD_TAXONOMY: TaxonomyVertical[] = [
     clusters: [
       { value: "residential", label: "Residential", emoji: "🏠" },
       { value: "commercial", label: "Commercial", emoji: "🏢" },
+      { value: "hospitality", label: "Hospitality", emoji: "🏨" },
     ],
     subcategories: [
       sub({ value: "apartment", label: "Apartment", emoji: "🏢", cluster: "residential" }),
@@ -228,6 +229,10 @@ export const WORLD_TAXONOMY: TaxonomyVertical[] = [
       sub({ value: "warehouse", label: "Warehouse", emoji: "🏭", cluster: "commercial" }),
       sub({ value: "short_stay", label: "Short Stay", emoji: "🛏️", cluster: "residential" }),
       sub({ value: "commercial_space", label: "Commercial Space", emoji: "🏬", cluster: "commercial" }),
+      sub({ value: "hotel", label: "Hotel", emoji: "🏨", cluster: "hospitality", tags: ["accommodation", "travel", "stay"], serviceModes: ["onsite"], timeRelevance: [] }),
+      sub({ value: "resort", label: "Resort", emoji: "🏖️", cluster: "hospitality", tags: ["luxury", "vacation", "beach"], serviceModes: ["onsite"], timeRelevance: [] }),
+      sub({ value: "serviced_apartment", label: "Serviced Apartment", emoji: "🏢", cluster: "hospitality", tags: ["long_stay", "business"], serviceModes: ["onsite"], timeRelevance: [] }),
+      sub({ value: "hostel", label: "Hostel", emoji: "🛏️", cluster: "hospitality", tags: ["budget", "backpacker"], serviceModes: ["onsite"], timeRelevance: [] }),
     ],
   },
 
@@ -361,6 +366,19 @@ const SUBCATEGORY_ALIASES: Record<string, string> = {
   organic: "organic_store",
   "cheese butter": "dairy",
   "cheese & butter": "dairy",
+  hotel: "hotel",
+  hotels: "hotel",
+  resort: "resort",
+  resorts: "resort",
+  "serviced apartment": "serviced_apartment",
+  "serviced apartments": "serviced_apartment",
+  "apart hotel": "serviced_apartment",
+  hostel: "hostel",
+  hostels: "hostel",
+  accommodation: "hotel",
+  lodging: "hotel",
+  "vacation rental": "short_stay",
+  "holiday home": "short_stay",
 };
 
 export function normalizeVertical(raw?: string | null): Vertical {
