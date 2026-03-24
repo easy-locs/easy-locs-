@@ -36,6 +36,7 @@ export const OVERRIDE_FIELD_KEYS = {
   seo_title: "seo_title",
   seo_description: "seo_description",
   seo_keywords: "seo_keywords",
+  og_image_url: "og_image_url",
 
   // Visibility
   visibility_mode: "visibility_mode",
@@ -53,6 +54,21 @@ export const OVERRIDE_FIELD_KEYS = {
 
   // Hours
   shop_opening_hours: "shop_opening_hours",
+
+  // System / engine-only (not merchant-controllable)
+  audit_score: "audit_score",
+  readiness_status: "readiness_status",
+  route_status: "route_status",
+  blocking_reason: "blocking_reason",
+  coherence_score: "coherence_score",
+  coherence_status: "coherence_status",
+
+  // Taxonomy (engine-managed)
+  vertical: "vertical",
+  cluster: "cluster",
+  subcategory: "subcategory",
+  source_type: "source_type",
+  source_confidence: "source_confidence",
 } as const;
 
 export type OverrideFieldKey = typeof OVERRIDE_FIELD_KEYS[keyof typeof OVERRIDE_FIELD_KEYS];
