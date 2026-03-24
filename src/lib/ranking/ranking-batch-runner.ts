@@ -1,8 +1,10 @@
 /**
  * RANKING BATCH RUNNER — Recomputes central ranking for candidates, seeds, merchants.
  * Persists results to current_ranking_state + ranking_snapshots.
+ * Enforces coherence gate before allowing high visibility classes.
  */
 import { supabase } from "@/integrations/supabase/client";
+import { passesCoherenceGate } from "@/lib/engines/coherence-engine";
 import {
   computeCentralRank,
   buildRankingInputFromCandidate,
