@@ -19,6 +19,19 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import type { ConversationThread } from "./types";
 
+function normalizeOrbitId(value: unknown): string | null {
+  if (typeof value !== "string") return null;
+  if (value.startsWith("orbit_")) return value;
+  return null;
+}
+
+function normalizeUuid(value: unknown): string | null {
+  if (typeof value !== "string") return null;
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value)
+    ? value
+    : null;
+}
+
 export function useConversationThreads() {
   const { user, orgId } = useAuth();
   const [threads, setThreads] = useState<ConversationThread[]>([]);
@@ -290,7 +303,7 @@ export function useConversationThreads() {
 
       // ── 11. V2 Direct Conversations (canonical stack) ──
       try {
-        const { data: v2Convs } = await (supabase as any)
+          const { data: v2Convs } = await (supabase as any)
           .from("conversations_v2")
           .select("id, type, participants, last_message_at, title, created_at")
           .eq("type", "direct")
@@ -298,44 +311,80 @@ export function useConversationThreads() {
           .limit(100);
 
         if (v2Convs?.length && user?.id) {
+            const peerIds = new Set<string>();
           for (const conv of v2Convs) {
             const participants = conv.participants as any[];
             if (!Array.isArray(participants)) continue;
-            // Only include conversations where current user is a participant
-            const isParticipant = participants.some((p: any) => 
-              p?.userId === user.id || p?.orbitId?.includes(user.id.slice(0, 8))
-            );
-            if (!isParticipant) continue;
-            // Skip if only 1 participant (self-thread)
-            if (participants.length < 2) continue;
-            
-            // Find the other participant
-            const peer = participants.find((p: any) => 
-              p?.userId !== user.id && !p?.orbitId?.includes(user.id.slice(0, 8))
-            );
-            const peerName = peer?.displayName || peer?.name || "Contact";
-            const v2Key = `v2-direct-${conv.id}`;
-            
-            // Don't overwrite if a legacy thread already covers this conversation
-            if (!threadMap.has(v2Key)) {
-              threadMap.set(v2Key, {
-                id: v2Key,
-                conversationType: "direct",
-                sourceModule: "direct",
-                contextType: "direct",
-                contextId: conv.id,
-                name: peerName,
-                email: peer?.email || null,
-                avatarUrl: peer?.avatarUrl || null,
-                threadId: conv.id,
-                v2ConversationId: conv.id,
-                isV2: true,
-                unreadCount: 0,
-                lastMessage: conv.title || undefined,
-                lastMessageTime: conv.last_message_at || conv.created_at,
-              });
-            }
+              const normalized = participants
+                .map((p: any) => ({
+                  userId: normalizeUuid(p?.userId) || normalizeUuid(p?.user_id) || normalizeUuid(p?.id) || normalizeUuid(p),
+                  orbitId: normalizeOrbitId(p?.orbitId) || normalizeOrbitId(p?.orbit_id),
+                  displayName: typeof p?.displayName === "string" ? p.displayName : typeof p?.display_name === "string" ? p.display_name : typeof p?.name === "string" ? p.name : null,
+                  email: typeof p?.email === "string" ? p.email : null,
+                  avatarUrl: typeof p?.avatarUrl === "string" ? p.avatarUrl : typeof p?.avatar_url === "string" ? p.avatar_url : null,
+                }))
+                .filter((p) => p.userId || p.orbitId);
+
+              const currentParticipant = normalized.find((p) => p.userId === user.id);
+              if (!currentParticipant) continue;
+
+              const uniquePeerCandidates = normalized.filter((p) => p.userId !== user.id);
+              if (uniquePeerCandidates.length !== 1) continue;
+
+              const peer = uniquePeerCandidates[0];
+              if (!peer.userId || peer.userId === user.id) continue;
+
+              peerIds.add(peer.userId);
+              const v2Key = `v2-direct-${conv.id}`;
+
+              if (!threadMap.has(v2Key)) {
+                threadMap.set(v2Key, {
+                  id: v2Key,
+                  conversationType: "direct",
+                  sourceModule: "direct",
+                  contextType: "direct",
+                  contextId: conv.id,
+                  name: peer.displayName || "Contact",
+                  email: peer.email || null,
+                  avatarUrl: peer.avatarUrl || null,
+                  threadId: conv.id,
+                  v2ConversationId: conv.id,
+                  isV2: true,
+                  peerUserId: peer.userId,
+                  peerOrbitId: peer.orbitId,
+                  participantUserIds: normalized.map((p) => p.userId).filter(Boolean) as string[],
+                  unreadCount: 0,
+                  lastMessage: conv.title || undefined,
+                  lastMessageTime: conv.last_message_at || conv.created_at,
+                });
+              }
           }
+
+            if (peerIds.size > 0) {
+              const { data: peerProfiles } = await supabase
+                .from("profiles")
+                .select("id, email, first_name, last_name, name")
+                .in("id", Array.from(peerIds));
+
+              const { data: peerOrbitProfiles } = await (supabase as any)
+                .from("orbit_profiles_v2")
+                .select("id, orbit_id, display_name, avatar_url, email")
+                .in("id", Array.from(peerIds));
+
+              const profileMap = new Map((peerProfiles || []).map((p: any) => [p.id, p]));
+              const orbitMap = new Map((peerOrbitProfiles || []).map((p: any) => [p.id, p]));
+
+              for (const thread of threadMap.values()) {
+                if (!thread.isV2 || !thread.peerUserId) continue;
+                const base = profileMap.get(thread.peerUserId);
+                const orbit = orbitMap.get(thread.peerUserId);
+                const fullName = [base?.first_name, base?.last_name].filter(Boolean).join(" ").trim();
+                thread.name = orbit?.display_name || fullName || base?.name || thread.name || "Contact";
+                thread.email = orbit?.email || base?.email || thread.email || null;
+                thread.avatarUrl = orbit?.avatar_url || thread.avatarUrl || null;
+                thread.peerOrbitId = orbit?.orbit_id || thread.peerOrbitId || null;
+              }
+            }
 
           // Load unread counts for V2 conversations
           const v2Ids = Array.from(threadMap.values())
