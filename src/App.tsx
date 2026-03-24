@@ -443,6 +443,7 @@ const AdminVisualQualityPage = safeLazy(() => import("./pages/admin/AdminVisualQ
 const AdminRankingControlPage = safeLazy(() => import("./pages/admin/AdminRankingControlPage"), "AdminRankingControlPage");
 const AdminShopQualityPage = safeLazy(() => import("./pages/admin/AdminShopQualityPage"), "AdminShopQualityPage");
 const AdminCoherenceControlPage = safeLazy(() => import("./pages/admin/AdminCoherenceControlPage"), "AdminCoherenceControlPage");
+const AdminSourceAuditPage = safeLazy(() => import("./pages/admin/AdminSourceAuditPage"), "AdminSourceAuditPage");
 const CustomerReorderPage = safeLazy(() => import("./pages/customer/CustomerReorderPage"), "CustomerReorderPage");
 const MerchantAutoAcceptSettingsPage = safeLazy(() => import("./pages/merchant/MerchantAutoAcceptSettingsPage"), "MerchantAutoAcceptSettingsPage");
 const AdminSystemHealthPage = safeLazy(() => import("./pages/admin/AdminSystemHealthPage"), "AdminSystemHealthPage");
@@ -1140,6 +1141,7 @@ const App = () => (
                 <Route path="/admin/ranking-control" element={<ProtectedRoute><AdminRankingControlPage /></ProtectedRoute>} />
                 <Route path="/admin/coherence-control" element={<ProtectedRoute><AdminCoherenceControlPage /></ProtectedRoute>} />
                 <Route path="/admin/shop-quality" element={<ProtectedRoute><AdminShopQualityPage /></ProtectedRoute>} />
+                <Route path="/admin/source-audit" element={<ProtectedRoute><AdminSourceAuditPage /></ProtectedRoute>} />
                 <Route path="/wallet/top-up" element={<ProtectedRoute><WalletTopUpPage /></ProtectedRoute>} />
                 <Route path="/wallet/transfer" element={<ProtectedRoute><WalletTransferPage /></ProtectedRoute>} />
                 <Route path="/wallet/request" element={<ProtectedRoute><WalletRequestPage /></ProtectedRoute>} />
