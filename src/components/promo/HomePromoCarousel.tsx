@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { listHomePromos } from "@/lib/promo/promoEngine";
+import { formatMoneyByCountry } from "@/lib/currency-engine";
 
 export default function HomePromoCarousel() {
   const navigate = useNavigate();
