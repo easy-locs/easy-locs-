@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { formatMoneyByCountry } from "@/lib/currency-engine";
 
 export default function DriverEarningsPageNew() {
   const navigate = useNavigate();
