@@ -4171,6 +4171,17 @@ const pageEn: Record<string, string> = {
   "landing.nav.language": "Language",
   "landing.footer.languages_count": "31 languages supported",
 
+  "landing.join.shop": "Open a Shop",
+  "landing.join.shop_desc": "Start selling online",
+  "landing.join.restaurant": "Restaurant",
+  "landing.join.restaurant_desc": "List your restaurant",
+  "landing.join.agency": "Real Estate Agency",
+  "landing.join.agency_desc": "Manage properties & teams",
+  "landing.join.provider": "Service Provider",
+  "landing.join.provider_desc": "Offer your services",
+  "landing.nav.popular": "Popular",
+  "landing.nav.more_languages": "More languages",
+
   "landing.legal.title": "Legal information",
   "landing.legal.text": "This application provides administrative assistance only. Generated documents are for informational purposes and do not replace a lawyer, notary or accountant.",
 
