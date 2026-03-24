@@ -94,7 +94,7 @@ const CategoryBubble = memo(function CategoryBubble({ cat, onNav }: { cat: typeo
       >
         <span className="text-2xl">{cat.icon}</span>
       </div>
-      <span className="text-[11px] font-semibold text-foreground leading-tight">{cat.label}</span>
+      <span className="text-[11px] font-semibold text-foreground leading-tight">{tc(cat.labelKey)}</span>
     </button>
   );
 });
