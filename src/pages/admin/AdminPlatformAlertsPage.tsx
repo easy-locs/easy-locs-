@@ -16,7 +16,7 @@ export default function AdminPlatformAlertsPage() {
 
       return {
         openTickets: (tickets ?? []).filter((r: any) => r.status === "open").length,
-        failedNotifications: (notifications ?? []).filter((r: any) => r.status === "failed").length,
+        failedNotifications: (notifications ?? []).filter((r: any) => !r.read_at).length,
         disputedOrders: (orders ?? []).filter((r: any) => r.status === "disputed").length,
         unpaidOrders: (orders ?? []).filter((r: any) =>
           ["unpaid", "pending"].includes(String(r.payment_status ?? ""))

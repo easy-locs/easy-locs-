@@ -53,9 +53,9 @@ export default function AdminNotificationOpsPage() {
         <div className="px-4 space-y-3">
           {rows.map((row: any) => (
             <div key={row.id} className="rounded-2xl border border-border/20 bg-card p-4 space-y-1">
-              <p className="text-sm font-bold text-foreground">{row.template_key || "notification"}</p>
+              <p className="text-sm font-bold text-foreground">{row.title || "notification"}</p>
               <p className="text-xs text-muted-foreground">
-                {row.channel || "push"} · {row.status || "pending"}
+                {row.type || "system"} · {row.read_at ? "read" : "unread"}
               </p>
               <p className="text-[11px] text-muted-foreground/70">
                 {row.created_at ? new Date(row.created_at).toLocaleString() : ""}
