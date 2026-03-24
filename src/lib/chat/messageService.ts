@@ -11,31 +11,45 @@ async function getCurrentUserId(): Promise<string> {
   return data.user.id;
 }
 
+/**
+ * Resolves orbit_id for a user. Falls back to deterministic format.
+ */
+async function resolveOrbitId(userId: string): Promise<string> {
+  const { data } = await (supabase as any)
+    .from("orbit_profiles_v2")
+    .select("orbit_id")
+    .eq("id", userId)
+    .maybeSingle();
+  return data?.orbit_id || `orbit_${userId.slice(0, 12)}`;
+}
+
 export async function sendTextMessage(input: {
   conversationId: string;
-  senderOrbitId: string;
+  senderOrbitId?: string;
   receiverOrbitId?: string;
   body: string;
 }): Promise<ChatMessageRow> {
+  const userId = await getCurrentUserId();
+
+  // Always resolve a valid orbit_id — never send null
+  const senderOrbitId = input.senderOrbitId || await resolveOrbitId(userId);
+
   // GUARD: prevent sending message to self
-  if (input.receiverOrbitId && input.senderOrbitId === input.receiverOrbitId) {
+  if (input.receiverOrbitId && senderOrbitId === input.receiverOrbitId) {
     throw new Error("Cannot send a message to yourself");
   }
-
-  const userId = await getCurrentUserId();
 
   const safeBody = DOMPurify.sanitize(input.body, {
     ALLOWED_TAGS: [],
     ALLOWED_ATTR: [],
   });
 
-  // Let DB generate UUID id via gen_random_uuid() default
   const { data, error } = await (supabase as any)
     .from("chat_messages_v2")
     .insert({
       conversation_id: input.conversationId,
       sender_user_id: userId,
-      sender_orbit_id: input.senderOrbitId,
+      sender_orbit_id: senderOrbitId,
       receiver_orbit_id: input.receiverOrbitId ?? null,
       type: "text",
       body: safeBody,
@@ -62,19 +76,20 @@ export async function sendTextMessage(input: {
 
 export async function createCallSystemMessage(input: {
   conversationId: string;
-  senderOrbitId: string | null;
+  senderOrbitId?: string | null;
   receiverOrbitId?: string | null;
   body: string;
   metadata?: Record<string, unknown>;
 }) {
   const userId = await getCurrentUserId();
+  const senderOrbitId = input.senderOrbitId || await resolveOrbitId(userId);
 
   const { error } = await (supabase as any)
     .from("chat_messages_v2")
     .insert({
       conversation_id: input.conversationId,
       sender_user_id: userId,
-      sender_orbit_id: input.senderOrbitId,
+      sender_orbit_id: senderOrbitId,
       receiver_orbit_id: input.receiverOrbitId ?? null,
       type: "call",
       body: input.body,
