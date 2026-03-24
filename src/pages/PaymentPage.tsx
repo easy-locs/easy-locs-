@@ -53,7 +53,7 @@ export default function PaymentPage() {
       <div>
         <h1 className="text-xl font-bold text-foreground">Payment</h1>
         <p className="text-sm text-muted-foreground">
-          Amount: {order?.total_amount ?? 0} {order?.currency ?? "AED"}
+          Amount: {order?.total_amount ?? 0} {order?.currency ?? ""}
         </p>
       </div>
 
