@@ -99,27 +99,44 @@ export default function ShopPage() {
         return data;
       }
 
-      // Fallback: try seed_merchants by ID
+      // Fallback: try seed_merchants by ID or name-based slug
+      const seedQuery = (supabase as any)
+        .from("seed_merchants")
+        .select("*");
+      
       if (isUuid) {
-        const { data: seed } = await (supabase as any)
+        seedQuery.eq("id", shopSlug!);
+      } else {
+        // Try matching by name-derived slug pattern
+        // Seeds don't have a slug column, so we search by ID first
+        // then by name pattern (converting slug back to name)
+        const nameGuess = shopSlug!.replace(/-/g, " ");
+        seedQuery.ilike("name", `%${nameGuess}%`);
+      }
+      
+      const { data: seedResults } = await seedQuery.limit(1).maybeSingle();
+      const seed = seedResults || (isUuid ? null : await (async () => {
+        // Also try exact ID match as last resort
+        const { data } = await (supabase as any)
           .from("seed_merchants")
           .select("*")
           .eq("id", shopSlug!)
           .maybeSingle();
-        if (seed) {
-          console.log("[ShopPage] seed_merchant found:", seed.name);
-          // Normalize seed to storefront-like shape
-          return {
-            ...seed,
-            slug: seed.id,
-            vertical: seed.category,
-            banner_url: seed.cover_image,
-            logo_url: seed.logo_image,
-            address: seed.area,
-            visibility_mode: seed.visibility_mode || "coming_soon",
-            _isSeed: true,
-          };
-        }
+        return data;
+      })());
+      
+      if (seed) {
+        console.log("[ShopPage] seed_merchant found:", seed.name);
+        return {
+          ...seed,
+          slug: seed.id,
+          vertical: seed.category,
+          banner_url: seed.cover_image,
+          logo_url: seed.logo_image,
+          address: seed.area,
+          visibility_mode: seed.visibility_mode || "coming_soon",
+          _isSeed: true,
+        };
       }
 
       console.log("[ShopPage] not found", error || "");
