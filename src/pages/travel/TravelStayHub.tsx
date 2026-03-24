@@ -230,8 +230,8 @@ export default function TravelStayHub() {
                   >
                     <CalendarIcon className="h-4 w-4 shrink-0" style={{ color: "hsla(38,70%,58%,0.7)" }} />
                     <div className="flex flex-col">
-                      <span className="text-[9px] font-semibold uppercase tracking-wider" style={{ color: "hsla(38,70%,58%,0.6)" }}>Check-out</span>
-                      <span className="font-bold">{checkOut ? format(checkOut, "dd MMM") : "Add date"}</span>
+                      <span className="text-[9px] font-semibold uppercase tracking-wider" style={{ color: "hsla(38,70%,58%,0.6)" }}>{tc("travel.check_out")}</span>
+                      <span className="font-bold">{checkOut ? format(checkOut, "dd MMM") : tc("common.add_date")}</span>
                     </div>
                   </button>
                 </PopoverTrigger>
