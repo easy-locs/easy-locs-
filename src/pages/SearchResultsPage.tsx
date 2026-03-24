@@ -119,7 +119,7 @@ export default function SearchResultsPage() {
                       <p className="text-[11px] text-muted-foreground truncate">{row.subtitle}</p>
                     </div>
                     <span className="text-xs font-bold text-primary shrink-0">
-                      {Number(row.price ?? 0).toFixed(2)} AED
+                      {new Intl.NumberFormat(undefined, { style: "currency", currency: row.currency || "AED", minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(Number(row.price ?? 0))}
                     </span>
                   </button>
                 ))}
