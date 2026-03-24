@@ -696,7 +696,19 @@ export function useConversationThreads() {
   }, [orgId, user?.id, debouncedReload]);
 
   const updateThreadLocally = useCallback((threadId: string, updates: Partial<ConversationThread>) => {
-    setThreads(prev => prev.map(t => t.id === threadId ? { ...t, ...updates } : t));
+    setThreads(prev => {
+      const next = prev
+        .map(t => t.id === threadId ? { ...t, ...updates } : t)
+        .sort((a, b) => {
+          if (a.pinned !== b.pinned) return a.pinned ? -1 : 1;
+          if (a.unreadCount !== b.unreadCount) return b.unreadCount - a.unreadCount;
+          const at = a.lastMessageTime || "";
+          const bt = b.lastMessageTime || "";
+          return bt.localeCompare(at);
+        });
+      setStats(s => ({ ...s, unread: next.filter(t => !t.archived).reduce((acc, t) => acc + t.unreadCount, 0) }));
+      return next;
+    });
   }, []);
 
   return {

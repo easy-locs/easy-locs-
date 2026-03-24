@@ -627,6 +627,11 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
           contentPreview: content.slice(0, 80),
         }, "orbit", { userId: authUserId, orgId });
 
+        onThreadUpdate(thread.id, {
+          lastMessage: msgText,
+          lastMessageTime: new Date().toISOString(),
+        });
+
         setSecurityLevel("normal");
         setSending(false);
         return;
