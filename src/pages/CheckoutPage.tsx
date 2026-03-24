@@ -71,7 +71,7 @@ export default function CheckoutPage() {
         sellerId,
         items: cart.items,
         fulfillmentType: mode,
-        currency: "AED",
+        currency: resolveDisplayCurrency({ country: "AE" }),
         deliveryFee,
         notes: notes || undefined,
         paymentMethod: payment,
