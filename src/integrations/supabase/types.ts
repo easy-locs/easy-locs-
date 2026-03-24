@@ -23454,10 +23454,13 @@ export type Database = {
           context_id: string | null
           context_type: string | null
           created_at: string | null
+          escalated_at: string | null
           id: string
           priority: string | null
+          reporter_user_id: string | null
           requester_user_id: string | null
           resolved_at: string | null
+          sla_deadline: string | null
           status: string | null
           subject: string
           ticket_type: string
@@ -23469,10 +23472,13 @@ export type Database = {
           context_id?: string | null
           context_type?: string | null
           created_at?: string | null
+          escalated_at?: string | null
           id?: string
           priority?: string | null
+          reporter_user_id?: string | null
           requester_user_id?: string | null
           resolved_at?: string | null
+          sla_deadline?: string | null
           status?: string | null
           subject: string
           ticket_type: string
@@ -23484,10 +23490,13 @@ export type Database = {
           context_id?: string | null
           context_type?: string | null
           created_at?: string | null
+          escalated_at?: string | null
           id?: string
           priority?: string | null
+          reporter_user_id?: string | null
           requester_user_id?: string | null
           resolved_at?: string | null
+          sla_deadline?: string | null
           status?: string | null
           subject?: string
           ticket_type?: string
