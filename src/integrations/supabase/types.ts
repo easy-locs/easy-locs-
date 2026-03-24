@@ -13769,6 +13769,45 @@ export type Database = {
         }
         Relationships: []
       }
+      platform_recovery_runs: {
+        Row: {
+          auto_fixes_count: number | null
+          completed_at: string | null
+          errors_count: number | null
+          id: string
+          modules_json: Json | null
+          started_at: string
+          status: string
+          summary_json: Json | null
+          total_ms: number | null
+          trigger_type: string
+        }
+        Insert: {
+          auto_fixes_count?: number | null
+          completed_at?: string | null
+          errors_count?: number | null
+          id?: string
+          modules_json?: Json | null
+          started_at?: string
+          status?: string
+          summary_json?: Json | null
+          total_ms?: number | null
+          trigger_type?: string
+        }
+        Update: {
+          auto_fixes_count?: number | null
+          completed_at?: string | null
+          errors_count?: number | null
+          id?: string
+          modules_json?: Json | null
+          started_at?: string
+          status?: string
+          summary_json?: Json | null
+          total_ms?: number | null
+          trigger_type?: string
+        }
+        Relationships: []
+      }
       platform_settings: {
         Row: {
           created_at: string
