@@ -147,7 +147,7 @@ export default function MerchantCouponManagerPage() {
                   <p className="text-[11px] text-muted-foreground">
                     {row.discount_type === "percent"
                       ? `${Number(row.discount_value ?? 0)}% off`
-                      : `${Number(row.discount_value ?? 0).toFixed(2)} AED off`}
+                      : `${formatMoneyByCountry(Number(row.discount_value ?? 0), null, "AED")} off`}
                   </p>
                   <p className="text-[11px] text-muted-foreground/70">
                     Min {Number(row.minimum_order_amount ?? 0).toFixed(2)} AED
