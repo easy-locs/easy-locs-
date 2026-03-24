@@ -18,6 +18,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { format, addDays, differenceInDays } from "date-fns";
 import SEOHead from "@/components/SEOHead";
 import PremiumMerchantCard from "@/components/discovery/PremiumMerchantCard";
+import { BoostSlotRenderer } from "@/components/boost/BoostSlotRenderer";
 import { useVerticalListings, type ListingItem } from "@/hooks/useVerticalListings";
 import { getSubcategoryLabel } from "@/lib/discovery/verticals";
 import { resolveCanonicalUI } from "@/lib/ui-engine";
