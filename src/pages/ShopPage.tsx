@@ -26,6 +26,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import { Loader2, MapPin, ShoppingCart, Plus, Minus, Trash2, Phone, Mail, MessageCircle, Send, CheckCircle2, Store, Tag, X, Heart, Globe, QrCode } from "lucide-react";
 import { ScanQrButton } from "@/components/qr/UniversalQrWidgets";
 import { useState, useEffect, lazy, Suspense } from "react";
+import { BoostSlotRenderer } from "@/components/boost/BoostSlotRenderer";
 import { toast } from "sonner";
 import { useStorefrontAnalytics } from "@/hooks/useStorefrontAnalytics";
 import { useShopTranslation } from "@/hooks/useShopTranslation";
