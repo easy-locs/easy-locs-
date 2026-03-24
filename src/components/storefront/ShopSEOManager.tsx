@@ -45,6 +45,13 @@ export default function ShopSEOManager({ shopId, shopSlug, currentData }: ShopSE
   const save = async () => {
     setSaving(true);
     try {
+      // Register merchant overrides for SEO fields
+      await Promise.all([
+        seoTitle && setMerchantValue(shopId, "seo_title", seoTitle),
+        seoDesc && setMerchantValue(shopId, "seo_description", seoDesc),
+        ogImage && setMerchantValue(shopId, "og_image_url", ogImage),
+      ]);
+      // Also write directly for immediate effect
       await (supabase as any).from("storefront_pages").update({
         seo_title: seoTitle || null,
         seo_description: seoDesc || null,
