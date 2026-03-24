@@ -33,9 +33,9 @@ export default function LiveActivityBar() {
 
   return (
     <div className="relative overflow-hidden border-y border-border/10 bg-card/50 backdrop-blur-xl">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2.5 flex items-center justify-between gap-4">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-2 sm:py-2.5 flex items-center justify-between gap-2 sm:gap-4 overflow-hidden">
         {/* Left — live pulse + event */}
-        <div className="flex items-center gap-3 min-w-0">
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0 overflow-hidden flex-1">
           <div className="flex items-center gap-1.5 shrink-0">
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
@@ -50,11 +50,11 @@ export default function LiveActivityBar() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
               transition={{ duration: 0.3 }}
-              className="flex items-center gap-1.5 min-w-0"
+              className="flex items-center gap-1.5 min-w-0 overflow-hidden flex-1"
             >
               <event.icon className="h-3.5 w-3.5 shrink-0" style={{ color: event.color }} />
-              <span className="text-xs text-muted-foreground truncate">{event.text}</span>
-              <span className="text-[9px] text-muted-foreground/50 shrink-0">just now</span>
+              <span className="text-[10px] sm:text-xs text-muted-foreground truncate">{event.text}</span>
+              <span className="text-[8px] sm:text-[9px] text-muted-foreground/50 shrink-0 hidden sm:inline">just now</span>
             </motion.div>
           </AnimatePresence>
         </div>
