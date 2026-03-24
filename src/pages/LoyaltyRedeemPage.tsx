@@ -45,7 +45,7 @@ export default function LoyaltyRedeemPage() {
             <Star className="h-3.5 w-3.5" /> Points: <span className="font-bold text-foreground">{account.points_balance}</span>
           </p>
           <p className="text-sm text-muted-foreground">Tier: <span className="font-bold text-foreground capitalize">{account.tier}</span></p>
-          <p className="text-sm text-muted-foreground">Cashback: <span className="font-bold text-foreground">{account.total_cashback} AED</span></p>
+          <p className="text-sm text-muted-foreground">Cashback: <span className="font-bold text-foreground">{formatMoneyByCountry(account.total_cashback, account.country)}</span></p>
         </div>
       )}
       <div className="space-y-2">
