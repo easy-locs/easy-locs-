@@ -1,7 +1,6 @@
 /**
- * VerticalHubPage — Premium hub page for any vertical.
- * Immersive hero with per-vertical AND per-subcategory theming.
- * Breadcrumb navigation, premium cards, subcategory chips.
+ * VerticalHubPage — Premium hub page driven by the Canonical UI Engine.
+ * Every visual decision (hero, cards, motion, wording) comes from taxonomy.
  */
 import { useState, useMemo, useEffect } from "react";
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
@@ -13,9 +12,9 @@ import PremiumMerchantCard from "@/components/discovery/PremiumMerchantCard";
 import UniverseSearch from "@/components/universe/UniverseSearch";
 import FilterChip from "@/components/universe/FilterChip";
 import { useVerticalListings, type ListingItem } from "@/hooks/useVerticalListings";
-import { type VerticalDef, getSubcategoryLabel } from "@/lib/discovery/verticals";
-import { getVerticalTheme, type VerticalTheme } from "@/lib/discovery/vertical-themes";
-import { getSubcategoryTheme } from "@/lib/discovery/subcategory-themes";
+import { type TaxonomyVertical } from "@/lib/taxonomy/world-class-taxonomy";
+import { getSubcategoryLabel } from "@/lib/discovery/verticals";
+import { resolveCanonicalUI, type CanonicalUISpec } from "@/lib/ui-engine";
 
 type SortMode = "relevance" | "rating" | "distance" | "newest";
 
@@ -36,30 +35,29 @@ function sortItems(items: ListingItem[], mode: SortMode): ListingItem[] {
   }
 }
 
-export default function VerticalHubPage({ vertical }: { vertical: VerticalDef }) {
+/** Motion variant presets driven by canonical engine */
+const CARD_VARIANTS: Record<string, object> = {
+  "slide-up":   { initial: { opacity: 0, y: 12 },  animate: { opacity: 1, y: 0 } },
+  "slide-left": { initial: { opacity: 0, x: -8 },  animate: { opacity: 1, x: 0 } },
+  "fade":       { initial: { opacity: 0 },          animate: { opacity: 1 } },
+  "scale":      { initial: { opacity: 0, scale: 0.95 }, animate: { opacity: 1, scale: 1 } },
+};
+
+export default function VerticalHubPage({ vertical }: { vertical: TaxonomyVertical }) {
   const [search, setSearch] = useState("");
   const [searchParams, setSearchParams] = useSearchParams();
   const initialSub = searchParams.get("sub");
   const [activeSub, setActiveSub] = useState<string | null>(initialSub);
   const [sortMode, setSortMode] = useState<SortMode>("relevance");
   const navigate = useNavigate();
-  const baseTheme = getVerticalTheme(vertical.value);
 
-  // Subcategory-specific theme override
-  const subTheme = activeSub ? getSubcategoryTheme(activeSub) : null;
-  const theme: VerticalTheme = subTheme ? {
-    ...baseTheme,
-    heroImage: subTheme.heroImage,
-    heroOverlay: subTheme.heroOverlay,
-    accentHsl: subTheme.accentHsl,
-    tagline: subTheme.tagline,
-    searchPlaceholder: subTheme.searchPlaceholder,
-  } : baseTheme;
+  // ═══ CANONICAL UI ENGINE — single source of truth ═══
+  const ui: CanonicalUISpec = useMemo(
+    () => resolveCanonicalUI(vertical.value, activeSub),
+    [vertical.value, activeSub],
+  );
 
-  const activeEmoji = subTheme?.emoji || vertical.emoji;
-  const activeTitle = activeSub
-    ? getSubcategoryLabel(vertical.value, activeSub)
-    : vertical.label;
+  const motionPreset = CARD_VARIANTS[ui.motion.cardEntry] || CARD_VARIANTS.fade;
 
   useEffect(() => {
     const sub = searchParams.get("sub");
@@ -68,11 +66,8 @@ export default function VerticalHubPage({ vertical }: { vertical: VerticalDef })
 
   const handleSubSelect = (sub: string | null) => {
     setActiveSub(sub);
-    if (sub) {
-      setSearchParams({ sub });
-    } else {
-      setSearchParams({});
-    }
+    if (sub) setSearchParams({ sub });
+    else setSearchParams({});
   };
 
   const { data: listings = [], isLoading } = useVerticalListings(vertical.value, activeSub);
@@ -104,11 +99,11 @@ export default function VerticalHubPage({ vertical }: { vertical: VerticalDef })
   return (
     <div className="min-h-screen pb-24" style={{ background: "hsl(var(--background))" }}>
       <SEOHead
-        title={`${activeTitle} — Easy-Locs`}
-        description={`Discover ${activeTitle.toLowerCase()} near you on Easy-Locs.`}
+        title={`${ui.displayTitle} — Easy-Locs`}
+        description={`Discover ${ui.displayTitle.toLowerCase()} near you on Easy-Locs.`}
       />
 
-      {/* ═══ PREMIUM HERO — changes with subcategory ═══ */}
+      {/* ═══ PREMIUM HERO — driven by canonical engine ═══ */}
       <AnimatePresence mode="wait">
         <motion.div
           key={activeSub || "base"}
@@ -118,10 +113,19 @@ export default function VerticalHubPage({ vertical }: { vertical: VerticalDef })
           transition={{ duration: 0.3 }}
         >
           <PremiumVerticalHero
-            title={activeTitle}
-            tagline={theme.tagline}
-            emoji={activeEmoji}
-            theme={theme}
+            title={ui.displayTitle}
+            tagline={ui.wording.resultsFormat.replace("{count}", String(filtered.length))}
+            emoji={ui.emoji}
+            theme={{
+              gradient: ui.gradient,
+              accentHsl: ui.accentHsl,
+              heroImage: ui.heroImage,
+              heroOverlay: ui.heroOverlay,
+              tagline: ui.searchPlaceholder,
+              searchPlaceholder: ui.searchPlaceholder,
+              emptyEmoji: ui.emoji,
+              emptyMessage: ui.wording.emptyTitle,
+            }}
             search={
               <div className="rounded-xl overflow-hidden" style={{
                 background: "hsl(var(--card))",
@@ -129,7 +133,7 @@ export default function VerticalHubPage({ vertical }: { vertical: VerticalDef })
                 border: "1px solid hsl(var(--border) / 0.1)",
               }}>
                 <UniverseSearch
-                  placeholder={theme.searchPlaceholder}
+                  placeholder={ui.searchPlaceholder}
                   value={search}
                   onChange={setSearch}
                 />
@@ -140,26 +144,29 @@ export default function VerticalHubPage({ vertical }: { vertical: VerticalDef })
       </AnimatePresence>
 
       <div className="px-4 mt-8">
-        {/* ═══ BREADCRUMB NAVIGATION ═══ */}
+        {/* ═══ BREADCRUMBS — from canonical engine ═══ */}
         <nav className="flex items-center gap-1.5 mb-4 text-[11px] overflow-x-auto scrollbar-none">
-          <Link to="/" className="text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1 shrink-0">
-            <Home className="h-3 w-3" /> Home
-          </Link>
-          <ChevronRight className="h-3 w-3 text-muted-foreground/50 shrink-0" />
-          <button
-            onClick={() => handleSubSelect(null)}
-            className={`shrink-0 transition-colors ${!activeSub ? "font-bold text-foreground" : "text-muted-foreground hover:text-foreground"}`}
-          >
-            {vertical.label}
-          </button>
-          {activeSub && (
-            <>
-              <ChevronRight className="h-3 w-3 text-muted-foreground/50 shrink-0" />
-              <span className="font-bold shrink-0" style={{ color: `hsl(${theme.accentHsl})` }}>
-                {getSubcategoryLabel(vertical.value, activeSub)}
-              </span>
-            </>
-          )}
+          {ui.breadcrumbs.map((crumb, i) => (
+            <span key={crumb.path} className="flex items-center gap-1.5 shrink-0">
+              {i > 0 && <ChevronRight className="h-3 w-3 text-muted-foreground/50" />}
+              {i === 0 ? (
+                <Link to={crumb.path} className="text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1">
+                  <Home className="h-3 w-3" /> {crumb.label}
+                </Link>
+              ) : i === ui.breadcrumbs.length - 1 ? (
+                <span className="font-bold" style={{ color: `hsl(${ui.accentHsl})` }}>
+                  {crumb.label}
+                </span>
+              ) : (
+                <button
+                  onClick={() => handleSubSelect(null)}
+                  className="text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  {crumb.label}
+                </button>
+              )}
+            </span>
+          ))}
         </nav>
 
         {/* ═══ SORT CHIPS ═══ */}
@@ -185,17 +192,17 @@ export default function VerticalHubPage({ vertical }: { vertical: VerticalDef })
                 className="w-[52px] h-[52px] rounded-2xl flex items-center justify-center transition-all"
                 style={{
                   background: !activeSub
-                    ? `hsl(${baseTheme.accentHsl} / 0.15)`
+                    ? `hsl(${ui.accentHsl} / 0.15)`
                     : "hsl(var(--muted))",
                   border: !activeSub
-                    ? `2px solid hsl(${baseTheme.accentHsl})`
+                    ? `2px solid hsl(${ui.accentHsl})`
                     : "2px solid transparent",
                 }}
               >
                 <span className="text-lg">✨</span>
               </div>
               <span className="text-[10px] font-semibold" style={{
-                color: !activeSub ? `hsl(${baseTheme.accentHsl})` : "hsl(var(--foreground))"
+                color: !activeSub ? `hsl(${ui.accentHsl})` : "hsl(var(--foreground))"
               }}>All</span>
             </button>
 
@@ -209,46 +216,47 @@ export default function VerticalHubPage({ vertical }: { vertical: VerticalDef })
                   className="w-[52px] h-[52px] rounded-2xl flex items-center justify-center transition-all"
                   style={{
                     background: activeSub === sub.value
-                      ? `hsl(${baseTheme.accentHsl} / 0.15)`
+                      ? `hsl(${ui.accentHsl} / 0.15)`
                       : "hsl(var(--muted))",
                     border: activeSub === sub.value
-                      ? `2px solid hsl(${baseTheme.accentHsl})`
+                      ? `2px solid hsl(${ui.accentHsl})`
                       : "2px solid transparent",
                   }}
                 >
                   <span className="text-xl">{sub.icon}</span>
                 </div>
                 <span className="text-[10px] font-semibold max-w-[52px] text-center truncate" style={{
-                  color: activeSub === sub.value ? `hsl(${baseTheme.accentHsl})` : "hsl(var(--foreground))"
+                  color: activeSub === sub.value ? `hsl(${ui.accentHsl})` : "hsl(var(--foreground))"
                 }}>{sub.label}</span>
               </button>
             ))}
           </div>
         </div>
 
-        {/* ═══ LOADING ═══ */}
+        {/* ═══ LOADING — vertical-specific ═══ */}
         {isLoading && (
           <div className="flex flex-col items-center py-16 gap-3">
             <motion.div
               className="w-8 h-8 rounded-full border-2 border-t-transparent"
-              style={{ borderColor: `hsl(${theme.accentHsl})` }}
+              style={{ borderColor: `hsl(${ui.accentHsl})` }}
               animate={{ rotate: 360 }}
               transition={{ duration: 0.8, repeat: Infinity, ease: "linear" }}
             />
-            <p className="text-xs text-muted-foreground">Loading…</p>
+            <p className="text-xs text-muted-foreground">{ui.wording.loadingText}</p>
           </div>
         )}
 
-        {/* ═══ EMPTY ═══ */}
+        {/* ═══ EMPTY — vertical-specific ═══ */}
         {!isLoading && filtered.length === 0 && (
           <div className="flex flex-col items-center py-16 gap-3">
-            <span className="text-4xl">{subTheme?.emoji || theme.emptyEmoji}</span>
-            <p className="text-sm font-bold text-foreground">{theme.emptyMessage}</p>
+            <span className="text-4xl">{ui.emoji}</span>
+            <p className="text-sm font-bold text-foreground">{ui.wording.emptyTitle}</p>
+            <p className="text-xs text-muted-foreground">{ui.wording.emptySubtitle}</p>
             {activeSub && (
               <button
                 onClick={() => handleSubSelect(null)}
                 className="text-xs font-semibold mt-2 px-4 py-2 rounded-xl transition-all active:scale-95"
-                style={{ color: `hsl(${baseTheme.accentHsl})`, background: `hsl(${baseTheme.accentHsl} / 0.1)` }}
+                style={{ color: `hsl(${ui.accentHsl})`, background: `hsl(${ui.accentHsl} / 0.1)` }}
               >
                 ← View all {vertical.label}
               </button>
@@ -256,7 +264,7 @@ export default function VerticalHubPage({ vertical }: { vertical: VerticalDef })
           </div>
         )}
 
-        {/* ═══ FLAT LIST (filtered by subcategory) ═══ */}
+        {/* ═══ FLAT LIST — motion driven by canonical engine ═══ */}
         {!isLoading && (activeSub || !grouped) && filtered.length > 0 && (
           <>
             <div className="flex items-center justify-between mb-3">
@@ -266,40 +274,47 @@ export default function VerticalHubPage({ vertical }: { vertical: VerticalDef })
             </div>
             <div className="space-y-2.5">
               {filtered.length > 0 && (
-                <PremiumMerchantCard
-                  to={filtered[0].slug ? `/s/${filtered[0].slug}` : `/s/${filtered[0].id}`}
-                  image={filtered[0].banner_url || filtered[0].logo_url}
-                  name={filtered[0].name}
-                  category={[
-                    filtered[0].subcategory ? getSubcategoryLabel(vertical.value, filtered[0].subcategory) : null,
-                    filtered[0].address,
-                  ].filter(Boolean).join(" · ")}
-                  rating={filtered[0].rating > 0 ? filtered[0].rating : undefined}
-                  reviewCount={filtered[0].reviews_count}
-                  distance={filtered[0].distanceKm ? `${filtered[0].distanceKm.toFixed(1)} km` : undefined}
-                  badge={filtered[0].reviews_count > 50 ? "Popular" : filtered[0].reviews_count > 20 ? "Verified" : undefined}
-                  variant="featured"
-                  verticalType={vertical.value}
-                  index={0}
-                />
+                <motion.div {...motionPreset} transition={{ delay: 0 }}>
+                  <PremiumMerchantCard
+                    to={filtered[0].slug ? `/s/${filtered[0].slug}` : `/s/${filtered[0].id}`}
+                    image={filtered[0].banner_url || filtered[0].logo_url}
+                    name={filtered[0].name}
+                    category={[
+                      filtered[0].subcategory ? getSubcategoryLabel(vertical.value, filtered[0].subcategory) : null,
+                      filtered[0].address,
+                    ].filter(Boolean).join(" · ")}
+                    rating={filtered[0].rating > 0 ? filtered[0].rating : undefined}
+                    reviewCount={filtered[0].reviews_count}
+                    distance={filtered[0].distanceKm ? `${filtered[0].distanceKm.toFixed(1)} km` : undefined}
+                    badge={filtered[0].reviews_count > 50 ? "Popular" : filtered[0].reviews_count > 20 ? "Verified" : undefined}
+                    variant="featured"
+                    verticalType={vertical.value}
+                    index={0}
+                  />
+                </motion.div>
               )}
               {filtered.slice(1).map((item, i) => (
-                <PremiumMerchantCard
+                <motion.div
                   key={item.id}
-                  to={item.slug ? `/s/${item.slug}` : `/s/${item.id}`}
-                  image={item.banner_url || item.logo_url}
-                  name={item.name}
-                  category={[
-                    item.subcategory ? getSubcategoryLabel(vertical.value, item.subcategory) : null,
-                    item.address,
-                  ].filter(Boolean).join(" · ")}
-                  rating={item.rating > 0 ? item.rating : undefined}
-                  reviewCount={item.reviews_count}
-                  distance={item.distanceKm ? `${item.distanceKm.toFixed(1)} km` : undefined}
-                  variant="horizontal"
-                  verticalType={vertical.value}
-                  index={i + 1}
-                />
+                  {...motionPreset}
+                  transition={{ delay: (i + 1) * (ui.motion.staggerMs / 1000) }}
+                >
+                  <PremiumMerchantCard
+                    to={item.slug ? `/s/${item.slug}` : `/s/${item.id}`}
+                    image={item.banner_url || item.logo_url}
+                    name={item.name}
+                    category={[
+                      item.subcategory ? getSubcategoryLabel(vertical.value, item.subcategory) : null,
+                      item.address,
+                    ].filter(Boolean).join(" · ")}
+                    rating={item.rating > 0 ? item.rating : undefined}
+                    reviewCount={item.reviews_count}
+                    distance={item.distanceKm ? `${item.distanceKm.toFixed(1)} km` : undefined}
+                    variant="horizontal"
+                    verticalType={vertical.value}
+                    index={i + 1}
+                  />
+                </motion.div>
               ))}
             </div>
           </>
@@ -318,7 +333,7 @@ export default function VerticalHubPage({ vertical }: { vertical: VerticalDef })
                 <button
                   onClick={() => handleSubSelect(subKey)}
                   className="text-[11px] font-semibold flex items-center gap-0.5"
-                  style={{ color: `hsl(${baseTheme.accentHsl})` }}
+                  style={{ color: `hsl(${ui.accentHsl})` }}
                 >
                   See all <ChevronRight className="h-3 w-3" />
                 </button>
