@@ -192,7 +192,7 @@ export default function CheckoutPage() {
         <div className="rounded-2xl p-4 space-y-2 bg-card border border-border/20">
           <div className="flex justify-between text-sm">
             <span className="text-muted-foreground">Subtotal</span>
-            <span className="font-semibold text-foreground">{total.toFixed(2)} AED</span>
+            <span className="font-semibold text-foreground">{fmt(total)}</span>
           </div>
           <div className="flex justify-between text-sm">
             <span className="text-muted-foreground">Delivery fee</span>
