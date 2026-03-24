@@ -42,12 +42,12 @@ export default function HomePromoCarousel() {
                 <span className="inline-block text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-primary/10 text-primary">
                   {row.discount_type === "percent"
                     ? `${Number(row.discount_value ?? 0)}% OFF`
-                    : `${Number(row.discount_value ?? 0).toFixed(0)} AED OFF`}
+                    : `${formatMoneyByCountry(Number(row.discount_value ?? 0), row.seed_merchants?.country || "AE")} OFF`}
                 </span>
                 <p className="text-sm font-bold text-foreground">{row.title}</p>
                 <p className="text-[11px] text-muted-foreground">
                   {row.seed_merchants?.name} · Min{" "}
-                  {Number(row.minimum_order_amount ?? 0).toFixed(2)} AED
+                  {formatMoneyByCountry(Number(row.minimum_order_amount ?? 0), row.seed_merchants?.country || "AE")}
                 </p>
               </div>
             </button>

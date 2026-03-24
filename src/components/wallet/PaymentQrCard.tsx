@@ -46,7 +46,7 @@ export function PaymentQrCard(props: PaymentQrCardProps) {
       </div>
       <div className="text-center space-y-0.5">
         <p className="text-sm font-bold text-foreground">
-          {props.amount ? `${props.amount} ${props.currency ?? "AED"}` : "Custom amount"}
+          {props.amount ? `${props.amount} ${props.currency ?? ""}` : "Custom amount"}
         </p>
         <p className="text-xs text-muted-foreground">
           {props.note || "Scan to pay"}
