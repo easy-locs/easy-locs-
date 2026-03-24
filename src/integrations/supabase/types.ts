@@ -12477,6 +12477,9 @@ export type Database = {
         Row: {
           activation_status: string
           claim_status: string
+          coherence_quarantined: boolean | null
+          coherence_score: number | null
+          coherence_status: string | null
           contact_status: string
           created_at: string
           entity_id: string
@@ -12502,6 +12505,9 @@ export type Database = {
         Insert: {
           activation_status?: string
           claim_status?: string
+          coherence_quarantined?: boolean | null
+          coherence_score?: number | null
+          coherence_status?: string | null
           contact_status?: string
           created_at?: string
           entity_id: string
@@ -12527,6 +12533,9 @@ export type Database = {
         Update: {
           activation_status?: string
           claim_status?: string
+          coherence_quarantined?: boolean | null
+          coherence_score?: number | null
+          coherence_status?: string | null
           contact_status?: string
           created_at?: string
           entity_id?: string
@@ -13344,6 +13353,12 @@ export type Database = {
           canonical_subcategory: string | null
           canonical_vertical: string
           city: string
+          coherence_checked_at: string | null
+          coherence_conflicts_json: Json | null
+          coherence_quarantine_reason: string | null
+          coherence_quarantined: boolean | null
+          coherence_score: number | null
+          coherence_status: string | null
           country: string
           created_at: string
           duplicate_group_id: string | null
@@ -13373,6 +13388,12 @@ export type Database = {
           canonical_subcategory?: string | null
           canonical_vertical?: string
           city?: string
+          coherence_checked_at?: string | null
+          coherence_conflicts_json?: Json | null
+          coherence_quarantine_reason?: string | null
+          coherence_quarantined?: boolean | null
+          coherence_score?: number | null
+          coherence_status?: string | null
           country?: string
           created_at?: string
           duplicate_group_id?: string | null
@@ -13402,6 +13423,12 @@ export type Database = {
           canonical_subcategory?: string | null
           canonical_vertical?: string
           city?: string
+          coherence_checked_at?: string | null
+          coherence_conflicts_json?: Json | null
+          coherence_quarantine_reason?: string | null
+          coherence_quarantined?: boolean | null
+          coherence_score?: number | null
+          coherence_status?: string | null
           country?: string
           created_at?: string
           duplicate_group_id?: string | null
@@ -18328,6 +18355,8 @@ export type Database = {
           brand_name: string | null
           category: string
           city: string
+          coherence_score: number | null
+          coherence_status: string | null
           cover_image: string | null
           created_at: string
           delivery_radius_km: number | null
@@ -18366,6 +18395,8 @@ export type Database = {
           brand_name?: string | null
           category: string
           city?: string
+          coherence_score?: number | null
+          coherence_status?: string | null
           cover_image?: string | null
           created_at?: string
           delivery_radius_km?: number | null
@@ -18404,6 +18435,8 @@ export type Database = {
           brand_name?: string | null
           category?: string
           city?: string
+          coherence_score?: number | null
+          coherence_status?: string | null
           cover_image?: string | null
           created_at?: string
           delivery_radius_km?: number | null
@@ -22042,6 +22075,8 @@ export type Database = {
           classification_reason: string | null
           classification_signals: string[] | null
           classification_version: string | null
+          coherence_score: number | null
+          coherence_status: string | null
           contact_email: string | null
           contact_phone: string | null
           contact_telegram: string | null
@@ -22152,6 +22187,8 @@ export type Database = {
           classification_reason?: string | null
           classification_signals?: string[] | null
           classification_version?: string | null
+          coherence_score?: number | null
+          coherence_status?: string | null
           contact_email?: string | null
           contact_phone?: string | null
           contact_telegram?: string | null
@@ -22262,6 +22299,8 @@ export type Database = {
           classification_reason?: string | null
           classification_signals?: string[] | null
           classification_version?: string | null
+          coherence_score?: number | null
+          coherence_status?: string | null
           contact_email?: string | null
           contact_phone?: string | null
           contact_telegram?: string | null
