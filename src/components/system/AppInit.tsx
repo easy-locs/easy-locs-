@@ -1,5 +1,7 @@
 import { useEffect } from "react";
 import { useV2AuthStore } from "@/stores/v2AuthStore";
+// Register all event handlers at boot
+import "@/lib/events/event-init";
 import { useOrbitStore } from "@/stores/orbitStore";
 import { ensureOrbitProfile } from "@/lib/orbit/ensureOrbitProfile";
 import { ensureWalletAccount } from "@/lib/wallet/ensureWalletAccount";
