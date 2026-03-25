@@ -19,7 +19,7 @@ export default function SupportInboxPage() {
     if (!ticket) return;
     await addSupportTicketMessage({
       ticketId: ticket.id,
-      senderRole: "user",
+      senderRole: "client",
       body: "Additional details: this happened after menu import.",
     });
   };
