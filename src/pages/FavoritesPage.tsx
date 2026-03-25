@@ -52,7 +52,7 @@ export default function FavoritesPage() {
           _slug: r.slug,
         }));
 
-      return [...sfNormalized, ...seedData];
+      return sfNormalized;
     },
     enabled: merchantIds.length > 0,
     staleTime: 5000,
