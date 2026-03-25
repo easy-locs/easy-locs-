@@ -1,6 +1,6 @@
 /**
- * useHomeSections — Fetches home page sections using the canonical discovery pipeline.
- * Enforces visibility_mode, route_status, display_priority for all home sections.
+ * useHomeSections — Fetches home page sections SEPARATED BY VERTICAL.
+ * RULE: Never mix verticals in sections. Each section = one vertical.
  */
 import { useQuery } from "@tanstack/react-query";
 import { useLocationStore } from "@/stores/locationStore";
@@ -37,12 +37,42 @@ function pointToPreview(p: RadarPoint): HomeShopPreview {
   };
 }
 
-export interface HomeSections {
+export interface VerticalSection {
   trending: HomeShopPreview[];
   bestRated: HomeShopPreview[];
   newest: HomeShopPreview[];
   nearYou: HomeShopPreview[];
 }
+
+export interface HomeSections {
+  /** @deprecated Use vertical-specific sections */
+  trending: HomeShopPreview[];
+  bestRated: HomeShopPreview[];
+  newest: HomeShopPreview[];
+  nearYou: HomeShopPreview[];
+  /** Vertical-separated sections — the correct way */
+  food: VerticalSection;
+  hotel: VerticalSection;
+  services: VerticalSection;
+  grocery: VerticalSection;
+  shops: VerticalSection;
+}
+
+function buildVerticalSection(previews: HomeShopPreview[]): VerticalSection {
+  const trending = previews.slice(0, 10);
+  const bestRated = [...previews]
+    .filter(p => p.rating > 0 && p.reviews_count > 0)
+    .sort((a, b) => b.rating - a.rating || b.reviews_count - a.reviews_count)
+    .slice(0, 10);
+  const nearYou = [...previews]
+    .filter(p => p.distanceKm != null)
+    .sort((a, b) => (a.distanceKm ?? 9999) - (b.distanceKm ?? 9999))
+    .slice(0, 8);
+  const newest = previews.slice(Math.max(0, previews.length - 10));
+  return { trending, bestRated, newest, nearYou };
+}
+
+const VERTICALS = ["food", "hotel", "services", "grocery", "shops"] as const;
 
 export function useHomeSections() {
   const location = useLocationStore((s) => s.currentLocation);
@@ -53,35 +83,35 @@ export function useHomeSections() {
     queryFn: async (): Promise<HomeSections> => {
       const userLoc = location && !isFallback ? { lat: location.lat, lng: location.lng } : undefined;
 
-      // Single canonical fetch — already visibility+route filtered
-      const all = await fetchCanonicalDiscovery({
-        surface: "home",
-        userLocation: userLoc,
-        limit: 200,
-      });
+      // Fetch per vertical to guarantee NO mixing
+      const fetches = VERTICALS.map(v =>
+        fetchCanonicalDiscovery({
+          surface: "home",
+          userLocation: userLoc,
+          vertical: v,
+          limit: 50,
+        }).then(pts => ({ vertical: v, previews: pts.map(pointToPreview) }))
+      );
 
-      const previews = all.map(pointToPreview);
+      const results = await Promise.all(fetches);
 
-      // Trending: top by ranking/priority (already sorted by display_priority)
-      const trending = previews.slice(0, 10);
+      const byVertical: Record<string, HomeShopPreview[]> = {};
+      for (const r of results) byVertical[r.vertical] = r.previews;
 
-      // Best rated: sort by rating
-      const bestRated = [...previews]
-        .filter((p) => p.rating > 0 && p.reviews_count > 0)
-        .sort((a, b) => b.rating - a.rating || b.reviews_count - a.reviews_count)
-        .slice(0, 10);
+      const food = buildVerticalSection(byVertical.food ?? []);
+      const hotel = buildVerticalSection(byVertical.hotel ?? []);
+      const services = buildVerticalSection(byVertical.services ?? []);
+      const grocery = buildVerticalSection(byVertical.grocery ?? []);
+      const shops = buildVerticalSection(byVertical.shops ?? []);
 
-      // Near you: sort by distance
-      const nearYou = [...previews]
-        .filter((p) => p.distanceKm != null)
-        .sort((a, b) => (a.distanceKm ?? 9999) - (b.distanceKm ?? 9999))
-        .slice(0, 8);
+      // Legacy compat — all combined (deprecated)
+      const all = results.flatMap(r => r.previews);
+      const trending = all.slice(0, 10);
+      const bestRated = [...all].filter(p => p.rating > 0).sort((a, b) => b.rating - a.rating).slice(0, 10);
+      const nearYou = [...all].filter(p => p.distanceKm != null).sort((a, b) => (a.distanceKm ?? 9999) - (b.distanceKm ?? 9999)).slice(0, 8);
+      const newest = all.slice(Math.max(0, all.length - 10));
 
-      // "Newest" — we don't have created_at in RadarPoint, so use last items from pipeline
-      // which are lower priority / recently added
-      const newest = previews.slice(Math.max(0, previews.length - 10));
-
-      return { trending, bestRated, newest, nearYou };
+      return { trending, bestRated, newest, nearYou, food, hotel, services, grocery, shops };
     },
     staleTime: 60_000,
   });
