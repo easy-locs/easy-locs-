@@ -92,6 +92,13 @@ export default function AdminEnginesDashboardPage() {
         });
       } catch {}
     })();
+    // Fetch recent decisions
+    (async () => {
+      try {
+        const { data } = await db.from("platform_actions_log").select("*").order("created_at", { ascending: false }).limit(20);
+        setDecisions(data ?? []);
+      } catch {}
+    })();
   }, [tick]);
 
   const rawStatus = useMemo(() => getContinuousEngineStatus(), [tick]);
