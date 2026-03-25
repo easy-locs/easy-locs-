@@ -3,7 +3,19 @@ import { useGeoStore, type GeoPermission } from "./geo-store";
 class GeoService {
   private _retryTimer: ReturnType<typeof setTimeout> | null = null;
 
-  start() {
+  private async probePermission(): Promise<GeoPermission | null> {
+    try {
+      if (!navigator.permissions?.query) return null;
+      const result = await navigator.permissions.query({ name: "geolocation" as PermissionName });
+      if (result.state === "granted") return "granted";
+      if (result.state === "denied") return "denied";
+      return "prompt";
+    } catch {
+      return null;
+    }
+  }
+
+  async start(allowPrompt = false) {
     const state = useGeoStore.getState();
     if (state.tracking) return;
 
@@ -12,6 +24,18 @@ class GeoService {
         error: "Geolocation not supported",
         ready: true,
         loading: false,
+      });
+      return;
+    }
+
+    const permission = await this.probePermission();
+    if (!allowPrompt && permission && permission !== "granted") {
+      useGeoStore.getState().setStatePartial({
+        ready: true,
+        loading: false,
+        tracking: false,
+        permission,
+        error: permission === "denied" ? "Location access denied" : null,
       });
       return;
     }
@@ -98,7 +122,7 @@ class GeoService {
   }
 
   /** Force a fresh GPS attempt — stops current watch and restarts */
-  forceRetry() {
+  forceRetry(allowPrompt = true) {
     this.stop();
     const current = useGeoStore.getState();
     // Only reset permission if not already granted (avoid losing valid state)
@@ -110,7 +134,7 @@ class GeoService {
     } else {
       useGeoStore.getState().setStatePartial({ error: null });
     }
-    this.start();
+    void this.start(allowPrompt);
   }
 
   getCurrent() {
