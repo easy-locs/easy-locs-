@@ -7,25 +7,23 @@ import { runEngineHealthChecks } from "@/lib/engine/engineHealthChecks";
 
 export function useMasterAppBootstrap() {
   useEffect(() => {
-    // 1. Install event-driven engines
+    // 1. Install event-driven engines (lightweight, sync)
     installOrchestrationEngine();
     installEngineConnectorHub();
 
-    // 2. Run immediate health checks
-    void runEngineHealthChecks();
+    // 2. Run health checks after initial paint
+    const t1 = setTimeout(() => void runEngineHealthChecks(), 3000);
 
-    // 3. Platform recovery at boot (after initial render)
-    setTimeout(() => {
-      void runPlatformRecovery("boot");
-    }, 5000);
+    // 3. Platform recovery — well after initial render
+    const t2 = setTimeout(() => void runPlatformRecovery("boot"), 8000);
 
-    // 4. Start continuous engine (interval-based automation)
-    setTimeout(() => {
-      startContinuousEngine();
-    }, 10000);
+    // 4. Start continuous engine — heavily deferred to avoid boot lag
+    const t3 = setTimeout(() => startContinuousEngine(), 20000);
 
     return () => {
-      // Cleanup not needed for singleton engines, but continuous engine can stop
+      clearTimeout(t1);
+      clearTimeout(t2);
+      clearTimeout(t3);
     };
   }, []);
 }
