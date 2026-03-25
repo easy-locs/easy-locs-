@@ -26,6 +26,14 @@ import {
 } from "@/lib/taxonomy/world-class-taxonomy";
 import type { RadarPoint, RadarCategory, UserGeoPoint } from "@/lib/radar/types";
 
+// ═══ Placeholder image filter — blocks generic/stock images from discovery ═══
+const PLACEHOLDER_PATTERNS = ["unsplash.com", "placeholder", "dummyimage", "placehold.co", "via.placeholder"];
+function isPlaceholder(url?: string | null): boolean {
+  if (!url) return true;
+  const lower = url.toLowerCase();
+  return PLACEHOLDER_PATTERNS.some(p => lower.includes(p));
+}
+
 // ═══════════════════════════════════════════════════
 //  VISIBILITY RULES — Which modes are visible per surface
 // ═══════════════════════════════════════════════════
@@ -233,6 +241,8 @@ export async function fetchCanonicalDiscovery(opts: CanonicalDiscoveryOpts): Pro
   // ── Normalize storefront_pages ──
   for (const s of storefrontRes.data ?? []) {
     seenIds.add(s.id);
+    // Skip entities with placeholder images
+    if (isPlaceholder(s.banner_url) && isPlaceholder(s.logo_url)) continue;
     const normVertical = normalizeVertical(s.vertical || s.category);
     const cat = verticalToRadarCategory(normVertical);
     if (category && category !== "all" && cat !== category) continue;
@@ -269,6 +279,7 @@ export async function fetchCanonicalDiscovery(opts: CanonicalDiscoveryOpts): Pro
   // display_priority projection: visibility_score / 100 * 50 (seeds rank below claimed storefronts)
   for (const m of seedResults) {
     if (seenIds.has(m.id)) continue;
+    if (isPlaceholder(m.cover_image) && isPlaceholder(m.logo_image)) continue;
     const coords = areaToCoords(m.area);
     const normVertical = normalizeVertical(m.category);
     const cat = verticalToRadarCategory(normVertical);
