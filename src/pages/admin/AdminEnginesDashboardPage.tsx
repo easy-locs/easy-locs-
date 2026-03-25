@@ -98,8 +98,8 @@ export default function AdminEnginesDashboardPage() {
   const enrichedJobs = useMemo(() => rawStatus.jobs.map(j => {
     const meta = ENGINE_METADATA[j.name];
     const derived = deriveRuntimeStatus(
-      j.lastStatus as "ok" | "error" | "pending",
-      j.itemsProcessed,
+      j.lastStatus as any,
+      { name: j.name, itemsProcessed: j.itemsProcessed, runCount: j.runCount, lastRun: j.lastRun, lastDetail: j.lastDetail },
       meta?.canRunIdle ?? true
     );
     return {
