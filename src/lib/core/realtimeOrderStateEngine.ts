@@ -62,6 +62,7 @@ export async function moveOrderToNextState(orderId: string) {
     await releaseOrderEscrow({
       orderId,
       merchantUserId: (order as any).merchant_user_id ?? null,
+      driverUserId: (order as any).assigned_driver_user_id ?? null,
       amount: Number((order as any).total_amount ?? 0),
       currency: (order as any).currency ?? "AED",
     });
