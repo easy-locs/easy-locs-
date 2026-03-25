@@ -179,7 +179,12 @@ export default function VerticalHubPage({ vertical }: { vertical: TaxonomyVertic
           ))}
         </nav>
 
-        {/* ═══ SORT CHIPS ═══ */}
+        {/* ═══ CITY FILTER ═══ */}
+        <CityFilter value={city} onChange={setCity} className="mb-3" />
+
+        {/* ═══ RADIUS SLIDER ═══ */}
+        <RadiusSlider value={radiusKm} onChange={setRadiusKm} className="mb-4" />
+
         <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-none -mx-1 px-1 mb-4 snap-x snap-mandatory">
           {SORT_OPTIONS.map(opt => (
             <FilterChip
