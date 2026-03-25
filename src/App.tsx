@@ -862,7 +862,8 @@ const App = () => (
               <Route path="/admin/sla" element={<AdminSLAPage />} />
               <Route path="/admin/trust-graph" element={<AdminTrustGraphPage />} />
               <Route path="/refund/:rideRequestId" element={<RefundRequestPage />} />
-              {/* orbit/call route removed — calls handled by CallProvider */}
+              {/* Orbit — main messaging hub */}
+              <Route path="/orbit" element={<CommunicationCenter />} />
               <Route path="/orbit/contacts" element={<OrbitContactsPage />} />
               <Route path="/team/command-center" element={<TeamCommandCenterPage />} />
               <Route path="/admin/executive-kpi" element={<ExecutiveKPIBoardPage />} />
@@ -1400,7 +1401,7 @@ const App = () => (
               <Route path="/payment/:orderId" element={<PaymentPage />} />
               <Route path="/store/:publicSlug" element={<PublicStorefrontBySlugPage />} />
 
-              <Route path="/app/orbit" element={<Navigate to="/" replace />} />
+              <Route path="/app/orbit" element={<Navigate to="/orbit" replace />} />
               <Route path="/app/*" element={<Navigate to="/" replace />} />
 
               {/* V2 routes — all redirected to canonical paths */}
