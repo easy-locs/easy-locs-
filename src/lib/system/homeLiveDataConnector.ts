@@ -1,21 +1,20 @@
 import { supabase } from "@/integrations/supabase/client";
-import { governSeedQuery } from "@/lib/discovery/query-governance";
+import { governStorefrontQuery } from "@/lib/discovery/query-governance";
 
 export async function getHomeLiveSnapshot() {
-  let seedQ = (supabase as any)
-    .from("seed_merchants")
-    .select("*")
-    .eq("category", "food")
-    .eq("is_open", true)
+  let sfQ = (supabase as any)
+    .from("storefront_pages")
+    .select("id, name, slug, vertical, category, subcategory, city, rating, banner_url, logo_url, display_priority")
+    .eq("vertical", "food")
     .limit(12);
-  seedQ = governSeedQuery(seedQ, "home");
+  sfQ = governStorefrontQuery(sfQ, "home");
 
   const [{ data: merchants }, { data: promos }, { data: orders }] = await Promise.all([
-    seedQ,
+    sfQ,
 
     (supabase as any)
       .from("seed_merchant_promos")
-      .select("*, seed_merchants(*)")
+      .select("*")
       .eq("is_active", true)
       .limit(8),
 

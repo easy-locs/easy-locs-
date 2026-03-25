@@ -215,32 +215,9 @@ export async function fetchCanonicalDiscovery(opts: CanonicalDiscoveryOpts): Pro
     storefrontQuery = storefrontQuery.ilike("name", `%${searchQuery.trim()}%`);
   }
 
-  // ── SEED MERCHANT GOVERNANCE ──
-  const seedAllowed = allowedModes.includes("coming_soon") || allowedModes.includes("live") || allowedModes.includes("ready");
+  // ── SINGLE SOURCE: storefront_pages only — seed_merchants is internal pipeline only ──
 
-  const seedQueryPromise = seedAllowed ? (() => {
-    let seedQuery = (supabase as any)
-      .from("seed_merchants")
-      .select("id, name, category, subcategory, city, area, rating, review_count, cover_image, logo_image, visibility_score, is_open, is_featured, promo_active, delivery_time_min, delivery_time_max, overall_quality_score, pipeline_stage, visibility_mode")
-      .eq("is_active", true)
-      .not("visibility_mode", "eq", "hidden")
-      .order("visibility_score", { ascending: false })
-      .limit(limit);
-
-    if (subcategory) {
-      seedQuery = seedQuery.eq("subcategory", subcategory);
-    }
-    if (city) {
-      seedQuery = seedQuery.ilike("city", city);
-    }
-    if (searchQuery?.trim()) {
-      seedQuery = seedQuery.ilike("name", `%${searchQuery.trim()}%`);
-    }
-    return seedQuery;
-  })() : Promise.resolve({ data: [] });
-
-  const [storefrontRes, seedRes] = await Promise.all([storefrontQuery, seedQueryPromise]);
-  let seedResults: any[] = seedRes.data ?? [];
+  const storefrontRes = await storefrontQuery;
 
   const points: RadarPoint[] = [];
   const seenIds = new Set<string>();
@@ -282,45 +259,7 @@ export async function fetchCanonicalDiscovery(opts: CanonicalDiscoveryOpts): Pro
     });
   }
 
-  // ── Normalize seed_merchants (governed: treated as coming_soon, no route issues) ──
-  // display_priority projection: visibility_score / 100 * 50 (seeds rank below claimed storefronts)
-  for (const m of seedResults) {
-    if (seenIds.has(m.id)) continue;
-    if (isPlaceholder(m.cover_image) && isPlaceholder(m.logo_image)) continue;
-    // Block low-quality entities from discovery
-    if ((m.overall_quality_score ?? 0) > 0 && (m.overall_quality_score ?? 0) < 30) continue;
-    const coords = areaToCoords(m.area);
-    const normVertical = normalizeVertical(m.category);
-    const cat = verticalToRadarCategory(normVertical);
-    if (category && category !== "all" && cat !== category) continue;
-    const sub = normalizeSubcategory(m.subcategory);
-    const dist = userLocation ? haversineKm(userLocation.lat, userLocation.lng, coords.lat, coords.lng) : undefined;
-
-    // ── Radius exclusion for seeds too ──
-    if (radiusKm && dist !== undefined && dist > radiusKm) continue;
-
-    const timeScore = timeRelevanceScore(sub, timeCtx);
-    // Projected display_priority: seeds rank lower than claimed storefronts
-    const seedPriority = Math.round((m.visibility_score ?? 50) * 0.5);
-
-    points.push({
-      id: m.id,
-      title: m.name,
-      subtitle: `${m.area}, ${m.city}`,
-      imageUrl: m.cover_image || m.logo_image,
-      category: cat,
-      subcategory: sub,
-      lat: coords.lat,
-      lng: coords.lng,
-      rating: m.rating ? Number(m.rating) : undefined,
-      reviewsCount: m.review_count ?? undefined,
-      isSponsored: m.is_featured || m.promo_active || seedPriority > 40,
-      distanceKm: dist,
-      timeScore,
-      district: m.area || null,
-      cityName: m.city || null,
-    });
-  }
+  // ── seed_merchants removed — storefront_pages is the SOLE public discovery source ──
 
   // ── Intelligent fallback for sparse subcategories ──
   if (subcategory && points.length < 5 && !searchQuery) {
@@ -339,15 +278,7 @@ export async function fetchCanonicalDiscovery(opts: CanonicalDiscoveryOpts): Pro
         .order("display_priority", { ascending: false, nullsFirst: false })
         .limit(50);
 
-      let fallbackSeed = (supabase as any)
-        .from("seed_merchants")
-        .select("id, name, category, subcategory, city, area, rating, review_count, cover_image, logo_image, visibility_score, is_open, is_featured, promo_active, delivery_time_min, delivery_time_max")
-        .eq("is_active", true)
-        .eq("category", parentVert.value)
-        .order("visibility_score", { ascending: false })
-        .limit(50);
-
-      const [fbSf, fbSd] = await Promise.all([fallbackQuery, fallbackSeed]);
+      const fbSf = await fallbackQuery;
 
       for (const s of fbSf.data ?? []) {
         if (seenIds.has(s.id)) continue;
@@ -372,30 +303,6 @@ export async function fetchCanonicalDiscovery(opts: CanonicalDiscoveryOpts): Pro
           distanceKm: dist,
           timeScore: timeRelevanceScore(sub, timeCtx),
           slug: s.slug || null,
-        });
-      }
-      for (const m of fbSd.data ?? []) {
-        if (seenIds.has(m.id)) continue;
-        seenIds.add(m.id);
-        const sub = normalizeSubcategory(m.subcategory);
-        const subCluster = sub ? getClusterForSubcategory(sub) : null;
-        if (subCluster !== cluster) continue;
-        const coords = areaToCoords(m.area);
-        const dist = userLocation ? haversineKm(userLocation.lat, userLocation.lng, coords.lat, coords.lng) : undefined;
-        if (radiusKm && dist !== undefined && dist > radiusKm) continue;
-
-        points.push({
-          id: m.id, title: m.name,
-          subtitle: `${m.area}, ${m.city}`,
-          imageUrl: m.cover_image || m.logo_image,
-          category: verticalToRadarCategory(normalizeVertical(m.category)),
-          subcategory: sub,
-          lat: coords.lat, lng: coords.lng,
-          rating: m.rating ? Number(m.rating) : undefined,
-          reviewsCount: m.review_count ?? undefined,
-          isSponsored: m.is_featured || m.promo_active || (m.visibility_score ?? 0) > 80,
-          distanceKm: dist,
-          timeScore: timeRelevanceScore(sub, timeCtx),
         });
       }
     }

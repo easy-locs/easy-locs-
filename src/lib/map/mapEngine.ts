@@ -1,6 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import { haversineKm } from "@/lib/geo/distance";
-import { governStorefrontQuery, governSeedQuery } from "@/lib/discovery/query-governance";
+import { governStorefrontQuery } from "@/lib/discovery/query-governance";
 
 export interface MapMerchantPin {
   id: string;
@@ -26,30 +26,21 @@ export async function getMapMerchantPins(params?: {
 }) {
   const limit = params?.limit ?? 300;
 
-  // Primary source: storefront_pages — governed
+  // Single source: storefront_pages — governed
   let sfQuery = (supabase as any)
     .from("storefront_pages")
     .select("id, name, slug, vertical, category, subcategory, latitude, longitude, rating, city, address, region, banner_url, logo_url")
+    .not("latitude", "is", null)
+    .not("longitude", "is", null)
     .limit(limit);
   sfQuery = governStorefrontQuery(sfQuery, "map");
   if (params?.category) sfQuery = sfQuery.eq("vertical", params.category);
   if (params?.city) sfQuery = sfQuery.eq("city", params.city);
 
-  // Secondary source: seed_merchants — governed (DB-native columns)
-  let seedQuery = (supabase as any)
-    .from("seed_merchants")
-    .select("id, name, category, subcategory, city, area, rating, cover_image, is_open, visibility_score, display_priority")
-    .limit(limit);
-  seedQuery = governSeedQuery(seedQuery, "map");
-  if (params?.category) seedQuery = seedQuery.eq("category", params.category);
-  if (params?.city) seedQuery = seedQuery.eq("city", params.city);
-
-  const [sfRes, seedRes] = await Promise.all([sfQuery, seedQuery]);
+  const sfRes = await sfQuery;
   const pins: MapMerchantPin[] = [];
-  const seenIds = new Set<string>();
 
   for (const row of sfRes.data ?? []) {
-    seenIds.add(row.id);
     pins.push({
       id: row.id,
       name: row.name,
@@ -63,24 +54,6 @@ export async function getMapMerchantPins(params?: {
       city: row.city ?? null,
       coverImage: row.banner_url || row.logo_url || null,
       slug: row.slug ?? null,
-    });
-  }
-
-  for (const row of seedRes.data ?? []) {
-    if (seenIds.has(row.id)) continue;
-    pins.push({
-      id: row.id,
-      name: row.name,
-      category: row.category,
-      subcategory: row.subcategory ?? null,
-      lat: null,
-      lng: null,
-      rating: row.rating ? Number(row.rating) : null,
-      isOpen: !!row.is_open,
-      area: row.area ?? null,
-      city: row.city ?? null,
-      coverImage: row.cover_image ?? null,
-      slug: null,
     });
   }
 
