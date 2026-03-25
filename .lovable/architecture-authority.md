@@ -23,9 +23,15 @@ ONE DOMAIN = ONE SOURCE OF TRUTH = ONE WRITE PATH = ONE READ PATH
 
 ## Structural Reset History
 
-### Pass 4 — Final Architecture Lockdown (2026-03-25)
+### Pass 5 — Final Cleanup (2026-03-25)
 
-**Public surfaces fully decoupled from seed layer:**
+| Module | Change |
+|--------|--------|
+| `V2AuthBridge.tsx` | **DELETED** — redundant with AppInit (never imported) |
+| `insert-ride-system-message.ts` | **DELETED** — dead, never imported |
+| `ShopOrderPage.tsx` | Removed `seed_products` fallback → now reads `menu_items` only |
+
+### Pass 4 — Final Architecture Lockdown (2026-03-25)
 
 | Module | Change |
 |--------|--------|
@@ -54,7 +60,7 @@ ALL public discovery surfaces now read exclusively from `storefront_pages`:
 | `ShopPage` (Pass 4) | seed fallback | `storefront_pages` + `catalog_items` only |
 | `CheckoutPage` (Pass 4) | seed fallback | `storefront_pages` only |
 
-### All Deleted Dead Layers (Passes 1-4)
+### All Deleted Dead Layers (Passes 1-5)
 
 | File | Reason |
 |------|--------|
@@ -63,8 +69,10 @@ ALL public discovery surfaces now read exclusively from `storefront_pages`:
 | `src/lib/orbit/orbit-id.ts` | Legacy identity conflict |
 | `src/lib/orbit/device-crypto.ts` | Orphaned |
 | `src/lib/orbit/orbit-key-trust.ts` | Orphaned |
+| `src/lib/orbit/insert-ride-system-message.ts` | Dead — never imported (Pass 5) |
 | `src/stores/appHydrationStore.ts` | Dead store |
 | `src/components/system/AppHydrationGate.tsx` | Dead component |
+| `src/components/system/V2AuthBridge.tsx` | Redundant with AppInit (Pass 5) |
 | `src/lib/platform/platform-continuous-engine.ts` | Client shadow runtime |
 | `src/lib/platform/self-healing-engine.ts` | Client shadow runtime |
 | `src/app/V1BootBridge.tsx` | Duplicate bootstrap |
