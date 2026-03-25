@@ -73,9 +73,58 @@ export default function OrdersManager({ shopId }: OrdersManagerProps) {
   }, [shopId, qc]);
 
   const updateStatus = async (orderId: string, newStatus: string) => {
+    const { data: order } = await (supabase as any).from("storefront_orders").select("*").eq("id", orderId).maybeSingle();
     await (supabase as any).from("storefront_orders").update({ status: newStatus, updated_at: new Date().toISOString() }).eq("id", orderId);
     qc.invalidateQueries({ queryKey: ["my-orders", shopId] });
     toast.success(`Order ${newStatus}`);
+
+    // On completion: write commission split + settlement + notification
+    if (newStatus === "completed" && order) {
+      const total = Number(order.total ?? order.subtotal ?? 0);
+      const currency = order.currency ?? "AED";
+      const platformRate = 0.05;
+      const platformAmount = Math.round(total * platformRate * 100) / 100;
+      const netAmount = Math.round((total - platformAmount) * 100) / 100;
+
+      // Commission split
+      await (supabase as any).from("commission_splits").insert({
+        order_id: orderId,
+        total_amount: total,
+        currency,
+        platform_amount: platformAmount,
+        platform_rate: platformRate,
+        store_amount: netAmount,
+        store_rate: 1 - platformRate,
+        driver_amount: 0,
+        driver_rate: 0,
+        store_user_id: order.seller_id ?? null,
+        status: "settled",
+        settled_at: new Date().toISOString(),
+      }).then(({ error }: any) => { if (error) console.error("[commission]", error.message); });
+
+      // Settlement ledger
+      await (supabase as any).from("settlement_ledger").insert({
+        merchant_id: order.seller_id ?? null,
+        order_id: orderId,
+        gross_amount: total,
+        platform_fee: platformAmount,
+        processing_fee: 0,
+        net_amount: netAmount,
+        currency,
+        status: "settled",
+      }).then(({ error }: any) => { if (error) console.error("[settlement]", error.message); });
+
+      // Notification to buyer
+      if (order.buyer_id) {
+        await (supabase as any).from("notifications").insert({
+          user_id: order.buyer_id,
+          title: "Order completed",
+          body: "Your order has been completed.",
+          type: "order",
+          metadata_json: { order_id: orderId, status: "completed" },
+        }).then(({ error }: any) => { if (error) console.error("[notif]", error.message); });
+      }
+    }
   };
 
   const cancelOrder = async (orderId: string) => {

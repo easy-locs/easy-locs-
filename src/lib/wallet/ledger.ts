@@ -77,7 +77,7 @@ export async function createLedgerEntry(params: {
       reference_id: params.referenceId ?? null,
       reference_type: params.referenceType ?? null,
       external_txn_id: params.externalTxnId ?? null,
-      note: params.note ?? null,
+      metadata: params.note ? { note: params.note } : {},
       status: "posted",
     } as any)
     .select("*")
