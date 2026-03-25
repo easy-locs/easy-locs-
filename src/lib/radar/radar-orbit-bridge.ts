@@ -46,8 +46,8 @@ export async function openOrbitFromRadar(
     }
 
     // Create new conversation thread
-    const { data: newThread, error } = await supabase
-      .from("conversations_v2")
+    const { data: newThread, error } = await (supabase
+      .from("conversations_v2" as any)
       .insert({
         participant_ids: [userId],
         context_type: "entity",
@@ -62,9 +62,9 @@ export async function openOrbitFromRadar(
           entity_rating: entity.rating,
           source: "radar",
         },
-      } as any)
+      })
       .select("id")
-      .single();
+      .single()) as any;
 
     if (error || !newThread) {
       console.error("[radar-orbit] Failed to create thread:", error);
