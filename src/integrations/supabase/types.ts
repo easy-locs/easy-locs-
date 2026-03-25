@@ -17567,6 +17567,7 @@ export type Database = {
       seed_merchants: {
         Row: {
           active_modules: number | null
+          address: string | null
           analytics_status: string | null
           area: string
           auto_published_at: string | null
@@ -17593,11 +17594,14 @@ export type Database = {
           delivery_time_min: number
           delivery_zones: Json | null
           description: string | null
+          digital_status: string | null
           display_priority: number | null
           duplicate_confidence: number | null
           duplicate_of: string | null
           field_sources_json: Json | null
           freshness_score: number | null
+          gallery_images: Json | null
+          gate_failures: Json | null
           grocery_catalog_at: string | null
           grocery_catalog_json: Json | null
           halal: boolean | null
@@ -17662,6 +17666,7 @@ export type Database = {
           source_key: string | null
           source_snapshot_at: string | null
           source_snapshot_json: Json | null
+          source_type: string | null
           source_updated_at: string | null
           source_url: string | null
           storefront_status: string | null
@@ -17684,6 +17689,7 @@ export type Database = {
         }
         Insert: {
           active_modules?: number | null
+          address?: string | null
           analytics_status?: string | null
           area: string
           auto_published_at?: string | null
@@ -17710,11 +17716,14 @@ export type Database = {
           delivery_time_min?: number
           delivery_zones?: Json | null
           description?: string | null
+          digital_status?: string | null
           display_priority?: number | null
           duplicate_confidence?: number | null
           duplicate_of?: string | null
           field_sources_json?: Json | null
           freshness_score?: number | null
+          gallery_images?: Json | null
+          gate_failures?: Json | null
           grocery_catalog_at?: string | null
           grocery_catalog_json?: Json | null
           halal?: boolean | null
@@ -17779,6 +17788,7 @@ export type Database = {
           source_key?: string | null
           source_snapshot_at?: string | null
           source_snapshot_json?: Json | null
+          source_type?: string | null
           source_updated_at?: string | null
           source_url?: string | null
           storefront_status?: string | null
@@ -17801,6 +17811,7 @@ export type Database = {
         }
         Update: {
           active_modules?: number | null
+          address?: string | null
           analytics_status?: string | null
           area?: string
           auto_published_at?: string | null
@@ -17827,11 +17838,14 @@ export type Database = {
           delivery_time_min?: number
           delivery_zones?: Json | null
           description?: string | null
+          digital_status?: string | null
           display_priority?: number | null
           duplicate_confidence?: number | null
           duplicate_of?: string | null
           field_sources_json?: Json | null
           freshness_score?: number | null
+          gallery_images?: Json | null
+          gate_failures?: Json | null
           grocery_catalog_at?: string | null
           grocery_catalog_json?: Json | null
           halal?: boolean | null
@@ -17896,6 +17910,7 @@ export type Database = {
           source_key?: string | null
           source_snapshot_at?: string | null
           source_snapshot_json?: Json | null
+          source_type?: string | null
           source_updated_at?: string | null
           source_url?: string | null
           storefront_status?: string | null
