@@ -17666,6 +17666,7 @@ export type Database = {
           source_key: string | null
           source_snapshot_at: string | null
           source_snapshot_json: Json | null
+          source_type: string | null
           source_updated_at: string | null
           source_url: string | null
           storefront_status: string | null
@@ -17787,6 +17788,7 @@ export type Database = {
           source_key?: string | null
           source_snapshot_at?: string | null
           source_snapshot_json?: Json | null
+          source_type?: string | null
           source_updated_at?: string | null
           source_url?: string | null
           storefront_status?: string | null
@@ -17908,6 +17910,7 @@ export type Database = {
           source_key?: string | null
           source_snapshot_at?: string | null
           source_snapshot_json?: Json | null
+          source_type?: string | null
           source_updated_at?: string | null
           source_url?: string | null
           storefront_status?: string | null
