@@ -63,6 +63,8 @@ export default function AdminEnginesDashboardPage() {
   const [statusFilter, setStatusFilter] = useState<RuntimeStatus | null>(null);
   const [dbStats, setDbStats] = useState<DbStats | null>(null);
   const [showCollisions, setShowCollisions] = useState(false);
+  const [showDecisions, setShowDecisions] = useState(false);
+  const [decisions, setDecisions] = useState<any[]>([]);
 
   useEffect(() => {
     const timer = setInterval(() => setTick(t => t + 1), 8000);
