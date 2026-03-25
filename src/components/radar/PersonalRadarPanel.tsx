@@ -4,7 +4,7 @@
  */
 import { useState, useMemo, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/contexts/AuthContext";
 import { buildUserContext } from "@/lib/engines/personal-radar/context-awareness-engine";
 import { computeNextActions, type NextAction } from "@/lib/engines/personal-radar/next-best-action-engine";
 import { personalizeEntities, type PersonalizedEntity } from "@/lib/engines/personal-radar/hyper-personalization-engine";
