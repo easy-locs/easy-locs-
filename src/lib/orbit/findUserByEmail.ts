@@ -48,12 +48,14 @@ export async function findUserByEmail(email: string) {
     // Fallback to generated orbit_id
   }
 
+  const displayName = data.name || [data.first_name, data.last_name].filter(Boolean).join(" ") || data.username || null;
+
   return {
     id: data.id,
     orbit_id: orbitId,
     email: data.email,
-    display_name: data.full_name || data.username || null,
-    avatar_url: data.avatar_url || null,
+    display_name: displayName,
+    avatar_url: null,
   };
 }
 
