@@ -101,7 +101,7 @@ export default function ShopPage() {
 
   // ── Catalog ──
   const { data: catalogItems = [] } = useQuery({
-    queryKey: ["storefront-catalog", shop?.id, shop?._isSeed],
+    queryKey: ["storefront-catalog", shop?.id],
     queryFn: async () => {
       if (!shop) return [];
       // Single source: catalog_items only (no seed_products fallback)
