@@ -114,6 +114,7 @@ export default function AdminSuperDashboardPage() {
             { label: "Delivery Ops", path: "/admin/delivery-ops" },
             { label: "Payments Ops", path: "/admin/payments-ops" },
             { label: "Orchestration Logs", path: "/admin/orchestration" },
+            { label: "Master Pipeline", path: "/admin/pipeline" },
             { label: "Merchant Auto-Onboarding", path: "/admin/merchant-autofill" },
             { label: "Bulk Merchant Import", path: "/admin/bulk-merchant-import" },
             { label: "Seed Tools", path: "/admin/seed-tools" },
