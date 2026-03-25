@@ -240,7 +240,7 @@ Deno.serve(async (req) => {
         }
       }
 
-      return { storefrontsSynced, menusSynced };
+      return { storefrontsSynced, storefrontsCreated, menusSynced };
     }
 
     async function runEngine(name: string, fn: () => Promise<any>, tier = "standard") {
