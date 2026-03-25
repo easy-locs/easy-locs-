@@ -7,38 +7,116 @@ ONE DOMAIN = ONE SOURCE OF TRUTH = ONE WRITE PATH = ONE READ PATH
 
 | Domain | Source of Truth | Write Path | Read Path | FORBIDDEN |
 |--------|---------------|------------|-----------|-----------|
-| **Identity** | `AuthContext` → `v2AuthStore` (synced) | `supabase.auth` → `AuthContext.onAuthStateChange` → `v2AuthStore.syncFromV1` | `useAuth()` for components, `v2AuthStore` for stores | `orbit_identity_profiles`, `orbit_device_keys`, duplicate session stores |
+| **Identity** | `AuthContext` → `v2AuthStore` (synced) | `supabase.auth` → `AuthContext.onAuthStateChange` → `v2AuthStore.syncFromV1` | `useAuth()` for components, `v2AuthStore` for stores | `orbit_identity_profiles`, `orbit_device_keys`, duplicate session stores, extra `onAuthStateChange` listeners |
 | **Orbit Profile** | `orbit_profiles_v2` table | `ensureOrbitProfile()` → `orbitStore.loadProfile()` | `useOrbitStore()` | `orbit_identity_profiles`, any legacy profile table |
-| **Communication** | `conversations_v2` + `chat_messages_v2` | `conversationService.ts` / `messageService.ts` → DB | `chatRepoExtended` / `conversationService` → components | Legacy `messages` table for Orbit flows, `chatStore` local-only state |
+| **Communication (V2 Orbit)** | `conversations_v2` + `chat_messages_v2` | `conversationService.ts` / `messageService.ts` → `chatRepo` → DB | `chatRepoExtended` / `conversationService` → components via `useChatStore()` | Legacy `messages` table for NEW Orbit flows, `chatStore` local-only state |
+| **Communication (Legacy)** | `messages` table | Direct supabase inserts in pages (ClientMessages, TenantMessages, RentalManagement) | Direct supabase reads in same pages | ⚠️ TO BE MIGRATED to conversations_v2 |
 | **Wallet/QR** | `wallet_balances_v2` + `wallet_accounts` + `qr_payment_sessions` | `wallet-hooks.ts` → `wallet_transfer` RPC | `useWalletBalance()` from `payments/wallet-hooks.ts` | Multiple QR generators, legacy wallet sync |
-| **Discovery** | `storefront_pages` + `menu_items` | Pipeline → `storefront_pages` publication | Public UI → `storefront_pages` only | Direct `seed_merchants` reads on public surfaces |
+| **QR Personal** | `qr-engine` (canonical format) | `encodeQr()` + `qr.payUser()` | `QRCodeSVG` / `BrandedQR` rendering | Duplicate QR format libraries |
+| **QR Merchant** | `merchant-qr-engine` | `createStaticMerchantQr()` / `createDynamicMerchantQr()` | `decodeMerchantQr()` → `executeMerchantPayment()` | Mixing personal and merchant QR flows |
+| **Discovery (PUBLIC)** | `storefront_pages` + `menu_items` | Pipeline → `storefront_pages` publication | `fetchCanonicalDiscovery()` / `governStorefrontQuery()` | ❌ Direct `seed_merchants` reads on ANY public surface |
+| **Discovery (INTERNAL)** | `seed_merchants` | Pipeline engines, admin pages, merchant settings | Admin dashboards, merchant management pages | Public UI reading seed_merchants |
 | **Admin/Engines** | `engine_supervisor` + `engine_run_logs` + `module_health` | Edge Functions → `engine_supervisor` | `useBackendEngineStatus()` | Client-side fake engine runtime, local telemetry |
 | **Pipeline** | `entity_pipeline_queue` | Pipeline worker → queue → publication | Admin → queue status | Duplicate pending jobs, ghost re-queuing |
 | **Boot** | `useMasterAppBootstrap` + `AppInit` | Single boot chain in `App.tsx` | N/A | Duplicate bootstrap, destructive cache purge on boot |
 | **Guest** | `lib/guest-session.ts` (unified) | `getGuestId()` / `createGuestSession()` | Same module | `lib/auth/guest-session.ts` (DELETED) |
 
-## Deleted Dead Layers (This Pass)
+## Structural Reset — Pass 3 (This Pass)
 
-| File | Reason |
-|------|--------|
-| `src/lib/auth/guest-session.ts` | Duplicate guest ID system — merged into `lib/guest-session.ts` |
-| `src/lib/orbit/orbit-id.ts` | Legacy `orbit_identity_profiles` — conflicts with `orbit_profiles_v2` |
-| `src/lib/orbit/device-crypto.ts` | Only used by deleted orbit-id system |
-| `src/lib/orbit/orbit-key-trust.ts` | Orphaned — no imports |
-| `src/stores/appHydrationStore.ts` | Dead hydration store — never mounted in App.tsx |
-| `src/components/system/AppHydrationGate.tsx` | Dead component — never imported |
+### Public Surface Hardening
 
-## Hardened Read Paths (This Pass)
+ALL public discovery surfaces now read exclusively from `storefront_pages`:
 
-| Surface | Before | After |
-|---------|--------|-------|
+| Module | Before | After |
+|--------|--------|-------|
+| `OrbitHome` (featured/nearby) | `seed_merchants` | `storefront_pages` |
+| `canonical-discovery-pipeline` | `storefront_pages` + `seed_merchants` merge | `storefront_pages` ONLY |
+| `homeEngine.ts` | `seed_merchants` | `storefront_pages` |
+| `homeLiveDataConnector.ts` | `seed_merchants` | `storefront_pages` |
+| `mapEngine.ts` | `storefront_pages` + `seed_merchants` merge | `storefront_pages` ONLY |
+| `searchEngine.ts` | `storefront_pages` + `seed_merchants` merge + `seed_products` | `storefront_pages` + `menu_items` |
+| `search-resolver.ts` | `storefront_pages` + `seed_merchants` merge | `storefront_pages` ONLY |
+| `smartRecommendations.ts` | `seed_merchants` | `storefront_pages` |
 | `RestaurantPage` | `storefront_pages` → fallback `seed_merchants` | `storefront_pages` only |
 | `RestaurantPage` menu | `seed_products` | `menu_items` |
 | `FavoritesPage` | `storefront_pages` + `seed_merchants` fallback | `storefront_pages` only |
 | `HomeAutofillStatusCard` | `seed_merchants` | `storefront_pages` |
 
-## Version/Cache Safety
+### Deleted Dead Layers (All Passes)
+
+| File | Reason |
+|------|--------|
+| `src/lib/auth/guest-session.ts` | Duplicate guest ID — merged into `lib/guest-session.ts` |
+| `src/lib/orbit/orbit-id.ts` | Legacy `orbit_identity_profiles` conflict |
+| `src/lib/orbit/device-crypto.ts` | Only used by deleted orbit-id |
+| `src/lib/orbit/orbit-key-trust.ts` | Orphaned |
+| `src/stores/appHydrationStore.ts` | Dead hydration store |
+| `src/components/system/AppHydrationGate.tsx` | Dead component |
+| `src/lib/engine/*` | Entire legacy client-side engine runtime |
+| `src/lib/platform/platform-continuous-engine.ts` | 844-line client loop conflict |
+| `src/lib/platform/self-healing-engine.ts` | Client shadow runtime |
+| `src/app/V1BootBridge.tsx` | Duplicate bootstrap |
+| `src/hooks/useV1HealthBoot.ts` | Legacy health boot |
+| `src/core/*` | Duplicate bootstrap reactions |
+| `src/app/providers/AppBootstrap.tsx` | Duplicate provider |
+| `src/components/shell/V2AppShell.tsx` | Dead shell |
+| `src/components/layout/UnifiedAppShell.tsx` | Dead shell |
+| `src/stores/uiShellStore.ts` | Dead store |
+| `src/lib/guards/*` | Dead guard system |
+| `src/lib/engines/visual-consistency-engine.ts` | Client audit conflict |
+| `src/lib/engines/ui-ux-consistency-engine.ts` | Client audit conflict |
+| `src/app/events/booking-events.ts` | Duplicate event installer |
+
+### Known Remaining Dual Tables (TRACKED)
+
+| Domain | Current State | Migration Plan |
+|--------|--------------|----------------|
+| **Legacy Messages** (`messages` table) | Used by ClientMessages, TenantMessages, RentalManagement, communication-pipeline, InMissionChat, ExploreContactDrawer, VoiceRecorder | Must migrate to `conversations_v2` + `chat_messages_v2` |
+| **Orbit Engine unread** (`orbit-engine.ts`) | Counts unread from `messages` table | Must switch to `chat_messages_v2` when migration complete |
+
+### FORBIDDEN PATTERNS
+
+1. ❌ Public page reading `seed_merchants` directly
+2. ❌ Duplicate `onAuthStateChange` listener (Login.tsx has one but it's page-scoped redirect only)
+3. ❌ Client-side fake engine runtime
+4. ❌ Duplicate bootstrap chain
+5. ❌ Multiple QR generators for same flow
+6. ❌ Direct `seed_products` in public menu (use `menu_items`)
+7. ❌ Destructive cache purge on boot
+8. ❌ Shadow communication engines
+
+### Version/Cache Safety
 
 - `enforceVersionConsistencyOnBoot` — REMOVED (dangerous auto-reload)
 - `startVersionPolling` — KEPT (non-destructive update notification)
 - `ChunkRecoveryBoundary` — KEPT (handles lazy load failures safely)
+
+## Write/Read Path Contracts
+
+### Orbit Communication
+```
+WRITE: UI → conversationService.ts → chatRepo.createConversation/createMessage → conversations_v2/chat_messages_v2
+READ:  UI → chatRepoExtended.listConversationsByOrbitId → useChatStore → render
+REALTIME: supabase.channel → postgres_changes on conversations_v2/chat_messages_v2
+```
+
+### QR / Wallet
+```
+WRITE: scan → decodeMerchantQr/decodeQr → resolvePayTarget → wallet_transfer RPC → wallet_accounts/wallet_ledger_entries
+READ:  useWalletBalance → wallet_accounts → UI
+SESSION: qr_payment_sessions table (single source)
+```
+
+### Discovery / Public
+```
+WRITE: pipeline engines → seed_merchants (enrich) → publish_gate → storefront_pages/menu_items
+READ:  fetchCanonicalDiscovery → storefront_pages ONLY → RadarPoint[] → UI
+GOVERNANCE: governStorefrontQuery() applies visibility_mode + route_status filters
+```
+
+### Admin / Engines
+```
+WRITE: Edge Functions (pg_cron) → engine_supervisor + engine_run_logs
+READ:  useBackendEngineStatus() → engine_supervisor → admin dashboards
+MONITORING: module_health table for cross-engine status
+```
