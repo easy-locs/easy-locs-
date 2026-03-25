@@ -17413,6 +17413,7 @@ export type Database = {
           cover_image: string | null
           created_at: string
           cuisine_tags: string[] | null
+          data_completeness_score: number | null
           dedup_status: string | null
           delivery_available: boolean | null
           delivery_radius_km: number | null
@@ -17448,11 +17449,13 @@ export type Database = {
           menu_items_json: Json | null
           menu_normalized_at: string | null
           menu_quality_flag: string | null
+          menu_quality_score: number | null
           menu_sections_json: Json | null
           minimum_order_amount: number | null
           name: string
           needs_rescrape: boolean | null
           opening_hours: Json | null
+          overall_quality_score: number | null
           owner_claimed: boolean | null
           owner_controlled: boolean | null
           phone: string | null
@@ -17485,6 +17488,7 @@ export type Database = {
           subcategory: string
           support_email: string | null
           support_phone: string | null
+          taxonomy_score: number | null
           tier: string
           unpublish_reason: string | null
           unpublished_at: string | null
@@ -17512,6 +17516,7 @@ export type Database = {
           cover_image?: string | null
           created_at?: string
           cuisine_tags?: string[] | null
+          data_completeness_score?: number | null
           dedup_status?: string | null
           delivery_available?: boolean | null
           delivery_radius_km?: number | null
@@ -17547,11 +17552,13 @@ export type Database = {
           menu_items_json?: Json | null
           menu_normalized_at?: string | null
           menu_quality_flag?: string | null
+          menu_quality_score?: number | null
           menu_sections_json?: Json | null
           minimum_order_amount?: number | null
           name: string
           needs_rescrape?: boolean | null
           opening_hours?: Json | null
+          overall_quality_score?: number | null
           owner_claimed?: boolean | null
           owner_controlled?: boolean | null
           phone?: string | null
@@ -17584,6 +17591,7 @@ export type Database = {
           subcategory: string
           support_email?: string | null
           support_phone?: string | null
+          taxonomy_score?: number | null
           tier?: string
           unpublish_reason?: string | null
           unpublished_at?: string | null
@@ -17611,6 +17619,7 @@ export type Database = {
           cover_image?: string | null
           created_at?: string
           cuisine_tags?: string[] | null
+          data_completeness_score?: number | null
           dedup_status?: string | null
           delivery_available?: boolean | null
           delivery_radius_km?: number | null
@@ -17646,11 +17655,13 @@ export type Database = {
           menu_items_json?: Json | null
           menu_normalized_at?: string | null
           menu_quality_flag?: string | null
+          menu_quality_score?: number | null
           menu_sections_json?: Json | null
           minimum_order_amount?: number | null
           name?: string
           needs_rescrape?: boolean | null
           opening_hours?: Json | null
+          overall_quality_score?: number | null
           owner_claimed?: boolean | null
           owner_controlled?: boolean | null
           phone?: string | null
@@ -17683,6 +17694,7 @@ export type Database = {
           subcategory?: string
           support_email?: string | null
           support_phone?: string | null
+          taxonomy_score?: number | null
           tier?: string
           unpublish_reason?: string | null
           unpublished_at?: string | null
