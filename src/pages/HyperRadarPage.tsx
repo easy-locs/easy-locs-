@@ -227,6 +227,9 @@ export default function HyperRadarPage() {
                 </div>
               )}
 
+              {/* AI Personal Radar */}
+              <PersonalRadarPanel entities={entities} open={panelOpen} />
+
               {/* Transition Suggestions */}
               {transitions.length > 0 && context !== "unknown" && (
                 <div>
