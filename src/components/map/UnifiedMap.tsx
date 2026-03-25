@@ -110,6 +110,7 @@ export default memo(function UnifiedMap({
   className = "",
   selectedId,
   onSelectEntity,
+  onZoneClick,
   showUserLocation = true,
   userLat,
   userLng,
