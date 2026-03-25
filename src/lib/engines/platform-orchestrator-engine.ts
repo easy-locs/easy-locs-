@@ -2,11 +2,12 @@
  * Platform Orchestrator Engine — Autonomous governance brain.
  * Reads all audits, applies policy rules, auto-fixes safe issues,
  * escalates risky ones, and logs every decision.
+ * NOW WIRED TO BACKEND (engine_supervisor) — no more dead client layer.
  */
 
 import { supabase } from "@/integrations/supabase/client";
 import { ENGINE_METADATA, detectEngineCollisions, type RuntimeStatus } from "./engine-metadata-registry";
-import { getContinuousEngineStatus } from "@/lib/platform/platform-continuous-engine";
+import { fetchBackendEngineStatus } from "./backend-engine-status";
 
 const db = supabase as any;
 
@@ -71,7 +72,6 @@ export interface ClassifiedCollision {
   reason: string;
 }
 
-// Fields where multiple engines writing is expected/orchestrated
 const ORCHESTRATED_FIELDS = new Set([
   "seed_merchants.pipeline_stage",
   "seed_merchants.gate_status",
@@ -112,28 +112,23 @@ export interface PlatformHealthScores {
   global: number;
 }
 
-export function computeHealthScores(): PlatformHealthScores {
-  const status = getContinuousEngineStatus();
+export async function computeHealthScores(): Promise<PlatformHealthScores> {
+  const status = await fetchBackendEngineStatus();
   const collisions = classifyCollisions();
 
-  // Performance: based on error rate
   const totalJobs = status.jobs.length || 1;
   const errors = status.jobs.filter(j => j.lastStatus === "error").length;
   const performance = Math.max(0, 100 - Math.round((errors / totalJobs) * 100 * 3));
 
-  // Coherence: based on collision severity
   const criticalCollisions = collisions.filter(c => c.level === "critical_collision").length;
   const warningCollisions = collisions.filter(c => c.level === "warning_collision").length;
   const coherence = Math.max(0, 100 - criticalCollisions * 20 - warningCollisions * 5);
 
-  // Cleanup: based on pending/idle ratio
   const idle = status.jobs.filter(j => j.lastStatus === "idle" || j.lastStatus === "pending").length;
   const cleanup = Math.max(0, 100 - Math.round((idle / totalJobs) * 50));
 
-  // i18n + routing: start at 85 baseline (real audit will adjust)
   const i18n = 85;
   const routing = 90;
-
   const global = Math.round((performance + coherence + i18n + cleanup + routing) / 5);
 
   return { performance, coherence, i18n, cleanup, routing, global };
@@ -159,9 +154,9 @@ export async function runPlatformOrchestrator(): Promise<{
   collisions: ClassifiedCollision[];
   warnings: string[];
 }> {
-  const status = getContinuousEngineStatus();
+  const status = await fetchBackendEngineStatus();
   const collisions = classifyCollisions();
-  const scores = computeHealthScores();
+  const scores = await computeHealthScores();
   const decisions: OrchestratorDecision[] = [];
   const warnings: string[] = [];
 
@@ -260,7 +255,6 @@ export async function runPlatformOrchestrator(): Promise<{
 
   // 6. Chief Mechanic: trigger mechanics engines based on sensor data
   try {
-    // If backend-connectivity found dead entities → trigger auto-repair
     const connectivityJob = status.jobs.find(j => j.name === "backend-connectivity");
     if (connectivityJob && connectivityJob.itemsProcessed > 0 && connectivityJob.businessImpact?.includes("dead")) {
       decisions.push({
@@ -276,7 +270,6 @@ export async function runPlatformOrchestrator(): Promise<{
       });
     }
 
-    // If entity-integrity found failures → trigger state healing
     const integrityJob = status.jobs.find(j => j.name === "entity-integrity");
     if (integrityJob && integrityJob.businessImpact?.includes("failure")) {
       decisions.push({
@@ -292,7 +285,6 @@ export async function runPlatformOrchestrator(): Promise<{
       });
     }
 
-    // If module-link-repair found broken links → escalate
     const moduleLinkJob = status.jobs.find(j => j.name === "module-link-repair");
     if (moduleLinkJob && moduleLinkJob.businessImpact?.includes("broken")) {
       decisions.push({
@@ -324,7 +316,7 @@ export async function runPlatformOrchestrator(): Promise<{
     });
   }
 
-  // 5. Persist decisions to DB
+  // Persist decisions to DB
   if (decisions.length > 0) {
     const rows = decisions.map(d => ({
       engine_source: d.engineSource,
@@ -340,7 +332,7 @@ export async function runPlatformOrchestrator(): Promise<{
     await db.from("platform_actions_log").insert(rows).catch(() => {});
   }
 
-  // 6. Persist health scores
+  // Persist health scores
   await db.from("platform_health_scores").insert({
     performance_score: scores.performance,
     coherence_score: scores.coherence,

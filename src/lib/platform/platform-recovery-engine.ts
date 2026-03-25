@@ -1,11 +1,10 @@
 /**
  * PLATFORM AUTO RECOVERY ENGINE
  * Central trigger that checks, reconnects, audits, auto-fixes, and heals the platform.
+ * NO dependency on dead V1 client engine layer.
  */
 
 import { supabase } from "@/integrations/supabase/client";
-import { setEngineHealth } from "@/lib/engine/centralEngineRuntime";
-import { getEngineRegistry } from "@/lib/engine/centralEngineRuntime";
 import { runAutoFix, type AutoFixResult } from "./platform-auto-fix";
 import { runAllHealthChecks, type HealthCheckResult } from "./platform-health-checks";
 
@@ -86,7 +85,6 @@ async function checkTable(name: string, table: string): Promise<ModuleCheckResul
 async function checkRpc(name: string, rpcName: string): Promise<ModuleCheckResult> {
   const t = Date.now();
   try {
-    // Use dummy UUID so the RPC signature matches (target_user_id is required)
     const dummyParams: Record<string, any> = {};
     if (rpcName === "ensure_wallet_account") {
       dummyParams.target_user_id = "00000000-0000-0000-0000-000000000000";
@@ -97,16 +95,6 @@ async function checkRpc(name: string, rpcName: string): Promise<ModuleCheckResul
     return { module: name, group: "backend", status: reachable ? "ok" : "error", detail: reachable ? "rpc reachable" : error?.message ?? "not found", durationMs: Date.now() - t };
   } catch (e: any) {
     return { module: name, group: "backend", status: "error", detail: e?.message ?? "unknown", durationMs: Date.now() - t };
-  }
-}
-
-function checkCanonicalModule(name: string, testFn: () => boolean): ModuleCheckResult {
-  const t = Date.now();
-  try {
-    const ok = testFn();
-    return { module: name, group: "core", status: ok ? "ok" : "error", detail: ok ? "loaded" : "missing", durationMs: Date.now() - t };
-  } catch (e: any) {
-    return { module: name, group: "core", status: "error", detail: e?.message ?? "crash", durationMs: Date.now() - t };
   }
 }
 
@@ -150,20 +138,6 @@ export async function runPlatformRecovery(
     checkTable("db.support_tickets", "support_tickets"),
   ]);
   results.push(...tableChecks);
-
-  const engineTableMap: Record<string, string> = {
-    "db.orders": "orders",
-    "db.wallet_accounts": "wallet",
-    "db.driver_profiles": "dispatch",
-    "db.notifications": "notifications",
-    "db.support_tickets": "support",
-  };
-  for (const check of tableChecks) {
-    const engineKey = engineTableMap[check.module];
-    if (engineKey) {
-      setEngineHealth(engineKey as any, check.status === "ok", check.detail);
-    }
-  }
 
   // ── B. RPC checks ──
   const rpcChecks = await Promise.all([
