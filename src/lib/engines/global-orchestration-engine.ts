@@ -6,6 +6,7 @@
 
 import { ENGINE_METADATA, detectEngineCollisions, type CollisionReport, type RuntimeStatus } from "./engine-metadata-registry";
 import { getContinuousEngineStatus } from "@/lib/platform/platform-continuous-engine";
+import { WARNING_RULES } from "./platform-orchestrator-engine";
 
 export interface OrchestrationStatus {
   totalEngines: number;
@@ -24,17 +25,26 @@ export interface OrchestrationStatus {
   timestamp: string;
 }
 
-/** Derive runtime status from raw engine output */
+/** Derive runtime status from raw engine output with precise warning rules */
 export function deriveRuntimeStatus(
-  rawStatus: "ok" | "error" | "pending",
-  itemsProcessed: number,
+  rawStatus: "ok" | "error" | "pending" | "idle" | "warning",
+  job: { name: string; itemsProcessed: number; runCount: number; lastRun?: string | null; lastDetail?: string },
   canRunIdle: boolean
 ): RuntimeStatus {
   if (rawStatus === "error") return "error";
   if (rawStatus === "pending") return "pending";
+  if (rawStatus === "warning") return "warning";
+
+  const meta = ENGINE_METADATA[job.name];
+
+  // Apply warning rules
+  for (const rule of WARNING_RULES) {
+    if (rule.check(job, meta)) return "warning";
+  }
+
   // ok but processed 0 items and can't run idle → idle
-  if (rawStatus === "ok" && itemsProcessed === 0 && !canRunIdle) return "idle";
-  // ok but processed 0 and can run idle → ok (expected)
+  if (rawStatus === "ok" && job.itemsProcessed === 0 && !canRunIdle) return "idle";
+
   return "ok";
 }
 
@@ -57,8 +67,8 @@ export function getOrchestrationStatus(): OrchestrationStatus {
   for (const job of status.jobs) {
     const meta = ENGINE_METADATA[job.name];
     const derived = deriveRuntimeStatus(
-      job.lastStatus as "ok" | "error" | "pending",
-      job.itemsProcessed,
+      job.lastStatus as any,
+      { name: job.name, itemsProcessed: job.itemsProcessed, runCount: job.runCount, lastRun: job.lastRun, lastDetail: job.lastDetail },
       meta?.canRunIdle ?? true
     );
     if (derived === "ok") runtimeSummary.active++;
@@ -68,7 +78,6 @@ export function getOrchestrationStatus(): OrchestrationStatus {
     else runtimeSummary.pending++;
   }
 
-  // Health score: critical errors heavily penalize
   const criticalErrors = status.jobs.filter(j => {
     const meta = ENGINE_METADATA[j.name];
     return meta?.tier === "critical" && j.lastStatus === "error";
@@ -93,13 +102,10 @@ export function runGlobalOrchestration(): OrchestrationStatus {
   const status = getOrchestrationStatus();
 
   console.log(`[global-orchestration] ${status.totalEngines} engines | Health: ${status.healthScore}/100`);
-  console.log(`[global-orchestration] Active:${status.runtimeSummary.active} Idle:${status.runtimeSummary.idle} Error:${status.runtimeSummary.error}`);
+  console.log(`[global-orchestration] Active:${status.runtimeSummary.active} Idle:${status.runtimeSummary.idle} Warning:${status.runtimeSummary.warning} Error:${status.runtimeSummary.error}`);
 
   if (status.collisions.length > 0) {
-    console.warn(`[global-orchestration] ⚠️ ${status.collisions.length} field collisions detected:`);
-    for (const c of status.collisions) {
-      console.warn(`  ${c.table}.${c.field} ← [${c.engines.join(", ")}]`);
-    }
+    console.warn(`[global-orchestration] ⚠️ ${status.collisions.length} field collisions detected`);
   }
 
   return status;

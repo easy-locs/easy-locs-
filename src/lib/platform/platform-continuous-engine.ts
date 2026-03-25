@@ -623,6 +623,19 @@ export function startContinuousEngine() {
     console.log(`[continuous] Orchestration: health=${result.healthScore} collisions=${result.collisions.length}`);
   }, "system");
 
+  // Engine #82 — Platform Orchestrator (autonomous governance brain)
+  registerJob("platform-orchestrator", 10 * 60_000, async () => {
+    const { runPlatformOrchestrator } = await import("@/lib/engines/platform-orchestrator-engine");
+    const result = await runPlatformOrchestrator();
+    const job = jobs.find(j => j.name === "platform-orchestrator");
+    if (job) {
+      job.itemsProcessed = result.decisions.length;
+      job.rowsAffected = result.decisions.filter(d => d.autoApplied).length;
+      job.businessImpact = `Health:${result.scores.global}/100`;
+      job.summary = `${result.decisions.length} decisions, ${result.warnings.length} warnings, ${result.collisions.length} collisions`;
+    }
+  }, "system");
+
   // ═══════════════════════════════════════════════════════════
   // START ALL — Staggered boot
   // ═══════════════════════════════════════════════════════════
