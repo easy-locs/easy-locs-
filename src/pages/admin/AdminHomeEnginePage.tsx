@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { getHomeEngineSnapshot, refreshMerchantVisibilityScores } from "@/lib/home/homeEngine";
+import { getHomeEngineSnapshot } from "@/lib/home/homeEngine";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 export default function AdminHomeEnginePage() {
