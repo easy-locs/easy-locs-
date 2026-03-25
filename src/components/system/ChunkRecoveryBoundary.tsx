@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 
+import { forceCleanRefresh } from "@/lib/version-check";
+
 const RELOAD_KEY = "el_chunk_reload_once_v1";
 
 function isChunkError(err: unknown) {
@@ -63,16 +65,8 @@ export default function ChunkRecoveryBoundary({
   const handleHardReset = async () => {
     try {
       sessionStorage.removeItem(RELOAD_KEY);
-      if ("serviceWorker" in navigator) {
-        const regs = await navigator.serviceWorker.getRegistrations();
-        await Promise.all(regs.map((r) => r.unregister()));
-      }
-      if ("caches" in window) {
-        const keys = await caches.keys();
-        await Promise.all(keys.map((k) => caches.delete(k)));
-      }
       localStorage.removeItem("el_runtime_debug_events_v1");
-      window.location.href = window.location.origin;
+      await forceCleanRefresh();
     } catch {
       window.location.reload();
     }

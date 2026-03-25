@@ -4,11 +4,7 @@ import { HashRouter } from "react-router-dom";
 import App from "./App";
 import "./index.css";
 import "./styles/performance.css";
-import {
-  APP_VERSION,
-  enforceVersionConsistencyOnBoot,
-  purgeLegacyServiceWorkersAndCaches,
-} from "@/lib/version-check";
+import { APP_VERSION } from "@/lib/version-check";
 import { initMonitoring } from "@/lib/monitoring";
 
 const rootElement = document.getElementById("root");
@@ -28,22 +24,6 @@ if (typeof window !== "undefined") {
   const buildWindow = window as Window & { __EASYLOCS_BUILD_ID__?: string };
   buildWindow.__EASYLOCS_BUILD_ID__ = APP_VERSION;
   console.info("[Build] Easy-Locs version", APP_VERSION);
-
-  void purgeLegacyServiceWorkersAndCaches()
-    .then((hadLegacyRegistrations) => {
-      console.info("[Build] service worker active", hadLegacyRegistrations);
-      if (hadLegacyRegistrations) {
-        console.warn("[Build] unregistered legacy service workers", hadLegacyRegistrations);
-      }
-    })
-    .catch((error) => {
-      console.warn("[Build] failed to purge legacy caches", error);
-    });
-
-  // DISABLED — was causing infinite reload loop in preview/deploy environments
-  // void enforceVersionConsistencyOnBoot().then((reloadedForFreshBuild) => {
-  //   console.info("[Build] stale HTML detected", reloadedForFreshBuild);
-  // });
 
   initMonitoring();
 }
