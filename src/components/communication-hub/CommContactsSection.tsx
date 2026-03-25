@@ -365,7 +365,7 @@ export default function CommContactsSection() {
         targetName: contact.name,
       });
       if (thread) {
-        navigate(`/dashboard/communication?thread=${thread.contextId}`);
+        navigate(`/orbit?thread=${thread.contextId}`);
       } else {
         toast.error("Impossible d'ouvrir la conversation");
       }
