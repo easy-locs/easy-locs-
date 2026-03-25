@@ -1,11 +1,12 @@
 /**
  * HyperRadarPage — Full-screen immersive radar with heatmap, layers, smart guidance, vibe density.
  */
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { useRadarResults } from "@/hooks/useRadarResults";
 import PersonalRadarPanel from "@/components/radar/PersonalRadarPanel";
+import ZoneIntelligenceSheet from "@/components/radar/ZoneIntelligenceSheet";
 import { useLocationStore } from "@/stores/locationStore";
 import {
   detectTimeSlot, getRelevantLayers, generateGuidance, classifyVibe,
