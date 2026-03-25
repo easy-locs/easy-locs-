@@ -42,21 +42,7 @@ export default function FavoritesPage() {
       sfQ = governStorefrontQuery(sfQ, "favorites");
       const { data: sfData } = await sfQ;
 
-      const foundIds = new Set((sfData ?? []).map((r: any) => r.id));
-      const missingIds = merchantIds.filter((id: string) => !foundIds.has(id));
-
-      let seedData: any[] = [];
-      if (missingIds.length > 0) {
-        let seedQ = (supabase as any)
-          .from("seed_merchants")
-          .select("id, name, category, subcategory, city, area, rating, review_count, cover_image")
-          .in("id", missingIds);
-        seedQ = governSeedQuery(seedQ, "favorites");
-        const { data } = await seedQ;
-        seedData = data ?? [];
-      }
-
-      // Sort by display_priority for storefront, then merge seeds
+      // Single source of truth: storefront_pages only (no seed_merchants fallback)
       const sfNormalized = (sfData ?? [])
         .sort((a: any, b: any) => (b.display_priority ?? 0) - (a.display_priority ?? 0))
         .map((r: any) => ({
