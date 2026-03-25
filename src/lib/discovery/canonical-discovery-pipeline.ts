@@ -241,6 +241,8 @@ export async function fetchCanonicalDiscovery(opts: CanonicalDiscoveryOpts): Pro
   // ── Normalize storefront_pages ──
   for (const s of storefrontRes.data ?? []) {
     seenIds.add(s.id);
+    // Skip entities with placeholder images
+    if (isPlaceholder(s.banner_url) && isPlaceholder(s.logo_url)) continue;
     const normVertical = normalizeVertical(s.vertical || s.category);
     const cat = verticalToRadarCategory(normVertical);
     if (category && category !== "all" && cat !== category) continue;
