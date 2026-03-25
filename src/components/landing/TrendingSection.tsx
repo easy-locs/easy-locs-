@@ -16,7 +16,7 @@ const VERTICAL_CONFIG = [
 function ShopCard({ shop }: { shop: HomeShopPreview }) {
   return (
     <Link
-      to={`/shop/${shop.slug}`}
+      to={`/s/${shop.slug}`}
       className="snap-start shrink-0 w-[185px] group"
     >
       <div className="relative rounded-2xl overflow-hidden bg-card border border-border/30 h-[210px] flex flex-col">
