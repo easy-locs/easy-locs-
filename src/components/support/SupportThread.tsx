@@ -7,11 +7,11 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export default function SupportThread({
   ticketId,
-  actorRole = "user",
+  actorRole = "client",
   showInternal = false,
 }: {
   ticketId: string;
-  actorRole?: "user" | "admin" | "merchant" | "driver" | "system";
+  actorRole?: "client" | "admin" | "merchant" | "driver" | "system";
   showInternal?: boolean;
 }) {
   const { user } = useAuth();
@@ -21,7 +21,7 @@ export default function SupportThread({
     queryKey: ["support-thread", ticketId, showInternal],
     queryFn: async () => {
       const rows = await listTicketMessages(ticketId);
-      return showInternal ? rows : rows.filter((m: any) => !m.is_internal);
+      return showInternal ? rows : rows.filter((m: any) => !m.metadata?.internal);
     },
     enabled: !!ticketId,
     staleTime: 5000,
@@ -32,9 +32,9 @@ export default function SupportThread({
     try {
       await sendTicketMessage({
         ticketId,
-        authorUserId: user?.id ?? null,
-        authorRole: actorRole,
-        message: message.trim(),
+        senderUserId: user?.id ?? null,
+        senderRole: actorRole,
+        body: message.trim(),
       });
       setMessage("");
       refetch();
@@ -56,8 +56,8 @@ export default function SupportThread({
       {!isLoading && messages.length > 0 && (
         <div className="space-y-3 max-h-64 overflow-y-auto">
           {messages.map((row: any) => {
-            const mine = row.author_user_id && row.author_user_id === user?.id;
-            const systemLike = row.author_role === "admin" || row.author_role === "system";
+            const mine = row.sender_user_id && row.sender_user_id === user?.id;
+            const systemLike = row.sender_role === "admin" || row.sender_role === "system";
 
             return (
               <div
@@ -67,10 +67,10 @@ export default function SupportThread({
                 }`}
               >
                 <p className="text-[10px] font-bold text-muted-foreground uppercase">
-                  {row.author_role}
-                  {row.is_internal ? " · internal" : ""}
+                  {row.sender_role}
+                  {row.metadata?.internal ? " · internal" : ""}
                 </p>
-                <p className="text-foreground">{row.message}</p>
+                <p className="text-foreground">{row.body}</p>
                 <p className="text-[10px] text-muted-foreground">
                   {new Date(row.created_at).toLocaleString()}
                 </p>

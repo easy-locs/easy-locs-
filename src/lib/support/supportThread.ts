@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 export async function listTicketMessages(ticketId: string) {
   const { data, error } = await (supabase as any)
     .from("support_ticket_messages")
-    .select("*")
+    .select("id, ticket_id, sender_role, body, metadata, created_at")
     .eq("ticket_id", ticketId)
     .order("created_at", { ascending: true });
 
@@ -13,19 +13,19 @@ export async function listTicketMessages(ticketId: string) {
 
 export async function sendTicketMessage(params: {
   ticketId: string;
-  authorUserId?: string | null;
-  authorRole: "user" | "admin" | "merchant" | "driver" | "system";
-  message: string;
-  isInternal?: boolean;
+  senderUserId?: string | null;
+  senderRole: "client" | "admin" | "merchant" | "driver" | "system";
+  body: string;
+  metadata?: Record<string, unknown>;
 }) {
   const { data, error } = await (supabase as any)
     .from("support_ticket_messages")
     .insert({
       ticket_id: params.ticketId,
-      author_user_id: params.authorUserId ?? null,
-      author_role: params.authorRole,
-      message: params.message,
-      is_internal: params.isInternal ?? false,
+      sender_user_id: params.senderUserId ?? null,
+      sender_role: params.senderRole,
+      body: params.body,
+      metadata: params.metadata ?? {},
     })
     .select("*")
     .single();
