@@ -23,11 +23,13 @@ export default function PremiumVerticalHero({ title, tagline, emoji, theme, sear
     <div className="relative overflow-hidden rounded-b-[2rem]" style={{ minHeight: 200 }}>
       {/* Background image */}
       <div className="absolute inset-0">
-        <img
+        <motion.img
           src={theme.heroImage}
-          alt=""
+          alt={`${title} hero banner`}
           className="w-full h-full object-cover"
           loading="eager"
+          animate={{ scale: [1, 1.06, 1], x: [0, -10, 0], y: [0, 8, 0] }}
+          transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
         />
       </div>
 
@@ -42,6 +44,15 @@ export default function PremiumVerticalHero({ title, tagline, emoji, theme, sear
         }}
         animate={{ opacity: [0.3, 0.6, 0.3] }}
         transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+      />
+
+      <motion.div
+        className="absolute inset-x-0 bottom-0 h-24 pointer-events-none"
+        style={{
+          background: "linear-gradient(180deg, transparent 0%, hsla(0,0%,100%,0.08) 35%, transparent 100%)",
+        }}
+        animate={{ x: ["-10%", "10%", "-10%"] }}
+        transition={{ duration: 9, repeat: Infinity, ease: "easeInOut" }}
       />
 
       {/* Floating particles */}
@@ -74,8 +85,8 @@ export default function PremiumVerticalHero({ title, tagline, emoji, theme, sear
         <div className="flex items-center gap-3 mb-2">
           <button
             onClick={() => navigate(-1)}
-            className="w-9 h-9 rounded-full flex items-center justify-center backdrop-blur-xl transition-all active:scale-90"
-            style={{ background: "hsla(0,0%,100%,0.12)", border: "1px solid hsla(0,0%,100%,0.1)" }}
+            className="w-9 h-9 rounded-full flex items-center justify-center transition-all active:scale-90"
+            style={{ background: "hsla(0,0%,100%,0.16)", border: "1px solid hsla(0,0%,100%,0.12)" }}
             aria-label="Go back"
           >
             <ArrowLeft className="h-4 w-4 text-white" />

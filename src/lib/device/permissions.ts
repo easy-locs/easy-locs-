@@ -1,6 +1,37 @@
 const MEDIA_DENIED_NAMES = new Set(["NotAllowedError", "SecurityError", "PermissionDeniedError"]);
 const MEDIA_MISSING_NAMES = new Set(["NotFoundError", "DevicesNotFoundError", "OverconstrainedError"]);
 const MEDIA_BUSY_NAMES = new Set(["NotReadableError", "TrackStartError", "AbortError"]);
+const PERMISSION_MEMORY_PREFIX = "easylocs.media.permission.";
+
+type RememberedMediaPermission = "granted" | "denied";
+
+function getStorage() {
+  try {
+    return window.localStorage;
+  } catch {
+    return null;
+  }
+}
+
+function readRememberedPermission(name: "camera" | "microphone"): RememberedMediaPermission | null {
+  const storage = getStorage();
+  return (storage?.getItem(`${PERMISSION_MEMORY_PREFIX}${name}`) as RememberedMediaPermission | null) ?? null;
+}
+
+function rememberPermission(name: "camera" | "microphone", value: RememberedMediaPermission) {
+  const storage = getStorage();
+  storage?.setItem(`${PERMISSION_MEMORY_PREFIX}${name}`, value);
+}
+
+async function readBrowserPermission(name: "camera" | "microphone"): Promise<PermissionState | null> {
+  try {
+    if (!navigator.permissions?.query) return null;
+    const status = await navigator.permissions.query({ name: name as PermissionName });
+    return status.state;
+  } catch {
+    return null;
+  }
+}
 
 export function getMediaAccessErrorMessage(error: unknown, opts?: { camera?: boolean; microphone?: boolean }) {
   const domError = error as DOMException | null;
@@ -38,12 +69,35 @@ export async function requestMediaStream(opts: { camera?: boolean; microphone?: 
     throw new Error("Media devices are unavailable on this device.");
   }
 
+  const requestedPermissions = [
+    opts.camera ? "camera" : null,
+    opts.microphone ? "microphone" : null,
+  ].filter(Boolean) as Array<"camera" | "microphone">;
+
   try {
+    for (const permission of requestedPermissions) {
+      const remembered = readRememberedPermission(permission);
+      if (remembered === "denied") {
+        throw new DOMException("Permission was previously denied", "NotAllowedError");
+      }
+
+      const browserState = await readBrowserPermission(permission);
+      if (browserState === "denied") {
+        rememberPermission(permission, "denied");
+        throw new DOMException("Permission denied in browser settings", "NotAllowedError");
+      }
+    }
+
     return await navigator.mediaDevices.getUserMedia({
       video: opts.camera ? (opts.videoConstraints ?? true) : false,
       audio: opts.microphone ? true : false,
     });
   } catch (error) {
+    const domError = error as DOMException | null;
+    if (MEDIA_DENIED_NAMES.has(domError?.name || "")) {
+      requestedPermissions.forEach((permission) => rememberPermission(permission, "denied"));
+    }
+
     throw new Error(getMediaAccessErrorMessage(error, { camera: opts.camera, microphone: opts.microphone }));
   }
 }
