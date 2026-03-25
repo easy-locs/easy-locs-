@@ -1401,7 +1401,7 @@ const App = () => (
               <Route path="/payment/:orderId" element={<PaymentPage />} />
               <Route path="/store/:publicSlug" element={<PublicStorefrontBySlugPage />} />
 
-              <Route path="/app/orbit" element={<Navigate to="/" replace />} />
+              <Route path="/app/orbit" element={<Navigate to="/orbit" replace />} />
               <Route path="/app/*" element={<Navigate to="/" replace />} />
 
               {/* V2 routes — all redirected to canonical paths */}
