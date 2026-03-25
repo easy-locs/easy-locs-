@@ -1,6 +1,6 @@
 /**
- * PLATFORM CONTINUOUS ENGINE — 57 ENGINES, 24/7 AUTONOMOUS OPERATION
- * All digital, quality, data, commerce, finance, delivery, and system engines.
+ * PLATFORM CONTINUOUS ENGINE — 68 ENGINES, 24/7 AUTONOMOUS OPERATION
+ * System, Digital, Quality, Data, Commerce, Finance, Delivery, Lifecycle + Vertical engines.
  */
 
 import { runPlatformRecovery } from "./platform-recovery-engine";
