@@ -477,6 +477,7 @@ Deno.serve(async (req) => {
           city, country, vertical,
           category: vertical,
           subcategory,
+          area: address?.split(",")[0]?.trim() || city || "Dubai",
           description,
           phone,
           address,
