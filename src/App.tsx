@@ -678,6 +678,10 @@ const queryClient = new QueryClient({
 // Expose query client globally for platform bus reactions
 (window as any).__REACT_QUERY_CLIENT__ = queryClient;
 
+// Wire canonical action engine to the shared query client
+import { setActionQueryClient } from "@/lib/run-action";
+setActionQueryClient(queryClient);
+
 const PageLoader = () => (
   <div className="px-4 py-6 space-y-4 max-w-md mx-auto animate-pulse">
     <div className="h-8 w-40 rounded-xl bg-muted/40" />
