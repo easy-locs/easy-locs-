@@ -17228,10 +17228,12 @@ export type Database = {
       seed_merchants: {
         Row: {
           area: string
+          backend_repaired_at: string | null
           blocking_reason: string | null
           branch_label: string | null
           brand_name: string | null
           category: string
+          category_mapped_at: string | null
           city: string
           coherence_score: number | null
           coherence_status: string | null
@@ -17252,6 +17254,8 @@ export type Database = {
           field_sources_json: Json | null
           freshness_score: number | null
           halal: boolean | null
+          hotel_inventory_at: string | null
+          hotel_inventory_json: Json | null
           id: string
           images: string[] | null
           ingestion_warnings: string[] | null
@@ -17266,9 +17270,12 @@ export type Database = {
           logo_image: string | null
           longitude: number | null
           menu_items_json: Json | null
+          menu_normalized_at: string | null
+          menu_quality_flag: string | null
           menu_sections_json: Json | null
           minimum_order_amount: number | null
           name: string
+          needs_rescrape: boolean | null
           opening_hours: Json | null
           phone: string | null
           pipeline_last_run_at: string | null
@@ -17284,22 +17291,27 @@ export type Database = {
           seo_status: string | null
           source_confidence: number | null
           source_key: string | null
+          source_snapshot_at: string | null
+          source_snapshot_json: Json | null
           source_updated_at: string | null
           source_url: string | null
           subcategory: string
           support_email: string | null
           support_phone: string | null
           tier: string
+          vertical: string | null
           visibility_mode: string | null
           visibility_score: number
           website: string | null
         }
         Insert: {
           area: string
+          backend_repaired_at?: string | null
           blocking_reason?: string | null
           branch_label?: string | null
           brand_name?: string | null
           category: string
+          category_mapped_at?: string | null
           city?: string
           coherence_score?: number | null
           coherence_status?: string | null
@@ -17320,6 +17332,8 @@ export type Database = {
           field_sources_json?: Json | null
           freshness_score?: number | null
           halal?: boolean | null
+          hotel_inventory_at?: string | null
+          hotel_inventory_json?: Json | null
           id?: string
           images?: string[] | null
           ingestion_warnings?: string[] | null
@@ -17334,9 +17348,12 @@ export type Database = {
           logo_image?: string | null
           longitude?: number | null
           menu_items_json?: Json | null
+          menu_normalized_at?: string | null
+          menu_quality_flag?: string | null
           menu_sections_json?: Json | null
           minimum_order_amount?: number | null
           name: string
+          needs_rescrape?: boolean | null
           opening_hours?: Json | null
           phone?: string | null
           pipeline_last_run_at?: string | null
@@ -17352,22 +17369,27 @@ export type Database = {
           seo_status?: string | null
           source_confidence?: number | null
           source_key?: string | null
+          source_snapshot_at?: string | null
+          source_snapshot_json?: Json | null
           source_updated_at?: string | null
           source_url?: string | null
           subcategory: string
           support_email?: string | null
           support_phone?: string | null
           tier?: string
+          vertical?: string | null
           visibility_mode?: string | null
           visibility_score?: number
           website?: string | null
         }
         Update: {
           area?: string
+          backend_repaired_at?: string | null
           blocking_reason?: string | null
           branch_label?: string | null
           brand_name?: string | null
           category?: string
+          category_mapped_at?: string | null
           city?: string
           coherence_score?: number | null
           coherence_status?: string | null
@@ -17388,6 +17410,8 @@ export type Database = {
           field_sources_json?: Json | null
           freshness_score?: number | null
           halal?: boolean | null
+          hotel_inventory_at?: string | null
+          hotel_inventory_json?: Json | null
           id?: string
           images?: string[] | null
           ingestion_warnings?: string[] | null
@@ -17402,9 +17426,12 @@ export type Database = {
           logo_image?: string | null
           longitude?: number | null
           menu_items_json?: Json | null
+          menu_normalized_at?: string | null
+          menu_quality_flag?: string | null
           menu_sections_json?: Json | null
           minimum_order_amount?: number | null
           name?: string
+          needs_rescrape?: boolean | null
           opening_hours?: Json | null
           phone?: string | null
           pipeline_last_run_at?: string | null
@@ -17420,12 +17447,15 @@ export type Database = {
           seo_status?: string | null
           source_confidence?: number | null
           source_key?: string | null
+          source_snapshot_at?: string | null
+          source_snapshot_json?: Json | null
           source_updated_at?: string | null
           source_url?: string | null
           subcategory?: string
           support_email?: string | null
           support_phone?: string | null
           tier?: string
+          vertical?: string | null
           visibility_mode?: string | null
           visibility_score?: number
           website?: string | null
