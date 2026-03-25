@@ -104,13 +104,22 @@ export default function QrScannerPage() {
     } catch { return []; }
   }, []);
 
+  const getRearCamera = useCallback((cams: Array<{ id: string; label: string }>) => {
+    return cams.find(c => /back|rear|environment|wide|ultra|main|world/i.test(c.label));
+  }, []);
+
   const bestCamera = useCallback((cams: Array<{ id: string; label: string }>, preferred?: string | null) => {
     if (!cams.length) return "";
-    if (preferred && cams.some(c => c.id === preferred)) return preferred;
     if (selectedCameraId && cams.some(c => c.id === selectedCameraId)) return selectedCameraId;
-    const rear = cams.find(c => /back|rear|environment|wide|ultra/i.test(c.label));
+    const rear = getRearCamera(cams);
+    if (preferred) {
+      const preferredCam = cams.find(c => c.id === preferred);
+      if (preferredCam && /back|rear|environment|wide|ultra|main|world/i.test(preferredCam.label)) return preferredCam.id;
+    }
+    if (rear) return rear.id;
+    if (preferred && cams.some(c => c.id === preferred)) return preferred;
     return rear?.id || cams[cams.length - 1]?.id || cams[0].id;
-  }, [selectedCameraId]);
+  }, [getRearCamera, selectedCameraId]);
 
   const resetFlags = useCallback(() => {
     startingRef.current = false;
@@ -437,6 +446,7 @@ export default function QrScannerPage() {
       if (!mountedRef.current || opRef.current !== startOp) return;
 
       const cams = await refreshCameras();
+      const rearCam = getRearCamera(cams);
       const camId = bestCamera(cams, preferredDeviceId || grantedId);
       if (mountedRef.current) setSelectedCameraId(camId);
       if (!mountedRef.current || opRef.current !== startOp) return;
@@ -458,17 +468,43 @@ export default function QrScannerPage() {
       };
 
       try {
-        if (camId) await doStart({ deviceId: { exact: camId } }, "preferred");
-        else await doStart({ facingMode: { ideal: "environment" } }, "facing");
+        if (preferredDeviceId || selectedCameraId) {
+          await doStart({ deviceId: { exact: camId } }, "selected-device");
+        } else {
+          try {
+            await doStart({ facingMode: { exact: "environment" } }, "environment-exact");
+          } catch {
+            if (rearCam?.id) {
+              await Promise.resolve(scanner.clear()).catch(() => {});
+              scannerRef.current = scanner;
+              if (ios) await new Promise(r => setTimeout(r, 200));
+              await doStart({ deviceId: { exact: rearCam.id } }, "rear-device");
+            } else if (camId) {
+              await Promise.resolve(scanner.clear()).catch(() => {});
+              scannerRef.current = scanner;
+              if (ios) await new Promise(r => setTimeout(r, 200));
+              await doStart({ deviceId: { exact: camId } }, "preferred-device");
+            } else {
+              throw new Error("No rear camera available");
+            }
+          }
+        }
       } catch {
         try {
           await Promise.resolve(scanner.clear()).catch(() => {});
           scannerRef.current = scanner;
           if (ios) await new Promise(r => setTimeout(r, 200));
-          await doStart({ facingMode: "environment" }, "fallback");
+          await doStart({ facingMode: { ideal: "environment" } }, "environment-ideal");
         } catch {
-          resetFlags();
-          setE("Camera unavailable — upload QR image"); setS("error"); return;
+          try {
+            await Promise.resolve(scanner.clear()).catch(() => {});
+            scannerRef.current = scanner;
+            if (ios) await new Promise(r => setTimeout(r, 200));
+            await doStart({ facingMode: "environment" }, "fallback");
+          } catch {
+            resetFlags();
+            setE("Camera unavailable — upload QR image"); setS("error"); return;
+          }
         }
       }
 
@@ -479,7 +515,7 @@ export default function QrScannerPage() {
       resetFlags();
       setE(err instanceof Error ? err.message : "Camera error"); setS("error");
     }
-  }, [bestCamera, clearScanner, handleQrResult, ios, refreshCameras, secure, setE, setS, resetFlags]);
+  }, [bestCamera, clearScanner, getRearCamera, handleQrResult, ios, refreshCameras, secure, selectedCameraId, setE, setS, resetFlags]);
 
   useEffect(() => {
     mountedRef.current = true;
