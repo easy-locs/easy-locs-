@@ -444,7 +444,7 @@ export default function QrScannerPage() {
       const scanner = new Html5Qrcode(REGION_ID, { verbose: false });
       scannerRef.current = scanner;
 
-      const cfg = { fps: 30, qrbox: { width: QR_BOX, height: QR_BOX }, disableFlip: false };
+      const cfg = { fps: 15, qrbox: { width: QR_BOX, height: QR_BOX }, disableFlip: false, videoConstraints: { focusMode: "continuous" as any, width: { ideal: 1280 }, height: { ideal: 720 } } };
 
       const doStart = async (vidCfg: any, label: string) => {
         await withTimeout(scanner.start(vidCfg, cfg, async (text) => {

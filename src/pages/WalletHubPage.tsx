@@ -15,11 +15,12 @@ import {
   Clock, CheckCircle, AlertCircle, ArrowRight, Globe, Banknote,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { toast } from "sonner";
 import TransactionRow, { type TransactionType } from "@/components/wallet/TransactionRow";
 import WalletSecurityPanel from "@/components/wallet/WalletSecurityPanel";
 import ReceiveQrPanel from "@/components/wallet/ReceiveQrPanel";
+import { AnimatedCounter } from "@/components/ui/AnimatedCounter";
 
 type WalletTab = "fiat" | "qr" | "security";
 
@@ -58,6 +59,39 @@ export default function WalletHubPage() {
     const pending = txHistory.filter(tx => tx.status === "pending").length;
     return { inTotal, outTotal, pending, txCount: thisMonth.length };
   }, [txHistory, user?.id]);
+
+  // Resolve counterparty names for transactions
+  const [counterpartyNames, setCounterpartyNames] = useState<Record<string, string>>({});
+  useEffect(() => {
+    if (!txHistory.length || !user?.id) return;
+    const ids = new Set<string>();
+    txHistory.forEach(tx => {
+      if (tx.sender_id && tx.sender_id !== user.id) ids.add(tx.sender_id);
+      if (tx.recipient_id && tx.recipient_id !== user.id) ids.add(tx.recipient_id);
+    });
+    if (ids.size === 0) return;
+    (supabase as any)
+      .from("profiles")
+      .select("id, name, first_name, last_name, username")
+      .in("id", Array.from(ids))
+      .then(({ data }: any) => {
+        const map: Record<string, string> = {};
+        (data ?? []).forEach((p: any) => {
+          map[p.id] = p.name || [p.first_name, p.last_name].filter(Boolean).join(" ") || p.username || "User";
+        });
+        setCounterpartyNames(map);
+      });
+  }, [txHistory, user?.id]);
+
+  const getTxTitle = useCallback((tx: any) => {
+    const isOut = tx.sender_id === user?.id;
+    const counterpartyId = isOut ? tx.recipient_id : tx.sender_id;
+    const counterpartyName = counterpartyId ? counterpartyNames[counterpartyId] : null;
+    if (counterpartyName) {
+      return isOut ? `Sent to ${counterpartyName}` : `Received from ${counterpartyName}`;
+    }
+    return tx.title || tx.context_type || "Transaction";
+  }, [user?.id, counterpartyNames]);
 
   const quickActions = [
     { label: "Top up", icon: Plus, color: "from-emerald-500 to-emerald-600" },
@@ -168,7 +202,7 @@ export default function WalletHubPage() {
                     </div>
                   </div>
                   <p className="text-4xl font-black text-primary-foreground tracking-tight">
-                    {showBalance ? `${totalBalance.toFixed(2)}` : "••••••"}
+                    {showBalance ? <AnimatedCounter value={totalBalance} decimals={2} duration={1000} /> : "••••••"}
                   </p>
                   <p className="text-sm font-semibold text-primary-foreground/50 mt-0.5">{mainCurrency}</p>
 
@@ -314,7 +348,7 @@ export default function WalletHubPage() {
                     {filteredTx.map((tx, i) => (
                       <div key={tx.id ?? i}>
                         <TransactionRow
-                          title={tx.title || tx.context_type || "Transaction"}
+                          title={getTxTitle(tx)}
                           amount={Number(tx.amount ?? 0)}
                           currency={tx.currency ?? "AED"}
                           type={(tx.context_type as TransactionType) ?? "payment"}
