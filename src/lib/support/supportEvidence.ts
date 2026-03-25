@@ -16,7 +16,7 @@ export async function addSupportEvidenceMeta(params: {
     .insert({
       ticket_id: params.ticketId,
       sender_user_id: params.uploadedByUserId ?? null,
-      sender_role: "user",
+      sender_role: "client",
       body: `Evidence uploaded: ${params.fileName}`,
       metadata: {
         evidence: true,
