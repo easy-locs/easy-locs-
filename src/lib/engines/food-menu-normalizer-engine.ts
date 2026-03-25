@@ -43,6 +43,20 @@ function cleanMenuItems(items: any[]): MenuItem[] {
     });
   }
 
+  // Strip duplicate images: if multiple items share the same image, it's fake
+  const imageCounts = new Map<string, number>();
+  for (const item of cleaned) {
+    if (item.image) {
+      const k = item.image.toLowerCase().trim();
+      imageCounts.set(k, (imageCounts.get(k) || 0) + 1);
+    }
+  }
+  for (const item of cleaned) {
+    if (item.image && (imageCounts.get(item.image.toLowerCase().trim()) || 0) > 1) {
+      item.image = undefined;
+    }
+  }
+
   return cleaned;
 }
 
