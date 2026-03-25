@@ -146,10 +146,41 @@ function computeBestsellerScore(item: RawMenuItem): number {
 
 // ── Image Quality ──
 
+const PLACEHOLDER_IMAGE_PATTERNS = [
+  "placeholder", "default", "generic", "via.placeholder",
+  "dummyimage", "placehold.co", "unsplash.com", "images.unsplash.com",
+  "lorempixel", "picsum", "stock-photo",
+];
+
 function assessImageQuality(url: string | null | undefined): { hasValidImage: boolean; imageQualityScore: number } {
   if (!url) return { hasValidImage: false, imageQualityScore: 0 };
-  const isValid = url.startsWith("http") && !url.includes("placeholder") && !url.includes("default") && url.length > 10;
+  const lower = url.toLowerCase();
+  const isPlaceholder = PLACEHOLDER_IMAGE_PATTERNS.some(p => lower.includes(p));
+  const isValid = url.startsWith("http") && !isPlaceholder && url.length > 10;
   return { hasValidImage: isValid, imageQualityScore: isValid ? 70 : 0 };
+}
+
+/**
+ * Detect and strip duplicate images within a menu.
+ * If multiple items share the exact same photo_url, it's fake/scraped data — strip them all.
+ */
+function deduplicateMenuImages(items: RawMenuItem[]): RawMenuItem[] {
+  const imageCounts = new Map<string, number>();
+  for (const item of items) {
+    if (item.photo_url) {
+      const key = item.photo_url.toLowerCase().trim();
+      imageCounts.set(key, (imageCounts.get(key) || 0) + 1);
+    }
+  }
+  return items.map(item => {
+    if (!item.photo_url) return item;
+    const key = item.photo_url.toLowerCase().trim();
+    // If same image used by >1 item → strip it (it's not a real per-item photo)
+    if ((imageCounts.get(key) || 0) > 1) {
+      return { ...item, photo_url: null };
+    }
+    return item;
+  });
 }
 
 // ── Main Engine ──
@@ -163,8 +194,11 @@ export function processMenuIntelligence(
 ): SmartMenuResult {
   const maxBestsellers = options?.maxBestsellers ?? 4;
 
+  // Step 0: Strip duplicate images (same photo across multiple items = fake scraped data)
+  const cleanedItems = deduplicateMenuImages(rawItems);
+
   // Step 1: Transform each item
-  const smartItems: SmartMenuItem[] = rawItems.map(item => {
+  const smartItems: SmartMenuItem[] = cleanedItems.map(item => {
     const { hasValidImage, imageQualityScore } = assessImageQuality(item.photo_url);
     const bestsellerScore = computeBestsellerScore(item);
     return {

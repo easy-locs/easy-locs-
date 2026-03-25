@@ -124,6 +124,32 @@ function similarity(a: string, b: string): number {
   return 0;
 }
 
+function stripDuplicateMenuImages(items: CleanItem[]): { items: CleanItem[]; duplicateImagesStripped: number } {
+  // Count how many times each image URL appears
+  const imageCounts = new Map<string, number>();
+  for (const item of items) {
+    if (item.image) {
+      const key = item.image.toLowerCase().trim();
+      imageCounts.set(key, (imageCounts.get(key) || 0) + 1);
+    }
+  }
+
+  let stripped = 0;
+  const cleaned = items.map(item => {
+    if (!item.image) return item;
+    const key = item.image.toLowerCase().trim();
+    const count = imageCounts.get(key) || 0;
+    // If more than 1 item uses the same image → it's a fake/duplicated image, strip it
+    if (count > 1) {
+      stripped++;
+      return { ...item, image: undefined };
+    }
+    return item;
+  });
+
+  return { items: cleaned, duplicateImagesStripped: stripped };
+}
+
 function rebuildMenu(rawItems: RawItem[]): RebuildResult {
   const rawCount = rawItems.length;
   let junkRemoved = 0;
@@ -144,13 +170,12 @@ function rebuildMenu(rawItems: RawItem[]): RebuildResult {
     });
   }
 
-  // Step 2: Dedup
+  // Step 2: Dedup names
   const deduped: CleanItem[] = [];
   const seen = new Set<string>();
   for (const item of extracted) {
     const key = item.canonical_name.toLowerCase();
     if (seen.has(key)) { dupsRemoved++; continue; }
-    // Check similarity with existing
     let isDup = false;
     for (const existing of deduped) {
       if (similarity(item.canonical_name, existing.canonical_name) > 0.8) {
@@ -165,8 +190,11 @@ function rebuildMenu(rawItems: RawItem[]): RebuildResult {
     }
   }
 
+  // Step 2b: Strip duplicate images (same photo used across multiple items = fake)
+  const { items: imageCleanedItems, duplicateImagesStripped } = stripDuplicateMenuImages(deduped);
+
   // Step 3: Auto-categorize
-  for (const item of deduped) {
+  for (const item of imageCleanedItems) {
     if (!item.category || item.category === "Main" || item.category.toLowerCase() === "uncategorized") {
       item.category = detectCategory(item.canonical_name, item.description);
     }
@@ -174,7 +202,7 @@ function rebuildMenu(rawItems: RawItem[]): RebuildResult {
 
   // Step 4: Build sections
   const groups: Record<string, CleanItem[]> = {};
-  for (const item of deduped) {
+  for (const item of imageCleanedItems) {
     const cat = item.category || "Uncategorized";
     if (!groups[cat]) groups[cat] = [];
     groups[cat].push(item);
@@ -184,9 +212,9 @@ function rebuildMenu(rawItems: RawItem[]): RebuildResult {
     .map(([name, items]) => ({ name, items }));
 
   // Step 5: Calculate scores
-  const validItems = deduped.length;
-  const withPrice = deduped.filter(i => i.price !== undefined).length;
-  const categorized = deduped.filter(i => i.category !== "Uncategorized").length;
+  const validItems = imageCleanedItems.length;
+  const withPrice = imageCleanedItems.filter(i => i.price !== undefined).length;
+  const categorized = imageCleanedItems.filter(i => i.category !== "Uncategorized").length;
   const uncategorized = validItems - categorized;
   const duplicationRate = rawCount > 0 ? dupsRemoved / rawCount : 0;
   const priceRate = validItems > 0 ? withPrice / validItems : 0;
@@ -202,7 +230,10 @@ function rebuildMenu(rawItems: RawItem[]): RebuildResult {
   if (junkRemoved / Math.max(rawCount, 1) < 0.3) score += 15;
   else if (junkRemoved / Math.max(rawCount, 1) < 0.6) score += 7;
 
-  const rebuildScore = Math.round(score);
+  // Penalize if many duplicate images were stripped (sign of fake/scraped data)
+  if (duplicateImagesStripped > 3) score -= 10;
+
+  const rebuildScore = Math.round(Math.max(0, Math.min(100, score)));
   const classification: "clean" | "rebuildable" | "garbage" =
     rebuildScore >= 70 ? "clean" :
     rebuildScore >= 35 ? "rebuildable" :
