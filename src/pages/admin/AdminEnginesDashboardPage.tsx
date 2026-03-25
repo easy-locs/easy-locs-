@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { getContinuousEngineStatus } from "@/lib/platform/platform-continuous-engine";
 import { ENGINE_METADATA, detectEngineCollisions, type EngineTier, type BusinessFunction, type RuntimeStatus } from "@/lib/engines/engine-metadata-registry";
 import { deriveRuntimeStatus } from "@/lib/engines/global-orchestration-engine";
+import { computeHealthScores, classifyCollisions, type ClassifiedCollision, type PlatformHealthScores } from "@/lib/engines/platform-orchestrator-engine";
 import { supabase } from "@/integrations/supabase/client";
 
 const db = supabase as any;
