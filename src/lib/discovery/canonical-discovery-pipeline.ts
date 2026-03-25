@@ -215,32 +215,9 @@ export async function fetchCanonicalDiscovery(opts: CanonicalDiscoveryOpts): Pro
     storefrontQuery = storefrontQuery.ilike("name", `%${searchQuery.trim()}%`);
   }
 
-  // ── SEED MERCHANT GOVERNANCE ──
-  const seedAllowed = allowedModes.includes("coming_soon") || allowedModes.includes("live") || allowedModes.includes("ready");
+  // ── SINGLE SOURCE: storefront_pages only — seed_merchants is internal pipeline only ──
 
-  const seedQueryPromise = seedAllowed ? (() => {
-    let seedQuery = (supabase as any)
-      .from("seed_merchants")
-      .select("id, name, category, subcategory, city, area, rating, review_count, cover_image, logo_image, visibility_score, is_open, is_featured, promo_active, delivery_time_min, delivery_time_max, overall_quality_score, pipeline_stage, visibility_mode")
-      .eq("is_active", true)
-      .not("visibility_mode", "eq", "hidden")
-      .order("visibility_score", { ascending: false })
-      .limit(limit);
-
-    if (subcategory) {
-      seedQuery = seedQuery.eq("subcategory", subcategory);
-    }
-    if (city) {
-      seedQuery = seedQuery.ilike("city", city);
-    }
-    if (searchQuery?.trim()) {
-      seedQuery = seedQuery.ilike("name", `%${searchQuery.trim()}%`);
-    }
-    return seedQuery;
-  })() : Promise.resolve({ data: [] });
-
-  const [storefrontRes, seedRes] = await Promise.all([storefrontQuery, seedQueryPromise]);
-  let seedResults: any[] = seedRes.data ?? [];
+  const storefrontRes = await storefrontQuery;
 
   const points: RadarPoint[] = [];
   const seenIds = new Set<string>();
