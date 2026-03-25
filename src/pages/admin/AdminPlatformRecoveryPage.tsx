@@ -11,7 +11,7 @@ import {
   type ModuleCheckResult,
   type ModuleStatus,
 } from "@/lib/platform/platform-recovery-engine";
-import { getContinuousEngineStatus } from "@/lib/platform/platform-continuous-engine";
+import { useBackendEngineStatus } from "@/hooks/useBackendEngineStatus";
 
 const statusIcon: Record<ModuleStatus, React.ReactNode> = {
   ok: <CheckCircle className="h-4 w-4 text-emerald-500" />,
@@ -107,7 +107,7 @@ export default function AdminPlatformRecoveryPage() {
   const [clientRun, setClientRun] = useState<RecoveryRunReport | null>(null);
   const [dbRuns, setDbRuns] = useState<DbRun[]>([]);
   const [loading, setLoading] = useState(true);
-  const [continuousStatus, setContinuousStatus] = useState<ReturnType<typeof getContinuousEngineStatus> | null>(null);
+  const continuousStatus = useBackendEngineStatus();
 
   const loadDbRuns = useCallback(async () => {
     const { data } = await (supabase as any)
@@ -121,9 +121,6 @@ export default function AdminPlatformRecoveryPage() {
 
   useEffect(() => {
     loadDbRuns();
-    setContinuousStatus(getContinuousEngineStatus());
-    const timer = setInterval(() => setContinuousStatus(getContinuousEngineStatus()), 10000);
-    return () => clearInterval(timer);
   }, [loadDbRuns]);
 
   const handleClientRun = useCallback(async () => {
@@ -133,7 +130,6 @@ export default function AdminPlatformRecoveryPage() {
       setClientRun(report);
     } finally {
       setRunning(false);
-      setContinuousStatus(getContinuousEngineStatus());
     }
   }, []);
 
@@ -205,7 +201,7 @@ export default function AdminPlatformRecoveryPage() {
         )}
 
         {/* Client Continuous Engine */}
-        {continuousStatus && (
+        {continuousStatus.totalJobs > 0 && (
           <Card>
             <CardHeader className="py-3">
               <CardTitle className="text-sm uppercase tracking-wider flex items-center gap-2">
