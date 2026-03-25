@@ -1,5 +1,5 @@
 /**
- * PLATFORM CONTINUOUS ENGINE — 68 ENGINES, 24/7 AUTONOMOUS OPERATION
+ * PLATFORM CONTINUOUS ENGINE — 75 ENGINES, 24/7 AUTONOMOUS OPERATION
  * System, Digital, Quality, Data, Commerce, Finance, Delivery, Lifecycle + Vertical engines.
  */
 
@@ -527,7 +527,39 @@ export function startContinuousEngine() {
   }, "data");
 
   // ═══════════════════════════════════════════════════════════
-  // AUTO-PUBLISH PIPELINE (69-71) — Publish, Optimize, Unpublish
+  // VERTICAL-SPECIFIC NORMALIZERS (69-70) — Service + Grocery
+  // ═══════════════════════════════════════════════════════════
+
+  registerJob("service-catalog-normalizer", 15 * 60_000, async () => {
+    const { runServiceCatalogNormalizer } = await import("@/lib/engines/service-catalog-normalizer-engine");
+    const result = await runServiceCatalogNormalizer(50);
+    if (result.normalized > 0) console.log(`[continuous] Service catalog: ${result.normalized} normalized`);
+  }, "quality");
+
+  registerJob("grocery-normalizer", 15 * 60_000, async () => {
+    const { runGroceryNormalizer } = await import("@/lib/engines/grocery-normalizer-engine");
+    const result = await runGroceryNormalizer(50);
+    if (result.normalized > 0) console.log(`[continuous] Grocery: ${result.normalized} normalized`);
+  }, "quality");
+
+  // ═══════════════════════════════════════════════════════════
+  // VERTICAL-SPECIFIC PUBLISH GATES (71-72) — Service + Grocery
+  // ═══════════════════════════════════════════════════════════
+
+  registerJob("publish-gate-service", 15 * 60_000, async () => {
+    const { runServicePublishGate } = await import("@/lib/engines/publish-gate-service-engine");
+    const result = await runServicePublishGate(50);
+    console.log(`[continuous] Service gate: ${result.passed} pass, ${result.blocked} block`);
+  }, "quality");
+
+  registerJob("publish-gate-grocery", 15 * 60_000, async () => {
+    const { runGroceryPublishGate } = await import("@/lib/engines/publish-gate-grocery-engine");
+    const result = await runGroceryPublishGate(50);
+    console.log(`[continuous] Grocery gate: ${result.passed} pass, ${result.blocked} block`);
+  }, "quality");
+
+  // ═══════════════════════════════════════════════════════════
+  // AUTO-PUBLISH PIPELINE (73-75) — Publish, Optimize, Unpublish
   // ═══════════════════════════════════════════════════════════
 
   registerJob("auto-publish", 15 * 60_000, async () => {
