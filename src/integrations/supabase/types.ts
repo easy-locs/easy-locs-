@@ -17567,6 +17567,7 @@ export type Database = {
       seed_merchants: {
         Row: {
           active_modules: number | null
+          address: string | null
           analytics_status: string | null
           area: string
           auto_published_at: string | null
@@ -17593,6 +17594,7 @@ export type Database = {
           delivery_time_min: number
           delivery_zones: Json | null
           description: string | null
+          digital_status: string | null
           display_priority: number | null
           duplicate_confidence: number | null
           duplicate_of: string | null
@@ -17684,6 +17686,7 @@ export type Database = {
         }
         Insert: {
           active_modules?: number | null
+          address?: string | null
           analytics_status?: string | null
           area: string
           auto_published_at?: string | null
@@ -17710,6 +17713,7 @@ export type Database = {
           delivery_time_min?: number
           delivery_zones?: Json | null
           description?: string | null
+          digital_status?: string | null
           display_priority?: number | null
           duplicate_confidence?: number | null
           duplicate_of?: string | null
@@ -17801,6 +17805,7 @@ export type Database = {
         }
         Update: {
           active_modules?: number | null
+          address?: string | null
           analytics_status?: string | null
           area?: string
           auto_published_at?: string | null
@@ -17827,6 +17832,7 @@ export type Database = {
           delivery_time_min?: number
           delivery_zones?: Json | null
           description?: string | null
+          digital_status?: string | null
           display_priority?: number | null
           duplicate_confidence?: number | null
           duplicate_of?: string | null
