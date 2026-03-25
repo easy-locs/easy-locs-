@@ -7,6 +7,7 @@ import { getOrCreateDirectThread } from "@/lib/direct-thread";
 import { supabase } from "@/integrations/supabase/client";
 import { eventBus } from "@/lib/events/eventBus";
 import { toast } from "sonner";
+import { notifyNewMessage } from "@/lib/engines/notification-event-dispatcher";
 import type { NavigateFunction } from "react-router-dom";
 
 export interface ContactBridgeOpts {
@@ -93,6 +94,9 @@ export async function contactFromDiscovery(opts: ContactBridgeOpts): Promise<voi
         .from("conversations_v2")
         .update({ last_message_at: new Date().toISOString() })
         .eq("id", convId);
+
+      // Notify recipient
+      notifyNewMessage(targetUserId, "Contact", autoMessage.slice(0, 80), convId).catch(console.error);
     }
 
     eventBus.emit("CONTACT_INITIATED", {
