@@ -49,12 +49,22 @@ if (typeof window !== "undefined") {
 }
 
 // Remove the static loading fallback as soon as the app bundle starts executing.
-// This prevents the 12s crash-recovery timer in index.html from showing a false
-// network/cache error while React is still bootstrapping on slower preview loads.
 rootElement.innerHTML = "";
 
-ReactDOM.createRoot(rootElement).render(
-  <HashRouter>
-    <App />
-  </HashRouter>
-);
+try {
+  ReactDOM.createRoot(rootElement).render(
+    <HashRouter>
+      <App />
+    </HashRouter>
+  );
+} catch (err) {
+  console.error("[Boot] React render crashed", err);
+  rootElement.innerHTML = `
+    <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;font-family:system-ui;">
+      <div style="text-align:center;max-width:400px;padding:20px;">
+        <p style="font-size:18px;margin:0 0 8px;">Boot Error</p>
+        <p style="font-size:13px;color:#94a3b8;margin:0 0 16px;">${err instanceof Error ? err.message : String(err)}</p>
+        <button onclick="location.reload()" style="background:#D4A853;color:#0F1117;border:none;padding:10px 24px;border-radius:8px;font-size:14px;cursor:pointer;">Reload</button>
+      </div>
+    </div>`;
+}
