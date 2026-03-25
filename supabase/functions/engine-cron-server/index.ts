@@ -602,6 +602,37 @@ Deno.serve(async (req) => {
     }, "standard");
 
     // ══════════════════════════════════════════════════
+    // UPDATE MODULE HEALTH FOR ALL MODULES
+    // ══════════════════════════════════════════════════
+    const moduleMapping: Record<string, string[]> = {
+      orbit: ["personal-profile", "preference-learning", "context-awareness"],
+      wallet: ["wallet-sync", "finance-reconciliation", "compliance-aml"],
+      scanner: ["qr-session-cleanup"],
+      checkout: ["abandoned-cart", "order-lifecycle"],
+      radar: ["hyper-radar", "personal-ranking", "zone-profile-refresh"],
+      delivery: ["delivery-monitor", "driver-availability", "live-status-refresh"],
+      deep_scrape: ["auto-source-enrich", "import-pipeline", "ingestion-pipeline"],
+      publish_pipeline: ["publish-gate", "auto-publish", "auto-unpublish", "coherence-sweep"],
+      notifications: ["notification-cleanup", "review-trigger"],
+      realtime: ["backend-connectivity", "backend-reconnect"],
+      chat: ["staff-sync", "call-log-cleanup"],
+      payments: ["coupon-expiration", "qr-session-cleanup", "finance-reconciliation"],
+    };
+
+    for (const [mod, engines] of Object.entries(moduleMapping)) {
+      const hasError = engines.some(e => report[e]?.error);
+      const allOk = engines.every(e => !report[e]?.error);
+      const now = new Date().toISOString();
+      const update: Record<string, any> = {
+        status: hasError ? "degraded" : "ok",
+        updated_at: now,
+      };
+      if (allOk) { update.last_success_at = now; update.current_incident = null; update.error_count_1h = 0; }
+      if (hasError) { update.last_error_at = now; update.current_incident = engines.filter(e => report[e]?.error).join(", "); }
+      await supabase.from("module_health").update(update).eq("module", mod).catch(() => {});
+    }
+
+    // ══════════════════════════════════════════════════
     // PERSIST RUN REPORT
     // ══════════════════════════════════════════════════
     const elapsed = Date.now() - startTime;

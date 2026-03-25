@@ -2,9 +2,12 @@
  * Production Monitoring Service
  * Captures runtime errors, performance metrics, and sync health checks.
  * All data stored in-memory and optionally persisted to Supabase audit_logs.
+ * 
+ * Unified with Sentry + module_health for full observability.
  */
 
 import { supabase } from "@/integrations/supabase/client";
+import { initUnifiedMonitoring } from "@/lib/monitoring/unified-monitor";
 
 // ── Types ──────────────────────────────────────────────────────────
 
