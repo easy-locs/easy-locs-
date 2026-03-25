@@ -35,7 +35,7 @@ export default function SplashScreen({ children }: { children: React.ReactNode }
           </motion.div>
         )}
       </AnimatePresence>
-      {!show && children}
+      {children}
     </>
   );
 }
