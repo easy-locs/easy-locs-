@@ -140,11 +140,54 @@ Deno.serve(async (req) => {
       let storefrontsSynced = 0;
       let menusSynced = 0;
 
+      let storefrontsCreated = 0;
+
       for (const seed of (seeds as any[]) ?? []) {
         if (seed.is_flagged) continue;
         const key = normalizeKey(seed.name);
-        const storefront = storefrontByKey.get(key);
-        if (!storefront) continue;
+        let storefront = storefrontByKey.get(key);
+
+        // CREATE storefront if it doesn't exist yet
+        if (!storefront) {
+          const slug = key || `shop-${seed.id.substring(0, 8)}`;
+          const vis = seed.cover_image ? "search_only" : "coming_soon";
+          const { data: created } = await supabase.from("storefront_pages").insert({
+            org_id: "55e39dc1-8aac-4e74-a1e5-002149314033",
+            user_id: "2d71d5bd-12e1-4c20-871d-291178ae3f4c",
+            name: seed.name,
+            slug,
+            description: seed.description ?? `${seed.name} in ${seed.city ?? "Dubai"}`,
+            vertical: seed.vertical ?? "food",
+            category: seed.category ?? "restaurant",
+            subcategory: seed.subcategory,
+            city: seed.city ?? "Dubai",
+            country: seed.country ?? "AE",
+            contact_phone: seed.phone ?? seed.support_phone,
+            banner_url: seed.cover_image,
+            logo_url: seed.logo_image,
+            latitude: seed.latitude,
+            longitude: seed.longitude,
+            visibility_mode: vis,
+            route_status: "valid",
+            ranking_score: Number(seed.overall_quality_score ?? seed.visibility_score ?? 50),
+            active: true,
+            has_photo: !!seed.cover_image,
+            onboarding_completed: true,
+            readiness_status: seed.cover_image ? "partial" : "draft",
+            launch_status: seed.cover_image ? "ready" : "draft",
+          } as any).select("id, slug, name, banner_url, logo_url, visibility_mode, vertical, category, subcategory, products_count, has_menu").single();
+          if (created) {
+            storefront = created;
+            storefrontByKey.set(key, storefront);
+            storefrontsCreated++;
+            // Also create onboarding profile for menu FK
+            if ((seed.vertical ?? "food") === "food") {
+              await supabase.from("merchant_onboarding_profiles").upsert({ id: created.id, merchant_name: seed.name, city: seed.city ?? "Dubai", onboarding_status: "completed" } as any, { onConflict: "id" });
+            }
+          } else {
+            continue;
+          }
+        }
 
         const catalogItems = flattenCatalogItems(seed.menu_items_json);
         const visibility_mode = computeConcreteVisibility(seed, storefront, catalogItems.length);
@@ -157,7 +200,6 @@ Deno.serve(async (req) => {
           city: seed.city ?? storefront.city ?? "",
           region: seed.area ?? storefront.region ?? null,
           country: seed.country ?? storefront.country ?? "AE",
-          address: seed.area ? `${seed.area}, ${seed.city ?? "Dubai"}` : storefront.address ?? null,
           vertical: seed.vertical ?? storefront.vertical ?? "shops",
           category: seed.category ?? storefront.category ?? null,
           subcategory: seed.subcategory ?? storefront.subcategory ?? null,
@@ -168,8 +210,8 @@ Deno.serve(async (req) => {
           products_count: catalogItems.length,
           is_order_enabled: catalogItems.length >= 3,
           has_photo: !!(seed.cover_image || storefront.banner_url || seed.logo_image || storefront.logo_url),
-          banner_url: !isPlaceholderImage(seed.cover_image) ? seed.cover_image : storefront.banner_url,
-          logo_url: !isPlaceholderImage(seed.logo_image) ? seed.logo_image : storefront.logo_url,
+          banner_url: seed.cover_image ?? storefront.banner_url,
+          logo_url: seed.logo_image ?? storefront.logo_url,
           latitude: seed.latitude ?? storefront.latitude ?? null,
           longitude: seed.longitude ?? storefront.longitude ?? null,
           onboarding_completed: visibility_mode !== "coming_soon",
@@ -189,7 +231,7 @@ Deno.serve(async (req) => {
             description: item.description,
             price: item.price,
             currency: "AED",
-            image_url: !isPlaceholderImage(item.image_url) ? item.image_url : null,
+            image_url: item.image_url ?? null,
             is_available: true,
             sort_order: item.sort_order,
           }));
@@ -198,7 +240,7 @@ Deno.serve(async (req) => {
         }
       }
 
-      return { storefrontsSynced, menusSynced };
+      return { storefrontsSynced, storefrontsCreated, menusSynced };
     }
 
     async function runEngine(name: string, fn: () => Promise<any>, tier = "standard") {
