@@ -5,6 +5,7 @@
  */
 import { validateEntityMenuCoherence, type CoherenceInput, type CoherenceResult } from "./coherence-engine";
 import { processMenuIntelligence, type RawMenuItem, type SmartMenuResult } from "./menu-intelligence-engine";
+import { isInvalidCategory, isPlaceholderImage } from "./merchant-quality-helpers";
 
 // ── Shop Quality Result ──
 
@@ -49,12 +50,14 @@ function scoreVisual(entity: Record<string, any>): { score: number; issues: stri
   const hasLogo = !!(entity.logo_url || entity.logo_image);
   const hasCover = !!(entity.cover_url || entity.cover_image || entity.banner_url);
   const hasGallery = Array.isArray(entity.gallery_urls) && entity.gallery_urls.length > 0;
+  const coverUrl = String(entity.cover_url || entity.cover_image || entity.banner_url || "");
 
   if (hasLogo) score += 30; else issues.push("missing_logo");
   if (hasCover) score += 35; else issues.push("missing_cover");
   if (hasGallery) score += 20;
   // Bonus for valid URLs (not placeholder)
-  if (hasCover && !String(entity.cover_url || entity.cover_image || "").includes("placeholder")) score += 15;
+  if (hasCover && !isPlaceholderImage(coverUrl)) score += 15;
+  if (hasCover && isPlaceholderImage(coverUrl)) issues.push("placeholder_cover");
 
   return { score: Math.min(100, score), issues };
 }
@@ -65,8 +68,8 @@ function scoreTaxonomy(entity: Record<string, any>): { score: number; issues: st
   let score = 0;
   const issues: string[] = [];
 
-  if (entity.category) score += 30; else issues.push("missing_vertical");
-  if (entity.subcategory) score += 40; else issues.push("missing_subcategory");
+  if (entity.category && !isInvalidCategory(entity.category)) score += 30; else issues.push("missing_vertical");
+  if (entity.subcategory && !isInvalidCategory(entity.subcategory)) score += 40; else issues.push("missing_subcategory");
   if (entity.tags && Array.isArray(entity.tags) && entity.tags.length > 0) score += 15;
   if (entity.vertical) score += 15;
 
