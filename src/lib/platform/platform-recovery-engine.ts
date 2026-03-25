@@ -86,7 +86,13 @@ async function checkTable(name: string, table: string): Promise<ModuleCheckResul
 async function checkRpc(name: string, rpcName: string): Promise<ModuleCheckResult> {
   const t = Date.now();
   try {
-    const { error } = await supabase.rpc(rpcName as any, {} as any);
+    // Use dummy UUID so the RPC signature matches (target_user_id is required)
+    const dummyParams: Record<string, any> = {};
+    if (rpcName === "ensure_wallet_account") {
+      dummyParams.target_user_id = "00000000-0000-0000-0000-000000000000";
+      dummyParams.target_currency = "AED";
+    }
+    const { error } = await supabase.rpc(rpcName as any, dummyParams as any);
     const reachable = !error || !error.message?.includes("Could not find the function");
     return { module: name, group: "backend", status: reachable ? "ok" : "error", detail: reachable ? "rpc reachable" : error?.message ?? "not found", durationMs: Date.now() - t };
   } catch (e: any) {
