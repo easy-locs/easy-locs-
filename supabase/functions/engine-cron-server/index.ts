@@ -503,6 +503,58 @@ Deno.serve(async (req) => {
     await runEngine("hyper-personalization", async () => ({ personalized: 0 }), "critical");
 
     // ══════════════════════════════════════════════════
+    // PHASE 13: GROWTH DOMINATION
+    // ══════════════════════════════════════════════════
+
+    // Check feature flags from DB
+    const { data: flagRows } = await supabase.from("system_feature_flags").select("flag_key, flag_value").like("flag_key" as any, "enable_%");
+    const flags: Record<string, boolean> = {};
+    for (const r of (flagRows as any[]) ?? []) { flags[r.flag_key] = r.flag_value === true; }
+
+    // A. Market opportunity scanner
+    await runEngine("market-opportunity-scanner", async () => {
+      if (!flags["enable_domination"]) return { skipped: "flag_off" };
+      const { data: zones } = await supabase.from("seed_merchants").select("city, country");
+      const zoneCounts = new Map<string, number>();
+      for (const z of (zones as any[]) ?? []) {
+        const k = `${z.city}::${z.country}`;
+        zoneCounts.set(k, (zoneCounts.get(k) ?? 0) + 1);
+      }
+      const opportunities = [...zoneCounts.entries()].filter(([, c]) => c < 50).length;
+      return { zones_scanned: zoneCounts.size, opportunities };
+    }, "standard");
+
+    // B. SEO page index generator
+    await runEngine("seo-mass-indexer", async () => {
+      if (!flags["enable_seo_mass"]) return { skipped: "flag_off" };
+      const { data: entities } = await supabase.from("seed_merchants")
+        .select("city, category")
+        .in("visibility_mode" as any, ["live", "search_only"])
+        .not("city", "is", null).not("category", "is", null);
+      const combos = new Set<string>();
+      for (const e of (entities as any[]) ?? []) { combos.add(`${e.city}::${e.category}`); }
+      return { seo_pages_possible: combos.size };
+    }, "standard");
+
+    // C. Invitation candidate scanner
+    await runEngine("invitation-scanner", async () => {
+      if (!flags["enable_smart_invitations"]) return { skipped: "flag_off" };
+      const { count } = await supabase.from("seed_merchants")
+        .select("id", { count: "exact", head: true })
+        .eq("visibility_mode", "hidden").eq("route_status", "draft")
+        .gt("quality_score" as any, 30).is("claimed_by" as any, null);
+      return { invitation_candidates: count ?? 0 };
+    }, "standard");
+
+    // D. Money engine scan
+    await runEngine("money-engine-scan", async () => {
+      if (!flags["enable_money_engine"]) return { skipped: "flag_off" };
+      const { count: boostCount } = await supabase.from("boost_campaigns")
+        .select("id", { count: "exact", head: true }).eq("status", "active");
+      return { active_campaigns: boostCount ?? 0 };
+    }, "standard");
+
+    // ══════════════════════════════════════════════════
     // PERSIST RUN REPORT
     // ══════════════════════════════════════════════════
     const elapsed = Date.now() - startTime;
