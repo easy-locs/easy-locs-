@@ -78,17 +78,17 @@ Deno.serve(async (req) => {
       const { data: candidates } = await supabase
         .from("seed_merchants")
         .select("id")
-        .is("global_rank_score", null)
+        .is("visibility_score", null)
         .eq("country", "AE")
         .limit(100);
 
       let ranked = 0;
       if (candidates?.length) {
         for (const c of candidates) {
-          const score = Math.random() * 40 + 30; // Base score, real ranking comes from client
+          const score = Math.random() * 40 + 30;
           await supabase
             .from("seed_merchants")
-            .update({ global_rank_score: Math.round(score) })
+            .update({ visibility_score: Math.round(score) })
             .eq("id", c.id);
           ranked++;
         }
@@ -100,12 +100,12 @@ Deno.serve(async (req) => {
 
     // ── Step 5: Visibility sync ──
     try {
-      // Hidden entities with good scores should be promoted
+      // Hidden entities with decent coherence should be promoted
       const { data: promotable } = await supabase
         .from("seed_merchants")
-        .select("id, completeness_score, coherence_status")
+        .select("id, coherence_score, coherence_status")
         .eq("visibility_mode", "hidden")
-        .gte("completeness_score", 50)
+        .gte("coherence_score", 50)
         .neq("coherence_status", "blocked")
         .eq("country", "AE")
         .limit(50);
@@ -115,7 +115,7 @@ Deno.serve(async (req) => {
         for (const e of promotable) {
           await supabase
             .from("seed_merchants")
-            .update({ visibility_mode: "indexed_not_public" })
+            .update({ visibility_mode: "search_only" })
             .eq("id", e.id);
           promoted++;
         }
