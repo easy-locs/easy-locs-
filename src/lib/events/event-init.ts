@@ -37,6 +37,15 @@ const BRIDGE_MAP: Record<string, string> = {
   "qr.payment.completed": "wallet.updated",
   // Radar entity open → entity.click
   "ENTITY_OPENED": "entity.click",
+  // Vertical pipeline events → passthrough
+  "ENTITY_CLASSIFIED": "entity.classified",
+  "FOOD_MENU_NORMALIZED": "entity.normalized",
+  "HOTEL_INVENTORY_NORMALIZED": "entity.normalized",
+  "SERVICE_CATALOG_NORMALIZED": "entity.normalized",
+  "GROCERY_CATALOG_NORMALIZED": "entity.normalized",
+  "PUBLISH_GATE_PASSED": "entity.published",
+  "PUBLISH_GATE_BLOCKED": "entity.blocked",
+  "DELIVERY_COMPLETED": "delivery.completed",
 };
 
 // Register bridge listeners
