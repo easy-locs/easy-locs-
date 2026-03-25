@@ -172,6 +172,9 @@ export function initMonitoring() {
   if (monitoringInitialized) return;
   monitoringInitialized = true;
 
+  // Initialize unified monitoring (Sentry + module_health + global error handlers)
+  initUnifiedMonitoring();
+
   // Unhandled JS errors
   window.addEventListener("error", (e) => {
     pushEvent({
