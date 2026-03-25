@@ -15,8 +15,14 @@ export default function AdminHomeEnginePage() {
 
   const rerun = async () => {
     try {
-      const res = await refreshMerchantVisibilityScores(150);
-      const ok = res.filter((r) => r.ok).length;
+      // Admin-only: refresh visibility scores on internal seed layer
+      const { data: merchants } = await (supabase as any).from("seed_merchants").select("id, rating, review_count, is_featured, is_open, promo_active").limit(150);
+      let ok = 0;
+      for (const m of merchants ?? []) {
+        const score = Number(m.rating ?? 0) * 14 + Math.min(Number(m.review_count ?? 0), 250) * 0.1 + (m.is_featured ? 18 : 0) + (m.is_open ? 10 : 0) + (m.promo_active ? 8 : 0);
+        await (supabase as any).from("seed_merchants").update({ visibility_score: Number(score.toFixed(2)), updated_at: new Date().toISOString() }).eq("id", m.id);
+        ok++;
+      }
       toast.success(`Home engine refreshed · ${ok} merchants updated`);
       refetch();
     } catch (err: any) {
