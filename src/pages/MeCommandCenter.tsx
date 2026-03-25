@@ -18,7 +18,7 @@ import {
   Wallet, Building2,
   Bot, ChevronRight,
   Power, FileEdit, Megaphone, Eye,
-  HelpCircle, Truck, Rocket, DollarSign,
+  HelpCircle, Truck, Rocket, DollarSign, Activity,
   User, Settings, Shield, Bell, MessageSquare, LogOut, Clock,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -287,6 +287,7 @@ export default function MeCommandCenter() {
           { icon: <Shield className="w-4 h-4" />, label: "Security & Privacy", path: "/settings/security" },
           { icon: <Bell className="w-4 h-4" />, label: "Notifications", path: "/settings/notifications" },
           { icon: <MessageSquare className="w-4 h-4" />, label: "Messages", path: "/orbit" },
+          { icon: <Activity className="w-4 h-4" />, label: "Platform Health", path: "/admin/platform-health" },
         ].map((item) => (
           <button
             key={item.label}
