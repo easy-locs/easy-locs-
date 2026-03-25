@@ -77,7 +77,7 @@ const CATEGORIES = [
 
 export default function CategoryBanners() {
   return (
-    <section className="py-10 sm:py-16 bg-background" aria-label="Main Categories">
+    <section className="py-8 sm:py-16 bg-background" aria-label="Main Categories">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 12 }}
@@ -161,7 +161,7 @@ export default function CategoryBanners() {
         </motion.div>
 
         {/* Grid of remaining banners */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
           {CATEGORIES.slice(1).map((cat, i) => (
             <motion.div
               key={cat.title}
