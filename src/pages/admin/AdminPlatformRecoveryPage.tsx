@@ -76,16 +76,6 @@ const PRODUCTION_READINESS: ReadinessRow[] = [
   { module: "QR scan & pay", status: "coded-wired", validation: "RPC built, resolver patched", production: "blocked", productionNote: "Needs live device scan" },
 ];
 
-const CLIENT_JOBS_EXPECTED = [
-  { name: "engine-health", interval: "5min", desc: "Engine health checks" },
-  { name: "platform-recovery", interval: "10min", desc: "Full platform recovery" },
-  { name: "auto-fix", interval: "5min", desc: "Auto-fix (i18n, geo, stores)" },
-  { name: "health-checks", interval: "5min", desc: "Geo + wallet + lead health" },
-  { name: "store-consistency", interval: "5min", desc: "Store hydration verification" },
-  { name: "boost-slot-refresh", interval: "1h", desc: "Boost cache invalidation" },
-  { name: "backend-reconnect", interval: "5min", desc: "Backend reconnect verification" },
-];
-
 function ModuleRow({ m }: { m: ModuleCheckResult }) {
   return (
     <div className="flex items-center justify-between py-2 px-3 rounded-md border text-xs">
@@ -147,6 +137,11 @@ export default function AdminPlatformRecoveryPage() {
   const latestDb = dbRuns[0];
   const displayModules: ModuleCheckResult[] = clientRun?.modules ?? (latestDb?.modules_json as any) ?? [];
   const displaySummary = clientRun?.summary ?? latestDb?.summary_json;
+  const runtimeJobs = [...continuousStatus.jobs].sort((a, b) => {
+    const aTime = a.lastRun ? new Date(a.lastRun).getTime() : 0;
+    const bTime = b.lastRun ? new Date(b.lastRun).getTime() : 0;
+    return bTime - aTime;
+  }).slice(0, 24);
 
   const groups = displayModules.length > 0
     ? ["backend", "core", "state", "health", "autofix", "audit", "analytics", "maintenance", "fix"]
@@ -200,44 +195,35 @@ export default function AdminPlatformRecoveryPage() {
           </div>
         )}
 
-        {/* Client Continuous Engine */}
+        {/* Backend Runtime */}
         {continuousStatus.totalJobs > 0 && (
           <Card>
             <CardHeader className="py-3">
               <CardTitle className="text-sm uppercase tracking-wider flex items-center gap-2">
-                <Activity className="h-4 w-4" /> Client Continuous Engine
+                <Activity className="h-4 w-4" /> Backend Runtime Engines
                 <Badge className={continuousStatus.running ? "bg-emerald-500/10 text-emerald-700 border-emerald-200" : "bg-destructive/10 text-destructive"}>
                   {continuousStatus.running ? "RUNNING" : "STOPPED"}
                 </Badge>
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-1 pt-0">
-              {CLIENT_JOBS_EXPECTED.map(expected => {
-                const actual = continuousStatus.jobs.find(j => j.name === expected.name);
+              {runtimeJobs.map(actual => {
                 return (
-                  <div key={expected.name} className="flex items-center justify-between py-2 px-3 rounded-md border text-xs">
+                  <div key={actual.name} className="flex items-center justify-between py-2 px-3 rounded-md border text-xs">
                     <div className="flex items-center gap-2">
-                      {actual ? (
-                        actual.lastStatus === "ok" ? <CheckCircle className="h-4 w-4 text-emerald-500" /> :
+                      {actual.lastStatus === "ok" ? <CheckCircle className="h-4 w-4 text-emerald-500" /> :
                         actual.lastStatus === "error" ? <XCircle className="h-4 w-4 text-destructive" /> :
-                        <Clock className="h-4 w-4 text-muted-foreground" />
-                      ) : <XCircle className="h-4 w-4 text-muted-foreground/50" />}
-                      <span className="font-mono font-medium">{expected.name}</span>
-                      <span className="text-muted-foreground hidden md:inline">{expected.desc}</span>
+                        <Clock className="h-4 w-4 text-muted-foreground" />}
+                      <span className="font-mono font-medium">{actual.name}</span>
+                      <span className="text-muted-foreground hidden md:inline">{actual.summary}</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Badge variant="outline">{expected.interval}</Badge>
-                      {actual ? (
-                        <>
-                          <Badge className={actual.lastStatus === "ok" ? "bg-emerald-500/10 text-emerald-700" : actual.lastStatus === "error" ? "bg-destructive/10 text-destructive" : "bg-muted"}>
-                            {actual.lastStatus}
-                          </Badge>
-                          <span className="text-muted-foreground">×{actual.runCount}</span>
-                          {actual.lastRun && <span className="text-muted-foreground text-[10px]">{new Date(actual.lastRun).toLocaleTimeString()}</span>}
-                        </>
-                      ) : (
-                        <Badge className="bg-muted text-muted-foreground">pending</Badge>
-                      )}
+                      <Badge variant="outline">{actual.intervalLabel}</Badge>
+                      <Badge className={actual.lastStatus === "ok" ? "bg-emerald-500/10 text-emerald-700" : actual.lastStatus === "error" ? "bg-destructive/10 text-destructive" : "bg-muted"}>
+                        {actual.lastStatus}
+                      </Badge>
+                      <span className="text-muted-foreground">×{actual.runCount}</span>
+                      {actual.lastRun && <span className="text-muted-foreground text-[10px]">{new Date(actual.lastRun).toLocaleTimeString()}</span>}
                     </div>
                   </div>
                 );
