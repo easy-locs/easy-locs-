@@ -258,7 +258,56 @@ export async function runPlatformOrchestrator(): Promise<{
     }
   } catch {}
 
-  // 6. Prevent auto-publish if backend-connectivity or full-stack-linkage report broken
+  // 6. Chief Mechanic: trigger mechanics engines based on sensor data
+  try {
+    // If backend-connectivity found dead entities → trigger auto-repair
+    const connectivityJob = status.jobs.find(j => j.name === "backend-connectivity");
+    if (connectivityJob && connectivityJob.itemsProcessed > 0 && connectivityJob.businessImpact?.includes("dead")) {
+      decisions.push({
+        engineSource: "platform-orchestrator",
+        actionType: "trigger_cleanup",
+        severity: "warning",
+        targetType: "engine",
+        targetPath: "auto-repair",
+        description: "Backend connectivity found dead entities — triggering auto-repair",
+        decision: "Auto-repair engine dispatched",
+        autoApplied: true,
+        result: "dispatched",
+      });
+    }
+
+    // If entity-integrity found failures → trigger state healing
+    const integrityJob = status.jobs.find(j => j.name === "entity-integrity");
+    if (integrityJob && integrityJob.businessImpact?.includes("failure")) {
+      decisions.push({
+        engineSource: "platform-orchestrator",
+        actionType: "trigger_cleanup",
+        severity: "warning",
+        targetType: "engine",
+        targetPath: "entity-state-healing",
+        description: "Entity integrity failures detected — triggering state healing",
+        decision: "State healing engine dispatched",
+        autoApplied: true,
+        result: "dispatched",
+      });
+    }
+
+    // If module-link-repair found broken links → escalate
+    const moduleLinkJob = status.jobs.find(j => j.name === "module-link-repair");
+    if (moduleLinkJob && moduleLinkJob.businessImpact?.includes("broken")) {
+      decisions.push({
+        engineSource: "platform-orchestrator",
+        actionType: "escalate",
+        severity: "critical",
+        targetType: "module_link",
+        description: "Module links still broken after repair attempt",
+        decision: "Escalated to review queue",
+        autoApplied: false,
+      });
+    }
+  } catch {}
+
+  // 7. Prevent auto-publish if backend-connectivity or full-stack-linkage report broken
   const connectivityJob = status.jobs.find(j => j.name === "backend-connectivity");
   const linkageJob = status.jobs.find(j => j.name === "full-stack-linkage");
   if (connectivityJob?.lastStatus === "error" || linkageJob?.lastStatus === "error") {
