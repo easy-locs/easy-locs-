@@ -220,6 +220,12 @@ export function startContinuousEngine() {
     }
   }, "quality");
 
+  registerJob("strict-quality-gate", 10 * 60_000, async () => {
+    const { runStrictQualityGate } = await import("@/lib/engines/strict-quality-gate-engine");
+    const result = await runStrictQualityGate(100);
+    console.log(`[continuous] Quality gate: published=${result.published} blocked=${result.blocked} unpublished=${result.unpublished}`);
+  }, "quality");
+
   registerJob("entity-recovery", 30 * 60_000, async () => {
     const { recoverHiddenEntities } = await import("@/lib/engines/entity-recovery-engine");
     const result = await recoverHiddenEntities(10);
