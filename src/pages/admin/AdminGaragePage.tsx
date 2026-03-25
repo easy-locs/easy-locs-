@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -53,7 +53,7 @@ const statusIcon = (s: string) => {
 const AdminGaragePage = () => {
   const backendStatus = useBackendEngineStatus(4000);
   const status = backendStatus;
-  const layer = "all" as GarageLayer;
+  const [layer, setLayer] = useState<GarageLayer>("all");
   const loading = backendStatus.loading;
   const filtered = useMemo(() => layer === "all" ? status.jobs : status.jobs.filter(j => getLayer(j.name) === layer), [layer, status.jobs]);
 
@@ -76,7 +76,7 @@ const AdminGaragePage = () => {
           </h1>
           <p className="text-sm text-muted-foreground">4 couches : Sensors → Toolbox → Mechanics → Orchestrator</p>
         </div>
-        <Button variant="outline" size="sm" disabled>
+        <Button variant="outline" size="sm">
           <RefreshCw className={`h-4 w-4 mr-2 ${loading ? "animate-spin" : ""}`} /> Refresh
         </Button>
       </div>

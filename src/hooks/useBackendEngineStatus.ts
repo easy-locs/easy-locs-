@@ -1,5 +1,6 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useEngineDebugSnapshot } from "@/hooks/useEngineDebugSnapshot";
+import { supabase } from "@/integrations/supabase/client";
 import {
   ENGINE_METADATA,
   type BusinessFunction,
@@ -27,6 +28,23 @@ type BackendEngineJob = {
   businessFn: BusinessFunction;
   vertical: EngineVertical;
   enabled: boolean;
+};
+
+type EngineRunLogRow = {
+  engine_name: string;
+  status: string;
+  duration_ms: number | null;
+  effect_summary: string | null;
+  db_rows_affected: number | null;
+  started_at: string;
+};
+
+type EngineRunAggregate = {
+  runCount: number;
+  rowsAffected: number;
+  lastDetail: string | null;
+  lastRun: string | null;
+  lastStatus: EngineRuntimeStatus;
 };
 
 function normalizeStatus(status: string | null | undefined): EngineRuntimeStatus {
@@ -64,9 +82,54 @@ function inferCategory(name: string, businessFn: BusinessFunction): EngineCatego
 
 export function useBackendEngineStatus(pollMs = 8000) {
   const { rows, loading } = useEngineDebugSnapshot(pollMs);
+  const [runAggregates, setRunAggregates] = useState<Record<string, EngineRunAggregate>>({});
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const fetchRuns = async () => {
+      const { data } = await (supabase as any)
+        .from("engine_run_logs")
+        .select("engine_name, status, duration_ms, effect_summary, db_rows_affected, started_at")
+        .order("started_at", { ascending: false })
+        .limit(500);
+
+      if (cancelled || !data) return;
+
+      const grouped = (data as EngineRunLogRow[]).reduce<Record<string, EngineRunAggregate>>((acc, row) => {
+        const status = normalizeStatus(row.status);
+
+        if (!acc[row.engine_name]) {
+          acc[row.engine_name] = {
+            runCount: 0,
+            rowsAffected: 0,
+            lastDetail: row.effect_summary ?? (row.duration_ms != null ? `${row.duration_ms}ms` : null),
+            lastRun: row.started_at,
+            lastStatus: status,
+          };
+        }
+
+        acc[row.engine_name].runCount += 1;
+        acc[row.engine_name].rowsAffected += Number(row.db_rows_affected ?? 0);
+
+        return acc;
+      }, {});
+
+      setRunAggregates(grouped);
+    };
+
+    void fetchRuns();
+    const timer = setInterval(fetchRuns, pollMs);
+
+    return () => {
+      cancelled = true;
+      clearInterval(timer);
+    };
+  }, [pollMs]);
 
   return useMemo(() => {
     const jobs: BackendEngineJob[] = rows.map((row) => {
+      const aggregate = runAggregates[row.engine_name];
       const meta = ENGINE_METADATA[row.engine_name] ?? {
         tier: "standard" as EngineTier,
         businessFn: "infrastructure" as BusinessFunction,
@@ -82,12 +145,15 @@ export function useBackendEngineStatus(pollMs = 8000) {
         category: inferCategory(row.engine_name, meta.businessFn),
         intervalMs: 0,
         intervalLabel: "server",
-        lastRun: row.last_run_at,
-        runCount: 0,
-        lastStatus: normalizeStatus(row.status),
-        lastDetail: row.last_error_message ?? (row.last_duration_ms != null ? `${row.last_duration_ms}ms` : null),
+        lastRun: aggregate?.lastRun ?? row.last_run_at,
+        runCount: aggregate?.runCount ?? 0,
+        lastStatus: aggregate?.lastStatus ?? normalizeStatus(row.status),
+        lastDetail:
+          row.last_error_message ??
+          aggregate?.lastDetail ??
+          (row.last_duration_ms != null ? `${row.last_duration_ms}ms` : null),
         itemsProcessed: 0,
-        rowsAffected: 0,
+        rowsAffected: aggregate?.rowsAffected ?? 0,
         businessImpact: "",
         summary: meta.description,
         tier: meta.tier,
@@ -118,5 +184,5 @@ export function useBackendEngineStatus(pollMs = 8000) {
       categories,
       jobs,
     };
-  }, [loading, rows]);
+  }, [loading, rows, runAggregates]);
 }
