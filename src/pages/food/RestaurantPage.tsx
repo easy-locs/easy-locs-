@@ -1,7 +1,7 @@
 /**
- * RestaurantPage — Merchant detail with menu from seed_products.
+ * RestaurantPage — Merchant detail page.
  * Route: /food/restaurant/:restaurantId
- * Queries storefront_pages first, falls back to seed_merchants.
+ * Single source of truth: storefront_pages + menu_items only.
  */
 import { useState, useRef, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
