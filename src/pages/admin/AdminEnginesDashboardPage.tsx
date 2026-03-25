@@ -168,7 +168,7 @@ export default function AdminEnginesDashboardPage() {
         <div className="flex-1">
           <h1 className="text-lg font-bold text-foreground">Engine Cockpit</h1>
           <p className="text-[11px] text-muted-foreground">
-            {rawStatus.totalJobs} engines · Health {healthScore}/100 · {rawStatus.running ? "🟢 Live" : "🔴 Off"}
+            {rawStatus.totalJobs} engines · Health {healthScores.global}/100 · {rawStatus.running ? "🟢 Live" : "🔴 Off"}
           </p>
         </div>
         <button onClick={() => setTick(t => t + 1)} className="rounded-xl bg-muted px-3 py-1.5 text-[11px] font-bold text-muted-foreground">↻</button>
@@ -362,13 +362,86 @@ export default function AdminEnginesDashboardPage() {
         </div>
       )}
 
+      {/* Health Scores */}
+      <div className="rounded-2xl border border-border bg-card overflow-hidden">
+        <div className="px-4 py-2 border-b border-border bg-muted/30">
+          <span className="text-sm font-bold text-foreground">🏥 Platform Health Scores</span>
+        </div>
+        <div className="p-3 grid grid-cols-3 gap-1.5">
+          {([
+            { label: "Performance", value: healthScores.performance, icon: "⚡" },
+            { label: "Coherence", value: healthScores.coherence, icon: "🔗" },
+            { label: "i18n", value: healthScores.i18n, icon: "🌍" },
+            { label: "Cleanup", value: healthScores.cleanup, icon: "🧹" },
+            { label: "Routing", value: healthScores.routing, icon: "🛤️" },
+            { label: "Global", value: healthScores.global, icon: "🎯" },
+          ]).map(s => (
+            <div key={s.label} className="rounded-xl bg-muted/40 px-2.5 py-2 text-center">
+              <p className="text-[10px] text-muted-foreground">{s.icon} {s.label}</p>
+              <p className={`text-lg font-bold ${s.value >= 80 ? "text-emerald-500" : s.value >= 50 ? "text-amber-500" : "text-red-500"}`}>{s.value}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Classified Collisions */}
+      {showCollisions && classifiedCols.length > 0 && (
+        <div className="rounded-2xl border border-border bg-card overflow-hidden">
+          <div className="px-4 py-2 border-b border-border bg-muted/30">
+            <span className="text-sm font-bold text-foreground">⚡ Classified Collisions</span>
+          </div>
+          <div className="divide-y divide-border/10">
+            {classifiedCols.map((c, i) => {
+              const levelColor = c.level === "critical_collision" ? "text-red-500" : c.level === "warning_collision" ? "text-amber-500" : c.level === "expected_orchestrated" ? "text-sky-400" : "text-emerald-500";
+              return (
+                <div key={i} className="px-4 py-2">
+                  <div className="flex items-center gap-2">
+                    <span className={`text-[10px] font-bold ${levelColor}`}>{c.level.replace("_", " ").toUpperCase()}</span>
+                    <span className="text-[11px] font-mono font-bold text-foreground">{c.table}.{c.field}</span>
+                  </div>
+                  <p className="text-[9px] text-muted-foreground">{c.engines.join(" · ")} — {c.reason}</p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Decision Journal */}
+      <div className="rounded-2xl border border-border bg-card overflow-hidden">
+        <button onClick={() => setShowDecisions(!showDecisions)} className="w-full px-4 py-2 border-b border-border bg-muted/30 flex items-center justify-between">
+          <span className="text-sm font-bold text-foreground">📋 Decision Journal ({decisions.length})</span>
+          <span className="text-[10px] text-muted-foreground">{showDecisions ? "▼" : "▶"}</span>
+        </button>
+        {showDecisions && (
+          <div className="divide-y divide-border/10 max-h-60 overflow-y-auto">
+            {decisions.length === 0 ? (
+              <p className="px-4 py-3 text-[11px] text-muted-foreground">No decisions logged yet. Orchestrator will populate on next cycle.</p>
+            ) : decisions.map((d: any) => {
+              const sevColor = d.severity === "critical" ? "text-red-500" : d.severity === "warning" ? "text-amber-500" : "text-muted-foreground";
+              return (
+                <div key={d.id} className="px-4 py-2">
+                  <div className="flex items-center gap-2">
+                    <span className={`text-[9px] font-bold ${sevColor}`}>{d.severity?.toUpperCase()}</span>
+                    <span className="text-[10px] font-bold text-foreground">{d.action_type}</span>
+                    {d.auto_applied && <span className="text-[8px] bg-emerald-500/20 text-emerald-400 rounded px-1">AUTO</span>}
+                  </div>
+                  <p className="text-[10px] text-muted-foreground truncate">{d.description}</p>
+                  <p className="text-[9px] text-muted-foreground/60">{d.decision} · {new Date(d.created_at).toLocaleString()}</p>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
       {/* Inventory */}
       <div className="rounded-2xl border border-border bg-card p-3 grid grid-cols-2 gap-1">
         {([
           { label: "Real Engines", value: rawStatus.totalJobs },
           { label: "Event Types", value: 8 },
           { label: "Collisions", value: collisions.length },
-          { label: "Health Score", value: `${healthScore}/100` },
+          { label: "Health Score", value: `${healthScores.global}/100` },
         ]).map(r => (
           <div key={r.label} className="flex justify-between items-center rounded-lg bg-muted/40 px-2.5 py-1">
             <span className="text-[9px] text-muted-foreground">{r.label}</span>
