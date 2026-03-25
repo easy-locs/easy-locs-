@@ -17600,6 +17600,7 @@ export type Database = {
           duplicate_of: string | null
           field_sources_json: Json | null
           freshness_score: number | null
+          gallery_images: Json | null
           grocery_catalog_at: string | null
           grocery_catalog_json: Json | null
           halal: boolean | null
@@ -17719,6 +17720,7 @@ export type Database = {
           duplicate_of?: string | null
           field_sources_json?: Json | null
           freshness_score?: number | null
+          gallery_images?: Json | null
           grocery_catalog_at?: string | null
           grocery_catalog_json?: Json | null
           halal?: boolean | null
@@ -17838,6 +17840,7 @@ export type Database = {
           duplicate_of?: string | null
           field_sources_json?: Json | null
           freshness_score?: number | null
+          gallery_images?: Json | null
           grocery_catalog_at?: string | null
           grocery_catalog_json?: Json | null
           halal?: boolean | null
