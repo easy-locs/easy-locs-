@@ -8,11 +8,8 @@ import EasyLocsLogo from "./EasyLocsLogo";
 
 export default function SplashScreen({ children }: { children: React.ReactNode }) {
   const [show, setShow] = useState(true);
-  const [renderChildren, setRenderChildren] = useState(false);
 
   useEffect(() => {
-    // Start rendering children immediately behind the splash
-    setRenderChildren(true);
     const t = setTimeout(() => setShow(false), 1200);
     return () => clearTimeout(t);
   }, []);
@@ -38,7 +35,7 @@ export default function SplashScreen({ children }: { children: React.ReactNode }
           </motion.div>
         )}
       </AnimatePresence>
-      {renderChildren && children}
+      {!show && children}
     </>
   );
 }
