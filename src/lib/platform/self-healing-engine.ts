@@ -111,7 +111,7 @@ export async function runHealthScan(): Promise<HealthScanResult> {
 
   for (const m of merchants ?? []) {
     if (!m.name || m.name.trim().length < 2) emptyPages++;
-    if (!m.logo_url) missingImages++;
+    if (!m.logo_image) missingImages++;
     if (m.visibility_score === null || m.visibility_score === undefined) brokenScores++;
 
     // Auto-fix missing category

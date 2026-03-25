@@ -17186,6 +17186,7 @@ export type Database = {
       seed_merchants: {
         Row: {
           area: string
+          blocking_reason: string | null
           branch_label: string | null
           brand_name: string | null
           category: string
@@ -17250,6 +17251,7 @@ export type Database = {
         }
         Insert: {
           area: string
+          blocking_reason?: string | null
           branch_label?: string | null
           brand_name?: string | null
           category: string
@@ -17314,6 +17316,7 @@ export type Database = {
         }
         Update: {
           area?: string
+          blocking_reason?: string | null
           branch_label?: string | null
           brand_name?: string | null
           category?: string
