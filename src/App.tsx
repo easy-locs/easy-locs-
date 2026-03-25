@@ -764,7 +764,7 @@ const App = () => (
            <SplashScreen>
            <BrandSuccessFlash />
              
-             <V1BootBridge />
+             
             <OrbitSessionGuard />
            <RealtimeHubGuard />
            <NotificationsRealtimeGuard />
