@@ -45,6 +45,7 @@ export const ENGINE_METADATA: Record<string, EngineMetadata> = {
   "journey-coherence":     { tier: "standard",    businessFn: "infrastructure", vertical: "all", canRunIdle: true,  tablesWritten: [],                   fieldsWritten: [],                              description: "Validates UI journey flows" },
   "ui-ux-consistency":     { tier: "standard",    businessFn: "infrastructure", vertical: "all", canRunIdle: true,  tablesWritten: [],                   fieldsWritten: [],                              description: "Audits UI/UX consistency" },
   "i18n-integrity":        { tier: "standard",    businessFn: "infrastructure", vertical: "all", canRunIdle: true,  tablesWritten: [],                   fieldsWritten: [],                              description: "Checks translation integrity" },
+  "global-orchestration":  { tier: "critical",    businessFn: "infrastructure", vertical: "all", canRunIdle: true,  tablesWritten: [],                   fieldsWritten: [],                              description: "Coordinates all engines, detects collisions" },
 
   // ── DIGITAL (visibility) ──
   "digital-orchestration": { tier: "priority",    businessFn: "visibility",     vertical: "all",     canRunIdle: true,  tablesWritten: [],                   fieldsWritten: [],                                                    description: "Orchestrates homepage sections" },
