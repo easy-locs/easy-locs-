@@ -17601,6 +17601,7 @@ export type Database = {
           field_sources_json: Json | null
           freshness_score: number | null
           gallery_images: Json | null
+          gate_failures: Json | null
           grocery_catalog_at: string | null
           grocery_catalog_json: Json | null
           halal: boolean | null
@@ -17721,6 +17722,7 @@ export type Database = {
           field_sources_json?: Json | null
           freshness_score?: number | null
           gallery_images?: Json | null
+          gate_failures?: Json | null
           grocery_catalog_at?: string | null
           grocery_catalog_json?: Json | null
           halal?: boolean | null
@@ -17841,6 +17843,7 @@ export type Database = {
           field_sources_json?: Json | null
           freshness_score?: number | null
           gallery_images?: Json | null
+          gate_failures?: Json | null
           grocery_catalog_at?: string | null
           grocery_catalog_json?: Json | null
           halal?: boolean | null
