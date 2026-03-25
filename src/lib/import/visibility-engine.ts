@@ -89,8 +89,8 @@ export async function publishCandidateAsSeed(candidateId: string): Promise<{ suc
       is_open: true,
       visibility_score: Math.min(100, (cand.quality_score ?? 50)),
       display_priority: Math.max(0, Math.min(100, Math.round((cand.quality_score ?? 50) * 0.8))),
-      visibility_mode: "visible",
-      route_status: "active",
+      visibility_mode: "live",
+      route_status: "valid",
     })
     .select("id")
     .single();
