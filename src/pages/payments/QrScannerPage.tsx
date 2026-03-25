@@ -12,6 +12,7 @@ import { playScanBeep } from "@/lib/audio/scan-beep";
 import { haptic } from "@/lib/haptics";
 import { platformBus } from "@/lib/shared/platform-bus";
 import { resolvePayTarget, type ResolvedPayTarget } from "@/lib/wallet/resolvePayTarget";
+import { generateIdempotencyKey, isDuplicatePayment, recordPaymentAttempt } from "@/lib/merchant-qr/merchant-qr-engine";
 import { supabase } from "@/integrations/supabase/client";
 import { useUnifiedPayment } from "@/payments/UnifiedPaymentSystem";
 import { useAuth } from "@/contexts/AuthContext";
@@ -174,6 +175,19 @@ export default function QrScannerPage() {
         setS("error");
         return;
       }
+      // ── Duplicate payment protection ──
+      const idempotencyKey = generateIdempotencyKey(
+        user?.id || "anon",
+        draft.recipientId,
+        amount,
+        draft.contextId,
+      );
+      if (isDuplicatePayment(idempotencyKey)) {
+        setE("Duplicate payment detected — please wait 30s before retrying");
+        setS("error");
+        return;
+      }
+      recordPaymentAttempt(idempotencyKey);
       setPayStepLabel("Opening payment…");
       setS("paying");
       const tPayStart = performance.now();
@@ -607,6 +621,12 @@ export default function QrScannerPage() {
                             setE("Missing amount");
                             return;
                           }
+                          // Duplicate guard
+                          const iKey = generateIdempotencyKey(user?.id || "anon", pendingPayment.recipientId, amount, pendingPayment.contextId);
+                          if (isDuplicatePayment(iKey)) {
+                            setE("Duplicate payment — wait 30s"); return;
+                          }
+                          recordPaymentAttempt(iKey);
                           setError("");
                           setPayStepLabel("Opening payment…");
                           setState("paying");
