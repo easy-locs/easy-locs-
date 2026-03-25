@@ -218,8 +218,9 @@ export async function fetchCanonicalDiscovery(opts: CanonicalDiscoveryOpts): Pro
   const seedQueryPromise = seedAllowed ? (() => {
     let seedQuery = (supabase as any)
       .from("seed_merchants")
-      .select("id, name, category, subcategory, city, area, rating, review_count, cover_image, logo_image, visibility_score, is_open, is_featured, promo_active, delivery_time_min, delivery_time_max")
+      .select("id, name, category, subcategory, city, area, rating, review_count, cover_image, logo_image, visibility_score, is_open, is_featured, promo_active, delivery_time_min, delivery_time_max, overall_quality_score, pipeline_stage, visibility_mode")
       .eq("is_active", true)
+      .not("visibility_mode", "eq", "hidden")
       .order("visibility_score", { ascending: false })
       .limit(limit);
 
@@ -280,6 +281,8 @@ export async function fetchCanonicalDiscovery(opts: CanonicalDiscoveryOpts): Pro
   for (const m of seedResults) {
     if (seenIds.has(m.id)) continue;
     if (isPlaceholder(m.cover_image) && isPlaceholder(m.logo_image)) continue;
+    // Block low-quality entities from discovery
+    if ((m.overall_quality_score ?? 0) > 0 && (m.overall_quality_score ?? 0) < 30) continue;
     const coords = areaToCoords(m.area);
     const normVertical = normalizeVertical(m.category);
     const cat = verticalToRadarCategory(normVertical);

@@ -590,6 +590,17 @@ export function startContinuousEngine() {
   }, "quality");
 
   // ═══════════════════════════════════════════════════════════
+  // MASTER PIPELINE (unified orchestrated run) — every 2 hours
+  // ═══════════════════════════════════════════════════════════
+
+  registerJob("master-pipeline", 120 * 60_000, async () => {
+    const { runQuickPipeline } = await import("@/lib/pipeline/master-data-pipeline");
+    const stages = await runQuickPipeline(30);
+    const total = stages.reduce((s, st) => s + st.processed, 0);
+    console.log(`[continuous] Master pipeline: ${total} processed across ${stages.length} stages`);
+  }, "data");
+
+  // ═══════════════════════════════════════════════════════════
   // PLATFORM HEALTH & AUDIT ENGINES (76-80)
   // ═══════════════════════════════════════════════════════════
 
