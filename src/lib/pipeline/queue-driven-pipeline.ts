@@ -85,38 +85,12 @@ export async function enqueueBatch(
 }
 
 /**
- * Fetch and lock the next pending queue item.
+ * Fetch and lock the next pending queue item using atomic RPC (SELECT FOR UPDATE SKIP LOCKED).
  */
-async function fetchAndLock(workerId: string): Promise<any | null> {
-  const now = new Date().toISOString();
-
-  // Find next pending item, ordered by priority desc then created_at asc
-  const { data: items } = await db
-    .from("entity_pipeline_queue")
-    .select("*")
-    .eq("status", "pending")
-    .order("priority", { ascending: false })
-    .order("created_at", { ascending: true })
-    .limit(1);
-
-  if (!items?.length) return null;
-  const item = items[0];
-
-  // Lock it
-  const { data: locked } = await db
-    .from("entity_pipeline_queue")
-    .update({
-      status: "processing",
-      locked_by: workerId,
-      locked_at: now,
-      updated_at: now,
-    })
-    .eq("id", item.id)
-    .eq("status", "pending") // optimistic lock
-    .select("*")
-    .single();
-
-  return locked;
+async function fetchAndLock(_workerId: string): Promise<any | null> {
+  const { data, error } = await db.rpc("fetch_and_lock_job");
+  if (error || !data?.length) return null;
+  return data[0];
 }
 
 /**
