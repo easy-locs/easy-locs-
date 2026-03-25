@@ -104,54 +104,60 @@ export default function CategoryBanners() {
           viewport={{ once: true }}
           className="mb-4"
         >
-          <Link
-            to={CATEGORIES[0].to}
-            className="group relative block rounded-3xl overflow-hidden border border-border/10 hover:border-accent/30 transition-all duration-300"
-            style={{ boxShadow: "0 8px 40px hsl(0 0% 0% / 0.15)" }}
-          >
-            <div className="aspect-[21/9] sm:aspect-[3/1] relative overflow-hidden">
-              <img
-                src={CATEGORIES[0].image}
-                alt={CATEGORIES[0].title}
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                loading="eager"
-              />
-              <div className="absolute inset-0" style={{ background: "linear-gradient(135deg, hsl(0 0% 0% / 0.6) 0%, hsl(0 0% 0% / 0.2) 50%, hsl(0 0% 0% / 0.5) 100%)" }} />
+          {(() => {
+            const featured = CATEGORIES[0];
+            const FeaturedIcon = featured.icon;
+            return (
+              <Link
+                to={featured.to}
+                className="group relative block rounded-3xl overflow-hidden border border-border/10 hover:border-accent/30 transition-all duration-300"
+                style={{ boxShadow: "0 8px 40px hsl(0 0% 0% / 0.15)" }}
+              >
+                <div className="aspect-[21/9] sm:aspect-[3/1] relative overflow-hidden">
+                  <img
+                    src={featured.image}
+                    alt={featured.title}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                    loading="eager"
+                  />
+                  <div className="absolute inset-0" style={{ background: "linear-gradient(135deg, hsl(0 0% 0% / 0.6) 0%, hsl(0 0% 0% / 0.2) 50%, hsl(0 0% 0% / 0.5) 100%)" }} />
 
-              {CATEGORIES[0].badge && (
-                <span className="absolute top-3 right-3 px-2.5 py-1 rounded-full text-[10px] font-bold text-white backdrop-blur-md"
-                  style={{ background: `${CATEGORIES[0].accent}80`, border: `1px solid ${CATEGORIES[0].accent}40` }}>
-                  {CATEGORIES[0].badge}
-                </span>
-              )}
+                  {featured.badge && (
+                    <span className="absolute top-3 right-3 px-2.5 py-1 rounded-full text-[10px] font-bold text-white backdrop-blur-md"
+                      style={{ background: `${featured.accent}80`, border: `1px solid ${featured.accent}40` }}>
+                      {featured.badge}
+                    </span>
+                  )}
 
-              <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-6">
-                <div className="flex items-end justify-between gap-4">
-                  <div>
-                    <div className="flex items-center gap-2 mb-2">
-                      <div className="w-8 h-8 rounded-xl flex items-center justify-center backdrop-blur-md border border-white/15"
-                        style={{ background: `${CATEGORIES[0].accent}30` }}>
-                        <CATEGORIES[0].icon className="h-4 w-4 text-white" />
-                      </div>
+                  <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-6">
+                    <div className="flex items-end justify-between gap-4">
                       <div>
-                        <h3 className="text-base sm:text-lg font-bold text-white">{CATEGORIES[0].title}</h3>
-                        <p className="text-[10px] sm:text-xs text-white/60">{CATEGORIES[0].sub}</p>
+                        <div className="flex items-center gap-2 mb-2">
+                          <div className="w-8 h-8 rounded-xl flex items-center justify-center backdrop-blur-md border border-white/15"
+                            style={{ background: `${featured.accent}30` }}>
+                            <FeaturedIcon className="h-4 w-4 text-white" />
+                          </div>
+                          <div>
+                            <h3 className="text-base sm:text-lg font-bold text-white">{featured.title}</h3>
+                            <p className="text-[10px] sm:text-xs text-white/60">{featured.sub}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <span className="text-white/80 text-xs font-semibold">
+                            <span className="text-white font-extrabold">{featured.count}</span> {featured.countLabel}
+                          </span>
+                        </div>
                       </div>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <span className="text-white/80 text-xs font-semibold">
-                        <span className="text-white font-extrabold">{CATEGORIES[0].count}</span> {CATEGORIES[0].countLabel}
+                      <span className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold text-white backdrop-blur-md border border-white/10 group-hover:gap-2.5 transition-all shrink-0"
+                        style={{ background: `${featured.accent}90` }}>
+                        {featured.cta} <ArrowRight className="h-3.5 w-3.5" />
                       </span>
                     </div>
                   </div>
-                  <span className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold text-white backdrop-blur-md border border-white/10 group-hover:gap-2.5 transition-all shrink-0"
-                    style={{ background: `${CATEGORIES[0].accent}90` }}>
-                    {CATEGORIES[0].cta} <ArrowRight className="h-3.5 w-3.5" />
-                  </span>
                 </div>
-              </div>
-            </div>
-          </Link>
+              </Link>
+            );
+          })()}
         </motion.div>
 
         {/* Grid of remaining banners */}
