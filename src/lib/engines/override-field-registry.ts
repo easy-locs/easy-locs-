@@ -119,8 +119,8 @@ export const PILOTED_COLUMNS: Record<string, string[]> = {
     "seo_title", "seo_description",
   ],
   seed_merchants: [
-    "name", "description", "logo_url", "cover_url", "vertical",
-    "subcategory", "tags", "slug", "visibility_mode", "display_priority",
+    "name", "description", "logo_image", "cover_image", "category",
+    "subcategory", "tier", "visibility_mode", "display_priority",
   ],
   onboarding_shop_candidates: [
     "name", "description", "logo_url", "cover_url", "vertical",

@@ -101,7 +101,7 @@ export async function runHealthScan(): Promise<HealthScanResult> {
 
   const { data: merchants } = await (supabase as any)
     .from("seed_merchants")
-    .select("id, name, category, city, logo_url, visibility_score")
+    .select("id, name, category, city, logo_image, visibility_score")
     .limit(500);
 
   let emptyPages = 0;
