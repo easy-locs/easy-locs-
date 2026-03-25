@@ -26,6 +26,14 @@ import {
 } from "@/lib/taxonomy/world-class-taxonomy";
 import type { RadarPoint, RadarCategory, UserGeoPoint } from "@/lib/radar/types";
 
+// ═══ Placeholder image filter — blocks generic/stock images from discovery ═══
+const PLACEHOLDER_PATTERNS = ["unsplash.com", "placeholder", "dummyimage", "placehold.co", "via.placeholder"];
+function isPlaceholder(url?: string | null): boolean {
+  if (!url) return true;
+  const lower = url.toLowerCase();
+  return PLACEHOLDER_PATTERNS.some(p => lower.includes(p));
+}
+
 // ═══════════════════════════════════════════════════
 //  VISIBILITY RULES — Which modes are visible per surface
 // ═══════════════════════════════════════════════════
