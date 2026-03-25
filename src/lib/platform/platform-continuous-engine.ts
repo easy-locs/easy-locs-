@@ -163,13 +163,13 @@ export function startContinuousEngine() {
 
   registerJob("ux-audit", 30 * 60_000, async () => {
     const { runUxAudit } = await import("@/lib/engines/ux-audit-engine");
-    const result = runUxAudit({ autoFix: true });
+    const result = runUxAudit();
     console.log(`[continuous] UX audit: score ${result.globalScore}, fixed ${result.totalFixed}`);
   }, "digital");
 
   registerJob("visual-consistency", 30 * 60_000, async () => {
-    const { runConsistencyAudit } = await import("@/lib/engines/visual-consistency-engine");
-    const result = runConsistencyAudit({ autoFix: true });
+    const { runVisualConsistencyAudit } = await import("@/lib/engines/visual-consistency-engine");
+    const result = runVisualConsistencyAudit();
     console.log(`[continuous] Visual: score ${result.score.total}, fixed ${result.fixedCount}`);
   }, "digital");
 
@@ -260,9 +260,9 @@ export function startContinuousEngine() {
   }, "quality");
 
   registerJob("menu-intelligence", 15 * 60_000, async () => {
-    const { buildSmartMenu } = await import("@/lib/engines/menu-intelligence-engine");
+    const { processMenuIntelligence } = await import("@/lib/engines/menu-intelligence-engine");
     // Warm the engine — actual processing happens per-shop
-    buildSmartMenu([]);
+    processMenuIntelligence([]);
   }, "quality");
 
   // ═══════════════════════════════════════════════════════════
