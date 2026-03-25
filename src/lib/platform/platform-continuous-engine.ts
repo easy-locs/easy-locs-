@@ -760,13 +760,34 @@ export function startContinuousEngine() {
   }, "quality");
 
   // ═══════════════════════════════════════════════════════════
-  // START ALL — Staggered boot
+  // START ALL — Staggered boot (spread over 5 minutes to avoid thundering herd)
+  // Only critical engines start immediately; others defer significantly.
   // ═══════════════════════════════════════════════════════════
 
+  const CRITICAL_JOBS = new Set(["pipeline-queue-worker", "pipeline-auto-enqueue", "global-orchestration"]);
+  const PRIORITY_CATS = new Set<string>(["system", "finance"]);
+
   for (const job of jobs) {
+    const isCritical = CRITICAL_JOBS.has(job.name);
+    const isPriority = PRIORITY_CATS.has(job.category);
     const idx = jobs.indexOf(job);
-    setTimeout(() => void executeJob(job), 5000 + idx * 1500);
-    job.timerId = setInterval(() => void executeJob(job), job.intervalMs);
+
+    // Critical: start after 8s, Priority: start after 30-90s, Standard: start after 2-5min
+    const bootDelay = isCritical
+      ? 8000 + idx * 500
+      : isPriority
+        ? 30000 + idx * 2000
+        : 120000 + idx * 3000;
+
+    setTimeout(() => {
+      if (!running) return;
+      void executeJob(job);
+    }, bootDelay);
+
+    job.timerId = setInterval(() => {
+      if (!running) return;
+      void executeJob(job);
+    }, job.intervalMs);
   }
 
   const cats = {
@@ -780,7 +801,7 @@ export function startContinuousEngine() {
     lifecycle: jobs.filter(j => j.category === "lifecycle").length,
   };
 
-  console.log(`[continuous] 🚀 ${jobs.length} engines started — system:${cats.system} digital:${cats.digital} quality:${cats.quality} data:${cats.data} commerce:${cats.commerce} finance:${cats.finance} delivery:${cats.delivery} lifecycle:${cats.lifecycle}`);
+  console.log(`[continuous] 🚀 ${jobs.length} engines registered — system:${cats.system} digital:${cats.digital} quality:${cats.quality} data:${cats.data} commerce:${cats.commerce} finance:${cats.finance} delivery:${cats.delivery} lifecycle:${cats.lifecycle}`);
 }
 
 export function stopContinuousEngine() {
