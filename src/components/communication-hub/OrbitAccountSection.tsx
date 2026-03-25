@@ -254,9 +254,9 @@ export default function OrbitAccountSection() {
     if (!user) return;
     try {
       const { data: messages } = await supabase
-        .from("messages")
-        .select("content, created_at, sender_id")
-        .or(`sender_id.eq.${user.id},recipient_id.eq.${user.id}`)
+        .from("chat_messages_v2")
+        .select("body, created_at, sender_user_id")
+        .or(`sender_user_id.eq.${user.id}`)
         .order("created_at", { ascending: true })
         .limit(1000);
       
@@ -265,8 +265,8 @@ export default function OrbitAccountSection() {
         return;
       }
 
-      const text = messages.map(m => 
-        `[${new Date(m.created_at).toLocaleString()}] ${m.sender_id === user.id ? "You" : "Contact"}: ${m.content}`
+      const text = messages.map((m: any) => 
+        `[${new Date(m.created_at).toLocaleString()}] ${m.sender_user_id === user.id ? "You" : "Contact"}: ${m.body}`
       ).join("\n");
 
       const blob = new Blob([text], { type: "text/plain" });
