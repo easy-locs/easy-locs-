@@ -12055,6 +12055,51 @@ export type Database = {
         }
         Relationships: []
       }
+      module_health: {
+        Row: {
+          auto_fix_enabled: boolean | null
+          current_incident: string | null
+          error_count_1h: number | null
+          id: string
+          last_error_at: string | null
+          last_success_at: string | null
+          metadata_json: Json | null
+          module: string
+          p95_latency_ms: number | null
+          repair_mode: string | null
+          status: string
+          updated_at: string | null
+        }
+        Insert: {
+          auto_fix_enabled?: boolean | null
+          current_incident?: string | null
+          error_count_1h?: number | null
+          id?: string
+          last_error_at?: string | null
+          last_success_at?: string | null
+          metadata_json?: Json | null
+          module: string
+          p95_latency_ms?: number | null
+          repair_mode?: string | null
+          status?: string
+          updated_at?: string | null
+        }
+        Update: {
+          auto_fix_enabled?: boolean | null
+          current_incident?: string | null
+          error_count_1h?: number | null
+          id?: string
+          last_error_at?: string | null
+          last_success_at?: string | null
+          metadata_json?: Json | null
+          module?: string
+          p95_latency_ms?: number | null
+          repair_mode?: string | null
+          status?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       newsletter_subscribers: {
         Row: {
           created_at: string
