@@ -17566,10 +17566,13 @@ export type Database = {
       }
       seed_merchants: {
         Row: {
+          active_modules: number | null
+          analytics_status: string | null
           area: string
           auto_published_at: string | null
           backend_repaired_at: string | null
           blocking_reason: string | null
+          boost_status: string | null
           branch_label: string | null
           brand_name: string | null
           category: string
@@ -17585,6 +17588,7 @@ export type Database = {
           dedup_status: string | null
           delivery_available: boolean | null
           delivery_radius_km: number | null
+          delivery_status: string | null
           delivery_time_max: number
           delivery_time_min: number
           delivery_zones: Json | null
@@ -17609,6 +17613,7 @@ export type Database = {
           is_open: boolean
           last_publish_check_at: string | null
           last_seen_at: string | null
+          last_sync_at: string | null
           last_verified_at: string | null
           latitude: number | null
           logo_image: string | null
@@ -17619,13 +17624,17 @@ export type Database = {
           menu_quality_flag: string | null
           menu_quality_score: number | null
           menu_sections_json: Json | null
+          menu_status: string | null
           minimum_order_amount: number | null
+          module_summary_json: Json | null
           name: string
           needs_rescrape: boolean | null
           opening_hours: Json | null
+          orbit_status: string | null
           overall_quality_score: number | null
           owner_claimed: boolean | null
           owner_controlled: boolean | null
+          payment_status: string | null
           phone: string | null
           pipeline_last_run_at: string | null
           pipeline_stage: string | null
@@ -17635,7 +17644,9 @@ export type Database = {
           promo_text: string | null
           publish_gate_status: string | null
           publish_source: string | null
+          publish_status: string | null
           published_at: string | null
+          radar_status: string | null
           rating: number
           raw_hotel_inventory_json: Json | null
           raw_menu_json: Json | null
@@ -17653,11 +17664,14 @@ export type Database = {
           source_snapshot_json: Json | null
           source_updated_at: string | null
           source_url: string | null
+          storefront_status: string | null
           subcategory: string
           support_email: string | null
           support_phone: string | null
           taxonomy_score: number | null
           tier: string
+          total_modules: number | null
+          truth_status: string | null
           unpublish_reason: string | null
           unpublished_at: string | null
           vertical: string | null
@@ -17669,10 +17683,13 @@ export type Database = {
           website: string | null
         }
         Insert: {
+          active_modules?: number | null
+          analytics_status?: string | null
           area: string
           auto_published_at?: string | null
           backend_repaired_at?: string | null
           blocking_reason?: string | null
+          boost_status?: string | null
           branch_label?: string | null
           brand_name?: string | null
           category: string
@@ -17688,6 +17705,7 @@ export type Database = {
           dedup_status?: string | null
           delivery_available?: boolean | null
           delivery_radius_km?: number | null
+          delivery_status?: string | null
           delivery_time_max?: number
           delivery_time_min?: number
           delivery_zones?: Json | null
@@ -17712,6 +17730,7 @@ export type Database = {
           is_open?: boolean
           last_publish_check_at?: string | null
           last_seen_at?: string | null
+          last_sync_at?: string | null
           last_verified_at?: string | null
           latitude?: number | null
           logo_image?: string | null
@@ -17722,13 +17741,17 @@ export type Database = {
           menu_quality_flag?: string | null
           menu_quality_score?: number | null
           menu_sections_json?: Json | null
+          menu_status?: string | null
           minimum_order_amount?: number | null
+          module_summary_json?: Json | null
           name: string
           needs_rescrape?: boolean | null
           opening_hours?: Json | null
+          orbit_status?: string | null
           overall_quality_score?: number | null
           owner_claimed?: boolean | null
           owner_controlled?: boolean | null
+          payment_status?: string | null
           phone?: string | null
           pipeline_last_run_at?: string | null
           pipeline_stage?: string | null
@@ -17738,7 +17761,9 @@ export type Database = {
           promo_text?: string | null
           publish_gate_status?: string | null
           publish_source?: string | null
+          publish_status?: string | null
           published_at?: string | null
+          radar_status?: string | null
           rating?: number
           raw_hotel_inventory_json?: Json | null
           raw_menu_json?: Json | null
@@ -17756,11 +17781,14 @@ export type Database = {
           source_snapshot_json?: Json | null
           source_updated_at?: string | null
           source_url?: string | null
+          storefront_status?: string | null
           subcategory: string
           support_email?: string | null
           support_phone?: string | null
           taxonomy_score?: number | null
           tier?: string
+          total_modules?: number | null
+          truth_status?: string | null
           unpublish_reason?: string | null
           unpublished_at?: string | null
           vertical?: string | null
@@ -17772,10 +17800,13 @@ export type Database = {
           website?: string | null
         }
         Update: {
+          active_modules?: number | null
+          analytics_status?: string | null
           area?: string
           auto_published_at?: string | null
           backend_repaired_at?: string | null
           blocking_reason?: string | null
+          boost_status?: string | null
           branch_label?: string | null
           brand_name?: string | null
           category?: string
@@ -17791,6 +17822,7 @@ export type Database = {
           dedup_status?: string | null
           delivery_available?: boolean | null
           delivery_radius_km?: number | null
+          delivery_status?: string | null
           delivery_time_max?: number
           delivery_time_min?: number
           delivery_zones?: Json | null
@@ -17815,6 +17847,7 @@ export type Database = {
           is_open?: boolean
           last_publish_check_at?: string | null
           last_seen_at?: string | null
+          last_sync_at?: string | null
           last_verified_at?: string | null
           latitude?: number | null
           logo_image?: string | null
@@ -17825,13 +17858,17 @@ export type Database = {
           menu_quality_flag?: string | null
           menu_quality_score?: number | null
           menu_sections_json?: Json | null
+          menu_status?: string | null
           minimum_order_amount?: number | null
+          module_summary_json?: Json | null
           name?: string
           needs_rescrape?: boolean | null
           opening_hours?: Json | null
+          orbit_status?: string | null
           overall_quality_score?: number | null
           owner_claimed?: boolean | null
           owner_controlled?: boolean | null
+          payment_status?: string | null
           phone?: string | null
           pipeline_last_run_at?: string | null
           pipeline_stage?: string | null
@@ -17841,7 +17878,9 @@ export type Database = {
           promo_text?: string | null
           publish_gate_status?: string | null
           publish_source?: string | null
+          publish_status?: string | null
           published_at?: string | null
+          radar_status?: string | null
           rating?: number
           raw_hotel_inventory_json?: Json | null
           raw_menu_json?: Json | null
@@ -17859,11 +17898,14 @@ export type Database = {
           source_snapshot_json?: Json | null
           source_updated_at?: string | null
           source_url?: string | null
+          storefront_status?: string | null
           subcategory?: string
           support_email?: string | null
           support_phone?: string | null
           taxonomy_score?: number | null
           tier?: string
+          total_modules?: number | null
+          truth_status?: string | null
           unpublish_reason?: string | null
           unpublished_at?: string | null
           vertical?: string | null
