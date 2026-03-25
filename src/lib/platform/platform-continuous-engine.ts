@@ -323,6 +323,33 @@ export function startContinuousEngine() {
     if (result.flagged > 0) console.log(`[continuous] Data trust: ${result.flagged}/${result.scanned} flagged`);
   }, "quality");
 
+  // J) Shop Cleanup Engine (15min)
+  registerJob("shop-cleanup", 15 * 60_000, async () => {
+    const { runShopCleanupEngine } = await import("@/lib/engines/shop-cleanup-engine");
+    const result = await runShopCleanupEngine(200);
+    const job = jobs.find(j => j.name === "shop-cleanup");
+    if (job) job.itemsProcessed = result.scanned;
+    console.log(`[continuous] Shop cleanup: ${result.autoFixed} fixed, ${result.downgraded} downgraded, ${result.duplicateCoverCount} dup covers`);
+  }, "quality");
+
+  // K) Publish Gate Sweep (15min)
+  registerJob("publish-gate", 15 * 60_000, async () => {
+    const { runPublishGateSweep } = await import("@/lib/engines/publish-gate-engine");
+    const result = await runPublishGateSweep(200);
+    const job = jobs.find(j => j.name === "publish-gate");
+    if (job) job.itemsProcessed = result.checked;
+    console.log(`[continuous] Publish gate: ${result.passed} passed, ${result.blocked} blocked, ${result.promoted} promoted`);
+  }, "quality");
+
+  // L) Onboarding Correction Loop (30min)
+  registerJob("onboarding-correction", 30 * 60_000, async () => {
+    const { runOnboardingCorrectionLoop } = await import("@/lib/engines/onboarding-correction-engine");
+    const result = await runOnboardingCorrectionLoop(100);
+    const job = jobs.find(j => j.name === "onboarding-correction");
+    if (job) job.itemsProcessed = result.processed;
+    console.log(`[continuous] Onboarding correction: ${result.reclassified} reclassified, ${result.promoted} promoted, ${result.blocked} blocked`);
+  }, "data");
+
   // Start all intervals staggered
   for (const job of jobs) {
     const idx = jobs.indexOf(job);
