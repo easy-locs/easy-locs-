@@ -1,18 +1,22 @@
 /**
- * PersonalRadarPanel — Personal mode overlay for HyperRadarPage.
- * Shows guidance cards, intent badges, mood chips, personalized feed.
+ * PersonalRadarPanel — AI-powered personal radar with 4 smart sections:
+ * For You Now, Best Now, Trending Nearby, Hidden Gems.
+ * Wired to real engines: context-awareness, hyper-personalization, profile, session intelligence.
  */
 import { useState, useMemo, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 import { buildUserContext } from "@/lib/engines/personal-radar/context-awareness-engine";
-import { computeNextActions, type NextAction } from "@/lib/engines/personal-radar/next-best-action-engine";
+import { computeNextActions } from "@/lib/engines/personal-radar/next-best-action-engine";
 import { personalizeEntities, type PersonalizedEntity } from "@/lib/engines/personal-radar/hyper-personalization-engine";
 import { detectSessionIntent, getIntentBadge, pushSessionSignal } from "@/lib/engines/personal-radar/session-intelligence-engine";
 import { loadRadarProfile, type UserRadarProfile } from "@/lib/engines/personal-radar/personal-profile-engine";
+import { openOrbitFromRadar } from "@/lib/radar/radar-orbit-bridge";
+import { entityUrl } from "@/lib/entity/entity-url";
 import {
-  Sparkles, Zap, Eye, MapPin, Coffee, Moon, Utensils, Hotel, Car, ShoppingBag,
-  Heart, ChevronUp, ChevronDown, User, Activity,
+  Sparkles, Zap, MapPin, Star, TrendingUp, Gem, Clock,
+  MessageCircle, Navigation, Eye,
 } from "lucide-react";
 
 interface Entity {
@@ -26,6 +30,7 @@ interface Entity {
   rating?: number;
   imageUrl?: string;
   image_url?: string;
+  slug?: string;
 }
 
 const MOOD_CHIPS = [
@@ -40,11 +45,11 @@ const MOOD_CHIPS = [
 
 export default function PersonalRadarPanel({ entities, open }: { entities: Entity[]; open: boolean }) {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [personalMode, setPersonalMode] = useState(true);
   const [profile, setProfile] = useState<UserRadarProfile | null>(null);
   const [activeMood, setActiveMood] = useState<string | null>(null);
 
-  // Load profile
   useEffect(() => {
     if (user?.id) {
       loadRadarProfile(user.id).then(setProfile).catch(() => {});
@@ -60,7 +65,8 @@ export default function PersonalRadarPanel({ entities, open }: { entities: Entit
   const { intent, confidence: intentConfidence } = useMemo(() => detectSessionIntent(), [entities]);
   const intentBadge = useMemo(() => getIntentBadge(intent), [intent]);
 
-  const personalized = useMemo(() => {
+  // All personalized entities
+  const allPersonalized = useMemo(() => {
     if (!personalMode) return [];
     return personalizeEntities(
       entities.map(e => ({
@@ -70,18 +76,41 @@ export default function PersonalRadarPanel({ entities, open }: { entities: Entit
       })),
       profile,
       context,
-    ).slice(0, 5);
+    );
   }, [entities, profile, context, personalMode]);
+
+  // Section: Best Now (top 5 by personal score)
+  const bestNow = useMemo(() => allPersonalized.slice(0, 5), [allPersonalized]);
+
+  // Section: Trending Nearby (high rating + close)
+  const trending = useMemo(() => {
+    return [...allPersonalized]
+      .filter(e => (e.rating ?? 0) >= 4.0 && e.distanceKm < 3)
+      .sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0))
+      .slice(0, 5);
+  }, [allPersonalized]);
+
+  // Section: Hidden Gems (lower popularity, decent score, not in top picks)
+  const hiddenGems = useMemo(() => {
+    const topIds = new Set(bestNow.map(e => e.id));
+    return allPersonalized
+      .filter(e => !topIds.has(e.id) && e.personalScore >= 40 && e.personalScore < 75 && e.distanceKm < 5)
+      .slice(0, 4);
+  }, [allPersonalized, bestNow]);
+
+  const handleChat = (entity: Entity) => {
+    if (user?.id) {
+      openOrbitFromRadar(entity, user.id, navigate);
+    } else {
+      navigate(`/auth`);
+    }
+  };
 
   if (!open) return null;
 
   return (
-    <motion.div
-      className="space-y-3"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-    >
-      {/* Personal Mode Toggle */}
+    <motion.div className="space-y-3" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Sparkles className="w-3.5 h-3.5" style={{ color: "hsl(var(--accent))" }} />
@@ -128,10 +157,9 @@ export default function PersonalRadarPanel({ entities, open }: { entities: Entit
         ))}
       </div>
 
-      {/* Next Best Actions */}
+      {/* ══ FOR YOU NOW ══ */}
       {personalMode && actions.length > 0 && (
-        <div>
-          <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider mb-1.5">For you now</p>
+        <Section icon={<Clock className="w-3 h-3" />} title="For You Now" accent>
           <div className="flex gap-2 overflow-x-auto no-scrollbar">
             {actions.slice(0, 4).map(a => (
               <div
@@ -144,59 +172,151 @@ export default function PersonalRadarPanel({ entities, open }: { entities: Entit
                 <p className="text-[9px] text-muted-foreground mt-0.5">{a.subtitle}</p>
                 <div className="flex items-center gap-1 mt-1">
                   <div className="h-1 flex-1 rounded-full bg-muted/30">
-                    <div
-                      className="h-1 rounded-full"
-                      style={{
-                        width: `${a.confidence}%`,
-                        background: a.confidence > 80 ? "hsl(var(--success))" : "hsl(var(--accent))",
-                      }}
-                    />
+                    <div className="h-1 rounded-full" style={{ width: `${a.confidence}%`, background: a.confidence > 80 ? "hsl(var(--success))" : "hsl(var(--accent))" }} />
                   </div>
                   <span className="text-[8px] text-muted-foreground">{a.confidence}%</span>
                 </div>
               </div>
             ))}
           </div>
-        </div>
+        </Section>
       )}
 
-      {/* Personalized Top 5 */}
-      {personalMode && personalized.length > 0 && (
-        <div>
-          <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider mb-1.5">Best for you</p>
-          <div className="space-y-1.5">
-            {personalized.map((p, i) => (
-              <div
+      {/* ══ BEST NOW ══ */}
+      {personalMode && bestNow.length > 0 && (
+        <Section icon={<Star className="w-3 h-3" />} title="Best Now">
+          <div className="space-y-1">
+            {bestNow.map((p, i) => (
+              <EntityRow
                 key={p.id}
-                className="flex items-center gap-2.5 px-2.5 py-2 rounded-xl border border-border/15 cursor-pointer hover:border-accent/20 transition-all"
-                style={{ background: "hsl(var(--background) / 0.5)" }}
+                entity={p}
+                rank={i + 1}
+                isTop={i < 3}
+                onView={() => navigate(entityUrl({ id: p.id }))}
+                onChat={() => handleChat(p as any)}
+              />
+            ))}
+          </div>
+        </Section>
+      )}
+
+      {/* ══ TRENDING NEARBY ══ */}
+      {personalMode && trending.length > 0 && (
+        <Section icon={<TrendingUp className="w-3 h-3" />} title="Trending Nearby">
+          <div className="flex gap-2 overflow-x-auto no-scrollbar">
+            {trending.map(t => (
+              <div
+                key={t.id}
+                className="min-w-[120px] rounded-xl border border-border/15 overflow-hidden shrink-0 cursor-pointer active:scale-[0.97] transition-transform"
+                onClick={() => navigate(entityUrl({ id: t.id }))}
               >
-                <div
-                  className="w-6 h-6 rounded-lg flex items-center justify-center text-[10px] font-bold shrink-0"
-                  style={{ background: "hsl(var(--accent) / 0.1)", color: "hsl(var(--accent))" }}
-                >
-                  {i + 1}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-[11px] font-bold text-foreground truncate">{p.name}</p>
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-[9px] text-muted-foreground capitalize">{p.category}</span>
-                    {p.matchReasons[0] && (
-                      <span className="text-[8px] px-1 py-0.5 rounded-full" style={{ background: "hsl(var(--accent) / 0.1)", color: "hsl(var(--accent))" }}>
-                        {p.matchReasons[0]}
-                      </span>
-                    )}
+                {t.imageUrl ? (
+                  <img src={t.imageUrl} alt={t.name} className="w-full h-16 object-cover" loading="lazy" />
+                ) : (
+                  <div className="w-full h-16 bg-muted/15 flex items-center justify-center">
+                    <MapPin className="w-4 h-4 text-muted-foreground/30" />
                   </div>
-                </div>
-                <div className="text-right shrink-0">
-                  <p className="text-[10px] font-bold" style={{ color: "hsl(var(--accent))" }}>{p.personalScore}</p>
-                  <p className="text-[8px] text-muted-foreground">score</p>
+                )}
+                <div className="px-2 py-1.5">
+                  <p className="text-[10px] font-bold text-foreground truncate">{t.name}</p>
+                  <div className="flex items-center gap-1">
+                    {t.rating && <span className="flex items-center gap-0.5 text-[9px]"><Star className="w-2.5 h-2.5 fill-amber-400 text-amber-400" />{t.rating.toFixed(1)}</span>}
+                    <span className="text-[8px] text-muted-foreground">{t.distanceKm < 1 ? `${Math.round(t.distanceKm * 1000)}m` : `${t.distanceKm.toFixed(1)}km`}</span>
+                  </div>
                 </div>
               </div>
             ))}
           </div>
-        </div>
+        </Section>
+      )}
+
+      {/* ══ HIDDEN GEMS ══ */}
+      {personalMode && hiddenGems.length > 0 && (
+        <Section icon={<Gem className="w-3 h-3" />} title="Hidden Gems">
+          <div className="space-y-1">
+            {hiddenGems.map(g => (
+              <EntityRow
+                key={g.id}
+                entity={g}
+                onView={() => navigate(entityUrl({ id: g.id }))}
+                onChat={() => handleChat(g as any)}
+                badge="gem"
+              />
+            ))}
+          </div>
+        </Section>
       )}
     </motion.div>
+  );
+}
+
+/* ── Shared components ── */
+
+function Section({ icon, title, accent, children }: { icon: React.ReactNode; title: string; accent?: boolean; children: React.ReactNode }) {
+  return (
+    <div>
+      <div className="flex items-center gap-1.5 mb-1.5">
+        <span style={{ color: accent ? "hsl(var(--accent))" : "hsl(var(--muted-foreground))" }}>{icon}</span>
+        <p className="text-[9px] font-bold uppercase tracking-wider" style={{ color: accent ? "hsl(var(--accent))" : "hsl(var(--muted-foreground))" }}>{title}</p>
+      </div>
+      {children}
+    </div>
+  );
+}
+
+function EntityRow({ entity, rank, isTop, onView, onChat, badge }: {
+  entity: PersonalizedEntity;
+  rank?: number;
+  isTop?: boolean;
+  onView: () => void;
+  onChat: () => void;
+  badge?: "gem";
+}) {
+  return (
+    <div
+      className="flex items-center gap-2 px-2.5 py-2 rounded-xl border transition-all active:scale-[0.98]"
+      style={{
+        background: isTop ? "hsl(var(--accent) / 0.04)" : "transparent",
+        borderColor: isTop ? "hsl(var(--accent) / 0.12)" : "hsl(var(--border) / 0.1)",
+      }}
+    >
+      {rank && (
+        <div className="w-5 h-5 rounded-md flex items-center justify-center text-[9px] font-bold shrink-0" style={{
+          background: isTop ? "hsl(var(--accent) / 0.12)" : "hsl(var(--muted) / 0.12)",
+          color: isTop ? "hsl(var(--accent))" : "hsl(var(--muted-foreground))",
+        }}>
+          {rank}
+        </div>
+      )}
+      {badge === "gem" && (
+        <div className="w-5 h-5 rounded-md flex items-center justify-center shrink-0" style={{ background: "hsl(270 60% 55% / 0.12)" }}>
+          <Gem className="w-2.5 h-2.5" style={{ color: "hsl(270 60% 55%)" }} />
+        </div>
+      )}
+      <div className="flex-1 min-w-0 cursor-pointer" onClick={onView}>
+        <p className="text-[11px] font-bold text-foreground truncate">{entity.name}</p>
+        <div className="flex items-center gap-1.5">
+          <span className="text-[9px] text-muted-foreground capitalize">{entity.category}</span>
+          {entity.matchReasons[0] && (
+            <span className="text-[8px] px-1 py-0.5 rounded-full" style={{ background: "hsl(var(--accent) / 0.1)", color: "hsl(var(--accent))" }}>
+              {entity.matchReasons[0]}
+            </span>
+          )}
+        </div>
+      </div>
+      {/* CTAs */}
+      <div className="flex items-center gap-1 shrink-0">
+        <button onClick={onChat} className="w-6 h-6 rounded-lg flex items-center justify-center active:scale-90 transition-transform" style={{ background: "hsl(var(--primary) / 0.1)" }}>
+          <MessageCircle className="w-3 h-3" style={{ color: "hsl(var(--primary))" }} />
+        </button>
+        <button onClick={onView} className="w-6 h-6 rounded-lg flex items-center justify-center active:scale-90 transition-transform" style={{ background: "hsl(var(--accent) / 0.1)" }}>
+          <Eye className="w-3 h-3" style={{ color: "hsl(var(--accent))" }} />
+        </button>
+      </div>
+      <div className="text-right shrink-0">
+        <p className="text-[10px] font-bold" style={{ color: "hsl(var(--accent))" }}>{entity.personalScore}</p>
+        <p className="text-[8px] text-muted-foreground">score</p>
+      </div>
+    </div>
   );
 }

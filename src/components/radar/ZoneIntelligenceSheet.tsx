@@ -1,12 +1,15 @@
 /**
  * ZoneIntelligenceSheet — Premium bottom sheet with snap points,
- * vertical tabs, top picks, and per-entity CTAs.
+ * vertical tabs, top picks, and per-entity CTAs (Message, Navigate, View).
  */
 import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { X, MapPin, Utensils, Hotel, Sparkles, ShoppingBag, Car, Moon, Activity, Navigation, MessageCircle, Phone, Star } from "lucide-react";
+import { X, MapPin, Utensils, Hotel, Sparkles, ShoppingBag, Car, Moon, Activity, Navigation, MessageCircle, Phone, Star, Eye } from "lucide-react";
 import { computeVibeDensity } from "@/lib/engines/vibe-density-engine";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
+import { openOrbitFromRadar } from "@/lib/radar/radar-orbit-bridge";
+import { entityUrl } from "@/lib/entity/entity-url";
 
 interface ZoneEntity {
   id: string;
@@ -19,6 +22,7 @@ interface ZoneEntity {
   distance?: number;
   imageUrl?: string;
   image_url?: string;
+  slug?: string;
 }
 
 interface Props {
@@ -54,6 +58,7 @@ export default function ZoneIntelligenceSheet({ entities, zoneLat, zoneLng, radi
   const [activeTab, setActiveTab] = useState<VerticalTab>("all");
   const [snap, setSnap] = useState<"half" | "full">("half");
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const zoneEntities = useMemo(() => {
     return entities
@@ -91,6 +96,18 @@ export default function ZoneIntelligenceSheet({ entities, zoneLat, zoneLng, radi
     })), new Date().getHours());
   }, [zoneEntities]);
 
+  const handleChat = (entity: ZoneEntity) => {
+    if (user?.id) {
+      openOrbitFromRadar(entity, user.id, navigate);
+    } else {
+      navigate("/auth");
+    }
+  };
+
+  const handleView = (entity: ZoneEntity) => {
+    navigate(entityUrl({ slug: entity.slug, id: entity.id }));
+  };
+
   const heightClass = snap === "full" ? "max-h-[85dvh]" : "max-h-[55dvh]";
 
   if (zoneEntities.length === 0) {
@@ -116,7 +133,7 @@ export default function ZoneIntelligenceSheet({ entities, zoneLat, zoneLng, radi
       initial={{ y: 400 }} animate={{ y: 0 }} exit={{ y: 400 }}
       transition={{ type: "spring", damping: 28, stiffness: 280 }}
     >
-      {/* Handle — tap to toggle snap */}
+      {/* Handle */}
       <button onClick={() => setSnap(s => s === "half" ? "full" : "half")} className="flex items-center justify-center py-2 shrink-0 active:bg-muted/10">
         <div className="w-9 h-1 rounded-full bg-muted-foreground/25" />
       </button>
@@ -205,7 +222,7 @@ export default function ZoneIntelligenceSheet({ entities, zoneLat, zoneLng, radi
               )}
 
               {/* Info */}
-              <div className="flex-1 min-w-0" onClick={() => onSelectEntity?.(e)}>
+              <div className="flex-1 min-w-0 cursor-pointer" onClick={() => handleView(e)}>
                 <p className="text-[11px] font-bold text-foreground truncate">{e.name}</p>
                 <div className="flex items-center gap-1.5">
                   <span className="text-[9px] text-muted-foreground capitalize truncate">{e.category || e.type}</span>
@@ -218,15 +235,24 @@ export default function ZoneIntelligenceSheet({ entities, zoneLat, zoneLng, radi
                 </div>
               </div>
 
-              {/* Distance + CTA */}
-              <div className="flex items-center gap-1.5 shrink-0">
-                <span className="text-[9px] font-bold text-muted-foreground">{distLabel}</span>
+              {/* CTAs: Message + View + Distance */}
+              <div className="flex items-center gap-1 shrink-0">
+                <span className="text-[9px] font-bold text-muted-foreground mr-1">{distLabel}</span>
                 <button
-                  onClick={() => navigate(`/entity/${e.id}`)}
+                  onClick={() => handleChat(e)}
+                  className="w-7 h-7 rounded-lg flex items-center justify-center active:scale-90 transition-transform"
+                  style={{ background: "hsl(var(--primary)/0.1)" }}
+                  title="Message"
+                >
+                  <MessageCircle className="w-3 h-3" style={{ color: "hsl(var(--primary))" }} />
+                </button>
+                <button
+                  onClick={() => handleView(e)}
                   className="w-7 h-7 rounded-lg flex items-center justify-center active:scale-90 transition-transform"
                   style={{ background: "hsl(var(--accent)/0.1)" }}
+                  title="View"
                 >
-                  <Navigation className="w-3 h-3" style={{ color: "hsl(var(--accent))" }} />
+                  <Eye className="w-3 h-3" style={{ color: "hsl(var(--accent))" }} />
                 </button>
               </div>
             </div>
