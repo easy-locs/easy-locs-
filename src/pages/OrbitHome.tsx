@@ -7,7 +7,7 @@ import { AnimatedCounter } from "@/components/ui/AnimatedCounter";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { governSeedQuery } from "@/lib/discovery/query-governance";
+import { governStorefrontQuery } from "@/lib/discovery/query-governance";
 import MarketplaceSection from "@/components/marketplace/MarketplaceSection";
 import { useWalletBalance } from "@/payments/wallet-hooks";
 import { runDigitalOrchestration } from "@/lib/engines/digital-orchestration-engine";
@@ -120,35 +120,41 @@ export default function OrbitHome() {
     return [...bannerItems, ...searchItems, ...verticalItems].slice(0, 12);
   }, [orchestration]);
 
-  /* Featured food */
+  /* Featured food — reads from storefront_pages (published truth) */
   const { data: featured = [] } = useQuery({
     queryKey: ["home-featured-food"],
     queryFn: async () => {
-      let q = (supabase as any).from("seed_merchants").select("*")
-        .eq("category", "food").eq("is_featured", true).limit(8);
-      q = governSeedQuery(q, "home");
+      let q = (supabase as any).from("storefront_pages")
+        .select("id, name, slug, banner_url, logo_url, subcategory, city, rating, region")
+        .eq("vertical", "food")
+        .order("display_priority", { ascending: false })
+        .limit(8);
+      q = governStorefrontQuery(q, "home");
       const { data } = await q;
       return (data || []).map((r: any) => ({
-        id: r.id, name: r.name, image: r.cover_image,
-        category: `${r.subcategory} · ${r.area}`, rating: Number(r.rating),
-        eta: `${r.delivery_time_min}–${r.delivery_time_max} min`, badge: "Featured",
+        id: r.id, name: r.name, image: r.banner_url || r.logo_url,
+        category: `${r.subcategory || "Restaurant"} · ${r.region || r.city || ""}`, rating: Number(r.rating || 0),
+        eta: "", badge: "Featured",
       }));
     },
     staleTime: 120_000,
   });
 
-  /* Nearby food */
+  /* Nearby food — reads from storefront_pages (published truth) */
   const { data: nearby = [] } = useQuery({
     queryKey: ["home-nearby-food"],
     queryFn: async () => {
-      let q = (supabase as any).from("seed_merchants").select("*")
-        .eq("category", "food").eq("is_open", true).limit(10);
-      q = governSeedQuery(q, "home");
+      let q = (supabase as any).from("storefront_pages")
+        .select("id, name, slug, banner_url, logo_url, subcategory, city, rating, region")
+        .eq("vertical", "food")
+        .order("ranking_score", { ascending: false })
+        .limit(10);
+      q = governStorefrontQuery(q, "home");
       const { data } = await q;
       return (data || []).map((r: any) => ({
-        id: r.id, name: r.name, image: r.cover_image,
-        category: `${r.subcategory} · ${r.area}`, rating: Number(r.rating),
-        eta: `${r.delivery_time_min}–${r.delivery_time_max} min`,
+        id: r.id, name: r.name, image: r.banner_url || r.logo_url,
+        category: `${r.subcategory || "Restaurant"} · ${r.region || r.city || ""}`, rating: Number(r.rating || 0),
+        eta: "",
       }));
     },
     staleTime: 120_000,
