@@ -971,6 +971,39 @@ export type Database = {
           },
         ]
       }
+      auto_repeat_orders: {
+        Row: {
+          created_at: string
+          enabled: boolean
+          frequency: string
+          id: string
+          last_triggered_at: string | null
+          source_order_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          enabled?: boolean
+          frequency?: string
+          id?: string
+          last_triggered_at?: string | null
+          source_order_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          enabled?: boolean
+          frequency?: string
+          id?: string
+          last_triggered_at?: string | null
+          source_order_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       automation_workflows: {
         Row: {
           city: string | null
@@ -11399,6 +11432,42 @@ export type Database = {
           },
         ]
       }
+      merchant_staff: {
+        Row: {
+          created_at: string
+          email: string | null
+          full_name: string
+          id: string
+          merchant_id: string
+          role: string
+          status: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          full_name: string
+          id?: string
+          merchant_id: string
+          role?: string
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          full_name?: string
+          id?: string
+          merchant_id?: string
+          role?: string
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       message_translations: {
         Row: {
           created_at: string | null
@@ -16821,6 +16890,39 @@ export type Database = {
           title?: string | null
           unit_number?: string | null
           updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      saved_carts: {
+        Row: {
+          created_at: string
+          id: string
+          items_json: Json
+          label: string | null
+          merchant_id: string | null
+          merchant_name: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          items_json?: Json
+          label?: string | null
+          merchant_id?: string | null
+          merchant_name?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          items_json?: Json
+          label?: string | null
+          merchant_id?: string | null
+          merchant_name?: string | null
+          updated_at?: string
           user_id?: string
         }
         Relationships: []
