@@ -79,8 +79,9 @@ export const useChatStore = create<ChatStore>((set, get) => ({
   createConversation: async (input) => {
     const now = new Date().toISOString();
 
+    // Let DB generate the UUID — no client-side fake ID
     const conversation: ConversationRecord = {
-      id: `conv_${Math.random().toString(36).slice(2, 11)}`,
+      id: crypto.randomUUID(),
       type: input.type,
       participants: input.participants,
       title: input.title,
@@ -106,8 +107,9 @@ export const useChatStore = create<ChatStore>((set, get) => ({
   sendMessage: async (input) => {
     const now = new Date().toISOString();
 
+    // Let DB generate UUID — no client-side fake ID
     const message: ChatMessageRecord = {
-      id: `msg_${Math.random().toString(36).slice(2, 11)}`,
+      id: crypto.randomUUID(),
       conversationId: input.conversationId,
       senderOrbitId: input.senderOrbitId,
       body: input.body,
