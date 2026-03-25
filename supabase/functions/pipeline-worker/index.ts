@@ -9,7 +9,7 @@ const corsHeaders = {
 const PIPELINE_STAGES = [
   "source", "classify", "clean", "normalize", "rebuild",
   "enrich", "deduplicate", "score", "validate", "publish",
-  "distribute", "digital",
+  "distribute", "digital", "sync",
 ];
 
 function getNextStage(current: string): string | null {
@@ -474,6 +474,78 @@ async function executeStageOnEntity(db: any, stage: string, entityId: string) {
         pipeline_stage: "digital_ready",
         digital_ready_at: now,
       }).eq("id", entityId);
+      break;
+    }
+
+    case "sync": {
+      // SYNC — Compute module readiness status for every module
+      const { data: entity } = await db.from("seed_merchants")
+        .select("id, name, vertical, overall_quality_score, visibility_mode, is_published, cover_image, menu_items_json, phone, latitude, longitude, category, subcategory, description, gallery_images, city")
+        .eq("id", entityId).single();
+      if (entity) {
+        const score = entity.overall_quality_score ?? 0;
+        const isLive = entity.visibility_mode === "live";
+        const hasMenu = flattenMenuItems(entity.menu_items_json).length >= 3;
+        const hasPhoto = entity.cover_image && !isPlaceholder(entity.cover_image);
+        const hasGeo = entity.latitude != null && entity.longitude != null;
+        const hasPhone = !!entity.phone && entity.phone.length >= 6;
+
+        // Compute each module status
+        const storefront_status = isLive && hasPhoto ? "ready" : score >= 50 ? "partial" : "locked";
+        const menu_status = hasMenu ? "ready" : entity.vertical !== "food" ? "not_applicable" : "locked";
+        const payment_status = isLive ? "partial" : "locked"; // Full requires Stripe/wallet setup
+        const delivery_status = hasGeo ? (isLive ? "partial" : "locked") : "not_applicable";
+        const radar_status = isLive && hasGeo ? "ready" : hasGeo ? "partial" : "locked";
+        const orbit_status = isLive && hasPhone ? "ready" : hasPhone ? "partial" : "locked";
+        const analytics_status = isLive ? "partial" : "locked";
+        const boost_status = score >= 70 && isLive ? "ready" : score >= 50 ? "partial" : "locked";
+
+        // Truth status (lifecycle)
+        let truth_status = "draft";
+        if (isLive && score >= 70) truth_status = "live";
+        else if (isLive || score >= 50) truth_status = "partially_live";
+        else if (score >= 40) truth_status = "ready_for_review";
+
+        // Publish status
+        let publish_status = "draft";
+        if (isLive && score >= 70) publish_status = "live";
+        else if (isLive) publish_status = "partially_live";
+        else if (score >= 50) publish_status = "ready_for_review";
+        else if (entity.visibility_mode === "hidden" && score < 30) publish_status = "blocked";
+
+        // Count active modules
+        const modules = [storefront_status, menu_status, payment_status, delivery_status, radar_status, orbit_status, analytics_status, boost_status];
+        const active_modules = modules.filter(s => s === "ready").length;
+        const applicable_modules = modules.filter(s => s !== "not_applicable").length;
+
+        const module_summary_json = {
+          storefront: storefront_status,
+          menu: menu_status,
+          payment: payment_status,
+          delivery: delivery_status,
+          radar: radar_status,
+          orbit: orbit_status,
+          analytics: analytics_status,
+          boost: boost_status,
+        };
+
+        // Compute actionable hints
+        const hints: string[] = [];
+        if (menu_status === "locked" && entity.vertical === "food") hints.push("Add 3+ menu items to unlock boost");
+        if (!hasGeo) hints.push("Add location to activate delivery & radar");
+        if (!hasPhoto) hints.push("Add a cover photo to improve visibility");
+        if (!hasPhone) hints.push("Add phone number to enable Orbit contact");
+
+        await db.from("seed_merchants").update({
+          storefront_status, menu_status, payment_status, delivery_status,
+          radar_status, orbit_status, analytics_status, boost_status,
+          truth_status, publish_status,
+          active_modules, total_modules: applicable_modules,
+          module_summary_json: { ...module_summary_json, hints },
+          last_sync_at: now,
+          pipeline_stage: "synced",
+        }).eq("id", entityId);
+      }
       break;
     }
   }
