@@ -2,7 +2,7 @@
  * VerticalHubPage — Premium hub page driven by the Canonical UI Engine.
  * Every visual decision (hero, cards, motion, wording) comes from taxonomy.
  */
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { BoostSlotRenderer } from "@/components/boost/BoostSlotRenderer";
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { ChevronRight, Home } from "lucide-react";
@@ -54,6 +54,7 @@ export default function VerticalHubPage({ vertical }: { vertical: TaxonomyVertic
   const [activeSub, setActiveSub] = useState<string | null>(initialSub);
   const [sortMode, setSortMode] = useState<SortMode>("relevance");
   const navigate = useNavigate();
+  const heroRailRef = useRef<HTMLDivElement | null>(null);
 
   // ═══ DISCOVERY STORE — city + radius ═══
   const radiusKm = useDiscoveryStore((s) => s.radiusKm);
@@ -106,6 +107,32 @@ export default function VerticalHubPage({ vertical }: { vertical: TaxonomyVertic
     return map;
   }, [filtered, activeSub]);
 
+  const heroMediaItems = useMemo(() => {
+    const source = (filtered.length > 0 ? filtered : listings).slice(0, 8);
+    return source.map((item, index) => ({
+      id: item.id,
+      name: item.name,
+      image: item.banner_url || item.logo_url || ui.heroImage,
+      meta: item.subcategory ? getSubcategoryLabel(vertical.value, item.subcategory) : item.address || vertical.label,
+      badge: index === 0 ? "Featured" : item.reviews_count > 25 ? "Popular" : "New",
+      href: item.slug ? `/s/${item.slug}` : `/s/${item.id}`,
+    }));
+  }, [filtered, listings, ui.heroImage, vertical.label, vertical.value]);
+
+  useEffect(() => {
+    const rail = heroRailRef.current;
+    if (!rail || heroMediaItems.length < 2) return;
+
+    const interval = window.setInterval(() => {
+      const maxLeft = rail.scrollWidth - rail.clientWidth;
+      if (maxLeft <= 0) return;
+      const nextLeft = rail.scrollLeft + 244 >= maxLeft ? 0 : rail.scrollLeft + 244;
+      rail.scrollTo({ left: nextLeft, behavior: "smooth" });
+    }, 3200);
+
+    return () => window.clearInterval(interval);
+  }, [heroMediaItems.length]);
+
   return (
     <div className="min-h-screen pb-24" style={{ background: "hsl(var(--background))" }}>
       <SEOHead
@@ -152,6 +179,40 @@ export default function VerticalHubPage({ vertical }: { vertical: TaxonomyVertic
           />
         </motion.div>
       </AnimatePresence>
+
+      {heroMediaItems.length > 0 && (
+        <section className="px-4 mt-4">
+          <div
+            ref={heroRailRef}
+            className="flex gap-3 overflow-x-auto pb-2 scrollbar-none snap-x snap-mandatory"
+            aria-label={`${ui.displayTitle} featured media`}
+          >
+            {heroMediaItems.map((item, index) => (
+              <motion.button
+                key={item.id}
+                onClick={() => navigate(item.href)}
+                className="relative shrink-0 w-[220px] h-[132px] overflow-hidden rounded-[1.4rem] snap-start text-left active:scale-[0.98]"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.05 }}
+              >
+                <img src={item.image} alt={item.name} className="absolute inset-0 w-full h-full object-cover" loading="lazy" />
+                <div className="absolute inset-0" style={{ background: "linear-gradient(180deg, transparent 0%, hsl(var(--background) / 0.18) 30%, hsl(var(--background) / 0.88) 100%)" }} />
+                <div
+                  className="absolute top-3 left-3 rounded-full px-2.5 py-1 text-[10px] font-bold"
+                  style={{ background: `hsl(${ui.accentHsl} / 0.18)`, color: `hsl(${ui.accentHsl})`, border: `1px solid hsl(${ui.accentHsl} / 0.24)` }}
+                >
+                  {item.badge}
+                </div>
+                <div className="absolute inset-x-0 bottom-0 p-3.5">
+                  <p className="text-sm font-bold text-white line-clamp-1">{item.name}</p>
+                  <p className="text-[11px] text-white/72 line-clamp-1 mt-0.5">{item.meta}</p>
+                </div>
+              </motion.button>
+            ))}
+          </div>
+        </section>
+      )}
 
       <div className="px-4 mt-10">
         {/* ═══ BREADCRUMBS — from canonical engine ═══ */}
