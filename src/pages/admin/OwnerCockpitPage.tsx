@@ -6,12 +6,12 @@ import { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { getContinuousEngineStatus } from "@/lib/platform/platform-continuous-engine";
 import { toast } from "sonner";
 import { FuturisticCard } from "@/components/ui/FuturisticCard";
 import { StatusPulse } from "@/components/ui/StatusPulse";
 import { AnimatedCounter } from "@/components/ui/AnimatedCounter";
 import { motion } from "framer-motion";
+import { useBackendEngineStatus } from "@/hooks/useBackendEngineStatus";
 import {
   Shield, Zap, RefreshCw, Server, Cpu, BarChart3, Users, Store, Globe, Bell,
   Search, TrendingUp, ArrowLeft, Activity, Truck, Wallet, ShoppingCart,
@@ -39,10 +39,9 @@ export default function OwnerCockpitPage() {
   const [loading, setLoading] = useState(true);
   const [tick, setTick] = useState(0);
   const [filterCat, setFilterCat] = useState<string | null>(null);
+  const engineStatus = useBackendEngineStatus(4000);
 
   const isOwner = user?.email?.toLowerCase() === OWNER_EMAIL;
-
-  const engineStatus = useMemo(() => getContinuousEngineStatus(), [tick]);
 
   const totalOk = engineStatus.jobs.filter(j => j.lastStatus === "ok").length;
   const totalError = engineStatus.jobs.filter(j => j.lastStatus === "error").length;

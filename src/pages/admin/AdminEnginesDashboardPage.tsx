@@ -1,10 +1,10 @@
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { getContinuousEngineStatus } from "@/lib/platform/platform-continuous-engine";
 import { ENGINE_METADATA, detectEngineCollisions, type EngineTier, type BusinessFunction, type RuntimeStatus } from "@/lib/engines/engine-metadata-registry";
 import { deriveRuntimeStatus } from "@/lib/engines/global-orchestration-engine";
 import { computeHealthScores, classifyCollisions, type ClassifiedCollision, type PlatformHealthScores } from "@/lib/engines/platform-orchestrator-engine";
 import { supabase } from "@/integrations/supabase/client";
+import { useBackendEngineStatus } from "@/hooks/useBackendEngineStatus";
 
 const db = supabase as any;
 
@@ -65,6 +65,7 @@ export default function AdminEnginesDashboardPage() {
   const [showCollisions, setShowCollisions] = useState(false);
   const [showDecisions, setShowDecisions] = useState(false);
   const [decisions, setDecisions] = useState<any[]>([]);
+  const backendStatus = useBackendEngineStatus();
 
   useEffect(() => {
     const timer = setInterval(() => setTick(t => t + 1), 8000);
@@ -101,7 +102,7 @@ export default function AdminEnginesDashboardPage() {
     })();
   }, [tick]);
 
-  const rawStatus = useMemo(() => getContinuousEngineStatus(), [tick]);
+  const rawStatus = backendStatus;
   const collisions = useMemo(() => detectEngineCollisions(), []);
   const classifiedCols = useMemo(() => classifyCollisions(), [tick]);
   const healthScores = useMemo(() => computeHealthScores(), [tick]);
