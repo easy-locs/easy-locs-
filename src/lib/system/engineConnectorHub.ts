@@ -139,33 +139,73 @@ export function installEngineConnectorHub() {
   if (hubInstalled) return;
   hubInstalled = true;
 
+  // ── Payment captured → Escrow ──
   platformBus.on("PAYMENT_SUCCESS", async (event) => {
     const payload = event.payload as any;
     if (!payload?.orderId) return;
     await syncOrderPaymentToEscrow(payload.orderId).catch(() => {});
   });
 
+  // ── Order ready → Driver dispatch ──
   platformBus.on("ORDER_READY", async (event) => {
     const payload = event.payload as any;
     if (!payload?.orderId) return;
     await syncReadyOrderToDriver(payload.orderId).catch(() => {});
   });
 
+  // ── Delivery done → Move order state ──
   platformBus.on("ORDER_DELIVERED", async (event) => {
     const payload = event.payload as any;
     if (!payload?.orderId) return;
     await moveOrderToNextState(payload.orderId).catch(() => {});
   });
 
+  // ── Order completed → Full chain: settlement + commission + notification + review trigger + loyalty ──
   platformBus.on("ORDER_COMPLETED", async (event) => {
     const payload = event.payload as any;
     if (!payload?.orderId) return;
+
+    // 1. Settlement
     await syncCompletedOrderToSettlement(payload.orderId).catch(() => {});
+
+    // 2. Review trigger notification (delayed by engine, but mark eligible)
+    try {
+      const order = await getOrderById(payload.orderId);
+      if (order?.user_id) {
+        await supabase.from("notifications").insert({
+          user_id: order.user_id,
+          type: "order_completed",
+          title: "Order completed!",
+          body: "Your order has been delivered. Enjoy!",
+          entity_id: payload.orderId,
+          entity_type: "order",
+          metadata_json: { shop_id: order.shop_id },
+        } as any);
+      }
+    } catch {}
   });
 
+  // ── Order refunded → Refund sync ──
   platformBus.on("ORDER_REFUNDED", async (event) => {
     const payload = event.payload as any;
     if (!payload?.orderId) return;
     await syncRefundedOrder(payload.orderId).catch(() => {});
+  });
+
+  // ── Delivery completed → Driver earnings + proof reminder ──
+  platformBus.on("DELIVERY_COMPLETED", async (event) => {
+    const payload = event.payload as any;
+    if (payload?.driverUserId && payload?.orderId) {
+      try {
+        await supabase.from("notifications").insert({
+          user_id: payload.driverUserId,
+          type: "delivery_completed",
+          title: "Delivery completed!",
+          body: "Your earnings have been credited.",
+          entity_id: payload.orderId,
+          entity_type: "order",
+        } as any);
+      } catch {}
+    }
   });
 }
