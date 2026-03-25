@@ -4,6 +4,7 @@
  */
 import { supabase } from "@/integrations/supabase/client";
 import { eventBus } from "@/lib/core/event-bus";
+import { sendNotification } from "@/lib/engines/notification-engine";
 
 // ── Types ──
 export type TicketParty = "client" | "merchant" | "driver" | "platform";
@@ -131,6 +132,15 @@ export async function createDisputeTicket(params: {
     severity,
     assignedTo,
   });
+
+  // Notify reporter
+  sendNotification({
+    user_id: params.reporterUserId,
+    event_type: "support_reply",
+    entity_id: ticket.id,
+    entity_type: "support_ticket",
+    variables: { title: "Support Ticket Created", body: `Your issue "${params.issueType.replace(/_/g, " ")}" has been received. We're on it.` },
+  }).catch(console.error);
 
   return ticket;
 }
