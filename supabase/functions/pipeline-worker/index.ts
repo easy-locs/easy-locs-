@@ -3,7 +3,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
 const PIPELINE_STAGES = [
@@ -18,6 +18,16 @@ function getNextStage(current: string): string | null {
 }
 
 const MAX_RETRIES = 3;
+
+const PLACEHOLDER_PATTERNS = [
+  "unsplash.com", "placeholder", "dummyimage", "placehold.co",
+  "via.placeholder", "picsum.photos", "lorempixel", "stock-photo",
+];
+
+function isPlaceholder(url?: string | null): boolean {
+  if (!url) return true;
+  return PLACEHOLDER_PATTERNS.some(p => url.toLowerCase().includes(p));
+}
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -71,27 +81,22 @@ Deno.serve(async (req) => {
       }
     }
 
-    // 3. Process queue items using atomic fetch_and_lock_job RPC
+    // 3. Process queue items
     let processed = 0;
     let failed = 0;
     const stageStats: Record<string, number> = {};
 
     for (let i = 0; i < maxItems; i++) {
-      // Atomic fetch + lock via RPC (SELECT FOR UPDATE SKIP LOCKED)
       const { data: locked_rows } = await db.rpc("fetch_and_lock_job");
       if (!locked_rows?.length) break;
       const locked = locked_rows[0];
-
       const now = new Date().toISOString();
 
       try {
-        // Execute real stage processing on the entity
         await executeStageOnEntity(db, locked.current_stage, locked.entity_id);
-
         const nextStage = getNextStage(locked.current_stage);
 
         if (nextStage) {
-          // Advance to next stage
           await db.from("entity_pipeline_queue").update({
             current_stage: nextStage,
             next_stage: getNextStage(nextStage),
@@ -105,7 +110,6 @@ Deno.serve(async (req) => {
             },
           }).eq("id", locked.id);
         } else {
-          // Pipeline complete
           await db.from("entity_pipeline_queue").update({
             status: "done",
             locked_by: null,
@@ -121,33 +125,22 @@ Deno.serve(async (req) => {
         stageStats[locked.current_stage] = (stageStats[locked.current_stage] ?? 0) + 1;
         processed++;
       } catch (err: any) {
-        // Handle failure with retry logic
         const retries = (locked.retries ?? 0) + 1;
         const status = retries >= MAX_RETRIES ? "failed" : "pending";
-
         await db.from("entity_pipeline_queue").update({
-          status,
-          retries,
+          status, retries,
           last_error: err?.message ?? "unknown",
-          locked_by: null,
-          locked_at: null,
-          updated_at: now,
+          locked_by: null, locked_at: null, updated_at: now,
         }).eq("id", locked.id);
-
         failed++;
-        console.error(`[pipeline-worker] Stage ${locked.current_stage} failed for ${locked.entity_id}:`, err?.message);
+        console.error(`[pipeline-worker] ${locked.current_stage} failed for ${locked.entity_id}: ${err?.message}`);
       }
     }
 
     return new Response(JSON.stringify({
-      success: true,
-      processed,
-      failed,
-      stages: stageStats,
+      success: true, processed, failed, stages: stageStats,
       enqueuedNew: unprocessed?.length ?? 0,
-    }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
   } catch (err) {
     console.error("[pipeline-worker] Error:", err);
@@ -158,16 +151,15 @@ Deno.serve(async (req) => {
   }
 });
 
-/**
- * Execute real pipeline stage logic on an entity.
- * Each stage updates the entity's pipeline_stage and relevant fields.
- */
+// ═══════════════════════════════════════════════════
+//  REAL STAGE PROCESSING — No hollow stages
+// ═══════════════════════════════════════════════════
+
 async function executeStageOnEntity(db: any, stage: string, entityId: string) {
   const now = new Date().toISOString();
 
   switch (stage) {
     case "source": {
-      // Snapshot raw source data
       const { data: entity } = await db.from("seed_merchants")
         .select("name, category, subcategory, description, phone, cover_image, logo_image, menu_items_json, latitude, longitude, city, country, source_type, source_url")
         .eq("id", entityId).single();
@@ -182,93 +174,232 @@ async function executeStageOnEntity(db: any, stage: string, entityId: string) {
     }
 
     case "classify": {
-      // Vertical classification using keyword signals
       const { data: entity } = await db.from("seed_merchants")
         .select("name, description, category, menu_items_json, vertical, vertical_locked")
         .eq("id", entityId).single();
       if (entity && !entity.vertical_locked) {
         const result = classifyVertical(entity.name ?? "", entity.description, entity.category, entity.menu_items_json);
-        const shouldLock = result.confidence >= 0.7;
         await db.from("seed_merchants").update({
           vertical: result.vertical,
           vertical_confidence: result.confidence,
-          vertical_locked: shouldLock,
+          vertical_locked: result.confidence >= 0.7,
           pipeline_stage: result.vertical === "unknown" ? "needs_review" : "vertical_classified",
         }).eq("id", entityId);
+      } else {
+        await db.from("seed_merchants").update({ pipeline_stage: "vertical_classified" }).eq("id", entityId);
       }
       break;
     }
 
     case "clean": {
-      // Clean malformed data
       const { data: entity } = await db.from("seed_merchants")
-        .select("id, name, phone, cover_image, logo_image")
+        .select("id, name, phone, cover_image, logo_image, description, menu_items_json")
         .eq("id", entityId).single();
       if (entity) {
         const updates: Record<string, any> = { pipeline_stage: "cleaned" };
-        // Fix name
+
+        // Clean name
         if (entity.name) {
-          const clean = entity.name.replace(/\s+/g, " ").trim();
+          let clean = entity.name.replace(/\s+/g, " ").trim();
+          clean = clean.replace(/[*#@!]+/g, "").trim();
+          clean = clean.replace(/^[-–—•·]+\s*/, "").trim();
           if (clean !== entity.name) updates.name = clean;
         }
-        // Fix phone
+
+        // Clean phone
         if (entity.phone) {
           const clean = entity.phone.replace(/[^\d+\-() ]/g, "").trim();
           if (clean !== entity.phone) updates.phone = clean;
         }
+
         // Purge placeholder images
-        const placeholders = ["unsplash.com", "placeholder", "dummyimage", "placehold.co", "via.placeholder", "picsum.photos"];
-        if (entity.cover_image && placeholders.some(p => entity.cover_image.toLowerCase().includes(p))) {
-          updates.cover_image = null;
+        if (isPlaceholder(entity.cover_image)) updates.cover_image = null;
+        if (isPlaceholder(entity.logo_image)) updates.logo_image = null;
+
+        // Clean description
+        if (entity.description) {
+          let desc = entity.description.replace(/<[^>]*>/g, "").replace(/\s{2,}/g, " ").trim();
+          if (desc.length < 5) desc = "";
+          if (desc !== entity.description) updates.description = desc || null;
         }
-        if (entity.logo_image && placeholders.some(p => entity.logo_image.toLowerCase().includes(p))) {
-          updates.logo_image = null;
+
+        // Strip duplicate images inside menu
+        if (entity.menu_items_json) {
+          const menu = stripDuplicateMenuImages(entity.menu_items_json);
+          if (menu.changed) updates.menu_items_json = menu.items;
         }
+
         await db.from("seed_merchants").update(updates).eq("id", entityId);
       }
       break;
     }
 
     case "normalize": {
-      // Update pipeline_stage — actual normalizer logic runs client-side per vertical
-      await db.from("seed_merchants").update({ pipeline_stage: "normalized" }).eq("id", entityId);
+      // Real normalization: standardize menu structure, fix categories
+      const { data: entity } = await db.from("seed_merchants")
+        .select("id, vertical, menu_items_json, category, subcategory")
+        .eq("id", entityId).single();
+      if (entity) {
+        const updates: Record<string, any> = { pipeline_stage: "normalized" };
+
+        // Normalize menu structure into canonical format
+        if (entity.menu_items_json && entity.vertical === "food") {
+          const normalized = normalizeMenuStructure(entity.menu_items_json);
+          updates.menu_items_json = normalized.menu;
+          updates.menu_quality_score = normalized.score;
+          updates.menu_normalized_at = now;
+        }
+
+        // Normalize category naming
+        if (entity.category) {
+          updates.category = entity.category.toLowerCase().trim();
+        }
+        if (entity.subcategory) {
+          updates.subcategory = entity.subcategory.toLowerCase().replace(/\s+/g, "_").trim();
+        }
+
+        await db.from("seed_merchants").update(updates).eq("id", entityId);
+      }
       break;
     }
 
     case "rebuild": {
-      await db.from("seed_merchants").update({ pipeline_stage: "rebuilt" }).eq("id", entityId);
+      // Rebuild menu: dedup items, auto-categorize, remove junk
+      const { data: entity } = await db.from("seed_merchants")
+        .select("id, menu_items_json, raw_menu_json, vertical")
+        .eq("id", entityId).single();
+      if (entity && entity.vertical === "food") {
+        const source = entity.raw_menu_json || entity.menu_items_json;
+        if (source) {
+          const items = flattenMenuItems(source);
+          const cleaned = rebuildMenuItems(items);
+          const sections = groupIntoSections(cleaned);
+          
+          await db.from("seed_merchants").update({
+            menu_items_json: { sections, totalItems: cleaned.length },
+            menu_sections_json: sections,
+            menu_quality_score: computeMenuScore(cleaned),
+            menu_quality_flag: cleaned.length >= 3 ? "rebuilt" : "too_few_items",
+            pipeline_stage: "rebuilt",
+          }).eq("id", entityId);
+        } else {
+          await db.from("seed_merchants").update({
+            pipeline_stage: "rebuilt",
+            menu_quality_flag: "no_menu_data",
+          }).eq("id", entityId);
+        }
+      } else {
+        await db.from("seed_merchants").update({ pipeline_stage: "rebuilt" }).eq("id", entityId);
+      }
       break;
     }
 
     case "enrich": {
-      await db.from("seed_merchants").update({ pipeline_stage: "enriched" }).eq("id", entityId);
+      // Enrich: auto-generate description if missing, fix subcategory
+      const { data: entity } = await db.from("seed_merchants")
+        .select("id, name, description, category, subcategory, city, vertical, menu_items_json")
+        .eq("id", entityId).single();
+      if (entity) {
+        const updates: Record<string, any> = { pipeline_stage: "enriched" };
+
+        // Auto-generate description if missing
+        if (!entity.description && entity.name) {
+          const menuHint = getMenuHint(entity.menu_items_json);
+          const desc = `${entity.name} — ${entity.subcategory || entity.category || entity.vertical} in ${entity.city || "Dubai"}${menuHint ? `. ${menuHint}` : ""}`;
+          updates.description = desc;
+        }
+
+        // Refine subcategory from menu if still "general"
+        if (entity.subcategory === "general" && entity.menu_items_json) {
+          const refined = detectSubcategoryFromMenu(entity.menu_items_json);
+          if (refined !== "general") updates.subcategory = refined;
+        }
+
+        await db.from("seed_merchants").update(updates).eq("id", entityId);
+      }
       break;
     }
 
     case "deduplicate": {
-      await db.from("seed_merchants").update({ pipeline_stage: "deduped" }).eq("id", entityId);
+      // Check for potential duplicates by name+city
+      const { data: entity } = await db.from("seed_merchants")
+        .select("id, name, city, phone, latitude, longitude")
+        .eq("id", entityId).single();
+      if (entity && entity.name) {
+        const { data: potentialDups } = await db.from("seed_merchants")
+          .select("id, name, phone, latitude, longitude")
+          .ilike("name", entity.name)
+          .eq("city", entity.city ?? "Dubai")
+          .neq("id", entityId)
+          .limit(5);
+
+        if (potentialDups?.length) {
+          // Mark as potential duplicate for review, don't auto-merge
+          await db.from("seed_merchants").update({
+            pipeline_stage: "deduped",
+            dedup_status: "potential_duplicate",
+            dedup_candidates: potentialDups.map((d: any) => d.id),
+          }).eq("id", entityId);
+        } else {
+          await db.from("seed_merchants").update({
+            pipeline_stage: "deduped",
+            dedup_status: "unique",
+          }).eq("id", entityId);
+        }
+      } else {
+        await db.from("seed_merchants").update({ pipeline_stage: "deduped" }).eq("id", entityId);
+      }
       break;
     }
 
     case "score": {
-      // Compute quality score
       const { data: entity } = await db.from("seed_merchants")
-        .select("cover_image, menu_items_json, vertical, latitude, longitude, phone, category")
+        .select("cover_image, menu_items_json, vertical, latitude, longitude, phone, category, subcategory, description, name, city, gallery_images")
         .eq("id", entityId).single();
       if (entity) {
         let score = 0;
-        const placeholders = ["unsplash.com", "placeholder", "dummyimage", "placehold.co", "via.placeholder"];
-        if (entity.cover_image && !placeholders.some((p: string) => entity.cover_image?.toLowerCase().includes(p))) score += 20;
-        if (entity.latitude != null && entity.longitude != null) score += 20;
-        if (entity.phone && entity.phone.trim().length >= 6) score += 20;
-        if (entity.category && !["general", "other", "unknown"].includes(entity.category.toLowerCase())) score += 20;
-        // Menu check
-        const menuItems = Array.isArray(entity.menu_items_json) ? entity.menu_items_json : [];
-        if (menuItems.length >= 3 || (entity.vertical !== "food" && menuItems.length > 0)) score += 20;
+
+        // Real photo (not placeholder) +20
+        if (entity.cover_image && !isPlaceholder(entity.cover_image)) score += 20;
+
+        // Geo coordinates +15
+        if (entity.latitude != null && entity.longitude != null) score += 15;
+
+        // Phone +10
+        if (entity.phone && entity.phone.trim().length >= 6) score += 10;
+
+        // Valid category +10
+        if (entity.category && !["general", "other", "unknown"].includes(entity.category.toLowerCase())) score += 10;
+
+        // Valid subcategory +5
+        if (entity.subcategory && !["general", "other", "unknown"].includes(entity.subcategory.toLowerCase())) score += 5;
+
+        // Description +10
+        if (entity.description && entity.description.length > 20) score += 10;
+
+        // Menu items +20 (scaled)
+        const menuItems = flattenMenuItems(entity.menu_items_json);
+        if (entity.vertical === "food") {
+          if (menuItems.length >= 10) score += 20;
+          else if (menuItems.length >= 5) score += 15;
+          else if (menuItems.length >= 3) score += 10;
+        } else {
+          if (menuItems.length > 0) score += 15;
+          else score += 10; // Non-food doesn't need menu
+        }
+
+        // Gallery bonus +5
+        if (Array.isArray(entity.gallery_images) && entity.gallery_images.length >= 3) score += 5;
+
+        // Name quality +5
+        if (entity.name && entity.name.length >= 3 && entity.name.length <= 60) score += 5;
+
+        const tier = score >= 80 ? "premium" : score >= 60 ? "standard" : score >= 40 ? "basic" : "low";
 
         await db.from("seed_merchants").update({
           overall_quality_score: score,
           visibility_score: score,
+          tier,
           pipeline_stage: "scored",
         }).eq("id", entityId);
       }
@@ -276,27 +407,41 @@ async function executeStageOnEntity(db: any, stage: string, entityId: string) {
     }
 
     case "validate": {
-      // Strict quality gate
       const { data: entity } = await db.from("seed_merchants")
-        .select("overall_quality_score, visibility_mode, cover_image")
+        .select("overall_quality_score, visibility_mode, cover_image, vertical, menu_items_json, name")
         .eq("id", entityId).single();
       if (entity) {
         const score = entity.overall_quality_score ?? 0;
-        let visibility = entity.visibility_mode ?? "hidden";
-        if (score >= 70) visibility = "live";
-        else if (score >= 50) visibility = "search_only";
-        else visibility = "hidden";
+        let visibility = "hidden";
+        const gateFailures: string[] = [];
+
+        // Check required fields
+        if (!entity.name || entity.name.length < 2) gateFailures.push("missing_name");
+        if (isPlaceholder(entity.cover_image)) gateFailures.push("placeholder_image");
+
+        // Food needs menu
+        if (entity.vertical === "food") {
+          const items = flattenMenuItems(entity.menu_items_json);
+          if (items.length < 3) gateFailures.push("insufficient_menu");
+        }
+
+        // Score-based visibility
+        if (gateFailures.length === 0) {
+          if (score >= 70) visibility = "live";
+          else if (score >= 50) visibility = "search_only";
+        }
 
         await db.from("seed_merchants").update({
           visibility_mode: visibility,
           pipeline_stage: "validated",
+          publish_gate_status: gateFailures.length === 0 ? "passed" : "failed",
+          gate_failures: gateFailures,
         }).eq("id", entityId);
       }
       break;
     }
 
     case "publish": {
-      // Mark as published if validated
       const { data: entity } = await db.from("seed_merchants")
         .select("visibility_mode, pipeline_stage")
         .eq("id", entityId).single();
@@ -304,32 +449,46 @@ async function executeStageOnEntity(db: any, stage: string, entityId: string) {
         await db.from("seed_merchants").update({
           pipeline_stage: "published",
           is_published: true,
+          published_at: now,
+        }).eq("id", entityId);
+      } else {
+        await db.from("seed_merchants").update({
+          pipeline_stage: "published",
+          is_published: false,
         }).eq("id", entityId);
       }
       break;
     }
 
     case "distribute": {
-      await db.from("seed_merchants").update({ pipeline_stage: "distributed" }).eq("id", entityId);
+      // Mark as distributed — ready for discovery surfaces
+      await db.from("seed_merchants").update({
+        pipeline_stage: "distributed",
+        distributed_at: now,
+      }).eq("id", entityId);
       break;
     }
 
     case "digital": {
-      await db.from("seed_merchants").update({ pipeline_stage: "digital_ready" }).eq("id", entityId);
+      await db.from("seed_merchants").update({
+        pipeline_stage: "digital_ready",
+        digital_ready_at: now,
+      }).eq("id", entityId);
       break;
     }
   }
 }
 
-/**
- * Classify entity vertical using keyword signals (mirrors client-side vertical-classifier-engine).
- */
+// ═══════════════════════════════════════════════════
+//  HELPER FUNCTIONS
+// ═══════════════════════════════════════════════════
+
 function classifyVertical(name: string, description?: string | null, category?: string | null, menuJson?: any): { vertical: string; confidence: number } {
   const text = `${name} ${description ?? ""} ${category ?? ""}`.toLowerCase();
 
-  const VERTICAL_SIGNALS: Record<string, { keywords: string[]; vertical: string }> = {
+  const SIGNALS: Record<string, { keywords: string[]; vertical: string }> = {
     food: {
-      keywords: ["restaurant", "food", "cuisine", "kitchen", "diner", "bistro", "grill", "café", "cafe", "pizza", "burger", "sushi", "shawarma", "bakery", "coffee", "juice", "dessert", "ice cream", "bbq", "steakhouse", "ramen"],
+      keywords: ["restaurant", "food", "cuisine", "kitchen", "diner", "bistro", "grill", "café", "cafe", "pizza", "burger", "sushi", "shawarma", "bakery", "coffee", "juice", "dessert", "ice cream", "bbq", "steakhouse", "ramen", "noodle", "kebab"],
       vertical: "food",
     },
     hotel: {
@@ -341,7 +500,7 @@ function classifyVertical(name: string, description?: string | null, category?: 
       vertical: "grocery",
     },
     services: {
-      keywords: ["salon", "barber", "beauty", "spa", "gym", "fitness", "laundry", "cleaning", "repair", "plumber", "electrician", "mechanic"],
+      keywords: ["salon", "barber", "beauty", "spa", "gym", "fitness", "laundry", "cleaning", "repair", "plumber", "electrician"],
       vertical: "services",
     },
     healthcare: {
@@ -350,7 +509,6 @@ function classifyVertical(name: string, description?: string | null, category?: 
     },
   };
 
-  // Check menu for hotel signals
   if (menuJson && !Array.isArray(menuJson)) {
     const keys = Object.keys(menuJson).map(k => k.toLowerCase());
     if (keys.some(k => ["rooms", "room_types", "rates", "amenities"].includes(k))) {
@@ -362,17 +520,186 @@ function classifyVertical(name: string, description?: string | null, category?: 
   let bestScore = 0;
   let totalSignals = 0;
 
-  for (const [, config] of Object.entries(VERTICAL_SIGNALS)) {
+  for (const [, config] of Object.entries(SIGNALS)) {
     const score = config.keywords.filter(k => text.includes(k)).length;
     totalSignals += score;
-    if (score > bestScore) {
-      bestScore = score;
-      bestMatch = config.vertical;
-    }
+    if (score > bestScore) { bestScore = score; bestMatch = config.vertical; }
   }
 
   if (bestScore === 0) return { vertical: "unknown", confidence: 0 };
-
   const confidence = Math.min(bestScore / Math.max(totalSignals, 1) + (bestScore >= 3 ? 0.3 : 0), 1);
   return { vertical: bestMatch, confidence: Math.round(confidence * 100) / 100 };
+}
+
+function flattenMenuItems(menuJson: any): any[] {
+  if (!menuJson) return [];
+  if (Array.isArray(menuJson)) return menuJson;
+  if (menuJson.sections && Array.isArray(menuJson.sections)) {
+    return menuJson.sections.flatMap((s: any) => s.items ?? []);
+  }
+  if (menuJson.items && Array.isArray(menuJson.items)) return menuJson.items;
+  return [];
+}
+
+function stripDuplicateMenuImages(menuJson: any): { items: any; changed: boolean } {
+  const items = flattenMenuItems(menuJson);
+  if (items.length === 0) return { items: menuJson, changed: false };
+
+  const imageCounts = new Map<string, number>();
+  for (const item of items) {
+    const img = item.photo_url || item.image || item.image_url;
+    if (img) {
+      const key = img.toLowerCase().trim();
+      imageCounts.set(key, (imageCounts.get(key) || 0) + 1);
+    }
+  }
+
+  let changed = false;
+  const cleaned = items.map((item: any) => {
+    const img = item.photo_url || item.image || item.image_url;
+    if (img && (imageCounts.get(img.toLowerCase().trim()) || 0) > 1) {
+      changed = true;
+      const copy = { ...item };
+      delete copy.photo_url;
+      delete copy.image;
+      delete copy.image_url;
+      return copy;
+    }
+    return item;
+  });
+
+  if (!changed) return { items: menuJson, changed: false };
+
+  if (menuJson.sections) {
+    let idx = 0;
+    const newSections = menuJson.sections.map((s: any) => ({
+      ...s,
+      items: (s.items ?? []).map(() => cleaned[idx++]),
+    }));
+    return { items: { ...menuJson, sections: newSections }, changed: true };
+  }
+  return { items: cleaned, changed: true };
+}
+
+const JUNK_NAMES = [
+  "item", "item 1", "item 2", "menu item", "product", "test",
+  "sample", "placeholder", "untitled", "n/a", "tbd", "null",
+  "coming soon", "undefined", "none", "---", "total", "subtotal",
+];
+
+function rebuildMenuItems(items: any[]): any[] {
+  const cleaned: any[] = [];
+  const seen = new Set<string>();
+
+  for (const item of items) {
+    const name = (item.name || item.item_name || item.title || "").trim();
+    if (!name || name.length < 2) continue;
+    if (JUNK_NAMES.some(j => name.toLowerCase() === j)) continue;
+    if (/^[\d\s.,€$£¥₹%+\-*/=]+$/.test(name)) continue;
+
+    const key = name.toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+
+    const price = typeof item.price === "number" ? item.price : parseFloat(item.price);
+
+    cleaned.push({
+      name: name.replace(/\b\w/g, (c: string) => c.toUpperCase()),
+      description: (item.description || item.item_description || "").trim() || undefined,
+      price: (!isNaN(price) && price > 0 && price < 50000) ? price : undefined,
+      category: (item.category || item.category_name || item.section || "").trim() || "Main",
+      photo_url: (item.photo_url || item.image || item.image_url) ?? undefined,
+    });
+  }
+
+  // Strip duplicate images
+  const imgCount = new Map<string, number>();
+  for (const item of cleaned) {
+    if (item.photo_url) {
+      const k = item.photo_url.toLowerCase();
+      imgCount.set(k, (imgCount.get(k) || 0) + 1);
+    }
+  }
+  for (const item of cleaned) {
+    if (item.photo_url && (imgCount.get(item.photo_url.toLowerCase()) || 0) > 1) {
+      item.photo_url = undefined;
+    }
+    // Also strip placeholders
+    if (item.photo_url && isPlaceholder(item.photo_url)) {
+      item.photo_url = undefined;
+    }
+  }
+
+  return cleaned;
+}
+
+function groupIntoSections(items: any[]): { name: string; items: any[] }[] {
+  const groups: Record<string, any[]> = {};
+  for (const item of items) {
+    const cat = item.category || "Main";
+    if (!groups[cat]) groups[cat] = [];
+    groups[cat].push(item);
+  }
+  return Object.entries(groups)
+    .sort(([a], [b]) => a === "Main" ? 1 : b === "Main" ? -1 : a.localeCompare(b))
+    .map(([name, sectionItems]) => ({ name, items: sectionItems }));
+}
+
+function computeMenuScore(items: any[]): number {
+  if (items.length === 0) return 0;
+  let score = 0;
+  if (items.length >= 10) score += 30;
+  else if (items.length >= 5) score += 20;
+  else if (items.length >= 3) score += 10;
+
+  const withPrice = items.filter(i => i.price).length;
+  score += Math.round((withPrice / items.length) * 30);
+
+  const withDesc = items.filter(i => i.description).length;
+  score += Math.round((withDesc / items.length) * 20);
+
+  const withImg = items.filter(i => i.photo_url).length;
+  score += Math.round((withImg / items.length) * 20);
+
+  return Math.min(100, score);
+}
+
+function normalizeMenuStructure(menuJson: any): { menu: any; score: number } {
+  const items = flattenMenuItems(menuJson);
+  const cleaned = rebuildMenuItems(items);
+  const sections = groupIntoSections(cleaned);
+  const score = computeMenuScore(cleaned);
+  return { menu: { sections, totalItems: cleaned.length }, score };
+}
+
+function getMenuHint(menuJson: any): string {
+  const items = flattenMenuItems(menuJson);
+  if (items.length === 0) return "";
+  const names = items.slice(0, 5).map((i: any) => i.name || i.item_name || "").filter(Boolean);
+  if (names.length === 0) return "";
+  return `Serving ${names.slice(0, 3).join(", ")} and more`;
+}
+
+function detectSubcategoryFromMenu(menuJson: any): string {
+  const items = flattenMenuItems(menuJson);
+  const text = items.map((i: any) => `${i.name || ""} ${i.category || ""}`).join(" ").toLowerCase();
+  
+  const map: Record<string, string[]> = {
+    pizza: ["pizza", "margherita", "pepperoni", "calzone"],
+    burger: ["burger", "cheeseburger", "smash"],
+    sushi: ["sushi", "maki", "nigiri", "sashimi"],
+    bakery: ["croissant", "pastry", "bread", "cake", "muffin"],
+    cafe: ["latte", "cappuccino", "espresso", "americano"],
+    indian: ["biryani", "tandoori", "curry", "tikka", "naan"],
+    chinese: ["dim sum", "wok", "fried rice", "chow mein"],
+    lebanese: ["shawarma", "falafel", "hummus", "fattoush"],
+    italian: ["pasta", "risotto", "bruschetta", "tiramisu"],
+    seafood: ["fish", "shrimp", "lobster", "calamari"],
+  };
+
+  for (const [sub, kws] of Object.entries(map)) {
+    const hits = kws.filter(k => text.includes(k)).length;
+    if (hits >= 2) return sub;
+  }
+  return "general";
 }
