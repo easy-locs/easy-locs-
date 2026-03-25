@@ -527,6 +527,28 @@ export function startContinuousEngine() {
   }, "data");
 
   // ═══════════════════════════════════════════════════════════
+  // AUTO-PUBLISH PIPELINE (69-71) — Publish, Optimize, Unpublish
+  // ═══════════════════════════════════════════════════════════
+
+  registerJob("auto-publish", 15 * 60_000, async () => {
+    const { runAutoPublish } = await import("@/lib/engines/auto-publish-engine");
+    const result = await runAutoPublish(100);
+    if (result.eligible > 0) console.log(`[continuous] Auto-publish: ${result.published_live} live, ${result.published_search_only} search`);
+  }, "quality");
+
+  registerJob("visibility-optimizer", 30 * 60_000, async () => {
+    const { runVisibilityOptimizer } = await import("@/lib/engines/visibility-optimizer-engine");
+    const result = await runVisibilityOptimizer(100);
+    if (result.promoted + result.downgraded > 0) console.log(`[continuous] Visibility: +${result.promoted} -${result.downgraded}`);
+  }, "quality");
+
+  registerJob("auto-unpublish", 30 * 60_000, async () => {
+    const { runAutoUnpublish } = await import("@/lib/engines/auto-unpublish-engine");
+    const result = await runAutoUnpublish(100);
+    if (result.unpublished > 0) console.log(`[continuous] Auto-unpublish: ${result.unpublished} removed`);
+  }, "quality");
+
+  // ═══════════════════════════════════════════════════════════
   // START ALL — Staggered boot
   // ═══════════════════════════════════════════════════════════
 

@@ -17228,6 +17228,7 @@ export type Database = {
       seed_merchants: {
         Row: {
           area: string
+          auto_published_at: string | null
           backend_repaired_at: string | null
           blocking_reason: string | null
           branch_label: string | null
@@ -17264,11 +17265,13 @@ export type Database = {
           is_featured: boolean
           is_flagged: boolean | null
           is_open: boolean
+          last_publish_check_at: string | null
           last_seen_at: string | null
           last_verified_at: string | null
           latitude: number | null
           logo_image: string | null
           longitude: number | null
+          manual_lock: boolean | null
           menu_items_json: Json | null
           menu_normalized_at: string | null
           menu_quality_flag: string | null
@@ -17277,12 +17280,17 @@ export type Database = {
           name: string
           needs_rescrape: boolean | null
           opening_hours: Json | null
+          owner_claimed: boolean | null
+          owner_controlled: boolean | null
           phone: string | null
           pipeline_last_run_at: string | null
           pipeline_status: string | null
           price_level: number
           promo_active: boolean | null
           promo_text: string | null
+          publish_gate_status: string | null
+          publish_source: string | null
+          published_at: string | null
           rating: number
           review_count: number
           review_required: boolean | null
@@ -17299,13 +17307,17 @@ export type Database = {
           support_email: string | null
           support_phone: string | null
           tier: string
+          unpublish_reason: string | null
+          unpublished_at: string | null
           vertical: string | null
+          visibility_decision_reason: string | null
           visibility_mode: string | null
           visibility_score: number
           website: string | null
         }
         Insert: {
           area: string
+          auto_published_at?: string | null
           backend_repaired_at?: string | null
           blocking_reason?: string | null
           branch_label?: string | null
@@ -17342,11 +17354,13 @@ export type Database = {
           is_featured?: boolean
           is_flagged?: boolean | null
           is_open?: boolean
+          last_publish_check_at?: string | null
           last_seen_at?: string | null
           last_verified_at?: string | null
           latitude?: number | null
           logo_image?: string | null
           longitude?: number | null
+          manual_lock?: boolean | null
           menu_items_json?: Json | null
           menu_normalized_at?: string | null
           menu_quality_flag?: string | null
@@ -17355,12 +17369,17 @@ export type Database = {
           name: string
           needs_rescrape?: boolean | null
           opening_hours?: Json | null
+          owner_claimed?: boolean | null
+          owner_controlled?: boolean | null
           phone?: string | null
           pipeline_last_run_at?: string | null
           pipeline_status?: string | null
           price_level?: number
           promo_active?: boolean | null
           promo_text?: string | null
+          publish_gate_status?: string | null
+          publish_source?: string | null
+          published_at?: string | null
           rating?: number
           review_count?: number
           review_required?: boolean | null
@@ -17377,13 +17396,17 @@ export type Database = {
           support_email?: string | null
           support_phone?: string | null
           tier?: string
+          unpublish_reason?: string | null
+          unpublished_at?: string | null
           vertical?: string | null
+          visibility_decision_reason?: string | null
           visibility_mode?: string | null
           visibility_score?: number
           website?: string | null
         }
         Update: {
           area?: string
+          auto_published_at?: string | null
           backend_repaired_at?: string | null
           blocking_reason?: string | null
           branch_label?: string | null
@@ -17420,11 +17443,13 @@ export type Database = {
           is_featured?: boolean
           is_flagged?: boolean | null
           is_open?: boolean
+          last_publish_check_at?: string | null
           last_seen_at?: string | null
           last_verified_at?: string | null
           latitude?: number | null
           logo_image?: string | null
           longitude?: number | null
+          manual_lock?: boolean | null
           menu_items_json?: Json | null
           menu_normalized_at?: string | null
           menu_quality_flag?: string | null
@@ -17433,12 +17458,17 @@ export type Database = {
           name?: string
           needs_rescrape?: boolean | null
           opening_hours?: Json | null
+          owner_claimed?: boolean | null
+          owner_controlled?: boolean | null
           phone?: string | null
           pipeline_last_run_at?: string | null
           pipeline_status?: string | null
           price_level?: number
           promo_active?: boolean | null
           promo_text?: string | null
+          publish_gate_status?: string | null
+          publish_source?: string | null
+          published_at?: string | null
           rating?: number
           review_count?: number
           review_required?: boolean | null
@@ -17455,7 +17485,10 @@ export type Database = {
           support_email?: string | null
           support_phone?: string | null
           tier?: string
+          unpublish_reason?: string | null
+          unpublished_at?: string | null
           vertical?: string | null
+          visibility_decision_reason?: string | null
           visibility_mode?: string | null
           visibility_score?: number
           website?: string | null
