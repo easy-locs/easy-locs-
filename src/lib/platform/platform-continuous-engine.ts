@@ -704,6 +704,22 @@ export function startContinuousEngine() {
     if (job) { job.itemsProcessed = result.totalScanned; job.rowsAffected = result.healed + result.unpublished; job.summary = `Healed:${result.healed} Unpublished:${result.unpublished} Review:${result.sentToReview}`; job.businessImpact = result.healed > 0 ? `${result.healed} states healed` : "All states coherent"; }
   }, "quality");
 
+  // ── MENU REBUILD ENGINE ──
+  registerJob("menu-rebuild", 10 * 60_000, async () => {
+    const { runMenuRebuildEngine } = await import("@/lib/engines/menu-rebuild-engine");
+    const result = await runMenuRebuildEngine(100);
+    const job = jobs.find(j => j.name === "menu-rebuild");
+    if (job) { job.itemsProcessed = result.total; job.rowsAffected = result.rebuilt + result.blocked; job.summary = `Rebuilt:${result.rebuilt} Blocked:${result.blocked} Clean:${result.alreadyClean}`; job.businessImpact = result.rebuilt > 0 ? `${result.rebuilt} menus rebuilt` : "All menus processed"; }
+  }, "quality");
+
+  // ── TAXONOMY REMAP ENGINE ──
+  registerJob("taxonomy-remap", 12 * 60_000, async () => {
+    const { runTaxonomyRemapEngine } = await import("@/lib/engines/taxonomy-remap-engine");
+    const result = await runTaxonomyRemapEngine(100);
+    const job = jobs.find(j => j.name === "taxonomy-remap");
+    if (job) { job.itemsProcessed = result.total; job.rowsAffected = result.remapped + result.blocked; job.summary = `OK:${result.ok} Remapped:${result.remapped} Blocked:${result.blocked}`; job.businessImpact = result.remapped > 0 ? `${result.remapped} taxonomy corrected` : "Taxonomy coherent"; }
+  }, "quality");
+
   // ═══════════════════════════════════════════════════════════
   // START ALL — Staggered boot
   // ═══════════════════════════════════════════════════════════
