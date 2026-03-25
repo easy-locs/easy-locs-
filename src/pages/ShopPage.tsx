@@ -472,20 +472,12 @@ export default function ShopPage() {
                   </div>
                 )}
 
-                {/* Currency selector */}
+                {/* Item count + locked currency */}
                 <div className="flex items-center justify-between mb-3">
                   <p className="text-xs text-muted-foreground">{filteredItems.length} items</p>
-                  <Select value={fx.displayCurrency} onValueChange={fx.setDisplayCurrency}>
-                    <SelectTrigger className="h-7 w-auto gap-1 text-[10px] border-none bg-muted/40 px-2 rounded-lg">
-                      <Globe className="h-3 w-3" />
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {["AED", "USD", "EUR", "GBP", "SAR", "EGP", "MAD", "INR", "PKR"].map(c => (
-                        <SelectItem key={c} value={c} className="text-xs">{c}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <span className="text-[10px] font-semibold text-muted-foreground px-2 py-1 rounded-lg bg-muted/40">
+                    {fx.displayCurrency}
+                  </span>
                 </div>
 
                 {/* Product grid */}
