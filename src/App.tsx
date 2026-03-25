@@ -598,6 +598,7 @@ const CustomerPartySplitLinksPage = safeLazy(() => import("./pages/customer/Cust
 const CustomerShareCartPage = safeLazy(() => import("./pages/customer/CustomerShareCartPage"), "CustomerShareCartPage");
 const MerchantRushPricingPage = safeLazy(() => import("./pages/merchant/MerchantRushPricingPage"), "MerchantRushPricingPage");
 const AdminGrowthCampaignsPage = safeLazy(() => import("./pages/admin/AdminGrowthCampaignsPage"), "AdminGrowthCampaignsPage");
+const AdminGrowthEnginePage = safeLazy(() => import("./pages/AdminGrowthEnginePage"), "AdminGrowthEnginePage");
 const AdminPromoPerformancePage = safeLazy(() => import("./pages/admin/AdminPromoPerformancePage"), "AdminPromoPerformancePage");
 const CustomerPaymentMethodsHubPage = safeLazy(() => import("./pages/customer/CustomerPaymentMethodsHubPage"), "CustomerPaymentMethodsHubPage");
 const CustomerOrderPreferencesPage = safeLazy(() => import("./pages/customer/CustomerOrderPreferencesPage"), "CustomerOrderPreferencesPage");
@@ -1211,6 +1212,7 @@ const App = () => (
                 <Route path="/driver/availability-zones" element={<ProtectedRoute><DriverAvailabilityZonesPage /></ProtectedRoute>} />
                 <Route path="/admin/growth-dashboard" element={<ProtectedRoute><AdminGrowthDashboardPage /></ProtectedRoute>} />
                 <Route path="/me/order-receipts" element={<ProtectedRoute><CustomerOrderReceiptsPage /></ProtectedRoute>} />
+                <Route path="/admin/growth-engine" element={<ProtectedRoute><AdminGrowthEnginePage /></ProtectedRoute>} />
                 <Route path="/merchant/refund-requests/:merchantId" element={<ProtectedRoute><MerchantRefundRequestsPage /></ProtectedRoute>} />
                 <Route path="/admin/coupon-oversight" element={<ProtectedRoute><AdminCouponOversightPage /></ProtectedRoute>} />
                 <Route path="/me/notification-center" element={<ProtectedRoute><CustomerNotificationCenterPage /></ProtectedRoute>} />
