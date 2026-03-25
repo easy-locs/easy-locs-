@@ -1,6 +1,5 @@
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -31,126 +30,78 @@ const PRO_DASHBOARD_PREFIXES = [
   "/dashboard/developer",
 ];
 
+/** Inline skeleton — never blocks full screen */
+function InlineSkeleton() {
+  return (
+    <div className="px-4 py-6 space-y-4 max-w-md mx-auto animate-pulse">
+      <div className="h-8 w-40 rounded-xl bg-muted/40" />
+      <div className="h-4 w-56 rounded-lg bg-muted/30" />
+      <div className="space-y-3 pt-2">
+        <div className="h-20 w-full rounded-2xl bg-muted/30" />
+        <div className="h-20 w-full rounded-2xl bg-muted/25" />
+        <div className="h-20 w-full rounded-2xl bg-muted/20" />
+      </div>
+    </div>
+  );
+}
+
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, loading, emailVerified, activeRole, onboardingCompleted, profileLoaded, subscription } = useAuth();
   const location = useLocation();
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-      </div>
-    );
-  }
-
+  if (loading) return <InlineSkeleton />;
   if (!user) return <Navigate to="/login" replace />;
-
-  // Wait for profile to load before making ANY routing decision — prevents flicker
-  if (!profileLoaded) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-      </div>
-    );
-  }
-
+  if (!profileLoaded) return <InlineSkeleton />;
   if (!emailVerified) return <Navigate to="/verify-email" replace />;
 
   const isOnboarding = location.pathname === "/onboarding";
   const isTenantRoute = location.pathname.startsWith("/tenant");
   const isClientRoute = location.pathname.startsWith("/client");
   const isAppRoute = location.pathname.startsWith("/app");
-  const isPropertyHubRoute = location.pathname.startsWith("/property-hub");
+  const isPropertyManagementPath = [
+    "/dashboard/properties", "/dashboard/buildings", "/dashboard/tenants",
+    "/dashboard/payment-notices", "/dashboard/interventions", "/dashboard/documents",
+    "/dashboard/accounting", "/dashboard/receipts", "/dashboard/wallet",
+    "/dashboard/add-property", "/dashboard/real-estate",
+  ].some(prefix => location.pathname.startsWith(prefix));
   const isAdminRoute = location.pathname.startsWith("/admin");
 
-  // Onboarding gate: force redirect to /onboarding if not completed (single source of truth)
-  if (!onboardingCompleted && !isOnboarding) {
-    return <Navigate to="/onboarding" replace />;
-  }
-
-  // Already completed onboarding but trying to access /onboarding → redirect to role dashboard
+  if (!onboardingCompleted && !isOnboarding) return <Navigate to="/onboarding" replace />;
   if (isOnboarding && onboardingCompleted) {
     const dest = activeRole === "tenant" ? "/tenant" : activeRole === "client" ? "/client" : "/dashboard";
     return <Navigate to={dest} replace />;
   }
 
-  // Routes accessible to free/client accounts (publishing, communication, explore, marketplace)
   const FREE_ACCESS_PREFIXES = [
-    "/dashboard/my-shop",
-    "/dashboard/activities",
-    "/dashboard/real-estate",
-    "/dashboard/seasonal",
-    "/dashboard/messages",
-    "/dashboard/communication",
-    "/dashboard/billing",
-    "/dashboard/settings",
-    "/dashboard/company",
-    "/dashboard/onboarding",
-    "/explore",
-    "/messages",
-    "/dashboard/add-property",
-    "/dashboard/create-listing",
-    "/properties-showcase",
-    "/host-catalog",
-    "/rental-catalog",
-    "/account-showcase",
+    "/dashboard/my-shop", "/dashboard/activities", "/dashboard/real-estate",
+    "/dashboard/seasonal", "/dashboard/messages", "/dashboard/communication",
+    "/dashboard/billing", "/dashboard/settings", "/dashboard/company",
+    "/dashboard/onboarding", "/explore", "/messages", "/dashboard/add-property",
+    "/dashboard/create-listing", "/properties-showcase", "/host-catalog",
+    "/rental-catalog", "/account-showcase",
   ];
+  const isFreePath = FREE_ACCESS_PREFIXES.some(prefix => location.pathname.startsWith(prefix)) || location.pathname === "/dashboard";
 
-  // Property-management dashboard paths accessible from Property Hub regardless of role
-  const PROPERTY_MANAGEMENT_PREFIXES = [
-    "/dashboard/properties",
-    "/dashboard/buildings",
-    "/dashboard/tenants",
-    "/dashboard/payment-notices",
-    "/dashboard/interventions",
-    "/dashboard/documents",
-    "/dashboard/accounting",
-    "/dashboard/receipts",
-    "/dashboard/wallet",
-    "/dashboard/add-property",
-    "/dashboard/real-estate",
-  ];
-
-  const isFreePath = FREE_ACCESS_PREFIXES.some(prefix => location.pathname.startsWith(prefix))
-    || location.pathname === "/dashboard";
-
-  const isPropertyManagementPath = PROPERTY_MANAGEMENT_PREFIXES.some(prefix => location.pathname.startsWith(prefix));
-
-  // Client role: can access /client/*, /app/*, admin/*, free publishing routes, property management, and onboarding
   if (activeRole === "client" && !isClientRoute && !isAppRoute && !isOnboarding && !isFreePath && !isPropertyManagementPath && !isAdminRoute) {
     return <Navigate to="/client" replace />;
   }
-
-  // Tenant role: can access /tenant/*, /app/*, admin/*, and property management dashboard routes
   if (activeRole === "tenant" && !isTenantRoute && !isAppRoute && !isOnboarding && !isPropertyManagementPath && !isFreePath && !isAdminRoute) {
     return <Navigate to="/tenant" replace />;
   }
-
-  // Landlord role users should not access /tenant/* or /client/* routes
   if (activeRole === "landlord" && (isTenantRoute || isClientRoute)) {
     return <Navigate to="/dashboard" replace />;
   }
 
-  // Subscription gate: redirect free accounts away from pro pages (applies to ALL roles)
   if (!subscription.loading && !subscription.subscribed) {
     const isProPath = PRO_DASHBOARD_PREFIXES.some(prefix => location.pathname.startsWith(prefix));
-    if (isProPath) {
-      return <Navigate to="/dashboard/billing" replace />;
-    }
+    if (isProPath) return <Navigate to="/dashboard/billing" replace />;
   }
 
-  // Admin gate: /admin/* routes require admin or owner role (server-side check)
-  if (isAdminRoute) {
-    return <AdminGate>{children}</AdminGate>;
-  }
+  if (isAdminRoute) return <AdminGate>{children}</AdminGate>;
 
   return <>{children}</>;
 };
 
-/**
- * AdminGate — checks has_role('admin') or has_role('owner') via server RPC.
- * Renders children only if the user has an admin/owner role.
- */
 function AdminGate({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
   const [checking, setChecking] = useState(true);
@@ -158,36 +109,23 @@ function AdminGate({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!user?.id) { setChecking(false); return; }
-
     let cancelled = false;
-
     (async () => {
       const [{ data: admin }, { data: owner }] = await Promise.all([
         supabase.rpc("has_role", { _user_id: user.id, _role: "admin" }),
         supabase.rpc("has_role", { _user_id: user.id, _role: "owner" }),
       ]);
-
       if (!cancelled) {
         setIsAdmin(!!admin || !!owner);
         setChecking(false);
       }
     })();
-
     return () => { cancelled = true; };
   }, [user?.id]);
 
-  if (checking) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-      </div>
-    );
-  }
-
+  if (checking) return <InlineSkeleton />;
   if (!isAdmin) return <Navigate to="/dashboard" replace />;
-
   return <>{children}</>;
 }
 
 export default ProtectedRoute;
-
