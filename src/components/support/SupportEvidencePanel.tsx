@@ -78,10 +78,10 @@ export default function SupportEvidencePanel({ ticketId }: { ticketId: string })
       {!isLoading && evidence.length > 0 && (
         <div className="space-y-2">
           {evidence.map((row: any) => (
-            <a key={row.id} href={row.fileUrl} target="_blank" rel="noopener noreferrer" className="block rounded-xl border border-border/20 bg-card p-3 hover:bg-muted/50 transition-colors">
-              <p className="text-sm font-semibold text-foreground">{row.fileName}</p>
+            <a key={row.id} href={row.metadata?.fileUrl} target="_blank" rel="noopener noreferrer" className="block rounded-xl border border-border/20 bg-card p-3 hover:bg-muted/50 transition-colors">
+              <p className="text-sm font-semibold text-foreground">{row.metadata?.fileName}</p>
               <p className="text-[11px] text-muted-foreground mt-0.5">
-                {row.uploadedAt ? new Date(row.uploadedAt).toLocaleString() : ""}
+                {row.created_at ? new Date(row.created_at).toLocaleString() : ""}
               </p>
             </a>
           ))}
