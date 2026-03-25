@@ -1,0 +1,1 @@
+ALTER TABLE public.seed_merchants ADD COLUMN IF NOT EXISTS blocking_reason text;
