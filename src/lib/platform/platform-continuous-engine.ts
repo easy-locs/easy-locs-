@@ -590,31 +590,36 @@ export function startContinuousEngine() {
   registerJob("platform-cleanup", 60 * 60_000, async () => {
     const { runPlatformCleanup } = await import("@/lib/engines/platform-cleanup-engine");
     const result = runPlatformCleanup();
-    if (result.totalIssues > 0) console.log(`[continuous] Cleanup: ${result.totalIssues} issues`);
+    const job = jobs.find(j => j.name === "platform-cleanup");
+    if (job) { job.itemsProcessed = result.totalIssues; job.summary = `${result.orphanedPages.length} orphans, ${result.heavyFiles.length} heavy files`; job.businessImpact = result.totalIssues > 0 ? "Cleanup needed" : "Clean"; }
   }, "system");
 
   registerJob("performance-audit", 30 * 60_000, async () => {
     const { runPerformanceAudit } = await import("@/lib/engines/performance-audit-engine");
     const result = runPerformanceAudit();
-    if (result.recommendations.length > 0) console.log(`[continuous] Perf: ${result.recommendations.length} recommendations`);
+    const job = jobs.find(j => j.name === "performance-audit");
+    if (job) { job.itemsProcessed = result.domNodes; job.summary = `DOM:${result.domNodes} FCP:${result.firstContentfulPaint}ms Heap:${result.jsHeapUsedMb}MB`; job.businessImpact = `${result.recommendations.length} recommendations`; }
   }, "system");
 
   registerJob("journey-coherence", 60 * 60_000, async () => {
     const { runJourneyCoherenceAudit } = await import("@/lib/engines/journey-coherence-engine");
     const result = runJourneyCoherenceAudit();
-    if (result.issues.length > 0) console.log(`[continuous] Journey: ${result.issues.length} issues`);
+    const job = jobs.find(j => j.name === "journey-coherence");
+    if (job) { job.itemsProcessed = result.totalRoutes; job.summary = `${result.issues.length} issues, ${result.deadEnds} dead-ends`; job.businessImpact = result.issues.length > 0 ? "Flows need fix" : "All coherent"; }
   }, "system");
 
   registerJob("ui-ux-consistency", 60 * 60_000, async () => {
     const { runUxConsistencyAudit } = await import("@/lib/engines/ui-ux-consistency-engine");
     const result = runUxConsistencyAudit();
-    if (result.issues.length > 0) console.log(`[continuous] UX: ${result.issues.length} issues`);
+    const job = jobs.find(j => j.name === "ui-ux-consistency");
+    if (job) { job.itemsProcessed = result.totalComponentsAudited; job.summary = `${result.issues.length} UX issues`; job.businessImpact = `Empty:${Math.round(result.emptyStatesCoverage*100)}% Load:${Math.round(result.loadingStatesCoverage*100)}% Err:${Math.round(result.errorStatesCoverage*100)}%`; }
   }, "system");
 
   registerJob("i18n-integrity", 60 * 60_000, async () => {
     const { runI18nIntegrityAudit } = await import("@/lib/engines/i18n-integrity-engine");
     const result = runI18nIntegrityAudit();
-    if (result.missingKeys > 0) console.log(`[continuous] i18n: ${result.missingKeys} missing keys`);
+    const job = jobs.find(j => j.name === "i18n-integrity");
+    if (job) { job.itemsProcessed = result.totalKeysChecked; job.summary = `${result.missingKeys} missing, ${result.truncatedTexts} truncated`; job.businessImpact = `Coverage: FR ${result.coveragePercent.fr}% EN ${result.coveragePercent.en}%`; }
   }, "system");
 
   registerJob("global-orchestration", 15 * 60_000, async () => {
