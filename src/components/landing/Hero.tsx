@@ -63,7 +63,7 @@ const Hero = () => {
   return (
     <section
       aria-label="Hero"
-      className="relative overflow-hidden pt-16 sm:pt-20"
+      className="relative overflow-hidden pt-14 sm:pt-20"
       style={{ background: "linear-gradient(160deg, hsl(222 50% 4%) 0%, hsl(220 48% 8%) 35%, hsl(222 42% 13%) 65%, hsl(220 38% 7%) 100%)" }}
     >
       {/* Ambient orbs */}
@@ -83,14 +83,14 @@ const Hero = () => {
         )}
       </div>
 
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-16 lg:py-20 xl:py-28">
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-16 lg:py-20 xl:py-28">
 
-        {/* Trust bar */}
+        {/* Trust bar — hidden on mobile to save space */}
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="flex items-center justify-center gap-2 sm:gap-4 mb-5 sm:mb-8 flex-wrap overflow-hidden"
+          className="hidden sm:flex items-center justify-center gap-2 sm:gap-4 mb-5 sm:mb-8 flex-wrap overflow-hidden"
         >
           <div className="flex items-center gap-1.5 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full border shrink-0 max-w-[48%] sm:max-w-none" style={{ background: "hsl(220 40% 8% / 0.6)", borderColor: "hsl(220 15% 90% / 0.06)" }}>
             <Users className="h-3 w-3 shrink-0" style={{ color: "hsl(var(--accent) / 0.6)" }} />
@@ -108,7 +108,7 @@ const Hero = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 xl:gap-16 items-center">
           {/* LEFT */}
-          <div className="lg:col-span-7 space-y-5 lg:space-y-7 text-center lg:text-left">
+          <div className="lg:col-span-7 space-y-3 sm:space-y-5 lg:space-y-7 text-center lg:text-left">
             {/* Brand + Radar Logo */}
             <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.15 }} className="flex flex-col items-center lg:items-start gap-3">
               <EasyLocsLogo variant="full" size="lg" animate />
@@ -149,12 +149,12 @@ const Hero = () => {
               </motion.h1>
             </AnimatePresence>
 
-            {/* Speed stats strip */}
+            {/* Speed stats strip — hidden mobile */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.35 }}
-              className="flex items-center justify-center lg:justify-start gap-2 flex-wrap overflow-hidden"
+              className="hidden sm:flex items-center justify-center lg:justify-start gap-2 flex-wrap overflow-hidden"
             >
               {SPEED_STATS.map((s) => (
                 <span key={s.label} className="inline-flex items-center gap-1 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full border text-[10px] sm:text-xs font-semibold shrink-0"
@@ -174,10 +174,10 @@ const Hero = () => {
               )}
             </motion.div>
 
-            {/* Universe chips */}
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }} className="flex flex-wrap justify-center lg:justify-start gap-1 sm:gap-1.5 overflow-hidden">
+            {/* Universe chips — single scrollable row on mobile */}
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }} className="flex gap-1 sm:gap-1.5 overflow-x-auto sm:flex-wrap sm:justify-center lg:justify-start scrollbar-none pb-1">
               {UNIVERSES.map((u, i) => (
-                <motion.span key={u.label} initial={{ opacity: 0, scale: 0.85 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.45 + i * 0.03 }} className="inline-flex items-center gap-0.5 sm:gap-1 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full text-[9px] sm:text-[10px] font-semibold border shrink-0" style={{ background: u.bg, borderColor: `${u.color}25`, color: u.color }}>
+                <motion.span key={u.label} initial={{ opacity: 0, scale: 0.85 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.45 + i * 0.03 }} className="inline-flex items-center gap-0.5 sm:gap-1 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full text-[9px] sm:text-[10px] font-semibold border shrink-0 whitespace-nowrap" style={{ background: u.bg, borderColor: `${u.color}25`, color: u.color }}>
                   <u.icon className="h-2.5 w-2.5 shrink-0" />{u.label}
                 </motion.span>
               ))}
@@ -198,8 +198,8 @@ const Hero = () => {
               </motion.div>
             </motion.div>
 
-            {/* Trust strip */}
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.7 }} className="flex items-center justify-center lg:justify-start gap-5 pt-1">
+            {/* Trust strip — hidden mobile */}
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.7 }} className="hidden sm:flex items-center justify-center lg:justify-start gap-5 pt-1">
               {[
                 { icon: Globe, val: "190+", lbl: "Countries" },
                 { icon: Shield, val: "0%", lbl: "Commission" },
@@ -213,8 +213,8 @@ const Hero = () => {
               ))}
             </motion.div>
 
-            {/* Intent selector */}
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.8 }} className="flex items-center justify-center lg:justify-start gap-1 overflow-x-auto scrollbar-none pb-1">
+            {/* Intent selector — hidden mobile */}
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.8 }} className="hidden sm:flex items-center justify-center lg:justify-start gap-1 overflow-x-auto scrollbar-none pb-1">
               {INTENTS.map((it, i) => (
                 <button
                   key={it.key}
