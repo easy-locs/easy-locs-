@@ -368,6 +368,7 @@ const MerchantMenuPageNew = safeLazy(() => import("./pages/merchant/MerchantMenu
 const DriverDashboardPageNew = safeLazy(() => import("./pages/driver/DriverDashboardPage"), "DriverDashboardPageNew");
 const AdminOpsDashboardPage = safeLazy(() => import("./pages/admin/AdminOpsDashboardPage"), "AdminOpsDashboardPage");
 const AdminOrchestrationPage = safeLazy(() => import("./pages/admin/AdminOrchestrationPage"), "AdminOrchestrationPage");
+const AdminPipelinePage = safeLazy(() => import("./pages/admin/AdminPipelinePage"), "AdminPipelinePage");
 const AdminEnginesDashboardPage = safeLazy(() => import("./pages/admin/AdminEnginesDashboardPage"), "AdminEnginesDashboardPage");
 const AdminBackendTruthPage = safeLazy(() => import("./pages/admin/AdminBackendTruthPage"), "AdminBackendTruthPage");
 const AdminGaragePage = safeLazy(() => import("./pages/admin/AdminGaragePage"), "AdminGaragePage");
@@ -1113,8 +1114,9 @@ const App = () => (
                <Route path="/merchant/menu/:merchantId" element={<ProtectedRoute><MerchantMenuPageNew /></ProtectedRoute>} />
                <Route path="/driver/dashboard" element={<ProtectedRoute><DriverDashboardPageNew /></ProtectedRoute>} />
                <Route path="/admin/ops-dashboard" element={<ProtectedRoute><AdminOpsDashboardPage /></ProtectedRoute>} />
-               <Route path="/admin/orchestration" element={<ProtectedRoute><AdminOrchestrationPage /></ProtectedRoute>} />
-                <Route path="/admin/engines" element={<ProtectedRoute><AdminEnginesDashboardPage /></ProtectedRoute>} />
+                <Route path="/admin/orchestration" element={<ProtectedRoute><AdminOrchestrationPage /></ProtectedRoute>} />
+                <Route path="/admin/pipeline" element={<ProtectedRoute><AdminPipelinePage /></ProtectedRoute>} />
+                 <Route path="/admin/engines" element={<ProtectedRoute><AdminEnginesDashboardPage /></ProtectedRoute>} />
                 <Route path="/admin/backend-truth" element={<ProtectedRoute><AdminBackendTruthPage /></ProtectedRoute>} />
                 <Route path="/admin/garage" element={<ProtectedRoute><AdminGaragePage /></ProtectedRoute>} />
                <Route path="/permissions" element={<PermissionCenterPage />} />
