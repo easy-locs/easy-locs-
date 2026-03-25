@@ -27,12 +27,13 @@ export async function openOrbitFromRadar(
 ): Promise<string | null> {
   try {
     // Check if conversation already exists for this entity + user
-    const query = supabase
-      .from("conversations_v2")
+    const { data: existing } = await (supabase
+      .from("conversations_v2" as any)
       .select("id")
       .eq("context_type", "entity")
-      .eq("context_id", entity.id);
-    const { data: existing } = await (query as any).contains("participant_ids", [userId]).maybeSingle();
+      .eq("context_id", entity.id)
+      .contains("participant_ids", [userId])
+      .maybeSingle()) as any;
 
     if (existing?.id) {
       eventBus.emit("CONTACT_INITIATED", {
