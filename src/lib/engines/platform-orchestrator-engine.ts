@@ -231,6 +231,50 @@ export async function runPlatformOrchestrator(): Promise<{
     });
   }
 
+  // 5. Backend truth enforcement — block dead entities from being live
+  try {
+    const { data: deadLive } = await db
+      .from("seed_merchants")
+      .select("id, name")
+      .eq("visibility_mode", "live")
+      .or("name.is.null,category.is.null,category.eq.unknown,vertical.is.null,vertical.eq.unknown,route_status.eq.broken")
+      .limit(50);
+
+    if (deadLive && deadLive.length > 0) {
+      await db.from("seed_merchants")
+        .update({ visibility_mode: "hidden", unpublish_reason: "auto:orchestrator_dead_entity", unpublished_at: new Date().toISOString() })
+        .in("id", deadLive.map((e: any) => e.id));
+
+      decisions.push({
+        engineSource: "platform-orchestrator",
+        actionType: "block",
+        severity: "critical",
+        targetType: "entity_batch",
+        description: `Blocked ${deadLive.length} dead entities from live visibility`,
+        decision: "Auto-unpublished: missing name/category/vertical or broken route",
+        autoApplied: true,
+        result: `${deadLive.length} unpublished`,
+      });
+    }
+  } catch {}
+
+  // 6. Prevent auto-publish if backend-connectivity or full-stack-linkage report broken
+  const connectivityJob = status.jobs.find(j => j.name === "backend-connectivity");
+  const linkageJob = status.jobs.find(j => j.name === "full-stack-linkage");
+  if (connectivityJob?.lastStatus === "error" || linkageJob?.lastStatus === "error") {
+    decisions.push({
+      engineSource: "platform-orchestrator",
+      actionType: "block",
+      severity: "critical",
+      targetType: "engine",
+      targetPath: "auto-publish",
+      description: "Auto-publish blocked: backend connectivity or linkage engine in error state",
+      decision: "Publication paused until truth engines recover",
+      autoApplied: true,
+      result: "auto-publish_paused",
+    });
+  }
+
   // 5. Persist decisions to DB
   if (decisions.length > 0) {
     const rows = decisions.map(d => ({
