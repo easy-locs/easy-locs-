@@ -629,7 +629,7 @@ Deno.serve(async (req) => {
       };
       if (allOk) { update.last_success_at = now; update.current_incident = null; update.error_count_1h = 0; }
       if (hasError) { update.last_error_at = now; update.current_incident = engines.filter(e => report[e]?.error).join(", "); }
-      await supabase.from("module_health").update(update).eq("module", mod).catch(() => {});
+      try { await supabase.from("module_health").update(update).eq("module", mod); } catch(_) {}
     }
 
     // ══════════════════════════════════════════════════
