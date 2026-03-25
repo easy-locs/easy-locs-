@@ -7067,6 +7067,66 @@ export type Database = {
         }
         Relationships: []
       }
+      engine_supervisor: {
+        Row: {
+          consecutive_failures: number
+          created_at: string | null
+          cron_interval: string | null
+          enabled: boolean
+          engine_name: string
+          engine_tier: string
+          id: string
+          last_duration_ms: number | null
+          last_error_at: string | null
+          last_error_message: string | null
+          last_run_at: string | null
+          last_success_at: string | null
+          max_retries: number
+          restart_count: number
+          runtime_class: string
+          status: string
+          updated_at: string | null
+        }
+        Insert: {
+          consecutive_failures?: number
+          created_at?: string | null
+          cron_interval?: string | null
+          enabled?: boolean
+          engine_name: string
+          engine_tier?: string
+          id?: string
+          last_duration_ms?: number | null
+          last_error_at?: string | null
+          last_error_message?: string | null
+          last_run_at?: string | null
+          last_success_at?: string | null
+          max_retries?: number
+          restart_count?: number
+          runtime_class?: string
+          status?: string
+          updated_at?: string | null
+        }
+        Update: {
+          consecutive_failures?: number
+          created_at?: string | null
+          cron_interval?: string | null
+          enabled?: boolean
+          engine_name?: string
+          engine_tier?: string
+          id?: string
+          last_duration_ms?: number | null
+          last_error_at?: string | null
+          last_error_message?: string | null
+          last_run_at?: string | null
+          last_success_at?: string | null
+          max_retries?: number
+          restart_count?: number
+          runtime_class?: string
+          status?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       entities: {
         Row: {
           address: string | null

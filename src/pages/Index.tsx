@@ -164,8 +164,8 @@ const Index = () => {
         <LiveActivityBar />
       </Suspense>
 
-      {/* Sections with consistent spacing */}
-      <div className="flex flex-col gap-0">
+      {/* Sections — strict flex column with mobile-first gap */}
+      <div className="flex flex-col gap-3 sm:gap-5">
         {/* 3. Main Category Banners */}
         <Suspense fallback={<SectionLoader />}>
           <CategoryBanners />
