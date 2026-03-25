@@ -88,25 +88,7 @@ export default function ShopPage() {
         }
       }
 
-      if (canonical.sourceTable === "seed_merchants") {
-        const { data: seed } = await (supabase as any)
-          .from("seed_merchants")
-          .select("*")
-          .eq("id", canonical.canonicalId)
-          .maybeSingle();
-
-        if (seed) return {
-          ...seed,
-          slug: seed.id,
-          vertical: seed.category,
-          banner_url: seed.cover_image,
-          logo_url: seed.logo_image,
-          address: seed.area,
-          visibility_mode: seed.visibility_mode || "coming_soon",
-          _isSeed: true,
-          _canonical: canonical,
-        };
-      }
+      // seed_merchants fallback removed — public pages read storefront_pages only
 
       debugLog.warn("router", "canonical.entity_resolver.miss", `No entity found for ${shopSlug}`, {
         slugOrId: shopSlug,
@@ -122,15 +104,7 @@ export default function ShopPage() {
     queryKey: ["storefront-catalog", shop?.id, shop?._isSeed],
     queryFn: async () => {
       if (!shop) return [];
-      if (shop._isSeed) {
-        const { data } = await (supabase as any).from("seed_products").select("*")
-          .eq("merchant_id", shop.id).eq("is_available", true).order("sort_order");
-        return (data || []).map((p: any) => ({
-          id: p.id, name: p.name, description: p.description, price: p.price,
-          image_url: p.image, category_id: p.category, category_name: p.category,
-          available: p.is_available, sort_order: p.sort_order,
-        }));
-      }
+      // Single source: catalog_items only (no seed_products fallback)
       const { data } = await (supabase as any).from("catalog_items")
         .select("*, storefront_catalog_categories(name)")
         .eq("shop_id", shop.id).eq("available", true).order("sort_order");
