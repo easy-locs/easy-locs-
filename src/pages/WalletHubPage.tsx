@@ -8,7 +8,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useWalletAccounts } from "@/hooks/useWalletAccounts";
 import { useWalletTransactions } from "@/payments/wallet-hooks";
 import { createWalletAccount } from "@/lib/wallet/wallet-account";
-import { createLedgerEntry, getOrCreateWalletAccount, recomputeWalletBalance } from "@/lib/wallet/ledger";
+
 import {
   ArrowLeft, Plus, ArrowUpRight, ArrowDownLeft, QrCode, Eye, EyeOff,
   CreditCard, Wallet, Shield, ScanLine, Settings, TrendingUp, Sparkles,
