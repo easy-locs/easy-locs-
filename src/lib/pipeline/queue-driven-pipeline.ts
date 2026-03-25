@@ -198,7 +198,8 @@ async function executeStage(stage: PipelineStage, entityId: string): Promise<{ p
       case "publish": {
         const { runAutoPublish } = await import("@/lib/engines/auto-publish-engine");
         const r = await runAutoPublish(1);
-        return { processed: r.promoted ?? r.published ?? 0 };
+        const count = (r as any).promoted ?? (r as any).published ?? (r as any).processed ?? 0;
+        return { processed: count };
       }
       case "distribute": {
         // Ranking happens in batch — mark as done for individual entity
