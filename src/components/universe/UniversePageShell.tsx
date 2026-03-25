@@ -5,7 +5,7 @@
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion } from "framer-motion"; // kept for potential future use
 import SEOHead from "@/components/SEOHead";
 
 interface UniversePageShellProps {
