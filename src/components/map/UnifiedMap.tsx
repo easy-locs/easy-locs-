@@ -355,6 +355,15 @@ export default memo(function UnifiedMap({
       map.on("mouseenter", CLUSTER_LAYER, () => { map.getCanvas().style.cursor = "pointer"; });
       map.on("mouseleave", CLUSTER_LAYER, () => { map.getCanvas().style.cursor = ""; });
 
+      // ── Zone click: click on empty map area → zone intelligence ──
+      map.on("click", (e) => {
+        // If the click hit a pin or cluster, ignore (those handlers run first)
+        const pinFeatures = map.queryRenderedFeatures(e.point, { layers: [UNCLUSTERED_LAYER, CLUSTER_LAYER] });
+        if (pinFeatures.length > 0) return;
+        // Clicked on empty zone
+        onZoneClickRef.current?.(e.lngLat.lat, e.lngLat.lng);
+      });
+
       setMapReady(true);
     });
 
