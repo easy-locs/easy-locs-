@@ -38,6 +38,12 @@ export default function HyperRadarPage() {
   const [activeLayers, setActiveLayers] = useState<RadarLayer[]>(["food", "stay", "services"]);
   const [radius, setRadius] = useState(5);
   const [panelOpen, setPanelOpen] = useState(true);
+  const [zoneClick, setZoneClick] = useState<{ lat: number; lng: number } | null>(null);
+
+  const handleZoneClick = useCallback((lat: number, lng: number) => {
+    setZoneClick({ lat, lng });
+    setPanelOpen(false); // hide default panel when zone sheet opens
+  }, []);
 
   const timeSlot = useMemo(() => detectTimeSlot(), []);
   const hour = new Date().getHours();
