@@ -163,6 +163,7 @@ export async function fetchCanonicalDiscovery(opts: CanonicalDiscoveryOpts): Pro
     category,
     subcategory,
     vertical,
+    city,
     radiusKm,
     limit = 200,
   } = opts;
