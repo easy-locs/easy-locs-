@@ -1212,6 +1212,7 @@ const App = () => (
                 <Route path="/driver/availability-zones" element={<ProtectedRoute><DriverAvailabilityZonesPage /></ProtectedRoute>} />
                 <Route path="/admin/growth-dashboard" element={<ProtectedRoute><AdminGrowthDashboardPage /></ProtectedRoute>} />
                 <Route path="/me/order-receipts" element={<ProtectedRoute><CustomerOrderReceiptsPage /></ProtectedRoute>} />
+                <Route path="/admin/growth-engine" element={<ProtectedRoute><AdminGrowthEnginePage /></ProtectedRoute>} />
                 <Route path="/merchant/refund-requests/:merchantId" element={<ProtectedRoute><MerchantRefundRequestsPage /></ProtectedRoute>} />
                 <Route path="/admin/coupon-oversight" element={<ProtectedRoute><AdminCouponOversightPage /></ProtectedRoute>} />
                 <Route path="/me/notification-center" element={<ProtectedRoute><CustomerNotificationCenterPage /></ProtectedRoute>} />
