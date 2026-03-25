@@ -265,8 +265,8 @@ export default function OrbitAccountSection() {
         return;
       }
 
-      const text = messages.map(m => 
-        `[${new Date(m.created_at).toLocaleString()}] ${m.sender_id === user.id ? "You" : "Contact"}: ${m.content}`
+      const text = messages.map((m: any) => 
+        `[${new Date(m.created_at).toLocaleString()}] ${m.sender_user_id === user.id ? "You" : "Contact"}: ${m.body}`
       ).join("\n");
 
       const blob = new Blob([text], { type: "text/plain" });
