@@ -33,7 +33,7 @@ export async function createSupportTicket(params: {
       .insert({
         ticket_id: (ticket as any).id,
         sender_user_id: params.requesterUserId ?? null,
-        sender_role: "user",
+        sender_role: "client",
         body: params.firstMessage.trim(),
       } as any);
   }
@@ -44,7 +44,7 @@ export async function createSupportTicket(params: {
 export async function addSupportTicketMessage(params: {
   ticketId: string;
   senderUserId?: string;
-  senderRole?: "user" | "support" | "ai" | "system";
+  senderRole?: "client" | "support" | "ai" | "system";
   body: string;
   metadata?: Record<string, any>;
 }) {
@@ -53,7 +53,7 @@ export async function addSupportTicketMessage(params: {
     .insert({
       ticket_id: params.ticketId,
       sender_user_id: params.senderUserId ?? null,
-      sender_role: params.senderRole ?? "user",
+      sender_role: params.senderRole ?? "client",
       body: params.body,
       metadata: params.metadata ?? {},
     } as any)
