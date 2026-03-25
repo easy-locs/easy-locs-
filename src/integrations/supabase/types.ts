@@ -16777,6 +16777,41 @@ export type Database = {
         }
         Relationships: []
       }
+      ride_events: {
+        Row: {
+          actor_user_id: string | null
+          created_at: string
+          event_type: string
+          id: string
+          payload: Json
+          ride_id: string
+        }
+        Insert: {
+          actor_user_id?: string | null
+          created_at?: string
+          event_type: string
+          id?: string
+          payload?: Json
+          ride_id: string
+        }
+        Update: {
+          actor_user_id?: string | null
+          created_at?: string
+          event_type?: string
+          id?: string
+          payload?: Json
+          ride_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ride_events_ride_id_fkey"
+            columns: ["ride_id"]
+            isOneToOne: false
+            referencedRelation: "rides"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ride_offers: {
         Row: {
           driver_id: string
@@ -16944,6 +16979,78 @@ export type Database = {
           trip_started_at?: string | null
           updated_at?: string
           zone_key?: string | null
+        }
+        Relationships: []
+      }
+      rides: {
+        Row: {
+          booking_mode: string
+          created_at: string
+          currency: string
+          driver_user_id: string | null
+          dropoff_label: string
+          dropoff_lat: number | null
+          dropoff_lng: number | null
+          estimated_price: number | null
+          final_price: number | null
+          id: string
+          notes: string | null
+          passenger_name: string | null
+          passenger_phone: string | null
+          pickup_label: string
+          pickup_lat: number | null
+          pickup_lng: number | null
+          ride_type: string
+          rider_user_id: string
+          scheduled_for: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          booking_mode?: string
+          created_at?: string
+          currency?: string
+          driver_user_id?: string | null
+          dropoff_label?: string
+          dropoff_lat?: number | null
+          dropoff_lng?: number | null
+          estimated_price?: number | null
+          final_price?: number | null
+          id?: string
+          notes?: string | null
+          passenger_name?: string | null
+          passenger_phone?: string | null
+          pickup_label?: string
+          pickup_lat?: number | null
+          pickup_lng?: number | null
+          ride_type?: string
+          rider_user_id: string
+          scheduled_for?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          booking_mode?: string
+          created_at?: string
+          currency?: string
+          driver_user_id?: string | null
+          dropoff_label?: string
+          dropoff_lat?: number | null
+          dropoff_lng?: number | null
+          estimated_price?: number | null
+          final_price?: number | null
+          id?: string
+          notes?: string | null
+          passenger_name?: string | null
+          passenger_phone?: string | null
+          pickup_label?: string
+          pickup_lat?: number | null
+          pickup_lng?: number | null
+          ride_type?: string
+          rider_user_id?: string
+          scheduled_for?: string | null
+          status?: string
+          updated_at?: string
         }
         Relationships: []
       }
@@ -25013,35 +25120,51 @@ export type Database = {
       tracking_positions: {
         Row: {
           accuracy_m: number | null
+          created_at: string | null
           heading: number | null
           id: string
           lat: number
           lng: number
           recorded_at: string
+          ride_id: string | null
           session_id: string
           speed_kmh: number | null
+          user_id: string | null
         }
         Insert: {
           accuracy_m?: number | null
+          created_at?: string | null
           heading?: number | null
           id?: string
           lat: number
           lng: number
           recorded_at?: string
+          ride_id?: string | null
           session_id: string
           speed_kmh?: number | null
+          user_id?: string | null
         }
         Update: {
           accuracy_m?: number | null
+          created_at?: string | null
           heading?: number | null
           id?: string
           lat?: number
           lng?: number
           recorded_at?: string
+          ride_id?: string | null
           session_id?: string
           speed_kmh?: number | null
+          user_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "tracking_positions_ride_id_fkey"
+            columns: ["ride_id"]
+            isOneToOne: false
+            referencedRelation: "rides"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "tracking_positions_session_id_fkey"
             columns: ["session_id"]

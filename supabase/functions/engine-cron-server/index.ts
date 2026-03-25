@@ -1298,6 +1298,52 @@ Deno.serve(async (req) => {
     }, "critical");
 
     // ══════════════════════════════════════════════════
+    // PHASE 12b: RIDE LIFECYCLE
+    // ══════════════════════════════════════════════════
+    await runEngine("ride-lifecycle", async () => {
+      const searchCutoff = new Date(Date.now() - 15 * 60_000).toISOString();
+      const { data: stuckSearching } = await supabase.from("rides").select("id").eq("status", "searching").lt("created_at", searchCutoff).limit(50);
+      let failed = 0;
+      for (const r of (stuckSearching as any[]) ?? []) {
+        await supabase.from("rides").update({ status: "failed" } as any).eq("id", r.id);
+        await supabase.from("ride_events").insert({ ride_id: r.id, event_type: "ride.auto_failed", payload: { reason: "no_driver_found" } } as any);
+        failed++;
+      }
+
+      const acceptCutoff = new Date(Date.now() - 30 * 60_000).toISOString();
+      const { data: stuckAccepted } = await supabase.from("rides").select("id").eq("status", "accepted").lt("updated_at", acceptCutoff).limit(50);
+      let cancelled = 0;
+      for (const r of (stuckAccepted as any[]) ?? []) {
+        await supabase.from("rides").update({ status: "cancelled" } as any).eq("id", r.id);
+        await supabase.from("ride_events").insert({ ride_id: r.id, event_type: "ride.auto_cancelled", payload: { reason: "stuck_accepted" } } as any);
+        cancelled++;
+      }
+
+      const now = new Date().toISOString();
+      const { data: dueScheduled } = await supabase.from("rides").select("id").eq("status", "scheduled").not("scheduled_for", "is", null).lt("scheduled_for", now).limit(50);
+      let activated = 0;
+      for (const r of (dueScheduled as any[]) ?? []) {
+        await supabase.from("rides").update({ status: "searching" } as any).eq("id", r.id);
+        await supabase.from("ride_events").insert({ ride_id: r.id, event_type: "ride.activated", payload: { reason: "schedule_due" } } as any);
+        activated++;
+      }
+
+      const { count: activeCount } = await supabase.from("rides").select("id", { count: "exact", head: true }).in("status", ["searching", "accepted", "driver_en_route", "arrived", "in_progress"]);
+      return { failed, cancelled, activated, activeRides: activeCount ?? 0 };
+    }, "critical");
+
+    await runEngine("ride-tracking-monitor", async () => {
+      const cutoff = new Date(Date.now() - 10 * 60_000).toISOString();
+      const { data: inProgress } = await supabase.from("rides").select("id").eq("status", "in_progress").limit(50);
+      let noTracking = 0;
+      for (const r of (inProgress as any[]) ?? []) {
+        const { data: pos } = await supabase.from("tracking_positions").select("id").eq("ride_id", r.id).gte("created_at", cutoff).limit(1);
+        if (!pos?.length) noTracking++;
+      }
+      return { monitored: inProgress?.length ?? 0, noTracking };
+    }, "priority");
+
+    // ══════════════════════════════════════════════════
     // PHASE 13: GROWTH DOMINATION
     // ══════════════════════════════════════════════════
     const { data: flagRows } = await supabase.from("system_feature_flags").select("flag_key, flag_value").like("flag_key" as any, "enable_%");
@@ -1341,7 +1387,7 @@ Deno.serve(async (req) => {
       scanner: ["qr-session-cleanup"],
       checkout: ["abandoned-cart", "order-lifecycle"],
       radar: ["hyper-radar", "personal-ranking", "zone-profile-refresh"],
-      delivery: ["delivery-monitor", "driver-availability", "live-status-refresh"],
+      delivery: ["delivery-monitor", "driver-availability", "live-status-refresh", "ride-lifecycle", "ride-tracking-monitor"],
       deep_scrape: ["auto-source-enrich", "import-pipeline", "ingestion-pipeline", "pipeline-worker"],
       publish_pipeline: ["publish-gate", "auto-publish", "auto-unpublish", "coherence-sweep", "pipeline-worker"],
       notifications: ["notification-cleanup", "review-trigger"],
