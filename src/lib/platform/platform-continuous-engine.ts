@@ -34,7 +34,7 @@ function registerJob(
   category: IntervalJob["category"] = "system"
 ) {
   if (jobs.find(j => j.name === name)) return;
-  jobs.push({ name, intervalMs, fn, runCount: 0, lastStatus: "pending", itemsProcessed: 0, category });
+  jobs.push({ name, intervalMs, fn, runCount: 0, lastStatus: "pending", itemsProcessed: 0, rowsAffected: 0, businessImpact: "", summary: "", category });
 }
 
 async function executeJob(job: IntervalJob) {
