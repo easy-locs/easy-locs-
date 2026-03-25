@@ -629,7 +629,7 @@ Deno.serve(async (req) => {
       };
       if (allOk) { update.last_success_at = now; update.current_incident = null; update.error_count_1h = 0; }
       if (hasError) { update.last_error_at = now; update.current_incident = engines.filter(e => report[e]?.error).join(", "); }
-      await supabase.from("module_health").update(update).eq("module", mod).catch(() => {});
+      try { await supabase.from("module_health").update(update).eq("module", mod); } catch(_) {}
     }
 
     // ══════════════════════════════════════════════════
@@ -639,20 +639,24 @@ Deno.serve(async (req) => {
     report.elapsed_ms = elapsed;
     report.completed_at = new Date().toISOString();
 
-    await supabase.from("platform_recovery_runs").insert({
-      id: crypto.randomUUID(),
-      trigger: "engine-cron-server-v2",
-      status: "completed",
-      report_json: report,
-    } as any);
+    try {
+      await supabase.from("platform_recovery_runs").insert({
+        id: crypto.randomUUID(),
+        trigger_type: "engine-cron-server-v2",
+        status: "completed",
+        report_json: report,
+      } as any);
+    } catch(_) {}
 
-    await supabase.from("engine_run_logs").insert({
-      engine_name: "engine-cron-server",
-      status: "ok",
-      duration_ms: elapsed,
-      items_processed: report.engines_triggered,
-      effect_summary: `${report.engines_triggered} engines, ${report.errors} errors, ${report.retried} retried in ${elapsed}ms`,
-    } as any);
+    try {
+      await supabase.from("engine_run_logs").insert({
+        engine_name: "engine-cron-server",
+        status: "ok",
+        duration_ms: elapsed,
+        items_processed: report.engines_triggered,
+        effect_summary: `${report.engines_triggered} engines, ${report.errors} errors, ${report.retried} retried in ${elapsed}ms`,
+      } as any);
+    } catch(_) {}
 
     return new Response(
       JSON.stringify({ success: true, engines: report.engines_triggered, errors: report.errors, retried: report.retried, elapsed_ms: elapsed }),
