@@ -1,11 +1,12 @@
 /**
  * HyperRadarPage — Full-screen immersive radar with heatmap, layers, smart guidance, vibe density.
  */
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { useRadarResults } from "@/hooks/useRadarResults";
 import PersonalRadarPanel from "@/components/radar/PersonalRadarPanel";
+import ZoneIntelligenceSheet from "@/components/radar/ZoneIntelligenceSheet";
 import { useLocationStore } from "@/stores/locationStore";
 import {
   detectTimeSlot, getRelevantLayers, generateGuidance, classifyVibe,
@@ -37,6 +38,12 @@ export default function HyperRadarPage() {
   const [activeLayers, setActiveLayers] = useState<RadarLayer[]>(["food", "stay", "services"]);
   const [radius, setRadius] = useState(5);
   const [panelOpen, setPanelOpen] = useState(true);
+  const [zoneClick, setZoneClick] = useState<{ lat: number; lng: number } | null>(null);
+
+  const handleZoneClick = useCallback((lat: number, lng: number) => {
+    setZoneClick({ lat, lng });
+    setPanelOpen(false); // hide default panel when zone sheet opens
+  }, []);
 
   const timeSlot = useMemo(() => detectTimeSlot(), []);
   const hour = new Date().getHours();
@@ -114,6 +121,8 @@ export default function HyperRadarPage() {
           showUserLocation
           showHeatmap
           heatmapPoints={entities.map(e => ({ lat: e.lat, lng: e.lng, intensity: 0.5 }))}
+          radiusKm={radius}
+          onZoneClick={handleZoneClick}
         />
 
         {/* Vibe Badge */}
@@ -265,6 +274,19 @@ export default function HyperRadarPage() {
           )}
         </AnimatePresence>
       </motion.div>
+
+      {/* Zone Intelligence Sheet */}
+      <AnimatePresence>
+        {zoneClick && (
+          <ZoneIntelligenceSheet
+            entities={entities}
+            zoneLat={zoneClick.lat}
+            zoneLng={zoneClick.lng}
+            radiusKm={radius}
+            onClose={() => { setZoneClick(null); setPanelOpen(true); }}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }
