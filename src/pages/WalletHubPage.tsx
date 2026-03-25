@@ -60,6 +60,39 @@ export default function WalletHubPage() {
     return { inTotal, outTotal, pending, txCount: thisMonth.length };
   }, [txHistory, user?.id]);
 
+  // Resolve counterparty names for transactions
+  const [counterpartyNames, setCounterpartyNames] = useState<Record<string, string>>({});
+  useEffect(() => {
+    if (!txHistory.length || !user?.id) return;
+    const ids = new Set<string>();
+    txHistory.forEach(tx => {
+      if (tx.sender_id && tx.sender_id !== user.id) ids.add(tx.sender_id);
+      if (tx.recipient_id && tx.recipient_id !== user.id) ids.add(tx.recipient_id);
+    });
+    if (ids.size === 0) return;
+    (supabase as any)
+      .from("profiles")
+      .select("id, name, first_name, last_name, username")
+      .in("id", Array.from(ids))
+      .then(({ data }: any) => {
+        const map: Record<string, string> = {};
+        (data ?? []).forEach((p: any) => {
+          map[p.id] = p.name || [p.first_name, p.last_name].filter(Boolean).join(" ") || p.username || "User";
+        });
+        setCounterpartyNames(map);
+      });
+  }, [txHistory, user?.id]);
+
+  const getTxTitle = useCallback((tx: any) => {
+    const isOut = tx.sender_id === user?.id;
+    const counterpartyId = isOut ? tx.recipient_id : tx.sender_id;
+    const counterpartyName = counterpartyId ? counterpartyNames[counterpartyId] : null;
+    if (counterpartyName) {
+      return isOut ? `Sent to ${counterpartyName}` : `Received from ${counterpartyName}`;
+    }
+    return tx.title || tx.context_type || "Transaction";
+  }, [user?.id, counterpartyNames]);
+
   const quickActions = [
     { label: "Top up", icon: Plus, color: "from-emerald-500 to-emerald-600" },
     { label: "Send", icon: ArrowUpRight, color: "from-blue-500 to-blue-600" },
