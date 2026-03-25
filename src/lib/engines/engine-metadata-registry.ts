@@ -137,6 +137,10 @@ export const ENGINE_METADATA: Record<string, EngineMetadata> = {
   "auto-repair":           { tier: "critical",    businessFn: "infrastructure", vertical: "all",     canRunIdle: false, tablesWritten: ["seed_merchants"],    fieldsWritten: ["city", "country", "currency", "description", "visibility_score", "visibility_mode"], description: "Auto-fixes safe deterministic issues, blocks dangerous, escalates ambiguous" },
   "module-link-repair":    { tier: "priority",    businessFn: "infrastructure", vertical: "all",     canRunIdle: false, tablesWritten: ["seed_merchants"],    fieldsWritten: ["visibility_mode", "pipeline_stage", "publish_gate_status"], description: "Verifies and repairs cross-module connections" },
   "entity-state-healing":  { tier: "critical",    businessFn: "visibility",     vertical: "all",     canRunIdle: false, tablesWritten: ["seed_merchants"],    fieldsWritten: ["visibility_mode", "vertical", "visibility_decision_reason"], description: "Heals incoherent entity states — pipeline vs visibility, gate vs mode" },
+
+  // ── MENU PIPELINE (Food Quality) ──
+  "menu-rebuild":          { tier: "critical",    businessFn: "onboarding",     vertical: "food",    canRunIdle: false, tablesWritten: ["seed_merchants"],    fieldsWritten: ["menu_items_json", "menu_rebuild_score", "menu_quality_score", "menu_quality_flag"], description: "Rebuilds dirty menus into clean canonical structure" },
+  "taxonomy-remap":        { tier: "priority",    businessFn: "taxonomy",       vertical: "food",    canRunIdle: false, tablesWritten: ["seed_merchants"],    fieldsWritten: ["category", "subcategory", "taxonomy_score"],              description: "Revalidates and corrects taxonomy after menu rebuild" },
 };
 
 /** Detect table/field collisions between engines */
