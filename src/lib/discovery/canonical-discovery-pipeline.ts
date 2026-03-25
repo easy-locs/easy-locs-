@@ -281,6 +281,8 @@ export async function fetchCanonicalDiscovery(opts: CanonicalDiscoveryOpts): Pro
   for (const m of seedResults) {
     if (seenIds.has(m.id)) continue;
     if (isPlaceholder(m.cover_image) && isPlaceholder(m.logo_image)) continue;
+    // Block low-quality entities from discovery
+    if ((m.overall_quality_score ?? 0) > 0 && (m.overall_quality_score ?? 0) < 30) continue;
     const coords = areaToCoords(m.area);
     const normVertical = normalizeVertical(m.category);
     const cat = verticalToRadarCategory(normVertical);
