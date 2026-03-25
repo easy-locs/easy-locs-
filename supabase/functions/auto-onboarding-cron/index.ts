@@ -132,7 +132,7 @@ Deno.serve(async (req) => {
 
     const { error: insertErr } = await supabase.from("platform_recovery_runs").insert({
       id: crypto.randomUUID(),
-      trigger: "auto-onboarding-cron",
+      trigger_type: "auto-onboarding-cron",
       status: "completed",
       report_json: report,
     });
