@@ -82,6 +82,7 @@ export async function syncCompletedOrderToSettlement(orderId: string): Promise<S
   await releaseOrderEscrow({
     orderId: order.id,
     merchantUserId: (order as any).merchant_user_id ?? null,
+    driverUserId: (order as any).assigned_driver_user_id ?? null,
     amount: Number(order.total_amount ?? 0),
     currency: order.currency ?? "AED",
   });
