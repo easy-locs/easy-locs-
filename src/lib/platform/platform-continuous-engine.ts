@@ -15,9 +15,12 @@ type IntervalJob = {
   timerId?: ReturnType<typeof setInterval>;
   lastRun?: string;
   runCount: number;
-  lastStatus: "ok" | "error" | "pending";
+  lastStatus: "ok" | "error" | "pending" | "idle" | "warning";
   lastDetail?: string;
   itemsProcessed: number;
+  rowsAffected: number;
+  businessImpact: string;
+  summary: string;
   category: "system" | "digital" | "quality" | "data" | "commerce" | "finance" | "delivery" | "lifecycle";
 };
 
