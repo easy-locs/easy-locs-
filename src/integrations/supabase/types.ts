@@ -28068,6 +28068,34 @@ export type Database = {
         Args: { target_currency?: string; target_user_id: string }
         Returns: Json
       }
+      fetch_and_lock_job: {
+        Args: never
+        Returns: {
+          created_at: string
+          current_stage: string
+          entity_id: string
+          entity_type: string
+          id: string
+          last_error: string | null
+          locked_at: string | null
+          locked_by: string | null
+          max_retries: number
+          next_stage: string | null
+          payload_json: Json | null
+          priority: number
+          retries: number
+          source_type: string | null
+          stage_results_json: Json | null
+          status: string
+          updated_at: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "entity_pipeline_queue"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       geocode_city_approx: {
         Args: { _city: string }
         Returns: {
