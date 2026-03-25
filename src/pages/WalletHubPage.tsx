@@ -15,11 +15,12 @@ import {
   Clock, CheckCircle, AlertCircle, ArrowRight, Globe, Banknote,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { toast } from "sonner";
 import TransactionRow, { type TransactionType } from "@/components/wallet/TransactionRow";
 import WalletSecurityPanel from "@/components/wallet/WalletSecurityPanel";
 import ReceiveQrPanel from "@/components/wallet/ReceiveQrPanel";
+import { AnimatedCounter } from "@/components/ui/AnimatedCounter";
 
 type WalletTab = "fiat" | "qr" | "security";
 
