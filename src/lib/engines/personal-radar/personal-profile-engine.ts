@@ -79,7 +79,7 @@ export async function refreshRadarProfile(userId: string): Promise<UserRadarProf
   const budgetSignals = ["fast_food", "budget", "street_food"];
   const luxScore = topCats.filter(c => luxSignals.some(s => c.includes(s))).length;
   const budScore = topCats.filter(c => budgetSignals.some(s => c.includes(s))).length;
-  const budgetProfile = luxScore > budScore ? "premium" : budScore > luxScore ? "budget" : "mid";
+  const budgetProfile: string = luxScore > budScore ? "premium" : budScore > luxScore ? "budget" : "mid";
 
   // Infer travel profile
   const travelSignals = Object.entries(contextCounts);
