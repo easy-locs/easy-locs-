@@ -18,7 +18,7 @@ import {
   Wallet, Building2,
   Bot, ChevronRight,
   Power, FileEdit, Megaphone, Eye,
-  HelpCircle, Truck, Rocket, DollarSign,
+  HelpCircle, Truck, Rocket, DollarSign, Activity,
   User, Settings, Shield, Bell, MessageSquare, LogOut, Clock,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
