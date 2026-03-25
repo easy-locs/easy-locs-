@@ -1,5 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-import { governSeedQuery } from "@/lib/discovery/query-governance";
+import { governStorefrontQuery } from "@/lib/discovery/query-governance";
 
 export async function getSmartRecommendations(params: {
   userId?: string | null;
@@ -7,13 +7,13 @@ export async function getSmartRecommendations(params: {
 }) {
   const limit = params.limit ?? 12;
 
-  // Governed seed query — canonical pipeline
-  let seedQ = (supabase as any)
-    .from("seed_merchants")
-    .select("*")
+  // Single source: storefront_pages — governed
+  let sfQ = (supabase as any)
+    .from("storefront_pages")
+    .select("id, name, slug, vertical, category, subcategory, city, region, rating, reviews_count, banner_url, logo_url, display_priority, ranking_score")
     .limit(80);
-  seedQ = governSeedQuery(seedQ, "discover");
-  const { data: merchants, error: merchantErr } = await seedQ;
+  sfQ = governStorefrontQuery(sfQ, "discover");
+  const { data: merchants, error: merchantErr } = await sfQ;
 
   if (merchantErr) throw merchantErr;
 
@@ -40,7 +40,7 @@ export async function getSmartRecommendations(params: {
   }
 
   const ranked = (merchants ?? []).map((row: any) => {
-    const hay = `${row.name ?? ""} ${row.subcategory ?? ""} ${row.category ?? ""} ${row.area ?? ""}`.toLowerCase();
+    const hay = `${row.name ?? ""} ${row.subcategory ?? ""} ${row.category ?? ""} ${row.region ?? ""}`.toLowerCase();
     let boost = 0;
     for (const [word, score] of preferredWords.entries()) {
       if (hay.includes(word)) boost += score;
@@ -48,10 +48,11 @@ export async function getSmartRecommendations(params: {
 
     return {
       ...row,
+      cover_image: row.banner_url || row.logo_url,
       _score:
-        Number(row.visibility_score ?? 0) * 0.6 +
+        Number(row.display_priority ?? 0) * 0.6 +
         Number(row.rating ?? 0) * 8 +
-        (row.is_featured ? 20 : 0) +
+        ((row.display_priority ?? 0) > 70 ? 20 : 0) +
         boost * 5,
     };
   });

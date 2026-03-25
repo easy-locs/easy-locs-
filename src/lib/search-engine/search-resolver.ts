@@ -13,7 +13,7 @@ import {
   getCanonicalVertical,
   CANONICAL_VERTICALS,
 } from "@/lib/taxonomy/world-class-taxonomy";
-import { governStorefrontQuery, governSeedQuery } from "@/lib/discovery/query-governance";
+import { governStorefrontQuery } from "@/lib/discovery/query-governance";
 
 const db = supabase as any;
 
@@ -81,21 +81,11 @@ export async function resolveSearch(
       .limit(20);
   }
 
-  // Seed merchants search (parallel) — governed
-  let seedPromise: Promise<any> = Promise.resolve({ data: [] });
-  if (q) {
-    let seedQ = db
-      .from("seed_merchants")
-      .select("id, name, category, subcategory, city, area, rating, review_count, cover_image, is_open, latitude, longitude, visibility_score")
-      .or(`name.ilike.%${q}%,subcategory.ilike.%${q}%,area.ilike.%${q}%`)
-      .limit(20);
-    seedQ = governSeedQuery(seedQ);
-    seedPromise = seedQ;
-  }
+  // Single source: storefront_pages only — seed_merchants is internal pipeline only
 
-  const [sfRes, seedRes, prodRes] = await Promise.all([sfQuery, seedPromise, productPromise]);
+  const [sfRes, prodRes] = await Promise.all([sfQuery, productPromise]);
 
-  // Merge shops — storefronts take priority
+  // Shops from storefronts only
   const seenIds = new Set<string>();
   const shops: SearchResult[] = [];
 
@@ -103,12 +93,6 @@ export async function resolveSearch(
     seenIds.add(row.id);
     const result = mapStorefront(row, state);
     shops.push(result);
-  }
-
-  for (const row of seedRes.data ?? []) {
-    if (!seenIds.has(row.id)) {
-      shops.push(mapSeed(row, state));
-    }
   }
 
   // Products
@@ -167,24 +151,7 @@ function mapStorefront(row: any, state: SearchState): SearchResult {
   };
 }
 
-function mapSeed(row: any, state: SearchState): SearchResult {
-  return {
-    id: row.id,
-    type: "shop",
-    title: row.name,
-    subtitle: [row.subcategory, row.area || row.city].filter(Boolean).join(" · "),
-    imageUrl: row.cover_image,
-    lat: row.latitude,
-    lng: row.longitude,
-    rating: row.rating,
-    reviewsCount: row.review_count,
-    subcategory: row.subcategory,
-    district: row.area,
-    city: row.city,
-    isOpen: row.is_open,
-    score: row.visibility_score ?? 0,
-  };
-}
+// mapSeed removed — seed_merchants is internal pipeline only
 
 function sortResults(results: SearchResult[], state: SearchState): SearchResult[] {
   return [...results].sort((a, b) => {

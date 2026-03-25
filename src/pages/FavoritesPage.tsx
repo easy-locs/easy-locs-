@@ -9,7 +9,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 import { listFavoriteMerchants } from "@/lib/favorites/favorites";
 import { supabase } from "@/integrations/supabase/client";
-import { governStorefrontQuery, governSeedQuery } from "@/lib/discovery/query-governance";
+import { governStorefrontQuery } from "@/lib/discovery/query-governance";
 import { ArrowLeft } from "lucide-react";
 import { entityUrl } from "@/lib/entity/entity-url";
 
