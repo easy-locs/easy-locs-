@@ -25351,6 +25351,39 @@ export type Database = {
         }
         Relationships: []
       }
+      verified_reviews: {
+        Row: {
+          comment: string | null
+          created_at: string
+          id: string
+          merchant_id: string
+          order_id: string
+          rating: number
+          user_id: string
+          verified: boolean
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string
+          id?: string
+          merchant_id: string
+          order_id: string
+          rating: number
+          user_id: string
+          verified?: boolean
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string
+          id?: string
+          merchant_id?: string
+          order_id?: string
+          rating?: number
+          user_id?: string
+          verified?: boolean
+        }
+        Relationships: []
+      }
       verticals: {
         Row: {
           active: boolean | null
