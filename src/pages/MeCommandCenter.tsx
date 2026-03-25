@@ -19,7 +19,7 @@ import {
   Bot, ChevronRight,
   Power, FileEdit, Megaphone, Eye,
   HelpCircle, Truck, Rocket, DollarSign, Activity,
-  User, Settings, Shield, Bell, MessageSquare, LogOut, Clock,
+  User, Settings, Shield, Bell, MessageSquare, LogOut, Clock, Zap, Radio,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
