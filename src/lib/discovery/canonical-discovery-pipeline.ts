@@ -279,6 +279,7 @@ export async function fetchCanonicalDiscovery(opts: CanonicalDiscoveryOpts): Pro
   // display_priority projection: visibility_score / 100 * 50 (seeds rank below claimed storefronts)
   for (const m of seedResults) {
     if (seenIds.has(m.id)) continue;
+    if (isPlaceholder(m.cover_image) && isPlaceholder(m.logo_image)) continue;
     const coords = areaToCoords(m.area);
     const normVertical = normalizeVertical(m.category);
     const cat = verticalToRadarCategory(normVertical);
