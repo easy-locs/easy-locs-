@@ -21,7 +21,7 @@ export async function findUserByEmail(email: string) {
 
   const { data, error } = await db
     .from("profiles")
-    .select("id, email, full_name, username, avatar_url")
+    .select("id, email, name, first_name, last_name, username")
     .ilike("email", normalizedEmail)
     .limit(1)
     .maybeSingle();
