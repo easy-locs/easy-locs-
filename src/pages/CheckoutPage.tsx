@@ -57,16 +57,8 @@ export default function CheckoutPage() {
         .maybeSingle();
       if (sfData?.user_id) {
         sellerId = sfData.user_id;
-      } else {
-        // Fallback: check seed_merchants for seeded restaurants
-        const { data: seedData } = await (supabase as any)
-          .from("seed_merchants")
-          .select("id")
-          .eq("id", cart.restaurantId)
-          .maybeSingle();
-        // seed_merchants have no owner — keep current user as seller
-        if (seedData) sellerId = user.id;
       }
+      // No seed_merchants fallback — storefront_pages is the only public truth
 
       const { order, alreadyExists } = await createStorefrontOrder({
         shopId: cart.restaurantId,
