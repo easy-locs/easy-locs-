@@ -4759,6 +4759,48 @@ export type Database = {
         }
         Relationships: []
       }
+      coupons: {
+        Row: {
+          code: string
+          created_at: string
+          discount_type: string
+          discount_value: number
+          expires_at: string | null
+          id: string
+          max_uses: number | null
+          min_order_amount: number | null
+          shop_id: string | null
+          status: string
+          used_count: number | null
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          discount_type?: string
+          discount_value?: number
+          expires_at?: string | null
+          id?: string
+          max_uses?: number | null
+          min_order_amount?: number | null
+          shop_id?: string | null
+          status?: string
+          used_count?: number | null
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          discount_type?: string
+          discount_value?: number
+          expires_at?: string | null
+          id?: string
+          max_uses?: number | null
+          min_order_amount?: number | null
+          shop_id?: string | null
+          status?: string
+          used_count?: number | null
+        }
+        Relationships: []
+      }
       cross_service_journeys: {
         Row: {
           completed_at: string | null
@@ -17197,6 +17239,7 @@ export type Database = {
           cover_image: string | null
           created_at: string
           cuisine_tags: string[] | null
+          dedup_status: string | null
           delivery_available: boolean | null
           delivery_radius_km: number | null
           delivery_time_max: number
@@ -17237,6 +17280,8 @@ export type Database = {
           review_count: number
           review_required: boolean | null
           route_status: string | null
+          seo_issues: string[] | null
+          seo_status: string | null
           source_confidence: number | null
           source_key: string | null
           source_updated_at: string | null
@@ -17262,6 +17307,7 @@ export type Database = {
           cover_image?: string | null
           created_at?: string
           cuisine_tags?: string[] | null
+          dedup_status?: string | null
           delivery_available?: boolean | null
           delivery_radius_km?: number | null
           delivery_time_max?: number
@@ -17302,6 +17348,8 @@ export type Database = {
           review_count?: number
           review_required?: boolean | null
           route_status?: string | null
+          seo_issues?: string[] | null
+          seo_status?: string | null
           source_confidence?: number | null
           source_key?: string | null
           source_updated_at?: string | null
@@ -17327,6 +17375,7 @@ export type Database = {
           cover_image?: string | null
           created_at?: string
           cuisine_tags?: string[] | null
+          dedup_status?: string | null
           delivery_available?: boolean | null
           delivery_radius_km?: number | null
           delivery_time_max?: number
@@ -17367,6 +17416,8 @@ export type Database = {
           review_count?: number
           review_required?: boolean | null
           route_status?: string | null
+          seo_issues?: string[] | null
+          seo_status?: string | null
           source_confidence?: number | null
           source_key?: string | null
           source_updated_at?: string | null
