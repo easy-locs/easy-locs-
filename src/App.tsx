@@ -632,6 +632,7 @@ const MerchantMenuCategoryManagerPage = safeLazy(() => import("./pages/merchant/
 const MerchantItemBadgesPage = safeLazy(() => import("./pages/merchant/MerchantItemBadgesPage"), "MerchantItemBadgesPage");
 const MerchantInstructionsPolicyPage = safeLazy(() => import("./pages/merchant/MerchantInstructionsPolicyPage"), "MerchantInstructionsPolicyPage");
 const AdminMenuQualityPage = safeLazy(() => import("./pages/admin/AdminMenuQualityPage"), "AdminMenuQualityPage");
+const AdminMenuQualityControlPage = safeLazy(() => import("./pages/admin/AdminMenuQualityControlPage"), "AdminMenuQualityControlPage");
 const AdminDeliveryLatencyPage = safeLazy(() => import("./pages/admin/AdminDeliveryLatencyPage"), "AdminDeliveryLatencyPage");
 const CustomerLunchSubscriptionPage = safeLazy(() => import("./pages/customer/CustomerLunchSubscriptionPage"), "CustomerLunchSubscriptionPage");
 const CustomerFamilyNightPage = safeLazy(() => import("./pages/customer/CustomerFamilyNightPage"), "CustomerFamilyNightPage");
@@ -1360,6 +1361,7 @@ const App = () => (
                 <Route path="/merchant/item-badges/:merchantId" element={<ProtectedRoute><MerchantItemBadgesPage /></ProtectedRoute>} />
                 <Route path="/merchant/instructions-policy/:merchantId" element={<ProtectedRoute><MerchantInstructionsPolicyPage /></ProtectedRoute>} />
                 <Route path="/admin/menu-quality" element={<ProtectedRoute><AdminMenuQualityPage /></ProtectedRoute>} />
+                <Route path="/admin/menu-quality-control" element={<ProtectedRoute><AdminMenuQualityControlPage /></ProtectedRoute>} />
                 <Route path="/admin/delivery-latency" element={<ProtectedRoute><AdminDeliveryLatencyPage /></ProtectedRoute>} />
                 <Route path="/me/lunch-subscription" element={<ProtectedRoute><CustomerLunchSubscriptionPage /></ProtectedRoute>} />
                 <Route path="/checkout/family-night" element={<ProtectedRoute><CustomerFamilyNightPage /></ProtectedRoute>} />
