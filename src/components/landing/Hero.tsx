@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useState, useEffect, useMemo } from "react";
 import { useRadar } from "@/hooks/useRadar";
+import EasyLocsLogo from "@/components/brand/EasyLocsLogo";
 
 const UNIVERSES = [
   { icon: UtensilsCrossed, label: "Food", color: "hsl(15 80% 55%)", bg: "hsl(15 80% 55% / 0.12)" },
