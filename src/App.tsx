@@ -370,6 +370,7 @@ const AdminOpsDashboardPage = safeLazy(() => import("./pages/admin/AdminOpsDashb
 const AdminOrchestrationPage = safeLazy(() => import("./pages/admin/AdminOrchestrationPage"), "AdminOrchestrationPage");
 const AdminEnginesDashboardPage = safeLazy(() => import("./pages/admin/AdminEnginesDashboardPage"), "AdminEnginesDashboardPage");
 const AdminBackendTruthPage = safeLazy(() => import("./pages/admin/AdminBackendTruthPage"), "AdminBackendTruthPage");
+const AdminGaragePage = safeLazy(() => import("./pages/admin/AdminGaragePage"), "AdminGaragePage");
 const PermissionCenterPage = safeLazy(() => import("./pages/PermissionCenterPage"), "PermissionCenterPage");
 const AdminSupportOpsPage = safeLazy(() => import("./pages/admin/AdminSupportOpsPage"), "AdminSupportOpsPage");
 const AdminDeliveryOpsPage = safeLazy(() => import("./pages/admin/AdminDeliveryOpsPage"), "AdminDeliveryOpsPage");
@@ -1105,6 +1106,7 @@ const App = () => (
                <Route path="/admin/orchestration" element={<ProtectedRoute><AdminOrchestrationPage /></ProtectedRoute>} />
                 <Route path="/admin/engines" element={<ProtectedRoute><AdminEnginesDashboardPage /></ProtectedRoute>} />
                 <Route path="/admin/backend-truth" element={<ProtectedRoute><AdminBackendTruthPage /></ProtectedRoute>} />
+                <Route path="/admin/garage" element={<ProtectedRoute><AdminGaragePage /></ProtectedRoute>} />
                <Route path="/permissions" element={<PermissionCenterPage />} />
                <Route path="/admin/support-ops" element={<ProtectedRoute><AdminSupportOpsPage /></ProtectedRoute>} />
                <Route path="/admin/delivery-ops" element={<ProtectedRoute><AdminDeliveryOpsPage /></ProtectedRoute>} />
