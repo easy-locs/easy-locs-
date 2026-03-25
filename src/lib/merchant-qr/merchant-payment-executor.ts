@@ -4,6 +4,7 @@
  */
 import { supabase } from "@/integrations/supabase/client";
 import { walletTransfer } from "@/payments/wallet-hooks";
+import { notifyPaymentSuccess, notifyWalletCredit } from "@/lib/engines/notification-event-dispatcher";
 import {
   validateMerchantQr,
   calculateSplit,
@@ -149,6 +150,10 @@ export async function executeMerchantPayment(opts: {
       merchantRate: splitResult.merchant / amount,
       driverRate: hasDriver ? splitResult.driver / amount : 0,
     });
+
+    // Notify sender (payment success) and merchant (credit received)
+    notifyPaymentSuccess(senderId, txId, amount, payload.currency).catch(console.error);
+    notifyWalletCredit(merchant.ownerUserId, splitResult.merchant, payload.currency, `Payment from order`).catch(console.error);
 
     // Step 9: Create receipt
     const receiptId = await createReceipt({
