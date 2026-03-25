@@ -48,27 +48,27 @@ export const useUnifiedNotificationStore = create<NotificationStoreState>((set, 
   hydrate: async (userId) => {
     set({ loading: true });
     try {
-      // app_notifications is the canonical notification table (in DB types)
-      const { data } = await supabase
-        .from("app_notifications")
+      // Read from canonical `notifications` table (172+ real rows)
+      const { data } = await (supabase as any)
+        .from("notifications")
         .select("*")
         .eq("user_id", userId)
-        .order("createdAt", { ascending: false })
+        .eq("is_archived", false)
+        .order("created_at", { ascending: false })
         .limit(100);
-      // Map app_notifications schema to AppNotification interface
       const mapped = (data || []).map((n: any) => ({
         id: n.id,
         user_id: n.user_id,
-        type: n.type,
-        title: n.title,
-        message: n.body,
-        link: n.metadata?.link || null,
-        priority: n.metadata?.priority || "normal",
-        category: n.type,
-        read_at: n.read ? n.createdAt : null,
-        resolved: n.read,
-        payload: n.metadata,
-        created_at: n.createdAt,
+        type: n.type || "system",
+        title: n.title || "Notification",
+        message: n.message || n.body || "",
+        link: n.link || n.cta_url || null,
+        priority: n.priority || "normal",
+        category: n.notification_type || n.type || "system",
+        read_at: n.read_at || (n.read ? n.created_at : null),
+        resolved: n.resolved || false,
+        payload: n.metadata_json,
+        created_at: n.created_at,
       }));
       set({ notifications: mapped, loading: false });
     } catch {
@@ -85,9 +85,9 @@ export const useUnifiedNotificationStore = create<NotificationStoreState>((set, 
   },
 
   markAsRead: async (id) => {
-    await supabase
-      .from("app_notifications")
-      .update({ read: true } as any)
+    await (supabase as any)
+      .from("notifications")
+      .update({ read: true, read_at: new Date().toISOString() })
       .eq("id", id);
     set((s) => ({
       notifications: s.notifications.map((n) =>
@@ -97,9 +97,9 @@ export const useUnifiedNotificationStore = create<NotificationStoreState>((set, 
   },
 
   markAllAsRead: async (userId) => {
-    await supabase
-      .from("app_notifications")
-      .update({ read: true } as any)
+    await (supabase as any)
+      .from("notifications")
+      .update({ read: true, read_at: new Date().toISOString() })
       .eq("user_id", userId)
       .eq("read", false);
     set((s) => ({
