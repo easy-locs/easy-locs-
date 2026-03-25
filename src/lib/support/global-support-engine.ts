@@ -104,12 +104,8 @@ export async function createDisputeTicket(params: {
       subject: `${params.issueType.replace(/_/g, " ")} — Order ${params.orderId.slice(0, 8)}`,
       status: "open",
       requester_user_id: params.reporterUserId,
-      metadata_json: {
-        parties: ["client", "platform", assignedTo].filter(Boolean),
-        sla_deadline_at: slaDeadline,
-        reported_by: params.reportedBy,
-        issue_severity: severity,
-      },
+      reporter_user_id: params.reporterUserId,
+      sla_deadline: slaDeadline,
     })
     .select("*")
     .single();
@@ -119,9 +115,9 @@ export async function createDisputeTicket(params: {
   // Add first message
   await (supabase as any).from("support_ticket_messages").insert({
     ticket_id: ticket.id,
-    author_user_id: params.reporterUserId,
-    author_role: params.reportedBy,
-    message: params.description,
+    sender_user_id: params.reporterUserId,
+    sender_role: params.reportedBy,
+    body: params.description,
   });
 
   // Emit event
@@ -158,11 +154,10 @@ export async function addProofToTicket(params: {
     .from("support_ticket_messages")
     .insert({
       ticket_id: params.ticketId,
-      author_user_id: params.uploaderUserId,
-      author_role: params.uploadedBy,
-      message: params.description || `${params.proofType} proof uploaded`,
-      is_internal: false,
-      metadata_json: {
+      sender_user_id: params.uploaderUserId,
+      sender_role: params.uploadedBy,
+      body: params.description || `${params.proofType} proof uploaded`,
+      metadata: {
         proof_type: params.proofType,
         file_url: params.fileUrl,
         uploaded_at: new Date().toISOString(),
@@ -178,6 +173,7 @@ export async function escalateTicket(ticketId: string, reason: string) {
     .update({
       status: "escalated",
       priority: "critical",
+      escalated_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     })
     .eq("id", ticketId);
@@ -186,9 +182,9 @@ export async function escalateTicket(ticketId: string, reason: string) {
 
   await (supabase as any).from("support_ticket_messages").insert({
     ticket_id: ticketId,
-    author_role: "system",
-    message: `⚠️ Ticket escalated: ${reason}`,
-    is_internal: true,
+    sender_role: "system",
+    body: `⚠️ Ticket escalated: ${reason}`,
+    metadata: { internal: true },
   });
 
   await eventBus.emit("support.ticket_escalated", { ticketId, reason });
@@ -220,14 +216,14 @@ export async function autoDetectIssues(ctx: OrderContext) {
 export async function checkSlaBreaches() {
   const { data: openTickets } = await (supabase as any)
     .from("support_tickets")
-    .select("id, metadata_json, status, priority")
-    .in("status", ["open", "in_progress", "waiting_merchant", "waiting_driver"])
+    .select("id, sla_deadline, status, priority")
+    .in("status", ["open", "in_progress"])
+    .not("sla_deadline", "is", null)
     .limit(200);
 
   let breached = 0;
   for (const t of openTickets ?? []) {
-    const deadline = t.metadata_json?.sla_deadline_at;
-    if (deadline && new Date(deadline) < new Date()) {
+    if (t.sla_deadline && new Date(t.sla_deadline) < new Date()) {
       await escalateTicket(t.id, "SLA breach — response time exceeded");
       breached++;
     }
