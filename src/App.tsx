@@ -30,7 +30,7 @@ import ErrorBoundary from "@/components/ErrorBoundary";
 import ChunkRecoveryBoundary from "@/components/system/ChunkRecoveryBoundary";
 import CountryGuard from "@/components/dashboard/CountryGuard";
 import { UnifiedPaymentProvider } from "@/payments/UnifiedPaymentSystem";
-import V1BootBridge from "@/app/V1BootBridge";
+
 import { useUnifiedNotificationStore } from "@/stores/unifiedNotificationStore";
 import { startUnifiedNotificationDispatcher, stopUnifiedNotificationDispatcher } from "@/lib/notifications/dispatcher";
 import AppBootstrapGuardDirect from "@/components/app/AppBootstrapGuard";
