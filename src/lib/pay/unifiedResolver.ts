@@ -57,14 +57,14 @@ async function findProfile(input: {
     console.log("[resolver] findProfile by orbitId:", input.orbitId);
     const { data: orbitRow } = await (supabase as any)
       .from("orbit_profiles_v2")
-      .select("user_id")
+      .select("id")
       .eq("orbit_id", input.orbitId)
       .maybeSingle();
-    if (orbitRow?.user_id) {
+    if (orbitRow?.id) {
       const { data } = await (supabase as any)
         .from("profiles")
         .select(selectCols)
-        .eq("id", orbitRow.user_id)
+        .eq("id", orbitRow.id)
         .maybeSingle();
       if (data) return { id: data.id, display_name: buildDisplayName(data), email: data.email };
     }
@@ -136,6 +136,7 @@ export async function resolveUnifiedTarget(input: {
         .from("wallet_accounts")
         .select("id, status")
         .eq("owner_user_id", input.userId)
+        .eq("currency", currency)
         .eq("status", "active")
         .limit(1)
         .maybeSingle()
@@ -199,6 +200,7 @@ export async function resolveUnifiedTarget(input: {
     .from("wallet_accounts")
     .select("id, status")
     .eq("owner_user_id", profile.id)
+    .eq("currency", currency)
     .eq("status", "active")
     .limit(1)
     .maybeSingle();

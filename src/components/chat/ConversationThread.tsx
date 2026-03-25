@@ -94,7 +94,7 @@ export function ConversationThread(props: { conversationId: string | null }) {
             </div>
 
             {group.msgs.map((msg) => {
-              const isMine = msg.senderOrbitId === orbit?.orbitId;
+              const isMine = msg.senderOrbitId === orbit?.orbitId || msg.senderOrbitId === orbit?.id;
 
               if (msg.type === "call") {
                 return (

@@ -15,6 +15,7 @@ export function useWalletAccounts(ownerUserId?: string) {
         .from("wallet_accounts")
         .select("*")
         .eq("owner_user_id", ownerUserId)
+        .eq("status", "active")
         .order("created_at", { ascending: false });
 
       if (!mounted) return;

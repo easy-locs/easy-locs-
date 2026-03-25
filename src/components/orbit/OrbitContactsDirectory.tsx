@@ -174,7 +174,7 @@ export default function OrbitContactsDirectory() {
   const [tab, setTab] = useState<Tab>("recent");
 
   useEffect(() => {
-    if (!user || !orgId) return;
+    if (!user) return;
     (async () => {
       setLoading(true);
       const { data } = await supabase
@@ -186,7 +186,7 @@ export default function OrbitContactsDirectory() {
       setContacts((data as OrbitContact[]) || []);
       setLoading(false);
     })();
-  }, [user, orgId]);
+  }, [user]);
 
   const filtered = useMemo(() => {
     let list = contacts;
@@ -206,7 +206,7 @@ export default function OrbitContactsDirectory() {
   }, [contacts, tab, search]);
 
   const handleMessage = useCallback(async (contact: OrbitContact) => {
-    if (!user || !orgId || !contact.contact_user_id) {
+    if (!user || !contact.contact_user_id) {
       toast.info("Cannot message this contact yet");
       return;
     }
@@ -216,11 +216,12 @@ export default function OrbitContactsDirectory() {
         targetUserId: contact.contact_user_id,
         targetName: contact.name,
       });
-      if (result) navigate(`/dashboard/communication?thread=${result.contextId}`);
+      const threadId = result?.v2ConversationId || result?.threadId || result?.contextId;
+      if (threadId) navigate(`/dashboard/communication?thread=${threadId}`);
     } catch {
       toast.error("Failed to open conversation");
     }
-  }, [user, orgId, navigate]);
+  }, [user, navigate]);
 
   const { startCall, isInCall, isStartingCall } = useCall();
 
