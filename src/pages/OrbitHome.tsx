@@ -2,14 +2,14 @@
  * OrbitHome — Premium super-app home.
  * Food-first · Luxury · Clean vertical hierarchy · No clutter
  */
-import { useMemo, memo, useCallback, useState, useEffect } from "react";
+import { useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { governSeedQuery } from "@/lib/discovery/query-governance";
 import MarketplaceSection from "@/components/marketplace/MarketplaceSection";
 import { useWalletBalance } from "@/payments/wallet-hooks";
+import { runDigitalOrchestration } from "@/lib/engines/digital-orchestration-engine";
 import {
   ChevronRight, MapPin,
   Search, Bell,
@@ -17,9 +17,8 @@ import {
   UtensilsCrossed, Building2, Plane, Sparkles,
   ArrowRight,
 } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import SEOHead from "@/components/SEOHead";
-import { tc } from "@/lib/i18n-canonical";
 
 /* ═══════════════════════════════════════════════
    FOOD HERO BANNERS — time-aware, food-first
@@ -105,11 +104,20 @@ const VERTICALS = [
    COMPONENT
    ═══════════════════════════════════════════════ */
 export default function OrbitHome() {
-  const { user } = useAuth();
   const navigate = useNavigate();
   const go = useCallback((p: string) => navigate(p), [navigate]);
   const banner = useFoodBanners();
   const { balance, currency, loading: wLoading } = useWalletBalance();
+  const orchestration = useMemo(() => runDigitalOrchestration(), []);
+  const marqueeItems = useMemo(() => {
+    const bannerItems = orchestration.activeBanners.map((item) => ({ label: item.title, path: "/food" }));
+    const searchItems = orchestration.searchSuggestions.map((item) => ({ label: item, path: "/food" }));
+    const verticalItems = orchestration.promotedVerticals.map((item) => ({
+      label: item[0].toUpperCase() + item.slice(1),
+      path: item === "food" ? "/food" : item === "services" ? "/services-hub" : item === "property" ? "/browse/real_estate" : "/travel",
+    }));
+    return [...bannerItems, ...searchItems, ...verticalItems].slice(0, 12);
+  }, [orchestration]);
 
   /* Featured food */
   const { data: featured = [] } = useQuery({
@@ -206,6 +214,27 @@ export default function OrbitHome() {
               </span>
             </motion.button>
           </div>
+
+          {marqueeItems.length > 0 && (
+            <div className="overflow-hidden">
+              <motion.div
+                className="flex gap-2 w-max px-5"
+                animate={{ x: ["0%", "-50%"] }}
+                transition={{ duration: 18, repeat: Infinity, ease: "linear" }}
+              >
+                {[...marqueeItems, ...marqueeItems].map((item, index) => (
+                  <button
+                    key={`${item.label}-${index}`}
+                    onClick={() => go(item.path)}
+                    className="shrink-0 rounded-full px-3.5 py-2 text-[11px] font-semibold active:scale-95 transition-transform bg-card text-foreground"
+                    style={{ border: "1px solid hsl(var(--border) / 0.08)" }}
+                  >
+                    {item.label}
+                  </button>
+                ))}
+              </motion.div>
+            </div>
+          )}
 
           {/* ─── 2. QUICK ACTIONS ─── */}
           <div className="px-5">
