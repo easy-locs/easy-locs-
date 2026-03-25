@@ -162,6 +162,10 @@ export const ENGINE_METADATA: Record<string, EngineMetadata> = {
   "radar-memory":          { tier: "standard",    businessFn: "conversion",     vertical: "all",     canRunIdle: false, tablesWritten: ["user_radar_events"],       fieldsWritten: [],                                                   description: "Remembers user patterns across sessions" },
   "session-intelligence":  { tier: "priority",    businessFn: "conversion",     vertical: "all",     canRunIdle: true,  tablesWritten: ["user_radar_sessions"],     fieldsWritten: ["detected_intent"],                                  description: "Detects current session intent in real-time" },
   "hyper-personalization": { tier: "critical",    businessFn: "conversion",     vertical: "all",     canRunIdle: false, tablesWritten: ["user_radar_recommendations"], fieldsWritten: ["personal_score", "recommendation_type"],       description: "Fuses all signals into personal_relevance_score per entity" },
+
+  // ── RIDES ──
+  "ride-lifecycle":        { tier: "critical",    businessFn: "lifecycle",      vertical: "all",     canRunIdle: false, tablesWritten: ["rides", "ride_events"],    fieldsWritten: ["status"],                                       description: "Manages ride lifecycle: auto-fail, auto-cancel, schedule activation" },
+  "ride-tracking-monitor": { tier: "priority",    businessFn: "delivery",       vertical: "all",     canRunIdle: false, tablesWritten: [],                          fieldsWritten: [],                                               description: "Monitors active rides for missing GPS tracking" },
 };
 
 /** Detect table/field collisions between engines */
