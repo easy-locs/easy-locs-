@@ -23,9 +23,15 @@ ONE DOMAIN = ONE SOURCE OF TRUTH = ONE WRITE PATH = ONE READ PATH
 
 ## Structural Reset History
 
-### Pass 4 — Final Architecture Lockdown (2026-03-25)
+### Pass 5 — Final Cleanup (2026-03-25)
 
-**Public surfaces fully decoupled from seed layer:**
+| Module | Change |
+|--------|--------|
+| `V2AuthBridge.tsx` | **DELETED** — redundant with AppInit (never imported) |
+| `insert-ride-system-message.ts` | **DELETED** — dead, never imported |
+| `ShopOrderPage.tsx` | Removed `seed_products` fallback → now reads `menu_items` only |
+
+### Pass 4 — Final Architecture Lockdown (2026-03-25)
 
 | Module | Change |
 |--------|--------|
