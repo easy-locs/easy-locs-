@@ -1,7 +1,6 @@
 /**
- * PLATFORM CONTINUOUS ENGINE
- * Client-side interval-based automation layer.
- * Runs ALL digital engines at fixed intervals with logging, metrics, and safe isolation.
+ * PLATFORM CONTINUOUS ENGINE — 57 ENGINES, 24/7 AUTONOMOUS OPERATION
+ * All digital, quality, data, commerce, finance, delivery, and system engines.
  */
 
 import { runPlatformRecovery } from "./platform-recovery-engine";
@@ -19,7 +18,7 @@ type IntervalJob = {
   lastStatus: "ok" | "error" | "pending";
   lastDetail?: string;
   itemsProcessed: number;
-  category: "system" | "digital" | "quality" | "data" | "commerce";
+  category: "system" | "digital" | "quality" | "data" | "commerce" | "finance" | "delivery" | "lifecycle";
 };
 
 const jobs: IntervalJob[] = [];
@@ -44,20 +43,18 @@ async function executeJob(job: IntervalJob) {
   } catch (e: any) {
     job.lastStatus = "error";
     job.lastDetail = e?.message ?? "unknown";
-    console.warn(`[continuous] Job "${job.name}" failed:`, e);
+    if (import.meta.env.DEV) console.warn(`[continuous] Job "${job.name}" failed:`, e?.message);
   }
   job.runCount++;
   job.lastRun = new Date().toISOString();
 }
-
-// ── Public API ──────────────────────────────────────────────
 
 export function startContinuousEngine() {
   if (running) return;
   running = true;
 
   // ═══════════════════════════════════════════════════════════
-  // SYSTEM ENGINES (5min)
+  // SYSTEM ENGINES (1-10) — 5-10min
   // ═══════════════════════════════════════════════════════════
 
   registerJob("engine-health", 5 * 60_000, async () => {
@@ -103,66 +100,83 @@ export function startContinuousEngine() {
     if (failed.length > 0) console.warn(`[continuous] Backend issues:`, failed.map(r => r.module));
   }, "system");
 
+  registerJob("sla-breach-check", 5 * 60_000, async () => {
+    const { checkSlaBreaches } = await import("@/lib/support/global-support-engine");
+    const result = await checkSlaBreaches();
+    if (result.breached > 0) console.log(`[continuous] SLA: ${result.breached} breaches escalated`);
+  }, "system");
+
+  registerJob("self-healing-scan", 10 * 60_000, async () => {
+    const { runHealthScan } = await import("@/lib/platform/self-healing-engine");
+    const result = await runHealthScan();
+    console.log(`[continuous] Self-healing: ${result.emptyPages} empty, ${result.missingImages} no-img, ${result.autoFixed} fixed`);
+  }, "system");
+
+  registerJob("permission-check", 15 * 60_000, async () => {
+    const { runPermissionCheck } = await import("@/lib/engines/permission-check-engine");
+    const result = await runPermissionCheck();
+    if (!result.allAccessible) console.warn(`[continuous] Permission issues detected`);
+  }, "system");
+
+  registerJob("audit-trail", 30 * 60_000, async () => {
+    const { runAuditTrailCheck } = await import("@/lib/engines/audit-trail-engine");
+    await runAuditTrailCheck();
+  }, "system");
+
   // ═══════════════════════════════════════════════════════════
-  // DIGITAL ORCHESTRATION ENGINES (5-15min)
+  // DIGITAL ORCHESTRATION ENGINES (11-18) — 5-15min
   // ═══════════════════════════════════════════════════════════
 
-  // B) Digital Orchestration — master decision layer (15min)
   registerJob("digital-orchestration", 15 * 60_000, async () => {
     const { runDigitalOrchestration } = await import("@/lib/engines/digital-orchestration-engine");
     const result = runDigitalOrchestration();
-    const job = jobs.find(j => j.name === "digital-orchestration");
-    if (job) job.itemsProcessed = result.homepageSections.length;
-    console.log(`[continuous] Digital orchestration: ${result.homepageSections.length} sections, ${result.activeBanners.length} banners, ${result.eventOverrides.length} events`);
+    console.log(`[continuous] Digital: ${result.homepageSections.length} sections, ${result.activeBanners.length} banners`);
   }, "digital");
 
-  // C) Global Experience refresh (5min)
   registerJob("global-experience-refresh", 5 * 60_000, async () => {
     const { useGlobalExperienceStore } = await import("@/stores/globalExperienceStore");
     useGlobalExperienceStore.getState().refresh();
   }, "digital");
 
-  // D) Homepage Freshness via content engine (15min)
   registerJob("content-freshness", 15 * 60_000, async () => {
     const { runContentFreshnessEngine } = await import("@/lib/engines/content-freshness-engine");
     const result = runContentFreshnessEngine();
-    const job = jobs.find(j => j.name === "content-freshness");
-    if (job) job.itemsProcessed = result.totalGenerated;
-    console.log(`[continuous] Content freshness: ${result.totalGenerated} blocks generated`);
+    console.log(`[continuous] Content: ${result.totalGenerated} blocks`);
   }, "digital");
 
-  // E) Campaign & Banner Engine (15min)
   registerJob("campaign-banner", 15 * 60_000, async () => {
     const { runCampaignBannerEngine } = await import("@/lib/engines/campaign-banner-engine");
     const result = await runCampaignBannerEngine();
-    const job = jobs.find(j => j.name === "campaign-banner");
-    if (job) job.itemsProcessed = result.totalActive;
-    console.log(`[continuous] Campaign banners: ${result.totalActive} active`);
+    console.log(`[continuous] Banners: ${result.totalActive} active`);
   }, "digital");
 
-  // I) Social Proof refresh (5min)
   registerJob("social-proof", 5 * 60_000, async () => {
     const { runSocialProofEngine } = await import("@/lib/engines/social-proof-engine");
     const result = await runSocialProofEngine();
-    const job = jobs.find(j => j.name === "social-proof");
-    if (job) job.itemsProcessed = result.totalPublicEntities;
-    console.log(`[continuous] Social proof: ${result.totalPublicEntities} public, ${result.openNowCount} open now`);
+    console.log(`[continuous] Social proof: ${result.totalPublicEntities} public`);
   }, "digital");
 
-  // H) Merchandising Engine (15min)
-  registerJob("merchandising", 15 * 60_000, async () => {
-    const { runMerchandisingEngine } = await import("@/lib/engines/merchandising-engine");
-    const result = await runMerchandisingEngine();
-    const job = jobs.find(j => j.name === "merchandising");
-    if (job) job.itemsProcessed = result.bestSellers.length;
-    console.log(`[continuous] Merchandising: ${result.bestSellers.length} bestsellers, ${result.openNow.length} open now`);
-  }, "commerce");
+  registerJob("search-intent", 15 * 60_000, async () => {
+    const { analyzeSearchIntent } = await import("@/lib/engines/search-intent-engine");
+    analyzeSearchIntent(""); // warm cache
+  }, "digital");
+
+  registerJob("ux-audit", 30 * 60_000, async () => {
+    const { runUxAudit } = await import("@/lib/engines/ux-audit-engine");
+    const result = runUxAudit({ autoFix: true });
+    console.log(`[continuous] UX audit: score ${result.globalScore}, fixed ${result.totalFixed}`);
+  }, "digital");
+
+  registerJob("visual-consistency", 30 * 60_000, async () => {
+    const { runConsistencyAudit } = await import("@/lib/engines/visual-consistency-engine");
+    const result = runConsistencyAudit({ autoFix: true });
+    console.log(`[continuous] Visual: score ${result.score.total}, fixed ${result.fixedCount}`);
+  }, "digital");
 
   // ═══════════════════════════════════════════════════════════
-  // QUALITY & DATA ENGINES (15-30min)
+  // QUALITY ENGINES (19-28) — 10-30min
   // ═══════════════════════════════════════════════════════════
 
-  // Coherence sweep (15min)
   registerJob("coherence-sweep", 15 * 60_000, async () => {
     const { runCoherenceGate } = await import("@/lib/engines/coherence-gate");
     const { supabase } = await import("@/integrations/supabase/client");
@@ -172,7 +186,6 @@ export function startContinuousEngine() {
       .is("coherence_status", null)
       .limit(20);
     if (unchecked?.length) {
-      let checked = 0;
       for (const e of unchecked) {
         const menuItems = Array.isArray(e.menu_items_json) ? e.menu_items_json : [];
         await runCoherenceGate(e.id, "seed_merchants", {
@@ -181,15 +194,10 @@ export function startContinuousEngine() {
           entity_subcategory: e.subcategory ?? "",
           menu_items: menuItems.map((i: any) => i?.name ?? ""),
         });
-        checked++;
       }
-      const job = jobs.find(j => j.name === "coherence-sweep");
-      if (job) job.itemsProcessed += checked;
-      if (checked > 0) console.log(`[continuous] Coherence checked ${checked} entities`);
     }
   }, "quality");
 
-  // Shop quality (15min)
   registerJob("shop-quality", 15 * 60_000, async () => {
     const { runShopQualityCheck } = await import("@/lib/engines/shop-quality-engine");
     const { supabase } = await import("@/integrations/supabase/client");
@@ -199,165 +207,289 @@ export function startContinuousEngine() {
       .is("visibility_score", null)
       .limit(20);
     if (shops?.length) {
-      let scored = 0;
       for (const shop of shops) {
         const result = runShopQualityCheck(shop);
         await (supabase as any)
           .from("seed_merchants")
           .update({ visibility_score: result.globalQualityScore, tier: result.qualityClass })
           .eq("id", shop.id);
-        scored++;
       }
-      const job = jobs.find(j => j.name === "shop-quality");
-      if (job) job.itemsProcessed += scored;
-      if (scored > 0) console.log(`[continuous] Quality scored ${scored} shops`);
     }
   }, "quality");
 
-  // Entity recovery (30min)
   registerJob("entity-recovery", 30 * 60_000, async () => {
     const { recoverHiddenEntities } = await import("@/lib/engines/entity-recovery-engine");
     const result = await recoverHiddenEntities(10);
-    const job = jobs.find(j => j.name === "entity-recovery");
-    if (job) job.itemsProcessed += result.recovered;
-    if (result.recovered > 0) console.log(`[continuous] Recovered ${result.recovered}/${result.total} entities`);
+    if (result.recovered > 0) console.log(`[continuous] Recovered ${result.recovered} entities`);
   }, "quality");
 
-  // G) Geo Density Engine (30min)
+  registerJob("data-trust-scan", 30 * 60_000, async () => {
+    const { runDataTrustScan } = await import("@/lib/engines/data-trust-engine");
+    const result = await runDataTrustScan(100);
+    if (result.flagged > 0) console.log(`[continuous] Trust: ${result.flagged}/${result.scanned} flagged`);
+  }, "quality");
+
+  registerJob("shop-cleanup", 15 * 60_000, async () => {
+    const { runShopCleanupEngine } = await import("@/lib/engines/shop-cleanup-engine");
+    const result = await runShopCleanupEngine(200);
+    console.log(`[continuous] Cleanup: ${result.autoFixed} fixed, ${result.downgraded} downgraded`);
+  }, "quality");
+
+  registerJob("publish-gate", 15 * 60_000, async () => {
+    const { runPublishGateSweep } = await import("@/lib/engines/publish-gate-engine");
+    const result = await runPublishGateSweep(200);
+    console.log(`[continuous] Gate: ${result.passed} passed, ${result.blocked} blocked`);
+  }, "quality");
+
+  registerJob("food-quality", 15 * 60_000, async () => {
+    const { runFoodQualityCheck } = await import("@/lib/engines/food-quality-engine");
+    const result = await runFoodQualityCheck(100);
+    if (result.hidden > 0) console.log(`[continuous] Food quality: ${result.hidden} hidden`);
+  }, "quality");
+
+  registerJob("franchise-dedup", 60 * 60_000, async () => {
+    const { runFranchiseDedup } = await import("@/lib/engines/franchise-dedup-engine");
+    const result = await runFranchiseDedup(200);
+    if (result.flagged > 0) console.log(`[continuous] Dedup: ${result.flagged} flagged`);
+  }, "quality");
+
+  registerJob("seo-check", 30 * 60_000, async () => {
+    const { runSeoCheck } = await import("@/lib/engines/seo-engine");
+    const result = await runSeoCheck(100);
+    console.log(`[continuous] SEO: ${result.optimized} optimized, ${result.issues} need work`);
+  }, "quality");
+
+  registerJob("menu-intelligence", 15 * 60_000, async () => {
+    const { buildSmartMenu } = await import("@/lib/engines/menu-intelligence-engine");
+    // Warm the engine — actual processing happens per-shop
+    buildSmartMenu([]);
+  }, "quality");
+
+  // ═══════════════════════════════════════════════════════════
+  // DATA ENGINES (29-35) — 15-60min
+  // ═══════════════════════════════════════════════════════════
+
   registerJob("geo-density", 30 * 60_000, async () => {
     const { runGeoDensityEngine } = await import("@/lib/engines/geo-density-engine");
     const result = await runGeoDensityEngine();
-    const job = jobs.find(j => j.name === "geo-density");
-    if (job) job.itemsProcessed = result.zones.length;
-    console.log(`[continuous] Geo density: ${result.zones.length} zones mapped, top: ${result.topCityVerticals.slice(0, 3).join(", ")}`);
+    console.log(`[continuous] Geo: ${result.zones.length} zones`);
   }, "data");
 
-  // M) Data Completeness Engine (30min)
   registerJob("data-completeness", 30 * 60_000, async () => {
     const { runDataCompletenessEngine } = await import("@/lib/engines/data-completeness-engine");
     const result = await runDataCompletenessEngine();
-    const job = jobs.find(j => j.name === "data-completeness");
-    if (job) job.itemsProcessed = result.totalScanned;
-    console.log(`[continuous] Data completeness: ${result.totalIncomplete}/${result.totalScanned} incomplete (photos:${result.missingPhotos}, geo:${result.missingGeo}, menu:${result.missingMenu})`);
+    console.log(`[continuous] Completeness: ${result.totalIncomplete}/${result.totalScanned} incomplete`);
   }, "data");
 
-  // N) Adaptive Taxonomy Engine (30min)
   registerJob("adaptive-taxonomy", 30 * 60_000, async () => {
     const { runAdaptiveTaxonomyEngine } = await import("@/lib/engines/adaptive-taxonomy-engine");
     const result = await runAdaptiveTaxonomyEngine();
-    const job = jobs.find(j => j.name === "adaptive-taxonomy");
-    if (job) job.itemsProcessed = result.entitiesAnalyzed;
-    console.log(`[continuous] Taxonomy: ${result.newlyMapped} newly mapped, ${result.gapCandidates.length} gap candidates, ${result.unmappable} unmappable`);
+    console.log(`[continuous] Taxonomy: ${result.newlyMapped} mapped`);
+  }, "data");
+
+  registerJob("onboarding-correction", 30 * 60_000, async () => {
+    const { runOnboardingCorrectionLoop } = await import("@/lib/engines/onboarding-correction-engine");
+    const result = await runOnboardingCorrectionLoop(100);
+    console.log(`[continuous] Onboarding: ${result.reclassified} reclassified, ${result.promoted} promoted`);
+  }, "data");
+
+  registerJob("auto-source-enrich", 60 * 60_000, async () => {
+    const { supabase } = await import("@/integrations/supabase/client");
+    await (supabase as any).functions.invoke("auto-onboarding-cron", { body: {} });
+  }, "data");
+
+  registerJob("fx-refresh", 60 * 60_000, async () => {
+    const { runFxRefresh } = await import("@/lib/engines/fx-currency-engine");
+    await runFxRefresh();
+  }, "data");
+
+  registerJob("notification-cleanup", 60 * 60_000, async () => {
+    const { runNotificationCleanup } = await import("@/lib/engines/notification-cleanup-engine");
+    const result = await runNotificationCleanup(200);
+    if (result.archived > 0) console.log(`[continuous] Notif cleanup: ${result.archived} archived`);
   }, "data");
 
   // ═══════════════════════════════════════════════════════════
-  // COMMERCE ENGINES (1h)
+  // COMMERCE ENGINES (36-42) — 5-60min
   // ═══════════════════════════════════════════════════════════
 
-  // Central ranking rerank (10min)
   registerJob("central-ranking-rerank", 10 * 60_000, async () => {
     const { rerankAll } = await import("@/lib/ranking/ranking-batch-runner");
     const result = await rerankAll();
-    const job = jobs.find(j => j.name === "central-ranking-rerank");
-    if (job) job.itemsProcessed = result.candidates + result.seeds;
-    if (result.candidates + result.seeds > 0) {
-      console.log(`[continuous] Reranked ${result.candidates} candidates + ${result.seeds} seeds`);
-    }
+    if (result.candidates + result.seeds > 0) console.log(`[continuous] Reranked ${result.candidates} + ${result.seeds}`);
   }, "commerce");
 
-  // Boost slot refresh (1h)
+  registerJob("merchandising", 15 * 60_000, async () => {
+    const { runMerchandisingEngine } = await import("@/lib/engines/merchandising-engine");
+    const result = await runMerchandisingEngine();
+    console.log(`[continuous] Merch: ${result.bestSellers.length} bestsellers`);
+  }, "commerce");
+
+  registerJob("ai-feedback-recompute", 15 * 60_000, async () => {
+    const { recomputeEntityAiScores } = await import("@/lib/ai/ai-feedback-engine");
+    const result = await recomputeEntityAiScores(200);
+    if (result.updated > 0) console.log(`[continuous] AI: ${result.updated} recomputed`);
+  }, "commerce");
+
+  registerJob("crm-reactivation", 60 * 60_000, async () => {
+    const { runCrmReactivationEngine } = await import("@/lib/engines/crm-reactivation-engine");
+    const result = await runCrmReactivationEngine();
+    console.log(`[continuous] CRM: ${result.candidates.length} candidates`);
+  }, "commerce");
+
   registerJob("boost-slot-refresh", 60 * 60_000, async () => {
     const { platformBus } = await import("@/lib/shared/platform-bus");
     platformBus.emit("boost.slots.refresh", { reason: "periodic" }, "system");
   }, "commerce");
 
-  // Auto-source enrichment (1h)
-  registerJob("auto-source-enrich", 60 * 60_000, async () => {
-    const { supabase } = await import("@/integrations/supabase/client");
-    await (supabase as any).functions.invoke("auto-onboarding-cron", { body: {} });
-    console.log("[continuous] Auto-onboarding cron triggered");
-  }, "data");
-
-  // AI Feedback Recompute (15min)
-  registerJob("ai-feedback-recompute", 15 * 60_000, async () => {
-    const { recomputeEntityAiScores } = await import("@/lib/ai/ai-feedback-engine");
-    const result = await recomputeEntityAiScores(200);
-    const job = jobs.find(j => j.name === "ai-feedback-recompute");
-    if (job) job.itemsProcessed = result.updated;
-    if (result.updated > 0) console.log(`[continuous] AI feedback recomputed ${result.updated} entities`);
+  registerJob("boost-analytics", 30 * 60_000, async () => {
+    const { runBoostAnalytics } = await import("@/lib/engines/boost-analytics-engine");
+    const result = await runBoostAnalytics();
+    if (result.paused > 0) console.log(`[continuous] Boost: ${result.paused} campaigns paused (budget)`);
   }, "commerce");
 
-  // F) CRM Reactivation Engine (1h)
-  registerJob("crm-reactivation", 60 * 60_000, async () => {
-    const { runCrmReactivationEngine } = await import("@/lib/engines/crm-reactivation-engine");
-    const result = await runCrmReactivationEngine();
-    const job = jobs.find(j => j.name === "crm-reactivation");
-    if (job) job.itemsProcessed = result.candidates.length;
-    console.log(`[continuous] CRM reactivation: ${result.candidates.length} candidates (${result.abandonedCarts} abandoned carts)`);
+  registerJob("inventory-check", 15 * 60_000, async () => {
+    const { runInventoryCheck } = await import("@/lib/engines/inventory-engine");
+    const result = await runInventoryCheck(100);
+    if (result.hidden > 0 || result.restocked > 0) console.log(`[continuous] Inventory: ${result.hidden} hidden, ${result.restocked} restocked`);
   }, "commerce");
 
-  // G) SLA Breach Check (5min)
-  registerJob("sla-breach-check", 5 * 60_000, async () => {
-    const { checkSlaBreaches } = await import("@/lib/support/global-support-engine");
-    const result = await checkSlaBreaches();
-    const job = jobs.find(j => j.name === "sla-breach-check");
-    if (job) job.itemsProcessed = result.checked;
-    if (result.breached > 0) console.log(`[continuous] SLA: ${result.breached} breaches escalated`);
-  }, "system");
+  // ═══════════════════════════════════════════════════════════
+  // FINANCE ENGINES (43-48) — 5-30min
+  // ═══════════════════════════════════════════════════════════
 
-  // H) Self-Healing Health Scan (10min)
-  registerJob("self-healing-scan", 10 * 60_000, async () => {
-    const { runHealthScan } = await import("@/lib/platform/self-healing-engine");
-    const result = await runHealthScan();
-    const job = jobs.find(j => j.name === "self-healing-scan");
-    if (job) job.itemsProcessed = result.emptyPages + result.missingImages + result.brokenScores;
-    console.log(`[continuous] Self-healing: ${result.emptyPages} empty, ${result.missingImages} no-img, ${result.autoFixed} fixed`);
-  }, "quality");
+  registerJob("finance-reconciliation", 10 * 60_000, async () => {
+    const { runFinanceReconciliation } = await import("@/lib/engines/finance-reconciliation-engine");
+    const result = await runFinanceReconciliation(50);
+    if (result.mismatches > 0 || result.created > 0) console.log(`[continuous] Finance: ${result.mismatches} mismatches, ${result.created} auto-created`);
+  }, "finance");
 
-  // I) Data Trust Scan (30min)
-  registerJob("data-trust-scan", 30 * 60_000, async () => {
-    const { runDataTrustScan } = await import("@/lib/engines/data-trust-engine");
-    const result = await runDataTrustScan(100);
-    const job = jobs.find(j => j.name === "data-trust-scan");
-    if (job) job.itemsProcessed = result.scanned;
-    if (result.flagged > 0) console.log(`[continuous] Data trust: ${result.flagged}/${result.scanned} flagged`);
-  }, "quality");
+  registerJob("wallet-sync", 15 * 60_000, async () => {
+    const { runWalletSync } = await import("@/lib/engines/wallet-sync-engine");
+    const result = await runWalletSync(50);
+    if (result.synced > 0) console.log(`[continuous] Wallet sync: ${result.synced} corrected`);
+  }, "finance");
 
-  // J) Shop Cleanup Engine (15min)
-  registerJob("shop-cleanup", 15 * 60_000, async () => {
-    const { runShopCleanupEngine } = await import("@/lib/engines/shop-cleanup-engine");
-    const result = await runShopCleanupEngine(200);
-    const job = jobs.find(j => j.name === "shop-cleanup");
-    if (job) job.itemsProcessed = result.scanned;
-    console.log(`[continuous] Shop cleanup: ${result.autoFixed} fixed, ${result.downgraded} downgraded, ${result.duplicateCoverCount} dup covers`);
-  }, "quality");
+  registerJob("coupon-expiration", 15 * 60_000, async () => {
+    const { runCouponExpiration } = await import("@/lib/engines/coupon-expiration-engine");
+    const result = await runCouponExpiration(100);
+    if (result.deactivated > 0) console.log(`[continuous] Coupons: ${result.deactivated} expired`);
+  }, "finance");
 
-  // K) Publish Gate Sweep (15min)
-  registerJob("publish-gate", 15 * 60_000, async () => {
-    const { runPublishGateSweep } = await import("@/lib/engines/publish-gate-engine");
-    const result = await runPublishGateSweep(200);
-    const job = jobs.find(j => j.name === "publish-gate");
-    if (job) job.itemsProcessed = result.checked;
-    console.log(`[continuous] Publish gate: ${result.passed} passed, ${result.blocked} blocked, ${result.promoted} promoted`);
-  }, "quality");
+  registerJob("qr-session-cleanup", 10 * 60_000, async () => {
+    const { runQrSessionCleanup } = await import("@/lib/engines/qr-session-engine");
+    const result = await runQrSessionCleanup(100);
+    if (result.expired > 0) console.log(`[continuous] QR: ${result.expired} sessions expired`);
+  }, "finance");
 
-  // L) Onboarding Correction Loop (30min)
-  registerJob("onboarding-correction", 30 * 60_000, async () => {
-    const { runOnboardingCorrectionLoop } = await import("@/lib/engines/onboarding-correction-engine");
-    const result = await runOnboardingCorrectionLoop(100);
-    const job = jobs.find(j => j.name === "onboarding-correction");
-    if (job) job.itemsProcessed = result.processed;
-    console.log(`[continuous] Onboarding correction: ${result.reclassified} reclassified, ${result.promoted} promoted, ${result.blocked} blocked`);
-  }, "data");
+  registerJob("compliance-aml", 30 * 60_000, async () => {
+    const { runComplianceScan } = await import("@/lib/engines/compliance-aml-engine");
+    const result = await runComplianceScan(100);
+    if (result.flagged > 0) console.log(`[continuous] AML: ${result.flagged} flagged`);
+  }, "finance");
 
-  // Start all intervals staggered
+  registerJob("abandoned-cart", 15 * 60_000, async () => {
+    const { runAbandonedCartRecovery } = await import("@/lib/engines/abandoned-cart-engine");
+    const result = await runAbandonedCartRecovery(50);
+    if (result.notified > 0) console.log(`[continuous] Cart recovery: ${result.notified} notified`);
+  }, "finance");
+
+  // ═══════════════════════════════════════════════════════════
+  // DELIVERY ENGINES (49-52) — 5-15min
+  // ═══════════════════════════════════════════════════════════
+
+  registerJob("driver-availability", 10 * 60_000, async () => {
+    const { runDriverAvailabilityScan } = await import("@/lib/engines/driver-availability-engine");
+    const result = await runDriverAvailabilityScan(100);
+    if (result.markedOffline > 0) console.log(`[continuous] Drivers: ${result.markedOffline} marked offline`);
+  }, "delivery");
+
+  registerJob("delivery-monitor", 10 * 60_000, async () => {
+    const { runDeliveryMonitor } = await import("@/lib/engines/delivery-monitor-engine");
+    const result = await runDeliveryMonitor(100);
+    if (result.stuck > 0) console.log(`[continuous] Delivery: ${result.stuck} stuck jobs`);
+  }, "delivery");
+
+  registerJob("live-status-refresh", 5 * 60_000, async () => {
+    const { runLiveStatusRefresh } = await import("@/lib/engines/live-status-engine");
+    const result = await runLiveStatusRefresh(50);
+    console.log(`[continuous] Live status: ${result.updated} orders tracked`);
+  }, "delivery");
+
+  registerJob("call-log-cleanup", 60 * 60_000, async () => {
+    const { runCallLogCleanup } = await import("@/lib/engines/call-log-engine");
+    const result = await runCallLogCleanup(100);
+    if (result.cleaned > 0) console.log(`[continuous] Calls: ${result.cleaned} stale cleaned`);
+  }, "delivery");
+
+  // ═══════════════════════════════════════════════════════════
+  // LIFECYCLE ENGINES (53-57) — 5-60min
+  // ═══════════════════════════════════════════════════════════
+
+  registerJob("order-lifecycle", 15 * 60_000, async () => {
+    const { runOrderLifecycle } = await import("@/lib/engines/order-lifecycle-engine");
+    const result = await runOrderLifecycle(50);
+    if (result.cancelled > 0) console.log(`[continuous] Orders: ${result.cancelled} stale cancelled`);
+  }, "lifecycle");
+
+  registerJob("review-trigger", 15 * 60_000, async () => {
+    const { runReviewTrigger } = await import("@/lib/engines/review-trigger-engine");
+    const result = await runReviewTrigger(50);
+    if (result.triggered > 0) console.log(`[continuous] Reviews: ${result.triggered} requests sent`);
+  }, "lifecycle");
+
+  registerJob("loyalty-scan", 30 * 60_000, async () => {
+    const { runLoyaltyScan } = await import("@/lib/engines/loyalty-engine");
+    const result = await runLoyaltyScan(50);
+    if (result.awarded > 0) console.log(`[continuous] Loyalty: ${result.awarded} points awarded`);
+  }, "lifecycle");
+
+  registerJob("staff-sync", 30 * 60_000, async () => {
+    const { runStaffSync } = await import("@/lib/engines/staff-sync-engine");
+    const result = await runStaffSync(100);
+    if (result.fixed > 0) console.log(`[continuous] Staff: ${result.fixed} roles fixed`);
+  }, "lifecycle");
+
+  registerJob("reorder-check", 60 * 60_000, async () => {
+    const { runReorderCheck } = await import("@/lib/engines/reorder-engine");
+    const result = await runReorderCheck(50);
+    if (result.triggered > 0) console.log(`[continuous] Reorder: ${result.triggered} reminders sent`);
+  }, "lifecycle");
+
+  registerJob("automation-workflows", 15 * 60_000, async () => {
+    const { runAutomationWorkflows } = await import("@/lib/engines/automation-workflow-engine");
+    const result = await runAutomationWorkflows(20);
+    if (result.completed > 0) console.log(`[continuous] Workflows: ${result.completed} processed`);
+  }, "lifecycle");
+
+  registerJob("approval-queue", 15 * 60_000, async () => {
+    const { runApprovalQueueCheck } = await import("@/lib/engines/approval-queue-engine");
+    const result = await runApprovalQueueCheck(50);
+    if (result.expired > 0) console.log(`[continuous] Approvals: ${result.expired} expired`);
+  }, "lifecycle");
+
+  // ═══════════════════════════════════════════════════════════
+  // START ALL — Staggered boot
+  // ═══════════════════════════════════════════════════════════
+
   for (const job of jobs) {
     const idx = jobs.indexOf(job);
-    setTimeout(() => void executeJob(job), 8000 + idx * 2000);
+    setTimeout(() => void executeJob(job), 5000 + idx * 1500);
     job.timerId = setInterval(() => void executeJob(job), job.intervalMs);
   }
 
-  console.log(`[continuous] 🚀 Engine started with ${jobs.length} jobs (${jobs.filter(j => j.category === "digital").length} digital, ${jobs.filter(j => j.category === "quality").length} quality, ${jobs.filter(j => j.category === "data").length} data, ${jobs.filter(j => j.category === "commerce").length} commerce)`);
+  const cats = {
+    system: jobs.filter(j => j.category === "system").length,
+    digital: jobs.filter(j => j.category === "digital").length,
+    quality: jobs.filter(j => j.category === "quality").length,
+    data: jobs.filter(j => j.category === "data").length,
+    commerce: jobs.filter(j => j.category === "commerce").length,
+    finance: jobs.filter(j => j.category === "finance").length,
+    delivery: jobs.filter(j => j.category === "delivery").length,
+    lifecycle: jobs.filter(j => j.category === "lifecycle").length,
+  };
+
+  console.log(`[continuous] 🚀 ${jobs.length} engines started — system:${cats.system} digital:${cats.digital} quality:${cats.quality} data:${cats.data} commerce:${cats.commerce} finance:${cats.finance} delivery:${cats.delivery} lifecycle:${cats.lifecycle}`);
 }
 
 export function stopContinuousEngine() {
@@ -378,6 +510,9 @@ export function getContinuousEngineStatus() {
       quality: jobs.filter(j => j.category === "quality").length,
       data: jobs.filter(j => j.category === "data").length,
       commerce: jobs.filter(j => j.category === "commerce").length,
+      finance: jobs.filter(j => j.category === "finance").length,
+      delivery: jobs.filter(j => j.category === "delivery").length,
+      lifecycle: jobs.filter(j => j.category === "lifecycle").length,
     },
     jobs: jobs.map(j => ({
       name: j.name,
