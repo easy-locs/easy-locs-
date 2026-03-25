@@ -9,11 +9,32 @@ import { sendNotification, updateLiveStatus } from "./notification-engine";
 export async function notifyOrderCreated(userId: string, orderId: string, shopName: string, amount: number) {
   return sendNotification({
     user_id: userId,
-    event_type: "order_created",
+    event_type: "order_confirmed",
     entity_id: orderId,
     entity_type: "order",
-    variables: { shop_name: shopName, amount, order_id: orderId },
+    variables: { shop_name: shopName, amount, order_id: orderId, title: "Order Confirmed", body: `Order from ${shopName} — ${amount} AED` },
     dedup_key: `order_created_${orderId}`,
+  });
+}
+
+export async function notifyNewMessage(receiverId: string, senderName: string, preview: string, conversationId: string) {
+  return sendNotification({
+    user_id: receiverId,
+    event_type: "new_message",
+    entity_id: conversationId,
+    entity_type: "conversation",
+    variables: { sender_name: senderName, preview, title: `Message from ${senderName}`, body: preview || "You received a message" },
+    dedup_key: `msg_${conversationId}_${Date.now()}`,
+  });
+}
+
+export async function notifyWalletCredit(userId: string, amount: number, currency: string, reason: string) {
+  return sendNotification({
+    user_id: userId,
+    event_type: "wallet_received",
+    entity_type: "wallet",
+    variables: { amount, currency, reason, title: "Payment Received", body: `+${amount} ${currency} — ${reason}` },
+    dedup_key: `wallet_credit_${userId}_${Date.now()}`,
   });
 }
 

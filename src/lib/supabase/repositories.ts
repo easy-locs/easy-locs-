@@ -173,6 +173,20 @@ export const chatRepo = {
       .select()
       .single();
     if (error) throw error;
+
+    // Notify other participants (fire-and-forget)
+    try {
+      const { notifyNewMessage } = await import("@/lib/engines/notification-event-dispatcher");
+      const convData = await db.from("conversations_v2").select("participants").eq("id", message.conversationId).maybeSingle();
+      const participants = (convData?.data?.participants as string[]) ?? [];
+      for (const p of participants) {
+        const recipientId = typeof p === "string" ? p : (p as any)?.orbitId ?? (p as any)?.userId;
+        if (recipientId && recipientId !== userId) {
+          notifyNewMessage(recipientId, "Contact", (message.body || "").slice(0, 80), message.conversationId).catch(() => {});
+        }
+      }
+    } catch {}
+
     return {
       ...message,
       id: data.id,

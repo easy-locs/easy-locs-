@@ -107,6 +107,16 @@ export function decodeMerchantQr(raw: string): MerchantQrPayload | null {
     const json = raw.slice(MERCHANT_QR_PREFIX.length);
     const parsed = JSON.parse(json);
     if (!parsed.merchantId || !parsed.mode) return null;
+    // Reject outdated QR versions
+    if (parsed._v && parsed._v < VERSION) {
+      console.warn("[QR] Rejected outdated QR version:", parsed._v, "current:", VERSION);
+      return null;
+    }
+    // Verify signature exists
+    if (!parsed.signature || !parsed.signature.startsWith("mqr_")) {
+      console.warn("[QR] Rejected unsigned QR payload");
+      return null;
+    }
     return parsed as MerchantQrPayload;
   } catch {
     return null;

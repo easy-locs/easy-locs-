@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { notifyOrderCreated } from "@/lib/engines/notification-event-dispatcher";
 
 async function getCurrentUserId() {
   const { data } = await supabase.auth.getUser();
@@ -34,6 +35,10 @@ export async function createOrder(params: {
     .single();
 
   if (error) throw error;
+
+  // Fire notification
+  notifyOrderCreated(userId, data.id, params.merchantProfileId || "", 0).catch(console.error);
+
   return data;
 }
 

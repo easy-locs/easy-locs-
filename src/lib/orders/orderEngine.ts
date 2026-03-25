@@ -4,6 +4,7 @@
  */
 import { supabase } from "@/integrations/supabase/client";
 import type { CartItem } from "@/stores/cartStore";
+import { notifyOrderCreated, notifyOrderDelivered } from "@/lib/engines/notification-event-dispatcher";
 
 export type FulfillmentType = "delivery" | "pickup" | "dine_in";
 
@@ -99,6 +100,9 @@ export async function createStorefrontOrder(input: CreateOrderInput) {
       actor_id: user.id,
     });
 
+  // Notify customer
+  notifyOrderCreated(user.id, order.id, input.shopId, total).catch(console.error);
+
   return { order, alreadyExists: false };
 }
 
@@ -127,6 +131,11 @@ export async function updateStorefrontOrderStatus(params: {
     .single();
 
   if (error) throw error;
+
+  // Notify on delivery
+  if (params.status === "delivered" && data?.buyer_id) {
+    notifyOrderDelivered(data.buyer_id, params.orderId, data.shop_id || "").catch(console.error);
+  }
 
   // Log status change
   await (supabase as any)
