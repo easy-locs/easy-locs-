@@ -2,7 +2,11 @@ import { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { runUxAudit, type UxAuditReport } from "@/lib/engines/ux-audit-engine";
 import { auditMenu, type MenuAuditResult } from "@/lib/engines/menu-presentation-engine";
-import { runVisualConsistencyAudit, type ConsistencyReport } from "@/lib/engines/visual-consistency-engine";
+
+// Inline minimal consistency types (engine moved to backend)
+type ConsistencyScore = { cardConsistency: number; ctaConsistency: number; spacingConsistency: number; colorConsistency: number; total: number };
+type ConsistencyIssue = { type: string; severity: string; description: string; autoFixable: boolean };
+type ConsistencyReport = { timestamp: string; score: ConsistencyScore; issues: ConsistencyIssue[]; fixedCount: number };
 
 function ScoreRing({ score, label, size = 56 }: { score: number; label: string; size?: number }) {
   const color = score >= 80 ? "text-emerald-500" : score >= 60 ? "text-amber-500" : "text-destructive";
