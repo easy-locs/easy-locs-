@@ -469,6 +469,64 @@ export function startContinuousEngine() {
   }, "lifecycle");
 
   // ═══════════════════════════════════════════════════════════
+  // VERTICAL ENGINES (58-68) — Scraping, Classification, Repair
+  // ═══════════════════════════════════════════════════════════
+
+  registerJob("source-intake-scan", 30 * 60_000, async () => {
+    const { runSourceIntakeScan } = await import("@/lib/engines/source-intake-engine");
+    const result = await runSourceIntakeScan(50);
+    if (result.snapshotted > 0) console.log(`[continuous] Source intake: ${result.snapshotted} snapshotted`);
+  }, "data");
+
+  registerJob("vertical-classifier", 15 * 60_000, async () => {
+    const { runVerticalClassifier } = await import("@/lib/engines/vertical-classifier-engine");
+    const result = await runVerticalClassifier(100);
+    if (result.changed > 0) console.log(`[continuous] Classifier: ${result.changed} reclassified`);
+  }, "quality");
+
+  registerJob("food-menu-normalizer", 15 * 60_000, async () => {
+    const { runFoodMenuNormalizer } = await import("@/lib/engines/food-menu-normalizer-engine");
+    const result = await runFoodMenuNormalizer(50);
+    if (result.normalized > 0) console.log(`[continuous] Food menu: ${result.normalized} normalized`);
+  }, "quality");
+
+  registerJob("hotel-inventory-normalizer", 30 * 60_000, async () => {
+    const { runHotelInventoryNormalizer } = await import("@/lib/engines/hotel-inventory-normalizer-engine");
+    const result = await runHotelInventoryNormalizer(30);
+    if (result.normalized > 0) console.log(`[continuous] Hotel inventory: ${result.normalized} normalized`);
+  }, "quality");
+
+  registerJob("shop-backend-repair", 15 * 60_000, async () => {
+    const { runShopBackendRepair } = await import("@/lib/engines/shop-backend-repair-engine");
+    const result = await runShopBackendRepair(100);
+    if (result.repaired > 0) console.log(`[continuous] Backend repair: ${result.repaired} shops fixed`);
+  }, "quality");
+
+  registerJob("category-mapping-sync", 30 * 60_000, async () => {
+    const { runCategoryMappingSync } = await import("@/lib/engines/category-mapping-engine");
+    const result = await runCategoryMappingSync(100);
+    if (result.remapped > 0) console.log(`[continuous] Category mapping: ${result.remapped} remapped`);
+  }, "data");
+
+  registerJob("publish-gate-food", 15 * 60_000, async () => {
+    const { runFoodPublishGate } = await import("@/lib/engines/publish-gate-food-engine");
+    const result = await runFoodPublishGate(100);
+    console.log(`[continuous] Food gate: ${result.passed} pass, ${result.blocked} block`);
+  }, "quality");
+
+  registerJob("publish-gate-hotel", 30 * 60_000, async () => {
+    const { runHotelPublishGate } = await import("@/lib/engines/publish-gate-hotel-engine");
+    const result = await runHotelPublishGate(50);
+    console.log(`[continuous] Hotel gate: ${result.passed} pass, ${result.blocked} block`);
+  }, "quality");
+
+  registerJob("source-rescrape-monitor", 60 * 60_000, async () => {
+    const { runSourceRescrapeMonitor } = await import("@/lib/engines/source-rescrape-monitor-engine");
+    const result = await runSourceRescrapeMonitor(100);
+    if (result.flagged > 0) console.log(`[continuous] Rescrape: ${result.flagged} stale flagged`);
+  }, "data");
+
+  // ═══════════════════════════════════════════════════════════
   // START ALL — Staggered boot
   // ═══════════════════════════════════════════════════════════
 
