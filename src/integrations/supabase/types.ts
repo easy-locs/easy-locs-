@@ -7025,6 +7025,48 @@ export type Database = {
         }
         Relationships: []
       }
+      engine_run_logs: {
+        Row: {
+          category: string
+          db_rows_affected: number | null
+          duration_ms: number | null
+          effect_summary: string | null
+          engine_name: string
+          error_message: string | null
+          finished_at: string | null
+          id: string
+          metadata_json: Json | null
+          started_at: string
+          status: string
+        }
+        Insert: {
+          category?: string
+          db_rows_affected?: number | null
+          duration_ms?: number | null
+          effect_summary?: string | null
+          engine_name: string
+          error_message?: string | null
+          finished_at?: string | null
+          id?: string
+          metadata_json?: Json | null
+          started_at?: string
+          status?: string
+        }
+        Update: {
+          category?: string
+          db_rows_affected?: number | null
+          duration_ms?: number | null
+          effect_summary?: string | null
+          engine_name?: string
+          error_message?: string | null
+          finished_at?: string | null
+          id?: string
+          metadata_json?: Json | null
+          started_at?: string
+          status?: string
+        }
+        Relationships: []
+      }
       entities: {
         Row: {
           address: string | null
@@ -17254,6 +17296,8 @@ export type Database = {
           duplicate_of: string | null
           field_sources_json: Json | null
           freshness_score: number | null
+          grocery_catalog_at: string | null
+          grocery_catalog_json: Json | null
           halal: boolean | null
           hotel_inventory_at: string | null
           hotel_inventory_json: Json | null
@@ -17284,6 +17328,7 @@ export type Database = {
           owner_controlled: boolean | null
           phone: string | null
           pipeline_last_run_at: string | null
+          pipeline_stage: string | null
           pipeline_status: string | null
           price_level: number
           promo_active: boolean | null
@@ -17292,11 +17337,16 @@ export type Database = {
           publish_source: string | null
           published_at: string | null
           rating: number
+          raw_hotel_inventory_json: Json | null
+          raw_menu_json: Json | null
+          raw_service_catalog_json: Json | null
           review_count: number
           review_required: boolean | null
           route_status: string | null
           seo_issues: string[] | null
           seo_status: string | null
+          service_catalog_at: string | null
+          service_catalog_json: Json | null
           source_confidence: number | null
           source_key: string | null
           source_snapshot_at: string | null
@@ -17310,6 +17360,8 @@ export type Database = {
           unpublish_reason: string | null
           unpublished_at: string | null
           vertical: string | null
+          vertical_confidence: number | null
+          vertical_locked: boolean | null
           visibility_decision_reason: string | null
           visibility_mode: string | null
           visibility_score: number
@@ -17343,6 +17395,8 @@ export type Database = {
           duplicate_of?: string | null
           field_sources_json?: Json | null
           freshness_score?: number | null
+          grocery_catalog_at?: string | null
+          grocery_catalog_json?: Json | null
           halal?: boolean | null
           hotel_inventory_at?: string | null
           hotel_inventory_json?: Json | null
@@ -17373,6 +17427,7 @@ export type Database = {
           owner_controlled?: boolean | null
           phone?: string | null
           pipeline_last_run_at?: string | null
+          pipeline_stage?: string | null
           pipeline_status?: string | null
           price_level?: number
           promo_active?: boolean | null
@@ -17381,11 +17436,16 @@ export type Database = {
           publish_source?: string | null
           published_at?: string | null
           rating?: number
+          raw_hotel_inventory_json?: Json | null
+          raw_menu_json?: Json | null
+          raw_service_catalog_json?: Json | null
           review_count?: number
           review_required?: boolean | null
           route_status?: string | null
           seo_issues?: string[] | null
           seo_status?: string | null
+          service_catalog_at?: string | null
+          service_catalog_json?: Json | null
           source_confidence?: number | null
           source_key?: string | null
           source_snapshot_at?: string | null
@@ -17399,6 +17459,8 @@ export type Database = {
           unpublish_reason?: string | null
           unpublished_at?: string | null
           vertical?: string | null
+          vertical_confidence?: number | null
+          vertical_locked?: boolean | null
           visibility_decision_reason?: string | null
           visibility_mode?: string | null
           visibility_score?: number
@@ -17432,6 +17494,8 @@ export type Database = {
           duplicate_of?: string | null
           field_sources_json?: Json | null
           freshness_score?: number | null
+          grocery_catalog_at?: string | null
+          grocery_catalog_json?: Json | null
           halal?: boolean | null
           hotel_inventory_at?: string | null
           hotel_inventory_json?: Json | null
@@ -17462,6 +17526,7 @@ export type Database = {
           owner_controlled?: boolean | null
           phone?: string | null
           pipeline_last_run_at?: string | null
+          pipeline_stage?: string | null
           pipeline_status?: string | null
           price_level?: number
           promo_active?: boolean | null
@@ -17470,11 +17535,16 @@ export type Database = {
           publish_source?: string | null
           published_at?: string | null
           rating?: number
+          raw_hotel_inventory_json?: Json | null
+          raw_menu_json?: Json | null
+          raw_service_catalog_json?: Json | null
           review_count?: number
           review_required?: boolean | null
           route_status?: string | null
           seo_issues?: string[] | null
           seo_status?: string | null
+          service_catalog_at?: string | null
+          service_catalog_json?: Json | null
           source_confidence?: number | null
           source_key?: string | null
           source_snapshot_at?: string | null
@@ -17488,6 +17558,8 @@ export type Database = {
           unpublish_reason?: string | null
           unpublished_at?: string | null
           vertical?: string | null
+          vertical_confidence?: number | null
+          vertical_locked?: boolean | null
           visibility_decision_reason?: string | null
           visibility_mode?: string | null
           visibility_score?: number
