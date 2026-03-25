@@ -102,38 +102,8 @@ export async function purgeLegacyServiceWorkersAndCaches(): Promise<number> {
   return registrationCount;
 }
 
-export async function enforceVersionConsistencyOnBoot(): Promise<boolean> {
-  try {
-    const servedHtml = await fetchServedHtml();
-    if (!servedHtml) return false;
-
-    const servedAssetPaths = extractAssetPathsFromHtml(servedHtml);
-    const loadedAssetPaths = getLoadedAssetPaths();
-
-    if (servedAssetPaths.length === 0 || loadedAssetPaths.length === 0) {
-      return false;
-    }
-
-    const staleAssetLoaded = loadedAssetPaths.some(
-      (assetPath) => assetPath.includes("/assets/") && !servedAssetPaths.includes(assetPath),
-    );
-
-    console.info("[Build] asset consistency", {
-      buildId: APP_VERSION,
-      loadedAssetPaths,
-      servedAssetPaths,
-      staleAssetLoaded,
-    });
-
-    if (!staleAssetLoaded) return false;
-
-    await forceCleanRefresh();
-    return true;
-  } catch (error) {
-    console.warn("[Build] asset consistency check failed", error);
-    return false;
-  }
-}
+// enforceVersionConsistencyOnBoot removed — risky auto-reload on boot is forbidden.
+// Use startVersionPolling for non-destructive update detection.
 
 /**
  * Forces a clean refresh, clearing service worker caches.
