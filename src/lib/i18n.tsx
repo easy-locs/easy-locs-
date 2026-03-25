@@ -463,13 +463,9 @@ async function loadPageTranslations(): Promise<void> {
   }
 }
 
-// Trigger load after first paint
+// Trigger load immediately (not idle) to prevent raw keys on first paint
 if (typeof window !== "undefined") {
-  if (typeof window.requestIdleCallback === "function") {
-    window.requestIdleCallback(() => void loadPageTranslations());
-  } else {
-    setTimeout(() => void loadPageTranslations(), 100);
-  }
+  void loadPageTranslations();
 }
 
 const translations: Record<Locale, Record<string, string>> = {
