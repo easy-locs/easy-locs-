@@ -621,6 +621,12 @@ export default function QrScannerPage() {
                             setE("Missing amount");
                             return;
                           }
+                          // Duplicate guard
+                          const iKey = generateIdempotencyKey(user?.id || "anon", pendingPayment.recipientId, amount, pendingPayment.contextId);
+                          if (isDuplicatePayment(iKey)) {
+                            setE("Duplicate payment — wait 30s"); return;
+                          }
+                          recordPaymentAttempt(iKey);
                           setError("");
                           setPayStepLabel("Opening payment…");
                           setState("paying");
