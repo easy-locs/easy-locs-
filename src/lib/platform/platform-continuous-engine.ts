@@ -642,6 +642,38 @@ export function startContinuousEngine() {
   }, "system");
 
   // ═══════════════════════════════════════════════════════════
+  // BACKEND TRUTH ENGINES (83-86)
+  // ═══════════════════════════════════════════════════════════
+
+  registerJob("backend-connectivity", 15 * 60_000, async () => {
+    const { runBackendConnectivityCheck } = await import("@/lib/engines/backend-connectivity-engine");
+    const result = await runBackendConnectivityCheck(500);
+    const job = jobs.find(j => j.name === "backend-connectivity");
+    if (job) { job.itemsProcessed = result.totalChecked; job.rowsAffected = result.autoRepaired; job.summary = `Full:${result.fullyConnected} Partial:${result.partiallyConnected} Dead:${result.dead}`; job.businessImpact = result.dead > 0 ? `${result.dead} dead entities` : "All connected"; }
+  }, "quality");
+
+  registerJob("entity-integrity", 15 * 60_000, async () => {
+    const { runEntityIntegrityCheck } = await import("@/lib/engines/entity-integrity-engine");
+    const result = await runEntityIntegrityCheck(500);
+    const job = jobs.find(j => j.name === "entity-integrity");
+    if (job) { job.itemsProcessed = result.totalChecked; job.rowsAffected = result.autoRepaired; job.summary = `Passed:${result.passed} Failed:${result.failed}`; job.businessImpact = result.failed > 0 ? `${result.failed} integrity failures` : "All entities valid"; }
+  }, "quality");
+
+  registerJob("dead-flow-elimination", 30 * 60_000, async () => {
+    const { runDeadFlowAudit } = await import("@/lib/engines/dead-flow-elimination-engine");
+    const result = runDeadFlowAudit();
+    const job = jobs.find(j => j.name === "dead-flow-elimination");
+    if (job) { job.itemsProcessed = result.totalFlowsChecked; job.summary = `Dead:${result.deadFlows} BrokenLinks:${result.brokenModuleLinks} DeadCTAs:${result.deadCTAs}`; job.businessImpact = result.deadFlows > 0 ? `${result.deadFlows} dead flows` : "All flows alive"; }
+  }, "quality");
+
+  registerJob("full-stack-linkage", 15 * 60_000, async () => {
+    const { runFullStackLinkageCheck } = await import("@/lib/engines/full-stack-linkage-engine");
+    const result = await runFullStackLinkageCheck(500);
+    const job = jobs.find(j => j.name === "full-stack-linkage");
+    if (job) { job.itemsProcessed = result.totalEntitiesChecked; job.rowsAffected = result.autoRepaired; job.summary = `Linked:${result.fullyLinked} Partial:${result.partiallyLinked} Broken:${result.broken}`; job.businessImpact = result.broken > 0 ? `${result.broken} broken chains, ${result.publicationBlocked} blocked` : "Full-stack OK"; }
+  }, "quality");
+
+  // ═══════════════════════════════════════════════════════════
   // START ALL — Staggered boot
   // ═══════════════════════════════════════════════════════════
 
