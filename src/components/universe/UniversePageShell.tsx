@@ -5,7 +5,7 @@
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion } from "framer-motion"; // kept for potential future use
 import SEOHead from "@/components/SEOHead";
 
 interface UniversePageShellProps {
@@ -86,13 +86,10 @@ export default function UniversePageShell({
       {/* Content — stable layout: keep structure identical between states */}
       <div className="px-4 mt-5" style={{ minHeight: 200 }}>
         {loading ? (
-          <div className="flex flex-col items-center justify-center py-16 gap-3">
-            <motion.div
-              className="w-8 h-8 rounded-full border-2 border-primary border-t-transparent"
-              animate={{ rotate: 360 }}
-              transition={{ duration: 0.8, repeat: Infinity, ease: "linear" }}
-            />
-            <p className="text-xs text-muted-foreground">Loading…</p>
+          <div className="space-y-3 animate-pulse">
+            <div className="h-24 w-full rounded-2xl bg-muted/30" />
+            <div className="h-24 w-full rounded-2xl bg-muted/25" />
+            <div className="h-24 w-full rounded-2xl bg-muted/20" />
           </div>
         ) : isEmpty ? (
           <div className="flex flex-col items-center justify-center py-16 gap-3">
