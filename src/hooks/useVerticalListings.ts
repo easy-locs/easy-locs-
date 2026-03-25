@@ -25,12 +25,12 @@ export interface ListingItem {
   distanceKm?: number;
 }
 
-export function useVerticalListings(vertical: string, subcategory?: string | null) {
+export function useVerticalListings(vertical: string, subcategory?: string | null, city?: string | null) {
   const geoPoint = useGeoStore((s) => s.point);
   const radiusKm = useDiscoveryStore((s) => s.radiusKm);
 
   return useQuery({
-    queryKey: ["vertical-listings", vertical, subcategory ?? "all", geoPoint?.lat?.toFixed(2), radiusKm],
+    queryKey: ["vertical-listings", vertical, subcategory ?? "all", city ?? "all", geoPoint?.lat?.toFixed(2), radiusKm],
     queryFn: async () => {
       const radarCategory = verticalToRadarCategory(vertical);
       const points = await fetchCanonicalDiscovery({
@@ -39,6 +39,7 @@ export function useVerticalListings(vertical: string, subcategory?: string | nul
         category: radarCategory,
         subcategory: subcategory ?? undefined,
         vertical,
+        city: city ?? undefined,
         radiusKm: radiusKm ?? undefined,
         limit: 100,
       });
