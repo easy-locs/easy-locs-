@@ -13,7 +13,7 @@ import {
   getCanonicalVertical,
   CANONICAL_VERTICALS,
 } from "@/lib/taxonomy/world-class-taxonomy";
-import { governStorefrontQuery, governSeedQuery } from "@/lib/discovery/query-governance";
+import { governStorefrontQuery } from "@/lib/discovery/query-governance";
 
 const db = supabase as any;
 
@@ -81,21 +81,11 @@ export async function resolveSearch(
       .limit(20);
   }
 
-  // Seed merchants search (parallel) — governed
-  let seedPromise: Promise<any> = Promise.resolve({ data: [] });
-  if (q) {
-    let seedQ = db
-      .from("seed_merchants")
-      .select("id, name, category, subcategory, city, area, rating, review_count, cover_image, is_open, latitude, longitude, visibility_score")
-      .or(`name.ilike.%${q}%,subcategory.ilike.%${q}%,area.ilike.%${q}%`)
-      .limit(20);
-    seedQ = governSeedQuery(seedQ);
-    seedPromise = seedQ;
-  }
+  // Single source: storefront_pages only — seed_merchants is internal pipeline only
 
-  const [sfRes, seedRes, prodRes] = await Promise.all([sfQuery, seedPromise, productPromise]);
+  const [sfRes, prodRes] = await Promise.all([sfQuery, productPromise]);
 
-  // Merge shops — storefronts take priority
+  // Shops from storefronts only
   const seenIds = new Set<string>();
   const shops: SearchResult[] = [];
 
@@ -103,12 +93,6 @@ export async function resolveSearch(
     seenIds.add(row.id);
     const result = mapStorefront(row, state);
     shops.push(result);
-  }
-
-  for (const row of seedRes.data ?? []) {
-    if (!seenIds.has(row.id)) {
-      shops.push(mapSeed(row, state));
-    }
   }
 
   // Products
