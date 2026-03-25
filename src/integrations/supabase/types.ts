@@ -14078,6 +14078,135 @@ export type Database = {
         }
         Relationships: []
       }
+      platform_actions_log: {
+        Row: {
+          action_type: string
+          auto_applied: boolean
+          created_at: string
+          decision: string
+          description: string
+          engine_source: string
+          id: string
+          metadata_json: Json | null
+          result: string | null
+          severity: string
+          target_path: string | null
+          target_type: string | null
+        }
+        Insert: {
+          action_type: string
+          auto_applied?: boolean
+          created_at?: string
+          decision: string
+          description: string
+          engine_source: string
+          id?: string
+          metadata_json?: Json | null
+          result?: string | null
+          severity?: string
+          target_path?: string | null
+          target_type?: string | null
+        }
+        Update: {
+          action_type?: string
+          auto_applied?: boolean
+          created_at?: string
+          decision?: string
+          description?: string
+          engine_source?: string
+          id?: string
+          metadata_json?: Json | null
+          result?: string | null
+          severity?: string
+          target_path?: string | null
+          target_type?: string | null
+        }
+        Relationships: []
+      }
+      platform_health_scores: {
+        Row: {
+          cleanup_score: number
+          coherence_score: number
+          created_at: string
+          details_json: Json | null
+          global_score: number
+          i18n_score: number
+          id: string
+          performance_score: number
+          routing_score: number
+        }
+        Insert: {
+          cleanup_score?: number
+          coherence_score?: number
+          created_at?: string
+          details_json?: Json | null
+          global_score?: number
+          i18n_score?: number
+          id?: string
+          performance_score?: number
+          routing_score?: number
+        }
+        Update: {
+          cleanup_score?: number
+          coherence_score?: number
+          created_at?: string
+          details_json?: Json | null
+          global_score?: number
+          i18n_score?: number
+          id?: string
+          performance_score?: number
+          routing_score?: number
+        }
+        Relationships: []
+      }
+      platform_policy_rules: {
+        Row: {
+          action_type: string
+          auto_fix_allowed: boolean
+          condition_type: string
+          condition_value: string
+          created_at: string
+          description: string | null
+          enabled: boolean
+          id: string
+          priority: number
+          risk_level: string
+          rule_name: string
+          updated_at: string
+          vertical: string | null
+        }
+        Insert: {
+          action_type: string
+          auto_fix_allowed?: boolean
+          condition_type: string
+          condition_value: string
+          created_at?: string
+          description?: string | null
+          enabled?: boolean
+          id?: string
+          priority?: number
+          risk_level?: string
+          rule_name: string
+          updated_at?: string
+          vertical?: string | null
+        }
+        Update: {
+          action_type?: string
+          auto_fix_allowed?: boolean
+          condition_type?: string
+          condition_value?: string
+          created_at?: string
+          description?: string | null
+          enabled?: boolean
+          id?: string
+          priority?: number
+          risk_level?: string
+          rule_name?: string
+          updated_at?: string
+          vertical?: string | null
+        }
+        Relationships: []
+      }
       platform_recovery_runs: {
         Row: {
           auto_fixes_count: number | null
