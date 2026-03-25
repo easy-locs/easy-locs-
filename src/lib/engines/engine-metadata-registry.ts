@@ -141,6 +141,13 @@ export const ENGINE_METADATA: Record<string, EngineMetadata> = {
   // ── MENU PIPELINE (Food Quality) ──
   "menu-rebuild":          { tier: "critical",    businessFn: "onboarding",     vertical: "food",    canRunIdle: false, tablesWritten: ["seed_merchants"],    fieldsWritten: ["menu_items_json", "menu_rebuild_score", "menu_quality_score", "menu_quality_flag"], description: "Rebuilds dirty menus into clean canonical structure" },
   "taxonomy-remap":        { tier: "priority",    businessFn: "taxonomy",       vertical: "food",    canRunIdle: false, tablesWritten: ["seed_merchants"],    fieldsWritten: ["category", "subcategory", "taxonomy_score"],              description: "Revalidates and corrects taxonomy after menu rebuild" },
+
+  // ── UX & RADAR INTELLIGENCE ──
+  "ux-autotest":           { tier: "priority",    businessFn: "infrastructure", vertical: "all",     canRunIdle: true,  tablesWritten: [],                    fieldsWritten: [],                                                   description: "Auto-tests UX flows, detects dead buttons, raw i18n keys, empty pages" },
+  "hyper-radar":           { tier: "standard",    businessFn: "visibility",     vertical: "all",     canRunIdle: true,  tablesWritten: [],                    fieldsWritten: [],                                                   description: "Immersive discovery with heatmap, layers, smart guidance" },
+  "behavior-pattern":      { tier: "standard",    businessFn: "conversion",     vertical: "all",     canRunIdle: true,  tablesWritten: [],                    fieldsWritten: [],                                                   description: "Analyzes aggregated behavior patterns by zone, time, season" },
+  "vibe-density":          { tier: "standard",    businessFn: "visibility",     vertical: "all",     canRunIdle: true,  tablesWritten: [],                    fieldsWritten: [],                                                   description: "Calculates zone atmosphere, crowd density, noise level" },
+  "travel-transition":     { tier: "standard",    businessFn: "conversion",     vertical: "all",     canRunIdle: true,  tablesWritten: [],                    fieldsWritten: [],                                                   description: "Detects travel context and provides smart guidance" },
 };
 
 /** Detect table/field collisions between engines */
