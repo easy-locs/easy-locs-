@@ -617,6 +617,12 @@ export function startContinuousEngine() {
     if (result.missingKeys > 0) console.log(`[continuous] i18n: ${result.missingKeys} missing keys`);
   }, "system");
 
+  registerJob("global-orchestration", 15 * 60_000, async () => {
+    const { runGlobalOrchestration } = await import("@/lib/engines/global-orchestration-engine");
+    const result = runGlobalOrchestration();
+    console.log(`[continuous] Orchestration: health=${result.healthScore} collisions=${result.collisions.length}`);
+  }, "system");
+
   // ═══════════════════════════════════════════════════════════
   // START ALL — Staggered boot
   // ═══════════════════════════════════════════════════════════
@@ -673,6 +679,9 @@ export function getContinuousEngineStatus() {
       lastStatus: j.lastStatus,
       lastDetail: j.lastDetail,
       itemsProcessed: j.itemsProcessed,
+      rowsAffected: j.rowsAffected,
+      businessImpact: j.businessImpact,
+      summary: j.summary,
     })),
   };
 }
