@@ -27,6 +27,8 @@ export function AppInit() {
 
   useEffect(() => {
     if (!initialized) return;
+    // Invalidate canonical identity cache on any auth state change
+    invalidateIdentityCache();
 
     if (!user) {
       clear();
