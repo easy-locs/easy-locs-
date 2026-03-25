@@ -3,6 +3,7 @@
  * Pipeline: Extract → Clean → Dedup → Categorize → Score → Classify (clean/rebuildable/garbage)
  */
 import { supabase } from "@/integrations/supabase/client";
+import { extractMenuItems } from "./merchant-quality-helpers";
 
 const db = supabase as any;
 
@@ -225,7 +226,7 @@ function rebuildMenu(rawItems: RawItem[]): RebuildResult {
 export async function runMenuRebuildEngine(limit = 100) {
   const { data: merchants } = await db
     .from("seed_merchants")
-    .select("id, name, menu_items_json, raw_menu_json, vertical, vertical_locked, menu_rebuild_score, pipeline_stage")
+    .select("id, name, menu_items_json, raw_menu_json, vertical, vertical_locked, menu_quality_score, pipeline_stage")
     .eq("vertical", "food")
     .limit(limit);
 
@@ -236,16 +237,14 @@ export async function runMenuRebuildEngine(limit = 100) {
     const source = m.raw_menu_json || m.menu_items_json;
     if (!source) { skipped++; continue; }
 
-    const rawItems: RawItem[] = Array.isArray(source)
-      ? source
-      : source?.items || source?.sections?.flatMap((s: any) => s.items || []) || [];
+    const rawItems: RawItem[] = extractMenuItems(source);
 
     if (rawItems.length === 0) {
       // Empty menu → block
       await db.from("seed_merchants").update({
         menu_quality_flag: "empty_after_cleanup",
-        menu_rebuild_score: 0,
         menu_quality_score: 0,
+        menu_sections_json: [],
         visibility_mode: "hidden",
         blocking_reason: "menu_empty",
       }).eq("id", m.id);
@@ -258,8 +257,8 @@ export async function runMenuRebuildEngine(limit = 100) {
     if (result.classification === "garbage") {
       await db.from("seed_merchants").update({
         menu_quality_flag: "garbage",
-        menu_rebuild_score: result.rebuildScore,
         menu_quality_score: result.rebuildScore,
+        menu_sections_json: result.sections,
         visibility_mode: "hidden",
         blocking_reason: `garbage_menu: score=${result.rebuildScore} valid=${result.stats.validItems}`,
       }).eq("id", m.id);
@@ -272,7 +271,7 @@ export async function runMenuRebuildEngine(limit = 100) {
     // Write rebuilt menu
     await db.from("seed_merchants").update({
       menu_items_json: { sections: result.sections, totalItems: result.totalItems },
-      menu_rebuild_score: result.rebuildScore,
+      menu_sections_json: result.sections,
       menu_quality_score: result.rebuildScore,
       menu_quality_flag: result.classification === "clean" ? "clean" : "rebuilt",
       menu_normalized_at: new Date().toISOString(),
