@@ -7,7 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export default function SupportThread({
   ticketId,
-  actorRole = "user",
+  actorRole = "client",
   showInternal = false,
 }: {
   ticketId: string;
@@ -33,7 +33,7 @@ export default function SupportThread({
       await sendTicketMessage({
         ticketId,
         senderUserId: user?.id ?? null,
-        senderRole: actorRole === "user" ? "client" : actorRole,
+        senderRole: actorRole,
         body: message.trim(),
       });
       setMessage("");
