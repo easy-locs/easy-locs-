@@ -1,8 +1,11 @@
 /**
  * Hotel Inventory Normalizer Engine — Processes hotel-vertical entities separately.
  * Handles room types, rates, policies, amenities. NEVER uses food menu logic.
+ * ONLY runs on vertical=hotel AND vertical_locked=true.
+ * Sets pipeline_stage to "normalized_hotel".
  */
 import { supabase } from "@/integrations/supabase/client";
+import { platformBus } from "@/lib/shared/platform-bus";
 
 const db = supabase as any;
 
@@ -31,8 +34,6 @@ interface HotelInventory {
 
 function extractRoomTypes(data: any): RoomType[] {
   if (!data) return [];
-
-  // Handle various source formats
   const rooms: RoomType[] = [];
   const rawRooms = data.rooms || data.room_types || data.roomTypes || 
                    (Array.isArray(data) ? data : data.items || []);
@@ -72,9 +73,10 @@ function extractAmenities(data: any): string[] {
 }
 
 export async function runHotelInventoryNormalizer(limit = 30) {
+  // STRICT: Only runs on vertical=hotel
   const { data: hotels } = await db
     .from("seed_merchants")
-    .select("id, name, menu_items_json, vertical, hotel_inventory_at")
+    .select("id, name, menu_items_json, vertical, vertical_locked, hotel_inventory_at")
     .eq("vertical", "hotel")
     .is("hotel_inventory_at", null)
     .limit(limit);
@@ -82,8 +84,16 @@ export async function runHotelInventoryNormalizer(limit = 30) {
   let normalized = 0, skipped = 0;
 
   for (const h of hotels ?? []) {
+    // GUARD: Skip if vertical not locked
+    if (!h.vertical_locked) { skipped++; continue; }
+
     const sourceData = h.menu_items_json;
     if (!sourceData) { skipped++; continue; }
+
+    // Preserve raw source
+    await db.from("seed_merchants").update({
+      raw_hotel_inventory_json: sourceData,
+    }).eq("id", h.id);
 
     const roomTypes = extractRoomTypes(sourceData);
     const policies = extractPolicies(sourceData);
@@ -100,9 +110,17 @@ export async function runHotelInventoryNormalizer(limit = 30) {
       hotel_inventory_json: inventory,
       hotel_inventory_at: new Date().toISOString(),
       menu_quality_flag: roomTypes.length > 0 ? "hotel_inventory_ok" : "no_rooms_found",
+      pipeline_stage: "normalized_hotel",
     }).eq("id", h.id);
 
     normalized++;
+
+    // Emit event
+    platformBus.emit("HOTEL_INVENTORY_NORMALIZED" as any, {
+      entityId: h.id,
+      totalRooms: roomTypes.length,
+      hasAmenities: amenities.length > 0,
+    }, "system");
   }
 
   console.log(`[hotel-inventory-normalizer] normalized=${normalized} skipped=${skipped}`);
