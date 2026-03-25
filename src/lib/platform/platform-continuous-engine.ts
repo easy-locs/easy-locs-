@@ -674,6 +674,31 @@ export function startContinuousEngine() {
   }, "quality");
 
   // ═══════════════════════════════════════════════════════════
+  // MECHANICS ENGINES (87-89) — Auto-repair Layer
+  // ═══════════════════════════════════════════════════════════
+
+  registerJob("auto-repair", 10 * 60_000, async () => {
+    const { runAutoRepairEngine } = await import("@/lib/engines/auto-repair-engine");
+    const result = await runAutoRepairEngine(200);
+    const job = jobs.find(j => j.name === "auto-repair");
+    if (job) { job.itemsProcessed = result.totalScanned; job.rowsAffected = result.autoFixed; job.summary = `Fixed:${result.autoFixed} Blocked:${result.blocked} Review:${result.sentToReview}`; job.businessImpact = result.autoFixed > 0 ? `${result.autoFixed} auto-repaired` : "All clean"; }
+  }, "quality");
+
+  registerJob("module-link-repair", 15 * 60_000, async () => {
+    const { runModuleLinkRepair } = await import("@/lib/engines/module-link-repair-engine");
+    const result = await runModuleLinkRepair();
+    const job = jobs.find(j => j.name === "module-link-repair");
+    if (job) { job.itemsProcessed = result.totalLinksChecked; job.rowsAffected = result.repaired; job.summary = `Connected:${result.connected} Broken:${result.broken} Repaired:${result.repaired}`; job.businessImpact = result.broken > 0 ? `${result.broken} broken links` : "All modules linked"; }
+  }, "quality");
+
+  registerJob("entity-state-healing", 10 * 60_000, async () => {
+    const { runEntityStateHealing } = await import("@/lib/engines/entity-state-healing-engine");
+    const result = await runEntityStateHealing(300);
+    const job = jobs.find(j => j.name === "entity-state-healing");
+    if (job) { job.itemsProcessed = result.totalScanned; job.rowsAffected = result.healed + result.unpublished; job.summary = `Healed:${result.healed} Unpublished:${result.unpublished} Review:${result.sentToReview}`; job.businessImpact = result.healed > 0 ? `${result.healed} states healed` : "All states coherent"; }
+  }, "quality");
+
+  // ═══════════════════════════════════════════════════════════
   // START ALL — Staggered boot
   // ═══════════════════════════════════════════════════════════
 

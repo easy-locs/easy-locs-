@@ -127,11 +127,16 @@ export const ENGINE_METADATA: Record<string, EngineMetadata> = {
   "automation-workflows":  { tier: "priority",    businessFn: "lifecycle",      vertical: "all",     canRunIdle: false, tablesWritten: ["automation_workflows"], fieldsWritten: ["status", "current_step"],                      description: "Executes automation workflows" },
   "approval-queue":        { tier: "standard",    businessFn: "lifecycle",      vertical: "all",     canRunIdle: false, tablesWritten: ["approval_queues"],   fieldsWritten: ["status"],                                           description: "Processes approval queues" },
 
-  // ── BACKEND TRUTH ──
+  // ── BACKEND TRUTH (Sensors) ──
   "backend-connectivity":  { tier: "critical",    businessFn: "infrastructure", vertical: "all",     canRunIdle: false, tablesWritten: ["seed_merchants"],    fieldsWritten: ["visibility_mode", "unpublish_reason"],              description: "Verifies every visible entity has valid backend" },
   "entity-integrity":      { tier: "critical",    businessFn: "onboarding",     vertical: "all",     canRunIdle: false, tablesWritten: ["seed_merchants"],    fieldsWritten: ["visibility_mode", "visibility_decision_reason"],    description: "Validates entity fields, state, and journey" },
   "dead-flow-elimination": { tier: "priority",    businessFn: "infrastructure", vertical: "all",     canRunIdle: true,  tablesWritten: [],                    fieldsWritten: [],                                                   description: "Detects dead CTAs, routes, flows, module links" },
   "full-stack-linkage":    { tier: "critical",    businessFn: "visibility",     vertical: "all",     canRunIdle: false, tablesWritten: ["seed_merchants"],    fieldsWritten: ["visibility_mode", "visibility_decision_reason"],    description: "Validates UI→Logic→API→DB→State chain, blocks broken" },
+
+  // ── MECHANICS (Auto-repair) ──
+  "auto-repair":           { tier: "critical",    businessFn: "infrastructure", vertical: "all",     canRunIdle: false, tablesWritten: ["seed_merchants"],    fieldsWritten: ["city", "country", "currency", "description", "visibility_score", "visibility_mode"], description: "Auto-fixes safe deterministic issues, blocks dangerous, escalates ambiguous" },
+  "module-link-repair":    { tier: "priority",    businessFn: "infrastructure", vertical: "all",     canRunIdle: false, tablesWritten: ["seed_merchants"],    fieldsWritten: ["visibility_mode", "pipeline_stage", "publish_gate_status"], description: "Verifies and repairs cross-module connections" },
+  "entity-state-healing":  { tier: "critical",    businessFn: "visibility",     vertical: "all",     canRunIdle: false, tablesWritten: ["seed_merchants"],    fieldsWritten: ["visibility_mode", "vertical", "visibility_decision_reason"], description: "Heals incoherent entity states — pipeline vs visibility, gate vs mode" },
 };
 
 /** Detect table/field collisions between engines */
