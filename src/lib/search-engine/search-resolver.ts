@@ -151,24 +151,7 @@ function mapStorefront(row: any, state: SearchState): SearchResult {
   };
 }
 
-function mapSeed(row: any, state: SearchState): SearchResult {
-  return {
-    id: row.id,
-    type: "shop",
-    title: row.name,
-    subtitle: [row.subcategory, row.area || row.city].filter(Boolean).join(" · "),
-    imageUrl: row.cover_image,
-    lat: row.latitude,
-    lng: row.longitude,
-    rating: row.rating,
-    reviewsCount: row.review_count,
-    subcategory: row.subcategory,
-    district: row.area,
-    city: row.city,
-    isOpen: row.is_open,
-    score: row.visibility_score ?? 0,
-  };
-}
+// mapSeed removed — seed_merchants is internal pipeline only
 
 function sortResults(results: SearchResult[], state: SearchState): SearchResult[] {
   return [...results].sort((a, b) => {
