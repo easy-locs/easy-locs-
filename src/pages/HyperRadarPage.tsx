@@ -111,9 +111,8 @@ export default function HyperRadarPage() {
         <UnifiedMap
           entities={entities}
           showUserLocation
-          enableClustering
-          interactive
-          mapStyle="mapbox://styles/mapbox/dark-v11"
+          showHeatmap
+          heatmapPoints={entities.map(e => ({ lat: e.lat, lng: e.lng, intensity: 0.5 }))}
         />
 
         {/* Vibe Badge */}
