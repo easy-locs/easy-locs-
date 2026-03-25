@@ -104,7 +104,7 @@ export default function SupportTicketDetailPage() {
             </div>
 
             {/* Thread */}
-            <SupportThread ticketId={ticketId!} actorRole="user" />
+            <SupportThread ticketId={ticketId!} actorRole="client" />
           </>
         )}
       </div>
