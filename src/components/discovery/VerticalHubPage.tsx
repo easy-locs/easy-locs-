@@ -55,6 +55,12 @@ export default function VerticalHubPage({ vertical }: { vertical: TaxonomyVertic
   const [sortMode, setSortMode] = useState<SortMode>("relevance");
   const navigate = useNavigate();
 
+  // ═══ DISCOVERY STORE — city + radius ═══
+  const radiusKm = useDiscoveryStore((s) => s.radiusKm);
+  const setRadiusKm = useDiscoveryStore((s) => s.setRadiusKm);
+  const city = useDiscoveryStore((s) => s.city);
+  const setCity = useDiscoveryStore((s) => s.setCity);
+
   // ═══ CANONICAL UI ENGINE — single source of truth ═══
   const ui: CanonicalUISpec = useMemo(
     () => resolveCanonicalUI(vertical.value, activeSub),
@@ -74,7 +80,7 @@ export default function VerticalHubPage({ vertical }: { vertical: TaxonomyVertic
     else setSearchParams({});
   };
 
-  const { data: listings = [], isLoading } = useVerticalListings(vertical.value, activeSub);
+  const { data: listings = [], isLoading } = useVerticalListings(vertical.value, activeSub, city);
 
   const filtered = useMemo(() => {
     let items = listings;
