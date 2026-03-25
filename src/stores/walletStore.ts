@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { platformBus } from "@/lib/shared/platform-bus";
 import type { WalletStateModel, WalletTransaction, CurrencyCode } from "@/lib/types/domain";
 import { walletRepo } from "@/lib/supabase/repositories";
+import { ensureWalletAccount } from "@/lib/wallet/ensureWalletAccount";
 
 type WalletStore = {
   wallet: WalletStateModel | null;
@@ -29,15 +30,13 @@ export const useWalletStore = create<WalletStore>((set, get) => ({
     let wallet = await walletRepo.getByOwnerOrbitId(ownerOrbitId);
 
     if (!wallet) {
-      wallet = await walletRepo.upsert({
-        walletId,
-        ownerOrbitId,
-        currency,
-        availableBalance: 0,
-        lockedBalance: 0,
-        pendingBalance: 0,
-        lastUpdatedAt: new Date().toISOString(),
-      });
+      await ensureWalletAccount(ownerOrbitId, currency);
+      wallet = await walletRepo.getByOwnerOrbitId(ownerOrbitId);
+    }
+
+    if (!wallet) {
+      set({ wallet: null, loading: false });
+      return;
     }
 
     set({ wallet, loading: false });
