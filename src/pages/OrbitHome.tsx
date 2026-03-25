@@ -3,6 +3,7 @@
  * Food-first · Luxury · Clean vertical hierarchy · No clutter
  */
 import { useMemo, useCallback } from "react";
+import { AnimatedCounter } from "@/components/ui/AnimatedCounter";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -307,7 +308,7 @@ export default function OrbitHome() {
                 </div>
                 <div className="text-left">
                   <p className="text-base font-black text-foreground tabular-nums">
-                    {wLoading ? "···" : `${balance.toFixed(2)} ${currency}`}
+                    {wLoading ? "···" : <><AnimatedCounter value={balance} decimals={2} duration={800} /> {currency}</>}
                   </p>
                   <p className="text-[10px] text-muted-foreground font-medium">Wallet balance</p>
                 </div>
