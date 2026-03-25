@@ -143,6 +143,8 @@ export interface CanonicalDiscoveryOpts {
   subcategory?: string | null;
   /** Vertical filter */
   vertical?: string;
+  /** City filter — restrict results to a specific city */
+  city?: string | null;
   /** Radius in km — shops beyond this are EXCLUDED */
   radiusKm?: number | null;
   /** Max results */
