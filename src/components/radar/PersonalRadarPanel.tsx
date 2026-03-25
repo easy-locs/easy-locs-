@@ -52,7 +52,7 @@ export default function PersonalRadarPanel({ entities, open }: { entities: Entit
   }, [user?.id]);
 
   const context = useMemo(() => buildUserContext({
-    nearbyCategories: entities.map(e => e.category),
+    nearbyCategories: entities.map(e => e.category || "service"),
   }), [entities]);
 
   const actions = useMemo(() => computeNextActions(context, profile), [context, profile]);
