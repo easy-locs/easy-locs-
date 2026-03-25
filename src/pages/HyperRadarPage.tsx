@@ -5,6 +5,7 @@ import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { useRadarResults } from "@/hooks/useRadarResults";
+import PersonalRadarPanel from "@/components/radar/PersonalRadarPanel";
 import { useLocationStore } from "@/stores/locationStore";
 import {
   detectTimeSlot, getRelevantLayers, generateGuidance, classifyVibe,
@@ -225,6 +226,9 @@ export default function HyperRadarPage() {
                   </div>
                 </div>
               )}
+
+              {/* AI Personal Radar */}
+              <PersonalRadarPanel entities={entities} open={panelOpen} />
 
               {/* Transition Suggestions */}
               {transitions.length > 0 && context !== "unknown" && (

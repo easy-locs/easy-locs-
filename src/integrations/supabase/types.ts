@@ -25505,6 +25505,156 @@ export type Database = {
         }
         Relationships: []
       }
+      user_radar_events: {
+        Row: {
+          category: string | null
+          context: string | null
+          created_at: string | null
+          entity_id: string | null
+          event_type: string
+          id: string
+          subcategory: string | null
+          user_id: string | null
+          zone_id: string | null
+        }
+        Insert: {
+          category?: string | null
+          context?: string | null
+          created_at?: string | null
+          entity_id?: string | null
+          event_type: string
+          id?: string
+          subcategory?: string | null
+          user_id?: string | null
+          zone_id?: string | null
+        }
+        Update: {
+          category?: string | null
+          context?: string | null
+          created_at?: string | null
+          entity_id?: string | null
+          event_type?: string
+          id?: string
+          subcategory?: string | null
+          user_id?: string | null
+          zone_id?: string | null
+        }
+        Relationships: []
+      }
+      user_radar_profiles: {
+        Row: {
+          budget_profile: string | null
+          created_at: string | null
+          id: string
+          last_updated_at: string | null
+          lifestyle_tags: string[] | null
+          preferred_categories: string[] | null
+          preferred_verticals: string[] | null
+          session_count: number | null
+          taste_scores_json: Json | null
+          travel_profile: string | null
+          user_id: string
+        }
+        Insert: {
+          budget_profile?: string | null
+          created_at?: string | null
+          id?: string
+          last_updated_at?: string | null
+          lifestyle_tags?: string[] | null
+          preferred_categories?: string[] | null
+          preferred_verticals?: string[] | null
+          session_count?: number | null
+          taste_scores_json?: Json | null
+          travel_profile?: string | null
+          user_id: string
+        }
+        Update: {
+          budget_profile?: string | null
+          created_at?: string | null
+          id?: string
+          last_updated_at?: string | null
+          lifestyle_tags?: string[] | null
+          preferred_categories?: string[] | null
+          preferred_verticals?: string[] | null
+          session_count?: number | null
+          taste_scores_json?: Json | null
+          travel_profile?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_radar_recommendations: {
+        Row: {
+          category: string | null
+          clicked: boolean | null
+          converted: boolean | null
+          entity_id: string | null
+          id: string
+          personal_score: number | null
+          recommendation_type: string
+          shown_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          category?: string | null
+          clicked?: boolean | null
+          converted?: boolean | null
+          entity_id?: string | null
+          id?: string
+          personal_score?: number | null
+          recommendation_type: string
+          shown_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          category?: string | null
+          clicked?: boolean | null
+          converted?: boolean | null
+          entity_id?: string | null
+          id?: string
+          personal_score?: number | null
+          recommendation_type?: string
+          shown_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      user_radar_sessions: {
+        Row: {
+          context_type: string | null
+          detected_intent: string | null
+          ended_at: string | null
+          id: string
+          session_id: string
+          started_at: string | null
+          time_slot: string | null
+          user_id: string | null
+          zone_id: string | null
+        }
+        Insert: {
+          context_type?: string | null
+          detected_intent?: string | null
+          ended_at?: string | null
+          id?: string
+          session_id: string
+          started_at?: string | null
+          time_slot?: string | null
+          user_id?: string | null
+          zone_id?: string | null
+        }
+        Update: {
+          context_type?: string | null
+          detected_intent?: string | null
+          ended_at?: string | null
+          id?: string
+          session_id?: string
+          started_at?: string | null
+          time_slot?: string | null
+          user_id?: string | null
+          zone_id?: string | null
+        }
+        Relationships: []
+      }
       user_reports: {
         Row: {
           context_id: string | null
@@ -26867,6 +27017,45 @@ export type Database = {
           status?: string | null
           updated_at?: string | null
           workspace_type?: string | null
+        }
+        Relationships: []
+      }
+      zone_live_profiles: {
+        Row: {
+          activity_score: number | null
+          density: number | null
+          dominant_categories: string[] | null
+          entity_count: number | null
+          id: string
+          lat: number | null
+          lng: number | null
+          updated_at: string | null
+          vibe: string | null
+          zone_id: string
+        }
+        Insert: {
+          activity_score?: number | null
+          density?: number | null
+          dominant_categories?: string[] | null
+          entity_count?: number | null
+          id?: string
+          lat?: number | null
+          lng?: number | null
+          updated_at?: string | null
+          vibe?: string | null
+          zone_id: string
+        }
+        Update: {
+          activity_score?: number | null
+          density?: number | null
+          dominant_categories?: string[] | null
+          entity_count?: number | null
+          id?: string
+          lat?: number | null
+          lng?: number | null
+          updated_at?: string | null
+          vibe?: string | null
+          zone_id?: string
         }
         Relationships: []
       }
