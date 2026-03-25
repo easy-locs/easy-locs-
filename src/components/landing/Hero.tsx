@@ -112,7 +112,7 @@ const Hero = () => {
             {/* Brand + Radar Logo */}
             <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.15 }} className="flex flex-col items-center lg:items-start gap-3">
               <EasyLocsLogo variant="full" size="lg" animate />
-              <span className="inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 text-[10px] sm:text-[11px] font-semibold border backdrop-blur-xl" style={{ background: "linear-gradient(135deg, hsl(var(--accent) / 0.1), hsl(var(--accent) / 0.03))", borderColor: "hsl(var(--accent) / 0.2)", color: "hsl(var(--gold-light))" }}>
+              <span className="inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 text-[10px] sm:text-[11px] font-semibold border" style={{ background: "linear-gradient(135deg, hsl(var(--accent) / 0.1), hsl(var(--accent) / 0.03))", borderColor: "hsl(var(--accent) / 0.2)", color: "hsl(var(--gold-light))" }}>
                 <span className="relative flex h-1.5 w-1.5">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75" style={{ background: "hsl(var(--success))" }} />
                   <span className="relative inline-flex rounded-full h-1.5 w-1.5" style={{ background: "hsl(var(--success))" }} />
@@ -244,7 +244,7 @@ const Hero = () => {
                 {FLOATING_CARDS.map((card, i) => (
                   <motion.div
                     key={card.title}
-                    className="rounded-2xl border backdrop-blur-xl p-3.5 cursor-default relative"
+                    className="rounded-2xl border p-3.5 cursor-default relative"
                     style={{
                       background: "linear-gradient(145deg, hsl(222 42% 13% / 0.9), hsl(222 42% 9% / 0.95))",
                       borderColor: "hsl(220 20% 90% / 0.06)",
