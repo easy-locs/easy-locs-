@@ -1,8 +1,8 @@
 /**
- * OrbitHome — Careem-style super app home.
- * Top menu strip → Dynamic banners → Categories → Marketplace feed
+ * OrbitHome — Premium super-app home.
+ * Food-first · Luxury · Clean vertical hierarchy · No clutter
  */
-import { useMemo, memo, useCallback } from "react";
+import { useMemo, memo, useCallback, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
@@ -11,165 +11,112 @@ import { governSeedQuery } from "@/lib/discovery/query-governance";
 import MarketplaceSection from "@/components/marketplace/MarketplaceSection";
 import { useWalletBalance } from "@/payments/wallet-hooks";
 import {
-  ChevronRight, MapPin, Car, Building2,
-  Plane, UtensilsCrossed, Search, Bell, Map, Rocket,
+  ChevronRight, MapPin,
+  Search, Bell,
   MessageCircle, CreditCard, QrCode, Phone,
+  UtensilsCrossed, Building2, Plane, Sparkles,
+  ArrowRight,
 } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import SEOHead from "@/components/SEOHead";
-import { useState, useEffect } from "react";
 import { tc } from "@/lib/i18n-canonical";
 
-/* ── Categories ── */
-const CATEGORIES = [
-  { id: "food", icon: "🍕", labelKey: "discovery.vertical.food.title", path: "/food" },
-  { id: "grocery", icon: "🛒", labelKey: "discovery.vertical.grocery.title", path: "/grocery" },
-  { id: "shops", icon: "🛍️", labelKey: "discovery.vertical.shops.title", path: "/shops" },
-  { id: "services", icon: "🔧", labelKey: "discovery.vertical.services.title", path: "/services-hub" },
-  { id: "ride", icon: "🚗", labelKey: "nav.radar", path: "/ride" },
-  { id: "send", icon: "📦", labelKey: "commerce.delivery", path: "/send" },
-  { id: "property", icon: "🏠", labelKey: "discovery.vertical.property.title", path: "/real-estate" },
-  { id: "travel", icon: "✈️", labelKey: "discovery.vertical.travel.title", path: "/travel" },
-] as const;
-
-/* ── Dynamic banners ── */
-function useDynamicBanners() {
+/* ═══════════════════════════════════════════════
+   FOOD HERO BANNERS — time-aware, food-first
+   ═══════════════════════════════════════════════ */
+function useFoodBanners() {
   const h = new Date().getHours();
   return useMemo(() => {
-    const banners: Array<{ id: string; bg: string; title: string; sub: string; cta: string; path: string }> = [];
-
-    if (h >= 5 && h < 11) {
-      banners.push({
-        id: "breakfast", bg: "linear-gradient(135deg, hsl(30 90% 55%), hsl(15 80% 50%))",
-        title: "☀️ Good morning!", sub: "Breakfast deals near you", cta: "Order now", path: "/food",
-      });
-    } else if (h >= 11 && h < 15) {
-      banners.push({
-        id: "lunch", bg: "linear-gradient(135deg, hsl(142 60% 45%), hsl(160 50% 40%))",
-        title: "🍽️ Lunch time!", sub: "Fast delivery from top restaurants", cta: "See restaurants", path: "/food",
-      });
-    } else if (h >= 15 && h < 18) {
-      banners.push({
-        id: "snack", bg: "linear-gradient(135deg, hsl(270 50% 55%), hsl(290 45% 50%))",
-        title: "☕ Afternoon break", sub: "Coffee, snacks & desserts", cta: "Explore", path: "/food",
-      });
-    } else {
-      banners.push({
-        id: "dinner", bg: "linear-gradient(135deg, hsl(220 60% 35%), hsl(240 50% 30%))",
-        title: "🌙 Dinner tonight", sub: "Your favorites are open", cta: "Order dinner", path: "/food",
-      });
-    }
-
-    banners.push({
-      id: "seller", bg: "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary) / 0.8))",
-      title: "🚀 Launch your shop", sub: "Free · 0% commission · 5 min setup", cta: "Start now", path: "/seller",
-    });
-    banners.push({
-      id: "property", bg: "linear-gradient(135deg, hsl(210 70% 50%), hsl(200 60% 45%))",
-      title: "🏠 Find your home", sub: "Rent, buy or short stay", cta: "Browse", path: "/real-estate",
-    });
-
-    return banners;
+    if (h >= 5 && h < 11) return {
+      greeting: "Good morning",
+      emoji: "☀️",
+      headline: "Breakfast & brunch",
+      sub: "Fresh pastries, coffee & healthy bowls delivered",
+      gradient: "linear-gradient(135deg, hsl(35 85% 52%), hsl(20 90% 48%))",
+    };
+    if (h >= 11 && h < 15) return {
+      greeting: "Bon appétit",
+      emoji: "🍽️",
+      headline: "Lunch specials",
+      sub: "Top restaurants, express delivery",
+      gradient: "linear-gradient(135deg, hsl(152 55% 42%), hsl(170 50% 38%))",
+    };
+    if (h >= 15 && h < 19) return {
+      greeting: "Afternoon cravings",
+      emoji: "☕",
+      headline: "Coffee & snacks",
+      sub: "Café, desserts & light bites",
+      gradient: "linear-gradient(135deg, hsl(280 45% 50%), hsl(260 50% 44%))",
+    };
+    return {
+      greeting: "Tonight's dinner",
+      emoji: "🌙",
+      headline: "Dinner delivered",
+      sub: "Your favorites are ready to order",
+      gradient: "linear-gradient(135deg, hsl(225 55% 32%), hsl(240 50% 26%))",
+    };
   }, [h]);
 }
 
-/* ── Orbit actions ── */
-const ORBIT_ACTIONS = [
-  { key: "chat", icon: MessageCircle, labelKey: "orbit.conversations", path: "/orbit", color: "hsl(210 80% 52%)" },
-  { key: "call", icon: Phone, labelKey: "orbit.call", path: "/orbit", color: "hsl(142 60% 45%)" },
-  { key: "pay", icon: CreditCard, labelKey: "commerce.pay_now", path: "/wallet/hub", color: "hsl(38 65% 50%)" },
-  { key: "scan", icon: QrCode, labelKey: "commerce.scan_qr", path: "/pay/scan", color: "hsl(270 60% 55%)" },
-];
+/* ═══════════════════════════════════════════════
+   QUICK ACTIONS — chat, call, pay, scan
+   ═══════════════════════════════════════════════ */
+const QUICK_ACTIONS = [
+  { key: "chat", icon: MessageCircle, label: "Chat", path: "/orbit", color: "hsl(210 80% 52%)" },
+  { key: "call", icon: Phone, label: "Call", path: "/orbit", color: "hsl(152 55% 42%)" },
+  { key: "pay", icon: CreditCard, label: "Pay", path: "/wallet/hub", color: "hsl(38 65% 50%)" },
+  { key: "scan", icon: QrCode, label: "Scan", path: "/pay/scan", color: "hsl(280 55% 52%)" },
+] as const;
 
-/* ── Category item ── */
-const CategoryBubble = memo(function CategoryBubble({ cat, onNav }: { cat: typeof CATEGORIES[number]; onNav: (p: string) => void }) {
-  return (
-    <button
-      onClick={() => onNav(cat.path)}
-      className="flex flex-col items-center gap-1.5 active:scale-90 transition-transform"
-    >
-      <div
-        className="w-14 h-14 rounded-2xl flex items-center justify-center"
-        style={{ background: "hsl(var(--muted))" }}
-      >
-        <span className="text-2xl">{cat.icon}</span>
-      </div>
-      <span className="text-[11px] font-semibold text-foreground leading-tight">{tc(cat.labelKey)}</span>
-    </button>
-  );
-});
+/* ═══════════════════════════════════════════════
+   VERTICAL CARDS — food, travel, services
+   ═══════════════════════════════════════════════ */
+const VERTICALS = [
+  {
+    key: "food",
+    icon: UtensilsCrossed,
+    title: "Food",
+    sub: "Restaurants & delivery",
+    path: "/food",
+    gradient: "linear-gradient(135deg, hsl(16 85% 55%), hsl(30 80% 50%))",
+    accent: "hsl(16 85% 55%)",
+  },
+  {
+    key: "travel",
+    icon: Plane,
+    title: "Travel",
+    sub: "Trips & experiences",
+    path: "/travel",
+    gradient: "linear-gradient(135deg, hsl(196 75% 48%), hsl(210 70% 45%))",
+    accent: "hsl(196 75% 48%)",
+  },
+  {
+    key: "services",
+    icon: Building2,
+    title: "Services",
+    sub: "Home, beauty & more",
+    path: "/services-hub",
+    gradient: "linear-gradient(135deg, hsl(260 50% 52%), hsl(280 45% 48%))",
+    accent: "hsl(260 50% 52%)",
+  },
+] as const;
 
-/* ── Banner carousel — no flickering, smooth crossfade ── */
-function BannerCarousel({ banners, onNav }: { banners: ReturnType<typeof useDynamicBanners>; onNav: (p: string) => void }) {
-  const [idx, setIdx] = useState(0);
-
-  useEffect(() => {
-    if (banners.length <= 1) return;
-    const timer = setInterval(() => setIdx((i) => (i + 1) % banners.length), 5000);
-    return () => clearInterval(timer);
-  }, [banners.length]);
-
-  const b = banners[idx];
-
-  return (
-    <div className="relative" style={{ height: 130 }}>
-      {banners.map((banner, i) => (
-        <button
-          key={banner.id}
-          onClick={() => onNav(banner.path)}
-          className="absolute inset-0 w-full rounded-2xl p-4 text-left active:scale-[0.98] transition-all duration-500 ease-in-out"
-          style={{
-            background: banner.bg,
-            opacity: i === idx ? 1 : 0,
-            pointerEvents: i === idx ? "auto" : "none",
-            transform: i === idx ? "scale(1)" : "scale(0.97)",
-          }}
-        >
-          <p className="text-lg font-bold text-white">{banner.title}</p>
-          <p className="text-xs text-white/80 mt-0.5">{banner.sub}</p>
-          <span className="inline-block mt-3 px-4 py-1.5 rounded-xl text-xs font-bold bg-white/20 text-white backdrop-blur-sm">
-            {banner.cta}
-          </span>
-        </button>
-      ))}
-
-      {/* Dots */}
-      {banners.length > 1 && (
-        <div className="absolute -bottom-5 left-0 right-0 flex gap-1.5 justify-center">
-          {banners.map((_, i) => (
-            <button
-              key={i}
-              onClick={() => setIdx(i)}
-              className="rounded-full transition-all duration-300"
-              style={{
-                width: i === idx ? 16 : 6,
-                height: 6,
-                background: i === idx ? "hsl(var(--primary))" : "hsl(var(--muted-foreground) / 0.2)",
-              }}
-            />
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
+/* ═══════════════════════════════════════════════
+   COMPONENT
+   ═══════════════════════════════════════════════ */
 export default function OrbitHome() {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const handleNav = useCallback((path: string) => navigate(path), [navigate]);
+  const go = useCallback((p: string) => navigate(p), [navigate]);
+  const banner = useFoodBanners();
+  const { balance, currency, loading: wLoading } = useWalletBalance();
 
-  const banners = useDynamicBanners();
-
+  /* Featured food */
   const { data: featured = [] } = useQuery({
-    queryKey: ["home-featured-seed"],
+    queryKey: ["home-featured-food"],
     queryFn: async () => {
-      let q = (supabase as any)
-        .from("seed_merchants")
-        .select("*")
-        .eq("category", "food")
-        .eq("is_featured", true)
-        .limit(8);
+      let q = (supabase as any).from("seed_merchants").select("*")
+        .eq("category", "food").eq("is_featured", true).limit(8);
       q = governSeedQuery(q, "home");
       const { data } = await q;
       return (data || []).map((r: any) => ({
@@ -181,15 +128,12 @@ export default function OrbitHome() {
     staleTime: 120_000,
   });
 
+  /* Nearby food */
   const { data: nearby = [] } = useQuery({
-    queryKey: ["home-nearby-seed"],
+    queryKey: ["home-nearby-food"],
     queryFn: async () => {
-      let q = (supabase as any)
-        .from("seed_merchants")
-        .select("*")
-        .eq("category", "food")
-        .eq("is_open", true)
-        .limit(10);
+      let q = (supabase as any).from("seed_merchants").select("*")
+        .eq("category", "food").eq("is_open", true).limit(10);
       q = governSeedQuery(q, "home");
       const { data } = await q;
       return (data || []).map((r: any) => ({
@@ -204,187 +148,177 @@ export default function OrbitHome() {
   return (
     <div className="flex flex-col min-h-[100dvh] bg-background" data-marketplace-home>
       <SEOHead
-        title="Easy-Locs® — Food, Ride, Property, Shops & Services"
-        description="Order food, book rides, manage properties, shop locally — all in one super app. 190+ countries, 0% commission."
+        title="Easy-Locs® — Food, Travel, Services & More"
+        description="Order food, book trips, manage properties — all in one premium super app."
       />
 
-      {/* ─── TOP MENU STRIP (Careem-style) ─── */}
+      {/* ━━━ STICKY HEADER ━━━ */}
       <header
         className="sticky top-0 z-40"
         style={{
-          background: "hsl(var(--background) / 0.96)",
-          backdropFilter: "blur(16px)",
+          background: "hsl(var(--background) / 0.97)",
           borderBottom: "1px solid hsl(var(--border) / 0.06)",
         }}
       >
-        <div className="flex items-center justify-between px-4 py-2 max-w-md mx-auto">
-          {/* Location */}
-          <button onClick={() => handleNav("/settings/addresses")} className="flex items-center gap-2 active:opacity-70 min-w-0 flex-1">
-            <MapPin className="w-4 h-4 shrink-0" style={{ color: "hsl(var(--primary))" }} />
+        <div className="flex items-center justify-between px-5 py-2.5 max-w-md mx-auto">
+          <button onClick={() => go("/settings/addresses")} className="flex items-center gap-2 active:opacity-70 min-w-0 flex-1">
+            <MapPin className="w-4 h-4 shrink-0 text-primary" />
             <div className="min-w-0">
-              <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground leading-none">Delivering to</p>
+              <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-muted-foreground leading-none">Delivering to</p>
               <p className="text-[13px] font-bold text-foreground leading-tight truncate">Dubai, UAE</p>
             </div>
           </button>
-
-          {/* Search + Bell */}
-          <div className="flex items-center gap-2 shrink-0">
-            <button onClick={() => handleNav("/search-results")} className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-90 transition-transform" style={{ background: "hsl(var(--muted))" }}>
+          <div className="flex items-center gap-1.5 shrink-0">
+            <button onClick={() => go("/search-results")} className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-90 transition-transform bg-muted">
               <Search className="w-4 h-4 text-muted-foreground" />
             </button>
-            <button onClick={() => handleNav("/notifications")} className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-90 transition-transform" style={{ background: "hsl(var(--muted))" }}>
+            <button onClick={() => go("/notifications")} className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-90 transition-transform bg-muted">
               <Bell className="w-4 h-4 text-muted-foreground" />
             </button>
           </div>
         </div>
       </header>
 
-      <div className="flex-1 overflow-y-auto overscroll-y-contain pb-[calc(64px+env(safe-area-inset-bottom,0px))]">
-        <div className="pt-3 pb-6 space-y-6 max-w-md mx-auto">
+      {/* ━━━ MAIN SCROLL ━━━ */}
+      <div className="flex-1 overflow-y-auto overscroll-y-contain pb-[calc(72px+env(safe-area-inset-bottom,0px))]">
+        <div className="pt-4 pb-8 space-y-7 max-w-md mx-auto">
 
-          {/* ─── DYNAMIC BANNER CAROUSEL ─── */}
-          <div className="px-4">
-            <BannerCarousel banners={banners} onNav={handleNav} />
+          {/* ─── 1. FOOD HERO BANNER ─── */}
+          <div className="px-5">
+            <motion.button
+              onClick={() => go("/food")}
+              className="w-full rounded-3xl p-5 text-left relative overflow-hidden active:scale-[0.98] transition-transform"
+              style={{ background: banner.gradient, minHeight: 150 }}
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+            >
+              {/* Decorative circles */}
+              <div className="absolute -right-6 -top-6 w-32 h-32 rounded-full" style={{ background: "rgba(255,255,255,0.08)" }} />
+              <div className="absolute -right-2 bottom-0 w-20 h-20 rounded-full" style={{ background: "rgba(255,255,255,0.05)" }} />
+
+              <p className="text-white/70 text-xs font-semibold tracking-wide uppercase">{banner.greeting}</p>
+              <h2 className="text-2xl font-extrabold text-white mt-1 font-serif">{banner.emoji} {banner.headline}</h2>
+              <p className="text-white/80 text-[13px] mt-1.5 max-w-[80%]">{banner.sub}</p>
+
+              <span className="inline-flex items-center gap-1.5 mt-4 px-4 py-2 rounded-2xl text-xs font-bold bg-white/20 text-white backdrop-blur-sm">
+                Order now <ArrowRight className="w-3.5 h-3.5" />
+              </span>
+            </motion.button>
           </div>
 
-          {/* ─── ORBIT QUICK ACTIONS (aligned grid) ─── */}
-          <div className="px-4">
+          {/* ─── 2. QUICK ACTIONS ─── */}
+          <div className="px-5">
             <div className="grid grid-cols-4 gap-2">
-              {ORBIT_ACTIONS.map((a) => (
+              {QUICK_ACTIONS.map((a) => (
                 <button
                   key={a.key}
-                  onClick={() => handleNav(a.path)}
-                  className="flex flex-col items-center gap-1.5 py-3 rounded-2xl active:scale-[0.95] transition-transform"
-                  style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border) / 0.1)" }}
+                  onClick={() => go(a.path)}
+                  className="flex flex-col items-center gap-1.5 py-3 rounded-2xl active:scale-[0.95] transition-transform bg-card"
+                  style={{ border: "1px solid hsl(var(--border) / 0.08)" }}
                 >
                   <div
                     className="w-10 h-10 rounded-xl flex items-center justify-center"
-                    style={{ background: `${a.color.replace(")", " / 0.12)")}` }}
+                    style={{ background: `${a.color.replace(")", " / 0.1)")}` }}
                   >
                     <a.icon className="w-5 h-5" style={{ color: a.color }} />
                   </div>
-                  <span className="text-[11px] font-semibold text-foreground">{tc(a.labelKey)}</span>
+                  <span className="text-[11px] font-semibold text-foreground">{a.label}</span>
                 </button>
               ))}
             </div>
           </div>
 
-          {/* ─── CATEGORIES GRID ─── */}
-          <div className="px-4">
-            <div className="grid grid-cols-4 gap-y-3 gap-x-2">
-              {CATEGORIES.map((cat) => (
-                <CategoryBubble key={cat.id} cat={cat} onNav={handleNav} />
+          {/* ─── 3. TRENDING FOOD — horizontal scroll ─── */}
+          {featured.length > 0 && (
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.15 }}>
+              <MarketplaceSection title="🔥 Trending now" seeAllPath="/food" items={featured} variant="horizontal-scroll" />
+            </motion.div>
+          )}
+
+          {/* ─── 4. FAST DELIVERY — horizontal scroll ─── */}
+          {nearby.length > 0 && (
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.25 }}>
+              <MarketplaceSection title="⚡ Express delivery" seeAllPath="/food" items={nearby.slice(0, 6)} variant="horizontal-scroll" />
+            </motion.div>
+          )}
+
+          {/* ─── 5. VERTICALS — 3-column luxury cards ─── */}
+          <div className="px-5 space-y-3">
+            <h2 className="text-sm font-bold text-foreground tracking-tight">Explore</h2>
+            <div className="grid grid-cols-3 gap-2.5">
+              {VERTICALS.map((v) => (
+                <motion.button
+                  key={v.key}
+                  onClick={() => go(v.path)}
+                  className="rounded-2xl p-3.5 text-left active:scale-[0.96] transition-transform relative overflow-hidden"
+                  style={{ background: v.gradient, minHeight: 110 }}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.96 }}
+                >
+                  <div className="absolute -right-3 -bottom-3 w-14 h-14 rounded-full" style={{ background: "rgba(255,255,255,0.08)" }} />
+                  <v.icon className="w-5 h-5 text-white/90 mb-2" />
+                  <p className="text-sm font-bold text-white leading-tight">{v.title}</p>
+                  <p className="text-[10px] text-white/65 mt-0.5 leading-tight">{v.sub}</p>
+                </motion.button>
               ))}
             </div>
           </div>
 
-          {/* ─── TRENDING ─── */}
-          {featured.length > 0 && (
-            <MarketplaceSection title="🔥 Trending" seeAllPath="/food" items={featured} variant="horizontal-scroll" />
-          )}
-
-          {/* ─── FAST DELIVERY ─── */}
-          {nearby.length > 0 && (
-            <MarketplaceSection title="⚡ Fast delivery" seeAllPath="/food" items={nearby.slice(0, 6)} variant="horizontal-scroll" />
-          )}
-
-          {/* ─── WALLET PREVIEW ─── */}
-          {(() => {
-            const { balance: wb, currency: wc, loading: wl } = useWalletBalance();
-            return (
-              <div className="px-4 space-y-2">
-                <div className="flex items-center justify-between">
-                  <h2 className="text-sm font-bold text-foreground">Wallet</h2>
-                  <button onClick={() => handleNav("/wallet/hub")} className="text-xs font-semibold flex items-center gap-0.5 active:opacity-70" style={{ color: "hsl(var(--primary))" }}>
-                    Manage <ChevronRight className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-                <div className="rounded-2xl p-4 flex items-center justify-between" style={{ background: "hsl(var(--muted))" }}>
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: "hsl(var(--primary) / 0.1)" }}>
-                      <CreditCard className="w-5 h-5 text-primary" />
-                    </div>
-                    <div>
-                      <p className="text-lg font-black text-foreground">{wl ? "..." : `${wb.toFixed(2)} ${wc}`}</p>
-                      <p className="text-[10px] text-muted-foreground">Available balance</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            );
-          })()}
-
-          {/* ─── MAP PREVIEW ─── */}
-          <div className="px-4">
+          {/* ─── 6. WALLET CARD ─── */}
+          <div className="px-5">
             <button
-              onClick={() => handleNav("/map")}
-              className="w-full flex items-center gap-3 p-4 rounded-2xl active:scale-[0.98] transition-transform"
-              style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border) / 0.1)" }}
+              onClick={() => go("/wallet/hub")}
+              className="w-full rounded-2xl p-4 flex items-center justify-between active:scale-[0.98] transition-transform bg-card"
+              style={{ border: "1px solid hsl(var(--border) / 0.08)" }}
             >
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: "hsl(210 80% 52% / 0.1)" }}>
-                <Map className="w-5 h-5" style={{ color: "hsl(210 80% 52%)" }} />
+              <div className="flex items-center gap-3">
+                <div className="w-11 h-11 rounded-xl flex items-center justify-center" style={{ background: "hsl(var(--primary) / 0.08)" }}>
+                  <CreditCard className="w-5 h-5 text-primary" />
+                </div>
+                <div className="text-left">
+                  <p className="text-base font-black text-foreground tabular-nums">
+                    {wLoading ? "···" : `${balance.toFixed(2)} ${currency}`}
+                  </p>
+                  <p className="text-[10px] text-muted-foreground font-medium">Wallet balance</p>
+                </div>
               </div>
-              <div className="flex-1 min-w-0 text-left">
-                <p className="text-sm font-bold text-foreground">Explorer Map</p>
-                <p className="text-[11px] text-muted-foreground">All shops, services & properties nearby</p>
-              </div>
-              <ChevronRight className="w-4 h-4 text-muted-foreground/40" />
+              <ChevronRight className="w-4 h-4 text-muted-foreground/30" />
             </button>
           </div>
 
-          {/* ─── NEAR YOU LIST ─── */}
+          {/* ─── 7. NEAR YOU — list view ─── */}
           {nearby.length > 0 && (
-            <MarketplaceSection title="📍 Near you" seeAllPath="/food" items={nearby} variant="list" />
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.35 }}>
+              <MarketplaceSection title="📍 Near you" seeAllPath="/food" items={nearby} variant="list" />
+            </motion.div>
           )}
 
-          {/* ─── EXPLORE SERVICES ─── */}
-          <div className="px-4 space-y-2">
-            <h2 className="text-sm font-bold text-foreground">Explore services</h2>
-            <div className="space-y-2">
-              {[
-                { icon: UtensilsCrossed, title: "Food & Restaurants", sub: "Order from nearby restaurants", path: "/food", color: "hsl(16 85% 55%)" },
-                { icon: Building2, title: "Property & Rentals", sub: "Find your next home", path: "/real-estate", color: "hsl(210 70% 55%)" },
-                { icon: Plane, title: "Travel & Activities", sub: "Book trips and experiences", path: "/travel", color: "hsl(196 80% 50%)" },
-                { icon: Car, title: "Ride & Transport", sub: "Cars, bikes & more", path: "/ride", color: "hsl(145 60% 42%)" },
-              ].map((svc) => (
-                <button key={svc.path} onClick={() => handleNav(svc.path)} className="w-full flex items-center gap-3 p-3.5 rounded-2xl active:scale-[0.98] transition-transform" style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border) / 0.1)" }}>
-                  <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: `${svc.color.replace(")", " / 0.12)")}` }}>
-                    <svc.icon className="w-5 h-5" style={{ color: svc.color }} />
-                  </div>
-                  <div className="flex-1 min-w-0 text-left">
-                    <p className="text-sm font-semibold text-foreground">{svc.title}</p>
-                    <p className="text-[11px] text-muted-foreground truncate">{svc.sub}</p>
-                  </div>
-                  <ChevronRight className="w-4 h-4 text-muted-foreground/40 shrink-0" />
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* ─── SELLER CTA ─── */}
-          <div className="px-4">
-            <motion.div
+          {/* ─── 8. SELLER CTA ─── */}
+          <div className="px-5">
+            <motion.button
+              onClick={() => go("/seller")}
+              className="w-full rounded-2xl p-5 text-center active:scale-[0.98] transition-transform"
+              style={{
+                background: "linear-gradient(135deg, hsl(var(--primary) / 0.05), hsl(var(--accent) / 0.03))",
+                border: "1px solid hsl(var(--primary) / 0.1)",
+              }}
               initial={{ opacity: 0, y: 12 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className="rounded-2xl p-5 text-center"
-              style={{
-                background: "linear-gradient(135deg, hsl(var(--primary) / 0.06), hsl(var(--accent) / 0.04))",
-                border: "1px solid hsl(var(--primary) / 0.12)",
-              }}
             >
-              <Rocket className="w-8 h-8 mx-auto mb-2" style={{ color: "hsl(var(--primary))" }} />
-              <p className="text-base font-bold text-foreground">Start your business today</p>
-              <p className="text-xs text-muted-foreground mt-1">5 min setup · Zero commission · Instant payments</p>
-              <button
-                onClick={() => handleNav("/seller")}
-                className="mt-3 px-6 py-2.5 rounded-xl text-sm font-bold text-primary-foreground active:scale-[0.97] transition-transform"
+              <Sparkles className="w-7 h-7 mx-auto mb-2 text-primary" />
+              <p className="text-[15px] font-bold text-foreground font-serif">Start your business</p>
+              <p className="text-[11px] text-muted-foreground mt-1">5 min setup · 0% commission · Instant payments</p>
+              <span
+                className="inline-block mt-3 px-5 py-2 rounded-xl text-xs font-bold text-primary-foreground"
                 style={{ background: "hsl(var(--primary))" }}
               >
                 Create your shop
-              </button>
-            </motion.div>
+              </span>
+            </motion.button>
           </div>
+
         </div>
       </div>
     </div>
