@@ -274,6 +274,19 @@ export default function HyperRadarPage() {
           )}
         </AnimatePresence>
       </motion.div>
+
+      {/* Zone Intelligence Sheet */}
+      <AnimatePresence>
+        {zoneClick && (
+          <ZoneIntelligenceSheet
+            entities={entities}
+            zoneLat={zoneClick.lat}
+            zoneLng={zoneClick.lng}
+            radiusKm={radius}
+            onClose={() => { setZoneClick(null); setPanelOpen(true); }}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }
