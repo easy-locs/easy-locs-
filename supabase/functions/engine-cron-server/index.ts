@@ -71,6 +71,24 @@ Deno.serve(async (req) => {
       } catch (e: any) { return { error: e.message }; }
     }
 
+    async function drainPipelineQueue(maxRounds = 3, batchSize = 100) {
+      let processed = 0;
+      let failed = 0;
+      let rounds = 0;
+
+      for (let i = 0; i < maxRounds; i++) {
+        const result = await callFunction("pipeline-worker", { maxItems: batchSize });
+        const roundProcessed = Number(result?.processed ?? 0);
+        const roundFailed = Number(result?.failed ?? 0);
+        processed += roundProcessed;
+        failed += roundFailed;
+        rounds++;
+        if (roundProcessed === 0 && roundFailed === 0) break;
+      }
+
+      return { processed, failed, rounds };
+    }
+
     async function runEngine(name: string, fn: () => Promise<any>, tier = "standard") {
       const { data: sv } = await supabase.from("engine_supervisor").select("enabled, consecutive_failures, max_retries").eq("engine_name", name).maybeSingle();
       if (sv && !sv.enabled) { report[name] = { skipped: "disabled" }; return; }
@@ -107,6 +125,7 @@ Deno.serve(async (req) => {
     // ══════════════════════════════════════════════════
     await runEngine("import-pipeline", () => callFunction("shop-import-processor", { action: "process_pending" }), "critical");
     await runEngine("ingestion-pipeline", () => callFunction("run-ingestion-pipeline", { batch_size: 50 }), "critical");
+    await runEngine("pipeline-worker", () => drainPipelineQueue(3, 100), "critical");
     await runEngine("auto-source-enrich", () => callFunction("auto-source-scrape", { action: "enrich_existing", limit: 10 }), "priority");
 
     // ══════════════════════════════════════════════════
@@ -1168,8 +1187,8 @@ Deno.serve(async (req) => {
       checkout: ["abandoned-cart", "order-lifecycle"],
       radar: ["hyper-radar", "personal-ranking", "zone-profile-refresh"],
       delivery: ["delivery-monitor", "driver-availability", "live-status-refresh"],
-      deep_scrape: ["auto-source-enrich", "import-pipeline", "ingestion-pipeline"],
-      publish_pipeline: ["publish-gate", "auto-publish", "auto-unpublish", "coherence-sweep"],
+      deep_scrape: ["auto-source-enrich", "import-pipeline", "ingestion-pipeline", "pipeline-worker"],
+      publish_pipeline: ["publish-gate", "auto-publish", "auto-unpublish", "coherence-sweep", "pipeline-worker"],
       notifications: ["notification-cleanup", "review-trigger"],
       realtime: ["backend-connectivity", "backend-reconnect"],
       chat: ["staff-sync", "call-log-cleanup"],
