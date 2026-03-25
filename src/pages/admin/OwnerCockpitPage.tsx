@@ -44,6 +44,21 @@ export default function OwnerCockpitPage() {
 
   const engineStatus = useMemo(() => getContinuousEngineStatus(), [tick]);
 
+  const totalOk = engineStatus.jobs.filter(j => j.lastStatus === "ok").length;
+  const totalError = engineStatus.jobs.filter(j => j.lastStatus === "error").length;
+  const totalPending = engineStatus.jobs.filter(j => j.lastStatus === "pending").length;
+
+  const grouped = useMemo(() => {
+    const g: Record<string, typeof engineStatus.jobs> = {};
+    for (const job of engineStatus.jobs) {
+      const cat = job.category || "system";
+      if (filterCat && cat !== filterCat) continue;
+      if (!g[cat]) g[cat] = [];
+      g[cat].push(job);
+    }
+    return g;
+  }, [engineStatus, filterCat]);
+
   useEffect(() => {
     if (!isOwner) return;
     loadStats();
