@@ -1387,7 +1387,7 @@ Deno.serve(async (req) => {
       scanner: ["qr-session-cleanup"],
       checkout: ["abandoned-cart", "order-lifecycle"],
       radar: ["hyper-radar", "personal-ranking", "zone-profile-refresh"],
-      delivery: ["delivery-monitor", "driver-availability", "live-status-refresh"],
+      delivery: ["delivery-monitor", "driver-availability", "live-status-refresh", "ride-lifecycle", "ride-tracking-monitor"],
       deep_scrape: ["auto-source-enrich", "import-pipeline", "ingestion-pipeline", "pipeline-worker"],
       publish_pipeline: ["publish-gate", "auto-publish", "auto-unpublish", "coherence-sweep", "pipeline-worker"],
       notifications: ["notification-cleanup", "review-trigger"],
