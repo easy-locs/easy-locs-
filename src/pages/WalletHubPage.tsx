@@ -202,7 +202,7 @@ export default function WalletHubPage() {
                     </div>
                   </div>
                   <p className="text-4xl font-black text-primary-foreground tracking-tight">
-                    {showBalance ? `${totalBalance.toFixed(2)}` : "••••••"}
+                    {showBalance ? <AnimatedCounter value={totalBalance} decimals={2} duration={1000} /> : "••••••"}
                   </p>
                   <p className="text-sm font-semibold text-primary-foreground/50 mt-0.5">{mainCurrency}</p>
 
@@ -348,7 +348,7 @@ export default function WalletHubPage() {
                     {filteredTx.map((tx, i) => (
                       <div key={tx.id ?? i}>
                         <TransactionRow
-                          title={tx.title || tx.context_type || "Transaction"}
+                          title={getTxTitle(tx)}
                           amount={Number(tx.amount ?? 0)}
                           currency={tx.currency ?? "AED"}
                           type={(tx.context_type as TransactionType) ?? "payment"}
