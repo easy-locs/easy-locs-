@@ -49,6 +49,32 @@ Deno.serve(async (req) => {
       if (!isInvalidCategory(e.category)) s += 20;
       return s;
     }
+    function normalizeKey(value?: string | null) {
+      return (value ?? "")
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "")
+        .trim();
+    }
+    function flattenCatalogItems(menuJson: any) {
+      return extractMenuItems(menuJson)
+        .map((item: any, index: number) => ({
+          name: String(item?.name ?? item?.title ?? "").trim(),
+          description: String(item?.description ?? item?.details ?? "").trim() || null,
+          price: Number(item?.price ?? item?.amount ?? item?.price_aed ?? 0) || 0,
+          image_url: typeof item?.image === "string" ? item.image : typeof item?.photo_url === "string" ? item.photo_url : null,
+          sort_order: index,
+        }))
+        .filter((item: any) => item.name.length >= 2);
+    }
+    function computeConcreteVisibility(seed: Record<string, any>, storefront: Record<string, any> | null, menuCount: number) {
+      const score = Number(seed.overall_quality_score ?? seed.visibility_score ?? 0);
+      const hasPhoto = !!(seed.cover_image && !isPlaceholderImage(seed.cover_image)) || !!(storefront?.banner_url || storefront?.logo_url);
+      const isFood = (seed.vertical ?? "food") === "food";
+      if (hasPhoto && (!isFood || menuCount >= 3) && score >= 60) return "live";
+      if (hasPhoto || menuCount >= 3 || score >= 35) return "search_only";
+      return "coming_soon";
+    }
 
     // ── Supervisor ──
     async function heartbeat(engineName: string, status: string, extras: Record<string, any> = {}) {
@@ -89,6 +115,92 @@ Deno.serve(async (req) => {
       return { processed, failed, rounds };
     }
 
+    async function syncConcreteMerchantSurfaces(limit = 250) {
+      const [{ data: seeds }, { data: storefronts }] = await Promise.all([
+        supabase
+          .from("seed_merchants")
+          .select("id, name, description, category, subcategory, vertical, city, area, country, phone, support_phone, cover_image, logo_image, latitude, longitude, overall_quality_score, visibility_score, menu_items_json, is_open, is_active, route_status, is_flagged")
+          .eq("is_active", true)
+          .neq("route_status", "broken")
+          .not("name", "is", null)
+          .limit(limit),
+        supabase
+          .from("storefront_pages")
+          .select("id, slug, name, banner_url, logo_url, visibility_mode, vertical, category, subcategory, products_count, has_menu")
+          .eq("active", true)
+          .limit(1000),
+      ]);
+
+      const storefrontByKey = new Map<string, any>();
+      for (const storefront of (storefronts as any[]) ?? []) {
+        storefrontByKey.set(normalizeKey(storefront.slug), storefront);
+        storefrontByKey.set(normalizeKey(storefront.name), storefront);
+      }
+
+      let storefrontsSynced = 0;
+      let menusSynced = 0;
+
+      for (const seed of (seeds as any[]) ?? []) {
+        if (seed.is_flagged) continue;
+        const key = normalizeKey(seed.name);
+        const storefront = storefrontByKey.get(key);
+        if (!storefront) continue;
+
+        const catalogItems = flattenCatalogItems(seed.menu_items_json);
+        const visibility_mode = computeConcreteVisibility(seed, storefront, catalogItems.length);
+        const ranking_score = Math.max(Number(seed.overall_quality_score ?? seed.visibility_score ?? 0), catalogItems.length >= 3 ? 55 : 25);
+
+        const patch: Record<string, any> = {
+          name: seed.name,
+          description: seed.description ?? null,
+          contact_phone: seed.phone ?? seed.support_phone ?? null,
+          city: seed.city ?? storefront.city ?? "",
+          region: seed.area ?? storefront.region ?? null,
+          country: seed.country ?? storefront.country ?? "AE",
+          address: seed.area ? `${seed.area}, ${seed.city ?? "Dubai"}` : storefront.address ?? null,
+          vertical: seed.vertical ?? storefront.vertical ?? "shops",
+          category: seed.category ?? storefront.category ?? null,
+          subcategory: seed.subcategory ?? storefront.subcategory ?? null,
+          visibility_mode,
+          route_status: "valid",
+          ranking_score,
+          has_menu: catalogItems.length >= 3,
+          products_count: catalogItems.length,
+          is_order_enabled: catalogItems.length >= 3,
+          has_photo: !!(seed.cover_image || storefront.banner_url || seed.logo_image || storefront.logo_url),
+          banner_url: !isPlaceholderImage(seed.cover_image) ? seed.cover_image : storefront.banner_url,
+          logo_url: !isPlaceholderImage(seed.logo_image) ? seed.logo_image : storefront.logo_url,
+          latitude: seed.latitude ?? storefront.latitude ?? null,
+          longitude: seed.longitude ?? storefront.longitude ?? null,
+          onboarding_completed: visibility_mode !== "coming_soon",
+          readiness_status: visibility_mode === "live" ? "ready" : visibility_mode === "search_only" ? "partial" : "draft",
+          launch_status: visibility_mode === "live" ? "live" : visibility_mode === "search_only" ? "ready" : "draft",
+          updated_at: new Date().toISOString(),
+        };
+
+        await supabase.from("storefront_pages").update(patch as any).eq("id", storefront.id);
+        storefrontsSynced++;
+
+        if (catalogItems.length >= 3) {
+          await supabase.from("menu_items").delete().eq("merchant_profile_id", storefront.id);
+          const rows = catalogItems.map((item: any) => ({
+            merchant_profile_id: storefront.id,
+            name: item.name,
+            description: item.description,
+            price: item.price,
+            currency: "AED",
+            image_url: !isPlaceholderImage(item.image_url) ? item.image_url : null,
+            is_available: true,
+            sort_order: item.sort_order,
+          }));
+          await supabase.from("menu_items").insert(rows as any);
+          menusSynced += rows.length;
+        }
+      }
+
+      return { storefrontsSynced, menusSynced };
+    }
+
     async function runEngine(name: string, fn: () => Promise<any>, tier = "standard") {
       const { data: sv } = await supabase.from("engine_supervisor").select("enabled, consecutive_failures, max_retries").eq("engine_name", name).maybeSingle();
       if (sv && !sv.enabled) { report[name] = { skipped: "disabled" }; return; }
@@ -125,8 +237,9 @@ Deno.serve(async (req) => {
     // ══════════════════════════════════════════════════
     await runEngine("import-pipeline", () => callFunction("shop-import-processor", { action: "process_pending" }), "critical");
     await runEngine("ingestion-pipeline", () => callFunction("run-ingestion-pipeline", { batch_size: 50 }), "critical");
-    await runEngine("pipeline-worker", () => drainPipelineQueue(3, 100), "critical");
+    await runEngine("pipeline-worker", () => drainPipelineQueue(4, 120), "critical");
     await runEngine("auto-source-enrich", () => callFunction("auto-source-scrape", { action: "enrich_existing", limit: 10 }), "priority");
+    await runEngine("concrete-surface-sync", () => syncConcreteMerchantSurfaces(250), "critical");
 
     // ══════════════════════════════════════════════════
     // PHASE 2: CLASSIFICATION & TAXONOMY
