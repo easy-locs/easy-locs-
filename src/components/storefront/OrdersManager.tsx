@@ -119,9 +119,9 @@ export default function OrdersManager({ shopId }: OrdersManagerProps) {
         await (supabase as any).from("notifications").insert({
           user_id: order.buyer_id,
           title: "Order completed",
-          body: `Your order has been completed.`,
+          body: "Your order has been completed.",
           type: "order",
-          data: { order_id: orderId, status: "completed" },
+          metadata_json: { order_id: orderId, status: "completed" },
         }).then(({ error }: any) => { if (error) console.error("[notif]", error.message); });
       }
     }
