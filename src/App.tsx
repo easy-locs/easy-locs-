@@ -677,8 +677,14 @@ const queryClient = new QueryClient({
 (window as any).__REACT_QUERY_CLIENT__ = queryClient;
 
 const PageLoader = () => (
-  <div className="min-h-[100dvh] flex flex-col items-center justify-center gap-6" style={{ background: "hsl(var(--background, 220 45% 8%))" }}>
-    <EasyLocsLogo variant="splash" size="md" animate />
+  <div className="px-4 py-6 space-y-4 max-w-md mx-auto animate-pulse">
+    <div className="h-8 w-40 rounded-xl bg-muted/40" />
+    <div className="h-4 w-64 rounded-lg bg-muted/30" />
+    <div className="space-y-3 pt-2">
+      <div className="h-24 w-full rounded-2xl bg-muted/30" />
+      <div className="h-24 w-full rounded-2xl bg-muted/25" />
+      <div className="h-24 w-full rounded-2xl bg-muted/20" />
+    </div>
   </div>
 );
 
