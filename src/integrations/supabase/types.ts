@@ -21010,6 +21010,8 @@ export type Database = {
           has_menu: boolean | null
           has_photo: boolean | null
           id: string
+          invoice_next_number: number | null
+          invoice_prefix: string | null
           is_auto_generated: boolean | null
           is_claimed: boolean
           is_flagged: boolean | null
@@ -21060,6 +21062,8 @@ export type Database = {
           subcategory: string | null
           tagline: string | null
           tags: string[] | null
+          tax_name: string | null
+          tax_rate: number | null
           test_batch_id: string | null
           theme_color: string | null
           updated_at: string | null
@@ -21122,6 +21126,8 @@ export type Database = {
           has_menu?: boolean | null
           has_photo?: boolean | null
           id?: string
+          invoice_next_number?: number | null
+          invoice_prefix?: string | null
           is_auto_generated?: boolean | null
           is_claimed?: boolean
           is_flagged?: boolean | null
@@ -21172,6 +21178,8 @@ export type Database = {
           subcategory?: string | null
           tagline?: string | null
           tags?: string[] | null
+          tax_name?: string | null
+          tax_rate?: number | null
           test_batch_id?: string | null
           theme_color?: string | null
           updated_at?: string | null
@@ -21234,6 +21242,8 @@ export type Database = {
           has_menu?: boolean | null
           has_photo?: boolean | null
           id?: string
+          invoice_next_number?: number | null
+          invoice_prefix?: string | null
           is_auto_generated?: boolean | null
           is_claimed?: boolean
           is_flagged?: boolean | null
@@ -21284,6 +21294,8 @@ export type Database = {
           subcategory?: string | null
           tagline?: string | null
           tags?: string[] | null
+          tax_name?: string | null
+          tax_rate?: number | null
           test_batch_id?: string | null
           theme_color?: string | null
           updated_at?: string | null
