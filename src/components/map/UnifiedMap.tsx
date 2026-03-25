@@ -126,6 +126,8 @@ export default memo(function UnifiedMap({
   entitiesRef.current = entities;
   const onSelectRef = useRef(onSelectEntity);
   onSelectRef.current = onSelectEntity;
+  const onZoneClickRef = useRef(onZoneClick);
+  onZoneClickRef.current = onZoneClick;
 
   const mapCenter: [number, number] = center
     || (userLat && userLng ? [userLng, userLat] : [55.2708, 25.2048]);
