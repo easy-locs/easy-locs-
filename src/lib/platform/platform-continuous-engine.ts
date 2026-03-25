@@ -15,9 +15,12 @@ type IntervalJob = {
   timerId?: ReturnType<typeof setInterval>;
   lastRun?: string;
   runCount: number;
-  lastStatus: "ok" | "error" | "pending";
+  lastStatus: "ok" | "error" | "pending" | "idle" | "warning";
   lastDetail?: string;
   itemsProcessed: number;
+  rowsAffected: number;
+  businessImpact: string;
+  summary: string;
   category: "system" | "digital" | "quality" | "data" | "commerce" | "finance" | "delivery" | "lifecycle";
 };
 
@@ -31,7 +34,7 @@ function registerJob(
   category: IntervalJob["category"] = "system"
 ) {
   if (jobs.find(j => j.name === name)) return;
-  jobs.push({ name, intervalMs, fn, runCount: 0, lastStatus: "pending", itemsProcessed: 0, category });
+  jobs.push({ name, intervalMs, fn, runCount: 0, lastStatus: "pending", itemsProcessed: 0, rowsAffected: 0, businessImpact: "", summary: "", category });
 }
 
 async function executeJob(job: IntervalJob) {
@@ -614,6 +617,12 @@ export function startContinuousEngine() {
     if (result.missingKeys > 0) console.log(`[continuous] i18n: ${result.missingKeys} missing keys`);
   }, "system");
 
+  registerJob("global-orchestration", 15 * 60_000, async () => {
+    const { runGlobalOrchestration } = await import("@/lib/engines/global-orchestration-engine");
+    const result = runGlobalOrchestration();
+    console.log(`[continuous] Orchestration: health=${result.healthScore} collisions=${result.collisions.length}`);
+  }, "system");
+
   // ═══════════════════════════════════════════════════════════
   // START ALL — Staggered boot
   // ═══════════════════════════════════════════════════════════
@@ -670,6 +679,9 @@ export function getContinuousEngineStatus() {
       lastStatus: j.lastStatus,
       lastDetail: j.lastDetail,
       itemsProcessed: j.itemsProcessed,
+      rowsAffected: j.rowsAffected,
+      businessImpact: j.businessImpact,
+      summary: j.summary,
     })),
   };
 }
