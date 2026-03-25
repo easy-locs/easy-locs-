@@ -121,6 +121,8 @@ export default function HyperRadarPage() {
           showUserLocation
           showHeatmap
           heatmapPoints={entities.map(e => ({ lat: e.lat, lng: e.lng, intensity: 0.5 }))}
+          radiusKm={radius}
+          onZoneClick={handleZoneClick}
         />
 
         {/* Vibe Badge */}
