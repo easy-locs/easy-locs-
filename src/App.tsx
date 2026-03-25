@@ -183,6 +183,7 @@ const CookiePage = safeLazy(() => import("./pages/legal/CookiePage"), "CookiePag
 const LegalNoticePage = safeLazy(() => import("./pages/legal/LegalNoticePage"), "LegalNoticePage");
 const AboutPage = safeLazy(() => import("./pages/legal/AboutPage"), "AboutPage");
 const ContactPage = safeLazy(() => import("./pages/legal/ContactPage"), "ContactPage");
+const AddContactPage = safeLazy(() => import("./pages/AddContactPage"), "AddContactPage");
 const HelpPage = safeLazy(() => import("./pages/legal/HelpPage"), "HelpPage");
 const PlatformVision = safeLazy(() => import("./pages/PlatformVision"), "PlatformVision");
 const DealAnalyticsPage = safeLazy(() => import("./pages/DealAnalyticsPage"), "DealAnalyticsPage");
