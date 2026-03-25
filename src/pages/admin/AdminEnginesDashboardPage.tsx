@@ -103,6 +103,8 @@ export default function AdminEnginesDashboardPage() {
 
   const rawStatus = useMemo(() => getContinuousEngineStatus(), [tick]);
   const collisions = useMemo(() => detectEngineCollisions(), []);
+  const classifiedCols = useMemo(() => classifyCollisions(), [tick]);
+  const healthScores = useMemo(() => computeHealthScores(), [tick]);
 
   // Enriched jobs with metadata
   const enrichedJobs = useMemo(() => rawStatus.jobs.map(j => {
@@ -124,7 +126,6 @@ export default function AdminEnginesDashboardPage() {
     };
   }), [rawStatus]);
 
-  // Filtered
   const filtered = useMemo(() => {
     return enrichedJobs.filter(j => {
       if (statusFilter && j.runtimeStatus !== statusFilter) return false;
@@ -133,7 +134,6 @@ export default function AdminEnginesDashboardPage() {
     });
   }, [enrichedJobs, statusFilter, bizFilter]);
 
-  // Grouped
   const grouped = useMemo(() => {
     const g: Record<string, typeof filtered> = {};
     const key = viewMode === "business" ? "businessFn" : "category";
@@ -148,7 +148,6 @@ export default function AdminEnginesDashboardPage() {
   const groupOrder = viewMode === "business" ? BIZ_FN_ORDER : CAT_ORDER;
   const groupMeta = viewMode === "business" ? BIZ_FN_META : CAT_META;
 
-  // Totals
   const totals = useMemo(() => {
     const t: Record<RuntimeStatus, number> = { ok: 0, idle: 0, warning: 0, error: 0, pending: 0 };
     for (const j of enrichedJobs) t[j.runtimeStatus]++;
@@ -160,12 +159,6 @@ export default function AdminEnginesDashboardPage() {
     for (const j of enrichedJobs) t[j.tier]++;
     return t;
   }, [enrichedJobs]);
-
-  // Health score
-  const healthScore = useMemo(() => {
-    const critErrors = enrichedJobs.filter(j => j.tier === "critical" && j.runtimeStatus === "error").length;
-    return Math.max(0, 100 - (critErrors * 15) - (totals.error * 5) - (collisions.length * 3));
-  }, [enrichedJobs, totals, collisions]);
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-6 space-y-4 pb-24">
