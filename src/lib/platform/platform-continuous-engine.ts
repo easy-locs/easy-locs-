@@ -74,6 +74,17 @@ export function startContinuousEngine() {
   }, "system");
 
   // ═══════════════════════════════════════════════════════════
+  // AI CORE ENGINE — Non-destructive AI layer (safe_auto mode)
+  // ═══════════════════════════════════════════════════════════
+
+  registerJob("ai-core-engine", 15 * 60_000, async () => {
+    const { runAiCore } = await import("@/lib/ai/ai-core-engine");
+    const result = await runAiCore(30);
+    const total = result.dataCleaner.cleaned + result.categoryClassifier.corrected + result.photoAnalyzer.flagged;
+    if (total > 0) console.log(`[continuous] AI Core: ${total} actions (clean=${result.dataCleaner.cleaned} classify=${result.categoryClassifier.corrected} photos=${result.photoAnalyzer.flagged})`);
+  }, "quality");
+
+  // ═══════════════════════════════════════════════════════════
   // SYSTEM ENGINES (1-10) — 5-10min
   // ═══════════════════════════════════════════════════════════
 
