@@ -4,8 +4,11 @@ export function getConversationPeer(conversation: any, myOrbitId: string) {
 }
 
 export function getConversationTitle(conversation: any, myOrbitId: string) {
-  if (conversation?.title) return conversation.title;
   const peer = getConversationPeer(conversation, myOrbitId);
+  if (conversation?.type === "direct" && peer) {
+    return peer?.displayName || peer?.email || peer?.orbitId || "Conversation";
+  }
+  if (conversation?.title) return conversation.title;
   return peer?.displayName || peer?.email || peer?.orbitId || "Conversation";
 }
 

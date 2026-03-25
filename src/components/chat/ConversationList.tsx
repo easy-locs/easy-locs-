@@ -3,6 +3,7 @@ import { useOrbitStore } from "@/stores/orbitStore";
 import { useEffect, useRef } from "react";
 import { Search, MessageCircle } from "lucide-react";
 import { useState } from "react";
+import { getConversationSubtitle, getConversationTitle } from "@/lib/chat/conversationUi";
 
 function timeAgo(dateStr: string) {
   const d = new Date(dateStr);
@@ -85,8 +86,9 @@ export function ConversationList(props: {
           sorted.map((conv) => {
             const lastMsg = getLastMessage(conv.id);
             const isActive = props.activeId === conv.id;
-            const displayName = conv.title ?? "Conversation";
-            const isMine = lastMsg?.senderOrbitId === orbit?.orbitId;
+            const displayName = getConversationTitle(conv, orbit?.orbitId || "");
+            const subtitle = getConversationSubtitle(conv, orbit?.orbitId || "");
+            const isMine = lastMsg?.senderOrbitId === orbit?.orbitId || lastMsg?.senderOrbitId === orbit?.id;
 
             return (
               <button
@@ -120,7 +122,7 @@ export function ConversationList(props: {
                         {lastMsg.body}
                       </>
                     ) : (
-                      <span className="italic">No messages</span>
+                      <span className="italic">{subtitle || "No messages"}</span>
                     )}
                   </p>
                 </div>
