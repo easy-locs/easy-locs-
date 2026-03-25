@@ -2,10 +2,11 @@
  * Global Orchestration Engine — Coordinates cross-engine dependencies,
  * detects collisions, validates execution order, and provides
  * a unified status view for the business cockpit.
+ * NOW WIRED TO BACKEND (engine_supervisor) — no more dead client layer.
  */
 
 import { ENGINE_METADATA, detectEngineCollisions, type CollisionReport, type RuntimeStatus } from "./engine-metadata-registry";
-import { getContinuousEngineStatus } from "@/lib/platform/platform-continuous-engine";
+import { fetchBackendEngineStatus, type EngineJobStatus } from "./backend-engine-status";
 import { WARNING_RULES } from "./platform-orchestrator-engine";
 
 export interface OrchestrationStatus {
@@ -28,7 +29,7 @@ export interface OrchestrationStatus {
 /** Derive runtime status from raw engine output with precise warning rules */
 export function deriveRuntimeStatus(
   rawStatus: "ok" | "error" | "pending" | "idle" | "warning",
-  job: { name: string; itemsProcessed: number; runCount: number; lastRun?: string | null; lastDetail?: string },
+  job: { name: string; itemsProcessed: number; runCount: number; lastRun?: string | null; lastDetail?: string | null },
   canRunIdle: boolean
 ): RuntimeStatus {
   if (rawStatus === "error") return "error";
@@ -36,21 +37,17 @@ export function deriveRuntimeStatus(
   if (rawStatus === "warning") return "warning";
 
   const meta = ENGINE_METADATA[job.name];
-
-  // Apply warning rules
   for (const rule of WARNING_RULES) {
     if (rule.check(job, meta)) return "warning";
   }
 
-  // ok but processed 0 items and can't run idle → idle
   if (rawStatus === "ok" && job.itemsProcessed === 0 && !canRunIdle) return "idle";
-
   return "ok";
 }
 
-/** Get full orchestration status */
-export function getOrchestrationStatus(): OrchestrationStatus {
-  const status = getContinuousEngineStatus();
+/** Get full orchestration status — fetches from backend */
+export async function getOrchestrationStatus(): Promise<OrchestrationStatus> {
+  const status = await fetchBackendEngineStatus();
   const collisions = detectEngineCollisions();
 
   const byTier: Record<string, number> = { critical: 0, priority: 0, standard: 0, optimizable: 0 };
@@ -67,7 +64,7 @@ export function getOrchestrationStatus(): OrchestrationStatus {
   for (const job of status.jobs) {
     const meta = ENGINE_METADATA[job.name];
     const derived = deriveRuntimeStatus(
-      job.lastStatus as any,
+      job.lastStatus,
       { name: job.name, itemsProcessed: job.itemsProcessed, runCount: job.runCount, lastRun: job.lastRun, lastDetail: job.lastDetail },
       meta?.canRunIdle ?? true
     );
@@ -98,8 +95,8 @@ export function getOrchestrationStatus(): OrchestrationStatus {
 }
 
 /** Run orchestration check and log results */
-export function runGlobalOrchestration(): OrchestrationStatus {
-  const status = getOrchestrationStatus();
+export async function runGlobalOrchestration(): Promise<OrchestrationStatus> {
+  const status = await getOrchestrationStatus();
 
   console.log(`[global-orchestration] ${status.totalEngines} engines | Health: ${status.healthScore}/100`);
   console.log(`[global-orchestration] Active:${status.runtimeSummary.active} Idle:${status.runtimeSummary.idle} Warning:${status.runtimeSummary.warning} Error:${status.runtimeSummary.error}`);
