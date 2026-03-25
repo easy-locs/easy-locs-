@@ -129,9 +129,39 @@ export async function sendNotification(payload: NotificationPayload): Promise<{ 
   const templates = await getTemplates();
   const template = templates.get(payload.event_type);
 
+  // Fallback: if no template, write a raw notification directly
   if (!template) {
-    console.warn(`[NotificationEngine] No template for event: ${payload.event_type}`);
-    return { success: false, reason: "no_template" };
+    console.warn(`[NotificationEngine] No template for event: ${payload.event_type}, using fallback`);
+    const vars = payload.variables ?? {};
+    const fallbackTitle = String(vars.title || payload.event_type.replace(/_/g, " "));
+    const fallbackBody = String(vars.body || vars.message || "");
+    const { data: fb, error: fbErr } = await db
+      .from("notifications")
+      .insert({
+        user_id: payload.user_id,
+        entity_id: payload.entity_id ?? null,
+        entity_type: payload.entity_type ?? null,
+        event_type: payload.event_type,
+        type: "system",
+        notification_type: "system",
+        priority: payload.priority_override ?? "normal",
+        channel: payload.channel ?? "in_app",
+        title: fallbackTitle,
+        message: fallbackBody,
+        body: fallbackBody,
+        dedup_key: payload.dedup_key ?? null,
+        metadata_json: payload.metadata ?? null,
+        read: false,
+        is_seen: false,
+      })
+      .select("id")
+      .single();
+    if (fbErr) {
+      console.error("[NotificationEngine] fallback insert error:", fbErr.message);
+      return { success: false, reason: fbErr.message };
+    }
+    console.log("[NotificationEngine] fallback notification sent:", fb?.id);
+    return { success: true, id: fb?.id };
   }
 
   const vars = payload.variables ?? {};
