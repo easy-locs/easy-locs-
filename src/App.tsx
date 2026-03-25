@@ -598,6 +598,7 @@ const CustomerPartySplitLinksPage = safeLazy(() => import("./pages/customer/Cust
 const CustomerShareCartPage = safeLazy(() => import("./pages/customer/CustomerShareCartPage"), "CustomerShareCartPage");
 const MerchantRushPricingPage = safeLazy(() => import("./pages/merchant/MerchantRushPricingPage"), "MerchantRushPricingPage");
 const AdminGrowthCampaignsPage = safeLazy(() => import("./pages/admin/AdminGrowthCampaignsPage"), "AdminGrowthCampaignsPage");
+const AdminGrowthEnginePage = safeLazy(() => import("./pages/AdminGrowthEnginePage"), "AdminGrowthEnginePage");
 const AdminPromoPerformancePage = safeLazy(() => import("./pages/admin/AdminPromoPerformancePage"), "AdminPromoPerformancePage");
 const CustomerPaymentMethodsHubPage = safeLazy(() => import("./pages/customer/CustomerPaymentMethodsHubPage"), "CustomerPaymentMethodsHubPage");
 const CustomerOrderPreferencesPage = safeLazy(() => import("./pages/customer/CustomerOrderPreferencesPage"), "CustomerOrderPreferencesPage");
