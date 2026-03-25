@@ -57,6 +57,23 @@ export function startContinuousEngine() {
   running = true;
 
   // ═══════════════════════════════════════════════════════════
+  // QUEUE-DRIVEN PIPELINE WORKER — Main execution model
+  // ═══════════════════════════════════════════════════════════
+
+  registerJob("pipeline-queue-worker", 2 * 60_000, async () => {
+    const { processQueue, recoverStaleItems } = await import("@/lib/pipeline/queue-driven-pipeline");
+    await recoverStaleItems(10);
+    const r = await processQueue(10);
+    if (r.processed > 0) console.log(`[continuous] Queue worker: ${r.processed} processed, ${r.failed} failed`);
+  }, "system");
+
+  registerJob("pipeline-auto-enqueue", 10 * 60_000, async () => {
+    const { enqueueUnprocessedEntities } = await import("@/lib/pipeline/queue-driven-pipeline");
+    const r = await enqueueUnprocessedEntities(50);
+    if (r.enqueued > 0) console.log(`[continuous] Auto-enqueued ${r.enqueued} entities`);
+  }, "system");
+
+  // ═══════════════════════════════════════════════════════════
   // SYSTEM ENGINES (1-10) — 5-10min
   // ═══════════════════════════════════════════════════════════
 
