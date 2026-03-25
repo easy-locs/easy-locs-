@@ -64,6 +64,8 @@ interface UnifiedMapProps {
   className?: string;
   selectedId?: string | null;
   onSelectEntity?: (entity: GeoEntity) => void;
+  /** Click on empty zone → lat/lng of click point */
+  onZoneClick?: (lat: number, lng: number) => void;
   showUserLocation?: boolean;
   userLat?: number;
   userLng?: number;
