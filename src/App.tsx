@@ -796,6 +796,7 @@ const App = () => (
               <Route path="/install" element={<Install />} />
 
               {/* Deep-link public pages */}
+              <Route path="/add-contact" element={<Suspense fallback={<PageLoader />}><AddContactPage /></Suspense>} />
               <Route path="/u/:userId" element={<UserProfilePage />} />
               <Route path="/p/:productId" element={<ProductPage />} />
               <Route path="/live/:liveId" element={<LivePage />} />
