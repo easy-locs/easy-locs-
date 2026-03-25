@@ -855,6 +855,7 @@ const App = () => (
               <Route path="/settings/security" element={<SettingsSecurityPage />} />
               <Route path="/settings/preferences" element={<SettingsPreferencesPage />} />
               <Route path="/settings/support" element={<SettingsSupportPage />} />
+              <Route path="/ride" element={<RideHubPage />} />
               <Route path="/track/:rideRequestId" element={<TrackRidePage />} />
               <Route path="/wallet/pay/:threadId" element={<PayRidePage />} />
               <Route path="/wallet/accounts" element={<Navigate to="/settings/wallet" replace />} />
