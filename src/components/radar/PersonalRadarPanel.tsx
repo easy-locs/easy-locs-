@@ -18,7 +18,7 @@ import {
 interface Entity {
   id: string;
   name: string;
-  category: string;
+  category?: string;
   subcategory?: string;
   lat: number;
   lng: number;
