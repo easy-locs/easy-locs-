@@ -1,10 +1,10 @@
-import { useState, useEffect } from "react";
+import { useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { RefreshCw, Wrench, ShieldAlert, Eye, EyeOff, CheckCircle, AlertTriangle, XCircle, Activity, Settings2 } from "lucide-react";
-import { getContinuousEngineStatus } from "@/lib/platform/platform-continuous-engine";
 import { ENGINE_METADATA } from "@/lib/engines/engine-metadata-registry";
+import { useBackendEngineStatus } from "@/hooks/useBackendEngineStatus";
 
 type GarageLayer = "sensors" | "toolbox" | "mechanics" | "orchestrator" | "all";
 
@@ -51,16 +51,13 @@ const statusIcon = (s: string) => {
 };
 
 const AdminGaragePage = () => {
-  const [status, setStatus] = useState<ReturnType<typeof getContinuousEngineStatus> | null>(null);
-  const [layer, setLayer] = useState<GarageLayer>("all");
-  const [loading, setLoading] = useState(false);
+  const backendStatus = useBackendEngineStatus(4000);
+  const status = backendStatus;
+  const layer = "all" as GarageLayer;
+  const loading = backendStatus.loading;
+  const filtered = useMemo(() => layer === "all" ? status.jobs : status.jobs.filter(j => getLayer(j.name) === layer), [layer, status.jobs]);
 
-  const refresh = () => { setLoading(true); setStatus(getContinuousEngineStatus()); setTimeout(() => setLoading(false), 300); };
-  useEffect(() => { refresh(); }, []);
-
-  if (!status) return <div className="p-6 text-muted-foreground">Loading garage...</div>;
-
-  const filtered = layer === "all" ? status.jobs : status.jobs.filter(j => getLayer(j.name) === layer);
+  if (loading) return <div className="p-6 text-muted-foreground">Loading garage...</div>;
 
   // Stats
   const mechanics = status.jobs.filter(j => getLayer(j.name) === "mechanics");
@@ -79,7 +76,7 @@ const AdminGaragePage = () => {
           </h1>
           <p className="text-sm text-muted-foreground">4 couches : Sensors → Toolbox → Mechanics → Orchestrator</p>
         </div>
-        <Button variant="outline" size="sm" onClick={refresh} disabled={loading}>
+        <Button variant="outline" size="sm" disabled>
           <RefreshCw className={`h-4 w-4 mr-2 ${loading ? "animate-spin" : ""}`} /> Refresh
         </Button>
       </div>

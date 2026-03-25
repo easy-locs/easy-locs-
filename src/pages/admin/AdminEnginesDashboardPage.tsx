@@ -1,8 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { ENGINE_METADATA, detectEngineCollisions, type EngineTier, type BusinessFunction, type RuntimeStatus } from "@/lib/engines/engine-metadata-registry";
-import { deriveRuntimeStatus } from "@/lib/engines/global-orchestration-engine";
-import { computeHealthScores, classifyCollisions, type ClassifiedCollision, type PlatformHealthScores } from "@/lib/engines/platform-orchestrator-engine";
 import { supabase } from "@/integrations/supabase/client";
 import { useBackendEngineStatus } from "@/hooks/useBackendEngineStatus";
 
@@ -49,6 +47,79 @@ const CAT_ORDER = ["system", "quality", "data", "digital", "commerce", "finance"
 const BIZ_FN_ORDER: BusinessFunction[] = ["onboarding", "taxonomy", "visibility", "conversion", "lifecycle", "finance", "delivery", "infrastructure"];
 
 type ViewMode = "category" | "business";
+
+type ClassifiedCollision = {
+  table: string;
+  field: string;
+  engines: string[];
+  level: "critical_collision" | "warning_collision" | "expected_orchestrated" | "safe_overlap";
+  reason: string;
+};
+
+type PlatformHealthScores = {
+  performance: number;
+  coherence: number;
+  i18n: number;
+  cleanup: number;
+  routing: number;
+  global: number;
+};
+
+const ORCHESTRATED_FIELDS = new Set([
+  "seed_merchants.pipeline_stage",
+  "seed_merchants.gate_status",
+  "seed_merchants.visibility_mode",
+]);
+
+const SAFE_OVERLAP_FIELDS = new Set(["seed_merchants.status"]);
+
+function deriveRuntimeStatusLocal(
+  rawStatus: RuntimeStatus,
+  job: { name: string; itemsProcessed: number; runCount: number },
+  canRunIdle: boolean,
+): RuntimeStatus {
+  if (rawStatus === "error" || rawStatus === "pending" || rawStatus === "warning") return rawStatus;
+  if (rawStatus === "ok" && job.itemsProcessed === 0 && job.runCount > 0 && !canRunIdle) return "idle";
+  return rawStatus;
+}
+
+function classifyCollisionsLocal(): ClassifiedCollision[] {
+  return detectEngineCollisions().map((collision) => {
+    const key = `${collision.table}.${collision.field}`;
+    const hasCritical = collision.engines.some((engine) => ENGINE_METADATA[engine]?.tier === "critical");
+    const hasConflictingFn = new Set(collision.engines.map((engine) => ENGINE_METADATA[engine]?.businessFn)).size > 2;
+
+    if (ORCHESTRATED_FIELDS.has(key)) {
+      return { ...collision, level: "expected_orchestrated", reason: "Sequential pipeline write" };
+    }
+
+    if (SAFE_OVERLAP_FIELDS.has(key)) {
+      return { ...collision, level: "safe_overlap", reason: "Safe shared status field" };
+    }
+
+    if (hasCritical && hasConflictingFn) {
+      return { ...collision, level: "critical_collision", reason: "Critical engines from different business functions" };
+    }
+
+    return { ...collision, level: "warning_collision", reason: "Multiple engines write the same field" };
+  });
+}
+
+function computeHealthScoresLocal(totalJobs: number, jobs: Array<{ runtimeStatus: RuntimeStatus }>, collisions: ClassifiedCollision[]): PlatformHealthScores {
+  const safeTotal = Math.max(totalJobs, 1);
+  const errors = jobs.filter((job) => job.runtimeStatus === "error").length;
+  const pending = jobs.filter((job) => job.runtimeStatus === "pending" || job.runtimeStatus === "idle").length;
+  const criticalCollisions = collisions.filter((collision) => collision.level === "critical_collision").length;
+  const warningCollisions = collisions.filter((collision) => collision.level === "warning_collision").length;
+  const performance = Math.max(0, 100 - Math.round((errors / safeTotal) * 100 * 3));
+  const coherence = Math.max(0, 100 - criticalCollisions * 20 - warningCollisions * 5);
+  const cleanup = Math.max(0, 100 - Math.round((pending / safeTotal) * 50));
+  const i18n = 85;
+  const routing = 90;
+  const global = Math.round((performance + coherence + i18n + cleanup + routing) / 5);
+
+  return { performance, coherence, i18n, cleanup, routing, global };
+}
 
 interface DbStats {
   total: number; live: number; hidden: number; searchOnly: number; comingSoon: number;
@@ -104,15 +175,14 @@ export default function AdminEnginesDashboardPage() {
 
   const rawStatus = backendStatus;
   const collisions = useMemo(() => detectEngineCollisions(), []);
-  const classifiedCols = useMemo(() => classifyCollisions(), [tick]);
-  const healthScores = useMemo(() => computeHealthScores(), [tick]);
+  const classifiedCols = useMemo(() => classifyCollisionsLocal(), [tick]);
 
   // Enriched jobs with metadata
   const enrichedJobs = useMemo(() => rawStatus.jobs.map(j => {
     const meta = ENGINE_METADATA[j.name];
-    const derived = deriveRuntimeStatus(
+    const derived = deriveRuntimeStatusLocal(
       j.lastStatus as any,
-      { name: j.name, itemsProcessed: j.itemsProcessed, runCount: j.runCount, lastRun: j.lastRun, lastDetail: j.lastDetail },
+      { name: j.name, itemsProcessed: j.itemsProcessed, runCount: j.runCount },
       meta?.canRunIdle ?? true
     );
     return {
@@ -126,6 +196,8 @@ export default function AdminEnginesDashboardPage() {
       tablesWritten: meta?.tablesWritten ?? [],
     };
   }), [rawStatus]);
+
+  const healthScores = useMemo(() => computeHealthScoresLocal(rawStatus.totalJobs, enrichedJobs, classifiedCols), [classifiedCols, enrichedJobs, rawStatus.totalJobs]);
 
   const filtered = useMemo(() => {
     return enrichedJobs.filter(j => {
