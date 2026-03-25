@@ -143,6 +143,8 @@ export interface CanonicalDiscoveryOpts {
   subcategory?: string | null;
   /** Vertical filter */
   vertical?: string;
+  /** City filter — restrict results to a specific city */
+  city?: string | null;
   /** Radius in km — shops beyond this are EXCLUDED */
   radiusKm?: number | null;
   /** Max results */
@@ -161,6 +163,7 @@ export async function fetchCanonicalDiscovery(opts: CanonicalDiscoveryOpts): Pro
     category,
     subcategory,
     vertical,
+    city,
     radiusKm,
     limit = 200,
   } = opts;
@@ -196,6 +199,10 @@ export async function fetchCanonicalDiscovery(opts: CanonicalDiscoveryOpts): Pro
   if (subcategory) {
     storefrontQuery = storefrontQuery.eq("subcategory", subcategory);
   }
+  // ── STAGE 4b: City filtering ──
+  if (city) {
+    storefrontQuery = storefrontQuery.ilike("city", city);
+  }
 
   // ── STAGE 7 partial: Order by display_priority first, then ranking_score ──
   storefrontQuery = storefrontQuery
@@ -209,12 +216,8 @@ export async function fetchCanonicalDiscovery(opts: CanonicalDiscoveryOpts): Pro
   }
 
   // ── SEED MERCHANT GOVERNANCE ──
-  // Seeds with visibility_mode/route_status columns are now treated like storefronts.
-  // Seeds without those columns are treated as "coming_soon".
-  // Always load seeds — the post-filter handles visibility.
   const seedAllowed = allowedModes.includes("coming_soon") || allowedModes.includes("live") || allowedModes.includes("ready");
 
-  // Build seed query (but only execute if allowed)
   const seedQueryPromise = seedAllowed ? (() => {
     let seedQuery = (supabase as any)
       .from("seed_merchants")
@@ -226,6 +229,9 @@ export async function fetchCanonicalDiscovery(opts: CanonicalDiscoveryOpts): Pro
 
     if (subcategory) {
       seedQuery = seedQuery.eq("subcategory", subcategory);
+    }
+    if (city) {
+      seedQuery = seedQuery.ilike("city", city);
     }
     if (searchQuery?.trim()) {
       seedQuery = seedQuery.ilike("name", `%${searchQuery.trim()}%`);
