@@ -38,7 +38,7 @@ Deno.serve(async (req) => {
         payload.last_error_at = now;
       }
 
-      await supabase.from("engine_supervisor").upsert(payload as any, { onConflict: "engine_name" }).catch(() => {});
+      try { await supabase.from("engine_supervisor").upsert(payload as any, { onConflict: "engine_name" }); } catch(_) {}
     }
 
     async function callFunction(name: string, body: Record<string, any> = {}) {
