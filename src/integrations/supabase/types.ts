@@ -6992,6 +6992,54 @@ export type Database = {
         }
         Relationships: []
       }
+      engine_registry: {
+        Row: {
+          business_function: string | null
+          created_at: string
+          description: string | null
+          engine_name: string
+          fields_modified: string[] | null
+          id: string
+          layer: string
+          merged_into: string | null
+          pipeline_stage: string
+          status: string
+          tables_modified: string[] | null
+          tier: string
+          updated_at: string
+        }
+        Insert: {
+          business_function?: string | null
+          created_at?: string
+          description?: string | null
+          engine_name: string
+          fields_modified?: string[] | null
+          id?: string
+          layer?: string
+          merged_into?: string | null
+          pipeline_stage: string
+          status?: string
+          tables_modified?: string[] | null
+          tier?: string
+          updated_at?: string
+        }
+        Update: {
+          business_function?: string | null
+          created_at?: string
+          description?: string | null
+          engine_name?: string
+          fields_modified?: string[] | null
+          id?: string
+          layer?: string
+          merged_into?: string | null
+          pipeline_stage?: string
+          status?: string
+          tables_modified?: string[] | null
+          tier?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       engine_reports: {
         Row: {
           category: string
@@ -7381,6 +7429,66 @@ export type Database = {
           session_id?: string | null
           user_id?: string | null
           weight?: number
+        }
+        Relationships: []
+      }
+      entity_pipeline_queue: {
+        Row: {
+          created_at: string
+          current_stage: string
+          entity_id: string
+          entity_type: string
+          id: string
+          last_error: string | null
+          locked_at: string | null
+          locked_by: string | null
+          max_retries: number
+          next_stage: string | null
+          payload_json: Json | null
+          priority: number
+          retries: number
+          source_type: string | null
+          stage_results_json: Json | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          current_stage?: string
+          entity_id: string
+          entity_type?: string
+          id?: string
+          last_error?: string | null
+          locked_at?: string | null
+          locked_by?: string | null
+          max_retries?: number
+          next_stage?: string | null
+          payload_json?: Json | null
+          priority?: number
+          retries?: number
+          source_type?: string | null
+          stage_results_json?: Json | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          current_stage?: string
+          entity_id?: string
+          entity_type?: string
+          id?: string
+          last_error?: string | null
+          locked_at?: string | null
+          locked_by?: string | null
+          max_retries?: number
+          next_stage?: string | null
+          payload_json?: Json | null
+          priority?: number
+          retries?: number
+          source_type?: string | null
+          stage_results_json?: Json | null
+          status?: string
+          updated_at?: string
         }
         Relationships: []
       }
