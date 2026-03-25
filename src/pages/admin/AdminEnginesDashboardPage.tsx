@@ -247,23 +247,7 @@ export default function AdminEnginesDashboardPage() {
         )}
       </div>
 
-      {/* Collisions Panel */}
-      {showCollisions && collisions.length > 0 && (
-        <div className="rounded-2xl border border-orange-500/30 bg-orange-500/5 overflow-hidden">
-          <div className="px-4 py-2 border-b border-orange-500/20">
-            <span className="text-sm font-bold text-orange-400">⚡ Field Collisions</span>
-            <p className="text-[10px] text-muted-foreground">Multiple engines write to the same field</p>
-          </div>
-          <div className="divide-y divide-orange-500/10">
-            {collisions.map((c, i) => (
-              <div key={i} className="px-4 py-2">
-                <p className="text-[11px] font-mono font-bold text-foreground">{c.table}.{c.field}</p>
-                <p className="text-[10px] text-muted-foreground">{c.engines.join(" · ")}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+
 
       {/* Engine Groups */}
       {groupOrder.filter(k => grouped[k]).map(key => {
