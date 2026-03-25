@@ -204,15 +204,15 @@ export default function AdminEnginesDashboardPage() {
               <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1.5">Visibility</p>
               <div className="grid grid-cols-2 gap-1.5">
                 {([
-                  { label: "Total Merchants", value: dbStats.total },
+                  { label: "Total Merchants", value: dbStats.total, color: "text-foreground" },
                   { label: "Live", value: dbStats.live, color: "text-emerald-500" },
                   { label: "Search Only", value: dbStats.searchOnly, color: "text-amber-500" },
                   { label: "Hidden", value: dbStats.hidden, color: "text-red-400" },
                   { label: "Coming Soon", value: dbStats.comingSoon, color: "text-blue-400" },
-                ] as const).map(r => (
+                ]).map(r => (
                   <div key={r.label} className="flex justify-between items-center rounded-xl bg-muted/40 px-3 py-1.5">
                     <span className="text-[10px] text-muted-foreground">{r.label}</span>
-                    <span className={`text-sm font-bold ${r.color || "text-foreground"}`}>{r.value}</span>
+                    <span className={`text-sm font-bold ${r.color}`}>{r.value}</span>
                   </div>
                 ))}
               </div>
