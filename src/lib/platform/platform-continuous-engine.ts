@@ -1,6 +1,6 @@
 /**
- * PLATFORM CONTINUOUS ENGINE — 75 ENGINES, 24/7 AUTONOMOUS OPERATION
- * System, Digital, Quality, Data, Commerce, Finance, Delivery, Lifecycle + Vertical engines.
+ * PLATFORM CONTINUOUS ENGINE — 80 ENGINES, 24/7 AUTONOMOUS OPERATION
+ * System, Digital, Quality, Data, Commerce, Finance, Delivery, Lifecycle + Vertical + Audit engines.
  */
 
 import { runPlatformRecovery } from "./platform-recovery-engine";
@@ -579,6 +579,40 @@ export function startContinuousEngine() {
     const result = await runAutoUnpublish(100);
     if (result.unpublished > 0) console.log(`[continuous] Auto-unpublish: ${result.unpublished} removed`);
   }, "quality");
+
+  // ═══════════════════════════════════════════════════════════
+  // PLATFORM HEALTH & AUDIT ENGINES (76-80)
+  // ═══════════════════════════════════════════════════════════
+
+  registerJob("platform-cleanup", 60 * 60_000, async () => {
+    const { runPlatformCleanup } = await import("@/lib/engines/platform-cleanup-engine");
+    const result = runPlatformCleanup();
+    if (result.totalIssues > 0) console.log(`[continuous] Cleanup: ${result.totalIssues} issues`);
+  }, "system");
+
+  registerJob("performance-audit", 30 * 60_000, async () => {
+    const { runPerformanceAudit } = await import("@/lib/engines/performance-audit-engine");
+    const result = runPerformanceAudit();
+    if (result.recommendations.length > 0) console.log(`[continuous] Perf: ${result.recommendations.length} recommendations`);
+  }, "system");
+
+  registerJob("journey-coherence", 60 * 60_000, async () => {
+    const { runJourneyCoherenceAudit } = await import("@/lib/engines/journey-coherence-engine");
+    const result = runJourneyCoherenceAudit();
+    if (result.issues.length > 0) console.log(`[continuous] Journey: ${result.issues.length} issues`);
+  }, "system");
+
+  registerJob("ui-ux-consistency", 60 * 60_000, async () => {
+    const { runUxConsistencyAudit } = await import("@/lib/engines/ui-ux-consistency-engine");
+    const result = runUxConsistencyAudit();
+    if (result.issues.length > 0) console.log(`[continuous] UX: ${result.issues.length} issues`);
+  }, "system");
+
+  registerJob("i18n-integrity", 60 * 60_000, async () => {
+    const { runI18nIntegrityAudit } = await import("@/lib/engines/i18n-integrity-engine");
+    const result = runI18nIntegrityAudit();
+    if (result.missingKeys > 0) console.log(`[continuous] i18n: ${result.missingKeys} missing keys`);
+  }, "system");
 
   // ═══════════════════════════════════════════════════════════
   // START ALL — Staggered boot
