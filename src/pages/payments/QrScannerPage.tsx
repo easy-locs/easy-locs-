@@ -110,13 +110,13 @@ export default function QrScannerPage() {
 
   const bestCamera = useCallback((cams: Array<{ id: string; label: string }>, preferred?: string | null) => {
     if (!cams.length) return "";
-    if (selectedCameraId && cams.some(c => c.id === selectedCameraId)) return selectedCameraId;
     const rear = getRearCamera(cams);
+    if (rear) return rear.id;
     if (preferred) {
       const preferredCam = cams.find(c => c.id === preferred);
       if (preferredCam && /back|rear|environment|wide|ultra|main|world/i.test(preferredCam.label)) return preferredCam.id;
     }
-    if (rear) return rear.id;
+    if (selectedCameraId && cams.some(c => c.id === selectedCameraId)) return selectedCameraId;
     if (preferred && cams.some(c => c.id === preferred)) return preferred;
     return rear?.id || cams[cams.length - 1]?.id || cams[0].id;
   }, [getRearCamera, selectedCameraId]);
@@ -447,14 +447,14 @@ export default function QrScannerPage() {
 
       const cams = await refreshCameras();
       const rearCam = getRearCamera(cams);
-      const camId = bestCamera(cams, preferredDeviceId || grantedId);
+      const camId = rearCam?.id || bestCamera(cams, preferredDeviceId || grantedId);
       if (mountedRef.current) setSelectedCameraId(camId);
       if (!mountedRef.current || opRef.current !== startOp) return;
 
       const scanner = new Html5Qrcode(REGION_ID, { verbose: false });
       scannerRef.current = scanner;
 
-      const cfg = { fps: 15, qrbox: { width: QR_BOX, height: QR_BOX }, disableFlip: false, videoConstraints: { focusMode: "continuous" as any, width: { ideal: 1280 }, height: { ideal: 720 } } };
+      const cfg = { fps: 15, qrbox: { width: QR_BOX, height: QR_BOX }, disableFlip: false, videoConstraints: { facingMode: { ideal: "environment" }, focusMode: "continuous" as any, width: { ideal: 1280 }, height: { ideal: 720 } } };
 
       const doStart = async (vidCfg: any, label: string) => {
         await withTimeout(scanner.start(vidCfg, cfg, async (text) => {
@@ -468,7 +468,7 @@ export default function QrScannerPage() {
       };
 
       try {
-        if (preferredDeviceId || selectedCameraId) {
+        if (camId) {
           await doStart({ deviceId: { exact: camId } }, "selected-device");
         } else {
           try {
