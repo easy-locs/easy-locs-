@@ -634,6 +634,8 @@ const MerchantInstructionsPolicyPage = safeLazy(() => import("./pages/merchant/M
 const AdminMenuQualityPage = safeLazy(() => import("./pages/admin/AdminMenuQualityPage"), "AdminMenuQualityPage");
 const AdminMenuQualityControlPage = safeLazy(() => import("./pages/admin/AdminMenuQualityControlPage"), "AdminMenuQualityControlPage");
 const AdminDeliveryLatencyPage = safeLazy(() => import("./pages/admin/AdminDeliveryLatencyPage"), "AdminDeliveryLatencyPage");
+const AdminUxLiveTestPage = safeLazy(() => import("./pages/admin/AdminUxLiveTestPage"), "AdminUxLiveTestPage");
+const HyperRadarPage = safeLazy(() => import("./pages/HyperRadarPage"), "HyperRadarPage");
 const CustomerLunchSubscriptionPage = safeLazy(() => import("./pages/customer/CustomerLunchSubscriptionPage"), "CustomerLunchSubscriptionPage");
 const CustomerFamilyNightPage = safeLazy(() => import("./pages/customer/CustomerFamilyNightPage"), "CustomerFamilyNightPage");
 const MerchantMenuClonerPage = safeLazy(() => import("./pages/merchant/MerchantMenuClonerPage"), "MerchantMenuClonerPage");
@@ -1363,6 +1365,8 @@ const App = () => (
                 <Route path="/admin/menu-quality" element={<ProtectedRoute><AdminMenuQualityPage /></ProtectedRoute>} />
                 <Route path="/admin/menu-quality-control" element={<ProtectedRoute><AdminMenuQualityControlPage /></ProtectedRoute>} />
                 <Route path="/admin/delivery-latency" element={<ProtectedRoute><AdminDeliveryLatencyPage /></ProtectedRoute>} />
+                <Route path="/admin/ux-live-test" element={<ProtectedRoute><AdminUxLiveTestPage /></ProtectedRoute>} />
+                <Route path="/hyper-radar" element={<HyperRadarPage />} />
                 <Route path="/me/lunch-subscription" element={<ProtectedRoute><CustomerLunchSubscriptionPage /></ProtectedRoute>} />
                 <Route path="/checkout/family-night" element={<ProtectedRoute><CustomerFamilyNightPage /></ProtectedRoute>} />
                 <Route path="/merchant/menu-cloner/:merchantId" element={<ProtectedRoute><MerchantMenuClonerPage /></ProtectedRoute>} />

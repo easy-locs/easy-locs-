@@ -463,13 +463,9 @@ async function loadPageTranslations(): Promise<void> {
   }
 }
 
-// Trigger load after first paint
+// Trigger load immediately (not idle) to prevent raw keys on first paint
 if (typeof window !== "undefined") {
-  if (typeof window.requestIdleCallback === "function") {
-    window.requestIdleCallback(() => void loadPageTranslations());
-  } else {
-    setTimeout(() => void loadPageTranslations(), 100);
-  }
+  void loadPageTranslations();
 }
 
 const translations: Record<Locale, Record<string, string>> = {
@@ -1527,11 +1523,12 @@ export function I18nProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const t = useCallback((key: string, vars?: Record<string, string | number>): string => {
-    // Lookup helper across all sources
+    // Lookup helper across all sources including page translations
+    const pageMap: Record<string, Record<string, string>> = { fr: pageFr, en: pageEn, es: pageEs, de: pageDe, it: pageIt, pt: pagePt };
     const lookup = (k: string): string | undefined =>
-      translations[locale]?.[k] || lazyData.get(locale)?.[k] ||
-      translations.en?.[k] || enExtras[k] ||
-      translations.fr?.[k] || frExtras[k] || undefined;
+      translations[locale]?.[k] || lazyData.get(locale)?.[k] || pageMap[locale]?.[k] ||
+      translations.en?.[k] || enExtras[k] || pageEn[k] ||
+      translations.fr?.[k] || frExtras[k] || pageFr[k] || undefined;
 
     // If count is provided, try plural resolution
     let resolved: string | undefined;
