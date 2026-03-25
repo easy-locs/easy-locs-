@@ -65,7 +65,7 @@ export async function searchUsersByEmail(query: string, limit = 10) {
 
   const { data, error } = await db
     .from("profiles")
-    .select("id, email, full_name, username, avatar_url")
+    .select("id, email, name, first_name, last_name, username")
     .ilike("email", `%${trimmed}%`)
     .limit(limit);
 
@@ -78,7 +78,7 @@ export async function searchUsersByEmail(query: string, limit = 10) {
     id: d.id,
     orbit_id: toOrbitId(d.id),
     email: d.email,
-    display_name: d.full_name || d.username || null,
-    avatar_url: d.avatar_url || null,
+    display_name: d.name || [d.first_name, d.last_name].filter(Boolean).join(" ") || d.username || null,
+    avatar_url: null,
   }));
 }
