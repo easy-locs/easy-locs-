@@ -288,6 +288,9 @@ export default function MeCommandCenter() {
           { icon: <Bell className="w-4 h-4" />, label: "Notifications", path: "/settings/notifications" },
           { icon: <MessageSquare className="w-4 h-4" />, label: "Messages", path: "/orbit" },
           { icon: <Activity className="w-4 h-4" />, label: "Platform Health", path: "/admin/platform-health" },
+          { icon: <Settings className="w-4 h-4" />, label: "Garage & Repairs", path: "/admin/garage" },
+          { icon: <Eye className="w-4 h-4" />, label: "Menu Quality Control", path: "/admin/menu-quality-control" },
+          { icon: <Shield className="w-4 h-4" />, label: "Backend Truth", path: "/admin/backend-truth" },
         ].map((item) => (
           <button
             key={item.label}
