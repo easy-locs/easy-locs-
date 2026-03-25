@@ -30,41 +30,34 @@ export default function RestaurantPage() {
   const { data: shop, isLoading } = useQuery({
     queryKey: ["restaurant-detail", restaurantId],
     queryFn: async () => {
-      // Try storefront_pages first
+      // Single source of truth: storefront_pages only
       const { data: sf } = await (supabase as any)
         .from("storefront_pages")
         .select("id, name, slug, vertical, category, subcategory, city, address, region, rating, reviews_count, banner_url, logo_url, latitude, longitude, contact_phone, contact_whatsapp, website_url")
         .eq("id", restaurantId)
         .maybeSingle();
-      if (sf) {
-        return {
-          ...sf,
-          cover_image: sf.banner_url || sf.logo_url,
-          review_count: sf.reviews_count,
-          delivery_time_min: null,
-          delivery_time_max: null,
-        };
-      }
-      // Fallback to seed_merchants
-      const { data: seed } = await (supabase as any)
-        .from("seed_merchants")
-        .select("*")
-        .eq("id", restaurantId)
-        .maybeSingle();
-      return seed;
+      if (!sf) return null;
+      return {
+        ...sf,
+        cover_image: sf.banner_url || sf.logo_url,
+        review_count: sf.reviews_count,
+        delivery_time_min: null,
+        delivery_time_max: null,
+      };
     },
     enabled: !!restaurantId,
     staleTime: 60_000,
   });
 
   const { data: menuItems = [] } = useQuery({
-    queryKey: ["restaurant-menu-seed", restaurantId],
+    queryKey: ["restaurant-menu", restaurantId],
     queryFn: async () => {
+      // Single source of truth: menu_items (published catalog)
       const { data } = await (supabase as any)
-        .from("seed_products")
+        .from("menu_items")
         .select("*")
-        .eq("merchant_id", restaurantId)
-        .eq("is_available", true)
+        .eq("shop_id", restaurantId)
+        .eq("available", true)
         .order("sort_order", { ascending: true });
       return data || [];
     },

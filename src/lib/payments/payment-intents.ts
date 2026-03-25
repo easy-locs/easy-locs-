@@ -1,5 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-import { getGuestId } from "@/lib/auth/guest-session";
+import { getGuestId } from "@/lib/guest-session";
 
 async function tryGetCurrentUserId(): Promise<string | null> {
   try {

@@ -1,9 +1,32 @@
 /**
  * Guest session management — allows unauthenticated visitors to chat,
  * send media, and communicate with providers.
+ * Also provides simple guest ID for unauthenticated cart/loyalty/payment flows.
  */
 
 const STORAGE_KEY = "easylocs_guest_session";
+const GUEST_ID_KEY = "easylocs_guest_id";
+
+/** Get or create a persistent guest ID (simple localStorage identity for non-auth flows) */
+export function getGuestId(): string {
+  let id: string | null = null;
+  try { id = localStorage.getItem(GUEST_ID_KEY); } catch { /* */ }
+  if (!id) {
+    id = crypto.randomUUID();
+    try { localStorage.setItem(GUEST_ID_KEY, id); } catch { /* */ }
+  }
+  return id;
+}
+
+/** Check if the current context is a guest (no authenticated user) */
+export function isGuestUser(user: any): boolean {
+  return !user;
+}
+
+/** Clear guest identity (e.g. after account creation) */
+export function clearGuestId(): void {
+  try { localStorage.removeItem(GUEST_ID_KEY); } catch { /* */ }
+}
 const FINGERPRINT_KEY = "easylocs_fp";
 
 export interface GuestSession {

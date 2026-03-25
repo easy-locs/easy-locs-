@@ -1,15 +1,19 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
+/**
+ * HomeAutofillStatusCard — reads from storefront_pages (published truth only).
+ * Never reads raw seed_merchants on public surfaces.
+ */
 export function HomeAutofillStatusCard() {
   const { data } = useQuery({
     queryKey: ["home-autofill-status"],
     queryFn: async () => {
       const { count } = await (supabase as any)
-        .from("seed_merchants")
+        .from("storefront_pages")
         .select("*", { count: "exact", head: true })
-        .eq("category", "food")
-        .eq("is_open", true);
+        .eq("vertical", "food")
+        .eq("status", "active");
 
       return {
         openRestaurants: count ?? 0,
