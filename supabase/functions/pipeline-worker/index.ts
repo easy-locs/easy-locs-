@@ -42,6 +42,45 @@ Deno.serve(async (req) => {
     const body = await req.json().catch(() => ({}));
     const maxItems = body.maxItems ?? 20;
 
+    // 0. Cleanup dead queue layers before doing any work
+    const { data: syncedRows } = await db
+      .from("entity_pipeline_queue")
+      .select("entity_id")
+      .eq("current_stage", "sync")
+      .eq("status", "done")
+      .limit(1000);
+
+    const syncedIds = Array.from(new Set((syncedRows ?? []).map((row: any) => row.entity_id).filter(Boolean)));
+    if (syncedIds.length > 0) {
+      await db
+        .from("entity_pipeline_queue")
+        .delete()
+        .in("entity_id", syncedIds)
+        .in("status", ["pending", "processing"]);
+    }
+
+    const { data: activeRows } = await db
+      .from("entity_pipeline_queue")
+      .select("id, entity_id, updated_at")
+      .in("status", ["pending", "processing"])
+      .order("updated_at", { ascending: false })
+      .limit(5000);
+
+    const seenEntities = new Set<string>();
+    const duplicateQueueIds: string[] = [];
+    for (const row of activeRows ?? []) {
+      if (!row.entity_id) continue;
+      if (seenEntities.has(row.entity_id)) {
+        duplicateQueueIds.push(row.id);
+      } else {
+        seenEntities.add(row.entity_id);
+      }
+    }
+
+    if (duplicateQueueIds.length > 0) {
+      await db.from("entity_pipeline_queue").delete().in("id", duplicateQueueIds);
+    }
+
     // 1. Recover stale items (locked > 10 min ago)
     const cutoff = new Date(Date.now() - 10 * 60_000).toISOString();
     await db.from("entity_pipeline_queue")
@@ -61,11 +100,15 @@ Deno.serve(async (req) => {
       const ids = unprocessed.map((e: any) => e.id);
       const { data: existing } = await db
         .from("entity_pipeline_queue")
-        .select("entity_id")
+        .select("entity_id, status, current_stage")
         .in("entity_id", ids)
-        .in("status", ["pending", "processing"]);
+        .in("status", ["pending", "processing", "done"]);
 
-      const existingIds = new Set((existing ?? []).map((e: any) => e.entity_id));
+      const existingIds = new Set(
+        (existing ?? [])
+          .filter((e: any) => ["pending", "processing"].includes(e.status) || (e.status === "done" && e.current_stage === "sync"))
+          .map((e: any) => e.entity_id),
+      );
       const toEnqueue = ids.filter((id: string) => !existingIds.has(id));
 
       if (toEnqueue.length > 0) {
@@ -109,6 +152,12 @@ Deno.serve(async (req) => {
               [locked.current_stage]: { processed: 1, at: now },
             },
           }).eq("id", locked.id);
+
+          await db.from("entity_pipeline_queue")
+            .delete()
+            .eq("entity_id", locked.entity_id)
+            .in("status", ["pending", "processing"])
+            .neq("id", locked.id);
         } else {
           await db.from("entity_pipeline_queue").update({
             status: "done",
@@ -120,6 +169,11 @@ Deno.serve(async (req) => {
               [locked.current_stage]: { processed: 1, at: now },
             },
           }).eq("id", locked.id);
+
+          await db.from("entity_pipeline_queue")
+            .delete()
+            .eq("entity_id", locked.entity_id)
+            .in("status", ["pending", "processing"]);
         }
 
         stageStats[locked.current_stage] = (stageStats[locked.current_stage] ?? 0) + 1;
