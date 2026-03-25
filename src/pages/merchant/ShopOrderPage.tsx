@@ -63,28 +63,15 @@ export default function ShopOrderPage() {
   const { data: products } = useQuery({
     queryKey: ["order-products", shop?.id],
     queryFn: async () => {
-      // Try products table first
-      const { data: prods } = await (supabase as any)
-        .from("products")
+      // Canonical source: menu_items (published catalog)
+      const { data: menuItems } = await (supabase as any)
+        .from("menu_items")
         .select("id, name, description, price, image_url, category, is_available")
         .eq("shop_id", shop.id)
         .eq("is_available", true)
         .order("sort_order", { ascending: true });
 
-      if (prods && prods.length > 0) return prods;
-
-      // Fallback to seed_products
-      const { data: seeds } = await (supabase as any)
-        .from("seed_products")
-        .select("id, name, description, price, image_url, category, is_available")
-        .eq("merchant_id", shop.id)
-        .eq("is_available", true)
-        .order("name", { ascending: true });
-
-      return (seeds ?? []).map((s: any) => ({
-        ...s,
-        available: s.is_available,
-      }));
+      return menuItems ?? [];
     },
     enabled: !!shop?.id,
   });
