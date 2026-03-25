@@ -23,6 +23,39 @@ Deno.serve(async (req) => {
     const startTime = Date.now();
     const report: Record<string, any> = { started_at: new Date().toISOString(), engines_triggered: 0, errors: 0, retried: 0 };
 
+    const placeholderPatterns = ["placeholder", "default", "generic", "via.placeholder", "dummyimage", "placehold.co", "unsplash.com", "images.unsplash.com"];
+
+    function isPlaceholderImage(url?: string | null) {
+      const value = (url ?? "").trim().toLowerCase();
+      if (!value) return true;
+      return placeholderPatterns.some((pattern) => value.includes(pattern));
+    }
+
+    function extractMenuItems(menuJson: any) {
+      if (!menuJson) return [];
+      if (Array.isArray(menuJson)) return menuJson.flatMap((entry: any) => entry?.items || [entry]).filter(Boolean);
+      const items = Array.isArray(menuJson?.items) ? menuJson.items : [];
+      const sections = Array.isArray(menuJson?.sections)
+        ? menuJson.sections.flatMap((section: any) => section?.items || [])
+        : [];
+      return [...items, ...sections].filter(Boolean);
+    }
+
+    function isInvalidCategory(category?: string | null) {
+      return !category || ["general", "other", "unknown", ""].includes(category.toLowerCase());
+    }
+
+    function computeQualityScore(entity: Record<string, any>) {
+      let score = 0;
+      if (!isPlaceholderImage(entity.cover_image)) score += 20;
+      const menuCount = extractMenuItems(entity.menu_items_json).length;
+      if (((entity.vertical ?? "food") === "food" && menuCount >= 3) || ((entity.vertical ?? "food") !== "food" && menuCount > 0)) score += 20;
+      if (entity.latitude != null && entity.longitude != null) score += 20;
+      if ((entity.phone ?? entity.support_phone ?? "").trim().length >= 6) score += 20;
+      if (!isInvalidCategory(entity.category)) score += 20;
+      return score;
+    }
+
     // ── Supervisor helpers ──
     async function heartbeat(engineName: string, status: string, extras: Record<string, any> = {}) {
       const now = new Date().toISOString();
@@ -180,15 +213,15 @@ Deno.serve(async (req) => {
     await runEngine("menu-rebuild", async () => {
       const { data: dirty } = await supabase
         .from("seed_merchants")
-        .select("id, menu_items_json, name")
+        .select("id, menu_items_json, raw_menu_json, name")
         .eq("vertical" as any, "food")
-        .is("menu_rebuild_score" as any, null)
+        .or("menu_quality_score.is.null,menu_quality_score.eq.0")
         .not("menu_items_json", "is", null)
         .limit(30);
       let rebuilt = 0;
       for (const m of (dirty as any[]) ?? []) {
-        const items = m.menu_items_json;
-        if (!Array.isArray(items)) continue;
+        const items = extractMenuItems(m.raw_menu_json ?? m.menu_items_json);
+        if (!items.length) continue;
         const junkPatterns = /^(menu|item|food|dish|test|n\/a|\d+|http|www\.)/i;
         const cleaned = items.filter((i: any) => {
           const name = (i.name || "").trim();
@@ -203,8 +236,9 @@ Deno.serve(async (req) => {
         });
         const score = deduped.length > 0 ? Math.min(100, Math.round((deduped.length / Math.max(items.length, 1)) * 80 + 20)) : 0;
         await supabase.from("seed_merchants").update({
-          menu_items_json: deduped,
-          menu_rebuild_score: score,
+          menu_items_json: { sections: [{ name: "Menu", items: deduped }], totalItems: deduped.length },
+          menu_sections_json: [{ name: "Menu", items: deduped }],
+          menu_quality_score: score,
           menu_quality_flag: score > 60 ? "clean" : score > 30 ? "rebuildable" : "garbage",
         } as any).eq("id", m.id);
         rebuilt++;
@@ -231,24 +265,29 @@ Deno.serve(async (req) => {
     await runEngine("publish-gate", async () => {
       const { data: candidates } = await supabase
         .from("seed_merchants")
-        .select("id, visibility_score, visibility_mode, menu_items_json, cover_image_url")
-        .eq("visibility_mode" as any, "hidden")
-        .gte("visibility_score" as any, 50)
-        .limit(50);
-      let published = 0, searchOnly = 0;
+        .select("id, vertical, category, subcategory, cover_image, menu_items_json, latitude, longitude, phone, support_phone, visibility_score, overall_quality_score, visibility_mode")
+        .in("visibility_mode" as any, ["hidden", "search_only", "live"])
+        .limit(100);
+      let published = 0, searchOnly = 0, blocked = 0;
       for (const m of (candidates as any[]) ?? []) {
-        const score = m.visibility_score ?? 0;
-        const hasMenu = Array.isArray(m.menu_items_json) && m.menu_items_json.length > 0;
-        const hasImage = !!m.cover_image_url;
-        if (score >= 70 && hasMenu && hasImage) {
-          await supabase.from("seed_merchants").update({ visibility_mode: "live" } as any).eq("id", m.id);
+        const score = m.overall_quality_score ?? Math.max(m.visibility_score ?? 0, computeQualityScore(m));
+        const menuCount = extractMenuItems(m.menu_items_json).length;
+        const hasRequiredMenu = m.vertical === "food" ? menuCount >= 3 : true;
+        const hasImage = !isPlaceholderImage(m.cover_image);
+        const hasCategory = !isInvalidCategory(m.category) && !isInvalidCategory(m.subcategory);
+
+        if (score >= 70 && hasRequiredMenu && hasImage && hasCategory) {
+          await supabase.from("seed_merchants").update({ visibility_mode: "live", blocking_reason: null, overall_quality_score: score } as any).eq("id", m.id);
           published++;
-        } else if (score >= 50) {
-          await supabase.from("seed_merchants").update({ visibility_mode: "search_only" } as any).eq("id", m.id);
+        } else if (score >= 50 && hasRequiredMenu && hasImage && hasCategory) {
+          await supabase.from("seed_merchants").update({ visibility_mode: "search_only", blocking_reason: null, overall_quality_score: score } as any).eq("id", m.id);
           searchOnly++;
+        } else {
+          await supabase.from("seed_merchants").update({ visibility_mode: "hidden", blocking_reason: "stabilization_gate_failed", overall_quality_score: score } as any).eq("id", m.id);
+          blocked++;
         }
       }
-      return { published, searchOnly };
+      return { published, searchOnly, blocked };
     }, "critical");
 
     await runEngine("publish-gate-food", async () => ({ checked: 0 }), "critical");
@@ -260,14 +299,22 @@ Deno.serve(async (req) => {
     await runEngine("auto-unpublish", async () => {
       const { data: failing } = await supabase
         .from("seed_merchants")
-        .select("id, visibility_score, visibility_mode")
+        .select("id, vertical, category, subcategory, cover_image, menu_items_json, visibility_score, overall_quality_score, visibility_mode")
         .eq("visibility_mode" as any, "live")
-        .lt("visibility_score" as any, 25)
-        .limit(50);
+        .limit(100);
       let unpublished = 0;
       for (const m of (failing as any[]) ?? []) {
-        await supabase.from("seed_merchants").update({ visibility_mode: "hidden", unpublish_reason: "low_score" } as any).eq("id", m.id);
-        unpublished++;
+        const score = m.overall_quality_score ?? Math.max(m.visibility_score ?? 0, computeQualityScore(m));
+        const menuCount = extractMenuItems(m.menu_items_json).length;
+        const shouldHide = score < 50
+          || isPlaceholderImage(m.cover_image)
+          || isInvalidCategory(m.category)
+          || isInvalidCategory(m.subcategory)
+          || (m.vertical === "food" && menuCount < 3);
+        if (shouldHide) {
+          await supabase.from("seed_merchants").update({ visibility_mode: "hidden", unpublish_reason: "stabilization_gate_failed", overall_quality_score: score } as any).eq("id", m.id);
+          unpublished++;
+        }
       }
       return { unpublished };
     }, "priority");
