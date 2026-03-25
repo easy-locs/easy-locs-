@@ -7,6 +7,7 @@
  * Scores: menu_quality_score, taxonomy_score, data_completeness_score
  */
 import { supabase } from "@/integrations/supabase/client";
+import { computeMerchantQualityScore, extractMenuItems, isInvalidCategory, isPlaceholderImage } from "./merchant-quality-helpers";
 
 const db = supabase as any;
 
@@ -31,9 +32,7 @@ function scoreMenu(menuJson: any, vertical: string): { score: number; blockers: 
   const blockers: string[] = [];
   if (!menuJson) { blockers.push("menu_empty"); return { score: 0, blockers }; }
 
-  const items = Array.isArray(menuJson) ? menuJson
-    : menuJson.sections?.flatMap((s: any) => s.items || [])
-    || menuJson.items || [];
+  const items = extractMenuItems(menuJson);
 
   if (!Array.isArray(items) || items.length === 0) {
     blockers.push("menu_empty"); return { score: 0, blockers };
@@ -89,14 +88,13 @@ function scoreTaxonomy(entity: any): { score: number; blockers: string[] } {
   }
 
   // Category check
-  const badCats = ["general", "other", "unknown", ""];
-  if (!entity.category || badCats.includes(entity.category.toLowerCase())) {
+  if (isInvalidCategory(entity.category)) {
     blockers.push("invalid_category");
     score -= 25;
   }
 
   // Subcategory
-  if (!entity.subcategory || badCats.includes(entity.subcategory.toLowerCase())) {
+  if (isInvalidCategory(entity.subcategory)) {
     blockers.push("missing_subcategory");
     score -= 15;
   }
@@ -111,18 +109,21 @@ function scoreTaxonomy(entity: any): { score: number; blockers: string[] } {
 
 function scoreCompleteness(entity: any): { score: number; blockers: string[] } {
   const blockers: string[] = [];
-  let score = 100;
-  const weight = 100 / 8;
+  let score = 0;
 
-  if (!entity.name || entity.name.trim().length < 2) { blockers.push("no_name"); score -= weight * 2; }
-  if (!entity.cover_image) { blockers.push("no_cover"); score -= weight; }
-  if (!entity.city) { blockers.push("no_city"); score -= weight; }
-  if (!entity.country) { blockers.push("no_country"); score -= weight; }
-  if (!entity.category) { score -= weight; }
-  if (!entity.subcategory) { score -= weight; }
-  if ((entity.visibility_score ?? 0) < 20) { blockers.push("low_visibility_score"); score -= weight; }
+  if (!entity.name || entity.name.trim().length < 2) blockers.push("no_name");
+  if (!entity.cover_image) blockers.push("no_cover");
+  if (entity.cover_image && isPlaceholderImage(entity.cover_image)) blockers.push("placeholder_cover");
+  if (!entity.city || !entity.country || entity.latitude == null || entity.longitude == null) blockers.push("imprecise_location");
+  if (!(entity.phone || entity.support_phone)) blockers.push("no_phone");
+  if (isInvalidCategory(entity.category)) blockers.push("invalid_category");
 
-  return { score: Math.max(0, Math.round(score)), blockers };
+  if (entity.cover_image && !isPlaceholderImage(entity.cover_image)) score += 20;
+  if (!blockers.includes("imprecise_location")) score += 20;
+  if (entity.phone || entity.support_phone) score += 20;
+  if (!isInvalidCategory(entity.category)) score += 20;
+
+  return { score, blockers };
 }
 
 const PUBLISH_THRESHOLD = 50;
@@ -138,7 +139,7 @@ export async function runStrictQualityGate(limit = 200): Promise<{
 }> {
   const { data: entities } = await db
     .from("seed_merchants")
-    .select("id, name, vertical, vertical_locked, category, subcategory, cover_image, city, country, menu_items_json, hotel_inventory_json, service_catalog_json, grocery_catalog_json, visibility_score, visibility_mode, pipeline_stage")
+    .select("id, name, vertical, vertical_locked, category, subcategory, cover_image, city, country, latitude, longitude, phone, support_phone, menu_items_json, hotel_inventory_json, service_catalog_json, grocery_catalog_json, visibility_score, visibility_mode, pipeline_stage")
     .limit(limit);
 
   let published = 0, blocked = 0, unpublished = 0, review = 0;
@@ -181,14 +182,14 @@ export async function runStrictQualityGate(limit = 200): Promise<{
       menu_quality_score: menuScore.score,
       taxonomy_score: taxScore.score,
       data_completeness_score: compScore.score,
-      overall_score: Math.round((menuScore.score * 0.4 + taxScore.score * 0.3 + compScore.score * 0.3)),
+      overall_score: computeMerchantQualityScore(e),
     };
 
     // Decision
     let action: GateResult["action"] = "review";
     if (scores.overall_score >= PUBLISH_THRESHOLD && allBlockers.length === 0) {
       action = "publish";
-    } else if (scores.overall_score < BLOCK_THRESHOLD || allBlockers.some(b => b.includes("menu_empty") || b.includes("no_vertical") || b.includes("no_name"))) {
+    } else if (scores.overall_score < BLOCK_THRESHOLD || allBlockers.some(b => b.includes("menu_empty") || b.includes("placeholder_cover") || b.includes("invalid_category") || b.includes("no_vertical") || b.includes("no_name"))) {
       action = "block";
     } else if (e.visibility_mode === "live" && scores.overall_score < PUBLISH_THRESHOLD) {
       action = "unpublish";
