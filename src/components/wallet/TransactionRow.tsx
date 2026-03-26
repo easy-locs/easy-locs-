@@ -13,6 +13,7 @@ interface TransactionRowProps {
   direction: "in" | "out";
   status: "completed" | "pending" | "failed";
   timestamp: string;
+  referenceCode?: string | null;
 }
 
 const TYPE_CONFIG: Record<TransactionType, { icon: any; color: string }> = {
@@ -25,7 +26,7 @@ const TYPE_CONFIG: Record<TransactionType, { icon: any; color: string }> = {
   transfer:       { icon: Send, color: "hsl(270 70% 60%)" },
 };
 
-export default function TransactionRow({ title, amount, currency, type, direction, status, timestamp }: TransactionRowProps) {
+export default function TransactionRow({ title, amount, currency, type, direction, status, timestamp, referenceCode }: TransactionRowProps) {
   const config = TYPE_CONFIG[type] || TYPE_CONFIG.payment;
   const Icon = config.icon;
   const sign = direction === "in" ? "+" : "-";
@@ -41,7 +42,12 @@ export default function TransactionRow({ title, amount, currency, type, directio
       </div>
       <div className="flex-1 min-w-0">
         <p className="text-sm font-semibold text-foreground truncate">{title}</p>
-        <p className="text-[10px] text-muted-foreground">{timeStr}</p>
+        <div className="flex items-center gap-1.5">
+          <p className="text-[10px] text-muted-foreground">{timeStr}</p>
+          {referenceCode && (
+            <span className="text-[9px] font-mono text-muted-foreground/60">#{referenceCode}</span>
+          )}
+        </div>
       </div>
       <div className="text-right flex-shrink-0">
         <p className="text-sm font-bold" style={{ color: amountColor }}>{sign}{amount.toFixed(2)}</p>

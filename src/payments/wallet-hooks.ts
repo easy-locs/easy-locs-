@@ -77,6 +77,7 @@ export interface UnifiedTx {
   subtitle: string | null;
   status: string;
   metadata: Record<string, any>;
+  reference_code?: string | null;
 }
 
 export function useWalletTransactions(limit = 50) {

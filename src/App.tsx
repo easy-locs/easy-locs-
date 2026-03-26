@@ -35,6 +35,7 @@ import { useNotificationV2Store } from "@/stores/notificationV2Store";
 import AppBootstrapGuardDirect from "@/components/app/AppBootstrapGuard";
 import { AppInit } from "@/components/system/AppInit";
 import { GlobalExperienceProvider } from "@/providers/GlobalExperienceProvider";
+import { UiQualityProvider } from "@/providers/UiQualityProvider";
 
 // V2 test pages — removed (Batch B purge)
 
@@ -660,7 +661,8 @@ const App = () => (
            <RealtimeHubGuard />
            <NotificationsRealtimeGuard />
            <UpdateNotification />
-                <AppInit />
+                 <AppInit />
+                 <UiQualityProvider>
                 <GeoBoot />
                 <PermissionBootstrap />
              <AppBootstrapGuardDirect />
@@ -1218,8 +1220,9 @@ const App = () => (
             </SwipeableMain>
            </Suspense>
            <MainBottomNav />
-           <SmartInstallBanner />
-           </SplashScreen>
+            <SmartInstallBanner />
+            </UiQualityProvider>
+            </SplashScreen>
            </AppLockGuard>
           </UnifiedPaymentProvider>
            </CallProvider>

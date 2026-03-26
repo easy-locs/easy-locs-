@@ -345,17 +345,18 @@ export default function WalletHubPage() {
                   </div>
                 ) : (
                   <div className="rounded-2xl overflow-hidden bg-card/80 backdrop-blur-sm border border-border/10">
-                    {filteredTx.map((tx, i) => (
-                      <div key={tx.id ?? i}>
-                        <TransactionRow
-                          title={getTxTitle(tx)}
-                          amount={Number(tx.amount ?? 0)}
-                          currency={tx.currency ?? "AED"}
-                          type={(tx.context_type as TransactionType) ?? "payment"}
-                          direction={tx.sender_id === user?.id ? "out" : "in"}
-                          status={tx.status === "completed" ? "completed" : tx.status === "pending" ? "pending" : "completed"}
-                          timestamp={tx.created_at}
-                        />
+                     {filteredTx.map((tx, i) => (
+                       <div key={tx.id ?? i}>
+                         <TransactionRow
+                           title={getTxTitle(tx)}
+                           amount={Number(tx.amount ?? 0)}
+                           currency={tx.currency ?? "AED"}
+                           type={(tx.context_type as TransactionType) ?? "payment"}
+                           direction={tx.sender_id === user?.id ? "out" : "in"}
+                           status={tx.status === "completed" ? "completed" : tx.status === "pending" ? "pending" : "completed"}
+                           timestamp={tx.created_at}
+                           referenceCode={tx.reference_code}
+                         />
                         {i < filteredTx.length - 1 && <div className="mx-4 border-t" style={{ borderColor: "hsl(var(--border) / 0.05)" }} />}
                       </div>
                     ))}
