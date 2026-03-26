@@ -1,6 +1,6 @@
 /**
  * dispatch-ride — Canonical mobility dispatch edge function.
- * Single source of truth for: taxi, food_delivery, parcel_delivery.
+ * Single source of truth for: taxi, food_delivery, grocery_delivery, parcel_delivery.
  * Tables: mobility_jobs, mobility_job_offers, rider_presence, rider_profiles,
  *         mobility_dispatch_attempts, mobility_fare_quotes, trip_live_state, trip_location_points
  *
@@ -9,9 +9,10 @@
  *   cancel_job      — Customer cancels own job
  *   accept_offer    — Rider accepts a dispatch offer
  *   reject_offer    — Rider rejects a dispatch offer
- *   advance_status  — Rider advances job status (arriving → arrived → picked_up → in_progress → completed)
+ *   advance_status  — Rider advances job status
  *   dispatch_offers — System re-dispatches offers with expanded radius
  *   merchant_update — Merchant updates food order status
+ *   activate_scheduled — Engine activates scheduled jobs when dispatch window opens
  *
  * SECURITY:
  *   - Self-acceptance prevention
@@ -54,6 +55,7 @@ serve(async (req) => {
     if (action === "create_job") {
       const {
         job_type, service_level,
+        booking_mode, scheduled_for,
         pickup_label, pickup_address, pickup_lat, pickup_lng,
         dropoff_label, dropoff_address, dropoff_lat, dropoff_lng,
         merchant_id, order_id, parcel_reference,
@@ -64,6 +66,18 @@ serve(async (req) => {
       if (!job_type || !service_level) throw new Error("job_type and service_level required");
       if (!pickup_lat || !pickup_lng || !dropoff_lat || !dropoff_lng) {
         throw new Error("Pickup and dropoff coordinates required");
+      }
+
+      const isScheduled = booking_mode === "scheduled";
+
+      // Validate scheduled_for when booking_mode is scheduled
+      if (isScheduled) {
+        if (!scheduled_for) throw new Error("scheduled_for required for scheduled bookings");
+        const scheduledDate = new Date(scheduled_for);
+        if (isNaN(scheduledDate.getTime())) throw new Error("Invalid scheduled_for datetime");
+        if (scheduledDate.getTime() < Date.now() + 10 * 60 * 1000) {
+          throw new Error("Scheduled time must be at least 10 minutes in the future");
+        }
       }
 
       const confirmationCode = String(Math.floor(100000 + Math.random() * 900000));
@@ -80,6 +94,16 @@ serve(async (req) => {
 
       const totalFare = quoted_price || 0;
 
+      // Compute dispatch window for scheduled bookings
+      let dispatchWindowStart: string | null = null;
+      let dispatchWindowEnd: string | null = null;
+      if (isScheduled && scheduled_for) {
+        const sf = new Date(scheduled_for);
+        // Dispatch window: 15 min before to 5 min after scheduled time
+        dispatchWindowStart = new Date(sf.getTime() - 15 * 60 * 1000).toISOString();
+        dispatchWindowEnd = new Date(sf.getTime() + 5 * 60 * 1000).toISOString();
+      }
+
       const { data: job, error } = await db.from("mobility_jobs").insert({
         job_type,
         service_level,
@@ -88,8 +112,12 @@ serve(async (req) => {
         merchant_id: merchant_id || null,
         order_id: order_id || null,
         parcel_reference: parcel_reference || null,
-        status: "searching",
-        dispatch_status: "dispatching",
+        status: isScheduled ? "scheduled" : "searching",
+        dispatch_status: isScheduled ? "pending" : "dispatching",
+        booking_mode: booking_mode || "now",
+        scheduled_for: isScheduled ? scheduled_for : null,
+        dispatch_window_start: dispatchWindowStart,
+        dispatch_window_end: dispatchWindowEnd,
         pickup_label: pickup_label || null,
         pickup_address: pickup_address || "",
         pickup_lat, pickup_lng,
@@ -121,14 +149,23 @@ serve(async (req) => {
           time_fare: totalFare * 0.1,
           total_fare: totalFare,
           currency: currency || "AED",
-          reason: "initial_quote",
+          reason: isScheduled ? "scheduled_quote" : "initial_quote",
         });
       }
 
-      // Auto-dispatch to nearby riders
-      const dispatchResult = await dispatchOffers(db, job, 2.0);
+      // Auto-dispatch to nearby riders (only for immediate bookings)
+      let dispatchResult = { offered: 0 };
+      if (!isScheduled) {
+        dispatchResult = await dispatchOffers(db, job, 2.0);
+      }
 
-      return json({ success: true, job, confirmation_code: confirmationCode, dispatch: dispatchResult });
+      return json({
+        success: true,
+        job,
+        confirmation_code: confirmationCode,
+        dispatch: dispatchResult,
+        booking_mode: isScheduled ? "scheduled" : "now",
+      });
     }
 
     // ─── CANCEL JOB (Customer only) ──────────────────────────
@@ -352,6 +389,53 @@ serve(async (req) => {
 
       const result = await dispatchOffers(db, job, radius_km || 2.0, surge_multiplier);
       return json({ success: true, ...result });
+    }
+
+    // ─── ACTIVATE SCHEDULED (Engine/Cron) ────────────────────
+    if (action === "activate_scheduled") {
+      const now = new Date().toISOString();
+
+      // Find scheduled jobs whose dispatch window has opened
+      const { data: jobs } = await db
+        .from("mobility_jobs")
+        .select("*")
+        .eq("status", "scheduled")
+        .eq("booking_mode", "scheduled")
+        .lte("dispatch_window_start", now)
+        .gte("dispatch_window_end", now);
+
+      if (!jobs?.length) return json({ success: true, activated: 0 });
+
+      let activated = 0;
+      for (const job of jobs) {
+        await db.from("mobility_jobs").update({
+          status: "searching",
+          dispatch_status: "dispatching",
+          updated_at: now,
+        }).eq("id", job.id);
+
+        await dispatchOffers(db, { ...job, status: "searching" }, 2.0);
+        activated++;
+      }
+
+      // Expire scheduled jobs past their dispatch window
+      const { data: expired } = await db
+        .from("mobility_jobs")
+        .select("id")
+        .eq("status", "scheduled")
+        .eq("booking_mode", "scheduled")
+        .lt("dispatch_window_end", now);
+
+      if (expired?.length) {
+        for (const j of expired) {
+          await db.from("mobility_jobs").update({
+            status: "expired",
+            updated_at: now,
+          }).eq("id", j.id);
+        }
+      }
+
+      return json({ success: true, activated, expired: expired?.length ?? 0 });
     }
 
     throw new Error(`Unknown action: ${action}`);

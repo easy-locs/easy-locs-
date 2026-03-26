@@ -1,6 +1,6 @@
 /**
- * useDeliveryNotifications — Push notification system for delivery events.
- * PASS81-P: Push Notifications for drivers
+ * useDeliveryNotifications — Push notification system for mobility events.
+ * Canonical: reads mobility_jobs only.
  */
 import { useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -36,7 +36,7 @@ export function useDeliveryNotifications() {
         body,
         icon: icon || "/favicon.ico",
         badge: "/favicon.ico",
-        tag: `delivery-${Date.now()}`,
+        tag: `mobility-${Date.now()}`,
         requireInteraction: false,
       });
     } catch {
@@ -57,23 +57,24 @@ export function useDeliveryNotifications() {
   const handleJobChange = useCallback((payload: any) => {
     const { new: newRow, old: oldRow, eventType } = payload;
 
-    if (eventType === "INSERT" && newRow?.driver_id === user?.id) {
-      toast.info("📩 Nouvelle mission assignée !", { description: newRow.pickup_address + " → " + newRow.dropoff_address });
-      sendPushNotification("📩 Nouvelle mission", `${newRow.pickup_address} → ${newRow.dropoff_address}`);
+    if (eventType === "INSERT" && newRow?.rider_user_id === user?.id) {
+      toast.info("📩 New mission assigned!", { description: (newRow.pickup_address || "") + " → " + (newRow.dropoff_address || "") });
+      sendPushNotification("📩 New mission", `${newRow.pickup_address || ""} → ${newRow.dropoff_address || ""}`);
       playSound("new_job");
       return;
     }
 
-    if (eventType === "UPDATE" && (newRow?.driver_id === user?.id || newRow?.seller_id === user?.id)) {
+    if (eventType === "UPDATE" && (newRow?.rider_user_id === user?.id || newRow?.customer_user_id === user?.id)) {
       const oldStatus = oldRow?.status;
       const newStatus = newRow?.status;
       if (oldStatus === newStatus) return;
 
       const statusMessages: Record<string, string> = {
-        accepted: "✅ Mission acceptée",
-        in_progress: "🚗 Colis récupéré — en route",
-        completed: "🏁 Livraison terminée !",
-        cancelled: "❌ Mission annulée",
+        accepted: "✅ Mission accepted",
+        picked_up: "📦 Picked up — in transit",
+        in_progress: "🚗 In progress",
+        completed: "🏁 Delivery completed!",
+        cancelled: "❌ Mission cancelled",
       };
 
       const msg = statusMessages[newStatus];
@@ -87,17 +88,15 @@ export function useDeliveryNotifications() {
 
   useEffect(() => {
     if (!user) return;
-
-    // Request permission on mount
     requestPermission();
 
-    // Subscribe to delivery_jobs changes for this user
+    // Subscribe to mobility_jobs changes for this user
     const channel = supabase
-      .channel(`delivery-notifs-${user.id}`)
+      .channel(`mobility-notifs-${user.id}`)
       .on("postgres_changes", {
         event: "*",
         schema: "public",
-        table: "delivery_jobs",
+        table: "mobility_jobs",
       }, handleJobChange)
       .subscribe();
 
