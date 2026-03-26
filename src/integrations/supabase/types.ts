@@ -12854,6 +12854,134 @@ export type Database = {
         }
         Relationships: []
       }
+      onboarding_canonical_records: {
+        Row: {
+          address: string | null
+          canonical_name: string | null
+          categories_json: Json
+          city: string | null
+          country: string | null
+          created_at: string
+          district: string | null
+          entity_id: string
+          hotel_inventory_json: Json
+          id: string
+          import_run_id: string | null
+          lat: number | null
+          lng: number | null
+          menu_items_json: Json
+          merge_confidence: number
+          missing_fields_json: Json
+          needs_review: boolean
+          opening_hours_json: Json | null
+          phone: string | null
+          photos_json: Json
+          publish_visibility: string
+          service_items_json: Json
+          source_proofs_json: Json
+          subcategories_json: Json
+          updated_at: string
+          vertical: string
+          website: string | null
+        }
+        Insert: {
+          address?: string | null
+          canonical_name?: string | null
+          categories_json?: Json
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          district?: string | null
+          entity_id: string
+          hotel_inventory_json?: Json
+          id?: string
+          import_run_id?: string | null
+          lat?: number | null
+          lng?: number | null
+          menu_items_json?: Json
+          merge_confidence?: number
+          missing_fields_json?: Json
+          needs_review?: boolean
+          opening_hours_json?: Json | null
+          phone?: string | null
+          photos_json?: Json
+          publish_visibility?: string
+          service_items_json?: Json
+          source_proofs_json?: Json
+          subcategories_json?: Json
+          updated_at?: string
+          vertical: string
+          website?: string | null
+        }
+        Update: {
+          address?: string | null
+          canonical_name?: string | null
+          categories_json?: Json
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          district?: string | null
+          entity_id?: string
+          hotel_inventory_json?: Json
+          id?: string
+          import_run_id?: string | null
+          lat?: number | null
+          lng?: number | null
+          menu_items_json?: Json
+          merge_confidence?: number
+          missing_fields_json?: Json
+          needs_review?: boolean
+          opening_hours_json?: Json | null
+          phone?: string | null
+          photos_json?: Json
+          publish_visibility?: string
+          service_items_json?: Json
+          source_proofs_json?: Json
+          subcategories_json?: Json
+          updated_at?: string
+          vertical?: string
+          website?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "onboarding_canonical_records_import_run_id_fkey"
+            columns: ["import_run_id"]
+            isOneToOne: false
+            referencedRelation: "onboarding_import_runs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      onboarding_import_runs: {
+        Row: {
+          created_at: string
+          error_message: string | null
+          id: string
+          input_json: Json
+          result_json: Json | null
+          status: string
+          vertical: string
+        }
+        Insert: {
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          input_json: Json
+          result_json?: Json | null
+          status?: string
+          vertical: string
+        }
+        Update: {
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          input_json?: Json
+          result_json?: Json | null
+          status?: string
+          vertical?: string
+        }
+        Relationships: []
+      }
       onboarding_shop_candidates: {
         Row: {
           address: string | null
@@ -12973,6 +13101,44 @@ export type Database = {
             columns: ["raw_id"]
             isOneToOne: false
             referencedRelation: "imported_shop_raw"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      onboarding_source_records: {
+        Row: {
+          created_at: string
+          id: string
+          import_run_id: string | null
+          payload_json: Json
+          source: string
+          source_entity_id: string
+          vertical: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          import_run_id?: string | null
+          payload_json: Json
+          source: string
+          source_entity_id: string
+          vertical: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          import_run_id?: string | null
+          payload_json?: Json
+          source?: string
+          source_entity_id?: string
+          vertical?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "onboarding_source_records_import_run_id_fkey"
+            columns: ["import_run_id"]
+            isOneToOne: false
+            referencedRelation: "onboarding_import_runs"
             referencedColumns: ["id"]
           },
         ]

@@ -1,20 +1,23 @@
-/**
- * Booking Connector — Stub for Booking.com hotel data.
- */
-import type { SourceConnector, SourceRecord } from "./connector.interface";
+import type { OnboardingConnector, ConnectorQuery } from "./base.connector";
+import type { SourceEntityRecord } from "../types";
 
-export const bookingConnector: SourceConnector = {
-  sourceId: "booking",
-  supportedVerticals: ["hotel"],
-
-  async fetchByUrl(url: string): Promise<SourceRecord | null> {
-    if (!url.includes("booking.com")) return null;
-    console.log(`[booking-connector] fetchByUrl: ${url}`);
-    return null;
-  },
-
-  async fetchBySearch(query: string, city: string): Promise<SourceRecord[]> {
-    console.log(`[booking-connector] search: "${query}" in ${city}`);
-    return [];
+export const bookingConnector: OnboardingConnector = {
+  source: "booking",
+  async search(input: ConnectorQuery): Promise<SourceEntityRecord[]> {
+    if (input.vertical !== "hotel") return [];
+    return [{
+      source: "booking",
+      sourceEntityId: `${input.name ?? "unknown"}:booking`,
+      vertical: "hotel",
+      name: input.name ?? null,
+      city: input.city ?? null,
+      district: input.district ?? null,
+      country: input.country ?? null,
+      hotelInventory: [],
+      photos: [],
+      categories: ["hotel"],
+      subcategories: [],
+      metadata: { fetchedFrom: "booking" },
+    }];
   },
 };

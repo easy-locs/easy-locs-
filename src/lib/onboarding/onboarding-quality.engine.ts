@@ -1,66 +1,51 @@
 /**
- * Onboarding Quality Score Engine — Computes a weighted quality score
- * combining data completeness, source diversity, and content richness.
+ * Onboarding Quality Score Engine — Computes weighted quality score
+ * for a canonical onboarding record.
  */
-import type { OnboardingVertical } from "./source-policy.engine";
-import type { CanonicalMerchantRecord } from "./missing-fields.engine";
-import { detectMissingFields } from "./missing-fields.engine";
+import type { CanonicalOnboardingRecord, OnboardingQualityResult } from "./types";
 
-export interface QualityScoreResult {
-  overallScore: number; // 0-100
-  breakdown: {
-    completeness: number;
-    sourceDiversity: number;
-    contentRichness: number;
-    mediaQuality: number;
-  };
-  tier: "premium" | "standard" | "basic" | "incomplete";
-}
+export function scoreOnboardingQuality(record: CanonicalOnboardingRecord): OnboardingQualityResult {
+  const warnings: string[] = [];
+  const missingFields = [...record.missingFields];
 
-export function computeQualityScore(
-  record: CanonicalMerchantRecord,
-  sourceCount: number = 1
-): QualityScoreResult {
-  const { completenessScore } = detectMissingFields(record);
+  let score = 100;
 
-  // Source diversity (multi-source = higher trust)
-  const sourceDiversity = Math.min(sourceCount * 25, 100);
+  if (!record.canonicalName) score -= 20;
+  if (!record.address) score -= 20;
+  if (record.lat == null || record.lng == null) score -= 20;
+  if (record.categories.length === 0) score -= 10;
+  if (record.photos.length === 0) {
+    score -= 8;
+    warnings.push("No photos");
+  }
 
-  // Content richness
-  let contentRichness = 0;
-  if (record.description && record.description.length > 50) contentRichness += 30;
-  if (record.categories && record.categories.length > 0) contentRichness += 20;
-  if (record.opening_hours_json) contentRichness += 15;
-  if (record.phone) contentRichness += 15;
-  if (record.website) contentRichness += 10;
-  if (record.rating != null) contentRichness += 10;
-  contentRichness = Math.min(contentRichness, 100);
+  if (record.vertical === "food" || record.vertical === "grocery") {
+    if (record.menuItems.length === 0) {
+      score -= 12;
+      warnings.push("No menu items");
+    }
+  }
 
-  // Media quality
-  let mediaQuality = 0;
-  const photoCount = record.photos_json?.length ?? 0;
-  if (photoCount >= 5) mediaQuality = 100;
-  else if (photoCount >= 3) mediaQuality = 75;
-  else if (photoCount >= 1) mediaQuality = 40;
-  if (record.logo_url) mediaQuality = Math.min(mediaQuality + 20, 100);
+  if (record.vertical === "hotel") {
+    if (record.hotelInventory.length === 0) {
+      score -= 12;
+      warnings.push("No hotel inventory");
+    }
+  }
 
-  // Weighted overall
-  const overallScore = Math.round(
-    completenessScore * 0.35 +
-    sourceDiversity * 0.2 +
-    contentRichness * 0.25 +
-    mediaQuality * 0.2
-  );
+  if (record.vertical === "services") {
+    if (record.serviceItems.length === 0) {
+      score -= 10;
+      warnings.push("No service items");
+    }
+  }
 
-  let tier: QualityScoreResult["tier"];
-  if (overallScore >= 80) tier = "premium";
-  else if (overallScore >= 60) tier = "standard";
-  else if (overallScore >= 40) tier = "basic";
-  else tier = "incomplete";
+  score = Math.max(0, score);
 
   return {
-    overallScore,
-    breakdown: { completeness: completenessScore, sourceDiversity, contentRichness, mediaQuality },
-    tier,
+    score,
+    missingFields,
+    warnings,
+    readyToPublish: score >= 75 && missingFields.length <= 1,
   };
 }
