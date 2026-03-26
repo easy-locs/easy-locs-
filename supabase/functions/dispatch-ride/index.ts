@@ -61,6 +61,7 @@ serve(async (req) => {
         merchant_id, order_id, parcel_reference,
         seats_requested, item_type, package_size, notes,
         quoted_price, currency,
+        parcel_detail,
       } = body;
 
       if (!job_type || !service_level) throw new Error("job_type and service_level required");
@@ -150,6 +151,26 @@ serve(async (req) => {
           total_fare: totalFare,
           currency: currency || "AED",
           reason: isScheduled ? "scheduled_quote" : "initial_quote",
+        });
+      }
+
+      // Insert parcel details if provided
+      if (parcel_detail && job_type === "parcel_delivery") {
+        await db.from("parcel_job_details").insert({
+          job_id: job.id,
+          parcel_type: parcel_detail.parcel_type || "general_goods",
+          package_size: parcel_detail.package_size || "medium_box",
+          package_weight_kg: parcel_detail.package_weight_kg || null,
+          package_count: parcel_detail.package_count || 1,
+          fragile: parcel_detail.fragile || false,
+          requires_signature: parcel_detail.requires_signature || false,
+          requires_otp: parcel_detail.requires_otp || false,
+          pickup_contact_name: parcel_detail.pickup_contact_name || null,
+          pickup_contact_phone: parcel_detail.pickup_contact_phone || null,
+          dropoff_contact_name: parcel_detail.dropoff_contact_name || null,
+          dropoff_contact_phone: parcel_detail.dropoff_contact_phone || null,
+          declared_value_amount: parcel_detail.declared_value_amount || null,
+          special_instructions: parcel_detail.special_instructions || null,
         });
       }
 
