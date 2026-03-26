@@ -14,7 +14,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { motion } from "framer-motion";
-import { useGeoLiveStation } from "@/hooks/useGeoLiveStation";
+import { useArbitratedStation } from "@/hooks/useArbitratedStation";
 import { cn } from "@/lib/utils";
 
 const DELIVERY_MODES = [
@@ -91,7 +91,7 @@ const WEATHER_ICON: Record<string, React.ReactNode> = {
 export default function MobilityDeliveryPage() {
   const navigate = useNavigate();
   const { jobs, loading: jobsLoading, hydrateMyJobs, refreshJob } = useCustomerMobilityStore();
-  const station = useGeoLiveStation();
+  const station = useArbitratedStation();
 
   useEffect(() => { hydrateMyJobs(); }, []);
 
