@@ -49,34 +49,51 @@ const SECTION_DEFS = [
   { key: "nearYou", title: "Near You", icon: "📍" },
 ] as const;
 
-/* ═══ Compact Header ═══ */
-const CompactHeader = memo(({ city, greeting, onLocationTap }: { city: string | null; greeting: string; onLocationTap: () => void }) => {
+/* ═══ Top Hero Banner — Careem-style with location + search ═══ */
+const TopHeroBanner = memo(({ city, greeting, timezone, onLocationTap }: { city: string | null; greeting: string; timezone?: string; onLocationTap: () => void }) => {
+  const hero = getSmartHero(timezone);
   const engine = useOrbitEngine();
+  const locationLabel = city || "your area";
+
   return (
-    <div className="flex items-center gap-2 mb-2">
-      <button onClick={onLocationTap} className="flex items-center gap-1.5 min-w-0 shrink text-left active:scale-95 transition-transform">
-        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-          {city ? <MapPin className="h-3.5 w-3.5 text-primary" /> : <Navigation className="h-3.5 w-3.5 text-primary animate-pulse" />}
+    <div className="rounded-2xl p-4 mb-3 relative overflow-hidden" style={{ background: hero.gradient }}>
+      {/* Location + Notification row */}
+      <div className="flex items-center justify-between mb-2 relative z-10">
+        <button onClick={onLocationTap} className="flex items-center gap-1.5 min-w-0 active:scale-95 transition-transform">
+          <MapPin className="h-3.5 w-3.5 text-white/70 shrink-0" />
+          <span className="text-white/70 text-[11px] font-medium truncate">{locationLabel}</span>
+        </button>
+        <Link to="/dashboard/notifications" className="relative shrink-0 w-8 h-8 rounded-full bg-white/15 flex items-center justify-center active:scale-95 transition-transform">
+          <Bell className="h-3.5 w-3.5 text-white/80" />
+          {engine.pendingNotifications > 0 && (
+            <span className="absolute -top-0.5 -right-0.5 min-w-[14px] h-3.5 rounded-full bg-destructive text-[8px] font-bold text-destructive-foreground flex items-center justify-center px-0.5">
+              {engine.pendingNotifications > 9 ? "9+" : engine.pendingNotifications}
+            </span>
+          )}
+        </Link>
+      </div>
+
+      {/* Title + emoji */}
+      <div className="flex items-center justify-between relative z-10 mb-2">
+        <div className="min-w-0 flex-1">
+          <h2 className="text-white text-lg font-black leading-tight">{hero.title}</h2>
+          <p className="text-white/60 text-[11px] mt-0.5">{hero.subtitle}</p>
         </div>
-        <div className="min-w-0">
-          <p className="text-[10px] text-muted-foreground leading-none">{greeting}</p>
-          <div className="flex items-center gap-1.5">
-            <p className="text-xs font-bold text-foreground truncate">{city || "📍 Set location"}</p>
-            <GeoStatusIndicator compact showRetry={false} />
-          </div>
-        </div>
-      </button>
-      <div className="flex-1">
+        <span className="text-4xl select-none ml-3 opacity-60">{hero.emoji}</span>
+      </div>
+
+      {/* CTA */}
+      <Link
+        to={hero.route}
+        className="inline-flex items-center gap-1 px-4 py-2 rounded-full bg-white/20 backdrop-blur-sm text-white text-[11px] font-bold active:bg-white/30 transition-colors relative z-10 mb-3"
+      >
+        {hero.cta} <ChevronRight className="h-3 w-3" />
+      </Link>
+
+      {/* Search bar inside banner */}
+      <div className="relative z-10">
         <UnifiedSearchBar variant="fullscreen" placeholder="Search anything…" />
       </div>
-      <Link to="/dashboard/notifications" className="relative shrink-0 w-8 h-8 rounded-full bg-muted/30 flex items-center justify-center active:scale-95 transition-transform">
-        <Bell className="h-3.5 w-3.5 text-foreground" />
-        {engine.pendingNotifications > 0 && (
-          <span className="absolute -top-0.5 -right-0.5 min-w-[14px] h-3.5 rounded-full bg-destructive text-[8px] font-bold text-destructive-foreground flex items-center justify-center px-0.5">
-            {engine.pendingNotifications > 9 ? "9+" : engine.pendingNotifications}
-          </span>
-        )}
-      </Link>
     </div>
   );
 });
