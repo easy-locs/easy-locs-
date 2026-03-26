@@ -10,7 +10,7 @@ export default function CategorySubscriptions() {
   const { subs, isSubscribed, toggleSubscription, loading } = useCategorySubscriptions();
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="app-mobile-page bg-background">
       <SEOHead title="Category Notifications — Easy-Locs" description="Subscribe to categories and get alerts when new listings are published." />
       <Navbar />
       <div className="container mx-auto max-w-3xl px-4 pt-24 pb-16">

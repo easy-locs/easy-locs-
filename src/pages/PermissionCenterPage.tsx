@@ -116,7 +116,7 @@ export default function PermissionCenterPage() {
 
   if (!perms) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="app-mobile-page bg-background flex items-center justify-center">
         <div className="animate-pulse text-muted-foreground text-sm">Loading permissions…</div>
       </div>
     );
@@ -125,7 +125,7 @@ export default function PermissionCenterPage() {
   const grantedCount = Object.values(perms).filter((v) => v === "granted").length;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="app-mobile-page bg-background">
       {/* Header */}
       <div className="bg-gradient-to-b from-primary/5 to-background px-4 pt-12 pb-6">
         <div className="flex items-center gap-3 mb-4">

@@ -63,7 +63,7 @@ export default function QrGeneratePage() {
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground p-6 max-w-4xl mx-auto space-y-8">
+    <div className="app-mobile-page bg-background text-foreground p-6 max-w-4xl mx-auto space-y-8">
       <div>
         <h1 className="text-2xl font-bold">QR Generator</h1>
         <p className="text-muted-foreground text-sm mt-1">

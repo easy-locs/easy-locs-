@@ -52,7 +52,7 @@ export default function QrTrackingPage() {
   const orderList = orders?.orders ?? [];
 
   return (
-    <div className="min-h-[100dvh] bg-background flex flex-col">
+    <div className="app-mobile-page bg-background flex flex-col">
       <header className="flex items-center gap-3 px-4 py-3 border-b border-border/10">
         <button onClick={() => navigate(-1)} className="w-9 h-9 rounded-xl flex items-center justify-center bg-muted active:scale-95">
           <ArrowLeft className="w-4 h-4 text-foreground" />

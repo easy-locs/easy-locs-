@@ -104,7 +104,7 @@ export default function RestaurantPage() {
   };
 
   return (
-    <div className="min-h-[100dvh] flex flex-col bg-background">
+    <div className="app-mobile-page flex flex-col bg-background">
       <div className="relative w-full h-52 shrink-0" data-cover-image>
         {shop?.cover_image ? (
           <img src={shop.cover_image} alt={shop?.name || ""} className="w-full h-full object-cover" />

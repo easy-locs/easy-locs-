@@ -123,7 +123,7 @@ export default function PropertiesShowcase() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="app-mobile-page bg-background">
       <SEOHead
         title="Properties for Sale & Rent Worldwide — Real Estate Listings | Easy-Locs"
         description="Discover professional real estate listings worldwide. Properties for sale, long-term rent, and seasonal rental with high-quality photos, full details, and direct owner contact. Start browsing now."

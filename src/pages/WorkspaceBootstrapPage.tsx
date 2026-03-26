@@ -24,7 +24,7 @@ export default function WorkspaceBootstrapPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background p-4 space-y-6">
+    <div className="app-mobile-page bg-background p-4 space-y-6">
       <BackCard label="Back" to="/dashboard" />
       <div className="space-y-1">
         <h1 className="text-2xl font-bold text-foreground">Workspace Bootstrap</h1>

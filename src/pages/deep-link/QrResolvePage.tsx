@@ -35,7 +35,7 @@ export default function QrResolvePage() {
     return (
       <>
         <SEOHead title="QR — Easy Locs" description="Scan QR codes" />
-        <div className="min-h-screen bg-background">
+        <div className="app-mobile-page bg-background">
           <MobilePageHeader title="QR Code" backTo="/discover" />
           <div className="max-w-md mx-auto px-4 pt-16 text-center space-y-4">
             <div className="w-16 h-16 rounded-full bg-muted/30 flex items-center justify-center mx-auto">
@@ -55,7 +55,7 @@ export default function QrResolvePage() {
     return (
       <>
         <SEOHead title="QR Expired — Easy Locs" description="This QR code has expired" />
-        <div className="min-h-screen bg-background">
+        <div className="app-mobile-page bg-background">
           <MobilePageHeader title="QR Code" backTo="/discover" />
           <div className="max-w-md mx-auto px-4 pt-16 text-center space-y-4">
             <div className="w-16 h-16 rounded-full bg-destructive/10 flex items-center justify-center mx-auto">
@@ -75,7 +75,7 @@ export default function QrResolvePage() {
     return (
       <>
         <SEOHead title="Security Verification — Easy Locs" description="QR security verification" />
-        <div className="min-h-screen bg-background">
+        <div className="app-mobile-page bg-background">
           <MobilePageHeader title="Security Verification" backTo="/discover" />
           <div className="max-w-md mx-auto px-4 pt-8 pb-24 space-y-6">
             <div className="rounded-2xl border border-border bg-card p-6 text-center space-y-3">
@@ -102,7 +102,7 @@ export default function QrResolvePage() {
     return (
       <>
         <SEOHead title="Pay — Easy Locs" description="QR payment" />
-        <div className="min-h-screen bg-background">
+        <div className="app-mobile-page bg-background">
           <MobilePageHeader title="Pay" backTo="/discover" />
           <div className="max-w-md mx-auto px-4 pt-8 pb-24 space-y-6">
             <div className="rounded-2xl border border-border bg-card p-6 text-center space-y-3">

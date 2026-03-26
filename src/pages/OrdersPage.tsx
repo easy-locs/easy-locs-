@@ -45,7 +45,7 @@ export default function OrdersPage() {
   });
 
   return (
-    <div className="min-h-[100dvh] flex flex-col" style={{ background: "hsl(var(--background))" }}>
+    <div className="app-mobile-page flex flex-col" style={{ background: "hsl(var(--background))" }}>
       <div className="flex items-center gap-3 px-4 pt-safe pb-3" style={{ paddingTop: "max(env(safe-area-inset-top, 12px), 12px)" }}>
         <button onClick={() => navigate(-1)} className="w-9 h-9 rounded-full flex items-center justify-center active:scale-90 transition-transform" style={{ background: "hsl(var(--muted))" }}>
           <ArrowLeft className="w-4.5 h-4.5" />

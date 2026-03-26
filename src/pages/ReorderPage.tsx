@@ -66,7 +66,7 @@ export default function ReorderPage() {
   }, [orderId]);
 
   return (
-    <div className="min-h-[100dvh] flex items-center justify-center bg-background">
+    <div className="app-mobile-page flex items-center justify-center bg-background">
       {loading && <p className="text-sm text-muted-foreground">Preparing reorder...</p>}
       {!loading && !done && <p className="text-sm text-destructive">Could not prepare reorder.</p>}
     </div>

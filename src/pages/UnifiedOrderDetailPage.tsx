@@ -76,7 +76,7 @@ export default function UnifiedOrderDetailPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background pb-20">
+      <div className="app-mobile-page bg-background pb-20">
         <MobilePageHeader title="Order Details" icon={<ShoppingBag className="h-5 w-5 text-primary" />} backTo="/my-orders" />
         <div className="max-w-lg mx-auto px-4 py-4 space-y-4">
           <Skeleton className="h-20 w-full rounded-xl" />
@@ -90,7 +90,7 @@ export default function UnifiedOrderDetailPage() {
 
   if (!order) {
     return (
-      <div className="min-h-screen bg-background pb-20">
+      <div className="app-mobile-page bg-background pb-20">
         <MobilePageHeader title="Order Details" icon={<ShoppingBag className="h-5 w-5 text-primary" />} backTo="/my-orders" />
         <MapEmptyState
           icon={<ShoppingBag className="h-6 w-6 text-muted-foreground/40" />}
@@ -112,7 +112,7 @@ export default function UnifiedOrderDetailPage() {
   return (
     <>
       <SEOHead title={`Order #${orderId?.slice(0, 8).toUpperCase()}`} description="Track your order in real time" />
-      <div className="min-h-screen bg-background pb-20">
+      <div className="app-mobile-page bg-background pb-20">
         <MobilePageHeader
           title={`Order #${orderId?.slice(0, 8).toUpperCase()}`}
           icon={<ShoppingBag className="h-5 w-5 text-primary" />}

@@ -129,7 +129,7 @@ export default function PublicRealEstateListing() {
   };
 
   if (loading) return (
-    <div className="min-h-screen bg-background flex items-center justify-center">
+    <div className="app-mobile-page bg-background flex items-center justify-center">
       <div className="animate-pulse space-y-4 w-full max-w-2xl px-4">
         <div className="h-64 sm:h-80 bg-muted rounded-2xl" />
         <div className="h-8 bg-muted rounded w-3/4" />
@@ -139,7 +139,7 @@ export default function PublicRealEstateListing() {
   );
 
   if (!listing) return (
-    <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-5 px-4">
+    <div className="app-mobile-page bg-background flex flex-col items-center justify-center gap-5 px-4">
       <Home className="h-16 sm:h-20 w-16 sm:w-20 text-muted-foreground/15" />
       <p className="text-muted-foreground text-lg sm:text-xl font-medium">Listing not found</p>
       <Link to="/properties"><Button variant="outline" className="rounded-lg min-h-[44px]"><ArrowLeft className="h-4 w-4 mr-2" /> Browse properties</Button></Link>
@@ -196,7 +196,7 @@ export default function PublicRealEstateListing() {
   ];
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="app-mobile-page bg-background">
       <SEOHead
         title={`${listing.title} — ${listing.city} | Easy-Locs`}
         description={seoDescription}

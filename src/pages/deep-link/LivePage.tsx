@@ -15,7 +15,7 @@ export default function LivePage() {
   return (
     <>
       <SEOHead title="Live — Easy Locs" description="Watch live streams and shop in real-time" />
-      <div className="min-h-screen bg-background">
+      <div className="app-mobile-page bg-background">
         <MobilePageHeader title="Live" backTo="/discover" />
 
         <div className="max-w-md mx-auto px-4 pt-6 pb-24 space-y-6">

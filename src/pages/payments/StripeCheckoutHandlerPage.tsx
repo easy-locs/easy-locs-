@@ -40,7 +40,7 @@ export default function StripeCheckoutHandlerPage() {
   }, [navigate, params]);
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+    <div className="app-mobile-page bg-background flex items-center justify-center p-4">
       <div className="rounded-2xl border border-border/20 bg-card p-6 text-center max-w-sm w-full">
         <h1 className="text-lg font-bold text-foreground">Payment Confirmation</h1>
         <p className="text-sm text-muted-foreground mt-2">

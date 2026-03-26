@@ -51,7 +51,7 @@ export default function MerchantStoreSettingsPage() {
 
   if (!merchant || !form) {
     return (
-      <div className="min-h-[100dvh] flex flex-col bg-background p-4">
+      <div className="app-mobile-page flex flex-col bg-background p-4">
         <Skeleton className="h-40 rounded-2xl" />
       </div>
     );
@@ -102,7 +102,7 @@ export default function MerchantStoreSettingsPage() {
   }));
 
   return (
-    <div className="min-h-[100dvh] flex flex-col bg-background">
+    <div className="app-mobile-page flex flex-col bg-background">
       <header className="flex items-center gap-3 px-4 pt-4 pb-3">
         <button onClick={() => navigate("/merchant/dashboard")} className="w-9 h-9 rounded-xl bg-muted flex items-center justify-center active:scale-95 transition-transform">
           <ArrowLeft className="w-4.5 h-4.5" />

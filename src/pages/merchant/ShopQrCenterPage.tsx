@@ -38,7 +38,7 @@ export default function ShopQrCenterPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="app-mobile-page bg-background flex items-center justify-center">
         <Loader2 className="w-6 h-6 animate-spin text-primary" />
       </div>
     );
@@ -46,7 +46,7 @@ export default function ShopQrCenterPage() {
 
   if (!ctx) {
     return (
-      <div className="min-h-screen bg-background p-4">
+      <div className="app-mobile-page bg-background p-4">
         <MobilePageHeader title="QR Center" onBack={() => navigate(-1)} />
         <p className="text-sm text-muted-foreground mt-8 text-center">Shop not found</p>
       </div>
@@ -97,7 +97,7 @@ export default function ShopQrCenterPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-background pb-[calc(96px+env(safe-area-inset-bottom))]">
+    <div className="app-mobile-page bg-background pb-[calc(96px+env(safe-area-inset-bottom))]">
       <MobilePageHeader title={`QR Center — ${ctx.name}`} onBack={() => navigate(-1)} />
 
       <div className="max-w-md mx-auto px-4 py-4 space-y-4">

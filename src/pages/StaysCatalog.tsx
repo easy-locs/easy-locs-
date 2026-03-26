@@ -66,7 +66,7 @@ const StaysCatalog = () => {
   const basePath = `/stays${country ? `/${country}` : ""}${city ? `/${city}` : ""}`;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="app-mobile-page bg-background">
       <SEOHead title={seoTitle} description={seoDesc} canonical={`https://www.easy-locs.com${basePath}`} />
       <header className="sticky top-0 z-40 bg-background/90 backdrop-blur-lg border-b border-border">
         <div className="max-w-6xl mx-auto px-4 h-12 flex items-center justify-between">

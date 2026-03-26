@@ -46,7 +46,7 @@ export default function UserProfilePage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background p-4 space-y-4">
+      <div className="app-mobile-page bg-background p-4 space-y-4">
         <Skeleton className="h-24 w-24 rounded-full mx-auto" />
         <Skeleton className="h-6 w-48 mx-auto" />
         <Skeleton className="h-4 w-32 mx-auto" />
@@ -56,7 +56,7 @@ export default function UserProfilePage() {
 
   if (!profile) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="app-mobile-page bg-background flex items-center justify-center">
         <div className="text-center space-y-3">
           <p className="text-lg font-semibold text-foreground">User not found</p>
           <Link to="/discover">
@@ -73,7 +73,7 @@ export default function UserProfilePage() {
   return (
     <>
       <SEOHead title={`${displayName} — Easy Locs`} description={profile.bio || `${displayName}'s profile`} />
-      <div className="min-h-screen bg-background">
+      <div className="app-mobile-page bg-background">
         <MobilePageHeader title="Profile" backTo="/discover" />
 
         <div className="max-w-md mx-auto px-4 pt-6 pb-24 space-y-6">

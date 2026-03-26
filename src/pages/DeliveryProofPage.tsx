@@ -39,7 +39,7 @@ export default function DeliveryProofPage() {
 
   if (submitted) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background p-4">
+      <div className="app-mobile-page flex items-center justify-center bg-background p-4">
         <div className="text-center space-y-4">
           <CheckCircle className="h-16 w-16 text-green-500 mx-auto" />
           <h2 className="text-xl font-bold text-foreground">Proof Submitted</h2>
@@ -50,7 +50,7 @@ export default function DeliveryProofPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background p-4">
+    <div className="app-mobile-page bg-background p-4">
       <div className="max-w-md mx-auto space-y-6">
         <div className="text-center space-y-2">
           <Camera className="h-12 w-12 text-primary mx-auto" />

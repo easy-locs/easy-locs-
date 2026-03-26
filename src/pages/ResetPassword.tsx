@@ -47,7 +47,7 @@ const ResetPassword = () => {
   };
 
   return (
-    <div className="min-h-screen bg-hero flex items-center justify-center p-4">
+    <div className="app-mobile-page bg-hero flex items-center justify-center p-4">
       <AuthBrand />
 
       <div className="bg-card rounded-2xl shadow-card-hover p-8 sm:p-10 max-w-md w-full">

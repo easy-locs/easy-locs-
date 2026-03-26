@@ -31,7 +31,7 @@ export default function QrEntryPage() {
 
   if (error) {
     return (
-      <div className="min-h-[100dvh] flex flex-col bg-background">
+      <div className="app-mobile-page flex flex-col bg-background">
         <header className="flex items-center gap-3 px-4 py-3 border-b border-border/10">
           <button onClick={() => navigate(-1)} className="w-9 h-9 rounded-xl flex items-center justify-center bg-muted active:scale-95 transition-transform">
             <ArrowLeft className="w-4 h-4 text-foreground" />
@@ -56,7 +56,7 @@ export default function QrEntryPage() {
   }
 
   return (
-    <div className="min-h-[100dvh] flex flex-col items-center justify-center bg-background">
+    <div className="app-mobile-page flex flex-col items-center justify-center bg-background">
       <div className="w-16 h-16 rounded-2xl flex items-center justify-center bg-primary/10 mb-4">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
       </div>

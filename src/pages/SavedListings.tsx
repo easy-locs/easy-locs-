@@ -25,7 +25,7 @@ export default function SavedListings() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="app-mobile-page bg-background">
       <SEOHead title="Saved Listings — Easy-Locs" description="Your saved listings and opportunities" />
       <Navbar />
       <div className="container mx-auto max-w-4xl px-4 pt-24 pb-16">

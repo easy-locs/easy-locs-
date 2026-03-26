@@ -64,13 +64,13 @@ export default function ShopCategoryPage() {
   const otherCategories = SEO_SERVICE_CATEGORIES.filter(s => s.slug !== category).slice(0, 6);
 
   if (isLoading) return (
-    <div className="min-h-screen bg-background flex items-center justify-center">
+    <div className="app-mobile-page bg-background flex items-center justify-center">
       <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
     </div>
   );
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="app-mobile-page bg-background">
       <SEOHead
         title={`${title} | Easy-Locs`}
         description={`Browse ${title.toLowerCase()} on Easy-Locs. Book trusted local services.`}

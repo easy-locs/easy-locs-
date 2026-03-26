@@ -81,7 +81,7 @@ export default function PaymentConfirmPage() {
   const walletWarning = target && target.walletStatus !== "active";
 
   return (
-    <div className="min-h-[100dvh] bg-background pb-24 relative">
+    <div className="app-mobile-page bg-background pb-24 relative">
       <PremiumPaymentSuccess
         open={showPremiumSuccess}
         logoUrl="/easylocs-logo.png"

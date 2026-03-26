@@ -137,7 +137,7 @@ export default function AccountShowcase() {
   };
 
   if (loading) return (
-    <div className="min-h-screen bg-background flex items-center justify-center">
+    <div className="app-mobile-page bg-background flex items-center justify-center">
       <div className="animate-pulse space-y-4 w-full max-w-xl px-4">
         <div className="h-24 bg-muted rounded-2xl" />
         <div className="h-6 bg-muted rounded w-1/2" />
@@ -147,7 +147,7 @@ export default function AccountShowcase() {
   );
 
   if (!profile) return (
-    <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-5 px-4">
+    <div className="app-mobile-page bg-background flex flex-col items-center justify-center gap-5 px-4">
       <Building2 className="h-16 w-16 text-muted-foreground/15" />
       <p className="text-muted-foreground text-lg font-medium">Agency not found</p>
       <Link to="/properties"><Button variant="outline" className="rounded-lg min-h-[44px]">Browse all properties</Button></Link>
@@ -158,7 +158,7 @@ export default function AccountShowcase() {
   const seoDescription = `Browse ${listings.length} professional property listings from ${profile.display_name}${profile.city ? ` in ${profile.city}` : ""}. Properties for sale, long-term rent, and seasonal rental. Contact directly.`;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="app-mobile-page bg-background">
       <SEOHead title={seoTitle} description={seoDescription} canonical={`https://www.easy-locs.com/agency/${accountSlug}`} />
 
       {/* Header */}

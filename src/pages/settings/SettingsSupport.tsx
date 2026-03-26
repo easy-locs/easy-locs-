@@ -15,7 +15,7 @@ export default function SettingsSupport() {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-[100dvh] flex flex-col bg-background">
+    <div className="app-mobile-page flex flex-col bg-background">
       <header className="flex items-center gap-3 px-4 pt-4 pb-3">
         <button
           onClick={() => navigate("/settings")}

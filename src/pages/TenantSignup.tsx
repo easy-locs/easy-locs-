@@ -86,7 +86,7 @@ const TenantSignup = () => {
 
   if (validating) {
     return (
-      <div className="min-h-screen bg-hero flex items-center justify-center">
+      <div className="app-mobile-page bg-hero flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
@@ -94,7 +94,7 @@ const TenantSignup = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-hero flex items-center justify-center p-4">
+      <div className="app-mobile-page bg-hero flex items-center justify-center p-4">
         <div className="bg-card rounded-2xl shadow-card-hover p-8 sm:p-10 max-w-md w-full text-center">
           <AlertTriangle className="h-12 w-12 text-destructive mx-auto mb-4" />
           <h1 className="text-xl font-bold text-foreground mb-2">{t("page.tsignup.invalid_invitation")}</h1>
@@ -108,7 +108,7 @@ const TenantSignup = () => {
   }
 
   return (
-    <div className="min-h-screen bg-hero flex items-center justify-center p-4">
+    <div className="app-mobile-page bg-hero flex items-center justify-center p-4">
       <AuthBrand />
 
       <div className="bg-card rounded-2xl shadow-card-hover p-8 sm:p-10 max-w-md w-full">

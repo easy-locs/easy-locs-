@@ -406,7 +406,7 @@ export default function DeliveryCommandCenter() {
   };
 
   return (
-    <div className="min-h-screen bg-background pb-20">
+    <div className="app-mobile-page bg-background pb-20">
       <MobilePageHeader title="Delivery Command" backTo="/dashboard" />
 
       {/* Stats */}

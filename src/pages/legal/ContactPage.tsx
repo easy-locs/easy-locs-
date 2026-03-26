@@ -24,7 +24,7 @@ const ContactPage = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="app-mobile-page flex flex-col">
       <SEOHead
         title="Contact Easy-Locs — Support & Inquiries"
         description="Get in touch with the Easy-Locs team. Support, partnerships, and inquiries for our property management platform."

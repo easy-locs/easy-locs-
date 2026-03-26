@@ -27,7 +27,7 @@ const HelpPage = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="app-mobile-page flex flex-col">
       <SEOHead
         title="Help & FAQ — Easy-Locs Property Management"
         description="Find answers to common questions about Easy-Locs. How to add properties, invite tenants, generate receipts and more."

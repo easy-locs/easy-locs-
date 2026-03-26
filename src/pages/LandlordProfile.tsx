@@ -38,7 +38,7 @@ const LandlordProfile = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="app-mobile-page bg-background flex items-center justify-center">
         <div className="animate-pulse text-muted-foreground">Loading...</div>
       </div>
     );
@@ -46,7 +46,7 @@ const LandlordProfile = () => {
 
   if (notFound || !landlord) {
     return (
-      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6">
+      <div className="app-mobile-page bg-background flex flex-col items-center justify-center p-6">
         <h1 className="text-2xl font-bold text-foreground mb-4">Profile not found</h1>
         <Link to="/" className="text-accent hover:underline flex items-center gap-2">
           <ArrowLeft className="h-4 w-4" /> Back to Easy-Locs
@@ -61,7 +61,7 @@ const LandlordProfile = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="app-mobile-page bg-background">
       {/* Nav */}
       <nav className="border-b border-border bg-card/80 backdrop-blur sticky top-0 z-50">
         <div className="max-w-4xl mx-auto flex flex-wrap items-center justify-between gap-2 px-4 sm:px-6 py-3">
