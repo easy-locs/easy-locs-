@@ -31,10 +31,14 @@ const BRIDGE_MAP: Record<string, string> = {
   "booking.confirmed": "order.confirmed",
   "booking.completed": "order.completed",
   "booking.cancelled": "order.cancelled",
+  "booking.confirmation.required": "order.confirmation_required",
+  "booking.payment.required": "order.payment_required",
   // Storefront orchestration
   "ORDER_CREATED": "order.created",
   "ORDER_COMPLETED": "order.completed",
   "ORDER_DELIVERED": "order.completed",
+  "ORDER_CONFIRMED": "order.confirmed",
+  "ORDER_READY": "order.ready",
   "PAYMENT_SUCCESS": "wallet.updated",
   // QR
   "qr.payment.completed": "wallet.updated",
@@ -49,6 +53,13 @@ const BRIDGE_MAP: Record<string, string> = {
   "PUBLISH_GATE_PASSED": "entity.published",
   "PUBLISH_GATE_BLOCKED": "entity.blocked",
   "DELIVERY_COMPLETED": "delivery.completed",
+  // Calls
+  "call.started": "call.started",
+  "call.ended": "call.ended",
+  // Listings
+  "listing.created": "listing.created",
+  "listing.published": "listing.published",
+  "listing.updated": "listing.updated",
 };
 
 // Register bridge listeners
