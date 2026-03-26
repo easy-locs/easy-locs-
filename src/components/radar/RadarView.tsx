@@ -26,6 +26,7 @@ import { useV2AuthStore } from "@/stores/v2AuthStore";
 import { useRadarPlaceStore } from "@/stores/radarPlaceStore";
 import RadarPlaceSearch from "@/components/radar/RadarPlaceSearch";
 import RadarZoneOverlayCard from "@/components/radar/RadarZoneOverlayCard";
+import { RadarOpportunityFeed } from "@/components/radar/RadarOpportunityFeed";
 import RadarLiveStationCard from "@/components/radar/RadarLiveStationCard";
 import {
   MapPin, List, Star, Navigation, Flame, Filter,
