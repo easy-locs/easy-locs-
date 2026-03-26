@@ -32,7 +32,7 @@ eventBus.on("merchant.visibility.refresh", async (payload) => {
     // Fetch active storefronts in this zone for availability signals
     const { data: storefronts, error } = await supabase
       .from("storefront_pages")
-      .select("id, shop_name, status, is_live, city, country")
+      .select("id, name, status, active, city, country")
       .eq("status", "active")
       .limit(100);
 
@@ -48,7 +48,7 @@ eventBus.on("merchant.visibility.refresh", async (payload) => {
              s.country?.toUpperCase() === countryCode?.toUpperCase();
     });
 
-    const liveCount = zoneRelevant.filter((s) => s.is_live).length;
+    const liveCount = zoneRelevant.filter((s) => s.active).length;
     const totalCount = zoneRelevant.length;
 
     // Emit downstream for search serviceability and radar layers
