@@ -228,32 +228,24 @@ const Index = () => {
         </Suspense>
 
         {/* 11. Offers */}
-        {!isMobile && (
-          <Suspense fallback={<SectionLoader />}>
-            <OffersSection />
-          </Suspense>
-        )}
+        <Suspense fallback={<SectionLoader />}>
+          <OffersSection />
+        </Suspense>
 
         {/* 12. For You */}
-        {!isMobile && (
-          <Suspense fallback={<SectionLoader />}>
-            <ForYouSection />
-          </Suspense>
-        )}
+        <Suspense fallback={<SectionLoader />}>
+          <ForYouSection />
+        </Suspense>
 
         {/* 12b. Smart Recommendations */}
-        {!isMobile && (
-          <Suspense fallback={null}>
-            <SmartRecommendationsSection />
-          </Suspense>
-        )}
+        <Suspense fallback={null}>
+          <SmartRecommendationsSection />
+        </Suspense>
 
         {/* 12c. Promo Carousel */}
-        {!isMobile && (
-          <Suspense fallback={null}>
-            <HomePromoCarousel />
-          </Suspense>
-        )}
+        <Suspense fallback={null}>
+          <HomePromoCarousel />
+        </Suspense>
 
         {/* 13. Value Proposition */}
         <Suspense fallback={<SectionLoader />}>
@@ -306,11 +298,9 @@ const Index = () => {
         </Suspense>
 
         {/* 13k. Remote Entrepreneurship */}
-        {!isMobile && (
-          <Suspense fallback={<SectionLoader />}>
-            <RemoteEntrepreneurship />
-          </Suspense>
-        )}
+        <Suspense fallback={<SectionLoader />}>
+          <RemoteEntrepreneurship />
+        </Suspense>
 
         {/* 14. Browse by Country + Cities */}
         {!isMobile && (
@@ -337,54 +327,40 @@ const Index = () => {
         )}
 
         {/* 17. Trust */}
-        {!isMobile && (
-          <Suspense fallback={<SectionLoader />}>
-            <TrustSection />
-          </Suspense>
-        )}
+        <Suspense fallback={<SectionLoader />}>
+          <TrustSection />
+        </Suspense>
 
         {/* 18. Pricing */}
-        {!isMobile && (
-          <Suspense fallback={<SectionLoader />}>
-            <Pricing />
-          </Suspense>
-        )}
+        <Suspense fallback={<SectionLoader />}>
+          <Pricing />
+        </Suspense>
 
         {/* 19. FAQ */}
-        {!isMobile && (
-          <Suspense fallback={<SectionLoader />}>
-            <LandingFAQ />
-          </Suspense>
-        )}
+        <Suspense fallback={<SectionLoader />}>
+          <LandingFAQ />
+        </Suspense>
 
         {/* 20. Newsletter */}
-        {!isMobile && (
-          <Suspense fallback={<SectionLoader />}>
-            <Newsletter />
-          </Suspense>
-        )}
+        <Suspense fallback={<SectionLoader />}>
+          <Newsletter />
+        </Suspense>
 
         {/* 21. Social Proof */}
-        {!isMobile && (
-          <Suspense fallback={null}>
-            <SocialProofStrip />
-          </Suspense>
-        )}
+        <Suspense fallback={null}>
+          <SocialProofStrip />
+        </Suspense>
 
         {/* 22. Legal Disclaimer */}
-        {!isMobile && (
-          <Suspense fallback={null}>
-            <LegalDisclaimer />
-          </Suspense>
-        )}
+        <Suspense fallback={null}>
+          <LegalDisclaimer />
+        </Suspense>
       </div>
 
       {/* Footer */}
-      {!isMobile && (
-        <Suspense fallback={null}>
-          <Footer />
-        </Suspense>
-      )}
+      <Suspense fallback={null}>
+        <Footer />
+      </Suspense>
     </div>
   );
 };
