@@ -223,7 +223,7 @@ export default function RealTimeDataHub({ orgId, className }: { orgId: string; c
           </div>
           {[
             { table: "mobility_jobs", rows: "12,847", size: "34 MB", updated: "il y a 2s" },
-            { table: "driver_sessions", rows: "1,284", size: "8 MB", updated: "il y a 1s" },
+            { table: "rider_presence", rows: "1,284", size: "8 MB", updated: "il y a 1s" },
             { table: "escrow_payments", rows: "8,432", size: "22 MB", updated: "il y a 5s" },
             { table: "delivery_ratings", rows: "6,215", size: "12 MB", updated: "il y a 8s" },
           ].map(t => (
