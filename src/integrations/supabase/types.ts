@@ -164,6 +164,47 @@ export type Database = {
           },
         ]
       }
+      acquisition_outreach_logs: {
+        Row: {
+          channel: string
+          id: string
+          merchant_id: string | null
+          message_template: string | null
+          responded_at: string | null
+          response: string | null
+          sent_at: string | null
+          status: string | null
+        }
+        Insert: {
+          channel?: string
+          id?: string
+          merchant_id?: string | null
+          message_template?: string | null
+          responded_at?: string | null
+          response?: string | null
+          sent_at?: string | null
+          status?: string | null
+        }
+        Update: {
+          channel?: string
+          id?: string
+          merchant_id?: string | null
+          message_template?: string | null
+          responded_at?: string | null
+          response?: string | null
+          sent_at?: string | null
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "acquisition_outreach_logs_merchant_id_fkey"
+            columns: ["merchant_id"]
+            isOneToOne: false
+            referencedRelation: "auto_discovered_merchants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       activities: {
         Row: {
           active: boolean
@@ -1059,6 +1100,93 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      auto_discovered_merchants: {
+        Row: {
+          category: string | null
+          city: string | null
+          claim_status: string | null
+          claimed_at: string | null
+          claimed_by: string | null
+          country: string | null
+          cover_url: string | null
+          created_at: string | null
+          email: string | null
+          id: string
+          last_synced_at: string | null
+          latitude: number | null
+          logo_url: string | null
+          longitude: number | null
+          menu_json: Json | null
+          name: string
+          outreach_status: string | null
+          phone: string | null
+          quality_score: number | null
+          rating: number | null
+          review_count: number | null
+          source: string
+          source_url: string | null
+          subcategory: string | null
+          updated_at: string | null
+          visibility_mode: string | null
+        }
+        Insert: {
+          category?: string | null
+          city?: string | null
+          claim_status?: string | null
+          claimed_at?: string | null
+          claimed_by?: string | null
+          country?: string | null
+          cover_url?: string | null
+          created_at?: string | null
+          email?: string | null
+          id?: string
+          last_synced_at?: string | null
+          latitude?: number | null
+          logo_url?: string | null
+          longitude?: number | null
+          menu_json?: Json | null
+          name: string
+          outreach_status?: string | null
+          phone?: string | null
+          quality_score?: number | null
+          rating?: number | null
+          review_count?: number | null
+          source?: string
+          source_url?: string | null
+          subcategory?: string | null
+          updated_at?: string | null
+          visibility_mode?: string | null
+        }
+        Update: {
+          category?: string | null
+          city?: string | null
+          claim_status?: string | null
+          claimed_at?: string | null
+          claimed_by?: string | null
+          country?: string | null
+          cover_url?: string | null
+          created_at?: string | null
+          email?: string | null
+          id?: string
+          last_synced_at?: string | null
+          latitude?: number | null
+          logo_url?: string | null
+          longitude?: number | null
+          menu_json?: Json | null
+          name?: string
+          outreach_status?: string | null
+          phone?: string | null
+          quality_score?: number | null
+          rating?: number | null
+          review_count?: number | null
+          source?: string
+          source_url?: string | null
+          subcategory?: string | null
+          updated_at?: string | null
+          visibility_mode?: string | null
+        }
+        Relationships: []
       }
       auto_repeat_orders: {
         Row: {
