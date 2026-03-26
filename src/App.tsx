@@ -233,7 +233,7 @@ const SlugCategoryResolver = safeLazy(() => import("./pages/seo/SEOShortUrlResol
 const MobilityTaxiPage = safeLazy(() => import("./pages/mobility/MobilityTaxiPage"), "MobilityTaxiPage");
 const MobilityDeliveryPage = safeLazy(() => import("./pages/mobility/MobilityDeliveryPage"), "MobilityDeliveryPage");
 const RiderLivePage = safeLazy(() => import("./pages/mobility/RiderLivePage"), "RiderLivePage");
-const RideHubPage = safeLazy(() => import("./pages/RideHubPage"), "RideHubPage");
+// RideHubPage deleted — canonical replacement is MobilityTaxiPage
 const TrackRidePage = safeLazy(() => import("./pages/TrackRidePage"), "TrackRidePage");
 const PayRidePage = safeLazy(() => import("./pages/PayRidePage"), "PayRidePage");
 const RideReceiptPage = safeLazy(() => import("./pages/RideReceiptPage"), "RideReceiptPage");
