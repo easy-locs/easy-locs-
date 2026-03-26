@@ -232,12 +232,13 @@ export default function RadarPlaceSearch() {
             placeName={selectedLabel.name}
             district={selectedLabel.district}
             city={selectedLabel.city}
+            placeId={enrichment?.route?.placeId}
+            zoneKey={enrichment?.route?.zoneKey}
+            lat={enrichment?.route?.destination.lat}
+            lng={enrichment?.route?.destination.lng}
             route={enrichment?.route ?? null}
             nearby={enrichment?.nearby ?? null}
             loading={enrichmentLoading}
-            onGoThere={() => {/* future: open navigation */}}
-            onOrderHere={() => {/* future: navigate to nearby merchants */}}
-            onExploreNearby={() => {/* future: expand nearby view */}}
             onDismiss={() => { setEnrichment(null); setSelectedLabel(null); }}
           />
         )}
