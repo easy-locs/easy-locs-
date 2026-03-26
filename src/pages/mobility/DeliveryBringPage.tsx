@@ -30,7 +30,7 @@ export default function DeliveryBringPage() {
   const riderCount = station.riderCount;
 
   return (
-    <div className="min-h-[100dvh] bg-background">
+    <div className="app-mobile-page bg-background">
       {/* Header */}
       <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-xl border-b border-border/30 px-4 py-3">
         <div className="flex items-center gap-3">
