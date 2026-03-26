@@ -68,9 +68,17 @@
   overflow: hidden;
 }
 
-/* 4. Card safety — all cards enforce content boundaries */
-[class*="rounded-2xl"], [class*="rounded-xl"] {
+/* 4. Card safety — all cards enforce content boundaries
+   EXCEPT: relative containers (search wrappers), inputs, buttons, labels */
+[class*="rounded-2xl"]:not(.relative):not(input):not(button):not(label):not([role="tablist"]):not([data-radix-collection-item]),
+[class*="rounded-xl"]:not(.relative):not(input):not(button):not(label):not([role="tablist"]):not([data-radix-collection-item]) {
   overflow: hidden;
+}
+
+/* Search wrapper safety — never clip positioned children */
+.relative:has(> input),
+.relative:has(> .absolute) {
+  overflow: visible !important;
 }
 
 /* 5. Image safety — never overflow container */
