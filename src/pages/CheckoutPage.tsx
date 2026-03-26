@@ -33,7 +33,7 @@ export default function CheckoutPage() {
       <div className="app-mobile-page flex flex-col items-center justify-center gap-4 px-4 bg-background" data-empty-state>
         <span className="text-5xl">🛒</span>
         <p className="text-sm font-medium text-muted-foreground">Your cart is empty</p>
-        <Button variant="outline" onClick={() => navigate("/food")} className="rounded-2xl">Browse food</Button>
+        <Button variant="outline" onClick={() => navigate("/browse/food")} className="rounded-2xl">Browse food</Button>
       </div>
     );
   }
