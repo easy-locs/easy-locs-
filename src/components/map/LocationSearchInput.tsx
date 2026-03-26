@@ -17,6 +17,7 @@ interface Props {
   showCurrentLocation?: boolean;
   autoFocus?: boolean;
   className?: string;
+  contextType?: string;
 }
 
 function toResolvedPlace(r: SearchBrainResult): ResolvedPlace {
@@ -37,12 +38,13 @@ export function LocationSearchInput({
   showCurrentLocation = true,
   autoFocus = false,
   className = "",
+  contextType,
 }: Props) {
   const [query, setQuery] = useState(controlledValue || "");
   const [open, setOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   // Search Brain — single source of search ordering truth
-  const { results, loading } = useSearchBrain(query);
+  const { results, loading } = useSearchBrain(query, { contextType });
   const currentLocation = useLocationStore((s) => s.currentLocation);
   const recentPlaces = useLocationStore((s) => s.recentPlaces);
   const savedPlaces = useLocationStore((s) => s.savedPlaces);
