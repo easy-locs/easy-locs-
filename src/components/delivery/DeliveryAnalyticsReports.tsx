@@ -11,17 +11,15 @@ import { Button } from "@/components/ui/button";
 interface JobRecord {
   id: string;
   status: string;
-  created_at: string | null;
-  assigned_at: string | null;
+  created_at: string;
   accepted_at: string | null;
   picked_up_at: string | null;
-  delivered_at: string | null;
-  delivery_fee: number | null;
+  completed_at: string | null;
+  current_price: number | null;
   currency: string | null;
   dropoff_lat: number | null;
   dropoff_lng: number | null;
-  priority: string;
-  driver_id: string | null;
+  rider_user_id: string | null;
 }
 
 interface DailyStats {
@@ -47,9 +45,9 @@ export default function DeliveryAnalyticsReports({ orgId }: { orgId: string }) {
     const fetch = async () => {
       const since = new Date();
       since.setDate(since.getDate() - periodDays[period]);
-      const { data } = await supabase
+      const { data } = await (supabase as any)
         .from("mobility_jobs")
-        .select("id, status, created_at, assigned_at, accepted_at, picked_up_at, delivered_at, delivery_fee, currency, dropoff_lat, dropoff_lng, priority, driver_id")
+        .select("id, status, created_at, accepted_at, picked_up_at, completed_at, current_price, currency, dropoff_lat, dropoff_lng, rider_user_id")
         .eq("merchant_id", orgId)
         .gte("created_at", since.toISOString())
         .order("created_at", { ascending: true });
@@ -65,46 +63,37 @@ export default function DeliveryAnalyticsReports({ orgId }: { orgId: string }) {
 
     // Delivery times
     const deliveryTimes = completed
-      .filter(j => j.created_at && j.delivered_at)
-      .map(j => (new Date(j.delivered_at!).getTime() - new Date(j.created_at!).getTime()) / 60000);
+      .filter(j => j.created_at && j.completed_at)
+      .map(j => (new Date(j.completed_at!).getTime() - new Date(j.created_at!).getTime()) / 60000);
     const avgDeliveryMin = deliveryTimes.length > 0 ? deliveryTimes.reduce((a, b) => a + b, 0) / deliveryTimes.length : 0;
     const fastestMin = deliveryTimes.length > 0 ? Math.min(...deliveryTimes) : 0;
     const slowestMin = deliveryTimes.length > 0 ? Math.max(...deliveryTimes) : 0;
 
     // Acceptance times
     const acceptTimes = jobs
-      .filter(j => j.assigned_at && j.accepted_at)
-      .map(j => (new Date(j.accepted_at!).getTime() - new Date(j.assigned_at!).getTime()) / 60000);
+      .filter(j => j.created_at && j.accepted_at)
+      .map(j => (new Date(j.accepted_at!).getTime() - new Date(j.created_at!).getTime()) / 60000);
     const avgAcceptMin = acceptTimes.length > 0 ? acceptTimes.reduce((a, b) => a + b, 0) / acceptTimes.length : 0;
 
-    // Revenue
-    const totalRevenue = completed.reduce((s, j) => s + (j.delivery_fee || 0), 0);
+    const totalRevenue = completed.reduce((s, j) => s + (j.current_price || 0), 0);
     const avgRevenue = completed.length > 0 ? totalRevenue / completed.length : 0;
 
-    // Success rate
     const successRate = jobs.length > 0 ? Math.round((completed.length / jobs.length) * 100) : 0;
 
-    // Daily breakdown
     const dailyMap = new Map<string, DailyStats>();
     for (const j of jobs) {
       const d = j.created_at ? j.created_at.slice(0, 10) : "unknown";
       if (!dailyMap.has(d)) dailyMap.set(d, { date: d, total: 0, completed: 0, cancelled: 0, revenue: 0, avgDeliveryMin: 0 });
       const day = dailyMap.get(d)!;
       day.total++;
-      if (j.status === "completed") { day.completed++; day.revenue += j.delivery_fee || 0; }
+      if (j.status === "completed") { day.completed++; day.revenue += j.current_price || 0; }
       if (j.status === "cancelled") day.cancelled++;
     }
     const dailyStats = Array.from(dailyMap.values()).sort((a, b) => a.date.localeCompare(b.date));
 
-    // Priority breakdown
     const byPriority = { standard: 0, express: 0, urgent: 0 };
-    for (const j of jobs) {
-      const p = j.priority as keyof typeof byPriority;
-      if (p in byPriority) byPriority[p]++;
-    }
 
-    // Unique drivers
-    const uniqueDrivers = new Set(jobs.filter(j => j.driver_id).map(j => j.driver_id)).size;
+    const uniqueDrivers = new Set(jobs.filter(j => j.rider_user_id).map(j => j.rider_user_id)).size;
 
     // Heatmap data (dropoff locations)
     const heatPoints = jobs

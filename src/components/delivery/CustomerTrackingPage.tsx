@@ -66,24 +66,23 @@ export default function CustomerTrackingPage() {
       const trackingData: TrackingData = data as any;
 
       // Fetch driver info if assigned
-      if (data.driver_id) {
-        const { data: session } = await supabase
-          .from("driver_sessions")
-          .select("lat, lng, vehicle_type, avg_rating")
-          .eq("user_id", data.driver_id)
+      if ((data as any).rider_user_id) {
+        const { data: presence } = await (supabase as any)
+          .from("rider_presence")
+          .select("lat, lng, vehicle_type")
+          .eq("user_id", (data as any).rider_user_id)
           .maybeSingle();
 
-        if (session) {
-          trackingData.driver_lat = session.lat;
-          trackingData.driver_lng = session.lng;
-          trackingData.driver_vehicle = session.vehicle_type;
-          trackingData.driver_rating = session.avg_rating;
+        if (presence) {
+          trackingData.driver_lat = presence.lat;
+          trackingData.driver_lng = presence.lng;
+          trackingData.driver_vehicle = presence.vehicle_type;
         }
 
         const { data: profile } = await supabase
           .from("profiles")
           .select("name, first_name, last_name")
-          .eq("id", data.driver_id)
+          .eq("id", (data as any).rider_user_id)
           .maybeSingle();
 
         if (profile) trackingData.driver_name = profile.name || [profile.first_name, profile.last_name].filter(Boolean).join(" ") || undefined;

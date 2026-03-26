@@ -58,22 +58,22 @@ export default function AdminFleetDashboard({ orgId, className }: Props) {
         const busy = allDrivers.filter(d => d.status === "busy");
 
         // Fetch jobs for org
-        const { data: jobs } = await supabase
+        const { data: jobs } = await (supabase as any)
           .from("mobility_jobs")
-          .select("id, status, delivery_fee, currency, created_at, delivered_at")
+          .select("id, status, current_price, currency, created_at, completed_at")
           .eq("merchant_id", orgId)
           .limit(1000);
 
-        const allJobs = jobs || [];
-        const completed = allJobs.filter(j => j.status === "completed");
-        const cancelled = allJobs.filter(j => j.status === "cancelled");
-        const active = allJobs.filter(j => ["pending", "assigned", "accepted", "in_progress"].includes(j.status));
-        const totalRevenue = allJobs.reduce((s, j) => s + (j.delivery_fee || 0), 0);
+        const allJobs = (jobs || []) as any[];
+        const completed = allJobs.filter((j: any) => j.status === "completed");
+        const cancelled = allJobs.filter((j: any) => j.status === "cancelled");
+        const active = allJobs.filter((j: any) => ["searching", "accepted", "rider_arriving_pickup", "in_progress"].includes(j.status));
+        const totalRevenue = allJobs.reduce((s: number, j: any) => s + (j.current_price || 0), 0);
 
         const deliveryTimes = completed
-          .filter(j => j.created_at && j.delivered_at)
-          .map(j => (new Date(j.delivered_at!).getTime() - new Date(j.created_at!).getTime()) / 3600000);
-        const avgTime = deliveryTimes.length ? deliveryTimes.reduce((a, b) => a + b, 0) / deliveryTimes.length : 0;
+          .filter((j: any) => j.created_at && j.completed_at)
+          .map((j: any) => (new Date(j.completed_at!).getTime() - new Date(j.created_at!).getTime()) / 3600000);
+        const avgTime = deliveryTimes.length ? deliveryTimes.reduce((a: number, b: number) => a + b, 0) / deliveryTimes.length : 0;
 
         setStats({
           totalDrivers: allDrivers.length,
@@ -87,7 +87,7 @@ export default function AdminFleetDashboard({ orgId, className }: Props) {
           completionRate: allJobs.length ? Math.round((completed.length / allJobs.length) * 100) : 0,
           totalRevenue,
           avgJobTime: Math.round(avgTime * 10) / 10,
-          currency: allJobs[0]?.currency || "EUR",
+          currency: (allJobs[0] as any)?.currency || "AED",
         });
 
         setDrivers(allDrivers.map(d => ({

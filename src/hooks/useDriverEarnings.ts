@@ -8,12 +8,12 @@ import { useAuth } from "@/contexts/AuthContext";
 
 export interface EarningEntry {
   id: string;
-  delivery_fee: number;
+  current_price: number;
   currency: string;
-  delivered_at: string;
+  completed_at: string;
   pickup_address: string;
   dropoff_address: string;
-  package_description: string | null;
+  notes: string | null;
 }
 
 export interface EarningsStats {
@@ -40,13 +40,13 @@ export function useDriverEarnings() {
     if (!user) return;
     setLoading(true);
     try {
-      const { data } = await supabase
+      const { data } = await (supabase as any)
         .from("mobility_jobs")
-        .select("id, delivery_fee, currency, delivered_at, pickup_address, dropoff_address, package_description")
+        .select("id, current_price, currency, completed_at, pickup_address, dropoff_address, notes")
         .eq("rider_user_id", user.id)
         .eq("status", "completed")
-        .not("delivered_at", "is", null)
-        .order("delivered_at", { ascending: false })
+        .not("completed_at", "is", null)
+        .order("completed_at", { ascending: false })
         .limit(500);
 
       const jobs = (data || []) as EarningEntry[];
@@ -57,10 +57,10 @@ export function useDriverEarnings() {
       const weekAgo = new Date(now); weekAgo.setDate(weekAgo.getDate() - 7);
       const monthAgo = new Date(now); monthAgo.setMonth(monthAgo.getMonth() - 1);
 
-      const total = jobs.reduce((s, j) => s + (j.delivery_fee || 0), 0);
-      const todayJobs = jobs.filter(j => j.delivered_at?.slice(0, 10) === todayStr);
-      const weekJobs = jobs.filter(j => new Date(j.delivered_at) >= weekAgo);
-      const monthJobs = jobs.filter(j => new Date(j.delivered_at) >= monthAgo);
+      const total = jobs.reduce((s, j) => s + (j.current_price || 0), 0);
+      const todayJobs = jobs.filter(j => j.completed_at?.slice(0, 10) === todayStr);
+      const weekJobs = jobs.filter(j => new Date(j.completed_at) >= weekAgo);
+      const monthJobs = jobs.filter(j => new Date(j.completed_at) >= monthAgo);
 
       // Daily earnings (last 14 days)
       const dailyMap = new Map<string, { amount: number; jobs: number }>();
@@ -69,10 +69,10 @@ export function useDriverEarnings() {
         dailyMap.set(d.toISOString().slice(0, 10), { amount: 0, jobs: 0 });
       }
       jobs.forEach(j => {
-        const day = j.delivered_at?.slice(0, 10);
+        const day = j.completed_at?.slice(0, 10);
         if (day && dailyMap.has(day)) {
           const e = dailyMap.get(day)!;
-          e.amount += j.delivery_fee || 0;
+          e.amount += j.current_price || 0;
           e.jobs++;
         }
       });
@@ -81,12 +81,12 @@ export function useDriverEarnings() {
         totalEarned: total,
         totalJobs: jobs.length,
         avgPerJob: jobs.length ? Math.round(total / jobs.length * 100) / 100 : 0,
-        currency: jobs[0]?.currency || "EUR",
-        todayEarned: todayJobs.reduce((s, j) => s + (j.delivery_fee || 0), 0),
+        currency: jobs[0]?.currency || "AED",
+        todayEarned: todayJobs.reduce((s, j) => s + (j.current_price || 0), 0),
         todayJobs: todayJobs.length,
-        weekEarned: weekJobs.reduce((s, j) => s + (j.delivery_fee || 0), 0),
+        weekEarned: weekJobs.reduce((s, j) => s + (j.current_price || 0), 0),
         weekJobs: weekJobs.length,
-        monthEarned: monthJobs.reduce((s, j) => s + (j.delivery_fee || 0), 0),
+        monthEarned: monthJobs.reduce((s, j) => s + (j.current_price || 0), 0),
         monthJobs: monthJobs.length,
         dailyEarnings: Array.from(dailyMap.entries()).map(([date, v]) => ({ date, ...v })),
       });
