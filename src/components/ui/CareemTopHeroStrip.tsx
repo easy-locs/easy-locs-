@@ -1,4 +1,6 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { AddressSelectorSheet } from "@/components/address/AddressSelectorSheet";
 
 type CareemTopHeroStripProps = {
   locationLabel?: string;
@@ -10,12 +12,13 @@ export function CareemTopHeroStrip({
   subtitle = "Fast delivery, rides, groceries and more",
 }: CareemTopHeroStripProps) {
   const navigate = useNavigate();
+  const [addressOpen, setAddressOpen] = useState(false);
 
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-3">
         <button
-          onClick={() => navigate("/settings/addresses")}
+          onClick={() => setAddressOpen(true)}
           className="min-w-0 text-left active:scale-[0.99] transition-transform"
         >
           <div className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">
@@ -53,6 +56,8 @@ export function CareemTopHeroStrip({
           Groceries
         </button>
       </div>
+
+      <AddressSelectorSheet open={addressOpen} onOpenChange={setAddressOpen} />
     </div>
   );
 }
