@@ -129,12 +129,12 @@ export default function UnifiedSearchBar({
         <button
           onClick={() => setFullscreenOpen(true)}
           className={cn(
-            "w-full min-w-0 flex items-center gap-2 rounded-2xl bg-card border border-border/20 px-4 py-3 text-sm text-muted-foreground shadow-sm active:scale-[0.98] transition-transform",
+            "flex h-12 w-full min-w-0 items-center gap-3 overflow-hidden rounded-2xl border border-border/20 bg-card px-4 text-sm text-muted-foreground shadow-sm active:scale-[0.98] transition-transform",
             className
           )}
         >
           <Search className="h-4 w-4 shrink-0" />
-          <span className="min-w-0 flex-1 truncate text-left">{defaultPlaceholder}</span>
+          <span className="min-w-0 flex-1 truncate text-left text-sm font-medium">{defaultPlaceholder}</span>
         </button>
 
         <AnimatePresence>
@@ -144,17 +144,17 @@ export default function UnifiedSearchBar({
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 20 }}
               transition={{ duration: 0.2 }}
-              className="fixed inset-0 z-[100] bg-background flex flex-col"
+              className="fixed inset-0 z-[100] flex flex-col bg-background"
             >
               {/* Header */}
-              <div className="flex items-center gap-3 px-4 py-3 border-b border-border/20">
+              <div className="flex items-center gap-3 border-b border-border/20 px-4 py-3">
                 <button
                   onClick={() => setFullscreenOpen(false)}
                   className="w-9 h-9 rounded-xl bg-muted flex items-center justify-center shrink-0"
                 >
                   <X className="w-4 h-4" />
                 </button>
-                <div className="flex-1 relative">
+                <div className="relative min-w-0 flex-1">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
                   <input
                     ref={inputRef}
@@ -163,7 +163,7 @@ export default function UnifiedSearchBar({
                     onChange={(e) => setQuery(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
                     placeholder={defaultPlaceholder}
-                    className="w-full min-w-0 pl-9 pr-8 h-12 rounded-2xl bg-card border border-border/30 text-sm text-foreground outline-none focus:ring-2 focus:ring-primary/20"
+                    className="h-12 w-full min-w-0 rounded-2xl border border-border/30 bg-card pl-10 pr-9 text-sm font-medium text-foreground outline-none focus:ring-2 focus:ring-primary/20"
                   />
                   {query && (
                     <button
@@ -212,10 +212,10 @@ export default function UnifiedSearchBar({
   }
 
   return (
-    <div ref={containerRef} className={cn("relative", className)}>
+    <div ref={containerRef} className={cn("relative w-full min-w-0", className)}>
       {/* Input */}
       <div className={cn(
-        "relative flex items-center",
+        "relative flex min-w-0 items-center",
         isHero && "shadow-lg"
       )}>
         <Search className={cn(
@@ -233,8 +233,8 @@ export default function UnifiedSearchBar({
           className={cn(
             "w-full min-w-0 bg-card border border-border/30 text-foreground outline-none transition-all",
             isHero
-              ? "pl-11 pr-10 h-14 rounded-2xl text-base shadow-lg focus:ring-2 focus:ring-primary/30"
-              : "pl-9 pr-8 h-12 rounded-2xl text-sm shadow-sm focus:ring-2 focus:ring-primary/20"
+              ? "h-14 rounded-2xl pl-11 pr-10 text-[15px] font-medium shadow-lg focus:ring-2 focus:ring-primary/30 sm:text-base"
+              : "h-12 rounded-2xl pl-10 pr-9 text-sm font-medium shadow-sm focus:ring-2 focus:ring-primary/20"
           )}
         />
         {query && (
