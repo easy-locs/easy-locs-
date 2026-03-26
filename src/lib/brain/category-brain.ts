@@ -16,7 +16,6 @@
  * No component may hardcode category-specific logic.
  */
 import { getRadarBehavior, type RadarCategoryBehavior } from "@/lib/radar/category-radar-behavior";
-import { resolveFulfillmentMode } from "@/lib/mobility/category-fulfillment-resolver";
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // CATEGORY BRAIN STATE

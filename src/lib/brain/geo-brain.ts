@@ -11,7 +11,7 @@
  * All consumers must read from this brain.
  */
 import { useGeoStore, type GeoPoint } from "@/lib/geo/geo-store";
-import { useLocationStore } from "@/stores/locationStore";
+import { useLocationStore, type ResolvedPlace } from "@/stores/locationStore";
 import { useRadarPlaceStore } from "@/stores/radarPlaceStore";
 import { computeZoneKey, type CanonicalPlace } from "@/lib/address/canonical-place";
 import { eventBus } from "@/lib/core/event-bus";
@@ -54,38 +54,41 @@ export function getGeoBrainState(): GeoBrainState {
   const locState = useLocationStore.getState();
   const radarPlace = useRadarPlaceStore.getState().selectedPlace;
 
-  const selectedLocation = locState.selectedLocation ?? locState.currentLocation ?? null;
+  // Prefer selected (ResolvedPlace with full fields) over GPS (LocationPoint)
+  const resolved: ResolvedPlace | null = locState.selectedLocation ?? null;
+  const gpsLoc = locState.currentLocation;
 
-  // Zone key priority: radarPlace > computed from location > default
+  // Zone key priority: radarPlace > computed from resolved > default
   let zoneKey = DEFAULT_ZONE;
   if (radarPlace?.zone_key) {
     zoneKey = radarPlace.zone_key;
-  } else if (selectedLocation?.city) {
+  } else if (resolved?.city) {
     zoneKey = computeZoneKey(
-      selectedLocation.country === "UAE" ? "AE" : selectedLocation.country ?? "AE",
-      selectedLocation.city,
-      selectedLocation.area,
+      resolved.country === "UAE" ? "AE" : resolved.country ?? "AE",
+      resolved.city,
+      resolved.area,
     );
   }
 
-  const displayLabel = radarPlace?.label ?? selectedLocation?.label ?? null;
+  const displayLabel = radarPlace?.label ?? resolved?.label ?? null;
+  const effectiveLocation = resolved ?? (gpsLoc ? { lat: gpsLoc.lat, lng: gpsLoc.lng, label: "" } : null);
 
   return {
     gpsPoint: geoState.point,
     gpsPermission: geoState.permission,
-    selectedLocation: selectedLocation
+    selectedLocation: effectiveLocation
       ? {
-          lat: selectedLocation.lat,
-          lng: selectedLocation.lng,
-          label: selectedLocation.label ?? "",
-          city: selectedLocation.city,
-          area: selectedLocation.area,
-          country: selectedLocation.country,
+          lat: effectiveLocation.lat,
+          lng: effectiveLocation.lng,
+          label: (effectiveLocation as ResolvedPlace).label ?? "",
+          city: (effectiveLocation as ResolvedPlace).city,
+          area: (effectiveLocation as ResolvedPlace).area,
+          country: (effectiveLocation as ResolvedPlace).country,
         }
       : null,
     zoneKey,
     displayLabel,
-    isResolved: !!(selectedLocation?.lat && selectedLocation?.lng),
+    isResolved: !!(effectiveLocation?.lat && effectiveLocation?.lng),
   };
 }
 

@@ -17,7 +17,6 @@
 export {
   arbitrate,
   quickArbitrate,
-  resolveConflicts,
   DecisionPriority,
   type ArbitrationDecision,
   type ArbitrationInput,
