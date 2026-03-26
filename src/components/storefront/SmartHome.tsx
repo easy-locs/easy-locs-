@@ -151,34 +151,8 @@ function CategoryCard({ cat, index }: { cat: SmartCategory; index: number }) {
   );
 }
 
-/* ═══ Hero Card ═══ */
-function SmartHeroCard({ timezone, city }: { timezone?: string; city: string | null }) {
-  const hero = getSmartHero(timezone);
-  const slot = getTimeSlot(timezone);
-  const isNight = slot === "latenight" || slot === "dinner";
-  const locationLabel = city || "your area";
-  return (
-    <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.1, duration: 0.3 }} className="mb-3">
-      <Link to={hero.route} className="block rounded-2xl p-4 relative overflow-hidden active:scale-[0.98] transition-transform" style={{ background: hero.gradient }}>
-        <div className="relative z-10 flex items-center justify-between">
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-1.5 mb-0.5">
-              <MapPin className="h-3 w-3 text-white/60" />
-              <p className="text-white/70 text-[10px] font-medium">{locationLabel}</p>
-            </div>
-            <h2 className="text-white text-lg font-black leading-tight mb-0.5">{hero.title}</h2>
-            <p className="text-white/70 text-[11px] mb-3">{hero.subtitle}</p>
-            <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-white/20 backdrop-blur-sm text-white text-[11px] font-bold active:bg-white/30 transition-colors">
-              {hero.cta} <ChevronRight className="h-3 w-3" />
-            </span>
-          </div>
-          <span className="text-4xl opacity-40 select-none ml-2">{hero.emoji}</span>
-        </div>
-        {isNight && <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />}
-      </Link>
-    </motion.div>
-  );
-}
+
+
 
 /* ═══ Data-Driven Section ═══ */
 function DynamicSection({ section, shops, index }: { section: { key: string; title: string; icon: string }; shops: any[]; index: number }) {
