@@ -94,7 +94,7 @@ for (const [platformEvent, coreEvent] of Object.entries(BRIDGE_MAP)) {
 // Initialize ride lifecycle handler (global realtime listener)
 initRideLifecycleHandler();
 initRideAIDispatchHandler();
-initRideWalletHandler();
+initRidePostflowHandler();
 initRideRatingHandler();
 initSupportOpenHandler();
 initUnifiedMobilityRequestHandler();
