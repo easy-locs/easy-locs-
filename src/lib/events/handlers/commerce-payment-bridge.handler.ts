@@ -16,6 +16,10 @@ import { eventBus } from "@/lib/core/event-bus";
 
 // Map commerce:payment_* events to canonical downstream events
 const COMMERCE_PAYMENT_BRIDGE: Record<string, { walletEvent: string; notifType: string }> = {
+  "commerce:intent_prepared": {
+    walletEvent: "wallet.updated",
+    notifType: "payment_intent_prepared",
+  },
   "commerce:payment_authorized": {
     walletEvent: "wallet.updated",
     notifType: "payment_authorized",
