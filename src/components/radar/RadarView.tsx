@@ -101,6 +101,10 @@ export default memo(function RadarView({ initialType, radiusKm: initialRadius, s
   const [layers, setLayers] = useState<LayerToggles>(DEFAULT_LAYERS);
   const currentUser = useV2AuthStore((s) => s.user);
 
+  // Place search context
+  const selectedPlace = useRadarPlaceStore((s) => s.selectedPlace);
+  const zoneOverlay = useRadarPlaceStore((s) => s.zoneOverlay);
+
   // Live context (realtime subscriptions)
   const liveCtx = useRadarLiveContext(mode);
 
@@ -133,8 +137,11 @@ export default memo(function RadarView({ initialType, radiusKm: initialRadius, s
 
   const type = activeType === "all" ? undefined : activeType;
   const { entities: rawResults, loading, location } = useRadarResults({ type, radiusKm: activeRadius });
-  const userLat = location?.lat ?? 25.2;
-  const userLng = location?.lng ?? 55.27;
+
+  // When a place is selected from search, use its coordinates; otherwise use GPS
+  const userLat = selectedPlace?.lat ?? location?.lat ?? 25.2;
+  const userLng = selectedPlace?.lng ?? location?.lng ?? 55.27;
+  const mapZoom = selectedPlace?.viewport?.recommended_zoom ?? undefined;
 
   // ── Filters + Ranking ──
   const results = useMemo(() => {
