@@ -20,7 +20,7 @@ export function GeoBoot() {
     return () => geoService.stop();
   }, []);
 
-  // Sync GPS → locationStore → reverse geocode → emit address events
+  // Sync GPS → Geo Brain → reverse geocode → canonical address pipeline
   useEffect(() => {
     const unsub = useGeoStore.subscribe((state) => {
       if (!state.point) return;
@@ -37,7 +37,11 @@ export function GeoBoot() {
         locStore.setMapViewport({ lat, lng }, 14);
       }
 
-      // Reverse geocode and emit events
+      // Skip if user already has a manually selected place (priority: selected > GPS > fallback)
+      const hasManualPlace = useRadarPlaceStore.getState().selectedPlace;
+      if (hasManualPlace) return;
+
+      // Reverse geocode GPS and push through Geo Brain canonical pipeline
       reverseGeocode(lat, lng)
         .then((result) => {
           const place = fromGPS(lat, lng, {
@@ -48,21 +52,8 @@ export function GeoBoot() {
             street: result.street,
           });
 
-          const zoneKey = place.zone_key ?? "UNKNOWN";
-
-          // Emit platform events for all listeners
-          eventBus.emit("address.context.updated", {
-            userId: "anonymous",
-            contextType: "global",
-            lat,
-            lng,
-            sourceType: "gps",
-            canonicalPlaceId: null,
-            zoneKey,
-          });
-          eventBus.emit("radar.context.refresh", { userId: "anonymous", zoneKey });
-          eventBus.emit("eta.context.refresh", { userId: "anonymous", contextType: "global" });
-          eventBus.emit("merchant.visibility.refresh", { zoneKey });
+          // Use Geo Brain as the ONLY write path — this triggers all downstream events
+          setAddressFromPlace(place);
         })
         .catch((err) => {
           console.warn("[GeoBoot] reverse geocode failed:", err);
