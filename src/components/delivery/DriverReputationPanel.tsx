@@ -108,7 +108,7 @@ export default function DriverReputationPanel({ driverId, className }: Props) {
         .eq("user_id", targetId)
         .maybeSingle();
 
-      const acceptanceRate = session?.acceptance_rate || (all.length ? ((all.length - cancelled.length) / all.length) * 100 : 100);
+      const acceptanceRate = all.length ? ((all.length - cancelled.length) / all.length) * 100 : 100;
       const cancellationRate = all.length ? (cancelled.length / all.length) * 100 : 0;
 
       // On-time rate (delivered within 2 hours of creation)
