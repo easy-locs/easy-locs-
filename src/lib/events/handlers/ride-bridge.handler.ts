@@ -60,19 +60,6 @@ eventBus.on("ride.completed", async (payload) => {
   if (!jobId) return;
 
   try {
-    // Check if payment already exists for this job
-    const { data: existingPayment } = await supabase
-      .from("unified_transactions")
-      .select("id, status")
-      .eq("entity_id", jobId as string)
-      .eq("entity_type", "mobility_job")
-      .maybeSingle();
-
-    if (existingPayment?.status === "completed") {
-      void eventBus.emit("ride.payment.completed", { jobId, transactionId: existingPayment.id });
-      return;
-    }
-
     // Emit payment required
     void eventBus.emit("ride.payment.required", {
       jobId,
