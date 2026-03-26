@@ -104,3 +104,6 @@ verify_jwt = false
 
 [functions.auto-onboarding-cron]
 verify_jwt = false
+
+[functions.run-engine-cron]
+verify_jwt = false
