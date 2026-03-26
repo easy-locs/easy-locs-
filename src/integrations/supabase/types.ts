@@ -747,42 +747,6 @@ export type Database = {
           },
         ]
       }
-      app_notifications: {
-        Row: {
-          body: string
-          createdAt: string
-          id: string
-          metadata: Json | null
-          orbitId: string
-          read: boolean
-          title: string
-          type: string
-          user_id: string | null
-        }
-        Insert: {
-          body: string
-          createdAt?: string
-          id: string
-          metadata?: Json | null
-          orbitId: string
-          read?: boolean
-          title: string
-          type: string
-          user_id?: string | null
-        }
-        Update: {
-          body?: string
-          createdAt?: string
-          id?: string
-          metadata?: Json | null
-          orbitId?: string
-          read?: boolean
-          title?: string
-          type?: string
-          user_id?: string | null
-        }
-        Relationships: []
-      }
       approval_actions: {
         Row: {
           action_type: string
@@ -5381,13 +5345,6 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "delivery_disputes_job_id_fkey"
-            columns: ["job_id"]
-            isOneToOne: false
-            referencedRelation: "delivery_jobs"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "delivery_disputes_org_id_fkey"
             columns: ["org_id"]
             isOneToOne: false
@@ -5396,156 +5353,6 @@ export type Database = {
           },
           {
             foreignKeyName: "delivery_disputes_org_id_fkey"
-            columns: ["org_id"]
-            isOneToOne: false
-            referencedRelation: "orgs_tenant_view"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      delivery_jobs: {
-        Row: {
-          accepted_at: string | null
-          assigned_at: string | null
-          cancellation_reason: string | null
-          cancelled_at: string | null
-          cancelled_by: string | null
-          confirmation_code: string | null
-          created_at: string | null
-          currency: string | null
-          customer_user_id: string | null
-          delivered_at: string | null
-          delivery_fee: number | null
-          dispatch_attempt_count: number | null
-          dispatch_status: string | null
-          driver_id: string | null
-          dropoff_address: string
-          dropoff_lat: number | null
-          dropoff_lng: number | null
-          fare_amount: number | null
-          id: string
-          last_dispatch_at: string | null
-          notes: string | null
-          order_id: string | null
-          org_id: string
-          package_description: string | null
-          package_size: string | null
-          payment_status: string | null
-          photo_proof_url: string | null
-          picked_up_at: string | null
-          pickup_address: string
-          pickup_lat: number | null
-          pickup_lng: number | null
-          pricing_mode: string | null
-          priority: string
-          reassignment_count: number | null
-          required_vehicles: string[] | null
-          scheduled_at: string | null
-          search_radius_km: number | null
-          seller_id: string
-          status: string
-          surge_multiplier: number | null
-          updated_at: string | null
-          weight_kg: number | null
-        }
-        Insert: {
-          accepted_at?: string | null
-          assigned_at?: string | null
-          cancellation_reason?: string | null
-          cancelled_at?: string | null
-          cancelled_by?: string | null
-          confirmation_code?: string | null
-          created_at?: string | null
-          currency?: string | null
-          customer_user_id?: string | null
-          delivered_at?: string | null
-          delivery_fee?: number | null
-          dispatch_attempt_count?: number | null
-          dispatch_status?: string | null
-          driver_id?: string | null
-          dropoff_address?: string
-          dropoff_lat?: number | null
-          dropoff_lng?: number | null
-          fare_amount?: number | null
-          id?: string
-          last_dispatch_at?: string | null
-          notes?: string | null
-          order_id?: string | null
-          org_id: string
-          package_description?: string | null
-          package_size?: string | null
-          payment_status?: string | null
-          photo_proof_url?: string | null
-          picked_up_at?: string | null
-          pickup_address?: string
-          pickup_lat?: number | null
-          pickup_lng?: number | null
-          pricing_mode?: string | null
-          priority?: string
-          reassignment_count?: number | null
-          required_vehicles?: string[] | null
-          scheduled_at?: string | null
-          search_radius_km?: number | null
-          seller_id: string
-          status?: string
-          surge_multiplier?: number | null
-          updated_at?: string | null
-          weight_kg?: number | null
-        }
-        Update: {
-          accepted_at?: string | null
-          assigned_at?: string | null
-          cancellation_reason?: string | null
-          cancelled_at?: string | null
-          cancelled_by?: string | null
-          confirmation_code?: string | null
-          created_at?: string | null
-          currency?: string | null
-          customer_user_id?: string | null
-          delivered_at?: string | null
-          delivery_fee?: number | null
-          dispatch_attempt_count?: number | null
-          dispatch_status?: string | null
-          driver_id?: string | null
-          dropoff_address?: string
-          dropoff_lat?: number | null
-          dropoff_lng?: number | null
-          fare_amount?: number | null
-          id?: string
-          last_dispatch_at?: string | null
-          notes?: string | null
-          order_id?: string | null
-          org_id?: string
-          package_description?: string | null
-          package_size?: string | null
-          payment_status?: string | null
-          photo_proof_url?: string | null
-          picked_up_at?: string | null
-          pickup_address?: string
-          pickup_lat?: number | null
-          pickup_lng?: number | null
-          pricing_mode?: string | null
-          priority?: string
-          reassignment_count?: number | null
-          required_vehicles?: string[] | null
-          scheduled_at?: string | null
-          search_radius_km?: number | null
-          seller_id?: string
-          status?: string
-          surge_multiplier?: number | null
-          updated_at?: string | null
-          weight_kg?: number | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "delivery_jobs_org_id_fkey"
-            columns: ["org_id"]
-            isOneToOne: false
-            referencedRelation: "orgs"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "delivery_jobs_org_id_fkey"
             columns: ["org_id"]
             isOneToOne: false
             referencedRelation: "orgs_tenant_view"
@@ -5681,13 +5488,6 @@ export type Database = {
           status?: string
         }
         Relationships: [
-          {
-            foreignKeyName: "delivery_offers_job_id_fkey"
-            columns: ["job_id"]
-            isOneToOne: false
-            referencedRelation: "delivery_jobs"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "delivery_offers_org_id_fkey"
             columns: ["org_id"]
@@ -5833,15 +5633,7 @@ export type Database = {
           rated_by?: string
           rating?: number
         }
-        Relationships: [
-          {
-            foreignKeyName: "delivery_ratings_job_id_fkey"
-            columns: ["job_id"]
-            isOneToOne: false
-            referencedRelation: "delivery_jobs"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       delivery_vehicle_capabilities: {
         Row: {
@@ -5879,51 +5671,6 @@ export type Database = {
           supports_taxi?: boolean
           temperature_control?: boolean
           vehicle_type?: string
-        }
-        Relationships: []
-      }
-      demand_zones: {
-        Row: {
-          active_drivers: number | null
-          active_requests: number | null
-          center_lat: number | null
-          center_lng: number | null
-          city: string | null
-          demand_score: number | null
-          id: string
-          predicted_demand: number | null
-          supply_score: number | null
-          surge_multiplier: number | null
-          updated_at: string | null
-          zone_key: string
-        }
-        Insert: {
-          active_drivers?: number | null
-          active_requests?: number | null
-          center_lat?: number | null
-          center_lng?: number | null
-          city?: string | null
-          demand_score?: number | null
-          id?: string
-          predicted_demand?: number | null
-          supply_score?: number | null
-          surge_multiplier?: number | null
-          updated_at?: string | null
-          zone_key: string
-        }
-        Update: {
-          active_drivers?: number | null
-          active_requests?: number | null
-          center_lat?: number | null
-          center_lng?: number | null
-          city?: string | null
-          demand_score?: number | null
-          id?: string
-          predicted_demand?: number | null
-          supply_score?: number | null
-          surge_multiplier?: number | null
-          updated_at?: string | null
-          zone_key?: string
         }
         Relationships: []
       }
@@ -7334,13 +7081,6 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "escrow_payments_job_id_fkey"
-            columns: ["job_id"]
-            isOneToOne: false
-            referencedRelation: "delivery_jobs"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "escrow_payments_org_id_fkey"
             columns: ["org_id"]
             isOneToOne: false
@@ -8147,113 +7887,7 @@ export type Database = {
           role?: string
           user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "group_members_group_id_fkey"
-            columns: ["group_id"]
-            isOneToOne: false
-            referencedRelation: "groups"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      group_messages: {
-        Row: {
-          attachment_url: string | null
-          content: string
-          created_at: string
-          group_id: string
-          id: string
-          is_pinned: boolean
-          pinned_at: string | null
-          pinned_by: string | null
-          sender_id: string
-        }
-        Insert: {
-          attachment_url?: string | null
-          content: string
-          created_at?: string
-          group_id: string
-          id?: string
-          is_pinned?: boolean
-          pinned_at?: string | null
-          pinned_by?: string | null
-          sender_id: string
-        }
-        Update: {
-          attachment_url?: string | null
-          content?: string
-          created_at?: string
-          group_id?: string
-          id?: string
-          is_pinned?: boolean
-          pinned_at?: string | null
-          pinned_by?: string | null
-          sender_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "group_messages_group_id_fkey"
-            columns: ["group_id"]
-            isOneToOne: false
-            referencedRelation: "groups"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      groups: {
-        Row: {
-          created_at: string
-          created_by: string
-          description: string | null
-          group_type: string
-          id: string
-          name: string
-          org_id: string
-          photo_url: string | null
-          posting_permission: string
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          created_by: string
-          description?: string | null
-          group_type?: string
-          id?: string
-          name: string
-          org_id: string
-          photo_url?: string | null
-          posting_permission?: string
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          created_by?: string
-          description?: string | null
-          group_type?: string
-          id?: string
-          name?: string
-          org_id?: string
-          photo_url?: string | null
-          posting_permission?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "groups_org_id_fkey"
-            columns: ["org_id"]
-            isOneToOne: false
-            referencedRelation: "orgs"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "groups_org_id_fkey"
-            columns: ["org_id"]
-            isOneToOne: false
-            referencedRelation: "orgs_tenant_view"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       growth_city_pages: {
         Row: {
@@ -12930,78 +12564,6 @@ export type Database = {
           sent_at?: string | null
           status_code?: string | null
           subtitle?: string | null
-          title?: string
-          type?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
-      notifications_v2: {
-        Row: {
-          action_url: string | null
-          actor: string
-          body: string
-          clicked_at: string | null
-          created_at: string
-          data: Json
-          dedupe_key: string | null
-          delivery_mode: string[]
-          dismissed_at: string | null
-          domain: string
-          id: string
-          orbit_context_id: string | null
-          priority: string
-          read_at: string | null
-          related_conversation_id: string | null
-          related_job_id: string | null
-          related_order_id: string | null
-          related_payment_intent_id: string | null
-          title: string
-          type: string
-          user_id: string
-        }
-        Insert: {
-          action_url?: string | null
-          actor?: string
-          body?: string
-          clicked_at?: string | null
-          created_at?: string
-          data?: Json
-          dedupe_key?: string | null
-          delivery_mode?: string[]
-          dismissed_at?: string | null
-          domain?: string
-          id?: string
-          orbit_context_id?: string | null
-          priority?: string
-          read_at?: string | null
-          related_conversation_id?: string | null
-          related_job_id?: string | null
-          related_order_id?: string | null
-          related_payment_intent_id?: string | null
-          title: string
-          type: string
-          user_id: string
-        }
-        Update: {
-          action_url?: string | null
-          actor?: string
-          body?: string
-          clicked_at?: string | null
-          created_at?: string
-          data?: Json
-          dedupe_key?: string | null
-          delivery_mode?: string[]
-          dismissed_at?: string | null
-          domain?: string
-          id?: string
-          orbit_context_id?: string | null
-          priority?: string
-          read_at?: string | null
-          related_conversation_id?: string | null
-          related_job_id?: string | null
-          related_order_id?: string | null
-          related_payment_intent_id?: string | null
           title?: string
           type?: string
           user_id?: string
@@ -22041,13 +21603,6 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "storefront_orders_delivery_job_id_fkey"
-            columns: ["delivery_job_id"]
-            isOneToOne: false
-            referencedRelation: "delivery_jobs"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "storefront_orders_shipping_zone_id_fkey"
             columns: ["shipping_zone_id"]
             isOneToOne: false
@@ -27289,39 +26844,6 @@ export type Database = {
           direction?: string
           id?: string
           reason?: string | null
-          user_id?: string
-        }
-        Relationships: []
-      }
-      wallet_ledger: {
-        Row: {
-          amount: number
-          created_at: string
-          id: string
-          reference_id: string | null
-          source: string | null
-          status: string | null
-          type: string
-          user_id: string
-        }
-        Insert: {
-          amount: number
-          created_at?: string
-          id?: string
-          reference_id?: string | null
-          source?: string | null
-          status?: string | null
-          type: string
-          user_id: string
-        }
-        Update: {
-          amount?: number
-          created_at?: string
-          id?: string
-          reference_id?: string | null
-          source?: string | null
-          status?: string | null
-          type?: string
           user_id?: string
         }
         Relationships: []
