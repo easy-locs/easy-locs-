@@ -1,29 +1,30 @@
+/**
+ * Tracking bridge — connects mobility_jobs to live tracking sessions.
+ * Canonical: reads mobility_jobs only.
+ */
 import { supabase } from "@/integrations/supabase/client";
 import { getOrCreateTrackingSession } from "@/lib/tracking/live-tracking";
 
-export async function startTrackingForDispatchJob(dispatchJobId: string) {
+export async function startTrackingForMobilityJob(jobId: string) {
   const { data: job, error } = await (supabase as any)
-    .from("dispatch_jobs_v2")
+    .from("mobility_jobs")
     .select("*")
-    .eq("id", dispatchJobId)
+    .eq("id", jobId)
     .single();
 
   if (error) throw error;
 
-  let driverProfileId: string | null = null;
-  if (job.assigned_driver_id) {
-    // assigned_driver_id in v2 is already a driver_profile_id
-    driverProfileId = job.assigned_driver_id;
-  }
-
   return getOrCreateTrackingSession({
-    contextType: "dispatch_job",
+    contextType: "mobility_job",
     contextId: job.id,
-    driverId: driverProfileId ?? undefined,
+    driverId: job.rider_profile_id ?? undefined,
     customerUserId: job.customer_user_id ?? undefined,
-    merchantProfileId: job.merchant_profile_id ?? undefined,
+    merchantProfileId: job.merchant_id ?? undefined,
   });
 }
+
+/** @deprecated Use startTrackingForMobilityJob instead */
+export const startTrackingForDispatchJob = startTrackingForMobilityJob;
 
 export async function startTrackingForOrder(orderId: string) {
   const { data: order, error } = await (supabase as any)
@@ -34,20 +35,17 @@ export async function startTrackingForOrder(orderId: string) {
 
   if (error) throw error;
 
-  let driverProfileId: string | null = null;
-  if (order.assigned_driver_user_id) {
-    const { data: dp } = await (supabase as any)
-      .from("driver_profiles")
-      .select("id")
-      .eq("user_id", order.assigned_driver_user_id)
-      .maybeSingle();
-    driverProfileId = dp?.id ?? null;
-  }
+  // Find linked mobility_job if any
+  const { data: linkedJob } = await (supabase as any)
+    .from("mobility_jobs")
+    .select("rider_user_id, rider_profile_id")
+    .eq("order_id", orderId)
+    .maybeSingle();
 
   return getOrCreateTrackingSession({
     contextType: "order",
     contextId: order.id,
-    driverId: driverProfileId ?? undefined,
+    driverId: linkedJob?.rider_profile_id ?? undefined,
     customerUserId: order.customer_user_id,
     merchantProfileId: order.merchant_profile_id ?? undefined,
   });
