@@ -31,8 +31,7 @@ import ChunkRecoveryBoundary from "@/components/system/ChunkRecoveryBoundary";
 import CountryGuard from "@/components/dashboard/CountryGuard";
 import { UnifiedPaymentProvider } from "@/payments/UnifiedPaymentSystem";
 
-import { useUnifiedNotificationStore } from "@/stores/unifiedNotificationStore";
-import { startUnifiedNotificationDispatcher, stopUnifiedNotificationDispatcher } from "@/lib/notifications/dispatcher";
+import { useNotificationV2Store } from "@/stores/notificationV2Store";
 import AppBootstrapGuardDirect from "@/components/app/AppBootstrapGuard";
 import { AppInit } from "@/components/system/AppInit";
 import { GlobalExperienceProvider } from "@/providers/GlobalExperienceProvider";
@@ -708,13 +707,15 @@ const seoPublicPrefixes = [
 const OrbitSessionGuard = () => { useOrbitSessionInit(); return null; };
 /** Centralized realtime: replaces usePresence, useOrbitCallSync, RealtimeMessageToast */
 const RealtimeHubGuard = () => { useRealtimeHub(); return null; };
-/** Unified notification dispatcher — starts realtime listener for current user */
+/** Canonical notification realtime — starts listener for current user on notifications_v2 */
 const NotificationsRealtimeGuard = () => {
   const { user } = useAuth();
   useEffect(() => {
     if (!user?.id) return;
-    startUnifiedNotificationDispatcher(user.id);
-    return () => stopUnifiedNotificationDispatcher();
+    const store = useNotificationV2Store.getState();
+    store.hydrate(user.id);
+    store.startRealtime(user.id);
+    return () => store.stopRealtime();
   }, [user?.id]);
   return null;
 };

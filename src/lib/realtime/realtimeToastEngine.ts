@@ -1,14 +1,7 @@
-import { toast } from "sonner";
-import { subscribeToTable } from "@/lib/realtime/realtimeEngine";
-
-export function startRealtimeToasts(userId: string) {
-  subscribeToTable("notifications", "notifications", (payload) => {
-    const row = payload.new;
-    if (!row) return;
-    if (row.user_id !== userId) return;
-
-    toast(row.title || "New update", {
-      description: row.message || "",
-    });
-  });
+/**
+ * Realtime toast engine — DEPRECATED.
+ * Replaced by notificationV2Store realtime with built-in toast delivery.
+ */
+export function startRealtimeToasts(_userId: string) {
+  console.log("[realtimeToastEngine] DEPRECATED — use notificationV2Store.startRealtime()");
 }

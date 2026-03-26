@@ -1,5 +1,8 @@
+/**
+ * Live Badge Store — derives badges from canonical notifications_v2 store.
+ */
 import { create } from "zustand";
-import { useUnifiedNotificationStore } from "@/stores/unifiedNotificationStore";
+import { useNotificationV2Store } from "@/stores/notificationV2Store";
 import { useBookingStore } from "@/stores/bookingStore";
 
 type LiveBadgeStore = {
@@ -13,7 +16,7 @@ export const useLiveBadgeStore = create<LiveBadgeStore>((set) => ({
   pendingBookingCount: 0,
 
   refresh: () => {
-    const unreadCount = useUnifiedNotificationStore.getState().unreadCount();
+    const unreadCount = useNotificationV2Store.getState().unreadCount;
     const bookings = useBookingStore.getState().bookings;
 
     set({
