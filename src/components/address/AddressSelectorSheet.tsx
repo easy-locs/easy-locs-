@@ -27,27 +27,26 @@ export function AddressSelectorSheet({ open, onOpenChange, contextType = "global
     if (!place) return;
     setSelected(place);
 
-    const lat = place.lat ?? place.latitude;
-    const lng = place.lng ?? place.longitude;
+    const { lat, lng } = place;
     if (!lat || !lng) return;
+
+    const label = place.label ?? place.formatted_address ?? "";
 
     // 1. Update locationStore
     useLocationStore.getState().setSelectedLocation({
-      lat, lng,
-      label: place.label ?? place.display_name ?? "",
+      lat, lng, label,
       city: place.city ?? undefined,
       area: place.district ?? undefined,
-      country: place.country ?? undefined,
+      country: place.country_name ?? undefined,
     });
     useLocationStore.getState().setMapViewport({ lat, lng }, 14);
 
     // 2. Add to recent places
     useLocationStore.getState().addRecentPlace({
-      lat, lng,
-      label: place.label ?? place.display_name ?? "",
+      lat, lng, label,
       city: place.city ?? undefined,
       area: place.district ?? undefined,
-      country: place.country ?? undefined,
+      country: place.country_name ?? undefined,
     });
 
     // 3. Update radarPlaceStore for radar sync
@@ -57,9 +56,13 @@ export function AddressSelectorSheet({ open, onOpenChange, contextType = "global
       place.district ?? undefined,
     );
     useRadarPlaceStore.getState().setSelectedPlace({
-      lat, lng,
-      label: place.label ?? place.display_name ?? "",
+      lat, lng, label,
       zone_key: zoneKey,
+      canonical_place_id: place.id ?? "",
+      formatted_address: place.formatted_address ?? label,
+      place_type: place.place_type ?? "address",
+      viewport: null,
+      overlay: null,
     });
 
     // 4. Emit canonical events to refresh entire execution chain
