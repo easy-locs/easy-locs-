@@ -66,6 +66,11 @@ const BRIDGE_MAP: Record<string, string> = {
   "listing.created": "listing.created",
   "listing.published": "listing.published",
   "listing.updated": "listing.updated",
+  // Ride lifecycle
+  "ride.requested": "ride.requested",
+  "ride.driver.assigned": "ride.driver.assigned",
+  "ride.completed": "ride.completed",
+  "ride.cancelled": "ride.cancelled",
 };
 
 // Register bridge listeners
