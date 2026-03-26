@@ -189,12 +189,11 @@ export default memo(function RadarView({ initialType, radiusKm: initialRadius, s
     if (!loading && rawResults.length > 0) {
       eventBus.emit("RADAR_SCAN_COMPLETED", {
         count: results.length,
-        radiusKm: activeRadius,
         lat: userLat,
         lng: userLng,
       });
     }
-  }, [loading, results.length, activeRadius, userLat, userLng]);
+  }, [loading, results.length, userLat, userLng]);
 
   const handleSelect = useCallback((entity: GeoEntity) => {
     setSelectedId(entity.id);
@@ -235,7 +234,7 @@ export default memo(function RadarView({ initialType, radiusKm: initialRadius, s
     }));
   }, [results]);
 
-  const activeFilterCount = (minRating > 0 ? 1 : 0) + (showPromotedOnly ? 1 : 0) + (activeRadius !== 10 ? 1 : 0);
+  const activeFilterCount = (minRating > 0 ? 1 : 0) + (showPromotedOnly ? 1 : 0);
 
   return (
     <div className="flex flex-col h-full min-h-0">
@@ -343,24 +342,6 @@ export default memo(function RadarView({ initialType, radiusKm: initialRadius, s
       {/* ── Advanced filters panel ── */}
       {showFilters && (
         <div className="px-4 py-2 space-y-2 shrink-0 animate-in slide-in-from-top-2 duration-150 border-b border-border/30">
-          {/* Radius */}
-          <div className="flex items-center gap-1.5">
-            <span className="text-[10px] font-semibold text-muted-foreground w-12 shrink-0">Radius</span>
-            {RADIUS_PRESETS.map(r => (
-              <button
-                key={r}
-                onClick={() => setGlobalRadius(r)}
-                className={cn(
-                  "px-2.5 py-1 rounded-full text-[10px] font-semibold transition-all",
-                  activeRadius === r
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-muted text-muted-foreground hover:bg-muted/80"
-                )}
-              >
-                {r}km
-              </button>
-            ))}
-          </div>
 
           {/* Rating filter */}
           <div className="flex items-center gap-1.5">
@@ -407,7 +388,7 @@ export default memo(function RadarView({ initialType, radiusKm: initialRadius, s
       <div className="px-4 py-1 shrink-0">
         <p className="text-[10px] text-muted-foreground">
           {loading ? canonicalUI.wording.loadingText : canonicalUI.wording.resultsFormat.replace("{count}", String(results.length))}
-          {!loading && ` within ${activeRadius}km`}
+          {!loading && ""}
           {minRating > 0 && ` · ★${minRating}+`}
           {showPromotedOnly && " · ⚡ Promoted"}
           {sortBy === "smart" && " · Smart ranked"}
@@ -428,7 +409,7 @@ export default memo(function RadarView({ initialType, radiusKm: initialRadius, s
               onSelectEntity={handleSelect}
               showHeatmap={viewMode === "heatmap"}
               heatmapPoints={heatmapPoints}
-              radiusKm={activeRadius}
+              className="h-full"
               className="h-full"
             />
             {/* Selected entity card */}
