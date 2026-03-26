@@ -49,14 +49,8 @@ const SECTION_DEFS = [
 ] as const;
 
 /* ═══ Compact Header ═══ */
-const CompactHeader = memo(({ city, greeting }: { city: string | null; greeting: string }) => {
+const CompactHeader = memo(({ city, greeting, onLocationTap }: { city: string | null; greeting: string; onLocationTap: () => void }) => {
   const engine = useOrbitEngine();
-  const navigate = useNavigate();
-  const handleLocationTap = () => {
-    if (!city) {
-      import("@/lib/location/requestLocation").then(({ requestLocation }) => requestLocation());
-    }
-  };
   return (
     <div className="flex items-center gap-2 mb-2">
       <button onClick={handleLocationTap} className="flex items-center gap-1.5 min-w-0 shrink text-left active:scale-95 transition-transform">
