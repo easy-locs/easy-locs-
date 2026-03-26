@@ -1,20 +1,21 @@
 /**
- * TaxiBookingForm — Professional customer taxi booking form.
- * Service levels: standard, premium, xl, moto_taxi.
- * Supports now/scheduled with proper date/time picker.
- * 
- * Uses CanonicalAddressInput for pickup/dropoff → full zone intelligence propagation.
+ * TaxiBookingForm — Premium customer taxi booking form.
+ * Integrates loadRidePreview for live ETA/fare/driver preview BEFORE submission.
+ * Uses CanonicalAddressInput for pickup/dropoff → zone intelligence propagation.
  */
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { useCustomerMobilityStore } from "@/stores/customerMobilityStore";
+import { loadRidePreview, type RidePreviewData } from "@/lib/mobility/load-ride-preview";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Car, MapPin, Navigation, Clock, DollarSign, Calendar, Users } from "lucide-react";
+import { Car, MapPin, Navigation, Clock, DollarSign, Calendar, Users, Zap, Loader2, Signal } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { CanonicalAddressInput } from "@/components/address/CanonicalAddressInput";
 import type { CanonicalPlace } from "@/lib/address/canonical-place";
+import { tc } from "@/lib/i18n-canonical";
+import { motion, AnimatePresence } from "framer-motion";
 
 type ServiceLevel = "taxi_standard" | "taxi_premium" | "taxi_xl" | "taxi_moto";
 type BookingMode = "now" | "scheduled";
@@ -26,6 +27,18 @@ const SERVICE_LEVELS: { value: ServiceLevel; label: string; emoji: string; desc:
   { value: "taxi_moto", label: "Moto", emoji: "🏍️", desc: "Fast" },
 ];
 
+const INITIAL_PREVIEW: RidePreviewData = {
+  ready: false,
+  waitMinutes: null,
+  etaMinutes: null,
+  distanceKm: null,
+  estimatedFare: null,
+  trafficLevel: "unknown",
+  zoneKey: null,
+  nearbyDrivers: null,
+  surgeMultiplier: 1,
+};
+
 export function TaxiBookingForm() {
   const createJob = useCustomerMobilityStore(s => s.createJob);
   const [serviceLevel, setServiceLevel] = useState<ServiceLevel>("taxi_standard");
@@ -34,9 +47,13 @@ export function TaxiBookingForm() {
   const [dropoff, setDropoff] = useState<CanonicalPlace | null>(null);
   const [scheduledDate, setScheduledDate] = useState("");
   const [scheduledTime, setScheduledTime] = useState("");
-  const [estimatedPrice, setEstimatedPrice] = useState("25");
   const [seats, setSeats] = useState("1");
-  const [loading, setLoading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [preview, setPreview] = useState<RidePreviewData>(INITIAL_PREVIEW);
+  const [previewLoading, setPreviewLoading] = useState(false);
+
+  const canPreview = !!pickup && !!dropoff;
+  const canSubmit = canPreview && preview.ready && !submitting;
 
   const getScheduledFor = (): string | undefined => {
     if (bookingMode !== "scheduled" || !scheduledDate || !scheduledTime) return undefined;
@@ -51,14 +68,34 @@ export function TaxiBookingForm() {
     setDropoff(place);
   }, []);
 
-  const submit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!pickup || !dropoff) { toast.error("Pickup & dropoff required"); return; }
-    if (bookingMode === "scheduled" && (!scheduledDate || !scheduledTime)) {
-      toast.error("Please select date and time");
+  // ── Load ride preview when pickup+dropoff are set (NOT creating a job) ──
+  useEffect(() => {
+    if (!pickup || !dropoff) {
+      setPreview(INITIAL_PREVIEW);
       return;
     }
-    setLoading(true);
+    let cancelled = false;
+    setPreviewLoading(true);
+    loadRidePreview({
+      pickup: { lat: pickup.lat, lng: pickup.lng },
+      dropoff: { lat: dropoff.lat, lng: dropoff.lng },
+      serviceLevel,
+    })
+      .then((data) => { if (!cancelled) setPreview(data); })
+      .catch(() => { if (!cancelled) setPreview(INITIAL_PREVIEW); })
+      .finally(() => { if (!cancelled) setPreviewLoading(false); });
+    return () => { cancelled = true; };
+  }, [pickup, dropoff, serviceLevel, bookingMode]);
+
+  // ── Submit: only on explicit user action ──
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!pickup || !dropoff || !preview.ready || submitting) return;
+    if (bookingMode === "scheduled" && (!scheduledDate || !scheduledTime)) {
+      toast.error(tc("mobility.select_date_time") || "Please select date and time");
+      return;
+    }
+    setSubmitting(true);
     try {
       await createJob({
         jobType: "taxi",
@@ -74,22 +111,24 @@ export function TaxiBookingForm() {
         dropoffLat: dropoff.lat,
         dropoffLng: dropoff.lng,
         seatsRequested: Number(seats) || 1,
-        quotedPrice: Number(estimatedPrice) || 0,
+        quotedPrice: preview.estimatedFare ?? 0,
         currency: "AED",
       });
-      toast.success(bookingMode === "scheduled" ? "Ride scheduled!" : "Taxi requested!");
-      setPickup(null); setDropoff(null);
+      toast.success(bookingMode === "scheduled" ? tc("mobility.ride_scheduled") || "Ride scheduled!" : tc("mobility.ride_requested") || "Taxi requested!");
+      setPickup(null);
+      setDropoff(null);
+      setPreview(INITIAL_PREVIEW);
     } catch (err: any) {
       toast.error(err.message ?? "Failed");
     } finally {
-      setLoading(false);
+      setSubmitting(false);
     }
   };
 
   const today = new Date().toISOString().split("T")[0];
 
   return (
-    <form onSubmit={submit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-4">
       {/* Service level */}
       <div className="grid grid-cols-4 gap-2">
         {SERVICE_LEVELS.map(sl => (
@@ -111,7 +150,7 @@ export function TaxiBookingForm() {
             className={cn("flex-1 py-2.5 rounded-xl text-xs font-bold border-2 transition-all flex items-center justify-center gap-1.5",
               bookingMode === m ? "border-primary bg-primary text-primary-foreground" : "border-border/40 bg-card text-muted-foreground"
             )}>
-            {m === "now" ? <><Car className="h-3.5 w-3.5" /> Now</> : <><Calendar className="h-3.5 w-3.5" /> Schedule</>}
+            {m === "now" ? <><Car className="h-3.5 w-3.5" /> {tc("mobility.now") || "Now"}</> : <><Calendar className="h-3.5 w-3.5" /> {tc("mobility.schedule") || "Schedule"}</>}
           </button>
         ))}
       </div>
@@ -120,27 +159,16 @@ export function TaxiBookingForm() {
       {bookingMode === "scheduled" && (
         <div className="rounded-2xl border border-primary/20 bg-primary/5 p-3 space-y-2">
           <Label className="text-xs font-bold text-primary flex items-center gap-1.5">
-            <Clock className="h-3.5 w-3.5" /> Schedule your ride
+            <Clock className="h-3.5 w-3.5" /> {tc("mobility.schedule_ride") || "Schedule your ride"}
           </Label>
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <Label className="text-[10px] text-muted-foreground">Date</Label>
-              <Input
-                type="date"
-                min={today}
-                value={scheduledDate}
-                onChange={e => setScheduledDate(e.target.value)}
-                className="bg-card border-border/40 rounded-xl h-10 text-sm"
-              />
+              <Label className="text-[10px] text-muted-foreground">{tc("common.date") || "Date"}</Label>
+              <Input type="date" min={today} value={scheduledDate} onChange={e => setScheduledDate(e.target.value)} className="bg-card border-border/40 rounded-xl h-10 text-sm" />
             </div>
             <div>
-              <Label className="text-[10px] text-muted-foreground">Time</Label>
-              <Input
-                type="time"
-                value={scheduledTime}
-                onChange={e => setScheduledTime(e.target.value)}
-                className="bg-card border-border/40 rounded-xl h-10 text-sm"
-              />
+              <Label className="text-[10px] text-muted-foreground">{tc("common.time") || "Time"}</Label>
+              <Input type="time" value={scheduledTime} onChange={e => setScheduledTime(e.target.value)} className="bg-card border-border/40 rounded-xl h-10 text-sm" />
             </div>
           </div>
           {scheduledDate && scheduledTime && (
@@ -158,53 +186,127 @@ export function TaxiBookingForm() {
         <CanonicalAddressInput
           value={pickup}
           onChange={handlePickupChange}
-          placeholder="Pickup location"
+          placeholder={tc("ride.pickup") || "Pickup location"}
           contextType="taxi_pickup"
-          contextLabel="Pickup"
+          contextLabel={tc("ride.pickup") || "Pickup"}
           allowAirport
           allowSavedPlaces
         />
         <CanonicalAddressInput
           value={dropoff}
           onChange={handleDropoffChange}
-          placeholder="Dropoff location"
+          placeholder={tc("ride.dropoff") || "Dropoff location"}
           contextType="taxi_dropoff"
-          contextLabel="Dropoff"
+          contextLabel={tc("ride.dropoff") || "Dropoff"}
           allowAirport
           allowSavedPlaces
         />
       </div>
 
-      {/* Seats + Price */}
-      <div className="grid grid-cols-2 gap-2">
-        <div className="relative">
-          <Users className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input type="number" min="1" max="7" placeholder="Seats" value={seats} onChange={e => setSeats(e.target.value)} className="pl-10 bg-card border-border/40 rounded-xl h-11" />
-        </div>
-        <div className="relative">
-          <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input type="number" placeholder="Est. fare" value={estimatedPrice} onChange={e => setEstimatedPrice(e.target.value)} className="pl-10 bg-card border-border/40 rounded-xl h-11" />
-        </div>
+      {/* Seats */}
+      <div className="relative">
+        <Users className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <Input type="number" min="1" max="7" placeholder={tc("mobility.seats") || "Seats"} value={seats} onChange={e => setSeats(e.target.value)} className="pl-10 bg-card border-border/40 rounded-xl h-11" />
       </div>
 
-      {/* Fare summary */}
-      <div className="rounded-xl border border-border/20 bg-muted/20 p-3 space-y-1">
-        <div className="flex justify-between text-[11px] text-muted-foreground">
-          <span>Base fare</span><span>{(Number(estimatedPrice) * 0.6).toFixed(0)} AED</span>
-        </div>
-        <div className="flex justify-between text-[11px] text-muted-foreground">
-          <span>Distance</span><span>{(Number(estimatedPrice) * 0.3).toFixed(0)} AED</span>
-        </div>
-        <div className="flex justify-between text-[11px] text-muted-foreground">
-          <span>Time</span><span>{(Number(estimatedPrice) * 0.1).toFixed(0)} AED</span>
-        </div>
-        <div className="border-t border-border/20 pt-1 flex justify-between text-xs font-bold text-foreground">
-          <span>Estimated total</span><span>{estimatedPrice} AED</span>
-        </div>
-      </div>
+      {/* ── Ride Preview Card ── */}
+      <AnimatePresence mode="wait">
+        {previewLoading && canPreview && (
+          <motion.div key="loading" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="rounded-xl border border-border/20 bg-muted/20 p-4 flex items-center justify-center gap-2">
+            <Loader2 className="w-4 h-4 animate-spin text-primary" />
+            <span className="text-xs text-muted-foreground">{tc("mobility.computing_route") || "Computing route…"}</span>
+          </motion.div>
+        )}
 
-      <Button type="submit" disabled={loading} className="w-full h-12 rounded-xl text-sm font-bold shadow-lg">
-        {loading ? "Requesting..." : bookingMode === "scheduled" ? "📅 Reserve ride" : "🚀 Request taxi"}
+        {preview.ready && !previewLoading && (
+          <motion.div
+            key="preview"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            className="rounded-2xl border border-border/30 bg-card p-4 space-y-3"
+          >
+            {/* Fare hero */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <DollarSign className="w-4 h-4 text-primary" />
+                <span className="text-xs text-muted-foreground">{tc("ride.fare") || "Estimated fare"}</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="text-xl font-bold text-foreground">
+                  {preview.estimatedFare} AED
+                </span>
+                {preview.surgeMultiplier > 1 && (
+                  <span className="flex items-center gap-0.5 text-xs text-amber-500 font-semibold bg-amber-500/10 px-1.5 py-0.5 rounded-full">
+                    <Zap className="w-3 h-3" /> ×{preview.surgeMultiplier.toFixed(1)}
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* Stats row */}
+            <div className="grid grid-cols-3 gap-2">
+              <div className="flex flex-col items-center bg-muted/30 rounded-lg py-2 px-1">
+                <Navigation className="w-3.5 h-3.5 text-primary mb-0.5" />
+                <span className="text-xs font-bold text-foreground">{preview.distanceKm?.toFixed(1)} km</span>
+                <span className="text-[9px] text-muted-foreground">{tc("mobility.distance") || "Distance"}</span>
+              </div>
+              <div className="flex flex-col items-center bg-muted/30 rounded-lg py-2 px-1">
+                <Clock className="w-3.5 h-3.5 text-sky-500 mb-0.5" />
+                <span className="text-xs font-bold text-foreground">{preview.etaMinutes} min</span>
+                <span className="text-[9px] text-muted-foreground">ETA</span>
+              </div>
+              <div className="flex flex-col items-center bg-muted/30 rounded-lg py-2 px-1">
+                <Car className="w-3.5 h-3.5 text-emerald-500 mb-0.5" />
+                <span className="text-xs font-bold text-foreground">{preview.waitMinutes} min</span>
+                <span className="text-[9px] text-muted-foreground">{tc("mobility.wait") || "Wait"}</span>
+              </div>
+            </div>
+
+            {/* Zone context */}
+            <div className="flex items-center justify-between text-[10px]">
+              <div className="flex items-center gap-1.5 text-muted-foreground">
+                <Signal className="w-3 h-3" />
+                <span>{preview.nearbyDrivers ?? 0} {tc("ride.riders") || "drivers"} {tc("mobility.nearby") || "nearby"}</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className={cn(
+                  "px-2 py-0.5 rounded-full font-semibold capitalize",
+                  preview.trafficLevel === "low" ? "bg-emerald-500/10 text-emerald-600" :
+                  preview.trafficLevel === "moderate" ? "bg-amber-500/10 text-amber-600" :
+                  preview.trafficLevel === "heavy" ? "bg-orange-500/10 text-orange-600" :
+                  "bg-muted text-muted-foreground"
+                )}>
+                  {tc(`ride.traffic_${preview.trafficLevel}`) || preview.trafficLevel}
+                </span>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* No preview yet prompt */}
+      {!canPreview && (
+        <div className="text-center py-3">
+          <p className="text-xs text-muted-foreground">
+            <MapPin className="w-3.5 h-3.5 inline mr-1" />
+            {tc("mobility.select_both_locations") || "Select pickup & dropoff to see route preview"}
+          </p>
+        </div>
+      )}
+
+      <Button
+        type="submit"
+        disabled={!canSubmit}
+        className="w-full h-12 rounded-xl text-sm font-bold shadow-lg"
+      >
+        {submitting ? (
+          <><Loader2 className="w-4 h-4 animate-spin mr-2" /> {tc("mobility.requesting") || "Requesting..."}</>
+        ) : bookingMode === "scheduled" ? (
+          <>📅 {tc("mobility.reserve_ride") || "Reserve ride"}</>
+        ) : (
+          <>🚀 {tc("mobility.request_taxi") || "Request taxi"}</>
+        )}
       </Button>
     </form>
   );
