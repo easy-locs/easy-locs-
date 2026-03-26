@@ -1,6 +1,7 @@
 /**
- * useSmartLocation — Unified location system with saved places (Home/Work/Favorites/Recent).
- * Used across Taxi (/ride), Delivery (/send), and food delivery flows.
+ * @deprecated — LEGACY local-storage-based location system.
+ * New code should use useCanonicalAddress() from @/hooks/useCanonicalAddress.
+ * Kept temporarily for CanonicalAddressInput fallback and SendMap/SmartLocationPicker.
  */
 import { useState, useEffect, useCallback } from "react";
 import { useLocationStore } from "@/stores/locationStore";
