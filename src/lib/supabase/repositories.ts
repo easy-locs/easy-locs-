@@ -131,6 +131,11 @@ export const bookingRepo = {
  */
 export const chatRepo = {
   async createConversation(conversation: ConversationRecord): Promise<ConversationRecord> {
+    // Get current user id for created_by_orbit_id (required by RLS)
+    const { data: authData } = await supabase.auth.getUser();
+    const userId = authData?.user?.id;
+    if (!userId) throw new Error("Not authenticated");
+
     const { data, error } = await db
       .from("conversations_v2")
       .insert({
@@ -144,6 +149,7 @@ export const chatRepo = {
         last_message_at: conversation.lastMessageAt || null,
         created_at: conversation.createdAt,
         updated_at: conversation.updatedAt,
+        created_by_orbit_id: userId,
       })
       .select()
       .single();
