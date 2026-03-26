@@ -9,6 +9,9 @@ import "./handlers/tracking.handler";
 import "./handlers/ai-feedback.handler";
 import "./handlers/business.handler";
 import "./handlers/user-behavior.handler";
+import "./handlers/eta-refresh.handler";
+import "./handlers/merchant-visibility-refresh.handler";
+import "./handlers/commerce-payment-bridge.handler";
 
 /**
  * Bridge: forward platformBus events to eventBus with normalized names.
