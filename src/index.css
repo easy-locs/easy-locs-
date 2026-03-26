@@ -68,10 +68,9 @@
   overflow: hidden;
 }
 
-/* 4. Card safety — enforce content boundaries for cards
-   EXCLUDE: relative containers, inputs, buttons, labels, scrollable wrappers */
-[class*="rounded-2xl"]:not(.relative):not(input):not(button):not(label):not([role="tablist"]):not([data-radix-collection-item]):not(.overflow-x-auto):not(.overflow-visible),
-[class*="rounded-xl"]:not(.relative):not(input):not(button):not(label):not([role="tablist"]):not([data-radix-collection-item]):not(.overflow-x-auto):not(.overflow-visible) {
+/* 4. Card safety — enforce content boundaries only on explicit card containers */
+.card-clip,
+[data-card-clip] {
   overflow: hidden;
 }
 
@@ -2096,43 +2095,57 @@ html {
 }
 
 @keyframes map-rain-fall {
-  0% {
-    background-position: 0 0, 0 0;
-  }
-  100% {
-    background-position: 0 18px, 0 0;
-  }
+  0% { background-position: 0 0, 0 0; }
+  100% { background-position: -6px 32px, 4px 24px; }
+}
+
+@keyframes map-rain-drift {
+  0% { opacity: 0.45; transform: translateY(0); }
+  50% { opacity: 0.7; }
+  100% { opacity: 0.45; transform: translateY(2px); }
+}
+
+@keyframes map-rain-pulse-glow {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 0.85; }
 }
 
 .map-rain-tint {
   background:
-    linear-gradient(180deg, hsl(var(--primary) / 0.16) 0%, transparent 40%, hsl(var(--background) / 0.1) 100%),
-    radial-gradient(circle at top, hsl(var(--info) / 0.16), transparent 45%);
+    linear-gradient(180deg, hsl(var(--primary) / 0.22) 0%, transparent 35%, hsl(var(--background) / 0.12) 100%),
+    radial-gradient(ellipse at 50% -10%, hsl(210 60% 50% / 0.2), transparent 55%);
+  animation: map-rain-drift 3s ease-in-out infinite;
 }
 
 .map-rain-overlay {
   background-image:
     repeating-linear-gradient(
-      -18deg,
-      hsl(var(--card) / 0) 0px,
-      hsl(var(--card) / 0) 10px,
-      hsl(var(--card) / 0.28) 11px,
-      hsl(var(--card) / 0.28) 13px
+      -12deg,
+      transparent 0px,
+      transparent 7px,
+      hsl(210 40% 85% / 0.35) 8px,
+      hsl(210 40% 85% / 0.35) 9px
     ),
-    linear-gradient(180deg, hsl(var(--background) / 0.02), hsl(var(--background) / 0.08));
+    repeating-linear-gradient(
+      -18deg,
+      transparent 0px,
+      transparent 12px,
+      hsl(210 50% 80% / 0.22) 13px,
+      hsl(210 50% 80% / 0.22) 14px
+    );
   mix-blend-mode: screen;
-  opacity: 0.5;
-  animation: map-rain-fall 0.7s linear infinite;
+  opacity: 0.6;
+  animation: map-rain-fall 0.5s linear infinite;
 }
 
 .map-rain-glow {
   background:
-    radial-gradient(circle at 20% 0%, hsl(var(--info) / 0.28), transparent 30%),
-    radial-gradient(circle at 80% 10%, hsl(var(--primary) / 0.2), transparent 28%),
-    linear-gradient(180deg, transparent 0%, hsl(var(--background) / 0.14) 100%);
+    radial-gradient(circle at 25% 0%, hsl(var(--info) / 0.32), transparent 28%),
+    radial-gradient(circle at 75% 5%, hsl(var(--primary) / 0.24), transparent 25%),
+    radial-gradient(circle at 50% 100%, hsl(var(--background) / 0.18), transparent 35%);
   mix-blend-mode: screen;
-  animation: map-rain-fall 1.4s linear infinite reverse;
-  opacity: 0.7;
+  animation: map-rain-pulse-glow 2.5s ease-in-out infinite;
+  opacity: 0.65;
 }
 
 .search-premium-wrap {
@@ -2159,9 +2172,7 @@ html {
   border-radius: 1rem;
   padding-inline-start: 2.75rem !important;
   padding-inline-end: 2.8rem !important;
-  white-space: nowrap;
   text-overflow: ellipsis;
-  overflow: hidden;
   line-height: 1.2;
 }
 
