@@ -48,9 +48,9 @@ export default function AdminFleetDashboard({ orgId, className }: Props) {
       setLoading(true);
       try {
         // Fetch rider presence for this org
-        const { data: sessions } = await supabase
+        const { data: sessions } = await (supabase as any)
           .from("rider_presence")
-          .select("user_id, vehicle_type, current_status, last_seen_at, is_online, is_available, lat, lng")
+          .select("user_id, vehicle_type, is_online, is_available, last_seen_at, updated_at, lat, lng")
           .limit(200);
 
         const allDrivers = sessions || [];
