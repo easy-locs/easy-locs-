@@ -243,6 +243,14 @@ export default memo(function RadarView({ initialType, radiusKm: initialRadius, s
         <RadarPlaceSearch />
       </div>
 
+      {/* ── Live Station Card — always visible ── */}
+      <div className="px-4 pt-1.5 shrink-0">
+        <RadarLiveStationCard
+          vertical={activeType === "all" ? undefined : activeType === "restaurant" ? "food" : activeType}
+          compact={viewMode === "map"}
+        />
+      </div>
+
       {/* ── Zone Overlay Card (when a place is selected) ── */}
       {selectedPlace && zoneOverlay && (
         <div className="px-4 pt-1.5 shrink-0">

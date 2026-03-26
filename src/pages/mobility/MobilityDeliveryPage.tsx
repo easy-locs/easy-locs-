@@ -110,8 +110,8 @@ export default function MobilityDeliveryPage() {
 
   const riderCount = station.riderCount;
   const avgEta = station.etas?.food ?? station.etas?.parcel ?? null;
-  const demandLevel = station.arbitration?.decisions?.find((d: any) => d.module === "demand")?.demandLevel;
-  const isHighDemand = demandLevel === "high" || demandLevel === "critical";
+  const demandDecision = station.arbitration?.decisions?.find((d: any) => d.module === "demand");
+  const isHighDemand = demandDecision && (demandDecision as any).multiplier > 1.2;
   const hasLocation = !!currentLocation || !!station.label;
 
   // Smart suggestions based on time/weather/demand
