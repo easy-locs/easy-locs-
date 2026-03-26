@@ -196,7 +196,7 @@ export async function validateP0Bridges(): Promise<ValidationResult[]> {
   }
 
   // Print summary
-  console.log("\n═══ BRIDGE VALIDATION RESULTS (P0 + P1) ═══");
+  console.log("\n═══ BRIDGE VALIDATION RESULTS (P0 + P1 + P2) ═══");
   for (const r of results) {
     console.log(`\n[${r.pass ? "✅ PASS" : "❌ FAIL"}] ${r.bridge}`);
     console.log(`  Emitted: ${r.emitted}`);
