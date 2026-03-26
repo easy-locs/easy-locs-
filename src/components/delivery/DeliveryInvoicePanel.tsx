@@ -53,23 +53,23 @@ export default function DeliveryInvoicePanel({ orgId, className }: Props) {
       else since.setMonth(since.getMonth() - 3);
 
       const { data: jobs } = await supabase
-        .from("delivery_jobs")
-        .select("id, driver_id, pickup_address, dropoff_address, delivery_fee, currency, delivered_at, status")
-        .eq("org_id", orgId)
+        .from("mobility_jobs")
+        .select("id, rider_user_id, pickup_address, dropoff_address, current_price, quoted_price, currency, completed_at, status")
+        .eq("merchant_id", orgId)
         .eq("status", "completed")
-        .gte("delivered_at", since.toISOString())
-        .order("delivered_at", { ascending: false })
+        .gte("completed_at", since.toISOString())
+        .order("completed_at", { ascending: false })
         .limit(500);
 
-      const invoiceRows: InvoiceRow[] = (jobs || []).map(j => ({
+      const invoiceRows: InvoiceRow[] = (jobs || []).map((j: any) => ({
         id: `INV-${j.id.slice(0, 8).toUpperCase()}`,
         jobId: j.id,
-        driverName: j.driver_id ? j.driver_id.slice(0, 8) + "…" : "—",
+        driverName: j.rider_user_id ? j.rider_user_id.slice(0, 8) + "…" : "—",
         pickupAddress: j.pickup_address,
         dropoffAddress: j.dropoff_address,
-        fee: j.delivery_fee || 0,
-        currency: j.currency || "EUR",
-        deliveredAt: j.delivered_at || "",
+        fee: j.current_price || j.quoted_price || 0,
+        currency: j.currency || "AED",
+        deliveredAt: j.completed_at || "",
         status: "invoiced",
       }));
 

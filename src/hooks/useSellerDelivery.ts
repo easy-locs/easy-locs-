@@ -1,6 +1,6 @@
 /**
- * useSellerDelivery — Seller-side delivery management: create jobs, list, find/assign drivers.
- * PASS70-C: Seller Logistics
+ * useSellerDelivery — Seller/merchant-side delivery management.
+ * CANONICAL: reads from mobility_jobs only.
  */
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -44,90 +44,113 @@ export function useSellerDelivery() {
   const [loading, setLoading] = useState(true);
 
   const fetchJobs = useCallback(async () => {
-    if (!user?.id || !orgId) return;
+    if (!user?.id) return;
     setLoading(true);
     const { data } = await supabase
-      .from("delivery_jobs")
+      .from("mobility_jobs")
       .select("*")
-      .eq("org_id", orgId)
-      .eq("seller_id", user.id)
+      .eq("merchant_id", user.id)
       .order("created_at", { ascending: false })
       .limit(50);
 
-    if (data) setJobs(data as DeliveryJob[]);
+    if (data) setJobs(data.map((row: any) => ({
+      ...row,
+      driver_id: row.rider_user_id,
+      delivery_fee: row.current_price ?? row.quoted_price,
+      delivered_at: row.completed_at,
+      pickup_address_compat: row.pickup_address || "Pickup",
+      dropoff_address_compat: row.dropoff_address || "Dropoff",
+    })));
     setLoading(false);
-  }, [user?.id, orgId]);
+  }, [user?.id]);
 
   useEffect(() => { fetchJobs(); }, [fetchJobs]);
 
-  // Realtime
   useEffect(() => {
-    if (!orgId) return;
+    if (!user?.id) return;
     const channel = supabase
-      .channel(`seller-jobs-${orgId}`)
+      .channel(`seller-mobility-jobs-${user.id}`)
       .on("postgres_changes", {
-        event: "*", schema: "public", table: "delivery_jobs",
-        filter: `org_id=eq.${orgId}`,
+        event: "*", schema: "public", table: "mobility_jobs",
+        filter: `merchant_id=eq.${user.id}`,
       }, () => fetchJobs())
       .subscribe();
     return () => { supabase.removeChannel(channel); };
-  }, [orgId, fetchJobs]);
+  }, [user?.id, fetchJobs]);
 
-  // Create job
   const createJob = useCallback(async (payload: CreateJobPayload) => {
-    if (!orgId) throw new Error("No org");
-    const { data, error } = await supabase.functions.invoke("dispatch-delivery", {
-      body: { action: "create_job", org_id: orgId, ...payload },
+    const { data, error } = await supabase.functions.invoke("dispatch-ride", {
+      body: {
+        action: "create_job",
+        job_type: "parcel_delivery",
+        service_level: payload.priority === "express" ? "parcel_express" : "parcel_standard",
+        pickup_address: payload.pickup_address,
+        pickup_lat: payload.pickup_lat,
+        pickup_lng: payload.pickup_lng,
+        dropoff_address: payload.dropoff_address,
+        dropoff_lat: payload.dropoff_lat,
+        dropoff_lng: payload.dropoff_lng,
+        notes: payload.package_description || payload.notes,
+        quoted_price: payload.delivery_fee,
+        currency: payload.currency || "AED",
+      },
     });
     if (error) throw error;
     if (data?.error) throw new Error(data.error);
     await fetchJobs();
     return data;
-  }, [orgId, fetchJobs]);
+  }, [fetchJobs]);
 
-  // Find nearby drivers
-  const findDrivers = useCallback(async (jobId: string, maxDistanceKm = 15): Promise<NearbyDriver[]> => {
-    const { data, error } = await supabase.functions.invoke("dispatch-delivery", {
-      body: { action: "find_drivers", job_id: jobId, max_distance_km: maxDistanceKm },
-    });
-    if (error) throw error;
-    if (data?.error) throw new Error(data.error);
-    return (data?.drivers || []) as NearbyDriver[];
+  const findDrivers = useCallback(async (_jobId: string, _maxDistanceKm = 15): Promise<NearbyDriver[]> => {
+    // Use rider_presence for nearby riders
+    const { data } = await supabase
+      .from("rider_presence")
+      .select("*")
+      .eq("is_online", true)
+      .eq("is_available", true)
+      .limit(20);
+    return (data || []).map((r: any) => ({
+      id: r.rider_profile_id || r.user_id,
+      user_id: r.user_id,
+      vehicle_type: r.vehicle_type || "bike",
+      lat: r.lat || 0,
+      lng: r.lng || 0,
+      distance_km: 0,
+      avg_rating: null,
+      total_completed: null,
+      acceptance_rate: null,
+    }));
   }, []);
 
-  // Assign driver
-  const assignDriver = useCallback(async (jobId: string, driverId: string) => {
-    const { data, error } = await supabase.functions.invoke("dispatch-delivery", {
-      body: { action: "assign_driver", job_id: jobId, driver_id: driverId },
+  const assignDriver = useCallback(async (jobId: string, _driverId: string) => {
+    // Assignment goes through dispatch engine
+    const { data, error } = await supabase.functions.invoke("dispatch-ride", {
+      body: { action: "accept_offer", job_id: jobId },
     });
     if (error) throw error;
-    if (data?.error) throw new Error(data.error);
     await fetchJobs();
     return data;
   }, [fetchJobs]);
 
-  // Cancel job
   const cancelJob = useCallback(async (jobId: string, reason?: string) => {
-    const { data, error } = await supabase.functions.invoke("dispatch-delivery", {
-      body: { action: "update_status", job_id: jobId, status: "cancelled", cancellation_reason: reason },
+    const { data, error } = await supabase.functions.invoke("dispatch-ride", {
+      body: { action: "cancel_job", job_id: jobId, cancel_reason: reason },
     });
     if (error) throw error;
-    if (data?.error) throw new Error(data.error);
     await fetchJobs();
     return data;
   }, [fetchJobs]);
 
-  // Metrics
   const metrics = {
     total: jobs.length,
-    pending: jobs.filter(j => j.status === "pending").length,
-    active: jobs.filter(j => ["assigned", "accepted", "in_progress"].includes(j.status)).length,
+    pending: jobs.filter(j => j.status === "searching").length,
+    active: jobs.filter(j => ["accepted", "rider_arriving_pickup", "picked_up", "in_progress"].includes(j.status)).length,
     completed: jobs.filter(j => j.status === "completed").length,
     cancelled: jobs.filter(j => j.status === "cancelled").length,
-    totalSpent: jobs.filter(j => j.status === "completed").reduce((s, j) => s + (j.delivery_fee || 0), 0),
+    totalSpent: jobs.filter(j => j.status === "completed").reduce((s, j) => s + (j.current_price || j.quoted_price || 0), 0),
     avgFee: (() => {
       const done = jobs.filter(j => j.status === "completed");
-      return done.length ? done.reduce((s, j) => s + (j.delivery_fee || 0), 0) / done.length : 0;
+      return done.length ? done.reduce((s, j) => s + (j.current_price || j.quoted_price || 0), 0) / done.length : 0;
     })(),
   };
 

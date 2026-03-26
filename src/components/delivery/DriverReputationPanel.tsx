@@ -71,9 +71,9 @@ export default function DriverReputationPanel({ driverId, className }: Props) {
     try {
       // Fetch completed deliveries
       const { data: jobs } = await supabase
-        .from("delivery_jobs")
-        .select("id, status, created_at, delivered_at, accepted_at")
-        .eq("driver_id", targetId)
+        .from("mobility_jobs")
+        .select("id, status, created_at, completed_at, accepted_at")
+        .eq("rider_user_id", targetId)
         .limit(500);
 
       const all = jobs || [];
@@ -112,9 +112,9 @@ export default function DriverReputationPanel({ driverId, className }: Props) {
       const cancellationRate = all.length ? (cancelled.length / all.length) * 100 : 0;
 
       // On-time rate (delivered within 2 hours of creation)
-      const onTime = completed.filter(j => {
-        if (!j.created_at || !j.delivered_at) return true;
-        const diff = (new Date(j.delivered_at).getTime() - new Date(j.created_at).getTime()) / 3600000;
+      const onTime = completed.filter((j: any) => {
+        if (!j.created_at || !j.completed_at) return true;
+        const diff = (new Date(j.completed_at).getTime() - new Date(j.created_at).getTime()) / 3600000;
         return diff <= 2;
       });
       const onTimeRate = completed.length ? (onTime.length / completed.length) * 100 : 100;

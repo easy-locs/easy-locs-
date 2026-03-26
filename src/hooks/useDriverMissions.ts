@@ -1,6 +1,6 @@
 /**
- * useDriverMissions — Fetches delivery jobs assigned to the current driver.
- * PASS70-B: Driver Dashboard
+ * useDriverMissions — Fetches mobility jobs assigned to the current rider.
+ * CANONICAL: reads from mobility_jobs only.
  */
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,29 +8,62 @@ import { useAuth } from "@/contexts/AuthContext";
 
 export interface DeliveryJob {
   id: string;
-  org_id: string;
-  seller_id: string;
-  driver_id: string | null;
+  job_type: string;
+  service_level: string;
+  customer_user_id: string;
+  rider_user_id: string | null;
+  merchant_id: string | null;
   status: string;
-  priority: string;
-  pickup_address: string;
+  pickup_address: string | null;
   pickup_lat: number | null;
   pickup_lng: number | null;
-  dropoff_address: string;
+  dropoff_address: string | null;
   dropoff_lat: number | null;
   dropoff_lng: number | null;
-  package_description: string | null;
-  weight_kg: number | null;
-  delivery_fee: number | null;
-  currency: string | null;
-  confirmation_code: string | null;
   notes: string | null;
-  scheduled_at: string | null;
-  assigned_at: string | null;
+  quoted_price: number | null;
+  current_price: number | null;
+  currency: string | null;
   accepted_at: string | null;
   picked_up_at: string | null;
-  delivered_at: string | null;
+  completed_at: string | null;
+  cancelled_at: string | null;
   created_at: string | null;
+  // Legacy compat aliases
+  driver_id: string | null;
+  delivery_fee: number | null;
+  delivered_at: string | null;
+  pickup_address_compat: string;
+  dropoff_address_compat: string;
+  // Additional compat fields for downstream components
+  package_description: string | null;
+  priority: string;
+  org_id: string | null;
+  seller_id: string | null;
+  assigned_at: string | null;
+  weight_kg: number | null;
+  confirmation_code: string | null;
+  scheduled_at: string | null;
+  [key: string]: any;
+}
+
+function mapRow(row: any): DeliveryJob {
+  return {
+    ...row,
+    driver_id: row.rider_user_id,
+    delivery_fee: row.current_price ?? row.quoted_price,
+    delivered_at: row.completed_at,
+    pickup_address_compat: row.pickup_address || "Pickup",
+    dropoff_address_compat: row.dropoff_address || "Dropoff",
+    package_description: row.notes,
+    priority: row.service_level || "standard",
+    org_id: row.merchant_id,
+    seller_id: row.merchant_id,
+    assigned_at: row.accepted_at,
+    weight_kg: null,
+    confirmation_code: null,
+    scheduled_at: null,
+  };
 }
 
 export function useDriverMissions() {
@@ -45,47 +78,44 @@ export function useDriverMissions() {
 
     const [activeRes, completedRes] = await Promise.all([
       supabase
-        .from("delivery_jobs")
+        .from("mobility_jobs")
         .select("*")
-        .eq("driver_id", user.id)
-        .in("status", ["assigned", "accepted", "in_progress"])
+        .eq("rider_user_id", user.id)
+        .in("status", ["accepted", "rider_arriving_pickup", "rider_arrived_pickup", "picked_up", "in_progress", "rider_arriving_dropoff"])
         .order("created_at", { ascending: false }),
       supabase
-        .from("delivery_jobs")
+        .from("mobility_jobs")
         .select("*")
-        .eq("driver_id", user.id)
+        .eq("rider_user_id", user.id)
         .in("status", ["completed", "cancelled"])
-        .order("delivered_at", { ascending: false })
+        .order("completed_at", { ascending: false })
         .limit(20),
     ]);
 
-    if (activeRes.data) setActiveMissions(activeRes.data as DeliveryJob[]);
-    if (completedRes.data) setCompletedMissions(completedRes.data as DeliveryJob[]);
+    if (activeRes.data) setActiveMissions(activeRes.data.map(mapRow));
+    if (completedRes.data) setCompletedMissions(completedRes.data.map(mapRow));
     setLoading(false);
   }, [user?.id]);
 
   useEffect(() => { fetchMissions(); }, [fetchMissions]);
 
-  // Realtime subscription for job updates
   useEffect(() => {
     if (!user?.id) return;
     const channel = supabase
-      .channel(`driver-jobs-${user.id}`)
+      .channel(`rider-jobs-${user.id}`)
       .on("postgres_changes", {
         event: "*",
         schema: "public",
-        table: "delivery_jobs",
-        filter: `driver_id=eq.${user.id}`,
+        table: "mobility_jobs",
+        filter: `rider_user_id=eq.${user.id}`,
       }, () => { fetchMissions(); })
       .subscribe();
-
     return () => { supabase.removeChannel(channel); };
   }, [user?.id, fetchMissions]);
 
-  // Accept a mission
   const acceptMission = useCallback(async (jobId: string) => {
-    const { data, error } = await supabase.functions.invoke("dispatch-delivery", {
-      body: { action: "accept_job", job_id: jobId },
+    const { data, error } = await supabase.functions.invoke("dispatch-ride", {
+      body: { action: "accept_offer", job_id: jobId },
     });
     if (error) throw error;
     if (data?.error) throw new Error(data.error);
@@ -93,10 +123,9 @@ export function useDriverMissions() {
     return data;
   }, [fetchMissions]);
 
-  // Update mission status
   const updateStatus = useCallback(async (jobId: string, status: string, reason?: string) => {
-    const { data, error } = await supabase.functions.invoke("dispatch-delivery", {
-      body: { action: "update_status", job_id: jobId, status, cancellation_reason: reason },
+    const { data, error } = await supabase.functions.invoke("dispatch-ride", {
+      body: { action: "advance_status", job_id: jobId, new_status: status, cancel_reason: reason },
     });
     if (error) throw error;
     if (data?.error) throw new Error(data.error);
@@ -104,10 +133,9 @@ export function useDriverMissions() {
     return data;
   }, [fetchMissions]);
 
-  // Confirm delivery with code
-  const confirmDelivery = useCallback(async (jobId: string, code: string, photoUrl?: string) => {
-    const { data, error } = await supabase.functions.invoke("dispatch-delivery", {
-      body: { action: "confirm_delivery", job_id: jobId, confirmation_code: code, photo_proof_url: photoUrl },
+  const confirmDelivery = useCallback(async (jobId: string, _code?: string, _photoUrl?: string) => {
+    const { data, error } = await supabase.functions.invoke("dispatch-ride", {
+      body: { action: "advance_status", job_id: jobId, new_status: "completed" },
     });
     if (error) throw error;
     if (data?.error) throw new Error(data.error);
@@ -115,14 +143,13 @@ export function useDriverMissions() {
     return data;
   }, [fetchMissions]);
 
-  // Stats
   const stats = {
     active: activeMissions.length,
     completed: completedMissions.filter(m => m.status === "completed").length,
     cancelled: completedMissions.filter(m => m.status === "cancelled").length,
     totalEarnings: completedMissions
       .filter(m => m.status === "completed")
-      .reduce((sum, m) => sum + (m.delivery_fee || 0), 0),
+      .reduce((sum, m) => sum + (m.current_price || m.quoted_price || 0), 0),
   };
 
   return {

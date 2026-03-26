@@ -62,8 +62,8 @@ export default function LiveDeliveryChat({ jobId, onClose }: Props) {
     queryFn: async () => {
       if (!jobId) return null;
       const { data } = await (supabase as any)
-        .from("delivery_jobs")
-        .select("*, profiles:driver_id(first_name, last_name, avatar_url)")
+        .from("mobility_jobs")
+        .select("*")
         .eq("id", jobId)
         .maybeSingle();
       return data;

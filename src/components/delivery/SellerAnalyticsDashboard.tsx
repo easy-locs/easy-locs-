@@ -45,9 +45,9 @@ export default function SellerAnalyticsDashboard({ orgId, className }: Props) {
         since.setDate(since.getDate() - daysAgo);
 
         const { data: jobs } = await supabase
-          .from("delivery_jobs")
+          .from("mobility_jobs")
           .select("id, status, delivery_fee, currency, created_at, delivered_at, driver_id")
-          .eq("seller_id", user.id)
+          .eq("merchant_id", user.id)
           .gte("created_at", since.toISOString())
           .order("created_at", { ascending: false })
           .limit(1000);

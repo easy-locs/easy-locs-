@@ -63,9 +63,9 @@ export default function RouteOptimizationEngine({ orgId, className }: Props) {
     try {
       // Fetch pending/assigned jobs with coordinates
       const { data: jobs } = await supabase
-        .from("delivery_jobs")
+        .from("mobility_jobs")
         .select("id, pickup_address, pickup_lat, pickup_lng, dropoff_address, dropoff_lat, dropoff_lng, status")
-        .eq("org_id", orgId)
+        .eq("merchant_id", orgId)
         .in("status", ["pending", "assigned"])
         .not("pickup_lat", "is", null)
         .not("dropoff_lat", "is", null)
