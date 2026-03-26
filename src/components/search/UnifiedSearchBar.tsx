@@ -129,7 +129,7 @@ export default function UnifiedSearchBar({
         <button
           onClick={() => setFullscreenOpen(true)}
           className={cn(
-            "flex h-12 w-full min-w-0 items-center gap-3 overflow-hidden rounded-2xl border border-border/20 bg-card px-4 text-sm text-muted-foreground shadow-sm active:scale-[0.98] transition-transform",
+            "flex h-12 w-full min-w-0 items-center gap-3 rounded-2xl border border-border/20 bg-card px-4 text-sm text-muted-foreground shadow-sm active:scale-[0.98] transition-transform",
             className
           )}
         >

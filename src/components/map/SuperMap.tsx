@@ -347,6 +347,14 @@ export default memo(function SuperMap({
     });
   }, [weather.isRaining, ready]);
 
+  // Auto-activate weather when rain detected
+  useEffect(() => {
+    if (weather.isRaining && !showWeather) {
+      useSuperMapStore.getState().toggleWeather();
+    }
+  }, [weather.isRaining, showWeather]);
+
+  // Animate rain radar tiles — cycle through frames with smooth transition
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !ready) return;
@@ -358,6 +366,7 @@ export default memo(function SuperMap({
     if (layer) {
       map.setLayoutProperty(RAIN_LAYER, "visibility", visible ? "visible" : "none");
       map.setPaintProperty(RAIN_LAYER, "raster-opacity", visible ? (weather.isRaining ? 0.72 : 0.42) : 0);
+      map.setPaintProperty(RAIN_LAYER, "raster-fade-duration", 300);
     }
 
     if (source?.setTiles && weatherRadar.activeTileUrl) {
