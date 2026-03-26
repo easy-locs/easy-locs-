@@ -57,17 +57,17 @@ const TopHeroBanner = memo(({ city, greeting, timezone, onLocationTap }: { city:
   const locationLabel = city || "your area";
 
   return (
-    <div className="rounded-2xl p-4 mb-3 relative overflow-hidden" style={{ background: hero.gradient }}>
+    <div className="rounded-2xl p-4 mb-4 relative overflow-visible" style={{ background: hero.gradient }}>
       {/* Location + Notification row */}
-      <div className="flex items-center justify-between mb-2 relative z-10">
-        <button onClick={onLocationTap} className="flex items-center gap-1.5 min-w-0 active:scale-95 transition-transform">
-          <MapPin className="h-3.5 w-3.5 text-white/70 shrink-0" />
-          <span className="text-white/70 text-[11px] font-medium truncate">{locationLabel}</span>
+      <div className="flex items-center justify-between mb-3 relative z-10">
+        <button onClick={onLocationTap} className="flex items-center gap-2 min-w-0 max-w-[70%] active:scale-95 transition-transform">
+          <MapPin className="h-4 w-4 text-white/70 shrink-0" />
+          <span className="text-white/80 text-xs font-medium truncate">{locationLabel}</span>
         </button>
-        <Link to="/dashboard/notifications" className="relative shrink-0 w-8 h-8 rounded-full bg-white/15 flex items-center justify-center active:scale-95 transition-transform">
-          <Bell className="h-3.5 w-3.5 text-white/80" />
+        <Link to="/dashboard/notifications" className="relative shrink-0 w-9 h-9 rounded-full bg-white/15 flex items-center justify-center active:scale-95 transition-transform">
+          <Bell className="h-4 w-4 text-white/80" />
           {engine.pendingNotifications > 0 && (
-            <span className="absolute -top-0.5 -right-0.5 min-w-[14px] h-3.5 rounded-full bg-destructive text-[8px] font-bold text-destructive-foreground flex items-center justify-center px-0.5">
+            <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 rounded-full bg-destructive text-[9px] font-bold text-destructive-foreground flex items-center justify-center px-1">
               {engine.pendingNotifications > 9 ? "9+" : engine.pendingNotifications}
             </span>
           )}
@@ -75,24 +75,24 @@ const TopHeroBanner = memo(({ city, greeting, timezone, onLocationTap }: { city:
       </div>
 
       {/* Title + emoji */}
-      <div className="flex items-center justify-between relative z-10 mb-2">
-        <div className="min-w-0 flex-1">
-          <h2 className="text-white text-lg font-black leading-tight">{hero.title}</h2>
-          <p className="text-white/60 text-[11px] mt-0.5">{hero.subtitle}</p>
+      <div className="flex items-center justify-between relative z-10 mb-3">
+        <div className="min-w-0 flex-1 pr-3">
+          <h2 className="text-white text-xl font-black leading-snug">{hero.title}</h2>
+          <p className="text-white/60 text-xs mt-1 leading-relaxed">{hero.subtitle}</p>
         </div>
-        <span className="text-4xl select-none ml-3 opacity-60">{hero.emoji}</span>
+        <span className="text-4xl select-none shrink-0 opacity-60">{hero.emoji}</span>
       </div>
 
       {/* CTA */}
       <Link
         to={hero.route}
-        className="inline-flex items-center gap-1 px-4 py-2 rounded-full bg-white/20 backdrop-blur-sm text-white text-[11px] font-bold active:bg-white/30 transition-colors relative z-10 mb-3"
+        className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-full bg-white/20 text-white text-xs font-bold active:bg-white/30 transition-colors relative z-10 mb-4"
       >
-        {hero.cta} <ChevronRight className="h-3 w-3" />
+        {hero.cta} <ChevronRight className="h-3.5 w-3.5" />
       </Link>
 
       {/* Search bar inside banner */}
-      <div className="relative z-10">
+      <div className="relative z-20">
         <UnifiedSearchBar variant="fullscreen" placeholder="Search anything…" />
       </div>
     </div>
