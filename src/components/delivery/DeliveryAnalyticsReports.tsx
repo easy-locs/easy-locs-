@@ -9,19 +9,18 @@ import { BarChart3, TrendingUp, Clock, CheckCircle2, XCircle, MapPin, Calendar, 
 import { Button } from "@/components/ui/button";
 
 interface JobRecord {
+interface JobRecord {
   id: string;
   status: string;
-  created_at: string | null;
-  assigned_at: string | null;
+  created_at: string;
   accepted_at: string | null;
   picked_up_at: string | null;
-  delivered_at: string | null;
-  delivery_fee: number | null;
+  completed_at: string | null;
+  current_price: number | null;
   currency: string | null;
   dropoff_lat: number | null;
   dropoff_lng: number | null;
-  priority: string;
-  driver_id: string | null;
+  rider_user_id: string | null;
 }
 
 interface DailyStats {
