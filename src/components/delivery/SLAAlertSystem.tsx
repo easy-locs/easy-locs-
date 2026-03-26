@@ -66,9 +66,9 @@ export default function SLAAlertSystem({ orgId, className }: Props) {
       const since = new Date();
       since.setDate(since.getDate() - 7);
 
-      const { data: jobs } = await supabase
+      const { data: jobs } = await (supabase as any)
         .from("mobility_jobs")
-        .select("id, status, created_at, assigned_at, accepted_at, picked_up_at, delivered_at")
+        .select("id, status, created_at, accepted_at, picked_up_at, completed_at")
         .eq("merchant_id", user.id)
         .gte("created_at", since.toISOString())
         .limit(200);
@@ -76,16 +76,16 @@ export default function SLAAlertSystem({ orgId, className }: Props) {
       const generatedAlerts: SLAAlert[] = [];
       const now = Date.now();
 
-      (jobs || []).forEach(job => {
-        // Check acceptance SLA
-        if (job.status === "assigned" && job.assigned_at) {
-          const elapsed = (now - new Date(job.assigned_at).getTime()) / 60000;
+      ((jobs || []) as any[]).forEach((job: any) => {
+        // Check acceptance SLA (offered → accepted)
+        if (job.status === "offered" && job.created_at) {
+          const elapsed = (now - new Date(job.created_at).getTime()) / 60000;
           if (elapsed > rules[0].maxMinutes) {
             generatedAlerts.push({
               id: `a-${job.id}-accept`, jobId: job.id, rule: rules[0].name,
               severity: elapsed > rules[0].escalateAfter ? "escalated" : "critical",
               message: `Mission en attente d'acceptation depuis ${Math.round(elapsed)}min`,
-              createdAt: job.assigned_at, resolvedAt: null, elapsedMinutes: Math.round(elapsed),
+              createdAt: job.created_at, resolvedAt: null, elapsedMinutes: Math.round(elapsed),
             });
           }
         }

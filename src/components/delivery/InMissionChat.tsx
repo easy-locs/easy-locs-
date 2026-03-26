@@ -91,16 +91,16 @@ export default function InMissionChat({ jobId, sellerId, driverId, onClose, clas
     if (!input.trim() || !user) return;
     setSending(true);
     try {
-      // We need org_id - fetch from the job
-      const { data: jobData } = await supabase
+      // We need merchant_id - fetch from the job
+      const { data: jobData } = await (supabase as any)
         .from("mobility_jobs")
-        .select("org_id")
+        .select("merchant_id")
         .eq("id", jobId)
         .maybeSingle();
 
       const { error } = await supabase.from("messages").insert({
         sender_id: user.id,
-        org_id: jobData?.org_id || "",
+        org_id: (jobData as any)?.merchant_id || "",
         content: input.trim(),
         context_type: "delivery_chat",
         context_id: contextId,

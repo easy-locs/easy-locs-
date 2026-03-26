@@ -24,13 +24,12 @@ interface AvailableJob {
   id: string;
   pickup_address: string;
   dropoff_address: string;
-  package_description: string | null;
-  delivery_fee: number | null;
+  notes: string | null;
+  current_price: number | null;
   currency: string | null;
-  priority: string;
-  weight_kg: number | null;
+  package_size: string | null;
   created_at: string | null;
-  org_id: string;
+  merchant_id: string | null;
 }
 
 type SortBy = "fee_desc" | "fee_asc" | "newest" | "priority";
@@ -49,11 +48,11 @@ export default function DriverJobMarketplace({ className }: Props) {
   useEffect(() => {
     const fetch = async () => {
       setLoading(true);
-      const { data } = await supabase
+      const { data } = await (supabase as any)
         .from("mobility_jobs")
-        .select("id, pickup_address, dropoff_address, package_description, delivery_fee, currency, priority, weight_kg, created_at, org_id")
-        .eq("status", "pending")
-        .is("driver_id", null)
+        .select("id, pickup_address, dropoff_address, notes, current_price, currency, package_size, created_at, merchant_id")
+        .eq("status", "searching")
+        .is("rider_user_id", null)
         .order("created_at", { ascending: false })
         .limit(100);
       setJobs((data as AvailableJob[]) || []);
@@ -66,8 +65,8 @@ export default function DriverJobMarketplace({ className }: Props) {
     let result = jobs.filter(j => {
       if (search && !j.pickup_address.toLowerCase().includes(search.toLowerCase()) &&
         !j.dropoff_address.toLowerCase().includes(search.toLowerCase()) &&
-        !(j.package_description || "").toLowerCase().includes(search.toLowerCase())) return false;
-      if (priorityFilter !== "all" && j.priority !== priorityFilter) return false;
+        !(j.notes || "").toLowerCase().includes(search.toLowerCase())) return false;
+      if (priorityFilter !== "all" && j.package_size !== priorityFilter) return false;
       if (minFee > 0 && (j.delivery_fee || 0) < minFee) return false;
       return true;
     });

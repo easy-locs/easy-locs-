@@ -47,9 +47,9 @@ export default function DeliveryAnalyticsReports({ orgId }: { orgId: string }) {
     const fetch = async () => {
       const since = new Date();
       since.setDate(since.getDate() - periodDays[period]);
-      const { data } = await supabase
+      const { data } = await (supabase as any)
         .from("mobility_jobs")
-        .select("id, status, created_at, assigned_at, accepted_at, picked_up_at, delivered_at, delivery_fee, currency, dropoff_lat, dropoff_lng, priority, driver_id")
+        .select("id, status, created_at, accepted_at, picked_up_at, completed_at, current_price, currency, dropoff_lat, dropoff_lng, rider_user_id")
         .eq("merchant_id", orgId)
         .gte("created_at", since.toISOString())
         .order("created_at", { ascending: true });
@@ -65,8 +65,8 @@ export default function DeliveryAnalyticsReports({ orgId }: { orgId: string }) {
 
     // Delivery times
     const deliveryTimes = completed
-      .filter(j => j.created_at && j.delivered_at)
-      .map(j => (new Date(j.delivered_at!).getTime() - new Date(j.created_at!).getTime()) / 60000);
+      .filter(j => j.created_at && j.completed_at)
+      .map(j => (new Date(j.completed_at!).getTime() - new Date(j.created_at!).getTime()) / 60000);
     const avgDeliveryMin = deliveryTimes.length > 0 ? deliveryTimes.reduce((a, b) => a + b, 0) / deliveryTimes.length : 0;
     const fastestMin = deliveryTimes.length > 0 ? Math.min(...deliveryTimes) : 0;
     const slowestMin = deliveryTimes.length > 0 ? Math.max(...deliveryTimes) : 0;

@@ -44,27 +44,27 @@ export default function SellerAnalyticsDashboard({ orgId, className }: Props) {
         const since = new Date();
         since.setDate(since.getDate() - daysAgo);
 
-        const { data: jobs } = await supabase
+        const { data: jobs } = await (supabase as any)
           .from("mobility_jobs")
-          .select("id, status, delivery_fee, currency, created_at, delivered_at, driver_id")
+          .select("id, status, current_price, currency, created_at, completed_at, rider_user_id")
           .eq("merchant_id", user.id)
           .gte("created_at", since.toISOString())
           .order("created_at", { ascending: false })
           .limit(1000);
 
-        const all = jobs || [];
-        const completed = all.filter(j => j.status === "completed");
-        const cancelled = all.filter(j => j.status === "cancelled");
-        const pending = all.filter(j => j.status === "pending");
-        const inProgress = all.filter(j => ["assigned", "accepted", "in_progress"].includes(j.status));
+        const all = (jobs || []) as any[];
+        const completed = all.filter((j: any) => j.status === "completed");
+        const cancelled = all.filter((j: any) => j.status === "cancelled");
+        const pending = all.filter((j: any) => j.status === "searching");
+        const inProgress = all.filter((j: any) => ["accepted", "rider_arriving_pickup", "in_progress"].includes(j.status));
 
-        const totalSpent = all.reduce((s, j) => s + (j.delivery_fee || 0), 0);
+        const totalSpent = all.reduce((s: number, j: any) => s + (j.current_price || 0), 0);
 
         // Avg delivery time for completed jobs
         const deliveryTimes = completed
-          .filter(j => j.created_at && j.delivered_at)
-          .map(j => (new Date(j.delivered_at!).getTime() - new Date(j.created_at!).getTime()) / 3600000);
-        const avgTime = deliveryTimes.length ? deliveryTimes.reduce((a, b) => a + b, 0) / deliveryTimes.length : 0;
+          .filter((j: any) => j.created_at && j.completed_at)
+          .map((j: any) => (new Date(j.completed_at!).getTime() - new Date(j.created_at!).getTime()) / 3600000);
+        const avgTime = deliveryTimes.length ? deliveryTimes.reduce((a: number, b: number) => a + b, 0) / deliveryTimes.length : 0;
 
         // Daily volume
         const dailyMap = new Map<string, { count: number; completed: number }>();
