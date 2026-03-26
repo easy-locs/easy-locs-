@@ -73,7 +73,7 @@ export function useGeoLiveStation() {
   // React to selected place changes
   useEffect(() => {
     if (selectedPlace) {
-      // If radarPlaceStore already has the overlay, use it directly
+      // Priority 1: User-selected canonical place
       if (zoneOverlay && zoneOverlay.zone_key === selectedPlace.zone_key) {
         const station = overlayToStation(zoneOverlay);
         const etas = projectETAs(station);
@@ -90,13 +90,25 @@ export function useGeoLiveStation() {
         fetchStation(selectedPlace.zone_key, selectedPlace.label);
       }
     } else if (location) {
-      // Fallback to GPS-derived zone
-      const zk = computeZoneKey("AE", "Dubai");
-      fetchStation(zk);
+      // Priority 2: GPS-derived zone (locationStore synced from geoStore)
+      // Geo Brain will have already set a canonical place via GeoBoot reverse geocode
+      // but if not yet resolved, use a computed zone from GPS coordinates
+      const locStore = useLocationStore.getState();
+      const selected = locStore.selectedLocation;
+      if (selected?.city) {
+        const zk = computeZoneKey(
+          selected.country === "UAE" ? "AE" : selected.country ?? "AE",
+          selected.city,
+          selected.area
+        );
+        fetchStation(zk, selected.label || selected.city);
+      } else {
+        // GPS available but no reverse geocode yet — use default
+        fetchStation("AE_DUBAI", "Dubai");
+      }
     } else {
-      // No place, no GPS — use default zone so UI is never empty
-      const defaultZone = "AE_DUBAI";
-      fetchStation(defaultZone, "Dubai");
+      // Priority 3: No place, no GPS — default fallback so UI is never empty
+      fetchStation("AE_DUBAI", "Dubai");
     }
   }, [selectedPlace?.zone_key, zoneOverlay?.zone_key, location?.lat]);
 
