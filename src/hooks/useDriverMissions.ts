@@ -55,6 +55,14 @@ function mapRow(row: any): DeliveryJob {
     delivered_at: row.completed_at,
     pickup_address_compat: row.pickup_address || "Pickup",
     dropoff_address_compat: row.dropoff_address || "Dropoff",
+    package_description: row.notes,
+    priority: row.service_level || "standard",
+    org_id: row.merchant_id,
+    seller_id: row.merchant_id,
+    assigned_at: row.accepted_at,
+    weight_kg: null,
+    confirmation_code: null,
+    scheduled_at: null,
   };
 }
 
