@@ -1,27 +1,30 @@
 /**
  * MapPlaceCard — Enriched result card shown after place-discovery selection.
  * Shows: route, distance, ETA, traffic, nearby commerce, actions.
+ * Actions are fully wired: Go There, Order Here, Explore Nearby.
  */
-import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import {
-  MapPin, Navigation, ShoppingBag, Car, Truck, ChevronRight,
-  Clock, Route, Store, X,
+  MapPin, Navigation, ShoppingBag, Car,
+  Clock, Route, Store, X, ChevronDown, ChevronUp, Filter,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { RoutePreview } from "@/lib/map/route-preview-engine";
-import type { NearbyResult } from "@/lib/map/nearby-discovery-engine";
+import type { NearbyResult, NearbyMerchant } from "@/lib/map/nearby-discovery-engine";
+import { eventBus } from "@/lib/core/event-bus";
 
 interface Props {
   placeName: string;
   district?: string;
   city?: string;
+  placeId?: string;
+  zoneKey?: string;
+  lat?: number;
+  lng?: number;
   route: RoutePreview | null;
   nearby: NearbyResult | null;
   loading?: boolean;
-  onGoThere?: () => void;
-  onOrderHere?: () => void;
-  onExploreNearby?: () => void;
   onDismiss?: () => void;
 }
 
@@ -40,22 +43,70 @@ const VERTICAL_ICONS: Record<string, string> = {
   beauty: "💅",
   shops: "🛍️",
   stays: "🏨",
+  general: "📍",
 };
 
 export function MapPlaceCard({
   placeName,
   district,
   city,
+  placeId,
+  zoneKey,
+  lat,
+  lng,
   route,
   nearby,
   loading,
-  onGoThere,
-  onOrderHere,
-  onExploreNearby,
   onDismiss,
 }: Props) {
   const locationSub = [district, city].filter(Boolean).join(", ");
   const categories = nearby ? Object.entries(nearby.categories) : [];
+  const [exploreOpen, setExploreOpen] = useState(false);
+  const [activeFilter, setActiveFilter] = useState<string | null>(null);
+
+  // ── Go There: emit route focus event + center map ──
+  const handleGoThere = () => {
+    if (route) {
+      eventBus.emit("map.route.focus" as any, {
+        placeId: placeId ?? route.placeId,
+        origin: route.origin,
+        destination: route.destination,
+        geometry: route.routeGeometry,
+        zoneKey: zoneKey ?? route.zoneKey,
+      });
+    } else if (lat != null && lng != null) {
+      eventBus.emit("map.center.request" as any, { lat, lng, zoom: 16 });
+    }
+  };
+
+  // ── Order Here: navigate to nearby deliverable merchants ──
+  const handleOrderHere = () => {
+    if (!nearby || nearby.merchants.length === 0) return;
+    eventBus.emit("place.order.requested" as any, {
+      placeId: nearby.placeId,
+      zoneKey: nearby.zoneKey ?? zoneKey,
+      merchants: nearby.merchants.slice(0, 10).map((m) => ({
+        id: m.id,
+        name: m.name,
+        slug: m.slug,
+        vertical: m.vertical,
+        distanceKm: m.distanceKm,
+      })),
+      totalCount: nearby.totalCount,
+    });
+  };
+
+  // ── Explore Nearby: toggle expanded merchant list ──
+  const handleExploreNearby = () => {
+    setExploreOpen((v) => !v);
+  };
+
+  // Filtered merchant list for explore
+  const filteredMerchants: NearbyMerchant[] = nearby
+    ? activeFilter
+      ? nearby.merchants.filter((m) => m.vertical === activeFilter)
+      : nearby.merchants
+    : [];
 
   return (
     <motion.div
@@ -106,7 +157,7 @@ export function MapPlaceCard({
         </div>
       )}
 
-      {/* Nearby commerce */}
+      {/* Nearby commerce summary */}
       {!loading && nearby && nearby.totalCount > 0 && (
         <div className="px-4 py-2 border-t border-border/10">
           <div className="flex items-center gap-1.5 mb-1.5">
@@ -135,29 +186,102 @@ export function MapPlaceCard({
 
       {/* Actions */}
       <div className="px-3 py-2.5 border-t border-border/10 flex gap-2">
-        {onGoThere && (
-          <ActionButton
-            icon={<Navigation className="w-3.5 h-3.5" />}
-            label="Go there"
-            onClick={onGoThere}
-          />
-        )}
-        {onOrderHere && nearby && nearby.totalCount > 0 && (
+        <ActionButton
+          icon={<Navigation className="w-3.5 h-3.5" />}
+          label="Go there"
+          onClick={handleGoThere}
+        />
+        {nearby && nearby.totalCount > 0 && (
           <ActionButton
             icon={<ShoppingBag className="w-3.5 h-3.5" />}
             label="Order here"
-            onClick={onOrderHere}
+            onClick={handleOrderHere}
             primary
           />
         )}
-        {onExploreNearby && nearby && nearby.totalCount > 0 && (
+        {nearby && nearby.totalCount > 0 && (
           <ActionButton
-            icon={<MapPin className="w-3.5 h-3.5" />}
-            label="Explore"
-            onClick={onExploreNearby}
+            icon={exploreOpen ? <ChevronUp className="w-3.5 h-3.5" /> : <MapPin className="w-3.5 h-3.5" />}
+            label={exploreOpen ? "Close" : "Explore"}
+            onClick={handleExploreNearby}
           />
         )}
       </div>
+
+      {/* Explore Nearby expanded panel */}
+      <AnimatePresence>
+        {exploreOpen && nearby && nearby.merchants.length > 0 && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="overflow-hidden border-t border-border/10"
+          >
+            {/* Category filters */}
+            {categories.length > 1 && (
+              <div className="px-3 pt-2 pb-1 flex items-center gap-1.5 overflow-x-auto">
+                <Filter className="w-3 h-3 text-muted-foreground shrink-0" />
+                <button
+                  onClick={() => setActiveFilter(null)}
+                  className={cn(
+                    "px-2 py-0.5 rounded-full text-[10px] font-semibold shrink-0 transition-colors",
+                    !activeFilter ? "bg-primary text-primary-foreground" : "bg-muted/50 text-muted-foreground hover:bg-muted"
+                  )}
+                >
+                  All
+                </button>
+                {categories.map(([vertical]) => (
+                  <button
+                    key={vertical}
+                    onClick={() => setActiveFilter(activeFilter === vertical ? null : vertical)}
+                    className={cn(
+                      "px-2 py-0.5 rounded-full text-[10px] font-semibold shrink-0 capitalize transition-colors",
+                      activeFilter === vertical ? "bg-primary text-primary-foreground" : "bg-muted/50 text-muted-foreground hover:bg-muted"
+                    )}
+                  >
+                    {VERTICAL_ICONS[vertical] ?? ""} {vertical}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* Merchant list */}
+            <div className="px-3 py-2 space-y-1 max-h-[200px] overflow-y-auto">
+              {filteredMerchants.length === 0 && (
+                <p className="text-xs text-muted-foreground text-center py-2">No merchants in this category</p>
+              )}
+              {filteredMerchants.map((m) => (
+                <button
+                  key={m.id}
+                  onClick={() => {
+                    eventBus.emit("ENTITY_OPENED", { id: m.id, type: "merchant", source: "map_explore" });
+                    // Navigate to merchant storefront
+                    window.location.href = `/s/${m.slug}`;
+                  }}
+                  className="w-full flex items-center gap-2.5 px-2 py-1.5 rounded-lg hover:bg-muted/40 transition-colors text-left"
+                >
+                  {m.logo_url ? (
+                    <img src={m.logo_url} alt="" className="w-7 h-7 rounded-lg object-cover shrink-0" />
+                  ) : (
+                    <div className="w-7 h-7 rounded-lg bg-muted/60 flex items-center justify-center shrink-0">
+                      <span className="text-xs">{VERTICAL_ICONS[m.vertical] ?? "📍"}</span>
+                    </div>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-semibold text-foreground truncate">{m.name}</p>
+                    <p className="text-[10px] text-muted-foreground truncate capitalize">
+                      {m.vertical} · {m.distanceKm < 1 ? `${Math.round(m.distanceKm * 1000)}m` : `${m.distanceKm.toFixed(1)}km`}
+                      {m.rating ? ` · ⭐ ${m.rating}` : ""}
+                    </p>
+                  </div>
+                  <ChevronDown className="w-3 h-3 text-muted-foreground/40 rotate-[-90deg] shrink-0" />
+                </button>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }
