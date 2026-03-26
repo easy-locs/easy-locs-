@@ -115,7 +115,7 @@ const AboutPage = () => {
             </div>
             <nav className="flex flex-wrap justify-center gap-4 mt-6 text-sm" aria-label="Related pages">
               <Link to="/property-management" className="text-muted-foreground hover:text-foreground transition-colors">{isFr ? "Gestion locative →" : "Property Management →"}</Link>
-              <Link to="/seasonal-rentals" className="text-muted-foreground hover:text-foreground transition-colors">{isFr ? "Locations saisonnières →" : "Seasonal Rentals →"}</Link>
+              <Link to="/seasonal-rentals-booking" className="text-muted-foreground hover:text-foreground transition-colors">{isFr ? "Locations saisonnières →" : "Seasonal Rentals →"}</Link>
               <Link to="/concierge-services" className="text-muted-foreground hover:text-foreground transition-colors">{isFr ? "Conciergerie →" : "Concierge →"}</Link>
               <Link to="/marketplace" className="text-muted-foreground hover:text-foreground transition-colors">Marketplace →</Link>
             </nav>
