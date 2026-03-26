@@ -15,6 +15,7 @@ import "./handlers/commerce-payment-bridge.handler";
 import "./handlers/zone-intelligence.handler";
 import "./handlers/experience-consumer.handler";
 import "./handlers/map-action.handler";
+import "@/lib/radar/signal-ingestor";
 
 /**
  * Bridge: forward platformBus events to eventBus with normalized names.
