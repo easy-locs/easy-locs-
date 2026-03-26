@@ -6,7 +6,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useMemo } from "react";
 import { ArrowLeft } from "lucide-react";
 import { motion } from "framer-motion";
-import { CATEGORY_TREE, type CategorySubcategory } from "@/lib/taxonomy/category-tree";
+import { CATEGORY_TREE } from "@/lib/taxonomy/category-tree";
 import { useVerticalListings } from "@/hooks/useVerticalListings";
 import PremiumMerchantCard from "@/components/discovery/PremiumMerchantCard";
 import SEOHead from "@/components/SEOHead";
@@ -65,7 +65,17 @@ export default function RetailCategoryPage() {
         ) : (
           listings.map((item, i) => (
             <motion.div key={item.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}>
-              <PremiumMerchantCard item={item} vertical="shops" />
+              <PremiumMerchantCard
+                to={`/s/${item.slug}`}
+                image={item.banner_url || item.logo_url}
+                name={item.name}
+                category={item.subcategory}
+                rating={item.rating}
+                reviewCount={item.reviews_count}
+                distance={item.distanceKm ? `${item.distanceKm.toFixed(1)} km` : undefined}
+                index={i}
+                verticalType="shops"
+              />
             </motion.div>
           ))
         )}
