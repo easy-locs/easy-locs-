@@ -8161,6 +8161,59 @@ export type Database = {
           },
         ]
       }
+      eta_projection_cache: {
+        Row: {
+          canonical_place_id: string | null
+          category: string
+          computed_at: string | null
+          confidence: number | null
+          eta_minutes: number
+          expires_at: string | null
+          id: string
+          merchant_count: number | null
+          rider_supply_factor: number | null
+          traffic_factor: number | null
+          weather_factor: number | null
+          zone_key: string
+        }
+        Insert: {
+          canonical_place_id?: string | null
+          category: string
+          computed_at?: string | null
+          confidence?: number | null
+          eta_minutes: number
+          expires_at?: string | null
+          id?: string
+          merchant_count?: number | null
+          rider_supply_factor?: number | null
+          traffic_factor?: number | null
+          weather_factor?: number | null
+          zone_key: string
+        }
+        Update: {
+          canonical_place_id?: string | null
+          category?: string
+          computed_at?: string | null
+          confidence?: number | null
+          eta_minutes?: number
+          expires_at?: string | null
+          id?: string
+          merchant_count?: number | null
+          rider_supply_factor?: number | null
+          traffic_factor?: number | null
+          weather_factor?: number | null
+          zone_key?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "eta_projection_cache_canonical_place_id_fkey"
+            columns: ["canonical_place_id"]
+            isOneToOne: false
+            referencedRelation: "canonical_places"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       exchange_connectors: {
         Row: {
           config: Json | null
@@ -8814,12 +8867,18 @@ export type Database = {
       geo_live_zone_overlays: {
         Row: {
           avg_food_eta_minutes: number | null
+          avg_grocery_eta_minutes: number | null
           avg_parcel_eta_minutes: number | null
           avg_taxi_eta_minutes: number | null
           demand_level: number | null
+          demand_multiplier: number | null
           flood_risk_level: string | null
           merchant_count: number | null
+          merchant_deliverable_count: number | null
+          merchant_open_count: number | null
           rider_supply: number | null
+          rider_supply_factor: number | null
+          surge_multiplier: number | null
           traffic_level: string | null
           traffic_speed_factor: number | null
           updated_at: string | null
@@ -8829,12 +8888,18 @@ export type Database = {
         }
         Insert: {
           avg_food_eta_minutes?: number | null
+          avg_grocery_eta_minutes?: number | null
           avg_parcel_eta_minutes?: number | null
           avg_taxi_eta_minutes?: number | null
           demand_level?: number | null
+          demand_multiplier?: number | null
           flood_risk_level?: string | null
           merchant_count?: number | null
+          merchant_deliverable_count?: number | null
+          merchant_open_count?: number | null
           rider_supply?: number | null
+          rider_supply_factor?: number | null
+          surge_multiplier?: number | null
           traffic_level?: string | null
           traffic_speed_factor?: number | null
           updated_at?: string | null
@@ -8844,12 +8909,18 @@ export type Database = {
         }
         Update: {
           avg_food_eta_minutes?: number | null
+          avg_grocery_eta_minutes?: number | null
           avg_parcel_eta_minutes?: number | null
           avg_taxi_eta_minutes?: number | null
           demand_level?: number | null
+          demand_multiplier?: number | null
           flood_risk_level?: string | null
           merchant_count?: number | null
+          merchant_deliverable_count?: number | null
+          merchant_open_count?: number | null
           rider_supply?: number | null
+          rider_supply_factor?: number | null
+          surge_multiplier?: number | null
           traffic_level?: string | null
           traffic_speed_factor?: number | null
           updated_at?: string | null
