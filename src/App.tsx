@@ -410,6 +410,7 @@ const AdminHomeEnginePage = safeLazy(() => import("./pages/admin/AdminHomeEngine
 const AdminMapEnginePage = safeLazy(() => import("./pages/admin/AdminMapEnginePage"), "AdminMapEnginePage");
 const AdminNotificationEnginePage = safeLazy(() => import("./pages/admin/AdminNotificationEnginePage"), "AdminNotificationEnginePage");
 const OwnerCockpitPage = safeLazy(() => import("./pages/admin/OwnerCockpitPage"), "OwnerCockpitPage");
+const OnboardingQualityDashboardPage = safeLazy(() => import("./pages/admin/OnboardingQualityDashboardPage"), "OnboardingQualityDashboardPage");
 const MerchantInventoryPage = safeLazy(() => import("./pages/merchant/MerchantInventoryPage"), "MerchantInventoryPage");
 const MerchantLiveControlPage = safeLazy(() => import("./pages/merchant/MerchantLiveControlPage"), "MerchantLiveControlPage");
 const MerchantCouponManagerPage = safeLazy(() => import("./pages/merchant/MerchantCouponManagerPage"), "MerchantCouponManagerPage");
