@@ -335,6 +335,7 @@ const BrowseVerticalPage = safeLazy(() => import("./pages/universe/BrowseVertica
 const RetailIndexPage = safeLazy(() => import("./pages/universe/RetailIndexPage"), "RetailIndexPage");
 const RetailCategoryPage = safeLazy(() => import("./pages/universe/RetailCategoryPage"), "RetailCategoryPage");
 const RetailMallPage = safeLazy(() => import("./pages/universe/RetailMallPage"), "RetailMallPage");
+const RetailStorePage = safeLazy(() => import("./pages/universe/RetailStorePage"), "RetailStorePage");
 
 // Food sub-pages (Careem-style drill-down)
 const FoodTypePage = safeLazy(() => import("./pages/food/FoodTypePage"), "FoodTypePage");
@@ -739,7 +740,7 @@ const App = () => (
               <Route path="/shop/category/:categorySlug" element={<RetailCategoryPage />} />
               <Route path="/shop/subcategory/:categorySlug/:subcategorySlug" element={<RetailCategoryPage />} />
               <Route path="/shop/mall/:mallSlug" element={<RetailMallPage />} />
-              <Route path="/shop/store/:slug" element={<ShopPage />} />
+              <Route path="/shop/store/:slug" element={<RetailStorePage />} />
 
               {/* Food sub-pages */}
               <Route path="/food/restaurant/:restaurantId" element={<FoodRestaurantPage />} />
