@@ -1,22 +1,20 @@
 /**
- * UiQualityProvider — Runs UI quality detection on every route change.
- * Auto-fixes safe issues (overflow) and logs others.
- * Sits high in the component tree.
+ * UiQualityProvider — Runs the full autonomous engine on every route change.
+ * Auto-fixes safe issues and surfaces decisions for UI consumers.
  */
 import { useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import { runUnifiedGlobalEngine } from "@/lib/engines/unified-global-engine";
+import { runAutonomousBusinessEngine } from "@/lib/engines/autonomous-business-engine";
 
 export function UiQualityProvider({ children }: { children: React.ReactNode }) {
   const location = useLocation();
   const lastRoute = useRef("");
 
   useEffect(() => {
-    // Debounce: don't re-run on the same route
     if (location.pathname === lastRoute.current) return;
     lastRoute.current = location.pathname;
 
-    // Delay to let DOM settle after route change
     const timer = setTimeout(() => {
       try {
         const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -30,12 +28,16 @@ export function UiQualityProvider({ children }: { children: React.ReactNode }) {
 
         const report = runUnifiedGlobalEngine({ country, timezone: tz });
 
-        if (import.meta.env.DEV && report.issues.length > 0) {
+        // Run the full autonomous business engine — this generates visible decisions
+        const bizState = runAutonomousBusinessEngine(report);
+
+        if (import.meta.env.DEV) {
+          const dr = bizState.decisionResult;
           console.log(
-            `[UiQuality] ${location.pathname}: ${report.scores.overallHealth}% health, ${report.issues.length} issues, ${report.automatedActions.length} auto-fixes`,
+            `[AutoEngine] ${location.pathname}: health=${report.scores.overallHealth}% | decisions=${dr?.decisions.length ?? 0} | executed=${dr?.executed.length ?? 0} | campaigns=${bizState.activeCampaigns.length} | incentives=${bizState.walletIncentives.length}`,
           );
         }
-      } catch (e) {
+      } catch {
         // Silent — quality layer should never break the app
       }
     }, 800);
