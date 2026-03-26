@@ -50,6 +50,8 @@ interface CustomerMobilityState {
   createJob: (input: {
     jobType: string;
     serviceLevel: string;
+    bookingMode?: string;
+    scheduledFor?: string;
     pickupLabel?: string;
     pickupAddress: string;
     pickupLat: number;
