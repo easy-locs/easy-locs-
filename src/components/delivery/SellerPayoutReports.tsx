@@ -26,6 +26,7 @@ interface JobRow {
   currency: string | null;
   created_at: string | null;
   delivered_at: string | null;
+  [key: string]: any;
 }
 
 export default function SellerPayoutReports({ orgId, className }: Props) {
@@ -53,7 +54,7 @@ export default function SellerPayoutReports({ orgId, className }: Props) {
       }
 
       const { data } = await q;
-      setJobs((data as JobRow[]) || []);
+      setJobs((data || []).map((r: any) => ({ ...r, delivery_fee: r.current_price ?? r.quoted_price, delivered_at: r.completed_at })) as JobRow[]);
       setLoading(false);
     };
     fetch();

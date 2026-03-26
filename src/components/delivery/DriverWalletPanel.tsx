@@ -53,7 +53,7 @@ export default function DriverWalletPanel({ className }: Props) {
         .eq("status", "completed")
         .not("completed_at", "is", null);
 
-      const totalEarned = (jobs || []).reduce((s, j) => s + (j.delivery_fee || 0), 0);
+      const totalEarned = (jobs || []).reduce((s, j: any) => s + (j.current_price || j.quoted_price || 0), 0);
       const currency = jobs?.[0]?.currency || "EUR";
 
       // Get wallet balance for withdrawn amount
