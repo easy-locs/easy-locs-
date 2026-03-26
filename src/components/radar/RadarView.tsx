@@ -130,13 +130,8 @@ export default memo(function RadarView({ initialType, radiusKm: initialRadius, s
   const activeVertical = activeType === "all" ? undefined : activeType === "restaurant" ? "food" : activeType === "shop" ? "shops" : activeType === "grocery" ? "grocery" : activeType === "property" ? "property" : activeType === "service" ? "services" : undefined;
   const canonicalUI = useCanonicalUI(activeVertical);
 
-  // Radius from global discovery store
-  const globalRadius = useDiscoveryStore((s) => s.radiusKm);
-  const setGlobalRadius = useDiscoveryStore((s) => s.setRadiusKm);
-  const activeRadius = initialRadius ?? globalRadius ?? 10;
-
   const type = activeType === "all" ? undefined : activeType;
-  const { entities: rawResults, loading, location } = useRadarResults({ type, radiusKm: activeRadius });
+  const { entities: rawResults, loading, location } = useRadarResults({ type });
 
   // When a place is selected from search, use its coordinates; otherwise use GPS
   const userLat = selectedPlace?.lat ?? location?.lat ?? 25.2;
