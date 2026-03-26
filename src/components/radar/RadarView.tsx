@@ -244,6 +244,18 @@ export default memo(function RadarView({ initialType, radiusKm: initialRadius, s
 
   return (
     <div className="flex flex-col h-full min-h-0">
+      {/* ── Place Search Bar ── */}
+      <div className="px-4 pt-2 shrink-0">
+        <RadarPlaceSearch />
+      </div>
+
+      {/* ── Zone Overlay Card (when a place is selected) ── */}
+      {selectedPlace && zoneOverlay && (
+        <div className="px-4 pt-1.5 shrink-0">
+          <RadarZoneOverlayCard overlay={zoneOverlay} label={selectedPlace.label} />
+        </div>
+      )}
+
       {/* ── Category chips ── */}
       <div className="flex gap-1.5 overflow-x-auto px-4 py-2 scrollbar-hide shrink-0">
         {TYPE_FILTERS.map(f => (
