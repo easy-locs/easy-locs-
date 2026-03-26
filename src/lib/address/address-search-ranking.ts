@@ -75,7 +75,7 @@ function countryCityScore(
   userCity?: string,
 ): { score: number; reasons: string[] } {
   const reasons: string[] = [];
-  const placeCountry = (place.country ?? "").toLowerCase().trim();
+  const placeCountry = (place.country_name ?? place.country_code ?? "").toLowerCase().trim();
   const placeCity = (place.city ?? "").toLowerCase().trim();
   const ctxCountry = (userCountry ?? "").toLowerCase().trim();
   const ctxCity = (userCity ?? "").toLowerCase().trim();
