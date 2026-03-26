@@ -128,19 +128,19 @@ export const listingRepo = {
 
 export const bookingRepo = {
   async create(booking: BookingRecordV2): Promise<BookingRecordV2> {
-    const { data, error } = await db.from("bookings").insert(booking).select().single();
+    const { data, error } = await db.from("bookings_v2").insert(booking).select().single();
     if (error) throw error;
     return data as BookingRecordV2;
   },
 
   async update(id: string, patch: Partial<BookingRecordV2>): Promise<BookingRecordV2> {
-    const { data, error } = await db.from("bookings").update(patch).eq("id", id).select().single();
+    const { data, error } = await db.from("bookings_v2").update(patch).eq("id", id).select().single();
     if (error) throw error;
     return data as BookingRecordV2;
   },
 
   async listByListing(listingId: string): Promise<BookingRecordV2[]> {
-    const { data, error } = await db.from("bookings").select("*").eq("listingId", listingId);
+    const { data, error } = await db.from("bookings_v2").select("*").eq("listing_id", listingId);
     if (error) throw error;
     return (data ?? []) as BookingRecordV2[];
   },
