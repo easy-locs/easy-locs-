@@ -1,7 +1,7 @@
 /**
  * RadarPlaceSearch — Premium place search bar with live ETA intelligence.
  * Consumes Search Brain output — NO local reranking.
- * Search Brain owns search ordering truth. UI displays only.
+ * After place-discovery selection: runs full pipeline (route + nearby + events).
  */
 import { useState, useCallback, useRef, useEffect } from "react";
 import { Search, X, MapPin, Clock, Building2, Plane, Navigation } from "lucide-react";
@@ -11,6 +11,8 @@ import { selectRadarPlace } from "@/lib/radar/radar-place-search-adapter";
 import { decorateSearchResults, formatETAChips, type DecoratedSearchResult } from "@/lib/radar/search-result-decorator";
 import type { CanonicalPlaceRow } from "@/lib/address/canonical-address-resolver";
 import { searchBrain, type SearchBrainResult } from "@/lib/search/search-brain";
+import { runPlaceSelectionPipeline, type PlaceSelectionResult } from "@/lib/map/place-selection-pipeline";
+import { MapPlaceCard } from "@/components/map/MapPlaceCard";
 import { motion, AnimatePresence } from "framer-motion";
 
 const PLACE_TYPE_ICON: Record<string, React.ReactNode> = {
@@ -60,20 +62,23 @@ export default function RadarPlaceSearch() {
   const [brainResults, setBrainResults] = useState<SearchBrainResult[]>([]);
   const [decorated, setDecorated] = useState<DecoratedSearchResult[]>([]);
   const [loading, setLoading] = useState(false);
+  const [enrichment, setEnrichment] = useState<PlaceSelectionResult | null>(null);
+  const [enrichmentLoading, setEnrichmentLoading] = useState(false);
+  const [selectedLabel, setSelectedLabel] = useState<{ name: string; district?: string; city?: string } | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout>>();
 
   const handleSearch = useCallback((q: string) => {
     setSearchQuery(q);
+    setEnrichment(null);
+    setSelectedLabel(null);
     if (debounceRef.current) clearTimeout(debounceRef.current);
     if (q.length < 2) { setBrainResults([]); setDecorated([]); return; }
 
     setLoading(true);
     debounceRef.current = setTimeout(async () => {
-      // Search Brain — canonical search ordering truth
       const ranked = await searchBrain({ query: q, contextType: "global" });
       setBrainResults(ranked);
-      // Decorate with live ETAs using place rows
       const placeRows = ranked.map(toPlaceRow);
       const enriched = await decorateSearchResults(placeRows);
       setDecorated(enriched);
@@ -91,6 +96,24 @@ export default function RadarPlaceSearch() {
     setBrainResults([]);
     setDecorated([]);
     setLoading(false);
+
+    // Run enrichment pipeline (route + nearby)
+    setSelectedLabel({ name: result.label, district: result.district, city: result.city });
+    setEnrichmentLoading(true);
+    try {
+      const pipelineResult = await runPlaceSelectionPipeline({
+        id: result.canonical_place_id ?? result.id,
+        lat: result.lat,
+        lng: result.lng,
+        zone_key: result.zone_key,
+        label: result.label,
+      });
+      setEnrichment(pipelineResult);
+    } catch {
+      setEnrichment(null);
+    } finally {
+      setEnrichmentLoading(false);
+    }
   }, [setSelectedPlace, setSearchActive, setSearchQuery]);
 
   const handleClear = useCallback(() => {
@@ -98,6 +121,8 @@ export default function RadarPlaceSearch() {
     setBrainResults([]);
     setDecorated([]);
     setSelectedPlace(null);
+    setEnrichment(null);
+    setSelectedLabel(null);
     inputRef.current?.focus();
   }, [setSearchQuery, setSelectedPlace]);
 
@@ -105,14 +130,13 @@ export default function RadarPlaceSearch() {
     return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
   }, []);
 
-  // Merge brain results + decoration by index (order preserved from Search Brain)
   const results = brainResults.map((r, i) => ({
     result: r,
     decoration: decorated[i] ?? null,
   }));
 
   return (
-    <div className="relative z-30">
+    <div className="relative z-30 space-y-2">
       <div className={cn(
         "flex items-center gap-2 px-3 py-2 rounded-xl transition-all",
         "bg-card/90 backdrop-blur-md border",
@@ -141,12 +165,11 @@ export default function RadarPlaceSearch() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -4 }}
             transition={{ duration: 0.15 }}
-            className="absolute top-full left-0 right-0 mt-1.5 rounded-xl border border-border/20 bg-card/95 backdrop-blur-xl shadow-2xl overflow-hidden max-h-[340px] overflow-y-auto"
+            className="absolute top-full left-0 right-0 mt-1.5 rounded-xl border border-border/20 bg-card/95 backdrop-blur-xl shadow-2xl overflow-hidden max-h-[340px] overflow-y-auto z-40"
           >
             {loading && results.length === 0 && (
               <div className="px-4 py-3 text-xs text-muted-foreground text-center">Searching...</div>
             )}
-            {/* Results displayed exactly as Search Brain ranked — NO reranking */}
             {results.map(({ result, decoration }) => {
               const etaChips = decoration ? formatETAChips(decoration.eta_projection) : [];
               return (
@@ -199,6 +222,24 @@ export default function RadarPlaceSearch() {
               );
             })}
           </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Enriched place card — shown after selection */}
+      <AnimatePresence>
+        {(enrichment || enrichmentLoading) && selectedLabel && (
+          <MapPlaceCard
+            placeName={selectedLabel.name}
+            district={selectedLabel.district}
+            city={selectedLabel.city}
+            route={enrichment?.route ?? null}
+            nearby={enrichment?.nearby ?? null}
+            loading={enrichmentLoading}
+            onGoThere={() => {/* future: open navigation */}}
+            onOrderHere={() => {/* future: navigate to nearby merchants */}}
+            onExploreNearby={() => {/* future: expand nearby view */}}
+            onDismiss={() => { setEnrichment(null); setSelectedLabel(null); }}
+          />
         )}
       </AnimatePresence>
     </div>
