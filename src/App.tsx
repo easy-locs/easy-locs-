@@ -36,6 +36,8 @@ import AppBootstrapGuardDirect from "@/components/app/AppBootstrapGuard";
 import { AppInit } from "@/components/system/AppInit";
 import { GlobalExperienceProvider } from "@/providers/GlobalExperienceProvider";
 import { UiQualityProvider } from "@/providers/UiQualityProvider";
+import { FloatingCTAButton } from "@/components/engine/FloatingCTAButton";
+import { OrbitPromptOverlay } from "@/components/engine/OrbitPromptOverlay";
 
 // V2 test pages — removed (Batch B purge)
 
@@ -1223,6 +1225,8 @@ const App = () => (
            </Suspense>
            <MainBottomNav />
             <SmartInstallBanner />
+            <FloatingCTAButton />
+            <OrbitPromptOverlay />
             </UiQualityProvider>
             </SplashScreen>
            </AppLockGuard>
