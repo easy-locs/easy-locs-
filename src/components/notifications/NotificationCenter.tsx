@@ -1,58 +1,41 @@
 /**
- * NotificationCenter — Production notification center UI.
- * Uses optimized Zustand selectors for minimal rerenders.
- * Authoritative source: `notifications` table via unifiedNotificationStore.
+ * NotificationCenter — Canonical notification center UI.
+ * Reads ONLY from notifications_v2 via useNotificationsCenter hook.
  */
-import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
-import { useUnifiedNotificationStore } from "@/stores/unifiedNotificationStore";
-import { resolveDeepLink } from "@/lib/notifications/deepLinks";
+import { useNotificationsCenter } from "@/hooks/useNotificationsCenter";
 import { useI18n } from "@/lib/i18n";
 import { motion } from "framer-motion";
 import {
   Bell, BellOff, CheckCheck,
-  CreditCard, MessageSquare, Phone, ShoppingBag, Building2, Shield, Zap,
+  CreditCard, MessageSquare, Phone, ShoppingBag, Truck, Shield, Zap, MapPin,
 } from "lucide-react";
 
-const CATEGORY_ICONS: Record<string, typeof Bell> = {
+const DOMAIN_ICONS: Record<string, typeof Bell> = {
   wallet: CreditCard,
-  order: ShoppingBag,
-  call: Phone,
-  message: MessageSquare,
-  rent: Building2,
-  security: Shield,
+  orbit: MessageSquare,
+  mobility: MapPin,
+  food_delivery: ShoppingBag,
+  parcel_delivery: Truck,
+  merchant: ShoppingBag,
+  admin: Shield,
   system: Zap,
-  business: ShoppingBag,
 };
 
 export default function NotificationCenter() {
   const navigate = useNavigate();
-  const { user } = useAuth();
   const { t } = useI18n();
-  const notifications = useUnifiedNotificationStore((s) => s.notifications);
-  const loading = useUnifiedNotificationStore((s) => s.loading);
-  const hydrate = useUnifiedNotificationStore((s) => s.hydrate);
-  const markAsRead = useUnifiedNotificationStore((s) => s.markAsRead);
-  const markAllAsRead = useUnifiedNotificationStore((s) => s.markAllAsRead);
-  const unreadCount = useUnifiedNotificationStore((s) => s.unreadCount);
-
-  useEffect(() => {
-    if (user?.id) hydrate(user.id);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.id]);
-
-  const unread = unreadCount();
+  const { notifications, unreadCount, loading, markAsRead, markAllAsRead, click } = useNotificationsCenter();
 
   const handleTap = async (notif: (typeof notifications)[0]) => {
-    if (!notif.read_at) await markAsRead(notif.id);
-    const route = resolveDeepLink(notif.type, notif.link);
-    navigate(route);
+    await click(notif.id);
+    if (notif.action_url) {
+      navigate(notif.action_url);
+    }
   };
 
   return (
     <div className="min-h-[100dvh] flex flex-col bg-background">
-      {/* Header */}
       <header className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-border/10">
         <div className="flex items-center gap-3">
           <button onClick={() => navigate(-1)} className="w-9 h-9 rounded-xl bg-muted flex items-center justify-center active:scale-95 transition-transform">
@@ -61,15 +44,15 @@ export default function NotificationCenter() {
           <div>
             <h1 className="text-lg font-bold text-foreground">{t("notifications.title") || "Notifications"}</h1>
             <p className="text-xs text-muted-foreground">
-              {unread > 0
-                ? `${unread} ${t("notifications.unread") || "unread"}`
+              {unreadCount > 0
+                ? `${unreadCount} ${t("notifications.unread") || "unread"}`
                 : t("notifications.all_caught_up") || "All caught up"}
             </p>
           </div>
         </div>
-        {unread > 0 && (
+        {unreadCount > 0 && (
           <button
-            onClick={() => user?.id && markAllAsRead(user.id)}
+            onClick={() => markAllAsRead()}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-xs font-medium active:scale-95 transition-transform"
           >
             <CheckCheck className="h-3.5 w-3.5" />
@@ -78,7 +61,6 @@ export default function NotificationCenter() {
         )}
       </header>
 
-      {/* List */}
       <div className="flex-1 overflow-y-auto">
         {loading && (
           <div className="space-y-3 px-4 pt-4">
@@ -99,7 +81,7 @@ export default function NotificationCenter() {
         {!loading && notifications.length > 0 && (
           <div className="px-4 py-3 space-y-2 pb-24">
             {notifications.map((notif, i) => {
-              const Icon = CATEGORY_ICONS[notif.category] || Bell;
+              const Icon = DOMAIN_ICONS[notif.domain] || Bell;
               const isUnread = !notif.read_at;
               return (
                 <motion.button
@@ -123,7 +105,7 @@ export default function NotificationCenter() {
                     <p className={`text-sm font-semibold truncate ${isUnread ? "text-foreground" : "text-foreground/80"}`}>
                       {notif.title}
                     </p>
-                    <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5">{notif.message}</p>
+                    <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5">{notif.body}</p>
                     <p className="text-[10px] text-muted-foreground/60 mt-1">
                       {new Date(notif.created_at).toLocaleString()}
                     </p>

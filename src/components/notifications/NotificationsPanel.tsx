@@ -1,13 +1,19 @@
-import { useUnifiedNotificationStore } from "@/stores/unifiedNotificationStore";
+/**
+ * NotificationsPanel — lightweight inline notification list.
+ * Reads from notifications_v2 via canonical hook.
+ */
+import { useNotificationsCenter } from "@/hooks/useNotificationsCenter";
 
 export function NotificationsPanel() {
-  const notifications = useUnifiedNotificationStore((s) => s.notifications);
-  const markAsRead = useUnifiedNotificationStore((s) => s.markAsRead);
+  const { notifications, markAsRead } = useNotificationsCenter();
 
   return (
     <div className="space-y-2 p-4">
       <h3 className="text-sm font-semibold text-foreground">Notifications</h3>
       <div className="space-y-1">
+        {notifications.length === 0 && (
+          <p className="text-xs text-muted-foreground py-4 text-center">No notifications yet</p>
+        )}
         {notifications.map((item) => (
           <div
             key={item.id}
@@ -28,7 +34,7 @@ export function NotificationsPanel() {
                 <span className="text-xs text-muted-foreground">Read</span>
               )}
             </div>
-            <p className="text-xs text-muted-foreground">{item.message}</p>
+            <p className="text-xs text-muted-foreground">{item.body}</p>
             <p className="text-[10px] text-muted-foreground">{new Date(item.created_at).toLocaleString()}</p>
           </div>
         ))}
