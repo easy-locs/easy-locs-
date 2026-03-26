@@ -5177,6 +5177,44 @@ export type Database = {
           },
         ]
       }
+      delivery_dispatch_attempts: {
+        Row: {
+          accepted_count: number | null
+          attempted_at: string | null
+          id: string
+          job_id: string
+          offered_count: number | null
+          pricing_multiplier: number | null
+          radius_km: number
+        }
+        Insert: {
+          accepted_count?: number | null
+          attempted_at?: string | null
+          id?: string
+          job_id: string
+          offered_count?: number | null
+          pricing_multiplier?: number | null
+          radius_km: number
+        }
+        Update: {
+          accepted_count?: number | null
+          attempted_at?: string | null
+          id?: string
+          job_id?: string
+          offered_count?: number | null
+          pricing_multiplier?: number | null
+          radius_km?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "delivery_dispatch_attempts_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "delivery_jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       delivery_disputes: {
         Row: {
           created_at: string | null
@@ -5314,6 +5352,91 @@ export type Database = {
           },
         ]
       }
+      delivery_fare_quotes: {
+        Row: {
+          base_fare: number
+          created_at: string | null
+          current_fare: number
+          id: string
+          job_id: string
+          reason: string | null
+          surge_multiplier: number | null
+        }
+        Insert: {
+          base_fare?: number
+          created_at?: string | null
+          current_fare?: number
+          id?: string
+          job_id: string
+          reason?: string | null
+          surge_multiplier?: number | null
+        }
+        Update: {
+          base_fare?: number
+          created_at?: string | null
+          current_fare?: number
+          id?: string
+          job_id?: string
+          reason?: string | null
+          surge_multiplier?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "delivery_fare_quotes_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "delivery_jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      delivery_job_offers: {
+        Row: {
+          created_at: string | null
+          distance_km: number | null
+          eta_minutes: number | null
+          id: string
+          job_id: string
+          offered_at: string | null
+          responded_at: string | null
+          rider_user_id: string
+          score: number | null
+          status: string
+        }
+        Insert: {
+          created_at?: string | null
+          distance_km?: number | null
+          eta_minutes?: number | null
+          id?: string
+          job_id: string
+          offered_at?: string | null
+          responded_at?: string | null
+          rider_user_id: string
+          score?: number | null
+          status?: string
+        }
+        Update: {
+          created_at?: string | null
+          distance_km?: number | null
+          eta_minutes?: number | null
+          id?: string
+          job_id?: string
+          offered_at?: string | null
+          responded_at?: string | null
+          rider_user_id?: string
+          score?: number | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "delivery_job_offers_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "delivery_jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       delivery_jobs: {
         Row: {
           accepted_at: string | null
@@ -5324,18 +5447,24 @@ export type Database = {
           confirmation_code: string | null
           created_at: string | null
           currency: string | null
+          customer_user_id: string | null
           delivered_at: string | null
           delivery_fee: number | null
+          dispatch_attempt_count: number | null
+          dispatch_status: string | null
           driver_id: string | null
           dropoff_address: string
           dropoff_lat: number | null
           dropoff_lng: number | null
+          fare_amount: number | null
           id: string
+          last_dispatch_at: string | null
           notes: string | null
           order_id: string | null
           org_id: string
           package_description: string | null
           package_size: string | null
+          payment_status: string | null
           photo_proof_url: string | null
           picked_up_at: string | null
           pickup_address: string
@@ -5346,8 +5475,10 @@ export type Database = {
           reassignment_count: number | null
           required_vehicles: string[] | null
           scheduled_at: string | null
+          search_radius_km: number | null
           seller_id: string
           status: string
+          surge_multiplier: number | null
           updated_at: string | null
           weight_kg: number | null
         }
@@ -5360,18 +5491,24 @@ export type Database = {
           confirmation_code?: string | null
           created_at?: string | null
           currency?: string | null
+          customer_user_id?: string | null
           delivered_at?: string | null
           delivery_fee?: number | null
+          dispatch_attempt_count?: number | null
+          dispatch_status?: string | null
           driver_id?: string | null
           dropoff_address?: string
           dropoff_lat?: number | null
           dropoff_lng?: number | null
+          fare_amount?: number | null
           id?: string
+          last_dispatch_at?: string | null
           notes?: string | null
           order_id?: string | null
           org_id: string
           package_description?: string | null
           package_size?: string | null
+          payment_status?: string | null
           photo_proof_url?: string | null
           picked_up_at?: string | null
           pickup_address?: string
@@ -5382,8 +5519,10 @@ export type Database = {
           reassignment_count?: number | null
           required_vehicles?: string[] | null
           scheduled_at?: string | null
+          search_radius_km?: number | null
           seller_id: string
           status?: string
+          surge_multiplier?: number | null
           updated_at?: string | null
           weight_kg?: number | null
         }
@@ -5396,18 +5535,24 @@ export type Database = {
           confirmation_code?: string | null
           created_at?: string | null
           currency?: string | null
+          customer_user_id?: string | null
           delivered_at?: string | null
           delivery_fee?: number | null
+          dispatch_attempt_count?: number | null
+          dispatch_status?: string | null
           driver_id?: string | null
           dropoff_address?: string
           dropoff_lat?: number | null
           dropoff_lng?: number | null
+          fare_amount?: number | null
           id?: string
+          last_dispatch_at?: string | null
           notes?: string | null
           order_id?: string | null
           org_id?: string
           package_description?: string | null
           package_size?: string | null
+          payment_status?: string | null
           photo_proof_url?: string | null
           picked_up_at?: string | null
           pickup_address?: string
@@ -5418,8 +5563,10 @@ export type Database = {
           reassignment_count?: number | null
           required_vehicles?: string[] | null
           scheduled_at?: string | null
+          search_radius_km?: number | null
           seller_id?: string
           status?: string
+          surge_multiplier?: number | null
           updated_at?: string | null
           weight_kg?: number | null
         }
@@ -16982,6 +17129,48 @@ export type Database = {
         }
         Relationships: []
       }
+      rider_presence: {
+        Row: {
+          accuracy_m: number | null
+          current_lat: number | null
+          current_lng: number | null
+          heading: number | null
+          is_available: boolean
+          is_online: boolean
+          last_seen_at: string | null
+          rider_user_id: string
+          speed_kmh: number | null
+          updated_at: string | null
+          vehicle_type: string | null
+        }
+        Insert: {
+          accuracy_m?: number | null
+          current_lat?: number | null
+          current_lng?: number | null
+          heading?: number | null
+          is_available?: boolean
+          is_online?: boolean
+          last_seen_at?: string | null
+          rider_user_id: string
+          speed_kmh?: number | null
+          updated_at?: string | null
+          vehicle_type?: string | null
+        }
+        Update: {
+          accuracy_m?: number | null
+          current_lat?: number | null
+          current_lng?: number | null
+          heading?: number | null
+          is_available?: boolean
+          is_online?: boolean
+          last_seen_at?: string | null
+          rider_user_id?: string
+          speed_kmh?: number | null
+          updated_at?: string | null
+          vehicle_type?: string | null
+        }
+        Relationships: []
+      }
       rides: {
         Row: {
           booking_mode: string
@@ -25394,6 +25583,91 @@ export type Database = {
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      trip_live_state: {
+        Row: {
+          customer_lat: number | null
+          customer_lng: number | null
+          job_id: string
+          rider_heading: number | null
+          rider_lat: number | null
+          rider_lng: number | null
+          rider_speed_kmh: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          customer_lat?: number | null
+          customer_lng?: number | null
+          job_id: string
+          rider_heading?: number | null
+          rider_lat?: number | null
+          rider_lng?: number | null
+          rider_speed_kmh?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          customer_lat?: number | null
+          customer_lng?: number | null
+          job_id?: string
+          rider_heading?: number | null
+          rider_lat?: number | null
+          rider_lng?: number | null
+          rider_speed_kmh?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trip_live_state_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: true
+            referencedRelation: "delivery_jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      trip_location_points: {
+        Row: {
+          accuracy_m: number | null
+          heading: number | null
+          id: string
+          job_id: string
+          lat: number
+          lng: number
+          recorded_at: string | null
+          rider_user_id: string
+          speed_kmh: number | null
+        }
+        Insert: {
+          accuracy_m?: number | null
+          heading?: number | null
+          id?: string
+          job_id: string
+          lat: number
+          lng: number
+          recorded_at?: string | null
+          rider_user_id: string
+          speed_kmh?: number | null
+        }
+        Update: {
+          accuracy_m?: number | null
+          heading?: number | null
+          id?: string
+          job_id?: string
+          lat?: number
+          lng?: number
+          recorded_at?: string | null
+          rider_user_id?: string
+          speed_kmh?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trip_location_points_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "delivery_jobs"
             referencedColumns: ["id"]
           },
         ]
