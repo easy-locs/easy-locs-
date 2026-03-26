@@ -17,6 +17,7 @@ import "./handlers/experience-consumer.handler";
 import "./handlers/map-action.handler";
 import "./handlers/ride-bridge.handler";
 import { initRideLifecycleHandler } from "./handlers/ride-lifecycle.handler";
+import { initRideAIDispatchHandler } from "./handlers/ride-ai-dispatch.handler";
 import "@/lib/radar/signal-ingestor";
 
 /**

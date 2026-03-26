@@ -1,12 +1,13 @@
 /**
- * ride-dispatch.handler — Listens for ride.requested, dispatches and creates job + offers.
+ * ride-dispatch.handler — Legacy handler, now delegates to AI orchestrator.
+ * Kept for backward compatibility; initRideAIDispatchHandler is the canonical handler.
  */
 import { eventBus } from "@/lib/core/event-bus";
 import { dispatchRide } from "@/lib/mobility/dispatch-engine";
 import { supabase } from "@/integrations/supabase/client";
 
 export function initRideDispatchHandler() {
-  eventBus.on("ride.requested", async (payload: any) => {
+  eventBus.on("ride.dispatch.legacy", async (payload: any) => {
     const result = await dispatchRide(payload);
 
     const { data: job } = await supabase
@@ -32,7 +33,7 @@ export function initRideDispatchHandler() {
     }
 
     if (import.meta.env.DEV) {
-      console.log("[ride-dispatch] Dispatched", (job as any).id);
+      console.log("[ride-dispatch] Legacy dispatched", (job as any).id);
     }
   });
 }
