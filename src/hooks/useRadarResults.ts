@@ -4,6 +4,7 @@
  */
 import { useState, useEffect } from "react";
 import { useLocationStore } from "@/stores/locationStore";
+import { useRadarPlaceStore } from "@/stores/radarPlaceStore";
 import { fetchCanonicalDiscovery } from "@/lib/discovery/canonical-discovery-pipeline";
 import type { GeoEntity } from "@/lib/geo/geoEntityAdapter";
 
@@ -64,7 +65,7 @@ export function useRadarResults(opts?: { type?: string; surface?: "radar" | "map
         }
       });
     return () => { cancelled = true; };
-  }, [location?.lat, opts?.type]);
+  }, [effectiveLat, effectiveLng, opts?.type]);
 
   return { entities, loading, location };
 }
