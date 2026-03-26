@@ -53,7 +53,7 @@ const CompactHeader = memo(({ city, greeting, onLocationTap }: { city: string | 
   const engine = useOrbitEngine();
   return (
     <div className="flex items-center gap-2 mb-2">
-      <button onClick={handleLocationTap} className="flex items-center gap-1.5 min-w-0 shrink text-left active:scale-95 transition-transform">
+      <button onClick={onLocationTap} className="flex items-center gap-1.5 min-w-0 shrink text-left active:scale-95 transition-transform">
         <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
           {city ? <MapPin className="h-3.5 w-3.5 text-primary" /> : <Navigation className="h-3.5 w-3.5 text-primary animate-pulse" />}
         </div>
