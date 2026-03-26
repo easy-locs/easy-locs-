@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { useDeliveryStore } from "@/stores/deliveryStore";
+import { useCustomerMobilityStore } from "@/stores/customerMobilityStore";
 
 export function OwnerJobsPanel() {
   const jobs = useDeliveryStore((s) => s.jobs);
