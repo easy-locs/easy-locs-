@@ -4,6 +4,7 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { ArrowRight, Plane, MapPin, Star, Calendar } from "lucide-react";
+import { useI18n } from "@/lib/i18n";
 import travelBanner from "@/assets/landing/travel-banner.jpg";
 
 const TRAVEL_CARDS = [
@@ -15,6 +16,7 @@ const TRAVEL_CARDS = [
 ];
 
 export default function TravelSection() {
+  const { t } = useI18n();
   return (
     <section className="py-10 sm:py-14 bg-background" aria-label="Travel & Stays">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -27,17 +29,17 @@ export default function TravelSection() {
           <div>
             <h2 className="text-xl sm:text-2xl font-extrabold text-foreground flex items-center gap-2">
               <Plane className="h-5 w-5" style={{ color: "hsl(200 70% 50%)" }} />
-              Travel & Stays
+              {t("landing.travel.title") || "Travel & Stays"}
             </h2>
             <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
-              Book directly · No commission · Worldwide
+              {t("landing.travel.subtitle") || "Book directly · No commission · Worldwide"}
             </p>
           </div>
           <Link
             to="/travel"
             className="hidden sm:flex items-center gap-1 text-sm font-semibold text-accent hover:gap-2 transition-all"
           >
-            Browse all <ArrowRight className="h-4 w-4" />
+            {t("landing.travel.browse") || "Browse all"} <ArrowRight className="h-4 w-4" />
           </Link>
         </motion.div>
 
