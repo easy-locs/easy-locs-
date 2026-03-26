@@ -98,8 +98,63 @@ export async function validateP0Bridges(): Promise<ValidationResult[]> {
     });
   }
 
+  // ═══ P1 BRIDGE: zone intelligence (demand/supply/traffic) ═══
+  {
+    const downstream: string[] = [];
+    const listeners = [
+      { event: "zone.supply.updated", fn: () => { downstream.push("zone.supply.updated"); } },
+      { event: "zone.demand.updated", fn: () => { downstream.push("zone.demand.updated"); } },
+      { event: "zone.traffic.updated", fn: () => { downstream.push("zone.traffic.updated"); } },
+      { event: "zone.pressure.updated", fn: () => { downstream.push("zone.pressure.updated"); } },
+    ];
+    listeners.forEach(l => eventBus.on(l.event, l.fn));
+
+    // Trigger via eta.projections.updated (which zone-intelligence handler listens to)
+    console.log("[P1-VALIDATION] Emitting eta.projections.updated with mock station...");
+    await eventBus.emit("eta.projections.updated", {
+      zoneKey: "AE_DUBAI_MARINA",
+      station: {
+        traffic_level: "heavy",
+        traffic_speed_factor: 0.5,
+        rider_supply: 3,
+        rider_supply_factor: 0.6,
+        rider_supply_count: 3,
+        merchant_count: 20,
+        merchant_open_count: 15,
+        merchant_deliverable_count: 12,
+        demand_level: 75,
+        demand_multiplier: 1.5,
+        surge_multiplier: 1.3,
+        weather_type: "clear",
+        weather_intensity: 0,
+        flood_risk_level: null,
+        avg_food_eta_minutes: 25,
+        avg_grocery_eta_minutes: 30,
+        avg_taxi_eta_minutes: 8,
+        avg_parcel_eta_minutes: 35,
+        updated_at: new Date().toISOString(),
+      },
+      etas: { food: 25, grocery: 30, taxi: 8, parcel: 35 },
+      updatedAt: new Date().toISOString(),
+    });
+
+    await new Promise(r => setTimeout(r, 300));
+    listeners.forEach(l => eventBus.off(l.event, l.fn));
+
+    results.push({
+      bridge: "zone-intelligence (P1)",
+      emitted: true,
+      handlerFired: downstream.length > 0,
+      downstreamEvents: downstream,
+      pass: downstream.includes("zone.supply.updated") &&
+            downstream.includes("zone.demand.updated") &&
+            downstream.includes("zone.traffic.updated") &&
+            downstream.includes("zone.pressure.updated"),
+    });
+  }
+
   // Print summary
-  console.log("\n═══ P0 BRIDGE VALIDATION RESULTS ═══");
+  console.log("\n═══ BRIDGE VALIDATION RESULTS (P0 + P1) ═══");
   for (const r of results) {
     console.log(`\n[${r.pass ? "✅ PASS" : "❌ FAIL"}] ${r.bridge}`);
     console.log(`  Emitted: ${r.emitted}`);
