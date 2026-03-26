@@ -1,17 +1,14 @@
 /**
  * AddressSelectorSheet — Canonical inline address selector.
- * Replaces all navigate("/address") calls with a reliable bottom sheet.
- * Connects selection → active context → radar → ETA → merchant refresh.
+ * Uses GEO BRAIN as single source of truth for address operations.
  */
 import { useState, useCallback } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { CanonicalAddressInput } from "@/components/address/CanonicalAddressInput";
 import { useLocationStore } from "@/stores/locationStore";
-import { useRadarPlaceStore } from "@/stores/radarPlaceStore";
-import { eventBus } from "@/lib/core/event-bus";
-import { computeZoneKey, type CanonicalPlace } from "@/lib/address/canonical-place";
+import { setAddressFromPlace, requestGPS } from "@/lib/brain/geo-brain";
+import type { CanonicalPlace } from "@/lib/address/canonical-place";
 import { MapPin, Navigation } from "lucide-react";
-import { geoService } from "@/lib/geo/geo-service";
 
 interface Props {
   open: boolean;
@@ -26,64 +23,13 @@ export function AddressSelectorSheet({ open, onOpenChange, contextType = "global
   const handlePlaceSelect = useCallback((place: CanonicalPlace | null) => {
     if (!place) return;
     setSelected(place);
-
-    const { lat, lng } = place;
-    if (!lat || !lng) return;
-
-    const label = place.label ?? place.formatted_address ?? "";
-
-    // 1. Update locationStore
-    useLocationStore.getState().setSelectedLocation({
-      lat, lng, label,
-      city: place.city ?? undefined,
-      area: place.district ?? undefined,
-      country: place.country_name ?? undefined,
-    });
-    useLocationStore.getState().setMapViewport({ lat, lng }, 14);
-
-    // 2. Add to recent places
-    useLocationStore.getState().addRecentPlace({
-      lat, lng, label,
-      city: place.city ?? undefined,
-      area: place.district ?? undefined,
-      country: place.country_name ?? undefined,
-    });
-
-    // 3. Update radarPlaceStore for radar sync
-    const zoneKey = place.zone_key ?? computeZoneKey(
-      place.country_code ?? "AE",
-      place.city ?? undefined,
-      place.district ?? undefined,
-    );
-    useRadarPlaceStore.getState().setSelectedPlace({
-      lat, lng, label,
-      zone_key: zoneKey,
-      canonical_place_id: place.id ?? "",
-      formatted_address: place.formatted_address ?? label,
-      place_type: place.place_type ?? "address",
-      viewport: null,
-      overlay: null,
-    });
-
-    // 4. Emit canonical events to refresh entire execution chain
-    eventBus.emit("address.context.updated", {
-      userId: "anonymous",
-      contextType,
-      lat, lng,
-      sourceType: "manual",
-      canonicalPlaceId: place.id ?? null,
-      zoneKey,
-    });
-    eventBus.emit("radar.context.refresh", { userId: "anonymous", zoneKey });
-    eventBus.emit("eta.context.refresh", { userId: "anonymous", contextType });
-    eventBus.emit("merchant.visibility.refresh", { zoneKey });
-
-    // 5. Close sheet
+    // Delegate entirely to Geo Brain
+    setAddressFromPlace(place);
     onOpenChange(false);
-  }, [contextType, onOpenChange]);
+  }, [onOpenChange]);
 
   const handleUseGPS = useCallback(() => {
-    geoService.forceRetry();
+    requestGPS();
     onOpenChange(false);
   }, [onOpenChange]);
 
@@ -98,7 +44,6 @@ export function AddressSelectorSheet({ open, onOpenChange, contextType = "global
         </SheetHeader>
 
         <div className="space-y-4 pb-6">
-          {/* GPS button */}
           {permissionState !== "denied" && (
             <button
               onClick={handleUseGPS}
@@ -112,7 +57,6 @@ export function AddressSelectorSheet({ open, onOpenChange, contextType = "global
             </button>
           )}
 
-          {/* Canonical address search */}
           <CanonicalAddressInput
             value={selected}
             onChange={handlePlaceSelect}
