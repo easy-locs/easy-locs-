@@ -133,8 +133,8 @@ export default memo(function UnifiedMap({
   onZoneClickRef.current = onZoneClick;
 
   const mapCenter: [number, number] = center
-    || (userLat && userLng ? [userLng, userLat] : [55.2708, 25.2048]);
-  const weather = useLiveWeatherStation({ lat: userLat, lng: userLng });
+    || (userLat != null && userLng != null ? [userLng, userLat] : [55.2708, 25.2048]);
+  const weather = useLiveWeatherStation({ lat: userLat ?? center?.[1], lng: userLng ?? center?.[0] });
 
   // Derive heatmap points from entities if not provided
   const effectiveHeatmap = heatmapPoints ?? (showHeatmap ? entities.map(e => ({
@@ -508,12 +508,17 @@ export default memo(function UnifiedMap({
         style={{ minHeight: 300 }}
       />
       <div className="pointer-events-none absolute left-3 right-3 top-3 z-10 flex items-start justify-between gap-3">
-        <div className="inline-flex min-w-0 items-center gap-2 rounded-full border border-border/40 bg-card/85 px-3 py-2 shadow-sm backdrop-blur-md">
+        <div className="inline-flex min-w-0 max-w-full items-center gap-2 rounded-full border border-border/40 bg-card/85 px-3 py-2 shadow-sm backdrop-blur-md">
           {weather.isRaining ? <CloudRain className="h-4 w-4 shrink-0 text-primary" /> : <CloudSun className="h-4 w-4 shrink-0 text-primary" />}
-          <span className="truncate text-[11px] font-medium text-foreground">Auto weather · {weather.label}</span>
+          <span className="truncate text-[11px] font-medium text-foreground">Live station · {weather.label}</span>
         </div>
       </div>
-      {weather.isRaining && <div className="pointer-events-none absolute inset-0 rounded-2xl bg-gradient-to-b from-primary/10 via-transparent to-background/10" />}
+      {weather.isRaining && (
+        <>
+          <div className="map-rain-tint pointer-events-none absolute inset-0 rounded-2xl" />
+          <div className="map-rain-overlay pointer-events-none absolute inset-0 rounded-2xl" />
+        </>
+      )}
       <DiscoveryHeatmapLayer
         map={mapReady ? mapRef.current : null}
         points={effectiveHeatmap}

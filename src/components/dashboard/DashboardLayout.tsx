@@ -52,6 +52,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   const { t } = useI18n();
   const { currentTier, isSubscribed } = useSubscriptionGating();
   const activeCountry = useCountryContext();
+  const isDashboardHome = location.pathname === "/dashboard";
 
   // Get country info for display
   const countryEntry = activeCountry ? getCountryEntryOrDefault(activeCountry) : null;
@@ -431,7 +432,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
       <div className="flex-1 flex flex-col min-h-screen min-w-0">
 
         {subscription.isTrial && (
-          <div className="mx-4 sm:mx-6 mt-3 flex items-center gap-3 bg-accent/10 border border-accent/30 rounded-lg px-4 py-2.5">
+          <div className={`${isDashboardHome ? "mx-3 mt-3 sm:mx-4" : "mx-4 mt-3 sm:mx-6"} flex items-center gap-3 bg-accent/10 border border-accent/30 rounded-lg px-4 py-2.5`}>
             <Clock className="h-4 w-4 text-accent shrink-0" />
             <p className="text-sm text-foreground">
               <span className="font-semibold">{t("trial.free")}</span>
@@ -451,7 +452,9 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
           </div>
         )}
 
-        <main className="app-main flex-1 w-full min-w-0 p-3 sm:p-5 lg:p-6 pb-24 lg:pb-6 overflow-x-hidden">{children}</main>
+        <main className={`app-main flex-1 w-full min-w-0 overflow-x-hidden ${isDashboardHome ? "px-0 pt-0 pb-24 lg:pb-6" : "p-3 sm:p-5 lg:p-6 pb-24 lg:pb-6"}`}>
+          {children}
+        </main>
       </div>
 
 
