@@ -198,7 +198,7 @@ export default function MyShopPage() {
                   <ExternalLink className="h-3 w-3 inline" /> Preview
                 </a>
                 <ShopShareEngine shopName={shop.name} shopSlug={shop.slug} shopDescription={shop.description} shopImage={shop.logo_url} />
-                <Suspense fallback={null}><NotificationBell shopId={shop.id} onOpen={() => { setTab("analytics"); haptic("light"); }} /></Suspense>
+                <Suspense fallback={null}><NotificationBell onOpen={() => { setTab("analytics"); haptic("light"); }} /></Suspense>
               </div>
             </div>
           </div>
