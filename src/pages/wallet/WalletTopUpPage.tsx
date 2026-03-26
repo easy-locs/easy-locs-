@@ -74,9 +74,9 @@ export default function WalletTopUpPage() {
         </div>
       </div>
 
-      <div className="px-4 space-y-5">
+      <div className="px-4 space-y-5" data-topup-content>
         {/* Payment method selector */}
-        <div>
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
           <p className="text-xs font-semibold text-muted-foreground mb-2">Payment method</p>
           <div className="grid grid-cols-2 gap-2">
             {methods.map((m) => {
@@ -106,10 +106,10 @@ export default function WalletTopUpPage() {
               );
             })}
           </div>
-        </div>
+        </motion.div>
 
         {/* Quick amounts */}
-        <div>
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
           <p className="text-xs font-semibold text-muted-foreground mb-2">Select amount</p>
           <div className="flex flex-wrap gap-2">
             {AMOUNTS.map((a) => (
@@ -126,10 +126,10 @@ export default function WalletTopUpPage() {
               </button>
             ))}
           </div>
-        </div>
+        </motion.div>
 
         {/* Custom amount */}
-        <div className="space-y-1.5">
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="space-y-1.5">
           <label className="text-xs font-medium text-muted-foreground">Custom amount</label>
           <input
             type="number"
@@ -140,7 +140,7 @@ export default function WalletTopUpPage() {
             placeholder="Amount"
             className="w-full rounded-xl border border-border/30 bg-card px-3 py-3 text-sm text-foreground outline-none focus:ring-2 focus:ring-primary/20"
           />
-        </div>
+        </motion.div>
 
         {/* Submit */}
         <button
