@@ -126,7 +126,7 @@ export default function VerticalHubPage({ vertical }: { vertical: TaxonomyVertic
   }, [heroMediaItems.length]);
 
   return (
-    <div className="min-h-screen pb-24" style={{ background: "hsl(var(--background))" }}>
+    <div className="min-h-screen app-mobile-content" style={{ background: "hsl(var(--background))" }}>
       <SEOHead
         title={`${ui.displayTitle} — Easy-Locs`}
         description={`Discover ${ui.displayTitle.toLowerCase()} near you on Easy-Locs.`}
@@ -287,7 +287,7 @@ export default function VerticalHubPage({ vertical }: { vertical: TaxonomyVertic
                 >
                   <span className="text-xl">{sub.icon}</span>
                 </div>
-                <span className="text-[10px] font-semibold max-w-[52px] text-center truncate" style={{
+                <span className="text-[10px] font-semibold max-w-[60px] text-center truncate leading-tight" style={{
                   color: activeSub === sub.value ? `hsl(${ui.accentHsl})` : "hsl(var(--foreground))"
                 }}>{sub.label}</span>
               </button>
@@ -310,19 +310,21 @@ export default function VerticalHubPage({ vertical }: { vertical: TaxonomyVertic
 
         {/* ═══ EMPTY — vertical-specific ═══ */}
         {!isLoading && filtered.length === 0 && (
-          <div className="flex flex-col items-center py-16 gap-3">
-            <span className="text-4xl">{ui.emoji}</span>
-            <p className="text-sm font-bold text-foreground">{ui.wording.emptyTitle}</p>
-            <p className="text-xs text-muted-foreground">{ui.wording.emptySubtitle}</p>
-            {activeSub && (
-              <button
-                onClick={() => handleSubSelect(null)}
-                className="text-xs font-semibold mt-2 px-4 py-2 rounded-xl transition-all active:scale-95"
-                style={{ color: `hsl(${ui.accentHsl})`, background: `hsl(${ui.accentHsl} / 0.1)` }}
-              >
-                ← View all {vertical.label}
-              </button>
-            )}
+          <div className="page-empty-state">
+            <div className="page-empty-state__inner">
+              <div className="page-empty-state__icon">{ui.emoji}</div>
+              <h3 className="page-empty-state__title text-foreground">{ui.wording.emptyTitle}</h3>
+              <p className="page-empty-state__desc text-muted-foreground">{ui.wording.emptySubtitle}</p>
+              {activeSub && (
+                <button
+                  onClick={() => handleSubSelect(null)}
+                  className="text-xs font-semibold mt-3 px-4 py-2 rounded-xl transition-all active:scale-95"
+                  style={{ color: `hsl(${ui.accentHsl})`, background: `hsl(${ui.accentHsl} / 0.1)` }}
+                >
+                  ← View all {vertical.label}
+                </button>
+              )}
+            </div>
           </div>
         )}
 
