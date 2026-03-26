@@ -129,7 +129,7 @@ export default function WalletHubPage() {
   ];
 
   return (
-    <div className="min-h-[100dvh] flex flex-col bg-background" data-wallet-page>
+    <div className="app-mobile-page flex flex-col bg-background" data-wallet-page>
       {/* Header */}
       <header className="flex items-center justify-between px-4 pt-4 pb-2">
         <div className="flex items-center gap-3">

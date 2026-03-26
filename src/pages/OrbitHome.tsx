@@ -161,7 +161,7 @@ export default function OrbitHome() {
   });
 
   return (
-    <div className="flex flex-col min-h-[100dvh] bg-background" data-marketplace-home>
+    <div className="app-mobile-page flex flex-col bg-background" data-marketplace-home>
       <SEOHead
         title="Easy-Locs® — Food, Travel, Services & More"
         description="Order food, book trips, manage properties — all in one premium super app."
