@@ -60,28 +60,29 @@ export function CustomerJobCard({ job }: { job: MobilityJob }) {
   return (
     <div className="bg-card border border-border/30 rounded-2xl overflow-hidden shadow-sm">
       {/* Status bar */}
-      <div className={cn("px-4 py-2.5 flex items-center justify-between border-b", statusInfo.color)}>
-        <div className="flex items-center gap-2">
-          {["searching", "offered", "pricing"].includes(job.status) && <Loader2 className="h-3 w-3 animate-spin" />}
-          {JOB_TYPE_ICON[job.job_type]}
-          <span className="text-xs font-bold">{statusInfo.label}</span>
+      {/* Status bar */}
+      <div className={cn("px-3 py-2 flex items-center justify-between gap-2 border-b", statusInfo.color)}>
+        <div className="flex items-center gap-1.5 min-w-0 flex-1">
+          {["searching", "offered", "pricing"].includes(job.status) && <Loader2 className="h-3 w-3 animate-spin shrink-0" />}
+          <span className="shrink-0">{JOB_TYPE_ICON[job.job_type]}</span>
+          <span className="text-xs font-bold truncate">{statusInfo.label}</span>
         </div>
-        <div className="flex items-center gap-1.5">
-          <Badge variant="outline" className="text-[10px]">{job.service_level.replace(/_/g, ' ')}</Badge>
-          <Badge variant="outline" className="text-[10px]">{job.currency}</Badge>
+        <div className="flex items-center gap-1 shrink-0">
+          <Badge variant="outline" className="text-[9px] px-1.5 py-0">{job.service_level.replace(/_/g, ' ')}</Badge>
+          <Badge variant="outline" className="text-[9px] px-1.5 py-0">{job.currency}</Badge>
         </div>
       </div>
 
       <div className="p-4 space-y-3">
         {/* Locations */}
         <div className="space-y-2">
-          <div className="flex items-start gap-2.5">
+          <div className="flex items-start gap-2 min-w-0">
             <MapPin className="h-4 w-4 text-emerald-500 mt-0.5 shrink-0" />
-            <span className="text-sm text-foreground">{job.pickup_label || job.pickup_address || "Pickup"}</span>
+            <span className="text-sm text-foreground truncate min-w-0">{job.pickup_label || job.pickup_address || "Pickup"}</span>
           </div>
-          <div className="flex items-start gap-2.5">
+          <div className="flex items-start gap-2 min-w-0">
             <Navigation className="h-4 w-4 text-primary mt-0.5 shrink-0" />
-            <span className="text-sm text-foreground">{job.dropoff_label || job.dropoff_address || "Dropoff"}</span>
+            <span className="text-sm text-foreground truncate min-w-0">{job.dropoff_label || job.dropoff_address || "Dropoff"}</span>
           </div>
         </div>
 
