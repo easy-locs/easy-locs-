@@ -612,6 +612,69 @@ export type Database = {
         }
         Relationships: []
       }
+      ai_decision_logs: {
+        Row: {
+          after_score: number | null
+          auto_execute: boolean
+          before_score: number | null
+          city: string | null
+          context_json: Json
+          country: string | null
+          created_at: string
+          decision_type: string
+          event_key: string | null
+          executed: boolean
+          executed_at: string | null
+          id: string
+          impact_score: number
+          module: string
+          priority: string
+          reason: string
+          result_delta: Json | null
+          route: string | null
+        }
+        Insert: {
+          after_score?: number | null
+          auto_execute?: boolean
+          before_score?: number | null
+          city?: string | null
+          context_json?: Json
+          country?: string | null
+          created_at?: string
+          decision_type: string
+          event_key?: string | null
+          executed?: boolean
+          executed_at?: string | null
+          id?: string
+          impact_score?: number
+          module: string
+          priority?: string
+          reason: string
+          result_delta?: Json | null
+          route?: string | null
+        }
+        Update: {
+          after_score?: number | null
+          auto_execute?: boolean
+          before_score?: number | null
+          city?: string | null
+          context_json?: Json
+          country?: string | null
+          created_at?: string
+          decision_type?: string
+          event_key?: string | null
+          executed?: boolean
+          executed_at?: string | null
+          id?: string
+          impact_score?: number
+          module?: string
+          priority?: string
+          reason?: string
+          result_delta?: Json | null
+          route?: string | null
+        }
+        Relationships: []
+      }
       ai_ops_suggestions: {
         Row: {
           context_id: string | null
