@@ -14451,6 +14451,104 @@ export type Database = {
           },
         ]
       }
+      parcel_job_details: {
+        Row: {
+          contains_documents: boolean
+          contains_electronics: boolean
+          contains_liquid: boolean
+          created_at: string | null
+          declared_value_amount: number | null
+          declared_value_currency: string | null
+          dropoff_contact_name: string | null
+          dropoff_contact_phone: string | null
+          dropoff_notes: string | null
+          fragile: boolean
+          id: string
+          job_id: string
+          package_count: number
+          package_size: string
+          package_weight_kg: number | null
+          parcel_type: string
+          perishable: boolean
+          pickup_contact_name: string | null
+          pickup_contact_phone: string | null
+          pickup_notes: string | null
+          requires_id_check: boolean
+          requires_otp: boolean
+          requires_photo_proof: boolean
+          requires_signature: boolean
+          special_instructions: string | null
+          temperature_sensitive: boolean
+          updated_at: string | null
+        }
+        Insert: {
+          contains_documents?: boolean
+          contains_electronics?: boolean
+          contains_liquid?: boolean
+          created_at?: string | null
+          declared_value_amount?: number | null
+          declared_value_currency?: string | null
+          dropoff_contact_name?: string | null
+          dropoff_contact_phone?: string | null
+          dropoff_notes?: string | null
+          fragile?: boolean
+          id?: string
+          job_id: string
+          package_count?: number
+          package_size?: string
+          package_weight_kg?: number | null
+          parcel_type?: string
+          perishable?: boolean
+          pickup_contact_name?: string | null
+          pickup_contact_phone?: string | null
+          pickup_notes?: string | null
+          requires_id_check?: boolean
+          requires_otp?: boolean
+          requires_photo_proof?: boolean
+          requires_signature?: boolean
+          special_instructions?: string | null
+          temperature_sensitive?: boolean
+          updated_at?: string | null
+        }
+        Update: {
+          contains_documents?: boolean
+          contains_electronics?: boolean
+          contains_liquid?: boolean
+          created_at?: string | null
+          declared_value_amount?: number | null
+          declared_value_currency?: string | null
+          dropoff_contact_name?: string | null
+          dropoff_contact_phone?: string | null
+          dropoff_notes?: string | null
+          fragile?: boolean
+          id?: string
+          job_id?: string
+          package_count?: number
+          package_size?: string
+          package_weight_kg?: number | null
+          parcel_type?: string
+          perishable?: boolean
+          pickup_contact_name?: string | null
+          pickup_contact_phone?: string | null
+          pickup_notes?: string | null
+          requires_id_check?: boolean
+          requires_otp?: boolean
+          requires_photo_proof?: boolean
+          requires_signature?: boolean
+          special_instructions?: string | null
+          temperature_sensitive?: boolean
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "parcel_job_details_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: true
+            referencedRelation: "mobility_jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       payment_events: {
         Row: {
           created_at: string
