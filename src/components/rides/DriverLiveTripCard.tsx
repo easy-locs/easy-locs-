@@ -8,13 +8,13 @@ import { useRiderDispatchStore } from "@/stores/riderDispatchStore";
 import { useTripTrackingStore } from "@/stores/tripTrackingStore";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { MapPin, Navigation, Truck, Play, CheckCircle2, Locate } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { MapPin, Navigation, Truck, Play, CheckCircle2, Locate, Package } from "lucide-react";
 
 const NEXT_STATUS: Record<string, { label: string; icon: React.ReactNode; status: string }> = {
-  accepted: { label: "I'm on my way", icon: <Truck className="h-3.5 w-3.5" />, status: "rider_arriving" },
-  rider_arriving: { label: "I've arrived", icon: <MapPin className="h-3.5 w-3.5" />, status: "rider_arrived" },
-  rider_arrived: { label: "Start trip", icon: <Play className="h-3.5 w-3.5" />, status: "in_progress" },
+  accepted: { label: "I'm on my way to pickup", icon: <Truck className="h-3.5 w-3.5" />, status: "rider_arriving_pickup" },
+  rider_arriving_pickup: { label: "I've arrived at pickup", icon: <MapPin className="h-3.5 w-3.5" />, status: "rider_arrived_pickup" },
+  rider_arrived_pickup: { label: "Picked up", icon: <Package className="h-3.5 w-3.5" />, status: "picked_up" },
+  picked_up: { label: "Start trip", icon: <Play className="h-3.5 w-3.5" />, status: "in_progress" },
   in_progress: { label: "Complete trip", icon: <CheckCircle2 className="h-3.5 w-3.5" />, status: "completed" },
 };
 
@@ -23,7 +23,6 @@ export function DriverLiveTripCard({ jobId, job }: { jobId: string; job: any }) 
   const { pushRiderLocation, startTracking } = useTripTrackingStore();
   const geoInterval = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // Start tracking and GPS push on mount
   useEffect(() => {
     startTracking(jobId);
 
@@ -31,7 +30,13 @@ export function DriverLiveTripCard({ jobId, job }: { jobId: string; job: any }) 
       if (!navigator.geolocation) return;
       navigator.geolocation.getCurrentPosition(
         (pos) => {
-          pushRiderLocation(jobId, pos.coords.latitude, pos.coords.longitude, pos.coords.heading ?? undefined, pos.coords.speed ? pos.coords.speed * 3.6 : undefined);
+          pushRiderLocation(
+            jobId,
+            pos.coords.latitude,
+            pos.coords.longitude,
+            pos.coords.heading ?? undefined,
+            pos.coords.speed ? pos.coords.speed * 3.6 : undefined
+          );
         },
         () => {},
         { enableHighAccuracy: true, maximumAge: 5000 }
@@ -62,33 +67,30 @@ export function DriverLiveTripCard({ jobId, job }: { jobId: string; job: any }) 
           <Locate className="h-3.5 w-3.5 text-primary animate-pulse" />
           <span className="text-xs font-bold text-primary">Active trip</span>
         </div>
-        <span className="text-[10px] text-muted-foreground uppercase font-bold">{job?.status}</span>
+        <span className="text-[10px] text-muted-foreground uppercase font-bold">{job?.status?.replace(/_/g, ' ')}</span>
       </div>
 
       <div className="p-4 space-y-3">
         <div className="space-y-2">
           <div className="flex items-start gap-2.5">
             <MapPin className="h-4 w-4 text-emerald-500 mt-0.5 shrink-0" />
-            <span className="text-sm text-foreground">{job?.pickup_address || "Pickup"}</span>
+            <span className="text-sm text-foreground">{job?.pickup_label || job?.pickup_address || "Pickup"}</span>
           </div>
           <div className="flex items-start gap-2.5">
             <Navigation className="h-4 w-4 text-primary mt-0.5 shrink-0" />
-            <span className="text-sm text-foreground">{job?.dropoff_address || "Dropoff"}</span>
+            <span className="text-sm text-foreground">{job?.dropoff_label || job?.dropoff_address || "Dropoff"}</span>
           </div>
         </div>
 
-        {job?.fare_amount != null && (
+        {job?.current_price != null && (
           <div className="flex items-center justify-between bg-emerald-500/5 rounded-lg px-3 py-2">
             <span className="text-xs text-muted-foreground">Fare</span>
-            <span className="text-sm font-bold text-emerald-600">{job.fare_amount} {job.currency ?? "AED"}</span>
+            <span className="text-sm font-bold text-emerald-600">{job.current_price} {job.currency ?? "AED"}</span>
           </div>
         )}
 
         {nextAction && (
-          <Button
-            className="w-full h-11 rounded-xl text-sm font-bold gap-2"
-            onClick={handleAdvance}
-          >
+          <Button className="w-full h-11 rounded-xl text-sm font-bold gap-2" onClick={handleAdvance}>
             {nextAction.icon} {nextAction.label}
           </Button>
         )}

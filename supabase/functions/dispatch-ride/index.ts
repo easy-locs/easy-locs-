@@ -1,11 +1,23 @@
 /**
- * dispatch-ride — Actor-validated ride dispatch with offer-based flow.
- * Actions: create_ride, cancel_ride, accept_offer, reject_offer, advance_status, dispatch_offers
+ * dispatch-ride — Canonical mobility dispatch edge function.
+ * Single source of truth for: taxi, food_delivery, parcel_delivery.
+ * Tables: mobility_jobs, mobility_job_offers, rider_presence, rider_profiles,
+ *         mobility_dispatch_attempts, mobility_fare_quotes, trip_live_state, trip_location_points
+ *
+ * Actions:
+ *   create_job      — Customer creates a mobility job
+ *   cancel_job      — Customer cancels own job
+ *   accept_offer    — Rider accepts a dispatch offer
+ *   reject_offer    — Rider rejects a dispatch offer
+ *   advance_status  — Rider advances job status (arriving → arrived → picked_up → in_progress → completed)
+ *   dispatch_offers — System re-dispatches offers with expanded radius
+ *   merchant_update — Merchant updates food order status
  *
  * SECURITY:
- * - Self-acceptance prevention (customer cannot accept own ride)
- * - Offer ownership validation (rider can only respond to own offers)
- * - Job status gating (no action on completed/cancelled jobs)
+ *   - Self-acceptance prevention
+ *   - Offer ownership validation
+ *   - Strict state machine transitions
+ *   - Actor enforcement per action
  */
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
@@ -21,7 +33,7 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  const supabaseAdmin = createClient(
+  const db = createClient(
     Deno.env.get("SUPABASE_URL") ?? "",
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
     { auth: { persistSession: false } }
@@ -31,80 +43,127 @@ serve(async (req) => {
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) throw new Error("No authorization header");
     const token = authHeader.replace("Bearer ", "");
-    const { data: userData, error: userError } = await supabaseAdmin.auth.getUser(token);
+    const { data: userData, error: userError } = await db.auth.getUser(token);
     if (userError || !userData.user) throw new Error("Not authenticated");
     const userId = userData.user.id;
 
     const body = await req.json();
     const { action } = body;
 
-    // ─── CREATE RIDE (Customer only) ─────────────────────────
-    if (action === "create_ride") {
+    // ─── CREATE JOB (Customer only) ──────────────────────────
+    if (action === "create_job") {
       const {
-        pickup_address, pickup_lat, pickup_lng,
-        dropoff_address, dropoff_lat, dropoff_lng,
-        fare_amount, currency, notes, scheduled_at, org_id,
+        job_type, service_level,
+        pickup_label, pickup_address, pickup_lat, pickup_lng,
+        dropoff_label, dropoff_address, dropoff_lat, dropoff_lng,
+        merchant_id, order_id, parcel_reference,
+        seats_requested, item_type, package_size, notes,
+        quoted_price, currency,
       } = body;
+
+      if (!job_type || !service_level) throw new Error("job_type and service_level required");
+      if (!pickup_lat || !pickup_lng || !dropoff_lat || !dropoff_lng) {
+        throw new Error("Pickup and dropoff coordinates required");
+      }
 
       const confirmationCode = String(Math.floor(100000 + Math.random() * 900000));
 
-      const { data: job, error } = await supabaseAdmin.from("delivery_jobs").insert({
+      // Get or create customer profile
+      const { data: existingProfile } = await db
+        .from("customer_profiles").select("id").eq("user_id", userId).maybeSingle();
+      let customerProfileId = existingProfile?.id;
+      if (!customerProfileId) {
+        const { data: newProfile } = await db
+          .from("customer_profiles").insert({ user_id: userId }).select("id").single();
+        customerProfileId = newProfile?.id;
+      }
+
+      const totalFare = quoted_price || 0;
+
+      const { data: job, error } = await db.from("mobility_jobs").insert({
+        job_type,
+        service_level,
         customer_user_id: userId,
-        seller_id: userId,
-        org_id: org_id || userId,
+        customer_profile_id: customerProfileId,
+        merchant_id: merchant_id || null,
+        order_id: order_id || null,
+        parcel_reference: parcel_reference || null,
         status: "searching",
         dispatch_status: "dispatching",
+        pickup_label: pickup_label || null,
         pickup_address: pickup_address || "",
         pickup_lat, pickup_lng,
+        dropoff_label: dropoff_label || null,
         dropoff_address: dropoff_address || "",
         dropoff_lat, dropoff_lng,
-        fare_amount: fare_amount || null,
-        delivery_fee: fare_amount || 0,
+        seats_requested: seats_requested || null,
+        item_type: item_type || null,
+        package_size: package_size || null,
+        notes: notes || null,
+        quoted_price: totalFare,
+        current_price: totalFare,
         currency: currency || "AED",
         confirmation_code: confirmationCode,
-        scheduled_at: scheduled_at || null,
-        notes: notes || "",
         search_radius_km: 2.0,
         dispatch_attempt_count: 0,
       }).select().single();
 
-      if (error) throw new Error(`Create ride failed: ${error.message}`);
+      if (error) throw new Error(`Create job failed: ${error.message}`);
 
-      // Auto-dispatch: find nearby riders and create offers
-      await dispatchOffers(supabaseAdmin, job, 2.0);
+      // Save initial fare quote
+      if (totalFare > 0) {
+        await db.from("mobility_fare_quotes").insert({
+          job_id: job.id,
+          job_type,
+          service_level,
+          base_fare: totalFare * 0.6,
+          distance_fare: totalFare * 0.3,
+          time_fare: totalFare * 0.1,
+          total_fare: totalFare,
+          currency: currency || "AED",
+          reason: "initial_quote",
+        });
+      }
 
-      return json({ success: true, job, confirmation_code: confirmationCode });
+      // Auto-dispatch to nearby riders
+      const dispatchResult = await dispatchOffers(db, job, 2.0);
+
+      return json({ success: true, job, confirmation_code: confirmationCode, dispatch: dispatchResult });
     }
 
-    // ─── CANCEL RIDE (Customer only) ─────────────────────────
-    if (action === "cancel_ride") {
+    // ─── CANCEL JOB (Customer only) ──────────────────────────
+    if (action === "cancel_job") {
       const { job_id, reason } = body;
       if (!job_id) throw new Error("job_id required");
 
-      const { data: job } = await supabaseAdmin.from("delivery_jobs").select("*").eq("id", job_id).single();
+      const { data: job } = await db.from("mobility_jobs").select("*").eq("id", job_id).single();
       if (!job) throw new Error("Job not found");
-
-      // Only customer can cancel
-      if (job.customer_user_id !== userId && job.seller_id !== userId) {
-        throw new Error("Only the customer can cancel this ride");
-      }
-      if (["completed", "cancelled"].includes(job.status)) {
+      if (job.customer_user_id !== userId) throw new Error("Only the customer can cancel");
+      if (["completed", "cancelled", "failed_no_rider"].includes(job.status)) {
         throw new Error("Job already finalized");
       }
 
-      await supabaseAdmin.from("delivery_jobs").update({
+      const now = new Date().toISOString();
+      await db.from("mobility_jobs").update({
         status: "cancelled",
-        cancelled_at: new Date().toISOString(),
+        cancelled_at: now,
         cancelled_by: userId,
-        cancellation_reason: reason || null,
-        updated_at: new Date().toISOString(),
+        cancel_reason: reason || null,
+        updated_at: now,
       }).eq("id", job_id);
 
       // Expire all pending offers
-      await supabaseAdmin.from("delivery_job_offers")
-        .update({ status: "expired", responded_at: new Date().toISOString() })
+      await db.from("mobility_job_offers")
+        .update({ status: "cancelled", responded_at: now, updated_at: now })
         .eq("job_id", job_id)
-        .eq("status", "pending");
+        .in("status", ["pending"]);
+
+      // Free assigned rider if any
+      if (job.rider_user_id) {
+        await db.from("rider_presence").update({
+          is_available: true, updated_at: now,
+        }).eq("user_id", job.rider_user_id);
+      }
 
       return json({ success: true, job_id, status: "cancelled" });
     }
@@ -114,59 +173,67 @@ serve(async (req) => {
       const { offer_id } = body;
       if (!offer_id) throw new Error("offer_id required");
 
-      const { data: offer } = await supabaseAdmin
-        .from("delivery_job_offers").select("*").eq("id", offer_id).single();
+      const { data: offer } = await db
+        .from("mobility_job_offers").select("*").eq("id", offer_id).single();
       if (!offer) throw new Error("Offer not found");
+      if (offer.rider_user_id !== userId) throw new Error("Offer does not belong to this rider");
+      if (offer.status !== "pending") throw new Error("Offer is no longer available");
 
-      // Ownership check
-      if (offer.rider_user_id !== userId) {
-        throw new Error("Offer does not belong to this rider");
-      }
-      if (offer.status !== "pending") {
-        throw new Error("Offer is no longer available");
-      }
-
-      // Fetch job and validate
-      const { data: job } = await supabaseAdmin
-        .from("delivery_jobs").select("*").eq("id", offer.job_id).single();
+      const { data: job } = await db
+        .from("mobility_jobs").select("*").eq("id", offer.job_id).single();
       if (!job) throw new Error("Job not found");
 
       // CRITICAL: Self-acceptance prevention
       if (job.customer_user_id === userId) {
         throw new Error("You cannot accept your own ride");
       }
-      if (!["searching", "pending"].includes(job.status)) {
-        throw new Error("Job is no longer available");
+      if (!["searching", "offered"].includes(job.status)) {
+        throw new Error("Job is no longer available for acceptance");
+      }
+      if (job.rider_user_id) {
+        throw new Error("Job already has an assigned rider");
       }
 
-      // Accept: assign rider to job
+      // Get rider profile
+      const { data: riderProfile } = await db
+        .from("rider_profiles").select("id").eq("user_id", userId).maybeSingle();
+
       const now = new Date().toISOString();
-      await supabaseAdmin.from("delivery_jobs").update({
-        driver_id: userId,
+
+      // Assign rider to job
+      await db.from("mobility_jobs").update({
+        rider_user_id: userId,
+        rider_profile_id: riderProfile?.id || null,
         status: "accepted",
         accepted_at: now,
         dispatch_status: "assigned",
         updated_at: now,
       }).eq("id", offer.job_id);
 
-      // Mark this offer accepted
-      await supabaseAdmin.from("delivery_job_offers").update({
-        status: "accepted",
-        responded_at: now,
+      // Mark offer accepted
+      await db.from("mobility_job_offers").update({
+        status: "accepted", responded_at: now, updated_at: now,
       }).eq("id", offer_id);
 
-      // Expire all other pending offers for this job
-      await supabaseAdmin.from("delivery_job_offers")
-        .update({ status: "expired", responded_at: now })
+      // Expire other pending offers
+      await db.from("mobility_job_offers")
+        .update({ status: "expired", responded_at: now, updated_at: now })
         .eq("job_id", offer.job_id)
         .eq("status", "pending")
         .neq("id", offer_id);
 
-      // Update rider presence
-      await supabaseAdmin.from("rider_presence").update({
-        is_available: false,
+      // Mark rider as unavailable
+      await db.from("rider_presence").update({
+        is_available: false, updated_at: now,
+      }).eq("user_id", userId);
+
+      // Initialize trip_live_state
+      await db.from("trip_live_state").upsert({
+        job_id: offer.job_id,
+        rider_user_id: userId,
+        rider_profile_id: riderProfile?.id || null,
         updated_at: now,
-      }).eq("rider_user_id", userId);
+      });
 
       return json({ success: true, job_id: offer.job_id, offer_id });
     }
@@ -176,82 +243,114 @@ serve(async (req) => {
       const { offer_id } = body;
       if (!offer_id) throw new Error("offer_id required");
 
-      const { data: offer } = await supabaseAdmin
-        .from("delivery_job_offers").select("*").eq("id", offer_id).single();
+      const { data: offer } = await db
+        .from("mobility_job_offers").select("*").eq("id", offer_id).single();
       if (!offer) throw new Error("Offer not found");
+      if (offer.rider_user_id !== userId) throw new Error("Offer does not belong to this rider");
 
-      if (offer.rider_user_id !== userId) {
-        throw new Error("Offer does not belong to this rider");
-      }
-
-      await supabaseAdmin.from("delivery_job_offers").update({
+      await db.from("mobility_job_offers").update({
         status: "rejected",
         responded_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
       }).eq("id", offer_id);
 
       return json({ success: true, offer_id });
     }
 
-    // ─── ADVANCE STATUS (Rider only, for assigned job) ───────
+    // ─── ADVANCE STATUS (Rider only) ─────────────────────────
     if (action === "advance_status") {
       const { job_id, status } = body;
       if (!job_id || !status) throw new Error("job_id and status required");
 
       const validTransitions: Record<string, string[]> = {
-        accepted: ["rider_arriving"],
-        rider_arriving: ["rider_arrived"],
-        rider_arrived: ["in_progress"],
-        in_progress: ["completed"],
+        accepted: ["rider_arriving_pickup"],
+        rider_arriving_pickup: ["rider_arrived_pickup"],
+        rider_arrived_pickup: ["picked_up"],
+        picked_up: ["in_progress"],
+        in_progress: ["rider_arriving_dropoff", "completed"],
+        rider_arriving_dropoff: ["completed"],
       };
 
-      const { data: job } = await supabaseAdmin
-        .from("delivery_jobs").select("*").eq("id", job_id).single();
+      const { data: job } = await db
+        .from("mobility_jobs").select("*").eq("id", job_id).single();
       if (!job) throw new Error("Job not found");
-
-      // Only assigned rider can advance
-      if (job.driver_id !== userId) {
-        throw new Error("You are not the assigned rider for this job");
-      }
+      if (job.rider_user_id !== userId) throw new Error("You are not the assigned rider");
 
       const allowed = validTransitions[job.status] ?? [];
       if (!allowed.includes(status)) {
         throw new Error(`Cannot transition from ${job.status} to ${status}`);
       }
 
-      const updates: Record<string, unknown> = {
-        status,
-        updated_at: new Date().toISOString(),
-      };
+      const now = new Date().toISOString();
+      const updates: Record<string, unknown> = { status, updated_at: now };
 
-      if (status === "in_progress") updates.picked_up_at = new Date().toISOString();
+      if (status === "rider_arrived_pickup") updates.arrived_pickup_at = now;
+      if (status === "picked_up") updates.picked_up_at = now;
+      if (status === "in_progress") updates.started_at = now;
       if (status === "completed") {
-        updates.delivered_at = new Date().toISOString();
+        updates.completed_at = now;
         updates.dispatch_status = "completed";
+        updates.payment_status = "captured";
       }
 
-      await supabaseAdmin.from("delivery_jobs").update(updates).eq("id", job_id);
+      await db.from("mobility_jobs").update(updates).eq("id", job_id);
 
       // Free rider on completion
       if (status === "completed") {
-        await supabaseAdmin.from("rider_presence").update({
-          is_available: true,
-          updated_at: new Date().toISOString(),
-        }).eq("rider_user_id", userId);
+        await db.from("rider_presence").update({
+          is_available: true, updated_at: now,
+        }).eq("user_id", userId);
+
+        // Clean up live state
+        await db.from("trip_live_state").delete().eq("job_id", job_id);
       }
 
       return json({ success: true, job_id, status });
     }
 
-    // ─── DISPATCH OFFERS (System/Admin) ──────────────────────
-    if (action === "dispatch_offers") {
-      const { job_id, radius_km } = body;
-      if (!job_id) throw new Error("job_id required");
+    // ─── MERCHANT UPDATE (Merchant only) ─────────────────────
+    if (action === "merchant_update") {
+      const { job_id, merchant_status } = body;
+      if (!job_id || !merchant_status) throw new Error("job_id and merchant_status required");
 
-      const { data: job } = await supabaseAdmin
-        .from("delivery_jobs").select("*").eq("id", job_id).single();
+      const validMerchantStatuses = ["accepted", "preparing", "ready", "handed_to_rider"];
+      if (!validMerchantStatuses.includes(merchant_status)) {
+        throw new Error(`Invalid merchant_status: ${merchant_status}`);
+      }
+
+      const { data: job } = await db
+        .from("mobility_jobs").select("*").eq("id", job_id).single();
       if (!job) throw new Error("Job not found");
 
-      const result = await dispatchOffers(supabaseAdmin, job, radius_km || 2.0);
+      // Verify merchant owns this job
+      const { data: merchant } = await db
+        .from("merchant_profiles").select("id").eq("user_id", userId).maybeSingle();
+      if (!merchant || job.merchant_id !== merchant.id) {
+        throw new Error("Not authorized as merchant for this job");
+      }
+
+      const now = new Date().toISOString();
+      const updates: Record<string, unknown> = { merchant_status, updated_at: now };
+
+      if (merchant_status === "ready") {
+        updates.ready_at = now;
+      }
+
+      await db.from("mobility_jobs").update(updates).eq("id", job_id);
+
+      return json({ success: true, job_id, merchant_status });
+    }
+
+    // ─── DISPATCH OFFERS (System/Cron) ───────────────────────
+    if (action === "dispatch_offers") {
+      const { job_id, radius_km, surge_multiplier } = body;
+      if (!job_id) throw new Error("job_id required");
+
+      const { data: job } = await db
+        .from("mobility_jobs").select("*").eq("id", job_id).single();
+      if (!job) throw new Error("Job not found");
+
+      const result = await dispatchOffers(db, job, radius_km || 2.0, surge_multiplier);
       return json({ success: true, ...result });
     }
 
@@ -262,65 +361,80 @@ serve(async (req) => {
   }
 });
 
-// ─── Dispatch engine ─────────────────────────────────────────
-async function dispatchOffers(supabaseAdmin: any, job: any, radiusKm: number) {
+// ─── Dispatch Engine ─────────────────────────────────────────
+async function dispatchOffers(db: any, job: any, radiusKm: number, surgeMultiplier?: number) {
   if (!job.pickup_lat || !job.pickup_lng) return { offered: 0 };
 
-  // Find available riders within radius
-  const { data: riders } = await supabaseAdmin
+  const surge = surgeMultiplier ?? job.surge_multiplier ?? 1.0;
+
+  // Find available riders with matching vehicle/service mode
+  const { data: riders } = await db
     .from("rider_presence")
-    .select("*")
+    .select("*, rider_profile:rider_profiles(*)")
     .eq("is_online", true)
     .eq("is_available", true)
-    .not("current_lat", "is", null)
-    .not("current_lng", "is", null);
+    .not("lat", "is", null)
+    .not("lng", "is", null);
 
   if (!riders?.length) return { offered: 0, message: "No riders available" };
 
   const eligible = riders
     .map((r: any) => ({
       ...r,
-      distance_km: haversine(r.current_lat, r.current_lng, job.pickup_lat, job.pickup_lng),
+      distance_km: haversine(r.lat, r.lng, job.pickup_lat, job.pickup_lng),
     }))
     .filter((r: any) => r.distance_km <= radiusKm)
-    // CRITICAL: exclude the customer themselves
-    .filter((r: any) => r.rider_user_id !== job.customer_user_id)
+    // Exclude customer from being offered their own job
+    .filter((r: any) => r.user_id !== job.customer_user_id)
     .sort((a: any, b: any) => a.distance_km - b.distance_km);
 
   if (!eligible.length) return { offered: 0, message: "No riders in range" };
 
-  // Create offers
+  const currentFare = (job.current_price || job.quoted_price || 0) * surge;
+
+  // Create offers for top 10 closest riders
   const offers = eligible.slice(0, 10).map((r: any) => ({
     job_id: job.id,
-    rider_user_id: r.rider_user_id,
+    rider_user_id: r.user_id,
+    rider_profile_id: r.rider_profile_id,
     status: "pending",
+    radius_km: radiusKm,
+    fare_at_offer: currentFare,
+    surge_multiplier: surge,
     distance_km: Math.round(r.distance_km * 100) / 100,
     eta_minutes: Math.round((r.distance_km / 30) * 60),
     offered_at: new Date().toISOString(),
+    expires_at: new Date(Date.now() + 30000).toISOString(),
   }));
 
-  const { error } = await supabaseAdmin
-    .from("delivery_job_offers")
-    .upsert(offers, { onConflict: "job_id,rider_user_id" });
+  await db.from("mobility_job_offers").insert(offers);
 
   // Log dispatch attempt
-  await supabaseAdmin.from("delivery_dispatch_attempts").insert({
+  const attemptNumber = (job.dispatch_attempt_count || 0) + 1;
+  await db.from("mobility_dispatch_attempts").insert({
     job_id: job.id,
+    attempt_number: attemptNumber,
     radius_km: radiusKm,
-    offered_count: offers.length,
-    accepted_count: 0,
-    attempted_at: new Date().toISOString(),
+    riders_targeted: riders.length,
+    riders_notified: offers.length,
+    fare_before: job.current_price,
+    fare_after: currentFare,
+    surge_multiplier: surge,
+    strategy: radiusKm <= 2 ? "close" : radiusKm <= 5 ? "medium" : "wide",
   });
 
-  // Update dispatch state on job
-  await supabaseAdmin.from("delivery_jobs").update({
-    dispatch_attempt_count: (job.dispatch_attempt_count || 0) + 1,
+  // Update job dispatch state
+  await db.from("mobility_jobs").update({
+    dispatch_attempt_count: attemptNumber,
     last_dispatch_at: new Date().toISOString(),
     search_radius_km: radiusKm,
+    surge_multiplier: surge,
+    current_price: currentFare,
+    status: "offered",
     updated_at: new Date().toISOString(),
   }).eq("id", job.id);
 
-  return { offered: offers.length, radius_km: radiusKm };
+  return { offered: offers.length, radius_km: radiusKm, surge_multiplier: surge };
 }
 
 function haversine(lat1: number, lng1: number, lat2: number, lng2: number): number {

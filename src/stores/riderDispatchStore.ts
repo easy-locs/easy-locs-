@@ -1,49 +1,62 @@
 /**
  * riderDispatchStore — Rider-only dispatch state.
- * Riders can: go online/offline, receive offers, accept/reject offers.
- * Riders CANNOT: create customer rides.
+ * Reads/writes: mobility_jobs, mobility_job_offers, rider_presence, rider_profiles
+ * Actor: RIDER only.
+ * Riders can: go online/offline, receive offers, accept/reject, advance trip status.
+ * Riders CANNOT: create customer jobs.
  */
 import { create } from "zustand";
 import { supabase } from "@/integrations/supabase/client";
 
-export interface RiderOffer {
+export interface MobilityOffer {
   id: string;
   job_id: string;
   rider_user_id: string;
+  rider_profile_id: string | null;
   status: string;
+  radius_km: number;
+  fare_at_offer: number | null;
+  surge_multiplier: number;
   distance_km: number | null;
   eta_minutes: number | null;
-  score: number | null;
   offered_at: string | null;
-  responded_at: string | null;
+  expires_at: string | null;
   // Joined job data
   job?: {
     id: string;
+    job_type: string;
+    service_level: string;
     customer_user_id: string;
-    pickup_address: string;
+    pickup_label: string | null;
+    pickup_address: string | null;
     pickup_lat: number | null;
     pickup_lng: number | null;
-    dropoff_address: string;
+    dropoff_label: string | null;
+    dropoff_address: string | null;
     dropoff_lat: number | null;
     dropoff_lng: number | null;
-    fare_amount: number | null;
-    delivery_fee: number | null;
+    current_price: number | null;
+    quoted_price: number | null;
+    currency: string;
     status: string;
     surge_multiplier: number | null;
+    merchant_status: string | null;
   };
 }
 
 export interface RiderPresenceState {
+  profileId: string | null;
   isOnline: boolean;
   isAvailable: boolean;
-  currentLat: number | null;
-  currentLng: number | null;
+  lat: number | null;
+  lng: number | null;
   vehicleType: string;
+  serviceModes: string[];
 }
 
 interface RiderDispatchState {
   presence: RiderPresenceState;
-  offers: RiderOffer[];
+  offers: MobilityOffer[];
   activeJobId: string | null;
   loading: boolean;
 
@@ -57,7 +70,7 @@ interface RiderDispatchState {
 }
 
 export const useRiderDispatchStore = create<RiderDispatchState>((set, get) => ({
-  presence: { isOnline: false, isAvailable: true, currentLat: null, currentLng: null, vehicleType: "scooter" },
+  presence: { profileId: null, isOnline: false, isAvailable: true, lat: null, lng: null, vehicleType: "car", serviceModes: [] },
   offers: [],
   activeJobId: null,
   loading: false,
@@ -66,36 +79,59 @@ export const useRiderDispatchStore = create<RiderDispatchState>((set, get) => ({
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
-    const { data } = await (supabase as any)
-      .from("rider_presence")
-      .select("*")
-      .eq("rider_user_id", user.id)
+    // Get rider profile first
+    const { data: profile } = await supabase
+      .from("rider_profiles")
+      .select("id, vehicle_type, rider_mode, is_online, is_available")
+      .eq("user_id", user.id)
       .maybeSingle();
 
-    if (data) {
-      set({
-        presence: {
-          isOnline: data.is_online,
-          isAvailable: data.is_available,
-          currentLat: data.current_lat,
-          currentLng: data.current_lng,
-          vehicleType: data.vehicle_type ?? "scooter",
-        },
-      });
-    }
+    if (!profile) return;
+
+    // Get presence
+    const { data: pres } = await supabase
+      .from("rider_presence")
+      .select("*")
+      .eq("rider_profile_id", profile.id)
+      .maybeSingle();
+
+    set({
+      presence: {
+        profileId: profile.id,
+        isOnline: pres?.is_online ?? profile.is_online ?? false,
+        isAvailable: pres?.is_available ?? profile.is_available ?? true,
+        lat: pres?.lat ?? null,
+        lng: pres?.lng ?? null,
+        vehicleType: profile.vehicle_type ?? "car",
+        serviceModes: pres?.service_modes ?? [],
+      },
+    });
   },
 
   toggleOnline: async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
-    const newOnline = !get().presence.isOnline;
+    const { presence } = get();
+    if (!presence.profileId) return;
 
-    await (supabase as any).from("rider_presence").upsert({
-      rider_user_id: user.id,
+    const newOnline = !presence.isOnline;
+    const now = new Date().toISOString();
+
+    await supabase.from("rider_presence").upsert({
+      rider_profile_id: presence.profileId,
+      user_id: user.id,
       is_online: newOnline,
       is_available: newOnline,
-      updated_at: new Date().toISOString(),
+      vehicle_type: presence.vehicleType,
+      service_modes: presence.serviceModes.length ? presence.serviceModes : ["taxi", "delivery"],
+      last_seen_at: now,
+      updated_at: now,
     });
+
+    // Sync to rider_profiles
+    await supabase.from("rider_profiles").update({
+      is_online: newOnline, is_available: newOnline, updated_at: now,
+    }).eq("id", presence.profileId);
 
     set(s => ({ presence: { ...s.presence, isOnline: newOnline, isAvailable: newOnline } }));
   },
@@ -103,18 +139,23 @@ export const useRiderDispatchStore = create<RiderDispatchState>((set, get) => ({
   updateLocation: async (lat, lng, heading, speed) => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
+    const { presence } = get();
+    if (!presence.profileId) return;
 
-    await (supabase as any).from("rider_presence").upsert({
-      rider_user_id: user.id,
-      current_lat: lat,
-      current_lng: lng,
+    const now = new Date().toISOString();
+    await supabase.from("rider_presence").upsert({
+      rider_profile_id: presence.profileId,
+      user_id: user.id,
+      lat, lng,
       heading: heading ?? null,
-      speed_kmh: speed ?? null,
-      last_seen_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
+      speed: speed ?? null,
+      last_seen_at: now,
+      updated_at: now,
+      vehicle_type: presence.vehicleType,
+      service_modes: presence.serviceModes.length ? presence.serviceModes : ["taxi", "delivery"],
     });
 
-    set(s => ({ presence: { ...s.presence, currentLat: lat, currentLng: lng } }));
+    set(s => ({ presence: { ...s.presence, lat, lng } }));
   },
 
   hydrateOffers: async () => {
@@ -122,21 +163,21 @@ export const useRiderDispatchStore = create<RiderDispatchState>((set, get) => ({
     if (!user) return;
     set({ loading: true });
 
-    const { data } = await (supabase as any)
-      .from("delivery_job_offers")
-      .select("*, job:delivery_jobs(*)")
+    const { data } = await supabase
+      .from("mobility_job_offers")
+      .select("*, job:mobility_jobs(*)")
       .eq("rider_user_id", user.id)
       .in("status", ["pending"])
       .order("offered_at", { ascending: false });
 
-    set({ offers: (data ?? []) as RiderOffer[], loading: false });
+    set({ offers: (data ?? []) as unknown as MobilityOffer[], loading: false });
 
-    // Also check if rider has an active job
-    const { data: activeJobs } = await (supabase as any)
-      .from("delivery_jobs")
+    // Check for active job
+    const { data: activeJobs } = await supabase
+      .from("mobility_jobs")
       .select("id")
-      .eq("driver_id", user.id)
-      .in("status", ["accepted", "in_progress", "assigned"])
+      .eq("rider_user_id", user.id)
+      .in("status", ["accepted", "rider_arriving_pickup", "rider_arrived_pickup", "picked_up", "in_progress", "rider_arriving_dropoff"])
       .limit(1);
 
     if (activeJobs?.[0]) {
