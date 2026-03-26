@@ -59,7 +59,7 @@ async function flushBatch() {
       lat: s.lat ?? null,
       lng: s.lng ?? null,
       intensity: s.intensity ?? 1,
-      metadata_json: s.metadata_json ?? {},
+      metadata_json: (s.metadata_json ?? {}) as unknown as import("@/integrations/supabase/types").Json,
     })),
   );
 
