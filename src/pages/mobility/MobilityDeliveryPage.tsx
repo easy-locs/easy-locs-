@@ -183,7 +183,7 @@ export default function MobilityDeliveryPage() {
         </div>
       </div>
 
-      <div className="px-4 py-4 space-y-5">
+      <div className="px-4 py-4 space-y-5 app-mobile-content">
         {/* ══ 1. HERO LIVE BLOCK ══ */}
         <motion.div
           initial={{ opacity: 0, y: 8 }}
