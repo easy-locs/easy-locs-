@@ -210,6 +210,8 @@ export default function SmartHome() {
   const navigate = useNavigate();
   const currentLocation = useLocationStore((s) => s.currentLocation);
   const isFallback = useLocationStore((s) => s.isFallback);
+  const [addressSheetOpen, setAddressSheetOpen] = useState(false);
+  const handleLocationTap = useCallback(() => setAddressSheetOpen(true), []);
 
   // Canonical pipeline-backed sections
   const { data: sections } = useHomeSections();
