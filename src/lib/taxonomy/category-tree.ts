@@ -267,13 +267,39 @@ export const CATEGORY_TREE: PrimaryCategory[] = [
       supports_tracking: true,
     },
     subcategories: [
-      { value: "fashion", label: "Fashion", emoji: "👗", cluster: "retail" },
-      { value: "electronics", label: "Electronics", emoji: "📱", cluster: "retail" },
+      // Fashion & Apparel
+      { value: "fashion", label: "Fashion", emoji: "👗", cluster: "fashion", tags: ["clothing", "ready-to-wear", "apparel"] },
+      { value: "fashion_men", label: "Men's Fashion", emoji: "👔", cluster: "fashion" },
+      { value: "fashion_women", label: "Women's Fashion", emoji: "👠", cluster: "fashion" },
+      { value: "fashion_kids", label: "Kids' Fashion", emoji: "👶", cluster: "fashion" },
+      { value: "sportswear", label: "Sportswear", emoji: "🏃", cluster: "fashion" },
+      { value: "shoes", label: "Shoes", emoji: "👟", cluster: "fashion" },
+      { value: "bags", label: "Bags & Leather", emoji: "👜", cluster: "fashion" },
+      // Beauty & Fragrance
+      { value: "perfume", label: "Perfume", emoji: "🧴", cluster: "beauty_retail" },
+      { value: "cosmetics", label: "Cosmetics & Skincare", emoji: "💄", cluster: "beauty_retail" },
+      { value: "haircare", label: "Haircare", emoji: "💇", cluster: "beauty_retail" },
+      // Jewelry & Watches
+      { value: "jewelry", label: "Jewelry & Watches", emoji: "💍", cluster: "luxury" },
+      { value: "luxury_brands", label: "Luxury Brands", emoji: "✨", cluster: "luxury" },
+      // Electronics & Tech
+      { value: "electronics", label: "Electronics", emoji: "📱", cluster: "electronics" },
+      { value: "phone_accessories", label: "Phone Accessories", emoji: "📲", cluster: "electronics" },
+      // Home & Living
+      { value: "home_decor", label: "Home Decor", emoji: "🛋️", cluster: "home" },
+      { value: "kitchen_accessories", label: "Kitchen Accessories", emoji: "🍳", cluster: "home" },
+      { value: "furniture", label: "Furniture", emoji: "🪑", cluster: "home" },
+      // Specialty
+      { value: "accessories", label: "Accessories", emoji: "🕶️", cluster: "specialty" },
+      { value: "optics", label: "Optics & Eyewear", emoji: "👓", cluster: "specialty" },
       { value: "gifts", label: "Gifts", emoji: "🎁", cluster: "specialty" },
+      { value: "toys", label: "Toys & Kids", emoji: "🧸", cluster: "specialty" },
+      { value: "sports_retail", label: "Sports Equipment", emoji: "⚽", cluster: "specialty" },
+      { value: "luggage", label: "Luggage & Travel", emoji: "🧳", cluster: "specialty" },
+      { value: "books_stationery", label: "Books & Stationery", emoji: "📚", cluster: "specialty" },
       { value: "pets", label: "Pets", emoji: "🐾", cluster: "specialty" },
       { value: "flowers", label: "Flowers", emoji: "💐", cluster: "specialty" },
-      { value: "home_decor", label: "Home Decor", emoji: "🛋️", cluster: "retail" },
-      { value: "accessories", label: "Accessories", emoji: "🕶️", cluster: "retail" },
+      { value: "department_store", label: "Department Store", emoji: "🏬", cluster: "mall" },
     ],
   },
 
