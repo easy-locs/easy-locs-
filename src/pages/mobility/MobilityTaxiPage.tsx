@@ -96,15 +96,15 @@ export default function MobilityTaxiPage() {
             )}
 
             <Tabs defaultValue={activeJobs.length > 0 ? "active" : "book"} className="w-full">
-              <TabsList className="w-full grid grid-cols-3 bg-muted/50 rounded-xl h-11">
-                <TabsTrigger value="book" className="rounded-lg text-xs font-semibold gap-1.5">
-                  <Car className="h-3.5 w-3.5" /> Book
+              <TabsList className="w-full grid grid-cols-3 bg-muted/50 rounded-xl h-10">
+                <TabsTrigger value="book" className="rounded-lg text-[11px] font-semibold gap-1 px-1">
+                  <Car className="h-3.5 w-3.5 shrink-0" /> <span className="truncate">Book</span>
                 </TabsTrigger>
-                <TabsTrigger value="active" className="rounded-lg text-xs font-semibold gap-1.5">
-                  <Clock className="h-3.5 w-3.5" /> Active
+                <TabsTrigger value="active" className="rounded-lg text-[11px] font-semibold gap-1 px-1">
+                  <Clock className="h-3.5 w-3.5 shrink-0" /> <span className="truncate">Active</span>
                 </TabsTrigger>
-                <TabsTrigger value="history" className="rounded-lg text-xs font-semibold gap-1.5">
-                  <CheckCircle2 className="h-3.5 w-3.5" /> History
+                <TabsTrigger value="history" className="rounded-lg text-[11px] font-semibold gap-1 px-1">
+                  <CheckCircle2 className="h-3.5 w-3.5 shrink-0" /> <span className="truncate">History</span>
                 </TabsTrigger>
               </TabsList>
 
