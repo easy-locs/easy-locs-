@@ -126,7 +126,7 @@ export default function VerticalHubPage({ vertical }: { vertical: TaxonomyVertic
   }, [heroMediaItems.length]);
 
   return (
-    <div className="min-h-screen app-mobile-content" style={{ background: "hsl(var(--background))" }}>
+    <div className="app-mobile-page app-mobile-content" style={{ background: "hsl(var(--background))" }}>
       <SEOHead
         title={`${ui.displayTitle} — Easy-Locs`}
         description={`Discover ${ui.displayTitle.toLowerCase()} near you on Easy-Locs.`}
