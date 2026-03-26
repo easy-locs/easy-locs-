@@ -42,7 +42,7 @@ export function toStorefrontDraftPayload(
     hotel_inventory_json: record.hotelInventory,
     service_items_json: record.serviceItems,
 
-    source_proofs_json: record.sourceProofs as Record<string, unknown>[],
+    source_proofs_json: record.sourceProofs as unknown as Record<string, unknown>[],
     merge_confidence: record.mergeConfidence,
     missing_fields: record.missingFields,
     needs_review: record.needsReview,
