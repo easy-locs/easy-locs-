@@ -32,7 +32,7 @@ const DEEP_LINK_MAP: Record<string, string> = {
   order_paid: "/my-orders",
 
   // Ride / Delivery
-  ride_update: "/ride",
+  ride_update: "/mobility/taxi",
   delivery_update: "/my-orders",
   driver_mission: "/dispatch",
 

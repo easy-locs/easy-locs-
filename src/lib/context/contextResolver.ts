@@ -79,7 +79,7 @@ export function resolveMerchantContext(merchantId: string, section?: string): Re
 export function resolveRideContext(mode: "ride" | "package", meta?: Record<string, string>): ResolvedContext {
   return {
     type: "ride",
-    targetRoute: mode === "package" ? "/ride/send-package" : "/ride",
+    targetRoute: mode === "package" ? "/mobility/delivery" : "/mobility/taxi",
     params: { mode, ...(meta || {}) },
   };
 }
