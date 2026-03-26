@@ -80,14 +80,15 @@ export default function TrackingPage() {
         {order && <OrderStatusChip status={normalizedStatus} variant="customer" />}
       </header>
 
-      {/* Map placeholder */}
-      <div className="mx-4 rounded-2xl overflow-hidden" style={{ height: 160, background: "hsl(var(--muted))" }}>
-        <div className="w-full h-full flex items-center justify-center">
-          <div className="text-center">
-            <MapPin className="w-8 h-8 mx-auto text-muted-foreground/40" />
-            <p className="text-xs text-muted-foreground mt-1">Live tracking</p>
+      {/* Live tracking map */}
+      <div className="mx-4 rounded-2xl overflow-hidden" style={{ height: 200 }}>
+        <Suspense fallback={
+          <div className="w-full h-full flex items-center justify-center bg-muted">
+            <MapPin className="w-8 h-8 text-muted-foreground/40" />
           </div>
-        </div>
+        }>
+          <LiveTrackingMap orderId={orderId ?? ""} />
+        </Suspense>
       </div>
 
       {/* ETA banner */}
