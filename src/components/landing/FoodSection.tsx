@@ -42,7 +42,7 @@ export default function FoodSection() {
             </p>
           </div>
           <Link
-            to="/food"
+            to="/browse/food"
             className="hidden sm:flex items-center gap-1 text-sm font-semibold text-accent hover:gap-2 transition-all"
           >
             {t("landing.food.explore") || "Explore"} <ArrowRight className="h-4 w-4" />

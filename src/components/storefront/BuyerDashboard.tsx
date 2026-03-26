@@ -167,7 +167,7 @@ export default function BuyerDashboard() {
 
       {/* Quick actions */}
       <div className="grid grid-cols-2 gap-2">
-        <Link to="/discover">
+        <Link to="/radar">
           <Button variant="outline" className="w-full h-10 text-xs gap-1.5">
             <Package className="h-3.5 w-3.5" /> Discover
           </Button>
