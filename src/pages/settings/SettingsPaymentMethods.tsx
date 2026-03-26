@@ -67,7 +67,7 @@ export default function SettingsPaymentMethods() {
   };
 
   return (
-    <div className="min-h-[100dvh] bg-background pb-24">
+    <div className="app-mobile-page app-mobile-content bg-background">
       <header className="flex items-center gap-3 px-4 pt-4 pb-3">
         <button onClick={() => navigate(-1)} className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-95 transition-transform bg-muted">
           <ArrowLeft className="w-4.5 h-4.5" />
