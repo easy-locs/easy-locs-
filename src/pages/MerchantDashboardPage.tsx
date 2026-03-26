@@ -298,6 +298,15 @@ export default function MerchantDashboardPage() {
         {/* ═══ Merchant Operations Hub ═══ */}
         <MerchantOpsHub profileId={profileId} />
 
+        {/* Live Fulfillment + Financial Widgets */}
+        {profileId && (
+          <div className="space-y-3 mb-4">
+            <MerchantLiveFulfillmentPanel merchantProfileId={profileId} />
+            <MerchantFinancialWidgets merchantProfileId={profileId} />
+            <MerchantQrCockpit merchantProfileId={profileId} storefrontPageId={null} />
+          </div>
+        )}
+
         <Tabs defaultValue="details" className="space-y-4">
           <TabsList className="grid grid-cols-4 w-full">
             <TabsTrigger value="details" className="text-xs"><Store className="h-3.5 w-3.5 mr-1" /> Details</TabsTrigger>
