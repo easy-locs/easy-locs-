@@ -1,6 +1,7 @@
 /**
  * useRadarResults — Returns nearby entities for radar/discovery views.
  * Uses CANONICAL discovery pipeline — serviceability-driven, no manual radius.
+ * Reacts to both GPS location AND selectedPlace from radarPlaceStore.
  */
 import { useState, useEffect } from "react";
 import { useLocationStore } from "@/stores/locationStore";
@@ -23,13 +24,20 @@ export function useRadarResults(opts?: { type?: string; surface?: "radar" | "map
   const [entities, setEntities] = useState<(GeoEntity & { isSponsored?: boolean; reviewsCount?: number })[]>([]);
   const [loading, setLoading] = useState(true);
   const location = useLocationStore((s) => s.currentLocation);
+  const selectedPlace = useRadarPlaceStore((s) => s.selectedPlace);
+
+  // Use selected place coordinates if available, otherwise GPS
+  const effectiveLat = selectedPlace?.lat ?? location?.lat;
+  const effectiveLng = selectedPlace?.lng ?? location?.lng;
 
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
     fetchCanonicalDiscovery({
       surface: opts?.surface ?? "discover",
-      userLocation: location ? { lat: location.lat, lng: location.lng } : undefined,
+      userLocation: effectiveLat != null && effectiveLng != null
+        ? { lat: effectiveLat, lng: effectiveLng }
+        : undefined,
     })
       .then((points) => {
         if (cancelled) return;
