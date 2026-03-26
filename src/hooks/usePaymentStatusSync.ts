@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
-import { useUnifiedNotificationStore } from "@/stores/unifiedNotificationStore";
+import { useNotificationV2Store } from "@/stores/notificationV2Store";
 import { useActivityLogStore } from "@/stores/activityLogStore";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -17,7 +17,7 @@ export function usePaymentStatusSync() {
 
     void (async () => {
       if (user?.id) {
-        await useUnifiedNotificationStore.getState().hydrate(user.id);
+        await useNotificationV2Store.getState().hydrate(user.id);
       }
 
       if (status === "success" && bookingId) {
