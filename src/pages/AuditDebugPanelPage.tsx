@@ -139,7 +139,7 @@ export default function AuditDebugPanelPage() {
   const sl = report ? statusLabel(report.status) : null;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="app-mobile-page bg-background">
       {/* ── Hero Header ── */}
       <div
         className="relative overflow-hidden px-5 pt-5 pb-8"
