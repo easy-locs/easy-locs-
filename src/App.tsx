@@ -411,6 +411,7 @@ const AdminMapEnginePage = safeLazy(() => import("./pages/admin/AdminMapEnginePa
 const AdminNotificationEnginePage = safeLazy(() => import("./pages/admin/AdminNotificationEnginePage"), "AdminNotificationEnginePage");
 const OwnerCockpitPage = safeLazy(() => import("./pages/admin/OwnerCockpitPage"), "OwnerCockpitPage");
 const OnboardingQualityDashboardPage = safeLazy(() => import("./pages/admin/OnboardingQualityDashboardPage"), "OnboardingQualityDashboardPage");
+const UnifiedGlobalEnginePage = safeLazy(() => import("./pages/admin/UnifiedGlobalEnginePage"), "UnifiedGlobalEnginePage");
 const MerchantInventoryPage = safeLazy(() => import("./pages/merchant/MerchantInventoryPage"), "MerchantInventoryPage");
 const MerchantLiveControlPage = safeLazy(() => import("./pages/merchant/MerchantLiveControlPage"), "MerchantLiveControlPage");
 const MerchantCouponManagerPage = safeLazy(() => import("./pages/merchant/MerchantCouponManagerPage"), "MerchantCouponManagerPage");
@@ -992,7 +993,8 @@ const App = () => (
               <Route path="/admin/outreach" element={<ProtectedRoute><AdminOutreachPage /></ProtectedRoute>} />
                <Route path="/admin/uae-ops" element={<ProtectedRoute><AdminUaeOpsDashboard /></ProtectedRoute>} />
                <Route path="/admin/owner-cockpit" element={<ProtectedRoute><OwnerCockpitPage /></ProtectedRoute>} />
-               <Route path="/admin/onboarding-quality" element={<ProtectedRoute><OnboardingQualityDashboardPage /></ProtectedRoute>} />
+                <Route path="/admin/onboarding-quality" element={<ProtectedRoute><OnboardingQualityDashboardPage /></ProtectedRoute>} />
+                <Route path="/admin/unified-engine" element={<ProtectedRoute><UnifiedGlobalEnginePage /></ProtectedRoute>} />
 
               {/* Merchant claim & dashboard */}
               <Route path="/merchant/claim" element={<MerchantClaimPage />} />
