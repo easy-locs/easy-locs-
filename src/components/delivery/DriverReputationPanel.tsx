@@ -101,14 +101,14 @@ export default function DriverReputationPanel({ driverId, className }: Props) {
         });
       });
 
-      // Fetch driver session for acceptance rate
-      const { data: session } = await supabase
-        .from("driver_sessions")
-        .select("acceptance_rate, total_completed, total_cancelled")
+      // Fetch rider presence for acceptance rate
+      const { data: session } = await (supabase as any)
+        .from("rider_presence")
+        .select("is_online, is_available")
         .eq("user_id", targetId)
         .maybeSingle();
 
-      const acceptanceRate = session?.acceptance_rate || (all.length ? ((all.length - cancelled.length) / all.length) * 100 : 100);
+      const acceptanceRate = all.length ? ((all.length - cancelled.length) / all.length) * 100 : 100;
       const cancellationRate = all.length ? (cancelled.length / all.length) * 100 : 0;
 
       // On-time rate (delivered within 2 hours of creation)

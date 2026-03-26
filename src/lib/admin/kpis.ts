@@ -5,7 +5,7 @@ export async function loadWorkspaceKpis(workspaceId: string) {
     supabase.from("merchant_onboarding_profiles").select("*", { count: "exact", head: true }).eq("workspace_id", workspaceId),
     supabase.from("menu_items" as any).select("*", { count: "exact", head: true }).eq("workspace_id", workspaceId),
     supabase.from("support_tickets" as any).select("*", { count: "exact", head: true }).eq("workspace_id", workspaceId).in("status", ["open", "in_progress", "waiting_user"]),
-    (supabase as any).from("dispatch_jobs_v2").select("*", { count: "exact", head: true }).in("dispatch_status", ["open", "broadcasted", "assigned", "picked_up", "in_progress"]),
+    (supabase as any).from("mobility_jobs").select("*", { count: "exact", head: true }).in("status", ["searching", "offered", "accepted", "in_progress"]),
     supabase.from("financial_reconciliation" as any).select("*", { count: "exact", head: true }).eq("workspace_id", workspaceId).eq("status", "mismatch"),
   ]);
 
