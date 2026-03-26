@@ -61,6 +61,16 @@ const CATEGORY_MOBILITY: Record<CategoryKey, { needsRider: boolean; needsMerchan
   travel:   { needsRider: false, needsMerchant: false, needsVehicle: false },
 };
 
+const CATEGORY_FULFILLMENT: Record<CategoryKey, string> = {
+  food: "platform_delivery",
+  grocery: "platform_delivery",
+  taxi: "mobility_driver",
+  parcel: "platform_delivery",
+  services: "booking",
+  property: "listing",
+  travel: "calendar",
+};
+
 const CATEGORY_QUICK_ACTION: Record<CategoryKey, { icon: string; label: string; subLabel: string }> = {
   food:     { icon: "🍕", label: "Order food",      subLabel: "restaurants" },
   grocery:  { icon: "🛒", label: "Grocery",         subLabel: "stores" },
@@ -81,7 +91,7 @@ export function getCategoryBrain(category: CategoryKey): CategoryBrainState {
     radar: getRadarBehavior(category),
     eta: CATEGORY_ETA[category],
     mobility: CATEGORY_MOBILITY[category],
-    fulfillmentMode: resolveFulfillmentMode(category),
+    fulfillmentMode: CATEGORY_FULFILLMENT[category],
     quickAction: CATEGORY_QUICK_ACTION[category],
   };
 }
