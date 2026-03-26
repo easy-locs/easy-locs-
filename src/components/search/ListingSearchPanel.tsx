@@ -11,14 +11,14 @@ export function ListingSearchPanel() {
       <h3 className="text-sm font-semibold text-foreground">Search Listings</h3>
 
       <input
-        className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground"
+        className="w-full rounded-xl border border-border bg-background px-3.5 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/60"
         placeholder="City"
         value={filters.city ?? ""}
         onChange={(e) => setFilters({ city: e.target.value || undefined })}
       />
 
       <input
-        className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground"
+        className="w-full rounded-xl border border-border bg-background px-3.5 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/60"
         placeholder="Text search"
         value={filters.text ?? ""}
         onChange={(e) => setFilters({ text: e.target.value || undefined })}
@@ -26,7 +26,7 @@ export function ListingSearchPanel() {
 
       <div className="flex gap-2">
         <input
-          className="w-1/2 rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground"
+          className="w-1/2 rounded-xl border border-border bg-background px-3.5 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/60"
           placeholder="Min price"
           type="number"
           value={filters.minNightPrice ?? ""}
@@ -37,7 +37,7 @@ export function ListingSearchPanel() {
           }
         />
         <input
-          className="w-1/2 rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground"
+          className="w-1/2 rounded-xl border border-border bg-background px-3.5 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/60"
           placeholder="Max price"
           type="number"
           value={filters.maxNightPrice ?? ""}
@@ -51,13 +51,13 @@ export function ListingSearchPanel() {
 
       <div className="flex gap-2">
         <button
-          className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
+          className="rounded-xl bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
           onClick={runSearch}
         >
           Search
         </button>
         <button
-          className="rounded-lg bg-secondary px-4 py-2 text-sm font-medium text-secondary-foreground hover:bg-secondary/80 transition-colors"
+          className="rounded-xl bg-secondary px-4 py-2.5 text-sm font-medium text-secondary-foreground hover:bg-secondary/80 transition-colors"
           onClick={clear}
         >
           Clear
