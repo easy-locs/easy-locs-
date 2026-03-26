@@ -39,7 +39,7 @@ const MODULE_LABELS: Record<RouteModule, string> = {
 };
 
 /** Resolve route from target_action + payload, fallback to route_path */
-function resolveRoute(opp: { target_action?: string | null; target_payload_json?: Record<string, unknown> | null; route_path: string }): string {
+function resolveRoute(opp: { target_action?: string | null; target_payload_json?: unknown; route_path: string }): string {
   const action = opp.target_action;
   const payload = opp.target_payload_json as Record<string, string> | null;
 
