@@ -21,6 +21,7 @@ import { useGlobalContext } from "@/hooks/useGlobalContext";
 import { staggerContainer, staggerItem, fadeSlideUp, TRANSITIONS } from "@/lib/motion/motion-system";
 import { getTopBanners } from "@/lib/context-banner/context-banner-engine";
 import { AddressSelectorSheet } from "@/components/address/AddressSelectorSheet";
+import { MobilityLiveMap } from "@/components/mobility/MobilityLiveMap";
 
 import foodImg from "@/assets/categories/food.png";
 import groceryImg from "@/assets/categories/grocery.png";
@@ -264,7 +265,7 @@ export default function SmartHome() {
   const row1 = categories.slice(0, half);
   const row2 = categories.slice(half);
 
-  const living = useLivingPage({ country: countryCode, city: city || undefined, maxSections: 6 });
+  const _living = useLivingPage({ country: countryCode, city: city || undefined, maxSections: 6 });
   const globalCtx = useGlobalContext({ country: countryCode, city: city || undefined });
   const contextBanners = useMemo(
     () => getTopBanners({ country: countryCode, city, hour: globalCtx.localHour }, 1),
@@ -324,32 +325,29 @@ export default function SmartHome() {
 
       {/* SmartHeroCard removed — merged into TopHeroBanner */}
 
-      {/* ═══ Living Commerce Sections (dynamic by context) ═══ */}
-      {living.activeSections.slice(0, 2).map((sec, i) => (
-        <motion.div
-          key={sec.id}
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 + i * 0.05, ...TRANSITIONS.smooth }}
-          className="mb-3 px-4"
-        >
-          <div className="flex items-center justify-between mb-1.5">
-            <h3 className="text-xs font-bold text-foreground flex items-center gap-1">
-              <span>{sec.emoji}</span> {sec.title}
-            </h3>
-            <Link to="/radar" className="text-[10px] font-medium text-primary flex items-center gap-0.5 active:opacity-70">
-              Explore <ChevronRight className="h-3 w-3" />
-            </Link>
-          </div>
-          {sec.gradient && (
-            <div className="rounded-xl p-3 border border-border/10 mb-2" style={{ background: sec.gradient }}>
-              <p className="text-[11px] text-muted-foreground">
-                {sec.targetSubs.slice(0, 4).join(" · ")}
-              </p>
-            </div>
-          )}
-        </motion.div>
-      ))}
+      {/* ═══ Live Map — Riders/Drivers nearby ═══ */}
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.12, ...TRANSITIONS.smooth }}
+        className="mb-3"
+      >
+        <div className="flex items-center justify-between mb-1.5">
+          <h3 className="text-xs font-bold text-foreground flex items-center gap-1">
+            <span>📍</span> Live near you
+          </h3>
+          <Link to="/taxi" className="text-[10px] font-medium text-primary flex items-center gap-0.5 active:opacity-70">
+            Book <ChevronRight className="h-3 w-3" />
+          </Link>
+        </div>
+        <MobilityLiveMap
+          pickupLat={currentLocation?.lat}
+          pickupLng={currentLocation?.lng}
+          mode="taxi"
+          nearbyRiders={5}
+          className="h-[180px]"
+        />
+      </motion.div>
 
       {SECTION_DEFS.map((sec, i) => (
         <DynamicSection key={sec.key} section={sec} shops={safeSections[sec.key as keyof typeof safeSections]} index={i} />
