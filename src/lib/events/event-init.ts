@@ -12,6 +12,7 @@ import "./handlers/user-behavior.handler";
 import "./handlers/eta-refresh.handler";
 import "./handlers/merchant-visibility-refresh.handler";
 import "./handlers/commerce-payment-bridge.handler";
+import "./handlers/zone-intelligence.handler";
 
 /**
  * Bridge: forward platformBus events to eventBus with normalized names.
