@@ -33,6 +33,7 @@ export function RideLiveCard({ rideId }: { rideId: string }) {
   const statusInfo = STATUS_CONFIG[ride.status] ?? { color: "bg-muted text-muted-foreground", label: ride.status };
 
   return (
+    <>
     <div className="bg-card border border-border/30 rounded-2xl overflow-hidden shadow-sm">
       {/* Status bar */}
       <div className={cn("px-4 py-2.5 flex items-center justify-between border-b", statusInfo.color)}>
