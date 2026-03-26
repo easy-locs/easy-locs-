@@ -1220,8 +1220,9 @@ const App = () => (
             </SwipeableMain>
            </Suspense>
            <MainBottomNav />
-           <SmartInstallBanner />
-           </SplashScreen>
+            <SmartInstallBanner />
+            </UiQualityProvider>
+            </SplashScreen>
            </AppLockGuard>
           </UnifiedPaymentProvider>
            </CallProvider>
