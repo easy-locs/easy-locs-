@@ -229,7 +229,10 @@ const ServiceCityPage = safeLazy(() => import("./pages/seo/ServiceHubPage").then
 const ProviderSEOPage = safeLazy(() => import("./pages/seo/ProviderSEOPage"), "ProviderSEOPage");
 const SlugResolver = safeLazy(() => import("./pages/seo/SEOShortUrlResolver").then(m => ({ default: m.SlugResolver })), "SlugResolver");
 const SlugCategoryResolver = safeLazy(() => import("./pages/seo/SEOShortUrlResolver").then(m => ({ default: m.SlugCategoryResolver })), "SlugCategoryResolver");
-// Ride & Send universes
+// Mobility — canonical pages
+const MobilityTaxiPage = safeLazy(() => import("./pages/mobility/MobilityTaxiPage"), "MobilityTaxiPage");
+const MobilityDeliveryPage = safeLazy(() => import("./pages/mobility/MobilityDeliveryPage"), "MobilityDeliveryPage");
+const RiderLivePage = safeLazy(() => import("./pages/mobility/RiderLivePage"), "RiderLivePage");
 const RideHubPage = safeLazy(() => import("./pages/RideHubPage"), "RideHubPage");
 const TrackRidePage = safeLazy(() => import("./pages/TrackRidePage"), "TrackRidePage");
 const PayRidePage = safeLazy(() => import("./pages/PayRidePage"), "PayRidePage");
@@ -859,7 +862,11 @@ const App = () => (
               <Route path="/settings/security" element={<SettingsSecurityPage />} />
               <Route path="/settings/preferences" element={<SettingsPreferencesPage />} />
               <Route path="/settings/support" element={<SettingsSupportPage />} />
-              <Route path="/ride" element={<RideHubPage />} />
+              {/* Mobility — canonical routes */}
+              <Route path="/mobility/taxi" element={<MobilityTaxiPage />} />
+              <Route path="/mobility/delivery" element={<MobilityDeliveryPage />} />
+              <Route path="/rider/live" element={<RiderLivePage />} />
+              <Route path="/ride" element={<Navigate to="/mobility/taxi" replace />} />
               <Route path="/track/:rideRequestId" element={<TrackRidePage />} />
               <Route path="/wallet/pay/:threadId" element={<PayRidePage />} />
               <Route path="/wallet/accounts" element={<Navigate to="/settings/wallet" replace />} />
