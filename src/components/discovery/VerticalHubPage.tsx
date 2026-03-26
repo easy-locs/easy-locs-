@@ -287,7 +287,7 @@ export default function VerticalHubPage({ vertical }: { vertical: TaxonomyVertic
                 >
                   <span className="text-xl">{sub.icon}</span>
                 </div>
-                <span className="text-[10px] font-semibold max-w-[52px] text-center truncate" style={{
+                <span className="text-[10px] font-semibold max-w-[60px] text-center truncate leading-tight" style={{
                   color: activeSub === sub.value ? `hsl(${ui.accentHsl})` : "hsl(var(--foreground))"
                 }}>{sub.label}</span>
               </button>
