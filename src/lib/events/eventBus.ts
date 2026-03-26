@@ -14,9 +14,9 @@ type EventMap = {
   WALLET_ROLLBACK: { amount: number };
 
   // ── Sprint 5: Discovery & Radar events ──
-  RADAR_SCAN_COMPLETED: { count: number; radiusKm: number; lat: number; lng: number };
+  RADAR_SCAN_COMPLETED: { count: number; lat: number; lng: number };
   SEARCH_UPDATED: { query: string; resultCount: number; vertical?: string };
-  GEO_RADIUS_CHANGED: { radiusKm: number; lat: number; lng: number };
+  GEO_LOCATION_CHANGED: { lat: number; lng: number };
   LISTING_DETECTED: { id: string; type: string; source: string };
   ONBOARDING_COMPLETED: { entityId: string; entityType: string; vertical?: string };
 
