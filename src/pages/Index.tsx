@@ -3,6 +3,7 @@ import Navbar from "@/components/landing/Navbar";
 import Hero from "@/components/landing/Hero";
 import SEOHead from "@/components/SEOHead";
 import { Loader2 } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 // Priority sections
 const LiveActivityBar = lazy(() => import("@/components/landing/LiveActivityBar"));
@@ -161,6 +162,8 @@ const hreflangAlternates = [
 const combinedJsonLd = [jsonLd, breadcrumbJsonLd, faqJsonLd];
 
 const Index = () => {
+  const isMobile = useIsMobile();
+
   return (
     <div className="min-h-screen flex flex-col" role="main" id="main-content">
       <SEOHead
@@ -198,9 +201,11 @@ const Index = () => {
         </Suspense>
 
         {/* 6. Radar Preview */}
-        <Suspense fallback={<SectionLoader />}>
-          <RadarPreviewSection />
-        </Suspense>
+        {!isMobile && (
+          <Suspense fallback={<SectionLoader />}>
+            <RadarPreviewSection />
+          </Suspense>
+        )}
 
         {/* 7. Food */}
         <Suspense fallback={<SectionLoader />}>
@@ -213,34 +218,46 @@ const Index = () => {
         </Suspense>
 
         {/* 9. Travel */}
-        <Suspense fallback={<SectionLoader />}>
-          <TravelSection />
-        </Suspense>
+        {!isMobile && (
+          <Suspense fallback={<SectionLoader />}>
+            <TravelSection />
+          </Suspense>
+        )}
 
         {/* 10. Services */}
-        <Suspense fallback={<SectionLoader />}>
-          <ServicesSection />
-        </Suspense>
+        {!isMobile && (
+          <Suspense fallback={<SectionLoader />}>
+            <ServicesSection />
+          </Suspense>
+        )}
 
         {/* 11. Offers */}
-        <Suspense fallback={<SectionLoader />}>
-          <OffersSection />
-        </Suspense>
+        {!isMobile && (
+          <Suspense fallback={<SectionLoader />}>
+            <OffersSection />
+          </Suspense>
+        )}
 
         {/* 12. For You */}
-        <Suspense fallback={<SectionLoader />}>
-          <ForYouSection />
-        </Suspense>
+        {!isMobile && (
+          <Suspense fallback={<SectionLoader />}>
+            <ForYouSection />
+          </Suspense>
+        )}
 
         {/* 12b. Smart Recommendations */}
-        <Suspense fallback={null}>
-          <SmartRecommendationsSection />
-        </Suspense>
+        {!isMobile && (
+          <Suspense fallback={null}>
+            <SmartRecommendationsSection />
+          </Suspense>
+        )}
 
         {/* 12c. Promo Carousel */}
-        <Suspense fallback={null}>
-          <HomePromoCarousel />
-        </Suspense>
+        {!isMobile && (
+          <Suspense fallback={null}>
+            <HomePromoCarousel />
+          </Suspense>
+        )}
 
         {/* 13. Value Proposition */}
         <Suspense fallback={<SectionLoader />}>
@@ -293,17 +310,23 @@ const Index = () => {
         </Suspense>
 
         {/* 13k. Remote Entrepreneurship */}
-        <Suspense fallback={<SectionLoader />}>
-          <RemoteEntrepreneurship />
-        </Suspense>
+        {!isMobile && (
+          <Suspense fallback={<SectionLoader />}>
+            <RemoteEntrepreneurship />
+          </Suspense>
+        )}
 
         {/* 14. Browse by Country + Cities */}
-        <Suspense fallback={<SectionLoader />}>
-          <BrowseByCountry />
-        </Suspense>
-        <Suspense fallback={<SectionLoader />}>
-          <PopularCities />
-        </Suspense>
+        {!isMobile && (
+          <>
+            <Suspense fallback={<SectionLoader />}>
+              <BrowseByCountry />
+            </Suspense>
+            <Suspense fallback={<SectionLoader />}>
+              <PopularCities />
+            </Suspense>
+          </>
+        )}
 
         {/* 15. How it works */}
         <Suspense fallback={<SectionLoader />}>
@@ -311,45 +334,61 @@ const Index = () => {
         </Suspense>
 
         {/* 16. World Map */}
-        <Suspense fallback={<SectionLoader />}>
-          <WorldMapSection />
-        </Suspense>
+        {!isMobile && (
+          <Suspense fallback={<SectionLoader />}>
+            <WorldMapSection />
+          </Suspense>
+        )}
 
         {/* 17. Trust */}
-        <Suspense fallback={<SectionLoader />}>
-          <TrustSection />
-        </Suspense>
+        {!isMobile && (
+          <Suspense fallback={<SectionLoader />}>
+            <TrustSection />
+          </Suspense>
+        )}
 
         {/* 18. Pricing */}
-        <Suspense fallback={<SectionLoader />}>
-          <Pricing />
-        </Suspense>
+        {!isMobile && (
+          <Suspense fallback={<SectionLoader />}>
+            <Pricing />
+          </Suspense>
+        )}
 
         {/* 19. FAQ */}
-        <Suspense fallback={<SectionLoader />}>
-          <LandingFAQ />
-        </Suspense>
+        {!isMobile && (
+          <Suspense fallback={<SectionLoader />}>
+            <LandingFAQ />
+          </Suspense>
+        )}
 
         {/* 20. Newsletter */}
-        <Suspense fallback={<SectionLoader />}>
-          <Newsletter />
-        </Suspense>
+        {!isMobile && (
+          <Suspense fallback={<SectionLoader />}>
+            <Newsletter />
+          </Suspense>
+        )}
 
         {/* 21. Social Proof */}
-        <Suspense fallback={null}>
-          <SocialProofStrip />
-        </Suspense>
+        {!isMobile && (
+          <Suspense fallback={null}>
+            <SocialProofStrip />
+          </Suspense>
+        )}
 
         {/* 22. Legal Disclaimer */}
-        <Suspense fallback={null}>
-          <LegalDisclaimer />
-        </Suspense>
+        {!isMobile && (
+          <Suspense fallback={null}>
+            <LegalDisclaimer />
+          </Suspense>
+        )}
       </div>
 
       {/* Footer */}
-      <Suspense fallback={null}>
-        <Footer />
-      </Suspense>
+      {!isMobile && (
+        <Suspense fallback={null}>
+          <Footer />
+        </Suspense>
+      )}
     </div>
   );
 };
