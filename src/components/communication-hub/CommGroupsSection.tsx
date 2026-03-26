@@ -135,8 +135,8 @@ export default function CommGroupsSection() {
     if (!user?.id) return;
     setLoading(true);
     setLoadError(null);
-    const { data, error } = await supabase
-      .from("groups")
+    const { data, error } = await (supabase as any)
+      .from("conversations_v2")
       .select("*")
       .order("updated_at", { ascending: false });
 
