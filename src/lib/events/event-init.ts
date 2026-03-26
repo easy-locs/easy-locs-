@@ -21,6 +21,8 @@ import { initRideAIDispatchHandler } from "./handlers/ride-ai-dispatch.handler";
 import { initRideWalletHandler } from "./handlers/ride-wallet.handler";
 import { initRideRatingHandler } from "./handlers/ride-rating.handler";
 import { initSupportOpenHandler } from "./handlers/support-open.handler";
+import { initUnifiedMobilityRequestHandler } from "./handlers/unified-mobility-request.handler";
+import { initMobilityCompatBridgeHandler } from "./handlers/mobility-compat-bridge.handler";
 import "@/lib/radar/signal-ingestor";
 
 /**
@@ -95,5 +97,7 @@ initRideAIDispatchHandler();
 initRideWalletHandler();
 initRideRatingHandler();
 initSupportOpenHandler();
+initUnifiedMobilityRequestHandler();
+initMobilityCompatBridgeHandler();
 
 console.log("[event-init] All event handlers registered + platformBus bridge active");
