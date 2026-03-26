@@ -17,6 +17,7 @@ interface Props {
   showCurrentLocation?: boolean;
   autoFocus?: boolean;
   className?: string;
+  contextType?: string;
 }
 
 function toResolvedPlace(r: SearchBrainResult): ResolvedPlace {
