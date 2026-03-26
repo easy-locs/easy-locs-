@@ -85,9 +85,11 @@ export async function getEffectiveContext(userId: string, contextType: AddressCo
  * Listen for address context changes and propagate to dependent systems.
  */
 export function initGeoSyncListeners(): () => void {
-  const unsub = eventBus.on("address.context.updated", (payload: any) => {
-    // Propagate to ETA, dispatch, merchant visibility
+  const handler = (payload: any) => {
     eventBus.emit("dispatch.context.refresh", { userId: payload.userId, zoneKey: payload.zoneKey });
-  });
-  return unsub;
+  };
+  eventBus.on("address.context.updated", handler);
+  return () => {
+    eventBus.off("address.context.updated", handler);
+  };
 }

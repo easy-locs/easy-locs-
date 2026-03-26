@@ -14,24 +14,20 @@ import {
   type UserSavedAddress,
   type ResolvedAddress,
 } from "@/lib/address/canonical-address-resolver";
-import type { CanonicalPlace } from "@/lib/address/canonical-place";
+import type { CanonicalPlace, AddressContextType, AddressSourceType } from "@/lib/address/canonical-place";
 import { supabase } from "@/integrations/supabase/client";
 
 interface UseCanonicalAddressResult {
   activeContext: ActiveAddressContext | null;
   savedAddresses: UserSavedAddress[];
   loading: boolean;
-  /** Resolve a place and set it as the active address */
-  activateAddress: (place: CanonicalPlace, source?: "gps" | "saved" | "manual" | "recent", contextType?: string) => Promise<ResolvedAddress | null>;
-  /** Save an address to user's saved list */
-  saveAddress: (canonicalPlaceId: string, label?: string, opts?: { apartment?: string; floor?: string; deliveryNote?: string; isDefault?: boolean }) => Promise<void>;
-  /** Delete a saved address */
+  activateAddress: (place: CanonicalPlace, source?: AddressSourceType, contextType?: AddressContextType) => Promise<ResolvedAddress | null>;
+  saveAddress: (canonicalPlaceId: string, label?: string, opts?: { apartment?: string; floor?: string; deliveryNote?: string; isDefault?: boolean; isFavorite?: boolean }) => Promise<void>;
   removeSavedAddress: (addressId: string) => Promise<void>;
-  /** Refresh data */
   refresh: () => Promise<void>;
 }
 
-export function useCanonicalAddress(): UseCanonicalAddressResult {
+export function useCanonicalAddress(contextType: AddressContextType = "global"): UseCanonicalAddressResult {
   const userId = useV2AuthStore((s) => s.user?.id);
   const [activeContext, setActiveContext] = useState<ActiveAddressContext | null>(null);
   const [savedAddresses, setSavedAddresses] = useState<UserSavedAddress[]>([]);
@@ -44,13 +40,13 @@ export function useCanonicalAddress(): UseCanonicalAddressResult {
     }
     setLoading(true);
     const [ctx, saved] = await Promise.all([
-      getActiveAddressContext(userId),
+      getActiveAddressContext(userId, contextType),
       getUserSavedAddresses(userId),
     ]);
     setActiveContext(ctx);
     setSavedAddresses(saved);
     setLoading(false);
-  }, [userId]);
+  }, [userId, contextType]);
 
   useEffect(() => { refresh(); }, [refresh]);
 
@@ -58,34 +54,34 @@ export function useCanonicalAddress(): UseCanonicalAddressResult {
   useEffect(() => {
     if (!userId) return;
     const channel = supabase
-      .channel(`addr-ctx-${userId}`)
+      .channel(`addr-ctx-${userId}-${contextType}`)
       .on("postgres_changes", { event: "*", schema: "public", table: "user_active_address_context", filter: `user_id=eq.${userId}` }, () => {
         refresh();
       })
       .subscribe();
     return () => { supabase.removeChannel(channel); };
-  }, [userId, refresh]);
+  }, [userId, contextType, refresh]);
 
   const activateAddress = useCallback(async (
     place: CanonicalPlace,
-    source: "gps" | "saved" | "manual" | "recent" = "manual",
-    contextType?: string,
+    source: AddressSourceType = "manual",
+    ctx?: AddressContextType,
   ): Promise<ResolvedAddress | null> => {
     if (!userId) return null;
     try {
-      const resolved = await resolveAndActivate({ userId, place, source, contextType });
+      const resolved = await resolveAndActivate({ userId, place, source, contextType: ctx ?? contextType });
       await refresh();
       return resolved;
     } catch (e) {
       console.error("[useCanonicalAddress] activate failed:", e);
       return null;
     }
-  }, [userId, refresh]);
+  }, [userId, contextType, refresh]);
 
   const saveAddressFn = useCallback(async (
     canonicalPlaceId: string,
     label?: string,
-    opts?: { apartment?: string; floor?: string; deliveryNote?: string; isDefault?: boolean },
+    opts?: { apartment?: string; floor?: string; deliveryNote?: string; isDefault?: boolean; isFavorite?: boolean },
   ) => {
     if (!userId) return;
     await saveUserAddress({
@@ -96,6 +92,7 @@ export function useCanonicalAddress(): UseCanonicalAddressResult {
       floor: opts?.floor,
       deliveryNote: opts?.deliveryNote,
       isDefault: opts?.isDefault,
+      isFavorite: opts?.isFavorite,
     });
     await refresh();
   }, [userId, refresh]);
