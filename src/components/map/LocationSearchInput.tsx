@@ -1,13 +1,14 @@
 /**
  * LocationSearchInput — Reusable address autocomplete.
- * Used by Explorer, Ride, Send Package.
+ * Uses Search Brain for ranking truth — NO local reranking.
  */
 import { useState, useRef, useEffect } from "react";
 import { Search, MapPin, Locate, X } from "lucide-react";
-import { useAddressSearch } from "@/hooks/useAddressSearch";
+import { useSearchBrain } from "@/hooks/useSearchBrain";
 import { useLocationStore, type ResolvedPlace } from "@/stores/locationStore";
 import { reverseGeocode } from "@/lib/location/geocode";
 import { motion, AnimatePresence } from "framer-motion";
+import type { SearchBrainResult } from "@/lib/search/search-brain";
 
 interface Props {
   value?: string;
@@ -16,6 +17,17 @@ interface Props {
   showCurrentLocation?: boolean;
   autoFocus?: boolean;
   className?: string;
+}
+
+function toResolvedPlace(r: SearchBrainResult): ResolvedPlace {
+  return {
+    lat: r.lat,
+    lng: r.lng,
+    label: r.label,
+    city: r.city,
+    area: r.district,
+    country: r.country_name,
+  };
 }
 
 export function LocationSearchInput({
@@ -29,7 +41,8 @@ export function LocationSearchInput({
   const [query, setQuery] = useState(controlledValue || "");
   const [open, setOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
-  const { results, loading } = useAddressSearch(query);
+  // Search Brain — single source of search ordering truth
+  const { results, loading } = useSearchBrain(query);
   const currentLocation = useLocationStore((s) => s.currentLocation);
   const recentPlaces = useLocationStore((s) => s.recentPlaces);
   const savedPlaces = useLocationStore((s) => s.savedPlaces);
@@ -96,7 +109,6 @@ export function LocationSearchInput({
             transition={{ duration: 0.15 }}
             className="absolute left-0 right-0 top-full mt-1 z-50 rounded-xl border border-border/30 bg-card shadow-xl max-h-[300px] overflow-y-auto"
           >
-            {/* Current location */}
             {showCurrentLocation && currentLocation && (
               <button
                 onClick={handleCurrentLocation}
@@ -107,7 +119,6 @@ export function LocationSearchInput({
               </button>
             )}
 
-            {/* Saved/recent if no search query */}
             {query.length < 2 && allSaved.length > 0 && (
               <div>
                 <p className="px-4 pt-2 pb-1 text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Saved & Recent</p>
@@ -127,31 +138,31 @@ export function LocationSearchInput({
               </div>
             )}
 
-            {/* Loading */}
             {loading && query.length >= 2 && (
               <div className="px-4 py-3 text-xs text-muted-foreground">Searching…</div>
             )}
 
-            {/* Results */}
+            {/* Search Brain results — displayed as-is, NO local reranking */}
             {!loading && results.length > 0 && (
               <div>
-                {results.map((r, i) => (
+                {results.map((r) => (
                   <button
-                    key={`${r.lat}-${r.lng}-${i}`}
-                    onClick={() => handleSelect(r)}
+                    key={r.id}
+                    onClick={() => handleSelect(toResolvedPlace(r))}
                     className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-muted/30 transition-colors"
                   >
                     <MapPin className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
                     <div className="flex-1 text-left min-w-0">
                       <p className="text-sm font-medium text-foreground truncate">{r.label}</p>
-                      {r.city && <p className="text-[11px] text-muted-foreground truncate">{r.city}{r.country ? `, ${r.country}` : ""}</p>}
+                      <p className="text-[11px] text-muted-foreground truncate">
+                        {[r.district, r.city, r.country_name].filter(Boolean).join(", ")}
+                      </p>
                     </div>
                   </button>
                 ))}
               </div>
             )}
 
-            {/* Empty */}
             {!loading && query.length >= 2 && results.length === 0 && (
               <div className="px-4 py-3 text-xs text-muted-foreground">No results found</div>
             )}

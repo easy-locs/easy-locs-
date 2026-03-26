@@ -1,15 +1,16 @@
 /**
  * RadarPlaceSearch — Premium place search bar with live ETA intelligence.
- * Resolves through canonical pipeline → viewport → live overlays → full radar refresh.
- * Search results show live ETA per category as inline chips.
+ * Consumes Search Brain output — NO local reranking.
+ * Search Brain owns search ordering truth. UI displays only.
  */
 import { useState, useCallback, useRef, useEffect } from "react";
 import { Search, X, MapPin, Clock, Building2, Plane, Navigation } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useRadarPlaceStore } from "@/stores/radarPlaceStore";
-import { searchRadarPlaces, selectRadarPlace } from "@/lib/radar/radar-place-search-adapter";
+import { selectRadarPlace } from "@/lib/radar/radar-place-search-adapter";
 import { decorateSearchResults, formatETAChips, type DecoratedSearchResult } from "@/lib/radar/search-result-decorator";
 import type { CanonicalPlaceRow } from "@/lib/address/canonical-address-resolver";
+import { searchBrain, type SearchBrainResult } from "@/lib/search/search-brain";
 import { motion, AnimatePresence } from "framer-motion";
 
 const PLACE_TYPE_ICON: Record<string, React.ReactNode> = {
@@ -22,9 +23,41 @@ const PLACE_TYPE_ICON: Record<string, React.ReactNode> = {
   landmark: <Navigation className="w-3.5 h-3.5" />,
 };
 
+/** Convert SearchBrainResult → minimal CanonicalPlaceRow for selectRadarPlace */
+function toPlaceRow(r: SearchBrainResult): CanonicalPlaceRow {
+  return {
+    id: r.canonical_place_id ?? r.id,
+    provider: r.provider,
+    provider_place_id: null,
+    place_type: r.place_type,
+    country_code: r.country_code ?? "AE",
+    country_name: r.country_name ?? null,
+    city: r.city ?? null,
+    district: r.district ?? null,
+    subdistrict: null,
+    postal_code: null,
+    street: null,
+    building: null,
+    landmark: null,
+    formatted_address: r.formatted_address,
+    short_label: r.label,
+    lat: r.lat,
+    lng: r.lng,
+    timezone: null,
+    geohash: null,
+    zone_key: r.zone_key ?? null,
+    parent_place_id: null,
+    popularity_score: 0,
+    confidence_score: r.final_score,
+    metadata_json: null,
+    created_at: "",
+    updated_at: "",
+  };
+}
+
 export default function RadarPlaceSearch() {
   const { searchQuery, setSearchQuery, searchActive, setSearchActive, setSelectedPlace } = useRadarPlaceStore();
-  const [rawResults, setRawResults] = useState<CanonicalPlaceRow[]>([]);
+  const [brainResults, setBrainResults] = useState<SearchBrainResult[]>([]);
   const [decorated, setDecorated] = useState<DecoratedSearchResult[]>([]);
   const [loading, setLoading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -33,33 +66,36 @@ export default function RadarPlaceSearch() {
   const handleSearch = useCallback((q: string) => {
     setSearchQuery(q);
     if (debounceRef.current) clearTimeout(debounceRef.current);
-    if (q.length < 2) { setRawResults([]); setDecorated([]); return; }
+    if (q.length < 2) { setBrainResults([]); setDecorated([]); return; }
 
     setLoading(true);
     debounceRef.current = setTimeout(async () => {
-      const places = await searchRadarPlaces({ query: q, limit: 8 });
-      setRawResults(places);
-      // Decorate with live ETAs
-      const enriched = await decorateSearchResults(places);
+      // Search Brain — canonical search ordering truth
+      const ranked = await searchBrain({ query: q, contextType: "global" });
+      setBrainResults(ranked);
+      // Decorate with live ETAs using place rows
+      const placeRows = ranked.map(toPlaceRow);
+      const enriched = await decorateSearchResults(placeRows);
       setDecorated(enriched);
       setLoading(false);
     }, 300);
   }, [setSearchQuery]);
 
-  const handleSelect = useCallback(async (place: CanonicalPlaceRow) => {
+  const handleSelect = useCallback(async (result: SearchBrainResult) => {
     setLoading(true);
-    const selection = await selectRadarPlace(place);
+    const placeRow = toPlaceRow(result);
+    const selection = await selectRadarPlace(placeRow);
     setSelectedPlace(selection);
     setSearchActive(false);
     setSearchQuery(selection.label);
-    setRawResults([]);
+    setBrainResults([]);
     setDecorated([]);
     setLoading(false);
   }, [setSelectedPlace, setSearchActive, setSearchQuery]);
 
   const handleClear = useCallback(() => {
     setSearchQuery("");
-    setRawResults([]);
+    setBrainResults([]);
     setDecorated([]);
     setSelectedPlace(null);
     inputRef.current?.focus();
@@ -69,15 +105,14 @@ export default function RadarPlaceSearch() {
     return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
   }, []);
 
-  // Merge raw + decorated by index
-  const results = rawResults.map((place, i) => ({
-    place,
+  // Merge brain results + decoration by index (order preserved from Search Brain)
+  const results = brainResults.map((r, i) => ({
+    result: r,
     decoration: decorated[i] ?? null,
   }));
 
   return (
     <div className="relative z-30">
-      {/* Search input */}
       <div className={cn(
         "flex items-center gap-2 px-3 py-2 rounded-xl transition-all",
         "bg-card/90 backdrop-blur-md border",
@@ -99,7 +134,6 @@ export default function RadarPlaceSearch() {
         )}
       </div>
 
-      {/* Results dropdown */}
       <AnimatePresence>
         {searchActive && (results.length > 0 || loading) && (
           <motion.div
@@ -112,32 +146,32 @@ export default function RadarPlaceSearch() {
             {loading && results.length === 0 && (
               <div className="px-4 py-3 text-xs text-muted-foreground text-center">Searching...</div>
             )}
-            {results.map(({ place, decoration }) => {
+            {/* Results displayed exactly as Search Brain ranked — NO reranking */}
+            {results.map(({ result, decoration }) => {
               const etaChips = decoration ? formatETAChips(decoration.eta_projection) : [];
               return (
                 <button
-                  key={place.id}
-                  onClick={() => handleSelect(place)}
+                  key={result.id}
+                  onClick={() => handleSelect(result)}
                   className="w-full flex flex-col gap-1 px-3 py-2.5 hover:bg-muted/30 active:bg-muted/50 transition-colors text-left"
                 >
                   <div className="flex items-center gap-3">
                     <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 bg-muted/50 text-muted-foreground">
-                      {PLACE_TYPE_ICON[place.place_type] ?? <MapPin className="w-3.5 h-3.5" />}
+                      {PLACE_TYPE_ICON[result.place_type] ?? <MapPin className="w-3.5 h-3.5" />}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-foreground truncate">
-                        {place.short_label ?? place.formatted_address}
-                      </p>
+                      <p className="text-sm font-semibold text-foreground truncate">{result.label}</p>
                       <p className="text-[10px] text-muted-foreground truncate">
-                        {[place.district, place.city, place.country_code].filter(Boolean).join(" · ")}
-                        {place.place_type !== "address" && (
-                          <span className="ml-1 capitalize text-primary/70">{place.place_type}</span>
+                        {[result.district, result.city, result.country_code].filter(Boolean).join(" · ")}
+                        {result.place_type !== "address" && (
+                          <span className="ml-1 capitalize text-primary/70">{result.place_type}</span>
+                        )}
+                        {result.local_rank_bucket === "international" && (
+                          <span className="ml-1">🌍</span>
                         )}
                       </p>
                     </div>
                   </div>
-
-                  {/* Live ETA chips */}
                   {etaChips.length > 0 && (
                     <div className="flex gap-1.5 ml-11">
                       {etaChips.map(chip => (
