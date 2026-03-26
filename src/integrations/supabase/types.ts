@@ -12982,6 +12982,160 @@ export type Database = {
         }
         Relationships: []
       }
+      onboarding_recrawl_jobs: {
+        Row: {
+          created_at: string
+          entity_id: string
+          error_message: string | null
+          finished_at: string | null
+          id: string
+          input_json: Json
+          result_json: Json | null
+          started_at: string | null
+          status: string
+          trigger_reason: string
+          vertical: string
+        }
+        Insert: {
+          created_at?: string
+          entity_id: string
+          error_message?: string | null
+          finished_at?: string | null
+          id?: string
+          input_json?: Json
+          result_json?: Json | null
+          started_at?: string | null
+          status?: string
+          trigger_reason: string
+          vertical: string
+        }
+        Update: {
+          created_at?: string
+          entity_id?: string
+          error_message?: string | null
+          finished_at?: string | null
+          id?: string
+          input_json?: Json
+          result_json?: Json | null
+          started_at?: string | null
+          status?: string
+          trigger_reason?: string
+          vertical?: string
+        }
+        Relationships: []
+      }
+      onboarding_review_actions: {
+        Row: {
+          action_type: string
+          actor_user_id: string | null
+          after_json: Json | null
+          before_json: Json | null
+          created_at: string
+          id: string
+          notes: string | null
+          review_queue_id: string | null
+        }
+        Insert: {
+          action_type: string
+          actor_user_id?: string | null
+          after_json?: Json | null
+          before_json?: Json | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          review_queue_id?: string | null
+        }
+        Update: {
+          action_type?: string
+          actor_user_id?: string | null
+          after_json?: Json | null
+          before_json?: Json | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          review_queue_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "onboarding_review_actions_review_queue_id_fkey"
+            columns: ["review_queue_id"]
+            isOneToOne: false
+            referencedRelation: "onboarding_review_queue"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      onboarding_review_queue: {
+        Row: {
+          assigned_to: string | null
+          canonical_record_id: string | null
+          created_at: string
+          entity_id: string
+          final_visibility: string | null
+          id: string
+          metadata_json: Json
+          missing_fields_json: Json
+          priority: number
+          quality_score: number
+          review_reason: string | null
+          review_status: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          suggested_visibility: string
+          updated_at: string
+          vertical: string
+          warnings_json: Json
+        }
+        Insert: {
+          assigned_to?: string | null
+          canonical_record_id?: string | null
+          created_at?: string
+          entity_id: string
+          final_visibility?: string | null
+          id?: string
+          metadata_json?: Json
+          missing_fields_json?: Json
+          priority?: number
+          quality_score?: number
+          review_reason?: string | null
+          review_status?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          suggested_visibility?: string
+          updated_at?: string
+          vertical: string
+          warnings_json?: Json
+        }
+        Update: {
+          assigned_to?: string | null
+          canonical_record_id?: string | null
+          created_at?: string
+          entity_id?: string
+          final_visibility?: string | null
+          id?: string
+          metadata_json?: Json
+          missing_fields_json?: Json
+          priority?: number
+          quality_score?: number
+          review_reason?: string | null
+          review_status?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          suggested_visibility?: string
+          updated_at?: string
+          vertical?: string
+          warnings_json?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "onboarding_review_queue_canonical_record_id_fkey"
+            columns: ["canonical_record_id"]
+            isOneToOne: false
+            referencedRelation: "onboarding_canonical_records"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       onboarding_shop_candidates: {
         Row: {
           address: string | null
