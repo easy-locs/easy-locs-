@@ -737,7 +737,9 @@ const App = () => (
               {/* Retail / Shop routes */}
               <Route path="/shop" element={<RetailIndexPage />} />
               <Route path="/shop/category/:categorySlug" element={<RetailCategoryPage />} />
+              <Route path="/shop/subcategory/:categorySlug/:subcategorySlug" element={<RetailCategoryPage />} />
               <Route path="/shop/mall/:mallSlug" element={<RetailMallPage />} />
+              <Route path="/shop/store/:slug" element={<ShopPage />} />
 
               {/* Food sub-pages */}
               <Route path="/food/restaurant/:restaurantId" element={<FoodRestaurantPage />} />
