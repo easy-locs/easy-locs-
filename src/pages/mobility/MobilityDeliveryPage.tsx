@@ -435,6 +435,9 @@ export default function MobilityDeliveryPage() {
           </motion.div>
         )}
       </div>
+
+      {/* Address Selector Sheet */}
+      <AddressSelectorSheet open={addressOpen} onOpenChange={setAddressOpen} contextType="global" />
     </div>
   );
 }
