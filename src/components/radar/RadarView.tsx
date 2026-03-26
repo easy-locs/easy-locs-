@@ -26,6 +26,7 @@ import { useV2AuthStore } from "@/stores/v2AuthStore";
 import { useRadarPlaceStore } from "@/stores/radarPlaceStore";
 import RadarPlaceSearch from "@/components/radar/RadarPlaceSearch";
 import RadarZoneOverlayCard from "@/components/radar/RadarZoneOverlayCard";
+import { RadarOpportunityFeed } from "@/components/radar/RadarOpportunityFeed";
 import RadarLiveStationCard from "@/components/radar/RadarLiveStationCard";
 import {
   MapPin, List, Star, Navigation, Flame, Filter,
@@ -258,6 +259,11 @@ export default memo(function RadarView({ initialType, radiusKm: initialRadius, s
           <RadarZoneOverlayCard overlay={zoneOverlay} label={selectedPlace.label} />
         </div>
       )}
+
+      {/* ── Radar Opportunities Feed ── */}
+      <div className="px-4 pt-1 shrink-0 max-h-48 overflow-y-auto scrollbar-hide">
+        <RadarOpportunityFeed />
+      </div>
 
       {/* ── Category chips ── */}
       <div className="flex gap-1.5 overflow-x-auto px-4 py-2 scrollbar-hide shrink-0">
