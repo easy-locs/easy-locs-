@@ -98,42 +98,45 @@ export async function validateP0Bridges(): Promise<ValidationResult[]> {
     });
   }
 
-  // ═══ P1 BRIDGE: zone intelligence (demand/supply/traffic) ═══
+  // ═══ P1 BRIDGE: zone intelligence (demand/supply/traffic/weather) ═══
   {
     const downstream: string[] = [];
     const listeners = [
       { event: "zone.supply.updated", fn: () => { downstream.push("zone.supply.updated"); } },
       { event: "zone.demand.updated", fn: () => { downstream.push("zone.demand.updated"); } },
       { event: "zone.traffic.updated", fn: () => { downstream.push("zone.traffic.updated"); } },
+      { event: "zone.weather.updated", fn: () => { downstream.push("zone.weather.updated"); } },
+      { event: "zone.weather.safety.updated", fn: () => { downstream.push("zone.weather.safety.updated"); } },
       { event: "zone.pressure.updated", fn: () => { downstream.push("zone.pressure.updated"); } },
     ];
     listeners.forEach(l => eventBus.on(l.event, l.fn));
 
-    // Trigger via eta.projections.updated (which zone-intelligence handler listens to)
-    console.log("[P1-VALIDATION] Emitting eta.projections.updated with mock station...");
+    const mockStation = {
+      traffic_level: "heavy",
+      traffic_speed_factor: 0.5,
+      rider_supply: 3,
+      rider_supply_factor: 0.6,
+      rider_supply_count: 3,
+      merchant_count: 20,
+      merchant_open_count: 15,
+      merchant_deliverable_count: 12,
+      demand_level: 75,
+      demand_multiplier: 1.5,
+      surge_multiplier: 1.3,
+      weather_type: "rain",
+      weather_intensity: 0.6,
+      flood_risk_level: "moderate",
+      avg_food_eta_minutes: 25,
+      avg_grocery_eta_minutes: 30,
+      avg_taxi_eta_minutes: 8,
+      avg_parcel_eta_minutes: 35,
+      updated_at: new Date().toISOString(),
+    };
+
+    console.log("[P1-VALIDATION] Emitting eta.projections.updated with weather mock...");
     await eventBus.emit("eta.projections.updated", {
       zoneKey: "AE_DUBAI_MARINA",
-      station: {
-        traffic_level: "heavy",
-        traffic_speed_factor: 0.5,
-        rider_supply: 3,
-        rider_supply_factor: 0.6,
-        rider_supply_count: 3,
-        merchant_count: 20,
-        merchant_open_count: 15,
-        merchant_deliverable_count: 12,
-        demand_level: 75,
-        demand_multiplier: 1.5,
-        surge_multiplier: 1.3,
-        weather_type: "clear",
-        weather_intensity: 0,
-        flood_risk_level: null,
-        avg_food_eta_minutes: 25,
-        avg_grocery_eta_minutes: 30,
-        avg_taxi_eta_minutes: 8,
-        avg_parcel_eta_minutes: 35,
-        updated_at: new Date().toISOString(),
-      },
+      station: mockStation,
       etas: { food: 25, grocery: 30, taxi: 8, parcel: 35 },
       updatedAt: new Date().toISOString(),
     });
@@ -142,14 +145,53 @@ export async function validateP0Bridges(): Promise<ValidationResult[]> {
     listeners.forEach(l => eventBus.off(l.event, l.fn));
 
     results.push({
-      bridge: "zone-intelligence (P1)",
+      bridge: "zone-intelligence (P1 — supply/demand/traffic/weather)",
       emitted: true,
       handlerFired: downstream.length > 0,
       downstreamEvents: downstream,
       pass: downstream.includes("zone.supply.updated") &&
             downstream.includes("zone.demand.updated") &&
             downstream.includes("zone.traffic.updated") &&
+            downstream.includes("zone.weather.updated") &&
+            downstream.includes("zone.weather.safety.updated") &&
             downstream.includes("zone.pressure.updated"),
+    });
+  }
+
+  // ═══ P2 BRIDGE: experience consumer ═══
+  {
+    const downstream: string[] = [];
+    const listeners = [
+      { event: "experience.suggestions.updated", fn: () => { downstream.push("experience.suggestions.updated"); } },
+      { event: "experience.trending.updated", fn: () => { downstream.push("experience.trending.updated"); } },
+      { event: "experience.prompts.updated", fn: () => { downstream.push("experience.prompts.updated"); } },
+    ];
+    listeners.forEach(l => eventBus.on(l.event, l.fn));
+
+    console.log("[P2-VALIDATION] Emitting zone.pressure.updated with experience mock...");
+    await eventBus.emit("zone.pressure.updated", {
+      zoneKey: "AE_DUBAI_MARINA",
+      pressureScore: 72,
+      supply: { riderCount: 3, isLow: true, factor: 0.6 },
+      demand: { level: 75, multiplier: 1.5, isHigh: true, surgeActive: true, surgeMultiplier: 1.3 },
+      traffic: { level: "heavy", speedFactor: 0.5, isSevere: false },
+      weather: { type: "rain", intensity: 0.6, isStorm: false },
+      safety: { floodRisk: "moderate", isBlocked: false },
+      merchants: { total: 20, open: 15, deliverable: 12 },
+      updatedAt: new Date().toISOString(),
+    });
+
+    await new Promise(r => setTimeout(r, 300));
+    listeners.forEach(l => eventBus.off(l.event, l.fn));
+
+    results.push({
+      bridge: "experience-consumer (P2 — suggestions/trending/prompts)",
+      emitted: true,
+      handlerFired: downstream.length > 0,
+      downstreamEvents: downstream,
+      pass: downstream.includes("experience.suggestions.updated") &&
+            downstream.includes("experience.trending.updated") &&
+            downstream.includes("experience.prompts.updated"),
     });
   }
 
