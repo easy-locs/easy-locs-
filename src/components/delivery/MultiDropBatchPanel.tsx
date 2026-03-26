@@ -19,10 +19,10 @@ interface PendingJob {
   dropoff_lng: number | null;
   pickup_lat: number | null;
   pickup_lng: number | null;
-  package_description: string | null;
-  delivery_fee: number | null;
+  notes: string | null;
+  current_price: number | null;
   currency: string | null;
-  priority: string;
+  package_size: string | null;
   status: string;
 }
 
@@ -70,7 +70,7 @@ function clusterJobs(jobs: PendingJob[], radiusKm: number): Cluster[] {
   // Add ungeolocated jobs as singles
   const noGeo = jobs.filter(j => !j.dropoff_lat || !j.dropoff_lng);
   for (const job of noGeo) {
-    clusters.push({ id: clusterId++, center: { lat: 0, lng: 0 }, jobs: [job], totalFees: job.delivery_fee || 0, estimatedKm: 0 });
+    clusters.push({ id: clusterId++, center: { lat: 0, lng: 0 }, jobs: [job], totalFees: job.current_price || 0, estimatedKm: 0 });
   }
 
   return clusters.sort((a, b) => b.jobs.length - a.jobs.length);
@@ -87,11 +87,11 @@ export default function MultiDropBatchPanel({ orgId }: { orgId: string }) {
   useEffect(() => {
     if (!orgId) return;
     const fetch = async () => {
-      const { data } = await supabase
+      const { data } = await (supabase as any)
         .from("mobility_jobs")
-        .select("id, pickup_address, dropoff_address, dropoff_lat, dropoff_lng, pickup_lat, pickup_lng, package_description, delivery_fee, currency, priority, status")
+        .select("id, pickup_address, dropoff_address, dropoff_lat, dropoff_lng, pickup_lat, pickup_lng, notes, current_price, currency, package_size, status")
         .eq("merchant_id", orgId)
-        .eq("status", "pending")
+        .eq("status", "searching")
         .order("created_at", { ascending: true });
       if (data) setPendingJobs(data as PendingJob[]);
       setLoading(false);
