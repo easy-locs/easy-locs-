@@ -13,7 +13,7 @@ const SECTIONS = [
   { icon: ShoppingCart, title: "Grocery", desc: "Fresh groceries fast", to: "/grocery", accent: "hsl(142 60% 45%)" },
   { icon: Wrench, title: "Services", desc: "Local professionals", to: "/services-hub", accent: "hsl(220 70% 55%)" },
   { icon: Car, title: "Ride", desc: "Taxi & VTC", to: "/mobility/taxi", accent: "hsl(270 60% 55%)" },
-  { icon: Send, title: "Send", desc: "Parcels & courier", to: "/send", accent: "hsl(190 70% 45%)" },
+  { icon: Send, title: "Send", desc: "Parcels & courier", to: "/mobility/delivery?mode=parcel", accent: "hsl(190 70% 45%)" },
   { icon: Plane, title: "Travel", desc: "Flights & stays", to: "/travel", accent: "hsl(250 65% 55%)" },
   { icon: Building2, title: "Property", desc: "Rent & buy/sell", to: "/property-hub", accent: "hsl(38 65% 50%)" },
   { icon: Wallet, title: "Wallet", desc: "Payments & transfers", to: "/wallet", accent: "hsl(152 60% 42%)" },
