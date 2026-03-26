@@ -240,6 +240,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     let mounted = true;
     let latestSeq = 0;
+    const safetyTimeout = window.setTimeout(() => {
+      if (!mounted) return;
+      setLoading(false);
+    }, 2500);
 
     // Mark V1 auth as active — prevents v2AuthStore from registering a second listener
     markV1AuthActive();
@@ -312,6 +316,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     return () => {
       mounted = false;
+      window.clearTimeout(safetyTimeout);
       authSub.unsubscribe();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
