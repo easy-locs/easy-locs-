@@ -275,7 +275,7 @@ export default function MeCommandCenter() {
           subtitle="Listings & bookings"
           badge="Not configured"
           badgeColor="amber"
-          onClick={() => navigate("/real-estate")}
+          onClick={() => navigate("/browse/real_estate")}
         />
       </div>
 
