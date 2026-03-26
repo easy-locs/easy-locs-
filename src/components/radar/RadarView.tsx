@@ -23,6 +23,9 @@ import { useDiscoveryStore } from "@/stores/discoveryStore";
 import { rankEntities, DISCOVERY_WEIGHTS, type RankableEntity, type RankContext } from "@/lib/ranking-engine";
 import { useCanonicalUI } from "@/hooks/useCanonicalUI";
 import { useV2AuthStore } from "@/stores/v2AuthStore";
+import { useRadarPlaceStore } from "@/stores/radarPlaceStore";
+import RadarPlaceSearch from "@/components/radar/RadarPlaceSearch";
+import RadarZoneOverlayCard from "@/components/radar/RadarZoneOverlayCard";
 import {
   MapPin, List, Star, Navigation, Flame, Filter,
   TrendingUp, Zap, ChevronDown, Clock, SlidersHorizontal, MessageCircle,
