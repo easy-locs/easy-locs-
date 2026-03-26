@@ -1,6 +1,6 @@
 /**
- * Notification Cleanup Engine — Archives old notifications from notifications_v2.
- * Canonical cleanup path.
+ * Notification Cleanup Engine — Archives old notifications.
+ * Canonical: reads/writes notifications table.
  */
 import { supabase } from "@/integrations/supabase/client";
 
@@ -10,19 +10,19 @@ const ARCHIVE_DAYS = 90;
 export async function runNotificationCleanup(limit = 200) {
   const cutoff = new Date(Date.now() - ARCHIVE_DAYS * 86400_000).toISOString();
 
-  // Dismiss old read notifications
+  // Archive old read notifications
   const { data: old } = await db
-    .from("notifications_v2")
+    .from("notifications")
     .select("id")
     .not("read_at", "is", null)
     .lt("created_at", cutoff)
-    .is("dismissed_at", null)
+    .or("is_archived.is.null,is_archived.eq.false")
     .limit(limit);
 
   let archived = 0;
   if (old?.length) {
     const ids = old.map((n: any) => n.id);
-    await db.from("notifications_v2").update({ dismissed_at: new Date().toISOString() }).in("id", ids);
+    await db.from("notifications").update({ is_archived: true }).in("id", ids);
     archived = ids.length;
   }
 

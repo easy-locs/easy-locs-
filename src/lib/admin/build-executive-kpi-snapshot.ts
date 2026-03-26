@@ -1,6 +1,6 @@
 /**
  * Executive KPI snapshot builder — daily aggregate of platform metrics.
- * Canonical: reads mobility_jobs, ride_disputes, driver_payouts, demand_zones.
+ * Canonical: reads mobility_jobs, ride_disputes, driver_payouts, geo_live_zone_overlays.
  */
 import { supabase } from "@/integrations/supabase/client";
 
@@ -12,7 +12,7 @@ export async function buildExecutiveKPISnapshot(date = new Date()) {
     supabase.from("refund_requests" as any).select("id,amount,refund_status").limit(5000),
     supabase.from("ride_disputes").select("id,status").limit(5000),
     supabase.from("driver_payouts").select("id,payout_status").limit(5000),
-    supabase.from("demand_zones").select("id,surge_multiplier").limit(500),
+    (supabase as any).from("geo_live_zone_overlays").select("zone_key,surge_multiplier").limit(500),
   ]);
 
   const jobsData = (jobs.data ?? []) as any[];

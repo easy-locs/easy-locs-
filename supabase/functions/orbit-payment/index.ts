@@ -268,12 +268,12 @@ serve(async (req) => {
       let reference_code_out = null;
       let reference_code_in = null;
       if (result?.tx_out_id) {
-        const { data: txOut } = await supabase.from("wallet_transactions").select("reference_code").eq("id", result.tx_out_id).maybeSingle();
-        reference_code_out = txOut?.reference_code || null;
+        const { data: txOut } = await supabase.from("unified_wallet_transactions").select("id").eq("id", result.tx_out_id).maybeSingle();
+        reference_code_out = txOut?.id || null;
       }
       if (result?.tx_in_id) {
-        const { data: txIn } = await supabase.from("wallet_transactions").select("reference_code").eq("id", result.tx_in_id).maybeSingle();
-        reference_code_in = txIn?.reference_code || null;
+        const { data: txIn } = await supabase.from("unified_wallet_transactions").select("id").eq("id", result.tx_in_id).maybeSingle();
+        reference_code_in = txIn?.id || null;
       }
 
       return new Response(JSON.stringify({ success: true, ...result, reference_code: reference_code_out, reference_code_in }), {
@@ -331,18 +331,15 @@ serve(async (req) => {
       });
 
       // Create pending wallet transaction for tracking
-      const { data: txRecord } = await supabase.from("wallet_transactions").insert({
-        user_id: user.id,
-        counterpart_user_id: recipient_user_id || null,
-        type: "payment",
-        direction: "out",
+      const { data: txRecord } = await supabase.from("unified_wallet_transactions").insert({
+        sender_id: user.id,
+        recipient_id: recipient_user_id || null,
         amount,
         currency,
-        description: description || "Fiat payment",
+        title: description || "Fiat payment",
         status: "pending",
-        thread_id: thread_id || null,
-        reference_type: context?.type || "fiat_checkout",
-        reference_id: session.id,
+        context_type: context?.type || "fiat_checkout",
+        context_id: session.id,
         metadata_json: {
           stripe_session_id: session.id,
           recipient_name: recipient_name || null,

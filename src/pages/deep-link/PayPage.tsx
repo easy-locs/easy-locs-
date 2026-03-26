@@ -21,8 +21,8 @@ export default function PayPage() {
     queryKey: ["public-payment", paymentId],
     queryFn: async () => {
       const { data: txn } = await (supabase as any)
-        .from("wallet_transactions")
-        .select("id, amount, currency, reference_type, reference_code, status, created_at, user_id, counterpart_user_id")
+        .from("unified_wallet_transactions")
+        .select("id, amount, currency, context_type, status, created_at, sender_id, recipient_id")
         .eq("id", paymentId)
         .maybeSingle();
       return txn;
