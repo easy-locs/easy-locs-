@@ -12993,6 +12993,78 @@ export type Database = {
         }
         Relationships: []
       }
+      notifications_v2: {
+        Row: {
+          action_url: string | null
+          actor: string
+          body: string
+          clicked_at: string | null
+          created_at: string
+          data: Json
+          dedupe_key: string | null
+          delivery_mode: string[]
+          dismissed_at: string | null
+          domain: string
+          id: string
+          orbit_context_id: string | null
+          priority: string
+          read_at: string | null
+          related_conversation_id: string | null
+          related_job_id: string | null
+          related_order_id: string | null
+          related_payment_intent_id: string | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          action_url?: string | null
+          actor?: string
+          body?: string
+          clicked_at?: string | null
+          created_at?: string
+          data?: Json
+          dedupe_key?: string | null
+          delivery_mode?: string[]
+          dismissed_at?: string | null
+          domain?: string
+          id?: string
+          orbit_context_id?: string | null
+          priority?: string
+          read_at?: string | null
+          related_conversation_id?: string | null
+          related_job_id?: string | null
+          related_order_id?: string | null
+          related_payment_intent_id?: string | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          action_url?: string | null
+          actor?: string
+          body?: string
+          clicked_at?: string | null
+          created_at?: string
+          data?: Json
+          dedupe_key?: string | null
+          delivery_mode?: string[]
+          dismissed_at?: string | null
+          domain?: string
+          id?: string
+          orbit_context_id?: string | null
+          priority?: string
+          read_at?: string | null
+          related_conversation_id?: string | null
+          related_job_id?: string | null
+          related_order_id?: string | null
+          related_payment_intent_id?: string | null
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       onboarding_audit: {
         Row: {
           flow_key: string

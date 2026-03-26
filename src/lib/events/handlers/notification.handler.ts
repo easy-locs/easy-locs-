@@ -1,66 +1,34 @@
 /**
- * Notification handler — listens to REAL platform events and writes notifications.
- * Uses platformBus (the actual event bus used by stores), not the orphaned eventBus.
+ * Notification handler — listens to REAL platform events and writes to notifications_v2.
+ * CANONICAL WRITE PATH — replaces legacy app_notifications writer.
  */
 import { platformBus } from "@/lib/shared/platform-bus";
 import { supabase } from "@/integrations/supabase/client";
-
-async function sendNotification(input: {
-  user_id: string;
-  title: string;
-  body: string;
-  type: string;
-  metadata?: Record<string, any>;
-}) {
-  try {
-    const { error } = await (supabase as any).from("app_notifications").insert({
-      id: crypto.randomUUID(),
-      user_id: input.user_id,
-      orbitId: input.user_id,
-      title: input.title,
-      body: input.body,
-      type: input.type,
-      metadata: input.metadata ?? null,
-      read: false,
-    });
-    if (error) {
-      console.warn("[notification] insert error", error.message);
-    } else {
-      console.log("[notification] sent", input.type, input.user_id);
-    }
-  } catch (e) {
-    console.error("[notification] send error", e);
-  }
-}
+import { insertNotification } from "@/lib/notifications-v2/notification-service";
 
 // ── Message sent → notify receiver ──
 platformBus.on("message.sent", (event) => {
   const msg = event.payload as any;
-  // msg.message contains the saved ChatMessageRecord
   const message = msg?.message;
   if (!message) return;
-  
-  // We need the receiver — get conversation participants to find the other user
-  // For now, log that the event fired (receiver resolution requires conversation lookup)
-  console.log("[notification] message.sent event captured", message.conversationId);
+  console.log("[notification-v2] message.sent event captured", message.conversationId);
 });
 
 // ── Wallet transaction created → notify user ──
 platformBus.on("wallet.transaction.created", (event) => {
   const { transaction } = event.payload as any;
   if (!transaction) return;
-  
-  // Get current user from auth
   supabase.auth.getUser().then(({ data }) => {
     const userId = data?.user?.id;
     if (!userId) return;
-    
-    void sendNotification({
+    void insertNotification({
       user_id: userId,
+      actor: "client",
+      domain: "wallet",
+      type: "wallet.credit",
       title: "Transaction recorded",
       body: `${transaction.amount > 0 ? "+" : ""}${transaction.amount} ${transaction.currency ?? "AED"}`,
-      type: "wallet",
-      metadata: { transactionId: transaction.id, amount: transaction.amount },
+      data: { transactionId: transaction.id, amount: transaction.amount },
     });
   });
 });
@@ -71,12 +39,15 @@ platformBus.on("wallet.payment.success", (event) => {
   supabase.auth.getUser().then(({ data }) => {
     const userId = data?.user?.id;
     if (!userId) return;
-    void sendNotification({
+    void insertNotification({
       user_id: userId,
+      actor: "client",
+      domain: "wallet",
+      type: "payment.success",
       title: "Payment successful ✅",
       body: `${p.amount ?? ""} ${p.currency ?? "AED"} payment completed`,
-      type: "wallet",
-      metadata: { transactionId: p.transactionId },
+      data: { transactionId: p.transactionId },
+      related_payment_intent_id: p.paymentIntentId,
     });
   });
 });
@@ -87,61 +58,68 @@ platformBus.on("wallet.payment.failed", (event) => {
   supabase.auth.getUser().then(({ data }) => {
     const userId = data?.user?.id;
     if (!userId) return;
-    void sendNotification({
+    void insertNotification({
       user_id: userId,
+      actor: "client",
+      domain: "wallet",
+      type: "payment.failed",
       title: "Payment failed ❌",
       body: p.reason || "Payment could not be processed",
-      type: "wallet",
-      metadata: { transactionId: p.transactionId },
+      priority: "high",
+      data: { transactionId: p.transactionId },
     });
   });
 });
 
-// ── Booking requested → notify ──
+// ── Booking events ──
 platformBus.on("booking.requested", (event) => {
   const { booking } = event.payload as any;
   if (!booking) return;
   supabase.auth.getUser().then(({ data }) => {
     const userId = data?.user?.id;
     if (!userId) return;
-    void sendNotification({
+    void insertNotification({
       user_id: userId,
+      actor: "client",
+      domain: "system",
+      type: "booking.requested",
       title: "Booking submitted",
-      body: `Your booking request has been sent`,
-      type: "booking",
-      metadata: { bookingId: booking.id },
+      body: "Your booking request has been sent",
+      data: { bookingId: booking.id },
     });
   });
 });
 
-// ── Booking confirmed → notify ──
 platformBus.on("booking.confirmed", (event) => {
   const p = event.payload as any;
   supabase.auth.getUser().then(({ data }) => {
     const userId = data?.user?.id;
     if (!userId) return;
-    void sendNotification({
+    void insertNotification({
       user_id: userId,
+      actor: "client",
+      domain: "system",
+      type: "booking.confirmed",
       title: "Booking confirmed! 🎉",
       body: "Your booking has been approved",
-      type: "booking",
-      metadata: { bookingId: p.bookingId },
+      data: { bookingId: p.bookingId },
     });
   });
 });
 
-// ── Booking cancelled → notify ──
 platformBus.on("booking.cancelled", (event) => {
   const p = event.payload as any;
   supabase.auth.getUser().then(({ data }) => {
     const userId = data?.user?.id;
     if (!userId) return;
-    void sendNotification({
+    void insertNotification({
       user_id: userId,
+      actor: "client",
+      domain: "system",
+      type: "booking.cancelled",
       title: "Booking cancelled",
       body: "Your booking has been cancelled",
-      type: "booking",
-      metadata: { bookingId: p.bookingId },
+      data: { bookingId: p.bookingId },
     });
   });
 });
@@ -151,12 +129,15 @@ platformBus.on("ORDER_CREATED", (event) => {
   const p = event.payload as any;
   const userId = p.userId || p.buyerId;
   if (!userId) return;
-  void sendNotification({
+  void insertNotification({
     user_id: userId,
+    actor: "client",
+    domain: "merchant",
+    type: "order.confirmed",
     title: "Order confirmed",
     body: `Order #${(p.orderId as string)?.slice(0, 8) ?? ""} is confirmed`,
-    type: "order",
-    metadata: { orderId: p.orderId, shopId: p.shopId },
+    data: { orderId: p.orderId, shopId: p.shopId },
+    related_order_id: p.orderId,
   });
 });
 
@@ -164,34 +145,34 @@ platformBus.on("ORDER_COMPLETED", (event) => {
   const p = event.payload as any;
   const userId = p.userId || p.buyerId;
   if (!userId) return;
-  void sendNotification({
+  void insertNotification({
     user_id: userId,
+    actor: "client",
+    domain: "merchant",
+    type: "order.delivered",
     title: "Order delivered! 🎉",
     body: "Your order has been delivered. Enjoy!",
-    type: "order",
-    metadata: { orderId: p.orderId },
+    data: { orderId: p.orderId },
+    related_order_id: p.orderId,
   });
 });
 
-// ── Support ticket created → log (handled by support engine) ──
-platformBus.on("ISSUE_CREATED", (event) => {
-  console.log("[notification] support issue created", event.payload);
-});
-
-// ── QR payment completed → notify ──
+// ── QR payment completed ──
 platformBus.on("qr.payment.completed", (event) => {
   const p = event.payload as any;
   supabase.auth.getUser().then(({ data }) => {
     const userId = data?.user?.id;
     if (!userId) return;
-    void sendNotification({
+    void insertNotification({
       user_id: userId,
+      actor: "client",
+      domain: "wallet",
+      type: "payment.qr.success",
       title: "QR Payment successful ✅",
       body: `Payment of ${p.amount ?? ""} ${p.currency ?? "AED"} completed`,
-      type: "wallet",
-      metadata: { targetId: p.targetId },
+      data: { targetId: p.targetId },
     });
   });
 });
 
-console.log("[notification.handler] Registered on platformBus");
+console.log("[notification-v2.handler] Registered on platformBus — writing to notifications_v2");
