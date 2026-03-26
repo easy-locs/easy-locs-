@@ -12,10 +12,10 @@ export default function DriverActiveMissionsPage() {
     queryKey: ["driver-active-missions-page", user?.id],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("delivery_jobs")
+        .from("mobility_jobs")
         .select("*")
-        .eq("driver_id", user!.id)
-        .in("status", ["assigned", "accepted", "picked_up", "in_transit"])
+        .eq("rider_user_id", user!.id)
+        .in("status", ["accepted", "rider_arriving_pickup", "picked_up", "in_progress"])
         .order("created_at", { ascending: false })
         .limit(50);
       if (error) throw error;
