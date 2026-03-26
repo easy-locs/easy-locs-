@@ -8,6 +8,14 @@
  * Weights:
  *   0.30 proximity + 0.20 country_city + 0.15 district_zone
  * + 0.15 text + 0.10 popularity + 0.05 category + 0.05 serviceability
+ *
+ * SHORT AMBIGUOUS QUERY MODE:
+ *   For queries like "Marina", "Mall", "Airport", "Tower", "Downtown"
+ *   local bias is amplified: foreign results get 0.25x penalty,
+ *   district/zone boost gets 1.5x multiplier.
+ *
+ * COUNTRY COMPARISON:
+ *   Uses country_code (ISO 2-letter) as primary key, NOT country_name.
  */
 import { haversineKm } from "@/lib/geo/distance";
 import type { SearchCandidate } from "./search-provider-normalizer";
@@ -26,6 +34,7 @@ interface RankingContext {
   userLat?: number;
   userLng?: number;
   userCountry?: string;
+  userCountryCode?: string;
   userCity?: string;
   userDistrict?: string;
   zoneKey?: string;
@@ -58,35 +67,58 @@ function proximityScore(distKm: number | null): { score: number; bucket: string 
   return { score: 0.2, bucket: ">50km" };
 }
 
-// ── Country/City score ──
+// ── Country/City score — uses country_code as PRIMARY key ──
 function countryCityScore(
   c: SearchCandidate,
   userCountry?: string,
   userCity?: string,
+  userCountryCode?: string,
 ): { score: number; reasons: string[] } {
   const reasons: string[] = [];
-  const pc = (c.country_name ?? c.country_code ?? "").toLowerCase();
-  const cc = (c.city ?? "").toLowerCase();
-  const uc = (userCountry ?? "").toLowerCase();
-  const uci = (userCity ?? "").toLowerCase();
+  
+  // PRIMARY: compare country_code (ISO 2-letter)
+  const candidateCC = (c.country_code ?? "").toUpperCase();
+  const userCC = (userCountryCode ?? "").toUpperCase();
+  
+  // FALLBACK: country_name comparison
+  const candidateCountryName = (c.country_name ?? "").toLowerCase();
+  const userCountryName = (userCountry ?? "").toLowerCase();
+  
+  const candidateCity = (c.city ?? "").toLowerCase();
+  const userCityLower = (userCity ?? "").toLowerCase();
 
-  if (!uc && !uci) return { score: 0.5, reasons };
+  // No context → neutral
+  if (!userCC && !userCountryName && !userCityLower) return { score: 0.5, reasons };
 
   let s = 0;
-  // Country
-  if (uc && pc) {
-    if (pc === uc || pc.includes(uc) || uc.includes(pc)) {
-      s += 0.6; reasons.push("same_country");
-    } else {
-      s -= 0.4; reasons.push("foreign");
+
+  // Country match — country_code is primary
+  let sameCountry = false;
+  if (userCC && candidateCC) {
+    sameCountry = candidateCC === userCC;
+  } else if (userCountryName && candidateCountryName) {
+    sameCountry = candidateCountryName === userCountryName || 
+                  candidateCountryName.includes(userCountryName) || 
+                  userCountryName.includes(candidateCountryName);
+  }
+
+  if (sameCountry) {
+    s += 0.6;
+    reasons.push("same_country");
+  } else if (userCC || userCountryName) {
+    // We have context and it doesn't match → foreign penalty
+    s -= 0.4;
+    reasons.push("foreign");
+  }
+
+  // City match
+  if (userCityLower && candidateCity) {
+    if (candidateCity === userCityLower || candidateCity.includes(userCityLower) || userCityLower.includes(candidateCity)) {
+      s += 0.4;
+      reasons.push("same_city");
     }
   }
-  // City
-  if (uci && cc) {
-    if (cc === uci || cc.includes(uci) || uci.includes(cc)) {
-      s += 0.4; reasons.push("same_city");
-    }
-  }
+
   return { score: Math.max(0, Math.min(1, s)), reasons };
 }
 
@@ -135,18 +167,21 @@ function textScore(query: string, c: SearchCandidate): number {
   return 0.2;
 }
 
-// ── Global bucket assignment ──
+// ── Global bucket assignment — uses country_code as PRIMARY ──
 function assignBucket(
   c: SearchCandidate,
   userCountry?: string,
   userCity?: string,
   userDistrict?: string,
   zoneKey?: string,
+  userCountryCode?: string,
 ): string {
-  const pc = (c.country_name ?? c.country_code ?? "").toLowerCase();
+  const candidateCC = (c.country_code ?? "").toUpperCase();
+  const userCC = (userCountryCode ?? "").toUpperCase();
+  const candidateCountryName = (c.country_name ?? c.country_code ?? "").toLowerCase();
+  const userCountryName = (userCountry ?? "").toLowerCase();
   const cc = (c.city ?? "").toLowerCase();
   const pd = (c.district ?? "").toLowerCase();
-  const uc = (userCountry ?? "").toLowerCase();
   const uci = (userCity ?? "").toLowerCase();
   const ud = (userDistrict ?? "").toLowerCase();
 
@@ -156,8 +191,16 @@ function assignBucket(
   if (ud && pd && (pd === ud || pd.includes(ud) || ud.includes(pd))) return "same_district";
   // City
   if (uci && cc && (cc === uci || cc.includes(uci) || uci.includes(cc))) return "same_city";
-  // Country
-  if (uc && pc && (pc === uc || pc.includes(uc) || uc.includes(pc))) return "same_country";
+  // Country — country_code primary
+  let sameCountry = false;
+  if (userCC && candidateCC) {
+    sameCountry = candidateCC === userCC;
+  } else if (userCountryName && candidateCountryName) {
+    sameCountry = candidateCountryName === userCountryName || 
+                  candidateCountryName.includes(userCountryName) || 
+                  userCountryName.includes(candidateCountryName);
+  }
+  if (sameCountry) return "same_country";
   return "international";
 }
 
@@ -175,7 +218,7 @@ export function localRank(candidates: SearchCandidate[], ctx: RankingContext): R
   const isExplicitForeign = ctx.intent.isExplicitForeign;
   const isAmbiguous = ctx.intent.isAmbiguousShort;
 
-  return candidates.map(c => {
+  const ranked = candidates.map(c => {
     const reasons: string[] = [];
 
     // Distance
@@ -185,10 +228,10 @@ export function localRank(candidates: SearchCandidate[], ctx: RankingContext): R
     }
     const prox = proximityScore(distKm);
 
-    // Country/City
+    // Country/City — using country_code as primary
     const cc = isExplicitForeign
       ? { score: 0.5, reasons: [] as string[] }
-      : countryCityScore(c, ctx.userCountry, ctx.userCity);
+      : countryCityScore(c, ctx.userCountry, ctx.userCity, ctx.userCountryCode);
 
     // District/Zone
     const dz = districtZoneScore(c, ctx.userDistrict, ctx.zoneKey);
@@ -199,13 +242,12 @@ export function localRank(candidates: SearchCandidate[], ctx: RankingContext): R
     // Popularity
     const pop = Math.min((c.popularity_score ?? 0) / 100, 1);
 
-    // Category (placeholder — always 0.5 until category brain integration)
+    // Category (placeholder)
     const cat = 0.5;
-
     // Serviceability (placeholder)
     const svc = 0.5;
 
-    // Score
+    // Base score
     let score =
       prox.score * W_PROXIMITY +
       cc.score * W_COUNTRY_CITY +
@@ -215,10 +257,21 @@ export function localRank(candidates: SearchCandidate[], ctx: RankingContext): R
       cat * W_CATEGORY +
       svc * W_SERVICEABILITY;
 
-    // Ambiguous short query boost: amplify local context even more
+    // SHORT AMBIGUOUS QUERY MODE — aggressive local bias
+    const bucket = assignBucket(c, ctx.userCountry, ctx.userCity, ctx.userDistrict, ctx.zoneKey, ctx.userCountryCode);
     if (isAmbiguous && !isExplicitForeign) {
-      // Extra penalty for foreign results on ambiguous queries
-      const bucket = assignBucket(c, ctx.userCountry, ctx.userCity, ctx.userDistrict, ctx.zoneKey);
+      if (bucket === "international") {
+        score *= 0.25; // Very aggressive penalty
+        reasons.push("ambiguous_foreign_penalty");
+      } else if (bucket === "same_country") {
+        score *= 0.85;
+      } else if (bucket === "same_zone" || bucket === "same_district") {
+        // Boost local zone/district results for ambiguous queries
+        score *= 1.15;
+        reasons.push("ambiguous_local_boost");
+      }
+    } else if (!isExplicitForeign) {
+      // Standard mode — still penalize foreign but less aggressively
       if (bucket === "international") score *= 0.4;
       else if (bucket === "same_country") score *= 0.9;
     }
@@ -230,8 +283,6 @@ export function localRank(candidates: SearchCandidate[], ctx: RankingContext): R
     if (prox.score >= 0.8) reasons.push("nearby");
     if (ts > 0.7) reasons.push("text_match");
     if (pop > 0.5) reasons.push("popular");
-
-    const bucket = assignBucket(c, ctx.userCountry, ctx.userCity, ctx.userDistrict, ctx.zoneKey);
 
     return {
       candidate: c,
@@ -257,4 +308,14 @@ export function localRank(candidates: SearchCandidate[], ctx: RankingContext): R
     // Secondary: score within bucket
     return b.score - a.score;
   });
+
+  // Debug logging in dev
+  if (import.meta.env.DEV && ranked.length > 0) {
+    console.log(`[SearchBrain] Query: "${ctx.query}" | Ambiguous: ${isAmbiguous} | Country: ${ctx.userCountryCode ?? ctx.userCountry ?? "?"} | City: ${ctx.userCity ?? "?"}`);
+    ranked.slice(0, 5).forEach((r, i) => {
+      console.log(`  #${i + 1} [${r.bucket}] ${r.candidate.label} (${r.candidate.country_code ?? "?"}) → ${r.score.toFixed(3)} | ${r.reasons.join(", ")}`);
+    });
+  }
+
+  return ranked;
 }
