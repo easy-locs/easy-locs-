@@ -147,8 +147,8 @@ export default function CommGroupsSection() {
           .from("group_members")
           .select("*", { count: "exact", head: true })
           .eq("group_id", g.id);
-        const { data: lastMsg } = await supabase
-          .from("group_messages")
+        const { data: lastMsg } = await (supabase as any)
+          .from("chat_messages_v2")
           .select("content, created_at")
           .eq("group_id", g.id)
           .order("created_at", { ascending: false })
@@ -178,7 +178,7 @@ export default function CommGroupsSection() {
     const groupId = crypto.randomUUID();
     const postingPermission: PostingPermission = newGroup.group_type === "channel" ? "admins_only" : "everyone";
 
-    const { error } = await supabase.from("groups").insert({
+    const { error } = await (supabase as any).from("conversations_v2").insert({
       id: groupId,
       org_id: orgId,
       name: newGroup.name.trim(),
@@ -211,8 +211,8 @@ export default function CommGroupsSection() {
   const openGroupChat = async (group: Group) => {
     setActiveGroup(group);
     haptic("light");
-    const { data: msgs } = await supabase
-      .from("group_messages")
+    const { data: msgs } = await (supabase as any)
+      .from("chat_messages_v2")
       .select("*")
       .eq("group_id", group.id)
       .order("created_at", { ascending: true })
@@ -231,14 +231,14 @@ export default function CommGroupsSection() {
     const content = msgInput.trim();
     setMsgInput("");
     haptic("light");
-    const { data, error } = await supabase.from("group_messages").insert({
+    const { data, error } = await (supabase as any).from("chat_messages_v2").insert({
       group_id: activeGroup.id,
       sender_id: user.id,
       content,
     } as any).select().single();
     if (!error && data) {
       setMessages(prev => [...prev, data as GroupMessage]);
-      await supabase.from("groups").update({ updated_at: new Date().toISOString() } as any).eq("id", activeGroup.id);
+      await (supabase as any).from("conversations_v2").update({ updated_at: new Date().toISOString() }).eq("id", activeGroup.id);
       setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }), 50);
     }
   };
@@ -246,7 +246,7 @@ export default function CommGroupsSection() {
   const togglePin = async (msg: GroupMessage) => {
     if (!isAdmin || !activeGroup) return;
     const newPinned = !msg.is_pinned;
-    const { error } = await supabase.from("group_messages").update({
+    const { error } = await (supabase as any).from("chat_messages_v2").update({
       is_pinned: newPinned,
       pinned_at: newPinned ? new Date().toISOString() : null,
       pinned_by: newPinned ? user?.id : null,
@@ -296,7 +296,7 @@ export default function CommGroupsSection() {
   const togglePostingPermission = async () => {
     if (!isAdmin || !activeGroup) return;
     const newPerm: PostingPermission = activeGroup.posting_permission === "everyone" ? "admins_only" : "everyone";
-    const { error } = await supabase.from("groups").update({ posting_permission: newPerm } as any).eq("id", activeGroup.id);
+    const { error } = await (supabase as any).from("conversations_v2").update({ posting_permission: newPerm }).eq("id", activeGroup.id);
     if (!error) {
       setActiveGroup(prev => prev ? { ...prev, posting_permission: newPerm } : null);
       haptic("light");
