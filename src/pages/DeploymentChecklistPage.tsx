@@ -6,7 +6,7 @@ export default function DeploymentChecklistPage() {
   const rows = getDeploymentChecklist();
 
   return (
-    <div className="min-h-screen bg-background p-4 space-y-4 max-w-lg mx-auto">
+    <div className="app-mobile-page bg-background p-4 space-y-4 max-w-lg mx-auto">
       <BackCard />
       <div>
         <h1 className="text-xl font-bold text-foreground">Deployment Checklist</h1>

@@ -17,7 +17,7 @@ export default function ExecutiveKPIBoardPage() {
   const latest = rows[0];
 
   return (
-    <div className="min-h-screen bg-background p-4">
+    <div className="app-mobile-page bg-background p-4">
       <BackCard />
       <h1 className="mt-4 text-xl font-bold text-foreground">Executive KPI board</h1>
       <p className="text-sm text-muted-foreground">Daily platform performance snapshot</p>

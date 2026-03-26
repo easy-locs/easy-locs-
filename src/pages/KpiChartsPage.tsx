@@ -7,7 +7,7 @@ export default function KpiChartsPage() {
   const { labels, ordersSeries, revenueSeries, driversSeries, merchantsSeries } = useKpiChartData(activeWorkspace?.id);
 
   return (
-    <div className="min-h-screen bg-background p-4 space-y-6 max-w-2xl mx-auto">
+    <div className="app-mobile-page bg-background p-4 space-y-6 max-w-2xl mx-auto">
       <BackCard />
       <div>
         <h1 className="text-xl font-bold text-foreground">KPI Charts</h1>
