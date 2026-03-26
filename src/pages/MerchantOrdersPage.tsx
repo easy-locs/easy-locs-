@@ -131,7 +131,7 @@ export default function MerchantOrdersPage() {
   const filteredOrders = orders.filter(o => o.status === activeTab);
 
   return (
-    <div className="min-h-[100dvh] flex flex-col" style={{ background: "hsl(var(--hud-bg))" }}>
+    <div className="app-mobile-page flex flex-col" style={{ background: "hsl(var(--hud-bg))" }}>
       {/* Header */}
       <header className="sticky top-0 z-40 flex items-center gap-3 px-4 h-14 border-b" style={{ background: "hsl(var(--hud-bg))", borderColor: "hsl(var(--hud-border) / 0.1)" }}>
         <button onClick={() => navigate(-1)} className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl active:scale-95">

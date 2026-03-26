@@ -33,7 +33,7 @@ export default function MerchantBasicAnalyticsPage() {
   });
 
   return (
-    <div className="min-h-[100dvh] flex flex-col bg-background">
+    <div className="app-mobile-page flex flex-col bg-background">
       <header className="flex items-center gap-3 px-4 pt-4 pb-3">
         <button onClick={() => navigate(`/merchant/dashboard/${merchantId}`)} className="w-9 h-9 rounded-xl bg-muted flex items-center justify-center">←</button>
         <div>

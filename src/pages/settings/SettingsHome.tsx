@@ -131,7 +131,7 @@ export default function SettingsHome() {
   const role = profile?.role;
 
   return (
-    <div className="min-h-[100dvh] flex flex-col bg-background pb-[calc(80px+env(safe-area-inset-bottom,0px))]">
+    <div className="app-mobile-page flex flex-col bg-background pb-[calc(80px+env(safe-area-inset-bottom,0px))]">
       {/* Premium Profile Header */}
       {user && (
         <div className="px-4 pt-6 pb-3">

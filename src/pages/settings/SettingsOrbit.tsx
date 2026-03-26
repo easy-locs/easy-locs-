@@ -65,7 +65,7 @@ export default function SettingsOrbit() {
   };
 
   return (
-    <div className="min-h-[100dvh] flex flex-col bg-background">
+    <div className="app-mobile-page flex flex-col bg-background">
       <header className="flex items-center gap-3 px-4 pt-4 pb-2">
         <button
           onClick={() => navigate("/settings")}

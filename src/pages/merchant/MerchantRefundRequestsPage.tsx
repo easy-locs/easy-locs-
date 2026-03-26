@@ -37,7 +37,7 @@ export default function MerchantRefundRequestsPage() {
   };
 
   return (
-    <div className="min-h-[100dvh] bg-background pb-24">
+    <div className="app-mobile-page bg-background pb-24">
       <div className="flex items-center gap-3 px-4 pt-6 pb-4">
         <button onClick={() => navigate(`/merchant/dashboard/${merchantId}`)} className="w-9 h-9 rounded-xl bg-muted flex items-center justify-center">←</button>
         <div>
