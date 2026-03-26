@@ -11815,6 +11815,44 @@ export type Database = {
           },
         ]
       }
+      mobility_ai_logs: {
+        Row: {
+          created_at: string
+          id: string
+          job_id: string | null
+          log_level: string
+          log_type: string
+          message: string
+          metadata_json: Json
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          job_id?: string | null
+          log_level?: string
+          log_type: string
+          message: string
+          metadata_json?: Json
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          job_id?: string | null
+          log_level?: string
+          log_type?: string
+          message?: string
+          metadata_json?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mobility_ai_logs_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "mobility_jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       mobility_dispatch_attempts: {
         Row: {
           accepted_count: number | null

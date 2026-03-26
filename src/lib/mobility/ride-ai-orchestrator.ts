@@ -1,10 +1,11 @@
 /**
- * ride-ai-orchestrator — Central orchestrator: pricing → scoring → dispatch waves.
+ * ride-ai-orchestrator — Central orchestrator: idempotency → pricing → scoring → dispatch waves.
  */
 import { supabase } from "@/integrations/supabase/client";
 import { scoreDriversForJob, type ScoredDriver } from "./driver-ai-scorer";
 import { computeAIPricing, type PricingAIResult } from "./pricing-ai-engine";
 import { createDispatchRun, dispatchWave } from "./dispatch-wave-engine";
+import { findRecentDuplicateRide, buildRideIdempotencyKey } from "./ride-idempotency";
 
 function distanceKm(lat1: number, lng1: number, lat2: number, lng2: number) {
   const dx = lat1 - lat2;
@@ -13,19 +14,27 @@ function distanceKm(lat1: number, lng1: number, lat2: number, lng2: number) {
 }
 
 export interface RideAIResult {
+  reused: boolean;
   job: any;
-  pricing: PricingAIResult;
+  pricing: PricingAIResult | null;
   scoredDrivers: ScoredDriver[];
 }
 
 export async function orchestrateRideAI(payload: any): Promise<RideAIResult> {
+  const idempotencyKey = buildRideIdempotencyKey(payload);
+
+  // Dedup check
+  const duplicate = await findRecentDuplicateRide(idempotencyKey);
+  if (duplicate) {
+    return { reused: true, job: duplicate, pricing: null, scoredDrivers: [] };
+  }
+
   const distKm = distanceKm(
     payload.pickup_lat,
     payload.pickup_lng,
     payload.dropoff_lat,
     payload.dropoff_lng,
   );
-
   const durationMin = Math.max(4, Math.round(distKm * 2.3));
 
   const zone = {
@@ -43,7 +52,7 @@ export async function orchestrateRideAI(payload: any): Promise<RideAIResult> {
     zone,
   });
 
-  // 2. Create job
+  // 2. Create job with idempotency key
   const { data: job } = await supabase
     .from("mobility_jobs")
     .insert({
@@ -96,5 +105,5 @@ export async function orchestrateRideAI(payload: any): Promise<RideAIResult> {
   await createDispatchRun((job as any).id, payload.zone_key ?? null);
   await dispatchWave((job as any).id, scoredDrivers, 1);
 
-  return { job, pricing, scoredDrivers };
+  return { reused: false, job, pricing, scoredDrivers };
 }
