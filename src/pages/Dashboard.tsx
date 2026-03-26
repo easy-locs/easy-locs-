@@ -8,7 +8,7 @@ const SmartHome = lazy(() => import("@/components/storefront/SmartHome"));
 const Dashboard = () => {
   return (
     <DashboardLayout>
-      <div className="max-w-5xl mx-auto">
+      <div className="w-full min-w-0">
         <Suspense fallback={null}><WelcomeTour /></Suspense>
         <Suspense fallback={null}>
           <div className="mb-4">
@@ -16,7 +16,7 @@ const Dashboard = () => {
           </div>
         </Suspense>
         <Suspense fallback={<div className="h-32 rounded-xl bg-muted/20 animate-pulse mb-4" />}>
-          <div className="px-1">
+          <div className="w-full min-w-0">
             <SmartHome />
           </div>
         </Suspense>
