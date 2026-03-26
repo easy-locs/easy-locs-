@@ -51,21 +51,24 @@ export default function DeliveryDispatch({ shopId }: { shopId: string }) {
 
       if (!orgMember) throw new Error("No organization found");
 
-      // Create delivery job
-      const { data: job, error } = await (supabase as any)
-        .from("delivery_jobs")
-        .insert({
-          org_id: orgMember.org_id,
-          seller_id: user!.id,
-          order_id: order.id,
+      // Create mobility job via canonical dispatch
+      const { data: result, error } = await supabase.functions.invoke("dispatch-ride", {
+        body: {
+          action: "create_job",
+          job_type: "parcel_delivery",
+          service_level: "parcel_standard",
           pickup_address: pickupAddress,
           dropoff_address: order.shipping_address,
-          package_description: `Storefront order for ${order.buyer_name || order.buyer_email}`,
-          status: "pending",
-          priority: "normal",
-        })
-        .select("id")
-        .single();
+          notes: `Storefront order for ${order.buyer_name || order.buyer_email}`,
+          quoted_price: 0,
+          currency: "AED",
+          order_id: order.id,
+          merchant_id: orgMember.org_id,
+        },
+      });
+
+      if (error) throw error;
+      const job = result?.job;
 
       if (error) throw error;
 

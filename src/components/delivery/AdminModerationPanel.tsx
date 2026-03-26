@@ -88,14 +88,15 @@ export default function AdminModerationPanel({ orgId }: { orgId: string }) {
         metadata_json: { driver_id: driverId, action, note: actionNote, timestamp: new Date().toISOString() },
       });
 
-      // Notify driver
-      await supabase.from("notifications").insert({
+      // Notify driver via canonical notifications_v2
+      await (supabase as any).from("notifications_v2").insert({
         user_id: userId,
-        org_id: orgId,
-        type: action === "reinstate" ? "info" : "info",
+        actor: "rider",
+        domain: "admin",
+        type: `moderation.${action}`,
         title: action === "warn" ? "⚠️ Avertissement" : action === "suspend" ? "🚫 Compte suspendu" : action === "ban" ? "❌ Compte banni" : "✅ Compte réactivé",
-        message: actionNote || `Action de modération : ${action}`,
-        link: "/driver",
+        body: actionNote || `Action de modération : ${action}`,
+        action_url: "/driver",
       });
 
       toast.success(`Action "${action}" appliquée`);

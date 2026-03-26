@@ -71,9 +71,9 @@ export default function DriverReputationPanel({ driverId, className }: Props) {
     try {
       // Fetch completed deliveries
       const { data: jobs } = await supabase
-        .from("delivery_jobs")
-        .select("id, status, created_at, delivered_at, accepted_at")
-        .eq("driver_id", targetId)
+        .from("mobility_jobs")
+        .select("id, status, created_at, completed_at, accepted_at")
+        .eq("rider_user_id", targetId)
         .limit(500);
 
       const all = jobs || [];

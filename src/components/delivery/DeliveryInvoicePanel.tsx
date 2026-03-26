@@ -53,12 +53,12 @@ export default function DeliveryInvoicePanel({ orgId, className }: Props) {
       else since.setMonth(since.getMonth() - 3);
 
       const { data: jobs } = await supabase
-        .from("delivery_jobs")
-        .select("id, driver_id, pickup_address, dropoff_address, delivery_fee, currency, delivered_at, status")
-        .eq("org_id", orgId)
+        .from("mobility_jobs")
+        .select("id, rider_user_id, pickup_address, dropoff_address, current_price, quoted_price, currency, completed_at, status")
+        .eq("merchant_id", orgId)
         .eq("status", "completed")
-        .gte("delivered_at", since.toISOString())
-        .order("delivered_at", { ascending: false })
+        .gte("completed_at", since.toISOString())
+        .order("completed_at", { ascending: false })
         .limit(500);
 
       const invoiceRows: InvoiceRow[] = (jobs || []).map(j => ({

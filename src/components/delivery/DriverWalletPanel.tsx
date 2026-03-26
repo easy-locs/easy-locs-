@@ -47,11 +47,11 @@ export default function DriverWalletPanel({ className }: Props) {
     try {
       // Get completed earnings
       const { data: jobs } = await supabase
-        .from("delivery_jobs")
-        .select("delivery_fee, currency")
-        .eq("driver_id", user.id)
+        .from("mobility_jobs")
+        .select("current_price, quoted_price, currency")
+        .eq("rider_user_id", user.id)
         .eq("status", "completed")
-        .not("delivered_at", "is", null);
+        .not("completed_at", "is", null);
 
       const totalEarned = (jobs || []).reduce((s, j) => s + (j.delivery_fee || 0), 0);
       const currency = jobs?.[0]?.currency || "EUR";
