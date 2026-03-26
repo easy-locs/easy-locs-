@@ -100,24 +100,30 @@ export async function seedAuditDemoData(workspaceId?: string) {
     });
   if (piErr) errors.push(`payment_intents: ${piErr.message}`);
 
-  // 7. Dispatch job (canonical dispatch_jobs_v2)
-  const { error: dispatchErr } = await (supabase as any)
-    .from("dispatch_jobs_v2")
+  // 7. Mobility job (canonical mobility_jobs)
+  const { error: mobilityErr } = await (supabase as any)
+    .from("mobility_jobs")
     .insert({
-      order_id: order?.id ?? null,
-      merchant_profile_id: merchant?.id ?? "unknown",
+      job_type: "parcel_delivery",
+      service_level: "parcel_standard",
       customer_user_id: userId,
-      assigned_driver_id: driver?.id ?? null,
-      dispatch_status: "assigned",
-      country_code: "AE",
-      delivery_fee: 10,
+      merchant_id: merchant?.id ?? null,
+      order_id: order?.id ?? null,
+      status: "completed",
+      dispatch_status: "completed",
+      booking_mode: "now",
       currency: "AED",
+      quoted_price: 10,
+      current_price: 10,
       pickup_lat: 0,
       pickup_lng: 0,
+      pickup_address: "Demo pickup",
       dropoff_lat: 0,
       dropoff_lng: 0,
+      dropoff_address: "Demo dropoff",
+      confirmation_code: "123456",
     });
-  if (dispatchErr) errors.push(`dispatch_jobs_v2: ${dispatchErr.message}`);
+  if (mobilityErr) errors.push(`mobility_jobs: ${mobilityErr.message}`);
 
   // 8. Tracking session (customer_user_id = auth.uid() required by RLS)
   const { data: trackingSession, error: tsErr } = await (supabase as any)

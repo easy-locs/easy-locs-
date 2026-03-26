@@ -24,7 +24,7 @@ export async function computeCityCoverage(city: string, countryCode: string): Pr
     (supabase as any).from("merchant_onboarding_profiles").select("id", { count: "exact", head: true }).eq("city", city).eq("country_code", countryCode),
     (supabase as any).from("merchant_onboarding_profiles").select("id", { count: "exact", head: true }).eq("city", city).eq("country_code", countryCode).in("status", ["live", "active"]),
     (supabase as any).from("driver_profiles").select("id", { count: "exact", head: true }).eq("city", city).eq("country_code", countryCode).eq("is_online", true),
-    (supabase as any).from("dispatch_jobs_v2").select("id", { count: "exact", head: true }).eq("city", city).eq("country_code", countryCode).in("dispatch_status", ["failed", "expired"]),
+    (supabase as any).from("mobility_jobs").select("id", { count: "exact", head: true }).in("status", ["failed_no_rider", "expired"]),
     (supabase as any).from("merchant_onboarding_profiles").select("id", { count: "exact", head: true }).eq("city", city).eq("country_code", countryCode).eq("status", "dormant"),
   ]);
 

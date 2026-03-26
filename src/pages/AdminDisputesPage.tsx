@@ -35,9 +35,9 @@ export default function AdminDisputesPage() {
       .update({ status: "refunded", updated_at: new Date().toISOString() } as any)
       .eq("id", id);
 
-    await supabase
-      .from("ride_requests" as any)
-      .update({ dispute_status: "refunded", updated_at: new Date().toISOString() } as any)
+    await (supabase as any)
+      .from("mobility_jobs")
+      .update({ status: "cancelled", cancel_reason: "dispute_refunded", updated_at: new Date().toISOString() })
       .eq("id", rideRequestId);
 
     setRows((prev) =>

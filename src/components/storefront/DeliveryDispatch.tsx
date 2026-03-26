@@ -1,6 +1,6 @@
 /**
  * DeliveryDispatch — Seller-side: request delivery for shipped orders.
- * Connects storefront orders to the delivery_jobs system.
+ * Connects storefront orders to mobility_jobs via dispatch-ride edge function.
  */
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";

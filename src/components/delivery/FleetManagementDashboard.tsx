@@ -43,10 +43,10 @@ export default function FleetManagementDashboard({ orgId }: { orgId: string }) {
 
   const fetchFleet = useCallback(async () => {
     if (!orgId) return;
-    const { data, error } = await supabase
-      .from("driver_sessions")
+    const { data, error } = await (supabase as any)
+      .from("rider_presence")
       .select("*")
-      .eq("org_id", orgId);
+      .limit(200);
 
     if (error) { console.error("[Fleet] fetch error:", error); setLoading(false); return; }
 
@@ -95,7 +95,7 @@ export default function FleetManagementDashboard({ orgId }: { orgId: string }) {
     if (!orgId) return;
     const channel = supabase
       .channel("fleet-live")
-      .on("postgres_changes", { event: "*", schema: "public", table: "driver_sessions", filter: `org_id=eq.${orgId}` }, () => fetchFleet())
+      .on("postgres_changes", { event: "*", schema: "public", table: "rider_presence" }, () => fetchFleet())
       .subscribe();
     return () => { supabase.removeChannel(channel); };
   }, [orgId, fetchFleet]);

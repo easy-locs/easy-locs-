@@ -72,14 +72,16 @@ export default function DriverOnboardingFlow({ onComplete, className }: Props) {
     if (!user) return;
     setSubmitting(true);
     try {
-      // Upsert driver session
-      const { error } = await supabase
-        .from("driver_sessions")
+      // Upsert rider presence (canonical)
+      const { error } = await (supabase as any)
+        .from("rider_presence")
         .upsert({
           user_id: user.id,
           vehicle_type: vehicleType,
-          max_distance_km: maxDistanceKm,
-          status: "offline",
+          is_online: false,
+          is_available: false,
+          rider_profile_id: user.id,
+          service_modes: [vehicleType === "car" ? "taxi" : "food_delivery", "parcel_delivery"],
         }, { onConflict: "user_id" });
 
       if (error) throw error;

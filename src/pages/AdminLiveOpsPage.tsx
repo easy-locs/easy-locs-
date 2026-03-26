@@ -16,7 +16,7 @@ export default function AdminLiveOpsPage() {
 
     const channel = supabase
       .channel("admin-live-ops")
-      .on("postgres_changes", { event: "*", schema: "public", table: "ride_requests" }, () => {
+      .on("postgres_changes", { event: "*", schema: "public", table: "mobility_jobs" }, () => {
         fetchLiveOps().then(setData);
       })
       .on("postgres_changes", { event: "*", schema: "public", table: "ride_disputes" }, () => {
@@ -32,7 +32,7 @@ export default function AdminLiveOpsPage() {
 
   const stats = useMemo(() => {
     const activeRides = data.rides.filter((r: any) =>
-      ["searching", "assigned", "driver_arrived", "in_progress"].includes(r.status)
+      ["searching", "offered", "accepted", "rider_arriving_pickup", "in_progress"].includes(r.status)
     ).length;
     const openDisputes = data.disputes.filter((d: any) => d.status === "open").length;
     const pendingPayouts = data.payouts.filter((p: any) => p.payout_status === "pending").length;
@@ -47,7 +47,7 @@ export default function AdminLiveOpsPage() {
 
         <div className="grid grid-cols-2 gap-3">
           {[
-            { label: "Active rides", value: stats.activeRides },
+            { label: "Active jobs", value: stats.activeRides },
             { label: "Open disputes", value: stats.openDisputes },
             { label: "Pending payouts", value: stats.pendingPayouts },
             { label: "Hot zones", value: stats.hotZones },
