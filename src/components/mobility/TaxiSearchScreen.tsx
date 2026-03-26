@@ -1,6 +1,6 @@
 /**
- * TaxiSearchScreen — Step 1: destination search (NO map).
- * Clean, focused UX like Careem/Uber opening screen.
+ * TaxiSearchScreen — Step 1: Destination search. NO map.
+ * Clean focused UX: service level → mode → pickup/dropoff → continue.
  */
 import React from "react";
 import { useTaxiFlowStore } from "@/stores/taxiFlowStore";
@@ -125,7 +125,7 @@ export function TaxiSearchScreen() {
         />
       </div>
 
-      {/* Continue button */}
+      {/* Continue */}
       <button
         type="button"
         disabled={!canContinue}
