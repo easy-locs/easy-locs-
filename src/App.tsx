@@ -814,7 +814,7 @@ const App = () => (
               <Route path="/listing/:id" element={<PublicListing />} />
               <Route path="/book/:slug" element={<PublicServiceBooking />} />
               <Route path="/nearby" element={<LocalServices />} />
-              <Route path="/rentals" element={<Navigate to="/property/rent" replace />} />
+              <Route path="/rentals" element={<Navigate to="/dashboard/rental-management" replace />} />
               <Route path="/rentals/:country" element={<RentalCatalog />} />
               <Route path="/rentals/:country/:city" element={<RentalCatalog />} />
               <Route path="/stays" element={<Navigate to="/travel/stays" replace />} />
