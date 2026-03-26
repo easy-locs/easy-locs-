@@ -45,7 +45,7 @@ export default function RideButton({ className = "", variant = "full" }: RideBut
       }
 
       // Navigate to ride flow
-      navigate("/ride");
+      navigate("/mobility/taxi");
     } catch (err) {
       toast.error("Could not start ride");
     } finally {
