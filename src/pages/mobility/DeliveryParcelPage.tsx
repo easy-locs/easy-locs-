@@ -8,7 +8,7 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { CanonicalAddressInput } from "@/components/address/CanonicalAddressInput";
 import type { CanonicalPlace } from "@/lib/address/canonical-place";
-import { useGeoLiveStation } from "@/hooks/useGeoLiveStation";
+import { useArbitratedStation } from "@/hooks/useArbitratedStation";
 import { cn } from "@/lib/utils";
 
 const PARCEL_TYPES = [
@@ -22,7 +22,7 @@ const PARCEL_TYPES = [
 
 export default function DeliveryParcelPage() {
   const navigate = useNavigate();
-  const station = useGeoLiveStation();
+  const station = useArbitratedStation();
   const [pickup, setPickup] = useState<CanonicalPlace | null>(null);
   const [dropoff, setDropoff] = useState<CanonicalPlace | null>(null);
   const [parcelType, setParcelType] = useState<string | null>(null);
@@ -36,7 +36,7 @@ export default function DeliveryParcelPage() {
 
   const canSubmit = parcelType && pickup && dropoff && recipientName;
   const etaMin = station.etas?.parcel;
-  const riderCount = station.station?.rider_supply ?? 0;
+  const riderCount = station.riderCount;
 
   return (
     <div className="min-h-[100dvh] bg-background">
@@ -60,7 +60,7 @@ export default function DeliveryParcelPage() {
 
       <div className="px-4 py-4 space-y-5">
         {/* Station context */}
-        {station.station && (
+        {riderCount > 0 && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex items-center gap-3 px-3 py-2 rounded-xl bg-muted/30 border border-border/10">
             <div className="flex items-center gap-1">
               <Users className="w-3.5 h-3.5 text-primary" />
@@ -70,7 +70,7 @@ export default function DeliveryParcelPage() {
               <Package className="w-3.5 h-3.5 text-violet-500" />
               <span className="text-xs text-muted-foreground">Est. {etaMin ?? "~30"}min</span>
             </div>
-            {station.station.surge_multiplier > 1.05 && (
+            {station.surge > 1.05 && (
               <div className="flex items-center gap-1 ml-auto">
                 <Zap className="w-3 h-3 text-destructive" />
                 <span className="text-[10px] font-bold text-destructive">Surge</span>
