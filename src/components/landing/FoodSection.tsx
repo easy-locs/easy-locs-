@@ -63,10 +63,12 @@ export default function FoodSection() {
 
         {/* Restaurant cards */}
         <div className="flex gap-3 overflow-x-auto pb-3 scrollbar-none snap-x snap-mandatory">
-          {shops.length === 0 &&
-            Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className="snap-start shrink-0 w-[240px] h-[200px] rounded-2xl bg-muted/30 animate-pulse" />
-            ))}
+          {shops.length === 0 && (
+            <div className="w-full py-8 text-center">
+              <UtensilsCrossed className="h-8 w-8 mx-auto text-muted-foreground/30 mb-2" />
+              <p className="text-sm text-muted-foreground">No restaurants available yet in your area</p>
+            </div>
+          )}
 
           {shops.map((shop, i) => (
             <motion.div
