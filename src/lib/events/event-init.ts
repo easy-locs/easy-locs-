@@ -18,7 +18,7 @@ import "./handlers/map-action.handler";
 import "./handlers/ride-bridge.handler";
 import { initRideLifecycleHandler } from "./handlers/ride-lifecycle.handler";
 import { initRideAIDispatchHandler } from "./handlers/ride-ai-dispatch.handler";
-import { initRideWalletHandler } from "./handlers/ride-wallet.handler";
+import { initRidePostflowHandler } from "./handlers/ride-postflow.handler";
 import { initRideRatingHandler } from "./handlers/ride-rating.handler";
 import { initSupportOpenHandler } from "./handlers/support-open.handler";
 import { initUnifiedMobilityRequestHandler } from "./handlers/unified-mobility-request.handler";
@@ -94,7 +94,7 @@ for (const [platformEvent, coreEvent] of Object.entries(BRIDGE_MAP)) {
 // Initialize ride lifecycle handler (global realtime listener)
 initRideLifecycleHandler();
 initRideAIDispatchHandler();
-initRideWalletHandler();
+initRidePostflowHandler();
 initRideRatingHandler();
 initSupportOpenHandler();
 initUnifiedMobilityRequestHandler();
