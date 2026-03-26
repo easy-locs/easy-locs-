@@ -42,7 +42,7 @@ const CATEGORIES = [
     sub: "Taxi, VTC, car rental — instant booking",
     icon: Car,
     image: transportBanner,
-    to: "/ride",
+    to: "/mobility/taxi",
     accent: "hsl(270 60% 55%)",
     cta: "Get a Ride",
     count: "500+",

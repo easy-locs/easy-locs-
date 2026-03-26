@@ -68,12 +68,12 @@ export default function DriverOnboardingWizard({ onComplete }: { onComplete?: ()
     if (!user?.id) return;
     setSubmitting(true);
     try {
-      // Upsert driver session with onboarding data
-      const { error } = await supabase.from("driver_sessions").upsert({
+      // Upsert rider presence with onboarding data
+      const { error } = await (supabase as any).from("rider_presence").upsert({
         user_id: user.id,
         vehicle_type: vehicle.vehicleType,
-        max_distance_km: zone.maxDistanceKm,
-        status: "offline",
+        is_online: false,
+        is_available: false,
       }, { onConflict: "user_id" });
 
       if (error) throw error;
