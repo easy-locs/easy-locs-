@@ -56,15 +56,15 @@ export default function DriverWalletPanel({ className }: Props) {
       const totalEarned = (jobs || []).reduce((s, j: any) => s + (j.current_price || j.quoted_price || 0), 0);
       const currency = jobs?.[0]?.currency || "EUR";
 
-      // Get wallet balance for withdrawn amount
-      const { data: walletData } = await supabase
-        .from("wallet_balances")
-        .select("balance, total_spent")
+      // Get wallet balance — canonical: wallet_balances_v2
+      const { data: walletData } = await (supabase as any)
+        .from("wallet_balances_v2")
+        .select("balance")
         .eq("user_id", user.id)
         .eq("currency", "LOCS")
         .maybeSingle();
 
-      const totalWithdrawn = walletData?.total_spent || 0;
+      const totalWithdrawn = walletData?.balance ? Math.max(0, totalEarned - (walletData.balance || 0)) : 0;
       const pendingWithdrawal = 0; // Could query a withdrawal_requests table
 
       setBalance({
@@ -76,13 +76,12 @@ export default function DriverWalletPanel({ className }: Props) {
         autoPayoutThreshold: threshold,
       });
 
-      // Mock withdrawal history from wallet transactions
-      const { data: txns } = await supabase
-        .from("wallet_transactions")
+      // Withdrawal history — canonical: unified_wallet_transactions
+      const { data: txns } = await (supabase as any)
+        .from("unified_wallet_transactions")
         .select("id, amount, status, created_at")
-        .eq("user_id", user.id)
-        .eq("type", "transfer")
-        .eq("direction", "out")
+        .eq("sender_id", user.id)
+        .eq("context_type", "withdrawal")
         .order("created_at", { ascending: false })
         .limit(10);
 
@@ -110,20 +109,20 @@ export default function DriverWalletPanel({ className }: Props) {
     }
     setSubmitting(true);
     try {
-      // Credit to wallet as LOCS
-      const { error } = await supabase.from("wallet_transactions").insert({
-        user_id: user.id,
-        type: "transfer",
-        direction: "in",
+      // Credit to wallet — canonical: unified_wallet_transactions
+      const { error } = await (supabase as any).from("unified_wallet_transactions").insert({
+        sender_id: null,
+        recipient_id: user.id,
         amount,
         currency: "LOCS",
-        description: `Retrait gains livraison: ${amount.toFixed(2)} ${balance.currency}`,
+        context_type: "withdrawal",
+        title: `Retrait gains livraison: ${amount.toFixed(2)} ${balance.currency}`,
         status: "completed",
       });
       if (error) throw error;
 
-      // Update wallet balance
-      await supabase.from("wallet_balances").upsert({
+      // Update wallet balance — canonical: wallet_balances_v2
+      await (supabase as any).from("wallet_balances_v2").upsert({
         user_id: user.id,
         currency: "LOCS",
         balance: (balance.available),

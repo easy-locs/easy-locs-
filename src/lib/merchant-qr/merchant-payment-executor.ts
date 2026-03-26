@@ -277,15 +277,16 @@ async function createReceipt(params: {
 }): Promise<string | undefined> {
   try {
     const receiptId = crypto.randomUUID();
-    await (supabase as any).from("notifications_v2").insert({
+    await (supabase as any).from("notifications").insert({
       id: receiptId,
       user_id: params.senderId,
-      actor: "client",
-      domain: "wallet",
       type: "payment.qr.receipt",
       title: `Payment to ${params.merchantName}`,
       body: `${params.amount} ${params.currency} • ${params.mode} QR`,
-      data: {
+      cta_url: null,
+      metadata_json: {
+        actor: "client",
+        domain: "wallet",
         tx_id: params.txId,
         merchant_id: params.merchantId,
         amount: params.amount,

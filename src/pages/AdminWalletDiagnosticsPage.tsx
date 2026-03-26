@@ -47,8 +47,8 @@ export default function AdminWalletDiagnosticsPage() {
       const [oRes, sRes, tRes, aRes] = await Promise.all([
         (supabase as any).from("orders").select("id, status, payment_status, wallet_status, settlement_status, gross_amount, delivery_fee, platform_commission_amount, merchant_net_amount, driver_amount, order_mode, payment_mode, currency, customer_wallet_id, created_at").eq("id", orderId).single(),
         (supabase as any).from("wallet_order_splits").select("*").eq("order_id", orderId).order("created_at"),
-        // Canonical: query by order_id, read transaction_type
-        (supabase as any).from("wallet_transactions").select("*").eq("order_id", orderId).order("created_at"),
+        // Canonical: unified_wallet_transactions by context_id
+        (supabase as any).from("unified_wallet_transactions").select("*").eq("context_id", orderId).order("created_at"),
         (supabase as any).from("audit_logs").select("*").ilike("action", "wallet_%").order("created_at", { ascending: false }).limit(20),
       ]);
       setOrder(oRes.data);
