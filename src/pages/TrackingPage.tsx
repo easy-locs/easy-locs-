@@ -11,6 +11,9 @@ import { motion } from "framer-motion";
 import { OrderStatusChip } from "@/components/orders/OrderStatusChip";
 import { getStatusMeta, normalizeStatus } from "@/lib/orders/order-status";
 import SupportTicketForm from "@/components/support/SupportTicketForm";
+import { lazy, Suspense } from "react";
+
+const LiveTrackingMap = lazy(() => import("@/components/tracking/LiveTrackingMap"));
 
 const STEPS = [
   { key: "pending_payment", label: "Order placed", icon: CreditCard },

@@ -12,6 +12,10 @@ import { toast } from "sonner";
 import { Store, Utensils, Zap, Eye, Plus, Trash2, Edit2, Check, Loader2, ExternalLink, ScanLine, ShoppingCart, CreditCard, QrCode } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { routes } from "@/lib/routes";
+import { MerchantLiveFulfillmentPanel } from "@/components/merchant/MerchantLiveFulfillmentPanel";
+import MerchantFinancialWidgets from "@/components/merchant/MerchantFinancialWidgets";
+import MerchantPaymentHistory from "@/components/merchant/MerchantPaymentHistory";
+import MerchantQrCockpit from "@/components/merchant/MerchantQrCockpit";
 
 interface MenuItem {
   id: string;
