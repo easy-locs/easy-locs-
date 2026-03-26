@@ -425,6 +425,8 @@ export default memo(function RadarView({ initialType, radiusKm: initialRadius, s
           <div className="h-full px-4 pb-2">
             <UnifiedMap
               entities={results}
+              center={selectedPlace ? [selectedPlace.lng, selectedPlace.lat] : undefined}
+              zoom={mapZoom}
               userLat={userLat}
               userLng={userLng}
               selectedId={selectedId}
