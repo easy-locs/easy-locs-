@@ -814,7 +814,7 @@ const App = () => (
               <Route path="/listing/:id" element={<PublicListing />} />
               <Route path="/book/:slug" element={<PublicServiceBooking />} />
               <Route path="/nearby" element={<LocalServices />} />
-              <Route path="/rentals" element={<Navigate to="/property/rent" replace />} />
+              <Route path="/rentals" element={<Navigate to="/dashboard/rental-management" replace />} />
               <Route path="/rentals/:country" element={<RentalCatalog />} />
               <Route path="/rentals/:country/:city" element={<RentalCatalog />} />
               <Route path="/stays" element={<Navigate to="/travel/stays" replace />} />
@@ -869,7 +869,7 @@ const App = () => (
               <Route path="/marketplace" element={<MarketplaceHubPage />} />
               <Route path="/marketplace/:citySlug" element={<MarketplaceCityPage />} />
               <Route path="/marketplace/:citySlug/:serviceSlug" element={<MarketplaceServiceCityPage />} />
-              <Route path="/services" element={<Navigate to="/services-hub" replace />} />
+              <Route path="/services" element={<Navigate to="/browse/services" replace />} />
               <Route path="/services/:categorySlug" element={<ServiceCategoryPage />} />
               <Route path="/services/city/:citySlug" element={<ServiceCityPage />} />
               <Route path="/provider/seo/:providerId" element={<ProviderSEOPage />} />
