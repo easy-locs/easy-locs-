@@ -45,6 +45,7 @@ export default function HyperRadarPage() {
   const [panelSnap, setPanelSnap] = useState<"closed" | "peek" | "half">("peek");
   const [zoneClick, setZoneClick] = useState<{ lat: number; lng: number } | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [showWeatherLayer, setShowWeatherLayer] = useState(true);
   const weather = useLiveWeatherStation({ lat: location?.lat, lng: location?.lng });
 
   /* ── Performance: limit visible pins ── */
@@ -132,6 +133,7 @@ export default function HyperRadarPage() {
           showHeatmap={visibleEntities.length > 30}
           heatmapPoints={visibleEntities.map(e => ({ lat: e.lat, lng: e.lng, intensity: 0.5 }))}
           radiusKm={radius}
+          showWeatherLayer={showWeatherLayer}
           onZoneClick={handleZoneClick}
         />
       </div>
@@ -178,14 +180,14 @@ export default function HyperRadarPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.15 }}
       >
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+        <div className="search-premium-wrap">
+          <Search className="search-premium-icon w-3.5 h-3.5 text-muted-foreground" />
           <input
             type="text"
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
             placeholder="Search places..."
-            className="h-11 w-full min-w-0 rounded-2xl border border-border/15 bg-card/95 pl-10 pr-4 text-sm font-medium text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:border-accent/30 transition-colors"
+            className="search-premium-field h-11 border border-border/15 bg-card/95 text-sm font-medium text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:border-accent/30 transition-colors"
             style={{ backdropFilter: "blur(12px)" }}
           />
         </div>
@@ -239,6 +241,13 @@ export default function HyperRadarPage() {
         transition={{ delay: 0.35 }}
       >
         <div className="flex gap-1.5 overflow-x-auto scrollbar-none pb-1">
+          <button
+            onClick={() => setShowWeatherLayer((current) => !current)}
+            className="flex items-center gap-1 rounded-full border border-border/15 bg-card/85 px-2.5 py-1.5 text-[10px] font-semibold whitespace-nowrap shrink-0 text-foreground backdrop-blur-md active:scale-95"
+          >
+            <CloudRain className="h-3 w-3 shrink-0 text-primary" />
+            {showWeatherLayer ? "Rain on" : "Rain off"}
+          </button>
           {LAYERS.map(layer => {
             const active = activeLayers.includes(layer.id);
             return (
