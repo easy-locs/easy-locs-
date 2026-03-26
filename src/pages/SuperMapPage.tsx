@@ -31,7 +31,7 @@ export default function SuperMapPage() {
         id: p.id,
         name: p.name,
         title: p.name,
-        type: p.category || "shop",
+        type: (["restaurant","shop","grocery","property","driver","courier","hotel","service"].includes(p.category) ? p.category : "shop") as GeoEntity["type"],
         category: p.subcategory || p.category || "general",
         lat: p.lat!,
         lng: p.lng!,
