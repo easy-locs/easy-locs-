@@ -1,6 +1,9 @@
 /**
  * geocode.ts — Reverse geocoding & place search via Mapbox.
  * Normalizes results, caches, debounces.
+ * 
+ * Provider contextualization: accepts country filter + proximity bias
+ * so Search Brain receives enough local candidates.
  */
 
 import { MAPBOX_ACCESS_TOKEN as TOKEN } from "@/lib/mapbox/config";
@@ -68,18 +71,37 @@ export async function reverseGeocode(lat: number, lng: number): Promise<Normaliz
 
 export async function searchPlaces(
   query: string,
-  options?: { proximity?: { lat: number; lng: number }; limit?: number },
+  options?: {
+    proximity?: { lat: number; lng: number };
+    limit?: number;
+    /** ISO 2-letter country code to bias/filter results (e.g. "AE") */
+    country?: string;
+    /** Bounding box [minLng, minLat, maxLng, maxLat] */
+    bbox?: [number, number, number, number];
+  },
 ): Promise<NormalizedPlace[]> {
   const trimmed = query.trim();
   if (!trimmed) return [];
 
-  const cKey = `${trimmed.toLowerCase()}_${options?.proximity?.lat?.toFixed(2) || ""}`;
+  const cKey = `${trimmed.toLowerCase()}_${options?.proximity?.lat?.toFixed(2) || ""}_${options?.country || ""}`;
   const cached = searchCache.get(cKey);
   if (cached && Date.now() - cached.ts < CACHE_TTL) return cached.results;
 
   let url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(trimmed)}.json?limit=${options?.limit || 5}&access_token=${TOKEN}`;
+  
+  // Proximity bias — Mapbox will prefer results near this point
   if (options?.proximity) {
     url += `&proximity=${options.proximity.lng},${options.proximity.lat}`;
+  }
+  
+  // Country filter — restricts results to specific country (ISO 3166-1 alpha-2)
+  if (options?.country) {
+    url += `&country=${options.country.toLowerCase()}`;
+  }
+  
+  // Bounding box filter
+  if (options?.bbox) {
+    url += `&bbox=${options.bbox.join(",")}`;
   }
 
   const res = await fetch(url);
