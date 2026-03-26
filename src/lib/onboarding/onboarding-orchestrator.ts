@@ -37,6 +37,66 @@ export interface OnboardingPipelineResult {
   }>;
 }
 
+function normalizeText(value: string | null | undefined) {
+  if (!value) return null;
+  const normalized = value
+    .replace(/[_|]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  if (!normalized) return null;
+
+  return normalized
+    .split(" ")
+    .map((chunk) => chunk.charAt(0).toUpperCase() + chunk.slice(1))
+    .join(" ");
+}
+
+function dedupePhotos(photos: string[]) {
+  const seen = new Set<string>();
+  return photos.filter((photo) => {
+    const key = photo.replace(/[?#].*$/, "").trim();
+    if (!key || seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+function dedupeNamedItems(items: Array<Record<string, unknown>>) {
+  const seen = new Set<string>();
+  return items.filter((item) => {
+    const rawName = [item.name, item.title, item.label, item.room_type]
+      .find((value) => typeof value === "string" && value.trim().length > 0);
+    const normalizedName = typeof rawName === "string" ? normalizeText(rawName)?.toLowerCase() : null;
+    if (!normalizedName || seen.has(normalizedName)) return false;
+    seen.add(normalizedName);
+
+    if (typeof item.name === "string") item.name = normalizeText(item.name) ?? item.name;
+    if (typeof item.title === "string") item.title = normalizeText(item.title) ?? item.title;
+    if (typeof item.label === "string") item.label = normalizeText(item.label) ?? item.label;
+    if (typeof item.room_type === "string") item.room_type = normalizeText(item.room_type) ?? item.room_type;
+    return true;
+  });
+}
+
+function sanitizeCanonicalRecord(record: CanonicalOnboardingRecord): CanonicalOnboardingRecord {
+  return {
+    ...record,
+    canonicalName: normalizeText(record.canonicalName),
+    branchName: normalizeText(record.branchName),
+    address: normalizeText(record.address),
+    city: normalizeText(record.city),
+    district: normalizeText(record.district),
+    country: normalizeText(record.country),
+    photos: dedupePhotos(record.photos),
+    categories: Array.from(new Set(record.categories.map((item) => item.trim()).filter(Boolean))),
+    subcategories: Array.from(new Set(record.subcategories.map((item) => item.trim()).filter(Boolean))),
+    menuItems: dedupeNamedItems([...record.menuItems]),
+    hotelInventory: dedupeNamedItems([...record.hotelInventory]),
+    serviceItems: dedupeNamedItems([...record.serviceItems]),
+  };
+}
+
 export async function runOnboardingPipeline(
   input: OnboardingRequest,
 ): Promise<OnboardingPipelineResult> {
@@ -83,7 +143,7 @@ export async function runOnboardingPipeline(
     }
 
     const mergedFinal = mergeEntityRecords(input.vertical, completedGroup);
-    canonicalResults.push(mergedFinal);
+    canonicalResults.push(sanitizeCanonicalRecord(mergedFinal));
   }
 
   const publish = canonicalResults.map((record) => {

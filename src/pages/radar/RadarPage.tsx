@@ -137,7 +137,7 @@ export default function RadarPage() {
             placeholder="Search shops, restaurants, services…"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full h-10 pl-9 pr-4 rounded-xl bg-muted/40 border border-border/20 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary/30"
+            className="w-full min-w-0 h-12 pl-10 pr-4 rounded-2xl bg-card border border-border/30 text-sm text-foreground placeholder:text-muted-foreground shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
           />
         </div>
 
@@ -241,7 +241,7 @@ export default function RadarPage() {
 
       {/* Content */}
       {mapMode === "map" || mapMode === "heatmap" ? (
-        <div className="relative mx-4 h-[400px] rounded-2xl overflow-hidden">
+        <div className="relative mx-4 h-[calc(100dvh-20rem)] min-h-[400px] rounded-2xl overflow-hidden">
           <Suspense fallback={<div className="w-full h-full bg-muted/20 flex items-center justify-center"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>}>
             <UnifiedMap
               entities={filtered.map((p) => ({
