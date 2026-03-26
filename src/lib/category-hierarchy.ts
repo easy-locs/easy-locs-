@@ -1,13 +1,8 @@
 /**
- * BACKWARD COMPATIBILITY — Re-exports from world-class-taxonomy.
- * @deprecated Use @/lib/taxonomy/world-class-taxonomy instead.
+ * BACKWARD COMPATIBILITY — Re-exports from canonical category-tree.
+ * @deprecated Use @/lib/taxonomy/category-tree instead.
  */
-import {
-  CANONICAL_VERTICALS,
-  ALL_SUBCATEGORY_VALUES as CANONICAL_ALL_SUBS,
-  getCanonicalSubcategory,
-  getParentVertical,
-} from "@/lib/taxonomy/world-class-taxonomy";
+import { CATEGORY_TREE, resolveSubcategory } from "@/lib/taxonomy/category-tree";
 
 export type SubCategory = {
   value: string;
@@ -22,31 +17,31 @@ export type CategoryGroup = {
   subcategories: SubCategory[];
 };
 
-export const CATEGORY_HIERARCHY: CategoryGroup[] = CANONICAL_VERTICALS.map((v) => ({
-  value: v.value,
-  label: v.label,
-  emoji: v.emoji,
-  subcategories: v.subcategories.map((s) => ({
+export const CATEGORY_HIERARCHY: CategoryGroup[] = CATEGORY_TREE.map((c) => ({
+  value: c.vertical,
+  label: c.label,
+  emoji: c.emoji,
+  subcategories: c.subcategories.map((s) => ({
     value: s.value,
     label: s.label,
     emoji: s.emoji,
   })),
 }));
 
-export const ALL_SUBCATEGORY_VALUES = CANONICAL_ALL_SUBS;
+export const ALL_SUBCATEGORY_VALUES = CATEGORY_TREE.flatMap(c => c.subcategories.map(s => s.value));
 
 export function getParentGroup(subValue: string): CategoryGroup | undefined {
-  const parent = getParentVertical(subValue);
-  if (!parent) return undefined;
-  return CATEGORY_HIERARCHY.find((g) => g.value === parent.value);
+  const resolved = resolveSubcategory(subValue);
+  if (!resolved) return undefined;
+  return CATEGORY_HIERARCHY.find((g) => g.value === resolved.primary.vertical);
 }
 
 export function getSubcategoryInfo(value: string): SubCategory | undefined {
-  const found = getCanonicalSubcategory(value);
-  if (!found) return undefined;
+  const resolved = resolveSubcategory(value);
+  if (!resolved) return undefined;
   return {
-    value: found.value,
-    label: found.label,
-    emoji: found.emoji,
+    value: resolved.subcategory.value,
+    label: resolved.subcategory.label,
+    emoji: resolved.subcategory.emoji,
   };
 }
