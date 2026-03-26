@@ -67,12 +67,10 @@ const MobileBottomNav = () => {
       role="tablist"
       aria-label="Main navigation"
       style={{
-        background: "hsl(var(--card) / 0.95)",
-        backdropFilter: "blur(12px) saturate(140%)",
-        WebkitBackdropFilter: "blur(12px) saturate(140%)",
-        borderTop: "1px solid hsl(var(--border) / 0.4)",
+        background: "hsl(var(--card))",
+        borderTop: "1px solid hsl(var(--border) / 0.3)",
         paddingBottom: "env(safe-area-inset-bottom, 0px)",
-        boxShadow: "0 -4px 24px hsl(var(--background) / 0.3)",
+        boxShadow: "0 -2px 16px hsl(var(--background) / 0.3)",
       }}
     >
       <div className="flex items-stretch justify-around h-[60px]">
