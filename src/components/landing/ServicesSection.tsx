@@ -38,7 +38,7 @@ export default function ServicesSection() {
             </p>
           </div>
           <Link
-            to="/services-hub"
+            to="/browse/services"
             className="hidden sm:flex items-center gap-1 text-sm font-semibold text-accent hover:gap-2 transition-all"
           >
             {t("landing.services.browse") || "All services"} <ArrowRight className="h-4 w-4" />
