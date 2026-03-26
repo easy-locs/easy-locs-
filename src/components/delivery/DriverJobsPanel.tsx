@@ -1,18 +1,19 @@
-import { useMemo } from "react";
+import { useEffect } from "react";
 import { useRiderDispatchStore } from "@/stores/riderDispatchStore";
 import { Check, X, Package, Truck, MapPin } from "lucide-react";
+import { toast } from "sonner";
 
 export function DriverJobsPanel() {
-  const jobs = useDeliveryStore((s) => s.jobs);
-  const acceptJob = useDeliveryStore((s) => s.acceptJob);
-  const rejectJob = useDeliveryStore((s) => s.rejectJob);
-  const updateJobStatus = useDeliveryStore((s) => s.updateJobStatus);
+  const offers = useRiderDispatchStore((s) => s.offers);
+  const activeJobId = useRiderDispatchStore((s) => s.activeJobId);
+  const acceptOffer = useRiderDispatchStore((s) => s.acceptOffer);
+  const rejectOffer = useRiderDispatchStore((s) => s.rejectOffer);
+  const advanceJobStatus = useRiderDispatchStore((s) => s.advanceJobStatus);
+  const hydrateOffers = useRiderDispatchStore((s) => s.hydrateOffers);
 
-  const driverJobs = useMemo(() => {
-    return jobs.filter((x) => x.driver_id && ["assigned", "accepted", "picked_up", "on_the_way"].includes(x.status));
-  }, [jobs]);
+  useEffect(() => { hydrateOffers(); }, []);
 
-  if (driverJobs.length === 0) {
+  if (offers.length === 0 && !activeJobId) {
     return (
       <div className="p-4 rounded-xl bg-card border border-border">
         <h3 className="text-sm font-semibold text-foreground mb-2">Driver Jobs</h3>
@@ -24,63 +25,33 @@ export function DriverJobsPanel() {
   return (
     <div className="space-y-3">
       <h3 className="text-sm font-semibold text-foreground">Driver Jobs</h3>
-
-      {driverJobs.map((job) => (
-        <div key={job.id} className="p-3 rounded-xl bg-card border border-border space-y-2">
+      {offers.map((offer) => (
+        <div key={offer.id} className="p-3 rounded-xl bg-card border border-border space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-mono text-muted-foreground">{job.id.slice(0, 16)}</span>
+            <span className="text-xs font-mono text-muted-foreground">{offer.job?.job_type?.replace(/_/g, ' ') ?? "Job"}</span>
             <span className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full bg-primary/10 text-primary">
-              {job.status}
+              {offer.status}
             </span>
           </div>
-
-          <p className="text-xs text-muted-foreground">
-            Fee: {job.delivery_fee ?? 0} • Priority: {(job as any).priority ?? "normal"}
-          </p>
-
-          {job.status === "assigned" && (
-            <div className="flex gap-2">
-              <button
-                onClick={() => void acceptJob(job.id)}
-                className="flex-1 flex items-center justify-center gap-1.5 rounded-lg bg-emerald-600 px-3 py-2 text-xs font-semibold text-white hover:bg-emerald-700 transition-colors active:scale-[0.97]"
-              >
-                <Check className="w-3.5 h-3.5" /> Accept
-              </button>
-              <button
-                onClick={() => void rejectJob(job.id)}
-                className="flex-1 flex items-center justify-center gap-1.5 rounded-lg bg-destructive/10 px-3 py-2 text-xs font-semibold text-destructive hover:bg-destructive/20 transition-colors active:scale-[0.97]"
-              >
-                <X className="w-3.5 h-3.5" /> Reject
-              </button>
-            </div>
+          {offer.job && (
+            <p className="text-xs text-muted-foreground">
+              Fare: {offer.fare_at_offer ?? 0} {offer.job.currency} • {offer.distance_km ?? 0} km
+            </p>
           )}
-
-          {job.status === "accepted" && (
+          <div className="flex gap-2">
             <button
-              onClick={() => void updateJobStatus(job.id, "picked_up")}
-              className="w-full flex items-center justify-center gap-1.5 rounded-lg bg-primary/10 px-3 py-2 text-xs font-semibold text-primary hover:bg-primary/20 transition-colors active:scale-[0.97]"
+              onClick={() => { acceptOffer(offer.id).catch((e: any) => toast.error(e.message)); }}
+              className="flex-1 flex items-center justify-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 transition-colors active:scale-[0.97]"
             >
-              <Package className="w-3.5 h-3.5" /> Mark Picked Up
+              <Check className="w-3.5 h-3.5" /> Accept
             </button>
-          )}
-
-          {job.status === "picked_up" && (
             <button
-              onClick={() => void updateJobStatus(job.id, "on_the_way")}
-              className="w-full flex items-center justify-center gap-1.5 rounded-lg bg-primary/10 px-3 py-2 text-xs font-semibold text-primary hover:bg-primary/20 transition-colors active:scale-[0.97]"
+              onClick={() => { rejectOffer(offer.id).catch((e: any) => toast.error(e.message)); }}
+              className="flex-1 flex items-center justify-center gap-1.5 rounded-lg bg-destructive/10 px-3 py-2 text-xs font-semibold text-destructive hover:bg-destructive/20 transition-colors active:scale-[0.97]"
             >
-              <Truck className="w-3.5 h-3.5" /> On The Way
+              <X className="w-3.5 h-3.5" /> Reject
             </button>
-          )}
-
-          {job.status === "on_the_way" && (
-            <button
-              onClick={() => void updateJobStatus(job.id, "delivered")}
-              className="w-full flex items-center justify-center gap-1.5 rounded-lg bg-emerald-600 px-3 py-2 text-xs font-semibold text-white hover:bg-emerald-700 transition-colors active:scale-[0.97]"
-            >
-              <MapPin className="w-3.5 h-3.5" /> Mark Delivered
-            </button>
-          )}
+          </div>
         </div>
       ))}
     </div>
