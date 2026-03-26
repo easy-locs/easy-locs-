@@ -16,8 +16,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { motion } from "framer-motion";
-import { useArbitratedStation } from "@/hooks/useArbitratedStation";
-import { useLocationStore } from "@/stores/locationStore";
+import { usePlatformBrain } from "@/hooks/usePlatformBrain";
 import { cn } from "@/lib/utils";
 
 /* ═══ Quick Actions — horizontal scroll ═══ */
