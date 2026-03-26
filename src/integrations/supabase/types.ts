@@ -9531,6 +9531,54 @@ export type Database = {
         }
         Relationships: []
       }
+      jurisdiction_rules: {
+        Row: {
+          city_code: string | null
+          commercial_license_required: boolean
+          country_code: string
+          created_at: string
+          document_requirements_json: Json | null
+          id: string
+          insurance_required: boolean
+          is_enabled: boolean
+          legal_requirements_json: Json | null
+          pricing_constraints_json: Json | null
+          service_mode: string
+          updated_at: string
+          vehicle_type: string
+        }
+        Insert: {
+          city_code?: string | null
+          commercial_license_required?: boolean
+          country_code: string
+          created_at?: string
+          document_requirements_json?: Json | null
+          id?: string
+          insurance_required?: boolean
+          is_enabled?: boolean
+          legal_requirements_json?: Json | null
+          pricing_constraints_json?: Json | null
+          service_mode: string
+          updated_at?: string
+          vehicle_type: string
+        }
+        Update: {
+          city_code?: string | null
+          commercial_license_required?: boolean
+          country_code?: string
+          created_at?: string
+          document_requirements_json?: Json | null
+          id?: string
+          insurance_required?: boolean
+          is_enabled?: boolean
+          legal_requirements_json?: Json | null
+          pricing_constraints_json?: Json | null
+          service_mode?: string
+          updated_at?: string
+          vehicle_type?: string
+        }
+        Relationships: []
+      }
       kyc_documents: {
         Row: {
           doc_type: string
