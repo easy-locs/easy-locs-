@@ -115,7 +115,7 @@ export default function MobilityDeliveryPage() {
   const deliveryJobs = jobs.filter(j => deliveryTypes.includes(j.job_type));
   const activeJobs = deliveryJobs.filter(j => !["completed", "cancelled", "failed_no_rider", "expired"].includes(j.status));
 
-  const riderCount = station.station?.rider_supply ?? 0;
+  const riderCount = station.riderCount;
   const avgEta = station.etas?.food ?? station.etas?.parcel ?? null;
 
   return (
@@ -182,18 +182,18 @@ export default function MobilityDeliveryPage() {
               </div>
             </div>
             <div className="flex items-center gap-2">
-              {station.station && (
+              {station.weatherType && (
                 <>
                   <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-muted/40">
-                    {WEATHER_ICON[station.station.weather_type ?? "clear"] ?? <Sun className="w-3.5 h-3.5" />}
-                    <span className="text-[10px] text-foreground capitalize">{station.station.weather_type ?? "clear"}</span>
+                    {WEATHER_ICON[station.weatherType ?? "clear"] ?? <Sun className="w-3.5 h-3.5" />}
+                    <span className="text-[10px] text-foreground capitalize">{station.weatherType ?? "clear"}</span>
                   </div>
                   <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-muted/40">
                     <Car className={cn("w-3.5 h-3.5",
-                      station.station.traffic_level === "heavy" || station.station.traffic_level === "severe"
+                      station.trafficLevel === "heavy" || station.trafficLevel === "severe"
                         ? "text-orange-400" : "text-emerald-400"
                     )} />
-                    <span className="text-[10px] text-foreground capitalize">{station.station.traffic_level ?? "normal"}</span>
+                    <span className="text-[10px] text-foreground capitalize">{station.trafficLevel ?? "normal"}</span>
                   </div>
                 </>
               )}
@@ -214,11 +214,11 @@ export default function MobilityDeliveryPage() {
             {station.etas.parcel != null && (
               <EtaChip emoji="📦" label="Parcel" eta={station.etas.parcel} />
             )}
-            {station.station && station.station.surge_multiplier > 1.05 && (
+            {station.surge > 1.05 && (
               <div className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-destructive/10 border border-destructive/20">
                 <Zap className="w-3 h-3 text-destructive" />
                 <span className="text-[10px] font-bold text-destructive">
-                  {Math.round((station.station.surge_multiplier - 1) * 100)}% surge
+                  {Math.round((station.surge - 1) * 100)}% surge
                 </span>
               </div>
             )}
