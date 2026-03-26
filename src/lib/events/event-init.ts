@@ -88,5 +88,6 @@ for (const [platformEvent, coreEvent] of Object.entries(BRIDGE_MAP)) {
 
 // Initialize ride lifecycle handler (global realtime listener)
 initRideLifecycleHandler();
+initRideAIDispatchHandler();
 
 console.log("[event-init] All event handlers registered + platformBus bridge active");
