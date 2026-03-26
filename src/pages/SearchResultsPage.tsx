@@ -62,7 +62,7 @@ export default function SearchResultsPage() {
   };
 
   return (
-    <div className="min-h-[100dvh] bg-background max-w-lg mx-auto">
+    <div className="app-mobile-page bg-background max-w-lg mx-auto">
       {/* Header */}
       <div className="flex items-center gap-3 px-4 pt-4 pb-2">
         <button
