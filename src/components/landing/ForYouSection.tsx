@@ -1,20 +1,21 @@
 /**
  * ForYouSection — Personalized recommendations (future-ready).
- * Shows curated content with CTA to sign up for personalization.
  */
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { ArrowRight, User, Sparkles, Heart } from "lucide-react";
 import { useHomeSections } from "@/hooks/useHomeSections";
+import { useI18n } from "@/lib/i18n";
 
 export default function ForYouSection() {
   const { data } = useHomeSections();
+  const { t } = useI18n();
   const shops = data?.nearYou ?? data?.newest ?? [];
 
   if (shops.length === 0) return null;
 
   return (
-    <section className="py-10 sm:py-14 bg-muted/20" aria-label="For You">
+    <section className="py-10 sm:py-14 bg-muted/20" aria-label={t("landing.foryou.title") || "For You"}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 12 }}
@@ -25,10 +26,10 @@ export default function ForYouSection() {
           <div>
             <h2 className="text-xl sm:text-2xl font-extrabold text-foreground flex items-center gap-2">
               <Heart className="h-5 w-5 text-pink-500" />
-              For You
+              {t("landing.foryou.title") || "For You"}
             </h2>
             <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
-              Personalized picks based on your preferences
+              {t("landing.foryou.subtitle") || "Personalized picks based on your preferences"}
             </p>
           </div>
         </motion.div>
@@ -64,7 +65,7 @@ export default function ForYouSection() {
                 <div className="p-2.5">
                   <p className="text-xs font-bold text-foreground truncate">{shop.name}</p>
                   <p className="text-[10px] text-muted-foreground truncate mt-0.5">
-                    {shop.vertical || shop.address || "Recommended"}
+                    {shop.vertical || shop.address || t("landing.foryou.recommended") || "Recommended"}
                   </p>
                 </div>
               </Link>
@@ -72,7 +73,6 @@ export default function ForYouSection() {
           ))}
         </div>
 
-        {/* CTA to sign up for personalization */}
         <motion.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
@@ -84,7 +84,7 @@ export default function ForYouSection() {
             className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl border border-accent/20 bg-accent/5 text-sm font-semibold text-accent hover:bg-accent/10 transition-all"
           >
             <User className="h-4 w-4" />
-            Sign up for personalized recommendations
+            {t("landing.foryou.cta") || "Sign up for personalized recommendations"}
             <ArrowRight className="h-4 w-4" />
           </Link>
         </motion.div>
