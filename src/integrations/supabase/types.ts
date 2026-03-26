@@ -5387,6 +5387,57 @@ export type Database = {
           },
         ]
       }
+      delivery_eta_context: {
+        Row: {
+          computed_at: string | null
+          customer_address_id: string | null
+          demand_factor: number | null
+          estimated_pickup_minutes: number | null
+          estimated_prep_minutes: number | null
+          estimated_total_minutes: number | null
+          estimated_travel_minutes: number | null
+          id: string
+          merchant_id: string
+          rider_supply_factor: number | null
+          rider_user_id: string | null
+          traffic_factor: number | null
+          weather_factor: number | null
+          zone_key: string | null
+        }
+        Insert: {
+          computed_at?: string | null
+          customer_address_id?: string | null
+          demand_factor?: number | null
+          estimated_pickup_minutes?: number | null
+          estimated_prep_minutes?: number | null
+          estimated_total_minutes?: number | null
+          estimated_travel_minutes?: number | null
+          id?: string
+          merchant_id: string
+          rider_supply_factor?: number | null
+          rider_user_id?: string | null
+          traffic_factor?: number | null
+          weather_factor?: number | null
+          zone_key?: string | null
+        }
+        Update: {
+          computed_at?: string | null
+          customer_address_id?: string | null
+          demand_factor?: number | null
+          estimated_pickup_minutes?: number | null
+          estimated_prep_minutes?: number | null
+          estimated_total_minutes?: number | null
+          estimated_travel_minutes?: number | null
+          id?: string
+          merchant_id?: string
+          rider_supply_factor?: number | null
+          rider_user_id?: string | null
+          traffic_factor?: number | null
+          weather_factor?: number | null
+          zone_key?: string | null
+        }
+        Relationships: []
+      }
       delivery_eta_predictions: {
         Row: {
           area: string | null
@@ -8496,6 +8547,63 @@ export type Database = {
         }
         Relationships: []
       }
+      geo_live_context: {
+        Row: {
+          center_lat: number | null
+          center_lng: number | null
+          city: string | null
+          country_code: string
+          demand_level: string | null
+          demand_multiplier: number | null
+          district: string | null
+          id: string
+          rider_supply_factor: number | null
+          rider_supply_level: string | null
+          traffic_level: string | null
+          traffic_speed_factor: number | null
+          updated_at: string | null
+          weather_speed_factor: number | null
+          weather_type: string | null
+          zone_key: string
+        }
+        Insert: {
+          center_lat?: number | null
+          center_lng?: number | null
+          city?: string | null
+          country_code: string
+          demand_level?: string | null
+          demand_multiplier?: number | null
+          district?: string | null
+          id?: string
+          rider_supply_factor?: number | null
+          rider_supply_level?: string | null
+          traffic_level?: string | null
+          traffic_speed_factor?: number | null
+          updated_at?: string | null
+          weather_speed_factor?: number | null
+          weather_type?: string | null
+          zone_key: string
+        }
+        Update: {
+          center_lat?: number | null
+          center_lng?: number | null
+          city?: string | null
+          country_code?: string
+          demand_level?: string | null
+          demand_multiplier?: number | null
+          district?: string | null
+          id?: string
+          rider_supply_factor?: number | null
+          rider_supply_level?: string | null
+          traffic_level?: string | null
+          traffic_speed_factor?: number | null
+          updated_at?: string | null
+          weather_speed_factor?: number | null
+          weather_type?: string | null
+          zone_key?: string
+        }
+        Relationships: []
+      }
       group_members: {
         Row: {
           group_id: string
@@ -11537,6 +11645,102 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      merchant_delivery_runtime: {
+        Row: {
+          accepting_orders: boolean | null
+          active_delivery_jobs_count: number | null
+          active_orders_count: number | null
+          avg_handover_delay_minutes: number | null
+          delivery_capacity_score: number | null
+          is_open_now: boolean | null
+          merchant_id: string
+          prep_time_minutes: number | null
+          queue_load: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          accepting_orders?: boolean | null
+          active_delivery_jobs_count?: number | null
+          active_orders_count?: number | null
+          avg_handover_delay_minutes?: number | null
+          delivery_capacity_score?: number | null
+          is_open_now?: boolean | null
+          merchant_id: string
+          prep_time_minutes?: number | null
+          queue_load?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          accepting_orders?: boolean | null
+          active_delivery_jobs_count?: number | null
+          active_orders_count?: number | null
+          avg_handover_delay_minutes?: number | null
+          delivery_capacity_score?: number | null
+          is_open_now?: boolean | null
+          merchant_id?: string
+          prep_time_minutes?: number | null
+          queue_load?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      merchant_delivery_zones: {
+        Row: {
+          base_delivery_fee: number | null
+          center_lat: number | null
+          center_lng: number | null
+          city: string | null
+          country_code: string | null
+          district: string | null
+          fee_per_km: number | null
+          id: string
+          is_active: boolean | null
+          max_eta_minutes: number | null
+          merchant_id: string
+          min_order_amount: number | null
+          polygon_geojson: Json | null
+          radius_km: number | null
+          updated_at: string | null
+          zone_type: string
+        }
+        Insert: {
+          base_delivery_fee?: number | null
+          center_lat?: number | null
+          center_lng?: number | null
+          city?: string | null
+          country_code?: string | null
+          district?: string | null
+          fee_per_km?: number | null
+          id?: string
+          is_active?: boolean | null
+          max_eta_minutes?: number | null
+          merchant_id: string
+          min_order_amount?: number | null
+          polygon_geojson?: Json | null
+          radius_km?: number | null
+          updated_at?: string | null
+          zone_type?: string
+        }
+        Update: {
+          base_delivery_fee?: number | null
+          center_lat?: number | null
+          center_lng?: number | null
+          city?: string | null
+          country_code?: string | null
+          district?: string | null
+          fee_per_km?: number | null
+          id?: string
+          is_active?: boolean | null
+          max_eta_minutes?: number | null
+          merchant_id?: string
+          min_order_amount?: number | null
+          polygon_geojson?: Json | null
+          radius_km?: number | null
+          updated_at?: string | null
+          zone_type?: string
+        }
+        Relationships: []
       }
       merchant_field_overrides: {
         Row: {
@@ -18025,6 +18229,54 @@ export type Database = {
           user_id?: string
           vehicle_brand?: string | null
           vehicle_model?: string | null
+          vehicle_type?: string | null
+        }
+        Relationships: []
+      }
+      rider_runtime_state: {
+        Row: {
+          acceptance_rate: number | null
+          active_job_id: string | null
+          avg_speed_kmh: number | null
+          completion_rate: number | null
+          current_lat: number | null
+          current_lng: number | null
+          is_available: boolean | null
+          is_online: boolean | null
+          last_seen_at: string | null
+          rider_user_id: string
+          service_modes: string[] | null
+          updated_at: string | null
+          vehicle_type: string | null
+        }
+        Insert: {
+          acceptance_rate?: number | null
+          active_job_id?: string | null
+          avg_speed_kmh?: number | null
+          completion_rate?: number | null
+          current_lat?: number | null
+          current_lng?: number | null
+          is_available?: boolean | null
+          is_online?: boolean | null
+          last_seen_at?: string | null
+          rider_user_id: string
+          service_modes?: string[] | null
+          updated_at?: string | null
+          vehicle_type?: string | null
+        }
+        Update: {
+          acceptance_rate?: number | null
+          active_job_id?: string | null
+          avg_speed_kmh?: number | null
+          completion_rate?: number | null
+          current_lat?: number | null
+          current_lng?: number | null
+          is_available?: boolean | null
+          is_online?: boolean | null
+          last_seen_at?: string | null
+          rider_user_id?: string
+          service_modes?: string[] | null
+          updated_at?: string | null
           vehicle_type?: string | null
         }
         Relationships: []
