@@ -2,34 +2,45 @@
  * RideLiveHealthBanner — GPS/realtime connection health indicator.
  */
 import { tc } from "@/lib/i18n-canonical";
+import { cn } from "@/lib/utils";
 
 interface Props {
   gpsSignal: "strong" | "weak" | "lost";
   lastSyncAt?: string | null;
+  staleSeconds?: number | null;
   realtimeConnected?: boolean;
 }
 
 export function RideLiveHealthBanner({
   gpsSignal,
   lastSyncAt,
+  staleSeconds,
   realtimeConnected = true,
 }: Props) {
-  const age =
-    lastSyncAt ? Math.round((Date.now() - new Date(lastSyncAt).getTime()) / 1000) : null;
+  if (gpsSignal === "strong" && realtimeConnected && (staleSeconds ?? 0) < 20) {
+    return null;
+  }
 
-  if (gpsSignal === "strong" && realtimeConnected) return null;
+  let title = tc("ride.live_sync_issue");
+  let tone = "border-amber-300/40 bg-amber-50 text-amber-900 dark:bg-amber-950/30 dark:text-amber-200";
 
-  let text = tc("ride.live_sync_issue");
-  if (gpsSignal === "weak") text = tc("ride.gps_weak");
-  if (gpsSignal === "lost") text = tc("ride.gps_lost");
-  if (!realtimeConnected) text = tc("ride.reconnecting_live");
+  if (!realtimeConnected) {
+    title = tc("ride.reconnecting_live");
+  } else if (gpsSignal === "weak") {
+    title = tc("ride.gps_weak");
+  } else if (gpsSignal === "lost") {
+    title = tc("ride.gps_lost");
+    tone = "border-destructive/20 bg-destructive/10 text-destructive";
+  }
+
+  const age = staleSeconds ?? (lastSyncAt ? Math.round((Date.now() - new Date(lastSyncAt).getTime()) / 1000) : null);
 
   return (
-    <div className="flex items-center gap-2 bg-destructive/10 rounded-xl px-3 py-2 border border-destructive/20">
-      <div className="w-2 h-2 rounded-full bg-destructive animate-pulse" />
-      <span className="text-xs text-destructive font-medium">{text}</span>
+    <div className={cn("flex items-center gap-2 rounded-xl px-3 py-2 border", tone)}>
+      <div className="w-2 h-2 rounded-full bg-current animate-pulse" />
+      <span className="text-xs font-medium">{title}</span>
       {age != null && (
-        <span className="text-[10px] text-muted-foreground ml-auto">
+        <span className="text-[10px] opacity-70 ml-auto">
           {tc("ride.last_update_seconds", { seconds: String(age) })}
         </span>
       )}

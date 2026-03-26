@@ -2,12 +2,10 @@
  * TrackRidePage — /track/:rideRequestId — Premium live ride tracking.
  *
  * Source of truth: mobility_jobs (realtime) + trip_live_state (GPS)
- * Components: RideStatusHero, RideTimeline, RideDriverCard, RideFareCard, RideCompletedCard, RideLiveHealthBanner
+ * Components: RideStatusHero, RideTimeline, RideDriverCard, RideFareCard, RideCompletedCard, RideLiveHealthBanner, RideLiveMapCard
  */
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { BackCard } from "@/components/ui/back-card";
-import DriverMap from "@/components/radar/DriverMap";
 import { supabase } from "@/integrations/supabase/client";
 import { useTripTrackingStore } from "@/stores/tripTrackingStore";
 import { useRideLiveETA } from "@/hooks/useRideLiveETA";
@@ -15,37 +13,36 @@ import { useRideLiveRoute } from "@/hooks/useRideLiveRoute";
 import { Button } from "@/components/ui/button";
 import { tc } from "@/lib/i18n-canonical";
 import { isActiveRideStatus, isFinalStatus, canCancel } from "@/lib/mobility/status-machine";
+import { getGPSHealth } from "@/lib/mobility/gps-scheduler";
 import { RideStatusHero } from "@/components/mobility/RideStatusHero";
 import { RideTimeline } from "@/components/mobility/RideTimeline";
 import { RideDriverCard } from "@/components/mobility/RideDriverCard";
 import { RideFareCard } from "@/components/mobility/RideFareCard";
 import { RideCompletedCard } from "@/components/mobility/RideCompletedCard";
+import { RideLiveMapCard } from "@/components/mobility/RideLiveMapCard";
 import { RideLiveHealthBanner } from "@/components/mobility/RideLiveHealthBanner";
 import { motion, AnimatePresence } from "framer-motion";
-import { XCircle, Clock } from "lucide-react";
+import { XCircle } from "lucide-react";
 import { toast } from "sonner";
-
-function getGPSHealth(livePosition: any): { signal: "strong" | "weak" | "lost"; lastSyncAt: string | null } {
-  if (!livePosition?.updatedAt) return { signal: "lost", lastSyncAt: null };
-  const ageSec = (Date.now() - new Date(livePosition.updatedAt).getTime()) / 1000;
-  if (ageSec < 15) return { signal: "strong", lastSyncAt: livePosition.updatedAt };
-  if (ageSec < 45) return { signal: "weak", lastSyncAt: livePosition.updatedAt };
-  return { signal: "lost", lastSyncAt: livePosition.updatedAt };
-}
 
 export default function TrackRidePage() {
   const { rideRequestId: jobId } = useParams();
   const navigate = useNavigate();
+
   const [job, setJob] = useState<Record<string, any> | null>(null);
   const [riderProfile, setRiderProfile] = useState<Record<string, any> | null>(null);
   const [conversationId, setConversationId] = useState<string | null>(null);
+  const [realtimeConnected, setRealtimeConnected] = useState(true);
 
   const { livePosition, startTracking, stopTracking } = useTripTrackingStore();
-  const status = job?.status ?? "loading";
+
+  const status = job?.status ?? "searching";
   const isActive = isActiveRideStatus(status);
   const isFinal = isFinalStatus(status);
+
   const eta = useRideLiveETA(jobId ?? null, isActive);
-  const liveRoute = useRideLiveRoute(jobId ?? null, isActive);
+  const liveRoute = useRideLiveRoute(jobId ?? null, isActive || !isFinal, status);
+  const gpsHealth = getGPSHealth();
 
   // ── Fetch job ──
   useEffect(() => {
@@ -54,14 +51,16 @@ export default function TrackRidePage() {
       .then(({ data }) => { if (data) setJob(data as any); });
   }, [jobId]);
 
-  // ── Single realtime channel for job ──
+  // ── Realtime subscription ──
   useEffect(() => {
     if (!jobId) return;
     const ch = supabase
       .channel(`track-job-${jobId}`)
-      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "mobility_jobs", filter: `id=eq.${jobId}` },
-        (payload) => setJob(payload.new as any))
-      .subscribe();
+      .on("postgres_changes", {
+        event: "UPDATE", schema: "public", table: "mobility_jobs", filter: `id=eq.${jobId}`,
+      }, (payload) => setJob(payload.new as any))
+      .subscribe((st) => setRealtimeConnected(st === "SUBSCRIBED"));
+
     return () => { supabase.removeChannel(ch); };
   }, [jobId]);
 
@@ -70,14 +69,14 @@ export default function TrackRidePage() {
     if (isActive && jobId) startTracking(jobId);
     else stopTracking();
     return () => stopTracking();
-  }, [isActive, jobId]);
+  }, [isActive, jobId, startTracking, stopTracking]);
 
   // ── Fetch rider profile on assignment ──
   useEffect(() => {
     const riderId = job?.rider_user_id;
     if (!riderId) { setRiderProfile(null); return; }
     supabase.from("rider_profiles")
-      .select("id, display_name, vehicle_type, vehicle_plate, vehicle_model, rating, photo_url, phone")
+      .select("id,display_name,vehicle_type,vehicle_plate,vehicle_model,rating,photo_url,phone")
       .eq("user_id", riderId).maybeSingle()
       .then(({ data }) => setRiderProfile(data as any));
   }, [job?.rider_user_id]);
@@ -86,9 +85,7 @@ export default function TrackRidePage() {
   useEffect(() => {
     if (!job?.rider_user_id || !job?.customer_user_id) return;
     supabase.from("conversations_v2").select("id")
-      .eq("type", "ride")
-      .contains("participants", [job.customer_user_id, job.rider_user_id])
-      .limit(1).maybeSingle()
+      .eq("type", "ride").limit(1).maybeSingle()
       .then(({ data }) => setConversationId(data?.id ?? null));
   }, [job?.rider_user_id, job?.customer_user_id]);
 
@@ -100,59 +97,20 @@ export default function TrackRidePage() {
     else toast.success(tc("ride.cancelled"));
   };
 
-  const gpsHealth = getGPSHealth(livePosition);
-
   return (
     <div className="min-h-screen bg-background">
-      <div className="max-w-lg mx-auto">
-        {/* ── Map ── */}
-        <div className="relative h-56">
-          <DriverMap
-            driverId={job?.rider_user_id ?? undefined}
-            pickupLat={job?.pickup_lat}
-            pickupLng={job?.pickup_lng}
-            dropoffLat={job?.dropoff_lat}
-            dropoffLng={job?.dropoff_lng}
-          />
-          <div className="absolute top-3 left-3 z-10">
-            <BackCard />
-          </div>
-          {/* Live ETA + traffic badges on map */}
-          {!isFinal && (liveRoute?.etaMinutes != null || eta) && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="absolute bottom-3 right-3 z-10 bg-card/95 backdrop-blur border border-border rounded-xl px-3 py-2 shadow-lg"
-            >
-              <div className="flex items-center gap-1.5">
-                <Clock className="w-3.5 h-3.5 text-primary" />
-                <span className="text-sm font-bold text-foreground">
-                  {liveRoute?.etaMinutes ?? eta?.etaPickupMinutes ?? eta?.etaDestinationMinutes ?? "—"} min
-                </span>
-              </div>
-              {(liveRoute?.trafficLevel || eta?.trafficLevel) && (
-                <p className="text-[10px] text-muted-foreground mt-0.5 capitalize">
-                  {tc("ride.traffic")}: {tc(`ride.traffic_${liveRoute?.trafficLevel ?? eta?.trafficLevel}`)}
-                </p>
-              )}
-              {liveRoute?.distanceKm != null && (
-                <p className="text-[10px] text-muted-foreground">
-                  {liveRoute.distanceKm} km
-                </p>
-              )}
-            </motion.div>
-          )}
-        </div>
+      <div className="max-w-lg mx-auto space-y-4 pb-8">
+        {/* ── Live Map Card ── */}
+        <RideLiveMapCard route={liveRoute} />
 
-        <div className="px-4 py-4 space-y-4">
+        <div className="px-4 space-y-4">
           {/* ── GPS Health Banner ── */}
-          {isActive && (
-            <RideLiveHealthBanner
-              gpsSignal={gpsHealth.signal}
-              lastSyncAt={gpsHealth.lastSyncAt}
-              realtimeConnected={true}
-            />
-          )}
+          <RideLiveHealthBanner
+            gpsSignal={gpsHealth.signal}
+            lastSyncAt={gpsHealth.lastSyncAt}
+            staleSeconds={liveRoute?.staleSeconds}
+            realtimeConnected={realtimeConnected}
+          />
 
           {/* ── Status Hero ── */}
           <RideStatusHero status={status} eta={eta} jobType={job?.job_type} />
@@ -224,9 +182,7 @@ export default function TrackRidePage() {
                   className="h-11 rounded-xl border border-border/40 bg-card font-semibold text-sm"
                   onClick={() => {
                     window.dispatchEvent(
-                      new CustomEvent("ride:rating:open", {
-                        detail: { jobId },
-                      }),
+                      new CustomEvent("ride:rating:open", { detail: { jobId } }),
                     );
                   }}
                 >
@@ -246,6 +202,15 @@ export default function TrackRidePage() {
               <XCircle className="h-3.5 w-3.5" /> {tc("ride.cancel_ride")}
             </Button>
           )}
+
+          {/* ── Back ── */}
+          <button
+            type="button"
+            className="w-full text-center text-xs text-muted-foreground py-2"
+            onClick={() => navigate(-1)}
+          >
+            {tc("nav.back")}
+          </button>
         </div>
       </div>
     </div>
