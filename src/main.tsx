@@ -24,7 +24,7 @@ if (typeof window !== "undefined") {
 
   const buildWindow = window as Window & { __EASYLOCS_BUILD_ID__?: string };
   buildWindow.__EASYLOCS_BUILD_ID__ = APP_VERSION;
-  console.info("[Build] Easy-Locs version", APP_VERSION);
+  console.info("[Boot] Easy-Locs version", APP_VERSION);
 
   initMonitoring();
 }
