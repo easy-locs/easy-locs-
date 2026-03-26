@@ -298,11 +298,9 @@ const Index = () => {
         </Suspense>
 
         {/* 13k. Remote Entrepreneurship */}
-        {!isMobile && (
-          <Suspense fallback={<SectionLoader />}>
-            <RemoteEntrepreneurship />
-          </Suspense>
-        )}
+        <Suspense fallback={<SectionLoader />}>
+          <RemoteEntrepreneurship />
+        </Suspense>
 
         {/* 14. Browse by Country + Cities */}
         {!isMobile && (
@@ -329,54 +327,40 @@ const Index = () => {
         )}
 
         {/* 17. Trust */}
-        {!isMobile && (
-          <Suspense fallback={<SectionLoader />}>
-            <TrustSection />
-          </Suspense>
-        )}
+        <Suspense fallback={<SectionLoader />}>
+          <TrustSection />
+        </Suspense>
 
         {/* 18. Pricing */}
-        {!isMobile && (
-          <Suspense fallback={<SectionLoader />}>
-            <Pricing />
-          </Suspense>
-        )}
+        <Suspense fallback={<SectionLoader />}>
+          <Pricing />
+        </Suspense>
 
         {/* 19. FAQ */}
-        {!isMobile && (
-          <Suspense fallback={<SectionLoader />}>
-            <LandingFAQ />
-          </Suspense>
-        )}
+        <Suspense fallback={<SectionLoader />}>
+          <LandingFAQ />
+        </Suspense>
 
         {/* 20. Newsletter */}
-        {!isMobile && (
-          <Suspense fallback={<SectionLoader />}>
-            <Newsletter />
-          </Suspense>
-        )}
+        <Suspense fallback={<SectionLoader />}>
+          <Newsletter />
+        </Suspense>
 
         {/* 21. Social Proof */}
-        {!isMobile && (
-          <Suspense fallback={null}>
-            <SocialProofStrip />
-          </Suspense>
-        )}
+        <Suspense fallback={null}>
+          <SocialProofStrip />
+        </Suspense>
 
         {/* 22. Legal Disclaimer */}
-        {!isMobile && (
-          <Suspense fallback={null}>
-            <LegalDisclaimer />
-          </Suspense>
-        )}
+        <Suspense fallback={null}>
+          <LegalDisclaimer />
+        </Suspense>
       </div>
 
       {/* Footer */}
-      {!isMobile && (
-        <Suspense fallback={null}>
-          <Footer />
-        </Suspense>
-      )}
+      <Suspense fallback={null}>
+        <Footer />
+      </Suspense>
     </div>
   );
 };
