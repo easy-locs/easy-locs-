@@ -516,12 +516,10 @@ const AdminRestaurantFillPage = safeLazy(() => import("./pages/admin/AdminRestau
 // IA-IF block
 const StripeCheckoutHandlerPage = safeLazy(() => import("./pages/payments/StripeCheckoutHandlerPage"), "StripeCheckoutHandlerPage");
 // IG-IL block
-const AdminUiFinalizerPage = safeLazy(() => import("./pages/admin/AdminUiFinalizerPage"), "AdminUiFinalizerPage");
 // IM-IR block
 // AppBootstrapGuard imported directly (not lazy) — it's a tiny null component
 const AdminMasterControlPage = safeLazy(() => import("./pages/admin/AdminMasterControlPage"), "AdminMasterControlPage");
 // IS-IX block
-const AdminProductionChecklistPage = safeLazy(() => import("./pages/admin/AdminProductionChecklistPage"), "AdminProductionChecklistPage");
 // JA-JF block
 const AdminQaCommandPage = safeLazy(() => import("./pages/admin/AdminQaCommandPage"), "AdminQaCommandPage");
 // KA-KF block
@@ -532,11 +530,8 @@ const DriverBreaksPage = safeLazy(() => import("./pages/driver/DriverBreaksPage"
 const MerchantBusinessHoursPage = safeLazy(() => import("./pages/merchant/MerchantBusinessHoursPage"), "MerchantBusinessHoursPage");
 // MA-MW block
 const CustomerShareCartPage = safeLazy(() => import("./pages/customer/CustomerShareCartPage"), "CustomerShareCartPage");
-const AdminGrowthCampaignsPage = safeLazy(() => import("./pages/admin/AdminGrowthCampaignsPage"), "AdminGrowthCampaignsPage");
 const AdminGrowthEnginePage = safeLazy(() => import("./pages/AdminGrowthEnginePage"), "AdminGrowthEnginePage");
 // MX-OG block
-const AdminCityLaunchChecklistPage = safeLazy(() => import("./pages/admin/AdminCityLaunchChecklistPage"), "AdminCityLaunchChecklistPage");
-const AdminRestaurantAutofillPage2 = safeLazy(() => import("./pages/admin/AdminRestaurantAutofillPage"), "AdminRestaurantAutofillPage2");
 const CentralControlPanelPage = safeLazy(() => import("./pages/admin/CentralControlPanelPage"), "CentralControlPanelPage");
 // OH-PI block
 const MerchantMenuCategoryManagerPage = safeLazy(() => import("./pages/merchant/MerchantMenuCategoryManagerPage"), "MerchantMenuCategoryManagerPage");
@@ -1161,11 +1156,9 @@ const App = () => (
                 {/* IA-IF */}
                 <Route path="/payments/stripe-handler" element={<ProtectedRoute><StripeCheckoutHandlerPage /></ProtectedRoute>} />
                 {/* IG-IL */}
-                <Route path="/admin/ui-finalizer" element={<ProtectedRoute><AdminUiFinalizerPage /></ProtectedRoute>} />
                 {/* IM-IR */}
                 <Route path="/admin/master-control" element={<ProtectedRoute><AdminMasterControlPage /></ProtectedRoute>} />
                 {/* IS-IX */}
-                <Route path="/admin/production-checklist" element={<ProtectedRoute><AdminProductionChecklistPage /></ProtectedRoute>} />
                 {/* JA-JF */}
                 <Route path="/admin/qa-command" element={<ProtectedRoute><AdminQaCommandPage /></ProtectedRoute>} />
                 {/* KA-KF */}
@@ -1176,10 +1169,7 @@ const App = () => (
                 <Route path="/merchant/business-hours/:merchantId" element={<ProtectedRoute><MerchantBusinessHoursPage /></ProtectedRoute>} />
                 {/* MA-MW */}
                 <Route path="/checkout/share-cart" element={<ProtectedRoute><CustomerShareCartPage /></ProtectedRoute>} />
-                <Route path="/admin/growth-campaigns" element={<ProtectedRoute><AdminGrowthCampaignsPage /></ProtectedRoute>} />
                 {/* MX-OG */}
-                <Route path="/admin/city-launch-checklist" element={<ProtectedRoute><AdminCityLaunchChecklistPage /></ProtectedRoute>} />
-                <Route path="/admin/restaurant-autofill-v2" element={<ProtectedRoute><AdminRestaurantAutofillPage2 /></ProtectedRoute>} />
                 <Route path="/admin/central-control" element={<ProtectedRoute><CentralControlPanelPage /></ProtectedRoute>} />
                 {/* OH-PI */}
                 <Route path="/merchant/menu-categories/:merchantId" element={<ProtectedRoute><MerchantMenuCategoryManagerPage /></ProtectedRoute>} />
