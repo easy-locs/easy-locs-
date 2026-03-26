@@ -232,6 +232,10 @@ const SlugCategoryResolver = safeLazy(() => import("./pages/seo/SEOShortUrlResol
 // Mobility — canonical pages
 const MobilityTaxiPage = safeLazy(() => import("./pages/mobility/MobilityTaxiPage"), "MobilityTaxiPage");
 const MobilityDeliveryPage = safeLazy(() => import("./pages/mobility/MobilityDeliveryPage"), "MobilityDeliveryPage");
+const DeliveryBringPage = safeLazy(() => import("./pages/mobility/DeliveryBringPage"), "DeliveryBringPage");
+const DeliveryParcelPage = safeLazy(() => import("./pages/mobility/DeliveryParcelPage"), "DeliveryParcelPage");
+const DeliveryGiftPage = safeLazy(() => import("./pages/mobility/DeliveryGiftPage"), "DeliveryGiftPage");
+const DeliveryErrandPage = safeLazy(() => import("./pages/mobility/DeliveryErrandPage"), "DeliveryErrandPage");
 const RiderLivePage = safeLazy(() => import("./pages/mobility/RiderLivePage"), "RiderLivePage");
 // RideHubPage deleted — canonical replacement is MobilityTaxiPage
 const TrackRidePage = safeLazy(() => import("./pages/TrackRidePage"), "TrackRidePage");
@@ -865,6 +869,10 @@ const App = () => (
               {/* Mobility — canonical routes */}
               <Route path="/mobility/taxi" element={<MobilityTaxiPage />} />
               <Route path="/mobility/delivery" element={<MobilityDeliveryPage />} />
+              <Route path="/mobility/delivery/bring" element={<DeliveryBringPage />} />
+              <Route path="/mobility/delivery/parcel" element={<DeliveryParcelPage />} />
+              <Route path="/mobility/delivery/gift" element={<DeliveryGiftPage />} />
+              <Route path="/mobility/delivery/errand" element={<DeliveryErrandPage />} />
               <Route path="/rider/live" element={<RiderLivePage />} />
               <Route path="/ride" element={<Navigate to="/mobility/taxi" replace />} />
               <Route path="/send" element={<Navigate to="/mobility/delivery" replace />} />
