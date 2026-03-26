@@ -3585,6 +3585,78 @@ export type Database = {
         }
         Relationships: []
       }
+      category_fulfillment_rules: {
+        Row: {
+          allows_live_dispatch: boolean
+          allows_scheduled: boolean
+          category: string | null
+          created_at: string
+          default_vehicle_types: string[]
+          delivery_kind: string | null
+          id: string
+          is_deliverable: boolean
+          pricing_strategy: string | null
+          requires_merchant_acceptance: boolean
+          requires_preparation_time: boolean
+          subcategory: string | null
+          supports_multi_stop: boolean
+          supports_orbit_call: boolean
+          supports_orbit_chat: boolean
+          supports_return_flow: boolean
+          supports_tip: boolean
+          supports_tracking: boolean
+          supports_wallet_hold: boolean
+          updated_at: string
+          vertical: string
+        }
+        Insert: {
+          allows_live_dispatch?: boolean
+          allows_scheduled?: boolean
+          category?: string | null
+          created_at?: string
+          default_vehicle_types?: string[]
+          delivery_kind?: string | null
+          id?: string
+          is_deliverable?: boolean
+          pricing_strategy?: string | null
+          requires_merchant_acceptance?: boolean
+          requires_preparation_time?: boolean
+          subcategory?: string | null
+          supports_multi_stop?: boolean
+          supports_orbit_call?: boolean
+          supports_orbit_chat?: boolean
+          supports_return_flow?: boolean
+          supports_tip?: boolean
+          supports_tracking?: boolean
+          supports_wallet_hold?: boolean
+          updated_at?: string
+          vertical: string
+        }
+        Update: {
+          allows_live_dispatch?: boolean
+          allows_scheduled?: boolean
+          category?: string | null
+          created_at?: string
+          default_vehicle_types?: string[]
+          delivery_kind?: string | null
+          id?: string
+          is_deliverable?: boolean
+          pricing_strategy?: string | null
+          requires_merchant_acceptance?: boolean
+          requires_preparation_time?: boolean
+          subcategory?: string | null
+          supports_multi_stop?: boolean
+          supports_orbit_call?: boolean
+          supports_orbit_chat?: boolean
+          supports_return_flow?: boolean
+          supports_tip?: boolean
+          supports_tracking?: boolean
+          supports_wallet_hold?: boolean
+          updated_at?: string
+          vertical?: string
+        }
+        Relationships: []
+      }
       category_subscriptions: {
         Row: {
           category: string
@@ -5916,6 +5988,45 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      delivery_vehicle_capabilities: {
+        Row: {
+          created_at: string
+          max_passengers: number | null
+          max_volume_class: string | null
+          max_weight_kg: number | null
+          supports_food: boolean
+          supports_grocery: boolean
+          supports_parcel: boolean
+          supports_taxi: boolean
+          temperature_control: boolean
+          vehicle_type: string
+        }
+        Insert: {
+          created_at?: string
+          max_passengers?: number | null
+          max_volume_class?: string | null
+          max_weight_kg?: number | null
+          supports_food?: boolean
+          supports_grocery?: boolean
+          supports_parcel?: boolean
+          supports_taxi?: boolean
+          temperature_control?: boolean
+          vehicle_type: string
+        }
+        Update: {
+          created_at?: string
+          max_passengers?: number | null
+          max_volume_class?: string | null
+          max_weight_kg?: number | null
+          supports_food?: boolean
+          supports_grocery?: boolean
+          supports_parcel?: boolean
+          supports_taxi?: boolean
+          temperature_control?: boolean
+          vehicle_type?: string
+        }
+        Relationships: []
       }
       demand_zones: {
         Row: {
@@ -12435,6 +12546,7 @@ export type Database = {
         Row: {
           accepted_at: string | null
           arrived_pickup_at: string | null
+          booking_mode: string
           cancel_reason: string | null
           cancelled_at: string | null
           cancelled_by: string | null
@@ -12447,6 +12559,8 @@ export type Database = {
           customer_user_id: string
           dispatch_attempt_count: number | null
           dispatch_status: string | null
+          dispatch_window_end: string | null
+          dispatch_window_start: string | null
           dropoff_address: string | null
           dropoff_label: string | null
           dropoff_lat: number | null
@@ -12473,6 +12587,7 @@ export type Database = {
           ready_at: string | null
           rider_profile_id: string | null
           rider_user_id: string | null
+          scheduled_for: string | null
           search_radius_km: number | null
           seats_requested: number | null
           service_level: string
@@ -12485,6 +12600,7 @@ export type Database = {
         Insert: {
           accepted_at?: string | null
           arrived_pickup_at?: string | null
+          booking_mode?: string
           cancel_reason?: string | null
           cancelled_at?: string | null
           cancelled_by?: string | null
@@ -12497,6 +12613,8 @@ export type Database = {
           customer_user_id: string
           dispatch_attempt_count?: number | null
           dispatch_status?: string | null
+          dispatch_window_end?: string | null
+          dispatch_window_start?: string | null
           dropoff_address?: string | null
           dropoff_label?: string | null
           dropoff_lat?: number | null
@@ -12523,6 +12641,7 @@ export type Database = {
           ready_at?: string | null
           rider_profile_id?: string | null
           rider_user_id?: string | null
+          scheduled_for?: string | null
           search_radius_km?: number | null
           seats_requested?: number | null
           service_level: string
@@ -12535,6 +12654,7 @@ export type Database = {
         Update: {
           accepted_at?: string | null
           arrived_pickup_at?: string | null
+          booking_mode?: string
           cancel_reason?: string | null
           cancelled_at?: string | null
           cancelled_by?: string | null
@@ -12547,6 +12667,8 @@ export type Database = {
           customer_user_id?: string
           dispatch_attempt_count?: number | null
           dispatch_status?: string | null
+          dispatch_window_end?: string | null
+          dispatch_window_start?: string | null
           dropoff_address?: string | null
           dropoff_label?: string | null
           dropoff_lat?: number | null
@@ -12573,6 +12695,7 @@ export type Database = {
           ready_at?: string | null
           rider_profile_id?: string | null
           rider_user_id?: string | null
+          scheduled_for?: string | null
           search_radius_km?: number | null
           seats_requested?: number | null
           service_level?: string
