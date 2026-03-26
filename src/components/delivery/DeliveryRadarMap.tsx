@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useLocationStore } from "@/stores/locationStore";
-import { useDriverStore } from "@/stores/driverStore";
+import { useRiderDispatchStore } from "@/stores/riderDispatchStore";
 import { MapPin, Radio } from "lucide-react";
 
 export function DeliveryRadarMap() {

@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { useDeliveryStore } from "@/stores/deliveryStore";
+import { useRiderDispatchStore } from "@/stores/riderDispatchStore";
 import { Check, X, Package, Truck, MapPin } from "lucide-react";
 
 export function DriverJobsPanel() {

@@ -1,4 +1,4 @@
-import { useDeliveryStore } from "@/stores/deliveryStore";
+import { useCustomerMobilityStore } from "@/stores/customerMobilityStore";
 import { useLocationStore } from "@/stores/locationStore";
 import { Package } from "lucide-react";
 
