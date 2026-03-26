@@ -11,7 +11,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { MapPin, Bell, Wallet, QrCode, Send, ChevronRight, Star, Navigation } from "lucide-react";
 import UnifiedSearchBar from "@/components/search/UnifiedSearchBar";
 import { useLocationStore } from "@/stores/locationStore";
-import { useOrbitEngine } from "@/stores/orbit-engine";
+import { useNotificationV2Store } from "@/stores/notificationV2Store";
 import { useHomeSections } from "@/hooks/useHomeSections";
 import { getSmartCategories, getSmartHero, getTimeGreeting, type SmartCategory } from "@/lib/smart-home-engine";
 import { eventBus } from "@/lib/core/event-bus";
