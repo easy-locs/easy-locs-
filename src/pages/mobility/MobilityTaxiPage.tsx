@@ -96,15 +96,15 @@ export default function MobilityTaxiPage() {
             )}
 
             <Tabs defaultValue={activeJobs.length > 0 ? "active" : "book"} className="w-full">
-              <TabsList className="w-full grid grid-cols-3 bg-muted/50 rounded-xl h-11">
-                <TabsTrigger value="book" className="rounded-lg text-xs font-semibold gap-1.5">
-                  <Car className="h-3.5 w-3.5" /> Book
+              <TabsList className="w-full grid grid-cols-3 bg-muted/50 rounded-xl h-10">
+                <TabsTrigger value="book" className="rounded-lg text-[11px] font-semibold gap-1 px-1">
+                  <Car className="h-3.5 w-3.5 shrink-0" /> <span className="truncate">Book</span>
                 </TabsTrigger>
-                <TabsTrigger value="active" className="rounded-lg text-xs font-semibold gap-1.5">
-                  <Clock className="h-3.5 w-3.5" /> Active
+                <TabsTrigger value="active" className="rounded-lg text-[11px] font-semibold gap-1 px-1">
+                  <Clock className="h-3.5 w-3.5 shrink-0" /> <span className="truncate">Active</span>
                 </TabsTrigger>
-                <TabsTrigger value="history" className="rounded-lg text-xs font-semibold gap-1.5">
-                  <CheckCircle2 className="h-3.5 w-3.5" /> History
+                <TabsTrigger value="history" className="rounded-lg text-[11px] font-semibold gap-1 px-1">
+                  <CheckCircle2 className="h-3.5 w-3.5 shrink-0" /> <span className="truncate">History</span>
                 </TabsTrigger>
               </TabsList>
 
@@ -130,10 +130,10 @@ export default function MobilityTaxiPage() {
                     description="Your ride history will appear here"
                   />
                 ) : pastJobs.slice(0, 20).map(j => (
-                  <div key={j.id} className="bg-card border border-border/30 rounded-xl p-4 space-y-1">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-semibold text-foreground">Taxi</span>
-                      <Badge variant={j.status === "completed" ? "default" : "secondary"} className="text-[10px]">{j.status}</Badge>
+                  <div key={j.id} className="bg-card border border-border/30 rounded-xl p-3 space-y-1.5">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-sm font-semibold text-foreground truncate">Taxi</span>
+                      <Badge variant={j.status === "completed" ? "default" : "secondary"} className="text-[9px] shrink-0">{j.status}</Badge>
                     </div>
                     <p className="text-xs text-muted-foreground truncate">📍 {j.pickup_label || j.pickup_address}</p>
                     <p className="text-xs text-muted-foreground truncate">🏁 {j.dropoff_label || j.dropoff_address}</p>
