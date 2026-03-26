@@ -14,9 +14,18 @@ export default function BrowseVerticalPage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
+  // Alias map for backward-compat routes
+  const VERTICAL_ALIASES: Record<string, string> = {
+    retail: "shops",
+    real_estate: "property",
+    healthcare: "healthcare",
+  };
+
+  const resolvedVertical = vertical ? (VERTICAL_ALIASES[vertical] ?? vertical) : vertical;
+
   const verticalDef = useMemo(
-    () => VERTICALS.find((v) => v.value === vertical),
-    [vertical]
+    () => VERTICALS.find((v) => v.value === resolvedVertical),
+    [resolvedVertical]
   );
 
   if (!verticalDef) {
