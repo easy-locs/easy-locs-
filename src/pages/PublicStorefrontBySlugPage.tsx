@@ -45,7 +45,7 @@ export default function PublicStorefrontBySlugPage() {
 
   if (!storefront) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="app-mobile-page bg-background flex items-center justify-center">
         <p className="text-sm text-muted-foreground">Loading storefront…</p>
       </div>
     );
@@ -56,7 +56,7 @@ export default function PublicStorefrontBySlugPage() {
     : storefront?.name ?? "Storefront";
 
   return (
-    <div className="min-h-screen bg-background p-4 space-y-6 max-w-lg mx-auto" dir={isArabic ? "rtl" : "ltr"}>
+    <div className="app-mobile-page bg-background p-4 space-y-6 max-w-lg mx-auto" dir={isArabic ? "rtl" : "ltr"}>
       <BackCard />
       <div>
         <h1 className="text-xl font-bold text-foreground">{merchantName}</h1>

@@ -208,7 +208,7 @@ export default function POSPage() {
   return (
     <>
       <SEOHead title="Point of Sale" description="Tactile POS with QR payment and wallet settlement." />
-      <div className="min-h-screen bg-background pb-20">
+      <div className="app-mobile-page bg-background pb-20">
         <MobilePageHeader
           title="Point of Sale"
           icon={<Store className="h-5 w-5 text-primary" />}

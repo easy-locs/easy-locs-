@@ -70,7 +70,7 @@ const categories = [
 ];
 
 const MarketplaceServicesPage = () => (
-  <div className="min-h-screen bg-background">
+  <div className="app-mobile-page bg-background">
     <SEOHead
       title="Marketplace Services for Rental Guests | Easy-Locs"
       description="Connect your guests with local services: airport transfers, car rental, cleaning, tours, wellness, restaurants. Dynamic booking calendars for each service type."

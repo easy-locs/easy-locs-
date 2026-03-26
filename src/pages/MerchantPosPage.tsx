@@ -228,7 +228,7 @@ export default function MerchantPosPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[hsl(220,30%,6%)] text-foreground flex flex-col lg:flex-row">
+    <div className="app-mobile-page bg-[hsl(220,30%,6%)] text-foreground flex flex-col lg:flex-row">
       {/* Left: Menu */}
       <div className="flex-1 flex flex-col p-3 lg:p-6 overflow-hidden">
         <div className="flex items-center gap-3 mb-4">

@@ -11,7 +11,7 @@ export default function TravelHotelDetail() {
   const { id } = useParams<{ id: string }>();
 
   return (
-    <div className="min-h-screen bg-background pb-28">
+    <div className="app-mobile-page bg-background pb-28">
       <MobilePageHeader title="Hotel Details" backTo="/travel/hotels" />
 
       <div className="px-4 space-y-4">

@@ -67,7 +67,7 @@ const features = [
 ];
 
 const ConciergeServicesPage = () => (
-  <div className="min-h-screen bg-background">
+  <div className="app-mobile-page bg-background">
     <SEOHead
       title="Concierge Services for Property Owners | Easy-Locs"
       description="Professional concierge management for vacation rentals and properties. Guest check-in, cleaning, maintenance, airport transfers. 190+ countries. Free to start."

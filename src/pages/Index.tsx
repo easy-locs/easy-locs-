@@ -165,7 +165,7 @@ const Index = () => {
   const isMobile = useIsMobile();
 
   return (
-    <div className="min-h-screen flex flex-col" role="main" id="main-content">
+    <div className="app-mobile-page flex flex-col" role="main" id="main-content">
       <SEOHead
         title="Easy-Locs — Build & Manage Property & Service Businesses Globally | Remote Platform"
         description="Create and manage rental properties, accept direct bookings, and run service businesses across multiple cities — all remotely from one platform. Property management software, concierge marketplace, 190+ countries."

@@ -33,7 +33,7 @@ export default function ProductPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background p-4 space-y-4">
+      <div className="app-mobile-page bg-background p-4 space-y-4">
         <Skeleton className="h-64 rounded-2xl" />
         <Skeleton className="h-6 w-2/3" />
         <Skeleton className="h-4 w-1/3" />
@@ -43,7 +43,7 @@ export default function ProductPage() {
 
   if (!data) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="app-mobile-page bg-background flex items-center justify-center">
         <div className="text-center space-y-3">
           <p className="text-lg font-semibold text-foreground">Product not found</p>
           <Link to="/discover">
@@ -66,7 +66,7 @@ export default function ProductPage() {
         description={data.description?.slice(0, 160) || data.title}
         ogImage={photos[0]}
       />
-      <div className="min-h-screen bg-background">
+      <div className="app-mobile-page bg-background">
         <MobilePageHeader title={data.title} backTo={shop ? `/s/${shop.slug}` : "/discover"} />
 
         <div className="max-w-md mx-auto pb-28">
