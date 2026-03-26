@@ -302,7 +302,6 @@ export default function MerchantDashboardPage() {
         {profileId && (
           <div className="space-y-3 mb-4">
             <MerchantFinancialWidgets merchantProfileId={profileId} />
-            <MerchantPaymentHistory merchantProfileId={profileId} />
           </div>
         )}
 
