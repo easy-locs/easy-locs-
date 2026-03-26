@@ -6,7 +6,7 @@ import { getBusinessEngineState } from "@/lib/engines/autonomous-business-engine
 import { useState, useEffect } from "react";
 
 export function MerchantAlertPanel() {
-  const [flags, setFlags] = useState<{ id: string; entityId: string; suggestion: string }[]>([]);
+  const [flags, setFlags] = useState<{ id: string; entityId?: string; suggestion: string }[]>([]);
 
   useEffect(() => {
     const s = getBusinessEngineState();
