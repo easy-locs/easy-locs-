@@ -257,12 +257,12 @@ serve(async (req) => {
         const meta = session.metadata || {};
         if (meta.type === "orbit_payment" && meta.user_id) {
           logStep("Orbit payment session expired", { sessionId: session.id });
-          // Mark wallet transaction as failed
+          // Mark unified wallet transaction as failed
           await supabase
-            .from("wallet_transactions")
+            .from("unified_wallet_transactions")
             .update({ status: "failed" })
-            .eq("reference_id", session.id)
-            .eq("user_id", meta.user_id)
+            .eq("context_id", session.id)
+            .eq("sender_id", meta.user_id)
             .eq("status", "pending");
           // Audit
           await supabase.from("audit_logs").insert({
@@ -272,7 +272,7 @@ serve(async (req) => {
           });
           // Post failure message in chat
           if (meta.thread_id) {
-            const { data: thread } = await supabase.from("conversation_threads").select("org_id").eq("id", meta.thread_id).maybeSingle();
+            const { data: thread } = await supabase.from("conversations_v2").select("id").eq("id", meta.thread_id).maybeSingle();
             await supabase.from("messages").insert({
               org_id: thread?.org_id || null,
               sender_id: "00000000-0000-0000-0000-000000000000",
@@ -358,15 +358,14 @@ async function runPostPaymentAutomation(supabase: any, pi: Stripe.PaymentIntent,
       const timeStr = new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
       body += ` · ${timeStr}`;
 
-      await supabase.from("app_notifications").insert({
+      await supabase.from("notifications").insert({
         id: crypto.randomUUID(),
         user_id: userId,
         title,
         body,
         type: "wallet_" + paymentType,
-        orbitId: userId,
         read: false,
-        metadata: {
+        metadata_json: {
           amount, currency, merchant_name: merchantName,
           payment_type: paymentType, payment_intent_id: pi.id,
           timestamp: new Date().toISOString(),
@@ -1033,16 +1032,14 @@ async function handleV2BookingPayment(supabase: any, session: Stripe.Checkout.Se
     .maybeSingle();
 
   if (ownerOrbit?.id) {
-    await supabase.from("app_notifications").insert({
-      id: `notif_${crypto.randomUUID().slice(0, 8)}`,
+    await supabase.from("notifications").insert({
+      id: crypto.randomUUID(),
       user_id: ownerOrbit.id,
-      orbitId: booking.ownerOrbitId,
       type: "payment",
       title: "Booking payment received",
       body: `Booking ${bookingId} paid successfully`,
       read: false,
-      metadata: { bookingId, paymentIntentId, listingId },
-      createdAt: now,
+      metadata_json: { bookingId, paymentIntentId, listingId },
     });
   }
 
@@ -1123,16 +1120,14 @@ async function handleV2RentPayment(supabase: any, session: Stripe.Checkout.Sessi
     .maybeSingle();
 
   if (ownerOrbit?.id) {
-    await supabase.from("app_notifications").insert({
-      id: `notif_${crypto.randomUUID().slice(0, 8)}`,
+    await supabase.from("notifications").insert({
+      id: crypto.randomUUID(),
       user_id: ownerOrbit.id,
-      orbitId: rentPayment.ownerOrbitId,
       type: "rent",
       title: "Rent payment received",
       body: `Rent payment ${rentPaymentId} paid successfully`,
       read: false,
-      metadata: { rentPaymentId, paymentIntentId, leaseId },
-      createdAt: now,
+      metadata_json: { rentPaymentId, paymentIntentId, leaseId },
     });
   }
 
@@ -1216,10 +1211,10 @@ async function handleWalletTopup(supabase: any, session: Stripe.Checkout.Session
     metadata: { amount, currency, user_id: userId },
   });
 
-  // Credit wallet_ledger — trigger will auto-update wallet balance
-  const { error: ledgerError } = await supabase.from("wallet_ledger").insert({
+  // Credit wallet_ledger_entries — canonical ledger
+  const { error: ledgerError } = await supabase.from("wallet_ledger_entries").insert({
     user_id: userId,
-    type: "credit",
+    entry_type: "credit",
     amount,
     source: "stripe_topup",
     status: "completed",
@@ -1240,9 +1235,8 @@ async function handleWalletTopup(supabase: any, session: Stripe.Checkout.Session
     .eq("payment_type", "wallet_topup");
 
   // Create notification
-  await supabase.from("app_notifications").insert({
+  await supabase.from("notifications").insert({
     id: crypto.randomUUID(),
-    orbitId: userId,
     user_id: userId,
     title: `💰 Wallet credited: ${amount} ${currency}`,
     body: `Your wallet has been topped up with ${amount} ${currency} via card payment.`,
@@ -1311,9 +1305,8 @@ async function handleListingRenewal(supabase: any, session: Stripe.Checkout.Sess
   await supabase.rpc("increment_listing_renewal_count", { p_listing_id: listingId }).catch(() => {});
 
   // Notification
-  await supabase.from("app_notifications").insert({
+  await supabase.from("notifications").insert({
     id: crypto.randomUUID(),
-    orbitId: userId,
     user_id: userId,
     title: "✅ Listing renewed",
     body: `Your listing has been renewed for 30 more days.`,
@@ -1384,9 +1377,8 @@ async function handleListingBoost(supabase: any, session: Stripe.Checkout.Sessio
 
   // Notification
   const tierLabel = boostTier.charAt(0).toUpperCase() + boostTier.slice(1);
-  await supabase.from("app_notifications").insert({
+  await supabase.from("notifications").insert({
     id: crypto.randomUUID(),
-    orbitId: userId,
     user_id: userId,
     title: `🚀 Boost activated — ${tierLabel}`,
     body: `Your listing is now boosted ${cfg.multiplier}x for ${cfg.days} days.`,
