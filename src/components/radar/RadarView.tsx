@@ -19,7 +19,7 @@ import { eventBus } from "@/lib/events/eventBus";
 import UnifiedMap from "@/components/map/UnifiedMap";
 import { formatGeoDistance, formatGeoETA, type SortMode } from "@/lib/geo/geoRanking";
 import type { GeoEntity } from "@/lib/geo/geoEntityAdapter";
-import { useDiscoveryStore } from "@/stores/discoveryStore";
+
 import { rankEntities, DISCOVERY_WEIGHTS, type RankableEntity, type RankContext } from "@/lib/ranking-engine";
 import { useCanonicalUI } from "@/hooks/useCanonicalUI";
 import { useV2AuthStore } from "@/stores/v2AuthStore";
