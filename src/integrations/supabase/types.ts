@@ -11868,6 +11868,157 @@ export type Database = {
           },
         ]
       }
+      mobility_dispatch_runs: {
+        Row: {
+          created_at: string
+          current_wave: number
+          dispatch_strategy: string
+          id: string
+          job_id: string
+          max_waves: number
+          metadata_json: Json
+          score_summary_json: Json
+          status: string
+          updated_at: string
+          zone_key: string | null
+        }
+        Insert: {
+          created_at?: string
+          current_wave?: number
+          dispatch_strategy?: string
+          id?: string
+          job_id: string
+          max_waves?: number
+          metadata_json?: Json
+          score_summary_json?: Json
+          status?: string
+          updated_at?: string
+          zone_key?: string | null
+        }
+        Update: {
+          created_at?: string
+          current_wave?: number
+          dispatch_strategy?: string
+          id?: string
+          job_id?: string
+          max_waves?: number
+          metadata_json?: Json
+          score_summary_json?: Json
+          status?: string
+          updated_at?: string
+          zone_key?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mobility_dispatch_runs_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "mobility_jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mobility_driver_scores: {
+        Row: {
+          created_at: string
+          explanation_json: Json
+          id: string
+          job_id: string
+          rank_index: number | null
+          rider_user_id: string
+          score_acceptance: number
+          score_activity: number
+          score_distance: number
+          score_gps_quality: number
+          score_reliability: number
+          score_response: number
+          score_total: number
+          score_vehicle_fit: number
+          score_zone: number
+        }
+        Insert: {
+          created_at?: string
+          explanation_json?: Json
+          id?: string
+          job_id: string
+          rank_index?: number | null
+          rider_user_id: string
+          score_acceptance?: number
+          score_activity?: number
+          score_distance?: number
+          score_gps_quality?: number
+          score_reliability?: number
+          score_response?: number
+          score_total?: number
+          score_vehicle_fit?: number
+          score_zone?: number
+        }
+        Update: {
+          created_at?: string
+          explanation_json?: Json
+          id?: string
+          job_id?: string
+          rank_index?: number | null
+          rider_user_id?: string
+          score_acceptance?: number
+          score_activity?: number
+          score_distance?: number
+          score_gps_quality?: number
+          score_reliability?: number
+          score_response?: number
+          score_total?: number
+          score_vehicle_fit?: number
+          score_zone?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mobility_driver_scores_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "mobility_jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mobility_driver_stats: {
+        Row: {
+          acceptance_rate: number
+          avg_pickup_arrival_minutes: number
+          avg_response_seconds: number
+          avg_trip_completion_rate: number
+          cancellation_rate: number
+          gps_reliability_score: number
+          metadata_json: Json
+          rider_user_id: string
+          updated_at: string
+          zone_success_json: Json
+        }
+        Insert: {
+          acceptance_rate?: number
+          avg_pickup_arrival_minutes?: number
+          avg_response_seconds?: number
+          avg_trip_completion_rate?: number
+          cancellation_rate?: number
+          gps_reliability_score?: number
+          metadata_json?: Json
+          rider_user_id: string
+          updated_at?: string
+          zone_success_json?: Json
+        }
+        Update: {
+          acceptance_rate?: number
+          avg_pickup_arrival_minutes?: number
+          avg_response_seconds?: number
+          avg_trip_completion_rate?: number
+          cancellation_rate?: number
+          gps_reliability_score?: number
+          metadata_json?: Json
+          rider_user_id?: string
+          updated_at?: string
+          zone_success_json?: Json
+        }
+        Relationships: []
+      }
       mobility_fare_quotes: {
         Row: {
           base_fare: number
@@ -12179,6 +12330,68 @@ export type Database = {
             columns: ["rider_profile_id"]
             isOneToOne: false
             referencedRelation: "rider_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mobility_pricing_snapshots: {
+        Row: {
+          base_fare: number
+          created_at: string
+          demand_multiplier: number
+          distance_fare: number
+          distance_km: number
+          duration_min: number
+          explanation_json: Json
+          final_price: number
+          id: string
+          job_id: string | null
+          surge_multiplier: number
+          time_fare: number
+          traffic_multiplier: number
+          weather_multiplier: number
+          zone_key: string | null
+        }
+        Insert: {
+          base_fare?: number
+          created_at?: string
+          demand_multiplier?: number
+          distance_fare?: number
+          distance_km?: number
+          duration_min?: number
+          explanation_json?: Json
+          final_price?: number
+          id?: string
+          job_id?: string | null
+          surge_multiplier?: number
+          time_fare?: number
+          traffic_multiplier?: number
+          weather_multiplier?: number
+          zone_key?: string | null
+        }
+        Update: {
+          base_fare?: number
+          created_at?: string
+          demand_multiplier?: number
+          distance_fare?: number
+          distance_km?: number
+          duration_min?: number
+          explanation_json?: Json
+          final_price?: number
+          id?: string
+          job_id?: string | null
+          surge_multiplier?: number
+          time_fare?: number
+          traffic_multiplier?: number
+          weather_multiplier?: number
+          zone_key?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mobility_pricing_snapshots_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "mobility_jobs"
             referencedColumns: ["id"]
           },
         ]
