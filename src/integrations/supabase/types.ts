@@ -4873,6 +4873,39 @@ export type Database = {
         }
         Relationships: []
       }
+      customer_profiles: {
+        Row: {
+          created_at: string | null
+          default_dropoff_label: string | null
+          default_pickup_label: string | null
+          full_name: string | null
+          id: string
+          phone: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          default_dropoff_label?: string | null
+          default_pickup_label?: string | null
+          full_name?: string | null
+          id?: string
+          phone?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          default_dropoff_label?: string | null
+          default_pickup_label?: string | null
+          full_name?: string | null
+          id?: string
+          phone?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       customer_recommendations: {
         Row: {
           created_at: string | null
@@ -11831,6 +11864,57 @@ export type Database = {
           },
         ]
       }
+      merchant_profiles: {
+        Row: {
+          address: string | null
+          business_name: string
+          created_at: string | null
+          id: string
+          is_open: boolean | null
+          lat: number | null
+          lng: number | null
+          merchant_type: string | null
+          phone: string | null
+          pickup_buffer_minutes: number | null
+          prep_time_minutes: number | null
+          storefront_page_id: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          address?: string | null
+          business_name: string
+          created_at?: string | null
+          id?: string
+          is_open?: boolean | null
+          lat?: number | null
+          lng?: number | null
+          merchant_type?: string | null
+          phone?: string | null
+          pickup_buffer_minutes?: number | null
+          prep_time_minutes?: number | null
+          storefront_page_id?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          address?: string | null
+          business_name?: string
+          created_at?: string | null
+          id?: string
+          is_open?: boolean | null
+          lat?: number | null
+          lng?: number | null
+          merchant_type?: string | null
+          phone?: string | null
+          pickup_buffer_minutes?: number | null
+          prep_time_minutes?: number | null
+          storefront_page_id?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       merchant_staff: {
         Row: {
           created_at: string
@@ -12162,6 +12246,362 @@ export type Database = {
             columns: ["thread_id"]
             isOneToOne: false
             referencedRelation: "conversation_threads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mobility_dispatch_attempts: {
+        Row: {
+          accepted_count: number | null
+          attempt_number: number
+          created_at: string | null
+          fare_after: number | null
+          fare_before: number | null
+          id: string
+          job_id: string
+          radius_km: number
+          riders_notified: number | null
+          riders_targeted: number | null
+          strategy: string | null
+          surge_multiplier: number | null
+        }
+        Insert: {
+          accepted_count?: number | null
+          attempt_number?: number
+          created_at?: string | null
+          fare_after?: number | null
+          fare_before?: number | null
+          id?: string
+          job_id: string
+          radius_km: number
+          riders_notified?: number | null
+          riders_targeted?: number | null
+          strategy?: string | null
+          surge_multiplier?: number | null
+        }
+        Update: {
+          accepted_count?: number | null
+          attempt_number?: number
+          created_at?: string | null
+          fare_after?: number | null
+          fare_before?: number | null
+          id?: string
+          job_id?: string
+          radius_km?: number
+          riders_notified?: number | null
+          riders_targeted?: number | null
+          strategy?: string | null
+          surge_multiplier?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mobility_dispatch_attempts_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "mobility_jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mobility_fare_quotes: {
+        Row: {
+          base_fare: number
+          created_at: string | null
+          currency: string | null
+          demand_component: number | null
+          distance_fare: number
+          id: string
+          job_id: string | null
+          job_type: string
+          merchant_component: number | null
+          reason: string | null
+          service_level: string
+          surge_multiplier: number | null
+          time_fare: number
+          total_fare: number
+        }
+        Insert: {
+          base_fare?: number
+          created_at?: string | null
+          currency?: string | null
+          demand_component?: number | null
+          distance_fare?: number
+          id?: string
+          job_id?: string | null
+          job_type: string
+          merchant_component?: number | null
+          reason?: string | null
+          service_level: string
+          surge_multiplier?: number | null
+          time_fare?: number
+          total_fare: number
+        }
+        Update: {
+          base_fare?: number
+          created_at?: string | null
+          currency?: string | null
+          demand_component?: number | null
+          distance_fare?: number
+          id?: string
+          job_id?: string | null
+          job_type?: string
+          merchant_component?: number | null
+          reason?: string | null
+          service_level?: string
+          surge_multiplier?: number | null
+          time_fare?: number
+          total_fare?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mobility_fare_quotes_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "mobility_jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mobility_job_offers: {
+        Row: {
+          created_at: string | null
+          distance_km: number | null
+          eta_minutes: number | null
+          expires_at: string
+          fare_at_offer: number | null
+          id: string
+          job_id: string
+          offered_at: string
+          radius_km: number
+          responded_at: string | null
+          rider_profile_id: string | null
+          rider_user_id: string
+          status: string
+          surge_multiplier: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          distance_km?: number | null
+          eta_minutes?: number | null
+          expires_at?: string
+          fare_at_offer?: number | null
+          id?: string
+          job_id: string
+          offered_at?: string
+          radius_km: number
+          responded_at?: string | null
+          rider_profile_id?: string | null
+          rider_user_id: string
+          status?: string
+          surge_multiplier?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          distance_km?: number | null
+          eta_minutes?: number | null
+          expires_at?: string
+          fare_at_offer?: number | null
+          id?: string
+          job_id?: string
+          offered_at?: string
+          radius_km?: number
+          responded_at?: string | null
+          rider_profile_id?: string | null
+          rider_user_id?: string
+          status?: string
+          surge_multiplier?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mobility_job_offers_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "mobility_jobs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mobility_job_offers_rider_profile_id_fkey"
+            columns: ["rider_profile_id"]
+            isOneToOne: false
+            referencedRelation: "rider_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mobility_jobs: {
+        Row: {
+          accepted_at: string | null
+          arrived_pickup_at: string | null
+          cancel_reason: string | null
+          cancelled_at: string | null
+          cancelled_by: string | null
+          completed_at: string | null
+          confirmation_code: string | null
+          created_at: string | null
+          currency: string | null
+          current_price: number | null
+          customer_profile_id: string | null
+          customer_user_id: string
+          dispatch_attempt_count: number | null
+          dispatch_status: string | null
+          dropoff_address: string | null
+          dropoff_label: string | null
+          dropoff_lat: number | null
+          dropoff_lng: number | null
+          id: string
+          item_type: string | null
+          job_type: string
+          last_dispatch_at: string | null
+          merchant_id: string | null
+          merchant_status: string | null
+          notes: string | null
+          order_id: string | null
+          package_size: string | null
+          parcel_reference: string | null
+          payment_status: string | null
+          picked_up_at: string | null
+          pickup_address: string | null
+          pickup_label: string | null
+          pickup_lat: number | null
+          pickup_lng: number | null
+          prep_time_minutes: number | null
+          pricing_version: number | null
+          quoted_price: number | null
+          ready_at: string | null
+          rider_profile_id: string | null
+          rider_user_id: string | null
+          search_radius_km: number | null
+          seats_requested: number | null
+          service_level: string
+          started_at: string | null
+          status: string
+          storefront_page_id: string | null
+          surge_multiplier: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          accepted_at?: string | null
+          arrived_pickup_at?: string | null
+          cancel_reason?: string | null
+          cancelled_at?: string | null
+          cancelled_by?: string | null
+          completed_at?: string | null
+          confirmation_code?: string | null
+          created_at?: string | null
+          currency?: string | null
+          current_price?: number | null
+          customer_profile_id?: string | null
+          customer_user_id: string
+          dispatch_attempt_count?: number | null
+          dispatch_status?: string | null
+          dropoff_address?: string | null
+          dropoff_label?: string | null
+          dropoff_lat?: number | null
+          dropoff_lng?: number | null
+          id?: string
+          item_type?: string | null
+          job_type: string
+          last_dispatch_at?: string | null
+          merchant_id?: string | null
+          merchant_status?: string | null
+          notes?: string | null
+          order_id?: string | null
+          package_size?: string | null
+          parcel_reference?: string | null
+          payment_status?: string | null
+          picked_up_at?: string | null
+          pickup_address?: string | null
+          pickup_label?: string | null
+          pickup_lat?: number | null
+          pickup_lng?: number | null
+          prep_time_minutes?: number | null
+          pricing_version?: number | null
+          quoted_price?: number | null
+          ready_at?: string | null
+          rider_profile_id?: string | null
+          rider_user_id?: string | null
+          search_radius_km?: number | null
+          seats_requested?: number | null
+          service_level: string
+          started_at?: string | null
+          status?: string
+          storefront_page_id?: string | null
+          surge_multiplier?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          accepted_at?: string | null
+          arrived_pickup_at?: string | null
+          cancel_reason?: string | null
+          cancelled_at?: string | null
+          cancelled_by?: string | null
+          completed_at?: string | null
+          confirmation_code?: string | null
+          created_at?: string | null
+          currency?: string | null
+          current_price?: number | null
+          customer_profile_id?: string | null
+          customer_user_id?: string
+          dispatch_attempt_count?: number | null
+          dispatch_status?: string | null
+          dropoff_address?: string | null
+          dropoff_label?: string | null
+          dropoff_lat?: number | null
+          dropoff_lng?: number | null
+          id?: string
+          item_type?: string | null
+          job_type?: string
+          last_dispatch_at?: string | null
+          merchant_id?: string | null
+          merchant_status?: string | null
+          notes?: string | null
+          order_id?: string | null
+          package_size?: string | null
+          parcel_reference?: string | null
+          payment_status?: string | null
+          picked_up_at?: string | null
+          pickup_address?: string | null
+          pickup_label?: string | null
+          pickup_lat?: number | null
+          pickup_lng?: number | null
+          prep_time_minutes?: number | null
+          pricing_version?: number | null
+          quoted_price?: number | null
+          ready_at?: string | null
+          rider_profile_id?: string | null
+          rider_user_id?: string | null
+          search_radius_km?: number | null
+          seats_requested?: number | null
+          service_level?: string
+          started_at?: string | null
+          status?: string
+          storefront_page_id?: string | null
+          surge_multiplier?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mobility_jobs_customer_profile_id_fkey"
+            columns: ["customer_profile_id"]
+            isOneToOne: false
+            referencedRelation: "customer_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mobility_jobs_merchant_id_fkey"
+            columns: ["merchant_id"]
+            isOneToOne: false
+            referencedRelation: "merchant_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mobility_jobs_rider_profile_id_fkey"
+            columns: ["rider_profile_id"]
+            isOneToOne: false
+            referencedRelation: "rider_profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -17131,42 +17571,119 @@ export type Database = {
       }
       rider_presence: {
         Row: {
-          accuracy_m: number | null
-          current_lat: number | null
-          current_lng: number | null
+          accuracy: number | null
+          actor: string
+          battery_level: number | null
           heading: number | null
-          is_available: boolean
-          is_online: boolean
+          is_available: boolean | null
+          is_online: boolean | null
           last_seen_at: string | null
-          rider_user_id: string
-          speed_kmh: number | null
+          lat: number | null
+          lng: number | null
+          rider_profile_id: string
+          service_modes: string[]
+          speed: number | null
           updated_at: string | null
+          user_id: string
+          vehicle_type: string
+        }
+        Insert: {
+          accuracy?: number | null
+          actor?: string
+          battery_level?: number | null
+          heading?: number | null
+          is_available?: boolean | null
+          is_online?: boolean | null
+          last_seen_at?: string | null
+          lat?: number | null
+          lng?: number | null
+          rider_profile_id: string
+          service_modes?: string[]
+          speed?: number | null
+          updated_at?: string | null
+          user_id: string
+          vehicle_type?: string
+        }
+        Update: {
+          accuracy?: number | null
+          actor?: string
+          battery_level?: number | null
+          heading?: number | null
+          is_available?: boolean | null
+          is_online?: boolean | null
+          last_seen_at?: string | null
+          lat?: number | null
+          lng?: number | null
+          rider_profile_id?: string
+          service_modes?: string[]
+          speed?: number | null
+          updated_at?: string | null
+          user_id?: string
+          vehicle_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rider_presence_rider_profile_id_fkey"
+            columns: ["rider_profile_id"]
+            isOneToOne: true
+            referencedRelation: "rider_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      rider_profiles: {
+        Row: {
+          created_at: string | null
+          full_name: string | null
+          id: string
+          is_available: boolean | null
+          is_online: boolean | null
+          is_verified: boolean | null
+          phone: string | null
+          plate_number: string | null
+          rating: number | null
+          rider_mode: string | null
+          seats: number | null
+          updated_at: string | null
+          user_id: string
+          vehicle_brand: string | null
+          vehicle_model: string | null
           vehicle_type: string | null
         }
         Insert: {
-          accuracy_m?: number | null
-          current_lat?: number | null
-          current_lng?: number | null
-          heading?: number | null
-          is_available?: boolean
-          is_online?: boolean
-          last_seen_at?: string | null
-          rider_user_id: string
-          speed_kmh?: number | null
+          created_at?: string | null
+          full_name?: string | null
+          id?: string
+          is_available?: boolean | null
+          is_online?: boolean | null
+          is_verified?: boolean | null
+          phone?: string | null
+          plate_number?: string | null
+          rating?: number | null
+          rider_mode?: string | null
+          seats?: number | null
           updated_at?: string | null
+          user_id: string
+          vehicle_brand?: string | null
+          vehicle_model?: string | null
           vehicle_type?: string | null
         }
         Update: {
-          accuracy_m?: number | null
-          current_lat?: number | null
-          current_lng?: number | null
-          heading?: number | null
-          is_available?: boolean
-          is_online?: boolean
-          last_seen_at?: string | null
-          rider_user_id?: string
-          speed_kmh?: number | null
+          created_at?: string | null
+          full_name?: string | null
+          id?: string
+          is_available?: boolean | null
+          is_online?: boolean | null
+          is_verified?: boolean | null
+          phone?: string | null
+          plate_number?: string | null
+          rating?: number | null
+          rider_mode?: string | null
+          seats?: number | null
           updated_at?: string | null
+          user_id?: string
+          vehicle_brand?: string | null
+          vehicle_model?: string | null
           vehicle_type?: string | null
         }
         Relationships: []
@@ -25589,33 +26106,42 @@ export type Database = {
       }
       trip_live_state: {
         Row: {
+          accuracy: number | null
           customer_lat: number | null
           customer_lng: number | null
+          heading: number | null
           job_id: string
-          rider_heading: number | null
-          rider_lat: number | null
-          rider_lng: number | null
-          rider_speed_kmh: number | null
+          lat: number | null
+          lng: number | null
+          rider_profile_id: string | null
+          rider_user_id: string | null
+          speed: number | null
           updated_at: string | null
         }
         Insert: {
+          accuracy?: number | null
           customer_lat?: number | null
           customer_lng?: number | null
+          heading?: number | null
           job_id: string
-          rider_heading?: number | null
-          rider_lat?: number | null
-          rider_lng?: number | null
-          rider_speed_kmh?: number | null
+          lat?: number | null
+          lng?: number | null
+          rider_profile_id?: string | null
+          rider_user_id?: string | null
+          speed?: number | null
           updated_at?: string | null
         }
         Update: {
+          accuracy?: number | null
           customer_lat?: number | null
           customer_lng?: number | null
+          heading?: number | null
           job_id?: string
-          rider_heading?: number | null
-          rider_lat?: number | null
-          rider_lng?: number | null
-          rider_speed_kmh?: number | null
+          lat?: number | null
+          lng?: number | null
+          rider_profile_id?: string | null
+          rider_user_id?: string | null
+          speed?: number | null
           updated_at?: string | null
         }
         Relationships: [
@@ -25623,51 +26149,71 @@ export type Database = {
             foreignKeyName: "trip_live_state_job_id_fkey"
             columns: ["job_id"]
             isOneToOne: true
-            referencedRelation: "delivery_jobs"
+            referencedRelation: "mobility_jobs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trip_live_state_rider_profile_id_fkey"
+            columns: ["rider_profile_id"]
+            isOneToOne: false
+            referencedRelation: "rider_profiles"
             referencedColumns: ["id"]
           },
         ]
       }
       trip_location_points: {
         Row: {
-          accuracy_m: number | null
+          accuracy: number | null
+          created_at: string | null
           heading: number | null
           id: string
           job_id: string
           lat: number
           lng: number
-          recorded_at: string | null
+          recorded_at: string
+          rider_profile_id: string | null
           rider_user_id: string
-          speed_kmh: number | null
+          speed: number | null
         }
         Insert: {
-          accuracy_m?: number | null
+          accuracy?: number | null
+          created_at?: string | null
           heading?: number | null
           id?: string
           job_id: string
           lat: number
           lng: number
-          recorded_at?: string | null
+          recorded_at?: string
+          rider_profile_id?: string | null
           rider_user_id: string
-          speed_kmh?: number | null
+          speed?: number | null
         }
         Update: {
-          accuracy_m?: number | null
+          accuracy?: number | null
+          created_at?: string | null
           heading?: number | null
           id?: string
           job_id?: string
           lat?: number
           lng?: number
-          recorded_at?: string | null
+          recorded_at?: string
+          rider_profile_id?: string | null
           rider_user_id?: string
-          speed_kmh?: number | null
+          speed?: number | null
         }
         Relationships: [
           {
             foreignKeyName: "trip_location_points_job_id_fkey"
             columns: ["job_id"]
             isOneToOne: false
-            referencedRelation: "delivery_jobs"
+            referencedRelation: "mobility_jobs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trip_location_points_rider_profile_id_fkey"
+            columns: ["rider_profile_id"]
+            isOneToOne: false
+            referencedRelation: "rider_profiles"
             referencedColumns: ["id"]
           },
         ]
