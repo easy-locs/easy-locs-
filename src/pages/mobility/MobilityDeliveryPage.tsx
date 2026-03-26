@@ -16,8 +16,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { motion } from "framer-motion";
-import { useArbitratedStation } from "@/hooks/useArbitratedStation";
-import { useLocationStore } from "@/stores/locationStore";
+import { usePlatformBrain } from "@/hooks/usePlatformBrain";
 import { cn } from "@/lib/utils";
 
 /* ═══ Quick Actions — horizontal scroll ═══ */
@@ -84,9 +83,10 @@ export default function MobilityDeliveryPage() {
   const navigate = useNavigate();
   const [addressOpen, setAddressOpen] = useState(false);
   const { jobs, hydrateMyJobs, refreshJob } = useCustomerMobilityStore();
-  const station = useArbitratedStation();
-  const permissionState = useLocationStore((s) => s.permissionState);
-  const currentLocation = useLocationStore((s) => s.currentLocation);
+  const brain = usePlatformBrain();
+  const station = brain.arbitration;
+  const currentLocation = brain.geo.selectedLocation;
+  const permissionState = brain.geo.gpsPermission;
 
   useEffect(() => { hydrateMyJobs(); }, []);
 

@@ -8,7 +8,7 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { CanonicalAddressInput } from "@/components/address/CanonicalAddressInput";
 import type { CanonicalPlace } from "@/lib/address/canonical-place";
-import { useArbitratedStation } from "@/hooks/useArbitratedStation";
+import { usePlatformBrain } from "@/hooks/usePlatformBrain";
 import { cn } from "@/lib/utils";
 
 const GIFT_IDEAS = [
@@ -22,7 +22,7 @@ const GIFT_IDEAS = [
 
 export default function DeliveryGiftPage() {
   const navigate = useNavigate();
-  const station = useArbitratedStation();
+  const { arbitration: station } = usePlatformBrain();
   const [recipientAddress, setRecipientAddress] = useState<CanonicalPlace | null>(null);
   const [recipientName, setRecipientName] = useState("");
   const [recipientPhone, setRecipientPhone] = useState("");
