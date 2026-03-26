@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 const TABLES_TO_CHECK = [
   "workspaces",
   "orders",
-  "dispatch_jobs_v2",
+  "mobility_jobs",
   "wallet_balances",
   "user_profiles",
 ] as const;
@@ -20,7 +20,7 @@ export async function verifyRlsBasicAccess() {
         reason: error ? error.message : "Accessible",
       });
     } catch (e: any) {
-      results.push({ key: table, ok: false, reason: e.message ?? "Query failed" });
+      results.push({ key: table, ok: false, reason: e.message });
     }
   }
 
