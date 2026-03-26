@@ -5,14 +5,17 @@
  *
  * Buckets: same_zone → same_district → same_city → same_country → international
  * 
- * Weights:
+ * MODES:
+ *   STRICT_ADDRESS: zone/district/proximity dominate; text last; foreign crushed
+ *   PLACE_DISCOVERY: balanced (default)
+ *
+ * Weights (place_discovery):
  *   0.30 proximity + 0.20 country_city + 0.15 district_zone
  * + 0.15 text + 0.10 popularity + 0.05 category + 0.05 serviceability
  *
- * SHORT AMBIGUOUS QUERY MODE:
- *   For queries like "Marina", "Mall", "Airport", "Tower", "Downtown"
- *   local bias is amplified: foreign results get 0.25x penalty,
- *   district/zone boost gets 1.5x multiplier.
+ * Weights (strict_address):
+ *   0.35 proximity + 0.25 country_city + 0.20 district_zone
+ * + 0.05 text + 0.05 popularity + 0.05 category + 0.05 serviceability
  *
  * COUNTRY COMPARISON:
  *   Uses country_code (ISO 2-letter) as primary key, NOT country_name.
@@ -20,14 +23,13 @@
 import { haversineKm } from "@/lib/geo/distance";
 import type { SearchCandidate } from "./search-provider-normalizer";
 import type { SearchIntent } from "./search-intent-resolver";
+import { resolveSearchMode, strictPlaceTypePenalty } from "./search-mode-resolver";
 
-const W_PROXIMITY = 0.30;
-const W_COUNTRY_CITY = 0.20;
-const W_DISTRICT_ZONE = 0.15;
-const W_TEXT = 0.15;
-const W_POPULARITY = 0.10;
-const W_CATEGORY = 0.05;
-const W_SERVICEABILITY = 0.05;
+// ── Weight sets per mode ──
+const WEIGHTS = {
+  place_discovery: { proximity: 0.30, country_city: 0.20, district_zone: 0.15, text: 0.15, popularity: 0.10, category: 0.05, serviceability: 0.05 },
+  strict_address:  { proximity: 0.35, country_city: 0.25, district_zone: 0.20, text: 0.05, popularity: 0.05, category: 0.05, serviceability: 0.05 },
+} as const;
 
 interface RankingContext {
   query: string;
@@ -217,6 +219,8 @@ const BUCKET_PRIORITY: Record<string, number> = {
 export function localRank(candidates: SearchCandidate[], ctx: RankingContext): RankedCandidate[] {
   const isExplicitForeign = ctx.intent.isExplicitForeign;
   const isAmbiguous = ctx.intent.isAmbiguousShort;
+  const mode = resolveSearchMode(ctx.contextType);
+  const W = WEIGHTS[mode];
 
   const ranked = candidates.map(c => {
     const reasons: string[] = [];
@@ -247,31 +251,49 @@ export function localRank(candidates: SearchCandidate[], ctx: RankingContext): R
     // Serviceability (placeholder)
     const svc = 0.5;
 
-    // Base score
+    // Base score — mode-aware weights
     let score =
-      prox.score * W_PROXIMITY +
-      cc.score * W_COUNTRY_CITY +
-      dz.score * W_DISTRICT_ZONE +
-      ts * W_TEXT +
-      pop * W_POPULARITY +
-      cat * W_CATEGORY +
-      svc * W_SERVICEABILITY;
+      prox.score * W.proximity +
+      cc.score * W.country_city +
+      dz.score * W.district_zone +
+      ts * W.text +
+      pop * W.popularity +
+      cat * W.category +
+      svc * W.serviceability;
 
     // SHORT AMBIGUOUS QUERY MODE — aggressive local bias
     const bucket = assignBucket(c, ctx.userCountry, ctx.userCity, ctx.userDistrict, ctx.zoneKey, ctx.userCountryCode);
-    if (isAmbiguous && !isExplicitForeign) {
+
+    // ── STRICT ADDRESS MODE: crush foreign + far + incompatible place types ──
+    if (mode === "strict_address") {
+      if (bucket === "international") {
+        score *= 0.10; // nearly invisible
+        reasons.push("strict_foreign_crush");
+      } else if (bucket === "same_country" && distKm != null && distKm > 50) {
+        score *= 0.40; // far same-country penalty
+        reasons.push("strict_far_penalty");
+      }
+      // Penalize landmarks/malls/airports as delivery addresses
+      score *= strictPlaceTypePenalty(c.place_type);
+      if (strictPlaceTypePenalty(c.place_type) < 1) {
+        reasons.push("strict_place_type_penalty");
+      }
+      // Distance hard penalty for strict mode
+      if (distKm != null && distKm > 25) {
+        score *= 0.50;
+        reasons.push("strict_distance_penalty");
+      }
+    } else if (isAmbiguous && !isExplicitForeign) {
       if (bucket === "international") {
         score *= 0.25; // Very aggressive penalty
         reasons.push("ambiguous_foreign_penalty");
       } else if (bucket === "same_country") {
         score *= 0.85;
       } else if (bucket === "same_zone" || bucket === "same_district") {
-        // Boost local zone/district results for ambiguous queries
         score *= 1.15;
         reasons.push("ambiguous_local_boost");
       }
     } else if (!isExplicitForeign) {
-      // Standard mode — still penalize foreign but less aggressively
       if (bucket === "international") score *= 0.4;
       else if (bucket === "same_country") score *= 0.9;
     }
