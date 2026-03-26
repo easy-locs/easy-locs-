@@ -328,13 +328,7 @@ export function installPlatformReactions(): () => void {
     platformBus.onPrefix("orbit:", () => refreshModule("communication"))
   );
 
-  // ── Tracking events → refresh business ──
-  unsubs.push(
-    platformBus.on("tracking:completed", () => refreshModule("business"))
-  );
-  unsubs.push(
-    platformBus.on("tracking:started", () => refreshModule("business"))
-  );
+  // (tracking:completed and tracking:started now handled by tracking: prefix below)
 
   // ── Storefront events → refresh business module ──
   unsubs.push(
