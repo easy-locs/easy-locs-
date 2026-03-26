@@ -3,7 +3,7 @@
  * Shows weather, traffic, demand, rider supply, ETAs, surge, flood risk.
  * Adapts per category vertical.
  */
-import { useArbitratedStation } from "@/hooks/useArbitratedStation";
+import { usePlatformBrain } from "@/hooks/usePlatformBrain";
 import {
   Cloud, CloudRain, CloudLightning, Sun, Car, Bike, Users,
   Clock, Zap, AlertTriangle, TrendingUp, Store, MapPin,
@@ -23,7 +23,7 @@ interface Props {
 }
 
 export default function RadarLiveStationCard({ vertical, compact = false }: Props) {
-  const station = useArbitratedStation();
+  const { arbitration: station } = usePlatformBrain();
 
   if (station.loading || (!station.zoneKey && !station.label)) {
     return (
