@@ -167,7 +167,7 @@ function DynamicSection({ section, shops, index }: { section: { key: string; tit
           <Link
             key={shop.id}
             to={`/s/${shop.slug}`}
-            className="shrink-0 w-[172px] rounded-2xl border border-border/15 bg-card overflow-visible active:scale-[0.96] transition-transform"
+            className="shrink-0 w-[182px] rounded-2xl border border-border/15 bg-card overflow-visible active:scale-[0.96] transition-transform"
           >
             <div className="relative flex h-[112px] items-center justify-center overflow-hidden rounded-t-2xl bg-muted/20">
               {(shop.banner_url || shop.logo_url) ? (
@@ -176,7 +176,7 @@ function DynamicSection({ section, shops, index }: { section: { key: string; tit
                 <Star className="h-6 w-6 text-muted-foreground/20" />
               )}
             </div>
-            <div className="space-y-1.5 p-3">
+            <div className="min-w-0 space-y-1.5 p-3">
               <p className="min-h-[2rem] text-xs font-bold leading-snug text-foreground line-clamp-2">{shop.name}</p>
               <div className="flex items-start gap-1.5">
                 {shop.rating != null && shop.rating > 0 && (
@@ -320,6 +320,7 @@ export default function SmartHome() {
         <BoostSlotRenderer surface="home" slotKey="hero_primary" variant="hero" className="mb-4" />
       </div>
 
+      <div className="px-3 sm:px-4">
       {/* ═══ Live Map ═══ */}
       <motion.div
         initial={{ opacity: 0, y: 8 }}
@@ -327,11 +328,11 @@ export default function SmartHome() {
         transition={{ delay: 0.12, ...TRANSITIONS.smooth }}
         className="mb-4"
       >
-        <div className="flex items-center justify-between mb-2 px-1">
+        <div className="mb-2 flex flex-wrap items-center justify-between gap-2 px-1">
           <h3 className="text-sm font-bold text-foreground flex items-center gap-1.5">
             <span>📍</span> Live near you
           </h3>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <Link to="/mobility/delivery" className="text-[11px] font-medium text-muted-foreground flex items-center gap-0.5 active:opacity-70">
               Send <ChevronRight className="h-3 w-3" />
             </Link>
@@ -359,6 +360,7 @@ export default function SmartHome() {
       {/* ═══ BOOST SLOT — Inline ═══ */}
       <div className="pb-4">
         <BoostSlotRenderer surface="home" slotKey="inline_banner_1" variant="inline" />
+      </div>
       </div>
 
       <AddressSelectorSheet open={addressSheetOpen} onOpenChange={setAddressSheetOpen} />

@@ -452,7 +452,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
           </div>
         )}
 
-        <main className={`app-main flex-1 w-full min-w-0 overflow-x-hidden ${isDashboardHome ? "px-0 pt-0 pb-24 lg:pb-6" : "p-3 sm:p-5 lg:p-6 pb-24 lg:pb-6"}`}>
+        <main className={`app-main flex-1 w-full min-w-0 overflow-x-hidden ${isDashboardHome ? "px-0 pt-0 pb-[max(7rem,calc(env(safe-area-inset-bottom)+6rem))] lg:pb-6" : "p-3 sm:p-5 lg:p-6 pb-24 lg:pb-6"}`}>
           {children}
         </main>
       </div>

@@ -40,7 +40,9 @@ export interface OnboardingPipelineResult {
 function normalizeText(value: string | null | undefined) {
   if (!value) return null;
   const normalized = value
+    .replace(/deliveroo|talabat|careem|booking|noon/gi, " ")
     .replace(/[_|]+/g, " ")
+    .replace(/[•·]+/g, " ")
     .replace(/\s+/g, " ")
     .trim();
 
@@ -68,7 +70,7 @@ function dedupeNamedItems(items: Array<Record<string, unknown>>) {
     const rawName = [item.name, item.title, item.label, item.room_type]
       .find((value) => typeof value === "string" && value.trim().length > 0);
     const normalizedName = typeof rawName === "string" ? normalizeText(rawName)?.toLowerCase() : null;
-    if (!normalizedName || seen.has(normalizedName)) return false;
+    if (!normalizedName || normalizedName.length < 2 || /^(item|menu|product|test|undefined|null)$/i.test(normalizedName) || seen.has(normalizedName)) return false;
     seen.add(normalizedName);
 
     if (typeof item.name === "string") item.name = normalizeText(item.name) ?? item.name;
@@ -89,8 +91,8 @@ function sanitizeCanonicalRecord(record: CanonicalOnboardingRecord): CanonicalOn
     district: normalizeText(record.district),
     country: normalizeText(record.country),
     photos: dedupePhotos(record.photos),
-    categories: Array.from(new Set(record.categories.map((item) => item.trim()).filter(Boolean))),
-    subcategories: Array.from(new Set(record.subcategories.map((item) => item.trim()).filter(Boolean))),
+    categories: Array.from(new Set(record.categories.map((item) => normalizeText(item) ?? "").filter(Boolean))),
+    subcategories: Array.from(new Set(record.subcategories.map((item) => normalizeText(item) ?? "").filter(Boolean))),
     menuItems: dedupeNamedItems([...record.menuItems]),
     hotelInventory: dedupeNamedItems([...record.hotelInventory]),
     serviceItems: dedupeNamedItems([...record.serviceItems]),

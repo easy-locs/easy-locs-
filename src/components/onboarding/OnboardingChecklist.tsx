@@ -135,14 +135,14 @@ const OnboardingChecklist = () => {
       className="bg-card border border-border rounded-2xl shadow-card overflow-hidden"
     >
       {/* Header */}
-      <div className="flex items-center justify-between p-4 pb-2">
-        <div className="flex items-center gap-2.5">
+      <div className="flex items-start justify-between gap-3 p-4 pb-2">
+        <div className="flex min-w-0 items-center gap-2.5">
           <div className="w-8 h-8 rounded-lg bg-gradient-gold flex items-center justify-center">
             <Sparkles className="h-4 w-4 text-accent-foreground" />
           </div>
-          <div>
-            <h3 className="text-sm font-bold text-foreground">Configuration</h3>
-            <p className="text-xs text-muted-foreground">{doneCount}/{items.length} étapes complétées</p>
+          <div className="min-w-0">
+            <h3 className="line-clamp-1 text-sm font-bold text-foreground">Configuration</h3>
+            <p className="line-clamp-2 text-xs text-muted-foreground">{doneCount}/{items.length} étapes complétées</p>
           </div>
         </div>
         <div className="flex items-center gap-1">
@@ -190,7 +190,7 @@ const OnboardingChecklist = () => {
                       <p className={`text-sm font-medium ${item.done ? "line-through text-muted-foreground" : "text-foreground"}`}>
                         {item.label}
                       </p>
-                      <p className="text-xs text-muted-foreground truncate">{item.description}</p>
+                      <p className="line-clamp-2 text-xs leading-relaxed text-muted-foreground">{item.description}</p>
                     </div>
                     <Icon className="h-4 w-4 text-muted-foreground shrink-0" />
                   </Link>

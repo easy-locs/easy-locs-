@@ -14,6 +14,7 @@ import { RADAR_CATEGORIES, getSubcategoriesForRadarCategory, type RadarMainCateg
 import type { RadarCategory } from "@/lib/radar/types";
 import { Search, MapPin, Navigation, Loader2, Flame } from "lucide-react";
 import "@/styles/radar-pro.css";
+import { useLiveWeatherStation } from "@/hooks/useLiveWeatherStation";
 
 const UnifiedMap = lazy(() => import("@/components/map/UnifiedMap"));
 
@@ -54,7 +55,9 @@ export default function RadarPage() {
 
   const [loadingListings, setLoadingListings] = useState(true);
   const [mapMode, setLocalMapMode] = useState<"list" | "map" | "heatmap">("list");
+  const [showWeatherLayer, setShowWeatherLayer] = useState(true);
   const timeCtx = useMemo(() => getTimeContext(), []);
+  const weather = useLiveWeatherStation({ lat: userLocation?.lat, lng: userLocation?.lng });
 
   const subcategories = useMemo(() => {
     return getSubcategoriesForRadarCategory(category as RadarMainCategory);
@@ -130,14 +133,14 @@ export default function RadarPage() {
         </div>
 
         {/* Search — shared state */}
-        <div className="relative mb-3">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <div className="search-premium-wrap mb-3">
+          <Search className="search-premium-icon h-4 w-4 text-muted-foreground" />
           <input
             type="text"
             placeholder="Search shops, restaurants, services…"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full min-w-0 h-12 pl-10 pr-4 rounded-2xl bg-card border border-border/30 text-sm text-foreground placeholder:text-muted-foreground shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+            className="search-premium-field h-12 bg-card border border-border/30 text-sm text-foreground placeholder:text-muted-foreground shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
           />
         </div>
 
@@ -207,7 +210,7 @@ export default function RadarPage() {
       </div>
 
       {/* View toggle — now includes heatmap */}
-      <div className="flex items-center justify-between px-4 pb-3">
+      <div className="flex flex-wrap items-center justify-between gap-2 px-4 pb-3">
         <div className="flex rounded-xl bg-muted/30 p-0.5">
           <button
             onClick={() => { ultraHaptic("light"); handleSetMapMode("list"); }}
@@ -234,9 +237,17 @@ export default function RadarPage() {
             <Flame className="h-3 w-3 inline mr-0.5" /> Heat
           </button>
         </div>
-        <p className="text-[10px] text-muted-foreground">
-          {filtered.length} results
-        </p>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setShowWeatherLayer((current) => !current)}
+            className="rounded-full border border-border/20 bg-card px-3 py-1 text-[10px] font-semibold text-foreground"
+          >
+            {showWeatherLayer ? "Rain on" : "Rain off"}
+          </button>
+          <p className="text-[10px] text-muted-foreground">
+            {weather.isRaining ? `${filtered.length} results · rain live` : `${filtered.length} results`}
+          </p>
+        </div>
       </div>
 
       {/* Content */}
@@ -266,6 +277,7 @@ export default function RadarPage() {
               showUserLocation={!!userLocation}
               zoom={13}
               showHeatmap={mapMode === "heatmap"}
+              showWeatherLayer={showWeatherLayer}
             />
           </Suspense>
         </div>
