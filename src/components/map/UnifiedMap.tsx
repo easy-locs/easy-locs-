@@ -10,6 +10,10 @@ import { MAPBOX_ACCESS_TOKEN } from "@/lib/mapbox/config";
 import DiscoveryHeatmapLayer from "@/components/map/DiscoveryHeatmapLayer";
 import { CloudRain, CloudSun } from "lucide-react";
 import { useLiveWeatherStation } from "@/hooks/useLiveWeatherStation";
+import { useRainRadar } from "@/hooks/useRainRadar";
+
+const RAIN_SOURCE = "discovery-rain-radar";
+const RAIN_LAYER = "discovery-rain-radar-layer";
 
 /* ═══════════════════════════════════════════════════
    CONSTANTS
@@ -75,6 +79,7 @@ interface UnifiedMapProps {
   heatmapPoints?: { lat: number; lng: number; intensity: number }[];
   /** Radius in km — renders a visual circle on map */
   radiusKm?: number;
+  showWeatherLayer?: boolean;
 }
 
 /** Build rich popup HTML */
@@ -119,6 +124,7 @@ export default memo(function UnifiedMap({
   showHeatmap = false,
   heatmapPoints,
   radiusKm,
+  showWeatherLayer = true,
 }: UnifiedMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
@@ -135,6 +141,7 @@ export default memo(function UnifiedMap({
   const mapCenter: [number, number] = center
     || (userLat != null && userLng != null ? [userLng, userLat] : [55.2708, 25.2048]);
   const weather = useLiveWeatherStation({ lat: userLat ?? center?.[1], lng: userLng ?? center?.[0] });
+  const rainRadar = useRainRadar(showWeatherLayer || weather.isRaining);
 
   // Derive heatmap points from entities if not provided
   const effectiveHeatmap = heatmapPoints ?? (showHeatmap ? entities.map(e => ({
@@ -187,6 +194,27 @@ export default memo(function UnifiedMap({
           "line-dasharray": [4, 3],
         },
       });
+
+      if (!map.getSource(RAIN_SOURCE)) {
+        map.addSource(RAIN_SOURCE, {
+          type: "raster",
+          tiles: [rainRadar.activeTileUrl ?? "https://tilecache.rainviewer.com/v2/radar/{z}/{x}/{y}/256/2/1_1.png"],
+          tileSize: 256,
+        });
+      }
+
+      if (!map.getLayer(RAIN_LAYER)) {
+        map.addLayer({
+          id: RAIN_LAYER,
+          type: "raster",
+          source: RAIN_SOURCE,
+          paint: {
+            "raster-opacity": 0,
+            "raster-fade-duration": 0,
+            "raster-resampling": "linear",
+          },
+        });
+      }
 
       // ── Cluster source ──
       map.addSource(CLUSTER_SOURCE, {
@@ -500,6 +528,24 @@ export default memo(function UnifiedMap({
     });
   }, [weather.isRaining, mapReady]);
 
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !mapReady) return;
+
+    const visible = showWeatherLayer || weather.isRaining;
+    const layer = map.getLayer(RAIN_LAYER);
+    const source = map.getSource(RAIN_SOURCE) as (mapboxgl.Source & { setTiles?: (tiles: string[]) => void }) | undefined;
+
+    if (layer) {
+      map.setLayoutProperty(RAIN_LAYER, "visibility", visible ? "visible" : "none");
+      map.setPaintProperty(RAIN_LAYER, "raster-opacity", visible ? (weather.isRaining ? 0.7 : 0.38) : 0);
+    }
+
+    if (source?.setTiles && rainRadar.activeTileUrl) {
+      source.setTiles([rainRadar.activeTileUrl]);
+    }
+  }, [mapReady, rainRadar.activeTileUrl, showWeatherLayer, weather.isRaining]);
+
   return (
     <>
       <div
@@ -517,6 +563,7 @@ export default memo(function UnifiedMap({
         <>
           <div className="map-rain-tint pointer-events-none absolute inset-0 rounded-2xl" />
           <div className="map-rain-overlay pointer-events-none absolute inset-0 rounded-2xl" />
+          <div className="map-rain-glow pointer-events-none absolute inset-0 rounded-2xl" />
         </>
       )}
       <DiscoveryHeatmapLayer

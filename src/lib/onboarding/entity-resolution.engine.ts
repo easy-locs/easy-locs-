@@ -4,7 +4,19 @@
 import type { SourceEntityRecord } from "./types";
 
 function normalize(s?: string | null): string {
-  return (s ?? "").trim().toLowerCase().replace(/\s+/g, " ");
+  return (s ?? "")
+    .trim()
+    .toLowerCase()
+    .replace(/deliveroo|talabat|careem|booking|noon/gi, " ")
+    .replace(/[()|•·'"`]/g, " ")
+    .replace(/\s+/g, " ");
+}
+
+function sameNameFingerprint(a?: string | null, b?: string | null): boolean {
+  const fp = (value?: string | null) => normalize(value).split(" ").filter(Boolean).slice(0, 5).join(" ");
+  const left = fp(a);
+  const right = fp(b);
+  return !!left && left === right;
 }
 
 function samePhone(a?: string | null, b?: string | null): boolean {
@@ -33,7 +45,8 @@ export function groupEntities(records: SourceEntityRecord[]): SourceEntityRecord
         samePhone(seed.phone, record.phone) ||
         sameWebsite(seed.website, record.website) ||
         (sameName && sameCity) ||
-        (sameName && sameDistrict)
+        (sameName && sameDistrict) ||
+        (sameNameFingerprint(seed.name, record.name) && (sameCity || sameDistrict))
       ) {
         group.push(record);
         matched = true;

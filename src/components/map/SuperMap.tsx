@@ -21,6 +21,10 @@ import type { GeoEntity } from "@/lib/geo/geoEntityAdapter";
 import SuperMapModeBar from "@/components/map/SuperMapModeBar";
 import { CloudRain, CloudSun } from "lucide-react";
 import { useLiveWeatherStation } from "@/hooks/useLiveWeatherStation";
+import { useRainRadar } from "@/hooks/useRainRadar";
+
+const RAIN_SOURCE = "supermap-rain-radar";
+const RAIN_LAYER = "supermap-rain-radar-layer";
 
 interface SuperMapProps {
   className?: string;
@@ -64,6 +68,7 @@ export default memo(function SuperMap({
   const zones = useSuperMapStore((s) => s.zones);
   const selectedEntityId = useSuperMapStore((s) => s.selectedEntityId);
   const showHeatmap = useSuperMapStore((s) => s.showHeatmap);
+  const showWeather = useSuperMapStore((s) => s.showWeather);
   const showRadius = useSuperMapStore((s) => s.showRadius);
   const radiusKm = useSuperMapStore((s) => s.radiusKm);
   const userLat = useSuperMapStore((s) => s.userLat);
@@ -72,6 +77,7 @@ export default memo(function SuperMap({
   const centerLng = useSuperMapStore((s) => s.centerLng);
   const zoom = useSuperMapStore((s) => s.zoom);
   const weather = useLiveWeatherStation({ lat: userLat ?? centerLat, lng: userLng ?? centerLng });
+  const weatherRadar = useRainRadar(showWeather || weather.isRaining);
 
   const onSelectRef = useRef(onSelectEntity);
   onSelectRef.current = onSelectEntity;
@@ -98,6 +104,27 @@ export default memo(function SuperMap({
 
     map.on("load", () => {
       setupSuperMapLayers(map);
+
+      if (!map.getSource(RAIN_SOURCE)) {
+        map.addSource(RAIN_SOURCE, {
+          type: "raster",
+          tiles: [weatherRadar.activeTileUrl ?? "https://tilecache.rainviewer.com/v2/radar/{z}/{x}/{y}/256/2/1_1.png"],
+          tileSize: 256,
+        });
+      }
+
+      if (!map.getLayer(RAIN_LAYER)) {
+        map.addLayer({
+          id: RAIN_LAYER,
+          type: "raster",
+          source: RAIN_SOURCE,
+          paint: {
+            "raster-opacity": 0,
+            "raster-fade-duration": 0,
+            "raster-resampling": "linear",
+          },
+        }, LAYERS.ZONE_FILL);
+      }
 
       // ── Click: cluster expand ──
       map.on("click", LAYERS.PLACES_CLUSTER, (e) => {
@@ -320,6 +347,24 @@ export default memo(function SuperMap({
     });
   }, [weather.isRaining, ready]);
 
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !ready) return;
+
+    const visible = showWeather || weather.isRaining;
+    const layer = map.getLayer(RAIN_LAYER);
+    const source = map.getSource(RAIN_SOURCE) as (mapboxgl.Source & { setTiles?: (tiles: string[]) => void }) | undefined;
+
+    if (layer) {
+      map.setLayoutProperty(RAIN_LAYER, "visibility", visible ? "visible" : "none");
+      map.setPaintProperty(RAIN_LAYER, "raster-opacity", visible ? (weather.isRaining ? 0.72 : 0.42) : 0);
+    }
+
+    if (source?.setTiles && weatherRadar.activeTileUrl) {
+      source.setTiles([weatherRadar.activeTileUrl]);
+    }
+  }, [ready, showWeather, weather.isRaining, weatherRadar.activeTileUrl]);
+
   return (
     <div className={`relative w-full h-full ${className}`} style={{ minHeight: 300 }}>
       <div ref={containerRef} className="absolute inset-0 rounded-2xl overflow-hidden" />
@@ -333,6 +378,7 @@ export default memo(function SuperMap({
         <>
           <div className="map-rain-tint pointer-events-none absolute inset-0 rounded-2xl" />
           <div className="map-rain-overlay pointer-events-none absolute inset-0 rounded-2xl" />
+          <div className="map-rain-glow pointer-events-none absolute inset-0 rounded-2xl" />
         </>
       )}
       {showModeBar && <SuperMapModeBar />}

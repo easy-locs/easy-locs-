@@ -100,18 +100,18 @@ export default function GlobalSearch() {
 
   return (
     <div ref={containerRef} className="relative w-full">
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+      <div className="search-premium-wrap">
+        <Search className="search-premium-icon h-4 w-4 text-muted-foreground" />
         <Input
           value={query}
           onChange={e => { setQuery(e.target.value); setOpen(true); }}
           onFocus={() => query.length >= 2 && setOpen(true)}
           placeholder="Search shops, products..."
-          className="pl-10 pr-10 h-10 rounded-xl bg-card border-border"
+          className="search-premium-field h-11 bg-card border-border"
         />
         {query && (
           <button onClick={() => { setQuery(""); setResults([]); setOpen(false); }}
-            className="absolute right-3 top-1/2 -translate-y-1/2">
+            className="search-premium-clear">
             <X className="h-4 w-4 text-muted-foreground" />
           </button>
         )}

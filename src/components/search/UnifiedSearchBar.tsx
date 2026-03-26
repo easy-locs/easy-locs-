@@ -147,7 +147,7 @@ export default function UnifiedSearchBar({
               className="fixed inset-0 z-[100] flex flex-col bg-background"
             >
               {/* Header */}
-              <div className="flex items-center gap-3 border-b border-border/20 px-4 py-3">
+              <div className="flex min-w-0 items-center gap-3 border-b border-border/20 px-4 py-3">
                 <button
                   onClick={() => setFullscreenOpen(false)}
                   className="w-9 h-9 rounded-xl bg-muted flex items-center justify-center shrink-0"
@@ -215,7 +215,7 @@ export default function UnifiedSearchBar({
     <div ref={containerRef} className={cn("relative w-full min-w-0", className)}>
       {/* Input */}
       <div className={cn(
-        "relative flex min-w-0 items-center",
+        "relative flex min-w-0 items-center overflow-visible",
         isHero && "shadow-lg"
       )}>
         <Search className={cn(
