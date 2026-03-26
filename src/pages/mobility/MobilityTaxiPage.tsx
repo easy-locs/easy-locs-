@@ -1,32 +1,44 @@
 /**
  * MobilityTaxiPage — /mobility/taxi — CUSTOMER ONLY taxi booking.
- * Strict actor separation: no delivery, no rider UI.
+ * Uses a state-machine flow: Search → Preview → Active ride (like Careem/Uber).
  */
 import { useEffect } from "react";
 import { useCustomerMobilityStore, type MobilityJob } from "@/stores/customerMobilityStore";
-import { CustomerJobCard } from "@/components/rides/CustomerJobCard";
+import { useTaxiFlowStore } from "@/stores/taxiFlowStore";
 import { supabase } from "@/integrations/supabase/client";
 import { Car, Clock, CheckCircle2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { TaxiBookingForm } from "@/components/mobility/TaxiBookingForm";
 import { MobileHeroHeader } from "@/components/layout/MobileHeroHeader";
 import { PageEmptyState } from "@/components/ui/PageEmptyState";
+import { CustomerJobCard } from "@/components/rides/CustomerJobCard";
+import { TaxiSearchScreen } from "@/components/mobility/TaxiSearchScreen";
+import { TaxiPreviewScreen } from "@/components/mobility/TaxiPreviewScreen";
+import { TaxiActiveScreen } from "@/components/mobility/TaxiActiveScreen";
+import { AnimatePresence } from "framer-motion";
 
 export default function MobilityTaxiPage() {
   const navigate = useNavigate();
   const { jobs, loading, hydrateMyJobs, refreshJob } = useCustomerMobilityStore();
+  const { step, reset } = useTaxiFlowStore();
 
   useEffect(() => { hydrateMyJobs(); }, []);
 
+  // Reset flow when leaving page
+  useEffect(() => () => { reset(); }, []);
+
+  // Realtime subscription
   useEffect(() => {
     const setup = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
       const ch = supabase
         .channel(`taxi-jobs:${user.id}`)
-        .on("postgres_changes", { event: "*", schema: "public", table: "mobility_jobs", filter: `customer_user_id=eq.${user.id}` }, (payload: any) => {
+        .on("postgres_changes", {
+          event: "*", schema: "public", table: "mobility_jobs",
+          filter: `customer_user_id=eq.${user.id}`,
+        }, (payload: any) => {
           if (payload.new?.id) refreshJob(payload.new.id);
         })
         .subscribe();
@@ -40,6 +52,13 @@ export default function MobilityTaxiPage() {
   const activeJobs = taxiJobs.filter(j => !["completed", "cancelled", "failed_no_rider", "expired"].includes(j.status));
   const pastJobs = taxiJobs.filter(j => ["completed", "cancelled", "failed_no_rider", "expired"].includes(j.status));
 
+  // If user has active rides, auto-switch to active_ride step
+  useEffect(() => {
+    if (activeJobs.length > 0 && step === "search") {
+      // Don't auto-switch — let user stay on search unless they just booked
+    }
+  }, [activeJobs.length, step]);
+
   return (
     <div className="app-mobile-page bg-background">
       <MobileHeroHeader
@@ -50,9 +69,15 @@ export default function MobilityTaxiPage() {
       />
 
       <div className="px-4 py-4 app-mobile-content">
-        {activeJobs.length > 0 && (
+        {activeJobs.length > 0 && step === "search" && (
           <div className="mb-3 flex justify-end">
-            <Badge variant="default" className="animate-pulse">{activeJobs.length} active</Badge>
+            <Badge
+              variant="default"
+              className="animate-pulse cursor-pointer"
+              onClick={() => useTaxiFlowStore.getState().setStep("active_ride")}
+            >
+              {activeJobs.length} active ride{activeJobs.length > 1 ? "s" : ""}
+            </Badge>
           </div>
         )}
 
@@ -69,10 +94,16 @@ export default function MobilityTaxiPage() {
             </TabsTrigger>
           </TabsList>
 
+          {/* BOOK TAB — State machine flow */}
           <TabsContent value="book" className="mt-4">
-            <TaxiBookingForm />
+            <AnimatePresence mode="wait">
+              {step === "search" && <TaxiSearchScreen />}
+              {step === "preview" && <TaxiPreviewScreen />}
+              {step === "active_ride" && <TaxiActiveScreen />}
+            </AnimatePresence>
           </TabsContent>
 
+          {/* ACTIVE TAB */}
           <TabsContent value="active" className="mt-4 space-y-3">
             {activeJobs.length === 0 ? (
               <PageEmptyState
@@ -83,6 +114,7 @@ export default function MobilityTaxiPage() {
             ) : activeJobs.map(j => <CustomerJobCard key={j.id} job={j} />)}
           </TabsContent>
 
+          {/* HISTORY TAB */}
           <TabsContent value="history" className="mt-4 space-y-3">
             {pastJobs.length === 0 ? (
               <PageEmptyState
