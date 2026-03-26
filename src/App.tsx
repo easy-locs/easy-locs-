@@ -185,7 +185,6 @@ const ContactPage = safeLazy(() => import("./pages/legal/ContactPage"), "Contact
 const AddContactPage = safeLazy(() => import("./pages/AddContactPage"), "AddContactPage");
 const HelpPage = safeLazy(() => import("./pages/legal/HelpPage"), "HelpPage");
 const PlatformVision = safeLazy(() => import("./pages/PlatformVision"), "PlatformVision");
-const DealAnalyticsPage = safeLazy(() => import("./pages/DealAnalyticsPage"), "DealAnalyticsPage");
 const ServiceTrackingPage = safeLazy(() => import("./pages/ServiceTrackingPage"), "ServiceTrackingPage");
 const SellerHubPage = safeLazy(() => import("./pages/SellerHubPage"), "SellerHubPage");
 const SellerDashboardPage = safeLazy(() => import("./pages/seller/SellerDashboardPage"), "SellerDashboardPage");
@@ -247,7 +246,6 @@ const AdminDisputesPage = safeLazy(() => import("./pages/AdminDisputesPage"), "A
 const DemandHeatmapPage = safeLazy(() => import("./pages/DemandHeatmapPage"), "DemandHeatmapPage");
 const AdminFraudPage = safeLazy(() => import("./pages/AdminFraudPage"), "AdminFraudPage");
 const AdminLiveOpsPage = safeLazy(() => import("./pages/AdminLiveOpsPage"), "AdminLiveOpsPage");
-const DriverPositioningPage = safeLazy(() => import("./pages/DriverPositioningPage"), "DriverPositioningPage");
 const RiderPrioritySubscriptionPage = safeLazy(() => import("./pages/RiderPrioritySubscriptionPage"), "RiderPrioritySubscriptionPage");
 const AdminDispatchBoardPage = safeLazy(() => import("./pages/AdminDispatchBoardPage"), "AdminDispatchBoardPage");
 const AdminSLAPage = safeLazy(() => import("./pages/AdminSLAPage"), "AdminSLAPage");
@@ -289,12 +287,9 @@ const DriverHeatmapMapPage = safeLazy(() => import("./pages/DriverHeatmapMapPage
 const AdminRealtimeControlPage = safeLazy(() => import("./pages/AdminRealtimeControlPage"), "AdminRealtimeControlPage");
 const DeploymentChecklistPage = safeLazy(() => import("./pages/DeploymentChecklistPage"), "DeploymentChecklistPage");
 const LoyaltyRedeemPage = safeLazy(() => import("./pages/LoyaltyRedeemPage"), "LoyaltyRedeemPage");
-const AbandonedCartOpsPage = safeLazy(() => import("./pages/AbandonedCartOpsPage"), "AbandonedCartOpsPage");
 const AdminAlertCenterPage = safeLazy(() => import("./pages/AdminAlertCenterPage"), "AdminAlertCenterPage");
-const IncidentDashboardPage = safeLazy(() => import("./pages/IncidentDashboardPage"), "IncidentDashboardPage");
 const StripeElementsPage = safeLazy(() => import("./pages/StripeElementsPage"), "StripeElementsPage");
 const AuditDebugPanelPage = safeLazy(() => import("./pages/AuditDebugPanelPage"), "AuditDebugPanelPage");
-const OpsWallboardPage = safeLazy(() => import("./pages/OpsWallboardPage"), "OpsWallboardPage");
 const MerchantClaimPage = safeLazy(() => import("./pages/MerchantClaimPage"), "MerchantClaimPage");
 const MerchantDashboardPage = safeLazy(() => import("./pages/MerchantDashboardPage"), "MerchantDashboardPage");
 const MerchantFinancePage = safeLazy(() => import("./pages/merchant/MerchantFinancePage"), "MerchantFinancePage");
@@ -769,7 +764,6 @@ const App = () => (
               <Route path="/driver/payout" element={<DriverPayoutPage />} />
               <Route path="/admin/disputes" element={<AdminDisputesPage />} />
               <Route path="/driver/heatmap" element={<DemandHeatmapPage />} />
-              <Route path="/driver/positioning" element={<DriverPositioningPage />} />
               <Route path="/admin/fraud" element={<AdminFraudPage />} />
               <Route path="/admin/live-ops" element={<AdminLiveOpsPage />} />
               <Route path="/subscription/priority" element={<RiderPrioritySubscriptionPage />} />
@@ -947,7 +941,6 @@ const App = () => (
               <Route path="/dashboard/audit" element={<ProtectedRoute><AuditTrail /></ProtectedRoute>} />
               <Route path="/dashboard/wallet" element={<Navigate to="/wallet" replace />} />
               <Route path="/wallet" element={<ProtectedRoute><WalletHubPage /></ProtectedRoute>} />
-              <Route path="/dashboard/deals" element={<ProtectedRoute><DealAnalyticsPage /></ProtectedRoute>} />
               <Route path="/dashboard/service-tracking" element={<ProtectedRoute><ServiceTrackingPage /></ProtectedRoute>} />
               <Route path="/dashboard/seller" element={<ProtectedRoute><SellerHubPage /></ProtectedRoute>} />
               <Route path="/seller" element={<ProtectedRoute><SellerDashboardPage /></ProtectedRoute>} />
@@ -994,12 +987,9 @@ const App = () => (
               <Route path="/admin/realtime-control" element={<ProtectedRoute><AdminRealtimeControlPage /></ProtectedRoute>} />
               <Route path="/admin/deployment-checklist" element={<ProtectedRoute><DeploymentChecklistPage /></ProtectedRoute>} />
               <Route path="/admin/loyalty-redeem" element={<ProtectedRoute><LoyaltyRedeemPage /></ProtectedRoute>} />
-              <Route path="/admin/abandoned-cart-ops" element={<ProtectedRoute><AbandonedCartOpsPage /></ProtectedRoute>} />
               <Route path="/admin/alerts" element={<ProtectedRoute><AdminAlertCenterPage /></ProtectedRoute>} />
-              <Route path="/admin/incidents" element={<ProtectedRoute><IncidentDashboardPage /></ProtectedRoute>} />
               <Route path="/payments/stripe-elements" element={<ProtectedRoute><StripeElementsPage /></ProtectedRoute>} />
               <Route path="/admin/audit-debug" element={<ProtectedRoute><AuditDebugPanelPage /></ProtectedRoute>} />
-              <Route path="/admin/ops-wallboard" element={<ProtectedRoute><OpsWallboardPage /></ProtectedRoute>} />
               <Route path="/admin/outreach" element={<ProtectedRoute><AdminOutreachPage /></ProtectedRoute>} />
                <Route path="/admin/uae-ops" element={<ProtectedRoute><AdminUaeOpsDashboard /></ProtectedRoute>} />
                <Route path="/admin/owner-cockpit" element={<ProtectedRoute><OwnerCockpitPage /></ProtectedRoute>} />
