@@ -54,8 +54,8 @@ export default function AdminFleetDashboard({ orgId, className }: Props) {
           .limit(200);
 
         const allDrivers = sessions || [];
-        const online = allDrivers.filter(d => d.status === "online");
-        const busy = allDrivers.filter(d => d.status === "busy");
+        const online = allDrivers.filter((d: any) => d.is_online === true);
+        const busy = allDrivers.filter((d: any) => d.is_online && !d.is_available);
 
         // Fetch jobs for org
         const { data: jobs } = await (supabase as any)
@@ -90,14 +90,14 @@ export default function AdminFleetDashboard({ orgId, className }: Props) {
           currency: (allJobs[0] as any)?.currency || "AED",
         });
 
-        setDrivers(allDrivers.map(d => ({
+        setDrivers(allDrivers.map((d: any) => ({
           userId: d.user_id,
-          vehicleType: d.vehicle_type,
-          status: d.status,
-          totalCompleted: d.total_completed || 0,
-          avgRating: d.avg_rating || 0,
-          lastActive: d.last_heartbeat_at || d.updated_at || "",
-        })).sort((a, b) => b.totalCompleted - a.totalCompleted));
+          vehicleType: d.vehicle_type || "unknown",
+          status: d.is_online ? (d.is_available ? "online" : "busy") : "offline",
+          totalCompleted: 0,
+          avgRating: 0,
+          lastActive: d.last_seen_at || d.updated_at || "",
+        })).sort((a: any, b: any) => b.totalCompleted - a.totalCompleted));
       } catch (err) {
         console.error("[fleet-dashboard]", err);
       } finally {
