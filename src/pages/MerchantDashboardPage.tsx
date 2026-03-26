@@ -12,6 +12,10 @@ import { toast } from "sonner";
 import { Store, Utensils, Zap, Eye, Plus, Trash2, Edit2, Check, Loader2, ExternalLink, ScanLine, ShoppingCart, CreditCard, QrCode } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { routes } from "@/lib/routes";
+import { MerchantLiveFulfillmentPanel } from "@/components/merchant/MerchantLiveFulfillmentPanel";
+import MerchantFinancialWidgets from "@/components/merchant/MerchantFinancialWidgets";
+import MerchantPaymentHistory from "@/components/merchant/MerchantPaymentHistory";
+import MerchantQrCockpit from "@/components/merchant/MerchantQrCockpit";
 
 interface MenuItem {
   id: string;
@@ -293,6 +297,13 @@ export default function MerchantDashboardPage() {
 
         {/* ═══ Merchant Operations Hub ═══ */}
         <MerchantOpsHub profileId={profileId} />
+
+        {/* Financial Widgets */}
+        {profileId && (
+          <div className="space-y-3 mb-4">
+            <MerchantFinancialWidgets merchantProfileId={profileId} />
+          </div>
+        )}
 
         <Tabs defaultValue="details" className="space-y-4">
           <TabsList className="grid grid-cols-4 w-full">
