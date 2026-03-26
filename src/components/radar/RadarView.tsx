@@ -83,9 +83,10 @@ interface RadarViewProps {
   initialType?: GeoEntity["type"];
   radiusKm?: number;
   showMap?: boolean;
+  mode?: RadarMode;
 }
 
-export default memo(function RadarView({ initialType, radiusKm: initialRadius, showMap = true }: RadarViewProps) {
+export default memo(function RadarView({ initialType, radiusKm: initialRadius, showMap = true, mode = "client" }: RadarViewProps) {
   const navigate = useNavigate();
   const [activeType, setActiveType] = useState<GeoEntity["type"] | "all">(initialType || "all");
   const [sortBy, setSortBy] = useState<RadarSortMode>("smart");
@@ -94,7 +95,29 @@ export default memo(function RadarView({ initialType, radiusKm: initialRadius, s
   const [minRating, setMinRating] = useState(0);
   const [showPromotedOnly, setShowPromotedOnly] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
+  const [layers, setLayers] = useState<LayerToggles>(DEFAULT_LAYERS);
   const currentUser = useV2AuthStore((s) => s.user);
+
+  // Live context (realtime subscriptions)
+  const liveCtx = useRadarLiveContext(mode);
+
+  // Predictive demand
+  const demandPrediction = useMemo(() => {
+    if (!liveCtx.geoContexts.length) return null;
+    const now = new Date();
+    return predictDemand({
+      currentHour: now.getHours(),
+      vertical: activeType === "restaurant" ? "food" : activeType === "grocery" ? "grocery" : "delivery",
+      activeEvents: liveCtx.zoneEvents,
+      riderCount: liveCtx.riders.length,
+      weatherType: liveCtx.geoContexts[0]?.weather_type ?? "clear",
+      dayOfWeek: now.getDay(),
+    });
+  }, [liveCtx.geoContexts, liveCtx.zoneEvents, liveCtx.riders.length, activeType]);
+
+  const toggleLayer = useCallback((key: keyof LayerToggles) => {
+    setLayers(prev => ({ ...prev, [key]: !prev[key] }));
+  }, []);
 
   // Canonical UI for active vertical
   const activeVertical = activeType === "all" ? undefined : activeType === "restaurant" ? "food" : activeType === "shop" ? "shops" : activeType === "grocery" ? "grocery" : activeType === "property" ? "property" : activeType === "service" ? "services" : undefined;
