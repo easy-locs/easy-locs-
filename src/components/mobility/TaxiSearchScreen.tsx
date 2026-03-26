@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { tc } from "@/lib/i18n-canonical";
 import { motion } from "framer-motion";
+import { MobilityLiveMap } from "./MobilityLiveMap";
 
 const SERVICE_LEVELS = [
   { value: "taxi_standard" as const, label: "Standard", emoji: "🚕", desc: "4 seats" },
@@ -124,6 +125,14 @@ export function TaxiSearchScreen() {
           className="pl-10 bg-card border-border/40 rounded-xl h-11"
         />
       </div>
+
+      {/* Live Map */}
+      <MobilityLiveMap
+        pickupLat={pickup ? 25.2048 : null}
+        pickupLng={pickup ? 55.2708 : null}
+        mode="taxi"
+        nearbyRiders={5}
+      />
 
       {/* Continue */}
       <button
