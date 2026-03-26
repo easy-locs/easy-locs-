@@ -15847,12 +15847,18 @@ export type Database = {
       radar_opportunities: {
         Row: {
           city: string | null
+          clicked_count: number | null
+          conversion_count: number | null
+          converted_at: string | null
           country: string | null
           created_at: string
+          dedupe_key: string | null
           demand_score: number | null
           description: string | null
+          dismissed_at: string | null
           entity_id: string | null
           entity_type: string | null
+          expired_at: string | null
           expires_at: string | null
           icon_key: string | null
           id: string
@@ -15864,7 +15870,12 @@ export type Database = {
           route_module: string
           route_path: string
           score: number
+          source_signal_count: number | null
           status: string
+          surfaced_count: number | null
+          target_action: string | null
+          target_audience: string | null
+          target_payload_json: Json | null
           timing_score: number | null
           title: string
           updated_at: string
@@ -15873,12 +15884,18 @@ export type Database = {
         }
         Insert: {
           city?: string | null
+          clicked_count?: number | null
+          conversion_count?: number | null
+          converted_at?: string | null
           country?: string | null
           created_at?: string
+          dedupe_key?: string | null
           demand_score?: number | null
           description?: string | null
+          dismissed_at?: string | null
           entity_id?: string | null
           entity_type?: string | null
+          expired_at?: string | null
           expires_at?: string | null
           icon_key?: string | null
           id?: string
@@ -15890,7 +15907,12 @@ export type Database = {
           route_module: string
           route_path: string
           score?: number
+          source_signal_count?: number | null
           status?: string
+          surfaced_count?: number | null
+          target_action?: string | null
+          target_audience?: string | null
+          target_payload_json?: Json | null
           timing_score?: number | null
           title: string
           updated_at?: string
@@ -15899,12 +15921,18 @@ export type Database = {
         }
         Update: {
           city?: string | null
+          clicked_count?: number | null
+          conversion_count?: number | null
+          converted_at?: string | null
           country?: string | null
           created_at?: string
+          dedupe_key?: string | null
           demand_score?: number | null
           description?: string | null
+          dismissed_at?: string | null
           entity_id?: string | null
           entity_type?: string | null
+          expired_at?: string | null
           expires_at?: string | null
           icon_key?: string | null
           id?: string
@@ -15916,7 +15944,12 @@ export type Database = {
           route_module?: string
           route_path?: string
           score?: number
+          source_signal_count?: number | null
           status?: string
+          surfaced_count?: number | null
+          target_action?: string | null
+          target_audience?: string | null
+          target_payload_json?: Json | null
           timing_score?: number | null
           title?: string
           updated_at?: string
@@ -15925,20 +15958,94 @@ export type Database = {
         }
         Relationships: []
       }
+      radar_rules: {
+        Row: {
+          audience_json: Json | null
+          city_filter: string | null
+          created_at: string | null
+          description_template: string | null
+          enabled: boolean | null
+          icon_key: string | null
+          id: string
+          max_active: number | null
+          opportunity_type: string
+          priority: number | null
+          route_module: string
+          signal_type: string
+          target_action: string | null
+          target_payload_template_json: Json | null
+          threshold_json: Json | null
+          title_template: string | null
+          ttl_minutes: number | null
+          updated_at: string | null
+          weights_json: Json | null
+          zone_filter: string | null
+        }
+        Insert: {
+          audience_json?: Json | null
+          city_filter?: string | null
+          created_at?: string | null
+          description_template?: string | null
+          enabled?: boolean | null
+          icon_key?: string | null
+          id?: string
+          max_active?: number | null
+          opportunity_type: string
+          priority?: number | null
+          route_module?: string
+          signal_type: string
+          target_action?: string | null
+          target_payload_template_json?: Json | null
+          threshold_json?: Json | null
+          title_template?: string | null
+          ttl_minutes?: number | null
+          updated_at?: string | null
+          weights_json?: Json | null
+          zone_filter?: string | null
+        }
+        Update: {
+          audience_json?: Json | null
+          city_filter?: string | null
+          created_at?: string | null
+          description_template?: string | null
+          enabled?: boolean | null
+          icon_key?: string | null
+          id?: string
+          max_active?: number | null
+          opportunity_type?: string
+          priority?: number | null
+          route_module?: string
+          signal_type?: string
+          target_action?: string | null
+          target_payload_template_json?: Json | null
+          threshold_json?: Json | null
+          title_template?: string | null
+          ttl_minutes?: number | null
+          updated_at?: string | null
+          weights_json?: Json | null
+          zone_filter?: string | null
+        }
+        Relationships: []
+      }
       radar_signals: {
         Row: {
           city: string | null
           country: string | null
           created_at: string
+          dedupe_key: string | null
           entity_id: string | null
           entity_type: string | null
+          expires_at: string | null
           id: string
           intensity: number | null
           lat: number | null
           lng: number | null
           metadata_json: Json | null
+          org_id: string | null
+          processed_at: string | null
           signal_type: string
           source_module: string
+          target_scope: string | null
           user_id: string | null
           zone_key: string | null
         }
@@ -15946,15 +16053,20 @@ export type Database = {
           city?: string | null
           country?: string | null
           created_at?: string
+          dedupe_key?: string | null
           entity_id?: string | null
           entity_type?: string | null
+          expires_at?: string | null
           id?: string
           intensity?: number | null
           lat?: number | null
           lng?: number | null
           metadata_json?: Json | null
+          org_id?: string | null
+          processed_at?: string | null
           signal_type: string
           source_module: string
+          target_scope?: string | null
           user_id?: string | null
           zone_key?: string | null
         }
@@ -15962,15 +16074,20 @@ export type Database = {
           city?: string | null
           country?: string | null
           created_at?: string
+          dedupe_key?: string | null
           entity_id?: string | null
           entity_type?: string | null
+          expires_at?: string | null
           id?: string
           intensity?: number | null
           lat?: number | null
           lng?: number | null
           metadata_json?: Json | null
+          org_id?: string | null
+          processed_at?: string | null
           signal_type?: string
           source_module?: string
+          target_scope?: string | null
           user_id?: string | null
           zone_key?: string | null
         }
