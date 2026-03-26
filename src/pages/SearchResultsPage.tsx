@@ -80,7 +80,7 @@ export default function SearchResultsPage() {
       </div>
 
       {/* Results */}
-      <div className="px-4 space-y-4 pb-20">
+      <div className="px-4 space-y-4 app-mobile-content">
         {/* ═══ BOOST SLOT — Search Top ═══ */}
         <BoostSlotRenderer surface="search" slotKey="hero_primary" variant="inline" />
         {loading && [1, 2, 3].map((i) => (
