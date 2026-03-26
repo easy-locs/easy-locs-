@@ -57,12 +57,12 @@ const TopHeroBanner = memo(({ city, greeting, timezone, onLocationTap }: { city:
   const locationLabel = city || "your area";
 
   return (
-    <div className="rounded-2xl p-4 mb-4 relative overflow-visible" style={{ background: hero.gradient }}>
+    <div className="relative mb-4 overflow-visible rounded-[1.75rem] px-4 pb-4 pt-4" style={{ background: hero.gradient }}>
       {/* Location + Notification row */}
-      <div className="flex items-center justify-between mb-3 relative z-10">
-        <button onClick={onLocationTap} className="flex items-center gap-2 min-w-0 max-w-[70%] active:scale-95 transition-transform">
+      <div className="relative z-10 mb-3 flex items-center justify-between gap-3">
+        <button onClick={onLocationTap} className="flex min-w-0 max-w-[72%] items-center gap-2 active:scale-95 transition-transform">
           <MapPin className="h-4 w-4 text-white/70 shrink-0" />
-          <span className="text-white/80 text-xs font-medium truncate">{locationLabel}</span>
+          <span className="truncate text-xs font-medium text-white/80">{locationLabel}</span>
         </button>
         <div className="shrink-0 rounded-full bg-white/15">
           <NotificationBell />
@@ -70,10 +70,10 @@ const TopHeroBanner = memo(({ city, greeting, timezone, onLocationTap }: { city:
       </div>
 
       {/* Title + emoji */}
-      <div className="flex items-center justify-between relative z-10 mb-3">
-        <div className="min-w-0 flex-1 pr-3">
-          <h2 className="text-white text-lg font-black leading-snug">{hero.title}</h2>
-          <p className="text-white/60 text-xs mt-1 leading-relaxed line-clamp-2">{hero.subtitle}</p>
+      <div className="relative z-10 mb-3 flex items-start justify-between gap-3">
+        <div className="min-w-0 flex-1 pr-1">
+          <h2 className="line-clamp-2 text-lg font-black leading-snug text-white">{hero.title}</h2>
+          <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-white/70">{hero.subtitle}</p>
         </div>
         <span className="text-3xl select-none shrink-0 opacity-60">{hero.emoji}</span>
       </div>
@@ -96,7 +96,7 @@ const TopHeroBanner = memo(({ city, greeting, timezone, onLocationTap }: { city:
 
 /* ═══ Quick Actions Strip ═══ */
 const QuickActions = memo(() => (
-  <div className="flex items-center gap-2 mb-4">
+  <div className="mb-4 flex items-center gap-2">
     {[
       { icon: QrCode, label: "Scan", to: "/pay/scan" },
       { icon: Send, label: "Pay", to: "/wallet/transfer" },
@@ -105,10 +105,10 @@ const QuickActions = memo(() => (
       <Link
         key={label}
         to={to}
-        className="flex-1 flex items-center justify-center gap-2 h-11 rounded-xl border border-border/20 bg-card/60 active:scale-95 active:bg-primary/5 transition-all"
+        className="flex h-11 flex-1 items-center justify-center gap-2 rounded-xl border border-border/20 bg-card/60 px-3 active:scale-95 active:bg-primary/5 transition-all"
       >
         <Icon className="h-4 w-4 text-primary shrink-0" />
-        <span className="text-xs font-semibold text-foreground">{label}</span>
+        <span className="truncate text-xs font-semibold text-foreground">{label}</span>
       </Link>
     ))}
   </div>
@@ -126,21 +126,21 @@ function CategoryCard({ cat, index }: { cat: SmartCategory; index: number }) {
     >
       <Link
         to={cat.route}
-        className="group flex flex-col items-center justify-between rounded-2xl active:scale-[0.92] transition-all duration-150 relative overflow-visible w-[76px] h-[96px] p-1.5 border border-border/10 bg-muted/30"
+        className="group relative flex h-[106px] w-[88px] flex-col items-center justify-between overflow-visible rounded-2xl border border-border/10 bg-muted/30 p-2 transition-all duration-150 active:scale-[0.92]"
       >
         {cat.subtitle && (
           <span className="absolute -top-1 -right-1 text-[7px] font-bold px-1.5 py-0.5 rounded-md bg-primary text-primary-foreground leading-none z-10">
             {cat.subtitle}
           </span>
         )}
-        <div className="flex-1 flex items-center justify-center w-full">
+        <div className="flex w-full flex-1 items-center justify-center">
           {imgSrc ? (
-            <img src={imgSrc} alt={cat.label} className="w-12 h-12 object-contain drop-shadow-md" loading="lazy" />
+            <img src={imgSrc} alt={cat.label} className="h-14 w-14 object-contain drop-shadow-md" loading="lazy" />
           ) : (
             <span className="text-2xl">{cat.icon}</span>
           )}
         </div>
-        <p className="text-[10px] font-bold text-foreground leading-tight text-center w-full mt-0.5 line-clamp-1">{cat.label}</p>
+        <p className="mt-0.5 min-h-[2rem] w-full text-center text-[10px] font-bold leading-tight text-foreground line-clamp-2">{cat.label}</p>
       </Link>
     </motion.div>
   );
@@ -167,22 +167,22 @@ function DynamicSection({ section, shops, index }: { section: { key: string; tit
           <Link
             key={shop.id}
             to={`/s/${shop.slug}`}
-            className="shrink-0 w-[156px] rounded-2xl border border-border/15 bg-card overflow-visible active:scale-[0.96] transition-transform"
+            className="shrink-0 w-[172px] rounded-2xl border border-border/15 bg-card overflow-visible active:scale-[0.96] transition-transform"
           >
-            <div className="h-[100px] bg-muted/20 flex items-center justify-center relative overflow-hidden rounded-t-2xl">
+            <div className="relative flex h-[112px] items-center justify-center overflow-hidden rounded-t-2xl bg-muted/20">
               {(shop.banner_url || shop.logo_url) ? (
                 <img src={shop.banner_url || shop.logo_url!} alt={shop.name} className="w-full h-full object-cover" loading="lazy" />
               ) : (
                 <Star className="h-6 w-6 text-muted-foreground/20" />
               )}
             </div>
-            <div className="p-3 space-y-1">
-              <p className="text-xs font-bold text-foreground line-clamp-1">{shop.name}</p>
-              <div className="flex items-center gap-1.5">
+            <div className="space-y-1.5 p-3">
+              <p className="min-h-[2rem] text-xs font-bold leading-snug text-foreground line-clamp-2">{shop.name}</p>
+              <div className="flex items-start gap-1.5">
                 {shop.rating != null && shop.rating > 0 && (
                   <span className="text-[10px] text-amber-500 font-semibold shrink-0">★ {Number(shop.rating).toFixed(1)}</span>
                 )}
-                <p className="text-[10px] text-muted-foreground truncate">{shop.address || shop.vertical || "Dubai"}</p>
+                <p className="line-clamp-2 min-w-0 text-[10px] leading-relaxed text-muted-foreground">{shop.address || shop.vertical || "Dubai"}</p>
               </div>
             </div>
           </Link>
@@ -267,56 +267,58 @@ export default function SmartHome() {
   );
 
   return (
-    <div className="w-full min-w-0 space-y-1 pb-4">
-      <TopHeroBanner city={city} greeting={greeting} timezone={timezone} onLocationTap={handleLocationTap} />
-      <QuickActions />
+    <div className="w-full min-w-0 pb-6">
+      <div className="px-3 pt-3 sm:px-4 sm:pt-4">
+        <TopHeroBanner city={city} greeting={greeting} timezone={timezone} onLocationTap={handleLocationTap} />
+        <QuickActions />
 
-      {/* Category grid — horizontal scrollable, 2 rows */}
-      <div className="overflow-x-auto scrollbar-none mb-4 touch-pan-x">
-        <motion.div
-          variants={staggerContainer}
-          initial="hidden"
-          animate="visible"
-          className="flex flex-col gap-2 px-1"
-          style={{ width: "max-content" }}
-        >
-          <div className="flex gap-2">
-            {row1.map((cat, i) => <CategoryCard key={cat.key} cat={cat} index={i} />)}
-          </div>
-          <div className="flex gap-2">
-            {row2.map((cat, i) => <CategoryCard key={cat.key} cat={cat} index={i + half} />)}
-          </div>
-        </motion.div>
-      </div>
-
-      {/* ═══ Context Banner ═══ */}
-      {contextBanners.length > 0 && (
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={TRANSITIONS.smooth}
-          className="mb-4"
-        >
-          <Link
-            to={contextBanners[0].route || "/radar"}
-            className="block rounded-2xl p-4 border border-border/15 active:scale-[0.98] transition-transform"
-            style={{ background: contextBanners[0].gradient }}
+        {/* Category grid — horizontal scrollable, 2 rows */}
+        <div className="mb-4 touch-pan-x overflow-x-auto scrollbar-none">
+          <motion.div
+            variants={staggerContainer}
+            initial="hidden"
+            animate="visible"
+            className="flex flex-col gap-2 px-0.5"
+            style={{ width: "max-content" }}
           >
-            <p className="text-sm font-bold text-foreground leading-snug">
-              {contextBanners[0].emoji} {contextBanners[0].title}
-            </p>
-            <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{contextBanners[0].subtitle}</p>
-            {contextBanners[0].cta && (
-              <span className="inline-flex items-center gap-1 mt-2.5 text-xs font-semibold text-primary">
-                {contextBanners[0].cta} <ChevronRight className="h-3.5 w-3.5" />
-              </span>
-            )}
-          </Link>
-        </motion.div>
-      )}
+            <div className="flex gap-2.5">
+              {row1.map((cat, i) => <CategoryCard key={cat.key} cat={cat} index={i} />)}
+            </div>
+            <div className="flex gap-2.5">
+              {row2.map((cat, i) => <CategoryCard key={cat.key} cat={cat} index={i + half} />)}
+            </div>
+          </motion.div>
+        </div>
 
-      {/* ═══ BOOST SLOT ═══ */}
-      <BoostSlotRenderer surface="home" slotKey="hero_primary" variant="hero" className="mb-4" />
+        {/* ═══ Context Banner ═══ */}
+        {contextBanners.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={TRANSITIONS.smooth}
+            className="mb-4"
+          >
+            <Link
+              to={contextBanners[0].route || "/radar"}
+              className="block rounded-2xl border border-border/15 p-4 active:scale-[0.98] transition-transform"
+              style={{ background: contextBanners[0].gradient }}
+            >
+              <p className="text-sm font-bold leading-snug text-foreground">
+                {contextBanners[0].emoji} {contextBanners[0].title}
+              </p>
+              <p className="mt-1 text-xs leading-relaxed text-muted-foreground line-clamp-2">{contextBanners[0].subtitle}</p>
+              {contextBanners[0].cta && (
+                <span className="mt-2.5 inline-flex items-center gap-1 text-xs font-semibold text-primary">
+                  {contextBanners[0].cta} <ChevronRight className="h-3.5 w-3.5" />
+                </span>
+              )}
+            </Link>
+          </motion.div>
+        )}
+
+        {/* ═══ BOOST SLOT ═══ */}
+        <BoostSlotRenderer surface="home" slotKey="hero_primary" variant="hero" className="mb-4" />
+      </div>
 
       {/* ═══ Live Map ═══ */}
       <motion.div
