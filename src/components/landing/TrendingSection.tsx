@@ -1,24 +1,22 @@
 /**
- * TrendingSection — Shows trending per VERTICAL. Never mixes food/hotel/services.
+ * TrendingSection — Shows trending per VERTICAL.
  */
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { ArrowRight, Star, Flame, UtensilsCrossed, Building2, Wrench, ShoppingBag } from "lucide-react";
 import { useHomeSections, type VerticalSection, type HomeShopPreview } from "@/hooks/useHomeSections";
+import { useI18n } from "@/lib/i18n";
 
 const VERTICAL_CONFIG = [
-  { key: "food", label: "Trending Food", icon: UtensilsCrossed, color: "text-orange-500", bg: "bg-orange-500/10", route: "/food" },
-  { key: "hotel", label: "Trending Hotels", icon: Building2, color: "text-blue-500", bg: "bg-blue-500/10", route: "/hotels" },
-  { key: "services", label: "Trending Services", icon: Wrench, color: "text-emerald-500", bg: "bg-emerald-500/10", route: "/services" },
-  { key: "grocery", label: "Trending Grocery", icon: ShoppingBag, color: "text-violet-500", bg: "bg-violet-500/10", route: "/grocery" },
+  { key: "food", labelKey: "landing.trending.food", icon: UtensilsCrossed, color: "text-orange-500", bg: "bg-orange-500/10", route: "/food" },
+  { key: "hotel", labelKey: "landing.trending.hotels", icon: Building2, color: "text-blue-500", bg: "bg-blue-500/10", route: "/hotels" },
+  { key: "services", labelKey: "landing.trending.services", icon: Wrench, color: "text-emerald-500", bg: "bg-emerald-500/10", route: "/services" },
+  { key: "grocery", labelKey: "landing.trending.grocery", icon: ShoppingBag, color: "text-violet-500", bg: "bg-violet-500/10", route: "/grocery" },
 ] as const;
 
 function ShopCard({ shop }: { shop: HomeShopPreview }) {
   return (
-    <Link
-      to={`/s/${shop.slug}`}
-      className="snap-start shrink-0 w-[185px] group"
-    >
+    <Link to={`/s/${shop.slug}`} className="snap-start shrink-0 w-[185px] group">
       <div className="relative rounded-2xl overflow-hidden bg-card border border-border/30 h-[210px] flex flex-col">
         <div className="h-[120px] bg-muted/30 overflow-hidden">
           {shop.banner_url ? (
@@ -48,29 +46,24 @@ function ShopCard({ shop }: { shop: HomeShopPreview }) {
   );
 }
 
-function VerticalRow({ config, section }: { config: typeof VERTICAL_CONFIG[number]; section: VerticalSection }) {
+function VerticalRow({ config, section, t }: { config: typeof VERTICAL_CONFIG[number]; section: VerticalSection; t: (k: string) => string }) {
   const shops = section.trending;
   if (shops.length === 0) return null;
   const Icon = config.icon;
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 12 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-40px" }}
-      className="mb-8"
-    >
+    <motion.div initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-40px" }} className="mb-8">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2.5">
           <div className={`w-8 h-8 rounded-xl ${config.bg} flex items-center justify-center`}>
             <Icon className={`h-4 w-4 ${config.color}`} />
           </div>
           <div>
-            <h3 className="text-sm sm:text-base font-extrabold text-foreground">{config.label}</h3>
+            <h3 className="text-sm sm:text-base font-extrabold text-foreground">{t(config.labelKey)}</h3>
           </div>
         </div>
         <Link to={config.route} className="flex items-center gap-1 text-[11px] font-semibold text-accent hover:gap-2 transition-all">
-          See all <ArrowRight className="h-3 w-3" />
+          {t("landing.trending.see_all") || "See all"} <ArrowRight className="h-3 w-3" />
         </Link>
       </div>
       <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-none snap-x snap-mandatory">
@@ -82,6 +75,7 @@ function VerticalRow({ config, section }: { config: typeof VERTICAL_CONFIG[numbe
 
 export default function TrendingSection() {
   const { data } = useHomeSections();
+  const { t } = useI18n();
 
   if (!data) {
     return (
@@ -107,7 +101,7 @@ export default function TrendingSection() {
           </div>
           <div>
             <h2 className="text-lg sm:text-xl font-extrabold text-foreground flex items-center gap-2">
-              Trending Now
+              {t("landing.trending.title") || "Trending Now"}
               <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-green-500/10 text-[9px] font-bold text-green-500 uppercase">
                 <span className="relative flex h-1.5 w-1.5">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
@@ -116,14 +110,14 @@ export default function TrendingSection() {
                 Live
               </span>
             </h2>
-            <p className="text-[11px] sm:text-xs text-muted-foreground">Popular on Easy-Locs right now</p>
+            <p className="text-[11px] sm:text-xs text-muted-foreground">{t("landing.trending.subtitle") || "Popular on Easy-Locs right now"}</p>
           </div>
         </div>
 
         {VERTICAL_CONFIG.map(cfg => {
           const section = data[cfg.key as keyof typeof data] as VerticalSection | undefined;
           if (!section) return null;
-          return <VerticalRow key={cfg.key} config={cfg} section={section} />;
+          return <VerticalRow key={cfg.key} config={cfg} section={section} t={t} />;
         })}
       </div>
     </section>
