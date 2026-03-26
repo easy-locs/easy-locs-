@@ -245,3 +245,19 @@ export function getEnginesByTier(tier: EngineTier): string[] {
     .filter(([, m]) => m.tier === tier)
     .map(([name]) => name);
 }
+
+/** Get engines by brain owner */
+export function getEnginesByBrain(brain: BrainOwner): string[] {
+  return Object.entries(ENGINE_METADATA)
+    .filter(([, m]) => m.brainOwner === brain)
+    .map(([name]) => name);
+}
+
+/** Get brain ownership summary */
+export function getBrainOwnershipSummary(): Record<BrainOwner, string[]> {
+  const result: Record<BrainOwner, string[]> = { geo: [], execution: [], category: [], arbitration: [], experience: [] };
+  for (const [name, meta] of Object.entries(ENGINE_METADATA)) {
+    result[meta.brainOwner].push(name);
+  }
+  return result;
+}
