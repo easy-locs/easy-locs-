@@ -347,6 +347,41 @@ export type Database = {
           },
         ]
       }
+      address_usage_events: {
+        Row: {
+          action_type: string | null
+          canonical_place_id: string | null
+          context_type: string | null
+          created_at: string | null
+          id: string
+          user_id: string | null
+        }
+        Insert: {
+          action_type?: string | null
+          canonical_place_id?: string | null
+          context_type?: string | null
+          created_at?: string | null
+          id?: string
+          user_id?: string | null
+        }
+        Update: {
+          action_type?: string | null
+          canonical_place_id?: string | null
+          context_type?: string | null
+          created_at?: string | null
+          id?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "address_usage_events_canonical_place_id_fkey"
+            columns: ["canonical_place_id"]
+            isOneToOne: false
+            referencedRelation: "canonical_places"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       admin_alerts: {
         Row: {
           acknowledged_at: string | null
@@ -2701,6 +2736,95 @@ export type Database = {
             columns: ["vertical_id"]
             isOneToOne: false
             referencedRelation: "canonical_verticals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      canonical_places: {
+        Row: {
+          building: string | null
+          city: string | null
+          country_code: string
+          country_name: string | null
+          created_at: string | null
+          district: string | null
+          formatted_address: string
+          geohash: string | null
+          id: string
+          landmark: string | null
+          lat: number
+          lng: number
+          parent_place_id: string | null
+          place_type: string
+          popularity_score: number | null
+          postal_code: string | null
+          provider: string
+          provider_place_id: string | null
+          search_text: unknown
+          short_label: string | null
+          street: string | null
+          subdistrict: string | null
+          timezone: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          building?: string | null
+          city?: string | null
+          country_code: string
+          country_name?: string | null
+          created_at?: string | null
+          district?: string | null
+          formatted_address: string
+          geohash?: string | null
+          id?: string
+          landmark?: string | null
+          lat: number
+          lng: number
+          parent_place_id?: string | null
+          place_type?: string
+          popularity_score?: number | null
+          postal_code?: string | null
+          provider?: string
+          provider_place_id?: string | null
+          search_text?: unknown
+          short_label?: string | null
+          street?: string | null
+          subdistrict?: string | null
+          timezone?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          building?: string | null
+          city?: string | null
+          country_code?: string
+          country_name?: string | null
+          created_at?: string | null
+          district?: string | null
+          formatted_address?: string
+          geohash?: string | null
+          id?: string
+          landmark?: string | null
+          lat?: number
+          lng?: number
+          parent_place_id?: string | null
+          place_type?: string
+          popularity_score?: number | null
+          postal_code?: string | null
+          provider?: string
+          provider_place_id?: string | null
+          search_text?: unknown
+          short_label?: string | null
+          street?: string | null
+          subdistrict?: string | null
+          timezone?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "canonical_places_parent_place_id_fkey"
+            columns: ["parent_place_id"]
+            isOneToOne: false
+            referencedRelation: "canonical_places"
             referencedColumns: ["id"]
           },
         ]
@@ -26907,6 +27031,50 @@ export type Database = {
         }
         Relationships: []
       }
+      user_active_address_context: {
+        Row: {
+          canonical_place_id: string | null
+          city: string | null
+          country_code: string | null
+          district: string | null
+          lat: number
+          lng: number
+          source: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          canonical_place_id?: string | null
+          city?: string | null
+          country_code?: string | null
+          district?: string | null
+          lat: number
+          lng: number
+          source?: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          canonical_place_id?: string | null
+          city?: string | null
+          country_code?: string | null
+          district?: string | null
+          lat?: number
+          lng?: number
+          source?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_active_address_context_canonical_place_id_fkey"
+            columns: ["canonical_place_id"]
+            isOneToOne: false
+            referencedRelation: "canonical_places"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_addresses: {
         Row: {
           city: string
@@ -27540,6 +27708,68 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      user_saved_addresses: {
+        Row: {
+          apartment: string | null
+          canonical_place_id: string | null
+          contact_name: string | null
+          contact_phone: string | null
+          created_at: string | null
+          delivery_note: string | null
+          entrance: string | null
+          floor: string | null
+          id: string
+          is_default: boolean | null
+          label: string | null
+          last_used_at: string | null
+          unit_number: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          apartment?: string | null
+          canonical_place_id?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          created_at?: string | null
+          delivery_note?: string | null
+          entrance?: string | null
+          floor?: string | null
+          id?: string
+          is_default?: boolean | null
+          label?: string | null
+          last_used_at?: string | null
+          unit_number?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          apartment?: string | null
+          canonical_place_id?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          created_at?: string | null
+          delivery_note?: string | null
+          entrance?: string | null
+          floor?: string | null
+          id?: string
+          is_default?: boolean | null
+          label?: string | null
+          last_used_at?: string | null
+          unit_number?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_saved_addresses_canonical_place_id_fkey"
+            columns: ["canonical_place_id"]
+            isOneToOne: false
+            referencedRelation: "canonical_places"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_sessions: {
         Row: {
