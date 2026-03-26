@@ -32,8 +32,8 @@ eventBus.on("merchant.visibility.refresh", async (payload) => {
     // Fetch active storefronts in this zone for availability signals
     const { data: storefronts, error } = await supabase
       .from("storefront_pages")
-      .select("id, name, status, active, city, country")
-      .eq("status", "active")
+      .select("id, name, launch_status, active, city, country")
+      .eq("launch_status", "launched")
       .limit(100);
 
     if (error) {
