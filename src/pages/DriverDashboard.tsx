@@ -125,7 +125,7 @@ export default function DriverDashboard() {
   const loading = sessionLoading || missionsLoading;
 
   return (
-    <div className="min-h-screen pb-20 bg-background">
+    <div className="app-mobile-page pb-20 bg-background">
       <MobilePageHeader title="Driver Hub" backTo="/dashboard" />
       <div className="px-4 pt-3 pb-4">
         <div className="flex items-center justify-between mb-4">

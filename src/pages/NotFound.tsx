@@ -12,7 +12,7 @@ const NotFound = () => {
   }, [location.pathname]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden" style={{ background: "var(--gradient-hero)" }}>
+    <div className="app-mobile-page flex items-center justify-center p-4 relative overflow-hidden" style={{ background: "var(--gradient-hero)" }}>
       <SEOHead title="Page Not Found — Easy-Locs" description="The page you're looking for doesn't exist." noindex />
 
       {/* Background effects */}

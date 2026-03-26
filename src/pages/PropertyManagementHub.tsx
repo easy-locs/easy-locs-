@@ -127,7 +127,7 @@ export default function PropertyManagementHub() {
     <SecurityGate label="Property Management" timeoutMinutes={10}>
       <>
         <SEOHead title="Property Management" description="Manage your properties and tenancies." />
-        <div className="min-h-screen bg-background pb-20">
+        <div className="app-mobile-page bg-background pb-20">
           <MobilePageHeader
             title={role ? (role === "landlord" ? "Landlord Hub" : "Tenant Hub") : "Property Management"}
             icon={<Building2 className="h-5 w-5 text-primary" />}

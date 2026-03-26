@@ -38,7 +38,7 @@ export default function DiscoverPage() {
   }, [allListings]);
 
   return (
-    <div className="min-h-screen pb-24" style={{ background: "hsl(var(--background))" }}>
+    <div className="app-mobile-page pb-24" style={{ background: "hsl(var(--background))" }}>
       <SEOHead
         title="Discover — Browse All Categories | Easy-Locs"
         description="Explore food, shops, services, property and more — all nearby businesses on one page."

@@ -181,7 +181,7 @@ export default function MerchantClaimPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="app-mobile-page bg-background flex items-center justify-center">
         <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
       </div>
     );
@@ -189,7 +189,7 @@ export default function MerchantClaimPage() {
 
   if (!merchant) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <div className="app-mobile-page bg-background flex items-center justify-center p-4">
         <Card className="max-w-sm w-full">
           <CardContent className="pt-6 text-center space-y-3">
             <Store className="h-10 w-10 mx-auto text-muted-foreground" />
@@ -203,7 +203,7 @@ export default function MerchantClaimPage() {
 
   if (merchant.onboarding_status !== "imported_not_claimed") {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <div className="app-mobile-page bg-background flex items-center justify-center p-4">
         <Card className="max-w-sm w-full">
           <CardContent className="pt-6 text-center space-y-3">
             <CheckCircle2 className="h-10 w-10 mx-auto text-primary" />
@@ -219,7 +219,7 @@ export default function MerchantClaimPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="app-mobile-page bg-background flex flex-col">
       {/* Progress */}
       <div className="sticky top-0 z-20 bg-background/95 backdrop-blur border-b border-border px-4 pt-3 pb-2">
         <div className="max-w-lg mx-auto">

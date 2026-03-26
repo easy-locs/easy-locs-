@@ -66,7 +66,7 @@ export default function StorePage() {
   });
 
   if (isLoading) return (
-    <div className="min-h-screen bg-background flex items-center justify-center">
+    <div className="app-mobile-page bg-background flex items-center justify-center">
       <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
     </div>
   );
@@ -74,7 +74,7 @@ export default function StorePage() {
   if (!showcase) return (
     <>
       <SEOHead title={`${t("mp.store_not_found") || "Store not found"} | Easy-Locs`} description="This store does not exist." />
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="app-mobile-page bg-background flex items-center justify-center">
         <p className="text-muted-foreground">{t("mp.store_not_found") || "Store not found"}</p>
       </div>
     </>
@@ -139,7 +139,7 @@ export default function StorePage() {
           } : {}),
         }}
       />
-      <div className="min-h-screen bg-background pb-16 sm:pb-0">
+      <div className="app-mobile-page bg-background pb-16 sm:pb-0">
         {/* Header */}
         <div className="bg-gradient-to-br from-accent/10 to-background border-b border-border">
           <div className="max-w-5xl mx-auto px-4 py-10 text-center">

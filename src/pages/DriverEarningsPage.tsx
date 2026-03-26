@@ -61,7 +61,7 @@ export default function DriverEarningsPage() {
   const c = stats.currency;
 
   return (
-    <div className="min-h-screen bg-background p-4 md:p-6 space-y-6">
+    <div className="app-mobile-page bg-background p-4 md:p-6 space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-foreground flex items-center gap-2"><Wallet className="w-6 h-6" /> Driver Earnings</h1>
         <Button variant="outline" size="sm" onClick={loadData} disabled={loading}><RefreshCw className={`w-4 h-4 mr-1 ${loading ? "animate-spin" : ""}`} /> Refresh</Button>

@@ -60,7 +60,7 @@ export default function TravelStays() {
   const results: StayResult[] = [];
 
   return (
-    <div className="min-h-screen bg-background pb-24">
+    <div className="app-mobile-page bg-background pb-24">
       <MobilePageHeader title="Stays" backTo="/travel" />
 
       <div className="px-4 space-y-3">

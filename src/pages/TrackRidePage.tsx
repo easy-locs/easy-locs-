@@ -98,7 +98,7 @@ export default function TrackRidePage() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="app-mobile-page bg-background">
       <div className="max-w-lg mx-auto space-y-4 pb-8">
         {/* ── Live Map Card ── */}
         <RideLiveMapCard route={liveRoute} />

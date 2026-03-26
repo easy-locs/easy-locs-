@@ -11,7 +11,7 @@ export default function TravelFlightDetail() {
   const { id } = useParams<{ id: string }>();
 
   return (
-    <div className="min-h-screen bg-background pb-28">
+    <div className="app-mobile-page bg-background pb-28">
       <MobilePageHeader title="Flight Details" backTo="/travel/flights" />
 
       <div className="px-4 space-y-4">

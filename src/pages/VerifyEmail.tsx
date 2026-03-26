@@ -49,7 +49,7 @@ const VerifyEmail = () => {
   };
 
   return (
-    <div className="min-h-screen bg-hero flex items-center justify-center p-4">
+    <div className="app-mobile-page bg-hero flex items-center justify-center p-4">
       <SEOHead title="Verify Email — Easy-Locs" description="Please verify your email address." noindex />
       <AuthBrand />
 

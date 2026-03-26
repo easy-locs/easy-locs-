@@ -89,7 +89,7 @@ const RentalCatalog = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="app-mobile-page bg-background">
       <SEOHead
         title={seoTitle}
         description={seoDesc}

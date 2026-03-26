@@ -86,7 +86,7 @@ export default function PayRequestPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background p-4 space-y-4">
+      <div className="app-mobile-page bg-background p-4 space-y-4">
         <Skeleton className="h-32 rounded-2xl" />
         <Skeleton className="h-12 rounded-xl" />
       </div>
@@ -97,7 +97,7 @@ export default function PayRequestPage() {
     return (
       <>
         <SEOHead title="Payment Request — Easy Locs" description="Payment request" />
-        <div className="min-h-screen bg-background">
+        <div className="app-mobile-page bg-background">
           <MobilePageHeader title="Payment Request" backTo="/discover" />
           <div className="max-w-md mx-auto px-4 pt-16 text-center space-y-4">
             <Receipt className="h-10 w-10 text-muted-foreground/40 mx-auto" />
@@ -116,7 +116,7 @@ export default function PayRequestPage() {
   return (
     <>
       <SEOHead title="Payment Request — Easy Locs" description="Secure payment request" />
-      <div className="min-h-screen bg-background">
+      <div className="app-mobile-page bg-background">
         <MobilePageHeader title="Payment Request" backTo="/discover" />
 
         <div className="max-w-md mx-auto px-4 pt-8 pb-24 space-y-6">

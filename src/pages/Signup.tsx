@@ -46,7 +46,7 @@ const Signup = () => {
   const inputClass = "w-full bg-background border border-border rounded-xl ps-10 pe-4 h-[var(--input-height)] text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-accent/40 focus:border-accent/40 transition-all";
 
   return (
-    <div className="min-h-screen bg-hero flex items-center justify-center p-4 pt-16 sm:pt-4 relative">
+    <div className="app-mobile-page bg-hero flex items-center justify-center p-4 pt-16 sm:pt-4 relative">
       <SEOHead title="Sign Up — Easy-Locs" description="Create your free Easy-Locs account." noindex />
       <AuthBrand />
 

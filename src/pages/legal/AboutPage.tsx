@@ -21,7 +21,7 @@ const AboutPage = () => {
   ];
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="app-mobile-page flex flex-col">
       <SEOHead
         title="About Easy-Locs® — Global Property Management & Marketplace Platform"
         description="Easy-Locs® is an all-in-one SaaS platform for property management, seasonal rentals, and service marketplace across 190+ countries. Leases, receipts, concierge, tenant portals and more."

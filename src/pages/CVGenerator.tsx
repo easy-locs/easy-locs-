@@ -89,7 +89,7 @@ export default function CVGenerator() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="app-mobile-page bg-background">
       <SEOHead title="Free CV Generator — Easy-Locs" description="Create a professional CV for free with AI. Fill in your details and generate a polished resume instantly." />
       <Navbar />
       <div className="container mx-auto max-w-3xl px-4 pt-24 pb-16">

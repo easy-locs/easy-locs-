@@ -127,7 +127,7 @@ const PropertyManagement = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="app-mobile-page bg-background">
       <SEOHead
         title={pageTitle}
         description={pageDesc}

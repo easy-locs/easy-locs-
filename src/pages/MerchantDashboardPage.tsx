@@ -232,7 +232,7 @@ export default function MerchantDashboardPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="app-mobile-page bg-background flex items-center justify-center">
         <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
       </div>
     );
@@ -240,7 +240,7 @@ export default function MerchantDashboardPage() {
 
   if (!merchant) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <div className="app-mobile-page bg-background flex items-center justify-center p-4">
         <Card className="max-w-sm w-full">
           <CardContent className="pt-6 text-center space-y-3">
             <Store className="h-10 w-10 mx-auto text-muted-foreground" />
@@ -254,7 +254,7 @@ export default function MerchantDashboardPage() {
   const statusColor = merchant.onboarding_status === "active" ? "default" : "secondary";
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="app-mobile-page bg-background">
       {/* Header */}
       <div className="sticky top-0 z-20 bg-background/95 backdrop-blur border-b border-border px-4 py-3">
         <div className="max-w-2xl mx-auto flex items-center justify-between">

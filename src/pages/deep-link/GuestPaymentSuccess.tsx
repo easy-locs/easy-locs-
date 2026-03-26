@@ -47,7 +47,7 @@ export default function GuestPaymentSuccess() {
   return (
     <>
       <SEOHead title="Payment Confirmed — Easy Locs" description="Your payment was successful" />
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <div className="app-mobile-page bg-background flex items-center justify-center p-4">
         <div className="max-w-sm w-full space-y-6 text-center">
           {verifying ? (
             <div className="space-y-3">

@@ -175,7 +175,7 @@ export default function MerchantOnboardingPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="app-mobile-page bg-background flex items-center justify-center">
         <div className="animate-pulse text-muted-foreground">Chargement…</div>
       </div>
     );
@@ -183,7 +183,7 @@ export default function MerchantOnboardingPage() {
 
   if (!profileId || !merchant) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <div className="app-mobile-page bg-background flex items-center justify-center p-4">
         <Card className="max-w-md w-full">
           <CardContent className="pt-6 text-center space-y-3">
             <Store className="h-12 w-12 mx-auto text-muted-foreground" />
@@ -200,7 +200,7 @@ export default function MerchantOnboardingPage() {
   const progressPct = ((step + 1) / STEPS.length) * 100;
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="app-mobile-page bg-background flex flex-col">
       {/* Progress header */}
       <div className="sticky top-0 z-20 bg-background/95 backdrop-blur border-b border-border px-4 pt-3 pb-2">
         <div className="max-w-lg mx-auto">

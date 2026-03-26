@@ -133,7 +133,7 @@ const PublicServiceBooking = () => {
   if (loading) return (
     <>
       <SEOHead title="Service booking | Easy-Locs" description="Book trusted services online with Easy-Locs." canonical={canonicalUrl} />
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="app-mobile-page bg-background flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
       </div>
     </>
@@ -142,7 +142,7 @@ const PublicServiceBooking = () => {
   if (!service) return (
     <>
       <SEOHead title={`${t("mp.service_not_found") || "Service not found"} | Easy-Locs`} description={t("mp.service_not_found_desc") || "This booking link is invalid or expired."} canonical={canonicalUrl} />
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="app-mobile-page bg-background flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-foreground mb-2">{t("mp.service_not_found") || "Service not found"}</h1>
           <p className="text-muted-foreground">{t("mp.service_not_found_desc") || "This booking link may be expired or invalid."}</p>
@@ -159,7 +159,7 @@ const PublicServiceBooking = () => {
         canonical={canonicalUrl}
         ogImage={ogImage}
       />
-      <div className="min-h-screen bg-background flex items-center justify-center px-4">
+      <div className="app-mobile-page bg-background flex items-center justify-center px-4">
         <Card className="max-w-md mx-auto w-full">
           <CardContent className="pt-8 pb-8 space-y-5">
             <div className="text-center space-y-3">
@@ -395,7 +395,7 @@ const PublicServiceBooking = () => {
           ...(service.category ? { serviceType: service.category.replace(/_/g, " ") } : {}),
         }}
       />
-      <div className="min-h-screen bg-background">
+      <div className="app-mobile-page bg-background">
         <div className="max-w-4xl mx-auto px-3 sm:px-4 py-6 sm:py-8">
           {/* Photo Gallery */}
           {photos.length > 0 && (

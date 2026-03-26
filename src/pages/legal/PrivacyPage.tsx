@@ -6,7 +6,7 @@ import SEOHead from "@/components/SEOHead";
 const PrivacyPage = () => {
   const { t } = useI18n();
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="app-mobile-page flex flex-col">
       <SEOHead
         title="Privacy Policy — Easy-Locs"
         description="Learn how Easy-Locs protects your personal data. GDPR-compliant privacy policy for our property management platform."

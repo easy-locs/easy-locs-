@@ -195,7 +195,7 @@ const Install = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="app-mobile-page bg-background">
       {/* ═══ HERO ═══ */}
       <Section className="relative overflow-hidden px-6 pt-12 pb-8">
         {/* Gradient orb background */}

@@ -31,7 +31,7 @@ export default function RiderPrioritySubscriptionPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-background p-4">
+    <div className="app-mobile-page bg-background p-4">
       <div className="mx-auto max-w-md space-y-6">
         <BackCard label="Priority Subscription" />
 

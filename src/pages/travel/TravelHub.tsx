@@ -18,7 +18,7 @@ export default function TravelHub() {
   const [activeTab, setActiveTab] = useState<TravelTab>("flights");
 
   return (
-    <div className="min-h-screen bg-background pb-24">
+    <div className="app-mobile-page bg-background pb-24">
       <SEOHead
         title="Travel — Flights & Stays Worldwide | Easy-Locs"
         description="Search and book flights, hotels, vacation rentals and seasonal stays worldwide. Compare prices and find the best deals."
