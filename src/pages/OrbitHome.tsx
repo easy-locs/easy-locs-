@@ -2,7 +2,7 @@
  * OrbitHome — Premium super-app home.
  * Food-first · Luxury · Clean vertical hierarchy · No clutter
  */
-import { useMemo, useCallback } from "react";
+import { useMemo, useCallback, lazy, Suspense } from "react";
 import { AnimatedCounter } from "@/components/ui/AnimatedCounter";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -20,6 +20,8 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import SEOHead from "@/components/SEOHead";
+
+const EngineActiveBanner = lazy(() => import("@/components/engine/EngineActiveBanner"));
 
 /* ═══════════════════════════════════════════════
    FOOD HERO BANNERS — time-aware, food-first
