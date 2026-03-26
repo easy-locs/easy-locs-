@@ -53,7 +53,6 @@ const SECTION_DEFS = [
 /* ═══ Top Hero Banner — Careem-style with location + search ═══ */
 const TopHeroBanner = memo(({ city, greeting, timezone, onLocationTap }: { city: string | null; greeting: string; timezone?: string; onLocationTap: () => void }) => {
   const hero = getSmartHero(timezone);
-  const engine = useOrbitEngine();
   const locationLabel = city || "your area";
 
   return (
@@ -66,27 +65,22 @@ const TopHeroBanner = memo(({ city, greeting, timezone, onLocationTap }: { city:
         </button>
         <Link to="/dashboard/notifications" className="relative shrink-0 w-9 h-9 rounded-full bg-white/15 flex items-center justify-center active:scale-95 transition-transform">
           <Bell className="h-4 w-4 text-white/80" />
-          {engine.pendingNotifications > 0 && (
-            <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 rounded-full bg-destructive text-[9px] font-bold text-destructive-foreground flex items-center justify-center px-1">
-              {engine.pendingNotifications > 9 ? "9+" : engine.pendingNotifications}
-            </span>
-          )}
         </Link>
       </div>
 
       {/* Title + emoji */}
       <div className="flex items-center justify-between relative z-10 mb-3">
         <div className="min-w-0 flex-1 pr-3">
-          <h2 className="text-white text-xl font-black leading-snug">{hero.title}</h2>
-          <p className="text-white/60 text-xs mt-1 leading-relaxed">{hero.subtitle}</p>
+          <h2 className="text-white text-lg font-black leading-snug">{hero.title}</h2>
+          <p className="text-white/60 text-xs mt-1 leading-relaxed line-clamp-2">{hero.subtitle}</p>
         </div>
-        <span className="text-4xl select-none shrink-0 opacity-60">{hero.emoji}</span>
+        <span className="text-3xl select-none shrink-0 opacity-60">{hero.emoji}</span>
       </div>
 
       {/* CTA */}
       <Link
         to={hero.route}
-        className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-full bg-white/20 text-white text-xs font-bold active:bg-white/30 transition-colors relative z-10 mb-4"
+        className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-white/20 text-white text-xs font-bold active:bg-white/30 transition-colors relative z-10 mb-3"
       >
         {hero.cta} <ChevronRight className="h-3.5 w-3.5" />
       </Link>
