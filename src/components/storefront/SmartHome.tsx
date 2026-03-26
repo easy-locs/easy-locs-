@@ -272,74 +272,73 @@ export default function SmartHome() {
   );
 
   return (
-    <div className="space-y-0">
+    <div className="space-y-1 pb-4">
       <TopHeroBanner city={city} greeting={greeting} timezone={timezone} onLocationTap={handleLocationTap} />
       <QuickActions />
 
-      <div className="overflow-x-auto scrollbar-none mb-3 -mx-1 px-1 touch-pan-x">
+      {/* Category grid — horizontal scrollable, 2 rows */}
+      <div className="overflow-x-auto scrollbar-none mb-4 touch-pan-x">
         <motion.div
           variants={staggerContainer}
           initial="hidden"
           animate="visible"
-          className="flex flex-col gap-1.5"
+          className="flex flex-col gap-2 px-1"
           style={{ width: "max-content" }}
         >
-          <div className="flex gap-1.5">
+          <div className="flex gap-2">
             {row1.map((cat, i) => <CategoryCard key={cat.key} cat={cat} index={i} />)}
           </div>
-          <div className="flex gap-1.5">
+          <div className="flex gap-2">
             {row2.map((cat, i) => <CategoryCard key={cat.key} cat={cat} index={i + half} />)}
           </div>
         </motion.div>
       </div>
 
-      {/* ═══ Context Banner — dynamic by time/country/event ═══ */}
+      {/* ═══ Context Banner ═══ */}
       {contextBanners.length > 0 && (
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={TRANSITIONS.smooth}
-          className="px-4 mb-3"
+          className="mb-4"
         >
           <Link
             to={contextBanners[0].route || "/radar"}
-            className="block rounded-2xl p-4 border border-border/10 active:scale-[0.98] transition-transform"
+            className="block rounded-2xl p-4 border border-border/15 active:scale-[0.98] transition-transform"
             style={{ background: contextBanners[0].gradient }}
           >
-            <p className="text-sm font-bold text-foreground">
+            <p className="text-sm font-bold text-foreground leading-snug">
               {contextBanners[0].emoji} {contextBanners[0].title}
             </p>
-            <p className="text-xs text-muted-foreground mt-0.5">{contextBanners[0].subtitle}</p>
+            <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{contextBanners[0].subtitle}</p>
             {contextBanners[0].cta && (
-              <span className="inline-flex items-center gap-1 mt-2 text-[11px] font-semibold text-primary">
-                {contextBanners[0].cta} <ChevronRight className="h-3 w-3" />
+              <span className="inline-flex items-center gap-1 mt-2.5 text-xs font-semibold text-primary">
+                {contextBanners[0].cta} <ChevronRight className="h-3.5 w-3.5" />
               </span>
             )}
           </Link>
         </motion.div>
       )}
 
-      {/* ═══ BOOST SLOT — Home Hero ═══ */}
-      <BoostSlotRenderer surface="home" slotKey="hero_primary" variant="hero" className="px-4 mb-3" />
+      {/* ═══ BOOST SLOT ═══ */}
+      <BoostSlotRenderer surface="home" slotKey="hero_primary" variant="hero" className="mb-4" />
 
-      {/* SmartHeroCard removed — merged into TopHeroBanner */}
-
-      {/* ═══ Live Map — Riders/Drivers nearby ═══ */}
+      {/* ═══ Live Map ═══ */}
       <motion.div
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.12, ...TRANSITIONS.smooth }}
-        className="px-4 mb-3"
+        className="mb-4"
       >
-        <div className="flex items-center justify-between mb-1.5">
-          <h3 className="text-xs font-bold text-foreground flex items-center gap-1">
+        <div className="flex items-center justify-between mb-2 px-1">
+          <h3 className="text-sm font-bold text-foreground flex items-center gap-1.5">
             <span>📍</span> Live near you
           </h3>
-          <div className="flex items-center gap-1.5">
-            <Link to="/mobility/delivery" className="text-[10px] font-medium text-muted-foreground flex items-center gap-0.5 active:opacity-70">
+          <div className="flex items-center gap-2">
+            <Link to="/mobility/delivery" className="text-[11px] font-medium text-muted-foreground flex items-center gap-0.5 active:opacity-70">
               Send <ChevronRight className="h-3 w-3" />
             </Link>
-            <Link to="/mobility/taxi" className="text-[10px] font-medium text-primary flex items-center gap-0.5 active:opacity-70">
+            <Link to="/mobility/taxi" className="text-[11px] font-medium text-primary flex items-center gap-0.5 active:opacity-70">
               Ride <ChevronRight className="h-3 w-3" />
             </Link>
           </div>
@@ -350,17 +349,18 @@ export default function SmartHome() {
             pickupLng={currentLocation?.lng}
             mode="taxi"
             nearbyRiders={5}
-            className="h-[180px]"
+            className="h-[200px]"
           />
         </Link>
       </motion.div>
 
+      {/* ═══ Data Sections ═══ */}
       {SECTION_DEFS.map((sec, i) => (
         <DynamicSection key={sec.key} section={sec} shops={safeSections[sec.key as keyof typeof safeSections]} index={i} />
       ))}
 
-      {/* ═══ BOOST SLOT — Home Inline ═══ */}
-      <div className="px-4 pb-4">
+      {/* ═══ BOOST SLOT — Inline ═══ */}
+      <div className="pb-4">
         <BoostSlotRenderer surface="home" slotKey="inline_banner_1" variant="inline" />
       </div>
 
