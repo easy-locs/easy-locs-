@@ -1,38 +1,41 @@
 /**
- * TaxiPreviewScreen — Step 2: map + route + fare + confirm.
- * Only shown AFTER pickup & dropoff are set.
+ * TaxiPreviewScreen — Step 2: Route + fare + ride options + confirm.
+ * Map appears HERE (not before). Uses real loadRidePreview engine.
  */
 import React, { useState, useEffect } from "react";
-import { useTaxiFlowStore } from "@/stores/taxiFlowStore";
+import { useTaxiFlowStore, type TaxiServiceLevel } from "@/stores/taxiFlowStore";
 import { useCustomerMobilityStore } from "@/stores/customerMobilityStore";
 import { loadRidePreview, type RidePreviewData } from "@/lib/mobility/load-ride-preview";
 import { toast } from "sonner";
 import { tc } from "@/lib/i18n-canonical";
 import { cn } from "@/lib/utils";
-import { ArrowLeft, Navigation, Clock, Car, DollarSign, Zap, Signal, Loader2 } from "lucide-react";
+import { ArrowLeft, Navigation, Clock, Car, DollarSign, Zap, Signal, Loader2, ShieldCheck, Users } from "lucide-react";
 import { motion } from "framer-motion";
 
 const INITIAL_PREVIEW: RidePreviewData = {
-  ready: false,
-  waitMinutes: null,
-  etaMinutes: null,
-  distanceKm: null,
-  estimatedFare: null,
-  trafficLevel: "unknown",
-  zoneKey: null,
-  nearbyDrivers: null,
-  surgeMultiplier: 1,
+  ready: false, waitMinutes: null, etaMinutes: null, distanceKm: null,
+  estimatedFare: null, trafficLevel: "unknown", zoneKey: null, nearbyDrivers: null, surgeMultiplier: 1,
 };
 
+const SERVICE_OPTIONS: { value: TaxiServiceLevel; emoji: string; title: string; subtitle: string }[] = [
+  { value: "taxi_standard", emoji: "🚕", title: "Standard", subtitle: "4 seats" },
+  { value: "taxi_premium", emoji: "✨", title: "Premium", subtitle: "Luxury" },
+  { value: "taxi_xl", emoji: "🚐", title: "XL", subtitle: "6+ seats" },
+  { value: "taxi_moto", emoji: "🏍️", title: "Moto", subtitle: "Fast" },
+];
+
 export function TaxiPreviewScreen() {
-  const { pickup, dropoff, serviceLevel, bookingMode, scheduledDate, scheduledTime, seats, setStep, setActiveJobId, reset } = useTaxiFlowStore();
+  const {
+    pickup, dropoff, serviceLevel, bookingMode, scheduledDate, scheduledTime, seats,
+    setServiceLevel, setStep, setActiveJobId,
+  } = useTaxiFlowStore();
   const createJob = useCustomerMobilityStore(s => s.createJob);
 
   const [preview, setPreview] = useState<RidePreviewData>(INITIAL_PREVIEW);
   const [previewLoading, setPreviewLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
-  // Load preview on mount
+  // Load preview
   useEffect(() => {
     if (!pickup || !dropoff) return;
     let cancelled = false;
@@ -53,37 +56,28 @@ export function TaxiPreviewScreen() {
     setSubmitting(true);
     try {
       const scheduledFor = bookingMode === "scheduled" && scheduledDate && scheduledTime
-        ? new Date(`${scheduledDate}T${scheduledTime}`).toISOString()
-        : undefined;
+        ? new Date(`${scheduledDate}T${scheduledTime}`).toISOString() : undefined;
 
       const job = await createJob({
-        jobType: "taxi",
-        serviceLevel,
-        bookingMode,
-        scheduledFor,
-        pickupLabel: pickup.label,
-        pickupAddress: pickup.formatted_address,
-        pickupLat: pickup.lat,
-        pickupLng: pickup.lng,
-        dropoffLabel: dropoff.label,
-        dropoffAddress: dropoff.formatted_address,
-        dropoffLat: dropoff.lat,
-        dropoffLng: dropoff.lng,
+        jobType: "taxi", serviceLevel, bookingMode, scheduledFor,
+        pickupLabel: pickup.label, pickupAddress: pickup.formatted_address,
+        pickupLat: pickup.lat, pickupLng: pickup.lng,
+        dropoffLabel: dropoff.label, dropoffAddress: dropoff.formatted_address,
+        dropoffLat: dropoff.lat, dropoffLng: dropoff.lng,
         seatsRequested: seats,
-        quotedPrice: preview.estimatedFare ?? 0,
-        currency: "AED",
+        quotedPrice: preview.estimatedFare ?? 0, currency: "AED",
       });
       setActiveJobId(job.id);
-      setStep("active_ride");
-      toast.success(bookingMode === "scheduled"
-        ? tc("mobility.ride_scheduled") || "Ride scheduled!"
-        : tc("mobility.ride_requested") || "Taxi requested!");
+      setStep("requesting");
+      toast.success(tc("mobility.ride_requested") || "Taxi requested!");
     } catch (err: any) {
       toast.error(err.message ?? "Failed to request ride");
     } finally {
       setSubmitting(false);
     }
   };
+
+  const activeOption = SERVICE_OPTIONS.find(o => o.value === serviceLevel) ?? SERVICE_OPTIONS[0];
 
   return (
     <motion.div
@@ -93,29 +87,66 @@ export function TaxiPreviewScreen() {
       exit={{ opacity: 0, y: -12 }}
       className="space-y-4"
     >
-      {/* Back button */}
-      <button
-        type="button"
-        onClick={() => setStep("search")}
-        className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
-      >
+      {/* Back */}
+      <button type="button" onClick={() => setStep("search")}
+        className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
         <ArrowLeft className="h-4 w-4" /> Edit trip
       </button>
 
-      {/* Route summary */}
-      <div className="rounded-2xl border border-border/30 bg-card p-4 space-y-2">
-        <div className="flex items-start gap-2.5">
-          <div className="w-2 h-2 rounded-full bg-emerald-500 mt-1.5 shrink-0" />
-          <span className="text-sm text-foreground truncate">{pickup?.label || "Pickup"}</span>
+      {/* Route map placeholder */}
+      <div className="rounded-2xl border border-border/30 bg-muted/20 overflow-hidden">
+        <div className="h-44 flex items-center justify-center">
+          <p className="text-xs text-muted-foreground">Route preview map</p>
         </div>
-        <div className="ml-1 border-l-2 border-dashed border-border/40 h-4" />
-        <div className="flex items-start gap-2.5">
-          <div className="w-2 h-2 rounded-full bg-primary mt-1.5 shrink-0" />
-          <span className="text-sm text-foreground truncate">{dropoff?.label || "Dropoff"}</span>
+        {/* Route summary */}
+        <div className="p-3 border-t border-border/20 space-y-1.5">
+          <div className="flex items-start gap-2">
+            <div className="w-2 h-2 rounded-full bg-emerald-500 mt-1.5 shrink-0" />
+            <span className="text-sm text-foreground truncate">{pickup?.label || "Pickup"}</span>
+          </div>
+          <div className="ml-1 border-l-2 border-dashed border-border/40 h-3" />
+          <div className="flex items-start gap-2">
+            <div className="w-2 h-2 rounded-full bg-primary mt-1.5 shrink-0" />
+            <span className="text-sm text-foreground truncate">{dropoff?.label || "Dropoff"}</span>
+          </div>
         </div>
       </div>
 
-      {/* Preview card */}
+      {/* Wait time info */}
+      {preview.ready && !previewLoading && (
+        <div className="flex items-center gap-3 rounded-xl bg-muted/30 px-4 py-2.5">
+          <span className="text-lg">⏱️</span>
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-semibold text-foreground">Wait time in your area</p>
+            <p className="text-[11px] text-muted-foreground">
+              {activeOption.title} rides arriving in ~{preview.waitMinutes ?? "?"} min
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Ride options */}
+      <div>
+        <p className="text-xs font-bold text-foreground mb-2">Choose your ride</p>
+        <div className="grid grid-cols-4 gap-2">
+          {SERVICE_OPTIONS.map(opt => {
+            const selected = opt.value === serviceLevel;
+            return (
+              <button key={opt.value} type="button" onClick={() => setServiceLevel(opt.value)}
+                className={cn(
+                  "flex flex-col items-center gap-0.5 p-2.5 rounded-xl border-2 transition-all text-center",
+                  selected ? "border-primary bg-primary/5 text-primary" : "border-border/40 bg-card text-muted-foreground"
+                )}>
+                <span className="text-lg">{opt.emoji}</span>
+                <span className="text-[10px] font-bold">{opt.title}</span>
+                <span className="text-[8px] text-muted-foreground">{opt.subtitle}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Fare & stats */}
       {previewLoading ? (
         <div className="rounded-xl border border-border/20 bg-muted/20 p-6 flex items-center justify-center gap-2">
           <Loader2 className="w-4 h-4 animate-spin text-primary" />
@@ -123,23 +154,23 @@ export function TaxiPreviewScreen() {
         </div>
       ) : preview.ready ? (
         <div className="rounded-2xl border border-border/30 bg-card p-4 space-y-3">
-          {/* Fare hero */}
+          {/* Fare */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <DollarSign className="w-4 h-4 text-primary" />
-              <span className="text-xs text-muted-foreground">{tc("ride.fare") || "Estimated fare"}</span>
+              <span className="text-xs text-muted-foreground">Estimated fare</span>
             </div>
             <div className="flex items-center gap-1.5">
               <span className="text-xl font-bold text-foreground">{preview.estimatedFare} AED</span>
               {preview.surgeMultiplier > 1 && (
-                <span className="flex items-center gap-0.5 text-xs text-amber-500 font-semibold bg-amber-500/10 px-1.5 py-0.5 rounded-full">
+                <span className="flex items-center gap-0.5 text-xs font-semibold bg-amber-500/10 text-amber-500 px-1.5 py-0.5 rounded-full">
                   <Zap className="w-3 h-3" /> ×{preview.surgeMultiplier.toFixed(1)}
                 </span>
               )}
             </div>
           </div>
 
-          {/* Stats */}
+          {/* Stats row */}
           <div className="grid grid-cols-3 gap-2">
             <div className="flex flex-col items-center bg-muted/30 rounded-lg py-2 px-1">
               <Navigation className="w-3.5 h-3.5 text-primary mb-0.5" />
@@ -147,18 +178,18 @@ export function TaxiPreviewScreen() {
               <span className="text-[9px] text-muted-foreground">Distance</span>
             </div>
             <div className="flex flex-col items-center bg-muted/30 rounded-lg py-2 px-1">
-              <Clock className="w-3.5 h-3.5 text-sky-500 mb-0.5" />
+              <Clock className="w-3.5 h-3.5 text-primary mb-0.5" />
               <span className="text-xs font-bold text-foreground">{preview.etaMinutes} min</span>
               <span className="text-[9px] text-muted-foreground">ETA</span>
             </div>
             <div className="flex flex-col items-center bg-muted/30 rounded-lg py-2 px-1">
-              <Car className="w-3.5 h-3.5 text-emerald-500 mb-0.5" />
+              <Car className="w-3.5 h-3.5 text-primary mb-0.5" />
               <span className="text-xs font-bold text-foreground">{preview.waitMinutes} min</span>
               <span className="text-[9px] text-muted-foreground">Wait</span>
             </div>
           </div>
 
-          {/* Zone info */}
+          {/* Zone context */}
           <div className="flex items-center justify-between text-[10px]">
             <div className="flex items-center gap-1.5 text-muted-foreground">
               <Signal className="w-3 h-3" />
@@ -181,7 +212,28 @@ export function TaxiPreviewScreen() {
         </div>
       )}
 
-      {/* Confirm button */}
+      {/* Safety badge */}
+      <div className="flex items-center gap-3 rounded-xl bg-muted/20 px-4 py-2.5">
+        <ShieldCheck className="w-4 h-4 text-primary shrink-0" />
+        <div className="min-w-0">
+          <p className="text-xs font-semibold text-foreground">Safer and smarter</p>
+          <p className="text-[11px] text-muted-foreground">Verified driver, live tracking, route visibility</p>
+        </div>
+      </div>
+
+      {/* Seats info */}
+      <div className="flex items-center justify-between rounded-xl bg-muted/20 px-4 py-2.5">
+        <div className="flex items-center gap-2">
+          <Users className="w-4 h-4 text-primary" />
+          <div>
+            <p className="text-xs font-semibold text-foreground">Seats</p>
+            <p className="text-[11px] text-muted-foreground">{seats} passenger{seats > 1 ? "s" : ""}</p>
+          </div>
+        </div>
+        <span className="text-xs text-muted-foreground">{activeOption.subtitle}</span>
+      </div>
+
+      {/* Confirm */}
       <div className="mobility-submit-sticky">
         <button
           type="button"
@@ -190,8 +242,8 @@ export function TaxiPreviewScreen() {
           className="w-full h-12 rounded-xl bg-primary text-primary-foreground font-semibold text-sm disabled:opacity-40 transition-opacity flex items-center justify-center gap-2"
         >
           {submitting
-            ? <><Loader2 className="w-4 h-4 animate-spin" /> {tc("mobility.requesting") || "Requesting..."}</>
-            : <>🚀 {bookingMode === "scheduled" ? tc("mobility.reserve_ride") || "Reserve ride" : tc("mobility.request_taxi") || "Request taxi"}</>}
+            ? <><Loader2 className="w-4 h-4 animate-spin" /> Requesting...</>
+            : <>🚀 Request {activeOption.title}</>}
         </button>
       </div>
     </motion.div>
