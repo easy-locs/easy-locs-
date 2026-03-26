@@ -185,7 +185,6 @@ const ContactPage = safeLazy(() => import("./pages/legal/ContactPage"), "Contact
 const AddContactPage = safeLazy(() => import("./pages/AddContactPage"), "AddContactPage");
 const HelpPage = safeLazy(() => import("./pages/legal/HelpPage"), "HelpPage");
 const PlatformVision = safeLazy(() => import("./pages/PlatformVision"), "PlatformVision");
-const DealAnalyticsPage = safeLazy(() => import("./pages/DealAnalyticsPage"), "DealAnalyticsPage");
 const ServiceTrackingPage = safeLazy(() => import("./pages/ServiceTrackingPage"), "ServiceTrackingPage");
 const SellerHubPage = safeLazy(() => import("./pages/SellerHubPage"), "SellerHubPage");
 const SellerDashboardPage = safeLazy(() => import("./pages/seller/SellerDashboardPage"), "SellerDashboardPage");
@@ -247,7 +246,6 @@ const AdminDisputesPage = safeLazy(() => import("./pages/AdminDisputesPage"), "A
 const DemandHeatmapPage = safeLazy(() => import("./pages/DemandHeatmapPage"), "DemandHeatmapPage");
 const AdminFraudPage = safeLazy(() => import("./pages/AdminFraudPage"), "AdminFraudPage");
 const AdminLiveOpsPage = safeLazy(() => import("./pages/AdminLiveOpsPage"), "AdminLiveOpsPage");
-const DriverPositioningPage = safeLazy(() => import("./pages/DriverPositioningPage"), "DriverPositioningPage");
 const RiderPrioritySubscriptionPage = safeLazy(() => import("./pages/RiderPrioritySubscriptionPage"), "RiderPrioritySubscriptionPage");
 const AdminDispatchBoardPage = safeLazy(() => import("./pages/AdminDispatchBoardPage"), "AdminDispatchBoardPage");
 const AdminSLAPage = safeLazy(() => import("./pages/AdminSLAPage"), "AdminSLAPage");
@@ -289,12 +287,9 @@ const DriverHeatmapMapPage = safeLazy(() => import("./pages/DriverHeatmapMapPage
 const AdminRealtimeControlPage = safeLazy(() => import("./pages/AdminRealtimeControlPage"), "AdminRealtimeControlPage");
 const DeploymentChecklistPage = safeLazy(() => import("./pages/DeploymentChecklistPage"), "DeploymentChecklistPage");
 const LoyaltyRedeemPage = safeLazy(() => import("./pages/LoyaltyRedeemPage"), "LoyaltyRedeemPage");
-const AbandonedCartOpsPage = safeLazy(() => import("./pages/AbandonedCartOpsPage"), "AbandonedCartOpsPage");
 const AdminAlertCenterPage = safeLazy(() => import("./pages/AdminAlertCenterPage"), "AdminAlertCenterPage");
-const IncidentDashboardPage = safeLazy(() => import("./pages/IncidentDashboardPage"), "IncidentDashboardPage");
 const StripeElementsPage = safeLazy(() => import("./pages/StripeElementsPage"), "StripeElementsPage");
 const AuditDebugPanelPage = safeLazy(() => import("./pages/AuditDebugPanelPage"), "AuditDebugPanelPage");
-const OpsWallboardPage = safeLazy(() => import("./pages/OpsWallboardPage"), "OpsWallboardPage");
 const MerchantClaimPage = safeLazy(() => import("./pages/MerchantClaimPage"), "MerchantClaimPage");
 const MerchantDashboardPage = safeLazy(() => import("./pages/MerchantDashboardPage"), "MerchantDashboardPage");
 const MerchantFinancePage = safeLazy(() => import("./pages/merchant/MerchantFinancePage"), "MerchantFinancePage");
@@ -424,7 +419,6 @@ const AdminRetentionOpsPage = safeLazy(() => import("./pages/admin/AdminRetentio
 const DriverEarningsPageNew = safeLazy(() => import("./pages/driver/DriverEarningsPageNew"), "DriverEarningsPageNew");
 const OrderReceiptPage = safeLazy(() => import("./pages/OrderReceiptPage"), "OrderReceiptPage");
 const MerchantBasicAnalyticsPage = safeLazy(() => import("./pages/merchant/MerchantBasicAnalyticsPage"), "MerchantBasicAnalyticsPage");
-const AdminOperationsLaunchpadPage = safeLazy(() => import("./pages/admin/AdminOperationsLaunchpadPage"), "AdminOperationsLaunchpadPage");
 const MerchantCustomersPage = safeLazy(() => import("./pages/merchant/MerchantCustomersPage"), "MerchantCustomersPage");
 const AdminMerchantHealthPage = safeLazy(() => import("./pages/admin/AdminMerchantHealthPage"), "AdminMerchantHealthPage");
 const WalletTopUpPage = safeLazy(() => import("./pages/wallet/WalletTopUpPage"), "WalletTopUpPage");
@@ -450,7 +444,6 @@ const MerchantClosingModePage = safeLazy(() => import("./pages/merchant/Merchant
 const AdminMerchantPromoWatchPage = safeLazy(() => import("./pages/admin/AdminMerchantPromoWatchPage"), "AdminMerchantPromoWatchPage");
 const DriverEarningsSummaryPage = safeLazy(() => import("./pages/driver/DriverEarningsSummaryPage"), "DriverEarningsSummaryPage");
 const AdminRefundWatchPage = safeLazy(() => import("./pages/admin/AdminRefundWatchPage"), "AdminRefundWatchPage");
-const CustomerSupportShortcutsPage = safeLazy(() => import("./pages/customer/CustomerSupportShortcutsPage"), "CustomerSupportShortcutsPage");
 const MerchantCustomerInsightsPage = safeLazy(() => import("./pages/merchant/MerchantCustomerInsightsPage"), "MerchantCustomerInsightsPage");
 const AdminDriverHeatmapPage = safeLazy(() => import("./pages/admin/AdminDriverHeatmapPage"), "AdminDriverHeatmapPage");
 const CustomerOrderArchivePage = safeLazy(() => import("./pages/customer/CustomerOrderArchivePage"), "CustomerOrderArchivePage");
@@ -472,14 +465,11 @@ const AdminFraudDetectionPage = safeLazy(() => import("./pages/admin/AdminFraudD
 const CustomerSavedCardsPage = safeLazy(() => import("./pages/customer/CustomerSavedCardsPage"), "CustomerSavedCardsPage");
 const MerchantInventoryAlertsPage = safeLazy(() => import("./pages/merchant/MerchantInventoryAlertsPage"), "MerchantInventoryAlertsPage");
 const AdminOrderTimelinePage = safeLazy(() => import("./pages/admin/AdminOrderTimelinePage"), "AdminOrderTimelinePage");
-const CustomerQuickHelpPage = safeLazy(() => import("./pages/customer/CustomerQuickHelpPage"), "CustomerQuickHelpPage");
 const DriverShiftPage = safeLazy(() => import("./pages/driver/DriverShiftPage"), "DriverShiftPage");
 const AdminMerchantApprovalQueuePage = safeLazy(() => import("./pages/admin/AdminMerchantApprovalQueuePage"), "AdminMerchantApprovalQueuePage");
 const CustomerDeliveryNotesPage = safeLazy(() => import("./pages/customer/CustomerDeliveryNotesPage"), "CustomerDeliveryNotesPage");
 const MerchantStaffAccessPage = safeLazy(() => import("./pages/merchant/MerchantStaffAccessPage"), "MerchantStaffAccessPage");
 const AdminFailedPaymentsPage = safeLazy(() => import("./pages/admin/AdminFailedPaymentsPage"), "AdminFailedPaymentsPage");
-const CustomerReferFriendPage = safeLazy(() => import("./pages/customer/CustomerReferFriendPage"), "CustomerReferFriendPage");
-const DriverDocumentsPage = safeLazy(() => import("./pages/driver/DriverDocumentsPage"), "DriverDocumentsPage");
 const AdminSupportSlaPage = safeLazy(() => import("./pages/admin/AdminSupportSlaPage"), "AdminSupportSlaPage");
 const CustomerAddressSelectorPage = safeLazy(() => import("./pages/customer/CustomerAddressSelectorPage"), "CustomerAddressSelectorPage");
 const MerchantDailySalesPage = safeLazy(() => import("./pages/merchant/MerchantDailySalesPage"), "MerchantDailySalesPage");
@@ -490,182 +480,65 @@ const AdminGrowthDashboardPage = safeLazy(() => import("./pages/admin/AdminGrowt
 const CustomerOrderReceiptsPage = safeLazy(() => import("./pages/customer/CustomerOrderReceiptsPage"), "CustomerOrderReceiptsPage");
 const MerchantRefundRequestsPage = safeLazy(() => import("./pages/merchant/MerchantRefundRequestsPage"), "MerchantRefundRequestsPage");
 const AdminCouponOversightPage = safeLazy(() => import("./pages/admin/AdminCouponOversightPage"), "AdminCouponOversightPage");
-const CustomerNotificationCenterPage = safeLazy(() => import("./pages/customer/CustomerNotificationCenterPage"), "CustomerNotificationCenterPage");
 const DriverCompletedDeliveriesPage = safeLazy(() => import("./pages/driver/DriverCompletedDeliveriesPage"), "DriverCompletedDeliveriesPage");
 const AdminActiveSessionsPage = safeLazy(() => import("./pages/admin/AdminActiveSessionsPage"), "AdminActiveSessionsPage");
 const MerchantMenuBulkEditPage = safeLazy(() => import("./pages/merchant/MerchantMenuBulkEditPage"), "MerchantMenuBulkEditPage");
 const AdminFraudMonitorPage = safeLazy(() => import("./pages/admin/AdminFraudMonitorPage"), "AdminFraudMonitorPage");
-const CustomerLiveTrackingPage = safeLazy(() => import("./pages/customer/CustomerLiveTrackingPage"), "CustomerLiveTrackingPage");
-const MerchantRealtimeOrdersBoard = safeLazy(() => import("./pages/merchant/MerchantRealtimeOrdersBoard"), "MerchantRealtimeOrdersBoard");
-const AdminGlobalHeatmapPage = safeLazy(() => import("./pages/admin/AdminGlobalHeatmapPage"), "AdminGlobalHeatmapPage");
-const CustomerQuickReorderPage = safeLazy(() => import("./pages/customer/CustomerQuickReorderPage"), "CustomerQuickReorderPage");
 const DriverLiveMissionsPage = safeLazy(() => import("./pages/driver/DriverLiveMissionsPage"), "DriverLiveMissionsPage");
-const AdminRealtimeAlertsPage = safeLazy(() => import("./pages/admin/AdminRealtimeAlertsPage"), "AdminRealtimeAlertsPage");
 // FA-FF block
-const CustomerOrderSchedulePage = safeLazy(() => import("./pages/customer/CustomerOrderSchedulePage"), "CustomerOrderSchedulePage");
-const MerchantOpenClosePage = safeLazy(() => import("./pages/merchant/MerchantOpenClosePage"), "MerchantOpenClosePage");
-const AdminRetentionDashboardPage = safeLazy(() => import("./pages/admin/AdminRetentionDashboardPage"), "AdminRetentionDashboardPage");
-const CustomerPromoWalletPage = safeLazy(() => import("./pages/customer/CustomerPromoWalletPage"), "CustomerPromoWalletPage");
-const DriverBreakModePage = safeLazy(() => import("./pages/driver/DriverBreakModePage"), "DriverBreakModePage");
-const AdminMerchantPerformancePage = safeLazy(() => import("./pages/admin/AdminMerchantPerformancePage"), "AdminMerchantPerformancePage");
 // FG-FL block
-const CustomerFamilyProfilesPage = safeLazy(() => import("./pages/customer/CustomerFamilyProfilesPage"), "CustomerFamilyProfilesPage");
-const MerchantPrepTimePage = safeLazy(() => import("./pages/merchant/MerchantPrepTimePage"), "MerchantPrepTimePage");
-const AdminRefundControlPage = safeLazy(() => import("./pages/admin/AdminRefundControlPage"), "AdminRefundControlPage");
-const CustomerTippingPage = safeLazy(() => import("./pages/customer/CustomerTippingPage"), "CustomerTippingPage");
-const DriverAcceptanceRatePage = safeLazy(() => import("./pages/driver/DriverAcceptanceRatePage"), "DriverAcceptanceRatePage");
-const AdminDriverPerformancePage = safeLazy(() => import("./pages/admin/AdminDriverPerformancePage"), "AdminDriverPerformancePage");
 // FM-FR block
-const CustomerSubscriptionsPage = safeLazy(() => import("./pages/customer/CustomerSubscriptionsPage"), "CustomerSubscriptionsPage");
-const MerchantPromoSchedulerPage = safeLazy(() => import("./pages/merchant/MerchantPromoSchedulerPage"), "MerchantPromoSchedulerPage");
-const AdminDisputeCenterPage = safeLazy(() => import("./pages/admin/AdminDisputeCenterPage"), "AdminDisputeCenterPage");
-const CustomerFavoriteOrdersPage = safeLazy(() => import("./pages/customer/CustomerFavoriteOrdersPage"), "CustomerFavoriteOrdersPage");
-const DriverShiftSchedulerPage = safeLazy(() => import("./pages/driver/DriverShiftSchedulerPage"), "DriverShiftSchedulerPage");
-const AdminGlobalFinancePage = safeLazy(() => import("./pages/admin/AdminGlobalFinancePage"), "AdminGlobalFinancePage");
 // FS-FX block
 const AdminCoreEnginePage = safeLazy(() => import("./pages/admin/AdminCoreEnginePage"), "AdminCoreEnginePage");
 // FY-GD block
 const CustomerGroupOrderPage = safeLazy(() => import("./pages/customer/CustomerGroupOrderPage"), "CustomerGroupOrderPage");
-const MerchantAutoAcceptPage = safeLazy(() => import("./pages/merchant/MerchantAutoAcceptPage"), "MerchantAutoAcceptPage");
-const AdminCashflowMonitorPage = safeLazy(() => import("./pages/admin/AdminCashflowMonitorPage"), "AdminCashflowMonitorPage");
-const CustomerAddressBookPageV2 = safeLazy(() => import("./pages/customer/CustomerAddressBookPageV2"), "CustomerAddressBookPageV2");
-const DriverNavigationModePage = safeLazy(() => import("./pages/driver/DriverNavigationModePage"), "DriverNavigationModePage");
-const AdminCityOpsPage = safeLazy(() => import("./pages/admin/AdminCityOpsPage"), "AdminCityOpsPage");
 // GE-GJ block
-const CustomerMealPlannerPage = safeLazy(() => import("./pages/customer/CustomerMealPlannerPage"), "CustomerMealPlannerPage");
 const MerchantDeliveryZonesPage = safeLazy(() => import("./pages/merchant/MerchantDeliveryZonesPage"), "MerchantDeliveryZonesPage");
-const AdminOperatorNotesPage = safeLazy(() => import("./pages/admin/AdminOperatorNotesPage"), "AdminOperatorNotesPage");
-const CustomerReceiptVaultPage = safeLazy(() => import("./pages/customer/CustomerReceiptVaultPage"), "CustomerReceiptVaultPage");
-const DriverVehicleProfilePage = safeLazy(() => import("./pages/driver/DriverVehicleProfilePage"), "DriverVehicleProfilePage");
-const AdminNetworkStatusPage = safeLazy(() => import("./pages/admin/AdminNetworkStatusPage"), "AdminNetworkStatusPage");
 // GK-GP block
-const CustomerSharedWalletPage = safeLazy(() => import("./pages/customer/CustomerSharedWalletPage"), "CustomerSharedWalletPage");
-const AdminSlaMonitorPage = safeLazy(() => import("./pages/admin/AdminSlaMonitorPage"), "AdminSlaMonitorPage");
 const CustomerOrderGiftsPage = safeLazy(() => import("./pages/customer/CustomerOrderGiftsPage"), "CustomerOrderGiftsPage");
-const AdminIncidentCenterPage = safeLazy(() => import("./pages/admin/AdminIncidentCenterPage"), "AdminIncidentCenterPage");
 // GQ-GV block
 const CustomerSplitBillPage = safeLazy(() => import("./pages/customer/CustomerSplitBillPage"), "CustomerSplitBillPage");
 const MerchantKitchenDisplayPage = safeLazy(() => import("./pages/merchant/MerchantKitchenDisplayPage"), "MerchantKitchenDisplayPage");
 const AdminOrderAuditPage = safeLazy(() => import("./pages/admin/AdminOrderAuditPage"), "AdminOrderAuditPage");
-const CustomerDeliveryInstructionsPage = safeLazy(() => import("./pages/customer/CustomerDeliveryInstructionsPage"), "CustomerDeliveryInstructionsPage");
-const DriverDailyTargetPage = safeLazy(() => import("./pages/driver/DriverDailyTargetPage"), "DriverDailyTargetPage");
-const AdminMarketExpansionPage = safeLazy(() => import("./pages/admin/AdminMarketExpansionPage"), "AdminMarketExpansionPage");
 // GW-HB block
 const CustomerSavedCartsPage2 = safeLazy(() => import("./pages/customer/CustomerSavedCartsPage"), "CustomerSavedCartsPage2");
-const MerchantOutOfStockPage = safeLazy(() => import("./pages/merchant/MerchantOutOfStockPage"), "MerchantOutOfStockPage");
-const AdminFraudWatchPage = safeLazy(() => import("./pages/admin/AdminFraudWatchPage"), "AdminFraudWatchPage");
-const CustomerContactlessPage = safeLazy(() => import("./pages/customer/CustomerContactlessPage"), "CustomerContactlessPage");
-const DriverHotZonesPage = safeLazy(() => import("./pages/driver/DriverHotZonesPage"), "DriverHotZonesPage");
-const AdminDemandForecastPage = safeLazy(() => import("./pages/admin/AdminDemandForecastPage"), "AdminDemandForecastPage");
 // HC-HH block
 const CustomerAutoRepeatPage = safeLazy(() => import("./pages/customer/CustomerAutoRepeatPage"), "CustomerAutoRepeatPage");
-const MerchantRushModePage = safeLazy(() => import("./pages/merchant/MerchantRushModePage"), "MerchantRushModePage");
 const AdminRefundQueuePage = safeLazy(() => import("./pages/admin/AdminRefundQueuePage"), "AdminRefundQueuePage");
 const CustomerPartyOrderPage = safeLazy(() => import("./pages/customer/CustomerPartyOrderPage"), "CustomerPartyOrderPage");
-const DriverEarningsBreakdownPage = safeLazy(() => import("./pages/driver/DriverEarningsBreakdownPage"), "DriverEarningsBreakdownPage");
 const AdminPlatformHealthPage = safeLazy(() => import("./pages/admin/AdminPlatformHealthPage"), "AdminPlatformHealthPage");
 // HI-HN block
-const CustomerOfficeLunchPage = safeLazy(() => import("./pages/customer/CustomerOfficeLunchPage"), "CustomerOfficeLunchPage");
-const MerchantDeliveryFeesPage = safeLazy(() => import("./pages/merchant/MerchantDeliveryFeesPage"), "MerchantDeliveryFeesPage");
-const AdminDriverCompliancePage = safeLazy(() => import("./pages/admin/AdminDriverCompliancePage"), "AdminDriverCompliancePage");
 const CustomerRewardRedemptionPage = safeLazy(() => import("./pages/customer/CustomerRewardRedemptionPage"), "CustomerRewardRedemptionPage");
-const DriverFuelCostPage = safeLazy(() => import("./pages/driver/DriverFuelCostPage"), "DriverFuelCostPage");
-const AdminExecutiveOverviewPage = safeLazy(() => import("./pages/admin/AdminExecutiveOverviewPage"), "AdminExecutiveOverviewPage");
 // HO-HT block
 const AdminSystemLivePanelPage = safeLazy(() => import("./pages/admin/AdminSystemLivePanelPage"), "AdminSystemLivePanelPage");
 // HU-HZ block
 const AdminRestaurantFillPage = safeLazy(() => import("./pages/admin/AdminRestaurantFillPage"), "AdminRestaurantFillPage");
 // IA-IF block
 const StripeCheckoutHandlerPage = safeLazy(() => import("./pages/payments/StripeCheckoutHandlerPage"), "StripeCheckoutHandlerPage");
-const AdminPaymentGoLivePage = safeLazy(() => import("./pages/admin/AdminPaymentGoLivePage"), "AdminPaymentGoLivePage");
-const AdminGoLiveReadinessPage = safeLazy(() => import("./pages/admin/AdminGoLiveReadinessPage"), "AdminGoLiveReadinessPage");
 // IG-IL block
-const AdminUiFinalizerPage = safeLazy(() => import("./pages/admin/AdminUiFinalizerPage"), "AdminUiFinalizerPage");
 // IM-IR block
 // AppBootstrapGuard imported directly (not lazy) — it's a tiny null component
 const AdminMasterControlPage = safeLazy(() => import("./pages/admin/AdminMasterControlPage"), "AdminMasterControlPage");
 // IS-IX block
-const AdminProductionChecklistPage = safeLazy(() => import("./pages/admin/AdminProductionChecklistPage"), "AdminProductionChecklistPage");
-const AdminFinalWrapPage = safeLazy(() => import("./pages/admin/AdminFinalWrapPage"), "AdminFinalWrapPage");
 // JA-JF block
 const AdminQaCommandPage = safeLazy(() => import("./pages/admin/AdminQaCommandPage"), "AdminQaCommandPage");
 // KA-KF block
 const LiveTrackingPageNew = safeLazy(() => import("./pages/live/LiveTrackingPage"), "LiveTrackingPageNew");
 // LG-LR block
 const DriverFuelCostsPage = safeLazy(() => import("./pages/driver/DriverFuelCostsPage"), "DriverFuelCostsPage");
-const DriverCompliancePage = safeLazy(() => import("./pages/driver/DriverCompliancePage"), "DriverCompliancePage");
 const DriverBreaksPage = safeLazy(() => import("./pages/driver/DriverBreaksPage"), "DriverBreaksPage");
-const DriverShiftPlannerPage = safeLazy(() => import("./pages/driver/DriverShiftPlannerPage"), "DriverShiftPlannerPage");
-const AdminDriverComplianceOpsPage = safeLazy(() => import("./pages/admin/AdminDriverComplianceOpsPage"), "AdminDriverComplianceOpsPage");
-const AdminMarketplaceExperimentsPage = safeLazy(() => import("./pages/admin/AdminMarketplaceExperimentsPage"), "AdminMarketplaceExperimentsPage");
-const CustomerScheduledOrderPage = safeLazy(() => import("./pages/customer/CustomerScheduledOrderPage"), "CustomerScheduledOrderPage");
-const MerchantStaffRolesPage = safeLazy(() => import("./pages/merchant/MerchantStaffRolesPage"), "MerchantStaffRolesPage");
-const MerchantPermissionsMatrixPage = safeLazy(() => import("./pages/merchant/MerchantPermissionsMatrixPage"), "MerchantPermissionsMatrixPage");
 const MerchantBusinessHoursPage = safeLazy(() => import("./pages/merchant/MerchantBusinessHoursPage"), "MerchantBusinessHoursPage");
 // MA-MW block
-const AdminRegionPerformancePage = safeLazy(() => import("./pages/admin/AdminRegionPerformancePage"), "AdminRegionPerformancePage");
-const AdminCourierHeatmapPage = safeLazy(() => import("./pages/admin/AdminCourierHeatmapPage"), "AdminCourierHeatmapPage");
-const AdminCustomerRetentionPage = safeLazy(() => import("./pages/admin/AdminCustomerRetentionPage"), "AdminCustomerRetentionPage");
-const CustomerPartySplitLinksPage = safeLazy(() => import("./pages/customer/CustomerPartySplitLinksPage"), "CustomerPartySplitLinksPage");
 const CustomerShareCartPage = safeLazy(() => import("./pages/customer/CustomerShareCartPage"), "CustomerShareCartPage");
-const MerchantRushPricingPage = safeLazy(() => import("./pages/merchant/MerchantRushPricingPage"), "MerchantRushPricingPage");
-const AdminGrowthCampaignsPage = safeLazy(() => import("./pages/admin/AdminGrowthCampaignsPage"), "AdminGrowthCampaignsPage");
 const AdminGrowthEnginePage = safeLazy(() => import("./pages/AdminGrowthEnginePage"), "AdminGrowthEnginePage");
-const AdminPromoPerformancePage = safeLazy(() => import("./pages/admin/AdminPromoPerformancePage"), "AdminPromoPerformancePage");
-const CustomerPaymentMethodsHubPage = safeLazy(() => import("./pages/customer/CustomerPaymentMethodsHubPage"), "CustomerPaymentMethodsHubPage");
-const CustomerOrderPreferencesPage = safeLazy(() => import("./pages/customer/CustomerOrderPreferencesPage"), "CustomerOrderPreferencesPage");
-const MerchantPackagingSettingsPage = safeLazy(() => import("./pages/merchant/MerchantPackagingSettingsPage"), "MerchantPackagingSettingsPage");
-const MerchantOrderThrottlePage = safeLazy(() => import("./pages/merchant/MerchantOrderThrottlePage"), "MerchantOrderThrottlePage");
-const AdminAcquisitionFunnelPage = safeLazy(() => import("./pages/admin/AdminAcquisitionFunnelPage"), "AdminAcquisitionFunnelPage");
-const AdminDriverIncentivesPage = safeLazy(() => import("./pages/admin/AdminDriverIncentivesPage"), "AdminDriverIncentivesPage");
-const CustomerFamilyProfilePage = safeLazy(() => import("./pages/customer/CustomerFamilyProfilePage"), "CustomerFamilyProfilePage");
-const CustomerFavoriteItemsPage = safeLazy(() => import("./pages/customer/CustomerFavoriteItemsPage"), "CustomerFavoriteItemsPage");
-const MerchantCancellationRulesPage = safeLazy(() => import("./pages/merchant/MerchantCancellationRulesPage"), "MerchantCancellationRulesPage");
-const MerchantCustomerChatSettingsPage = safeLazy(() => import("./pages/merchant/MerchantCustomerChatSettingsPage"), "MerchantCustomerChatSettingsPage");
 // MX-OG block
-const AdminCityLaunchChecklistPage = safeLazy(() => import("./pages/admin/AdminCityLaunchChecklistPage"), "AdminCityLaunchChecklistPage");
-const AdminRestaurantAutofillPage2 = safeLazy(() => import("./pages/admin/AdminRestaurantAutofillPage"), "AdminRestaurantAutofillPage2");
-const AdminSystemLiveStatusPage = safeLazy(() => import("./pages/admin/AdminSystemLiveStatusPage"), "AdminSystemLiveStatusPage");
-const CustomerQuickReorderHubPage = safeLazy(() => import("./pages/customer/CustomerQuickReorderHubPage"), "CustomerQuickReorderHubPage");
-const MerchantLiveOpsPanelPage = safeLazy(() => import("./pages/merchant/MerchantLiveOpsPanelPage"), "MerchantLiveOpsPanelPage");
 const CentralControlPanelPage = safeLazy(() => import("./pages/admin/CentralControlPanelPage"), "CentralControlPanelPage");
-const AdminLiveIncidentFeedPage = safeLazy(() => import("./pages/admin/AdminLiveIncidentFeedPage"), "AdminLiveIncidentFeedPage");
-const AdminRiskScoreboardPage = safeLazy(() => import("./pages/admin/AdminRiskScoreboardPage"), "AdminRiskScoreboardPage");
-const AdminStoreReadinessMatrixPage = safeLazy(() => import("./pages/admin/AdminStoreReadinessMatrixPage"), "AdminStoreReadinessMatrixPage");
-const CustomerBulkPartyBuilderPage = safeLazy(() => import("./pages/customer/CustomerBulkPartyBuilderPage"), "CustomerBulkPartyBuilderPage");
-const CustomerDinnerPlannerPage = safeLazy(() => import("./pages/customer/CustomerDinnerPlannerPage"), "CustomerDinnerPlannerPage");
-const MerchantAutoAcceptRulesPage = safeLazy(() => import("./pages/merchant/MerchantAutoAcceptRulesPage"), "MerchantAutoAcceptRulesPage");
-const MerchantDriverHandoffPage = safeLazy(() => import("./pages/merchant/MerchantDriverHandoffPage"), "MerchantDriverHandoffPage");
 // OH-PI block
-const AdminDispatchTuningPage = safeLazy(() => import("./pages/admin/AdminDispatchTuningPage"), "AdminDispatchTuningPage");
-const AdminPaymentWatchPage = safeLazy(() => import("./pages/admin/AdminPaymentWatchPage"), "AdminPaymentWatchPage");
-const CustomerWeeklyMealPlanPage = safeLazy(() => import("./pages/customer/CustomerWeeklyMealPlanPage"), "CustomerWeeklyMealPlanPage");
-const CustomerKidsMealProfilePage = safeLazy(() => import("./pages/customer/CustomerKidsMealProfilePage"), "CustomerKidsMealProfilePage");
 const MerchantMenuCategoryManagerPage = safeLazy(() => import("./pages/merchant/MerchantMenuCategoryManagerPage"), "MerchantMenuCategoryManagerPage");
-const MerchantItemBadgesPage = safeLazy(() => import("./pages/merchant/MerchantItemBadgesPage"), "MerchantItemBadgesPage");
-const MerchantInstructionsPolicyPage = safeLazy(() => import("./pages/merchant/MerchantInstructionsPolicyPage"), "MerchantInstructionsPolicyPage");
-const AdminMenuQualityPage = safeLazy(() => import("./pages/admin/AdminMenuQualityPage"), "AdminMenuQualityPage");
 const AdminMenuQualityControlPage = safeLazy(() => import("./pages/admin/AdminMenuQualityControlPage"), "AdminMenuQualityControlPage");
-const AdminDeliveryLatencyPage = safeLazy(() => import("./pages/admin/AdminDeliveryLatencyPage"), "AdminDeliveryLatencyPage");
 const AdminUxLiveTestPage = safeLazy(() => import("./pages/admin/AdminUxLiveTestPage"), "AdminUxLiveTestPage");
 const HyperRadarPage = safeLazy(() => import("./pages/HyperRadarPage"), "HyperRadarPage");
-const CustomerLunchSubscriptionPage = safeLazy(() => import("./pages/customer/CustomerLunchSubscriptionPage"), "CustomerLunchSubscriptionPage");
-const CustomerFamilyNightPage = safeLazy(() => import("./pages/customer/CustomerFamilyNightPage"), "CustomerFamilyNightPage");
-const MerchantMenuClonerPage = safeLazy(() => import("./pages/merchant/MerchantMenuClonerPage"), "MerchantMenuClonerPage");
-const MerchantFeaturedItemsPage = safeLazy(() => import("./pages/merchant/MerchantFeaturedItemsPage"), "MerchantFeaturedItemsPage");
-const MerchantHolidaySchedulePage = safeLazy(() => import("./pages/merchant/MerchantHolidaySchedulePage"), "MerchantHolidaySchedulePage");
-const AdminDriverPayoutsPage = safeLazy(() => import("./pages/admin/AdminDriverPayoutsPage"), "AdminDriverPayoutsPage");
-const AdminMerchantPayoutsPage = safeLazy(() => import("./pages/admin/AdminMerchantPayoutsPage"), "AdminMerchantPayoutsPage");
-const AdminWalletReconPage = safeLazy(() => import("./pages/admin/AdminWalletReconPage"), "AdminWalletReconPage");
-const CustomerGuestCheckoutProfilePage = safeLazy(() => import("./pages/customer/CustomerGuestCheckoutProfilePage"), "CustomerGuestCheckoutProfilePage");
-const CustomerDinnerBudgetPage = safeLazy(() => import("./pages/customer/CustomerDinnerBudgetPage"), "CustomerDinnerBudgetPage");
-const MerchantStoreAnnouncementPage = safeLazy(() => import("./pages/merchant/MerchantStoreAnnouncementPage"), "MerchantStoreAnnouncementPage");
-const MerchantTemporaryClosurePage = safeLazy(() => import("./pages/merchant/MerchantTemporaryClosurePage"), "MerchantTemporaryClosurePage");
-const MerchantQueueLimitPage = safeLazy(() => import("./pages/merchant/MerchantQueueLimitPage"), "MerchantQueueLimitPage");
 // PJ-PO block
-const AdminNotificationCampaignsPage = safeLazy(() => import("./pages/admin/AdminNotificationCampaignsPage"), "AdminNotificationCampaignsPage");
-const AdminCustomerSegmentsPage = safeLazy(() => import("./pages/admin/AdminCustomerSegmentsPage"), "AdminCustomerSegmentsPage");
-const AdminMerchantSegmentsPage = safeLazy(() => import("./pages/admin/AdminMerchantSegmentsPage"), "AdminMerchantSegmentsPage");
 // V1WalletHubPage removed — legacy redirect
 
 const AuthCallbackPage = safeLazy(() => import("./pages/AuthCallbackPage"), "AuthCallbackPage");
@@ -886,7 +759,6 @@ const App = () => (
               <Route path="/driver/payout" element={<DriverPayoutPage />} />
               <Route path="/admin/disputes" element={<AdminDisputesPage />} />
               <Route path="/driver/heatmap" element={<DemandHeatmapPage />} />
-              <Route path="/driver/positioning" element={<DriverPositioningPage />} />
               <Route path="/admin/fraud" element={<AdminFraudPage />} />
               <Route path="/admin/live-ops" element={<AdminLiveOpsPage />} />
               <Route path="/subscription/priority" element={<RiderPrioritySubscriptionPage />} />
@@ -1064,7 +936,6 @@ const App = () => (
               <Route path="/dashboard/audit" element={<ProtectedRoute><AuditTrail /></ProtectedRoute>} />
               <Route path="/dashboard/wallet" element={<Navigate to="/wallet" replace />} />
               <Route path="/wallet" element={<ProtectedRoute><WalletHubPage /></ProtectedRoute>} />
-              <Route path="/dashboard/deals" element={<ProtectedRoute><DealAnalyticsPage /></ProtectedRoute>} />
               <Route path="/dashboard/service-tracking" element={<ProtectedRoute><ServiceTrackingPage /></ProtectedRoute>} />
               <Route path="/dashboard/seller" element={<ProtectedRoute><SellerHubPage /></ProtectedRoute>} />
               <Route path="/seller" element={<ProtectedRoute><SellerDashboardPage /></ProtectedRoute>} />
@@ -1111,12 +982,9 @@ const App = () => (
               <Route path="/admin/realtime-control" element={<ProtectedRoute><AdminRealtimeControlPage /></ProtectedRoute>} />
               <Route path="/admin/deployment-checklist" element={<ProtectedRoute><DeploymentChecklistPage /></ProtectedRoute>} />
               <Route path="/admin/loyalty-redeem" element={<ProtectedRoute><LoyaltyRedeemPage /></ProtectedRoute>} />
-              <Route path="/admin/abandoned-cart-ops" element={<ProtectedRoute><AbandonedCartOpsPage /></ProtectedRoute>} />
               <Route path="/admin/alerts" element={<ProtectedRoute><AdminAlertCenterPage /></ProtectedRoute>} />
-              <Route path="/admin/incidents" element={<ProtectedRoute><IncidentDashboardPage /></ProtectedRoute>} />
               <Route path="/payments/stripe-elements" element={<ProtectedRoute><StripeElementsPage /></ProtectedRoute>} />
               <Route path="/admin/audit-debug" element={<ProtectedRoute><AuditDebugPanelPage /></ProtectedRoute>} />
-              <Route path="/admin/ops-wallboard" element={<ProtectedRoute><OpsWallboardPage /></ProtectedRoute>} />
               <Route path="/admin/outreach" element={<ProtectedRoute><AdminOutreachPage /></ProtectedRoute>} />
                <Route path="/admin/uae-ops" element={<ProtectedRoute><AdminUaeOpsDashboard /></ProtectedRoute>} />
                <Route path="/admin/owner-cockpit" element={<ProtectedRoute><OwnerCockpitPage /></ProtectedRoute>} />
@@ -1195,7 +1063,6 @@ const App = () => (
                 <Route path="/driver/earnings-v2" element={<ProtectedRoute><DriverEarningsPageNew /></ProtectedRoute>} />
                 <Route path="/order/receipt/:orderId" element={<ProtectedRoute><OrderReceiptPage /></ProtectedRoute>} />
                 <Route path="/merchant/analytics/:merchantId" element={<ProtectedRoute><MerchantBasicAnalyticsPage /></ProtectedRoute>} />
-                <Route path="/admin/operations-launchpad" element={<ProtectedRoute><AdminOperationsLaunchpadPage /></ProtectedRoute>} />
                 <Route path="/merchant/customers/:merchantId" element={<ProtectedRoute><MerchantCustomersPage /></ProtectedRoute>} />
                 <Route path="/admin/merchant-health" element={<ProtectedRoute><AdminMerchantHealthPage /></ProtectedRoute>} />
                 <Route path="/admin/platform-recovery" element={<ProtectedRoute><AdminPlatformRecoveryPage /></ProtectedRoute>} />
@@ -1226,7 +1093,6 @@ const App = () => (
                 <Route path="/admin/merchant-promo-watch" element={<ProtectedRoute><AdminMerchantPromoWatchPage /></ProtectedRoute>} />
                 <Route path="/driver/earnings-summary" element={<ProtectedRoute><DriverEarningsSummaryPage /></ProtectedRoute>} />
                 <Route path="/admin/refund-watch" element={<ProtectedRoute><AdminRefundWatchPage /></ProtectedRoute>} />
-                <Route path="/support/shortcuts" element={<ProtectedRoute><CustomerSupportShortcutsPage /></ProtectedRoute>} />
                 <Route path="/merchant/customer-insights/:merchantId" element={<ProtectedRoute><MerchantCustomerInsightsPage /></ProtectedRoute>} />
                 <Route path="/admin/driver-heatmap" element={<ProtectedRoute><AdminDriverHeatmapPage /></ProtectedRoute>} />
                 <Route path="/my-orders/archive" element={<ProtectedRoute><CustomerOrderArchivePage /></ProtectedRoute>} />
@@ -1241,14 +1107,11 @@ const App = () => (
                 <Route path="/me/saved-cards" element={<ProtectedRoute><CustomerSavedCardsPage /></ProtectedRoute>} />
                 <Route path="/merchant/inventory-alerts/:merchantId" element={<ProtectedRoute><MerchantInventoryAlertsPage /></ProtectedRoute>} />
                 <Route path="/admin/order-timeline" element={<ProtectedRoute><AdminOrderTimelinePage /></ProtectedRoute>} />
-                <Route path="/me/quick-help" element={<ProtectedRoute><CustomerQuickHelpPage /></ProtectedRoute>} />
                 <Route path="/driver/shift" element={<ProtectedRoute><DriverShiftPage /></ProtectedRoute>} />
                 <Route path="/admin/merchant-approval-queue" element={<ProtectedRoute><AdminMerchantApprovalQueuePage /></ProtectedRoute>} />
                 <Route path="/me/delivery-notes" element={<ProtectedRoute><CustomerDeliveryNotesPage /></ProtectedRoute>} />
                 <Route path="/merchant/staff-access/:merchantId" element={<ProtectedRoute><MerchantStaffAccessPage /></ProtectedRoute>} />
                 <Route path="/admin/failed-payments" element={<ProtectedRoute><AdminFailedPaymentsPage /></ProtectedRoute>} />
-                <Route path="/me/refer-friend" element={<ProtectedRoute><CustomerReferFriendPage /></ProtectedRoute>} />
-                <Route path="/driver/documents" element={<ProtectedRoute><DriverDocumentsPage /></ProtectedRoute>} />
                 <Route path="/admin/support-sla" element={<ProtectedRoute><AdminSupportSlaPage /></ProtectedRoute>} />
                 <Route path="/checkout/address-selector" element={<ProtectedRoute><CustomerAddressSelectorPage /></ProtectedRoute>} />
                 <Route path="/merchant/daily-sales/:merchantId" element={<ProtectedRoute><MerchantDailySalesPage /></ProtectedRoute>} />
@@ -1260,177 +1123,60 @@ const App = () => (
                 <Route path="/admin/growth-engine" element={<ProtectedRoute><AdminGrowthEnginePage /></ProtectedRoute>} />
                 <Route path="/merchant/refund-requests/:merchantId" element={<ProtectedRoute><MerchantRefundRequestsPage /></ProtectedRoute>} />
                 <Route path="/admin/coupon-oversight" element={<ProtectedRoute><AdminCouponOversightPage /></ProtectedRoute>} />
-                <Route path="/me/notification-center" element={<ProtectedRoute><CustomerNotificationCenterPage /></ProtectedRoute>} />
                 <Route path="/driver/completed-deliveries" element={<ProtectedRoute><DriverCompletedDeliveriesPage /></ProtectedRoute>} />
                 <Route path="/admin/active-sessions" element={<ProtectedRoute><AdminActiveSessionsPage /></ProtectedRoute>} />
                 <Route path="/merchant/menu-bulk/:merchantId" element={<ProtectedRoute><MerchantMenuBulkEditPage /></ProtectedRoute>} />
                 <Route path="/admin/fraud-monitor" element={<ProtectedRoute><AdminFraudMonitorPage /></ProtectedRoute>} />
-                <Route path="/tracking-live/:orderId" element={<ProtectedRoute><CustomerLiveTrackingPage /></ProtectedRoute>} />
-                <Route path="/merchant/live-orders/:merchantId" element={<ProtectedRoute><MerchantRealtimeOrdersBoard /></ProtectedRoute>} />
-                <Route path="/admin/heatmap" element={<ProtectedRoute><AdminGlobalHeatmapPage /></ProtectedRoute>} />
-                <Route path="/quick-reorder" element={<ProtectedRoute><CustomerQuickReorderPage /></ProtectedRoute>} />
                 <Route path="/driver/live-missions" element={<ProtectedRoute><DriverLiveMissionsPage /></ProtectedRoute>} />
-                <Route path="/admin/realtime-alerts" element={<ProtectedRoute><AdminRealtimeAlertsPage /></ProtectedRoute>} />
-                <Route path="/checkout/schedule" element={<ProtectedRoute><CustomerOrderSchedulePage /></ProtectedRoute>} />
-                <Route path="/merchant/open-close/:merchantId" element={<ProtectedRoute><MerchantOpenClosePage /></ProtectedRoute>} />
-                <Route path="/admin/retention-dashboard" element={<ProtectedRoute><AdminRetentionDashboardPage /></ProtectedRoute>} />
-                <Route path="/me/promo-wallet" element={<ProtectedRoute><CustomerPromoWalletPage /></ProtectedRoute>} />
-                <Route path="/driver/break-mode" element={<ProtectedRoute><DriverBreakModePage /></ProtectedRoute>} />
-                <Route path="/admin/merchant-performance" element={<ProtectedRoute><AdminMerchantPerformancePage /></ProtectedRoute>} />
-                <Route path="/me/family-profiles" element={<ProtectedRoute><CustomerFamilyProfilesPage /></ProtectedRoute>} />
-                <Route path="/merchant/prep-time/:merchantId" element={<ProtectedRoute><MerchantPrepTimePage /></ProtectedRoute>} />
-                <Route path="/admin/refund-control" element={<ProtectedRoute><AdminRefundControlPage /></ProtectedRoute>} />
-                <Route path="/checkout/tip" element={<ProtectedRoute><CustomerTippingPage /></ProtectedRoute>} />
-                <Route path="/driver/acceptance-rate" element={<ProtectedRoute><DriverAcceptanceRatePage /></ProtectedRoute>} />
-                <Route path="/admin/driver-performance" element={<ProtectedRoute><AdminDriverPerformancePage /></ProtectedRoute>} />
-                <Route path="/me/subscriptions" element={<ProtectedRoute><CustomerSubscriptionsPage /></ProtectedRoute>} />
-                <Route path="/merchant/promo-scheduler/:merchantId" element={<ProtectedRoute><MerchantPromoSchedulerPage /></ProtectedRoute>} />
-                <Route path="/admin/dispute-center" element={<ProtectedRoute><AdminDisputeCenterPage /></ProtectedRoute>} />
-                <Route path="/me/favorite-orders" element={<ProtectedRoute><CustomerFavoriteOrdersPage /></ProtectedRoute>} />
-                <Route path="/driver/shift-scheduler" element={<ProtectedRoute><DriverShiftSchedulerPage /></ProtectedRoute>} />
-                <Route path="/admin/global-finance" element={<ProtectedRoute><AdminGlobalFinancePage /></ProtectedRoute>} />
                 {/* FS-FX */}
                 <Route path="/admin/core-engine" element={<ProtectedRoute><AdminCoreEnginePage /></ProtectedRoute>} />
                 {/* FY-GD */}
                 <Route path="/checkout/group-order" element={<ProtectedRoute><CustomerGroupOrderPage /></ProtectedRoute>} />
-                <Route path="/merchant/auto-accept-v2/:merchantId" element={<ProtectedRoute><MerchantAutoAcceptPage /></ProtectedRoute>} />
-                <Route path="/admin/cashflow-monitor" element={<ProtectedRoute><AdminCashflowMonitorPage /></ProtectedRoute>} />
-                <Route path="/me/address-book-v2" element={<ProtectedRoute><CustomerAddressBookPageV2 /></ProtectedRoute>} />
-                <Route path="/driver/navigation-mode" element={<ProtectedRoute><DriverNavigationModePage /></ProtectedRoute>} />
-                <Route path="/admin/city-ops" element={<ProtectedRoute><AdminCityOpsPage /></ProtectedRoute>} />
                 {/* GE-GJ */}
-                <Route path="/me/meal-planner" element={<ProtectedRoute><CustomerMealPlannerPage /></ProtectedRoute>} />
                 <Route path="/merchant/delivery-zones/:merchantId" element={<ProtectedRoute><MerchantDeliveryZonesPage /></ProtectedRoute>} />
-                <Route path="/admin/operator-notes" element={<ProtectedRoute><AdminOperatorNotesPage /></ProtectedRoute>} />
-                <Route path="/me/receipt-vault" element={<ProtectedRoute><CustomerReceiptVaultPage /></ProtectedRoute>} />
-                <Route path="/driver/vehicle-profile" element={<ProtectedRoute><DriverVehicleProfilePage /></ProtectedRoute>} />
-                <Route path="/admin/network-status" element={<ProtectedRoute><AdminNetworkStatusPage /></ProtectedRoute>} />
                 {/* GK-GP */}
-                <Route path="/me/shared-wallet" element={<ProtectedRoute><CustomerSharedWalletPage /></ProtectedRoute>} />
-                <Route path="/admin/sla-monitor" element={<ProtectedRoute><AdminSlaMonitorPage /></ProtectedRoute>} />
                 <Route path="/checkout/gift-order" element={<ProtectedRoute><CustomerOrderGiftsPage /></ProtectedRoute>} />
-                <Route path="/admin/incident-center" element={<ProtectedRoute><AdminIncidentCenterPage /></ProtectedRoute>} />
                 {/* GQ-GV */}
                 <Route path="/checkout/split-bill" element={<ProtectedRoute><CustomerSplitBillPage /></ProtectedRoute>} />
                 <Route path="/merchant/kitchen-display/:merchantId" element={<ProtectedRoute><MerchantKitchenDisplayPage /></ProtectedRoute>} />
                 <Route path="/admin/order-audit" element={<ProtectedRoute><AdminOrderAuditPage /></ProtectedRoute>} />
-                <Route path="/checkout/delivery-instructions" element={<ProtectedRoute><CustomerDeliveryInstructionsPage /></ProtectedRoute>} />
-                <Route path="/driver/daily-target" element={<ProtectedRoute><DriverDailyTargetPage /></ProtectedRoute>} />
-                <Route path="/admin/market-expansion" element={<ProtectedRoute><AdminMarketExpansionPage /></ProtectedRoute>} />
                 {/* GW-HB */}
                 <Route path="/me/saved-carts" element={<ProtectedRoute><CustomerSavedCartsPage2 /></ProtectedRoute>} />
-                <Route path="/merchant/out-of-stock/:merchantId" element={<ProtectedRoute><MerchantOutOfStockPage /></ProtectedRoute>} />
-                <Route path="/admin/fraud-watch" element={<ProtectedRoute><AdminFraudWatchPage /></ProtectedRoute>} />
-                <Route path="/checkout/contactless" element={<ProtectedRoute><CustomerContactlessPage /></ProtectedRoute>} />
-                <Route path="/driver/hot-zones" element={<ProtectedRoute><DriverHotZonesPage /></ProtectedRoute>} />
-                <Route path="/admin/demand-forecast" element={<ProtectedRoute><AdminDemandForecastPage /></ProtectedRoute>} />
                 {/* HC-HH */}
                 <Route path="/me/auto-repeat" element={<ProtectedRoute><CustomerAutoRepeatPage /></ProtectedRoute>} />
-                <Route path="/merchant/rush-mode/:merchantId" element={<ProtectedRoute><MerchantRushModePage /></ProtectedRoute>} />
                 <Route path="/admin/refund-queue" element={<ProtectedRoute><AdminRefundQueuePage /></ProtectedRoute>} />
                 <Route path="/checkout/party-order" element={<ProtectedRoute><CustomerPartyOrderPage /></ProtectedRoute>} />
-                <Route path="/driver/earnings-breakdown" element={<ProtectedRoute><DriverEarningsBreakdownPage /></ProtectedRoute>} />
                 <Route path="/admin/platform-health" element={<ProtectedRoute><AdminPlatformHealthPage /></ProtectedRoute>} />
                 {/* HI-HN */}
-                <Route path="/checkout/office-lunch" element={<ProtectedRoute><CustomerOfficeLunchPage /></ProtectedRoute>} />
-                <Route path="/merchant/delivery-fees/:merchantId" element={<ProtectedRoute><MerchantDeliveryFeesPage /></ProtectedRoute>} />
-                <Route path="/admin/driver-compliance" element={<ProtectedRoute><AdminDriverCompliancePage /></ProtectedRoute>} />
                 <Route path="/me/redeem-rewards" element={<ProtectedRoute><CustomerRewardRedemptionPage /></ProtectedRoute>} />
-                <Route path="/driver/fuel-costs" element={<ProtectedRoute><DriverFuelCostPage /></ProtectedRoute>} />
-                <Route path="/admin/executive-overview" element={<ProtectedRoute><AdminExecutiveOverviewPage /></ProtectedRoute>} />
                 {/* HO-HT */}
                 <Route path="/admin/system-live" element={<ProtectedRoute><AdminSystemLivePanelPage /></ProtectedRoute>} />
                 {/* HU-HZ */}
                 <Route path="/admin/restaurant-autofill" element={<ProtectedRoute><AdminRestaurantFillPage /></ProtectedRoute>} />
                 {/* IA-IF */}
                 <Route path="/payments/stripe-handler" element={<ProtectedRoute><StripeCheckoutHandlerPage /></ProtectedRoute>} />
-                <Route path="/admin/payment-go-live" element={<ProtectedRoute><AdminPaymentGoLivePage /></ProtectedRoute>} />
-                <Route path="/admin/go-live-readiness" element={<ProtectedRoute><AdminGoLiveReadinessPage /></ProtectedRoute>} />
                 {/* IG-IL */}
-                <Route path="/admin/ui-finalizer" element={<ProtectedRoute><AdminUiFinalizerPage /></ProtectedRoute>} />
                 {/* IM-IR */}
                 <Route path="/admin/master-control" element={<ProtectedRoute><AdminMasterControlPage /></ProtectedRoute>} />
                 {/* IS-IX */}
-                <Route path="/admin/production-checklist" element={<ProtectedRoute><AdminProductionChecklistPage /></ProtectedRoute>} />
-                <Route path="/admin/final-wrap" element={<ProtectedRoute><AdminFinalWrapPage /></ProtectedRoute>} />
                 {/* JA-JF */}
                 <Route path="/admin/qa-command" element={<ProtectedRoute><AdminQaCommandPage /></ProtectedRoute>} />
                 {/* KA-KF */}
                 <Route path="/live-tracking" element={<ProtectedRoute><LiveTrackingPageNew /></ProtectedRoute>} />
                 {/* LG-LR */}
                 <Route path="/driver/fuel-costs-v2" element={<ProtectedRoute><DriverFuelCostsPage /></ProtectedRoute>} />
-                <Route path="/driver/compliance" element={<ProtectedRoute><DriverCompliancePage /></ProtectedRoute>} />
                 <Route path="/driver/breaks" element={<ProtectedRoute><DriverBreaksPage /></ProtectedRoute>} />
-                <Route path="/driver/shift-planner" element={<ProtectedRoute><DriverShiftPlannerPage /></ProtectedRoute>} />
-                <Route path="/admin/driver-compliance-ops" element={<ProtectedRoute><AdminDriverComplianceOpsPage /></ProtectedRoute>} />
-                <Route path="/admin/marketplace-experiments" element={<ProtectedRoute><AdminMarketplaceExperimentsPage /></ProtectedRoute>} />
-                <Route path="/checkout/scheduled-order" element={<ProtectedRoute><CustomerScheduledOrderPage /></ProtectedRoute>} />
-                <Route path="/merchant/staff-roles/:merchantId" element={<ProtectedRoute><MerchantStaffRolesPage /></ProtectedRoute>} />
-                <Route path="/merchant/permissions/:merchantId" element={<ProtectedRoute><MerchantPermissionsMatrixPage /></ProtectedRoute>} />
                 <Route path="/merchant/business-hours/:merchantId" element={<ProtectedRoute><MerchantBusinessHoursPage /></ProtectedRoute>} />
                 {/* MA-MW */}
-                <Route path="/admin/region-performance" element={<ProtectedRoute><AdminRegionPerformancePage /></ProtectedRoute>} />
-                <Route path="/admin/courier-heatmap" element={<ProtectedRoute><AdminCourierHeatmapPage /></ProtectedRoute>} />
-                <Route path="/admin/customer-retention" element={<ProtectedRoute><AdminCustomerRetentionPage /></ProtectedRoute>} />
-                <Route path="/checkout/party-split-links" element={<ProtectedRoute><CustomerPartySplitLinksPage /></ProtectedRoute>} />
                 <Route path="/checkout/share-cart" element={<ProtectedRoute><CustomerShareCartPage /></ProtectedRoute>} />
-                <Route path="/merchant/rush-pricing/:merchantId" element={<ProtectedRoute><MerchantRushPricingPage /></ProtectedRoute>} />
-                <Route path="/admin/growth-campaigns" element={<ProtectedRoute><AdminGrowthCampaignsPage /></ProtectedRoute>} />
-                <Route path="/admin/promo-performance" element={<ProtectedRoute><AdminPromoPerformancePage /></ProtectedRoute>} />
-                <Route path="/me/payment-methods" element={<ProtectedRoute><CustomerPaymentMethodsHubPage /></ProtectedRoute>} />
-                <Route path="/me/order-preferences" element={<ProtectedRoute><CustomerOrderPreferencesPage /></ProtectedRoute>} />
-                <Route path="/merchant/packaging/:merchantId" element={<ProtectedRoute><MerchantPackagingSettingsPage /></ProtectedRoute>} />
-                <Route path="/merchant/order-throttle/:merchantId" element={<ProtectedRoute><MerchantOrderThrottlePage /></ProtectedRoute>} />
-                <Route path="/admin/acquisition-funnel" element={<ProtectedRoute><AdminAcquisitionFunnelPage /></ProtectedRoute>} />
-                <Route path="/admin/driver-incentives" element={<ProtectedRoute><AdminDriverIncentivesPage /></ProtectedRoute>} />
-                <Route path="/me/family-profile" element={<ProtectedRoute><CustomerFamilyProfilePage /></ProtectedRoute>} />
-                <Route path="/me/favorite-items" element={<ProtectedRoute><CustomerFavoriteItemsPage /></ProtectedRoute>} />
-                <Route path="/merchant/cancellation-rules/:merchantId" element={<ProtectedRoute><MerchantCancellationRulesPage /></ProtectedRoute>} />
-                <Route path="/merchant/chat-settings/:merchantId" element={<ProtectedRoute><MerchantCustomerChatSettingsPage /></ProtectedRoute>} />
                 {/* MX-OG */}
-                <Route path="/admin/city-launch-checklist" element={<ProtectedRoute><AdminCityLaunchChecklistPage /></ProtectedRoute>} />
-                <Route path="/admin/restaurant-autofill-v2" element={<ProtectedRoute><AdminRestaurantAutofillPage2 /></ProtectedRoute>} />
-                <Route path="/admin/system-live-status" element={<ProtectedRoute><AdminSystemLiveStatusPage /></ProtectedRoute>} />
-                <Route path="/me/quick-reorder" element={<ProtectedRoute><CustomerQuickReorderHubPage /></ProtectedRoute>} />
-                <Route path="/merchant/live-ops/:merchantId" element={<ProtectedRoute><MerchantLiveOpsPanelPage /></ProtectedRoute>} />
                 <Route path="/admin/central-control" element={<ProtectedRoute><CentralControlPanelPage /></ProtectedRoute>} />
-                <Route path="/admin/live-incident-feed" element={<ProtectedRoute><AdminLiveIncidentFeedPage /></ProtectedRoute>} />
-                <Route path="/admin/risk-scoreboard" element={<ProtectedRoute><AdminRiskScoreboardPage /></ProtectedRoute>} />
-                <Route path="/admin/store-readiness-matrix" element={<ProtectedRoute><AdminStoreReadinessMatrixPage /></ProtectedRoute>} />
-                <Route path="/checkout/bulk-party-builder" element={<ProtectedRoute><CustomerBulkPartyBuilderPage /></ProtectedRoute>} />
-                <Route path="/checkout/dinner-planner" element={<ProtectedRoute><CustomerDinnerPlannerPage /></ProtectedRoute>} />
-                <Route path="/merchant/auto-accept-rules/:merchantId" element={<ProtectedRoute><MerchantAutoAcceptRulesPage /></ProtectedRoute>} />
-                <Route path="/merchant/driver-handoff/:merchantId" element={<ProtectedRoute><MerchantDriverHandoffPage /></ProtectedRoute>} />
                 {/* OH-PI */}
-                <Route path="/admin/dispatch-tuning" element={<ProtectedRoute><AdminDispatchTuningPage /></ProtectedRoute>} />
-                <Route path="/admin/payment-watch" element={<ProtectedRoute><AdminPaymentWatchPage /></ProtectedRoute>} />
-                <Route path="/me/weekly-meal-plan" element={<ProtectedRoute><CustomerWeeklyMealPlanPage /></ProtectedRoute>} />
-                <Route path="/me/kids-meal-profile" element={<ProtectedRoute><CustomerKidsMealProfilePage /></ProtectedRoute>} />
                 <Route path="/merchant/menu-categories/:merchantId" element={<ProtectedRoute><MerchantMenuCategoryManagerPage /></ProtectedRoute>} />
-                <Route path="/merchant/item-badges/:merchantId" element={<ProtectedRoute><MerchantItemBadgesPage /></ProtectedRoute>} />
-                <Route path="/merchant/instructions-policy/:merchantId" element={<ProtectedRoute><MerchantInstructionsPolicyPage /></ProtectedRoute>} />
-                <Route path="/admin/menu-quality" element={<ProtectedRoute><AdminMenuQualityPage /></ProtectedRoute>} />
                 <Route path="/admin/menu-quality-control" element={<ProtectedRoute><AdminMenuQualityControlPage /></ProtectedRoute>} />
-                <Route path="/admin/delivery-latency" element={<ProtectedRoute><AdminDeliveryLatencyPage /></ProtectedRoute>} />
                 <Route path="/admin/ux-live-test" element={<ProtectedRoute><AdminUxLiveTestPage /></ProtectedRoute>} />
                 <Route path="/hyper-radar" element={<HyperRadarPage />} />
-                <Route path="/me/lunch-subscription" element={<ProtectedRoute><CustomerLunchSubscriptionPage /></ProtectedRoute>} />
-                <Route path="/checkout/family-night" element={<ProtectedRoute><CustomerFamilyNightPage /></ProtectedRoute>} />
-                <Route path="/merchant/menu-cloner/:merchantId" element={<ProtectedRoute><MerchantMenuClonerPage /></ProtectedRoute>} />
-                <Route path="/merchant/featured-items/:merchantId" element={<ProtectedRoute><MerchantFeaturedItemsPage /></ProtectedRoute>} />
-                <Route path="/merchant/holiday-schedule/:merchantId" element={<ProtectedRoute><MerchantHolidaySchedulePage /></ProtectedRoute>} />
-                <Route path="/admin/driver-payouts" element={<ProtectedRoute><AdminDriverPayoutsPage /></ProtectedRoute>} />
-                <Route path="/admin/merchant-payouts" element={<ProtectedRoute><AdminMerchantPayoutsPage /></ProtectedRoute>} />
-                <Route path="/admin/wallet-recon" element={<ProtectedRoute><AdminWalletReconPage /></ProtectedRoute>} />
-                <Route path="/checkout/guest-profile" element={<ProtectedRoute><CustomerGuestCheckoutProfilePage /></ProtectedRoute>} />
-                <Route path="/checkout/dinner-budget" element={<ProtectedRoute><CustomerDinnerBudgetPage /></ProtectedRoute>} />
-                <Route path="/merchant/store-announcement/:merchantId" element={<ProtectedRoute><MerchantStoreAnnouncementPage /></ProtectedRoute>} />
-                <Route path="/merchant/temporary-closure/:merchantId" element={<ProtectedRoute><MerchantTemporaryClosurePage /></ProtectedRoute>} />
-                <Route path="/merchant/queue-limit/:merchantId" element={<ProtectedRoute><MerchantQueueLimitPage /></ProtectedRoute>} />
                 {/* PJ-PO */}
-                <Route path="/admin/notification-campaigns" element={<ProtectedRoute><AdminNotificationCampaignsPage /></ProtectedRoute>} />
-                <Route path="/admin/customer-segments" element={<ProtectedRoute><AdminCustomerSegmentsPage /></ProtectedRoute>} />
-                <Route path="/admin/merchant-segments" element={<ProtectedRoute><AdminMerchantSegmentsPage /></ProtectedRoute>} />
 
               {/* Guest / Public */}
               <Route path="/guest/checkout/:cartId" element={<GuestCheckoutPage />} />
