@@ -262,6 +262,9 @@ const MerchantOnboardingPage = safeLazy(() => import("./pages/MerchantOnboarding
 const MerchantOnboardingAdminPage = safeLazy(() => import("./pages/MerchantOnboardingAdminPage"), "MerchantOnboardingAdminPage");
 const ExecutiveDashboard = safeLazy(() => import("./pages/ExecutiveDashboard"), "ExecutiveDashboard");
 // GhostCallPage — removed (orphan, bypassed CallProvider)
+const ConciergeOperations = safeLazy(() => import("./pages/ConciergeOperations"), "ConciergeOperations");
+const CustomerProfilePage = safeLazy(() => import("./pages/CustomerProfilePage"), "CustomerProfilePage");
+const TravelHotels = safeLazy(() => import("./pages/travel/TravelHotels"), "TravelHotels");
 const WorkspaceBootstrapPage = safeLazy(() => import("./pages/WorkspaceBootstrapPage"), "WorkspaceBootstrapPage");
 const MenuAdminPage = safeLazy(() => import("./pages/MenuAdminPage"), "MenuAdminPage");
 const SupportInboxPage = safeLazy(() => import("./pages/SupportInboxPage"), "SupportInboxPage");
