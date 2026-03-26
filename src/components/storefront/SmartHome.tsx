@@ -4,7 +4,7 @@
  * Uses canonical discovery pipeline + Living Commerce Engine for all sections.
  * SINGLE SOURCE OF TRUTH: smart-home-engine.ts (10 primary categories).
  */
-import { memo, useMemo, useEffect } from "react";
+import { memo, useMemo, useEffect, useState, useCallback } from "react";
 import { GeoStatusIndicator } from "@/components/geo/GeoStatusIndicator";
 import { BoostSlotRenderer } from "@/components/boost/BoostSlotRenderer";
 import { Link, useNavigate } from "react-router-dom";
