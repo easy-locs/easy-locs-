@@ -18,6 +18,7 @@ import { TaxiPreviewScreen } from "@/components/mobility/TaxiPreviewScreen";
 import { TaxiRequestingScreen } from "@/components/mobility/TaxiRequestingScreen";
 import { TaxiTrackingScreen } from "@/components/mobility/TaxiTrackingScreen";
 import { TaxiCompletedScreen } from "@/components/mobility/TaxiCompletedScreen";
+import { TaxiStepIndicator } from "@/components/mobility/TaxiStepIndicator";
 import { AnimatePresence } from "framer-motion";
 
 export default function MobilityTaxiPage() {
@@ -67,12 +68,15 @@ export default function MobilityTaxiPage() {
       <div className="px-4 py-4 app-mobile-content">
         {/* If in booking flow (preview/requesting/tracking/completed), show only the flow */}
         {inFlow ? (
-          <AnimatePresence mode="wait">
-            {step === "preview" && <TaxiPreviewScreen />}
-            {step === "requesting" && <TaxiRequestingScreen />}
-            {step === "tracking" && <TaxiTrackingScreen />}
-            {step === "completed" && <TaxiCompletedScreen />}
-          </AnimatePresence>
+          <div className="space-y-3">
+            <TaxiStepIndicator step={step} />
+            <AnimatePresence mode="wait">
+              {step === "preview" && <TaxiPreviewScreen />}
+              {step === "requesting" && <TaxiRequestingScreen />}
+              {step === "tracking" && <TaxiTrackingScreen />}
+              {step === "completed" && <TaxiCompletedScreen />}
+            </AnimatePresence>
+          </div>
         ) : (
           <>
             {activeJobs.length > 0 && (
