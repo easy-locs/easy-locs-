@@ -108,7 +108,7 @@ export default function WalletTransferPage() {
   };
 
   return (
-    <div className="min-h-[100dvh] bg-background pb-24">
+    <div className="app-mobile-page app-mobile-content bg-background">
       <div className="flex items-center gap-3 px-4 pt-6 pb-4">
         <button onClick={() => navigate("/wallet/hub")} className="w-9 h-9 rounded-xl bg-muted flex items-center justify-center active:scale-[0.95] transition-transform">
           <ArrowLeft className="w-4 h-4 text-foreground" />
