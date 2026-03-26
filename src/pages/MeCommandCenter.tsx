@@ -94,7 +94,7 @@ export default function MeCommandCenter() {
   }[businessStatus];
 
   return (
-    <div className="max-w-md mx-auto px-4 py-4 pb-[calc(96px+env(safe-area-inset-bottom,0px))] space-y-3">
+    <div className="app-mobile-page app-mobile-content max-w-md mx-auto px-4 py-4 space-y-3">
       {/* ── A. Smart Header ── */}
       <div className="rounded-2xl border border-border/15 bg-card p-4">
         <div className="flex items-center gap-3">
