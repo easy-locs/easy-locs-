@@ -68,10 +68,9 @@
   overflow: hidden;
 }
 
-/* 4. Card safety — enforce content boundaries for cards
-   EXCLUDE: relative containers, inputs, buttons, labels, scrollable wrappers */
-[class*="rounded-2xl"]:not(.relative):not(input):not(button):not(label):not([role="tablist"]):not([data-radix-collection-item]):not(.overflow-x-auto):not(.overflow-visible),
-[class*="rounded-xl"]:not(.relative):not(input):not(button):not(label):not([role="tablist"]):not([data-radix-collection-item]):not(.overflow-x-auto):not(.overflow-visible) {
+/* 4. Card safety — enforce content boundaries only on explicit card containers */
+.card-clip,
+[data-card-clip] {
   overflow: hidden;
 }
 
