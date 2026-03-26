@@ -73,33 +73,54 @@ export const walletRepo = {
   },
 
   async createTransaction(tx: WalletTransaction): Promise<WalletTransaction> {
-    const { data, error } = await db.from("unified_wallet_transactions").insert(tx).select().single();
+    // Get current user for sender_id
+    const { data: authData } = await supabase.auth.getUser();
+    const userId = authData?.user?.id;
+
+    const { data, error } = await db.from("unified_wallet_transactions").insert({
+      sender_id: userId || null,
+      amount: tx.amount,
+      currency: tx.currency || "AED",
+      context_type: tx.type,
+      title: tx.type,
+      subtitle: tx.reference || null,
+      status: tx.status || "pending",
+      metadata: { reference: tx.reference, source: "wallet_store" },
+    }).select().single();
     if (error) throw error;
-    return data as WalletTransaction;
+    return {
+      id: data.id,
+      type: data.context_type || tx.type,
+      status: data.status || "pending",
+      amount: data.amount,
+      currency: data.currency || "AED",
+      reference: data.subtitle || tx.reference,
+      createdAt: data.created_at,
+    } as WalletTransaction;
   },
 };
 
 export const listingRepo = {
   async listPublished(): Promise<PropertyListingV2[]> {
-    const { data, error } = await db.from("property_listings").select("*").eq("status", "published").order("createdAt", { ascending: false });
+    const { data, error } = await db.from("property_listings_v2").select("*").eq("status", "published").order("created_at", { ascending: false });
     if (error) throw error;
     return (data ?? []) as PropertyListingV2[];
   },
 
   async getById(id: string): Promise<PropertyListingV2 | null> {
-    const { data, error } = await db.from("property_listings").select("*").eq("id", id).maybeSingle();
+    const { data, error } = await db.from("property_listings_v2").select("*").eq("id", id).maybeSingle();
     if (error) throw error;
     return data as PropertyListingV2 | null;
   },
 
   async create(listing: PropertyListingV2): Promise<PropertyListingV2> {
-    const { data, error } = await db.from("property_listings").insert(listing).select().single();
+    const { data, error } = await db.from("property_listings_v2").insert(listing).select().single();
     if (error) throw error;
     return data as PropertyListingV2;
   },
 
   async update(id: string, patch: Partial<PropertyListingV2>): Promise<PropertyListingV2> {
-    const { data, error } = await db.from("property_listings").update(patch).eq("id", id).select().single();
+    const { data, error } = await db.from("property_listings_v2").update(patch).eq("id", id).select().single();
     if (error) throw error;
     return data as PropertyListingV2;
   },
@@ -107,19 +128,19 @@ export const listingRepo = {
 
 export const bookingRepo = {
   async create(booking: BookingRecordV2): Promise<BookingRecordV2> {
-    const { data, error } = await db.from("bookings").insert(booking).select().single();
+    const { data, error } = await db.from("bookings_v2").insert(booking).select().single();
     if (error) throw error;
     return data as BookingRecordV2;
   },
 
   async update(id: string, patch: Partial<BookingRecordV2>): Promise<BookingRecordV2> {
-    const { data, error } = await db.from("bookings").update(patch).eq("id", id).select().single();
+    const { data, error } = await db.from("bookings_v2").update(patch).eq("id", id).select().single();
     if (error) throw error;
     return data as BookingRecordV2;
   },
 
   async listByListing(listingId: string): Promise<BookingRecordV2[]> {
-    const { data, error } = await db.from("bookings").select("*").eq("listingId", listingId);
+    const { data, error } = await db.from("bookings_v2").select("*").eq("listing_id", listingId);
     if (error) throw error;
     return (data ?? []) as BookingRecordV2[];
   },
@@ -131,6 +152,11 @@ export const bookingRepo = {
  */
 export const chatRepo = {
   async createConversation(conversation: ConversationRecord): Promise<ConversationRecord> {
+    // Get current user id for created_by_orbit_id (required by RLS)
+    const { data: authData } = await supabase.auth.getUser();
+    const userId = authData?.user?.id;
+    if (!userId) throw new Error("Not authenticated");
+
     const { data, error } = await db
       .from("conversations_v2")
       .insert({
@@ -144,6 +170,7 @@ export const chatRepo = {
         last_message_at: conversation.lastMessageAt || null,
         created_at: conversation.createdAt,
         updated_at: conversation.updatedAt,
+        created_by_orbit_id: userId,
       })
       .select()
       .single();
