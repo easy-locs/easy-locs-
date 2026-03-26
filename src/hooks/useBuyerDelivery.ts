@@ -1,6 +1,6 @@
 /**
- * useBuyerDelivery — Buyer-side delivery tracking, confirmation, and rating.
- * PASS70-D: Buyer Tracking UI
+ * useBuyerDelivery — Buyer-side delivery tracking.
+ * CANONICAL: reads from mobility_jobs only.
  */
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -9,24 +9,30 @@ import { useAuth } from "@/contexts/AuthContext";
 export interface BuyerDeliveryJob {
   id: string;
   status: string;
-  priority: string;
-  pickup_address: string;
-  dropoff_address: string;
+  job_type: string;
+  service_level: string;
+  pickup_address: string | null;
+  dropoff_address: string | null;
   dropoff_lat: number | null;
   dropoff_lng: number | null;
-  package_description: string | null;
-  delivery_fee: number | null;
-  currency: string | null;
-  confirmation_code: string | null;
   notes: string | null;
-  driver_id: string | null;
+  current_price: number | null;
+  quoted_price: number | null;
+  currency: string | null;
+  rider_user_id: string | null;
   created_at: string | null;
-  assigned_at: string | null;
   accepted_at: string | null;
   picked_up_at: string | null;
-  delivered_at: string | null;
-  photo_proof_url: string | null;
+  completed_at: string | null;
   order_id: string | null;
+  // Legacy compat
+  delivery_fee: number | null;
+  driver_id: string | null;
+  delivered_at: string | null;
+  assigned_at: string | null;
+  package_description: string | null;
+  confirmation_code: string | null;
+  photo_proof_url: string | null;
 }
 
 export interface DriverInfo {
@@ -48,28 +54,40 @@ export type TrackingStep = {
 
 const STEP_MAP: { key: string; label: string; emoji: string; statusMatch: string[]; tsField: keyof BuyerDeliveryJob }[] = [
   { key: "created", label: "Commande confirmée", emoji: "📋", statusMatch: [], tsField: "created_at" },
-  { key: "assigned", label: "Chauffeur assigné", emoji: "👤", statusMatch: ["assigned"], tsField: "assigned_at" },
-  { key: "accepted", label: "Mission acceptée", emoji: "✅", statusMatch: ["accepted"], tsField: "accepted_at" },
-  { key: "picked_up", label: "Colis récupéré", emoji: "📦", statusMatch: ["in_progress"], tsField: "picked_up_at" },
-  { key: "delivered", label: "Livré", emoji: "🏁", statusMatch: ["completed"], tsField: "delivered_at" },
+  { key: "accepted", label: "Chauffeur assigné", emoji: "✅", statusMatch: ["accepted", "rider_arriving_pickup"], tsField: "accepted_at" },
+  { key: "picked_up", label: "Colis récupéré", emoji: "📦", statusMatch: ["picked_up", "in_progress", "rider_arriving_dropoff"], tsField: "picked_up_at" },
+  { key: "delivered", label: "Livré", emoji: "🏁", statusMatch: ["completed"], tsField: "completed_at" },
 ];
 
+function mapRow(row: any): BuyerDeliveryJob {
+  return {
+    ...row,
+    delivery_fee: row.current_price ?? row.quoted_price,
+    driver_id: row.rider_user_id,
+    delivered_at: row.completed_at,
+    assigned_at: row.accepted_at,
+    package_description: row.notes,
+    confirmation_code: null,
+    photo_proof_url: null,
+  };
+}
+
 export function buildTrackingSteps(job: BuyerDeliveryJob): TrackingStep[] {
-  const statusOrder = ["pending", "assigned", "accepted", "in_progress", "completed"];
+  const statusOrder = ["searching", "offered", "accepted", "rider_arriving_pickup", "rider_arrived_pickup", "picked_up", "in_progress", "rider_arriving_dropoff", "completed"];
   const currentIdx = statusOrder.indexOf(job.status);
 
   return STEP_MAP.map((step, i) => ({
     key: step.key,
     label: step.label,
     emoji: step.emoji,
-    completed: i <= currentIdx,
-    active: i === currentIdx,
+    completed: i <= Math.min(currentIdx, STEP_MAP.length - 1),
+    active: i === Math.min(currentIdx, STEP_MAP.length - 1),
     timestamp: job[step.tsField] as string | null,
   }));
 }
 
 export function getTrackingProgress(job: BuyerDeliveryJob): number {
-  const order = ["pending", "assigned", "accepted", "in_progress", "completed"];
+  const order = ["searching", "offered", "accepted", "rider_arriving_pickup", "picked_up", "in_progress", "completed"];
   const idx = order.indexOf(job.status);
   if (idx < 0) return 0;
   return Math.round((idx / (order.length - 1)) * 100);
@@ -84,20 +102,19 @@ export function useBuyerDelivery(jobId?: string) {
   const fetchJob = useCallback(async () => {
     if (!jobId) { setLoading(false); return; }
     const { data } = await supabase
-      .from("delivery_jobs")
+      .from("mobility_jobs")
       .select("*")
       .eq("id", jobId)
       .single();
     if (data) {
-      setJob(data as BuyerDeliveryJob);
-      // Fetch driver info if assigned
-      if (data.driver_id) {
-        const { data: ds } = await supabase
-          .from("driver_sessions")
-          .select("lat, lng, vehicle_type, avg_rating, total_completed")
-          .eq("user_id", data.driver_id)
+      setJob(mapRow(data));
+      if (data.rider_user_id) {
+        const { data: rp } = await supabase
+          .from("rider_presence")
+          .select("lat, lng, vehicle_type")
+          .eq("user_id", data.rider_user_id)
           .maybeSingle();
-        if (ds) setDriverInfo(ds as DriverInfo);
+        if (rp) setDriverInfo({ ...rp, avg_rating: null, total_completed: null } as DriverInfo);
       }
     }
     setLoading(false);
@@ -105,25 +122,23 @@ export function useBuyerDelivery(jobId?: string) {
 
   useEffect(() => { fetchJob(); }, [fetchJob]);
 
-  // Realtime
   useEffect(() => {
     if (!jobId) return;
     const channel = supabase
       .channel(`buyer-job-${jobId}`)
       .on("postgres_changes", {
-        event: "*", schema: "public", table: "delivery_jobs",
+        event: "*", schema: "public", table: "mobility_jobs",
         filter: `id=eq.${jobId}`,
       }, () => fetchJob())
       .subscribe();
     return () => { supabase.removeChannel(channel); };
   }, [jobId, fetchJob]);
 
-  // Submit rating
   const submitRating = useCallback(async (rating: number, comment?: string, categories?: string[]) => {
-    if (!job?.driver_id || !user?.id) throw new Error("Missing data");
+    if (!job?.rider_user_id || !user?.id) throw new Error("Missing data");
     const { error } = await supabase.from("delivery_ratings").insert({
       job_id: job.id,
-      driver_id: job.driver_id,
+      driver_id: job.rider_user_id,
       rated_by: user.id,
       rating,
       comment: comment || null,
@@ -143,7 +158,6 @@ export function useBuyerDelivery(jobId?: string) {
   };
 }
 
-/** Fetch all delivery jobs for a buyer (by order_id or recent) */
 export function useBuyerDeliveries() {
   const { user } = useAuth();
   const [jobs, setJobs] = useState<BuyerDeliveryJob[]>([]);
@@ -151,16 +165,15 @@ export function useBuyerDeliveries() {
 
   useEffect(() => {
     if (!user?.id) return;
-    // Buyer sees jobs where they placed the order (seller_id is the shop, not the buyer)
-    // For now, show all jobs in orgs they belong to — can be refined
     const fetch = async () => {
       const { data } = await supabase
-        .from("delivery_jobs")
+        .from("mobility_jobs")
         .select("*")
+        .eq("customer_user_id", user.id)
         .not("status", "eq", "cancelled")
         .order("created_at", { ascending: false })
         .limit(20);
-      if (data) setJobs(data as BuyerDeliveryJob[]);
+      if (data) setJobs(data.map(mapRow));
       setLoading(false);
     };
     fetch();
