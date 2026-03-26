@@ -528,6 +528,7 @@ export default memo(function UnifiedMap({
     });
   }, [weather.isRaining, mapReady]);
 
+  // Animate rain radar tiles with smooth frame transitions
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !mapReady) return;
@@ -539,6 +540,7 @@ export default memo(function UnifiedMap({
     if (layer) {
       map.setLayoutProperty(RAIN_LAYER, "visibility", visible ? "visible" : "none");
       map.setPaintProperty(RAIN_LAYER, "raster-opacity", visible ? (weather.isRaining ? 0.7 : 0.38) : 0);
+      map.setPaintProperty(RAIN_LAYER, "raster-fade-duration", 300);
     }
 
     if (source?.setTiles && rainRadar.activeTileUrl) {
