@@ -44,7 +44,7 @@ export function LocationSearchInput({
   const [open, setOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   // Search Brain — single source of search ordering truth
-  const { results, loading } = useSearchBrain(query);
+  const { results, loading } = useSearchBrain(query, { contextType });
   const currentLocation = useLocationStore((s) => s.currentLocation);
   const recentPlaces = useLocationStore((s) => s.recentPlaces);
   const savedPlaces = useLocationStore((s) => s.savedPlaces);
