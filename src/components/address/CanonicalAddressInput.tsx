@@ -107,14 +107,14 @@ export function CanonicalAddressInput({
               {currentLocation && (
                 <DropdownItem
                   icon={<MapPin className="h-4 w-4 text-primary" />}
-                  label="Current Location"
+                  label="Current location"
                   sub={currentLocation.address}
                   onClick={() => selectSaved(currentLocation)}
                 />
               )}
               {home?.address && (
                 <DropdownItem
-                  icon={<Home className="h-4 w-4 text-blue-500" />}
+                  icon={<Home className="h-4 w-4 text-primary" />}
                   label="Home"
                   sub={home.address}
                   onClick={() => selectSaved(home)}
@@ -122,7 +122,7 @@ export function CanonicalAddressInput({
               )}
               {work?.address && (
                 <DropdownItem
-                  icon={<Briefcase className="h-4 w-4 text-amber-500" />}
+                  icon={<Briefcase className="h-4 w-4 text-muted-foreground" />}
                   label="Work"
                   sub={work.address}
                   onClick={() => selectSaved(work)}
@@ -144,7 +144,7 @@ export function CanonicalAddressInput({
           {airportMatch && (
             <div className="px-2 pb-1">
               <DropdownItem
-                icon={<Plane className="h-4 w-4 text-purple-500" />}
+                icon={<Plane className="h-4 w-4 text-accent-foreground" />}
                 label={airportMatch.label}
                 sub={airportMatch.formatted_address}
                 onClick={() => selectPlace(airportMatch)}
