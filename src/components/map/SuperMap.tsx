@@ -19,6 +19,8 @@ import {
 import { useSuperMapStore } from "@/stores/superMapStore";
 import type { GeoEntity } from "@/lib/geo/geoEntityAdapter";
 import SuperMapModeBar from "@/components/map/SuperMapModeBar";
+import { CloudRain, CloudSun } from "lucide-react";
+import { useLiveWeatherStation } from "@/hooks/useLiveWeatherStation";
 
 interface SuperMapProps {
   className?: string;
@@ -69,6 +71,7 @@ export default memo(function SuperMap({
   const centerLat = useSuperMapStore((s) => s.centerLat);
   const centerLng = useSuperMapStore((s) => s.centerLng);
   const zoom = useSuperMapStore((s) => s.zoom);
+  const weather = useLiveWeatherStation({ lat: userLat ?? centerLat, lng: userLng ?? centerLng });
 
   const onSelectRef = useRef(onSelectEntity);
   onSelectRef.current = onSelectEntity;
@@ -291,9 +294,42 @@ export default memo(function SuperMap({
     mapRef.current.fitBounds(bounds, { padding: 60, maxZoom: 15, duration: 400 });
   }, [entities, ready]);
 
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !ready) return;
+
+    if (weather.isRaining) {
+      map.setFog({
+        color: "rgba(94, 134, 190, 0.22)",
+        "high-color": "rgba(18, 35, 58, 0.20)",
+        "horizon-blend": 0.18,
+        range: [0.8, 8],
+        "space-color": "rgba(10, 16, 28, 0.82)",
+        "star-intensity": 0.03,
+      });
+      return;
+    }
+
+    map.setFog({
+      color: "rgba(255, 255, 255, 0.02)",
+      "high-color": "rgba(255, 255, 255, 0.01)",
+      "horizon-blend": 0.08,
+      range: [1, 10],
+      "space-color": "rgba(10, 12, 20, 0.72)",
+      "star-intensity": 0.08,
+    });
+  }, [weather.isRaining, ready]);
+
   return (
     <div className={`relative w-full h-full ${className}`} style={{ minHeight: 300 }}>
       <div ref={containerRef} className="absolute inset-0 rounded-2xl overflow-hidden" />
+      <div className="pointer-events-none absolute left-3 right-3 top-3 z-20 flex items-start justify-between gap-3">
+        <div className="inline-flex min-w-0 items-center gap-2 rounded-full border border-border/40 bg-card/85 px-3 py-2 shadow-sm backdrop-blur-md">
+          {weather.isRaining ? <CloudRain className="h-4 w-4 shrink-0 text-primary" /> : <CloudSun className="h-4 w-4 shrink-0 text-primary" />}
+          <span className="truncate text-[11px] font-medium text-foreground">Auto weather · {weather.label}</span>
+        </div>
+      </div>
+      {weather.isRaining && <div className="pointer-events-none absolute inset-0 rounded-2xl bg-gradient-to-b from-primary/10 via-transparent to-background/10" />}
       {showModeBar && <SuperMapModeBar />}
     </div>
   );

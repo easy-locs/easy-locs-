@@ -8,7 +8,7 @@ import { memo, useMemo, useEffect, useState, useCallback } from "react";
 import { GeoStatusIndicator } from "@/components/geo/GeoStatusIndicator";
 import { BoostSlotRenderer } from "@/components/boost/BoostSlotRenderer";
 import { Link, useNavigate } from "react-router-dom";
-import { MapPin, Bell, Wallet, QrCode, Send, ChevronRight, Star, Navigation } from "lucide-react";
+import { MapPin, Wallet, QrCode, Send, ChevronRight, Star, Navigation } from "lucide-react";
 import UnifiedSearchBar from "@/components/search/UnifiedSearchBar";
 import { useLocationStore } from "@/stores/locationStore";
 // notification store used by NotificationBell component directly
@@ -22,6 +22,7 @@ import { staggerContainer, staggerItem, fadeSlideUp, TRANSITIONS } from "@/lib/m
 import { getTopBanners } from "@/lib/context-banner/context-banner-engine";
 import { AddressSelectorSheet } from "@/components/address/AddressSelectorSheet";
 import { MobilityLiveMap } from "@/components/mobility/MobilityLiveMap";
+import NotificationBell from "@/components/storefront/NotificationBell";
 
 import foodImg from "@/assets/categories/food.png";
 import groceryImg from "@/assets/categories/grocery.png";
@@ -63,9 +64,9 @@ const TopHeroBanner = memo(({ city, greeting, timezone, onLocationTap }: { city:
           <MapPin className="h-4 w-4 text-white/70 shrink-0" />
           <span className="text-white/80 text-xs font-medium truncate">{locationLabel}</span>
         </button>
-        <Link to="/dashboard/notifications" className="relative shrink-0 w-9 h-9 rounded-full bg-white/15 flex items-center justify-center active:scale-95 transition-transform">
-          <Bell className="h-4 w-4 text-white/80" />
-        </Link>
+        <div className="shrink-0 rounded-full bg-white/15">
+          <NotificationBell />
+        </div>
       </div>
 
       {/* Title + emoji */}
@@ -266,7 +267,7 @@ export default function SmartHome() {
   );
 
   return (
-    <div className="space-y-1 pb-4">
+    <div className="w-full min-w-0 space-y-1 pb-4">
       <TopHeroBanner city={city} greeting={greeting} timezone={timezone} onLocationTap={handleLocationTap} />
       <QuickActions />
 

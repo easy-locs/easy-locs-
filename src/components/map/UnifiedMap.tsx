@@ -8,6 +8,8 @@ import "mapbox-gl/dist/mapbox-gl.css";
 import type { GeoEntity } from "@/lib/geo/geoEntityAdapter";
 import { MAPBOX_ACCESS_TOKEN } from "@/lib/mapbox/config";
 import DiscoveryHeatmapLayer from "@/components/map/DiscoveryHeatmapLayer";
+import { CloudRain, CloudSun } from "lucide-react";
+import { useLiveWeatherStation } from "@/hooks/useLiveWeatherStation";
 
 /* ═══════════════════════════════════════════════════
    CONSTANTS
@@ -132,6 +134,7 @@ export default memo(function UnifiedMap({
 
   const mapCenter: [number, number] = center
     || (userLat && userLng ? [userLng, userLat] : [55.2708, 25.2048]);
+  const weather = useLiveWeatherStation({ lat: userLat, lng: userLng });
 
   // Derive heatmap points from entities if not provided
   const effectiveHeatmap = heatmapPoints ?? (showHeatmap ? entities.map(e => ({
@@ -471,6 +474,32 @@ export default memo(function UnifiedMap({
     });
   }, [radiusKm, userLat, userLng, mapReady]);
 
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !mapReady) return;
+
+    if (weather.isRaining) {
+      map.setFog({
+        color: "rgba(94, 134, 190, 0.22)",
+        "high-color": "rgba(18, 35, 58, 0.20)",
+        "horizon-blend": 0.18,
+        range: [0.8, 8],
+        "space-color": "rgba(10, 16, 28, 0.82)",
+        "star-intensity": 0.03,
+      });
+      return;
+    }
+
+    map.setFog({
+      color: "rgba(255, 255, 255, 0.02)",
+      "high-color": "rgba(255, 255, 255, 0.01)",
+      "horizon-blend": 0.08,
+      range: [1, 10],
+      "space-color": "rgba(10, 12, 20, 0.72)",
+      "star-intensity": 0.08,
+    });
+  }, [weather.isRaining, mapReady]);
+
   return (
     <>
       <div
@@ -478,6 +507,13 @@ export default memo(function UnifiedMap({
         className={`w-full h-full rounded-2xl overflow-hidden ${className}`}
         style={{ minHeight: 300 }}
       />
+      <div className="pointer-events-none absolute left-3 right-3 top-3 z-10 flex items-start justify-between gap-3">
+        <div className="inline-flex min-w-0 items-center gap-2 rounded-full border border-border/40 bg-card/85 px-3 py-2 shadow-sm backdrop-blur-md">
+          {weather.isRaining ? <CloudRain className="h-4 w-4 shrink-0 text-primary" /> : <CloudSun className="h-4 w-4 shrink-0 text-primary" />}
+          <span className="truncate text-[11px] font-medium text-foreground">Auto weather · {weather.label}</span>
+        </div>
+      </div>
+      {weather.isRaining && <div className="pointer-events-none absolute inset-0 rounded-2xl bg-gradient-to-b from-primary/10 via-transparent to-background/10" />}
       <DiscoveryHeatmapLayer
         map={mapReady ? mapRef.current : null}
         points={effectiveHeatmap}

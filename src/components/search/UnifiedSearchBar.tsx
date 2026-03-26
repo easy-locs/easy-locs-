@@ -129,12 +129,12 @@ export default function UnifiedSearchBar({
         <button
           onClick={() => setFullscreenOpen(true)}
           className={cn(
-            "w-full flex items-center gap-2 rounded-2xl bg-card border border-border/20 px-4 py-3 text-sm text-muted-foreground shadow-sm active:scale-[0.98] transition-transform",
+            "w-full min-w-0 flex items-center gap-2 rounded-2xl bg-card border border-border/20 px-4 py-3 text-sm text-muted-foreground shadow-sm active:scale-[0.98] transition-transform",
             className
           )}
         >
-          <Search className="h-4 w-4" />
-          <span>{defaultPlaceholder}</span>
+          <Search className="h-4 w-4 shrink-0" />
+          <span className="min-w-0 flex-1 truncate text-left">{defaultPlaceholder}</span>
         </button>
 
         <AnimatePresence>
@@ -163,7 +163,7 @@ export default function UnifiedSearchBar({
                     onChange={(e) => setQuery(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
                     placeholder={defaultPlaceholder}
-                    className="w-full pl-9 pr-8 h-11 rounded-2xl bg-card border border-border/30 text-sm outline-none focus:ring-2 focus:ring-primary/20"
+                    className="w-full min-w-0 pl-9 pr-8 h-12 rounded-2xl bg-card border border-border/30 text-sm text-foreground outline-none focus:ring-2 focus:ring-primary/20"
                   />
                   {query && (
                     <button
@@ -231,10 +231,10 @@ export default function UnifiedSearchBar({
           placeholder={defaultPlaceholder}
           autoFocus={autoFocus}
           className={cn(
-            "w-full bg-card border border-border/30 text-foreground outline-none transition-all",
+            "w-full min-w-0 bg-card border border-border/30 text-foreground outline-none transition-all",
             isHero
               ? "pl-11 pr-10 h-14 rounded-2xl text-base shadow-lg focus:ring-2 focus:ring-primary/30"
-              : "pl-9 pr-8 h-11 rounded-2xl text-sm shadow-sm focus:ring-2 focus:ring-primary/20"
+              : "pl-9 pr-8 h-12 rounded-2xl text-sm shadow-sm focus:ring-2 focus:ring-primary/20"
           )}
         />
         {query && (
