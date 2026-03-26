@@ -2,7 +2,7 @@
  * TrackRidePage — /track/:rideRequestId — Premium live ride tracking.
  *
  * Source of truth: mobility_jobs (realtime) + trip_live_state (GPS)
- * Components: RideStatusHero, RideTimeline, RideDriverCard, RideFareCard, RideCompletedCard
+ * Components: RideStatusHero, RideTimeline, RideDriverCard, RideFareCard, RideCompletedCard, RideLiveHealthBanner
  */
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
@@ -11,6 +11,7 @@ import DriverMap from "@/components/radar/DriverMap";
 import { supabase } from "@/integrations/supabase/client";
 import { useTripTrackingStore } from "@/stores/tripTrackingStore";
 import { useRideLiveETA } from "@/hooks/useRideLiveETA";
+import { useRideLiveRoute } from "@/hooks/useRideLiveRoute";
 import { Button } from "@/components/ui/button";
 import { tc } from "@/lib/i18n-canonical";
 import { isActiveRideStatus, isFinalStatus, canCancel } from "@/lib/mobility/status-machine";
@@ -19,9 +20,18 @@ import { RideTimeline } from "@/components/mobility/RideTimeline";
 import { RideDriverCard } from "@/components/mobility/RideDriverCard";
 import { RideFareCard } from "@/components/mobility/RideFareCard";
 import { RideCompletedCard } from "@/components/mobility/RideCompletedCard";
+import { RideLiveHealthBanner } from "@/components/mobility/RideLiveHealthBanner";
 import { motion, AnimatePresence } from "framer-motion";
 import { XCircle, Clock } from "lucide-react";
 import { toast } from "sonner";
+
+function getGPSHealth(livePosition: any): { signal: "strong" | "weak" | "lost"; lastSyncAt: string | null } {
+  if (!livePosition?.updatedAt) return { signal: "lost", lastSyncAt: null };
+  const ageSec = (Date.now() - new Date(livePosition.updatedAt).getTime()) / 1000;
+  if (ageSec < 15) return { signal: "strong", lastSyncAt: livePosition.updatedAt };
+  if (ageSec < 45) return { signal: "weak", lastSyncAt: livePosition.updatedAt };
+  return { signal: "lost", lastSyncAt: livePosition.updatedAt };
+}
 
 export default function TrackRidePage() {
   const { rideRequestId: jobId } = useParams();
@@ -35,6 +45,7 @@ export default function TrackRidePage() {
   const isActive = isActiveRideStatus(status);
   const isFinal = isFinalStatus(status);
   const eta = useRideLiveETA(jobId ?? null, isActive);
+  const liveRoute = useRideLiveRoute(jobId ?? null, isActive);
 
   // ── Fetch job ──
   useEffect(() => {
@@ -89,6 +100,8 @@ export default function TrackRidePage() {
     else toast.success(tc("ride.cancelled"));
   };
 
+  const gpsHealth = getGPSHealth(livePosition);
+
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-lg mx-auto">
@@ -104,8 +117,8 @@ export default function TrackRidePage() {
           <div className="absolute top-3 left-3 z-10">
             <BackCard />
           </div>
-          {/* Live ETA badge on map */}
-          {eta && !isFinal && (
+          {/* Live ETA + traffic badges on map */}
+          {!isFinal && (liveRoute?.etaMinutes != null || eta) && (
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -114,17 +127,33 @@ export default function TrackRidePage() {
               <div className="flex items-center gap-1.5">
                 <Clock className="w-3.5 h-3.5 text-primary" />
                 <span className="text-sm font-bold text-foreground">
-                  {eta.etaPickupMinutes ?? eta.etaDestinationMinutes ?? "—"} min
+                  {liveRoute?.etaMinutes ?? eta?.etaPickupMinutes ?? eta?.etaDestinationMinutes ?? "—"} min
                 </span>
               </div>
-              <p className="text-[10px] text-muted-foreground mt-0.5 capitalize">
-                {tc("ride.traffic")}: {tc(`ride.traffic_${eta.trafficLevel}`)}
-              </p>
+              {(liveRoute?.trafficLevel || eta?.trafficLevel) && (
+                <p className="text-[10px] text-muted-foreground mt-0.5 capitalize">
+                  {tc("ride.traffic")}: {tc(`ride.traffic_${liveRoute?.trafficLevel ?? eta?.trafficLevel}`)}
+                </p>
+              )}
+              {liveRoute?.distanceKm != null && (
+                <p className="text-[10px] text-muted-foreground">
+                  {liveRoute.distanceKm} km
+                </p>
+              )}
             </motion.div>
           )}
         </div>
 
         <div className="px-4 py-4 space-y-4">
+          {/* ── GPS Health Banner ── */}
+          {isActive && (
+            <RideLiveHealthBanner
+              gpsSignal={gpsHealth.signal}
+              lastSyncAt={gpsHealth.lastSyncAt}
+              realtimeConnected={true}
+            />
+          )}
+
           {/* ── Status Hero ── */}
           <RideStatusHero status={status} eta={eta} jobType={job?.job_type} />
 
@@ -170,11 +199,41 @@ export default function TrackRidePage() {
 
           {/* ── Completed state ── */}
           {status === "completed" && jobId && (
-            <RideCompletedCard
-              jobId={jobId}
-              fare={job?.current_price ?? job?.quoted_price}
-              currency={job?.currency}
-            />
+            <div className="space-y-3">
+              <RideCompletedCard
+                jobId={jobId}
+                fare={job?.current_price ?? job?.quoted_price}
+                currency={job?.currency}
+              />
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  className="h-11 rounded-xl bg-primary text-primary-foreground font-semibold text-sm"
+                  onClick={() => {
+                    window.dispatchEvent(
+                      new CustomEvent("wallet:open", {
+                        detail: { context_type: "mobility_ride", context_id: jobId },
+                      }),
+                    );
+                  }}
+                >
+                  {tc("ride.pay_now")}
+                </button>
+                <button
+                  type="button"
+                  className="h-11 rounded-xl border border-border/40 bg-card font-semibold text-sm"
+                  onClick={() => {
+                    window.dispatchEvent(
+                      new CustomEvent("ride:rating:open", {
+                        detail: { jobId },
+                      }),
+                    );
+                  }}
+                >
+                  {tc("ride.rate_driver")}
+                </button>
+              </div>
+            </div>
           )}
 
           {/* ── Cancel button ── */}
