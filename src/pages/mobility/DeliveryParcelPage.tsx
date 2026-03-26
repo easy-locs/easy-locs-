@@ -8,7 +8,7 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { CanonicalAddressInput } from "@/components/address/CanonicalAddressInput";
 import type { CanonicalPlace } from "@/lib/address/canonical-place";
-import { useArbitratedStation } from "@/hooks/useArbitratedStation";
+import { usePlatformBrain } from "@/hooks/usePlatformBrain";
 import { cn } from "@/lib/utils";
 
 const PARCEL_TYPES = [
@@ -22,7 +22,7 @@ const PARCEL_TYPES = [
 
 export default function DeliveryParcelPage() {
   const navigate = useNavigate();
-  const station = useArbitratedStation();
+  const { arbitration: station } = usePlatformBrain();
   const [pickup, setPickup] = useState<CanonicalPlace | null>(null);
   const [dropoff, setDropoff] = useState<CanonicalPlace | null>(null);
   const [parcelType, setParcelType] = useState<string | null>(null);

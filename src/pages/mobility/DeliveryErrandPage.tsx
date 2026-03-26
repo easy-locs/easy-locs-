@@ -8,7 +8,7 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { CanonicalAddressInput } from "@/components/address/CanonicalAddressInput";
 import type { CanonicalPlace } from "@/lib/address/canonical-place";
-import { useArbitratedStation } from "@/hooks/useArbitratedStation";
+import { usePlatformBrain } from "@/hooks/usePlatformBrain";
 
 const ERRAND_IDEAS = [
   "Pick up dry cleaning",
@@ -21,7 +21,7 @@ const ERRAND_IDEAS = [
 
 export default function DeliveryErrandPage() {
   const navigate = useNavigate();
-  const station = useArbitratedStation();
+  const { arbitration: station } = usePlatformBrain();
   const [pickup, setPickup] = useState<CanonicalPlace | null>(null);
   const [dropoff, setDropoff] = useState<CanonicalPlace | null>(null);
   const [taskDescription, setTaskDescription] = useState("");
