@@ -8,7 +8,8 @@ import { useGeoStore } from "./geo-store";
 import { useLocationStore } from "@/stores/locationStore";
 import { reverseGeocode } from "@/lib/location/geocode";
 import { fromGPS } from "@/lib/address/canonical-place";
-import { eventBus } from "@/lib/core/event-bus";
+import { setAddressFromPlace } from "@/lib/brain/geo-brain";
+import { useRadarPlaceStore } from "@/stores/radarPlaceStore";
 
 export function GeoBoot() {
   const lastSyncRef = useRef<string>("");
