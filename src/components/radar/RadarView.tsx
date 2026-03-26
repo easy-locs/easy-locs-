@@ -52,7 +52,7 @@ const SORT_OPTIONS: { label: string; value: RadarSortMode; icon: React.ReactNode
   { label: "Trending", value: "trending", icon: <TrendingUp className="w-3 h-3" /> },
 ];
 
-const RADIUS_PRESETS = [1, 3, 5, 10, 25];
+
 
 const RATING_FILTERS = [
   { label: "Any", value: 0 },

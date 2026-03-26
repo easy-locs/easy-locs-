@@ -30,14 +30,6 @@ const SORT_MODES: { key: SortMode; label: string }[] = [
   { key: "trending", label: "🔥 Trending" },
 ];
 
-const RADIUS_OPTIONS = [
-  { label: "1 km", value: 1 },
-  { label: "3 km", value: 3 },
-  { label: "5 km", value: 5 },
-  { label: "10 km", value: 10 },
-  { label: "25 km", value: 25 },
-  { label: "All", value: 0 },
-];
 
 export default function RadarPage() {
   useRadarGeo();
