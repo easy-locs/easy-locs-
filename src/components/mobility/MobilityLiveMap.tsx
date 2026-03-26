@@ -118,10 +118,10 @@ export function MobilityLiveMap({
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.2 }}
-      className={cn("relative rounded-2xl border border-border/30 overflow-hidden", className)}
-      style={{ height: 240 }}
+      className={cn("relative rounded-2xl border border-border/30 overflow-hidden bg-card", className)}
+      style={{ minHeight: 180 }}
     >
-      <div ref={containerRef} className="absolute inset-0" />
+      <div ref={containerRef} className="absolute inset-0 w-full h-full" />
 
       {/* Bottom overlay */}
       <div className="absolute bottom-0 inset-x-0 z-20 bg-gradient-to-t from-card via-card/80 to-transparent px-4 py-3">
