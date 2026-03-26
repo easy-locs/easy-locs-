@@ -867,6 +867,10 @@ const App = () => (
               <Route path="/mobility/delivery" element={<MobilityDeliveryPage />} />
               <Route path="/rider/live" element={<RiderLivePage />} />
               <Route path="/ride" element={<Navigate to="/mobility/taxi" replace />} />
+              <Route path="/send" element={<Navigate to="/mobility/delivery" replace />} />
+              <Route path="/send-package" element={<Navigate to="/mobility/delivery" replace />} />
+              <Route path="/ride/send-package" element={<Navigate to="/mobility/delivery" replace />} />
+              <Route path="/delivery" element={<Navigate to="/mobility/delivery" replace />} />
               <Route path="/track/:rideRequestId" element={<TrackRidePage />} />
               <Route path="/wallet/pay/:threadId" element={<PayRidePage />} />
               <Route path="/wallet/accounts" element={<Navigate to="/settings/wallet" replace />} />
