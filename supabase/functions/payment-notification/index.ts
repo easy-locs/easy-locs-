@@ -64,15 +64,14 @@ serve(async (req) => {
     body += ` · ${timeStr}`;
 
     // Insert notification
-    const { error: notifError } = await supabase.from("app_notifications").insert({
+    const { error: notifError } = await supabase.from("notifications").insert({
       id: crypto.randomUUID(),
       user_id,
       title,
       body,
       type: "wallet_" + payment_type,
-      orbitId: user_id,
       read: false,
-      metadata: {
+      metadata_json: {
         amount,
         currency,
         merchant_name: merchant_name || null,
