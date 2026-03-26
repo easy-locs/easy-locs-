@@ -76,7 +76,7 @@ export async function computeOpportunities(
   // 1. Check zone overlays for demand spikes
   const { data: overlays } = await supabase
     .from("geo_live_zone_overlays")
-    .select("zone_key, city, country, demand_level, demand_multiplier, surge_multiplier, rider_supply, traffic_level, weather_type, lat, lng")
+    .select("zone_key, demand_level, demand_multiplier, surge_multiplier, rider_supply, traffic_level, weather_type")
     .gte("demand_level", 50)
     .order("demand_level", { ascending: false })
     .limit(5);
@@ -84,15 +84,17 @@ export async function computeOpportunities(
   if (overlays) {
     for (const z of overlays) {
       const demandScore = Math.min(1, (z.demand_level ?? 0) / 100);
-      const proximityScore = userLat && z.lat
-        ? Math.max(0, 1 - haversineKm(userLat, userLng!, z.lat, z.lng!) / 10)
-        : 0.5;
+      const proximityScore = 0.5; // no lat/lng on overlay table, use default
       const surgeBonus = (z.surge_multiplier ?? 1) > 1.2 ? 0.2 : 0;
       const score = demandScore * 0.35 + proximityScore * 0.25 + timingScore * 0.2 + surgeBonus + 0.2;
 
+      // Extract city from zone_key (format: "country:city:district")
+      const parts = (z.zone_key ?? "").split(":");
+      const zoneCity = parts[1] || z.zone_key;
+
       opportunities.push({
         opportunity_type: "hot_demand_zone",
-        title: `High demand in ${z.city || z.zone_key}`,
+        title: `High demand in ${zoneCity}`,
         description: `Demand level ${z.demand_level}% — ${z.rider_supply ?? 0} riders available`,
         score: Math.min(1, score),
         proximity_score: proximityScore,
@@ -102,10 +104,7 @@ export async function computeOpportunities(
         route_module: "marketplace",
         route_path: "/radar",
         zone_key: z.zone_key ?? undefined,
-        city: z.city ?? undefined,
-        country: z.country ?? undefined,
-        lat: z.lat ?? undefined,
-        lng: z.lng ?? undefined,
+        city: zoneCity,
         icon_key: "flame",
         metadata_json: {
           demand_level: z.demand_level,
@@ -113,7 +112,7 @@ export async function computeOpportunities(
           riders: z.rider_supply,
           traffic: z.traffic_level,
           weather: z.weather_type,
-        },
+        } as Record<string, unknown>,
         expires_at: new Date(now.getTime() + 30 * 60 * 1000).toISOString(),
       });
     }
@@ -255,7 +254,7 @@ export async function persistOpportunities(opps: ScoredOpportunity[]): Promise<v
       entity_id: o.entity_id ?? null,
       entity_type: o.entity_type ?? null,
       icon_key: o.icon_key,
-      metadata_json: o.metadata_json,
+      metadata_json: o.metadata_json as unknown as import("@/integrations/supabase/types").Json,
       status: "active",
       expires_at: o.expires_at ?? null,
     })),
