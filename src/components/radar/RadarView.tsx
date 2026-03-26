@@ -15,7 +15,7 @@ import {
 } from "@/components/radar/RadarLiveLayers";
 import { predictDemand } from "@/lib/radar/predictive-demand-engine";
 import { contactFromDiscovery } from "@/lib/radar/contactBridge";
-import { eventBus } from "@/lib/events/eventBus";
+import { eventBus } from "@/lib/core/event-bus";
 import UnifiedMap from "@/components/map/UnifiedMap";
 import { formatGeoDistance, formatGeoETA, type SortMode } from "@/lib/geo/geoRanking";
 import type { GeoEntity } from "@/lib/geo/geoEntityAdapter";
