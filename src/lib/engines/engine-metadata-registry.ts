@@ -1,12 +1,18 @@
 /**
  * Engine Metadata Registry — Business tier, function, vertical, table dependencies.
- * Source of truth for cockpit display and collision detection.
+ * Source of truth for cockpit display, collision detection, and BRAIN OWNERSHIP.
+ *
+ * GOVERNANCE LAW:
+ * - Every engine has exactly ONE brain owner
+ * - Brains DECIDE. Engines EXECUTE/ENRICH.
+ * - No engine may act as an independent final decision-maker
  */
 
 export type EngineTier = "critical" | "priority" | "standard" | "optimizable";
 export type BusinessFunction = "onboarding" | "taxonomy" | "visibility" | "conversion" | "lifecycle" | "finance" | "delivery" | "infrastructure";
 export type EngineVertical = "all" | "food" | "hotel" | "services" | "grocery" | "property";
 export type RuntimeStatus = "ok" | "idle" | "warning" | "error" | "pending";
+export type BrainOwner = "geo" | "execution" | "category" | "arbitration" | "experience";
 
 export interface EngineMetadata {
   tier: EngineTier;
@@ -16,6 +22,8 @@ export interface EngineMetadata {
   tablesWritten: string[];
   fieldsWritten: string[];
   description: string;
+  /** Which brain owns this engine's output */
+  brainOwner: BrainOwner;
 }
 
 export interface EngineRunResult {
