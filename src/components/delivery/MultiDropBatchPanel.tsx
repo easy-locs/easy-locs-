@@ -88,9 +88,9 @@ export default function MultiDropBatchPanel({ orgId }: { orgId: string }) {
     if (!orgId) return;
     const fetch = async () => {
       const { data } = await supabase
-        .from("delivery_jobs")
+        .from("mobility_jobs")
         .select("id, pickup_address, dropoff_address, dropoff_lat, dropoff_lng, pickup_lat, pickup_lng, package_description, delivery_fee, currency, priority, status")
-        .eq("org_id", orgId)
+        .eq("merchant_id", orgId)
         .eq("status", "pending")
         .order("created_at", { ascending: true });
       if (data) setPendingJobs(data as PendingJob[]);

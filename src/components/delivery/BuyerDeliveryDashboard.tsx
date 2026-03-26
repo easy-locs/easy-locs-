@@ -53,13 +53,21 @@ export default function BuyerDeliveryDashboard({ className }: Props) {
     setLoading(true);
     try {
       const { data } = await supabase
-        .from("delivery_jobs")
-        .select("id, status, pickup_address, dropoff_address, dropoff_lat, dropoff_lng, package_description, delivery_fee, currency, created_at, delivered_at, scheduled_at, confirmation_code")
-        .or(`seller_id.eq.${user.id}`)
+        .from("mobility_jobs")
+        .select("id, status, pickup_address, dropoff_address, dropoff_lat, dropoff_lng, notes, current_price, quoted_price, currency, created_at, completed_at")
+        .eq("customer_user_id", user.id)
         .order("created_at", { ascending: false })
         .limit(50);
 
-      const orderList = (data || []) as BuyerOrder[];
+      const orderList = (data || []).map((r: any) => ({
+        ...r,
+        package_description: r.notes,
+        delivery_fee: r.current_price ?? r.quoted_price,
+        delivered_at: r.completed_at,
+        scheduled_at: null,
+        confirmation_code: null,
+        escrow_status: null,
+      })) as BuyerOrder[];
       setOrders(orderList);
 
       // Fetch real escrow statuses for active orders
@@ -92,7 +100,7 @@ export default function BuyerDeliveryDashboard({ className }: Props) {
     if (!user) return;
     const channel = supabase
       .channel(`buyer-orders-${user.id}`)
-      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "delivery_jobs" }, () => {
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "mobility_jobs" }, () => {
         refresh();
       })
       .subscribe();

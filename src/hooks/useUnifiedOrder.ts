@@ -1,6 +1,6 @@
 /**
- * useUnifiedOrder — Fetches a single order with linked payment, delivery, and driver data.
- * Provides realtime subscriptions and status sync actions.
+ * useUnifiedOrder — Fetches a single order with linked mobility job.
+ * CANONICAL: reads from mobility_jobs for delivery context.
  */
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -44,22 +44,28 @@ export function useUnifiedOrder(orderId: string | undefined) {
       .single();
     if (data) {
       setOrder(data);
-      // Fetch linked delivery job
       if (data.delivery_job_id) {
+        // Try canonical mobility_jobs first
         const { data: job } = await supabase
-          .from("delivery_jobs")
+          .from("mobility_jobs")
           .select("*")
           .eq("id", data.delivery_job_id)
-          .single();
-        setDeliveryJob(job);
-        // Fetch driver session if driver assigned
-        if (job?.driver_id) {
-          const { data: ds } = await supabase
-            .from("driver_sessions")
-            .select("*")
-            .eq("user_id", job.driver_id)
-            .single();
-          setDriverSession(ds);
+          .maybeSingle();
+        if (job) {
+          setDeliveryJob({
+            ...job,
+            driver_id: job.rider_user_id,
+            delivery_fee: job.current_price ?? job.quoted_price,
+            delivered_at: job.completed_at,
+          });
+          if (job.rider_user_id) {
+            const { data: rp } = await supabase
+              .from("rider_presence")
+              .select("*")
+              .eq("user_id", job.rider_user_id)
+              .maybeSingle();
+            setDriverSession(rp);
+          }
         }
       }
     }
@@ -68,7 +74,6 @@ export function useUnifiedOrder(orderId: string | undefined) {
 
   useEffect(() => { fetchOrder(); }, [fetchOrder]);
 
-  // Realtime: order changes
   useEffect(() => {
     if (!orderId) return;
     const ch = supabase
@@ -78,21 +83,19 @@ export function useUnifiedOrder(orderId: string | undefined) {
     return () => { supabase.removeChannel(ch); };
   }, [orderId, fetchOrder]);
 
-  // Realtime: delivery job changes
   useEffect(() => {
     if (!order?.delivery_job_id) return;
     const ch = supabase
-      .channel(`unified-delivery-${order.delivery_job_id}`)
-      .on("postgres_changes", { event: "*", schema: "public", table: "delivery_jobs", filter: `id=eq.${order.delivery_job_id}` }, () => fetchOrder())
+      .channel(`unified-mobility-${order.delivery_job_id}`)
+      .on("postgres_changes", { event: "*", schema: "public", table: "mobility_jobs", filter: `id=eq.${order.delivery_job_id}` }, () => fetchOrder())
       .subscribe();
     return () => { supabase.removeChannel(ch); };
   }, [order?.delivery_job_id, fetchOrder]);
 
-  // Determine user role
   const role: UserRole = useMemo(() => {
     if (!user?.id || !order) return "buyer";
     if (order.seller_id === user.id) return "seller";
-    if (deliveryJob?.driver_id === user.id) return "driver";
+    if (deliveryJob?.rider_user_id === user.id) return "driver";
     return "buyer";
   }, [user?.id, order, deliveryJob]);
 
@@ -113,7 +116,6 @@ export function useUnifiedOrder(orderId: string | undefined) {
 
   const ctas = useMemo(() => getOrderCTAs(unifiedStatus, role), [unifiedStatus, role]);
 
-  // Actions
   const updateOrderStatus = useCallback(async (status: string) => {
     if (!orderId) return;
     await (supabase as any).from("storefront_orders").update({ status, updated_at: new Date().toISOString() }).eq("id", orderId);
@@ -129,28 +131,32 @@ export function useUnifiedOrder(orderId: string | undefined) {
 
   const requestDelivery = useCallback(async () => {
     if (!order) return;
-    // Create delivery job
-    const { data: job } = await supabase.from("delivery_jobs").insert({
-      org_id: order.shop_id,
-      seller_id: order.seller_id,
-      buyer_id: order.buyer_id,
-      pickup_address: "Seller location",
-      dropoff_address: order.shipping_address || order.delivery_address || "Buyer location",
-      dropoff_lat: order.delivery_lat,
-      dropoff_lng: order.delivery_lng,
-      package_description: `Order #${order.id.slice(0, 8)}`,
-      delivery_fee: order.delivery_fee || 0,
-      currency: order.currency || "EUR",
-      status: "pending",
-    } as any).select().single();
-    if (job) {
+    // Create mobility job via canonical dispatch
+    const { data: result, error } = await supabase.functions.invoke("dispatch-ride", {
+      body: {
+        action: "create_job",
+        job_type: "food_delivery",
+        service_level: "bike_delivery",
+        pickup_address: "Seller location",
+        dropoff_address: order.shipping_address || order.delivery_address || "Buyer location",
+        dropoff_lat: order.delivery_lat,
+        dropoff_lng: order.delivery_lng,
+        quoted_price: order.delivery_fee || 0,
+        currency: order.currency || "AED",
+        notes: `Order #${order.id.slice(0, 8)}`,
+        order_id: order.id,
+        merchant_id: order.shop_id,
+      },
+    });
+    if (error) throw error;
+    if (result?.job?.id) {
       await (supabase as any).from("storefront_orders").update({
-        delivery_job_id: job.id,
+        delivery_job_id: result.job.id,
         delivery_requested: true,
-        delivery_status: "pending",
+        delivery_status: "searching",
         status: "preparing",
       }).eq("id", orderId);
-      toast({ title: "Delivery requested", description: "Looking for available drivers" });
+      toast({ title: "Delivery requested", description: "Looking for available riders" });
     }
   }, [order, orderId, toast]);
 
@@ -171,13 +177,10 @@ export function useUnifiedOrder(orderId: string | undefined) {
       notes: reason || "Cancelled by user",
       updated_at: new Date().toISOString(),
     }).eq("id", orderId);
-    // If there's a delivery job, cancel it too
     if (order?.delivery_job_id) {
-      await supabase.from("delivery_jobs").update({
-        status: "cancelled",
-        cancelled_at: new Date().toISOString(),
-        cancellation_reason: reason || "Order cancelled",
-      } as any).eq("id", order.delivery_job_id);
+      await supabase.functions.invoke("dispatch-ride", {
+        body: { action: "cancel_job", job_id: order.delivery_job_id, cancel_reason: reason || "Order cancelled" },
+      });
     }
     toast({ title: "Order cancelled" });
   }, [orderId, order, toast]);

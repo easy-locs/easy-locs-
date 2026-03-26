@@ -50,7 +50,7 @@ export default function DriverJobMarketplace({ className }: Props) {
     const fetch = async () => {
       setLoading(true);
       const { data } = await supabase
-        .from("delivery_jobs")
+        .from("mobility_jobs")
         .select("id, pickup_address, dropoff_address, package_description, delivery_fee, currency, priority, weight_kg, created_at, org_id")
         .eq("status", "pending")
         .is("driver_id", null)

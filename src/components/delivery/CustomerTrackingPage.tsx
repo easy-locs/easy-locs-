@@ -55,7 +55,7 @@ export default function CustomerTrackingPage() {
     try {
       // Search by confirmation code or job ID
       const { data, error } = await supabase
-        .from("delivery_jobs")
+        .from("mobility_jobs")
         .select("*")
         .or(`confirmation_code.eq.${code.trim()},id.eq.${code.trim()}`)
         .limit(1)
@@ -116,7 +116,7 @@ export default function CustomerTrackingPage() {
     if (!tracking?.id) return;
     const channel = supabase
       .channel(`track-${tracking.id}`)
-      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "delivery_jobs", filter: `id=eq.${tracking.id}` },
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "mobility_jobs", filter: `id=eq.${tracking.id}` },
         (payload) => {
           const updated = payload.new as any;
           setTracking(prev => prev ? { ...prev, ...updated } : null);
