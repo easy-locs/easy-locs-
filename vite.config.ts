@@ -67,6 +67,8 @@ export default defineConfig(({ mode }) => ({
             if (id.includes("jspdf")) return "vendor-pdf";
             if (id.includes("date-fns")) return "vendor-datefns";
             if (id.includes("leaflet")) return "vendor-leaflet";
+            if (id.includes("mapbox-gl")) return "vendor-mapbox";
+            if (id.includes("html2canvas")) return "vendor-html2canvas";
             if (id.includes("@tanstack")) return "vendor-tanstack";
             if (id.includes("next-themes") || id.includes("sonner") || id.includes("lucide")) return "vendor-ui";
           }
