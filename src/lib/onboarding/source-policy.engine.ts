@@ -1,20 +1,13 @@
 /**
  * Source Policy Engine — Decides which data sources are authorized per vertical.
  * Each vertical has its own allowed, primary, fallback, and forbidden source lists.
- * No scraping chaos: only the right sources for the right business type.
  */
+import type { SourcePolicy, Vertical, SourceName } from "./types";
 
-export type OnboardingVertical = "food" | "grocery" | "hotel" | "services" | "property";
+// Re-export for backward compat
+export type OnboardingVertical = Vertical;
 
-export interface SourcePolicy {
-  vertical: OnboardingVertical;
-  allowedSources: string[];
-  primarySources: string[];
-  fallbackSources: string[];
-  forbiddenSources: string[];
-}
-
-export const SOURCE_POLICIES: Record<OnboardingVertical, SourcePolicy> = {
+export const SOURCE_POLICIES: Record<Vertical, SourcePolicy> = {
   food: {
     vertical: "food",
     allowedSources: ["deliveroo", "talabat", "careem", "noon", "official_web", "google_business"],
@@ -34,56 +27,54 @@ export const SOURCE_POLICIES: Record<OnboardingVertical, SourcePolicy> = {
     allowedSources: ["booking", "expedia", "govoyage", "official_web", "google_business"],
     primarySources: ["booking", "expedia", "govoyage"],
     fallbackSources: ["official_web", "google_business"],
-    forbiddenSources: ["deliveroo", "talabat", "careem", "noon", "property_portal"],
+    forbiddenSources: ["deliveroo", "talabat", "careem", "noon"],
   },
   services: {
     vertical: "services",
     allowedSources: ["official_web", "google_business", "trusted_directory"],
     primarySources: ["official_web", "google_business"],
     fallbackSources: ["trusted_directory"],
-    forbiddenSources: ["booking", "expedia", "deliveroo", "talabat", "noon", "property_portal"],
+    forbiddenSources: ["deliveroo", "talabat", "careem", "booking", "expedia"],
   },
   property: {
     vertical: "property",
     allowedSources: ["property_portal", "official_web", "crm_import", "google_business"],
     primarySources: ["property_portal", "crm_import"],
     fallbackSources: ["official_web", "google_business"],
-    forbiddenSources: ["deliveroo", "talabat", "careem", "noon", "booking", "expedia"],
+    forbiddenSources: ["deliveroo", "talabat", "careem", "booking", "expedia", "govoyage"],
   },
 };
 
-/** Get all allowed sources for a vertical */
-export function getSourcesForVertical(vertical: OnboardingVertical): string[] {
+export function getPolicy(vertical: Vertical): SourcePolicy {
+  return SOURCE_POLICIES[vertical];
+}
+
+export function getSourcesForVertical(vertical: Vertical): SourceName[] {
   return SOURCE_POLICIES[vertical]?.allowedSources ?? [];
 }
 
-/** Check if a source is allowed for a vertical */
-export function isSourceAllowed(vertical: OnboardingVertical, source: string): boolean {
+export function isSourceAllowed(vertical: Vertical, source: string): boolean {
   const policy = SOURCE_POLICIES[vertical];
   if (!policy) return false;
-  return policy.allowedSources.includes(source);
+  return (policy.allowedSources as string[]).includes(source);
 }
 
-/** Check if a source is explicitly forbidden for a vertical */
-export function isSourceForbidden(vertical: OnboardingVertical, source: string): boolean {
+export function isSourceForbidden(vertical: Vertical, source: string): boolean {
   const policy = SOURCE_POLICIES[vertical];
   if (!policy) return true;
-  return policy.forbiddenSources.includes(source);
+  return (policy.forbiddenSources as string[]).includes(source);
 }
 
-/** Get primary sources (highest trust) for a vertical */
-export function getPrimarySources(vertical: OnboardingVertical): string[] {
+export function getPrimarySources(vertical: Vertical): SourceName[] {
   return SOURCE_POLICIES[vertical]?.primarySources ?? [];
 }
 
-/** Get fallback sources for a vertical */
-export function getFallbackSources(vertical: OnboardingVertical): string[] {
+export function getFallbackSources(vertical: Vertical): SourceName[] {
   return SOURCE_POLICIES[vertical]?.fallbackSources ?? [];
 }
 
-/** Filter a list of source records, keeping only allowed ones */
 export function filterAllowedSources(
-  vertical: OnboardingVertical,
+  vertical: Vertical,
   sources: { source: string; [key: string]: any }[]
 ): typeof sources {
   return sources.filter((s) => isSourceAllowed(vertical, s.source));
