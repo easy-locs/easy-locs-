@@ -120,6 +120,7 @@ export default function SellerHubPage() {
         </div>
 
         {/* Content */}
+        <Suspense fallback={<div className="flex justify-center py-12"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>}>
         <div className="px-4">
           {tab === "shops" && <SellerDashboard />}
 
@@ -161,6 +162,7 @@ export default function SellerHubPage() {
             </div>
           )}
         </div>
+        </Suspense>
       </div>
     </DashboardLayout>
   );
