@@ -122,7 +122,6 @@ export function RideLiveCard({ rideId }: { rideId: string }) {
       </div>
     </div>
     {isDriverActive && <TrackingPusher rideId={rideId} />}
-  </>;
-
-  return content;
+    </>
+  );
 }
