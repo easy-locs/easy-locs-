@@ -9,7 +9,6 @@ import { BarChart3, TrendingUp, Clock, CheckCircle2, XCircle, MapPin, Calendar, 
 import { Button } from "@/components/ui/button";
 
 interface JobRecord {
-interface JobRecord {
   id: string;
   status: string;
   created_at: string;
