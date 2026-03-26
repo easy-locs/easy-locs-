@@ -3,7 +3,7 @@
  * Route: /driver/live-missions
  * Actor: RIDER only. Go online, see offers, accept/reject, manage active trip.
  */
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useRiderDispatchStore } from "@/stores/riderDispatchStore";
 import { RiderOfferCard } from "@/components/rides/RiderOfferCard";
@@ -154,6 +154,3 @@ function ActiveTripSection({ jobId }: { jobId: string }) {
   if (!job) return <div className="h-32 bg-muted/40 rounded-xl animate-pulse" />;
   return <DriverLiveTripCard jobId={jobId} job={job} />;
 }
-
-// Need useState import
-import { useState } from "react";
