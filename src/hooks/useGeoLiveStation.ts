@@ -91,8 +91,12 @@ export function useGeoLiveStation() {
       }
     } else if (location) {
       // Fallback to GPS-derived zone
-      const zk = computeZoneKey("AE", "Dubai"); // Will be refined when reverse geocode completes
+      const zk = computeZoneKey("AE", "Dubai");
       fetchStation(zk);
+    } else {
+      // No place, no GPS — use default zone so UI is never empty
+      const defaultZone = "AE_DUBAI";
+      fetchStation(defaultZone, "Dubai");
     }
   }, [selectedPlace?.zone_key, zoneOverlay?.zone_key, location?.lat]);
 
