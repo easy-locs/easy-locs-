@@ -427,7 +427,7 @@ export default function MobilityDeliveryPage() {
             <p className="text-sm font-semibold text-foreground">Location access needed</p>
             <p className="text-xs text-muted-foreground">Enable location or select an address to see nearby options</p>
             <button
-              onClick={() => navigate("/address")}
+              onClick={() => setAddressOpen(true)}
               className="px-4 py-2 rounded-xl bg-primary text-primary-foreground text-xs font-bold"
             >
               Set address manually
