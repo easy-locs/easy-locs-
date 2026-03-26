@@ -298,12 +298,11 @@ export default function MerchantDashboardPage() {
         {/* ═══ Merchant Operations Hub ═══ */}
         <MerchantOpsHub profileId={profileId} />
 
-        {/* Live Fulfillment + Financial Widgets */}
+        {/* Financial Widgets */}
         {profileId && (
           <div className="space-y-3 mb-4">
-            <MerchantLiveFulfillmentPanel merchantProfileId={profileId} />
             <MerchantFinancialWidgets merchantProfileId={profileId} />
-            <MerchantQrCockpit merchantProfileId={profileId} storefrontPageId={null} />
+            <MerchantPaymentHistory merchantProfileId={profileId} />
           </div>
         )}
 
