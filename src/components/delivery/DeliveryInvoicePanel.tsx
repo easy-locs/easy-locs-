@@ -61,15 +61,15 @@ export default function DeliveryInvoicePanel({ orgId, className }: Props) {
         .order("completed_at", { ascending: false })
         .limit(500);
 
-      const invoiceRows: InvoiceRow[] = (jobs || []).map(j => ({
+      const invoiceRows: InvoiceRow[] = (jobs || []).map((j: any) => ({
         id: `INV-${j.id.slice(0, 8).toUpperCase()}`,
         jobId: j.id,
-        driverName: j.driver_id ? j.driver_id.slice(0, 8) + "…" : "—",
+        driverName: j.rider_user_id ? j.rider_user_id.slice(0, 8) + "…" : "—",
         pickupAddress: j.pickup_address,
         dropoffAddress: j.dropoff_address,
-        fee: j.delivery_fee || 0,
-        currency: j.currency || "EUR",
-        deliveredAt: j.delivered_at || "",
+        fee: j.current_price || j.quoted_price || 0,
+        currency: j.currency || "AED",
+        deliveredAt: j.completed_at || "",
         status: "invoiced",
       }));
 

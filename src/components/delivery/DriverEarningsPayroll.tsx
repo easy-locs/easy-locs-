@@ -70,7 +70,7 @@ export default function DriverEarningsPayroll() {
       .order("created_at", { ascending: false });
 
     if (error) { console.error("[Payroll] fetch error:", error); }
-    setJobs((data || []) as DeliveryEarning[]);
+    setJobs((data || []).map((r: any) => ({ ...r, delivery_fee: r.current_price ?? r.quoted_price, delivered_at: r.completed_at, priority: r.service_level })) as DeliveryEarning[]);
     setLoading(false);
   }, [user?.id, period, getPeriodRange]);
 

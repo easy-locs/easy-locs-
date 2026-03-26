@@ -112,9 +112,9 @@ export default function DriverReputationPanel({ driverId, className }: Props) {
       const cancellationRate = all.length ? (cancelled.length / all.length) * 100 : 0;
 
       // On-time rate (delivered within 2 hours of creation)
-      const onTime = completed.filter(j => {
-        if (!j.created_at || !j.delivered_at) return true;
-        const diff = (new Date(j.delivered_at).getTime() - new Date(j.created_at).getTime()) / 3600000;
+      const onTime = completed.filter((j: any) => {
+        if (!j.created_at || !j.completed_at) return true;
+        const diff = (new Date(j.completed_at).getTime() - new Date(j.created_at).getTime()) / 3600000;
         return diff <= 2;
       });
       const onTimeRate = completed.length ? (onTime.length / completed.length) * 100 : 100;
