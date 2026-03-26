@@ -252,6 +252,20 @@ export default memo(function RadarView({ initialType, radiusKm: initialRadius, s
         ))}
       </div>
 
+      {/* ── Live Layers Bar ── */}
+      <div className="px-4 py-1 shrink-0 space-y-1.5">
+        <LayerToggleBar layers={layers} onToggle={toggleLayer} mode={mode} />
+        <div className="flex gap-1.5 flex-wrap">
+          {layers.weather && <WeatherOverlay contexts={liveCtx.geoContexts} />}
+          {layers.traffic && <TrafficOverlay contexts={liveCtx.geoContexts} />}
+          {layers.riders && <RiderSupplyChip riders={liveCtx.riders} />}
+        </div>
+        {layers.events && <ZoneEventAlerts events={liveCtx.zoneEvents} />}
+        {layers.demand && (mode === "rider" || mode === "admin" || mode === "merchant") && (
+          <DemandPredictionCard prediction={demandPrediction} />
+        )}
+      </div>
+
       {/* ── Controls row ── */}
       <div className="flex items-center justify-between px-4 py-1 shrink-0 gap-2">
         {/* Sort options */}
