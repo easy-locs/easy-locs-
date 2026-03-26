@@ -23,6 +23,9 @@ import { useDiscoveryStore } from "@/stores/discoveryStore";
 import { rankEntities, DISCOVERY_WEIGHTS, type RankableEntity, type RankContext } from "@/lib/ranking-engine";
 import { useCanonicalUI } from "@/hooks/useCanonicalUI";
 import { useV2AuthStore } from "@/stores/v2AuthStore";
+import { useRadarPlaceStore } from "@/stores/radarPlaceStore";
+import RadarPlaceSearch from "@/components/radar/RadarPlaceSearch";
+import RadarZoneOverlayCard from "@/components/radar/RadarZoneOverlayCard";
 import {
   MapPin, List, Star, Navigation, Flame, Filter,
   TrendingUp, Zap, ChevronDown, Clock, SlidersHorizontal, MessageCircle,
@@ -98,6 +101,10 @@ export default memo(function RadarView({ initialType, radiusKm: initialRadius, s
   const [layers, setLayers] = useState<LayerToggles>(DEFAULT_LAYERS);
   const currentUser = useV2AuthStore((s) => s.user);
 
+  // Place search context
+  const selectedPlace = useRadarPlaceStore((s) => s.selectedPlace);
+  const zoneOverlay = useRadarPlaceStore((s) => s.zoneOverlay);
+
   // Live context (realtime subscriptions)
   const liveCtx = useRadarLiveContext(mode);
 
@@ -130,8 +137,11 @@ export default memo(function RadarView({ initialType, radiusKm: initialRadius, s
 
   const type = activeType === "all" ? undefined : activeType;
   const { entities: rawResults, loading, location } = useRadarResults({ type, radiusKm: activeRadius });
-  const userLat = location?.lat ?? 25.2;
-  const userLng = location?.lng ?? 55.27;
+
+  // When a place is selected from search, use its coordinates; otherwise use GPS
+  const userLat = selectedPlace?.lat ?? location?.lat ?? 25.2;
+  const userLng = selectedPlace?.lng ?? location?.lng ?? 55.27;
+  const mapZoom = selectedPlace?.viewport?.recommended_zoom ?? undefined;
 
   // ── Filters + Ranking ──
   const results = useMemo(() => {
@@ -234,6 +244,18 @@ export default memo(function RadarView({ initialType, radiusKm: initialRadius, s
 
   return (
     <div className="flex flex-col h-full min-h-0">
+      {/* ── Place Search Bar ── */}
+      <div className="px-4 pt-2 shrink-0">
+        <RadarPlaceSearch />
+      </div>
+
+      {/* ── Zone Overlay Card (when a place is selected) ── */}
+      {selectedPlace && zoneOverlay && (
+        <div className="px-4 pt-1.5 shrink-0">
+          <RadarZoneOverlayCard overlay={zoneOverlay} label={selectedPlace.label} />
+        </div>
+      )}
+
       {/* ── Category chips ── */}
       <div className="flex gap-1.5 overflow-x-auto px-4 py-2 scrollbar-hide shrink-0">
         {TYPE_FILTERS.map(f => (
@@ -403,6 +425,8 @@ export default memo(function RadarView({ initialType, radiusKm: initialRadius, s
           <div className="h-full px-4 pb-2">
             <UnifiedMap
               entities={results}
+              center={selectedPlace ? [selectedPlace.lng, selectedPlace.lat] : undefined}
+              zoom={mapZoom}
               userLat={userLat}
               userLng={userLng}
               selectedId={selectedId}
