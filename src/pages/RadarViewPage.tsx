@@ -6,11 +6,9 @@ import RadarView from "@/components/radar/RadarView";
 import { motion } from "framer-motion";
 import { Radio, Sparkles, Navigation } from "lucide-react";
 import { useLocationStore } from "@/stores/locationStore";
-import { useDiscoveryStore } from "@/stores/discoveryStore";
 
 export default function RadarViewPage() {
   const currentLocation = useLocationStore((s) => s.currentLocation);
-  const radiusKm = useDiscoveryStore((s) => s.radiusKm);
 
   return (
     <div className="h-[calc(100dvh-72px)] flex flex-col relative overflow-hidden"
