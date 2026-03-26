@@ -34,7 +34,7 @@ export default function OrderReceiptPage() {
   const timeline = order ? buildUnifiedTimeline(order, null) : [];
 
   return (
-    <div className="min-h-[100dvh] flex flex-col bg-background pb-24">
+    <div className="app-mobile-page flex flex-col bg-background pb-24">
       <header className="flex items-center gap-3 px-4 pt-4 pb-3">
         <button
           onClick={() => navigate("/my-orders")}

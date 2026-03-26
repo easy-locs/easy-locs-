@@ -19,7 +19,7 @@ export default function MyOrdersPage() {
   return (
     <>
       <SEOHead title={tc("nav.orders")} description={tc("commerce.track_order")} />
-      <div className="min-h-[100dvh] flex flex-col bg-background" data-orders-page>
+      <div className="app-mobile-page flex flex-col bg-background" data-orders-page>
         <header className="flex items-center gap-3 px-4 pt-4 pb-3">
           <button
             onClick={() => navigate("/home")}

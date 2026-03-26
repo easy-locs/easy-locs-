@@ -21,7 +21,7 @@ export default function BrowseVerticalPage() {
 
   if (!verticalDef) {
     return (
-      <div className="min-h-[100dvh] flex flex-col items-center justify-center bg-background px-6">
+      <div className="app-mobile-page flex flex-col items-center justify-center bg-background px-6">
         <p className="text-lg font-bold text-foreground mb-2">Category not found</p>
         <p className="text-sm text-muted-foreground mb-6">"{vertical}" doesn't exist.</p>
         <button
