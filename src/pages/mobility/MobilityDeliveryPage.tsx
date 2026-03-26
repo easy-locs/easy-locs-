@@ -2,10 +2,11 @@
  * MobilityDeliveryPage — Premium Delivery Hub with live station context,
  * animated hero, quick actions slider, smart suggestions, trending section.
  */
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useCustomerMobilityStore } from "@/stores/customerMobilityStore";
 import { CustomerJobCard } from "@/components/rides/CustomerJobCard";
 import { supabase } from "@/integrations/supabase/client";
+import { AddressSelectorSheet } from "@/components/address/AddressSelectorSheet";
 import {
   ArrowLeft, UtensilsCrossed, ShoppingCart, Send, Gift, Briefcase,
   Car, Users, CloudRain, Sun, Cloud, Zap, ChevronRight,
@@ -81,6 +82,7 @@ const WEATHER_ICON: Record<string, React.ReactNode> = {
 
 export default function MobilityDeliveryPage() {
   const navigate = useNavigate();
+  const [addressOpen, setAddressOpen] = useState(false);
   const { jobs, hydrateMyJobs, refreshJob } = useCustomerMobilityStore();
   const station = useArbitratedStation();
   const permissionState = useLocationStore((s) => s.permissionState);
@@ -166,7 +168,7 @@ export default function MobilityDeliveryPage() {
         {/* Address bar */}
         <div className="px-4 pb-3">
           <button
-            onClick={() => navigate("/address")}
+            onClick={() => setAddressOpen(true)}
             className="w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl border border-border/20 bg-card/60 hover:bg-card transition-colors"
           >
             <MapPin className="h-4 w-4 text-primary shrink-0" />
@@ -425,7 +427,7 @@ export default function MobilityDeliveryPage() {
             <p className="text-sm font-semibold text-foreground">Location access needed</p>
             <p className="text-xs text-muted-foreground">Enable location or select an address to see nearby options</p>
             <button
-              onClick={() => navigate("/address")}
+              onClick={() => setAddressOpen(true)}
               className="px-4 py-2 rounded-xl bg-primary text-primary-foreground text-xs font-bold"
             >
               Set address manually
@@ -433,6 +435,9 @@ export default function MobilityDeliveryPage() {
           </motion.div>
         )}
       </div>
+
+      {/* Address Selector Sheet */}
+      <AddressSelectorSheet open={addressOpen} onOpenChange={setAddressOpen} contextType="global" />
     </div>
   );
 }
