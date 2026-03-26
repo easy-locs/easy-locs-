@@ -44,6 +44,7 @@ import { OrbitPromptOverlay } from "@/components/engine/OrbitPromptOverlay";
 // V2 Suite 4 pages
 // V2 Suite 4 pages — all removed, routes redirect to canonical paths
 const ClaimPage = safeLazy(() => import("./pages/ClaimPage"), "ClaimPage");
+const ClaimShopPage = safeLazy(() => import("./pages/ClaimShopPage"), "ClaimShopPage");
 
 
 function safeLazy(factory: () => Promise<{ default: ComponentType<any> }>, name: string) {
