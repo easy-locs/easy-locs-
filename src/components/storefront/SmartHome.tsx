@@ -336,17 +336,24 @@ export default function SmartHome() {
           <h3 className="text-xs font-bold text-foreground flex items-center gap-1">
             <span>📍</span> Live near you
           </h3>
-          <Link to="/taxi" className="text-[10px] font-medium text-primary flex items-center gap-0.5 active:opacity-70">
-            Book <ChevronRight className="h-3 w-3" />
-          </Link>
+          <div className="flex items-center gap-1.5">
+            <Link to="/mobility/delivery" className="text-[10px] font-medium text-muted-foreground flex items-center gap-0.5 active:opacity-70">
+              Send <ChevronRight className="h-3 w-3" />
+            </Link>
+            <Link to="/mobility/taxi" className="text-[10px] font-medium text-primary flex items-center gap-0.5 active:opacity-70">
+              Ride <ChevronRight className="h-3 w-3" />
+            </Link>
+          </div>
         </div>
-        <MobilityLiveMap
-          pickupLat={currentLocation?.lat}
-          pickupLng={currentLocation?.lng}
-          mode="taxi"
-          nearbyRiders={5}
-          className="h-[180px]"
-        />
+        <Link to="/mobility/taxi" className="block">
+          <MobilityLiveMap
+            pickupLat={currentLocation?.lat}
+            pickupLng={currentLocation?.lng}
+            mode="taxi"
+            nearbyRiders={5}
+            className="h-[180px]"
+          />
+        </Link>
       </motion.div>
 
       {SECTION_DEFS.map((sec, i) => (

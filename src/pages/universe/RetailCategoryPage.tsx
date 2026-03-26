@@ -14,15 +14,16 @@ import SEOHead from "@/components/SEOHead";
 const shopsCategory = CATEGORY_TREE.find(c => c.key === "shops")!;
 
 export default function RetailCategoryPage() {
-  const { categorySlug } = useParams<{ categorySlug: string }>();
+  const { categorySlug, subcategorySlug } = useParams<{ categorySlug: string; subcategorySlug?: string }>();
   const navigate = useNavigate();
 
   const sub = useMemo(() => {
-    const normalized = categorySlug?.replace(/-/g, "_");
+    const rawSlug = subcategorySlug ?? categorySlug;
+    const normalized = rawSlug?.replace(/-/g, "_");
     return shopsCategory.subcategories.find(
-      s => s.value === normalized || s.label.toLowerCase().replace(/[\s&']/g, "-").replace(/-+/g, "-") === categorySlug
+      s => s.value === normalized || s.label.toLowerCase().replace(/[\s&']/g, "-").replace(/-+/g, "-") === rawSlug
     );
-  }, [categorySlug]);
+  }, [categorySlug, subcategorySlug]);
 
   const { data: listings = [], isLoading } = useVerticalListings("shops", sub?.value ?? null);
 
