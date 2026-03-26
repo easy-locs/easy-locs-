@@ -73,7 +73,7 @@ export function UnifiedMobilityPreviewCard({
           <span>x{pricing.demandMultiplier}</span>
         </div>
         {pricing.surgeMultiplier > 1 && (
-          <div className="flex justify-between text-amber-600 font-medium">
+          <div className="flex justify-between text-destructive font-medium">
             <span>Surge</span>
             <span>x{pricing.surgeMultiplier}</span>
           </div>
