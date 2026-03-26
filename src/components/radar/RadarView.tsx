@@ -1,12 +1,19 @@
 /**
  * RadarView — Premium discovery hub with clustered map, rich pins, radius circle,
- * advanced filters (rating, promoted, open now), and smart ranking.
- * Uses Canonical UI Engine for vertical-aware wording and accents.
+ * advanced filters (rating, promoted, open now), smart ranking,
+ * and real-time live layers (weather, traffic, demand, zone events).
  */
 import { useState, useCallback, useMemo, memo, useEffect } from "react";
 import { BoostSlotRenderer } from "@/components/boost/BoostSlotRenderer";
 import { useNavigate } from "react-router-dom";
 import { useRadarResults } from "@/hooks/useRadarResults";
+import { useRadarLiveContext, type RadarMode } from "@/hooks/useRadarLiveContext";
+import {
+  LayerToggleBar, WeatherOverlay, TrafficOverlay, ZoneEventAlerts,
+  DemandPredictionCard, RiderSupplyChip, DEFAULT_LAYERS,
+  type LayerToggles,
+} from "@/components/radar/RadarLiveLayers";
+import { predictDemand } from "@/lib/radar/predictive-demand-engine";
 import { contactFromDiscovery } from "@/lib/radar/contactBridge";
 import { eventBus } from "@/lib/events/eventBus";
 import UnifiedMap from "@/components/map/UnifiedMap";
@@ -76,9 +83,10 @@ interface RadarViewProps {
   initialType?: GeoEntity["type"];
   radiusKm?: number;
   showMap?: boolean;
+  mode?: RadarMode;
 }
 
-export default memo(function RadarView({ initialType, radiusKm: initialRadius, showMap = true }: RadarViewProps) {
+export default memo(function RadarView({ initialType, radiusKm: initialRadius, showMap = true, mode = "client" }: RadarViewProps) {
   const navigate = useNavigate();
   const [activeType, setActiveType] = useState<GeoEntity["type"] | "all">(initialType || "all");
   const [sortBy, setSortBy] = useState<RadarSortMode>("smart");
@@ -87,7 +95,29 @@ export default memo(function RadarView({ initialType, radiusKm: initialRadius, s
   const [minRating, setMinRating] = useState(0);
   const [showPromotedOnly, setShowPromotedOnly] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
+  const [layers, setLayers] = useState<LayerToggles>(DEFAULT_LAYERS);
   const currentUser = useV2AuthStore((s) => s.user);
+
+  // Live context (realtime subscriptions)
+  const liveCtx = useRadarLiveContext(mode);
+
+  // Predictive demand
+  const demandPrediction = useMemo(() => {
+    if (!liveCtx.geoContexts.length) return null;
+    const now = new Date();
+    return predictDemand({
+      currentHour: now.getHours(),
+      vertical: activeType === "restaurant" ? "food" : activeType === "grocery" ? "grocery" : "delivery",
+      activeEvents: liveCtx.zoneEvents,
+      riderCount: liveCtx.riders.length,
+      weatherType: liveCtx.geoContexts[0]?.weather_type ?? "clear",
+      dayOfWeek: now.getDay(),
+    });
+  }, [liveCtx.geoContexts, liveCtx.zoneEvents, liveCtx.riders.length, activeType]);
+
+  const toggleLayer = useCallback((key: keyof LayerToggles) => {
+    setLayers(prev => ({ ...prev, [key]: !prev[key] }));
+  }, []);
 
   // Canonical UI for active vertical
   const activeVertical = activeType === "all" ? undefined : activeType === "restaurant" ? "food" : activeType === "shop" ? "shops" : activeType === "grocery" ? "grocery" : activeType === "property" ? "property" : activeType === "service" ? "services" : undefined;
@@ -220,6 +250,20 @@ export default memo(function RadarView({ initialType, radiusKm: initialRadius, s
             {f.icon} {f.label}
           </button>
         ))}
+      </div>
+
+      {/* ── Live Layers Bar ── */}
+      <div className="px-4 py-1 shrink-0 space-y-1.5">
+        <LayerToggleBar layers={layers} onToggle={toggleLayer} mode={mode} />
+        <div className="flex gap-1.5 flex-wrap">
+          {layers.weather && <WeatherOverlay contexts={liveCtx.geoContexts} />}
+          {layers.traffic && <TrafficOverlay contexts={liveCtx.geoContexts} />}
+          {layers.riders && <RiderSupplyChip riders={liveCtx.riders} />}
+        </div>
+        {layers.events && <ZoneEventAlerts events={liveCtx.zoneEvents} />}
+        {layers.demand && (mode === "rider" || mode === "admin" || mode === "merchant") && (
+          <DemandPredictionCard prediction={demandPrediction} />
+        )}
       </div>
 
       {/* ── Controls row ── */}
