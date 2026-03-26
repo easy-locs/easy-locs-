@@ -1,10 +1,11 @@
 /**
- * RadarZoneOverlayCard — Displays live zone intelligence for the selected place.
- * Shows traffic, weather, demand, rider supply, merchant count, and category ETAs.
+ * RadarZoneOverlayCard — Full Geo Live Station display.
+ * Shows traffic, weather, demand, rider supply, merchants, surge, and category ETAs.
  */
-import { Cloud, CloudRain, Sun, Wind, Car, Users, Store, Clock, Zap, AlertTriangle } from "lucide-react";
+import { Cloud, CloudRain, Sun, Wind, Car, Users, Store, Clock, Zap, AlertTriangle, TrendingUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { ZoneOverlay } from "@/lib/radar/radar-place-search-adapter";
+import { projectETAs, overlayToStation } from "@/lib/radar/eta-projection-engine";
 import { motion } from "framer-motion";
 
 const WEATHER_ICONS: Record<string, React.ReactNode> = {
@@ -29,6 +30,10 @@ interface Props {
 }
 
 export default function RadarZoneOverlayCard({ overlay, label, className }: Props) {
+  const station = overlayToStation(overlay);
+  const etas = projectETAs(station);
+  const surgeActive = station.surge_multiplier > 1.05;
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 8 }}
@@ -38,13 +43,19 @@ export default function RadarZoneOverlayCard({ overlay, label, className }: Prop
         className
       )}
     >
-      {/* Zone label */}
+      {/* Zone label + surge badge */}
       {label && (
         <div className="flex items-center gap-2">
           <span className="text-xs font-bold text-foreground">{label}</span>
           <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary font-semibold">
             {overlay.zone_key}
           </span>
+          {surgeActive && (
+            <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-destructive/15 text-destructive font-bold flex items-center gap-0.5">
+              <TrendingUp className="w-2.5 h-2.5" />
+              {Math.round((station.surge_multiplier - 1) * 100)}% surge
+            </span>
+          )}
         </div>
       )}
 
@@ -90,8 +101,10 @@ export default function RadarZoneOverlayCard({ overlay, label, className }: Prop
         <div className="flex items-center gap-1.5">
           <Store className="w-3.5 h-3.5 text-violet-400" />
           <div>
-            <p className="text-[10px] font-semibold text-foreground">{overlay.merchant_count ?? 0}</p>
-            <p className="text-[8px] text-muted-foreground">Merchants</p>
+            <p className="text-[10px] font-semibold text-foreground">
+              {station.merchant_deliverable_count}/{station.merchant_open_count}
+            </p>
+            <p className="text-[8px] text-muted-foreground">Delivering</p>
           </div>
         </div>
 
@@ -107,32 +120,37 @@ export default function RadarZoneOverlayCard({ overlay, label, className }: Prop
         )}
       </div>
 
-      {/* Category ETAs */}
-      {(overlay.avg_food_eta_minutes || overlay.avg_taxi_eta_minutes || overlay.avg_parcel_eta_minutes) && (
-        <div className="flex gap-3 pt-1 border-t border-border/10">
-          {overlay.avg_food_eta_minutes != null && (
-            <div className="flex items-center gap-1">
-              <Clock className="w-3 h-3 text-orange-400" />
-              <span className="text-[10px] text-foreground font-semibold">{Math.round(overlay.avg_food_eta_minutes)}min</span>
-              <span className="text-[8px] text-muted-foreground">Food</span>
-            </div>
-          )}
-          {overlay.avg_taxi_eta_minutes != null && (
-            <div className="flex items-center gap-1">
-              <Clock className="w-3 h-3 text-yellow-400" />
-              <span className="text-[10px] text-foreground font-semibold">{Math.round(overlay.avg_taxi_eta_minutes)}min</span>
-              <span className="text-[8px] text-muted-foreground">Taxi</span>
-            </div>
-          )}
-          {overlay.avg_parcel_eta_minutes != null && (
-            <div className="flex items-center gap-1">
-              <Clock className="w-3 h-3 text-cyan-400" />
-              <span className="text-[10px] text-foreground font-semibold">{Math.round(overlay.avg_parcel_eta_minutes)}min</span>
-              <span className="text-[8px] text-muted-foreground">Parcel</span>
-            </div>
-          )}
-        </div>
-      )}
+      {/* Category ETAs — projected from ETA engine */}
+      <div className="flex gap-2.5 pt-1.5 border-t border-border/10 flex-wrap">
+        {etas.taxi != null && (
+          <div className="flex items-center gap-1">
+            <span className="text-[10px]">🚕</span>
+            <span className="text-[10px] text-foreground font-semibold">{etas.taxi}min</span>
+            <span className="text-[8px] text-muted-foreground">Taxi</span>
+          </div>
+        )}
+        {etas.food != null && (
+          <div className="flex items-center gap-1">
+            <span className="text-[10px]">🍽️</span>
+            <span className="text-[10px] text-foreground font-semibold">{etas.food}min</span>
+            <span className="text-[8px] text-muted-foreground">Food</span>
+          </div>
+        )}
+        {etas.grocery != null && (
+          <div className="flex items-center gap-1">
+            <span className="text-[10px]">🛒</span>
+            <span className="text-[10px] text-foreground font-semibold">{etas.grocery}min</span>
+            <span className="text-[8px] text-muted-foreground">Grocery</span>
+          </div>
+        )}
+        {etas.parcel != null && (
+          <div className="flex items-center gap-1">
+            <span className="text-[10px]">📦</span>
+            <span className="text-[10px] text-foreground font-semibold">{etas.parcel}min</span>
+            <span className="text-[8px] text-muted-foreground">Parcel</span>
+          </div>
+        )}
+      </div>
     </motion.div>
   );
 }
