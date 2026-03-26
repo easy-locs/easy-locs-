@@ -228,32 +228,24 @@ const Index = () => {
         </Suspense>
 
         {/* 11. Offers */}
-        {!isMobile && (
-          <Suspense fallback={<SectionLoader />}>
-            <OffersSection />
-          </Suspense>
-        )}
+        <Suspense fallback={<SectionLoader />}>
+          <OffersSection />
+        </Suspense>
 
         {/* 12. For You */}
-        {!isMobile && (
-          <Suspense fallback={<SectionLoader />}>
-            <ForYouSection />
-          </Suspense>
-        )}
+        <Suspense fallback={<SectionLoader />}>
+          <ForYouSection />
+        </Suspense>
 
         {/* 12b. Smart Recommendations */}
-        {!isMobile && (
-          <Suspense fallback={null}>
-            <SmartRecommendationsSection />
-          </Suspense>
-        )}
+        <Suspense fallback={null}>
+          <SmartRecommendationsSection />
+        </Suspense>
 
         {/* 12c. Promo Carousel */}
-        {!isMobile && (
-          <Suspense fallback={null}>
-            <HomePromoCarousel />
-          </Suspense>
-        )}
+        <Suspense fallback={null}>
+          <HomePromoCarousel />
+        </Suspense>
 
         {/* 13. Value Proposition */}
         <Suspense fallback={<SectionLoader />}>
