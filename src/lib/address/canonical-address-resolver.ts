@@ -382,7 +382,7 @@ export async function trackAddressUsage(params: {
   });
 
   // Bump popularity
-  await (supabase as any).rpc("increment_popularity", { place_id: params.canonicalPlaceId }).catch(() => {});
+  try { await (supabase as any).rpc("increment_popularity", { place_id: params.canonicalPlaceId }); } catch {}
 }
 
 // ── Get recent places for a user ──
