@@ -1,6 +1,9 @@
 /**
  * Search Intent Resolver — Classifies query shape before ranking.
  * Detects: local ambiguous, airport, saved shortcut, explicit foreign, landmark, etc.
+ * 
+ * SHORT AMBIGUOUS QUERIES: Marina, Mall, Airport, Tower, Downtown, Burj, JLT
+ * → MUST default to LOCAL intent. Foreign results heavily penalized.
  */
 
 export interface SearchIntent {
@@ -17,6 +20,7 @@ const AIRPORT_ALIASES: Record<string, string> = {
   dxb: "AE", "dubai airport": "AE", "dubai international": "AE",
   auh: "AE", "abu dhabi airport": "AE",
   shj: "AE", "sharjah airport": "AE",
+  dwc: "AE", "al maktoum": "AE",
   jfk: "US", lax: "US", lhr: "GB", cdg: "FR", nrt: "JP",
   sin: "SG", hkg: "HK", bkk: "TH", ist: "TR",
 };
@@ -26,6 +30,7 @@ const FOREIGN_INDICATORS = [
   "usa", "united states", "new york", "london", "paris", "tokyo",
   "singapore", "california", "texas", "chicago", "los angeles",
   "san francisco", "seattle", "boston", "florida", "germany", "france",
+  "india", "mumbai", "delhi", "beijing", "shanghai", "sydney",
 ];
 
 // Saved shortcut keywords
@@ -39,6 +44,10 @@ const AMBIGUOUS_SHORT = [
   "port", "harbour", "harbor", "garden", "plaza", "center",
   "centre", "village", "heights", "springs", "hills", "bay",
   "creek", "lake", "island", "gate", "square", "boulevard",
+  "burj", "jlt", "jbr", "difc", "deira", "karama", "jumeirah",
+  "barsha", "tecom", "media city", "internet city", "silicon oasis",
+  "sports city", "motor city", "discovery gardens", "gardens",
+  "souk", "corniche", "creek", "festival", "city walk",
 ];
 
 export function resolveSearchIntent(query: string, contextType?: string): SearchIntent {
@@ -46,7 +55,7 @@ export function resolveSearchIntent(query: string, contextType?: string): Search
   const words = q.split(/\s+/);
 
   // Airport detection
-  const airportKey = Object.keys(AIRPORT_ALIASES).find(k => q.includes(k));
+  const airportKey = Object.keys(AIRPORT_ALIASES).find(k => q === k || q.includes(k));
   if (airportKey || q.includes("terminal") || q.includes("airport")) {
     return {
       type: "airport",
@@ -69,7 +78,7 @@ export function resolveSearchIntent(query: string, contextType?: string): Search
     };
   }
 
-  // Explicit foreign
+  // Explicit foreign — only if query explicitly names a foreign place
   const hasForeign = FOREIGN_INDICATORS.some(f => q.includes(f));
   if (hasForeign) {
     return {
@@ -81,9 +90,9 @@ export function resolveSearchIntent(query: string, contextType?: string): Search
     };
   }
 
-  // Ambiguous short (local default)
-  const isShort = words.length <= 2;
-  const matchesAmbiguous = AMBIGUOUS_SHORT.some(a => q.includes(a));
+  // Ambiguous short (local default) — extended for UAE/Dubai neighborhoods
+  const isShort = words.length <= 3;
+  const matchesAmbiguous = AMBIGUOUS_SHORT.some(a => q === a || q.startsWith(a + " ") || q.endsWith(" " + a));
   if (isShort && matchesAmbiguous) {
     return {
       type: "local_place",
@@ -94,11 +103,12 @@ export function resolveSearchIntent(query: string, contextType?: string): Search
     };
   }
 
+  // Generic short query — still treat as mildly ambiguous for local bias
   return {
     type: "generic",
     isExplicitForeign: false,
     isAirportQuery: false,
     isSavedShortcut: false,
-    isAmbiguousShort: isShort,
+    isAmbiguousShort: isShort && words.length <= 2,
   };
 }
