@@ -67,7 +67,7 @@ export default function RetailStorePage() {
               </div>
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <MapPin className="h-4 w-4" />
-                <span>{store.address || store.city || "Dubai Mall District"}</span>
+                <span>{store.address || "Dubai Mall District"}</span>
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <Link to={`/s/${store.slug}`} className="inline-flex items-center justify-center gap-2 rounded-2xl bg-primary px-4 py-3 text-sm font-bold text-primary-foreground">
