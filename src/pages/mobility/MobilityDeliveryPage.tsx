@@ -148,7 +148,7 @@ export default function MobilityDeliveryPage() {
   }, [station.weatherType]);
 
   return (
-    <div className="min-h-[100dvh] bg-background">
+    <div className="app-mobile-page bg-background">
       {/* ══ Sticky Header ══ */}
       <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-xl border-b border-border/30">
         <div className="px-4 py-3 flex items-center gap-3">
