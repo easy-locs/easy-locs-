@@ -330,7 +330,7 @@ export default function SmartHome() {
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.12, ...TRANSITIONS.smooth }}
-        className="mb-3"
+        className="px-4 mb-3"
       >
         <div className="flex items-center justify-between mb-1.5">
           <h3 className="text-xs font-bold text-foreground flex items-center gap-1">
