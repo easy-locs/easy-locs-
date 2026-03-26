@@ -1,6 +1,7 @@
 import React from "react";
 import { useRide, useRideEvents, useRideRealtime, useRideTracking } from "@/hooks/useRides";
 import { cancelRide, updateRideStatus } from "@/lib/rides/service";
+import { TrackingPusher } from "@/components/rides/TrackingPusher";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
@@ -28,6 +29,7 @@ export function RideLiveCard({ rideId }: { rideId: string }) {
   if (!ride) return <div className="h-32 bg-muted/40 rounded-xl animate-pulse" />;
 
   const isFinal = ["completed", "cancelled", "failed"].includes(ride.status);
+  const isDriverActive = ["accepted", "driver_en_route", "arrived", "in_progress"].includes(ride.status);
   const statusInfo = STATUS_CONFIG[ride.status] ?? { color: "bg-muted text-muted-foreground", label: ride.status };
 
   return (
@@ -119,5 +121,8 @@ export function RideLiveCard({ rideId }: { rideId: string }) {
         )}
       </div>
     </div>
-  );
+    {isDriverActive && <TrackingPusher rideId={rideId} />}
+  </>;
+
+  return content;
 }

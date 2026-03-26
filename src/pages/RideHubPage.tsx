@@ -6,7 +6,8 @@ import { useState } from "react";
 import { useMyRides } from "@/hooks/useRides";
 import { RideBookingForm } from "@/components/rides/RideBookingForm";
 import { RideLiveCard } from "@/components/rides/RideLiveCard";
-import { ArrowLeft, Car, Clock, CheckCircle2 } from "lucide-react";
+import { DriverOpenRidesPanel } from "@/components/rides/DriverOpenRidesPanel";
+import { ArrowLeft, Car, Clock, CheckCircle2, Users } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
@@ -38,7 +39,7 @@ export default function RideHubPage() {
 
       <div className="px-4 py-4 space-y-4">
         <Tabs defaultValue={activeRides.length > 0 ? "active" : "book"} className="w-full">
-          <TabsList className="w-full grid grid-cols-3 bg-muted/50 rounded-xl h-10">
+          <TabsList className="w-full grid grid-cols-4 bg-muted/50 rounded-xl h-10">
             <TabsTrigger value="book" className="rounded-lg text-xs font-semibold gap-1.5 data-[state=active]:bg-background data-[state=active]:shadow-sm">
               <Car className="h-3.5 w-3.5" /> Book
             </TabsTrigger>
@@ -48,6 +49,9 @@ export default function RideHubPage() {
             </TabsTrigger>
             <TabsTrigger value="history" className="rounded-lg text-xs font-semibold gap-1.5 data-[state=active]:bg-background data-[state=active]:shadow-sm">
               <CheckCircle2 className="h-3.5 w-3.5" /> History
+            </TabsTrigger>
+            <TabsTrigger value="driver" className="rounded-lg text-xs font-semibold gap-1.5 data-[state=active]:bg-background data-[state=active]:shadow-sm">
+              <Users className="h-3.5 w-3.5" /> Driver
             </TabsTrigger>
           </TabsList>
 
@@ -95,6 +99,10 @@ export default function RideHubPage() {
                 </div>
               ))
             )}
+          </TabsContent>
+
+          <TabsContent value="driver" className="mt-4">
+            <DriverOpenRidesPanel />
           </TabsContent>
         </Tabs>
       </div>
