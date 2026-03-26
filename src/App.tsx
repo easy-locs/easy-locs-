@@ -36,12 +36,15 @@ import AppBootstrapGuardDirect from "@/components/app/AppBootstrapGuard";
 import { AppInit } from "@/components/system/AppInit";
 import { GlobalExperienceProvider } from "@/providers/GlobalExperienceProvider";
 import { UiQualityProvider } from "@/providers/UiQualityProvider";
+import { FloatingCTAButton } from "@/components/engine/FloatingCTAButton";
+import { OrbitPromptOverlay } from "@/components/engine/OrbitPromptOverlay";
 
 // V2 test pages — removed (Batch B purge)
 
 // V2 Suite 4 pages
 // V2 Suite 4 pages — all removed, routes redirect to canonical paths
 const ClaimPage = safeLazy(() => import("./pages/ClaimPage"), "ClaimPage");
+const ClaimShopPage = safeLazy(() => import("./pages/ClaimShopPage"), "ClaimShopPage");
 
 
 function safeLazy(factory: () => Promise<{ default: ComponentType<any> }>, name: string) {
@@ -1192,6 +1195,7 @@ const App = () => (
               {/* Guest / Public */}
               <Route path="/guest/checkout/:cartId" element={<GuestCheckoutPage />} />
               <Route path="/payment/:orderId" element={<PaymentPage />} />
+              <Route path="/claim-shop/:merchantId" element={<ClaimShopPage />} />
               <Route path="/store/:publicSlug" element={<PublicStorefrontBySlugPage />} />
 
               <Route path="/app/orbit" element={<Navigate to="/orbit" replace />} />
@@ -1223,6 +1227,8 @@ const App = () => (
            </Suspense>
            <MainBottomNav />
             <SmartInstallBanner />
+            <FloatingCTAButton />
+            <OrbitPromptOverlay />
             </UiQualityProvider>
             </SplashScreen>
            </AppLockGuard>
