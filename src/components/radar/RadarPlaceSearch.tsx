@@ -1,12 +1,14 @@
 /**
- * RadarPlaceSearch — Premium place search bar embedded in the Radar.
+ * RadarPlaceSearch — Premium place search bar with live ETA intelligence.
  * Resolves through canonical pipeline → viewport → live overlays → full radar refresh.
+ * Search results show live ETA per category as inline chips.
  */
 import { useState, useCallback, useRef, useEffect } from "react";
 import { Search, X, MapPin, Clock, Building2, Plane, Navigation } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useRadarPlaceStore } from "@/stores/radarPlaceStore";
 import { searchRadarPlaces, selectRadarPlace } from "@/lib/radar/radar-place-search-adapter";
+import { decorateSearchResults, formatETAChips, type DecoratedSearchResult } from "@/lib/radar/search-result-decorator";
 import type { CanonicalPlaceRow } from "@/lib/address/canonical-address-resolver";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -22,7 +24,8 @@ const PLACE_TYPE_ICON: Record<string, React.ReactNode> = {
 
 export default function RadarPlaceSearch() {
   const { searchQuery, setSearchQuery, searchActive, setSearchActive, setSelectedPlace } = useRadarPlaceStore();
-  const [results, setResults] = useState<CanonicalPlaceRow[]>([]);
+  const [rawResults, setRawResults] = useState<CanonicalPlaceRow[]>([]);
+  const [decorated, setDecorated] = useState<DecoratedSearchResult[]>([]);
   const [loading, setLoading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout>>();
@@ -30,12 +33,15 @@ export default function RadarPlaceSearch() {
   const handleSearch = useCallback((q: string) => {
     setSearchQuery(q);
     if (debounceRef.current) clearTimeout(debounceRef.current);
-    if (q.length < 2) { setResults([]); return; }
+    if (q.length < 2) { setRawResults([]); setDecorated([]); return; }
 
     setLoading(true);
     debounceRef.current = setTimeout(async () => {
       const places = await searchRadarPlaces({ query: q, limit: 8 });
-      setResults(places);
+      setRawResults(places);
+      // Decorate with live ETAs
+      const enriched = await decorateSearchResults(places);
+      setDecorated(enriched);
       setLoading(false);
     }, 300);
   }, [setSearchQuery]);
@@ -46,13 +52,15 @@ export default function RadarPlaceSearch() {
     setSelectedPlace(selection);
     setSearchActive(false);
     setSearchQuery(selection.label);
-    setResults([]);
+    setRawResults([]);
+    setDecorated([]);
     setLoading(false);
   }, [setSelectedPlace, setSearchActive, setSearchQuery]);
 
   const handleClear = useCallback(() => {
     setSearchQuery("");
-    setResults([]);
+    setRawResults([]);
+    setDecorated([]);
     setSelectedPlace(null);
     inputRef.current?.focus();
   }, [setSearchQuery, setSelectedPlace]);
@@ -60,6 +68,12 @@ export default function RadarPlaceSearch() {
   useEffect(() => {
     return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
   }, []);
+
+  // Merge raw + decorated by index
+  const results = rawResults.map((place, i) => ({
+    place,
+    decoration: decorated[i] ?? null,
+  }));
 
   return (
     <div className="relative z-30">
@@ -93,33 +107,63 @@ export default function RadarPlaceSearch() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -4 }}
             transition={{ duration: 0.15 }}
-            className="absolute top-full left-0 right-0 mt-1.5 rounded-xl border border-border/20 bg-card/95 backdrop-blur-xl shadow-2xl overflow-hidden max-h-[300px] overflow-y-auto"
+            className="absolute top-full left-0 right-0 mt-1.5 rounded-xl border border-border/20 bg-card/95 backdrop-blur-xl shadow-2xl overflow-hidden max-h-[340px] overflow-y-auto"
           >
             {loading && results.length === 0 && (
               <div className="px-4 py-3 text-xs text-muted-foreground text-center">Searching...</div>
             )}
-            {results.map((place) => (
-              <button
-                key={place.id}
-                onClick={() => handleSelect(place)}
-                className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-muted/30 active:bg-muted/50 transition-colors text-left"
-              >
-                <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 bg-muted/50 text-muted-foreground">
-                  {PLACE_TYPE_ICON[place.place_type] ?? <MapPin className="w-3.5 h-3.5" />}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-foreground truncate">
-                    {place.short_label ?? place.formatted_address}
-                  </p>
-                  <p className="text-[10px] text-muted-foreground truncate">
-                    {[place.district, place.city, place.country_code].filter(Boolean).join(" · ")}
-                    {place.place_type !== "address" && (
-                      <span className="ml-1 capitalize text-primary/70">{place.place_type}</span>
-                    )}
-                  </p>
-                </div>
-              </button>
-            ))}
+            {results.map(({ place, decoration }) => {
+              const etaChips = decoration ? formatETAChips(decoration.eta_projection) : [];
+              return (
+                <button
+                  key={place.id}
+                  onClick={() => handleSelect(place)}
+                  className="w-full flex flex-col gap-1 px-3 py-2.5 hover:bg-muted/30 active:bg-muted/50 transition-colors text-left"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 bg-muted/50 text-muted-foreground">
+                      {PLACE_TYPE_ICON[place.place_type] ?? <MapPin className="w-3.5 h-3.5" />}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-foreground truncate">
+                        {place.short_label ?? place.formatted_address}
+                      </p>
+                      <p className="text-[10px] text-muted-foreground truncate">
+                        {[place.district, place.city, place.country_code].filter(Boolean).join(" · ")}
+                        {place.place_type !== "address" && (
+                          <span className="ml-1 capitalize text-primary/70">{place.place_type}</span>
+                        )}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Live ETA chips */}
+                  {etaChips.length > 0 && (
+                    <div className="flex gap-1.5 ml-11">
+                      {etaChips.map(chip => (
+                        <span
+                          key={chip.category}
+                          className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md text-[9px] font-semibold bg-muted/60 text-muted-foreground"
+                        >
+                          <span>{chip.emoji}</span>
+                          <span>{chip.minutes}min</span>
+                        </span>
+                      ))}
+                      {decoration?.live_context.traffic && (
+                        <span className={cn(
+                          "inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md text-[9px] font-semibold",
+                          decoration.live_context.traffic === "heavy" || decoration.live_context.traffic === "severe"
+                            ? "bg-destructive/10 text-destructive"
+                            : "bg-muted/60 text-muted-foreground"
+                        )}>
+                          🚗 {decoration.live_context.traffic}
+                        </span>
+                      )}
+                    </div>
+                  )}
+                </button>
+              );
+            })}
           </motion.div>
         )}
       </AnimatePresence>
