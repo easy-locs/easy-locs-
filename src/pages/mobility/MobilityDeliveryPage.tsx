@@ -82,6 +82,7 @@ const WEATHER_ICON: Record<string, React.ReactNode> = {
 
 export default function MobilityDeliveryPage() {
   const navigate = useNavigate();
+  const [addressOpen, setAddressOpen] = useState(false);
   const { jobs, hydrateMyJobs, refreshJob } = useCustomerMobilityStore();
   const station = useArbitratedStation();
   const permissionState = useLocationStore((s) => s.permissionState);
