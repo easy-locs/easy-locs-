@@ -20,6 +20,7 @@ import { initRideLifecycleHandler } from "./handlers/ride-lifecycle.handler";
 import { initRideAIDispatchHandler } from "./handlers/ride-ai-dispatch.handler";
 import { initRideWalletHandler } from "./handlers/ride-wallet.handler";
 import { initRideRatingHandler } from "./handlers/ride-rating.handler";
+import { initSupportOpenHandler } from "./handlers/support-open.handler";
 import "@/lib/radar/signal-ingestor";
 
 /**
@@ -93,5 +94,6 @@ initRideLifecycleHandler();
 initRideAIDispatchHandler();
 initRideWalletHandler();
 initRideRatingHandler();
+initSupportOpenHandler();
 
 console.log("[event-init] All event handlers registered + platformBus bridge active");
