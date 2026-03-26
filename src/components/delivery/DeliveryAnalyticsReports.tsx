@@ -48,9 +48,9 @@ export default function DeliveryAnalyticsReports({ orgId }: { orgId: string }) {
       const since = new Date();
       since.setDate(since.getDate() - periodDays[period]);
       const { data } = await supabase
-        .from("delivery_jobs")
+        .from("mobility_jobs")
         .select("id, status, created_at, assigned_at, accepted_at, picked_up_at, delivered_at, delivery_fee, currency, dropoff_lat, dropoff_lng, priority, driver_id")
-        .eq("org_id", orgId)
+        .eq("merchant_id", orgId)
         .gte("created_at", since.toISOString())
         .order("created_at", { ascending: true });
       if (data) setJobs(data as JobRecord[]);

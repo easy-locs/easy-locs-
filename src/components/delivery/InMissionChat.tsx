@@ -93,7 +93,7 @@ export default function InMissionChat({ jobId, sellerId, driverId, onClose, clas
     try {
       // We need org_id - fetch from the job
       const { data: jobData } = await supabase
-        .from("delivery_jobs")
+        .from("mobility_jobs")
         .select("org_id")
         .eq("id", jobId)
         .maybeSingle();
