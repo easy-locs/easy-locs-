@@ -13,6 +13,7 @@ import {
   MapPin, Clock, Shield, Sparkles, TrendingUp, Package,
   Navigation, AlertTriangle, CloudLightning, Bike,
 } from "lucide-react";
+import { MobilityLiveMap } from "@/components/mobility/MobilityLiveMap";
 import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { motion } from "framer-motion";
@@ -264,6 +265,12 @@ export default function MobilityDeliveryPage() {
             </div>
           )}
         </motion.div>
+
+        {/* ══ Live Map Preview ══ */}
+        <MobilityLiveMap
+          mode="delivery"
+          nearbyRiders={riderCount > 0 ? riderCount : 3}
+        />
 
         {/* ══ Active Deliveries ══ */}
         {activeJobs.length > 0 && (
