@@ -524,8 +524,8 @@ async function handleOrbitPaymentCompleted(supabase: any, session: Stripe.Checko
   // Post confirmation message in Orbit chat thread
   if (threadId && userId) {
     const { data: thread } = await supabase
-      .from("conversation_threads")
-      .select("org_id")
+      .from("conversations_v2")
+      .select("id")
       .eq("id", threadId)
       .maybeSingle();
 
@@ -536,7 +536,7 @@ async function handleOrbitPaymentCompleted(supabase: any, session: Stripe.Checko
     const richContent = `💰 Payment confirmed\n━━━━━━━━━━━━━━━━\n💵 Amount: ${amount} ${currency}\n💳 Method: Card (Stripe)\n📋 Status: ✅ Completed (verified)\n🔖 Ref: ${sessionId.slice(0, 16)}${contextLine}\n━━━━━━━━━━━━━━━━`;
 
     await supabase.from("messages").insert({
-      org_id: thread?.org_id || null,
+      org_id: null,
       sender_id: "00000000-0000-0000-0000-000000000000",
       thread_id: threadId,
       content: richContent,
@@ -562,8 +562,8 @@ async function handleOrbitPaymentCompleted(supabase: any, session: Stripe.Checko
     // Get org_id from thread or first available org
     let notifOrgId = null;
     if (threadId) {
-      const { data: t } = await supabase.from("conversation_threads").select("org_id").eq("id", threadId).maybeSingle();
-      notifOrgId = t?.org_id;
+      const { data: t } = await supabase.from("conversations_v2").select("id").eq("id", threadId).maybeSingle();
+      notifOrgId = null; // conversations_v2 doesn't carry org_id
     }
 
     await supabase.from("notifications").insert({

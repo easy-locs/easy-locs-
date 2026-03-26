@@ -68,16 +68,14 @@ serve(async (req) => {
       .single();
     if (pErr) throw pErr;
 
-    await admin.from("app_notifications").insert({
+    await admin.from("notifications").insert({
       id: crypto.randomUUID(),
       user_id: userId,
-      "orbitId": ownerOrbit.orbit_id,
       type: "rent",
       title: "Rent payment created",
       body: `Payment ${paymentId} scheduled for ${dueDate}`,
       read: false,
-      metadata: { paymentId, leaseId },
-      "createdAt": now,
+      metadata_json: { paymentId, leaseId },
     });
 
     return new Response(
