@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useState, useEffect, useMemo } from "react";
 import { useRadar } from "@/hooks/useRadar";
+import { useI18n } from "@/lib/i18n";
 import EasyLocsLogo from "@/components/brand/EasyLocsLogo";
 
 const UNIVERSES = [
@@ -49,10 +50,19 @@ function useLiveStats() {
 
 const Hero = () => {
   const isMobile = useIsMobile();
+  const { t } = useI18n();
   const [intentIdx, setIntentIdx] = useState(0);
-  const intent = INTENTS[intentIdx];
   const liveStats = useLiveStats();
   const { radar, formatETA } = useRadar({ type: "taxi" });
+
+  const INTENTS_I18N = useMemo(() => [
+    { key: "consumer", headline: t("landing.hero.intent_consumer") || "One platform. Everything around you. Instantly.", sub: t("landing.hero.intent_consumer_sub") || "Order, ride, send, pay — all in one app.", cta: t("landing.hero.cta_start") || "Start now — free" },
+    { key: "business", headline: t("landing.hero.intent_business") || "Earn money with your city.", sub: t("landing.hero.intent_business_sub") || "Open a shop, get customers instantly, accept payments.", cta: t("landing.hero.intent_business_cta") || "Launch your business" },
+    { key: "property", headline: t("landing.hero.intent_property") || "Rent. Manage. Grow.", sub: t("landing.hero.intent_property_sub") || "The smartest property management platform.", cta: t("landing.hero.intent_property_cta") || "List your property" },
+    { key: "services", headline: t("landing.hero.intent_services") || "Your skills. Clients nearby.", sub: t("landing.hero.intent_services_sub") || "Get discovered by thousands of users.", cta: t("landing.hero.intent_services_cta") || "Offer your services" },
+  ], [t]);
+
+  const intent = INTENTS_I18N[intentIdx];
 
   // Rotate intent every 6s
   useEffect(() => {
@@ -95,13 +105,13 @@ const Hero = () => {
           <div className="flex items-center gap-1.5 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full border shrink-0 max-w-[48%] sm:max-w-none" style={{ background: "hsl(220 40% 8% / 0.6)", borderColor: "hsl(220 15% 90% / 0.06)" }}>
             <Users className="h-3 w-3 shrink-0" style={{ color: "hsl(var(--accent) / 0.6)" }} />
             <span className="text-[9px] sm:text-[11px] font-bold truncate" style={{ color: "hsl(var(--accent))" }}>
-              {liveStats.users.toLocaleString()}+ users
+              {liveStats.users.toLocaleString()}+ {t("landing.hero.users") || "users"}
             </span>
           </div>
           <div className="flex items-center gap-1.5 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full border shrink-0 max-w-[48%] sm:max-w-none" style={{ background: "hsl(220 40% 8% / 0.6)", borderColor: "hsl(var(--success) / 0.1)" }}>
             <TrendingUp className="h-3 w-3 shrink-0" style={{ color: "hsl(var(--success))" }} />
             <span className="text-[9px] sm:text-[11px] font-bold truncate" style={{ color: "hsl(var(--success))" }}>
-              ${liveStats.processed}M processed
+              ${liveStats.processed}M {t("landing.hero.processed") || "processed"}
             </span>
           </div>
         </motion.div>
@@ -117,7 +127,7 @@ const Hero = () => {
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75" style={{ background: "hsl(var(--success))" }} />
                   <span className="relative inline-flex rounded-full h-1.5 w-1.5" style={{ background: "hsl(var(--success))" }} />
                 </span>
-                Live in 190+ countries
+                {t("landing.hero.live_badge") || "Live in 190+ countries"}
               </span>
             </motion.div>
 
@@ -193,7 +203,7 @@ const Hero = () => {
               </motion.div>
               <motion.div whileHover={{ scale: 1.03, y: -1 }} whileTap={{ scale: 0.97 }}>
                 <Link to="/business" className="inline-flex items-center justify-center gap-2 h-11 sm:h-12 px-6 sm:px-7 rounded-2xl text-sm font-semibold border w-full sm:w-auto" style={{ borderColor: "hsl(220 15% 75% / 0.1)", color: "hsl(220 15% 75%)", background: "hsl(220 15% 75% / 0.04)" }}>
-                  Launch your business in minutes
+                  {t("landing.hero.launch_business") || "Launch your business in minutes"}
                 </Link>
               </motion.div>
             </motion.div>
@@ -201,9 +211,9 @@ const Hero = () => {
             {/* Trust strip — hidden mobile */}
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.7 }} className="hidden sm:flex items-center justify-center lg:justify-start gap-5 pt-1">
               {[
-                { icon: Globe, val: "190+", lbl: "Countries" },
-                { icon: Shield, val: "0%", lbl: "Commission" },
-                { icon: CreditCard, val: "120+", lbl: "Currencies" },
+                { icon: Globe, val: "190+", lbl: t("landing.hero.stat_countries") || "Countries" },
+                { icon: Shield, val: "0%", lbl: t("landing.hero.stat_commission") || "Commission" },
+                { icon: CreditCard, val: "120+", lbl: t("landing.hero.stat_currencies") || "Currencies" },
               ].map((s) => (
                 <div key={s.lbl} className="flex items-center gap-1.5">
                   <s.icon className="h-3 w-3" style={{ color: "hsl(var(--accent) / 0.6)" }} />
@@ -293,7 +303,7 @@ const Hero = () => {
               >
                 <span className="flex items-center gap-1.5 text-[10px] font-semibold" style={{ color: "hsl(var(--success))" }}>
                   <span className="w-1.5 h-1.5 rounded-full animate-ping" style={{ background: "hsl(var(--success))" }} />
-                  {liveStats.txPerMin} transactions in the last minute
+                  {liveStats.txPerMin} {t("landing.hero.tx_last_minute") || "transactions in the last minute"}
                 </span>
               </motion.div>
             </div>
