@@ -7,14 +7,14 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
-import SellerDashboard from "@/components/seller/SellerDashboard";
-import SellerDashboardPanel from "@/components/marketplace/SellerDashboardPanel";
-import SellerVideoHub from "@/components/marketplace/SellerVideoHub";
-import StorefrontAnalytics from "@/components/marketplace/StorefrontAnalytics";
-import LiveCommerceToggle from "@/components/marketplace/LiveCommerceToggle";
-import SellerLogisticsPanel from "@/components/delivery/SellerLogisticsPanel";
 import { Store, Video, BarChart3, Radio, Truck, ChefHat, Loader2 } from "lucide-react";
 import { haptic } from "@/lib/haptics";
+
+const SellerDashboard = lazy(() => import("@/components/seller/SellerDashboard"));
+const SellerVideoHub = lazy(() => import("@/components/marketplace/SellerVideoHub"));
+const StorefrontAnalytics = lazy(() => import("@/components/marketplace/StorefrontAnalytics"));
+const LiveCommerceToggle = lazy(() => import("@/components/marketplace/LiveCommerceToggle"));
+const SellerLogisticsPanel = lazy(() => import("@/components/delivery/SellerLogisticsPanel"));
 
 const KitchenQueue = lazy(() => import("@/components/pos/KitchenQueue"));
 
@@ -120,6 +120,7 @@ export default function SellerHubPage() {
         </div>
 
         {/* Content */}
+        <Suspense fallback={<div className="flex justify-center py-12"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>}>
         <div className="px-4">
           {tab === "shops" && <SellerDashboard />}
 
@@ -161,6 +162,7 @@ export default function SellerHubPage() {
             </div>
           )}
         </div>
+        </Suspense>
       </div>
     </DashboardLayout>
   );
