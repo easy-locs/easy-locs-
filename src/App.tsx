@@ -900,7 +900,7 @@ const App = () => (
               {/* Orphaned pages — now wired */}
               <Route path="/concierge-ops" element={<ProtectedRoute><ConciergeOperations /></ProtectedRoute>} />
               <Route path="/customer/:customerId" element={<ProtectedRoute><CustomerProfilePage /></ProtectedRoute>} />
-              <Route path="/travel/hotels" element={<TravelHotels />} />
+              {/* /travel/hotels already redirects to /travel/stays at line 895 */}
 
               <Route path="/super-map" element={<Navigate to="/radar" replace />} />
               <Route path="/map" element={<Navigate to="/radar" replace />} />
@@ -1043,7 +1043,7 @@ const App = () => (
               <Route path="/dashboard/developer" element={<ProtectedRoute><DeveloperPortal /></ProtectedRoute>} />
               <Route path="/dashboard/audit" element={<ProtectedRoute><AuditTrail /></ProtectedRoute>} />
               <Route path="/dashboard/wallet" element={<Navigate to="/wallet" replace />} />
-              <Route path="/wallet" element={<ProtectedRoute><WalletHub /></ProtectedRoute>} />
+              <Route path="/wallet" element={<ProtectedRoute><WalletHubPage /></ProtectedRoute>} />
               <Route path="/dashboard/deals" element={<ProtectedRoute><DealAnalyticsPage /></ProtectedRoute>} />
               <Route path="/dashboard/service-tracking" element={<ProtectedRoute><ServiceTrackingPage /></ProtectedRoute>} />
               <Route path="/dashboard/seller" element={<ProtectedRoute><SellerHubPage /></ProtectedRoute>} />
