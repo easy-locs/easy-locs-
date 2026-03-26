@@ -1,11 +1,9 @@
 /**
  * useRadarResults — Returns nearby entities for radar/discovery views.
- * Uses CANONICAL discovery pipeline — visibility, routing, radius enforced.
- * Enriches GeoEntity with isSponsored + reviewsCount for filters/ranking.
+ * Uses CANONICAL discovery pipeline — serviceability-driven, no manual radius.
  */
 import { useState, useEffect } from "react";
 import { useLocationStore } from "@/stores/locationStore";
-import { useDiscoveryStore } from "@/stores/discoveryStore";
 import { fetchCanonicalDiscovery } from "@/lib/discovery/canonical-discovery-pipeline";
 import type { GeoEntity } from "@/lib/geo/geoEntityAdapter";
 
@@ -20,11 +18,10 @@ const CATEGORY_TO_TYPE: Record<string, GeoEntity["type"]> = {
   experiences: "service",
 };
 
-export function useRadarResults(opts?: { type?: string; radiusKm?: number; surface?: "radar" | "map" | "search" | "discover" | "home" }) {
+export function useRadarResults(opts?: { type?: string; surface?: "radar" | "map" | "search" | "discover" | "home" }) {
   const [entities, setEntities] = useState<(GeoEntity & { isSponsored?: boolean; reviewsCount?: number })[]>([]);
   const [loading, setLoading] = useState(true);
   const location = useLocationStore((s) => s.currentLocation);
-  const radiusKm = useDiscoveryStore((s) => s.radiusKm);
 
   useEffect(() => {
     let cancelled = false;
@@ -32,7 +29,6 @@ export function useRadarResults(opts?: { type?: string; radiusKm?: number; surfa
     fetchCanonicalDiscovery({
       surface: opts?.surface ?? "discover",
       userLocation: location ? { lat: location.lat, lng: location.lng } : undefined,
-      radiusKm: opts?.radiusKm ?? radiusKm ?? undefined,
     })
       .then((points) => {
         if (cancelled) return;
@@ -68,7 +64,7 @@ export function useRadarResults(opts?: { type?: string; radiusKm?: number; surfa
         }
       });
     return () => { cancelled = true; };
-  }, [location?.lat, opts?.type, radiusKm]);
+  }, [location?.lat, opts?.type]);
 
   return { entities, loading, location };
 }
