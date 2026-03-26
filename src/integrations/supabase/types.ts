@@ -18539,10 +18539,13 @@ export type Database = {
           menu_quality_score: number | null
           menu_sections_json: Json | null
           menu_status: string | null
+          merge_confidence: number | null
           minimum_order_amount: number | null
+          missing_fields_json: Json | null
           module_summary_json: Json | null
           name: string
           needs_rescrape: boolean | null
+          needs_review: boolean | null
           opening_hours: Json | null
           orbit_status: string | null
           overall_quality_score: number | null
@@ -18574,6 +18577,7 @@ export type Database = {
           service_catalog_json: Json | null
           source_confidence: number | null
           source_key: string | null
+          source_proofs_json: Json | null
           source_snapshot_at: string | null
           source_snapshot_json: Json | null
           source_type: string | null
@@ -18661,10 +18665,13 @@ export type Database = {
           menu_quality_score?: number | null
           menu_sections_json?: Json | null
           menu_status?: string | null
+          merge_confidence?: number | null
           minimum_order_amount?: number | null
+          missing_fields_json?: Json | null
           module_summary_json?: Json | null
           name: string
           needs_rescrape?: boolean | null
+          needs_review?: boolean | null
           opening_hours?: Json | null
           orbit_status?: string | null
           overall_quality_score?: number | null
@@ -18696,6 +18703,7 @@ export type Database = {
           service_catalog_json?: Json | null
           source_confidence?: number | null
           source_key?: string | null
+          source_proofs_json?: Json | null
           source_snapshot_at?: string | null
           source_snapshot_json?: Json | null
           source_type?: string | null
@@ -18783,10 +18791,13 @@ export type Database = {
           menu_quality_score?: number | null
           menu_sections_json?: Json | null
           menu_status?: string | null
+          merge_confidence?: number | null
           minimum_order_amount?: number | null
+          missing_fields_json?: Json | null
           module_summary_json?: Json | null
           name?: string
           needs_rescrape?: boolean | null
+          needs_review?: boolean | null
           opening_hours?: Json | null
           orbit_status?: string | null
           overall_quality_score?: number | null
@@ -18818,6 +18829,7 @@ export type Database = {
           service_catalog_json?: Json | null
           source_confidence?: number | null
           source_key?: string | null
+          source_proofs_json?: Json | null
           source_snapshot_at?: string | null
           source_snapshot_json?: Json | null
           source_type?: string | null
@@ -22464,6 +22476,7 @@ export type Database = {
           duplicate_confidence: number | null
           duplicate_of: string | null
           entity_type: string
+          gallery_urls: Json | null
           geo_scope: string | null
           has_menu: boolean | null
           has_photo: boolean | null
@@ -22491,7 +22504,10 @@ export type Database = {
           longitude: number | null
           menu_quality_score: number | null
           merchant_profile_id: string | null
+          merge_confidence: number | null
+          missing_fields_json: Json | null
           name: string
+          needs_review: boolean | null
           og_image_url: string | null
           onboarding_completed: boolean | null
           onboarding_step: number | null
@@ -22516,6 +22532,7 @@ export type Database = {
           source_confidence: number | null
           source_external_id: string | null
           source_name: string | null
+          source_proofs_json: Json | null
           source_type: string | null
           subcategory: string | null
           tagline: string | null
@@ -22580,6 +22597,7 @@ export type Database = {
           duplicate_confidence?: number | null
           duplicate_of?: string | null
           entity_type?: string
+          gallery_urls?: Json | null
           geo_scope?: string | null
           has_menu?: boolean | null
           has_photo?: boolean | null
@@ -22607,7 +22625,10 @@ export type Database = {
           longitude?: number | null
           menu_quality_score?: number | null
           merchant_profile_id?: string | null
+          merge_confidence?: number | null
+          missing_fields_json?: Json | null
           name: string
+          needs_review?: boolean | null
           og_image_url?: string | null
           onboarding_completed?: boolean | null
           onboarding_step?: number | null
@@ -22632,6 +22653,7 @@ export type Database = {
           source_confidence?: number | null
           source_external_id?: string | null
           source_name?: string | null
+          source_proofs_json?: Json | null
           source_type?: string | null
           subcategory?: string | null
           tagline?: string | null
@@ -22696,6 +22718,7 @@ export type Database = {
           duplicate_confidence?: number | null
           duplicate_of?: string | null
           entity_type?: string
+          gallery_urls?: Json | null
           geo_scope?: string | null
           has_menu?: boolean | null
           has_photo?: boolean | null
@@ -22723,7 +22746,10 @@ export type Database = {
           longitude?: number | null
           menu_quality_score?: number | null
           merchant_profile_id?: string | null
+          merge_confidence?: number | null
+          missing_fields_json?: Json | null
           name?: string
+          needs_review?: boolean | null
           og_image_url?: string | null
           onboarding_completed?: boolean | null
           onboarding_step?: number | null
@@ -22748,6 +22774,7 @@ export type Database = {
           source_confidence?: number | null
           source_external_id?: string | null
           source_name?: string | null
+          source_proofs_json?: Json | null
           source_type?: string | null
           subcategory?: string | null
           tagline?: string | null
