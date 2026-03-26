@@ -7,7 +7,7 @@ const db = supabase as any;
 
 const CRITICAL_TABLES = [
   "orders", "wallet_accounts", "wallet_ledger_entries", "notifications",
-  "support_tickets", "profiles", "commission_splits", "delivery_jobs",
+  "support_tickets", "profiles", "commission_splits", "mobility_jobs",
 ];
 
 export async function runPermissionCheck() {

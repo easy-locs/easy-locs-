@@ -2,7 +2,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 export async function getOrCreateTrackingSession(params: {
   workspaceId?: string;
-  contextType: "order" | "dispatch_job" | "taxi_ride";
+  contextType: "order" | "dispatch_job" | "taxi_ride" | "mobility_job";
   contextId: string;
   driverId?: string;
   customerUserId?: string;
