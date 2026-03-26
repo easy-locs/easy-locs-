@@ -897,6 +897,11 @@ const App = () => (
               <Route path="/travel/stay/:id" element={<TravelStayDetail />} />
               <Route path="/travel/flight/:id" element={<TravelFlightDetail />} />
 
+              {/* Orphaned pages — now wired */}
+              <Route path="/concierge-ops" element={<ProtectedRoute><ConciergeOperations /></ProtectedRoute>} />
+              <Route path="/customer/:customerId" element={<ProtectedRoute><CustomerProfilePage /></ProtectedRoute>} />
+              <Route path="/travel/hotels" element={<TravelHotels />} />
+
               <Route path="/super-map" element={<Navigate to="/radar" replace />} />
               <Route path="/map" element={<Navigate to="/radar" replace />} />
               <Route path="/radar" element={<HyperRadarPage />} />
