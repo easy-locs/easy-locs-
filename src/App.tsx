@@ -869,7 +869,7 @@ const App = () => (
               <Route path="/marketplace" element={<MarketplaceHubPage />} />
               <Route path="/marketplace/:citySlug" element={<MarketplaceCityPage />} />
               <Route path="/marketplace/:citySlug/:serviceSlug" element={<MarketplaceServiceCityPage />} />
-              <Route path="/services" element={<Navigate to="/services-hub" replace />} />
+              <Route path="/services" element={<Navigate to="/browse/services" replace />} />
               <Route path="/services/:categorySlug" element={<ServiceCategoryPage />} />
               <Route path="/services/city/:citySlug" element={<ServiceCityPage />} />
               <Route path="/provider/seo/:providerId" element={<ProviderSEOPage />} />
