@@ -15,6 +15,8 @@ import "./handlers/commerce-payment-bridge.handler";
 import "./handlers/zone-intelligence.handler";
 import "./handlers/experience-consumer.handler";
 import "./handlers/map-action.handler";
+import "./handlers/ride-bridge.handler";
+import { initRideLifecycleHandler } from "./handlers/ride-lifecycle.handler";
 import "@/lib/radar/signal-ingestor";
 
 /**
@@ -77,5 +79,8 @@ for (const [platformEvent, coreEvent] of Object.entries(BRIDGE_MAP)) {
     void eventBus.emit(coreEvent, payload);
   });
 }
+
+// Initialize ride lifecycle handler (global realtime listener)
+initRideLifecycleHandler();
 
 console.log("[event-init] All event handlers registered + platformBus bridge active");
