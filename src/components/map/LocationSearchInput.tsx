@@ -38,6 +38,7 @@ export function LocationSearchInput({
   showCurrentLocation = true,
   autoFocus = false,
   className = "",
+  contextType,
 }: Props) {
   const [query, setQuery] = useState(controlledValue || "");
   const [open, setOpen] = useState(false);
