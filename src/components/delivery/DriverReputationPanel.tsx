@@ -101,10 +101,10 @@ export default function DriverReputationPanel({ driverId, className }: Props) {
         });
       });
 
-      // Fetch driver session for acceptance rate
-      const { data: session } = await supabase
-        .from("driver_sessions")
-        .select("acceptance_rate, total_completed, total_cancelled")
+      // Fetch rider presence for acceptance rate
+      const { data: session } = await (supabase as any)
+        .from("rider_presence")
+        .select("is_online, is_available")
         .eq("user_id", targetId)
         .maybeSingle();
 

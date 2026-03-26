@@ -51,8 +51,8 @@ export default function AdminModerationPanel({ orgId }: { orgId: string }) {
     setLoading(true);
 
     const [driversRes, disputesRes] = await Promise.all([
-      supabase.from("driver_sessions").select("*").eq("org_id", orgId),
-      supabase.from("delivery_disputes").select("*").eq("org_id", orgId).order("created_at", { ascending: false }).limit(50),
+      (supabase as any).from("rider_presence").select("*").limit(100),
+      supabase.from("delivery_disputes").select("*").order("created_at", { ascending: false }).limit(50),
     ]);
 
     const driverList = (driversRes.data || []) as ModerationDriver[];
@@ -77,7 +77,7 @@ export default function AdminModerationPanel({ orgId }: { orgId: string }) {
   const handleDriverAction = async (driverId: string, userId: string, action: ModerationAction) => {
     try {
       if (action === "suspend" || action === "ban") {
-        await supabase.from("driver_sessions").update({ status: "offline" }).eq("user_id", userId);
+        await (supabase as any).from("rider_presence").update({ is_online: false, is_available: false }).eq("user_id", userId);
       }
 
       // Log moderation action
