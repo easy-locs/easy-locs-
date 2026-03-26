@@ -281,7 +281,7 @@ export default function SmartHome() {
 
   return (
     <div className="space-y-0">
-      <CompactHeader city={city} greeting={greeting} />
+      <CompactHeader city={city} greeting={greeting} onLocationTap={handleLocationTap} />
       <QuickActions />
 
       <div className="overflow-x-auto scrollbar-none mb-3 -mx-1 px-1 touch-pan-x">
@@ -367,6 +367,8 @@ export default function SmartHome() {
       <div className="px-4 pb-4">
         <BoostSlotRenderer surface="home" slotKey="inline_banner_1" variant="inline" />
       </div>
+
+      <AddressSelectorSheet open={addressSheetOpen} onOpenChange={setAddressSheetOpen} />
     </div>
   );
 }
