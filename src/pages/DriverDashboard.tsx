@@ -3,8 +3,10 @@
  * 3 sections max: Stats, Active Missions, History.
  * Clean status flow: assigned → accepted → in_progress → completed.
  */
-import { useState } from "react";
+import { useState, lazy, Suspense } from "react";
 import DeliveryHeatmapPanel from "@/components/delivery/DeliveryHeatmapPanel";
+import DriverStatusQuickCard from "@/components/driver/DriverStatusQuickCard";
+import DriverPositioningCard from "@/components/driver/DriverPositioningCard";
 import { MobilePageHeader } from "@/components/ui/mobile-page-header";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -232,6 +234,12 @@ export default function DriverDashboard() {
             <Power className="h-4 w-4" />
             {isOnline ? "Online" : "Offline"}
           </motion.button>
+        </div>
+
+        {/* Quick Status + Positioning */}
+        <div className="space-y-2 mb-3">
+          <DriverStatusQuickCard />
+          <DriverPositioningCard driverId={session?.user_id ?? undefined} />
         </div>
 
         {/* Stats row */}
