@@ -1,5 +1,5 @@
 /**
- * RideReceiptPage — /ride/receipt/:rideRequestId — Post-ride receipt details.
+ * RideReceiptPage — /mobility/receipt/:jobId — Receipt from canonical mobility_jobs.
  */
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
@@ -8,51 +8,51 @@ import { supabase } from "@/integrations/supabase/client";
 import { formatMoneyByCountry } from "@/lib/currency-engine";
 
 export default function RideReceiptPage() {
-  const { rideRequestId } = useParams();
-  const [ride, setRide] = useState<any>(null);
+  const { jobId } = useParams();
+  const [job, setJob] = useState<any>(null);
 
   useEffect(() => {
-    if (!rideRequestId) return;
-    supabase
-      .from("ride_requests" as any)
+    if (!jobId) return;
+    (supabase as any)
+      .from("mobility_jobs")
       .select("*")
-      .eq("id", rideRequestId)
+      .eq("id", jobId)
       .single()
-      .then(({ data }) => setRide(data ?? null));
-  }, [rideRequestId]);
+      .then(({ data }: any) => setJob(data ?? null));
+  }, [jobId]);
 
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-lg mx-auto px-4 py-6 space-y-4">
         <BackCard />
         <div className="rounded-2xl border border-border bg-card p-5 space-y-4">
-          <h1 className="text-lg font-bold text-foreground">Ride receipt</h1>
-          <p className="text-xs text-muted-foreground">
-            Receipt for ride {rideRequestId}
+          <h1 className="text-lg font-bold text-foreground">Receipt</h1>
+          <p className="text-xs text-muted-foreground capitalize">
+            {job?.job_type?.replace(/_/g, ' ') ?? 'Ride'} · {jobId?.slice(0, 8)}
           </p>
 
           <div className="space-y-2 text-sm">
             <div className="flex justify-between">
               <span className="text-muted-foreground">Status</span>
-              <span className="font-medium text-foreground">{ride?.status ?? "—"}</span>
+              <span className="font-medium text-foreground capitalize">{job?.status?.replace(/_/g, ' ') ?? "—"}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Final amount</span>
+              <span className="text-muted-foreground">Amount</span>
               <span className="font-semibold text-foreground">
-                {ride?.final_amount != null ? formatMoneyByCountry(ride.final_amount, ride?.country, ride?.currency) : "—"}
+                {job?.current_price != null ? formatMoneyByCountry(job.current_price, job?.country_code, job?.currency) : "—"}
               </span>
             </div>
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Settlement</span>
-              <span className="font-medium text-foreground">{ride?.settlement_status ?? "pending"}</span>
+              <span className="text-muted-foreground">Pickup</span>
+              <span className="font-medium text-foreground truncate max-w-[60%] text-right">{job?.pickup_address ?? "—"}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Started at</span>
-              <span className="font-medium text-foreground">{ride?.trip_started_at ?? "—"}</span>
+              <span className="text-muted-foreground">Dropoff</span>
+              <span className="font-medium text-foreground truncate max-w-[60%] text-right">{job?.dropoff_address ?? "—"}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Completed at</span>
-              <span className="font-medium text-foreground">{ride?.completed_at ?? "—"}</span>
+              <span className="text-muted-foreground">Completed</span>
+              <span className="font-medium text-foreground">{job?.completed_at ? new Date(job.completed_at).toLocaleString() : "—"}</span>
             </div>
           </div>
         </div>
