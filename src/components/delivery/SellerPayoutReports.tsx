@@ -39,9 +39,9 @@ export default function SellerPayoutReports({ orgId, className }: Props) {
     const fetch = async () => {
       setLoading(true);
       let q = supabase
-        .from("delivery_jobs")
-        .select("id, status, delivery_fee, currency, created_at, delivered_at")
-        .eq("seller_id", user.id)
+        .from("mobility_jobs")
+        .select("id, status, current_price, quoted_price, currency, created_at, completed_at")
+        .eq("merchant_id", user.id)
         .order("created_at", { ascending: false })
         .limit(1000);
 

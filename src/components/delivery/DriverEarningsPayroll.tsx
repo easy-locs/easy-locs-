@@ -62,9 +62,9 @@ export default function DriverEarningsPayroll() {
     const { from, to } = getPeriodRange(period);
 
     const { data, error } = await supabase
-      .from("delivery_jobs")
-      .select("id, delivery_fee, currency, status, delivered_at, created_at, pickup_address, dropoff_address, priority")
-      .eq("driver_id", user.id)
+      .from("mobility_jobs")
+      .select("id, current_price, quoted_price, currency, status, completed_at, created_at, pickup_address, dropoff_address, service_level")
+      .eq("rider_user_id", user.id)
       .gte("created_at", from.toISOString())
       .lte("created_at", to.toISOString())
       .order("created_at", { ascending: false });
