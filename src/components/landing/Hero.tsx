@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useState, useEffect, useMemo } from "react";
 import { useRadar } from "@/hooks/useRadar";
+import { useI18n } from "@/lib/i18n";
 import EasyLocsLogo from "@/components/brand/EasyLocsLogo";
 
 const UNIVERSES = [
@@ -49,10 +50,19 @@ function useLiveStats() {
 
 const Hero = () => {
   const isMobile = useIsMobile();
+  const { t } = useI18n();
   const [intentIdx, setIntentIdx] = useState(0);
-  const intent = INTENTS[intentIdx];
   const liveStats = useLiveStats();
   const { radar, formatETA } = useRadar({ type: "taxi" });
+
+  const INTENTS_I18N = useMemo(() => [
+    { key: "consumer", headline: t("landing.hero.intent_consumer") || "One platform. Everything around you. Instantly.", sub: t("landing.hero.intent_consumer_sub") || "Order, ride, send, pay — all in one app.", cta: t("landing.hero.cta_start") || "Start now — free" },
+    { key: "business", headline: t("landing.hero.intent_business") || "Earn money with your city.", sub: t("landing.hero.intent_business_sub") || "Open a shop, get customers instantly, accept payments.", cta: t("landing.hero.intent_business_cta") || "Launch your business" },
+    { key: "property", headline: t("landing.hero.intent_property") || "Rent. Manage. Grow.", sub: t("landing.hero.intent_property_sub") || "The smartest property management platform.", cta: t("landing.hero.intent_property_cta") || "List your property" },
+    { key: "services", headline: t("landing.hero.intent_services") || "Your skills. Clients nearby.", sub: t("landing.hero.intent_services_sub") || "Get discovered by thousands of users.", cta: t("landing.hero.intent_services_cta") || "Offer your services" },
+  ], [t]);
+
+  const intent = INTENTS_I18N[intentIdx];
 
   // Rotate intent every 6s
   useEffect(() => {
