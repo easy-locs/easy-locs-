@@ -260,6 +260,11 @@ export default memo(function RadarView({ initialType, radiusKm: initialRadius, s
         </div>
       )}
 
+      {/* ── Radar Opportunities Feed ── */}
+      <div className="px-4 pt-1 shrink-0 max-h-48 overflow-y-auto scrollbar-hide">
+        <RadarOpportunityFeed />
+      </div>
+
       {/* ── Category chips ── */}
       <div className="flex gap-1.5 overflow-x-auto px-4 py-2 scrollbar-hide shrink-0">
         {TYPE_FILTERS.map(f => (
