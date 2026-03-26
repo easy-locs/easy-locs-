@@ -262,6 +262,9 @@ const MerchantOnboardingPage = safeLazy(() => import("./pages/MerchantOnboarding
 const MerchantOnboardingAdminPage = safeLazy(() => import("./pages/MerchantOnboardingAdminPage"), "MerchantOnboardingAdminPage");
 const ExecutiveDashboard = safeLazy(() => import("./pages/ExecutiveDashboard"), "ExecutiveDashboard");
 // GhostCallPage — removed (orphan, bypassed CallProvider)
+const ConciergeOperations = safeLazy(() => import("./pages/ConciergeOperations"), "ConciergeOperations");
+const CustomerProfilePage = safeLazy(() => import("./pages/CustomerProfilePage"), "CustomerProfilePage");
+const TravelHotels = safeLazy(() => import("./pages/travel/TravelHotels"), "TravelHotels");
 const WorkspaceBootstrapPage = safeLazy(() => import("./pages/WorkspaceBootstrapPage"), "WorkspaceBootstrapPage");
 const MenuAdminPage = safeLazy(() => import("./pages/MenuAdminPage"), "MenuAdminPage");
 const SupportInboxPage = safeLazy(() => import("./pages/SupportInboxPage"), "SupportInboxPage");
@@ -893,6 +896,11 @@ const App = () => (
               <Route path="/travel/hotel/:id" element={<TravelHotelDetail />} />
               <Route path="/travel/stay/:id" element={<TravelStayDetail />} />
               <Route path="/travel/flight/:id" element={<TravelFlightDetail />} />
+
+              {/* Orphaned pages — now wired */}
+              <Route path="/concierge-ops" element={<ProtectedRoute><ConciergeOperations /></ProtectedRoute>} />
+              <Route path="/customer/:customerId" element={<ProtectedRoute><CustomerProfilePage /></ProtectedRoute>} />
+              <Route path="/travel/hotels" element={<TravelHotels />} />
 
               <Route path="/super-map" element={<Navigate to="/radar" replace />} />
               <Route path="/map" element={<Navigate to="/radar" replace />} />
