@@ -6,7 +6,7 @@
 import { useEffect, useState } from "react";
 import { useDriverMissions, type DeliveryJob } from "@/hooks/useDriverMissions";
 import { useRiderDispatchStore } from "@/stores/riderDispatchStore";
-import { useArbitratedStation } from "@/hooks/useArbitratedStation";
+import { usePlatformBrain } from "@/hooks/usePlatformBrain";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import {
@@ -45,7 +45,7 @@ export default function RiderLivePage() {
   const hydrateOffers = useRiderDispatchStore(s => s.hydrateOffers);
   const acceptOffer = useRiderDispatchStore(s => s.acceptOffer);
   const rejectOffer = useRiderDispatchStore(s => s.rejectOffer);
-  const station = useArbitratedStation();
+  const { arbitration: station } = usePlatformBrain();
 
   const [isOnline, setIsOnline] = useState(false);
 
