@@ -158,36 +158,36 @@ function CategoryCard({ cat, index }: { cat: SmartCategory; index: number }) {
 function DynamicSection({ section, shops, index }: { section: { key: string; title: string; icon: string }; shops: any[]; index: number }) {
   if (shops.length === 0) return null;
   return (
-    <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 + index * 0.04 }} className="mb-3">
-      <div className="flex items-center justify-between mb-1.5">
-        <h3 className="text-xs font-bold text-foreground flex items-center gap-1">
+    <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 + index * 0.04 }} className="mb-4">
+      <div className="flex items-center justify-between mb-2 px-1">
+        <h3 className="text-sm font-bold text-foreground flex items-center gap-1.5">
           <span>{section.icon}</span> {section.title}
         </h3>
-        <Link to="/radar" className="text-[10px] font-medium text-primary flex items-center gap-0.5 active:opacity-70">
+        <Link to="/radar" className="text-[11px] font-medium text-primary flex items-center gap-0.5 active:opacity-70">
           See all <ChevronRight className="h-3 w-3" />
         </Link>
       </div>
-      <div className="flex gap-2.5 overflow-x-auto pb-1 scrollbar-none">
+      <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-none px-1">
         {shops.map((shop: any) => (
           <Link
             key={shop.id}
             to={`/s/${shop.slug}`}
-            className="shrink-0 w-[148px] rounded-2xl border border-border/15 bg-card/50 overflow-hidden active:scale-[0.96] transition-transform"
+            className="shrink-0 w-[156px] rounded-2xl border border-border/15 bg-card overflow-visible active:scale-[0.96] transition-transform"
           >
-            <div className="h-[92px] bg-muted/10 flex items-center justify-center relative overflow-hidden">
+            <div className="h-[100px] bg-muted/20 flex items-center justify-center relative overflow-hidden rounded-t-2xl">
               {(shop.banner_url || shop.logo_url) ? (
                 <img src={shop.banner_url || shop.logo_url!} alt={shop.name} className="w-full h-full object-cover" loading="lazy" />
               ) : (
-                <Star className="h-5 w-5 text-muted-foreground/30" />
+                <Star className="h-6 w-6 text-muted-foreground/20" />
               )}
             </div>
-            <div className="p-2.5 space-y-0.5">
-              <p className="text-[11px] font-bold text-foreground truncate">{shop.name}</p>
-              <div className="flex items-center gap-1">
+            <div className="p-3 space-y-1">
+              <p className="text-xs font-bold text-foreground line-clamp-1">{shop.name}</p>
+              <div className="flex items-center gap-1.5">
                 {shop.rating != null && shop.rating > 0 && (
-                  <span className="text-[9px] text-amber-500 font-semibold">★ {Number(shop.rating).toFixed(1)}</span>
+                  <span className="text-[10px] text-amber-500 font-semibold shrink-0">★ {Number(shop.rating).toFixed(1)}</span>
                 )}
-                <p className="text-[9px] text-muted-foreground truncate">{shop.address || shop.vertical || "Dubai"}</p>
+                <p className="text-[10px] text-muted-foreground truncate">{shop.address || shop.vertical || "Dubai"}</p>
               </div>
             </div>
           </Link>
