@@ -1,15 +1,16 @@
 /**
  * tripTrackingStore — Real-time trip tracking for both customer and rider views.
- * Reads from trip_live_state and trip_location_points.
+ * Reads from: trip_live_state (canonical mobility_jobs FK)
+ * Writes to: trip_location_points, trip_live_state
  */
 import { create } from "zustand";
 import { supabase } from "@/integrations/supabase/client";
 
 export interface TripLivePosition {
-  riderLat: number | null;
-  riderLng: number | null;
-  riderHeading: number | null;
-  riderSpeed: number | null;
+  lat: number | null;
+  lng: number | null;
+  heading: number | null;
+  speed: number | null;
   customerLat: number | null;
   customerLng: number | null;
   updatedAt: string | null;
@@ -27,13 +28,12 @@ interface TripTrackingState {
 
 let activeChannel: ReturnType<typeof supabase.channel> | null = null;
 
-export const useTripTrackingStore = create<TripTrackingState>((set, get) => ({
+export const useTripTrackingStore = create<TripTrackingState>((set) => ({
   jobId: null,
   livePosition: null,
   connected: false,
 
   startTracking: (jobId) => {
-    // Clean up previous
     if (activeChannel) {
       supabase.removeChannel(activeChannel);
       activeChannel = null;
@@ -42,22 +42,22 @@ export const useTripTrackingStore = create<TripTrackingState>((set, get) => ({
     set({ jobId, connected: false });
 
     // Fetch initial state
-    (supabase as any)
+    supabase
       .from("trip_live_state")
       .select("*")
       .eq("job_id", jobId)
       .maybeSingle()
-      .then(({ data }: any) => {
+      .then(({ data }) => {
         if (data) {
           set({
             livePosition: {
-              riderLat: data.rider_lat,
-              riderLng: data.rider_lng,
-              riderHeading: data.rider_heading,
-              riderSpeed: data.rider_speed_kmh,
-              customerLat: data.customer_lat,
-              customerLng: data.customer_lng,
-              updatedAt: data.updated_at,
+              lat: (data as any).lat,
+              lng: (data as any).lng,
+              heading: (data as any).heading,
+              speed: (data as any).speed,
+              customerLat: (data as any).customer_lat,
+              customerLng: (data as any).customer_lng,
+              updatedAt: (data as any).updated_at,
             },
           });
         }
@@ -76,10 +76,10 @@ export const useTripTrackingStore = create<TripTrackingState>((set, get) => ({
         if (d) {
           set({
             livePosition: {
-              riderLat: d.rider_lat,
-              riderLng: d.rider_lng,
-              riderHeading: d.rider_heading,
-              riderSpeed: d.rider_speed_kmh,
+              lat: d.lat,
+              lng: d.lng,
+              heading: d.heading,
+              speed: d.speed,
               customerLat: d.customer_lat,
               customerLng: d.customer_lng,
               updatedAt: d.updated_at,
@@ -106,24 +106,35 @@ export const useTripTrackingStore = create<TripTrackingState>((set, get) => ({
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
+    // Get rider profile id
+    const { data: profile } = await supabase
+      .from("rider_profiles")
+      .select("id")
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    const now = new Date().toISOString();
+
     // Insert breadcrumb
-    await (supabase as any).from("trip_location_points").insert({
+    await supabase.from("trip_location_points").insert({
       job_id: jobId,
       rider_user_id: user.id,
+      rider_profile_id: profile?.id ?? null,
       lat, lng,
       heading: heading ?? null,
-      speed_kmh: speed ?? null,
-      recorded_at: new Date().toISOString(),
+      speed: speed ?? null,
+      recorded_at: now,
     });
 
     // Upsert live state
-    await (supabase as any).from("trip_live_state").upsert({
+    await supabase.from("trip_live_state").upsert({
       job_id: jobId,
-      rider_lat: lat,
-      rider_lng: lng,
-      rider_heading: heading ?? null,
-      rider_speed_kmh: speed ?? null,
-      updated_at: new Date().toISOString(),
+      rider_user_id: user.id,
+      rider_profile_id: profile?.id ?? null,
+      lat, lng,
+      heading: heading ?? null,
+      speed: speed ?? null,
+      updated_at: now,
     });
   },
 }));
