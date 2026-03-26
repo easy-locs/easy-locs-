@@ -341,6 +341,34 @@ export function installPlatformReactions(): () => void {
     platformBus.onPrefix("storefront:", () => refreshModule("business"))
   );
 
+  // ── Commerce events → refresh wallet module ──
+  unsubs.push(
+    platformBus.onPrefix("commerce:", () => refreshModule("wallet"))
+  );
+
+  // ── Tracking position/status → refresh business ──
+  unsubs.push(
+    platformBus.onPrefix("tracking:", () => refreshModule("business"))
+  );
+
+  // ── Listing events → refresh business module ──
+  unsubs.push(
+    platformBus.onPrefix("listing.", () => refreshModule("business"))
+  );
+
+  // ── Rent/PM payment events → refresh wallet + business ──
+  unsubs.push(
+    platformBus.onPrefix("rent.", () => {
+      refreshModule("wallet");
+      refreshModule("business");
+    })
+  );
+
+  // ── Growth events → refresh business ──
+  unsubs.push(
+    platformBus.onPrefix("growth:", () => refreshModule("business"))
+  );
+
   // ── Currency changed → propagate via custom event for legacy components ──
   unsubs.push(
     platformBus.on("system:currency_changed", (event) => {
