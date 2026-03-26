@@ -2767,6 +2767,53 @@ export type Database = {
           },
         ]
       }
+      canonical_place_viewports: {
+        Row: {
+          canonical_place_id: string
+          center_lat: number
+          center_lng: number
+          polygon_geojson: Json | null
+          recommended_zoom: number | null
+          updated_at: string | null
+          viewport_east: number | null
+          viewport_north: number | null
+          viewport_south: number | null
+          viewport_west: number | null
+        }
+        Insert: {
+          canonical_place_id: string
+          center_lat: number
+          center_lng: number
+          polygon_geojson?: Json | null
+          recommended_zoom?: number | null
+          updated_at?: string | null
+          viewport_east?: number | null
+          viewport_north?: number | null
+          viewport_south?: number | null
+          viewport_west?: number | null
+        }
+        Update: {
+          canonical_place_id?: string
+          center_lat?: number
+          center_lng?: number
+          polygon_geojson?: Json | null
+          recommended_zoom?: number | null
+          updated_at?: string | null
+          viewport_east?: number | null
+          viewport_north?: number | null
+          viewport_south?: number | null
+          viewport_west?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "canonical_place_viewports_canonical_place_id_fkey"
+            columns: ["canonical_place_id"]
+            isOneToOne: true
+            referencedRelation: "canonical_places"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       canonical_places: {
         Row: {
           building: string | null
@@ -8759,6 +8806,54 @@ export type Database = {
           traffic_speed_factor?: number | null
           updated_at?: string | null
           weather_speed_factor?: number | null
+          weather_type?: string | null
+          zone_key?: string
+        }
+        Relationships: []
+      }
+      geo_live_zone_overlays: {
+        Row: {
+          avg_food_eta_minutes: number | null
+          avg_parcel_eta_minutes: number | null
+          avg_taxi_eta_minutes: number | null
+          demand_level: number | null
+          flood_risk_level: string | null
+          merchant_count: number | null
+          rider_supply: number | null
+          traffic_level: string | null
+          traffic_speed_factor: number | null
+          updated_at: string | null
+          weather_intensity: number | null
+          weather_type: string | null
+          zone_key: string
+        }
+        Insert: {
+          avg_food_eta_minutes?: number | null
+          avg_parcel_eta_minutes?: number | null
+          avg_taxi_eta_minutes?: number | null
+          demand_level?: number | null
+          flood_risk_level?: string | null
+          merchant_count?: number | null
+          rider_supply?: number | null
+          traffic_level?: string | null
+          traffic_speed_factor?: number | null
+          updated_at?: string | null
+          weather_intensity?: number | null
+          weather_type?: string | null
+          zone_key: string
+        }
+        Update: {
+          avg_food_eta_minutes?: number | null
+          avg_parcel_eta_minutes?: number | null
+          avg_taxi_eta_minutes?: number | null
+          demand_level?: number | null
+          flood_risk_level?: string | null
+          merchant_count?: number | null
+          rider_supply?: number | null
+          traffic_level?: string | null
+          traffic_speed_factor?: number | null
+          updated_at?: string | null
+          weather_intensity?: number | null
           weather_type?: string | null
           zone_key?: string
         }
