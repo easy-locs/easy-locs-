@@ -41,9 +41,9 @@ export function useDriverEarnings() {
     setLoading(true);
     try {
       const { data } = await supabase
-        .from("delivery_jobs")
+        .from("mobility_jobs")
         .select("id, delivery_fee, currency, delivered_at, pickup_address, dropoff_address, package_description")
-        .eq("driver_id", user.id)
+        .eq("rider_user_id", user.id)
         .eq("status", "completed")
         .not("delivered_at", "is", null)
         .order("delivered_at", { ascending: false })

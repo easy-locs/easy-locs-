@@ -47,9 +47,9 @@ export default function DeliverySLAPanel({ orgId }: { orgId: string }) {
     if (!orgId) return;
     const fetch = async () => {
       const { data } = await supabase
-        .from("delivery_jobs")
+        .from("mobility_jobs")
         .select("*")
-        .eq("org_id", orgId)
+        .eq("merchant_id", orgId)
         .order("created_at", { ascending: false })
         .limit(100);
       if (data) setJobs(data);

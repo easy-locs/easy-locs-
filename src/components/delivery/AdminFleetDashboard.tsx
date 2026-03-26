@@ -59,9 +59,9 @@ export default function AdminFleetDashboard({ orgId, className }: Props) {
 
         // Fetch jobs for org
         const { data: jobs } = await supabase
-          .from("delivery_jobs")
+          .from("mobility_jobs")
           .select("id, status, delivery_fee, currency, created_at, delivered_at")
-          .eq("org_id", orgId)
+          .eq("merchant_id", orgId)
           .limit(1000);
 
         const allJobs = jobs || [];
