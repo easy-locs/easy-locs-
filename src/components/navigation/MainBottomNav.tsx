@@ -24,12 +24,10 @@ function MainBottomNav() {
       role="tablist"
       aria-label="Main navigation"
       style={{
-        background: "hsl(var(--card) / 0.97)",
-        backdropFilter: "blur(20px) saturate(180%)",
-        WebkitBackdropFilter: "blur(20px) saturate(180%)",
-        borderTop: "1px solid hsl(var(--border) / 0.25)",
+        background: "hsl(var(--card))",
+        borderTop: "1px solid hsl(var(--border) / 0.3)",
         paddingBottom: "env(safe-area-inset-bottom, 0px)",
-        boxShadow: "0 -1px 12px hsl(var(--background) / 0.3)",
+        boxShadow: "0 -2px 16px hsl(var(--background) / 0.4)",
       }}
     >
       <div className="flex items-stretch justify-around h-14 max-w-md mx-auto">
