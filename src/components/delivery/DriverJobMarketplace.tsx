@@ -67,16 +67,16 @@ export default function DriverJobMarketplace({ className }: Props) {
         !j.dropoff_address.toLowerCase().includes(search.toLowerCase()) &&
         !(j.notes || "").toLowerCase().includes(search.toLowerCase())) return false;
       if (priorityFilter !== "all" && j.package_size !== priorityFilter) return false;
-      if (minFee > 0 && (j.delivery_fee || 0) < minFee) return false;
+      if (minFee > 0 && (j.current_price || 0) < minFee) return false;
       return true;
     });
 
     result.sort((a, b) => {
-      if (sortBy === "fee_desc") return (b.delivery_fee || 0) - (a.delivery_fee || 0);
-      if (sortBy === "fee_asc") return (a.delivery_fee || 0) - (b.delivery_fee || 0);
+      if (sortBy === "fee_desc") return (b.current_price || 0) - (a.current_price || 0);
+      if (sortBy === "fee_asc") return (a.current_price || 0) - (b.current_price || 0);
       if (sortBy === "priority") {
-        const prio = { urgent: 3, express: 2, standard: 1 };
-        return (prio[b.priority as keyof typeof prio] || 0) - (prio[a.priority as keyof typeof prio] || 0);
+        const prio: Record<string, number> = { urgent: 3, express: 2, standard: 1 };
+        return (prio[(b.package_size || "standard")] || 0) - (prio[(a.package_size || "standard")] || 0);
       }
       return new Date(b.created_at || "").getTime() - new Date(a.created_at || "").getTime();
     });
@@ -168,7 +168,7 @@ export default function DriverJobMarketplace({ className }: Props) {
       ) : (
         <div className="space-y-2">
           {filtered.map(job => {
-            const badge = PRIORITY_BADGES[job.priority as keyof typeof PRIORITY_BADGES] || PRIORITY_BADGES.standard;
+            const badge = PRIORITY_BADGES[(job.package_size || "standard") as keyof typeof PRIORITY_BADGES] || PRIORITY_BADGES.standard;
             const isBidding = bidding === job.id;
             return (
               <motion.div key={job.id} layout initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
@@ -181,8 +181,8 @@ export default function DriverJobMarketplace({ className }: Props) {
                         <span className="text-[8px] px-1.5 py-0.5 rounded-full font-medium" style={{ background: badge.bg, color: badge.color }}>
                           {badge.label}
                         </span>
-                        {job.weight_kg && (
-                          <span className="text-[8px]" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>{job.weight_kg}kg</span>
+                        {job.package_size && (
+                          <span className="text-[8px]" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>{job.package_size}</span>
                         )}
                       </div>
                       <div className="space-y-1">
@@ -195,15 +195,15 @@ export default function DriverJobMarketplace({ className }: Props) {
                           <span className="truncate">{job.dropoff_address}</span>
                         </p>
                       </div>
-                      {job.package_description && (
+                      {job.notes && (
                         <p className="text-[9px] mt-1" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>
-                          📦 {job.package_description}
+                          📦 {job.notes}
                         </p>
                       )}
                     </div>
                     <div className="text-right shrink-0 ml-3">
                       <p className="text-sm font-black" style={{ color: "hsl(var(--success))" }}>
-                        {(job.delivery_fee || 0).toFixed(2)}€
+                        {(job.current_price || 0).toFixed(2)} AED
                       </p>
                       <p className="text-[7px]" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>
                         {job.created_at ? new Date(job.created_at).toLocaleDateString("fr") : ""}

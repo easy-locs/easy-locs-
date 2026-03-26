@@ -56,7 +56,7 @@ function clusterJobs(jobs: PendingJob[], radiusKm: number): Cluster[] {
 
     const centerLat = group.reduce((s, j) => s + j.dropoff_lat!, 0) / group.length;
     const centerLng = group.reduce((s, j) => s + j.dropoff_lng!, 0) / group.length;
-    const totalFees = group.reduce((s, j) => s + (j.delivery_fee || 0), 0);
+    const totalFees = group.reduce((s, j) => s + (j.current_price || 0), 0);
 
     // Estimate route distance (sum of inter-stop distances)
     let estKm = 0;
@@ -220,10 +220,10 @@ export default function MultiDropBatchPanel({ orgId }: { orgId: string }) {
                     {cluster.jobs.map((job, idx) => (
                       <div key={job.id} className="flex items-center gap-2 py-1">
                         <span className="text-[10px] font-mono w-4 text-center" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>{idx + 1}</span>
-                        <MapPin className="h-3 w-3 shrink-0" style={{ color: `hsl(var(${priorityColors[job.priority] || "--info"}))` }} />
+                        <MapPin className="h-3 w-3 shrink-0" style={{ color: `hsl(var(--info))` }} />
                         <p className="text-[10px] truncate flex-1" style={{ color: "hsl(var(--hud-text))" }}>{job.dropoff_address}</p>
                         <span className="text-[9px] shrink-0" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>
-                          {job.delivery_fee || 0}€
+                          {job.current_price || 0} AED
                         </span>
                       </div>
                     ))}
