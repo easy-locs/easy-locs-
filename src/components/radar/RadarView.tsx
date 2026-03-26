@@ -19,7 +19,7 @@ import { eventBus } from "@/lib/events/eventBus";
 import UnifiedMap from "@/components/map/UnifiedMap";
 import { formatGeoDistance, formatGeoETA, type SortMode } from "@/lib/geo/geoRanking";
 import type { GeoEntity } from "@/lib/geo/geoEntityAdapter";
-import { useDiscoveryStore } from "@/stores/discoveryStore";
+
 import { rankEntities, DISCOVERY_WEIGHTS, type RankableEntity, type RankContext } from "@/lib/ranking-engine";
 import { useCanonicalUI } from "@/hooks/useCanonicalUI";
 import { useV2AuthStore } from "@/stores/v2AuthStore";
@@ -52,7 +52,7 @@ const SORT_OPTIONS: { label: string; value: RadarSortMode; icon: React.ReactNode
   { label: "Trending", value: "trending", icon: <TrendingUp className="w-3 h-3" /> },
 ];
 
-const RADIUS_PRESETS = [1, 3, 5, 10, 25];
+
 
 const RATING_FILTERS = [
   { label: "Any", value: 0 },
@@ -130,13 +130,8 @@ export default memo(function RadarView({ initialType, radiusKm: initialRadius, s
   const activeVertical = activeType === "all" ? undefined : activeType === "restaurant" ? "food" : activeType === "shop" ? "shops" : activeType === "grocery" ? "grocery" : activeType === "property" ? "property" : activeType === "service" ? "services" : undefined;
   const canonicalUI = useCanonicalUI(activeVertical);
 
-  // Radius from global discovery store
-  const globalRadius = useDiscoveryStore((s) => s.radiusKm);
-  const setGlobalRadius = useDiscoveryStore((s) => s.setRadiusKm);
-  const activeRadius = initialRadius ?? globalRadius ?? 10;
-
   const type = activeType === "all" ? undefined : activeType;
-  const { entities: rawResults, loading, location } = useRadarResults({ type, radiusKm: activeRadius });
+  const { entities: rawResults, loading, location } = useRadarResults({ type });
 
   // When a place is selected from search, use its coordinates; otherwise use GPS
   const userLat = selectedPlace?.lat ?? location?.lat ?? 25.2;
@@ -194,12 +189,11 @@ export default memo(function RadarView({ initialType, radiusKm: initialRadius, s
     if (!loading && rawResults.length > 0) {
       eventBus.emit("RADAR_SCAN_COMPLETED", {
         count: results.length,
-        radiusKm: activeRadius,
         lat: userLat,
         lng: userLng,
       });
     }
-  }, [loading, results.length, activeRadius, userLat, userLng]);
+  }, [loading, results.length, userLat, userLng]);
 
   const handleSelect = useCallback((entity: GeoEntity) => {
     setSelectedId(entity.id);
@@ -240,7 +234,7 @@ export default memo(function RadarView({ initialType, radiusKm: initialRadius, s
     }));
   }, [results]);
 
-  const activeFilterCount = (minRating > 0 ? 1 : 0) + (showPromotedOnly ? 1 : 0) + (activeRadius !== 10 ? 1 : 0);
+  const activeFilterCount = (minRating > 0 ? 1 : 0) + (showPromotedOnly ? 1 : 0);
 
   return (
     <div className="flex flex-col h-full min-h-0">
@@ -348,24 +342,6 @@ export default memo(function RadarView({ initialType, radiusKm: initialRadius, s
       {/* ── Advanced filters panel ── */}
       {showFilters && (
         <div className="px-4 py-2 space-y-2 shrink-0 animate-in slide-in-from-top-2 duration-150 border-b border-border/30">
-          {/* Radius */}
-          <div className="flex items-center gap-1.5">
-            <span className="text-[10px] font-semibold text-muted-foreground w-12 shrink-0">Radius</span>
-            {RADIUS_PRESETS.map(r => (
-              <button
-                key={r}
-                onClick={() => setGlobalRadius(r)}
-                className={cn(
-                  "px-2.5 py-1 rounded-full text-[10px] font-semibold transition-all",
-                  activeRadius === r
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-muted text-muted-foreground hover:bg-muted/80"
-                )}
-              >
-                {r}km
-              </button>
-            ))}
-          </div>
 
           {/* Rating filter */}
           <div className="flex items-center gap-1.5">
@@ -412,7 +388,7 @@ export default memo(function RadarView({ initialType, radiusKm: initialRadius, s
       <div className="px-4 py-1 shrink-0">
         <p className="text-[10px] text-muted-foreground">
           {loading ? canonicalUI.wording.loadingText : canonicalUI.wording.resultsFormat.replace("{count}", String(results.length))}
-          {!loading && ` within ${activeRadius}km`}
+          {!loading && ""}
           {minRating > 0 && ` · ★${minRating}+`}
           {showPromotedOnly && " · ⚡ Promoted"}
           {sortBy === "smart" && " · Smart ranked"}
@@ -433,7 +409,6 @@ export default memo(function RadarView({ initialType, radiusKm: initialRadius, s
               onSelectEntity={handleSelect}
               showHeatmap={viewMode === "heatmap"}
               heatmapPoints={heatmapPoints}
-              radiusKm={activeRadius}
               className="h-full"
             />
             {/* Selected entity card */}

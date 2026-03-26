@@ -30,14 +30,6 @@ const SORT_MODES: { key: SortMode; label: string }[] = [
   { key: "trending", label: "🔥 Trending" },
 ];
 
-const RADIUS_OPTIONS = [
-  { label: "1 km", value: 1 },
-  { label: "3 km", value: 3 },
-  { label: "5 km", value: 5 },
-  { label: "10 km", value: 10 },
-  { label: "25 km", value: 25 },
-  { label: "All", value: 0 },
-];
 
 export default function RadarPage() {
   useRadarGeo();
@@ -59,8 +51,6 @@ export default function RadarPage() {
   // Shared discovery state
   const searchQuery = useDiscoveryStore((s) => s.searchQuery);
   const setSearchQuery = useDiscoveryStore((s) => s.setSearchQuery);
-  const radiusKm = useDiscoveryStore((s) => s.radiusKm);
-  const setRadiusKm = useDiscoveryStore((s) => s.setRadiusKm);
 
   const [loadingListings, setLoadingListings] = useState(true);
   const [mapMode, setLocalMapMode] = useState<"list" | "map" | "heatmap">("list");
@@ -86,7 +76,7 @@ export default function RadarPage() {
         userLocation: userLocation ?? undefined,
         category: category !== "all" ? category : undefined,
         subcategory: subcategory ?? undefined,
-        radiusKm: radiusKm || undefined,
+        
       });
       setPoints(points);
     } catch (err) {
@@ -94,7 +84,7 @@ export default function RadarPage() {
     } finally {
       setLoadingListings(false);
     }
-  }, [searchQuery, setPoints, userLocation?.lat, userLocation?.lng, category, subcategory, radiusKm]);
+  }, [searchQuery, setPoints, userLocation?.lat, userLocation?.lng, category, subcategory]);
 
   useEffect(() => { fetchListings(); }, [fetchListings]);
 
@@ -151,23 +141,6 @@ export default function RadarPage() {
           />
         </div>
 
-        {/* Radius control — REAL radius filtering */}
-        <div className="flex gap-1.5 overflow-x-auto no-scrollbar pb-2">
-          <MapPin className="w-3.5 h-3.5 text-muted-foreground shrink-0 mt-1" />
-          {RADIUS_OPTIONS.map(({ label, value }) => (
-            <button
-              key={value}
-              onClick={() => { ultraHaptic("light"); setRadiusKm(value === 0 ? null : value); }}
-              className={`shrink-0 rounded-full px-3 py-1 text-[11px] font-medium transition-all active:scale-95 ${
-                (radiusKm === value) || (value === 0 && !radiusKm)
-                  ? "bg-primary text-primary-foreground shadow-sm"
-                  : "bg-muted/30 text-muted-foreground"
-              }`}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
 
         {/* Category chips */}
         <div className="flex gap-2 overflow-x-auto no-scrollbar pb-2">
@@ -262,7 +235,7 @@ export default function RadarPage() {
           </button>
         </div>
         <p className="text-[10px] text-muted-foreground">
-          {filtered.length} results{radiusKm ? ` • ${radiusKm}km` : ""}
+          {filtered.length} results
         </p>
       </div>
 

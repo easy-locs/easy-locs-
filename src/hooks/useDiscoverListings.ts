@@ -1,5 +1,6 @@
 /**
  * useDiscoverListings — Canonical pipeline-backed hook for DiscoverPage & ShopsPage.
+ * No manual radius — results driven by geo live station + serviceability.
  */
 import { useQuery } from "@tanstack/react-query";
 import { useGeoStore } from "@/lib/geo/geo-store";
@@ -46,18 +47,16 @@ function pointToListing(p: RadarPoint): DiscoverListing {
 export function useDiscoverListings(surface: DiscoverySurface = "discover") {
   const geoPoint = useGeoStore((s) => s.point);
   const searchQuery = useDiscoveryStore((s) => s.searchQuery);
-  const radiusKm = useDiscoveryStore((s) => s.radiusKm);
   const vertical = useDiscoveryStore((s) => s.vertical);
   const subcategory = useDiscoveryStore((s) => s.subcategory);
 
   return useQuery({
-    queryKey: ["discover-canonical", surface, searchQuery, radiusKm, vertical, subcategory, geoPoint?.lat?.toFixed(2)],
+    queryKey: ["discover-canonical", surface, searchQuery, vertical, subcategory, geoPoint?.lat?.toFixed(2)],
     queryFn: async () => {
       const points = await fetchCanonicalDiscovery({
         surface,
         searchQuery: searchQuery || undefined,
         userLocation: geoPoint ? { lat: geoPoint.lat, lng: geoPoint.lng } : undefined,
-        radiusKm: radiusKm ?? undefined,
         vertical: vertical ?? undefined,
         subcategory: subcategory ?? undefined,
         limit: 300,
