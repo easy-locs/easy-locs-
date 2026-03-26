@@ -83,10 +83,24 @@ export async function getEffectiveContext(userId: string, contextType: AddressCo
 
 /**
  * Listen for address context changes and propagate to dependent systems.
+ * Handles both global and context-specific (taxi_pickup, food_delivery, etc.) updates.
  */
 export function initGeoSyncListeners(): () => void {
   const handler = (payload: any) => {
-    eventBus.emit("dispatch.context.refresh", { userId: payload.userId, zoneKey: payload.zoneKey });
+    const { userId, zoneKey, contextType } = payload;
+
+    // Always refresh dispatch context
+    eventBus.emit("dispatch.context.refresh", { userId, zoneKey });
+
+    // For non-global contexts, also trigger ETA + merchant refresh for that zone
+    if (contextType && contextType !== "global" && zoneKey) {
+      eventBus.emit("eta.context.refresh", { userId, contextType, zoneKey });
+      eventBus.emit("merchant.visibility.refresh", { zoneKey });
+
+      if (import.meta.env.DEV) {
+        console.log(`[geo-sync] Context-specific propagation: ${contextType} → zone=${zoneKey}`);
+      }
+    }
   };
   eventBus.on("address.context.updated", handler);
   return () => {
