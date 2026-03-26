@@ -147,12 +147,11 @@ async function checkQrTables(): Promise<RuntimeAuditCheck> {
 
 async function checkDispatchTables(): Promise<RuntimeAuditCheck> {
   try {
-    // Sequential to avoid lock contention
-    const jobs = await (supabase as any).from("dispatch_jobs_v2").select("id", { head: true, count: "exact" }).limit(1);
+    const jobs = await (supabase as any).from("mobility_jobs").select("id", { head: true, count: "exact" }).limit(1);
     if (jobs.error) return fail("Dispatch tables", "dispatch_tables", jobs.error.message);
-    const offers = await (supabase as any).from("driver_mission_offers").select("id", { head: true, count: "exact" }).limit(1);
+    const offers = await (supabase as any).from("mobility_job_offers").select("id", { head: true, count: "exact" }).limit(1);
     if (offers.error) return fail("Dispatch tables", "dispatch_tables", offers.error.message);
-    return pass("Dispatch tables", "dispatch_tables", "dispatch_jobs_v2 + driver_mission_offers OK");
+    return pass("Dispatch tables", "dispatch_tables", "mobility_jobs + mobility_job_offers OK");
   } catch (e: any) {
     return fail("Dispatch tables", "dispatch_tables", e.message ?? "Unknown error");
   }

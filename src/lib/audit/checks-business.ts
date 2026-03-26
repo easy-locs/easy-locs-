@@ -125,7 +125,7 @@ export async function auditPaymentChecks(workspaceId?: string): Promise<AuditChe
 /* ── Dispatch checks ── */
 export async function auditDispatchChecks(workspaceId?: string): Promise<AuditCheck[]> {
   const integrity = await checkDispatchAssignedWithoutDriver(workspaceId);
-  const total = await safeCount("dispatch_jobs_v2", workspaceId);
+  const total = await safeCount("mobility_jobs", workspaceId);
 
   return [
     {
@@ -134,12 +134,12 @@ export async function auditDispatchChecks(workspaceId?: string): Promise<AuditCh
       group: "dispatch",
       severity: integrity.ok ? "info" : "critical",
       impact: integrity.ok ? 0 : 20,
-      title: integrity.ok ? "Assigned jobs have driver" : "Assigned jobs missing driver",
+      title: integrity.ok ? "Assigned jobs have rider" : "Assigned jobs missing rider",
       expected: "0 broken jobs",
       actual: String(integrity.broken),
-      hint: "Fix assignment path and assigned_driver_id mapping",
+      hint: "Fix assignment path and rider_user_id mapping",
     },
-    classifyResult("Dispatch jobs", "dispatch.total_volume", "dispatch", total, "Create delivery flows to populate"),
+    classifyResult("Mobility jobs", "dispatch.total_volume", "dispatch", total, "Create mobility flows to populate"),
   ];
 }
 
