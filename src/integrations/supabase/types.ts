@@ -347,6 +347,30 @@ export type Database = {
           },
         ]
       }
+      address_search_cache: {
+        Row: {
+          expires_at: string
+          locale: string | null
+          query_text: string
+          result_json: Json
+          search_hash: string
+        }
+        Insert: {
+          expires_at?: string
+          locale?: string | null
+          query_text: string
+          result_json?: Json
+          search_hash: string
+        }
+        Update: {
+          expires_at?: string
+          locale?: string | null
+          query_text?: string
+          result_json?: Json
+          search_hash?: string
+        }
+        Relationships: []
+      }
       address_usage_events: {
         Row: {
           action_type: string | null
@@ -354,6 +378,7 @@ export type Database = {
           context_type: string | null
           created_at: string | null
           id: string
+          search_query: string | null
           user_id: string | null
         }
         Insert: {
@@ -362,6 +387,7 @@ export type Database = {
           context_type?: string | null
           created_at?: string | null
           id?: string
+          search_query?: string | null
           user_id?: string | null
         }
         Update: {
@@ -370,6 +396,7 @@ export type Database = {
           context_type?: string | null
           created_at?: string | null
           id?: string
+          search_query?: string | null
           user_id?: string | null
         }
         Relationships: [
@@ -2744,6 +2771,7 @@ export type Database = {
         Row: {
           building: string | null
           city: string | null
+          confidence_score: number | null
           country_code: string
           country_name: string | null
           created_at: string | null
@@ -2754,6 +2782,7 @@ export type Database = {
           landmark: string | null
           lat: number
           lng: number
+          metadata_json: Json | null
           parent_place_id: string | null
           place_type: string
           popularity_score: number | null
@@ -2766,10 +2795,12 @@ export type Database = {
           subdistrict: string | null
           timezone: string | null
           updated_at: string | null
+          zone_key: string | null
         }
         Insert: {
           building?: string | null
           city?: string | null
+          confidence_score?: number | null
           country_code: string
           country_name?: string | null
           created_at?: string | null
@@ -2780,6 +2811,7 @@ export type Database = {
           landmark?: string | null
           lat: number
           lng: number
+          metadata_json?: Json | null
           parent_place_id?: string | null
           place_type?: string
           popularity_score?: number | null
@@ -2792,10 +2824,12 @@ export type Database = {
           subdistrict?: string | null
           timezone?: string | null
           updated_at?: string | null
+          zone_key?: string | null
         }
         Update: {
           building?: string | null
           city?: string | null
+          confidence_score?: number | null
           country_code?: string
           country_name?: string | null
           created_at?: string | null
@@ -2806,6 +2840,7 @@ export type Database = {
           landmark?: string | null
           lat?: number
           lng?: number
+          metadata_json?: Json | null
           parent_place_id?: string | null
           place_type?: string
           popularity_score?: number | null
@@ -2818,6 +2853,7 @@ export type Database = {
           subdistrict?: string | null
           timezone?: string | null
           updated_at?: string | null
+          zone_key?: string | null
         }
         Relationships: [
           {
@@ -11922,6 +11958,53 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: []
+      }
+      merchant_geo_context: {
+        Row: {
+          canonical_place_id: string | null
+          delivery_enabled: boolean | null
+          delivery_radius_km: number | null
+          lat: number
+          lng: number
+          merchant_id: string
+          pickup_enabled: boolean | null
+          service_area_json: Json | null
+          updated_at: string | null
+          zone_key: string | null
+        }
+        Insert: {
+          canonical_place_id?: string | null
+          delivery_enabled?: boolean | null
+          delivery_radius_km?: number | null
+          lat?: number
+          lng?: number
+          merchant_id: string
+          pickup_enabled?: boolean | null
+          service_area_json?: Json | null
+          updated_at?: string | null
+          zone_key?: string | null
+        }
+        Update: {
+          canonical_place_id?: string | null
+          delivery_enabled?: boolean | null
+          delivery_radius_km?: number | null
+          lat?: number
+          lng?: number
+          merchant_id?: string
+          pickup_enabled?: boolean | null
+          service_area_json?: Json | null
+          updated_at?: string | null
+          zone_key?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "merchant_geo_context_canonical_place_id_fkey"
+            columns: ["canonical_place_id"]
+            isOneToOne: false
+            referencedRelation: "canonical_places"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       merchant_menu_import_items: {
         Row: {
@@ -27035,35 +27118,44 @@ export type Database = {
         Row: {
           canonical_place_id: string | null
           city: string | null
+          context_type: string
           country_code: string | null
           district: string | null
           lat: number
           lng: number
           source: string
+          source_type: string | null
           updated_at: string | null
           user_id: string
+          zone_key: string | null
         }
         Insert: {
           canonical_place_id?: string | null
           city?: string | null
+          context_type?: string
           country_code?: string | null
           district?: string | null
           lat: number
           lng: number
           source?: string
+          source_type?: string | null
           updated_at?: string | null
           user_id: string
+          zone_key?: string | null
         }
         Update: {
           canonical_place_id?: string | null
           city?: string | null
+          context_type?: string
           country_code?: string | null
           district?: string | null
           lat?: number
           lng?: number
           source?: string
+          source_type?: string | null
           updated_at?: string | null
           user_id?: string
+          zone_key?: string | null
         }
         Relationships: [
           {
@@ -27721,6 +27813,7 @@ export type Database = {
           floor: string | null
           id: string
           is_default: boolean | null
+          is_favorite: boolean | null
           label: string | null
           last_used_at: string | null
           unit_number: string | null
@@ -27738,6 +27831,7 @@ export type Database = {
           floor?: string | null
           id?: string
           is_default?: boolean | null
+          is_favorite?: boolean | null
           label?: string | null
           last_used_at?: string | null
           unit_number?: string | null
@@ -27755,6 +27849,7 @@ export type Database = {
           floor?: string | null
           id?: string
           is_default?: boolean | null
+          is_favorite?: boolean | null
           label?: string | null
           last_used_at?: string | null
           unit_number?: string | null
@@ -30231,6 +30326,7 @@ export type Database = {
         Returns: undefined
       }
       increment_listing_views: { Args: { p_slug: string }; Returns: undefined }
+      increment_popularity: { Args: { place_id: string }; Returns: undefined }
       is_group_admin: {
         Args: { _group_id: string; _user_id: string }
         Returns: boolean

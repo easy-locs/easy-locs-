@@ -71,7 +71,7 @@ export function CanonicalAddressInput({
   const selectPlace = async (place: CanonicalPlace) => {
     onChange(place);
     // Activate in background (non-blocking)
-    activateAddress(place, "manual", contextType);
+    activateAddress(place, "manual", (contextType as any) ?? undefined);
     setQuery("");
     setFocused(false);
   };
