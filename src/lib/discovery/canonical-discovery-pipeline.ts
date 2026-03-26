@@ -26,10 +26,11 @@ import {
 } from "@/lib/taxonomy/world-class-taxonomy";
 import type { RadarPoint, RadarCategory, UserGeoPoint } from "@/lib/radar/types";
 
-// ═══ Placeholder image filter — blocks generic/stock images from discovery ═══
-const PLACEHOLDER_PATTERNS = ["unsplash.com", "placeholder", "dummyimage", "placehold.co", "via.placeholder"];
+// ═══ Placeholder image filter — blocks truly generic images from discovery ═══
+// NOTE: unsplash removed from blocklist — many storefronts use unsplash as temporary photos
+const PLACEHOLDER_PATTERNS = ["placeholder", "dummyimage", "placehold.co", "via.placeholder"];
 function isPlaceholder(url?: string | null): boolean {
-  if (!url) return true;
+  if (!url) return false; // Allow entries without images — UI shows fallback icons
   const lower = url.toLowerCase();
   return PLACEHOLDER_PATTERNS.some(p => lower.includes(p));
 }
