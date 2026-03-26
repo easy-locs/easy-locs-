@@ -218,18 +218,14 @@ const Index = () => {
         </Suspense>
 
         {/* 9. Travel */}
-        {!isMobile && (
-          <Suspense fallback={<SectionLoader />}>
-            <TravelSection />
-          </Suspense>
-        )}
+        <Suspense fallback={<SectionLoader />}>
+          <TravelSection />
+        </Suspense>
 
         {/* 10. Services */}
-        {!isMobile && (
-          <Suspense fallback={<SectionLoader />}>
-            <ServicesSection />
-          </Suspense>
-        )}
+        <Suspense fallback={<SectionLoader />}>
+          <ServicesSection />
+        </Suspense>
 
         {/* 11. Offers */}
         {!isMobile && (
