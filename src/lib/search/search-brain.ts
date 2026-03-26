@@ -20,7 +20,6 @@
 import { searchPlaces, type NormalizedPlace } from "@/lib/location/geocode";
 import { searchCanonicalPlaces, type CanonicalPlaceRow } from "@/lib/address/canonical-address-resolver";
 import { getGeoBrainState } from "@/lib/brain/geo-brain";
-import { haversineKm } from "@/lib/geo/distance";
 import { resolveSearchIntent, type SearchIntent } from "./search-intent-resolver";
 import { normalizeProviderResult, type SearchCandidate } from "./search-provider-normalizer";
 import { localRank } from "./search-local-ranker";
@@ -32,8 +31,8 @@ export const SEARCH_BRAIN_MODE: "shadow" | "assist" | "execute" = "execute";
 // ── Search context ──
 export interface SearchBrainContext {
   query: string;
-  contextType?: string; // global | food_delivery | taxi_pickup | taxi_dropoff | parcel_pickup ...
-  userIntent?: string;  // address | place | merchant | airport_transfer | delivery_destination
+  contextType?: string;
+  userIntent?: string;
   vertical?: string;
 }
 
@@ -70,6 +69,29 @@ export interface SearchBrainResult {
   search_reason: string;
 }
 
+/**
+ * Derive country_code from geo brain state.
+ * Uses zone_key first (e.g. "AE_DUBAI_MARINA" → "AE"), then country name fallback.
+ */
+function deriveCountryCode(geo: ReturnType<typeof getGeoBrainState>): string | undefined {
+  // zone_key starts with country code: "AE_DUBAI_..."
+  if (geo.zoneKey) {
+    const parts = geo.zoneKey.split("_");
+    if (parts[0] && parts[0].length === 2) return parts[0].toUpperCase();
+  }
+  // Fallback from country name
+  const country = geo.selectedLocation?.country?.toLowerCase();
+  if (!country) return undefined;
+  if (country.includes("united arab") || country === "uae") return "AE";
+  if (country.includes("united states") || country === "usa" || country === "us") return "US";
+  if (country.includes("united kingdom") || country === "uk") return "GB";
+  if (country.includes("france")) return "FR";
+  if (country.includes("germany")) return "DE";
+  if (country.includes("india")) return "IN";
+  if (country.includes("saudi")) return "SA";
+  return undefined;
+}
+
 // ── Main entry point ──
 export async function searchBrain(ctx: SearchBrainContext): Promise<SearchBrainResult[]> {
   if (!SEARCH_BRAIN_ENABLED) return [];
@@ -87,22 +109,33 @@ export async function searchBrain(ctx: SearchBrainContext): Promise<SearchBrainR
   const userCity = geo.selectedLocation?.city;
   const userDistrict = geo.selectedLocation?.area;
   const zoneKey = geo.zoneKey;
+  const userCountryCode = deriveCountryCode(geo);
 
-  // 3. Fetch from providers + canonical DB in parallel
+  // 3. Build provider search options with geo context bias
+  const providerOpts: Parameters<typeof searchPlaces>[1] = {
+    limit: 8,
+  };
+  // Always pass proximity if we have it — this biases Mapbox toward local results
+  if (userLat != null && userLng != null) {
+    providerOpts.proximity = { lat: userLat, lng: userLng };
+  }
+  // Pass country for Mapbox country filter when not explicit foreign
+  if (userCountryCode && !intent.isExplicitForeign) {
+    providerOpts.country = userCountryCode;
+  }
+
+  // 4. Fetch from providers + canonical DB in parallel
   const [providerResults, canonicalResults] = await Promise.all([
-    searchPlaces(q, {
-      proximity: userLat != null && userLng != null ? { lat: userLat, lng: userLng } : undefined,
-      limit: 8,
-    }).catch(() => [] as NormalizedPlace[]),
+    searchPlaces(q, providerOpts).catch(() => [] as NormalizedPlace[]),
     searchCanonicalPlaces({
       query: q,
-      countryCode: intent.inferredCountryCode,
+      countryCode: intent.isExplicitForeign ? intent.inferredCountryCode : (userCountryCode ?? intent.inferredCountryCode),
       city: intent.isExplicitForeign ? undefined : userCity ?? undefined,
       limit: 8,
     }).catch(() => [] as CanonicalPlaceRow[]),
   ]);
 
-  // 4. Normalize all into SearchCandidate[]
+  // 5. Normalize all into SearchCandidate[]
   const candidates: SearchCandidate[] = [];
   const seenCoords = new Set<string>();
 
@@ -138,12 +171,13 @@ export async function searchBrain(ctx: SearchBrainContext): Promise<SearchBrainR
     candidates.push(normalizeProviderResult(np));
   }
 
-  // 5. Rank through local-first ranker
+  // 6. Rank through local-first ranker — with country_code context
   const ranked = localRank(candidates, {
     query: q,
     userLat,
     userLng,
     userCountry,
+    userCountryCode,
     userCity,
     userDistrict,
     zoneKey,
@@ -151,7 +185,7 @@ export async function searchBrain(ctx: SearchBrainContext): Promise<SearchBrainR
     intent,
   });
 
-  // 6. Build enriched output
+  // 7. Build enriched output
   return ranked.map(r => ({
     id: r.candidate.id,
     canonical_place_id: r.candidate.canonical_place_id,
