@@ -20,10 +20,10 @@ export function TaxiPreviewMapCard({ preview }: Props) {
     if (!containerRef.current || mapRef.current || !preview) return;
     mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN;
 
-    const pickupLng = preview.pickupLng ?? 55.2708;
-    const pickupLat = preview.pickupLat ?? 25.2048;
-    const dropoffLng = preview.dropoffLng ?? 55.30;
-    const dropoffLat = preview.dropoffLat ?? 25.22;
+    const pickupLng = preview.pickup?.lng ?? 55.2708;
+    const pickupLat = preview.pickup?.lat ?? 25.2048;
+    const dropoffLng = preview.dropoff?.lng ?? 55.30;
+    const dropoffLat = preview.dropoff?.lat ?? 25.22;
 
     const map = new mapboxgl.Map({
       container: containerRef.current,
@@ -53,10 +53,10 @@ export function TaxiPreviewMapCard({ preview }: Props) {
       map.fitBounds(bounds, { padding: 50, maxZoom: 14 });
 
       // Route line
-      if (preview.routeGeometry) {
+      if (preview.geometry) {
         map.addSource("taxi-route", {
           type: "geojson",
-          data: { type: "Feature", properties: {}, geometry: preview.routeGeometry },
+          data: { type: "Feature", properties: {}, geometry: preview.geometry },
         });
         map.addLayer({
           id: "taxi-route-line",

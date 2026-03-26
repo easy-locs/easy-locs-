@@ -16,10 +16,10 @@ export function RideLiveMapCard({ route }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
 
-  const driverLat = route?.driverLat ?? 25.21;
-  const driverLng = route?.driverLng ?? 55.27;
-  const pickupLat = route?.pickupLat ?? 25.2048;
-  const pickupLng = route?.pickupLng ?? 55.2708;
+  const driverLat = route?.driver?.lat ?? 25.21;
+  const driverLng = route?.driver?.lng ?? 55.27;
+  const pickupLat = route?.pickup?.lat ?? 25.2048;
+  const pickupLng = route?.pickup?.lng ?? 55.2708;
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
