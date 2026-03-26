@@ -163,7 +163,7 @@ const CountryWorkspace = safeLazy(() => import("./pages/CountryWorkspace"), "Cou
 // Orbit App Shell & Home
 const OrbitAppShell = safeLazy(() => import("./components/orbit/OrbitAppShell"), "OrbitAppShell");
 const OrbitHome = safeLazy(() => import("./pages/OrbitHome"), "OrbitHome");
-const WalletHub = safeLazy(() => import("./pages/WalletHubPage"), "WalletHubPage");
+// WalletHub duplicate removed — use WalletHubPage (line 260) for both /wallet and /wallet/hub
 const AddProperty = safeLazy(() => import("./pages/AddProperty"), "AddProperty");
 const PropertyDetailHub = safeLazy(() => import("./pages/PropertyDetailHub"), "PropertyDetailHub");
 const CreateListing = safeLazy(() => import("./pages/CreateListing"), "CreateListing");
@@ -264,7 +264,7 @@ const ExecutiveDashboard = safeLazy(() => import("./pages/ExecutiveDashboard"), 
 // GhostCallPage — removed (orphan, bypassed CallProvider)
 const ConciergeOperations = safeLazy(() => import("./pages/ConciergeOperations"), "ConciergeOperations");
 const CustomerProfilePage = safeLazy(() => import("./pages/CustomerProfilePage"), "CustomerProfilePage");
-const TravelHotels = safeLazy(() => import("./pages/travel/TravelHotels"), "TravelHotels");
+// TravelHotels removed — /travel/hotels redirects to /travel/stays (line 895)
 const WorkspaceBootstrapPage = safeLazy(() => import("./pages/WorkspaceBootstrapPage"), "WorkspaceBootstrapPage");
 const MenuAdminPage = safeLazy(() => import("./pages/MenuAdminPage"), "MenuAdminPage");
 const SupportInboxPage = safeLazy(() => import("./pages/SupportInboxPage"), "SupportInboxPage");
@@ -900,7 +900,7 @@ const App = () => (
               {/* Orphaned pages — now wired */}
               <Route path="/concierge-ops" element={<ProtectedRoute><ConciergeOperations /></ProtectedRoute>} />
               <Route path="/customer/:customerId" element={<ProtectedRoute><CustomerProfilePage /></ProtectedRoute>} />
-              <Route path="/travel/hotels" element={<TravelHotels />} />
+              {/* /travel/hotels already redirects to /travel/stays at line 895 */}
 
               <Route path="/super-map" element={<Navigate to="/radar" replace />} />
               <Route path="/map" element={<Navigate to="/radar" replace />} />
@@ -1043,7 +1043,7 @@ const App = () => (
               <Route path="/dashboard/developer" element={<ProtectedRoute><DeveloperPortal /></ProtectedRoute>} />
               <Route path="/dashboard/audit" element={<ProtectedRoute><AuditTrail /></ProtectedRoute>} />
               <Route path="/dashboard/wallet" element={<Navigate to="/wallet" replace />} />
-              <Route path="/wallet" element={<ProtectedRoute><WalletHub /></ProtectedRoute>} />
+              <Route path="/wallet" element={<ProtectedRoute><WalletHubPage /></ProtectedRoute>} />
               <Route path="/dashboard/deals" element={<ProtectedRoute><DealAnalyticsPage /></ProtectedRoute>} />
               <Route path="/dashboard/service-tracking" element={<ProtectedRoute><ServiceTrackingPage /></ProtectedRoute>} />
               <Route path="/dashboard/seller" element={<ProtectedRoute><SellerHubPage /></ProtectedRoute>} />
