@@ -1,3 +1,7 @@
+/**
+ * @deprecated — Use @/lib/location/geocode.ts (reverseGeocode, searchPlaces) instead.
+ * This file is kept for any remaining direct consumers.
+ */
 import { MAPBOX_ACCESS_TOKEN } from "@/lib/mapbox/config";
 
 export async function forwardGeocode(query: string) {

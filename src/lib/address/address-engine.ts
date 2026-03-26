@@ -1,6 +1,9 @@
 /**
- * Address Priority Engine — Uber/Careem-like address resolution.
- * Priority: default_address > last_used_address > current_location > city_fallback
+ * @deprecated — LEGACY. Use canonical-address-resolver.ts instead.
+ * This file is kept only for backward compatibility during migration.
+ * All new code MUST use:
+ *   import { resolveAddress, resolveAndActivate } from "@/lib/address/canonical-address-resolver";
+ *   import type { CanonicalPlace } from "@/lib/address/canonical-place";
  */
 import { supabase } from "@/integrations/supabase/client";
 import { debugLog } from "@/lib/debug/runtime-debug-bus";
