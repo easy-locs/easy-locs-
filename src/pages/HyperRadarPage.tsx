@@ -19,8 +19,9 @@ import UnifiedMap from "@/components/map/UnifiedMap";
 import {
   Radio, X, ChevronUp, ChevronDown,
   Utensils, Hotel, Car, Sparkles, Moon, ShoppingBag,
-  Activity, Navigation, Search, Minus, Plus,
+  Activity, Navigation, Search, Minus, Plus, CloudRain, CloudSun,
 } from "lucide-react";
+import { useLiveWeatherStation } from "@/hooks/useLiveWeatherStation";
 
 /* ── Layer config ── */
 const LAYERS: { id: RadarLayer; label: string; icon: React.ReactNode; color: string }[] = [
@@ -44,6 +45,7 @@ export default function HyperRadarPage() {
   const [panelSnap, setPanelSnap] = useState<"closed" | "peek" | "half">("peek");
   const [zoneClick, setZoneClick] = useState<{ lat: number; lng: number } | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const weather = useLiveWeatherStation({ lat: location?.lat, lng: location?.lng });
 
   /* ── Performance: limit visible pins ── */
   const visibleEntities = useMemo(() => {
@@ -125,6 +127,8 @@ export default function HyperRadarPage() {
         <UnifiedMap
           entities={visibleEntities}
           showUserLocation
+          userLat={location?.lat}
+          userLng={location?.lng}
           showHeatmap={visibleEntities.length > 30}
           heatmapPoints={visibleEntities.map(e => ({ lat: e.lat, lng: e.lng, intensity: 0.5 }))}
           radiusKm={radius}
@@ -145,11 +149,17 @@ export default function HyperRadarPage() {
           <X className="w-4 h-4 text-foreground" />
         </button>
 
-        <div className="flex items-center gap-1.5">
-          <div className="w-6 h-6 rounded-lg flex items-center justify-center" style={{ background: "hsl(var(--accent)/0.12)" }}>
+        <div className="min-w-0 flex flex-col items-center gap-1">
+          <div className="flex items-center gap-1.5">
+            <div className="w-6 h-6 rounded-lg flex items-center justify-center" style={{ background: "hsl(var(--accent)/0.12)" }}>
             <Radio className="w-3 h-3" style={{ color: "hsl(var(--accent))" }} />
+            </div>
+            <span className="text-xs font-bold text-foreground">Radar</span>
           </div>
-          <span className="text-xs font-bold text-foreground">Radar</span>
+          <div className="inline-flex max-w-[180px] min-w-0 items-center gap-1.5 rounded-full border border-border/15 bg-card/80 px-2.5 py-1 backdrop-blur-md">
+            {weather.isRaining ? <CloudRain className="h-3 w-3 shrink-0 text-primary" /> : <CloudSun className="h-3 w-3 shrink-0 text-primary" />}
+            <span className="truncate text-[10px] font-medium text-foreground">{weather.label}</span>
+          </div>
         </div>
 
         <div className="flex items-center gap-1 px-2 py-0.5 rounded-full" style={{ background: "hsl(var(--success)/0.1)", border: "1px solid hsl(var(--success)/0.2)" }}>
@@ -163,7 +173,7 @@ export default function HyperRadarPage() {
 
       {/* Search Bar */}
       <motion.div
-        className="absolute top-12 left-3 right-3 z-20"
+        className="absolute left-3 right-3 top-[74px] z-20"
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.15 }}
@@ -175,7 +185,7 @@ export default function HyperRadarPage() {
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
             placeholder="Search places..."
-            className="w-full h-9 pl-8 pr-3 rounded-xl bg-card/95 border border-border/15 text-xs text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:border-accent/30 transition-colors"
+            className="h-11 w-full min-w-0 rounded-2xl border border-border/15 bg-card/95 pl-10 pr-4 text-sm font-medium text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:border-accent/30 transition-colors"
             style={{ backdropFilter: "blur(12px)" }}
           />
         </div>
@@ -183,7 +193,7 @@ export default function HyperRadarPage() {
 
       {/* Radius Control — right side */}
       <motion.div
-        className="absolute top-[88px] right-3 z-20 flex flex-col items-center gap-1 px-2 py-2 rounded-xl border border-border/15 bg-card/90"
+        className="absolute right-3 top-[130px] z-20 flex flex-col items-center gap-1 rounded-xl border border-border/15 bg-card/90 px-2 py-2"
         initial={{ opacity: 0, x: 15 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ delay: 0.25 }}
@@ -203,7 +213,7 @@ export default function HyperRadarPage() {
       {/* Vibe Badge — left side */}
       {vibe && (
         <motion.div
-          className="absolute top-[88px] left-3 z-20 px-2.5 py-1.5 rounded-xl border border-border/15 bg-card/90"
+          className="absolute left-3 top-[130px] z-20 rounded-xl border border-border/15 bg-card/90 px-2.5 py-1.5"
           initial={{ opacity: 0, x: -15 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.3 }}

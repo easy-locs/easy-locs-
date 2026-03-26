@@ -2030,6 +2030,8 @@ html {
 .search-shell {
   position: relative;
   width: 100%;
+  min-width: 0;
+  overflow: visible;
 }
 
 .search-shell__icon {
@@ -2045,7 +2047,9 @@ html {
 }
 
 .search-shell__input {
+  display: block;
   width: 100%;
+  min-width: 0;
   height: var(--search-input-h);
   min-height: var(--search-input-h);
   border-radius: 18px;
@@ -2074,6 +2078,51 @@ html {
   z-index: 2;
   border: none;
   cursor: pointer;
+}
+
+@media (max-width: 428px) {
+  .search-shell__icon {
+    left: 16px;
+    width: 16px;
+    height: 16px;
+  }
+
+  .search-shell__input {
+    border-radius: 16px;
+    padding-left: 46px !important;
+    padding-right: 40px !important;
+    font-size: 16px;
+  }
+}
+
+@keyframes map-rain-fall {
+  0% {
+    background-position: 0 0, 0 0;
+  }
+  100% {
+    background-position: 0 18px, 0 0;
+  }
+}
+
+.map-rain-tint {
+  background:
+    linear-gradient(180deg, hsl(var(--primary) / 0.16) 0%, transparent 40%, hsl(var(--background) / 0.1) 100%),
+    radial-gradient(circle at top, hsl(var(--info) / 0.16), transparent 45%);
+}
+
+.map-rain-overlay {
+  background-image:
+    repeating-linear-gradient(
+      -18deg,
+      hsl(var(--card) / 0) 0px,
+      hsl(var(--card) / 0) 10px,
+      hsl(var(--card) / 0.28) 11px,
+      hsl(var(--card) / 0.28) 13px
+    ),
+    linear-gradient(180deg, hsl(var(--background) / 0.02), hsl(var(--background) / 0.08));
+  mix-blend-mode: screen;
+  opacity: 0.5;
+  animation: map-rain-fall 0.7s linear infinite;
 }
 
 /* Disable browser search decorations */
