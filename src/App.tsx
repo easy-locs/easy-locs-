@@ -332,6 +332,9 @@ const ElectronicsHub = safeLazy(() => import("./pages/universe/ElectronicsHub"),
 const GiftsHub = safeLazy(() => import("./pages/universe/GiftsHub"), "GiftsHub");
 const PetsHub = safeLazy(() => import("./pages/universe/PetsHub"), "PetsHub");
 const BrowseVerticalPage = safeLazy(() => import("./pages/universe/BrowseVerticalPage"), "BrowseVerticalPage");
+const RetailIndexPage = safeLazy(() => import("./pages/universe/RetailIndexPage"), "RetailIndexPage");
+const RetailCategoryPage = safeLazy(() => import("./pages/universe/RetailCategoryPage"), "RetailCategoryPage");
+const RetailMallPage = safeLazy(() => import("./pages/universe/RetailMallPage"), "RetailMallPage");
 
 // Food sub-pages (Careem-style drill-down)
 const FoodTypePage = safeLazy(() => import("./pages/food/FoodTypePage"), "FoodTypePage");
