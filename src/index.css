@@ -2173,9 +2173,7 @@ html {
   border-radius: 1rem;
   padding-inline-start: 2.75rem !important;
   padding-inline-end: 2.8rem !important;
-  white-space: nowrap;
   text-overflow: ellipsis;
-  overflow: hidden;
   line-height: 1.2;
 }
 
