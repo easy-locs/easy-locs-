@@ -333,7 +333,7 @@ export function localRank(candidates: SearchCandidate[], ctx: RankingContext): R
 
   // Debug logging in dev
   if (import.meta.env.DEV && ranked.length > 0) {
-    console.log(`[SearchBrain] Query: "${ctx.query}" | Ambiguous: ${isAmbiguous} | Country: ${ctx.userCountryCode ?? ctx.userCountry ?? "?"} | City: ${ctx.userCity ?? "?"}`);
+    console.log(`[SearchBrain] Query: "${ctx.query}" | Mode: ${mode} | Ambiguous: ${isAmbiguous} | Country: ${ctx.userCountryCode ?? ctx.userCountry ?? "?"} | City: ${ctx.userCity ?? "?"}`);
     ranked.slice(0, 5).forEach((r, i) => {
       console.log(`  #${i + 1} [${r.bucket}] ${r.candidate.label} (${r.candidate.country_code ?? "?"}) → ${r.score.toFixed(3)} | ${r.reasons.join(", ")}`);
     });
