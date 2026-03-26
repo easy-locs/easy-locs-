@@ -183,6 +183,11 @@ const Index = () => {
         <LiveActivityBar />
       </Suspense>
 
+      {/* 2b. Quick Stats */}
+      <Suspense fallback={null}>
+        <MicroQuickStats />
+      </Suspense>
+
       {/* Sections — strict flex column with mobile-first gap */}
       <div className="flex flex-col gap-3 sm:gap-5">
         {/* 3. Main Category Banners */}
@@ -303,16 +308,12 @@ const Index = () => {
         </Suspense>
 
         {/* 14. Browse by Country + Cities */}
-        {!isMobile && (
-          <>
-            <Suspense fallback={<SectionLoader />}>
-              <BrowseByCountry />
-            </Suspense>
-            <Suspense fallback={<SectionLoader />}>
-              <PopularCities />
-            </Suspense>
-          </>
-        )}
+        <Suspense fallback={<SectionLoader />}>
+          <BrowseByCountry />
+        </Suspense>
+        <Suspense fallback={<SectionLoader />}>
+          <PopularCities />
+        </Suspense>
 
         {/* 15. How it works */}
         <Suspense fallback={<SectionLoader />}>
