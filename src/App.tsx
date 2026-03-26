@@ -1195,6 +1195,7 @@ const App = () => (
               {/* Guest / Public */}
               <Route path="/guest/checkout/:cartId" element={<GuestCheckoutPage />} />
               <Route path="/payment/:orderId" element={<PaymentPage />} />
+              <Route path="/claim-shop/:merchantId" element={<ClaimShopPage />} />
               <Route path="/store/:publicSlug" element={<PublicStorefrontBySlugPage />} />
 
               <Route path="/app/orbit" element={<Navigate to="/orbit" replace />} />
