@@ -34,7 +34,7 @@ export default function CustomerPaymentActivityPage() {
   });
 
   return (
-    <div className="min-h-[100dvh] bg-background pb-24">
+    <div className="app-mobile-page app-mobile-content bg-background">
       <div className="flex items-center gap-3 px-4 pt-6 pb-4">
         <button
           onClick={() => navigate("/wallet/hub")}
