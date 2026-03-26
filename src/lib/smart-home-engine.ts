@@ -1,22 +1,22 @@
 /**
- * Smart Home Engine — Single source of truth for dashboard category cards.
- * 10 primary verticals only. Subcategories (bakery, coffee, dineout, gifts, pets, concierge)
- * are demoted — accessible via browse routes, not top-level cards.
- *
- * Each card maps to:
- * - a canonical vertical or fulfillment entry point
- * - the correct route
- * - the correct fulfillment type
+ * Smart Home Engine — Dashboard rendering layer.
+ * Derives ALL category data from the canonical category-tree.ts.
+ * This file handles time/geo priority only — NOT category definitions.
  */
+import {
+  CATEGORY_TREE,
+  getPrimaryCategory,
+  type PrimaryCategory,
+  type FulfillmentType,
+  type MobilityJobType,
+} from "@/lib/taxonomy/category-tree";
 
 export type TimeSlot = "morning" | "lunch" | "afternoon" | "dinner" | "latenight";
 
-export type CategoryKey =
-  | "food" | "grocery" | "shops" | "services" | "pharmacy"
-  | "beauty" | "taxi" | "delivery" | "property" | "travel";
+export type CategoryKey = string;
 
 export interface SmartCategory {
-  key: CategoryKey;
+  key: string;
   label: string;
   icon: string;
   image?: string;
@@ -24,12 +24,9 @@ export interface SmartCategory {
   color: string;
   size: "normal" | "wide" | "tall";
   route: string;
-  /** Canonical vertical from world-class-taxonomy */
   vertical: string;
-  /** Fulfillment type for dispatch resolution */
-  fulfillmentType: "food_delivery" | "grocery_delivery" | "parcel_delivery" | "taxi" | "service_booking" | "property_listing" | "none";
-  /** Mobility job_type if applicable */
-  mobilityJobType: string | null;
+  fulfillmentType: FulfillmentType;
+  mobilityJobType: MobilityJobType;
 }
 
 export interface SmartHero {
@@ -39,6 +36,37 @@ export interface SmartHero {
   cta: string;
   route: string;
   gradient: string;
+}
+
+/* ═══ Color mapping (semantic tokens only) ═══ */
+const CATEGORY_COLORS: Record<string, string> = {
+  food: "hsl(var(--warning))",
+  grocery: "hsl(var(--success))",
+  shops: "hsl(var(--primary))",
+  services: "hsl(var(--info))",
+  pharmacy: "hsl(var(--success))",
+  beauty: "hsl(var(--accent))",
+  taxi: "hsl(var(--accent))",
+  delivery: "hsl(var(--info))",
+  property: "hsl(var(--primary))",
+  travel: "hsl(var(--info))",
+};
+
+/** Convert a PrimaryCategory → SmartCategory for dashboard rendering */
+function toSmartCategory(cat: PrimaryCategory): SmartCategory {
+  return {
+    key: cat.key,
+    label: cat.label,
+    icon: cat.emoji,
+    image: cat.key,
+    subtitle: cat.subtitle,
+    color: CATEGORY_COLORS[cat.key] ?? "hsl(var(--muted))",
+    size: "normal",
+    route: cat.route,
+    vertical: cat.vertical,
+    fulfillmentType: cat.fulfillment,
+    mobilityJobType: cat.mobilityJobType,
+  };
 }
 
 /* ═══ Time Detection ═══ */
@@ -57,72 +85,11 @@ export function getTimeSlot(timezone?: string): TimeSlot {
   return "latenight";
 }
 
-/* ═══ Canonical 10 Primary Categories ═══ */
-const PRIMARY_CATEGORIES: Record<CategoryKey, SmartCategory> = {
-  food: {
-    key: "food", label: "Food", icon: "🍕", image: "food",
-    color: "hsl(var(--warning))", size: "normal",
-    route: "/browse/food", subtitle: "Order now",
-    vertical: "food", fulfillmentType: "food_delivery", mobilityJobType: "food_delivery",
-  },
-  grocery: {
-    key: "grocery", label: "Grocery", icon: "🛒", image: "grocery",
-    color: "hsl(var(--success))", size: "normal",
-    route: "/browse/grocery", subtitle: "Fresh & fast",
-    vertical: "grocery", fulfillmentType: "grocery_delivery", mobilityJobType: "grocery_delivery",
-  },
-  shops: {
-    key: "shops", label: "Shops", icon: "🏪", image: "shops",
-    color: "hsl(var(--primary))", size: "normal",
-    route: "/browse/retail", subtitle: "Browse stores",
-    vertical: "shops", fulfillmentType: "parcel_delivery", mobilityJobType: "parcel_delivery",
-  },
-  services: {
-    key: "services", label: "Services", icon: "🔧", image: "services",
-    color: "hsl(var(--info))", size: "normal",
-    route: "/browse/services", subtitle: "Near you",
-    vertical: "services", fulfillmentType: "service_booking", mobilityJobType: null,
-  },
-  pharmacy: {
-    key: "pharmacy", label: "Pharmacy", icon: "💊", image: "pharmacy",
-    color: "hsl(var(--success))", size: "normal",
-    route: "/browse/healthcare?sub=pharmacy", subtitle: "Medicines",
-    vertical: "healthcare", fulfillmentType: "parcel_delivery", mobilityJobType: "parcel_delivery",
-  },
-  beauty: {
-    key: "beauty", label: "Beauty", icon: "💅", image: "beauty",
-    color: "hsl(var(--accent))", size: "normal",
-    route: "/browse/services?sub=beauty", subtitle: "Salon & spa",
-    vertical: "services", fulfillmentType: "service_booking", mobilityJobType: null,
-  },
-  taxi: {
-    key: "taxi", label: "Taxi", icon: "🚕", image: "taxi",
-    color: "hsl(var(--accent))", size: "normal",
-    route: "/mobility/taxi", subtitle: "Book a ride",
-    vertical: "mobility", fulfillmentType: "taxi", mobilityJobType: "taxi",
-  },
-  delivery: {
-    key: "delivery", label: "Delivery", icon: "🚚", image: "delivery",
-    color: "hsl(var(--info))", size: "normal",
-    route: "/mobility/delivery", subtitle: "Send & track",
-    vertical: "mobility", fulfillmentType: "parcel_delivery", mobilityJobType: "parcel_delivery",
-  },
-  property: {
-    key: "property", label: "Property", icon: "🏠", image: "property",
-    color: "hsl(var(--primary))", size: "normal",
-    route: "/browse/real_estate", subtitle: "Rent & buy",
-    vertical: "property", fulfillmentType: "property_listing", mobilityJobType: null,
-  },
-  travel: {
-    key: "travel", label: "Travel", icon: "✈️", image: "travel",
-    color: "hsl(var(--info))", size: "normal",
-    route: "/travel", subtitle: "Flights & hotels",
-    vertical: "experiences", fulfillmentType: "none", mobilityJobType: null,
-  },
-};
+/* ═══ All 10 category keys in default order ═══ */
+const ALL_KEYS = CATEGORY_TREE.map(c => c.key);
 
-/* ═══ Time-based priority (10 primaries only) ═══ */
-const TIME_PRIORITY: Record<TimeSlot, CategoryKey[]> = {
+/* ═══ Time-based priority ═══ */
+const TIME_PRIORITY: Record<TimeSlot, string[]> = {
   morning:   ["food", "grocery", "pharmacy", "taxi", "services", "beauty", "shops", "travel", "property", "delivery"],
   lunch:     ["food", "delivery", "shops", "services", "grocery", "taxi", "travel", "property", "pharmacy", "beauty"],
   afternoon: ["shops", "services", "grocery", "beauty", "delivery", "travel", "property", "food", "pharmacy", "taxi"],
@@ -131,7 +98,7 @@ const TIME_PRIORITY: Record<TimeSlot, CategoryKey[]> = {
 };
 
 /* ═══ Country priority overrides ═══ */
-const COUNTRY_BOOSTS: Record<string, CategoryKey[]> = {
+const COUNTRY_BOOSTS: Record<string, string[]> = {
   AE: ["food", "grocery", "taxi", "beauty", "pharmacy", "property", "shops"],
   FR: ["property", "services", "food", "shops", "pharmacy"],
   MA: ["food", "services", "taxi", "property", "pharmacy"],
@@ -191,8 +158,8 @@ export function getSmartCategories(timezone?: string, countryCode?: string): Sma
   const timePriority = TIME_PRIORITY[slot];
   const countryBoost = countryCode ? COUNTRY_BOOSTS[countryCode.toUpperCase()] : undefined;
 
-  const ordered: CategoryKey[] = [];
-  const seen = new Set<CategoryKey>();
+  const ordered: string[] = [];
+  const seen = new Set<string>();
 
   if (countryBoost) {
     for (const key of countryBoost) {
@@ -202,11 +169,14 @@ export function getSmartCategories(timezone?: string, countryCode?: string): Sma
   for (const key of timePriority) {
     if (!seen.has(key)) { ordered.push(key); seen.add(key); }
   }
-  // Ensure all 10 are present
-  for (const key of Object.keys(PRIMARY_CATEGORIES) as CategoryKey[]) {
+  for (const key of ALL_KEYS) {
     if (!seen.has(key)) { ordered.push(key); seen.add(key); }
   }
-  return ordered.map(key => PRIMARY_CATEGORIES[key]);
+
+  return ordered
+    .map(key => getPrimaryCategory(key))
+    .filter(Boolean)
+    .map(cat => toSmartCategory(cat!));
 }
 
 export function getSmartHero(timezone?: string): SmartHero {
@@ -224,15 +194,14 @@ export function getTimeGreeting(timezone?: string): string {
   }
 }
 
-/** Dynamic sections ordered by relevance */
 export function getSmartSections(timezone?: string): { key: string; title: string; icon: string }[] {
   const slot = getTimeSlot(timezone);
   const base = [
-    { key: "trending",  title: "Trending near you",  icon: "🔥" },
-    { key: "toprated",  title: "Best rated nearby",  icon: "⭐" },
-    { key: "opennow",   title: "Open now",            icon: "🟢" },
-    { key: "fastest",   title: "Fastest delivery",    icon: "⚡" },
-    { key: "offers",    title: "Deals in your area",  icon: "🎉" },
+    { key: "trending", title: "Trending near you", icon: "🔥" },
+    { key: "toprated", title: "Best rated nearby", icon: "⭐" },
+    { key: "opennow", title: "Open now", icon: "🟢" },
+    { key: "fastest", title: "Fastest delivery", icon: "⚡" },
+    { key: "offers", title: "Deals in your area", icon: "🎉" },
   ];
   if (slot === "latenight") {
     const open = base.find(s => s.key === "opennow")!;
@@ -246,11 +215,13 @@ export function getSmartSections(timezone?: string): { key: string; title: strin
 }
 
 /** Get category → fulfillment mapping for a given key */
-export function getCategoryFulfillment(key: CategoryKey) {
-  return PRIMARY_CATEGORIES[key];
+export function getCategoryFulfillment(key: string) {
+  const cat = getPrimaryCategory(key);
+  if (!cat) return undefined;
+  return toSmartCategory(cat);
 }
 
 /** Get all category keys */
-export function getAllCategoryKeys(): CategoryKey[] {
-  return Object.keys(PRIMARY_CATEGORIES) as CategoryKey[];
+export function getAllCategoryKeys(): string[] {
+  return ALL_KEYS;
 }
