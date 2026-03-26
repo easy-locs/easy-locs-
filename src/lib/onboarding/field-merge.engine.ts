@@ -1,143 +1,149 @@
 /**
- * Field-Level Merge Engine — Merges data from multiple sources field-by-field,
- * using per-vertical source priority rankings.
- * Never "one source wins all": each field is resolved independently.
+ * Field-Level Merge Engine — Merges data from multiple sources field-by-field.
+ * Each field is resolved independently using per-vertical source priority.
  */
-import type { OnboardingVertical } from "./source-policy.engine";
+import type {
+  CanonicalOnboardingRecord,
+  SourceEntityRecord,
+  SourceEvidence,
+  Vertical,
+  SourceName,
+} from "./types";
 
-/** Per-vertical, per-field source priority (first = highest trust) */
-export const FIELD_SOURCE_PRIORITY: Record<OnboardingVertical, Record<string, string[]>> = {
+const FIELD_PRIORITY: Record<Vertical, Record<string, SourceName[]>> = {
   food: {
-    name: ["official_web", "deliveroo", "talabat", "careem", "noon", "google_business"],
-    menu_items: ["deliveroo", "talabat", "careem", "noon", "official_web"],
-    opening_hours: ["official_web", "deliveroo", "talabat", "careem", "google_business"],
-    phone: ["official_web", "google_business", "deliveroo", "talabat"],
-    coordinates: ["google_business", "deliveroo", "talabat", "careem", "official_web"],
-    hero_image: ["official_web", "deliveroo", "talabat", "careem"],
-    logo: ["official_web", "google_business", "deliveroo", "talabat"],
-    address: ["google_business", "official_web", "deliveroo", "talabat"],
-    categories: ["taxonomy_engine", "deliveroo", "talabat", "careem"],
-    rating: ["google_business", "deliveroo", "talabat"],
-    description: ["official_web", "deliveroo", "talabat", "google_business"],
-    delivery_radius: ["deliveroo", "talabat", "careem"],
+    canonicalName: ["official_web", "deliveroo", "talabat", "careem", "noon", "google_business"],
+    address: ["google_business", "official_web", "deliveroo", "talabat", "careem"],
+    phone: ["official_web", "google_business"],
+    website: ["official_web", "google_business"],
+    openingHours: ["official_web", "google_business", "deliveroo", "talabat", "careem"],
+    menuItems: ["deliveroo", "talabat", "careem", "noon", "official_web"],
+    photos: ["official_web", "deliveroo", "talabat", "careem"],
   },
   grocery: {
-    name: ["official_web", "talabat", "careem", "noon", "google_business"],
-    catalog_items: ["talabat", "careem", "noon", "official_web"],
-    opening_hours: ["official_web", "talabat", "careem", "google_business"],
-    phone: ["official_web", "google_business", "talabat"],
-    coordinates: ["google_business", "talabat", "careem", "official_web"],
-    hero_image: ["official_web", "talabat", "careem"],
-    logo: ["official_web", "google_business"],
-    address: ["google_business", "official_web", "talabat"],
-    categories: ["taxonomy_engine", "talabat", "noon"],
-    description: ["official_web", "talabat", "google_business"],
+    canonicalName: ["official_web", "talabat", "careem", "noon", "google_business"],
+    address: ["google_business", "official_web", "talabat", "careem", "noon"],
+    phone: ["official_web", "google_business"],
+    website: ["official_web", "google_business"],
+    openingHours: ["official_web", "google_business", "talabat", "careem", "noon"],
+    menuItems: ["talabat", "careem", "noon", "official_web"],
+    photos: ["official_web", "talabat", "careem", "noon"],
   },
   hotel: {
-    name: ["official_web", "booking", "expedia", "govoyage", "google_business"],
-    amenities: ["booking", "expedia", "official_web"],
-    checkin_checkout: ["official_web", "booking", "expedia"],
-    photos: ["official_web", "booking", "expedia", "govoyage"],
+    canonicalName: ["official_web", "booking", "expedia", "govoyage", "google_business"],
     address: ["booking", "expedia", "official_web", "google_business"],
-    coordinates: ["google_business", "booking", "expedia", "official_web"],
-    phone: ["official_web", "google_business", "booking"],
-    room_types: ["booking", "expedia", "official_web"],
-    policies: ["official_web", "booking", "expedia"],
-    rating: ["google_business", "booking", "expedia"],
-    description: ["official_web", "booking", "expedia"],
-    logo: ["official_web", "google_business"],
+    phone: ["official_web", "google_business"],
+    website: ["official_web", "google_business"],
+    openingHours: ["official_web"],
+    hotelInventory: ["booking", "expedia", "govoyage", "official_web"],
+    photos: ["official_web", "booking", "expedia", "govoyage"],
   },
   services: {
-    name: ["official_web", "google_business", "trusted_directory"],
+    canonicalName: ["official_web", "google_business", "trusted_directory"],
+    address: ["google_business", "official_web", "trusted_directory"],
     phone: ["official_web", "google_business", "trusted_directory"],
-    coordinates: ["google_business", "official_web"],
-    opening_hours: ["official_web", "google_business"],
-    photos: ["official_web", "google_business"],
-    categories: ["taxonomy_engine", "google_business", "official_web"],
-    description: ["official_web", "google_business"],
-    address: ["google_business", "official_web"],
-    logo: ["official_web", "google_business"],
-    rating: ["google_business"],
-    service_catalog: ["official_web", "trusted_directory"],
+    website: ["official_web", "google_business"],
+    openingHours: ["official_web", "google_business", "trusted_directory"],
+    serviceItems: ["official_web", "trusted_directory"],
+    photos: ["official_web", "google_business", "trusted_directory"],
   },
   property: {
-    name: ["crm_import", "property_portal", "official_web"],
-    address: ["property_portal", "crm_import", "official_web", "google_business"],
-    coordinates: ["google_business", "property_portal", "official_web"],
-    photos: ["property_portal", "official_web"],
+    canonicalName: ["crm_import", "property_portal", "official_web"],
+    address: ["crm_import", "property_portal", "official_web", "google_business"],
     phone: ["crm_import", "official_web", "google_business"],
-    description: ["official_web", "property_portal"],
-    amenities: ["property_portal", "official_web"],
-    pricing: ["property_portal", "crm_import"],
-    logo: ["official_web"],
-    categories: ["taxonomy_engine", "property_portal"],
+    website: ["official_web"],
+    photos: ["crm_import", "property_portal", "official_web"],
   },
 };
 
-export interface SourceFieldData {
-  source: string;
-  field: string;
-  value: any;
-  confidence?: number; // optional per-source confidence
+function firstByPriority<T>(
+  records: SourceEntityRecord[],
+  field: keyof SourceEntityRecord,
+  orderedSources: SourceName[],
+): { value: T | null; proof: SourceEvidence[] } {
+  for (const source of orderedSources) {
+    const row = records.find((r) => r.source === source && r[field] != null);
+    if (row && row[field] != null) {
+      return {
+        value: row[field] as T,
+        proof: [{
+          source,
+          field: String(field),
+          value: row[field],
+          confidence: 0.9,
+          fetchedAt: new Date().toISOString(),
+          url: row.sourceUrl ?? null,
+        }],
+      };
+    }
+  }
+  return { value: null, proof: [] };
 }
 
-export interface MergedField {
-  field: string;
-  value: any;
-  winningSource: string;
-  alternativeSources: string[];
-}
+export function mergeEntityRecords(
+  vertical: Vertical,
+  records: SourceEntityRecord[],
+): CanonicalOnboardingRecord {
+  const priorities = FIELD_PRIORITY[vertical];
 
-/**
- * Merge a single field from multiple source contributions.
- * Picks the value from the highest-priority source that has a non-empty value.
- */
-export function mergeField(
-  vertical: OnboardingVertical,
-  field: string,
-  contributions: SourceFieldData[]
-): MergedField | null {
-  const priority = FIELD_SOURCE_PRIORITY[vertical]?.[field] ?? [];
+  const name = firstByPriority<string>(records, "name", priorities.canonicalName ?? []);
+  const address = firstByPriority<string>(records, "address", priorities.address ?? []);
+  const phone = firstByPriority<string>(records, "phone", priorities.phone ?? []);
+  const website = firstByPriority<string>(records, "website", priorities.website ?? []);
+  const openingHours = firstByPriority<Record<string, unknown>>(records, "openingHours", priorities.openingHours ?? []);
+  const menuItems = firstByPriority<Array<Record<string, unknown>>>(records, "menuItems", priorities.menuItems ?? []);
+  const hotelInventory = firstByPriority<Array<Record<string, unknown>>>(records, "hotelInventory", priorities.hotelInventory ?? []);
+  const serviceItems = firstByPriority<Array<Record<string, unknown>>>(records, "serviceItems", priorities.serviceItems ?? []);
+  const photos = firstByPriority<string[]>(records, "photos", priorities.photos ?? []);
 
-  // Sort contributions by priority index (lower = better)
-  const sorted = [...contributions]
-    .filter((c) => c.value != null && c.value !== "" && c.value !== undefined)
-    .sort((a, b) => {
-      const ai = priority.indexOf(a.source);
-      const bi = priority.indexOf(b.source);
-      const pa = ai === -1 ? 999 : ai;
-      const pb = bi === -1 ? 999 : bi;
-      return pa - pb;
-    });
+  const city = records.find((r) => r.city)?.city ?? null;
+  const district = records.find((r) => r.district)?.district ?? null;
+  const country = records.find((r) => r.country)?.country ?? null;
+  const lat = records.find((r) => r.lat != null)?.lat ?? null;
+  const lng = records.find((r) => r.lng != null)?.lng ?? null;
+  const branchName = records.find((r) => r.branchName)?.branchName ?? null;
 
-  if (sorted.length === 0) return null;
+  const categories = [...new Set(records.flatMap((r) => r.categories ?? []))];
+  const subcategories = [...new Set(records.flatMap((r) => r.subcategories ?? []))];
+
+  const rating = records.find((r) => r.rating != null)?.rating ?? null;
+  const reviewCount = records.find((r) => r.reviewCount != null)?.reviewCount ?? null;
+
+  const sourceProofs = [
+    ...name.proof, ...address.proof, ...phone.proof, ...website.proof,
+    ...openingHours.proof, ...menuItems.proof, ...hotelInventory.proof,
+    ...serviceItems.proof, ...photos.proof,
+  ];
+
+  const missingFields = [
+    !name.value ? "canonicalName" : null,
+    !address.value ? "address" : null,
+    lat == null ? "lat" : null,
+    lng == null ? "lng" : null,
+    categories.length === 0 ? "categories" : null,
+  ].filter(Boolean) as string[];
+
+  const confidenceBase = Math.max(0, 100 - missingFields.length * 15) / 100;
 
   return {
-    field,
-    value: sorted[0].value,
-    winningSource: sorted[0].source,
-    alternativeSources: sorted.slice(1).map((s) => s.source),
+    entityId: crypto.randomUUID(),
+    vertical,
+    canonicalName: name.value,
+    branchName,
+    address: address.value,
+    city, district, country, lat, lng,
+    phone: phone.value,
+    website: website.value,
+    categories, subcategories,
+    openingHours: openingHours.value,
+    menuItems: menuItems.value ?? [],
+    hotelInventory: hotelInventory.value ?? [],
+    serviceItems: serviceItems.value ?? [],
+    photos: photos.value ?? [],
+    rating, reviewCount,
+    sourceProofs,
+    mergeConfidence: confidenceBase,
+    missingFields,
+    needsReview: missingFields.length > 0,
   };
-}
-
-/**
- * Merge all fields from multiple sources into a canonical record.
- */
-export function mergeAllFields(
-  vertical: OnboardingVertical,
-  allContributions: SourceFieldData[]
-): MergedField[] {
-  const byField = new Map<string, SourceFieldData[]>();
-  for (const c of allContributions) {
-    if (!byField.has(c.field)) byField.set(c.field, []);
-    byField.get(c.field)!.push(c);
-  }
-
-  const results: MergedField[] = [];
-  for (const [field, contributions] of byField) {
-    const merged = mergeField(vertical, field, contributions);
-    if (merged) results.push(merged);
-  }
-
-  return results;
 }
