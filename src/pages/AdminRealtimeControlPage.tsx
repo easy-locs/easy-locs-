@@ -34,7 +34,7 @@ export default function AdminRealtimeControlPage() {
     const channel = supabase
       .channel("admin-realtime-control")
       .on("postgres_changes", { event: "*", schema: "public", table: "orders" }, load)
-      .on("postgres_changes", { event: "*", schema: "public", table: "dispatch_jobs_v2" }, load)
+      .on("postgres_changes", { event: "*", schema: "public", table: "mobility_jobs" }, load)
       .on("postgres_changes", { event: "*", schema: "public", table: "driver_profiles" }, load)
       .subscribe();
 

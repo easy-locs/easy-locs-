@@ -2,6 +2,7 @@
  * SmartHome — Production-clean super-app home with data-driven sections.
  * Careem-style category grid with 3D icons + geo-aware delivery area.
  * Uses canonical discovery pipeline + Living Commerce Engine for all sections.
+ * SINGLE SOURCE OF TRUTH: smart-home-engine.ts (10 primary categories).
  */
 import { memo, useMemo, useEffect } from "react";
 import { GeoStatusIndicator } from "@/components/geo/GeoStatusIndicator";
@@ -27,31 +28,15 @@ import servicesImg from "@/assets/categories/services.png";
 import taxiImg from "@/assets/categories/taxi.png";
 import deliveryImg from "@/assets/categories/delivery.png";
 import propertyImg from "@/assets/categories/property.png";
-import walletImg from "@/assets/categories/wallet.png";
-import coffeeImg from "@/assets/categories/coffee.png";
-import bakeryImg from "@/assets/categories/bakery.png";
-import dineoutImg from "@/assets/categories/dineout.png";
 import beautyImg from "@/assets/categories/beauty.png";
-import conciergeImg from "@/assets/categories/concierge.png";
-import mobilityImg from "@/assets/categories/mobility.png";
-import rentalsImg from "@/assets/categories/rentals.png";
-import staysImg from "@/assets/categories/stays.png";
 import travelImg from "@/assets/categories/travel.png";
-import healthcareImg from "@/assets/categories/healthcare.png";
-import electronicsImg from "@/assets/categories/electronics.png";
-import giftsImg from "@/assets/categories/gifts.png";
 import pharmacyImg from "@/assets/categories/pharmacy.png";
-import petsImg from "@/assets/categories/pets.png";
-import flowersImg from "@/assets/categories/flowers.png";
 
+/** Only 10 primary category images — no subcategory images at dashboard level */
 const CATEGORY_IMAGES: Record<string, string> = {
   food: foodImg, grocery: groceryImg, shops: shopsImg, services: servicesImg,
-  taxi: taxiImg, delivery: deliveryImg, property: propertyImg, wallet: walletImg,
-  coffee: coffeeImg, bakery: bakeryImg, dineout: dineoutImg, beauty: beautyImg,
-  concierge: conciergeImg, mobility: mobilityImg, rentals: rentalsImg,
-  stays: staysImg, travel: travelImg, healthcare: healthcareImg,
-  electronics: electronicsImg, gifts: giftsImg, pharmacy: pharmacyImg,
-  pets: petsImg, flowers: flowersImg,
+  taxi: taxiImg, delivery: deliveryImg, property: propertyImg,
+  beauty: beautyImg, travel: travelImg, pharmacy: pharmacyImg,
 };
 
 type HomeShopPreview = ReturnType<typeof useHomeSections>["data"] extends infer T ? T extends { trending: (infer U)[] } ? U : never : never;

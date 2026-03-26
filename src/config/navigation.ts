@@ -125,9 +125,12 @@ export const PROFILE_SECTIONS = [
 ] as const;
 
 export const EXPLORE_CATEGORIES = [
-  { key: "food", label: "Food", icon: "🍔", path: "/food" },
-  { key: "shops", label: "Shops", icon: "🛍️", path: "/radar" },
+  { key: "food", label: "Food", icon: "🍔", path: "/browse/food" },
+  { key: "grocery", label: "Grocery", icon: "🛒", path: "/browse/grocery" },
+  { key: "shops", label: "Shops", icon: "🛍️", path: "/browse/retail" },
+  { key: "services", label: "Services", icon: "🔧", path: "/browse/services" },
+  { key: "taxi", label: "Taxi", icon: "🚕", path: "/mobility/taxi" },
+  { key: "delivery", label: "Delivery", icon: "🚚", path: "/mobility/delivery" },
+  { key: "property", label: "Property", icon: "🏠", path: "/browse/real_estate" },
   { key: "travel", label: "Travel", icon: "✈️", path: "/travel" },
-  { key: "property", label: "Property", icon: "🏠", path: "/real-estate" },
-  { key: "services", label: "Services", icon: "🔧", path: "/services-hub" },
 ] as const;

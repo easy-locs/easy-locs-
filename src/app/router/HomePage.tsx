@@ -24,8 +24,8 @@ import {
 const QUICK_ACTIONS = [
   { key: "orbit", label: "Chat", icon: MessageCircle, path: "/orbit", color: "bg-primary/10 text-primary" },
   { key: "marketplace", label: "Shop", icon: Store, path: "/achille", color: "bg-orange-500/10 text-orange-600" },
-  { key: "ride", label: "Ride", icon: Car, path: "/ride", color: "bg-blue-500/10 text-blue-600" },
-  { key: "delivery", label: "Send", icon: Package, path: "/ride/send-package", color: "bg-emerald-500/10 text-emerald-600" },
+  { key: "ride", label: "Ride", icon: Car, path: "/mobility/taxi", color: "bg-blue-500/10 text-blue-600" },
+  { key: "delivery", label: "Send", icon: Package, path: "/mobility/delivery", color: "bg-emerald-500/10 text-emerald-600" },
   { key: "wallet", label: "Wallet", icon: Wallet, path: "/wallet/hub", color: "bg-violet-500/10 text-violet-600" },
   { key: "scan", label: "Scan", icon: QrCode, path: "/pay/scan", color: "bg-amber-500/10 text-amber-600" },
   { key: "pay", label: "Pay", icon: CreditCard, path: "/wallet/hub", color: "bg-rose-500/10 text-rose-600" },
