@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { ArrowRight, Star, Clock, UtensilsCrossed } from "lucide-react";
 import { useHomeSections } from "@/hooks/useHomeSections";
+import { useI18n } from "@/lib/i18n";
 
 const FOOD_SUBCATS = [
   { label: "Pizza", emoji: "🍕", to: "/food?sub=pizza" },
@@ -19,6 +20,7 @@ const FOOD_SUBCATS = [
 
 export default function FoodSection() {
   const { data } = useHomeSections();
+  const { t } = useI18n();
   const shops = data?.bestRated ?? [];
 
   return (
@@ -33,17 +35,17 @@ export default function FoodSection() {
           <div>
             <h2 className="text-xl sm:text-2xl font-extrabold text-foreground flex items-center gap-2">
               <UtensilsCrossed className="h-5 w-5" style={{ color: "hsl(15 80% 55%)" }} />
-              Food & Delivery
+              {t("landing.food.title") || "Food & Delivery"}
             </h2>
             <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
-              Best restaurants near you · Fast delivery
+              {t("landing.food.subtitle") || "Best restaurants near you · Fast delivery"}
             </p>
           </div>
           <Link
             to="/food"
             className="hidden sm:flex items-center gap-1 text-sm font-semibold text-accent hover:gap-2 transition-all"
           >
-            Explore <ArrowRight className="h-4 w-4" />
+            {t("landing.food.explore") || "Explore"} <ArrowRight className="h-4 w-4" />
           </Link>
         </motion.div>
 

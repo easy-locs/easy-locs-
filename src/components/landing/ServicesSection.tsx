@@ -4,6 +4,7 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { ArrowRight, Wrench, Star, MapPin, CheckCircle } from "lucide-react";
+import { useI18n } from "@/lib/i18n";
 
 const SERVICES = [
   { title: "Home Cleaning", emoji: "🧹", rating: 4.9, pros: 234, to: "/marketplace/cleaning" },
@@ -17,6 +18,7 @@ const SERVICES = [
 ];
 
 export default function ServicesSection() {
+  const { t } = useI18n();
   return (
     <section className="py-10 sm:py-14 bg-muted/30" aria-label="Services Marketplace">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -29,17 +31,17 @@ export default function ServicesSection() {
           <div>
             <h2 className="text-xl sm:text-2xl font-extrabold text-foreground flex items-center gap-2">
               <Wrench className="h-5 w-5" style={{ color: "hsl(220 70% 55%)" }} />
-              Services Marketplace
+              {t("landing.services.title") || "Services Marketplace"}
             </h2>
             <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
-              Trusted professionals · Instant booking
+              {t("landing.services.subtitle") || "Trusted professionals · Instant booking"}
             </p>
           </div>
           <Link
             to="/services-hub"
             className="hidden sm:flex items-center gap-1 text-sm font-semibold text-accent hover:gap-2 transition-all"
           >
-            All services <ArrowRight className="h-4 w-4" />
+            {t("landing.services.browse") || "All services"} <ArrowRight className="h-4 w-4" />
           </Link>
         </motion.div>
 
