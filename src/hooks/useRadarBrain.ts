@@ -34,10 +34,7 @@ export function useRadarBrain(options: UseRadarBrainOptions = {}): RadarBrainHoo
   const currentLocation = useLocationStore((s) => s.currentLocation);
   const behavior = useMemo(() => getRadarBehavior(vertical), [vertical]);
 
-  const zoneKey = explicitZoneKey
-    ?? (currentLocation?.countryCode && currentLocation?.city
-      ? buildZoneKey(currentLocation.countryCode, currentLocation.city, currentLocation.district ?? undefined)
-      : "AE_DUBAI");
+  const zoneKey = explicitZoneKey ?? "AE_DUBAI";
 
   const evaluate = useCallback(async () => {
     setLoading(true);
