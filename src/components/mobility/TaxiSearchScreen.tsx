@@ -38,22 +38,22 @@ export function TaxiSearchScreen() {
       className="space-y-4"
     >
       {/* Service level chips */}
-      <div className="grid grid-cols-4 gap-2">
+      <div className="grid grid-cols-4 gap-1.5">
         {SERVICE_LEVELS.map(sl => (
           <button
             key={sl.value}
             type="button"
             onClick={() => setServiceLevel(sl.value)}
             className={cn(
-              "flex flex-col items-center gap-0.5 p-2.5 rounded-xl border-2 transition-all text-center",
+              "flex flex-col items-center gap-0.5 p-2 rounded-xl border-2 transition-all text-center min-w-0",
               serviceLevel === sl.value
                 ? "border-primary bg-primary/5 text-primary"
                 : "border-border/40 bg-card text-muted-foreground"
             )}
           >
-            <span className="text-lg">{sl.emoji}</span>
-            <span className="text-[10px] font-bold">{sl.label}</span>
-            <span className="text-[8px] text-muted-foreground">{sl.desc}</span>
+            <span className="text-base">{sl.emoji}</span>
+            <span className="text-[10px] font-bold leading-tight truncate w-full">{sl.label}</span>
+            <span className="text-[8px] text-muted-foreground leading-tight truncate w-full">{sl.desc}</span>
           </button>
         ))}
       </div>
