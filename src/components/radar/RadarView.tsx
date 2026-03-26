@@ -1,12 +1,19 @@
 /**
  * RadarView — Premium discovery hub with clustered map, rich pins, radius circle,
- * advanced filters (rating, promoted, open now), and smart ranking.
- * Uses Canonical UI Engine for vertical-aware wording and accents.
+ * advanced filters (rating, promoted, open now), smart ranking,
+ * and real-time live layers (weather, traffic, demand, zone events).
  */
 import { useState, useCallback, useMemo, memo, useEffect } from "react";
 import { BoostSlotRenderer } from "@/components/boost/BoostSlotRenderer";
 import { useNavigate } from "react-router-dom";
 import { useRadarResults } from "@/hooks/useRadarResults";
+import { useRadarLiveContext, type RadarMode } from "@/hooks/useRadarLiveContext";
+import {
+  LayerToggleBar, WeatherOverlay, TrafficOverlay, ZoneEventAlerts,
+  DemandPredictionCard, RiderSupplyChip, DEFAULT_LAYERS,
+  type LayerToggles,
+} from "@/components/radar/RadarLiveLayers";
+import { predictDemand } from "@/lib/radar/predictive-demand-engine";
 import { contactFromDiscovery } from "@/lib/radar/contactBridge";
 import { eventBus } from "@/lib/events/eventBus";
 import UnifiedMap from "@/components/map/UnifiedMap";
