@@ -87,7 +87,7 @@ export default function TrackingPage() {
             <MapPin className="w-8 h-8 text-muted-foreground/40" />
           </div>
         }>
-          <LiveTrackingMap orderId={orderId ?? ""} />
+          <LiveTrackingMap trackingId={orderId ?? ""} />
         </Suspense>
       </div>
 
