@@ -299,7 +299,7 @@ export default function SmartHome() {
 
   return (
     <div className="space-y-0">
-      <CompactHeader city={city} greeting={greeting} onLocationTap={handleLocationTap} />
+      <TopHeroBanner city={city} greeting={greeting} timezone={timezone} onLocationTap={handleLocationTap} />
       <QuickActions />
 
       <div className="overflow-x-auto scrollbar-none mb-3 -mx-1 px-1 touch-pan-x">
@@ -348,7 +348,7 @@ export default function SmartHome() {
       {/* ═══ BOOST SLOT — Home Hero ═══ */}
       <BoostSlotRenderer surface="home" slotKey="hero_primary" variant="hero" className="px-4 mb-3" />
 
-      <SmartHeroCard timezone={timezone} city={city} />
+      {/* SmartHeroCard removed — merged into TopHeroBanner */}
 
       {/* ═══ Living Commerce Sections (dynamic by context) ═══ */}
       {living.activeSections.slice(0, 2).map((sec, i) => (
