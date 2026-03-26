@@ -4,7 +4,7 @@
  * Uses canonical discovery pipeline + Living Commerce Engine for all sections.
  * SINGLE SOURCE OF TRUTH: smart-home-engine.ts (10 primary categories).
  */
-import { memo, useMemo, useEffect } from "react";
+import { memo, useMemo, useEffect, useState, useCallback } from "react";
 import { GeoStatusIndicator } from "@/components/geo/GeoStatusIndicator";
 import { BoostSlotRenderer } from "@/components/boost/BoostSlotRenderer";
 import { Link, useNavigate } from "react-router-dom";
@@ -20,6 +20,7 @@ import { useLivingPage } from "@/hooks/useLivingPage";
 import { useGlobalContext } from "@/hooks/useGlobalContext";
 import { staggerContainer, staggerItem, fadeSlideUp, TRANSITIONS } from "@/lib/motion/motion-system";
 import { getTopBanners } from "@/lib/context-banner/context-banner-engine";
+import { AddressSelectorSheet } from "@/components/address/AddressSelectorSheet";
 
 import foodImg from "@/assets/categories/food.png";
 import groceryImg from "@/assets/categories/grocery.png";
@@ -49,17 +50,11 @@ const SECTION_DEFS = [
 ] as const;
 
 /* ═══ Compact Header ═══ */
-const CompactHeader = memo(({ city, greeting }: { city: string | null; greeting: string }) => {
+const CompactHeader = memo(({ city, greeting, onLocationTap }: { city: string | null; greeting: string; onLocationTap: () => void }) => {
   const engine = useOrbitEngine();
-  const navigate = useNavigate();
-  const handleLocationTap = () => {
-    if (!city) {
-      import("@/lib/location/requestLocation").then(({ requestLocation }) => requestLocation());
-    }
-  };
   return (
     <div className="flex items-center gap-2 mb-2">
-      <button onClick={handleLocationTap} className="flex items-center gap-1.5 min-w-0 shrink text-left active:scale-95 transition-transform">
+      <button onClick={onLocationTap} className="flex items-center gap-1.5 min-w-0 shrink text-left active:scale-95 transition-transform">
         <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
           {city ? <MapPin className="h-3.5 w-3.5 text-primary" /> : <Navigation className="h-3.5 w-3.5 text-primary animate-pulse" />}
         </div>
@@ -216,6 +211,8 @@ export default function SmartHome() {
   const navigate = useNavigate();
   const currentLocation = useLocationStore((s) => s.currentLocation);
   const isFallback = useLocationStore((s) => s.isFallback);
+  const [addressSheetOpen, setAddressSheetOpen] = useState(false);
+  const handleLocationTap = useCallback(() => setAddressSheetOpen(true), []);
 
   // Canonical pipeline-backed sections
   const { data: sections } = useHomeSections();
@@ -285,7 +282,7 @@ export default function SmartHome() {
 
   return (
     <div className="space-y-0">
-      <CompactHeader city={city} greeting={greeting} />
+      <CompactHeader city={city} greeting={greeting} onLocationTap={handleLocationTap} />
       <QuickActions />
 
       <div className="overflow-x-auto scrollbar-none mb-3 -mx-1 px-1 touch-pan-x">
@@ -371,6 +368,8 @@ export default function SmartHome() {
       <div className="px-4 pb-4">
         <BoostSlotRenderer surface="home" slotKey="inline_banner_1" variant="inline" />
       </div>
+
+      <AddressSelectorSheet open={addressSheetOpen} onOpenChange={setAddressSheetOpen} />
     </div>
   );
 }
