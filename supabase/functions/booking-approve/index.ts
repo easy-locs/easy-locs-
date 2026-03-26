@@ -65,16 +65,14 @@ serve(async (req) => {
       });
     }
 
-    await admin.from("app_notifications").insert({
+    await admin.from("notifications").insert({
       id: crypto.randomUUID(),
       user_id: booking.buyer_user_id,
-      "orbitId": ownerOrbit.orbit_id,
       type: "booking",
       title: "Booking approved",
       body: `Booking ${bookingId} has been approved`,
       read: false,
-      metadata: { bookingId },
-      "createdAt": now,
+      metadata_json: { bookingId },
     });
 
     return new Response(

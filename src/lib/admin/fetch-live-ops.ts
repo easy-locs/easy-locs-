@@ -8,7 +8,7 @@ export async function fetchLiveOps() {
     (supabase as any).from("mobility_jobs").select("id,status", { count: "exact", head: false }).limit(200),
     (supabase as any).from("ride_disputes").select("id,status", { count: "exact", head: false }).limit(200),
     (supabase as any).from("driver_payouts").select("id,payout_status", { count: "exact", head: false }).limit(200),
-    (supabase as any).from("demand_zones").select("*").limit(50),
+    (supabase as any).from("geo_live_zone_overlays").select("*").limit(50),
   ]);
 
   return {
