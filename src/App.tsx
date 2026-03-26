@@ -885,6 +885,9 @@ const App = () => (
               <Route path="/about" element={<AboutPage />} />
               <Route path="/contact" element={<ContactPage />} />
               <Route path="/help" element={<HelpPage />} />
+              <Route path="/legal-notice" element={<LegalNoticePage />} />
+              <Route path="/seasonal-rentals" element={<Navigate to="/seasonal-rentals-booking" replace />} />
+              <Route path="/developer" element={<Navigate to="/dashboard/developer" replace />} />
               <Route path="/vision" element={<PlatformVision />} />
 
               {/* ══════ PROTECTED DASHBOARD ══════ */}
