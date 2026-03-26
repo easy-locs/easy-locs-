@@ -1,23 +1,22 @@
 /**
  * CanonicalAddressInput — Premium super-app address input.
- * Connected to canonical_places dictionary, user_saved_addresses,
- * and the full resolution pipeline.
+ * Connected to Search Brain for all search ordering truth.
+ * UI displays only — no local reranking.
  * 
- * Shows: current location → saved → recent → nearby → search results
- * Resolves every selection into canonical_place_id.
+ * Shows: current location → saved → recent → Search Brain ranked results
  */
 import { useState, useRef, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { MapPin, Home, Briefcase, Clock, Plane, Search, X, Star, Navigation, Bookmark } from "lucide-react";
-import { useAddressSearch } from "@/hooks/useAddressSearch";
+import { useSearchBrain } from "@/hooks/useSearchBrain";
 import { useSmartLocation, type SavedPlace } from "@/hooks/useSmartLocation";
 import { useCanonicalAddress } from "@/hooks/useCanonicalAddress";
 import {
   type CanonicalPlace,
-  fromNormalizedPlace,
   fromSavedPlace,
   resolveAirportPlace,
 } from "@/lib/address/canonical-place";
+import type { SearchBrainResult } from "@/lib/search/search-brain";
 import { cn } from "@/lib/utils";
 
 interface Props {
@@ -26,8 +25,8 @@ interface Props {
   placeholder?: string;
   allowAirport?: boolean;
   allowSavedPlaces?: boolean;
-  contextType?: string; // food / grocery / taxi / parcel / services
-  contextLabel?: string; // "Deliver to" / "Pickup at" / "Destination"
+  contextType?: string;
+  contextLabel?: string;
   className?: string;
 }
 
@@ -37,6 +36,25 @@ const LABEL_ICONS: Record<string, React.ReactNode> = {
   shop: <Star className="w-4 h-4 text-warning" />,
   warehouse: <Bookmark className="w-4 h-4 text-muted-foreground" />,
 };
+
+/** Convert Search Brain result → CanonicalPlace */
+function fromSearchBrainResult(r: SearchBrainResult): CanonicalPlace {
+  return {
+    id: r.canonical_place_id ?? r.id,
+    provider: r.provider,
+    provider_place_id: undefined,
+    label: r.label,
+    formatted_address: r.formatted_address,
+    lat: r.lat,
+    lng: r.lng,
+    country_code: r.country_code ?? "AE",
+    country_name: r.country_name,
+    city: r.city,
+    district: r.district,
+    place_type: (r.place_type as CanonicalPlace["place_type"]) ?? "address",
+    zone_key: r.zone_key,
+  };
+}
 
 export function CanonicalAddressInput({
   value,
@@ -53,11 +71,14 @@ export function CanonicalAddressInput({
   const inputRef = useRef<HTMLInputElement>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
 
-  const { results, loading: searchLoading } = useAddressSearch(query, { enabled: focused && query.length >= 2 });
+  // Search Brain — single source of search ordering truth
+  const { results, loading: searchLoading } = useSearchBrain(query, {
+    enabled: focused && query.length >= 2,
+    contextType,
+  });
   const { home, work, recents, currentLocation } = useSmartLocation();
   const { savedAddresses, activateAddress } = useCanonicalAddress();
 
-  // Close dropdown on outside click
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) {
@@ -70,7 +91,6 @@ export function CanonicalAddressInput({
 
   const selectPlace = async (place: CanonicalPlace) => {
     onChange(place);
-    // Activate in background (non-blocking)
     activateAddress(place, "manual", (contextType as any) ?? undefined);
     setQuery("");
     setFocused(false);
@@ -110,19 +130,16 @@ export function CanonicalAddressInput({
   const airportMatch = allowAirport && query.length >= 3 ? resolveAirportPlace(query) : null;
   const showDropdown = focused && (query.length >= 2 || allowSavedPlaces);
 
-  // Merge DB saved + local saved (dedupe by label)
   const dbSaved = useMemo(() => {
     return savedAddresses.filter(a => a.place != null).slice(0, 5);
   }, [savedAddresses]);
 
   return (
     <div ref={wrapperRef} className={cn("relative", className)}>
-      {/* Context label */}
       {contextLabel && (
         <p className="text-[10px] font-semibold text-muted-foreground mb-1 px-1">{contextLabel}</p>
       )}
 
-      {/* Input */}
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
         <input
@@ -144,7 +161,6 @@ export function CanonicalAddressInput({
         )}
       </div>
 
-      {/* Dropdown */}
       <AnimatePresence>
         {showDropdown && (
           <motion.div
@@ -157,7 +173,6 @@ export function CanonicalAddressInput({
             {/* Quick actions — saved + current location */}
             {allowSavedPlaces && query.length < 2 && (
               <div className="p-2 space-y-0.5">
-                {/* GPS */}
                 {currentLocation && (
                   <DropdownItem
                     icon={<Navigation className="h-4 w-4 text-primary" />}
@@ -167,8 +182,6 @@ export function CanonicalAddressInput({
                     accent
                   />
                 )}
-
-                {/* DB saved addresses */}
                 {dbSaved.length > 0 && (
                   <>
                     <div className="px-2 pt-1.5 pb-0.5">
@@ -186,8 +199,6 @@ export function CanonicalAddressInput({
                     ))}
                   </>
                 )}
-
-                {/* Fallback to local saved if no DB saved */}
                 {dbSaved.length === 0 && (
                   <>
                     {home?.address && (
@@ -208,8 +219,6 @@ export function CanonicalAddressInput({
                     )}
                   </>
                 )}
-
-                {/* Recent */}
                 {recents.length > 0 && (
                   <>
                     <div className="px-2 pt-1.5 pb-0.5">
@@ -242,7 +251,7 @@ export function CanonicalAddressInput({
               </div>
             )}
 
-            {/* Search results */}
+            {/* Search Brain results — displayed as-is, NO local reranking */}
             {searchLoading && query.length >= 2 && (
               <div className="py-4 flex justify-center">
                 <div className="w-5 h-5 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
@@ -250,13 +259,14 @@ export function CanonicalAddressInput({
             )}
             {!searchLoading && results.length > 0 && (
               <div className="p-2 space-y-0.5 border-t border-border/10">
-                {results.map((r, i) => (
+                {results.map((r) => (
                   <DropdownItem
-                    key={i}
+                    key={r.id}
                     icon={<MapPin className="h-4 w-4 text-muted-foreground" />}
                     label={r.label}
-                    sub={[r.area, r.city, r.country].filter(Boolean).join(", ")}
-                    onClick={() => selectPlace(fromNormalizedPlace(r))}
+                    sub={[r.district, r.city, r.country_name].filter(Boolean).join(", ")}
+                    badge={r.local_rank_bucket !== "international" ? undefined : "🌍"}
+                    onClick={() => selectPlace(fromSearchBrainResult(r))}
                   />
                 ))}
               </div>
@@ -278,6 +288,7 @@ function DropdownItem({
   label,
   sub,
   detail,
+  badge,
   onClick,
   accent = false,
 }: {
@@ -285,6 +296,7 @@ function DropdownItem({
   label: string;
   sub?: string;
   detail?: string;
+  badge?: string;
   onClick: () => void;
   accent?: boolean;
 }) {
@@ -301,9 +313,8 @@ function DropdownItem({
         <p className="text-sm font-medium text-foreground truncate">{label}</p>
         {sub && <p className="text-xs text-muted-foreground truncate">{sub}</p>}
       </div>
-      {detail && (
-        <span className="text-[10px] text-muted-foreground shrink-0">{detail}</span>
-      )}
+      {detail && <span className="text-[10px] text-muted-foreground shrink-0">{detail}</span>}
+      {badge && <span className="text-xs shrink-0">{badge}</span>}
     </button>
   );
 }
