@@ -35,6 +35,16 @@ export interface DeliveryJob {
   delivered_at: string | null;
   pickup_address_compat: string;
   dropoff_address_compat: string;
+  // Additional compat fields for downstream components
+  package_description: string | null;
+  priority: string;
+  org_id: string | null;
+  seller_id: string | null;
+  assigned_at: string | null;
+  weight_kg: number | null;
+  confirmation_code: string | null;
+  scheduled_at: string | null;
+  [key: string]: any;
 }
 
 function mapRow(row: any): DeliveryJob {
