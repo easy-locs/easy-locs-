@@ -48,7 +48,7 @@ const HostCatalog = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="app-mobile-page bg-background flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-accent" />
       </div>
     );
@@ -56,7 +56,7 @@ const HostCatalog = () => {
 
   if (notFound) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="app-mobile-page bg-background flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-foreground mb-2">{t("page.host.not_found")}</h1>
           <p className="text-muted-foreground">{t("page.host.not_found_desc")}</p>
@@ -80,7 +80,7 @@ const HostCatalog = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="app-mobile-page bg-background">
       <SEOHead
         title={hostSeoTitle}
         description={hostSeoDesc}

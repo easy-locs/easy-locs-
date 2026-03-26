@@ -269,7 +269,7 @@ const Onboarding = () => {
   );
 
   return (
-    <div className="min-h-screen bg-hero flex items-center justify-center p-4 overflow-y-auto">
+    <div className="app-mobile-page bg-hero flex items-center justify-center p-4 overflow-y-auto">
       <div className="absolute top-6 left-6">
         <AppLogo variant="auth" linkTo="/" />
       </div>

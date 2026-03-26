@@ -61,7 +61,7 @@ export default function ClaimPage() {
 
   if (loading) {
     return (
-      <div className="min-h-[100dvh] flex items-center justify-center bg-background">
+      <div className="app-mobile-page flex items-center justify-center bg-background">
         <div className="w-8 h-8 rounded-full border-2 border-primary border-t-transparent animate-spin" />
       </div>
     );
@@ -69,7 +69,7 @@ export default function ClaimPage() {
 
   if (error) {
     return (
-      <div className="min-h-[100dvh] flex flex-col items-center justify-center gap-4 bg-background px-6">
+      <div className="app-mobile-page flex flex-col items-center justify-center gap-4 bg-background px-6">
         <AlertCircle className="w-12 h-12 text-destructive" />
         <p className="text-lg font-bold text-foreground">Invalid Claim Link</p>
         <p className="text-sm text-muted-foreground text-center">{error}</p>
@@ -82,7 +82,7 @@ export default function ClaimPage() {
 
   if (claimed) {
     return (
-      <div className="min-h-[100dvh] flex flex-col items-center justify-center gap-4 bg-background px-6">
+      <div className="app-mobile-page flex flex-col items-center justify-center gap-4 bg-background px-6">
         <CheckCircle2 className="w-16 h-16 text-primary" />
         <p className="text-xl font-bold text-foreground">Business Claimed!</p>
         <p className="text-sm text-muted-foreground text-center">
@@ -99,7 +99,7 @@ export default function ClaimPage() {
   }
 
   return (
-    <div className="min-h-[100dvh] bg-background flex flex-col items-center justify-center px-6 gap-6">
+    <div className="app-mobile-page bg-background flex flex-col items-center justify-center px-6 gap-6">
       {/* Store card */}
       <div className="w-full max-w-sm rounded-3xl p-6 space-y-4" style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border) / 0.15)" }}>
         <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto" style={{ background: "hsl(var(--primary) / 0.1)" }}>

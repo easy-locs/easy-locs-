@@ -21,7 +21,7 @@ export default function ExecutiveDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-background p-4">
+    <div className="app-mobile-page bg-background p-4">
       <BackCard />
       <div className="mt-4">
         <h1 className="text-xl font-bold text-foreground">Executive Dashboard</h1>

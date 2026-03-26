@@ -109,7 +109,7 @@ const PublicListing = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="app-mobile-page bg-background flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-accent" />
       </div>
     );
@@ -117,7 +117,7 @@ const PublicListing = () => {
 
   if (notFound) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="app-mobile-page bg-background flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-foreground mb-2">{t("page.listing.not_found")}</h1>
           <p className="text-muted-foreground">{t("page.listing.not_found_desc")}</p>
@@ -128,7 +128,7 @@ const PublicListing = () => {
 
   if (paymentSuccess) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="app-mobile-page bg-background flex items-center justify-center">
         <div className="text-center max-w-md px-4">
           <CheckCircle className="h-16 w-16 text-success mx-auto mb-4" />
           <h1 className="text-2xl font-bold text-foreground mb-2">{t("page.listing.payment_confirmed")}</h1>
@@ -178,7 +178,7 @@ const PublicListing = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="app-mobile-page bg-background">
       <SEOHead
         title={seoTitle}
         description={seoDesc}

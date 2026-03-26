@@ -238,7 +238,7 @@ const GuestPortal = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="app-mobile-page bg-background flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-accent" />
       </div>
     );
@@ -246,7 +246,7 @@ const GuestPortal = () => {
 
   if (notFound || !booking) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="app-mobile-page bg-background flex items-center justify-center">
         <div className="text-center max-w-sm px-4">
           <h1 className="text-2xl font-bold text-foreground mb-2">Booking not found</h1>
           <p className="text-muted-foreground text-sm">Please check your booking link or contact your host.</p>
@@ -256,7 +256,7 @@ const GuestPortal = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="app-mobile-page bg-background">
       {/* Header */}
       <header className="sticky top-0 z-40 bg-background/90 backdrop-blur-lg border-b border-border">
         <div className="max-w-3xl mx-auto px-4 h-12 flex items-center justify-between">

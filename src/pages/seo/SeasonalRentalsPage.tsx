@@ -61,7 +61,7 @@ const features = [
 ];
 
 const SeasonalRentalsPage = () => (
-  <div className="min-h-screen bg-background">
+  <div className="app-mobile-page bg-background">
     <SEOHead
       title="Vacation Rental Management Software | Easy-Locs"
       description="Manage short-term rentals with smart calendars, dynamic pricing, Stripe payments, and channel sync. Direct booking pages for your properties. 190+ countries."

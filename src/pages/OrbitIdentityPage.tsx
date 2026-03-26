@@ -19,7 +19,7 @@ export default function OrbitIdentityPage() {
   }, [user?.id, profile, loadProfile]);
 
   return (
-    <div className="min-h-screen bg-background p-4 space-y-6">
+    <div className="app-mobile-page bg-background p-4 space-y-6">
       <div className="space-y-2">
         <h1 className="text-2xl font-bold text-foreground">Orbit ID</h1>
         {loading && <p className="text-muted-foreground">Loading...</p>}

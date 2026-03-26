@@ -170,13 +170,13 @@ export default function ShopPage() {
 
   // ── Loading & Error states ──
   if (isLoading) return (
-    <div className="min-h-screen bg-background flex items-center justify-center">
+    <div className="app-mobile-page bg-background flex items-center justify-center">
       <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
     </div>
   );
 
   if (!shop) return (
-    <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4 px-6 text-center">
+    <div className="app-mobile-page bg-background flex flex-col items-center justify-center gap-4 px-6 text-center">
       <Store className="h-12 w-12 text-muted-foreground/50" />
       <p className="text-muted-foreground font-medium">Shop not found</p>
       <p className="text-xs text-muted-foreground">"{shopSlug}" doesn't exist or has been removed.</p>
@@ -186,7 +186,7 @@ export default function ShopPage() {
 
   if (shop.shop_visibility === "private" && !inviteToken && shop.user_id !== user?.id) {
     return (
-      <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4">
+      <div className="app-mobile-page bg-background flex flex-col items-center justify-center gap-4">
         <Store className="h-12 w-12 text-muted-foreground/50" />
         <p className="text-muted-foreground">This shop is private.</p>
       </div>
@@ -218,7 +218,7 @@ export default function ShopPage() {
         canonical={buildAppUrl(`/s/${shop.slug}`)}
       />
 
-      <div className="min-h-screen bg-background pb-24">
+      <div className="app-mobile-page bg-background pb-24">
         {/* ═══ HERO ═══ */}
         <div className="relative">
           {/* Cover image */}

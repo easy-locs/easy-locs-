@@ -10,7 +10,7 @@ export default function TravelHotels() {
   const [sortBy, setSortBy] = useState<"price" | "rating" | "stars">("price");
 
   return (
-    <div className="min-h-screen bg-background pb-24">
+    <div className="app-mobile-page bg-background pb-24">
       <MobilePageHeader title="Hotels" backTo="/travel" />
 
       <div className="px-4 space-y-3">

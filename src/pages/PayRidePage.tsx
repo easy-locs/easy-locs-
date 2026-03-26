@@ -8,7 +8,7 @@ export default function PayRidePage() {
   const { threadId } = useParams();
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="app-mobile-page bg-background">
       <div className="max-w-lg mx-auto px-4 py-4 space-y-4">
         <BackCard />
         <div className="space-y-1">

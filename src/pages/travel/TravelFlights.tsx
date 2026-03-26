@@ -52,7 +52,7 @@ export default function TravelFlights() {
   const results: FlightResult[] = [];
 
   return (
-    <div className="min-h-screen bg-background pb-24">
+    <div className="app-mobile-page bg-background pb-24">
       <MobilePageHeader title="Flights" backTo="/travel" />
       
       <div className="px-4 space-y-3">

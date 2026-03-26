@@ -102,7 +102,7 @@ export default function TravelStayHub() {
   };
 
   return (
-    <div className="min-h-screen pb-28" style={{ background: "hsl(var(--background))" }}>
+    <div className="app-mobile-page pb-28" style={{ background: "hsl(var(--background))" }}>
       <SEOHead
         title="Travel & Stays — Hotels, Resorts, Vacation | Easy-Locs"
         description="Book hotels, resorts, vacation rentals and short stays across UAE. Best prices, instant booking."

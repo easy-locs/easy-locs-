@@ -159,7 +159,7 @@ export default function ShopOrderPage() {
 
   if (shopLoading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="app-mobile-page bg-background flex items-center justify-center">
         <Loader2 className="w-6 h-6 animate-spin text-primary" />
       </div>
     );
@@ -167,7 +167,7 @@ export default function ShopOrderPage() {
 
   if (!shop) {
     return (
-      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
+      <div className="app-mobile-page bg-background flex flex-col items-center justify-center p-4">
         <UtensilsCrossed className="w-12 h-12 text-muted-foreground/30 mb-4" />
         <p className="text-lg font-bold text-foreground">Shop not found</p>
         <p className="text-sm text-muted-foreground mt-1">This shop doesn't exist or has been removed.</p>
@@ -187,7 +187,7 @@ export default function ShopOrderPage() {
         description={shop.description || `Order from ${shop.name} in ${shop.city}`}
       />
 
-      <div className="min-h-screen bg-background pb-24">
+      <div className="app-mobile-page bg-background pb-24">
         {/* Table / desk context banner */}
         {(tableNumber || mode === "desk") && (
           <div className="bg-primary/10 px-4 py-2 flex items-center gap-2 text-xs font-medium text-primary">

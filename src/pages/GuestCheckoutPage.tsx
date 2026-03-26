@@ -33,7 +33,7 @@ export default function GuestCheckoutPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background p-4 space-y-6 max-w-lg mx-auto">
+    <div className="app-mobile-page bg-background p-4 space-y-6 max-w-lg mx-auto">
       <BackCard />
       <div>
         <h1 className="text-xl font-bold text-foreground">Guest Checkout</h1>

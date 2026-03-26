@@ -91,7 +91,7 @@ export default function ExplorePage() {
   const trending = sections?.trending ?? [];
 
   return (
-    <div className="min-h-screen bg-background pb-24">
+    <div className="app-mobile-page bg-background pb-24">
       {/* Hero */}
       <div className="relative px-4 pt-6 pb-4">
         <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}>

@@ -35,7 +35,7 @@ export default function MerchantKitchenPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="app-mobile-page bg-background flex items-center justify-center">
         <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
       </div>
     );
@@ -43,7 +43,7 @@ export default function MerchantKitchenPage() {
 
   if (!resolvedShopId) {
     return (
-      <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-3 px-4">
+      <div className="app-mobile-page bg-background flex flex-col items-center justify-center gap-3 px-4">
         <span className="text-4xl">🍳</span>
         <p className="text-sm font-medium text-muted-foreground text-center">
           No shop found. Create a storefront first to access the kitchen display.
@@ -53,7 +53,7 @@ export default function MerchantKitchenPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background p-4 lg:p-6">
+    <div className="app-mobile-page bg-background p-4 lg:p-6">
       <MerchantKitchenQueue shopId={resolvedShopId} />
     </div>
   );

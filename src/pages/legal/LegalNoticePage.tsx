@@ -5,7 +5,7 @@ import { useI18n } from "@/lib/i18n";
 const LegalNoticePage = () => {
   const { t } = useI18n();
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="app-mobile-page flex flex-col">
       <Navbar />
       <main className="flex-1 pt-24 pb-16">
         <div className="container max-w-3xl">

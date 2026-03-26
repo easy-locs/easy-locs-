@@ -30,7 +30,7 @@ export default function CheckoutPage() {
 
   if (itemCount === 0) {
     return (
-      <div className="min-h-[100dvh] flex flex-col items-center justify-center gap-4 px-4 bg-background" data-empty-state>
+      <div className="app-mobile-page flex flex-col items-center justify-center gap-4 px-4 bg-background" data-empty-state>
         <span className="text-5xl">🛒</span>
         <p className="text-sm font-medium text-muted-foreground">Your cart is empty</p>
         <Button variant="outline" onClick={() => navigate("/food")} className="rounded-2xl">Browse food</Button>
@@ -97,7 +97,7 @@ export default function CheckoutPage() {
   ];
 
   return (
-    <div className="min-h-[100dvh] flex flex-col bg-background" data-checkout-form>
+    <div className="app-mobile-page flex flex-col bg-background" data-checkout-form>
       <header className="flex items-center gap-3 px-4 pt-4 pb-3">
         <button onClick={() => navigate(-1)} className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-95 transition-transform bg-muted">
           <ArrowLeft className="w-4.5 h-4.5" />
