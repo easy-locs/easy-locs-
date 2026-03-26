@@ -1,6 +1,7 @@
 /**
- * dispatch-delivery — Edge function for delivery job dispatch
- * Actions: create_job, find_drivers, assign_driver, accept_job, update_status, confirm_delivery, auto_dispatch
+ * dispatch-delivery — Edge function for delivery job dispatch.
+ * CANONICAL: reads/writes mobility_jobs + rider_presence + mobility_job_offers.
+ * Zero legacy table references (delivery_jobs, driver_sessions deleted).
  */
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
@@ -22,7 +23,6 @@ serve(async (req) => {
   );
 
   try {
-    // Auth
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) throw new Error("No authorization header");
     const token = authHeader.replace("Bearer ", "");
@@ -35,72 +35,88 @@ serve(async (req) => {
 
     // ─── CREATE JOB ──────────────────────────────────────────
     if (action === "create_job") {
-      const { org_id, pickup_address, pickup_lat, pickup_lng, dropoff_address, dropoff_lat, dropoff_lng, package_description, weight_kg, priority, delivery_fee, currency, scheduled_at, notes, order_id } = body;
+      const {
+        org_id, pickup_address, pickup_lat, pickup_lng,
+        dropoff_address, dropoff_lat, dropoff_lng,
+        package_description, weight_kg, priority, delivery_fee, currency,
+        scheduled_at, notes, order_id, job_type, booking_mode, scheduled_for,
+      } = body;
 
-      if (!org_id) throw new Error("org_id required");
-
-      // Generate 6-digit confirmation code
       const confirmationCode = String(Math.floor(100000 + Math.random() * 900000));
+      const effectiveJobType = job_type || "parcel_delivery";
+      const effectiveBookingMode = booking_mode || (scheduled_at ? "scheduled" : "now");
+      const effectiveScheduledFor = scheduled_for || scheduled_at || null;
 
-      const { data: job, error } = await supabaseAdmin.from("delivery_jobs").insert({
-        org_id,
-        seller_id: userId,
-        order_id: order_id || null,
-        status: "pending",
-        priority: priority || "standard",
+      const jobData: Record<string, any> = {
+        customer_user_id: userId,
+        job_type: effectiveJobType,
+        service_level: priority || "standard",
+        booking_mode: effectiveBookingMode,
+        status: effectiveBookingMode === "scheduled" ? "scheduled" : "searching",
         pickup_address: pickup_address || "",
         pickup_lat, pickup_lng,
         dropoff_address: dropoff_address || "",
         dropoff_lat, dropoff_lng,
-        package_description: package_description || "",
-        weight_kg: weight_kg || 1,
-        delivery_fee: delivery_fee || 0,
+        current_price: delivery_fee || 0,
         currency: currency || "EUR",
-        confirmation_code: confirmationCode,
-        scheduled_at: scheduled_at || null,
         notes: notes || "",
-      }).select().single();
+        order_id: order_id || null,
+        merchant_id: org_id || null,
+        confirmation_code: confirmationCode,
+      };
+
+      if (effectiveBookingMode === "scheduled" && effectiveScheduledFor) {
+        jobData.scheduled_for = effectiveScheduledFor;
+        const scheduledDate = new Date(effectiveScheduledFor);
+        jobData.dispatch_window_start = new Date(scheduledDate.getTime() - 15 * 60000).toISOString();
+        jobData.dispatch_window_end = new Date(scheduledDate.getTime() + 15 * 60000).toISOString();
+      }
+
+      const { data: job, error } = await supabaseAdmin
+        .from("mobility_jobs")
+        .insert(jobData)
+        .select()
+        .single();
 
       if (error) throw new Error(`Create job failed: ${error.message}`);
 
       return json({ success: true, job, confirmation_code: confirmationCode });
     }
 
-    // ─── FIND NEARBY DRIVERS (with ranking) ────────────────
+    // ─── FIND NEARBY RIDERS ──────────────────────────────────
     if (action === "find_drivers") {
       const { job_id, max_distance_km, ranked } = body;
       if (!job_id) throw new Error("job_id required");
 
-      const { data: job } = await supabaseAdmin.from("delivery_jobs").select("*").eq("id", job_id).single();
+      const { data: job } = await supabaseAdmin.from("mobility_jobs").select("*").eq("id", job_id).single();
       if (!job) throw new Error("Job not found");
       await assertJobAuthority(supabaseAdmin, userId, job);
 
-      // Find online drivers
-      const { data: drivers } = await supabaseAdmin
-        .from("driver_sessions")
+      const { data: riders } = await supabaseAdmin
+        .from("rider_presence")
         .select("*")
-        .in("status", ["online"])
-        .not("lat", "is", null)
-        .not("lng", "is", null);
+        .eq("is_online", true)
+        .eq("is_available", true)
+        .not("current_lat", "is", null)
+        .not("current_lng", "is", null);
 
-      if (!drivers || drivers.length === 0) {
-        return json({ success: true, drivers: [], message: "No drivers available" });
+      if (!riders || riders.length === 0) {
+        return json({ success: true, drivers: [], message: "No riders available" });
       }
 
       const maxDist = max_distance_km || 15;
 
       if (ranked) {
-        const rankedDrivers = rankAndScoreDrivers(drivers, job, maxDist);
-        return json({ success: true, drivers: rankedDrivers, total: rankedDrivers.length, ranked: true });
+        const rankedRiders = rankAndScoreRiders(riders, job, maxDist);
+        return json({ success: true, drivers: rankedRiders, total: rankedRiders.length, ranked: true });
       }
 
-      // Legacy: simple distance sort
-      const nearby = drivers
-        .map((d: any) => {
-          const dist = haversine(d.lat, d.lng, job.pickup_lat, job.pickup_lng);
-          return { ...d, distance_km: Math.round(dist * 100) / 100 };
+      const nearby = riders
+        .map((r: any) => {
+          const dist = haversine(r.current_lat, r.current_lng, job.pickup_lat, job.pickup_lng);
+          return { ...r, distance_km: Math.round(dist * 100) / 100 };
         })
-        .filter((d: any) => d.distance_km <= maxDist)
+        .filter((r: any) => r.distance_km <= maxDist)
         .sort((a: any, b: any) => a.distance_km - b.distance_km);
 
       return json({ success: true, drivers: nearby, total: nearby.length });
@@ -111,55 +127,63 @@ serve(async (req) => {
       const { job_id, max_distance_km } = body;
       if (!job_id) throw new Error("job_id required");
 
-      const { data: job } = await supabaseAdmin.from("delivery_jobs").select("*").eq("id", job_id).single();
+      const { data: job } = await supabaseAdmin.from("mobility_jobs").select("*").eq("id", job_id).single();
       if (!job) throw new Error("Job not found");
       await assertJobAuthority(supabaseAdmin, userId, job);
-      if (!["pending"].includes(job.status)) throw new Error(`Cannot auto-dispatch in status: ${job.status}`);
+      if (!["searching", "pending"].includes(job.status)) throw new Error(`Cannot auto-dispatch in status: ${job.status}`);
 
-      // Find online drivers
-      const { data: drivers } = await supabaseAdmin
-        .from("driver_sessions")
+      const { data: riders } = await supabaseAdmin
+        .from("rider_presence")
         .select("*")
-        .in("status", ["online"])
-        .not("lat", "is", null)
-        .not("lng", "is", null);
+        .eq("is_online", true)
+        .eq("is_available", true)
+        .not("current_lat", "is", null)
+        .not("current_lng", "is", null);
 
-      if (!drivers || drivers.length === 0) {
-        return json({ success: false, error: "No drivers available", drivers: [] });
+      if (!riders || riders.length === 0) {
+        return json({ success: false, error: "No riders available", drivers: [] });
       }
 
       const maxDist = max_distance_km || 15;
-      const rankedDrivers = rankAndScoreDrivers(drivers, job, maxDist);
+      const rankedRiders = rankAndScoreRiders(riders, job, maxDist);
 
-      if (rankedDrivers.length === 0) {
-        return json({ success: false, error: "No eligible drivers in range", drivers: [] });
+      if (rankedRiders.length === 0) {
+        return json({ success: false, error: "No eligible riders in range", drivers: [] });
       }
 
-      const best = rankedDrivers[0];
+      const best = rankedRiders[0];
 
-      // Auto-assign the best driver
-      const { error: assignErr } = await supabaseAdmin.from("delivery_jobs")
-        .update({ driver_id: best.user_id, status: "assigned", assigned_at: new Date().toISOString(), updated_at: new Date().toISOString() })
+      // Assign rider to job
+      const { error: assignErr } = await supabaseAdmin.from("mobility_jobs")
+        .update({
+          rider_user_id: best.user_id,
+          status: "accepted",
+          updated_at: new Date().toISOString(),
+        })
         .eq("id", job_id);
 
       if (assignErr) throw new Error(`Auto-assign failed: ${assignErr.message}`);
 
-      // Create offer record with score
-      await supabaseAdmin.from("delivery_offers").upsert({
-        job_id, driver_id: best.user_id, org_id: job.org_id,
+      // Create offer record
+      await supabaseAdmin.from("mobility_job_offers").insert({
+        job_id,
+        rider_user_id: best.user_id,
         status: "accepted",
-        distance_km: best.distance_km,
-        eta_minutes: best.eta_minutes,
-        score: best.score,
+        offered_at: new Date().toISOString(),
         responded_at: new Date().toISOString(),
-      }, { onConflict: "job_id,driver_id" });
+      }).catch(() => {});
+
+      // Mark rider busy
+      await supabaseAdmin.from("rider_presence")
+        .update({ is_available: false, updated_at: new Date().toISOString() })
+        .eq("user_id", best.user_id);
 
       return json({
         success: true,
         job_id,
         assigned_driver: best,
-        alternates: rankedDrivers.slice(1, 4),
-        total_candidates: rankedDrivers.length,
+        alternates: rankedRiders.slice(1, 4),
+        total_candidates: rankedRiders.length,
       });
     }
 
@@ -168,61 +192,59 @@ serve(async (req) => {
       const { job_id, driver_id } = body;
       if (!job_id || !driver_id) throw new Error("job_id and driver_id required");
 
-      // Verify job status
-      const { data: job } = await supabaseAdmin.from("delivery_jobs").select("*").eq("id", job_id).single();
+      const { data: job } = await supabaseAdmin.from("mobility_jobs").select("*").eq("id", job_id).single();
       if (!job) throw new Error("Job not found");
       await assertJobAuthority(supabaseAdmin, userId, job);
-      if (!["pending", "assigned"].includes(job.status)) throw new Error(`Cannot assign in status: ${job.status}`);
 
-      // Check driver is online
-      const { data: session } = await supabaseAdmin
-        .from("driver_sessions")
+      const { data: rider } = await supabaseAdmin
+        .from("rider_presence")
         .select("*")
         .eq("user_id", driver_id)
-        .eq("status", "online")
+        .eq("is_online", true)
+        .eq("is_available", true)
         .maybeSingle();
 
-      if (!session) throw new Error("Driver not available");
+      if (!rider) throw new Error("Rider not available");
 
-      // Update job
-      const reassign = job.status === "assigned" ? { reassignment_count: (job.reassignment_count || 0) + 1 } : {};
-      const { error } = await supabaseAdmin.from("delivery_jobs")
-        .update({ driver_id, status: "assigned", assigned_at: new Date().toISOString(), ...reassign, updated_at: new Date().toISOString() })
+      const { error } = await supabaseAdmin.from("mobility_jobs")
+        .update({ rider_user_id: driver_id, status: "accepted", updated_at: new Date().toISOString() })
         .eq("id", job_id);
 
       if (error) throw new Error(`Assign failed: ${error.message}`);
 
-      // Create offer record
-      await supabaseAdmin.from("delivery_offers").upsert({
-        job_id, driver_id, org_id: job.org_id,
-        status: "accepted",
-        distance_km: session.lat && job.pickup_lat
-          ? Math.round(haversine(session.lat, session.lng, job.pickup_lat, job.pickup_lng) * 100) / 100
-          : null,
-        responded_at: new Date().toISOString(),
-      }, { onConflict: "job_id,driver_id" });
+      await supabaseAdmin.from("rider_presence")
+        .update({ is_available: false, updated_at: new Date().toISOString() })
+        .eq("user_id", driver_id);
 
       return json({ success: true, job_id, driver_id });
     }
 
-    // ─── ACCEPT JOB (by driver) ──────────────────────────────
+    // ─── ACCEPT JOB (by rider) ───────────────────────────────
     if (action === "accept_job") {
       const { job_id } = body;
       if (!job_id) throw new Error("job_id required");
 
-      const { data: job } = await supabaseAdmin.from("delivery_jobs").select("*").eq("id", job_id).eq("driver_id", userId).single();
-      if (!job) throw new Error("Job not found or not assigned to you");
-      if (job.status !== "assigned") throw new Error(`Cannot accept in status: ${job.status}`);
+      const { data: job } = await supabaseAdmin.from("mobility_jobs")
+        .select("*").eq("id", job_id).single();
+      if (!job) throw new Error("Job not found");
 
-      const { error } = await supabaseAdmin.from("delivery_jobs")
-        .update({ status: "accepted", accepted_at: new Date().toISOString(), updated_at: new Date().toISOString() })
+      // Verify rider has an offer or is assigned
+      if (job.rider_user_id && job.rider_user_id !== userId) {
+        throw new Error("Job not assigned to you");
+      }
+
+      const { error } = await supabaseAdmin.from("mobility_jobs")
+        .update({
+          rider_user_id: userId,
+          status: "accepted",
+          updated_at: new Date().toISOString(),
+        })
         .eq("id", job_id);
 
       if (error) throw new Error(`Accept failed: ${error.message}`);
 
-      // Update driver session to busy
-      await supabaseAdmin.from("driver_sessions")
-        .update({ status: "on_delivery", current_job_id: job_id, updated_at: new Date().toISOString() })
+      await supabaseAdmin.from("rider_presence")
+        .update({ is_available: false, updated_at: new Date().toISOString() })
         .eq("user_id", userId);
 
       return json({ success: true, job_id });
@@ -233,38 +255,28 @@ serve(async (req) => {
       const { job_id, status, cancellation_reason } = body;
       if (!job_id || !status) throw new Error("job_id and status required");
 
-      // Fetch job and verify authorization
-      const { data: jobForAuth } = await supabaseAdmin.from("delivery_jobs")
+      const { data: job } = await supabaseAdmin.from("mobility_jobs")
         .select("*").eq("id", job_id).single();
-      if (!jobForAuth) throw new Error("Job not found");
-      await assertJobAuthority(supabaseAdmin, userId, jobForAuth);
+      if (!job) throw new Error("Job not found");
+      await assertJobAuthority(supabaseAdmin, userId, job);
 
       const updates: Record<string, any> = { status, updated_at: new Date().toISOString() };
 
-      if (status === "in_progress") updates.picked_up_at = new Date().toISOString();
-      if (status === "completed") updates.delivered_at = new Date().toISOString();
+      if (status === "in_progress") updates.started_at = new Date().toISOString();
+      if (status === "completed") updates.completed_at = new Date().toISOString();
       if (status === "cancelled") {
         updates.cancelled_at = new Date().toISOString();
-        updates.cancelled_by = userId;
         updates.cancellation_reason = cancellation_reason || null;
       }
 
-      const { error } = await supabaseAdmin.from("delivery_jobs").update(updates).eq("id", job_id);
+      const { error } = await supabaseAdmin.from("mobility_jobs").update(updates).eq("id", job_id);
       if (error) throw new Error(`Update failed: ${error.message}`);
 
-      // If completed/cancelled, free driver
-      if (["completed", "cancelled"].includes(status)) {
-        const { data: job } = await supabaseAdmin.from("delivery_jobs").select("driver_id").eq("id", job_id).single();
-        if (job?.driver_id) {
-          await supabaseAdmin.from("driver_sessions")
-            .update({ status: "online", current_job_id: null, updated_at: new Date().toISOString() })
-            .eq("user_id", job.driver_id);
-
-          // Update driver stats
-          if (status === "completed") {
-            await supabaseAdmin.rpc("increment_driver_completed", { _driver_id: job.driver_id }).catch(() => {});
-          }
-        }
+      // If completed/cancelled, free rider
+      if (["completed", "cancelled"].includes(status) && job.rider_user_id) {
+        await supabaseAdmin.from("rider_presence")
+          .update({ is_available: true, updated_at: new Date().toISOString() })
+          .eq("user_id", job.rider_user_id);
       }
 
       return json({ success: true, job_id, status });
@@ -275,11 +287,10 @@ serve(async (req) => {
       const { job_id, confirmation_code, photo_proof_url } = body;
       if (!job_id || !confirmation_code) throw new Error("job_id and confirmation_code required");
 
-      const { data: job } = await supabaseAdmin.from("delivery_jobs").select("*").eq("id", job_id).single();
+      const { data: job } = await supabaseAdmin.from("mobility_jobs").select("*").eq("id", job_id).single();
       if (!job) throw new Error("Job not found");
-      if (job.status !== "in_progress" && job.status !== "accepted") throw new Error("Job not in delivery");
+      if (!["in_progress", "accepted"].includes(job.status)) throw new Error("Job not in delivery");
 
-      // Constant-time code comparison
       const expected = job.confirmation_code || "";
       if (confirmation_code.length !== expected.length || confirmation_code !== expected) {
         return json({ success: false, error: "Invalid confirmation code" }, 400);
@@ -287,22 +298,21 @@ serve(async (req) => {
 
       const updates: Record<string, any> = {
         status: "completed",
-        delivered_at: new Date().toISOString(),
+        completed_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       };
       if (photo_proof_url) updates.photo_proof_url = photo_proof_url;
 
-      const { error } = await supabaseAdmin.from("delivery_jobs").update(updates).eq("id", job_id);
+      const { error } = await supabaseAdmin.from("mobility_jobs").update(updates).eq("id", job_id);
       if (error) throw new Error(`Confirm failed: ${error.message}`);
 
-      // Free driver
-      if (job.driver_id) {
-        await supabaseAdmin.from("driver_sessions")
-          .update({ status: "online", current_job_id: null, updated_at: new Date().toISOString() })
-          .eq("user_id", job.driver_id);
+      if (job.rider_user_id) {
+        await supabaseAdmin.from("rider_presence")
+          .update({ is_available: true, updated_at: new Date().toISOString() })
+          .eq("user_id", job.rider_user_id);
       }
 
-      return json({ success: true, job_id, delivered_at: updates.delivered_at });
+      return json({ success: true, job_id, delivered_at: updates.completed_at });
     }
 
     // ─── ESCROW: HOLD FUNDS ─────────────────────────────────
@@ -310,21 +320,22 @@ serve(async (req) => {
       const { job_id } = body;
       if (!job_id) throw new Error("job_id required");
 
-      const { data: job } = await supabaseAdmin.from("delivery_jobs").select("*").eq("id", job_id).single();
+      const { data: job } = await supabaseAdmin.from("mobility_jobs").select("*").eq("id", job_id).single();
       if (!job) throw new Error("Job not found");
-      await assertJobAuthority(supabaseAdmin, userId, job);
 
-      // Check no existing active escrow
       const { data: existing } = await supabaseAdmin.from("escrow_payments")
         .select("id").eq("job_id", job_id).in("status", ["held", "pending"]).maybeSingle();
       if (existing) throw new Error("Escrow already exists for this job");
 
       const { data: escrow, error } = await supabaseAdmin.from("escrow_payments").insert({
-        job_id, org_id: job.org_id, payer_id: userId,
-        payee_id: job.driver_id || null,
-        amount: job.delivery_fee || 0, currency: job.currency || "EUR",
-        status: "held", held_at: new Date().toISOString(),
-        metadata_json: { job_priority: job.priority, pickup: job.pickup_address, dropoff: job.dropoff_address },
+        job_id, org_id: job.merchant_id || userId,
+        payer_id: userId,
+        payee_id: job.rider_user_id || null,
+        amount: job.current_price || 0,
+        currency: job.currency || "EUR",
+        status: "held",
+        held_at: new Date().toISOString(),
+        metadata_json: { job_type: job.job_type, pickup: job.pickup_address, dropoff: job.dropoff_address },
       }).select().single();
 
       if (error) throw new Error(`Escrow hold failed: ${error.message}`);
@@ -338,7 +349,7 @@ serve(async (req) => {
 
       const { data: escrow } = await supabaseAdmin.from("escrow_payments")
         .select("*").eq("job_id", job_id).eq("status", "held").maybeSingle();
-      if (!escrow) throw new Error("No held escrow found for this job");
+      if (!escrow) throw new Error("No held escrow found");
       await assertEscrowAuthority(supabaseAdmin, userId, escrow);
 
       const { error } = await supabaseAdmin.from("escrow_payments").update({
@@ -348,13 +359,12 @@ serve(async (req) => {
 
       if (error) throw new Error(`Escrow release failed: ${error.message}`);
 
-      // Audit
       await supabaseAdmin.from("audit_logs").insert({
-        user_id: userId, org_id: escrow.org_id, action: "escrow_released",
+        user_id: userId, action: "escrow_released",
         metadata_json: { escrow_id: escrow.id, job_id, amount: escrow.amount, currency: escrow.currency },
       });
 
-      return json({ success: true, escrow_id: escrow.id, amount: escrow.amount, released_at: new Date().toISOString() });
+      return json({ success: true, escrow_id: escrow.id, amount: escrow.amount });
     }
 
     // ─── ESCROW: REFUND ──────────────────────────────────────
@@ -364,7 +374,7 @@ serve(async (req) => {
 
       const { data: escrow } = await supabaseAdmin.from("escrow_payments")
         .select("*").eq("job_id", job_id).eq("status", "held").maybeSingle();
-      if (!escrow) throw new Error("No held escrow found for this job");
+      if (!escrow) throw new Error("No held escrow found");
       await assertEscrowAuthority(supabaseAdmin, userId, escrow);
 
       const { error } = await supabaseAdmin.from("escrow_payments").update({
@@ -374,12 +384,7 @@ serve(async (req) => {
 
       if (error) throw new Error(`Escrow refund failed: ${error.message}`);
 
-      await supabaseAdmin.from("audit_logs").insert({
-        user_id: userId, org_id: escrow.org_id, action: "escrow_refunded",
-        metadata_json: { escrow_id: escrow.id, job_id, amount: escrow.amount, reason },
-      });
-
-      return json({ success: true, escrow_id: escrow.id, amount: escrow.amount, refunded_at: new Date().toISOString() });
+      return json({ success: true, escrow_id: escrow.id, amount: escrow.amount });
     }
 
     // ─── ESCROW: STATUS ──────────────────────────────────────
@@ -387,8 +392,7 @@ serve(async (req) => {
       const { job_id } = body;
       if (!job_id) throw new Error("job_id required");
 
-      // Verify user has access to this job
-      const { data: job } = await supabaseAdmin.from("delivery_jobs").select("*").eq("id", job_id).single();
+      const { data: job } = await supabaseAdmin.from("mobility_jobs").select("*").eq("id", job_id).single();
       if (!job) throw new Error("Job not found");
       await assertJobAuthority(supabaseAdmin, userId, job);
 
@@ -414,38 +418,34 @@ function json(data: any, status = 200) {
   });
 }
 
-/** Check if userId is the job seller, the assigned driver, or an org owner/admin */
-async function assertJobAuthority(
-  supabaseAdmin: any,
-  userId: string,
-  job: any,
-  requireOwnerOrAdmin = false
-) {
-  if (!requireOwnerOrAdmin) {
-    if (userId === job.seller_id || userId === job.driver_id) return;
+async function assertJobAuthority(supabaseAdmin: any, userId: string, job: any) {
+  if (userId === job.customer_user_id || userId === job.rider_user_id) return;
+  if (job.merchant_id) {
+    const { data: orgRole } = await supabaseAdmin
+      .from("org_members")
+      .select("role")
+      .eq("user_id", userId)
+      .eq("org_id", job.merchant_id)
+      .in("role", ["owner", "admin"])
+      .maybeSingle();
+    if (orgRole) return;
   }
-  // Check org membership
-  const { data: orgRole } = await supabaseAdmin
-    .from("org_members")
-    .select("role")
-    .eq("user_id", userId)
-    .eq("org_id", job.org_id)
-    .in("role", ["owner", "admin"])
-    .maybeSingle();
-  if (!orgRole) throw new Error("Forbidden: not authorized for this job");
+  throw new Error("Forbidden: not authorized for this job");
 }
 
-/** Check if userId is the escrow payer or an org owner/admin */
 async function assertEscrowAuthority(supabaseAdmin: any, userId: string, escrow: any) {
   if (userId === escrow.payer_id) return;
-  const { data: orgRole } = await supabaseAdmin
-    .from("org_members")
-    .select("role")
-    .eq("user_id", userId)
-    .eq("org_id", escrow.org_id)
-    .in("role", ["owner", "admin"])
-    .maybeSingle();
-  if (!orgRole) throw new Error("Forbidden: not authorized for this escrow");
+  if (escrow.org_id) {
+    const { data: orgRole } = await supabaseAdmin
+      .from("org_members")
+      .select("role")
+      .eq("user_id", userId)
+      .eq("org_id", escrow.org_id)
+      .in("role", ["owner", "admin"])
+      .maybeSingle();
+    if (orgRole) return;
+  }
+  throw new Error("Forbidden: not authorized for this escrow");
 }
 
 function haversine(lat1: number, lng1: number, lat2: number, lng2: number): number {
@@ -461,91 +461,49 @@ function haversine(lat1: number, lng1: number, lat2: number, lng2: number): numb
 // ─── Ranking Engine ──────────────────────────────────────────────────────────
 
 const VEHICLE_SPEEDS: Record<string, number> = {
-  bicycle: 15, scooter: 30, car: 40, van: 35, truck: 30,
-};
-
-const VEHICLE_CAPACITY_KG: Record<string, number> = {
-  bicycle: 5, scooter: 15, car: 50, van: 200, truck: 1000,
+  bicycle: 15, moto: 30, car: 40, van: 35, car_premium: 40, car_xl: 35,
 };
 
 const RANKING_WEIGHTS = {
-  distance: 0.30, eta: 0.20, reliability: 0.20,
-  vehicle: 0.10, availability: 0.10, rating: 0.10,
+  distance: 0.35, eta: 0.25, availability: 0.20, rating: 0.20,
 };
 
-interface RankedDriverResult {
-  user_id: string;
-  score: number;
-  distance_km: number;
-  eta_minutes: number;
-  vehicle_type: string;
-  avg_rating: number | null;
-  acceptance_rate: number | null;
-  breakdown: Record<string, number>;
-}
+function rankAndScoreRiders(riders: any[], job: any, maxDistKm: number) {
+  const results: any[] = [];
 
-function rankAndScoreDrivers(drivers: any[], job: any, maxDistKm: number): RankedDriverResult[] {
-  const priorityBoost = job.priority === "urgent" ? 1.5 : job.priority === "express" ? 1.25 : 1;
-  
-  // Adjust weights for priority
-  let w = { ...RANKING_WEIGHTS };
-  if (priorityBoost > 1) {
-    w.distance *= priorityBoost;
-    w.eta *= priorityBoost;
-    const total = Object.values(w).reduce((a, b) => a + b, 0);
-    for (const k of Object.keys(w) as (keyof typeof w)[]) w[k] /= total;
-  }
+  for (const r of riders) {
+    const lat = r.current_lat ?? r.lat;
+    const lng = r.current_lng ?? r.lng;
+    if (!lat || !lng) continue;
 
-  const results: RankedDriverResult[] = [];
+    const dist = haversine(lat, lng, job.pickup_lat ?? 0, job.pickup_lng ?? 0);
+    if (dist > maxDistKm) continue;
 
-  for (const d of drivers) {
-    const dist = haversine(d.lat, d.lng, job.pickup_lat ?? 0, job.pickup_lng ?? 0);
-    if (dist > (d.max_distance_km ?? maxDistKm)) continue;
+    // Self-acceptance prevention
+    if (r.user_id === job.customer_user_id) continue;
 
-    // Vehicle capacity check
-    const capacity = VEHICLE_CAPACITY_KG[d.vehicle_type] ?? 50;
-    if ((job.weight_kg ?? 1) > capacity) continue;
-
-    // Required vehicles check
-    const reqVehicles: string[] = job.required_vehicles ?? [];
-    if (reqVehicles.length > 0 && !reqVehicles.includes(d.vehicle_type)) continue;
-
-    const speed = VEHICLE_SPEEDS[d.vehicle_type] ?? 30;
+    const speed = VEHICLE_SPEEDS[r.vehicle_type] ?? 30;
     const etaMin = Math.round((dist / speed) * 60);
 
-    // Score components (0–100)
-    const distScore = dist <= 0 ? 100 : dist >= maxDistKm ? 0 : Math.round((1 - dist / maxDistKm) * 100);
-    const etaScore = etaMin <= 0 ? 100 : etaMin >= 45 ? 0 : Math.round((1 - etaMin / 45) * 100);
-
-    const totalCompleted = d.total_completed ?? 0;
-    const totalCancelled = d.total_cancelled ?? 0;
-    const totalJobs = totalCompleted + totalCancelled;
-    const completionRate = totalJobs > 0 ? totalCompleted / totalJobs : 0.5;
-    const acceptRate = d.acceptance_rate ?? 0.5;
-    const reliabilityScore = Math.round((completionRate * 0.7 + acceptRate * 0.3) * 100);
-
-    const vehicleScore = 100; // already passed capacity/type checks
-    const availabilityScore = d.status === "online" ? 100 : d.status === "busy" ? 30 : 0;
-    const ratingScore = Math.round(((d.avg_rating ?? 3) / 5) * 100);
+    const distScore = dist >= maxDistKm ? 0 : Math.round((1 - dist / maxDistKm) * 100);
+    const etaScore = etaMin >= 45 ? 0 : Math.round((1 - etaMin / 45) * 100);
+    const availScore = r.is_available ? 100 : 0;
+    const ratingScore = Math.round(((r.avg_rating ?? 3) / 5) * 100);
 
     const score = Math.round(
-      distScore * w.distance +
-      etaScore * w.eta +
-      reliabilityScore * w.reliability +
-      vehicleScore * w.vehicle +
-      availabilityScore * w.availability +
-      ratingScore * w.rating
+      distScore * RANKING_WEIGHTS.distance +
+      etaScore * RANKING_WEIGHTS.eta +
+      availScore * RANKING_WEIGHTS.availability +
+      ratingScore * RANKING_WEIGHTS.rating
     );
 
     results.push({
-      user_id: d.user_id,
+      user_id: r.user_id,
       score,
       distance_km: Math.round(dist * 100) / 100,
       eta_minutes: etaMin,
-      vehicle_type: d.vehicle_type,
-      avg_rating: d.avg_rating,
-      acceptance_rate: d.acceptance_rate,
-      breakdown: { distScore, etaScore, reliabilityScore, vehicleScore, availabilityScore, ratingScore },
+      vehicle_type: r.vehicle_type || "car",
+      avg_rating: r.avg_rating,
     });
   }
 
