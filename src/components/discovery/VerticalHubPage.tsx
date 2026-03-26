@@ -12,9 +12,6 @@ import PremiumVerticalHero from "@/components/discovery/PremiumVerticalHero";
 import PremiumMerchantCard from "@/components/discovery/PremiumMerchantCard";
 import UniverseSearch from "@/components/universe/UniverseSearch";
 import FilterChip from "@/components/universe/FilterChip";
-import RadiusSlider from "@/components/discovery/RadiusSlider";
-import CityFilter from "@/components/discovery/CityFilter";
-import { useDiscoveryStore } from "@/stores/discoveryStore";
 import { useVerticalListings, type ListingItem } from "@/hooks/useVerticalListings";
 import { type TaxonomyVertical } from "@/lib/taxonomy/world-class-taxonomy";
 import { getSubcategoryLabel } from "@/lib/discovery/verticals";
@@ -56,11 +53,6 @@ export default function VerticalHubPage({ vertical }: { vertical: TaxonomyVertic
   const navigate = useNavigate();
   const heroRailRef = useRef<HTMLDivElement | null>(null);
 
-  // ═══ DISCOVERY STORE — city + radius ═══
-  const radiusKm = useDiscoveryStore((s) => s.radiusKm);
-  const setRadiusKm = useDiscoveryStore((s) => s.setRadiusKm);
-  const city = useDiscoveryStore((s) => s.city);
-  const setCity = useDiscoveryStore((s) => s.setCity);
 
   // ═══ CANONICAL UI ENGINE — single source of truth ═══
   const ui: CanonicalUISpec = useMemo(
@@ -81,7 +73,7 @@ export default function VerticalHubPage({ vertical }: { vertical: TaxonomyVertic
     else setSearchParams({});
   };
 
-  const { data: listings = [], isLoading } = useVerticalListings(vertical.value, activeSub, city);
+  const { data: listings = [], isLoading } = useVerticalListings(vertical.value, activeSub);
 
   const filtered = useMemo(() => {
     let items = listings;
@@ -239,12 +231,6 @@ export default function VerticalHubPage({ vertical }: { vertical: TaxonomyVertic
             </span>
           ))}
         </nav>
-
-        {/* ═══ CITY FILTER ═══ */}
-        <CityFilter value={city} onChange={setCity} className="mb-3" />
-
-        {/* ═══ RADIUS SLIDER ═══ */}
-        <RadiusSlider value={radiusKm} onChange={setRadiusKm} className="mb-4" />
 
         <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-none -mx-1 px-1 mb-4 snap-x snap-mandatory">
           {SORT_OPTIONS.map(opt => (

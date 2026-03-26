@@ -1,10 +1,9 @@
 /**
  * useVerticalListings — Fetches UNIFIED data for a given vertical.
- * Uses CANONICAL discovery pipeline — visibility, routing, radius enforced.
+ * Uses CANONICAL discovery pipeline — serviceability-driven, no manual radius.
  */
 import { useQuery } from "@tanstack/react-query";
 import { useGeoStore } from "@/lib/geo/geo-store";
-import { useDiscoveryStore } from "@/stores/discoveryStore";
 import { fetchCanonicalDiscovery } from "@/lib/discovery/canonical-discovery-pipeline";
 import { verticalToRadarCategory } from "@/lib/taxonomy/world-class-taxonomy";
 
@@ -25,12 +24,11 @@ export interface ListingItem {
   distanceKm?: number;
 }
 
-export function useVerticalListings(vertical: string, subcategory?: string | null, city?: string | null) {
+export function useVerticalListings(vertical: string, subcategory?: string | null) {
   const geoPoint = useGeoStore((s) => s.point);
-  const radiusKm = useDiscoveryStore((s) => s.radiusKm);
 
   return useQuery({
-    queryKey: ["vertical-listings", vertical, subcategory ?? "all", city ?? "all", geoPoint?.lat?.toFixed(2), radiusKm],
+    queryKey: ["vertical-listings", vertical, subcategory ?? "all", geoPoint?.lat?.toFixed(2)],
     queryFn: async () => {
       const radarCategory = verticalToRadarCategory(vertical);
       const points = await fetchCanonicalDiscovery({
@@ -39,8 +37,6 @@ export function useVerticalListings(vertical: string, subcategory?: string | nul
         category: radarCategory,
         subcategory: subcategory ?? undefined,
         vertical,
-        city: city ?? undefined,
-        radiusKm: radiusKm ?? undefined,
         limit: 100,
       });
 
