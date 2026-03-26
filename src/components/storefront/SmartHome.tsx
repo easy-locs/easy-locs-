@@ -265,7 +265,7 @@ export default function SmartHome() {
   const row1 = categories.slice(0, half);
   const row2 = categories.slice(half);
 
-  const living = useLivingPage({ country: countryCode, city: city || undefined, maxSections: 6 });
+  const _living = useLivingPage({ country: countryCode, city: city || undefined, maxSections: 6 });
   const globalCtx = useGlobalContext({ country: countryCode, city: city || undefined });
   const contextBanners = useMemo(
     () => getTopBanners({ country: countryCode, city, hour: globalCtx.localHour }, 1),
