@@ -20,7 +20,20 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  const supabase = createClient(Deno.env.get("SUPABASE_URL") ?? "", Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "");
+  // Guard: only service-role or authenticated callers with valid JWT
+  const authHeader = req.headers.get("authorization") ?? "";
+  const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
+  const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+  const token = authHeader.replace("Bearer ", "");
+
+  // Reject if no auth or if using the anon key directly (must be service_role or user JWT)
+  if (!token || token === supabaseAnonKey) {
+    return new Response(JSON.stringify({ error: "Unauthorized" }), {
+      status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+
+  const supabase = createClient(Deno.env.get("SUPABASE_URL") ?? "", supabaseServiceKey);
 
   try {
     const {
