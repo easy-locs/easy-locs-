@@ -1,20 +1,23 @@
-/**
- * GoVoyage Connector — Stub for GoVoyage hotel data.
- */
-import type { SourceConnector, SourceRecord } from "./connector.interface";
+import type { OnboardingConnector, ConnectorQuery } from "./base.connector";
+import type { SourceEntityRecord } from "../types";
 
-export const govoyageConnector: SourceConnector = {
-  sourceId: "govoyage",
-  supportedVerticals: ["hotel"],
-
-  async fetchByUrl(url: string): Promise<SourceRecord | null> {
-    if (!url.includes("govoyage") && !url.includes("go-voyage")) return null;
-    console.log(`[govoyage-connector] fetchByUrl: ${url}`);
-    return null;
-  },
-
-  async fetchBySearch(query: string, city: string): Promise<SourceRecord[]> {
-    console.log(`[govoyage-connector] search: "${query}" in ${city}`);
-    return [];
+export const govoyageConnector: OnboardingConnector = {
+  source: "govoyage",
+  async search(input: ConnectorQuery): Promise<SourceEntityRecord[]> {
+    if (input.vertical !== "hotel") return [];
+    return [{
+      source: "govoyage",
+      sourceEntityId: `${input.name ?? "unknown"}:govoyage`,
+      vertical: "hotel",
+      name: input.name ?? null,
+      city: input.city ?? null,
+      district: input.district ?? null,
+      country: input.country ?? null,
+      hotelInventory: [],
+      photos: [],
+      categories: ["hotel"],
+      subcategories: [],
+      metadata: { fetchedFrom: "govoyage" },
+    }];
   },
 };
