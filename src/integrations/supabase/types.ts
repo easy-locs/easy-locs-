@@ -15844,6 +15844,138 @@ export type Database = {
         }
         Relationships: []
       }
+      radar_opportunities: {
+        Row: {
+          city: string | null
+          country: string | null
+          created_at: string
+          demand_score: number | null
+          description: string | null
+          entity_id: string | null
+          entity_type: string | null
+          expires_at: string | null
+          icon_key: string | null
+          id: string
+          lat: number | null
+          lng: number | null
+          metadata_json: Json | null
+          opportunity_type: string
+          proximity_score: number | null
+          route_module: string
+          route_path: string
+          score: number
+          status: string
+          timing_score: number | null
+          title: string
+          updated_at: string
+          urgency_score: number | null
+          zone_key: string | null
+        }
+        Insert: {
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          demand_score?: number | null
+          description?: string | null
+          entity_id?: string | null
+          entity_type?: string | null
+          expires_at?: string | null
+          icon_key?: string | null
+          id?: string
+          lat?: number | null
+          lng?: number | null
+          metadata_json?: Json | null
+          opportunity_type: string
+          proximity_score?: number | null
+          route_module: string
+          route_path: string
+          score?: number
+          status?: string
+          timing_score?: number | null
+          title: string
+          updated_at?: string
+          urgency_score?: number | null
+          zone_key?: string | null
+        }
+        Update: {
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          demand_score?: number | null
+          description?: string | null
+          entity_id?: string | null
+          entity_type?: string | null
+          expires_at?: string | null
+          icon_key?: string | null
+          id?: string
+          lat?: number | null
+          lng?: number | null
+          metadata_json?: Json | null
+          opportunity_type?: string
+          proximity_score?: number | null
+          route_module?: string
+          route_path?: string
+          score?: number
+          status?: string
+          timing_score?: number | null
+          title?: string
+          updated_at?: string
+          urgency_score?: number | null
+          zone_key?: string | null
+        }
+        Relationships: []
+      }
+      radar_signals: {
+        Row: {
+          city: string | null
+          country: string | null
+          created_at: string
+          entity_id: string | null
+          entity_type: string | null
+          id: string
+          intensity: number | null
+          lat: number | null
+          lng: number | null
+          metadata_json: Json | null
+          signal_type: string
+          source_module: string
+          user_id: string | null
+          zone_key: string | null
+        }
+        Insert: {
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          entity_id?: string | null
+          entity_type?: string | null
+          id?: string
+          intensity?: number | null
+          lat?: number | null
+          lng?: number | null
+          metadata_json?: Json | null
+          signal_type: string
+          source_module: string
+          user_id?: string | null
+          zone_key?: string | null
+        }
+        Update: {
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          entity_id?: string | null
+          entity_type?: string | null
+          id?: string
+          intensity?: number | null
+          lat?: number | null
+          lng?: number | null
+          metadata_json?: Json | null
+          signal_type?: string
+          source_module?: string
+          user_id?: string | null
+          zone_key?: string | null
+        }
+        Relationships: []
+      }
       ranking_snapshots: {
         Row: {
           boost_readiness_score: number
