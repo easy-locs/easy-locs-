@@ -102,25 +102,25 @@ export const walletRepo = {
 
 export const listingRepo = {
   async listPublished(): Promise<PropertyListingV2[]> {
-    const { data, error } = await db.from("property_listings").select("*").eq("status", "published").order("createdAt", { ascending: false });
+    const { data, error } = await db.from("property_listings_v2").select("*").eq("status", "published").order("created_at", { ascending: false });
     if (error) throw error;
     return (data ?? []) as PropertyListingV2[];
   },
 
   async getById(id: string): Promise<PropertyListingV2 | null> {
-    const { data, error } = await db.from("property_listings").select("*").eq("id", id).maybeSingle();
+    const { data, error } = await db.from("property_listings_v2").select("*").eq("id", id).maybeSingle();
     if (error) throw error;
     return data as PropertyListingV2 | null;
   },
 
   async create(listing: PropertyListingV2): Promise<PropertyListingV2> {
-    const { data, error } = await db.from("property_listings").insert(listing).select().single();
+    const { data, error } = await db.from("property_listings_v2").insert(listing).select().single();
     if (error) throw error;
     return data as PropertyListingV2;
   },
 
   async update(id: string, patch: Partial<PropertyListingV2>): Promise<PropertyListingV2> {
-    const { data, error } = await db.from("property_listings").update(patch).eq("id", id).select().single();
+    const { data, error } = await db.from("property_listings_v2").update(patch).eq("id", id).select().single();
     if (error) throw error;
     return data as PropertyListingV2;
   },
