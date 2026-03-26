@@ -206,7 +206,7 @@ const PropertyManagement = () => {
             Get Started Free <ArrowRight className="h-4 w-4" />
           </Link>
           <nav className="flex flex-wrap justify-center gap-4 mt-8 text-sm" aria-label="Related pages">
-            <Link to="/seasonal-rentals" className="text-muted-foreground hover:text-accent transition-colors">Vacation Rentals →</Link>
+            <Link to="/seasonal-rentals-booking" className="text-muted-foreground hover:text-accent transition-colors">Vacation Rentals →</Link>
             <Link to="/concierge-services" className="text-muted-foreground hover:text-accent transition-colors">Concierge Services →</Link>
             <Link to="/marketplace-services" className="text-muted-foreground hover:text-accent transition-colors">Marketplace →</Link>
             <Link to="/explore" className="text-muted-foreground hover:text-accent transition-colors">Explore Listings →</Link>

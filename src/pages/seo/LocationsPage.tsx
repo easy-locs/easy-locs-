@@ -206,7 +206,7 @@ const LocationsPage = () => {
               <p className="font-semibold text-foreground mb-2">Resources</p>
               <Link to="/property-management" className="block text-muted-foreground hover:text-primary py-0.5">Property Management</Link>
               <Link to="/long-term-rentals" className="block text-muted-foreground hover:text-primary py-0.5">Long-Term Rentals</Link>
-              <Link to="/seasonal-rentals" className="block text-muted-foreground hover:text-primary py-0.5">Seasonal Rentals</Link>
+              <Link to="/seasonal-rentals-booking" className="block text-muted-foreground hover:text-primary py-0.5">Seasonal Rentals</Link>
               <Link to="/activities" className="block text-muted-foreground hover:text-primary py-0.5">Activities</Link>
               <Link to="/marketplace-services" className="block text-muted-foreground hover:text-primary py-0.5">Marketplace</Link>
               <Link to="/concierge-services" className="block text-muted-foreground hover:text-primary py-0.5">Concierge</Link>

@@ -155,7 +155,7 @@ const ConciergeServicesPage = () => (
           <Button asChild size="lg"><Link to="/signup">Get Started Free</Link></Button>
           <nav className="flex flex-wrap justify-center gap-4 mt-8 text-sm" aria-label="Related pages">
             <Link to="/property-management" className="text-muted-foreground hover:text-primary transition-colors">Property Management →</Link>
-            <Link to="/seasonal-rentals" className="text-muted-foreground hover:text-primary transition-colors">Vacation Rentals →</Link>
+            <Link to="/seasonal-rentals-booking" className="text-muted-foreground hover:text-primary transition-colors">Vacation Rentals →</Link>
             <Link to="/marketplace-services" className="text-muted-foreground hover:text-primary transition-colors">Marketplace →</Link>
             <Link to="/explore" className="text-muted-foreground hover:text-primary transition-colors">Explore Listings →</Link>
           </nav>
