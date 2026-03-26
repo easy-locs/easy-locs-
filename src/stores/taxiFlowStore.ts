@@ -1,25 +1,25 @@
 /**
- * taxiFlowStore — State machine for taxi booking UX.
- * Controls which screen the customer sees: search → preview → active → completed.
+ * taxiFlowStore — 5-step state machine for taxi booking (Careem/Uber UX).
+ * search → preview → requesting → tracking → completed
  */
 import { create } from "zustand";
 import type { CanonicalPlace } from "@/lib/address/canonical-place";
 
 export type TaxiFlowStep =
-  | "search"        // destination input (NO map)
-  | "preview"       // map + route + fare + confirm
-  | "active_ride"   // live tracking
-  | "completed";    // ride done / rating
+  | "search"       // Step 1: destination input, NO map
+  | "preview"      // Step 2: map + route + fare + ride options
+  | "requesting"   // Step 3: searching for driver
+  | "tracking"     // Step 4: live ride tracking
+  | "completed";   // Step 5: ride done
 
-export type ServiceLevel = "taxi_standard" | "taxi_premium" | "taxi_xl" | "taxi_moto";
-export type BookingMode = "now" | "scheduled";
+export type TaxiServiceLevel = "taxi_standard" | "taxi_premium" | "taxi_xl" | "taxi_moto";
 
 interface TaxiFlowState {
   step: TaxiFlowStep;
   pickup: CanonicalPlace | null;
   dropoff: CanonicalPlace | null;
-  serviceLevel: ServiceLevel;
-  bookingMode: BookingMode;
+  serviceLevel: TaxiServiceLevel;
+  bookingMode: "now" | "scheduled";
   scheduledDate: string;
   scheduledTime: string;
   seats: number;
@@ -28,8 +28,8 @@ interface TaxiFlowState {
   setStep: (s: TaxiFlowStep) => void;
   setPickup: (p: CanonicalPlace | null) => void;
   setDropoff: (d: CanonicalPlace | null) => void;
-  setServiceLevel: (sl: ServiceLevel) => void;
-  setBookingMode: (bm: BookingMode) => void;
+  setServiceLevel: (sl: TaxiServiceLevel) => void;
+  setBookingMode: (bm: "now" | "scheduled") => void;
   setScheduledDate: (d: string) => void;
   setScheduledTime: (t: string) => void;
   setSeats: (s: number) => void;
@@ -37,19 +37,16 @@ interface TaxiFlowState {
   reset: () => void;
 }
 
-const INITIAL: Pick<TaxiFlowState,
-  "step" | "pickup" | "dropoff" | "serviceLevel" | "bookingMode" |
-  "scheduledDate" | "scheduledTime" | "seats" | "activeJobId"
-> = {
-  step: "search",
-  pickup: null,
-  dropoff: null,
-  serviceLevel: "taxi_standard",
-  bookingMode: "now",
+const INITIAL = {
+  step: "search" as TaxiFlowStep,
+  pickup: null as CanonicalPlace | null,
+  dropoff: null as CanonicalPlace | null,
+  serviceLevel: "taxi_standard" as TaxiServiceLevel,
+  bookingMode: "now" as "now" | "scheduled",
   scheduledDate: "",
   scheduledTime: "",
   seats: 1,
-  activeJobId: null,
+  activeJobId: null as string | null,
 };
 
 export const useTaxiFlowStore = create<TaxiFlowState>((set) => ({
