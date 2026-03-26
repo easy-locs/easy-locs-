@@ -113,7 +113,6 @@ const Hero = () => {
             <span className="text-[9px] sm:text-[11px] font-bold truncate" style={{ color: "hsl(var(--success))" }}>
               ${liveStats.processed}M {t("landing.hero.processed") || "processed"}
             </span>
-            </span>
           </div>
         </motion.div>
 
