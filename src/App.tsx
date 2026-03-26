@@ -163,7 +163,7 @@ const CountryWorkspace = safeLazy(() => import("./pages/CountryWorkspace"), "Cou
 // Orbit App Shell & Home
 const OrbitAppShell = safeLazy(() => import("./components/orbit/OrbitAppShell"), "OrbitAppShell");
 const OrbitHome = safeLazy(() => import("./pages/OrbitHome"), "OrbitHome");
-const WalletHub = safeLazy(() => import("./pages/WalletHubPage"), "WalletHubPage");
+// WalletHub duplicate removed — use WalletHubPage (line 260) for both /wallet and /wallet/hub
 const AddProperty = safeLazy(() => import("./pages/AddProperty"), "AddProperty");
 const PropertyDetailHub = safeLazy(() => import("./pages/PropertyDetailHub"), "PropertyDetailHub");
 const CreateListing = safeLazy(() => import("./pages/CreateListing"), "CreateListing");
@@ -264,7 +264,7 @@ const ExecutiveDashboard = safeLazy(() => import("./pages/ExecutiveDashboard"), 
 // GhostCallPage — removed (orphan, bypassed CallProvider)
 const ConciergeOperations = safeLazy(() => import("./pages/ConciergeOperations"), "ConciergeOperations");
 const CustomerProfilePage = safeLazy(() => import("./pages/CustomerProfilePage"), "CustomerProfilePage");
-const TravelHotels = safeLazy(() => import("./pages/travel/TravelHotels"), "TravelHotels");
+// TravelHotels removed — /travel/hotels redirects to /travel/stays (line 895)
 const WorkspaceBootstrapPage = safeLazy(() => import("./pages/WorkspaceBootstrapPage"), "WorkspaceBootstrapPage");
 const MenuAdminPage = safeLazy(() => import("./pages/MenuAdminPage"), "MenuAdminPage");
 const SupportInboxPage = safeLazy(() => import("./pages/SupportInboxPage"), "SupportInboxPage");
