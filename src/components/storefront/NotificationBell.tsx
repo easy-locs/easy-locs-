@@ -1,24 +1,43 @@
 /**
- * NotificationBell — PASS122: Inline bell with unread badge.
- * Auto-subscribes to realtime notifications. Zero config.
+ * NotificationBell — Connected to canonical notification_v2 store.
+ * Shows real unread count from Orbit/payment/system notifications.
  */
 import { Bell, BellDot } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useStorefrontNotifications } from "@/hooks/useStorefrontNotifications";
+import { useNotificationV2Store } from "@/stores/notificationV2Store";
+import { useAuth } from "@/contexts/AuthContext";
+import { useEffect } from "react";
 import { haptic } from "@/lib/haptics";
+import { useNavigate } from "react-router-dom";
 
 interface Props {
-  shopId?: string;
   onOpen?: () => void;
 }
 
-export default function NotificationBell({ shopId, onOpen }: Props) {
-  const { unreadCount, markAllRead } = useStorefrontNotifications(shopId);
+export default function NotificationBell({ onOpen }: Props) {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const unreadCount = useNotificationV2Store((s) => s.unreadCount);
+  const hydrated = useNotificationV2Store((s) => s.hydrated);
+  const hydrate = useNotificationV2Store((s) => s.hydrate);
+  const startRealtime = useNotificationV2Store((s) => s.startRealtime);
+  const stopRealtime = useNotificationV2Store((s) => s.stopRealtime);
+  const markAllAsRead = useNotificationV2Store((s) => s.markAllAsRead);
+
+  useEffect(() => {
+    if (!user?.id) return;
+    if (!hydrated) hydrate(user.id);
+    startRealtime(user.id);
+    return () => stopRealtime();
+  }, [user?.id]);
 
   const handleClick = () => {
     haptic("light");
-    if (unreadCount > 0) markAllRead();
-    onOpen?.();
+    if (onOpen) {
+      onOpen();
+    } else {
+      navigate("/dashboard/notifications");
+    }
   };
 
   return (
