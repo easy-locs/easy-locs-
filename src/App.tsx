@@ -661,7 +661,8 @@ const App = () => (
            <RealtimeHubGuard />
            <NotificationsRealtimeGuard />
            <UpdateNotification />
-                <AppInit />
+                 <AppInit />
+                 <UiQualityProvider>
                 <GeoBoot />
                 <PermissionBootstrap />
              <AppBootstrapGuardDirect />
