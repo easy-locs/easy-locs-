@@ -5,7 +5,7 @@
  */
 import { getOrCreateDirectThread } from "@/lib/direct-thread";
 import { supabase } from "@/integrations/supabase/client";
-import { eventBus } from "@/lib/events/eventBus";
+import { eventBus } from "@/lib/core/event-bus";
 import { toast } from "sonner";
 import { notifyNewMessage } from "@/lib/engines/notification-event-dispatcher";
 import type { NavigateFunction } from "react-router-dom";

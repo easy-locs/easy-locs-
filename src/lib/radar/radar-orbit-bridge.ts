@@ -7,7 +7,7 @@
  *   lease_id, last_message_at, created_at, updated_at, created_by_orbit_id
  */
 import { supabase } from "@/integrations/supabase/client";
-import { eventBus } from "@/lib/events/eventBus";
+import { eventBus } from "@/lib/core/event-bus";
 
 export interface RadarEntity {
   id: string;
