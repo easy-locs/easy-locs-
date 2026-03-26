@@ -44,13 +44,13 @@ export function CareemTopHeroStrip({
 
       <div className="flex gap-2">
         <button
-          onClick={() => navigate("/food")}
+          onClick={() => navigate("/browse/food")}
           className="rounded-2xl bg-primary text-primary-foreground px-4 py-3 text-sm font-bold active:scale-[0.98] transition-transform"
         >
           Order Food
         </button>
         <button
-          onClick={() => navigate("/grocery")}
+          onClick={() => navigate("/browse/grocery")}
           className="rounded-2xl bg-muted px-4 py-3 text-sm font-bold text-foreground active:scale-[0.98] transition-transform"
         >
           Groceries
