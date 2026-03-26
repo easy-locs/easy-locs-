@@ -62,7 +62,7 @@ export async function computeLiveETA(jobId: string): Promise<LiveETA | null> {
   if (!liveState?.lat || !liveState?.lng) return null;
 
   // 2. Get job coordinates
-  const { data: job } = await supabase
+  const { data: job } = await (supabase as any)
     .from("mobility_jobs")
     .select("pickup_lat, pickup_lng, dropoff_lat, dropoff_lng, status, zone_key")
     .eq("id", jobId)
@@ -76,7 +76,7 @@ export async function computeLiveETA(jobId: string): Promise<LiveETA | null> {
     const { data: overlay } = await supabase
       .from("geo_live_zone_overlays")
       .select("traffic_level, traffic_speed_factor")
-      .eq("zone_key", job.zone_key)
+      .eq("zone_key", job.zone_key as string)
       .maybeSingle();
 
     if (overlay?.traffic_level) {
