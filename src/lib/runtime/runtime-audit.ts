@@ -194,7 +194,7 @@ async function checkWalletTables(): Promise<RuntimeAuditCheck> {
     // Sequential to avoid lock contention
     const accounts = await (supabase as any).from("wallet_accounts").select("id", { head: true, count: "exact" }).limit(1);
     if (accounts.error) return fail("Wallet tables", "wallet_tables", accounts.error.message);
-    const tx = await (supabase as any).from("wallet_transactions").select("id", { head: true, count: "exact" }).limit(1);
+    const tx = await (supabase as any).from("unified_wallet_transactions").select("id", { head: true, count: "exact" }).limit(1);
     if (tx.error) return fail("Wallet tables", "wallet_tables", tx.error.message);
     const ledger = await (supabase as any).from("wallet_ledger_entries").select("id", { head: true, count: "exact" }).limit(1);
     if (ledger.error) return fail("Wallet tables", "wallet_tables", ledger.error.message);

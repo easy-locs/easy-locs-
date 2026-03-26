@@ -11,7 +11,7 @@ export function useRealtimeDispatchBoard() {
     const [rides, alerts, zones] = await Promise.all([
       (supabase as any).from("mobility_jobs").select("*").order("updated_at", { ascending: false }).limit(100),
       (supabase as any).from("admin_alerts").select("*").eq("status", "open").order("created_at", { ascending: false }).limit(50),
-      (supabase as any).from("demand_zones").select("*").order("surge_multiplier", { ascending: false }).limit(50),
+      (supabase as any).from("geo_live_zone_overlays").select("*").order("surge_multiplier", { ascending: false }).limit(50),
     ]);
     setState({ rides: (rides.data ?? []), alerts: (alerts.data ?? []), zones: (zones.data ?? []), loading: false });
   }, []);

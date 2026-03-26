@@ -88,15 +88,14 @@ export default function AdminModerationPanel({ orgId }: { orgId: string }) {
         metadata_json: { driver_id: driverId, action, note: actionNote, timestamp: new Date().toISOString() },
       });
 
-      // Notify driver via canonical notifications_v2
-      await (supabase as any).from("notifications_v2").insert({
+      // Notify driver — canonical: notifications
+      await (supabase as any).from("notifications").insert({
         user_id: userId,
-        actor: "rider",
-        domain: "admin",
         type: `moderation.${action}`,
         title: action === "warn" ? "⚠️ Avertissement" : action === "suspend" ? "🚫 Compte suspendu" : action === "ban" ? "❌ Compte banni" : "✅ Compte réactivé",
         body: actionNote || `Action de modération : ${action}`,
-        action_url: "/driver",
+        cta_url: "/driver",
+        metadata_json: { actor: "rider", domain: "admin" },
       });
 
       toast.success(`Action "${action}" appliquée`);

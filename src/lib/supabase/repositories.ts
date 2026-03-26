@@ -73,7 +73,7 @@ export const walletRepo = {
   },
 
   async createTransaction(tx: WalletTransaction): Promise<WalletTransaction> {
-    const { data, error } = await db.from("wallet_transactions").insert(tx).select().single();
+    const { data, error } = await db.from("unified_wallet_transactions").insert(tx).select().single();
     if (error) throw error;
     return data as WalletTransaction;
   },

@@ -1,6 +1,6 @@
 /**
  * AdminNotificationEnginePage — Admin view of notification queue.
- * Reads from canonical notifications_v2 table.
+ * Canonical: reads from notifications table.
  */
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -8,7 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 async function listNotifications(limit = 100) {
   const { data, error } = await (supabase as any)
-    .from("notifications_v2")
+    .from("notifications")
     .select("*")
     .order("created_at", { ascending: false })
     .limit(limit);
