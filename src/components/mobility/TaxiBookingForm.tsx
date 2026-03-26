@@ -2,8 +2,10 @@
  * TaxiBookingForm — Professional customer taxi booking form.
  * Service levels: standard, premium, xl, moto_taxi.
  * Supports now/scheduled with proper date/time picker.
+ * 
+ * Uses CanonicalAddressInput for pickup/dropoff → full zone intelligence propagation.
  */
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import { useCustomerMobilityStore } from "@/stores/customerMobilityStore";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,6 +13,8 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Car, MapPin, Navigation, Clock, DollarSign, Calendar, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { CanonicalAddressInput } from "@/components/address/CanonicalAddressInput";
+import type { CanonicalPlace } from "@/lib/address/canonical-place";
 
 type ServiceLevel = "taxi_standard" | "taxi_premium" | "taxi_xl" | "taxi_moto";
 type BookingMode = "now" | "scheduled";
@@ -26,8 +30,8 @@ export function TaxiBookingForm() {
   const createJob = useCustomerMobilityStore(s => s.createJob);
   const [serviceLevel, setServiceLevel] = useState<ServiceLevel>("taxi_standard");
   const [bookingMode, setBookingMode] = useState<BookingMode>("now");
-  const [pickupLabel, setPickupLabel] = useState("");
-  const [dropoffLabel, setDropoffLabel] = useState("");
+  const [pickup, setPickup] = useState<CanonicalPlace | null>(null);
+  const [dropoff, setDropoff] = useState<CanonicalPlace | null>(null);
   const [scheduledDate, setScheduledDate] = useState("");
   const [scheduledTime, setScheduledTime] = useState("");
   const [estimatedPrice, setEstimatedPrice] = useState("25");
@@ -39,9 +43,17 @@ export function TaxiBookingForm() {
     return new Date(`${scheduledDate}T${scheduledTime}`).toISOString();
   };
 
+  const handlePickupChange = useCallback((place: CanonicalPlace | null) => {
+    setPickup(place);
+  }, []);
+
+  const handleDropoffChange = useCallback((place: CanonicalPlace | null) => {
+    setDropoff(place);
+  }, []);
+
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!pickupLabel || !dropoffLabel) { toast.error("Pickup & dropoff required"); return; }
+    if (!pickup || !dropoff) { toast.error("Pickup & dropoff required"); return; }
     if (bookingMode === "scheduled" && (!scheduledDate || !scheduledTime)) {
       toast.error("Please select date and time");
       return;
@@ -53,20 +65,20 @@ export function TaxiBookingForm() {
         serviceLevel,
         bookingMode,
         scheduledFor: getScheduledFor(),
-        pickupLabel,
-        pickupAddress: pickupLabel,
-        pickupLat: 25.2048,
-        pickupLng: 55.2708,
-        dropoffLabel,
-        dropoffAddress: dropoffLabel,
-        dropoffLat: 25.2148,
-        dropoffLng: 55.2808,
+        pickupLabel: pickup.label,
+        pickupAddress: pickup.formatted_address,
+        pickupLat: pickup.lat,
+        pickupLng: pickup.lng,
+        dropoffLabel: dropoff.label,
+        dropoffAddress: dropoff.formatted_address,
+        dropoffLat: dropoff.lat,
+        dropoffLng: dropoff.lng,
         seatsRequested: Number(seats) || 1,
         quotedPrice: Number(estimatedPrice) || 0,
         currency: "AED",
       });
       toast.success(bookingMode === "scheduled" ? "Ride scheduled!" : "Taxi requested!");
-      setPickupLabel(""); setDropoffLabel("");
+      setPickup(null); setDropoff(null);
     } catch (err: any) {
       toast.error(err.message ?? "Failed");
     } finally {
@@ -141,16 +153,26 @@ export function TaxiBookingForm() {
         </div>
       )}
 
-      {/* Locations */}
+      {/* Locations — canonical address inputs */}
       <div className="space-y-2">
-        <div className="relative">
-          <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-emerald-500" />
-          <Input placeholder="Pickup location" value={pickupLabel} onChange={e => setPickupLabel(e.target.value)} className="pl-10 bg-card border-border/40 rounded-xl h-11" />
-        </div>
-        <div className="relative">
-          <Navigation className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-primary" />
-          <Input placeholder="Dropoff location" value={dropoffLabel} onChange={e => setDropoffLabel(e.target.value)} className="pl-10 bg-card border-border/40 rounded-xl h-11" />
-        </div>
+        <CanonicalAddressInput
+          value={pickup}
+          onChange={handlePickupChange}
+          placeholder="Pickup location"
+          contextType="taxi_pickup"
+          contextLabel="Pickup"
+          allowAirport
+          allowSavedPlaces
+        />
+        <CanonicalAddressInput
+          value={dropoff}
+          onChange={handleDropoffChange}
+          placeholder="Dropoff location"
+          contextType="taxi_dropoff"
+          contextLabel="Dropoff"
+          allowAirport
+          allowSavedPlaces
+        />
       </div>
 
       {/* Seats + Price */}
