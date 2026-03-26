@@ -61,6 +61,7 @@ serve(async (req) => {
         merchant_id, order_id, parcel_reference,
         seats_requested, item_type, package_size, notes,
         quoted_price, currency,
+        parcel_detail,
       } = body;
 
       if (!job_type || !service_level) throw new Error("job_type and service_level required");
