@@ -96,14 +96,14 @@ export default function DriverEarningsDashboard({ className }: Props) {
             style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.06)" }}>
             <div className="flex-1 min-w-0">
               <p className="text-[11px] font-medium truncate" style={{ color: "hsl(var(--hud-text))" }}>
-                {e.package_description || "Colis"}
+                {e.notes || "Colis"}
               </p>
               <p className="text-[9px] truncate" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>
-                {e.delivered_at ? new Date(e.delivered_at).toLocaleDateString("fr") : ""}
+                {e.completed_at ? new Date(e.completed_at).toLocaleDateString("fr") : ""}
               </p>
             </div>
             <span className="text-[11px] font-bold shrink-0" style={{ color: "hsl(var(--success))" }}>
-              +{(e.delivery_fee || 0).toFixed(2)}€
+              +{(e.current_price || 0).toFixed(2)} AED
             </span>
           </div>
         ))}

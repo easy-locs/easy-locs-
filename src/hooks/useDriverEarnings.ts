@@ -69,10 +69,10 @@ export function useDriverEarnings() {
         dailyMap.set(d.toISOString().slice(0, 10), { amount: 0, jobs: 0 });
       }
       jobs.forEach(j => {
-        const day = j.delivered_at?.slice(0, 10);
+        const day = j.completed_at?.slice(0, 10);
         if (day && dailyMap.has(day)) {
           const e = dailyMap.get(day)!;
-          e.amount += j.delivery_fee || 0;
+          e.amount += j.current_price || 0;
           e.jobs++;
         }
       });
@@ -81,12 +81,12 @@ export function useDriverEarnings() {
         totalEarned: total,
         totalJobs: jobs.length,
         avgPerJob: jobs.length ? Math.round(total / jobs.length * 100) / 100 : 0,
-        currency: jobs[0]?.currency || "EUR",
-        todayEarned: todayJobs.reduce((s, j) => s + (j.delivery_fee || 0), 0),
+        currency: jobs[0]?.currency || "AED",
+        todayEarned: todayJobs.reduce((s, j) => s + (j.current_price || 0), 0),
         todayJobs: todayJobs.length,
-        weekEarned: weekJobs.reduce((s, j) => s + (j.delivery_fee || 0), 0),
+        weekEarned: weekJobs.reduce((s, j) => s + (j.current_price || 0), 0),
         weekJobs: weekJobs.length,
-        monthEarned: monthJobs.reduce((s, j) => s + (j.delivery_fee || 0), 0),
+        monthEarned: monthJobs.reduce((s, j) => s + (j.current_price || 0), 0),
         monthJobs: monthJobs.length,
         dailyEarnings: Array.from(dailyMap.entries()).map(([date, v]) => ({ date, ...v })),
       });
