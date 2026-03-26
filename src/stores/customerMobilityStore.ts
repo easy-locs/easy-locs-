@@ -111,6 +111,8 @@ export const useCustomerMobilityStore = create<CustomerMobilityState>((set, get)
         action: "create_job",
         job_type: input.jobType,
         service_level: input.serviceLevel,
+        booking_mode: input.bookingMode || "now",
+        scheduled_for: input.scheduledFor || null,
         pickup_label: input.pickupLabel,
         pickup_address: input.pickupAddress,
         pickup_lat: input.pickupLat,

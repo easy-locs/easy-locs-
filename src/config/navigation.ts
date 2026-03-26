@@ -39,7 +39,8 @@ export const NAV_TABS_CONFIG: NavTab[] = [
       p.startsWith("/food") || p.startsWith("/grocery") ||
       p.startsWith("/shops") || p.startsWith("/achille") ||
       p.startsWith("/ride") || p.startsWith("/send") ||
-      p.startsWith("/track/"),
+      p.startsWith("/track/") ||
+      p.startsWith("/mobility/") || p.startsWith("/rider/"),
   },
   {
     key: "orbit",
