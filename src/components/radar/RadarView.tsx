@@ -26,6 +26,7 @@ import { useV2AuthStore } from "@/stores/v2AuthStore";
 import { useRadarPlaceStore } from "@/stores/radarPlaceStore";
 import RadarPlaceSearch from "@/components/radar/RadarPlaceSearch";
 import RadarZoneOverlayCard from "@/components/radar/RadarZoneOverlayCard";
+import RadarLiveStationCard from "@/components/radar/RadarLiveStationCard";
 import {
   MapPin, List, Star, Navigation, Flame, Filter,
   TrendingUp, Zap, ChevronDown, Clock, SlidersHorizontal, MessageCircle,
@@ -241,6 +242,14 @@ export default memo(function RadarView({ initialType, radiusKm: initialRadius, s
       {/* ── Place Search Bar ── */}
       <div className="px-4 pt-2 shrink-0">
         <RadarPlaceSearch />
+      </div>
+
+      {/* ── Live Station Card — always visible ── */}
+      <div className="px-4 pt-1.5 shrink-0">
+        <RadarLiveStationCard
+          vertical={activeType === "all" ? undefined : activeType === "restaurant" ? "food" : activeType}
+          compact={viewMode === "map"}
+        />
       </div>
 
       {/* ── Zone Overlay Card (when a place is selected) ── */}
