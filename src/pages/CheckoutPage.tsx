@@ -4,6 +4,7 @@
  * Route: /checkout
  */
 import { useState, useRef } from "react";
+import { AddressSelectorSheet } from "@/components/address/AddressSelectorSheet";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "@/hooks/useCart";
 import { useAuth } from "@/contexts/AuthContext";
@@ -24,6 +25,7 @@ export default function CheckoutPage() {
   const [payment, setPayment] = useState<PaymentMethod>("wallet");
   const [notes, setNotes] = useState("");
   const [placing, setPlacing] = useState(false);
+  const [addressOpen, setAddressOpen] = useState(false);
   const idempotencyRef = useRef(crypto.randomUUID());
 
   if (itemCount === 0) {
@@ -132,16 +134,19 @@ export default function CheckoutPage() {
 
         {/* Address */}
         {mode === "delivery" && (
-          <button
-            onClick={() => navigate("/settings/addresses")}
-            className="w-full rounded-2xl p-4 flex items-center gap-3 active:scale-[0.98] transition-transform bg-card border border-border/20"
-          >
-            <MapPin className="w-5 h-5 shrink-0 text-primary" />
-            <div className="flex-1 text-left">
-              <p className="text-[11px] text-muted-foreground font-medium">Deliver to</p>
-              <p className="text-sm font-semibold text-foreground">Select address</p>
-            </div>
-          </button>
+          <>
+            <button
+              onClick={() => setAddressOpen(true)}
+              className="w-full rounded-2xl p-4 flex items-center gap-3 active:scale-[0.98] transition-transform bg-card border border-border/20"
+            >
+              <MapPin className="w-5 h-5 shrink-0 text-primary" />
+              <div className="flex-1 text-left">
+                <p className="text-[11px] text-muted-foreground font-medium">Deliver to</p>
+                <p className="text-sm font-semibold text-foreground">Select address</p>
+              </div>
+            </button>
+            <AddressSelectorSheet open={addressOpen} onOpenChange={setAddressOpen} />
+          </>
         )}
 
         {/* Items */}
