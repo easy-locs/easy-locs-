@@ -6,7 +6,7 @@
 import { useEffect, useState } from "react";
 import { useDriverMissions, type DeliveryJob } from "@/hooks/useDriverMissions";
 import { useRiderDispatchStore } from "@/stores/riderDispatchStore";
-import { useGeoLiveStation } from "@/hooks/useGeoLiveStation";
+import { useArbitratedStation } from "@/hooks/useArbitratedStation";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import {
@@ -45,7 +45,7 @@ export default function RiderLivePage() {
   const hydrateOffers = useRiderDispatchStore(s => s.hydrateOffers);
   const acceptOffer = useRiderDispatchStore(s => s.acceptOffer);
   const rejectOffer = useRiderDispatchStore(s => s.rejectOffer);
-  const station = useGeoLiveStation();
+  const station = useArbitratedStation();
 
   const [isOnline, setIsOnline] = useState(false);
 
@@ -133,7 +133,7 @@ export default function RiderLivePage() {
         </motion.div>
 
         {/* Station context */}
-        {station.station && (
+        {station.zoneKey && (
           <motion.div
             initial={{ opacity: 0, y: 4 }}
             animate={{ opacity: 1, y: 0 }}
@@ -141,28 +141,26 @@ export default function RiderLivePage() {
           >
             <div className="flex items-center justify-between">
               <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Zone Intelligence</span>
-              {station.zoneKey && (
-                <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary font-semibold">{station.zoneKey}</span>
-              )}
+              <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary font-semibold">{station.zoneKey}</span>
             </div>
             <div className="flex items-center gap-3 mt-2">
               <div className="flex items-center gap-1">
                 <Users className="w-3.5 h-3.5 text-cyan-400" />
-                <span className="text-xs text-foreground">{station.station.rider_supply} riders</span>
+                <span className="text-xs text-foreground">{station.riderCount} riders</span>
               </div>
               <div className="flex items-center gap-1">
-                {WEATHER_ICON[station.station.weather_type ?? "clear"]}
-                <span className="text-xs text-foreground capitalize">{station.station.weather_type ?? "clear"}</span>
+                {WEATHER_ICON[station.weatherType ?? "clear"]}
+                <span className="text-xs text-foreground capitalize">{station.weatherType ?? "clear"}</span>
               </div>
               <div className="flex items-center gap-1">
-                <Car className={cn("w-3.5 h-3.5", station.station.traffic_level === "heavy" ? "text-orange-400" : "text-emerald-400")} />
-                <span className="text-xs text-foreground capitalize">{station.station.traffic_level ?? "normal"}</span>
+                <Car className={cn("w-3.5 h-3.5", station.trafficLevel === "heavy" ? "text-orange-400" : "text-emerald-400")} />
+                <span className="text-xs text-foreground capitalize">{station.trafficLevel ?? "normal"}</span>
               </div>
-              {station.station.surge_multiplier > 1.05 && (
+              {station.surge > 1.05 && (
                 <div className="flex items-center gap-1 ml-auto px-2 py-0.5 rounded-full bg-destructive/10">
                   <Zap className="w-3 h-3 text-destructive" />
                   <span className="text-[10px] font-bold text-destructive">
-                    +{Math.round((station.station.surge_multiplier - 1) * 100)}%
+                    +{Math.round((station.surge - 1) * 100)}%
                   </span>
                 </div>
               )}
