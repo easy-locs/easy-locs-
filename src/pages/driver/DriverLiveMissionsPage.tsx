@@ -23,7 +23,7 @@ export default function DriverLiveMissionsPage() {
     hydrateOffers();
   }, []);
 
-  // Realtime: listen for new offers
+  // Realtime: listen for new offers on mobility_job_offers
   useEffect(() => {
     const setupRealtime = async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -34,7 +34,7 @@ export default function DriverLiveMissionsPage() {
         .on("postgres_changes", {
           event: "*",
           schema: "public",
-          table: "delivery_job_offers",
+          table: "mobility_job_offers",
           filter: `rider_user_id=eq.${user.id}`,
         }, () => { hydrateOffers(); })
         .subscribe();
@@ -48,7 +48,6 @@ export default function DriverLiveMissionsPage() {
 
   return (
     <div className="min-h-[100dvh] bg-background pb-24">
-      {/* Header */}
       <div className="flex items-center gap-3 px-4 pt-6 pb-4">
         <button onClick={() => navigate("/driver/dashboard")} className="w-9 h-9 rounded-xl bg-muted flex items-center justify-center">
           <ArrowLeft className="h-4 w-4" />
@@ -80,12 +79,10 @@ export default function DriverLiveMissionsPage() {
           </button>
         </div>
 
-        {/* Active trip — rider controls only */}
-        {activeJobId && (
-          <ActiveTripSection jobId={activeJobId} />
-        )}
+        {/* Active trip */}
+        {activeJobId && <ActiveTripSection jobId={activeJobId} />}
 
-        {/* Offers list — rider controls only */}
+        {/* Offers */}
         {!activeJobId && presence.isOnline && (
           <div className="space-y-3">
             <div className="flex items-center gap-2">
@@ -114,7 +111,7 @@ export default function DriverLiveMissionsPage() {
           </div>
         )}
 
-        {/* Offline message */}
+        {/* Offline */}
         {!presence.isOnline && !activeJobId && (
           <div className="text-center py-12">
             <Power className="h-10 w-10 text-muted-foreground/40 mx-auto mb-3" />
@@ -131,19 +128,19 @@ function ActiveTripSection({ jobId }: { jobId: string }) {
   const [job, setJob] = useState<any>(null);
 
   useEffect(() => {
-    (supabase as any)
-      .from("delivery_jobs")
+    supabase
+      .from("mobility_jobs")
       .select("*")
       .eq("id", jobId)
       .single()
-      .then(({ data }: any) => setJob(data));
+      .then(({ data }) => setJob(data));
 
     const ch = supabase
       .channel(`active-trip:${jobId}`)
       .on("postgres_changes", {
         event: "*",
         schema: "public",
-        table: "delivery_jobs",
+        table: "mobility_jobs",
         filter: `id=eq.${jobId}`,
       }, (payload: any) => setJob(payload.new))
       .subscribe();
