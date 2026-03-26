@@ -73,9 +73,30 @@ export const walletRepo = {
   },
 
   async createTransaction(tx: WalletTransaction): Promise<WalletTransaction> {
-    const { data, error } = await db.from("unified_wallet_transactions").insert(tx).select().single();
+    // Get current user for sender_id
+    const { data: authData } = await supabase.auth.getUser();
+    const userId = authData?.user?.id;
+
+    const { data, error } = await db.from("unified_wallet_transactions").insert({
+      sender_id: userId || null,
+      amount: tx.amount,
+      currency: tx.currency || "AED",
+      context_type: tx.type,
+      title: tx.type,
+      subtitle: tx.reference || null,
+      status: tx.status || "pending",
+      metadata: { reference: tx.reference, source: "wallet_store" },
+    }).select().single();
     if (error) throw error;
-    return data as WalletTransaction;
+    return {
+      id: data.id,
+      type: data.context_type || tx.type,
+      status: data.status || "pending",
+      amount: data.amount,
+      currency: data.currency || "AED",
+      reference: data.subtitle || tx.reference,
+      createdAt: data.created_at,
+    } as WalletTransaction;
   },
 };
 
