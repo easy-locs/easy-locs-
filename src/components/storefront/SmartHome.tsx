@@ -101,7 +101,7 @@ const TopHeroBanner = memo(({ city, greeting, timezone, onLocationTap }: { city:
 
 /* ═══ Quick Actions Strip ═══ */
 const QuickActions = memo(() => (
-  <div className="flex items-center gap-1.5 mb-3">
+  <div className="flex items-center gap-2 mb-4">
     {[
       { icon: QrCode, label: "Scan", to: "/pay/scan" },
       { icon: Send, label: "Pay", to: "/wallet/transfer" },
@@ -110,10 +110,10 @@ const QuickActions = memo(() => (
       <Link
         key={label}
         to={to}
-        className="flex-1 flex items-center justify-center gap-1.5 h-9 rounded-xl border border-border/15 bg-card/50 active:scale-95 active:bg-primary/5 transition-all"
+        className="flex-1 flex items-center justify-center gap-2 h-11 rounded-xl border border-border/20 bg-card/60 active:scale-95 active:bg-primary/5 transition-all"
       >
-        <Icon className="h-3.5 w-3.5 text-primary" />
-        <span className="text-[11px] font-semibold text-foreground">{label}</span>
+        <Icon className="h-4 w-4 text-primary shrink-0" />
+        <span className="text-xs font-semibold text-foreground">{label}</span>
       </Link>
     ))}
   </div>
@@ -131,22 +131,21 @@ function CategoryCard({ cat, index }: { cat: SmartCategory; index: number }) {
     >
       <Link
         to={cat.route}
-        className="group flex flex-col items-center justify-between rounded-2xl active:scale-[0.92] transition-all duration-150 relative overflow-hidden w-[80px] h-[100px] p-1.5 border border-border/8"
-        style={{ background: "hsl(var(--muted) / 0.35)" }}
+        className="group flex flex-col items-center justify-between rounded-2xl active:scale-[0.92] transition-all duration-150 relative overflow-visible w-[76px] h-[96px] p-1.5 border border-border/10 bg-muted/30"
       >
         {cat.subtitle && (
-          <span className="absolute top-0.5 right-0.5 text-[7px] font-bold px-1 py-0.5 rounded-md bg-primary/10 text-primary leading-none z-10">
+          <span className="absolute -top-1 -right-1 text-[7px] font-bold px-1.5 py-0.5 rounded-md bg-primary text-primary-foreground leading-none z-10">
             {cat.subtitle}
           </span>
         )}
         <div className="flex-1 flex items-center justify-center w-full">
           {imgSrc ? (
-            <img src={imgSrc} alt={cat.label} className="w-14 h-14 object-contain drop-shadow-md" loading="lazy" />
+            <img src={imgSrc} alt={cat.label} className="w-12 h-12 object-contain drop-shadow-md" loading="lazy" />
           ) : (
-            <span className="text-3xl">{cat.icon}</span>
+            <span className="text-2xl">{cat.icon}</span>
           )}
         </div>
-        <p className="text-[10px] font-bold text-foreground leading-tight text-center truncate w-full mt-0.5">{cat.label}</p>
+        <p className="text-[10px] font-bold text-foreground leading-tight text-center w-full mt-0.5 line-clamp-1">{cat.label}</p>
       </Link>
     </motion.div>
   );
