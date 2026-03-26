@@ -83,9 +83,10 @@ export default function MobilityDeliveryPage() {
   const navigate = useNavigate();
   const [addressOpen, setAddressOpen] = useState(false);
   const { jobs, hydrateMyJobs, refreshJob } = useCustomerMobilityStore();
-  const station = useArbitratedStation();
-  const permissionState = useLocationStore((s) => s.permissionState);
-  const currentLocation = useLocationStore((s) => s.currentLocation);
+  const brain = usePlatformBrain();
+  const station = brain.arbitration;
+  const currentLocation = brain.geo.selectedLocation;
+  const permissionState = brain.geo.gpsPermission;
 
   useEffect(() => { hydrateMyJobs(); }, []);
 
