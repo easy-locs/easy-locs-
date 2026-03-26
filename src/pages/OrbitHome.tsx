@@ -245,6 +245,13 @@ export default function OrbitHome() {
             </div>
           )}
 
+          {/* ─── ENGINE DECISIONS — visible product impact ─── */}
+          <div className="px-5">
+            <Suspense fallback={null}>
+              <EngineActiveBanner />
+            </Suspense>
+          </div>
+
           {/* ─── 2. QUICK ACTIONS ─── */}
           <div className="px-5">
             <div className="grid grid-cols-4 gap-2">
