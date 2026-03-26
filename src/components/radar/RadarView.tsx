@@ -410,7 +410,6 @@ export default memo(function RadarView({ initialType, radiusKm: initialRadius, s
               showHeatmap={viewMode === "heatmap"}
               heatmapPoints={heatmapPoints}
               className="h-full"
-              className="h-full"
             />
             {/* Selected entity card */}
             {selected && (
