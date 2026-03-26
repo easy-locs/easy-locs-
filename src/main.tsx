@@ -6,6 +6,7 @@ import "./index.css";
 import "./styles/performance.css";
 import { APP_VERSION } from "@/lib/version-check";
 import { initMonitoring } from "@/lib/monitoring";
+import "@/lib/events/event-init"; // Boot event pipeline: platformBus → eventBus → handlers
 
 const rootElement = document.getElementById("root");
 
