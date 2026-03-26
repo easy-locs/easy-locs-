@@ -19,6 +19,7 @@ import {
 export interface UnifiedOrderData {
   order: any;
   deliveryJob: any | null;
+  /** Rider presence data (canonical: rider_presence table) */
   driverSession: any | null;
   unifiedStatus: UnifiedOrderStatus;
   timeline: TimelineEvent[];
