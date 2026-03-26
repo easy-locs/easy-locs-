@@ -18,6 +18,8 @@ import "./handlers/map-action.handler";
 import "./handlers/ride-bridge.handler";
 import { initRideLifecycleHandler } from "./handlers/ride-lifecycle.handler";
 import { initRideAIDispatchHandler } from "./handlers/ride-ai-dispatch.handler";
+import { initRideWalletHandler } from "./handlers/ride-wallet.handler";
+import { initRideRatingHandler } from "./handlers/ride-rating.handler";
 import "@/lib/radar/signal-ingestor";
 
 /**
@@ -89,5 +91,7 @@ for (const [platformEvent, coreEvent] of Object.entries(BRIDGE_MAP)) {
 // Initialize ride lifecycle handler (global realtime listener)
 initRideLifecycleHandler();
 initRideAIDispatchHandler();
+initRideWalletHandler();
+initRideRatingHandler();
 
 console.log("[event-init] All event handlers registered + platformBus bridge active");
