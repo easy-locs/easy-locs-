@@ -2,12 +2,12 @@
  * RideHubPage — Customer ride hub.
  * Route: /ride
  * Actor: CUSTOMER only. Creates rides, tracks active trips, views history.
- * Driver/Rider controls are on /driver/live-missions.
  */
 import { useEffect } from "react";
-import { useCustomerRideStore } from "@/stores/customerRideStore";
+import { useCustomerMobilityStore, type MobilityJob } from "@/stores/customerMobilityStore";
 import { CustomerJobCard } from "@/components/rides/CustomerJobCard";
 import { RideBookingForm } from "@/components/rides/RideBookingForm";
+import { supabase } from "@/integrations/supabase/client";
 import { ArrowLeft, Car, Clock, CheckCircle2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -15,12 +15,36 @@ import { Badge } from "@/components/ui/badge";
 
 export default function RideHubPage() {
   const navigate = useNavigate();
-  const { jobs, loading, hydrateMyJobs } = useCustomerRideStore();
+  const { jobs, loading, hydrateMyJobs, refreshJob } = useCustomerMobilityStore();
 
   useEffect(() => { hydrateMyJobs(); }, []);
 
-  const activeJobs = jobs.filter(j => !["completed", "cancelled"].includes(j.status));
-  const pastJobs = jobs.filter(j => ["completed", "cancelled"].includes(j.status));
+  // Realtime: listen for job updates
+  useEffect(() => {
+    const setup = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const ch = supabase
+        .channel(`customer-jobs:${user.id}`)
+        .on("postgres_changes", {
+          event: "*",
+          schema: "public",
+          table: "mobility_jobs",
+          filter: `customer_user_id=eq.${user.id}`,
+        }, (payload: any) => {
+          if (payload.new?.id) refreshJob(payload.new.id);
+        })
+        .subscribe();
+
+      return () => { supabase.removeChannel(ch); };
+    };
+    const cleanup = setup();
+    return () => { cleanup.then(fn => fn?.()); };
+  }, []);
+
+  const activeJobs = jobs.filter(j => !["completed", "cancelled", "failed_no_rider", "expired"].includes(j.status));
+  const pastJobs = jobs.filter(j => ["completed", "cancelled", "failed_no_rider", "expired"].includes(j.status));
 
   return (
     <div className="min-h-[100dvh] bg-background">
@@ -30,8 +54,8 @@ export default function RideHubPage() {
             <ArrowLeft className="h-5 w-5 text-foreground" />
           </button>
           <div>
-            <h1 className="text-lg font-bold text-foreground tracking-tight">Rides</h1>
-            <p className="text-xs text-muted-foreground">Book a ride or track active trips</p>
+            <h1 className="text-lg font-bold text-foreground tracking-tight">Rides & Delivery</h1>
+            <p className="text-xs text-muted-foreground">Book a ride, food delivery, or parcel</p>
           </div>
           {activeJobs.length > 0 && (
             <Badge variant="default" className="ml-auto animate-pulse">{activeJobs.length} active</Badge>
@@ -84,16 +108,16 @@ export default function RideHubPage() {
               pastJobs.slice(0, 20).map(j => (
                 <div key={j.id} className="bg-card border border-border/30 rounded-xl p-4 space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-semibold text-foreground">Ride</span>
+                    <span className="text-sm font-semibold text-foreground capitalize">{j.job_type.replace(/_/g, ' ')}</span>
                     <Badge variant={j.status === "completed" ? "default" : "secondary"} className="text-[10px]">
                       {j.status}
                     </Badge>
                   </div>
-                  <p className="text-xs text-muted-foreground">📍 {j.pickup_address}</p>
-                  <p className="text-xs text-muted-foreground">🏁 {j.dropoff_address}</p>
+                  <p className="text-xs text-muted-foreground">📍 {j.pickup_label || j.pickup_address}</p>
+                  <p className="text-xs text-muted-foreground">🏁 {j.dropoff_label || j.dropoff_address}</p>
                   <div className="flex items-center justify-between text-xs text-muted-foreground/70">
                     <span>{j.created_at ? new Date(j.created_at).toLocaleDateString() : "—"}</span>
-                    {j.fare_amount != null && <span className="font-semibold text-foreground">{j.fare_amount} {j.currency}</span>}
+                    {j.current_price != null && <span className="font-semibold text-foreground">{j.current_price} {j.currency}</span>}
                   </div>
                 </div>
               ))
