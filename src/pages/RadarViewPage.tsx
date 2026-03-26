@@ -57,12 +57,12 @@ export default function RadarViewPage() {
         </div>
 
         <div className="flex items-center gap-2">
-          {/* Radius indicator */}
+          {/* Location indicator */}
           <div className="flex items-center gap-1 px-2 py-1 rounded-lg"
             style={{ background: "hsl(var(--accent) / 0.06)", border: "1px solid hsl(var(--accent) / 0.1)" }}
           >
             <Navigation className="w-3 h-3" style={{ color: "hsl(var(--accent) / 0.7)" }} />
-            <span className="text-[10px] font-bold" style={{ color: "hsl(var(--accent))" }}>{radiusKm}km</span>
+            <span className="text-[10px] font-bold" style={{ color: "hsl(var(--accent))" }}>Live</span>
           </div>
 
           {/* Live pulse */}
