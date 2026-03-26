@@ -8,7 +8,7 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { CanonicalAddressInput } from "@/components/address/CanonicalAddressInput";
 import type { CanonicalPlace } from "@/lib/address/canonical-place";
-import { useGeoLiveStation } from "@/hooks/useGeoLiveStation";
+import { useArbitratedStation } from "@/hooks/useArbitratedStation";
 
 const ERRAND_IDEAS = [
   "Pick up dry cleaning",
@@ -21,14 +21,14 @@ const ERRAND_IDEAS = [
 
 export default function DeliveryErrandPage() {
   const navigate = useNavigate();
-  const station = useGeoLiveStation();
+  const station = useArbitratedStation();
   const [pickup, setPickup] = useState<CanonicalPlace | null>(null);
   const [dropoff, setDropoff] = useState<CanonicalPlace | null>(null);
   const [taskDescription, setTaskDescription] = useState("");
 
   const canSubmit = pickup && taskDescription.trim();
   const etaMin = station.etas?.parcel;
-  const riderCount = station.station?.rider_supply ?? 0;
+  const riderCount = station.riderCount;
 
   return (
     <div className="min-h-[100dvh] bg-background">
