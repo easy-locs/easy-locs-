@@ -12,6 +12,7 @@ import { resolvePayTarget, type ResolvedPayTarget } from "@/lib/wallet/resolvePa
 import { AppCard } from "@/components/ui/AppCard";
 import { AppActionButton } from "@/components/ui/AppActionButton";
 import { ArrowLeft, User, Search, AlertTriangle } from "lucide-react";
+import { motion } from "framer-motion";
 
 export default function WalletTransferPage() {
   const navigate = useNavigate();
@@ -129,7 +130,7 @@ export default function WalletTransferPage() {
 
       <div className="px-4 space-y-4">
         {/* Recipient search */}
-        <div className="flex gap-2">
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} className="flex gap-2">
           <input
             value={recipient}
             onChange={(e) => { setRecipient(e.target.value); setTarget(null); }}
@@ -139,7 +140,7 @@ export default function WalletTransferPage() {
           <AppActionButton variant="secondary" onClick={findRecipient} loading={searching}>
             <Search className="h-4 w-4" />
           </AppActionButton>
-        </div>
+        </motion.div>
 
         {/* Resolved target card */}
         {target && (
@@ -170,8 +171,10 @@ export default function WalletTransferPage() {
           </div>
         )}
 
-        <input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="Amount" className="w-full rounded-xl border border-border/20 bg-card px-3 py-3 text-sm text-foreground outline-none focus:ring-2 focus:ring-primary/20" />
-        <textarea value={note} onChange={(e) => setNote(e.target.value)} rows={3} placeholder="Note (optional)" className="w-full rounded-xl border border-border/20 bg-card px-3 py-3 text-sm text-foreground resize-none outline-none focus:ring-2 focus:ring-primary/20" />
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="space-y-3">
+          <input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="Amount" className="w-full rounded-xl border border-border/20 bg-card px-3 py-3 text-sm text-foreground outline-none focus:ring-2 focus:ring-primary/20" />
+          <textarea value={note} onChange={(e) => setNote(e.target.value)} rows={3} placeholder="Note (optional)" className="w-full rounded-xl border border-border/20 bg-card px-3 py-3 text-sm text-foreground resize-none outline-none focus:ring-2 focus:ring-primary/20" />
+        </motion.div>
 
         <AppActionButton full onClick={submit} loading={saving} disabled={!target || !!walletWarning}>
           {saving ? "Sending…" : "Send Transfer"}
