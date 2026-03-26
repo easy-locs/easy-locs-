@@ -1,26 +1,20 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-
-type AddressItem = {
-  id: string;
-  label: string;
-  line1: string;
-  city: string;
-};
-
-const MOCK_ADDRESSES: AddressItem[] = [
-  { id: "1", label: "Home", line1: "Al Barsha 1", city: "Dubai" },
-  { id: "2", label: "Office", line1: "Business Bay", city: "Dubai" },
-  { id: "3", label: "Other", line1: "Dubai Marina", city: "Dubai" },
-];
+import { useCanonicalAddress } from "@/hooks/useCanonicalAddress";
+import { CanonicalAddressInput } from "@/components/address/CanonicalAddressInput";
+import type { CanonicalPlace } from "@/lib/address/canonical-place";
 
 export default function CustomerAddressSelectorPage() {
   const navigate = useNavigate();
-  const [selectedId, setSelectedId] = useState("1");
+  const { savedAddresses, activateAddress, loading } = useCanonicalAddress("food_delivery");
+  const [selectedPlace, setSelectedPlace] = useState<CanonicalPlace | null>(null);
 
-  const save = () => {
-    toast.success("Delivery address selected");
+  const save = async () => {
+    if (selectedPlace) {
+      await activateAddress(selectedPlace, "saved", "food_delivery");
+      toast.success("Delivery address selected");
+    }
     navigate("/checkout");
   };
 
@@ -39,36 +33,57 @@ export default function CustomerAddressSelectorPage() {
         </div>
       </div>
 
-      <div className="px-4 space-y-3">
-        {MOCK_ADDRESSES.map((row) => (
-          <button
-            key={row.id}
-            onClick={() => setSelectedId(row.id)}
-            className={`w-full rounded-2xl border p-4 text-left transition-transform active:scale-[0.99] ${
-              selectedId === row.id
-                ? "border-primary bg-primary/5"
-                : "border-border/20 bg-card"
-            }`}
-          >
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-bold text-foreground">{row.label}</p>
-                <p className="text-xs text-muted-foreground">{row.line1}</p>
-                <p className="text-[11px] text-muted-foreground/70">{row.city}</p>
-              </div>
-              <div
-                className={`w-5 h-5 rounded-full border-2 ${
-                  selectedId === row.id ? "border-primary bg-primary" : "border-border"
-                }`}
-              />
-            </div>
-          </button>
-        ))}
+      <div className="px-4">
+        <CanonicalAddressInput
+          value={selectedPlace}
+          onChange={setSelectedPlace}
+          contextType="food_delivery"
+          contextLabel="Deliver to"
+          placeholder="Search or select address..."
+          allowSavedPlaces
+        />
       </div>
+
+      {/* Saved addresses list */}
+      {savedAddresses.length > 0 && !selectedPlace && (
+        <div className="px-4 mt-4 space-y-3">
+          <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Saved Addresses</p>
+          {savedAddresses.map((addr) => (
+            <button
+              key={addr.id}
+              onClick={() => {
+                if (addr.place) {
+                  setSelectedPlace({
+                    id: addr.place.id,
+                    provider: addr.place.provider,
+                    provider_place_id: addr.place.provider_place_id,
+                    label: addr.label ?? addr.place.short_label ?? addr.place.formatted_address,
+                    formatted_address: addr.place.formatted_address,
+                    lat: Number(addr.place.lat),
+                    lng: Number(addr.place.lng),
+                    country_code: addr.place.country_code,
+                    city: addr.place.city,
+                    district: addr.place.district,
+                    place_type: (addr.place.place_type as any) ?? "address",
+                  });
+                }
+              }}
+              className="w-full rounded-2xl border border-border/20 bg-card p-4 text-left transition-transform active:scale-[0.99]"
+            >
+              <p className="text-sm font-bold text-foreground">{addr.label ?? "Address"}</p>
+              <p className="text-xs text-muted-foreground">{addr.place?.formatted_address}</p>
+              {addr.apartment && (
+                <p className="text-[11px] text-muted-foreground/70">Apt {addr.apartment}{addr.floor ? `, Floor ${addr.floor}` : ""}</p>
+              )}
+            </button>
+          ))}
+        </div>
+      )}
 
       <button
         onClick={save}
-        className="mx-4 mt-4 w-[calc(100%-2rem)] rounded-2xl bg-primary text-primary-foreground px-4 py-3 text-sm font-bold"
+        disabled={!selectedPlace}
+        className="mx-4 mt-4 w-[calc(100%-2rem)] rounded-2xl bg-primary text-primary-foreground px-4 py-3 text-sm font-bold disabled:opacity-50"
       >
         Confirm Address
       </button>
