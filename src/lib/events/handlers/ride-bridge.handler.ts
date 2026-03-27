@@ -53,35 +53,7 @@ eventBus.on("ride.driver.assigned", async (payload) => {
     if (import.meta.env.DEV) console.warn("[ride-bridge] Orbit bridge error", e);
   }
 });
-
-// ── Wallet Bridge: Emit payment events on ride completion ──
-eventBus.on("ride.completed", async (payload) => {
-  const { jobId, customerUserId, currentPrice, currency } = payload as Record<string, unknown>;
-  if (!jobId) return;
-
-  try {
-    // Emit payment required
-    void eventBus.emit("ride.payment.required", {
-      jobId,
-      customerUserId,
-      amount: currentPrice,
-      currency,
-    });
-
-    if (import.meta.env.DEV) console.log(`[ride-bridge] Payment required for job ${jobId}: ${currentPrice} ${currency}`);
-  } catch (e) {
-    if (import.meta.env.DEV) console.warn("[ride-bridge] Wallet bridge error", e);
-  }
-});
-
-// ── Rating request after completion ──
-eventBus.on("ride.completed", (payload) => {
-  const { jobId } = payload as Record<string, string>;
-  // Slight delay for rating prompt
-  setTimeout(() => {
-    void eventBus.emit("ride.rating.requested", { jobId });
-  }, 3000);
-});
+// ── Wallet + Rating bridges moved to close-flow-engine.ts ──
 
 if (import.meta.env.DEV) {
   console.log("[ride-bridge] Orbit + Wallet ride bridges active");
