@@ -22,6 +22,7 @@ import ScrollableFilterBar from "@/components/ui/ScrollableFilterBar";
 import QRContactCard from "./QRContactCard";
 import { getOrCreateDirectThread } from "@/lib/direct-thread";
 import { resolveDirectPeer } from "@/lib/orbit/resolveDirectPeer";
+import { listOrbitContacts, toggleFavoriteContact, upsertOrbitContact } from "@/lib/orbit/orbit-contacts-service";
 import { useCall } from "@/components/call/CallProvider";
 import { Skeleton } from "@/components/ui/skeleton";
 import { trackOrbitEvent, guardDisplayName } from "@/lib/orbit/orbitTelemetry";
@@ -178,7 +179,7 @@ export default function CommContactsSection() {
 
     // Persist links in background
     for (const u of updates) {
-      supabase.from("contacts").update({ contact_user_id: u.profileId } as any).eq("id", u.contactId).then(() => {});
+      upsertOrbitContact({ ownerUserId: user!.id, peerUserId: u.profileId }).then(() => {});
     }
 
     return updated;
@@ -211,13 +212,19 @@ export default function CommContactsSection() {
     setLoading(true);
     setLoadError(null);
     try {
-      const { data, error } = await supabase
-        .from("contacts")
-        .select("*")
-        .eq("owner_id", user.id)
-        .order("name");
-      if (error) throw error;
-      const raw = (data as Contact[]) || [];
+      const rows = await listOrbitContacts(user.id);
+      const raw = (rows || []).map((row: any) => ({
+        id: row.id,
+        name: row.display_name || row.email || row.phone || "Contact",
+        email: row.email,
+        phone: row.phone,
+        company: null,
+        category: row.source || "client",
+        is_favorite: !!row.is_favorite,
+        avatar_url: row.avatar_url,
+        last_contacted_at: row.metadata?.last_contacted_at || null,
+        contact_user_id: row.peer_user_id,
+      })) as Contact[];
       const linked = await batchAutoLink(raw);
       setContacts(linked);
       await batchResolveOrgs(linked);
@@ -234,7 +241,7 @@ export default function CommContactsSection() {
     if (!user?.id) return;
     const channel = supabase
       .channel(`contacts-sync-${user.id}`)
-      .on("postgres_changes", { event: "*", schema: "public", table: "contacts", filter: `owner_id=eq.${user.id}` }, () => loadContacts())
+      .on("postgres_changes", { event: "*", schema: "public", table: "orbit_contacts_v2", filter: `owner_user_id=eq.${user.id}` }, () => loadContacts())
       .subscribe();
     return () => { supabase.removeChannel(channel); };
   }, [user?.id, loadContacts]);
@@ -319,17 +326,24 @@ export default function CommContactsSection() {
       return;
     }
 
-    const { error } = await supabase.from("contacts").insert({
-      owner_id: user.id,
-      org_id: orgId || null,
-      name: newContact.name.trim(),
-      email: newContact.email.trim() || null,
-      phone: newContact.phone.trim() || null,
-      company: newContact.company.trim() || null,
-      category: newContact.category,
-    } as any);
+    try {
+      await upsertOrbitContact({
+        ownerUserId: user.id,
+        displayName: newContact.name.trim(),
+        email: newContact.email.trim() || null,
+        phone: newContact.phone.trim() || null,
+        source: newContact.category,
+        metadata: {
+          company: newContact.company.trim() || null,
+          last_contacted_at: new Date().toISOString(),
+        },
+      });
+    } catch {
+      setSaving(false);
+      toast.error("Failed to add contact");
+      return;
+    }
     setSaving(false);
-    if (error) { toast.error("Failed to add contact"); return; }
     toast.success("Contact added");
     haptic("success");
     setShowAdd(false);
@@ -341,9 +355,9 @@ export default function CommContactsSection() {
     haptic("light");
     const newVal = !contact.is_favorite;
     setContacts(prev => prev.map(c => c.id === contact.id ? { ...c, is_favorite: newVal } : c));
-    const { error } = await supabase.from("contacts").update({ is_favorite: newVal } as any).eq("id", contact.id);
-    if (error) {
-      // Rollback on failure
+    try {
+      await toggleFavoriteContact(contact.id, newVal);
+    } catch {
       setContacts(prev => prev.map(c => c.id === contact.id ? { ...c, is_favorite: !newVal } : c));
       toast.error("Failed to update favorite");
     }
@@ -419,7 +433,7 @@ export default function CommContactsSection() {
       });
 
       await initiateCall({
-        targetId: peer.peerUserId,
+        targetId: peer.peerOrbitId || peer.peerUserId,
         threadId: thread?.v2ConversationId || thread?.threadId,
         contextType: "direct",
         contextId: thread?.v2ConversationId || thread?.contextId || "",
@@ -457,7 +471,15 @@ export default function CommContactsSection() {
         toast.success(`Invitation envoyée par email à ${contact.name}`);
 
         // Update last_contacted_at
-        await supabase.from("contacts").update({ last_contacted_at: new Date().toISOString() } as any).eq("id", contact.id);
+        await upsertOrbitContact({
+          ownerUserId: user!.id,
+          peerUserId: contact.contact_user_id,
+          displayName: contact.name,
+          email: contact.email,
+          phone: contact.phone,
+          source: contact.category,
+          metadata: { last_contacted_at: new Date().toISOString() },
+        });
       } catch {
         // Fallback to clipboard
         navigator.clipboard.writeText(inviteUrl).then(() => {

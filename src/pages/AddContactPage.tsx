@@ -4,7 +4,7 @@
  */
 import { useEffect, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import { upsertOrbitContact } from "@/lib/orbit/orbit-contacts-service";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { Loader2, UserPlus, CheckCircle2 } from "lucide-react";
@@ -42,22 +42,17 @@ export default function AddContactPage() {
 
         setContactName(parsed.name || "Contact");
 
-        const { error } = await supabase.from("contacts").insert({
-          owner_id: user.id,
-          org_id: orgId || null,
-          name: parsed.name || "Contact",
+        await upsertOrbitContact({
+          ownerUserId: user.id,
+          peerUserId: parsed.userId || null,
+          peerOrbitId: parsed.orbitId || null,
+          displayName: parsed.name || "Contact",
           email: parsed.email || null,
-          contact_user_id: parsed.userId || null,
-          category: "professional",
-        } as any);
+          source: "qr_link",
+          metadata: { qr: true },
+        });
 
-        if (error?.code === "23505") {
-          toast.info("Contact already exists!");
-        } else if (error) {
-          throw error;
-        } else {
-          toast.success(`${parsed.name || "Contact"} added!`);
-        }
+        toast.success(`${parsed.name || "Contact"} added!`);
         setStatus("success");
         setTimeout(() => navigate("/orbit?section=contacts", { replace: true }), 1500);
       } catch {
