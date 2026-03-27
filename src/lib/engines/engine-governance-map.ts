@@ -186,6 +186,14 @@ export const DISABLED_ENGINES: Record<string, { reason: string; mergedInto?: str
   "vibe-density":             { reason: "heartbeat-only" },
   "ride-tracking-monitor":    { reason: "heartbeat-only" },
   "data-completeness":        { reason: "heartbeat-only" },
+  "invitation-scanner":       { reason: "heartbeat-only" },
+  "market-opportunity-scanner": { reason: "heartbeat-only" },
+  "money-engine-scan":        { reason: "heartbeat-only" },
+  "radar-memory":             { reason: "heartbeat-only" },
+  "seo-check":                { reason: "duplicate", mergedInto: "shop-quality" },
+  "seo-mass-indexer":         { reason: "duplicate", mergedInto: "shop-quality" },
+  "session-intelligence":     { reason: "heartbeat-only" },
+  "travel-transition":        { reason: "heartbeat-only" },
 };
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
