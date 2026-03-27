@@ -89,12 +89,11 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
   const { messages: decryptedMessages } = useDecryptedMessages(loader.rawMessages, decrypt, user?.id);
   const messages = decryptedMessages as ChatMessage[];
 
-  const { showOriginal, translatingMsgId, handleTranslateMessage } = useTranslation(locale, loader.setRawMessages);
+  const { showOriginal, translatingMsgId, handleTranslateMessage } = useTranslation(locale, loader.setRawMessages as any);
 
   const messageSender = useMessageSender({
     thread,
     orgId,
-    userId: user?.id,
     locale,
     myOrbitId,
     e2eReady,
@@ -102,12 +101,12 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
     offline,
     privacySettings,
     disappearTTL: security.disappearTTL,
-    securityLevel: security.securityLevel,
-    setSecurityLevel: security.setSecurityLevel,
+    securityLevel: security.securityLevel as "normal" | "high" | "ghost",
+    setSecurityLevel: security.setSecurityLevel as (l: "normal" | "high" | "ghost") => void,
     selectedCategory: "general",
     replyTo: selection.replyTo,
-    setReplyTo: () => selection.setReplyTo(null),
-    setRawMessages: loader.setRawMessages,
+    setReplyTo: (r: any) => selection.setReplyTo(r),
+    setRawMessages: loader.setRawMessages as any,
     setPendingOffline: loader.setPendingOffline,
     onThreadUpdate,
     resolveAuthUserId,
