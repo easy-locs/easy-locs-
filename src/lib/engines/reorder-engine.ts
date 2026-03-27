@@ -27,13 +27,16 @@ export async function runReorderCheck(limit = 50) {
 
     // Notify user
     if (r.user_id) {
-      await db.from("notifications").insert({
+      await db.from("app_notifications").insert({
         user_id: r.user_id,
-        type: "reorder_reminder",
+        scope: "global",
+        category: "reorder_reminder",
         title: "Time to reorder!",
         body: "Your recurring order is due. Tap to reorder.",
+        severity: "info",
         entity_id: r.source_order_id,
         entity_type: "order",
+        metadata: {},
       });
     }
     triggered++;

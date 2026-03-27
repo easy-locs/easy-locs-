@@ -1,5 +1,6 @@
 /**
  * Orchestration Engine — Connects all platform engines via the event bus.
+ * Uses canonical `app_notifications` table (V2).
  */
 
 import { platformBus } from "@/lib/shared/platform-bus";
@@ -19,7 +20,8 @@ import type {
 } from "./eventTypes";
 
 import { supabase } from "@/integrations/supabase/client";
-import type { Json } from "@/integrations/supabase/types";
+
+const db = supabase as any;
 
 let installed = false;
 
@@ -30,12 +32,14 @@ async function createNotification(params: {
   templateKey: string;
   payload?: Record<string, unknown>;
 }) {
-  const { error } = await (supabase as any).from("notifications").insert({
+  const { error } = await db.from("app_notifications").insert({
     user_id: params.actorId ?? null,
-    type: params.channel ?? "push",
+    scope: "global",
+    category: params.channel ?? "system",
     title: params.templateKey,
-    message: JSON.stringify(params.payload ?? {}),
-    priority: "normal",
+    body: JSON.stringify(params.payload ?? {}),
+    severity: "info",
+    metadata: { actorType: params.actorType, ...(params.payload ?? {}) },
   });
 
   if (error) {

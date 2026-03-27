@@ -9,7 +9,7 @@ export default function AdminNotificationOpsPage() {
     queryKey: ["admin-notification-ops"],
     queryFn: async () => {
       const { data, error } = await (supabase as any)
-        .from("notifications")
+        .from("app_notifications")
         .select("*")
         .order("created_at", { ascending: false })
         .limit(300);
@@ -20,9 +20,9 @@ export default function AdminNotificationOpsPage() {
     staleTime: 5000,
   });
 
-  const pending = rows.filter((r: any) => !r.read_at && !r.resolved).length;
+  const pending = rows.filter((r: any) => !r.read_at && !r.dismissed_at).length;
   const sent = rows.filter((r: any) => !!r.read_at).length;
-  const failed = rows.filter((r: any) => !!r.resolved).length;
+  const dismissed = rows.filter((r: any) => !!r.dismissed_at).length;
 
   return (
     <div className="min-h-[100dvh] bg-background pb-24">
@@ -42,7 +42,7 @@ export default function AdminNotificationOpsPage() {
       <div className="grid grid-cols-3 gap-3 px-4 pb-4">
         <Metric title="Pending" value={String(pending)} />
         <Metric title="Sent" value={String(sent)} />
-        <Metric title="Failed" value={String(failed)} />
+        <Metric title="Dismissed" value={String(dismissed)} />
       </div>
 
       {isLoading && [1, 2, 3].map((i) => (
