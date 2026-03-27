@@ -237,7 +237,7 @@ export default function HudConversationList({
                       thread={thread}
                       isActive={selectedThread?.id === thread.id}
                       index={i}
-                      onClick={() => onSelectThread(thread)}
+                      onClick={() => { trackOrbitEvent("orbit.conversation.opened", { screen: "conversation_list", component: "HudConversationList", action: "select_thread", payload: { threadId: thread.id, type: thread.conversationType }, result: "success" }); onSelectThread(thread); }}
                     />
                   </SwipeableThreadItem>
                 ))}
