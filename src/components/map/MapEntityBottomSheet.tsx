@@ -1,9 +1,9 @@
 /**
- * MapEntityBottomSheet — Detail sheet when an entity is selected on the canonical map.
+ * MapEntityBottomSheet — Premium, compact detail sheet. Visual-first, minimal text.
  */
 import type { MapEntity } from "@/types/map";
-import { kindToEmoji, kindToColor } from "@/lib/map/map-style-helpers";
-import { X, Navigation, Star, Clock } from "lucide-react";
+import { kindToColor } from "@/lib/map/map-style-helpers";
+import { X, Navigation, Star, Clock, ChevronRight } from "lucide-react";
 
 interface Props {
   entity: MapEntity | null;
@@ -14,65 +14,86 @@ interface Props {
 export function MapEntityBottomSheet({ entity, onClose, onOpen }: Props) {
   if (!entity) return null;
 
-  return (
-    <div className="absolute bottom-4 left-3 right-3 z-20 animate-in slide-in-from-bottom-4 duration-300">
-      <div className="rounded-2xl border border-border/20 bg-card/95 backdrop-blur-md shadow-2xl overflow-hidden">
-        <div className="flex items-start gap-3 p-3">
-          {/* Icon */}
-          <div
-            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl text-xl"
-            style={{ backgroundColor: `${kindToColor(entity.kind)}20` }}
-          >
-            {kindToEmoji(entity.kind)}
-          </div>
+  const color = kindToColor(entity.kind);
 
-          {/* Info */}
-          <div className="min-w-0 flex-1">
-            <h4 className="text-sm font-bold text-foreground line-clamp-1">{entity.title}</h4>
-            {entity.subtitle && (
-              <p className="text-[11px] text-muted-foreground line-clamp-1 mt-0.5">{entity.subtitle}</p>
-            )}
-            <div className="mt-1 flex items-center gap-2 text-[10px] text-muted-foreground">
-              {entity.distanceKm != null && (
-                <span className="flex items-center gap-0.5">
-                  <Navigation className="h-3 w-3" />
-                  {entity.distanceKm < 1 ? `${Math.round(entity.distanceKm * 1000)}m` : `${entity.distanceKm.toFixed(1)}km`}
-                </span>
-              )}
-              {entity.etaMin != null && (
-                <span className="flex items-center gap-0.5">
-                  <Clock className="h-3 w-3" />
-                  {entity.etaMin} min
-                </span>
-              )}
-              {entity.rating != null && (
-                <span className="flex items-center gap-0.5">
-                  <Star className="h-3 w-3 text-yellow-500" />
-                  {entity.rating.toFixed(1)}
-                </span>
-              )}
-              {entity.status && (
-                <span className="rounded-full bg-muted/30 px-1.5 py-0.5 capitalize">{entity.status}</span>
+  return (
+    <div className="absolute bottom-4 left-3 right-3 z-20 animate-fade-in">
+      <div
+        className="rounded-2xl overflow-hidden shadow-2xl border border-white/[0.06]"
+        style={{ background: "linear-gradient(135deg, rgba(15,17,22,0.96), rgba(20,24,32,0.94))" }}
+      >
+        <div className="flex items-center gap-3 p-3">
+          {/* Glowing icon dot */}
+          <div className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-xl">
+            <div
+              className="absolute inset-0 rounded-xl blur-md opacity-40"
+              style={{ backgroundColor: color }}
+            />
+            <div
+              className="relative h-full w-full rounded-xl flex items-center justify-center"
+              style={{ backgroundColor: `${color}20`, borderColor: `${color}30`, borderWidth: 1 }}
+            >
+              {entity.image ? (
+                <img src={entity.image} alt="" className="h-8 w-8 rounded-lg object-cover" />
+              ) : (
+                <div className="h-3 w-3 rounded-full" style={{ backgroundColor: color }} />
               )}
             </div>
           </div>
 
-          {/* Close */}
-          <button onClick={onClose} className="shrink-0 rounded-full p-1 hover:bg-muted/30 transition-colors">
-            <X className="h-4 w-4 text-muted-foreground" />
-          </button>
-        </div>
+          {/* Info — compact */}
+          <div className="min-w-0 flex-1">
+            <h4 className="text-[13px] font-bold text-white/95 line-clamp-1 leading-tight">
+              {entity.title}
+            </h4>
+            <div className="mt-1 flex items-center gap-2 flex-wrap">
+              {entity.rating != null && (
+                <span className="flex items-center gap-0.5 text-[10px] font-semibold text-amber-400">
+                  <Star className="h-2.5 w-2.5 fill-amber-400" />
+                  {entity.rating.toFixed(1)}
+                </span>
+              )}
+              {entity.distanceKm != null && (
+                <span className="flex items-center gap-0.5 text-[10px] text-white/40">
+                  <Navigation className="h-2.5 w-2.5" />
+                  {entity.distanceKm < 1 ? `${Math.round(entity.distanceKm * 1000)}m` : `${entity.distanceKm.toFixed(1)}km`}
+                </span>
+              )}
+              {entity.etaMin != null && (
+                <span className="flex items-center gap-0.5 text-[10px] text-white/40">
+                  <Clock className="h-2.5 w-2.5" />
+                  {entity.etaMin}′
+                </span>
+              )}
+              {entity.status && (
+                <span
+                  className="rounded-full px-1.5 py-px text-[9px] font-bold uppercase tracking-wider"
+                  style={{ backgroundColor: `${color}20`, color }}
+                >
+                  {entity.status}
+                </span>
+              )}
+            </div>
+          </div>
 
-        {onOpen && (
-          <div className="border-t border-border/10 px-3 py-2">
+          {/* Actions */}
+          <div className="flex items-center gap-1 shrink-0">
+            {onOpen && (
+              <button
+                onClick={() => onOpen(entity)}
+                className="flex h-8 w-8 items-center justify-center rounded-full bg-white/8 hover:bg-white/15 transition-colors"
+              >
+                <ChevronRight className="h-4 w-4 text-white/70" />
+              </button>
+            )}
             <button
-              onClick={() => onOpen(entity)}
-              className="w-full rounded-xl bg-primary py-2 text-xs font-bold text-primary-foreground transition-colors hover:bg-primary/90"
+              onClick={onClose}
+              className="flex h-8 w-8 items-center justify-center rounded-full bg-white/8 hover:bg-white/15 transition-colors"
             >
-              View Details
+              <X className="h-3.5 w-3.5 text-white/50" />
             </button>
           </div>
-        )}
+        </div>
       </div>
     </div>
   );
