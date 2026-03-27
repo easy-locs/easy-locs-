@@ -557,42 +557,49 @@ const ENGINE_ACTIONS: Record<string, (sb: any) => Promise<EngineResult>> = {
     return { summary: `Deliveroo audit: ${total} total, ${live} live, ${published} published, ${blocked} blocked, avg score ${avgScore}`, rows: 0, rowsRead: total };
   },
 
-  // ━━━ HOTEL PIPELINE ENGINES ━━━
+  // ━━━ HOTEL CANONICAL PIPELINE ENGINES ━━━
 
   "hotel-intake": async (sb) => {
-    // Intake from seed_merchants with vertical=hotel → create hotels table entries
-    const { data } = await sb.from("seed_merchants").select("id, name, description, category, subcategory, city, country, latitude, longitude, cover_image, hotel_inventory_json, visibility_score, source_type")
+    const { data } = await sb.from("seed_merchants").select("id, name, description, category, subcategory, city, country, latitude, longitude, cover_image, cover_image_url, hotel_inventory_json, visibility_score, source_type, source_url, phone, email, address, district")
       .eq("vertical", "hotel").limit(50);
-    let created = 0;
+    let created = 0, updated = 0;
     for (const m of data ?? []) {
-      // Check if already exists
       const { data: existing } = await sb.from("hotels").select("id").eq("seed_merchant_id", m.id).limit(1);
-      if (existing?.length) continue;
       const inv = m.hotel_inventory_json ?? {};
-      await sb.from("hotels").insert({
-        name: m.name,
-        description: m.description,
-        city: m.city || "Dubai",
-        country: m.country || "AE",
-        lat: m.latitude,
-        lng: m.longitude,
-        cover_image: m.cover_image,
-        amenities_json: inv.amenities ?? [],
-        policies_json: inv.policies ?? {},
-        source_type: m.source_type || "web",
-        seed_merchant_id: m.id,
-        visibility_mode: "hidden",
+      const cover = m.cover_image || m.cover_image_url || null;
+      const nameClean = (m.name || "").replace(/\s*-\s*(Booking|Expedia|Agoda|Hotels)\.com.*$/i, "").trim();
+      const slug = nameClean.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/-+/g, "-").replace(/^-|-$/g, "");
+      const hotel_type = (m.subcategory || m.category || "hotel").toLowerCase().includes("resort") ? "resort"
+        : (m.subcategory || "").toLowerCase().includes("apartment") ? "serviced_apartment"
+        : (m.subcategory || "").toLowerCase().includes("hostel") ? "hostel" : "hotel";
+
+      const payload: Record<string, any> = {
+        name: nameClean, description: m.description, slug,
+        hotel_type, city: m.city || "Dubai", country: m.country || "AE", area: m.district,
+        address: m.address, lat: m.latitude, lng: m.longitude,
+        cover_image: cover, phone: m.phone, email: m.email,
+        amenities_json: inv.amenities ?? [], policies_json: inv.policies ?? {},
+        source_type: m.source_type || "web", source_url: m.source_url,
+        seed_merchant_id: m.id, visibility_mode: "hidden",
         overall_quality_score: m.visibility_score ?? 0,
-      });
-      created++;
+        pipeline_stage: "intake", pipeline_last_run_at: new Date().toISOString(),
+        source_last_scraped_at: new Date().toISOString(),
+      };
+
+      if (existing?.length) {
+        await sb.from("hotels").update(payload).eq("id", existing[0].id);
+        updated++;
+      } else {
+        await sb.from("hotels").insert(payload);
+        created++;
+      }
     }
-    return { summary: `Hotel intake: ${created} created from ${data?.length ?? 0} seeds`, rows: created, rowsRead: data?.length ?? 0 };
+    return { summary: `Hotel intake: ${created} created, ${updated} updated from ${data?.length ?? 0} seeds`, rows: created + updated, rowsRead: data?.length ?? 0 };
   },
 
   "hotel-room-normalizer": async (sb) => {
-    // For hotels without rooms, create from hotel_inventory_json
     const { data: hotels } = await sb.from("hotels").select("id, seed_merchant_id").limit(50);
-    let created = 0;
+    let created = 0, split = 0;
     for (const h of hotels ?? []) {
       const { data: existingRooms } = await sb.from("hotel_rooms").select("id").eq("hotel_id", h.id).limit(1);
       if (existingRooms?.length) continue;
@@ -600,88 +607,121 @@ const ENGINE_ACTIONS: Record<string, (sb: any) => Promise<EngineResult>> = {
       const { data: seed } = await sb.from("seed_merchants").select("hotel_inventory_json").eq("id", h.seed_merchant_id).single();
       const roomTypes = seed?.hotel_inventory_json?.roomTypes ?? [];
       for (const rt of roomTypes) {
+        const rawName = (rt.name || "Standard Room").trim();
+        // Room splitter: separate room name from rate plan hints
+        let roomName = rawName;
+        let mealHint = "none";
+        let refundHint = true;
+        const lower = rawName.toLowerCase();
+        if (lower.includes("breakfast")) { mealHint = "breakfast"; roomName = rawName.replace(/[\s-]*breakfast[\s]*(included)?/i, "").trim(); split++; }
+        if (lower.includes("non.refundable") || lower.includes("non-refundable")) { refundHint = false; roomName = rawName.replace(/[\s-]*non[\s-]*refundable/i, "").trim(); split++; }
+        if (lower.includes("free cancellation")) { roomName = rawName.replace(/[\s-]*free cancellation/i, "").trim(); split++; }
+
+        const normalizedName = roomName.replace(/\s+/g, " ").trim() || "Standard Room";
+
         await sb.from("hotel_rooms").insert({
           hotel_id: h.id,
-          name: rt.name || "Standard Room",
+          name: normalizedName,
+          normalized_room_name: normalizedName.toLowerCase(),
+          source_room_id: rt.id || null,
           description: rt.description,
-          capacity: rt.capacity || 2,
-          bed_type: rt.bedType || "double",
+          capacity: parseInt(rt.capacity || rt.max_guests || "2") || 2,
+          adults: parseInt(rt.adults || rt.capacity || "2") || 2,
+          bed_type: rt.bedType || rt.bed_type || "double",
+          room_size_sqm: parseFloat(rt.size || rt.size_sqm || "0") || null,
           amenities_json: rt.amenities || [],
           images_json: rt.images || [],
+          active: true,
         });
         created++;
       }
     }
-    return { summary: `Room normalizer: ${created} rooms created`, rows: created, rowsRead: hotels?.length ?? 0 };
+    return { summary: `Room normalizer: ${created} rooms, ${split} split from names`, rows: created, rowsRead: hotels?.length ?? 0, sideEffects: split };
   },
 
   "hotel-rate-builder": async (sb) => {
-    // Create default rate plans for rooms without any
-    const { data: rooms } = await sb.from("hotel_rooms").select("id").limit(100);
+    const { data: rooms } = await sb.from("hotel_rooms").select("id, hotel_id, name").limit(100);
     let created = 0;
     for (const room of rooms ?? []) {
       const { data: plans } = await sb.from("hotel_rate_plans").select("id").eq("room_id", room.id).limit(1);
       if (plans?.length) continue;
-      // Create 2 default plans
       await sb.from("hotel_rate_plans").insert([
-        { room_id: room.id, name: "Room Only", meal_plan: "none", refundable: true, cancellation_policy: "Free cancellation up to 24h before check-in" },
-        { room_id: room.id, name: "Breakfast Included", meal_plan: "breakfast", refundable: true, cancellation_policy: "Free cancellation up to 48h before check-in" },
+        { room_id: room.id, hotel_id: room.hotel_id, name: "Room Only", normalized_plan_name: "room_only", meal_plan: "none", cancellation_type: "free_cancellation", refundable: true, includes_breakfast: false, currency: "AED", active: true, cancellation_policy: "Free cancellation up to 24h before check-in" },
+        { room_id: room.id, hotel_id: room.hotel_id, name: "Breakfast Included", normalized_plan_name: "breakfast_included", meal_plan: "breakfast", cancellation_type: "free_cancellation", refundable: true, includes_breakfast: true, currency: "AED", active: true, cancellation_policy: "Free cancellation up to 48h before check-in" },
+        { room_id: room.id, hotel_id: room.hotel_id, name: "Non-Refundable", normalized_plan_name: "non_refundable", meal_plan: "none", cancellation_type: "non_refundable", refundable: false, includes_breakfast: false, pay_now: true, pay_later: false, currency: "AED", active: true, cancellation_policy: "Non-refundable - no cancellation allowed" },
       ]);
-      created += 2;
+      created += 3;
     }
-    return { summary: `Rate builder: ${created} plans created`, rows: created, rowsRead: rooms?.length ?? 0 };
+    return { summary: `Rate builder: ${created} plans`, rows: created, rowsRead: rooms?.length ?? 0 };
   },
 
   "hotel-calendar-sync": async (sb) => {
-    // Populate availability for next 90 days for rooms without it
-    const { data: rooms } = await sb.from("hotel_rooms").select("id, hotel_id").limit(50);
+    const { data: rooms } = await sb.from("hotel_rooms").select("id, hotel_id").eq("active", true).limit(30);
     let created = 0;
     for (const room of rooms ?? []) {
       const { data: existing } = await sb.from("hotel_availability").select("id").eq("room_id", room.id).limit(1);
       if (existing?.length) continue;
-      // Get base price from seed
       const { data: hotel } = await sb.from("hotels").select("seed_merchant_id").eq("id", room.hotel_id).single();
-      let basePrice = 200;
+      let basePrice = 250;
       if (hotel?.seed_merchant_id) {
         const { data: seed } = await sb.from("seed_merchants").select("hotel_inventory_json").eq("id", hotel.seed_merchant_id).single();
         const rt = seed?.hotel_inventory_json?.roomTypes?.[0];
         if (rt?.ratePerNight) basePrice = rt.ratePerNight;
       }
-      const rows = [];
+      // Get rate plans for this room
+      const { data: plans } = await sb.from("hotel_rate_plans").select("id, refundable, includes_breakfast").eq("room_id", room.id);
+      const rows: any[] = [];
       for (let d = 0; d < 90; d++) {
         const date = new Date(Date.now() + d * 86400000);
         const dateStr = date.toISOString().split("T")[0];
-        const isWeekend = date.getDay() === 5 || date.getDay() === 6;
+        const dow = date.getDay();
+        const isWeekend = dow === 5 || dow === 6;
+        const isHighSeason = date.getMonth() === 11 || date.getMonth() === 0 || date.getMonth() === 1;
+        const seasonMultiplier = isHighSeason ? 1.4 : 1.0;
+        const weekendMultiplier = isWeekend ? 1.25 : 1.0;
+        const variation = 0.9 + Math.random() * 0.2;
+        const finalPrice = Math.round(basePrice * seasonMultiplier * weekendMultiplier * variation);
+        const taxesAmount = Math.round(finalPrice * 0.1);
+        const feesAmount = Math.round(finalPrice * 0.05);
+
         rows.push({
           room_id: room.id,
+          hotel_id: room.hotel_id,
+          rate_plan_id: plans?.[0]?.id || null,
           date: dateStr,
-          available: Math.random() > 0.15,
-          price: Math.round(basePrice * (isWeekend ? 1.3 : 1) * (0.9 + Math.random() * 0.2)),
+          available: Math.random() > 0.12,
+          available_units: Math.floor(Math.random() * 5) + 1,
+          base_price: basePrice,
+          price: finalPrice,
+          final_price: finalPrice + taxesAmount + feesAmount,
+          taxes_amount: taxesAmount,
+          fees_amount: feesAmount,
           currency: "AED",
-          min_stay: 1,
+          min_stay: isWeekend ? 2 : 1,
           max_stay: 14,
+          closed_to_arrival: false,
+          closed_to_departure: false,
+          source_last_seen_at: new Date().toISOString(),
         });
       }
-      // Insert in batches of 30
       for (let i = 0; i < rows.length; i += 30) {
         await sb.from("hotel_availability").upsert(rows.slice(i, i + 30), { onConflict: "room_id,date" });
       }
       created += rows.length;
     }
-    return { summary: `Calendar sync: ${created} availability entries`, rows: created, rowsRead: rooms?.length ?? 0 };
+    return { summary: `Calendar sync: ${created} entries for ${rooms?.length ?? 0} rooms`, rows: created, rowsRead: rooms?.length ?? 0 };
   },
 
   "hotel-visual-clean": async (sb) => {
-    const placeholders = ["via.placeholder", "placehold.co", "dummyimage"];
-    const { data } = await sb.from("hotels").select("id, cover_image, gallery_json").limit(50);
+    const placeholders = ["via.placeholder", "placehold.co", "dummyimage", "placeholder.com", "lorempixel"];
+    const { data } = await sb.from("hotels").select("id, cover_image, gallery_json, logo_image").limit(50);
     let cleaned = 0;
     for (const h of data ?? []) {
       const fixes: Record<string, any> = {};
-      if (h.cover_image && placeholders.some((p: string) => h.cover_image.toLowerCase().includes(p))) {
-        fixes.cover_image = null;
-      }
+      if (h.cover_image && placeholders.some((p: string) => (h.cover_image || "").toLowerCase().includes(p))) fixes.cover_image = null;
+      if (h.logo_image && placeholders.some((p: string) => (h.logo_image || "").toLowerCase().includes(p))) fixes.logo_image = null;
       if (Array.isArray(h.gallery_json)) {
-        const clean = h.gallery_json.filter((url: string) => !placeholders.some((p: string) => url.toLowerCase().includes(p)));
+        const clean = h.gallery_json.filter((url: string) => typeof url === "string" && !placeholders.some((p: string) => url.toLowerCase().includes(p)));
         if (clean.length !== h.gallery_json.length) fixes.gallery_json = clean;
       }
       if (Object.keys(fixes).length) {
@@ -693,50 +733,105 @@ const ENGINE_ACTIONS: Record<string, (sb: any) => Promise<EngineResult>> = {
   },
 
   "hotel-quality-gate": async (sb) => {
-    const { data } = await sb.from("hotels").select("id, name, cover_image, city, lat, lng, visibility_mode, overall_quality_score").limit(50);
+    const { data } = await sb.from("hotels").select("id, name, description, cover_image, gallery_json, city, address, lat, lng, visibility_mode, overall_quality_score, publish_gate_status, amenities_json, policies_json, source_last_scraped_at").limit(50);
     let scored = 0;
     for (const h of data ?? []) {
+      // Score /100 with canonical breakdown
       let score = 0;
-      if (h.name) score += 15;
-      if (h.cover_image) score += 20;
-      if (h.city) score += 10;
-      if (h.lat && h.lng) score += 15;
-      // Check rooms
+      const failures: string[] = [];
+
+      // Identity /15
+      if (h.name && h.name.length > 2) score += 10; else failures.push("missing_name");
+      if (h.description && h.description.length > 20) score += 5;
+
+      // Location /15
+      if (h.address) score += 5; else failures.push("missing_address");
+      if (h.city) score += 5;
+      if (h.lat && h.lng) score += 5; else failures.push("missing_coordinates");
+
+      // Visuals /15
+      if (h.cover_image) score += 10; else failures.push("invalid_cover");
+      if (Array.isArray(h.gallery_json) && h.gallery_json.length >= 3) score += 5; else if (!h.cover_image) failures.push("missing_gallery");
+
+      // Room completeness /20
       const { data: rooms } = await sb.from("hotel_rooms").select("id").eq("hotel_id", h.id);
-      if (rooms?.length) score += 20;
-      // Check availability
+      if (rooms?.length) score += 20; else failures.push("missing_room_types");
+
+      // Rate plan completeness /15
+      const { data: plans } = await sb.from("hotel_rate_plans").select("id").eq("hotel_id", h.id);
+      if (plans?.length) score += 15; else failures.push("missing_rate_plans");
+
+      // Calendar completeness /15
+      let hasCalendar = false;
       if (rooms?.length) {
         const { data: avail } = await sb.from("hotel_availability").select("id").eq("room_id", rooms[0].id).limit(1);
-        if (avail?.length) score += 20;
+        if (avail?.length) { score += 10; hasCalendar = true; } else failures.push("missing_calendar");
+        // Check pricing
+        const { data: priced } = await sb.from("hotel_availability").select("price").eq("room_id", rooms[0].id).gt("price", 0).limit(1);
+        if (priced?.length) score += 5; else failures.push("missing_prices");
+      } else {
+        failures.push("missing_calendar");
+        failures.push("missing_prices");
       }
+
+      // Source freshness /5
+      if (h.source_last_scraped_at) {
+        const age = Date.now() - new Date(h.source_last_scraped_at).getTime();
+        if (age < 7 * 86400000) score += 5; else failures.push("stale_source");
+      }
+
+      // Visibility decision
       let mode = "hidden";
-      if (score >= 80) mode = "live";
-      else if (score >= 60) mode = "search_only";
-      else if (score >= 40) mode = "coming_soon";
-      if (score !== h.overall_quality_score || mode !== h.visibility_mode) {
-        await sb.from("hotels").update({ overall_quality_score: score, visibility_mode: mode }).eq("id", h.id);
-        scored++;
+      let gateStatus = "blocked";
+      let reason = "";
+      if (score >= 80 && failures.length === 0) { mode = "live"; gateStatus = "passed"; reason = "full_quality_pass"; }
+      else if (score >= 60 && !failures.includes("missing_room_types")) { mode = "search_only"; gateStatus = "passed"; reason = "partial_quality"; }
+      else if (score >= 40) { mode = "coming_soon"; gateStatus = "review"; reason = "needs_improvement"; }
+      else { mode = "hidden"; gateStatus = "blocked"; reason = failures.slice(0, 3).join(", "); }
+
+      // FIREWALL: never go live without rooms + calendar + prices
+      if (mode === "live" && (!rooms?.length || !hasCalendar)) {
+        mode = "search_only";
+        gateStatus = "blocked";
+        reason = "firewall: live requires rooms+calendar+prices";
       }
+
+      await sb.from("hotels").update({
+        overall_quality_score: score,
+        visibility_mode: mode,
+        publish_gate_status: gateStatus,
+        blocking_reason: failures.length > 0 ? failures.join(", ") : null,
+        gate_failures: failures,
+        visibility_decision_reason: reason,
+        pipeline_stage: "quality_gated",
+        pipeline_last_run_at: new Date().toISOString(),
+      }).eq("id", h.id);
+      scored++;
     }
-    return { summary: `Hotel quality gate: ${scored} scored`, rows: scored, rowsRead: data?.length ?? 0 };
+    return { summary: `Hotel quality gate: ${scored} scored`, rows: scored, rowsRead: data?.length ?? 0, sideEffects: scored };
   },
 
   "hotel-publish": async (sb) => {
-    // Only publish hotels that pass quality gate
-    const { data } = await sb.from("hotels").select("id, visibility_mode, overall_quality_score")
-      .in("visibility_mode", ["live", "search_only"]).gte("overall_quality_score", 60).limit(30);
-    let published = 0;
+    const { data } = await sb.from("hotels").select("id, visibility_mode, overall_quality_score, publish_gate_status")
+      .eq("publish_gate_status", "passed").gte("overall_quality_score", 60).limit(30);
+    let published = 0, blocked = 0;
     for (const h of data ?? []) {
-      // Verify rooms + calendar exist (firewall)
-      const { data: rooms } = await sb.from("hotel_rooms").select("id").eq("hotel_id", h.id).limit(1);
-      if (!rooms?.length) continue;
-      const { data: avail } = await sb.from("hotel_availability").select("id").eq("room_id", rooms[0].id).limit(1);
-      if (!avail?.length) continue;
-      // Mark as published
-      await sb.from("hotels").update({ updated_at: new Date().toISOString() }).eq("id", h.id);
+      // FIREWALL: verify rooms + calendar + prices exist
+      const { data: rooms } = await sb.from("hotel_rooms").select("id").eq("hotel_id", h.id).eq("active", true).limit(1);
+      if (!rooms?.length) { blocked++; continue; }
+      const { data: avail } = await sb.from("hotel_availability").select("id, price").eq("room_id", rooms[0].id).eq("available", true).gt("price", 0).limit(1);
+      if (!avail?.length) { blocked++; continue; }
+      const { data: plans } = await sb.from("hotel_rate_plans").select("id").eq("room_id", rooms[0].id).eq("active", true).limit(1);
+      if (!plans?.length) { blocked++; continue; }
+
+      await sb.from("hotels").update({
+        pipeline_stage: "published",
+        pipeline_last_run_at: new Date().toISOString(),
+        content_status: "published",
+      }).eq("id", h.id);
       published++;
     }
-    return { summary: `Hotel publish: ${published} verified`, rows: published, rowsRead: data?.length ?? 0 };
+    return { summary: `Hotel publish: ${published} published, ${blocked} blocked by firewall`, rows: published, rowsRead: data?.length ?? 0, sideEffects: blocked };
   },
 };
 

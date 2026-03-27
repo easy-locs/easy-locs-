@@ -8416,38 +8416,99 @@ export type Database = {
       hotel_availability: {
         Row: {
           available: boolean | null
+          available_units: number | null
+          base_price: number | null
+          closed_to_arrival: boolean | null
+          closed_to_departure: boolean | null
           created_at: string | null
           currency: string | null
           date: string
+          fees_amount: number | null
+          final_price: number | null
+          hotel_id: string | null
           id: string
           max_stay: number | null
           min_stay: number | null
           price: number
+          rate_plan_id: string | null
+          restriction_notes: string | null
           room_id: string
+          source_last_seen_at: string | null
+          taxes_amount: number | null
         }
         Insert: {
           available?: boolean | null
+          available_units?: number | null
+          base_price?: number | null
+          closed_to_arrival?: boolean | null
+          closed_to_departure?: boolean | null
           created_at?: string | null
           currency?: string | null
           date: string
+          fees_amount?: number | null
+          final_price?: number | null
+          hotel_id?: string | null
           id?: string
           max_stay?: number | null
           min_stay?: number | null
           price?: number
+          rate_plan_id?: string | null
+          restriction_notes?: string | null
           room_id: string
+          source_last_seen_at?: string | null
+          taxes_amount?: number | null
         }
         Update: {
           available?: boolean | null
+          available_units?: number | null
+          base_price?: number | null
+          closed_to_arrival?: boolean | null
+          closed_to_departure?: boolean | null
           created_at?: string | null
           currency?: string | null
           date?: string
+          fees_amount?: number | null
+          final_price?: number | null
+          hotel_id?: string | null
           id?: string
           max_stay?: number | null
           min_stay?: number | null
           price?: number
+          rate_plan_id?: string | null
+          restriction_notes?: string | null
           room_id?: string
+          source_last_seen_at?: string | null
+          taxes_amount?: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "hotel_availability_hotel_id_fkey"
+            columns: ["hotel_id"]
+            isOneToOne: false
+            referencedRelation: "hotels"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hotel_availability_hotel_id_fkey"
+            columns: ["hotel_id"]
+            isOneToOne: false
+            referencedRelation: "vw_hotel_gate_failures"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hotel_availability_hotel_id_fkey"
+            columns: ["hotel_id"]
+            isOneToOne: false
+            referencedRelation: "vw_hotel_quality"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hotel_availability_rate_plan_id_fkey"
+            columns: ["rate_plan_id"]
+            isOneToOne: false
+            referencedRelation: "hotel_rate_plans"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "hotel_availability_room_id_fkey"
             columns: ["room_id"]
@@ -8455,37 +8516,95 @@ export type Database = {
             referencedRelation: "hotel_rooms"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "hotel_availability_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "vw_hotel_calendar_coverage"
+            referencedColumns: ["room_id"]
+          },
         ]
       }
       hotel_rate_plans: {
         Row: {
+          active: boolean | null
           cancellation_policy: string | null
+          cancellation_type: string | null
           created_at: string | null
+          currency: string | null
+          hotel_id: string | null
           id: string
+          includes_breakfast: boolean | null
+          includes_taxes: boolean | null
           meal_plan: string | null
           name: string
+          normalized_plan_name: string | null
+          pay_later: boolean | null
+          pay_now: boolean | null
           refundable: boolean | null
           room_id: string
+          source_rate_id: string | null
         }
         Insert: {
+          active?: boolean | null
           cancellation_policy?: string | null
+          cancellation_type?: string | null
           created_at?: string | null
+          currency?: string | null
+          hotel_id?: string | null
           id?: string
+          includes_breakfast?: boolean | null
+          includes_taxes?: boolean | null
           meal_plan?: string | null
           name?: string
+          normalized_plan_name?: string | null
+          pay_later?: boolean | null
+          pay_now?: boolean | null
           refundable?: boolean | null
           room_id: string
+          source_rate_id?: string | null
         }
         Update: {
+          active?: boolean | null
           cancellation_policy?: string | null
+          cancellation_type?: string | null
           created_at?: string | null
+          currency?: string | null
+          hotel_id?: string | null
           id?: string
+          includes_breakfast?: boolean | null
+          includes_taxes?: boolean | null
           meal_plan?: string | null
           name?: string
+          normalized_plan_name?: string | null
+          pay_later?: boolean | null
+          pay_now?: boolean | null
           refundable?: boolean | null
           room_id?: string
+          source_rate_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "hotel_rate_plans_hotel_id_fkey"
+            columns: ["hotel_id"]
+            isOneToOne: false
+            referencedRelation: "hotels"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hotel_rate_plans_hotel_id_fkey"
+            columns: ["hotel_id"]
+            isOneToOne: false
+            referencedRelation: "vw_hotel_gate_failures"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hotel_rate_plans_hotel_id_fkey"
+            columns: ["hotel_id"]
+            isOneToOne: false
+            referencedRelation: "vw_hotel_quality"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "hotel_rate_plans_room_id_fkey"
             columns: ["room_id"]
@@ -8493,44 +8612,72 @@ export type Database = {
             referencedRelation: "hotel_rooms"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "hotel_rate_plans_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "vw_hotel_calendar_coverage"
+            referencedColumns: ["room_id"]
+          },
         ]
       }
       hotel_rooms: {
         Row: {
+          active: boolean | null
+          adults: number | null
           amenities_json: Json | null
           bed_type: string | null
           capacity: number | null
+          children: number | null
           created_at: string | null
           description: string | null
           hotel_id: string
           id: string
           images_json: Json | null
           name: string
+          normalized_room_name: string | null
+          room_size_sqm: number | null
           size_m2: number | null
+          smoking_allowed: boolean | null
+          source_room_id: string | null
         }
         Insert: {
+          active?: boolean | null
+          adults?: number | null
           amenities_json?: Json | null
           bed_type?: string | null
           capacity?: number | null
+          children?: number | null
           created_at?: string | null
           description?: string | null
           hotel_id: string
           id?: string
           images_json?: Json | null
           name: string
+          normalized_room_name?: string | null
+          room_size_sqm?: number | null
           size_m2?: number | null
+          smoking_allowed?: boolean | null
+          source_room_id?: string | null
         }
         Update: {
+          active?: boolean | null
+          adults?: number | null
           amenities_json?: Json | null
           bed_type?: string | null
           capacity?: number | null
+          children?: number | null
           created_at?: string | null
           description?: string | null
           hotel_id?: string
           id?: string
           images_json?: Json | null
           name?: string
+          normalized_room_name?: string | null
+          room_size_sqm?: number | null
           size_m2?: number | null
+          smoking_allowed?: boolean | null
+          source_room_id?: string | null
         }
         Relationships: [
           {
@@ -8540,85 +8687,144 @@ export type Database = {
             referencedRelation: "hotels"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "hotel_rooms_hotel_id_fkey"
+            columns: ["hotel_id"]
+            isOneToOne: false
+            referencedRelation: "vw_hotel_gate_failures"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hotel_rooms_hotel_id_fkey"
+            columns: ["hotel_id"]
+            isOneToOne: false
+            referencedRelation: "vw_hotel_quality"
+            referencedColumns: ["id"]
+          },
         ]
       }
       hotels: {
         Row: {
           address: string | null
           amenities_json: Json | null
+          area: string | null
+          blocking_reason: string | null
           checkin_time: string | null
           checkout_time: string | null
           city: string | null
+          content_status: string | null
           country: string | null
           cover_image: string | null
           created_at: string | null
           description: string | null
+          email: string | null
           gallery_json: Json | null
+          gate_failures: Json | null
+          hotel_type: string | null
           id: string
           lat: number | null
           lng: number | null
+          logo_image: string | null
           name: string
           overall_quality_score: number | null
+          phone: string | null
+          pipeline_last_run_at: string | null
+          pipeline_stage: string | null
           policies_json: Json | null
+          publish_gate_status: string | null
           rating: number | null
           reviews_count: number | null
           seed_merchant_id: string | null
+          slug: string | null
           source_entity_id: string | null
+          source_last_scraped_at: string | null
           source_type: string | null
+          source_url: string | null
           stars: number | null
           updated_at: string | null
+          visibility_decision_reason: string | null
           visibility_mode: string | null
         }
         Insert: {
           address?: string | null
           amenities_json?: Json | null
+          area?: string | null
+          blocking_reason?: string | null
           checkin_time?: string | null
           checkout_time?: string | null
           city?: string | null
+          content_status?: string | null
           country?: string | null
           cover_image?: string | null
           created_at?: string | null
           description?: string | null
+          email?: string | null
           gallery_json?: Json | null
+          gate_failures?: Json | null
+          hotel_type?: string | null
           id?: string
           lat?: number | null
           lng?: number | null
+          logo_image?: string | null
           name: string
           overall_quality_score?: number | null
+          phone?: string | null
+          pipeline_last_run_at?: string | null
+          pipeline_stage?: string | null
           policies_json?: Json | null
+          publish_gate_status?: string | null
           rating?: number | null
           reviews_count?: number | null
           seed_merchant_id?: string | null
+          slug?: string | null
           source_entity_id?: string | null
+          source_last_scraped_at?: string | null
           source_type?: string | null
+          source_url?: string | null
           stars?: number | null
           updated_at?: string | null
+          visibility_decision_reason?: string | null
           visibility_mode?: string | null
         }
         Update: {
           address?: string | null
           amenities_json?: Json | null
+          area?: string | null
+          blocking_reason?: string | null
           checkin_time?: string | null
           checkout_time?: string | null
           city?: string | null
+          content_status?: string | null
           country?: string | null
           cover_image?: string | null
           created_at?: string | null
           description?: string | null
+          email?: string | null
           gallery_json?: Json | null
+          gate_failures?: Json | null
+          hotel_type?: string | null
           id?: string
           lat?: number | null
           lng?: number | null
+          logo_image?: string | null
           name?: string
           overall_quality_score?: number | null
+          phone?: string | null
+          pipeline_last_run_at?: string | null
+          pipeline_stage?: string | null
           policies_json?: Json | null
+          publish_gate_status?: string | null
           rating?: number | null
           reviews_count?: number | null
           seed_merchant_id?: string | null
+          slug?: string | null
           source_entity_id?: string | null
+          source_last_scraped_at?: string | null
           source_type?: string | null
+          source_url?: string | null
           stars?: number | null
           updated_at?: string | null
+          visibility_decision_reason?: string | null
           visibility_mode?: string | null
         }
         Relationships: []
@@ -30040,6 +30246,129 @@ export type Database = {
           overall_quality_score?: number | null
           publish_gate_status?: string | null
           source_last_scraped_at?: string | null
+        }
+        Relationships: []
+      }
+      vw_hotel_calendar_coverage: {
+        Row: {
+          available_days: number | null
+          avg_price: number | null
+          hotel_id: string | null
+          hotel_name: string | null
+          max_price: number | null
+          min_price: number | null
+          room_id: string | null
+          room_name: string | null
+          total_days: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hotel_rooms_hotel_id_fkey"
+            columns: ["hotel_id"]
+            isOneToOne: false
+            referencedRelation: "hotels"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hotel_rooms_hotel_id_fkey"
+            columns: ["hotel_id"]
+            isOneToOne: false
+            referencedRelation: "vw_hotel_gate_failures"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hotel_rooms_hotel_id_fkey"
+            columns: ["hotel_id"]
+            isOneToOne: false
+            referencedRelation: "vw_hotel_quality"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      vw_hotel_gate_failures: {
+        Row: {
+          blocking_reason: string | null
+          gate_failures: Json | null
+          id: string | null
+          name: string | null
+          overall_quality_score: number | null
+          publish_gate_status: string | null
+          visibility_mode: string | null
+        }
+        Insert: {
+          blocking_reason?: string | null
+          gate_failures?: Json | null
+          id?: string | null
+          name?: string | null
+          overall_quality_score?: number | null
+          publish_gate_status?: string | null
+          visibility_mode?: string | null
+        }
+        Update: {
+          blocking_reason?: string | null
+          gate_failures?: Json | null
+          id?: string | null
+          name?: string | null
+          overall_quality_score?: number | null
+          publish_gate_status?: string | null
+          visibility_mode?: string | null
+        }
+        Relationships: []
+      }
+      vw_hotel_quality: {
+        Row: {
+          avail_days: number | null
+          blocking_reason: string | null
+          city: string | null
+          has_cover: boolean | null
+          has_geo: boolean | null
+          id: string | null
+          name: string | null
+          overall_quality_score: number | null
+          pipeline_stage: string | null
+          publish_gate_status: string | null
+          rate_plan_count: number | null
+          rating: number | null
+          room_count: number | null
+          source_type: string | null
+          stars: number | null
+          visibility_mode: string | null
+        }
+        Insert: {
+          avail_days?: never
+          blocking_reason?: string | null
+          city?: string | null
+          has_cover?: never
+          has_geo?: never
+          id?: string | null
+          name?: string | null
+          overall_quality_score?: number | null
+          pipeline_stage?: string | null
+          publish_gate_status?: string | null
+          rate_plan_count?: never
+          rating?: number | null
+          room_count?: never
+          source_type?: string | null
+          stars?: number | null
+          visibility_mode?: string | null
+        }
+        Update: {
+          avail_days?: never
+          blocking_reason?: string | null
+          city?: string | null
+          has_cover?: never
+          has_geo?: never
+          id?: string | null
+          name?: string | null
+          overall_quality_score?: number | null
+          pipeline_stage?: string | null
+          publish_gate_status?: string | null
+          rate_plan_count?: never
+          rating?: number | null
+          room_count?: never
+          source_type?: string | null
+          stars?: number | null
+          visibility_mode?: string | null
         }
         Relationships: []
       }
