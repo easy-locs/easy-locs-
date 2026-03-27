@@ -266,44 +266,52 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
   }, [callStateV2.activeCall?.uiState]);
 
   const handleStartAudioCall = async () => {
-    if (!thread?.peerOrbitId) return;
+    const peerTarget = thread?.peerOrbitId || thread?.peerUserId;
+    if (!peerTarget) {
+      toast.error("No peer available for call");
+      return;
+    }
     const micOk = devicePermissions.permissions.microphone === "granted" || await devicePermissions.requestMicrophone();
     if (!micOk) return;
     const session = await callActionsV2.createOutgoingCall({
-      conversationId: thread.v2ConversationId || null,
-      peerOrbitId: thread.peerOrbitId,
-      peerName: thread.name || "Contact",
+      conversationId: thread!.v2ConversationId || null,
+      peerOrbitId: peerTarget,
+      peerName: thread!.name || "Contact",
       mode: "audio",
     });
     if (!session) return;
     callStateV2.startOutgoing({
       sessionId: session.id,
-      conversationId: thread.v2ConversationId || null,
-      peerOrbitId: thread.peerOrbitId,
-      peerUserId: thread.peerUserId || null,
-      peerName: thread.name || "Contact",
+      conversationId: thread!.v2ConversationId || null,
+      peerOrbitId: peerTarget,
+      peerUserId: thread!.peerUserId || null,
+      peerName: thread!.name || "Contact",
       mode: "audio",
     });
   };
 
   const handleStartVideoCall = async () => {
-    if (!thread?.peerOrbitId) return;
+    const peerTarget = thread?.peerOrbitId || thread?.peerUserId;
+    if (!peerTarget) {
+      toast.error("No peer available for video call");
+      return;
+    }
     const micOk = devicePermissions.permissions.microphone === "granted" || await devicePermissions.requestMicrophone();
     const camOk = devicePermissions.permissions.camera === "granted" || await devicePermissions.requestCamera();
     if (!micOk || !camOk) return;
     const session = await callActionsV2.createOutgoingCall({
-      conversationId: thread.v2ConversationId || null,
-      peerOrbitId: thread.peerOrbitId,
-      peerName: thread.name || "Contact",
+      conversationId: thread!.v2ConversationId || null,
+      peerOrbitId: peerTarget,
+      peerName: thread!.name || "Contact",
       mode: "video",
     });
     if (!session) return;
     callStateV2.startOutgoing({
       sessionId: session.id,
-      conversationId: thread.v2ConversationId || null,
-      peerOrbitId: thread.peerOrbitId,
-      peerUserId: thread.peerUserId || null,
-      peerName: thread.name || "Contact",
+      conversationId: thread!.v2ConversationId || null,
+      peerOrbitId: peerTarget,
+      peerUserId: thread!.peerUserId || null,
+      peerName: thread!.name || "Contact",
       mode: "video",
     });
   };

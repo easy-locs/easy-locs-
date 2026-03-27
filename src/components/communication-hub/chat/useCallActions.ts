@@ -17,7 +17,9 @@ export function useCallActions(thread: ConversationThread | null, workspaceId: s
     void runGuardedAction(
       async () => {
         const isDirect = thread?.conversationType === "direct";
-        const targetId = isDirect ? thread?.peerUserId : (thread?.peerUserId || thread?.tenantId);
+        const targetId = isDirect
+          ? (thread?.peerUserId || thread?.peerOrbitId)
+          : (thread?.peerUserId || thread?.peerOrbitId || thread?.tenantId);
 
         console.log("[useCallActions] handleStartCall", {
           threadId: thread?.id,
@@ -31,7 +33,7 @@ export function useCallActions(thread: ConversationThread | null, workspaceId: s
         });
 
         if (!targetId) {
-          toast.error(isDirect ? "Impossible d'appeler ce contact : peer introuvable" : "Unable to resolve call target — no peer found");
+          toast.error("Unable to resolve call target — no peer found");
           throw new Error("No call target resolved");
         }
 
