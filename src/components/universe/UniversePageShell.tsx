@@ -188,6 +188,9 @@ export default function UniversePageShell({
         </div>
       </div>
 
+      {/* Hero slot (cuisine slider, etc.) */}
+      {heroSlot && <div className="relative z-20 -mt-3">{heroSlot}</div>}
+
       {/* Search slot */}
       {search && <div className="px-4 -mt-5 relative z-20">{search}</div>}
 
