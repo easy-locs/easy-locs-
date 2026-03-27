@@ -134,7 +134,7 @@ export default function UnifiedSearchBar({
           )}
         >
           <Search className="h-4 w-4 shrink-0" />
-          <span className="min-w-0 flex-1 truncate text-left text-sm font-medium">{defaultPlaceholder}</span>
+          <span className="min-w-0 flex-1 text-left text-sm font-medium leading-tight line-clamp-1">{defaultPlaceholder}</span>
         </button>
 
         <AnimatePresence>
