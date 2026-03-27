@@ -40,37 +40,63 @@ const trackClick = (channel: string, opts: { listingId?: string | null; serviceI
   } as any).then(() => {});
 };
 
-async function getOrCreateThread(userId: string, orgId: string, opts: {
+async function getOrCreateV2Conversation(userId: string, orgId: string, opts: {
   contextType?: string; contextId?: string; listingTitle?: string; listingUrl?: string; providerName?: string;
 }): Promise<string | null> {
+  const db = supabase as any;
   try {
-    const { data: existing } = await supabase
-      .from("conversation_threads")
+    // Look up existing V2 conversation for this listing/service
+    const { data: existing } = await db
+      .from("conversations_v2")
       .select("id")
-      .eq("org_id", orgId)
-      .eq("initiator_id", userId)
-      .eq("context_id", opts.contextId || "")
-      .eq("status", "active")
+      .eq("listing_id", opts.contextId || "")
+      .eq("type", "inquiry")
       .limit(1)
       .maybeSingle();
     if (existing) return existing.id;
 
-    const { data: thread, error } = await supabase
-      .from("conversation_threads")
+    // Resolve orbit_id for creator
+    let creatorOrbitId = `orbit_${userId.slice(0, 12)}`;
+    try {
+      const { data: profile } = await db
+        .from("orbit_profiles_v2")
+        .select("orbit_id")
+        .eq("id", userId)
+        .maybeSingle();
+      if (profile?.orbit_id) creatorOrbitId = profile.orbit_id;
+    } catch { /* fallback */ }
+
+    // Get org owner for participant list
+    const { data: org } = await supabase
+      .from("orgs")
+      .select("owner_user_id")
+      .eq("id", orgId)
+      .maybeSingle();
+
+    const participants = [
+      { userId, orbitId: creatorOrbitId },
+      ...(org?.owner_user_id ? [{ userId: org.owner_user_id, orbitId: `orbit_${org.owner_user_id.slice(0, 12)}` }] : []),
+    ];
+
+    const { data: conv, error } = await db
+      .from("conversations_v2")
       .insert({
-        org_id: orgId,
-        initiator_id: userId,
-        participant_ids: [userId],
-        context_type: opts.contextType || "listing",
-        context_id: opts.contextId || null,
-        listing_title: opts.listingTitle || null,
-        listing_url: opts.listingUrl || null,
-        provider_name: opts.providerName || null,
+        type: "inquiry",
+        title: opts.listingTitle || null,
+        listing_id: opts.contextId || null,
+        created_by_orbit_id: creatorOrbitId,
+        participants,
+        metadata: {
+          org_id: orgId,
+          context_type: opts.contextType || "listing",
+          provider_name: opts.providerName || null,
+        },
+        last_message_at: new Date().toISOString(),
       })
       .select("id")
       .single();
     if (error) throw error;
-    return thread?.id || null;
+    return conv?.id || null;
   } catch { return null; }
 }
 
@@ -143,7 +169,7 @@ const ListingContactButtons = ({
     );
   }
 
-  // ── Send message → navigate to thread ──
+  // ── Send message → navigate to V2 conversation ──
   const handleSendMessage = async () => {
     if (!user || !orgId) return;
     setMessageSending(true);
@@ -156,7 +182,7 @@ const ListingContactButtons = ({
         return;
       }
 
-      const threadId = await getOrCreateThread(user.id, orgId, {
+      const convId = await getOrCreateV2Conversation(user.id, orgId, {
         contextType: serviceId ? "service" : "listing",
         contextId: serviceId || listingId || "",
         listingTitle,
@@ -164,25 +190,47 @@ const ListingContactButtons = ({
         providerName,
       });
 
-      const { error } = await supabase.from("messages").insert({
-        org_id: orgId,
-        sender_id: user.id,
-        content: `Hi, I'm interested in "${listingTitle}"`,
-        category: "general",
-        contact_name: user.user_metadata?.name || user.email,
-        contact_email: user.email,
-        context_id: serviceId || listingId || undefined,
-        message_type: "inquiry",
-        read: false,
-        thread_id: threadId,
+      if (!convId) throw new Error("Failed to create conversation");
+
+      // Resolve sender orbit_id
+      let senderOrbitId = `orbit_${user.id.slice(0, 12)}`;
+      try {
+        const { data: profile } = await (supabase as any)
+          .from("orbit_profiles_v2")
+          .select("orbit_id")
+          .eq("id", user.id)
+          .maybeSingle();
+        if (profile?.orbit_id) senderOrbitId = profile.orbit_id;
+      } catch { /* fallback */ }
+
+      const msgBody = `Hi, I'm interested in "${listingTitle}"`;
+      const { error } = await (supabase as any).from("chat_messages_v2").insert({
+        conversation_id: convId,
+        sender_user_id: user.id,
+        sender_orbit_id: senderOrbitId,
+        type: "text",
+        body: msgBody,
+        metadata: {
+          source: "listing_contact",
+          listing_id: listingId || serviceId || null,
+        },
       });
       if (error) throw error;
+
+      // Update conversation preview
+      await (supabase as any)
+        .from("conversations_v2")
+        .update({
+          last_message_at: new Date().toISOString(),
+          last_message_preview: msgBody.slice(0, 120),
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", convId);
+
       toast.success(t("gate.message_sent") || "Message sent!");
 
-      // Navigate to the conversation thread
-      if (threadId) {
-        navigate(`/client/messages?thread=${threadId}`);
-      }
+      // Navigate to the Orbit conversation
+      navigate(`/orbit?conversation=${convId}`);
     } catch {
       toast.error(t("gate.message_failed") || "Failed to send message");
     }
