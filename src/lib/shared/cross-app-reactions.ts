@@ -27,21 +27,12 @@ export function installCrossAppReactions(): () => void {
   // Listens on BOTH notations to catch events from any source
   const handleWalletPayment = async (event: any) => {
     const p = event.payload as any;
-    if (!p?.conversationId) return;
 
     const user = await getCurrentUser();
     if (!user) return;
 
+    // Notification (system message is already created by orbit-payment-bridge)
     try {
-      await (supabase as any).from("chat_messages_v2").insert({
-        conversation_id: p.conversationId,
-        sender_user_id: user.id,
-        sender_orbit_id: p.senderOrbitId ?? null,
-        type: "system",
-        body: `💰 Payment received · ${p.amount ?? "?"} ${p.currency ?? ""}`.trim(),
-        metadata: { payment_id: p.paymentId, source: "wallet" },
-      });
-
       await createAppNotification({
         userId: user.id,
         scope: "wallet",
@@ -51,7 +42,7 @@ export function installCrossAppReactions(): () => void {
         severity: "success",
       });
     } catch (e) {
-      console.error("[cross-app] wallet→orbit message failed", e);
+      console.error("[cross-app] wallet notification failed", e);
     }
 
     platformBus.emit("dashboard:refresh" as any, { source: "wallet" }, "wallet");
@@ -59,7 +50,6 @@ export function installCrossAppReactions(): () => void {
 
   unsubs.push(
     platformBus.on("wallet:payment_completed", handleWalletPayment),
-    platformBus.on("wallet.payment.completed" as any, handleWalletPayment),
   );
 
   // ── Booking created → inject system message in Orbit chat ──
@@ -97,7 +87,6 @@ export function installCrossAppReactions(): () => void {
 
   unsubs.push(
     platformBus.on("marketplace:booking_created", handleBookingCreated),
-    platformBus.on("booking.created" as any, handleBookingCreated),
   );
 
   // ── Radar location shared → inject location message in Orbit chat ──
