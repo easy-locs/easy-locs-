@@ -102,18 +102,24 @@ export default function AdminEngineCockpit() {
   const [logs, setLogs] = useState<RunLog[]>([]);
   const [scrapeRuns, setScrapeRuns] = useState<ScrapeRun[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<"all" | "real" | "noop" | "error" | "blocked">("all");
+  const [filter, setFilter] = useState<"all" | "real" | "noop" | "error" | "blocked" | "browser_repair">("all");
   const [selectedEngine, setSelectedEngine] = useState<string | null>(null);
+  const [repairRuns, setRepairRuns] = useState<BrowserRepairRun[]>([]);
+  const [repairIssues, setRepairIssues] = useState<BrowserRepairIssue[]>([]);
 
   const fetchData = useCallback(async () => {
-    const [{ data: eng }, { data: runLogs }, { data: scrRuns }] = await Promise.all([
+    const [{ data: eng }, { data: runLogs }, { data: scrRuns }, { data: brRuns }, { data: brIssues }] = await Promise.all([
       db.from("engine_supervisor").select("*").order("engine_name"),
       db.from("engine_run_logs").select("*").order("started_at", { ascending: false }).limit(300),
       db.from("merchant_scrape_runs").select("*").order("started_at", { ascending: false }).limit(20),
+      db.from("browser_repair_runs").select("*").order("started_at", { ascending: false }).limit(20),
+      db.from("browser_repair_issues").select("*").order("created_at", { ascending: false }).limit(100),
     ]);
     if (eng) setEngines(eng);
     if (runLogs) setLogs(runLogs);
     if (scrRuns) setScrapeRuns(scrRuns);
+    if (brRuns) setRepairRuns(brRuns);
+    if (brIssues) setRepairIssues(brIssues);
     setLoading(false);
   }, []);
 
