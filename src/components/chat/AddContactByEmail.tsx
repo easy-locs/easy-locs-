@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { findUserByEmail } from "@/lib/orbit/findUserByEmail";
 import { createOrGetDirectConversation } from "@/lib/orbit/createOrGetDirectConversation";
+import { upsertOrbitContact } from "@/lib/orbit/orbit-contacts-service";
 import { useOrbitStore } from "@/stores/orbitStore";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
 import { Search, AlertCircle, MessageCircle, UserPlus } from "lucide-react";
 import { toast } from "sonner";
 import type { ConversationRow } from "@/lib/types/comms";
@@ -73,46 +73,21 @@ export function AddContactByEmail(props: {
     setSaving(true);
 
     try {
-      // Check if contact already exists
-      const { data: existing } = await supabase
-        .from("contacts")
-        .select("id")
-        .eq("owner_id", user.id)
-        .eq("contact_user_id", result.id)
-        .maybeSingle();
-
-      if (existing) {
-        toast.info("Ce contact existe déjà");
-        setSaved(true);
-        setSaving(false);
-        return;
-      }
-
-      const { error: insertErr } = await supabase.from("contacts").insert({
-        owner_id: user.id,
-        name: result.display_name || result.email || "Contact",
+      await upsertOrbitContact({
+        ownerUserId: user.id,
+        peerUserId: result.id,
+        peerOrbitId: result.orbit_id || null,
+        displayName: result.display_name || result.email || "Contact",
         email: result.email || null,
-        contact_user_id: result.id,
-        category: "friend",
+        avatarUrl: result.avatar_url || null,
+        source: "email_search",
       });
-
-      if (insertErr) {
-        console.error("[AddContactByEmail] insert error", insertErr.message, insertErr.details, insertErr.code);
-        // If it's a duplicate key error, treat as success
-        if (insertErr.code === "23505") {
-          toast.info("Ce contact existe déjà");
-          setSaved(true);
-          return;
-        }
-        setError(`Impossible d'ajouter le contact: ${insertErr.message}`);
-        return;
-      }
 
       setSaved(true);
       toast.success("Contact ajouté !");
       props.onSaved?.();
-    } catch {
-      setError("Erreur lors de l'ajout");
+    } catch (err: any) {
+      setError(err?.message || "Erreur lors de l'ajout");
     } finally {
       setSaving(false);
     }
