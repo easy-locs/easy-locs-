@@ -24,6 +24,11 @@ const isolatedPrefixes = [
   "src/components/communication/",
   "src/components/communication-hub/",
   "src/components/chat/",
+  "src/components/rental/",
+  "src/components/qr/",
+  "src/components/storefront/",
+  "src/hooks/useThreadActions",
+  "src/pages/RentalManagement",
 ];
 
 function walk(dir, out = []) {
