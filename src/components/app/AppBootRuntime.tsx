@@ -1,16 +1,16 @@
 import { useEffect } from "react";
 import { platformBus } from "@/lib/shared/platform-bus";
-import { CANONICAL_APP_EVENTS } from "@/lib/app-shell/canonical-app-events";
+import { APP_EVENTS } from "@/lib/platform/events";
 
 export function AppBootRuntime() {
   useEffect(() => {
     platformBus.emit(
-      CANONICAL_APP_EVENTS.APP_BOOTSTRAPPED,
+      APP_EVENTS.APP_BOOTSTRAPPED,
       { at: new Date().toISOString() },
       "app"
     );
     platformBus.emit(
-      CANONICAL_APP_EVENTS.APP_READY,
+      APP_EVENTS.APP_READY,
       { at: new Date().toISOString() },
       "app"
     );
