@@ -147,6 +147,7 @@ export default function CommCallsSection() {
     haptic("medium");
     const peerId = call.caller_orbit_id === user?.id ? call.receiver_orbit_id : call.caller_orbit_id;
 
+    trackOrbitEvent("orbit.call.started", { screen: "calls", component: "CommCallsSection", action: "redial", payload: { callType: call.call_type }, result: "success" });
     await startCall({
       orgId: peerId,
       contextType: "direct",
