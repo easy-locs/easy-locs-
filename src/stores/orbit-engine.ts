@@ -171,8 +171,8 @@ async function refreshBusiness(orgId?: string) {
 }
 
 async function refreshNotifications(userId: string) {
-  const pendingNotifications = await safeCount("notifications", (q) =>
-    q.eq("user_id", userId).eq("read", false)
+  const pendingNotifications = await safeCount("app_notifications", (q) =>
+    q.eq("user_id", userId).is("read_at", null).is("dismissed_at", null)
   );
   return { pendingNotifications };
 }
