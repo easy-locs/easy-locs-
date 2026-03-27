@@ -1,5 +1,2 @@
-/** Stub — engine logic moved to backend functions. */
-export async function runBackendConnectivity(..._args: any[]): Promise<any> {
-  console.warn("[backend-connectivity-engine] Stub — no-op");
-  return { status: "stub", results: [] };
-}
+/** Stub */
+export async function runBackendConnectivityCheck(..._args: any[]) { return { status: "stub", results: [] }; }
