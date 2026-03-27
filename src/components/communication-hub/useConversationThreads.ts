@@ -52,20 +52,46 @@ export function useConversationThreads() {
     const threadMap = new Map<string, ConversationThread>();
 
     try {
-      // ── 1. Tenant-based (property management) ──
-      const { data: tenants } = await supabase
-        .from("tenants")
-        .select("id, name, email, tenant_user_id, property_id, lease_type")
-        .eq("org_id", orgId)
-        .order("name");
+      // ── Parallel fetch: sections 1-6 fire concurrently ──
+      const [tenantRes, mBookingRes, cOrderRes, sBookingRes, reLeadRes, guestRes] = await Promise.all([
+        supabase.from("tenants").select("id, name, email, tenant_user_id, property_id, lease_type").eq("org_id", orgId).order("name"),
+        supabase.from("marketplace_bookings").select("id, booker_name, booker_email, booker_phone, status, total_price, currency, service_id, service_date, provider_id").eq("org_id", orgId).order("created_at", { ascending: false }).limit(200),
+        supabase.from("concierge_orders").select("id, guest_name, guest_email, guest_phone, status, total_price, currency, service_id, service_date, property_label, property_id").eq("org_id", orgId).order("created_at", { ascending: false }).limit(200),
+        supabase.from("booking_requests").select("id, guest_name, guest_email, guest_phone, status, check_in, check_out, property_id").eq("org_id", orgId).order("created_at", { ascending: false }).limit(200),
+        supabase.from("real_estate_leads").select("id, name, email, phone, status, message, listing_id, created_at").eq("org_id", orgId).order("created_at", { ascending: false }).limit(200),
+        supabase.from("guest_sessions").select("id, display_name, email, context_type, context_id, created_at, expires_at").eq("org_id", orgId).order("created_at", { ascending: false }).limit(50).then(r => r, () => ({ data: null, error: null, count: null, status: 200, statusText: "OK" })),
+      ]);
 
+      const tenants = tenantRes.data;
+      const mBookings = mBookingRes.data;
+      const cOrders = cOrderRes.data;
+      const sBookings = sBookingRes.data;
+      const reLeads = reLeadRes.data;
+      const guestSessions = (guestRes as any).data;
+
+      // ── Parallel sub-lookups for related entities ──
+      const propertyIds = (tenants || []).filter(t => t.property_id).map(t => t.property_id!);
+      const mSvcIds = [...new Set((mBookings || []).map(b => b.service_id).filter(Boolean))] as string[];
+      const cSvcIds = [...new Set((cOrders || []).map(o => o.service_id).filter(Boolean))] as string[];
+      const sPropIds = [...new Set((sBookings || []).map(b => b.property_id).filter(Boolean))] as string[];
+      const listingIds = [...new Set((reLeads || []).map(l => l.listing_id).filter(Boolean))] as string[];
+
+      const [propRes, mSvcRes, cSvcRes, sPropRes, listingRes] = await Promise.all([
+        propertyIds.length > 0 ? supabase.from("properties").select("id, label, country").in("id", propertyIds) : { data: [] },
+        mSvcIds.length > 0 ? supabase.from("marketplace_services").select("id, title, country").in("id", mSvcIds) : { data: [] },
+        cSvcIds.length > 0 ? supabase.from("concierge_services").select("id, title, country").in("id", cSvcIds) : { data: [] },
+        sPropIds.length > 0 ? supabase.from("properties").select("id, label, country").in("id", sPropIds) : { data: [] },
+        listingIds.length > 0 ? supabase.from("real_estate_listings").select("id, title, listing_type, country").in("id", listingIds) : { data: [] },
+      ]);
+
+      const propertyMap: Record<string, { label: string; country: string }> = Object.fromEntries((propRes.data || []).map(p => [p.id, { label: p.label, country: p.country || "FR" }]));
+      const mSvcMap: Record<string, { title: string; country: string }> = Object.fromEntries((mSvcRes.data || []).map(s => [s.id, { title: s.title, country: s.country || "" }]));
+      const cSvcMap: Record<string, { title: string; country: string }> = Object.fromEntries((cSvcRes.data || []).map(s => [s.id, { title: s.title, country: s.country || "" }]));
+      const sPropMap: Record<string, { label: string; country: string }> = Object.fromEntries((sPropRes.data || []).map(p => [p.id, { label: p.label, country: p.country || "" }]));
+      const listingMap: Record<string, { title: string; listing_type: string; country: string }> = Object.fromEntries((listingRes.data || []).map(l => [l.id, { title: l.title, listing_type: l.listing_type, country: l.country || "" }]));
+
+      // ── 1. Tenants ──
       if (tenants) {
-        const propertyIds = tenants.filter(t => t.property_id).map(t => t.property_id!);
-        let propertyMap: Record<string, { label: string; country: string }> = {};
-        if (propertyIds.length > 0) {
-          const { data: props } = await supabase.from("properties").select("id, label, country").in("id", propertyIds);
-          if (props) propertyMap = Object.fromEntries(props.map(p => [p.id, { label: p.label, country: p.country || "FR" }]));
-        }
         for (const t of tenants) {
           threadMap.set(`tenant-${t.id}`, {
             id: `tenant-${t.id}`,
@@ -85,20 +111,7 @@ export function useConversationThreads() {
       }
 
       // ── 2. Marketplace bookings ──
-      const { data: mBookings } = await supabase
-        .from("marketplace_bookings")
-        .select("id, booker_name, booker_email, booker_phone, status, total_price, currency, service_id, service_date, provider_id")
-        .eq("org_id", orgId)
-        .order("created_at", { ascending: false })
-        .limit(200);
-
       if (mBookings?.length) {
-        const svcIds = [...new Set(mBookings.map(b => b.service_id).filter(Boolean))];
-        let svcMap: Record<string, { title: string; country: string }> = {};
-        if (svcIds.length > 0) {
-          const { data: svcs } = await supabase.from("marketplace_services").select("id, title, country").in("id", svcIds);
-          if (svcs) svcMap = Object.fromEntries(svcs.map(s => [s.id, { title: s.title, country: s.country || "" }]));
-        }
         for (const b of mBookings) {
           threadMap.set(`booking-${b.id}`, {
             id: `booking-${b.id}`,
@@ -112,8 +125,8 @@ export function useConversationThreads() {
             bookingId: b.id,
             bookingType: "marketplace",
             bookingStatus: b.status,
-            serviceTitle: b.service_id ? svcMap[b.service_id]?.title : undefined,
-            propertyCountry: b.service_id ? svcMap[b.service_id]?.country : undefined,
+            serviceTitle: b.service_id ? mSvcMap[b.service_id]?.title : undefined,
+            propertyCountry: b.service_id ? mSvcMap[b.service_id]?.country : undefined,
             totalPrice: b.total_price,
             currency: b.currency,
             unreadCount: 0,
@@ -122,20 +135,7 @@ export function useConversationThreads() {
       }
 
       // ── 3. Concierge bookings ──
-      const { data: cOrders } = await supabase
-        .from("concierge_orders")
-        .select("id, guest_name, guest_email, guest_phone, status, total_price, currency, service_id, service_date, property_label, property_id")
-        .eq("org_id", orgId)
-        .order("created_at", { ascending: false })
-        .limit(200);
-
       if (cOrders?.length) {
-        const svcIds = [...new Set(cOrders.map(o => o.service_id).filter(Boolean))];
-        let svcMap: Record<string, { title: string; country: string }> = {};
-        if (svcIds.length > 0) {
-          const { data: svcs } = await supabase.from("concierge_services").select("id, title, country").in("id", svcIds);
-          if (svcs) svcMap = Object.fromEntries(svcs.map(s => [s.id, { title: s.title, country: s.country || "" }]));
-        }
         for (const o of cOrders) {
           threadMap.set(`booking-${o.id}`, {
             id: `booking-${o.id}`,
@@ -149,7 +149,7 @@ export function useConversationThreads() {
             bookingId: o.id,
             bookingType: "concierge",
             bookingStatus: o.status,
-            serviceTitle: o.service_id ? svcMap[o.service_id]?.title : undefined,
+            serviceTitle: o.service_id ? cSvcMap[o.service_id]?.title : undefined,
             propertyLabel: o.property_label || undefined,
             propertyId: o.property_id || undefined,
             totalPrice: o.total_price,
@@ -160,20 +160,7 @@ export function useConversationThreads() {
       }
 
       // ── 4. Seasonal bookings ──
-      const { data: sBookings } = await supabase
-        .from("booking_requests")
-        .select("id, guest_name, guest_email, guest_phone, status, check_in, check_out, property_id")
-        .eq("org_id", orgId)
-        .order("created_at", { ascending: false })
-        .limit(200);
-
       if (sBookings?.length) {
-        const propIds = [...new Set(sBookings.map(b => b.property_id).filter(Boolean))];
-        let propMap: Record<string, { label: string; country: string }> = {};
-        if (propIds.length > 0) {
-          const { data: props } = await supabase.from("properties").select("id, label, country").in("id", propIds);
-          if (props) propMap = Object.fromEntries(props.map(p => [p.id, { label: p.label, country: p.country || "" }]));
-        }
         for (const b of sBookings) {
           threadMap.set(`booking-${b.id}`, {
             id: `booking-${b.id}`,
@@ -187,29 +174,16 @@ export function useConversationThreads() {
             bookingId: b.id,
             bookingType: "seasonal",
             bookingStatus: b.status,
-            propertyLabel: b.property_id ? propMap[b.property_id]?.label : undefined,
-            propertyCountry: b.property_id ? propMap[b.property_id]?.country : undefined,
+            propertyLabel: b.property_id ? sPropMap[b.property_id]?.label : undefined,
+            propertyCountry: b.property_id ? sPropMap[b.property_id]?.country : undefined,
             propertyId: b.property_id || undefined,
             unreadCount: 0,
           });
         }
       }
 
-      // ── 5. Real estate leads (listing conversations) ──
-      const { data: reLeads } = await supabase
-        .from("real_estate_leads")
-        .select("id, name, email, phone, status, message, listing_id, created_at")
-        .eq("org_id", orgId)
-        .order("created_at", { ascending: false })
-        .limit(200);
-
+      // ── 5. Real estate leads ──
       if (reLeads?.length) {
-        const listingIds = [...new Set(reLeads.map(l => l.listing_id).filter(Boolean))];
-        let listingMap: Record<string, { title: string; listing_type: string; country: string }> = {};
-        if (listingIds.length > 0) {
-          const { data: listings } = await supabase.from("real_estate_listings").select("id, title, listing_type, country").in("id", listingIds);
-          if (listings) listingMap = Object.fromEntries(listings.map(l => [l.id, { title: l.title, listing_type: l.listing_type, country: l.country || "" }]));
-        }
         for (const lead of reLeads) {
           const listing = lead.listing_id ? listingMap[lead.listing_id] : null;
           threadMap.set(`lead-${lead.id}`, {
@@ -234,32 +208,21 @@ export function useConversationThreads() {
       }
 
       // ── 6. Guest sessions ──
-      try {
-        const { data: guestSessions } = await supabase
-          .from("guest_sessions")
-          .select("id, display_name, email, context_type, context_id, created_at, expires_at")
-          .eq("org_id", orgId)
-          .order("created_at", { ascending: false })
-          .limit(50);
-
-        if (guestSessions?.length) {
-          for (const gs of guestSessions) {
-            threadMap.set(`guest-${gs.id}`, {
-              id: `guest-${gs.id}`,
-              conversationType: "business",
-              sourceModule: "marketplace",
-              contextType: "guest_session",
-              contextId: gs.id,
-              name: gs.display_name || "Guest",
-              email: gs.email || null,
-              listingTitle: gs.context_type !== "general" ? gs.context_type : undefined,
-              unreadCount: 0,
-              lastMessageTime: gs.created_at,
-            });
-          }
+      if (guestSessions?.length) {
+        for (const gs of guestSessions) {
+          threadMap.set(`guest-${gs.id}`, {
+            id: `guest-${gs.id}`,
+            conversationType: "business",
+            sourceModule: "marketplace",
+            contextType: "guest_session",
+            contextId: gs.id,
+            name: gs.display_name || "Guest",
+            email: gs.email || null,
+            listingTitle: gs.context_type !== "general" ? gs.context_type : undefined,
+            unreadCount: 0,
+            lastMessageTime: gs.created_at,
+          });
         }
-      } catch (e) {
-        console.warn("[comm-threads] guest_sessions query failed:", e);
       }
 
       // ── 7. Conversation threads table (non-direct: listing, business, team) ──
