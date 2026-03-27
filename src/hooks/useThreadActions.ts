@@ -164,7 +164,7 @@ export function useThreadActions({ updateThreadLocally, loadThreads }: UseThread
     try {
       // Update the conversation_threads table status if thread has a DB thread
       if (thread.threadId) {
-        await supabase.from("conversation_threads").update({ status } as any).eq("id", thread.threadId);
+        await supabase.from("conversations_v2").update({ status } as any).eq("id", thread.threadId);
       }
       const statusLabels: Record<string, string> = {
         active: "🟢 Active", waiting_tenant: "🟡 Waiting client", waiting_landlord: "🟠 Waiting owner",

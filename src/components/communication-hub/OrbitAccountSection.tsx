@@ -178,7 +178,7 @@ export default function OrbitAccountSection() {
     if (!user) return;
     try {
       const { data: threads } = await supabase
-        .from("conversation_threads")
+        .from("conversations_v2")
         .select("id")
         .contains("participant_ids", [user.id]);
       
@@ -204,7 +204,7 @@ export default function OrbitAccountSection() {
     if (!user) return;
     try {
       const { data: threads } = await supabase
-        .from("conversation_threads")
+        .from("conversations_v2")
         .select("id")
         .contains("participant_ids", [user.id]);
       
@@ -229,7 +229,7 @@ export default function OrbitAccountSection() {
     if (!confirm(t("orbit.delete_for_all_q") || "Delete all chats? This cannot be undone.")) return;
     try {
       const { data: threads } = await supabase
-        .from("conversation_threads")
+        .from("conversations_v2")
         .select("id")
         .contains("participant_ids", [user.id]);
       
