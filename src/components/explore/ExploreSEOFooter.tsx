@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { Globe, MapPin, Briefcase, Home, Users, ChevronRight } from "lucide-react";
 import { SEO_COUNTRIES, SEO_SERVICE_CATEGORIES, getPhase1Cities } from "@/lib/seo/seo-data";
-import { CATEGORY_HIERARCHY } from "@/lib/category-hierarchy";
+import { CATEGORY_HIERARCHY } from "@/lib/taxonomy/category-tree";
 import { useI18n } from "@/lib/i18n";
 
 const CONTINENT_ORDER = [
