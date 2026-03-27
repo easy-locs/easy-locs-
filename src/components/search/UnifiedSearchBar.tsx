@@ -386,9 +386,9 @@ function AutocompleteSection({
             </div>
           )}
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-foreground truncate">{item.title}</p>
+            <p className="text-sm font-medium text-foreground break-words line-clamp-2 leading-snug">{item.title}</p>
             {item.subtitle && (
-              <p className="text-[11px] text-muted-foreground truncate">{item.subtitle}</p>
+              <p className="text-[11px] text-muted-foreground break-words line-clamp-2 leading-snug">{item.subtitle}</p>
             )}
           </div>
           {item.price != null && (

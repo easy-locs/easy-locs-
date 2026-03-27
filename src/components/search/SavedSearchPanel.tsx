@@ -41,7 +41,7 @@ export function SavedSearchPanel() {
             key={item.id}
             className="flex items-center justify-between rounded-lg border border-border p-2"
           >
-            <p className="text-sm font-medium text-foreground truncate flex-1">{item.name}</p>
+            <p className="text-sm font-medium text-foreground break-words line-clamp-2 leading-snug flex-1">{item.name}</p>
             <div className="flex gap-1 shrink-0">
               <Button
                 variant="ghost"
