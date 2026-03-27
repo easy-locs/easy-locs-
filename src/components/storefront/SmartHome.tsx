@@ -301,30 +301,80 @@ export default function SmartHome() {
           </motion.div>
         </div>
 
-        {/* ═══ Context Banner ═══ */}
+        {/* ═══ Context Banners — Animated carousel ═══ */}
         {contextBanners.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={TRANSITIONS.smooth}
-            className="mb-4"
-          >
-            <Link
-              to={contextBanners[0].route || "/radar"}
-              className="block rounded-2xl border border-border/15 p-4 active:scale-[0.98] transition-transform"
-              style={{ background: contextBanners[0].gradient }}
-            >
-              <p className="text-sm font-bold leading-snug text-foreground">
-                {contextBanners[0].emoji} {contextBanners[0].title}
-              </p>
-              <p className="mt-1 text-xs leading-relaxed text-muted-foreground line-clamp-2">{contextBanners[0].subtitle}</p>
-              {contextBanners[0].cta && (
-                <span className="mt-2.5 inline-flex items-center gap-1 text-xs font-semibold text-primary">
-                  {contextBanners[0].cta} <ChevronRight className="h-3.5 w-3.5" />
-                </span>
-              )}
-            </Link>
-          </motion.div>
+          <div className="mb-4 space-y-2">
+            <AnimatePresence mode="wait">
+              {contextBanners.slice(activeBannerIdx, activeBannerIdx + 1).map((banner) => (
+                <motion.div
+                  key={banner.id}
+                  initial={{ opacity: 0, x: 40 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -40 }}
+                  transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
+                >
+                  <Link
+                    to={banner.route || "/radar"}
+                    className="relative block overflow-hidden rounded-2xl border border-border/15 p-4 active:scale-[0.98] transition-transform"
+                    style={{ background: banner.gradient }}
+                  >
+                    {/* Animated glow overlay */}
+                    {banner.glowColor && (
+                      <motion.div
+                        className="absolute inset-0 pointer-events-none"
+                        style={{
+                          background: `radial-gradient(ellipse at 80% 20%, ${banner.glowColor}, transparent 65%)`,
+                        }}
+                        animate={{ opacity: [0.4, 0.8, 0.4] }}
+                        transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                      />
+                    )}
+
+                    {/* Shimmer line */}
+                    {banner.animation === "shimmer" && (
+                      <motion.div
+                        className="absolute inset-0 pointer-events-none"
+                        style={{
+                          background: "linear-gradient(105deg, transparent 40%, hsla(0,0%,100%,0.08) 50%, transparent 60%)",
+                        }}
+                        animate={{ x: ["-100%", "200%"] }}
+                        transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", repeatDelay: 2 }}
+                      />
+                    )}
+
+                    <div className="relative z-10">
+                      <p className="text-sm font-extrabold leading-snug text-white drop-shadow-sm">
+                        {banner.emoji} {banner.title}
+                      </p>
+                      <p className="mt-1 text-xs leading-relaxed text-white/75 line-clamp-2 font-medium">{banner.subtitle}</p>
+                      {banner.cta && (
+                        <span className="mt-2.5 inline-flex items-center gap-1 rounded-full bg-white/20 px-3 py-1 text-[11px] font-bold text-white backdrop-blur-sm">
+                          {banner.cta} <ChevronRight className="h-3 w-3" />
+                        </span>
+                      )}
+                    </div>
+                  </Link>
+                </motion.div>
+              ))}
+            </AnimatePresence>
+
+            {/* Dots indicator */}
+            {contextBanners.length > 1 && (
+              <div className="flex items-center justify-center gap-1.5">
+                {contextBanners.map((b, i) => (
+                  <button
+                    key={b.id}
+                    onClick={() => setActiveBannerIdx(i)}
+                    className="h-1.5 rounded-full transition-all duration-300"
+                    style={{
+                      width: i === activeBannerIdx ? 16 : 6,
+                      background: i === activeBannerIdx ? "hsl(var(--primary))" : "hsl(var(--muted-foreground) / 0.25)",
+                    }}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
         )}
 
         {/* ═══ BOOST SLOT ═══ */}
