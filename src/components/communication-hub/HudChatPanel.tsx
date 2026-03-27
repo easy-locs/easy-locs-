@@ -1,7 +1,6 @@
 /**
  * HudChatPanel — Futuristic command center chat interface.
- * Wraps existing ChatPanel logic with dark glass HUD visuals.
- * Re-exports the original ChatPanel but overrides styling.
+ * Refactored: logic extracted to useMessageSender, usePaymentDialogs, useTranslation.
  */
 import { useState, useEffect, useRef, useCallback } from "react";
 import DealContextHeader from "./DealContextHeader";
@@ -50,7 +49,6 @@ import OrbitSmartPayment, { type PaymentConfirmation } from "@/components/orbit/
 import { RequestMoneyModal } from "@/components/chat/RequestMoneyModal";
 import { sendPaymentRequestMessageToThread, sendPaymentReceiptToThread } from "@/components/chat/ChatPaymentCards";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
-// date-fns format imported below with ChatMessageBubble
 import { toast } from "sonner";
 import { useI18n } from "@/lib/i18n";
 import { getCountryConfig } from "@/lib/country-config";
@@ -62,11 +60,12 @@ import { MESSAGE_CATEGORIES, CONV_STATUSES, CONV_TYPE_CONFIG, SOURCE_MODULE_CONF
 import ChatMessageBubble, { DateSeparator } from "./ChatMessageBubble";
 import { format, isToday, isYesterday } from "date-fns";
 
+// ── Extracted hooks ──
+import { useMessageSender } from "@/hooks/useMessageSender";
+import { usePaymentDialogs } from "@/hooks/usePaymentDialogs";
+import { useTranslation } from "@/hooks/useTranslation";
+
 const SYSTEM_SENDER_ID = "00000000-0000-0000-0000-000000000000";
-const escapeEmailHtml = (v: string) =>
-  v.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
-const normalizeEmail = (e: string | null | undefined) => (e || "").trim().toLowerCase();
-const isValidEmail = (e: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
 
 interface Props {
   thread: ConversationThread | null;
@@ -87,22 +86,14 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
   const [pendingOffline, setPendingOffline] = useState<any[]>([]);
 
   const [rawMessages, setRawMessages] = useState<ChatMessage[]>([]);
-  const { messages: messages, isDecrypting } = useDecryptedMessages(rawMessages, decrypt, user?.id);
-  const [newMessage, setNewMessage] = useState("");
-  const [sending, setSending] = useState(false);
+  const { messages: decryptedMessages } = useDecryptedMessages(rawMessages, decrypt, user?.id);
+  const messages = decryptedMessages as ChatMessage[];
   const [selectedCategory, setSelectedCategory] = useState("general");
   const [convStatus, setConvStatus] = useState("active");
   const [uploading, setUploading] = useState(false);
-  const [showOriginal, setShowOriginal] = useState<Record<string, boolean>>({});
-  const [translatingMsgId, setTranslatingMsgId] = useState<string | null>(null);
   const [typingIndicator, setTypingIndicator] = useState(false);
   const typingChannelRef = useRef<any>(null);
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const [paymentLinkDialog, setPaymentLinkDialog] = useState(false);
-  const [paymentAmount, setPaymentAmount] = useState("");
-  const [paymentDescription, setPaymentDescription] = useState("");
-  const [requestMoneyDialog, setRequestMoneyDialog] = useState(false);
-  const [sendingPaymentLink, setSendingPaymentLink] = useState(false);
   const [contextMessage, setContextMessage] = useState<{ msgId: string; content: string; isMe: boolean; createdAt: string; hasAudio?: boolean; hasAttachment?: boolean; senderId?: string; canModerate?: boolean; isStarred?: boolean } | null>(null);
   const [hiddenMsgIds, setHiddenMsgIds] = useState<Set<string>>(new Set());
   const [disappearTTL, setDisappearTTL] = useState("off");
@@ -132,11 +123,24 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
     return data.user.id;
   }, []);
 
-  // ══ All business logic identical to ChatPanel.tsx ══
+  // ── Extracted: Translation hook ──
+  const { showOriginal, translatingMsgId, handleTranslateMessage } = useTranslation(locale);
+
+  // ── Extracted: Message sender hook ──
+  const messageSender = useMessageSender({
+    thread, orgId, userId: user?.id, locale, myOrbitId, e2eReady, encrypt, offline,
+    privacySettings, disappearTTL, securityLevel, setSecurityLevel, selectedCategory,
+    replyTo, setReplyTo: () => setReplyTo(null), setRawMessages, setPendingOffline,
+    onThreadUpdate, resolveAuthUserId,
+  });
+
+  // ── Extracted: Payment dialogs hook ──
+  const payment = usePaymentDialogs({ thread, orgId, locale, resolveAuthUserId });
+
+  // ══ Load messages ══
   const loadMessages = useCallback(async () => {
     if (!thread) return;
 
-    // ── V2 CANONICAL PATH ──
     if (thread.isV2 && thread.v2ConversationId) {
       const { data } = await (supabase as any)
         .from("chat_messages_v2")
@@ -146,30 +150,19 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
         .limit(200);
       if (data) {
         const mapped = data.map((m: any) => ({
-          id: m.id,
-          sender_id: m.sender_user_id,
-          content: m.body,
-          created_at: m.created_at,
-          read: !!m.read_at,
-          category: "general",
-          tenant_id: null,
-          translated_content: null,
-          translated_locale: null,
-          language_detected: null,
-          message_type: m.type || "user",
-          context_type: "direct",
-          context_id: thread.v2ConversationId,
+          id: m.id, sender_id: m.sender_user_id, content: m.body,
+          created_at: m.created_at, read: !!m.read_at, category: "general",
+          tenant_id: null, translated_content: null, translated_locale: null,
+          language_detected: null, message_type: m.type || "user",
+          context_type: "direct", context_id: thread.v2ConversationId,
         }));
         setRawMessages(mapped as ChatMessage[]);
-        // Mark unread V2 messages as read
         const unreadIds = data
           .filter((m: any) => !m.read_at && m.sender_user_id !== user?.id)
           .map((m: any) => m.id);
         if (unreadIds.length > 0) {
-          await (supabase as any)
-            .from("chat_messages_v2")
-            .update({ read_at: new Date().toISOString() })
-            .in("id", unreadIds);
+          await (supabase as any).from("chat_messages_v2")
+            .update({ read_at: new Date().toISOString() }).in("id", unreadIds);
           onThreadUpdate(thread.id, { unreadCount: 0 });
         }
       }
@@ -177,10 +170,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
       return;
     }
 
-    // ── LEGACY PATH ──
     if (!orgId) return;
-
-    // If offline, load from cache
     if (!offline.isOnline) {
       const cached = await offline.getCachedMessages();
       if (cached.length > 0) setRawMessages(cached as ChatMessage[]);
@@ -198,15 +188,11 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
     const { data } = await query;
     if (data) {
       const clearedAt = thread.clearedAt;
-      const visible = clearedAt
-        ? data.filter((m: any) => m.created_at > clearedAt)
-        : data;
+      const visible = clearedAt ? data.filter((m: any) => m.created_at > clearedAt) : data;
       const enriched = visible.map((msg: any) => {
         if (msg.reply_to_id && !msg.reply_to_content) {
           const parent = visible.find((m: any) => m.id === msg.reply_to_id);
-          if (parent) {
-            return { ...msg, reply_to_content: (parent as any).content?.slice(0, 120) || "Message" };
-          }
+          if (parent) return { ...msg, reply_to_content: (parent as any).content?.slice(0, 120) || "Message" };
         }
         return msg;
       });
@@ -226,15 +212,13 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
   }, [orgId, thread, user, onThreadUpdate, offline]);
 
   useEffect(() => { loadMessages(); }, [loadMessages]);
-  // Re-load when coming back online
   useEffect(() => { if (offline.isOnline) loadMessages(); }, [offline.isOnline]);
   useEffect(() => { if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight; }, [messages]);
 
-  // Realtime messages + typing
+  // ══ Realtime ══
   useEffect(() => {
     if (!thread) return;
 
-    // ── V2 CANONICAL REALTIME ──
     if (thread.isV2 && thread.v2ConversationId) {
       const v2Channel = supabase
         .channel(`rt:v2:${thread.v2ConversationId}`)
@@ -245,22 +229,13 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
           const msg = payload.new as any;
           if (!msg?.id) return;
           const mapped: ChatMessage = {
-            id: msg.id,
-            sender_id: msg.sender_user_id,
-            content: msg.body,
-            created_at: msg.created_at,
-            read: !!msg.read_at,
-            category: "general",
-            tenant_id: null,
-            translated_content: null,
-            translated_locale: null,
-            language_detected: null,
-            message_type: msg.type || "user",
-            context_type: "direct",
-            context_id: thread.v2ConversationId,
+            id: msg.id, sender_id: msg.sender_user_id, content: msg.body,
+            created_at: msg.created_at, read: !!msg.read_at, category: "general",
+            tenant_id: null, translated_content: null, translated_locale: null,
+            language_detected: null, message_type: msg.type || "user",
+            context_type: "direct", context_id: thread.v2ConversationId,
           } as any;
           setRawMessages(prev => prev.some(m => m.id === mapped.id) ? prev : [...prev, mapped]);
-          // Auto mark as read
           if (msg.sender_user_id !== user?.id && !msg.read_at) {
             (supabase as any).from("chat_messages_v2").update({ read_at: new Date().toISOString() }).eq("id", msg.id);
             onThreadUpdate(thread.id, { unreadCount: 0 });
@@ -272,20 +247,16 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
         }, (payload) => {
           const msg = payload.new as any;
           if (!msg?.id) return;
-          setRawMessages(prev => prev.map(m => m.id === msg.id ? {
-            ...m, content: msg.body, read: !!msg.read_at,
-          } : m));
+          setRawMessages(prev => prev.map(m => m.id === msg.id ? { ...m, content: msg.body, read: !!msg.read_at } : m));
         })
         .subscribe();
 
       const typChannel = supabase.channel(`rt:typing:v2:${thread.v2ConversationId}`);
-      typChannel
-        .on("presence", { event: "sync" }, () => {
-          const state = typChannel.presenceState();
-          const others = Object.values(state).flat().filter((p: any) => p.user_id !== user?.id);
-          setTypingIndicator(others.length > 0);
-        })
-        .subscribe();
+      typChannel.on("presence", { event: "sync" }, () => {
+        const state = typChannel.presenceState();
+        const others = Object.values(state).flat().filter((p: any) => p.user_id !== user?.id);
+        setTypingIndicator(others.length > 0);
+      }).subscribe();
       typingChannelRef.current = typChannel;
 
       return () => {
@@ -296,7 +267,6 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
       };
     }
 
-    // ── LEGACY REALTIME ──
     if (!orgId) return;
     const matchThread = (msg: any) => {
       const msgKey = msg.booking_id ? `booking-${msg.booking_id}` : msg.tenant_id ? `tenant-${msg.tenant_id}` : null;
@@ -314,15 +284,11 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
       },
       onUpdate: (payload: any) => {
         const updated = payload.new as ChatMessage;
-        if (matchThread(updated)) {
-          setRawMessages(prev => prev.map(m => m.id === updated.id ? updated : m));
-        }
+        if (matchThread(updated)) setRawMessages(prev => prev.map(m => m.id === updated.id ? updated : m));
       },
       onDelete: (payload: any) => {
         const deleted = payload.old as any;
-        if (deleted?.id) {
-          setRawMessages(prev => prev.filter(m => m.id !== deleted.id));
-        }
+        if (deleted?.id) setRawMessages(prev => prev.filter(m => m.id !== deleted.id));
       },
       onTypingSync: (others) => setTypingIndicator(others.length > 0),
       currentUserId: user?.id,
@@ -335,7 +301,6 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
     };
   }, [orgId, thread, user, privacySettings.readReceipts, onThreadUpdate]);
 
-  // Broadcast typing on input change (debounced, respects privacy)
   const broadcastTyping = useCallback(() => {
     if (!privacySettings.typingIndicators || !typingChannelRef.current) return;
     typingChannelRef.current.track({ user_id: user?.id, typing: true, ts: Date.now() }).catch(() => {});
@@ -345,147 +310,89 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
     }, 3000);
   }, [user?.id, privacySettings.typingIndicators]);
 
+  // ══ File upload ══
   const handleFileUpload = async (file: File) => {
     if (!thread) return;
-
     const authUserId = await resolveAuthUserId();
     if (!authUserId) return;
-
-    if (!orgId) {
-      toast.error("Please select a workspace first");
-      return;
-    }
-
+    if (!orgId) { toast.error("Please select a workspace first"); return; }
     setUploading(true);
     try {
       const { validateMediaFile } = await import("@/lib/media-utils");
       const validationErr = validateMediaFile(file);
-      if (validationErr) {
-        toast.error(validationErr);
-        setUploading(false);
-        return;
-      }
+      if (validationErr) { toast.error(validationErr); setUploading(false); return; }
 
       const isMedia = file.type.startsWith("image/") || file.type.startsWith("video/");
       let uploadFile: File | Blob = file;
       let uploadExt = file.name.split(".").pop() || "bin";
       let fileMetaJson: Record<string, string> | null = null;
 
-      // E2E: encrypt file before upload if encryption is ready
       const peerId = thread.tenantId || thread.contextId || thread.id;
       if (e2eReady && peerId) {
         try {
           const { encryptFileForUpload } = await import("@/lib/orbit-file-encryption");
           const { getPrivateKey } = await import("@/lib/orbit-keystore");
           const { importPublicKey, deriveSharedKey: deriveKey } = await import("@/lib/orbit-crypto");
-
           const privateKey = await getPrivateKey(authUserId);
           if (privateKey) {
-            const { data: peerKeyData } = await supabase
-              .from("user_key_bundles" as any)
-              .select("identity_public_key")
-              .eq("user_id", peerId)
-              .maybeSingle();
+            const { data: peerKeyData } = await supabase.from("user_key_bundles" as any).select("identity_public_key").eq("user_id", peerId).maybeSingle();
             const peerPubBase64 = (peerKeyData as any)?.identity_public_key;
             if (peerPubBase64) {
               const peerPubKey = await importPublicKey(peerPubBase64);
               const sharedKey = await deriveKey(privateKey, peerPubKey);
               const { encryptedBlob, iv, originalName, originalType } = await encryptFileForUpload(file, sharedKey);
-              uploadFile = encryptedBlob;
-              uploadExt = "enc";
+              uploadFile = encryptedBlob; uploadExt = "enc";
               fileMetaJson = { iv, originalName, originalType };
             }
           }
-        } catch (err) {
-          console.warn("[Orbit] File encryption failed, uploading unencrypted:", err);
-        }
+        } catch (err) { console.warn("[Orbit] File encryption failed, uploading unencrypted:", err); }
       }
 
       const path = `${orgId}/${thread.id}/${Date.now()}-${Math.random().toString(36).slice(2)}.${uploadExt}`;
       const buckets = ["chat-media", "property-photos", "avatars"];
       let finalUrl: string | null = null;
-      let uploaded = false;
-
       for (const bucket of buckets) {
         const { error: uploadErr } = await supabase.storage.from(bucket).upload(path, uploadFile, { upsert: false });
-        if (uploadErr) {
-          console.warn(`[Orbit] Upload to ${bucket} failed:`, uploadErr.message);
-          continue;
-        }
-
+        if (uploadErr) continue;
         const { data: signedData } = await supabase.storage.from(bucket).createSignedUrl(path, 60 * 60 * 24 * 365);
         finalUrl = signedData?.signedUrl || null;
-        uploaded = true;
         break;
       }
+      if (!finalUrl) throw new Error("File upload failed. Please try again.");
 
-      if (!uploaded || !finalUrl) {
-        throw new Error("File upload failed. Please try again.");
-      }
-
-      // Build content — if encrypted, embed file metadata
       let content = isMedia ? `📷 ${file.name}` : `📎 ${file.name}`;
       if (fileMetaJson) {
         const { buildEncryptedFileRef } = await import("@/lib/orbit-file-encryption");
-        content = buildEncryptedFileRef({
-          url: finalUrl,
-          iv: fileMetaJson.iv,
-          originalName: fileMetaJson.originalName,
-          originalType: fileMetaJson.originalType,
-        });
+        content = buildEncryptedFileRef({ url: finalUrl, iv: fileMetaJson.iv, originalName: fileMetaJson.originalName, originalType: fileMetaJson.originalType });
       }
 
-      // ── V2 CANONICAL FILE SEND ──
       if (thread.isV2 && thread.v2ConversationId) {
-        const { error: v2FileErr } = await (supabase as any)
-          .from("chat_messages_v2")
-          .insert({
-            conversation_id: thread.v2ConversationId,
-            sender_user_id: authUserId,
-            sender_orbit_id: myOrbitId || `orbit_${authUserId.slice(0, 12)}`,
-            receiver_orbit_id: thread.peerOrbitId ?? null,
-            type: isMedia ? "media" : "file",
-            body: content,
-            metadata: fileMetaJson ? { encrypted_file: fileMetaJson, url: finalUrl } : { url: finalUrl },
-          });
+        const { error: v2FileErr } = await (supabase as any).from("chat_messages_v2").insert({
+          conversation_id: thread.v2ConversationId, sender_user_id: authUserId,
+          sender_orbit_id: myOrbitId || `orbit_${authUserId.slice(0, 12)}`,
+          receiver_orbit_id: thread.peerOrbitId ?? null,
+          type: isMedia ? "media" : "file", body: content,
+          metadata: fileMetaJson ? { encrypted_file: fileMetaJson, url: finalUrl } : { url: finalUrl },
+        });
         if (v2FileErr) throw v2FileErr;
-        await (supabase as any)
-          .from("conversations_v2")
-          .update({ last_message_at: new Date().toISOString(), updated_at: new Date().toISOString() })
-          .eq("id", thread.v2ConversationId);
+        await (supabase as any).from("conversations_v2").update({ last_message_at: new Date().toISOString(), updated_at: new Date().toISOString() }).eq("id", thread.v2ConversationId);
       } else {
-        // ── LEGACY FILE SEND ──
         const fileInsertPayload: any = {
-          org_id: orgId,
-          sender_id: authUserId,
-          tenant_id: thread.tenantId || null,
-          booking_id: thread.bookingId || null,
-          booking_type: thread.bookingType || null,
+          org_id: orgId, sender_id: authUserId, tenant_id: thread.tenantId || null,
+          booking_id: thread.bookingId || null, booking_type: thread.bookingType || null,
           contact_name: thread.conversationType !== "property" ? thread.name : undefined,
           contact_email: thread.conversationType !== "property" ? thread.email : undefined,
-          content,
-          category: "general",
-          attachment_url: fileMetaJson ? undefined : finalUrl,
-          message_type: "user",
-          sender_locale: locale,
-          context_type: thread.contextType,
-          context_id: thread.contextId,
-          encrypted: !!fileMetaJson,
+          content, category: "general", attachment_url: fileMetaJson ? undefined : finalUrl,
+          message_type: "user", sender_locale: locale,
+          context_type: thread.contextType, context_id: thread.contextId, encrypted: !!fileMetaJson,
         };
         if (thread.threadId) fileInsertPayload.thread_id = thread.threadId;
         const { error: insertError } = await supabase.from("messages").insert(fileInsertPayload);
         if (insertError) throw insertError;
       }
       toast.success(fileMetaJson ? "🔒 Encrypted file sent" : "File sent");
-      // Platform bus: file sent
-      platformBus.emit("orbit:message_sent", {
-        threadId: thread.threadId || thread.id,
-        contextId: thread.contextId,
-        type: "file",
-      }, "orbit", { userId: user?.id, orgId });
-    } catch (e: any) {
-      toast.error(e?.message || "Upload failed");
-    }
+      platformBus.emit("orbit:message_sent", { threadId: thread.threadId || thread.id, contextId: thread.contextId, type: "file" }, "orbit", { userId: user?.id, orgId });
+    } catch (e: any) { toast.error(e?.message || "Upload failed"); }
     setUploading(false);
   };
 
@@ -503,39 +410,27 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
         const { error } = await supabase.storage.from(bucket).upload(path, file, { upsert: false });
         if (error) continue;
         const { data: signed } = await supabase.storage.from(bucket).createSignedUrl(path, 60 * 60 * 24 * 365);
-        finalUrl = signed?.signedUrl || null;
-        break;
+        finalUrl = signed?.signedUrl || null; break;
       }
       if (!finalUrl) throw new Error("Upload failed");
-
       const effectiveTTL = disappearTTL !== "off" ? disappearTTL : privacySettings.defaultDisappearTtl;
       const disappearAt = computeDisappearAt(effectiveTTL);
 
-      // ── V2 VIEW-ONCE ──
       if (thread.isV2 && thread.v2ConversationId) {
-        await (supabase as any)
-          .from("chat_messages_v2")
-          .insert({
-            conversation_id: thread.v2ConversationId,
-            sender_user_id: authUserId,
-            sender_orbit_id: myOrbitId || `orbit_${authUserId.slice(0, 12)}`,
-            receiver_orbit_id: thread.peerOrbitId ?? null,
-            type: "media",
-            body: "📷 View-once photo",
-            metadata: { url: finalUrl, view_once: true },
-          });
-        await (supabase as any)
-          .from("conversations_v2")
-          .update({ last_message_at: new Date().toISOString() })
-          .eq("id", thread.v2ConversationId);
+        await (supabase as any).from("chat_messages_v2").insert({
+          conversation_id: thread.v2ConversationId, sender_user_id: authUserId,
+          sender_orbit_id: myOrbitId || `orbit_${authUserId.slice(0, 12)}`,
+          receiver_orbit_id: thread.peerOrbitId ?? null, type: "media",
+          body: "📷 View-once photo", metadata: { url: finalUrl, view_once: true },
+        });
+        await (supabase as any).from("conversations_v2").update({ last_message_at: new Date().toISOString() }).eq("id", thread.v2ConversationId);
       } else {
         const viewOncePayload: any = {
           org_id: orgId, sender_id: authUserId, tenant_id: thread.tenantId || null,
           booking_id: thread.bookingId || null, booking_type: thread.bookingType || null,
-          content: "📷 View-once photo", attachment_url: finalUrl,
-          category: "general", message_type: "user", sender_locale: locale,
-          context_type: thread.contextType, context_id: thread.contextId,
-          view_once: true, disappear_at: disappearAt,
+          content: "📷 View-once photo", attachment_url: finalUrl, category: "general",
+          message_type: "user", sender_locale: locale, context_type: thread.contextType,
+          context_id: thread.contextId, view_once: true, disappear_at: disappearAt,
         };
         if (thread.threadId) viewOncePayload.thread_id = thread.threadId;
         await supabase.from("messages").insert(viewOncePayload);
@@ -546,260 +441,14 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
     setViewOnceNext(false);
   };
 
-  const handleSend = async () => {
-    if (!newMessage.trim() || !thread) return;
-    const msgText = newMessage.trim();
-
-    const authUserId = await resolveAuthUserId();
-    if (!authUserId) return;
-
-    if (!orgId) {
-      toast.error("Please select a workspace to send messages");
-      return;
-    }
-    // Rate limiting
-    const { checkMessageRate, detectAbuse } = await import("@/lib/orbit-rate-limiter");
-    const rateCheck = checkMessageRate(authUserId);
-    if (!rateCheck.allowed) {
-      toast.error(rateCheck.inCooldown ? `Too many messages. Wait ${rateCheck.retryAfter}s` : "Slow down...");
-      return;
-    }
-    const abuseCheck = detectAbuse(msgText);
-    if (abuseCheck.suspicious) {
-      toast.error(abuseCheck.reason || "Message blocked");
-      return;
-    }
-
-    // ── OPTIMISTIC INSERT: show message instantly ──
-    const optimisticId = `opt-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
-    const optimisticMsg: ChatMessage = {
-      id: optimisticId,
-      content: msgText,
-      sender_id: authUserId,
-      created_at: new Date().toISOString(),
-      read: false,
-      message_type: "user",
-      category: selectedCategory,
-    } as any;
-    setRawMessages(prev => [...prev, optimisticMsg]);
-    setNewMessage("");
-    const currentReplyTo = replyTo;
-    setReplyTo(null);
-
-    // Compress before encryption
-    const { compressMessage } = await import("@/lib/orbit-message-compress");
-    const content = await compressMessage(msgText);
-
-    // E2E Encryption
-    let storedContent = content;
-    let isEncrypted = false;
-    const peerId = thread.tenantId || thread.contextId || thread.id;
-    if (e2eReady && peerId) {
-      const encrypted = await encrypt(content, peerId);
-      if (encrypted) { storedContent = encrypted; isEncrypted = true; }
-    }
-
-    // ── OFFLINE MODE: queue message locally ──
-    if (!offline.isOnline) {
-      const queuedId = await offline.queueMessage(storedContent, isEncrypted, {
-        tenantId: thread.tenantId,
-        bookingId: thread.bookingId,
-        bookingType: thread.bookingType,
-        contactName: thread.conversationType !== "property" ? thread.name : undefined,
-        contactEmail: thread.conversationType !== "property" ? thread.email : undefined,
-        category: thread.conversationType === "listing" ? "real_estate" : selectedCategory,
-        senderLocale: locale,
-        propertyId: thread.propertyId,
-        contextType: thread.contextType,
-        contextId: thread.contextId,
-        threadDbId: thread.threadId,
-      });
-      // Replace optimistic with queued
-      setRawMessages(prev => prev.map(m => m.id === optimisticId ? { ...m, id: queuedId } as any : m));
-      setPendingOffline(prev => [...prev, { id: queuedId }]);
-      toast("📡 Queued — will send when back online", { duration: 2000 });
-      return;
-    }
-
-    // ── ONLINE MODE: send in background (already shown optimistically) ──
-    setSending(true);
-    try {
-      // ── V2 CANONICAL SEND PATH ──
-      if (thread.isV2 && thread.v2ConversationId) {
-        if (!thread.peerUserId || thread.peerUserId === authUserId) {
-          console.error("[Orbit V2] Invalid peer resolution", {
-            authUserId,
-            peerUserId: thread.peerUserId,
-            conversationId: thread.v2ConversationId,
-            threadId: thread.id,
-          });
-          setRawMessages(prev => prev.filter(m => m.id !== optimisticId));
-          toast.error("Destinataire invalide pour cette conversation.");
-          return;
-        }
-        const { error: v2Err } = await (supabase as any)
-          .from("chat_messages_v2")
-          .insert({
-            conversation_id: thread.v2ConversationId,
-            sender_user_id: authUserId,
-            sender_orbit_id: myOrbitId || `orbit_${authUserId.slice(0, 12)}`,
-            receiver_orbit_id: thread.peerOrbitId ?? null,
-            type: "text",
-            body: storedContent,
-          });
-        if (v2Err) {
-          console.error("[Orbit V2] Message insert failed:", v2Err);
-          setRawMessages(prev => prev.filter(m => m.id !== optimisticId));
-          toast.error("Failed to send: " + v2Err.message);
-          setNewMessage(msgText);
-          return;
-        }
-        // Update conversation timestamp
-        await (supabase as any)
-          .from("conversations_v2")
-          .update({ last_message_at: new Date().toISOString(), updated_at: new Date().toISOString() })
-          .eq("id", thread.v2ConversationId);
-
-        platformBus.emit("orbit:message_sent", {
-          threadId: thread.id,
-          contextId: thread.contextId,
-          recipientName: thread.name,
-          contentPreview: content.slice(0, 80),
-        }, "orbit", { userId: authUserId, orgId });
-
-        onThreadUpdate(thread.id, {
-          lastMessage: msgText,
-          lastMessageTime: new Date().toISOString(),
-        });
-
-        setSecurityLevel("normal");
-        setSending(false);
-        return;
-      }
-
-      // ── LEGACY SEND PATH ──
-      let tenantLocale = "en";
-      if (thread.tenantId) {
-        const { data: tData } = await supabase.from("tenants").select("preferred_locale").eq("id", thread.tenantId).maybeSingle();
-        if (tData?.preferred_locale) tenantLocale = tData.preferred_locale;
-        else tenantLocale = getCountryConfig(thread.propertyCountry || "FR").locale.slice(0, 2);
-      } else tenantLocale = getCountryConfig(thread.propertyCountry || "FR").locale.slice(0, 2);
-
-      let translatedContent: string | null = null;
-      if (locale !== tenantLocale) {
-        try {
-          const { data: transData } = await supabase.functions.invoke("translate-message", { body: { text: content, from_locale: locale, to_locale: tenantLocale } });
-          if (transData?.translated) translatedContent = transData.translated;
-        } catch (e) { console.error("Translation failed:", e); }
-      }
-
-      // Compute disappear_at based on thread TTL or global default
-      const effectiveTTL = disappearTTL !== "off" ? disappearTTL : privacySettings.defaultDisappearTtl;
-      const disappearAt = computeDisappearAt(effectiveTTL);
-
-      const secPayload = buildSecurityPayload(securityLevel);
-
-      const insertPayload: any = {
-        org_id: orgId, sender_id: authUserId, tenant_id: thread.tenantId || null,
-        booking_id: thread.bookingId || null, booking_type: thread.bookingType || null,
-        contact_name: thread.conversationType !== "property" ? thread.name : undefined,
-        contact_email: thread.conversationType !== "property" ? thread.email : undefined,
-        content: storedContent, translated_content: translatedContent,
-        category: thread.conversationType === "listing" ? "real_estate" : selectedCategory,
-        sender_locale: locale, read: false, message_type: "user",
-        property_id: thread.propertyId || null, conversation_status: "waiting_tenant",
-        context_type: thread.contextType, context_id: thread.contextId,
-        encrypted: isEncrypted,
-        disappear_at: secPayload.disappear_at || disappearAt,
-        reply_to_id: currentReplyTo?.msgId || null,
-        reply_to_content: currentReplyTo?.content?.slice(0, 120) || null,
-        ...secPayload,
-      };
-      // Include thread_id for proper thread matching on forward/search
-      if (thread.threadId) insertPayload.thread_id = thread.threadId;
-
-      const { error: insertErr } = await supabase.from("messages").insert(insertPayload);
-
-      if (insertErr) {
-        console.error("[Orbit] Message insert failed:", insertErr);
-        setRawMessages(prev => prev.filter(m => m.id !== optimisticId));
-        toast.error("Failed to send message: " + insertErr.message);
-        setNewMessage(msgText);
-        return;
-      }
-
-      setConvStatus("waiting_tenant");
-      setSecurityLevel("normal");
-
-      platformBus.emit("orbit:message_sent", {
-        threadId: thread.threadId || thread.id,
-        contextId: thread.contextId,
-        recipientName: thread.name,
-        contentPreview: content.slice(0, 80),
-      }, "orbit", { userId: authUserId, orgId });
-
-      const recipientEmail = normalizeEmail(thread.email);
-      if (recipientEmail && isValidEmail(recipientEmail)) {
-        try {
-          await supabase.functions.invoke("send-notification-email", {
-            body: {
-              event_type: "marketplace_notification", recipient_email: recipientEmail, recipient_name: thread.name,
-              data: {
-                subject: `📩 New message [REF:${thread.bookingId || thread.tenantId || thread.id}]`,
-                message: escapeEmailHtml(translatedContent || content),
-                service_title: thread.serviceTitle || thread.propertyLabel || "",
-                booking_id: thread.bookingId || "", cta_url: buildAppUrl("/"), cta_label: "Reply", org_id: orgId,
-              }, locale: tenantLocale,
-            },
-          });
-        } catch (e) { console.error("Email failed:", e); }
-      }
-
-      if (thread.conversationType === "property" && thread.tenantId) {
-        const { data: tenant } = await supabase.from("tenants").select("tenant_user_id").eq("id", thread.tenantId).single();
-        if (tenant?.tenant_user_id) {
-          await supabase.from("notifications").insert({
-            user_id: tenant.tenant_user_id, org_id: orgId, type: "message",
-            title: "📩 New message from your landlord", message: content.slice(0, 200), link: "/tenant/messages",
-          });
-        }
-      }
-    } catch (e: any) {
-      toast.error("Send failed: " + (e?.message || "unknown error"));
-    } finally { setSending(false); }
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); }
-  };
-
   const toggleMsgSelect = useCallback((id: string) => {
     setSelectedMsgIds(prev => {
       const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
+      if (next.has(id)) next.delete(id); else next.add(id);
       if (next.size === 0) setSelectMode(false);
       return next;
     });
   }, []);
-
-  const handleTranslateMessage = async (msg: ChatMessage) => {
-    if (translatingMsgId) return;
-    if (showOriginal[msg.id]) { setShowOriginal(prev => ({ ...prev, [msg.id]: false })); return; }
-    if (!msg.translated_content) {
-      setTranslatingMsgId(msg.id);
-      try {
-        const { data: transData } = await supabase.functions.invoke("translate-message", { body: { text: msg.content, from_locale: msg.sender_locale || "en", to_locale: locale } });
-        if (transData?.translated) {
-          setRawMessages(prev => prev.map(m => m.id === msg.id ? { ...m, translated_content: transData.translated } : m));
-          await supabase.from("messages").update({ translated_content: transData.translated }).eq("id", msg.id);
-        }
-      } catch (e) { toast.error("Translation failed"); }
-      setTranslatingMsgId(null);
-      return;
-    }
-    setShowOriginal(prev => ({ ...prev, [msg.id]: true }));
-  };
 
   const handleBookingAction = async (action: "confirm" | "cancel" | "complete") => {
     if (!orgId || !user) { toast.error("Workspace required"); return; }
@@ -828,8 +477,8 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
       onThreadUpdate(thread.id, { bookingStatus: newStatus });
       toast.success(actionLabels[action]);
 
-      const email = normalizeEmail(thread.email);
-      if (email && isValidEmail(email)) {
+      const email = (thread.email || "").trim().toLowerCase();
+      if (email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
         const clientLang = getCountryConfig(thread.propertyCountry || "FR").locale.slice(0, 2);
         await supabase.functions.invoke("send-notification-email", {
           body: {
@@ -843,52 +492,6 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
     } catch (e: any) { toast.error("Error: " + (e?.message || "Unknown error")); }
   };
 
-  const handleSendPaymentLink = async () => {
-    if (!thread || !orgId || !paymentAmount) return;
-    const authUserId = await resolveAuthUserId();
-    if (!authUserId) return;
-    setSendingPaymentLink(true);
-    try {
-      const amount = parseFloat(paymentAmount);
-      if (isNaN(amount) || amount <= 0) throw new Error("Invalid amount");
-      let paymentUrl = "";
-      try {
-        const { data, error } = await supabase.functions.invoke("create-concierge-payment", {
-          body: { order_id: thread.bookingId || thread.id, service_id: thread.contextId, amount, currency: thread.currency || "eur", guest_email: thread.email || "", guest_name: thread.name || "", service_title: thread.serviceTitle || paymentDescription || "", origin: window.location.origin },
-        });
-        if (error) throw error;
-        paymentUrl = data?.url || "";
-      } catch (e) { console.error("Stripe failed:", e); }
-      const msgContent = paymentUrl
-        ? `💳 Payment request: ${amount.toFixed(2)} ${(thread.currency || "EUR").toUpperCase()}\n${paymentDescription ? `📝 ${paymentDescription}\n` : ""}🔗 ${paymentUrl}`
-        : `💳 Payment request: ${amount.toFixed(2)} ${(thread.currency || "EUR").toUpperCase()}\n${paymentDescription ? `📝 ${paymentDescription}\n` : ""}Please contact us for payment details.`;
-      const paymentMsgPayload: any = {
-        org_id: orgId, sender_id: authUserId, tenant_id: thread.tenantId || null,
-        booking_id: thread.bookingId || null, booking_type: thread.bookingType || null,
-        content: msgContent, category: "payment", message_type: "user", read: false,
-        context_type: thread.contextType, context_id: thread.contextId,
-      };
-      if (thread.threadId) paymentMsgPayload.thread_id = thread.threadId;
-      await supabase.from("messages").insert(paymentMsgPayload);
-      // Record wallet transaction — canonical: unified_wallet_transactions
-      try {
-        await (supabase as any).from("unified_wallet_transactions").insert({
-          sender_id: null,
-          recipient_id: authUserId,
-          amount,
-          currency: (thread.currency || "EUR").toUpperCase(),
-          title: paymentDescription || `Payment request to ${thread.name}`,
-          status: "pending",
-          context_type: thread.contextType || "payment_request",
-          context_id: thread.bookingId || thread.contextId || null,
-        } as any);
-      } catch {}
-      setPaymentLinkDialog(false); setPaymentAmount(""); setPaymentDescription("");
-      toast.success("Payment request sent");
-    } catch (e: any) { toast.error(e.message); }
-    setSendingPaymentLink(false);
-  };
-
   const updateConversationStatus = async (status: string) => {
     if (!thread || !orgId) return;
     setConvStatus(status);
@@ -896,11 +499,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
     const lastMsg = messages[messages.length - 1];
     if (lastMsg) {
       const { error } = await supabase.from("messages").update({ conversation_status: status }).eq("id", lastMsg.id);
-      if (error) {
-        console.error("[Status] Update failed:", error);
-        toast.error("Failed to update status");
-        return;
-      }
+      if (error) { toast.error("Failed to update status"); return; }
     }
     toast.success(`Status: ${CONV_STATUSES.find(s => s.value === status)?.label}`);
   };
@@ -908,20 +507,60 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
   const getCategoryIcon = (cat: string) => MESSAGE_CATEGORIES.find(c => c.value === cat)?.icon || "💬";
 
   const handleStartCall = (isVideo: boolean) => {
-    if (!orgId) {
-      toast.error("Please select a workspace first");
-      return;
-    }
+    if (!orgId) { toast.error("Please select a workspace first"); return; }
     haptic("medium");
     startCall({
-      orgId,
-      threadId: thread?.threadId,
-      contextType: thread?.conversationType || "listing",
-      contextId: thread?.contextId,
-      contextLabel: thread?.name,
-      peerName: thread?.name || "Contact",
-      isVideo,
+      orgId, threadId: thread?.threadId, contextType: thread?.conversationType || "listing",
+      contextId: thread?.contextId, contextLabel: thread?.name, peerName: thread?.name || "Contact", isVideo,
     });
+  };
+
+  // ══ Voice send handler ══
+  const handleVoiceSend = async () => {
+    if (!voicePreview || !thread || !orgId) return;
+    const authUserId = await resolveAuthUserId();
+    if (!authUserId) return;
+    haptic("medium");
+    setUploading(true);
+    try {
+      const blob = voicePreview.blob;
+      const dur = voicePreview.duration;
+      const ext = blob.type.includes("mp4") ? "m4a" : blob.type.includes("webm") ? "webm" : "ogg";
+      const path = `${orgId}/${thread.id}/voice-${Date.now()}.${ext}`;
+      let uploadedBucket = "chat-media";
+      const { error: uploadErr } = await supabase.storage.from("chat-media").upload(path, blob);
+      if (uploadErr) {
+        const { error: uploadErr2 } = await supabase.storage.from("property-photos").upload(path, blob);
+        if (uploadErr2) throw new Error("Voice upload failed");
+        uploadedBucket = "property-photos";
+      }
+      const { data: signed } = await supabase.storage.from(uploadedBucket).createSignedUrl(path, 60 * 60 * 24 * 365);
+      const audioUrl = signed?.signedUrl || path;
+      const voiceSecPayload = buildSecurityPayload(securityLevel);
+      const voiceInsertPayload: any = {
+        org_id: orgId, sender_id: authUserId, tenant_id: thread.tenantId || null,
+        booking_id: thread.bookingId || null, booking_type: thread.bookingType || null,
+        contact_name: thread.conversationType !== "property" ? thread.name : undefined,
+        contact_email: thread.conversationType !== "property" ? thread.email : undefined,
+        content: `🎤 Voice message (${formatVoiceDuration(dur)})`, category: "general",
+        audio_url: audioUrl, audio_duration_seconds: dur, message_type: "user",
+        sender_locale: locale, context_type: thread.contextType, context_id: thread.contextId,
+        transcript_status: "pending", ...voiceSecPayload,
+      };
+      if (thread.threadId) voiceInsertPayload.thread_id = thread.threadId;
+      const { data: insertedMsg } = await supabase.from("messages").insert(voiceInsertPayload).select("id").single();
+      if (insertedMsg?.id) {
+        supabase.functions.invoke("voice-transcribe", {
+          body: { message_id: insertedMsg.id, audio_url: audioUrl, target_locale: locale },
+        }).catch(err => console.error("[Orbit] Transcription trigger failed:", err));
+      }
+      setSecurityLevel("normal");
+      toast.success("Voice message sent");
+      platformBus.emit("orbit:message_sent", { threadId: thread.threadId || thread.id, contextId: thread.contextId, type: "voice" }, "orbit", { userId: authUserId, orgId });
+    } catch (e: any) { toast.error(e?.message || "Failed to send voice message"); }
+    URL.revokeObjectURL(voicePreview.url);
+    setVoicePreview(null);
+    setUploading(false);
   };
 
   // ══ EMPTY STATE ══
@@ -930,50 +569,21 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
       <div className="flex-1 flex items-center justify-center" style={{ background: "hsl(var(--hud-bg))" }}>
         <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="text-center max-w-md px-6">
           <div className="relative w-28 h-28 mx-auto mb-8">
-            <div className="absolute inset-0 rounded-full" style={{
-              background: "radial-gradient(circle, hsl(var(--hud-cyan) / 0.15) 0%, transparent 70%)",
-            }} />
-            <div className="absolute inset-4 rounded-full flex items-center justify-center" style={{
-              background: "hsl(var(--hud-surface))",
-              border: "1px solid hsl(var(--hud-border) / 0.2)",
-              boxShadow: "var(--hud-glow), inset 0 0 20px hsl(var(--hud-cyan) / 0.05)",
-            }}>
+            <div className="absolute inset-0 rounded-full" style={{ background: "radial-gradient(circle, hsl(var(--hud-cyan) / 0.15) 0%, transparent 70%)" }} />
+            <div className="absolute inset-4 rounded-full flex items-center justify-center" style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.2)", boxShadow: "var(--hud-glow), inset 0 0 20px hsl(var(--hud-cyan) / 0.05)" }}>
               <Shield className="h-8 w-8" style={{ color: "hsl(var(--hud-cyan) / 0.6)" }} />
             </div>
-            <motion.div
-              className="absolute w-2 h-2 rounded-full"
-              style={{ background: "hsl(var(--hud-cyan))", boxShadow: "0 0 8px hsl(var(--hud-cyan) / 0.5)", transformOrigin: "4px 56px" }}
-              animate={{ rotate: 360 }}
-              transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
-            />
+            <motion.div className="absolute w-2 h-2 rounded-full" style={{ background: "hsl(var(--hud-cyan))", boxShadow: "0 0 8px hsl(var(--hud-cyan) / 0.5)", transformOrigin: "4px 56px" }} animate={{ rotate: 360 }} transition={{ duration: 8, repeat: Infinity, ease: "linear" }} />
           </div>
-
-          <h3 className="text-lg font-bold mb-2" style={{ color: "hsl(var(--hud-text))" }}>
-            {t("orbit.command_center") || "Command Center"}
-          </h3>
-          <p className="text-sm mb-1" style={{ color: "hsl(var(--hud-text-dim))" }}>
-            {t("orbit.secure_hub") || "Secure business communication hub"}
-          </p>
+          <h3 className="text-lg font-bold mb-2" style={{ color: "hsl(var(--hud-text))" }}>{t("orbit.command_center") || "Command Center"}</h3>
+          <p className="text-sm mb-1" style={{ color: "hsl(var(--hud-text-dim))" }}>{t("orbit.secure_hub") || "Secure business communication hub"}</p>
           <div className="flex items-center justify-center gap-2 mt-3 mb-6">
             <Lock className="h-3 w-3" style={{ color: "hsl(var(--hud-success) / 0.5)" }} />
-            <span className="text-[10px] font-medium uppercase tracking-widest" style={{ color: "hsl(var(--hud-success) / 0.5)" }}>
-              {t("orbit.e2e_channel") || "End-to-end encrypted channel"}
-            </span>
+            <span className="text-[10px] font-medium uppercase tracking-widest" style={{ color: "hsl(var(--hud-success) / 0.5)" }}>{t("orbit.e2e_channel") || "End-to-end encrypted channel"}</span>
           </div>
-
           <div className="grid grid-cols-3 gap-2">
-            {[
-              { icon: "💬", label: "Chat" },
-              { icon: "📞", label: "Calls" },
-              { icon: "📁", label: "Files" },
-              { icon: "💳", label: "Payments" },
-              { icon: "🤝", label: "Deals" },
-              { icon: "🏠", label: "Properties" },
-            ].map(p => (
-              <div key={p.label} className="px-3 py-2.5 rounded-lg text-center" style={{
-                background: "hsl(var(--hud-surface))",
-                border: "1px solid hsl(var(--hud-border) / 0.1)",
-              }}>
+            {[{ icon: "💬", label: "Chat" }, { icon: "📞", label: "Calls" }, { icon: "📁", label: "Files" }, { icon: "💳", label: "Payments" }, { icon: "🤝", label: "Deals" }, { icon: "🏠", label: "Properties" }].map(p => (
+              <div key={p.label} className="px-3 py-2.5 rounded-lg text-center" style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.1)" }}>
                 <span className="text-base">{p.icon}</span>
                 <p className="text-[10px] font-medium mt-1" style={{ color: "hsl(var(--hud-text-dim))" }}>{p.label}</p>
               </div>
@@ -984,65 +594,36 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
     );
   }
 
-  const config = CONV_TYPE_CONFIG[thread.conversationType];
   const moduleConfig = SOURCE_MODULE_CONFIG[thread.sourceModule];
 
   return (
     <>
       <div className="flex-1 flex flex-col min-w-0" style={{ background: "hsl(var(--hud-bg))" }}>
-        {/* ══ Header — clean, full-width ══ */}
-        <div className="px-3 sm:px-4 py-2.5 shrink-0" style={{
-          borderBottom: "1px solid hsl(var(--hud-border) / 0.08)",
-          background: "hsl(var(--hud-surface) / 0.5)",
-          backdropFilter: "blur(12px)",
-        }}>
+        {/* ══ Header ══ */}
+        <div className="px-3 sm:px-4 py-2.5 shrink-0" style={{ borderBottom: "1px solid hsl(var(--hud-border) / 0.08)", background: "hsl(var(--hud-surface) / 0.5)", backdropFilter: "blur(12px)" }}>
           <div className="flex items-center gap-3">
             <Button variant="ghost" size="icon" onClick={onBack} className="shrink-0 h-9 w-9 rounded-full hover:bg-[hsl(var(--hud-surface-2))]">
               <ArrowLeft className="h-4 w-4" style={{ color: "hsl(var(--hud-text))" }} />
             </Button>
-            {/* Avatar */}
-            <div className="h-10 w-10 rounded-full flex items-center justify-center shrink-0" style={{
-              background: "linear-gradient(135deg, hsl(var(--hud-cyan) / 0.15), hsl(var(--hud-cyan) / 0.05))",
-              border: "1.5px solid hsl(var(--hud-cyan) / 0.2)",
-            }}>
-              <span className="text-sm font-bold" style={{ color: "hsl(var(--hud-cyan))" }}>
-                {(thread.name || "?")[0].toUpperCase()}
-              </span>
+            <div className="h-10 w-10 rounded-full flex items-center justify-center shrink-0" style={{ background: "linear-gradient(135deg, hsl(var(--hud-cyan) / 0.15), hsl(var(--hud-cyan) / 0.05))", border: "1.5px solid hsl(var(--hud-cyan) / 0.2)" }}>
+              <span className="text-sm font-bold" style={{ color: "hsl(var(--hud-cyan))" }}>{(thread.name || "?")[0].toUpperCase()}</span>
             </div>
-            {/* Name + context */}
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-1.5">
                 <p className="text-sm font-semibold truncate" style={{ color: "hsl(var(--hud-text))" }}>{thread.name}</p>
                 {thread.propertyCountry && <span className="text-xs shrink-0">{getCountryEntryOrDefault(thread.propertyCountry).flag}</span>}
               </div>
               <div className="flex items-center gap-1.5 mt-0.5">
-                <span className="text-[10px] font-medium" style={{ color: "hsl(var(--hud-text-dim))" }}>
-                  {moduleConfig.emoji} {moduleConfig.label}
-                </span>
-                {thread.bookingStatus && (
-                  <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-medium ${STATUS_COLORS[thread.bookingStatus] || ""}`}>
-                    {STATUS_LABELS[thread.bookingStatus] || thread.bookingStatus}
-                  </span>
-                )}
-                <span className="inline-flex items-center gap-0.5 text-[9px]" style={{ color: "hsl(var(--hud-success) / 0.6)" }}>
-                  <Lock className="h-2 w-2" /> E2E
-                </span>
+                <span className="text-[10px] font-medium" style={{ color: "hsl(var(--hud-text-dim))" }}>{moduleConfig.emoji} {moduleConfig.label}</span>
+                {thread.bookingStatus && <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-medium ${STATUS_COLORS[thread.bookingStatus] || ""}`}>{STATUS_LABELS[thread.bookingStatus] || thread.bookingStatus}</span>}
+                <span className="inline-flex items-center gap-0.5 text-[9px]" style={{ color: "hsl(var(--hud-success) / 0.6)" }}><Lock className="h-2 w-2" /> E2E</span>
               </div>
             </div>
-            {/* Call + actions */}
             <div className="flex items-center gap-1 shrink-0">
-              <button
-                disabled={isInCall || isStartingCall}
-                onClick={() => handleStartCall(false)}
-                className="h-9 w-9 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 rounded-full flex items-center justify-center transition-colors hover:bg-[hsl(var(--hud-surface-2))] disabled:opacity-40"
-              >
+              <button disabled={isInCall || isStartingCall} onClick={() => handleStartCall(false)} className="h-9 w-9 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 rounded-full flex items-center justify-center transition-colors hover:bg-[hsl(var(--hud-surface-2))] disabled:opacity-40">
                 <Phone className="h-[18px] w-[18px]" style={{ color: "hsl(var(--hud-success))" }} />
               </button>
-              <button
-                disabled={isInCall || isStartingCall}
-                onClick={() => handleStartCall(true)}
-                className="h-9 w-9 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 rounded-full flex items-center justify-center transition-colors hover:bg-[hsl(var(--hud-surface-2))] disabled:opacity-40"
-              >
+              <button disabled={isInCall || isStartingCall} onClick={() => handleStartCall(true)} className="h-9 w-9 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 rounded-full flex items-center justify-center transition-colors hover:bg-[hsl(var(--hud-surface-2))] disabled:opacity-40">
                 <Video className="h-[18px] w-[18px]" style={{ color: "hsl(var(--hud-cyan))" }} />
               </button>
               <DropdownMenu>
@@ -1053,26 +634,20 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-52 max-h-[70vh] overflow-y-auto" style={{ background: "hsl(var(--hud-surface))", borderColor: "hsl(var(--hud-border) / 0.2)" }}>
                   {CONV_STATUSES.map(s => (
-                    <DropdownMenuItem key={s.value} onClick={() => updateConversationStatus(s.value)}
-                      className={convStatus === s.value ? "font-semibold" : ""}>
+                    <DropdownMenuItem key={s.value} onClick={() => updateConversationStatus(s.value)} className={convStatus === s.value ? "font-semibold" : ""}>
                       {s.icon} {t(`orbit.status.${s.value}`) || s.label}
                     </DropdownMenuItem>
                   ))}
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={() => { haptic("light"); setShowSecurityPanel(true); }}>
-                    <Shield className="h-3.5 w-3.5 mr-2" style={{ color: e2eReady ? "hsl(var(--hud-success))" : "hsl(var(--hud-text-dim))" }} />
-                    {t("orbit.security") || "Security"}
+                    <Shield className="h-3.5 w-3.5 mr-2" style={{ color: e2eReady ? "hsl(var(--hud-success))" : "hsl(var(--hud-text-dim))" }} /> {t("orbit.security") || "Security"}
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => { haptic("light"); setShowSafetyNumber(true); }}>
-                    <Lock className="h-3.5 w-3.5 mr-2" style={{ color: "hsl(var(--hud-text-dim))" }} />
-                    {t("orbit.safety_number") || "Safety Number"}
+                    <Lock className="h-3.5 w-3.5 mr-2" style={{ color: "hsl(var(--hud-text-dim))" }} /> {t("orbit.safety_number") || "Safety Number"}
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={onToggleContext}>
-                    <ChevronRight className="h-3.5 w-3.5 mr-2" /> {t("orbit.details") || "Details"}
-                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={onToggleContext}><ChevronRight className="h-3.5 w-3.5 mr-2" /> {t("orbit.details") || "Details"}</DropdownMenuItem>
                   <DropdownMenuItem onClick={() => { haptic("light"); setSelectMode(true); setSelectedMsgIds(new Set()); }}>
-                    <CheckCheck className="h-3.5 w-3.5 mr-2" style={{ color: "hsl(var(--hud-text-dim))" }} />
-                    {t("orbit.select_messages") || "Select Messages"}
+                    <CheckCheck className="h-3.5 w-3.5 mr-2" style={{ color: "hsl(var(--hud-text-dim))" }} /> {t("orbit.select_messages") || "Select Messages"}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -1080,169 +655,63 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
           </div>
         </div>
 
-        {/* ══ Deal Context Header ══ */}
-        <DealContextHeader
-          dealId={thread.dealId}
-          contextType={thread.conversationType}
-          contextId={thread.contextId}
-          onToggleContext={onToggleContext}
-        />
+        <DealContextHeader dealId={thread.dealId} contextType={thread.conversationType} contextId={thread.contextId} onToggleContext={onToggleContext} />
 
-        {/* ══ Multi-select toolbar ══ */}
         {selectMode && (
-          <MessageMultiSelectToolbar
-            selectedIds={selectedMsgIds}
-            messages={messages as any[]}
-            currentUserId={user?.id}
-            currentContextId={thread?.contextId}
-            userEmail={user?.email}
-            userName={user?.user_metadata?.full_name || user?.email || "User"}
-            onClearSelection={() => { setSelectMode(false); setSelectedMsgIds(new Set()); }}
-            onDeletedForMe={(ids) => setHiddenMsgIds(prev => new Set([...prev, ...ids]))}
-            onDeletedForAll={(ids) => {
-              setRawMessages(prev => prev.map(m => ids.includes(m.id) ? {
-                ...m, content: "🚫 This message was deleted", deleted_for_all: true, attachment_url: null,
-                audio_url: null, audio_duration_seconds: null,
-              } as any : m));
-            }}
-          />
+          <MessageMultiSelectToolbar selectedIds={selectedMsgIds} messages={messages as any[]} currentUserId={user?.id} currentContextId={thread?.contextId} userEmail={user?.email} userName={user?.user_metadata?.full_name || user?.email || "User"} onClearSelection={() => { setSelectMode(false); setSelectedMsgIds(new Set()); }} onDeletedForMe={(ids) => setHiddenMsgIds(prev => new Set([...prev, ...ids]))} onDeletedForAll={(ids) => { setRawMessages(prev => prev.map(m => ids.includes(m.id) ? { ...m, content: "🚫 This message was deleted", deleted_for_all: true, attachment_url: null, audio_url: null, audio_duration_seconds: null } as any : m)); }} />
         )}
 
-        {/* ══ Offline Banner ══ */}
         {!offline.isOnline && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            className="flex items-center gap-2 px-4 py-2"
-            style={{ background: "hsl(var(--hud-warning) / 0.15)", borderBottom: "1px solid hsl(var(--hud-warning) / 0.3)" }}
-          >
+          <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} className="flex items-center gap-2 px-4 py-2" style={{ background: "hsl(var(--hud-warning) / 0.15)", borderBottom: "1px solid hsl(var(--hud-warning) / 0.3)" }}>
             <WifiOff className="h-3.5 w-3.5 shrink-0" style={{ color: "hsl(var(--hud-warning))" }} />
-            <span className="text-[11px] font-medium" style={{ color: "hsl(var(--hud-warning))" }}>
-              {t("orbit.offline_banner") || "Offline — messages will be sent when you reconnect"}
-            </span>
-            {offline.queueCount > 0 && (
-              <Badge variant="outline" className="ml-auto text-[9px] h-4 px-1.5" style={{ borderColor: "hsl(var(--hud-warning) / 0.4)", color: "hsl(var(--hud-warning))" }}>
-                {offline.queueCount} queued
-              </Badge>
-            )}
+            <span className="text-[11px] font-medium" style={{ color: "hsl(var(--hud-warning))" }}>{t("orbit.offline_banner") || "Offline — messages will be sent when you reconnect"}</span>
+            {offline.queueCount > 0 && <Badge variant="outline" className="ml-auto text-[9px] h-4 px-1.5" style={{ borderColor: "hsl(var(--hud-warning) / 0.4)", color: "hsl(var(--hud-warning))" }}>{offline.queueCount} queued</Badge>}
           </motion.div>
         )}
         {offline.isSyncing && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            className="flex items-center gap-2 px-4 py-1.5"
-            style={{ background: "hsl(var(--hud-success) / 0.1)", borderBottom: "1px solid hsl(var(--hud-success) / 0.2)" }}
-          >
-            <CloudUpload className="h-3.5 w-3.5 animate-pulse shrink-0" style={{ color: "hsl(var(--hud-success))" }} />
-            <span className="text-[11px] font-medium" style={{ color: "hsl(var(--hud-success))" }}>
-              {t("orbit.syncing_queued") || "Syncing queued messages..."}
-            </span>
+          <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} className="flex items-center gap-2 px-4 py-1.5" style={{ background: "hsl(var(--hud-success) / 0.1)", borderBottom: "1px solid hsl(var(--hud-success) / 0.2)" }}>
+            <CloudUpload className="h-3 w-3 animate-pulse" style={{ color: "hsl(var(--hud-success))" }} />
+            <span className="text-[10px]" style={{ color: "hsl(var(--hud-success))" }}>Syncing {offline.queueCount} messages…</span>
           </motion.div>
         )}
 
         {/* ══ Messages ══ */}
-        <div ref={scrollRef} className="flex-1 overflow-y-auto overflow-x-hidden px-3 sm:px-4 py-3" style={{ background: "hsl(var(--hud-bg))" }}>
-          {isDecrypting && rawMessages.length > 0 && messages.length === 0 ? (
-            /* Skeleton while decrypting E2E messages */
-            <div className="space-y-4 py-4">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <div key={i} className={`flex ${i % 2 === 0 ? "justify-start" : "justify-end"}`}>
-                  <div className="space-y-1.5" style={{ maxWidth: "75%" }}>
-                    {i % 2 === 0 && <Skeleton className="h-2.5 w-16" />}
-                    <Skeleton className={`h-10 rounded-2xl ${i % 2 === 0 ? "w-48 rounded-bl-md" : "w-40 rounded-br-md"}`} />
-                    <div className={`flex gap-1 ${i % 2 === 0 ? "" : "justify-end"}`}>
-                      <Skeleton className="h-2 w-8" />
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : messages.length === 0 ? (
-            <div className="flex items-center justify-center h-full">
-              <div className="text-center px-6">
-                <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4" style={{
-                  background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)",
-                }}>
-                  <MessageCircle className="h-7 w-7" style={{ color: "hsl(var(--hud-text-dim) / 0.25)" }} />
-                </div>
-                <p className="text-sm font-medium" style={{ color: "hsl(var(--hud-text))" }}>{t("orbit.no_messages") || "No messages yet"}</p>
-                <p className="text-xs mt-1" style={{ color: "hsl(var(--hud-text-dim))" }}>{t("orbit.start_conversation") || "Start the conversation"}</p>
-                <div className="flex items-center justify-center gap-1.5 mt-3">
-                  <Lock className="h-3 w-3" style={{ color: "hsl(var(--hud-success) / 0.5)" }} />
-                  <span className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>{t("orbit.e2e_encrypted") || "End-to-end encrypted"}</span>
-                </div>
+        <div ref={scrollRef} className="flex-1 overflow-y-auto px-3 sm:px-4 py-4 space-y-1" style={{ scrollbarWidth: "thin" }}>
+          {messages.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-full gap-3">
+              <div className="h-14 w-14 rounded-full flex items-center justify-center" style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.15)" }}>
+                <MessageCircle className="h-6 w-6" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }} />
               </div>
+              <p className="text-xs" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>{t("orbit.no_messages") || "No messages yet"}</p>
             </div>
-          ) : (
-            (() => {
-              const filtered = (messages as ChatMessage[]).filter(msg => {
-                if (hiddenMsgIds.has(msg.id)) return false;
-                // Filter sender's own deleted messages
-                if ((msg as any).deleted_for_sender && msg.sender_id === user?.id) return false;
-                // Filter recipient deleted messages
-                if (user?.id && ((msg as any).deleted_for_user_ids as string[] | null)?.includes(user.id)) return false;
-                return true;
-              });
-              let lastDateStr = "";
-              return filtered.map((msg, idx) => {
-                const msgDate = new Date(msg.created_at);
-                const dateStr = format(msgDate, "yyyy-MM-dd");
-                const showDateSep = dateStr !== lastDateStr;
-                lastDateStr = dateStr;
-                const dateLabel = isToday(msgDate) ? "Today" : isYesterday(msgDate) ? "Yesterday" : format(msgDate, "dd/MM/yyyy");
-                const isMe = msg.sender_id === user?.id;
-                const prevMsg = idx > 0 ? filtered[idx - 1] : null;
-                const isConsecutive = prevMsg
-                  && prevMsg.sender_id === msg.sender_id
-                  && !showDateSep
-                  && prevMsg.message_type !== "system"
-                  && msg.message_type !== "system"
-                  && (new Date(msg.created_at).getTime() - new Date(prevMsg.created_at).getTime()) < 120000;
-                return (
-                  <div key={msg.id}>
-                    {showDateSep && <DateSeparator date={dateLabel} />}
-                    {msg.message_type === "deal_event" && (msg as any).metadata_json ? (
-                      <DealStatusBubble
-                        eventType={((msg as any).metadata_json?.event_type || "status_change") as DealEventType}
-                        data={(msg as any).metadata_json?.data || {}}
-                        createdAt={msg.created_at}
-                        actorRole={(msg as any).metadata_json?.actor_role}
-                      />
-                    ) : (
-                    <ChatMessageBubble
-                      msg={msg}
-                      isMe={isMe}
-                      isConsecutive={!!isConsecutive}
-                      threadName={thread?.name}
-                      locale={locale}
-                      showOriginal={!!showOriginal[msg.id]}
-                      translatingMsgId={translatingMsgId}
-                      isPendingOffline={pendingOffline.some(p => p.id === msg.id)}
-                      selected={selectedMsgIds.has(msg.id)}
-                      selectMode={selectMode}
-                      currentUserId={user?.id}
-                      onTranslate={handleTranslateMessage}
-                      onContextMenu={(e, m, me) => {
-                        if (selectMode) { toggleMsgSelect(m.id); return; }
-                        setContextMessage({ msgId: m.id, content: m.content, isMe: me, createdAt: m.created_at, hasAudio: !!(m as any).audio_url, hasAttachment: !!m.attachment_url, senderId: m.sender_id, canModerate: false, isStarred: !!(m as any).starred });
-                      }}
-                      onToggleSelect={toggleMsgSelect}
-                      getCategoryIcon={getCategoryIcon}
-                    />
-                    )}
-                  </div>
-                );
-              });
-            })()
-          )}
+          ) : (() => {
+            let lastDate = "";
+            return messages.filter(m => !hiddenMsgIds.has(m.id)).map((msg, idx, arr) => {
+              const msgDate = new Date(msg.created_at);
+              const dateKey = msgDate.toDateString();
+              const showDateSep = dateKey !== lastDate;
+              if (showDateSep) lastDate = dateKey;
+              const dateLabel = isToday(msgDate) ? "Today" : isYesterday(msgDate) ? "Yesterday" : format(msgDate, "dd MMM yyyy");
+              const isMe = msg.sender_id === user?.id;
+              const prevMsg = arr[idx - 1];
+              const isConsecutive = prevMsg && prevMsg.sender_id === msg.sender_id && !showDateSep && msg.message_type !== "system" && (new Date(msg.created_at).getTime() - new Date(prevMsg.created_at).getTime()) < 120000;
+              return (
+                <div key={msg.id}>
+                  {showDateSep && <DateSeparator date={dateLabel} />}
+                  {msg.message_type === "deal_event" && (msg as any).metadata_json ? (
+                    <DealStatusBubble eventType={((msg as any).metadata_json?.event_type || "status_change") as DealEventType} data={(msg as any).metadata_json?.data || {}} createdAt={msg.created_at} actorRole={(msg as any).metadata_json?.actor_role} />
+                  ) : (
+                    <ChatMessageBubble msg={msg} isMe={isMe} isConsecutive={!!isConsecutive} threadName={thread?.name} locale={locale} showOriginal={!!showOriginal[msg.id]} translatingMsgId={translatingMsgId} isPendingOffline={pendingOffline.some(p => p.id === msg.id)} selected={selectedMsgIds.has(msg.id)} selectMode={selectMode} currentUserId={user?.id} onTranslate={handleTranslateMessage} onContextMenu={(e, m, me) => { if (selectMode) { toggleMsgSelect(m.id); return; } setContextMessage({ msgId: m.id, content: m.content, isMe: me, createdAt: m.created_at, hasAudio: !!(m as any).audio_url, hasAttachment: !!m.attachment_url, senderId: m.sender_id, canModerate: false, isStarred: !!(m as any).starred }); }} onToggleSelect={toggleMsgSelect} getCategoryIcon={getCategoryIcon} />
+                  )}
+                </div>
+              );
+            });
+          })()}
           {typingIndicator && (
             <div className="flex justify-start mt-1">
               <div className="rounded-2xl rounded-bl-md px-4 py-3" style={{ background: "hsl(var(--hud-surface-2))" }}>
                 <div className="flex gap-1.5">
-                  {[0, 150, 300].map(d => (
-                    <span key={d} className="h-2 w-2 rounded-full animate-bounce" style={{ background: "hsl(var(--hud-cyan) / 0.4)", animationDelay: `${d}ms` }} />
-                  ))}
+                  {[0, 150, 300].map(d => <span key={d} className="h-2 w-2 rounded-full animate-bounce" style={{ background: "hsl(var(--hud-cyan) / 0.4)", animationDelay: `${d}ms` }} />)}
                 </div>
               </div>
             </div>
@@ -1253,296 +722,88 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
         {(thread.conversationType === "booking" || thread.conversationType === "listing" || thread.conversationType === "deal") && (
           <div className="px-3 sm:px-4 py-2 shrink-0" style={{ borderTop: "1px solid hsl(var(--hud-border) / 0.06)", background: "hsl(var(--hud-surface) / 0.25)" }}>
             <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
-              {!thread.dealId && (
-                <Button size="sm" variant="outline" className="text-[11px] h-7 min-h-[44px] sm:min-h-0 gap-1.5 rounded-full px-3 shrink-0" style={{ borderColor: "hsl(var(--hud-cyan) / 0.2)", color: "hsl(var(--hud-cyan))", background: "hsl(var(--hud-cyan) / 0.06)" }} onClick={onToggleContext}>
-                  <Handshake className="h-3 w-3" /> Deal
-                </Button>
-              )}
-              <Button size="sm" variant="outline" className="text-[11px] h-7 min-h-[44px] sm:min-h-0 gap-1.5 rounded-full px-3 shrink-0" style={{ borderColor: "hsl(var(--hud-border) / 0.15)", color: "hsl(var(--hud-text))", background: "hsl(var(--hud-surface))" }} onClick={() => setPaymentLinkDialog(true)}>
-                <CreditCard className="h-3 w-3" /> {t("orbit.payment") || "Payment"}
-              </Button>
-              <Button size="sm" variant="outline" className="text-[11px] h-7 min-h-[44px] sm:min-h-0 gap-1.5 rounded-full px-3 shrink-0" style={{ borderColor: "hsl(var(--hud-purple) / 0.2)", color: "hsl(var(--hud-purple))", background: "hsl(var(--hud-purple) / 0.06)" }} onClick={() => setRequestMoneyDialog(true)}>
-                <CreditCard className="h-3 w-3" /> Request
-              </Button>
-              {thread.bookingStatus === "pending" && (
-                <Button size="sm" className="text-[11px] h-7 min-h-[44px] sm:min-h-0 gap-1.5 rounded-full px-3 shrink-0" style={{ background: "hsl(var(--hud-success) / 0.15)", color: "hsl(var(--hud-success))", border: "1px solid hsl(var(--hud-success) / 0.25)" }} onClick={() => handleBookingAction("confirm")}>
-                  <CalendarCheck className="h-3 w-3" /> {t("orbit.confirm") || "Confirm"}
-                </Button>
-              )}
-              {thread.bookingStatus === "confirmed" && (
-                <Button size="sm" variant="outline" className="text-[11px] h-7 min-h-[44px] sm:min-h-0 gap-1.5 rounded-full px-3 shrink-0" style={{ borderColor: "hsl(var(--hud-cyan) / 0.25)", color: "hsl(var(--hud-cyan))" }} onClick={() => handleBookingAction("complete")}>
-                  <CalendarCheck className="h-3 w-3" /> {t("orbit.complete") || "Complete"}
-                </Button>
-              )}
-              {!["cancelled", "completed"].includes(thread.bookingStatus || "") && (
-                <Button size="sm" variant="ghost" className="text-[11px] h-7 min-h-[44px] sm:min-h-0 gap-1.5 rounded-full px-3 shrink-0" style={{ color: "hsl(var(--hud-danger) / 0.8)" }} onClick={() => handleBookingAction("cancel")}>
-                  <Ban className="h-3 w-3" /> {t("orbit.cancel") || "Cancel"}
-                </Button>
-              )}
+              {!thread.dealId && <Button size="sm" variant="outline" className="text-[11px] h-7 min-h-[44px] sm:min-h-0 gap-1.5 rounded-full px-3 shrink-0" style={{ borderColor: "hsl(var(--hud-cyan) / 0.2)", color: "hsl(var(--hud-cyan))", background: "hsl(var(--hud-cyan) / 0.06)" }} onClick={onToggleContext}><Handshake className="h-3 w-3" /> Deal</Button>}
+              <Button size="sm" variant="outline" className="text-[11px] h-7 min-h-[44px] sm:min-h-0 gap-1.5 rounded-full px-3 shrink-0" style={{ borderColor: "hsl(var(--hud-border) / 0.15)", color: "hsl(var(--hud-text))", background: "hsl(var(--hud-surface))" }} onClick={() => payment.setPaymentLinkDialog(true)}><CreditCard className="h-3 w-3" /> {t("orbit.payment") || "Payment"}</Button>
+              <Button size="sm" variant="outline" className="text-[11px] h-7 min-h-[44px] sm:min-h-0 gap-1.5 rounded-full px-3 shrink-0" style={{ borderColor: "hsl(var(--hud-purple) / 0.2)", color: "hsl(var(--hud-purple))", background: "hsl(var(--hud-purple) / 0.06)" }} onClick={() => payment.setRequestMoneyDialog(true)}><CreditCard className="h-3 w-3" /> Request</Button>
+              {thread.bookingStatus === "pending" && <Button size="sm" className="text-[11px] h-7 min-h-[44px] sm:min-h-0 gap-1.5 rounded-full px-3 shrink-0" style={{ background: "hsl(var(--hud-success) / 0.15)", color: "hsl(var(--hud-success))", border: "1px solid hsl(var(--hud-success) / 0.25)" }} onClick={() => handleBookingAction("confirm")}><CalendarCheck className="h-3 w-3" /> {t("orbit.confirm") || "Confirm"}</Button>}
+              {thread.bookingStatus === "confirmed" && <Button size="sm" variant="outline" className="text-[11px] h-7 min-h-[44px] sm:min-h-0 gap-1.5 rounded-full px-3 shrink-0" style={{ borderColor: "hsl(var(--hud-cyan) / 0.25)", color: "hsl(var(--hud-cyan))" }} onClick={() => handleBookingAction("complete")}><CalendarCheck className="h-3 w-3" /> {t("orbit.complete") || "Complete"}</Button>}
+              {!["cancelled", "completed"].includes(thread.bookingStatus || "") && <Button size="sm" variant="ghost" className="text-[11px] h-7 min-h-[44px] sm:min-h-0 gap-1.5 rounded-full px-3 shrink-0" style={{ color: "hsl(var(--hud-danger) / 0.8)" }} onClick={() => handleBookingAction("cancel")}><Ban className="h-3 w-3" /> {t("orbit.cancel") || "Cancel"}</Button>}
             </div>
           </div>
         )}
 
         {/* ══ Reply-to banner ══ */}
         {replyTo && (
-          <div className="px-3 py-2 flex items-center gap-2 shrink-0" style={{
-            borderTop: "1px solid hsl(var(--hud-border) / 0.08)",
-            background: "hsl(var(--hud-cyan) / 0.05)",
-            borderLeft: "3px solid hsl(var(--hud-cyan))",
-          }}>
+          <div className="px-3 py-2 flex items-center gap-2 shrink-0" style={{ borderTop: "1px solid hsl(var(--hud-border) / 0.08)", background: "hsl(var(--hud-cyan) / 0.05)", borderLeft: "3px solid hsl(var(--hud-cyan))" }}>
             <div className="flex-1 min-w-0">
-              <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-cyan))" }}>
-                {replyTo.senderName === user?.id ? "You" : "Reply"}
-              </p>
-              <p className="text-[11px] line-clamp-1" style={{ color: "hsl(var(--hud-text-dim))" }}>
-                {replyTo.content.length > 80 ? replyTo.content.slice(0, 80) + "…" : replyTo.content}
-              </p>
+              <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-cyan))" }}>{replyTo.senderName === user?.id ? "You" : "Reply"}</p>
+              <p className="text-[11px] line-clamp-1" style={{ color: "hsl(var(--hud-text-dim))" }}>{replyTo.content.length > 80 ? replyTo.content.slice(0, 80) + "…" : replyTo.content}</p>
             </div>
-            <button onClick={() => setReplyTo(null)} className="shrink-0 h-6 w-6 rounded-full flex items-center justify-center" style={{ color: "hsl(var(--hud-text-dim))" }}>
-              ✕
-            </button>
+            <button onClick={() => setReplyTo(null)} className="shrink-0 h-6 w-6 rounded-full flex items-center justify-center" style={{ color: "hsl(var(--hud-text-dim))" }}>✕</button>
           </div>
         )}
 
         {/* ══ Composer ══ */}
-        <div className="px-2 sm:px-3 py-2 safe-area-pb shrink-0" style={{
-          borderTop: replyTo ? "none" : "1px solid hsl(var(--hud-border) / 0.08)",
-          background: "hsl(var(--hud-surface) / 0.4)",
-        }}>
-          <input ref={fileInputRef} type="file" className="hidden" accept="image/*,video/mp4,video/webm,video/quicktime,.pdf,.doc,.docx"
-            onChange={e => { const file = e.target.files?.[0]; if (file) handleFileUpload(file); e.target.value = ""; }} />
-          
-          {/* Voice recording state */}
+        <div className="px-2 sm:px-3 py-2 safe-area-pb shrink-0" style={{ borderTop: replyTo ? "none" : "1px solid hsl(var(--hud-border) / 0.08)", background: "hsl(var(--hud-surface) / 0.4)" }}>
+          <input ref={fileInputRef} type="file" className="hidden" accept="image/*,video/mp4,video/webm,video/quicktime,.pdf,.doc,.docx" onChange={e => { const file = e.target.files?.[0]; if (file) handleFileUpload(file); e.target.value = ""; }} />
+
           {voiceRecorder.recording ? (
-            <div className="flex items-center gap-3"
-              onTouchMove={(e) => {
-                const touch = e.touches[0];
-                if (slideStartRef.current && (slideStartRef.current - touch.clientX) > 100) {
-                  voiceRecorder.cancel(); haptic("light");
-                }
-              }}>
-              <button
-                onClick={() => { voiceRecorder.cancel(); haptic("light"); }}
-                className="shrink-0 h-10 w-10 rounded-full flex items-center justify-center"
-                style={{ background: "hsl(var(--hud-danger) / 0.15)", color: "hsl(var(--hud-danger))" }}>
-                <Ban className="h-4 w-4" />
-              </button>
+            <div className="flex items-center gap-3" onTouchMove={(e) => { const touch = e.touches[0]; if (slideStartRef.current && (slideStartRef.current - touch.clientX) > 100) { voiceRecorder.cancel(); haptic("light"); } }}>
+              <button onClick={() => { voiceRecorder.cancel(); haptic("light"); }} className="shrink-0 h-10 w-10 rounded-full flex items-center justify-center" style={{ background: "hsl(var(--hud-danger) / 0.15)", color: "hsl(var(--hud-danger))" }}><Ban className="h-4 w-4" /></button>
               <div className="flex-1 flex items-center gap-2">
                 <div className="h-2.5 w-2.5 rounded-full animate-pulse" style={{ background: "hsl(var(--hud-danger))" }} />
-                <span className="text-sm font-mono tabular-nums" style={{ color: "hsl(var(--hud-text))" }}>
-                  {formatVoiceDuration(voiceRecorder.duration)}
-                </span>
+                <span className="text-sm font-mono tabular-nums" style={{ color: "hsl(var(--hud-text))" }}>{formatVoiceDuration(voiceRecorder.duration)}</span>
                 <span className="text-[11px] animate-pulse" style={{ color: "hsl(var(--hud-text-dim))" }}>← Slide to cancel</span>
               </div>
-              <button
-                onClick={async () => {
-                  haptic("medium");
-                  try {
-                    const result = await voiceRecorder.stop();
-                    setVoicePreview(result);
-                  } catch (err: any) {
-                    if (err?.message !== "Recording too short") toast.error("Voice recording failed");
-                  }
-                }}
-                className="shrink-0 h-12 w-12 rounded-full flex items-center justify-center active:scale-90 transition-transform"
-                style={{ background: "hsl(var(--hud-cyan))", color: "hsl(var(--hud-bg))" }}>
-                <Check className="h-5 w-5" />
-              </button>
+              <button onClick={async () => { haptic("medium"); try { const result = await voiceRecorder.stop(); setVoicePreview(result); } catch (err: any) { if (err?.message !== "Recording too short") toast.error("Voice recording failed"); } }} className="shrink-0 h-12 w-12 rounded-full flex items-center justify-center active:scale-90 transition-transform" style={{ background: "hsl(var(--hud-cyan))", color: "hsl(var(--hud-bg))" }}><Check className="h-5 w-5" /></button>
             </div>
           ) : voicePreview ? (
-            /* Voice preview before sending */
             <div className="flex items-center gap-2">
-              <button onClick={() => { URL.revokeObjectURL(voicePreview.url); setVoicePreview(null); haptic("light"); }}
-                className="shrink-0 h-9 w-9 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 rounded-full flex items-center justify-center"
-                style={{ background: "hsl(var(--hud-danger) / 0.15)", color: "hsl(var(--hud-danger))" }}>
-                <Ban className="h-3.5 w-3.5" />
-              </button>
+              <button onClick={() => { URL.revokeObjectURL(voicePreview.url); setVoicePreview(null); haptic("light"); }} className="shrink-0 h-9 w-9 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 rounded-full flex items-center justify-center" style={{ background: "hsl(var(--hud-danger) / 0.15)", color: "hsl(var(--hud-danger))" }}><Ban className="h-3.5 w-3.5" /></button>
               <div className="flex-1 flex items-center gap-2 rounded-xl px-3 py-2" style={{ background: "hsl(var(--hud-surface))" }}>
-                <button onClick={() => { const a = new Audio(voicePreview.url); a.play(); }} className="h-8 w-8 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 rounded-full flex items-center justify-center" style={{ background: "hsl(var(--hud-cyan) / 0.2)", color: "hsl(var(--hud-cyan))" }}>
-                  <Zap className="h-3.5 w-3.5" />
-                </button>
-                <div className="flex-1 h-1 rounded-full" style={{ background: "hsl(var(--hud-border) / 0.3)" }}>
-                  <div className="h-full rounded-full" style={{ width: "100%", background: "hsl(var(--hud-cyan))" }} />
-                </div>
+                <button onClick={() => { const a = new Audio(voicePreview.url); a.play(); }} className="h-8 w-8 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 rounded-full flex items-center justify-center" style={{ background: "hsl(var(--hud-cyan) / 0.2)", color: "hsl(var(--hud-cyan))" }}><Zap className="h-3.5 w-3.5" /></button>
+                <div className="flex-1 h-1 rounded-full" style={{ background: "hsl(var(--hud-border) / 0.3)" }}><div className="h-full rounded-full" style={{ width: "100%", background: "hsl(var(--hud-cyan))" }} /></div>
                 <span className="text-xs font-mono" style={{ color: "hsl(var(--hud-text-dim))" }}>{formatVoiceDuration(voicePreview.duration)}</span>
               </div>
-              <button onClick={async () => {
-                haptic("medium");
-                if (!thread || !orgId) return;
-                const authUserId = await resolveAuthUserId();
-                if (!authUserId) return;
-                setUploading(true);
-                try {
-                  const blob = voicePreview.blob;
-                  const dur = voicePreview.duration;
-                  const ext = blob.type.includes("mp4") ? "m4a" : blob.type.includes("webm") ? "webm" : "ogg";
-                  const path = `${orgId}/${thread.id}/voice-${Date.now()}.${ext}`;
-                  let uploadedBucket = "chat-media";
-                  const { error: uploadErr } = await supabase.storage.from("chat-media").upload(path, blob);
-                  if (uploadErr) {
-                    // Fallback to other buckets
-                    const { error: uploadErr2 } = await supabase.storage.from("property-photos").upload(path, blob);
-                    if (uploadErr2) throw new Error("Voice upload failed");
-                    uploadedBucket = "property-photos";
-                  }
-                  const { data: signed } = await supabase.storage.from(uploadedBucket).createSignedUrl(path, 60 * 60 * 24 * 365);
-                  const audioUrl = signed?.signedUrl || path;
-
-                  const voiceSecPayload = buildSecurityPayload(securityLevel);
-
-                  const voiceInsertPayload: any = {
-                    org_id: orgId,
-                    sender_id: authUserId,
-                    tenant_id: thread.tenantId || null,
-                    booking_id: thread.bookingId || null,
-                    booking_type: thread.bookingType || null,
-                    contact_name: thread.conversationType !== "property" ? thread.name : undefined,
-                    contact_email: thread.conversationType !== "property" ? thread.email : undefined,
-                    content: `🎤 Voice message (${formatVoiceDuration(dur)})`,
-                    category: "general",
-                    audio_url: audioUrl,
-                    audio_duration_seconds: dur,
-                    message_type: "user",
-                    sender_locale: locale,
-                    context_type: thread.contextType,
-                    context_id: thread.contextId,
-                    transcript_status: "pending",
-                    ...voiceSecPayload,
-                  };
-                  if (thread.threadId) voiceInsertPayload.thread_id = thread.threadId;
-
-                  const { data: insertedMsg, error: insertErr } = await supabase.from("messages").insert(voiceInsertPayload).select("id").single();
-
-                  // Trigger voice transcription in background
-                  if (insertedMsg?.id) {
-                    supabase.functions.invoke("voice-transcribe", {
-                      body: {
-                        message_id: insertedMsg.id,
-                        audio_url: audioUrl,
-                        target_locale: locale,
-                      },
-                    }).catch(err => console.error("[Orbit] Transcription trigger failed:", err));
-                  }
-
-                   setSecurityLevel("normal"); // Reset security level after voice send
-                   toast.success("Voice message sent");
-                   // Platform bus: voice sent
-                   platformBus.emit("orbit:message_sent", {
-                     threadId: thread.threadId || thread.id,
-                     contextId: thread.contextId,
-                     type: "voice",
-                   }, "orbit", { userId: authUserId, orgId });
-                } catch (e: any) {
-                  toast.error(e?.message || "Failed to send voice message");
-                }
-                URL.revokeObjectURL(voicePreview.url);
-                setVoicePreview(null);
-                setUploading(false);
-              }} className="shrink-0 h-10 w-10 rounded-full flex items-center justify-center active:scale-90 transition-transform"
-                style={{ background: "hsl(var(--hud-cyan))", color: "hsl(var(--hud-bg))" }}>
+              <button onClick={handleVoiceSend} className="shrink-0 h-10 w-10 rounded-full flex items-center justify-center active:scale-90 transition-transform" style={{ background: "hsl(var(--hud-cyan))", color: "hsl(var(--hud-bg))" }}>
                 {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
               </button>
             </div>
           ) : (
-            /* Normal composer */
             <div className="flex items-end gap-1.5">
-              {/* Attachment + input container */}
-              <div className="flex-1 min-w-0 flex items-end rounded-2xl px-1.5 py-1" style={{
-                background: "hsl(var(--hud-surface))",
-                border: "1px solid hsl(var(--hud-border) / 0.12)",
-              }}>
-                {/* Security level picker */}
+              <div className="flex-1 min-w-0 flex items-end rounded-2xl px-1.5 py-1" style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.12)" }}>
                 <SecurityLevelPicker value={securityLevel} onChange={setSecurityLevel} />
-                {/* Attach button (opens dropdown) */}
                 <DropdownMenu open={showAttachMenu} onOpenChange={setShowAttachMenu}>
                   <DropdownMenuTrigger asChild>
-                     <button className="shrink-0 h-8 w-8 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 flex items-center justify-center rounded-full hover:bg-[hsl(var(--hud-surface-2))]" disabled={uploading}>
+                    <button className="shrink-0 h-8 w-8 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 flex items-center justify-center rounded-full hover:bg-[hsl(var(--hud-surface-2))]" disabled={uploading}>
                       {uploading ? <Loader2 className="h-4 w-4 animate-spin" style={{ color: "hsl(var(--hud-cyan))" }} /> : <Paperclip className="h-4 w-4" style={{ color: "hsl(var(--hud-text-dim))" }} />}
                     </button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="start" side="top" className="w-44" style={{ background: "hsl(var(--hud-surface))", borderColor: "hsl(var(--hud-border) / 0.2)" }}>
-                    <DropdownMenuItem onClick={() => { fileInputRef.current?.click(); setShowAttachMenu(false); }}>
-                      <Paperclip className="h-4 w-4 mr-2" style={{ color: "hsl(var(--hud-cyan))" }} /> File
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => {
-                      setShowAttachMenu(false);
-                      const inp = document.createElement("input");
-                      inp.type = "file"; inp.accept = "image/*"; inp.capture = "environment";
-                      inp.onchange = () => { const f = inp.files?.[0]; if (f) handleFileUpload(f); };
-                      inp.click();
-                    }}>
-                      <Camera className="h-4 w-4 mr-2" style={{ color: "hsl(var(--hud-success))" }} /> Camera
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => { setShowAttachMenu(false); haptic("light"); setShowLocationPicker(true); }}>
-                      <MapPin className="h-4 w-4 mr-2" style={{ color: "hsl(var(--hud-warning))" }} /> Location
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => { setShowAttachMenu(false); setPaymentLinkDialog(true); }}>
-                      <CreditCard className="h-4 w-4 mr-2" style={{ color: "hsl(var(--hud-purple))" }} /> Payment
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => { setShowAttachMenu(false); setRequestMoneyDialog(true); }}>
-                      <CreditCard className="h-4 w-4 mr-2" style={{ color: "hsl(var(--hud-warning))" }} /> Request Money
-                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => { fileInputRef.current?.click(); setShowAttachMenu(false); }}><Paperclip className="h-4 w-4 mr-2" style={{ color: "hsl(var(--hud-cyan))" }} /> File</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => { setShowAttachMenu(false); const inp = document.createElement("input"); inp.type = "file"; inp.accept = "image/*"; inp.capture = "environment"; inp.onchange = () => { const f = inp.files?.[0]; if (f) handleFileUpload(f); }; inp.click(); }}><Camera className="h-4 w-4 mr-2" style={{ color: "hsl(var(--hud-success))" }} /> Camera</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => { setShowAttachMenu(false); haptic("light"); setShowLocationPicker(true); }}><MapPin className="h-4 w-4 mr-2" style={{ color: "hsl(var(--hud-warning))" }} /> Location</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => { setShowAttachMenu(false); payment.setPaymentLinkDialog(true); }}><CreditCard className="h-4 w-4 mr-2" style={{ color: "hsl(var(--hud-purple))" }} /> Payment</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => { setShowAttachMenu(false); payment.setRequestMoneyDialog(true); }}><CreditCard className="h-4 w-4 mr-2" style={{ color: "hsl(var(--hud-warning))" }} /> Request Money</DropdownMenuItem>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={() => {
-                      setShowAttachMenu(false);
-                      setViewOnceNext(true);
-                      const inp = document.createElement("input");
-                      inp.type = "file"; inp.accept = "image/*";
-                      inp.onchange = () => { const f = inp.files?.[0]; if (f) handleViewOnceUpload(f); };
-                      inp.click();
-                    }}>
-                      <Eye className="h-4 w-4 mr-2" style={{ color: "hsl(var(--hud-danger))" }} /> View Once Photo
-                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => { setShowAttachMenu(false); setViewOnceNext(true); const inp = document.createElement("input"); inp.type = "file"; inp.accept = "image/*"; inp.onchange = () => { const f = inp.files?.[0]; if (f) handleViewOnceUpload(f); }; inp.click(); }}><Eye className="h-4 w-4 mr-2" style={{ color: "hsl(var(--hud-danger))" }} /> View Once Photo</DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
-                {/* Text input */}
-                <input
-                  value={newMessage}
-                  onChange={e => { setNewMessage(e.target.value); broadcastTyping(); }}
-                  onKeyDown={handleKeyDown}
-                  placeholder="Message…"
-                  className="flex-1 min-w-0 h-9 bg-transparent border-0 outline-none text-sm px-2"
-                  style={{ color: "hsl(var(--hud-text))" }}
-                />
-                {/* AI button (desktop only) */}
+                <input value={messageSender.newMessage} onChange={e => { messageSender.setNewMessage(e.target.value); broadcastTyping(); }} onKeyDown={messageSender.handleKeyDown} placeholder="Message…" className="flex-1 min-w-0 h-9 bg-transparent border-0 outline-none text-sm px-2" style={{ color: "hsl(var(--hud-text))" }} />
                 <div className="hidden sm:block shrink-0">
-                  <AIGenerateButton task="guest_reply" taskContext={newMessage || "message from client"} onApply={text => setNewMessage(text)} label="AI" variant="icon" />
+                  <AIGenerateButton task="guest_reply" taskContext={messageSender.newMessage || "message from client"} onApply={text => messageSender.setNewMessage(text)} label="AI" variant="icon" />
                 </div>
               </div>
-              {/* Send / mic button — hold to record */}
-              <button
-                onClick={newMessage.trim() ? handleSend : undefined}
-                onTouchStart={!newMessage.trim() ? (e) => {
-                  slideStartRef.current = e.touches[0].clientX;
-                  holdTimerRef.current = setTimeout(async () => {
-                    haptic("medium");
-                    try { await voiceRecorder.start(); } catch { toast.error("Microphone access denied"); }
-                  }, 200);
-                } : undefined}
-                onTouchEnd={!newMessage.trim() ? () => {
-                  if (holdTimerRef.current) { clearTimeout(holdTimerRef.current); holdTimerRef.current = null; }
-                } : undefined}
-                onMouseDown={!newMessage.trim() ? async () => {
-                  haptic("medium");
-                  try { await voiceRecorder.start(); } catch { toast.error("Microphone access denied"); }
-                } : undefined}
-                disabled={sending}
-                className="shrink-0 h-10 w-10 rounded-full flex items-center justify-center transition-all active:scale-90"
-                style={{
-                  background: newMessage.trim() ? "hsl(var(--hud-cyan))" : "hsl(var(--hud-surface))",
-                  color: newMessage.trim() ? "hsl(var(--hud-bg))" : "hsl(var(--hud-text-dim))",
-                  border: newMessage.trim() ? "none" : "1px solid hsl(var(--hud-border) / 0.12)",
-                  WebkitTapHighlightColor: "transparent",
-                }}>
-                {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : newMessage.trim() ? <Send className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+              <button onClick={messageSender.newMessage.trim() ? messageSender.handleSend : undefined} onTouchStart={!messageSender.newMessage.trim() ? (e) => { slideStartRef.current = e.touches[0].clientX; holdTimerRef.current = setTimeout(async () => { haptic("medium"); try { await voiceRecorder.start(); } catch { toast.error("Microphone access denied"); } }, 200); } : undefined} onTouchEnd={!messageSender.newMessage.trim() ? () => { if (holdTimerRef.current) { clearTimeout(holdTimerRef.current); holdTimerRef.current = null; } } : undefined} onMouseDown={!messageSender.newMessage.trim() ? async () => { haptic("medium"); try { await voiceRecorder.start(); } catch { toast.error("Microphone access denied"); } } : undefined} disabled={messageSender.sending} className="shrink-0 h-10 w-10 rounded-full flex items-center justify-center transition-all active:scale-90" style={{ background: messageSender.newMessage.trim() ? "hsl(var(--hud-cyan))" : "hsl(var(--hud-surface))", color: messageSender.newMessage.trim() ? "hsl(var(--hud-bg))" : "hsl(var(--hud-text-dim))", border: messageSender.newMessage.trim() ? "none" : "1px solid hsl(var(--hud-border) / 0.12)", WebkitTapHighlightColor: "transparent" }}>
+                {messageSender.sending ? <Loader2 className="h-4 w-4 animate-spin" /> : messageSender.newMessage.trim() ? <Send className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
               </button>
             </div>
           )}
         </div>
       </div>
 
-      {/* WeChat-style Smart Payment */}
-      <Sheet open={paymentLinkDialog} onOpenChange={setPaymentLinkDialog}>
+      {/* ══ Payment Sheet ══ */}
+      <Sheet open={payment.paymentLinkDialog} onOpenChange={payment.setPaymentLinkDialog}>
         <SheetContent side="bottom" className="rounded-t-2xl max-h-[85vh] overflow-y-auto p-0">
           <OrbitSmartPayment
             recipientUserId={thread.tenantId || thread.contextId || thread.id}
@@ -1551,245 +812,44 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
             threadId={thread.threadId || thread.id}
             defaultCurrency={thread.currency?.toUpperCase()}
             onSuccess={(conf: PaymentConfirmation) => {
-              setPaymentLinkDialog(false);
-              // Send rich payment confirmation message in chat with E2EE
+              payment.setPaymentLinkDialog(false);
               const sendPaymentMessage = async () => {
                 const authUserId = await resolveAuthUserId();
                 if (!authUserId || !orgId) return;
                 const methodLabel = conf.method === "locs" ? "LOCS Wallet" : `Card (${conf.currency})`;
-                // Fiat payments are PENDING until webhook confirms; LOCS are instant
                 const statusLabel = conf.status === "completed" ? "✅ Completed" : "⏳ Pending confirmation";
                 const headerLabel = conf.status === "completed" ? "💰 Payment sent" : "💰 Payment initiated";
                 const contextLine = conf.context ? `\n📎 ${conf.context.type}: ${conf.context.label || conf.context.id.slice(0, 8)}` : "";
                 const refLine = conf.referenceCode ? `\n🔖 Ref: ${conf.referenceCode}` : `\n🔖 ID: ${conf.txnId.slice(0, 12)}`;
                 const richContent = `${headerLabel}\n━━━━━━━━━━━━━━━━\n💵 Amount: ${conf.amount} ${conf.currency}\n💳 Method: ${methodLabel}\n📋 Status: ${statusLabel}${refLine}${contextLine}\n━━━━━━━━━━━━━━━━`;
-
-                // E2EE: encrypt payment message like any other message
                 let storedContent = richContent;
                 let isEncrypted = false;
                 const peerId = thread.tenantId || thread.contextId || thread.id;
-                if (e2eReady && peerId) {
-                  const enc = await encrypt(richContent, peerId);
-                  if (enc) { storedContent = enc; isEncrypted = true; }
-                }
-
-                const msgPayload: any = {
-                  org_id: orgId, sender_id: authUserId, tenant_id: thread.tenantId || null,
-                  booking_id: thread.bookingId || null, booking_type: thread.bookingType || null,
-                  content: storedContent,
-                  category: "payment", message_type: "system", read: false,
-                  context_type: thread.contextType, context_id: thread.contextId,
-                  encrypted: isEncrypted,
-                };
+                if (e2eReady && peerId) { const enc = await encrypt(richContent, peerId); if (enc) { storedContent = enc; isEncrypted = true; } }
+                const msgPayload: any = { org_id: orgId, sender_id: authUserId, tenant_id: thread.tenantId || null, booking_id: thread.bookingId || null, booking_type: thread.bookingType || null, content: storedContent, category: "payment", message_type: "system", read: false, context_type: thread.contextType, context_id: thread.contextId, encrypted: isEncrypted };
                 if (thread.threadId) msgPayload.thread_id = thread.threadId;
                 await supabase.from("messages").insert(msgPayload);
-
-                // Also send structured receipt card
-                try {
-                  await sendPaymentReceiptToThread({
-                    threadId: thread.threadId || thread.id,
-                    senderId: authUserId,
-                    orgId,
-                    transactionId: conf.txnId,
-                    amount: conf.amount,
-                    currency: conf.currency,
-                    recipientName: conf.recipientName || thread.name,
-                    title: conf.status === "completed" ? "Payment sent" : "Payment initiated",
-                    contextType: thread.contextType,
-                    contextId: thread.contextId,
-                    tenantId: thread.tenantId,
-                    bookingId: thread.bookingId,
-                    bookingType: thread.bookingType,
-                    encrypt: e2eReady ? encrypt : undefined,
-                    peerId: e2eReady ? (thread.tenantId || thread.contextId || thread.id) : null,
-                  });
-                } catch (receiptErr) {
-                  console.warn("[HudChatPanel] Receipt card insert failed (non-blocking):", receiptErr);
-                }
-
-                // Cross-module sync: dispatch wallet_payment event for LOCS (instant)
-                if (conf.status === "completed" && conf.context) {
-                  try {
-                    const { dispatchSyncEvent } = await import("@/lib/shared/sync-engine");
-                    await dispatchSyncEvent({
-                      type: "wallet_payment_completed",
-                      context: {
-                        orgId,
-                        bookingId: thread.bookingId || undefined,
-                        propertyId: thread.propertyId || undefined,
-                      },
-                      actorUserId: authUserId,
-                      targetUserId: conf.recipientName ? undefined : undefined,
-                      amount: conf.amount,
-                      currency: conf.currency,
-                      paymentMethod: conf.method,
-                      txnId: conf.txnId,
-                      recipientName: conf.recipientName,
-                    });
-                  } catch (syncErr) {
-                    console.warn("[HudChatPanel] Sync event dispatch failed (non-blocking):", syncErr);
-                  }
-                }
+                try { await sendPaymentReceiptToThread({ threadId: thread.threadId || thread.id, senderId: authUserId, orgId, transactionId: conf.txnId, amount: conf.amount, currency: conf.currency, recipientName: conf.recipientName || thread.name, title: conf.status === "completed" ? "Payment sent" : "Payment initiated", contextType: thread.contextType, contextId: thread.contextId, tenantId: thread.tenantId, bookingId: thread.bookingId, bookingType: thread.bookingType, encrypt: e2eReady ? encrypt : undefined, peerId: e2eReady ? peerId : null }); } catch {}
+                if (conf.status === "completed" && conf.context) { try { const { dispatchSyncEvent } = await import("@/lib/shared/sync-engine"); await dispatchSyncEvent({ type: "wallet_payment_completed", context: { orgId, bookingId: thread.bookingId || undefined, propertyId: thread.propertyId || undefined }, actorUserId: authUserId, amount: conf.amount, currency: conf.currency, paymentMethod: conf.method, txnId: conf.txnId, recipientName: conf.recipientName }); } catch {} }
               };
               sendPaymentMessage();
               toast.success(conf.status === "completed" ? "Payment sent!" : "Payment initiated — awaiting confirmation");
             }}
-            onCancel={() => setPaymentLinkDialog(false)}
+            onCancel={() => payment.setPaymentLinkDialog(false)}
           />
         </SheetContent>
       </Sheet>
 
-      {/* Request Money Modal */}
-      <RequestMoneyModal
-        open={requestMoneyDialog}
-        onClose={() => setRequestMoneyDialog(false)}
-        recipientId={thread.tenantId || thread.contextId || null}
-        contextId={thread.threadId || thread.id || null}
-        onCreated={async (req) => {
-          const authUserId = await resolveAuthUserId();
-          if (!authUserId || !orgId) return;
-          const peerId = thread.tenantId || thread.contextId || thread.id;
-          try {
-            await sendPaymentRequestMessageToThread({
-              threadId: thread.threadId || thread.id,
-              senderId: authUserId,
-              orgId,
-              request: req,
-              tenantId: thread.tenantId,
-              bookingId: thread.bookingId,
-              bookingType: thread.bookingType,
-              contextType: thread.contextType,
-              contextId: thread.contextId,
-              encrypt: e2eReady ? encrypt : undefined,
-              peerId: e2eReady ? peerId : null,
-            });
-          } catch (err) {
-            console.error("[HudChatPanel] Failed to send request message:", err);
-          }
-          toast.success("Payment request sent in chat");
-        }}
-      />
+      <RequestMoneyModal open={payment.requestMoneyDialog} onClose={() => payment.setRequestMoneyDialog(false)} recipientId={thread.tenantId || thread.contextId || null} contextId={thread.threadId || thread.id || null} onCreated={async (req) => { const authUserId = await resolveAuthUserId(); if (!authUserId || !orgId) return; const peerId = thread.tenantId || thread.contextId || thread.id; try { await sendPaymentRequestMessageToThread({ threadId: thread.threadId || thread.id, senderId: authUserId, orgId, request: req, tenantId: thread.tenantId, bookingId: thread.bookingId, bookingType: thread.bookingType, contextType: thread.contextType, contextId: thread.contextId, encrypt: e2eReady ? encrypt : undefined, peerId: e2eReady ? peerId : null }); } catch (err) { console.error("[HudChatPanel] Failed to send request message:", err); } toast.success("Payment request sent in chat"); }} />
 
-      {/* Message Context Menu */}
-      <MessageContextMenu
-        message={contextMessage}
-        onClose={() => setContextMessage(null)}
-        onDeleted={(msgId, type) => {
-          if (type === "self") {
-            setHiddenMsgIds(prev => new Set([...prev, msgId]));
-          } else {
-            setRawMessages(prev => prev.map(m => m.id === msgId ? { 
-              ...m, content: "🚫 This message was deleted", message_type: "system",
-              attachment_url: null, audio_url: undefined, audio_duration_seconds: undefined, deleted_for_all: true,
-            } as any : m));
-          }
-        }}
-        onCopy={() => {}}
-        onEdited={(msgId, newContent) => {
-          setRawMessages(prev => prev.map(m => m.id === msgId ? { ...m, content: newContent, edited_at: new Date().toISOString() } : m));
-        }}
-        onReply={(msgId, content, senderName) => {
-          setReplyTo({ msgId, content, senderName });
-        }}
-        onForward={(msgId, content) => {
-          setForwardData({ messageId: msgId, content });
-        }}
-        onStarToggle={(msgId, starred) => {
-          setRawMessages(prev => prev.map(m => m.id === msgId ? { ...m, starred } as any : m));
-        }}
-        onEnterSelectMode={(msgId) => {
-          setSelectMode(true);
-          setSelectedMsgIds(new Set([msgId]));
-        }}
-      />
+      <MessageContextMenu message={contextMessage} onClose={() => setContextMessage(null)} onDeleted={(msgId, type) => { if (type === "self") { setHiddenMsgIds(prev => new Set([...prev, msgId])); } else { setRawMessages(prev => prev.map(m => m.id === msgId ? { ...m, content: "🚫 This message was deleted", message_type: "system", attachment_url: null, audio_url: undefined, audio_duration_seconds: undefined, deleted_for_all: true } as any : m)); } }} onCopy={() => {}} onEdited={(msgId, newContent) => { setRawMessages(prev => prev.map(m => m.id === msgId ? { ...m, content: newContent, edited_at: new Date().toISOString() } : m)); }} onReply={(msgId, content, senderName) => { setReplyTo({ msgId, content, senderName }); }} onForward={(msgId, content) => { setForwardData({ messageId: msgId, content }); }} onStarToggle={(msgId, starred) => { setRawMessages(prev => prev.map(m => m.id === msgId ? { ...m, starred } as any : m)); }} onEnterSelectMode={(msgId) => { setSelectMode(true); setSelectedMsgIds(new Set([msgId])); }} />
 
-      {/* Location Picker */}
-      <ChatLocationPicker
-        open={showLocationPicker}
-        onClose={() => setShowLocationPicker(false)}
-        onSend={async (loc) => {
-          if (!orgId || !thread) return;
-          const authUserId = await resolveAuthUserId();
-          if (!authUserId) return;
+      <ChatLocationPicker open={showLocationPicker} onClose={() => setShowLocationPicker(false)} onSend={async (loc) => { if (!orgId || !thread) return; const authUserId = await resolveAuthUserId(); if (!authUserId) return; const mapUrl = `https://www.openstreetmap.org/?mlat=${loc.lat}&mlon=${loc.lng}#map=16/${loc.lat}/${loc.lng}`; const locationMsg = loc.type === "live" ? `📡 Live location shared for ${loc.duration}min\n📍 ${mapUrl}` : loc.type === "place" ? `📍 ${loc.label}\n${loc.address || ""}\n${mapUrl}` : `📍 My location\n${mapUrl}`; let storedContent = locationMsg; let isLocEncrypted = false; const peerId = thread.tenantId || thread.contextId || thread.id; if (e2eReady && peerId) { const enc = await encrypt(locationMsg, peerId); if (enc) { storedContent = enc; isLocEncrypted = true; } } const insertData: any = { org_id: orgId, sender_id: authUserId, content: storedContent, category: "general", message_type: "user", sender_locale: locale, encrypted: isLocEncrypted, contact_name: thread.conversationType !== "property" ? thread.name : undefined, contact_email: thread.conversationType !== "property" ? thread.email : undefined }; if (thread.bookingId) insertData.booking_id = thread.bookingId; if (thread.tenantId) insertData.tenant_id = thread.tenantId; if (thread.contextType) insertData.context_type = thread.contextType; if (thread.contextId) insertData.context_id = thread.contextId; if (thread.threadId) insertData.thread_id = thread.threadId; const { error } = await supabase.from("messages").insert(insertData); if (error) { toast.error("Failed to send location"); } else { platformBus.emit("orbit:message_sent", { threadId: thread.threadId || thread.id, contextId: thread.contextId, type: "location" }, "orbit", { userId: user?.id, orgId }); toast.success("📍 Location shared"); } loadMessages(); }} />
 
-          const mapUrl = `https://www.openstreetmap.org/?mlat=${loc.lat}&mlon=${loc.lng}#map=16/${loc.lat}/${loc.lng}`;
-          const locationMsg = loc.type === "live"
-            ? `📡 Live location shared for ${loc.duration}min\n📍 ${mapUrl}`
-            : loc.type === "place"
-              ? `📍 ${loc.label}\n${loc.address || ""}\n${mapUrl}`
-              : `📍 My location\n${mapUrl}`;
-          
-          // Encrypt location payload
-          let storedContent = locationMsg;
-          let isLocEncrypted = false;
-          const peerId = thread.tenantId || thread.contextId || thread.id;
-          if (e2eReady && peerId) {
-            const enc = await encrypt(locationMsg, peerId);
-            if (enc) { storedContent = enc; isLocEncrypted = true; }
-          }
+      <OrbitSafetyNumber peerId={thread?.tenantId || thread?.contextId || thread?.id || ""} peerName={thread?.name || "Contact"} open={showSafetyNumber} onOpenChange={setShowSafetyNumber} />
+      <OrbitSecurityPanel peerId={thread?.tenantId || thread?.contextId || thread?.id || ""} peerName={thread?.name || "Contact"} open={showSecurityPanel} onOpenChange={setShowSecurityPanel} />
 
-          const insertData: any = {
-            org_id: orgId,
-            sender_id: authUserId,
-            content: storedContent,
-            category: "general",
-            message_type: "user",
-            sender_locale: locale,
-            encrypted: isLocEncrypted,
-            contact_name: thread.conversationType !== "property" ? thread.name : undefined,
-            contact_email: thread.conversationType !== "property" ? thread.email : undefined,
-          };
-          if (thread.bookingId) insertData.booking_id = thread.bookingId;
-          if (thread.tenantId) insertData.tenant_id = thread.tenantId;
-          if (thread.contextType) insertData.context_type = thread.contextType;
-          if (thread.contextId) insertData.context_id = thread.contextId;
-          if (thread.threadId) insertData.thread_id = thread.threadId;
-          
-          const { error } = await supabase.from("messages").insert(insertData);
-           if (error) {
-            console.error("[Location] Insert failed:", error);
-            toast.error("Failed to send location");
-          } else {
-            platformBus.emit("orbit:message_sent", {
-              threadId: thread.threadId || thread.id,
-              contextId: thread.contextId,
-              type: "location",
-            }, "orbit", { userId: user?.id, orgId });
-            toast.success("📍 Location shared");
-          }
-          loadMessages();
-        }}
-      />
-
-      {/* Safety Number Verification */}
-      <OrbitSafetyNumber
-        peerId={thread?.tenantId || thread?.contextId || thread?.id || ""}
-        peerName={thread?.name || "Contact"}
-        open={showSafetyNumber}
-        onOpenChange={setShowSafetyNumber}
-      />
-
-      {/* Security Panel */}
-      <OrbitSecurityPanel
-        peerId={thread?.tenantId || thread?.contextId || thread?.id || ""}
-        peerName={thread?.name || "Contact"}
-        open={showSecurityPanel}
-        onOpenChange={setShowSecurityPanel}
-      />
-
-      {/* Forward Message Dialog */}
-      {forwardData && (
-        <ForwardMessageDialog
-          open={!!forwardData}
-          onClose={() => setForwardData(null)}
-          messageContent={forwardData.content}
-          messageId={forwardData.messageId}
-          userId={user?.id || ""}
-          userEmail={user?.email || ""}
-          userName={user?.user_metadata?.full_name || user?.email || "User"}
-          currentContextId={thread?.contextId || ""}
-        />
-      )}
+      {forwardData && <ForwardMessageDialog open={!!forwardData} onClose={() => setForwardData(null)} messageContent={forwardData.content} messageId={forwardData.messageId} userId={user?.id || ""} userEmail={user?.email || ""} userName={user?.user_metadata?.full_name || user?.email || "User"} currentContextId={thread?.contextId || ""} />}
     </>
   );
 }
