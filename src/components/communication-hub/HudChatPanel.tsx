@@ -400,39 +400,43 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
           />
         )}
 
-        <MessageList
-          ref={scrollRef}
-          messages={visibleMessages}
-          rawCount={loader.rawMessages.length}
-          isDecrypting={loader.rawMessages.length > 0 && visibleMessages.length === 0}
-          typingIndicator={loader.typingIndicator}
-          hiddenMsgIds={selection.hiddenMsgIds}
-          selectedMsgIds={selection.selectedMsgIds}
-          selectMode={selection.selectMode}
-          pendingOffline={loader.pendingOffline}
-          userId={user?.id}
-          threadName={thread.name}
-          locale={locale}
-          showOriginal={showOriginal}
-          translatingMsgId={translatingMsgId}
-          onTranslate={handleTranslateMessage}
-          onContextMenu={(_, msg, isMe) => {
-            selection.setContextMessage({
-              msgId: msg.id,
-              content: msg.content,
-              isMe,
-              createdAt: msg.created_at,
-              hasAudio: !!(msg as any).audio_url,
-              hasAttachment: !!msg.attachment_url,
-              senderId: msg.sender_id,
-              canModerate: false,
-              isStarred: !!(msg as any).starred,
-            });
-          }}
-          onToggleSelect={selection.toggleMsgSelect}
-          getCategoryIcon={getCategoryIcon}
-          t={t}
-        />
+        <div className="relative flex-1 min-h-0">
+          <MessageList
+            ref={scrollRef}
+            messages={visibleMessages}
+            rawCount={loader.rawMessages.length}
+            isDecrypting={loader.rawMessages.length > 0 && visibleMessages.length === 0}
+            typingIndicator={loader.typingIndicator}
+            hiddenMsgIds={selection.hiddenMsgIds}
+            selectedMsgIds={selection.selectedMsgIds}
+            selectMode={selection.selectMode}
+            pendingOffline={loader.pendingOffline}
+            userId={user?.id}
+            threadName={thread.name}
+            locale={locale}
+            showOriginal={showOriginal}
+            translatingMsgId={translatingMsgId}
+            onTranslate={handleTranslateMessage}
+            onContextMenu={(_, msg, isMe) => {
+              selection.setContextMessage({
+                msgId: msg.id,
+                content: msg.content,
+                isMe,
+                createdAt: msg.created_at,
+                hasAudio: !!(msg as any).audio_url,
+                hasAttachment: !!msg.attachment_url,
+                senderId: msg.sender_id,
+                canModerate: false,
+                isStarred: !!(msg as any).starred,
+              });
+            }}
+            onToggleSelect={selection.toggleMsgSelect}
+            getCategoryIcon={getCategoryIcon}
+            t={t}
+          />
+
+          <OrbitJumpToBottomButton visible={showJumpToBottom} onClick={jumpToBottom} />
+        </div>
 
         {(thread.conversationType === "booking" || thread.conversationType === "listing" || thread.conversationType === "deal") && (
           <div className="px-3 sm:px-4 py-2 shrink-0" style={{ borderTop: "1px solid hsl(var(--hud-border) / 0.06)", background: "hsl(var(--hud-surface) / 0.25)" }}>
