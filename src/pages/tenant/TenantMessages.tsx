@@ -326,14 +326,20 @@ const TenantMessages = () => {
               </div>
             ) : (
               messages.map((m) => {
-                const isMe = m.sender_id === user?.id;
-                const isSystem = m.message_type === "system" || m.sender_id === SYSTEM_SENDER_ID;
+                const isMe = m.sender_user_id === user?.id;
+                const isSystem = m.type === "system" || m.sender_user_id === SYSTEM_SENDER_ID;
+                const meta = m.metadata || {};
+                const content = m.body || "";
+                const attachmentUrl = meta.attachment_url;
+                const translatedContent = meta.translated_content;
+                const senderLocale = meta.sender_locale;
+                const category = meta.category;
 
                 if (isSystem) {
                   return (
                     <div key={m.id} className="flex justify-center">
                       <div className="bg-muted/50 text-muted-foreground text-xs px-4 py-2 rounded-full max-w-[80%] text-center">
-                        {m.content}
+                        {content}
                         <span className="ml-2 opacity-60">{format(new Date(m.created_at), "dd/MM HH:mm")}</span>
                       </div>
                     </div>
@@ -342,18 +348,18 @@ const TenantMessages = () => {
 
                 const showingOriginal = showOriginalMap[m.id];
                 const displayContent = isMe
-                  ? m.content
+                  ? content
                   : showingOriginal
-                    ? m.content
-                    : (m.translated_content || m.content);
-                const hasTranslation = !isMe && (m.translated_content || m.sender_locale !== tenantLocale);
+                    ? content
+                    : (translatedContent || content);
+                const hasTranslation = !isMe && (translatedContent || senderLocale !== tenantLocale);
 
                 return (
                   <motion.div key={m.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
                     className={`flex ${isMe ? "justify-end" : "justify-start"}`}>
                     <div className={`max-w-[75%] rounded-2xl px-4 py-2.5 ${isMe ? "bg-accent text-accent-foreground rounded-br-md" : "bg-muted text-foreground rounded-bl-md"}`}>
-                      {m.category && m.category !== "general" && (
-                        <span className="text-[10px] opacity-70 mb-0.5 block">{getCategoryIcon(m.category)}</span>
+                      {category && category !== "general" && (
+                        <span className="text-[10px] opacity-70 mb-0.5 block">{getCategoryIcon(category)}</span>
                       )}
                       <p className="text-sm whitespace-pre-wrap break-words">{displayContent}</p>
                       {/* Translation toggle */}
@@ -367,8 +373,8 @@ const TenantMessages = () => {
                           {translatingId === m.id ? "…" : showingOriginal ? "Show translation" : "Show original"}
                         </button>
                       )}
-                      {m.attachment_url && (
-                        <a href={m.attachment_url} target="_blank" rel="noopener noreferrer"
+                      {attachmentUrl && (
+                        <a href={attachmentUrl} target="_blank" rel="noopener noreferrer"
                           className={`flex items-center gap-1.5 mt-2 text-xs underline ${isMe ? "text-accent-foreground/80" : "text-accent"}`}>
                           <Paperclip className="h-3 w-3" /> Pièce jointe
                         </a>
@@ -379,7 +385,7 @@ const TenantMessages = () => {
                         </p>
                         {isMe && (
                           <span className="text-[10px]">
-                            {m.read ? <CheckCheck className="h-3 w-3 text-accent-foreground/80" /> : <Check className="h-3 w-3 text-accent-foreground/40" />}
+                            {m.read_at ? <CheckCheck className="h-3 w-3 text-accent-foreground/80" /> : <Check className="h-3 w-3 text-accent-foreground/40" />}
                           </span>
                         )}
                       </div>
