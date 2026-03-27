@@ -138,6 +138,7 @@ export default function CommGroupsSection() {
     const { data, error } = await (supabase as any)
       .from("conversations_v2")
       .select("*")
+      .in("type", ["group", "channel", "community"])
       .order("updated_at", { ascending: false });
 
     if (error) { setLoadError(error.message); setLoading(false); return; }
@@ -149,8 +150,8 @@ export default function CommGroupsSection() {
           .eq("group_id", g.id);
         const { data: lastMsg } = await (supabase as any)
           .from("chat_messages_v2")
-          .select("content, created_at")
-          .eq("group_id", g.id)
+          .select("body, created_at")
+          .eq("conversation_id", g.id)
           .order("created_at", { ascending: false })
           .limit(1);
         return {
@@ -158,7 +159,7 @@ export default function CommGroupsSection() {
           group_type: g.group_type || "group",
           posting_permission: g.posting_permission || "everyone",
           member_count: count || 0,
-          last_message: lastMsg?.[0]?.content || null,
+          last_message: lastMsg?.[0]?.body || null,
           last_message_at: lastMsg?.[0]?.created_at || g.created_at,
         };
       }));
@@ -214,10 +215,20 @@ export default function CommGroupsSection() {
     const { data: msgs } = await (supabase as any)
       .from("chat_messages_v2")
       .select("*")
-      .eq("group_id", group.id)
+      .eq("conversation_id", group.id)
       .order("created_at", { ascending: true })
       .limit(200);
-    setMessages((msgs as GroupMessage[]) || []);
+    const mapped = ((msgs as any[]) || []).map((m: any) => ({
+      id: m.id,
+      sender_id: m.sender_user_id || m.sender_id,
+      content: m.body || m.content,
+      created_at: m.created_at,
+      sender_name: m.sender_name,
+      is_pinned: m.is_pinned,
+      pinned_at: m.pinned_at,
+      pinned_by: m.pinned_by,
+    }));
+    setMessages(mapped as GroupMessage[]);
     const { data: mems } = await supabase
       .from("group_members")
       .select("*")
@@ -232,9 +243,9 @@ export default function CommGroupsSection() {
     setMsgInput("");
     haptic("light");
     const { data, error } = await (supabase as any).from("chat_messages_v2").insert({
-      group_id: activeGroup.id,
-      sender_id: user.id,
-      content,
+      conversation_id: activeGroup.id,
+      sender_user_id: user.id,
+      body: content,
     } as any).select().single();
     if (!error && data) {
       setMessages(prev => [...prev, data as GroupMessage]);
@@ -330,12 +341,18 @@ export default function CommGroupsSection() {
       .on("postgres_changes", {
         event: "INSERT",
         schema: "public",
-        table: "group_messages",
-        filter: `group_id=eq.${activeGroup.id}`,
+        table: "chat_messages_v2",
+        filter: `conversation_id=eq.${activeGroup.id}`,
       }, (payload) => {
-        const msg = payload.new as GroupMessage;
-        if (msg.sender_id !== user?.id) {
-          setMessages(prev => [...prev, msg]);
+        const msg = payload.new as any;
+        if (msg.sender_user_id !== user?.id) {
+          setMessages(prev => [...prev, {
+            id: msg.id,
+            sender_id: msg.sender_user_id,
+            content: msg.body,
+            created_at: msg.created_at,
+            is_pinned: msg.is_pinned,
+          } as GroupMessage]);
           setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }), 50);
         }
       })
@@ -455,7 +472,7 @@ export default function CommGroupsSection() {
                   )}
                   {!isMine && (
                     <span className="text-[10px] font-semibold block mb-0.5" style={{ color: "hsl(var(--hud-cyan) / 0.7)" }}>
-                      {msg.sender_id.slice(0, 8)}
+                      {msg.sender_name || "Member"}
                     </span>
                   )}
                   <p>{msg.content}</p>
