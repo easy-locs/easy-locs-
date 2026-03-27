@@ -1,3 +1,4 @@
+console.info("[BOOT_EARLIEST] main.tsx module executing", Date.now());
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { HashRouter } from "react-router-dom";
