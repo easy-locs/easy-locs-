@@ -451,6 +451,16 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
           </div>
         )}
 
+        <OrbitComposerTopState
+          replyState={composer.replyState}
+          editState={composer.editState}
+          onClose={() => {
+            composer.setReplyState(null);
+            composer.setEditState(null);
+            messageSender.setNewMessage("");
+          }}
+        />
+
         <ComposerBar
           newMessage={messageSender.newMessage}
           sending={messageSender.sending}
@@ -462,7 +472,18 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
           replyTo={selection.replyTo}
           userId={user?.id}
           onMessageChange={messageSender.setNewMessage}
-          onSend={messageSender.handleSend}
+          onSend={async () => {
+            // Handle edit mode
+            if (composer.editState) {
+              await messageActions.editMessage(composer.editState.messageId, messageSender.newMessage.trim());
+              messageSender.setNewMessage("");
+              composer.setEditState(null);
+              return;
+            }
+            // Normal send
+            await messageSender.handleSend();
+            composer.setReplyState(null);
+          }}
           onKeyDown={messageSender.handleKeyDown}
           onSecurityLevelChange={security.setSecurityLevel}
           onFileUpload={attachments.handleFileUpload}
@@ -491,6 +512,15 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
           onClearReply={() => selection.setReplyTo(null)}
           onBroadcastTyping={() => loader.broadcastTyping(privacySettings.typingIndicators)}
           t={t}
+        />
+
+        <OrbitMediaBar
+          attachmentCount={0}
+          recording={voiceRecorder.recording}
+          onOpenGallery={() => attachments.setShowAttachmentMenu?.(true)}
+          onOpenCamera={() => attachments.setShowAttachmentMenu?.(true)}
+          onOpenFiles={() => attachments.setShowAttachmentMenu?.(true)}
+          onStartVoice={() => composer.setIsRecording(!composer.isRecording)}
         />
       </div>
 
