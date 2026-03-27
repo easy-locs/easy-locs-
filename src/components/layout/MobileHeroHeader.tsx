@@ -47,8 +47,8 @@ export function MobileHeroHeader({
 
         <div className="mobile-hero__titleWrap">
           <h1 className="mobile-hero__title">
-            {icon ? <span className="mr-2">{icon}</span> : null}
-            {title}
+            {icon ? <span className="mobile-hero__icon">{icon}</span> : null}
+            <span className="mobile-hero__titleText">{title}</span>
           </h1>
 
           {subtitle ? (
