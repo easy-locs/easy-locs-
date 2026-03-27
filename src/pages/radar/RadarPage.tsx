@@ -112,20 +112,21 @@ export default function RadarPage() {
             <button onClick={() => navigate("/")} className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-95 transition-transform bg-muted/60 backdrop-blur-sm">
               <ArrowLeft className="w-4.5 h-4.5" />
             </button>
-            <h1 className="text-lg font-bold text-foreground">Radar</h1>
-          </div>
-            <p className="text-[10px] text-muted-foreground flex items-center gap-1">
-              {geoLoading ? (
-                <><Loader2 className="h-3 w-3 animate-spin" /> Locating…</>
-              ) : userLocation ? (
-                <><MapPin className="h-3 w-3 text-primary" /> {userLocation.lat.toFixed(4)}, {userLocation.lng.toFixed(4)}</>
-              ) : geoPermission === "denied" ? (
-                <button onClick={handleLocate} className="text-primary font-semibold">📍 Enable location</button>
-              ) : (
-                "Searching location…"
-              )}
-              <span className="ml-2 text-[9px] text-primary/70">{timeCtx.emoji} {timeCtx.label}</span>
-            </p>
+            <div>
+              <h1 className="text-lg font-bold text-foreground">Radar</h1>
+              <p className="text-[10px] text-muted-foreground flex items-center gap-1">
+                {geoLoading ? (
+                  <><Loader2 className="h-3 w-3 animate-spin" /> Locating…</>
+                ) : userLocation ? (
+                  <><MapPin className="h-3 w-3 text-primary" /> {userLocation.lat.toFixed(4)}, {userLocation.lng.toFixed(4)}</>
+                ) : geoPermission === "denied" ? (
+                  <button onClick={handleLocate} className="text-primary font-semibold">📍 Enable location</button>
+                ) : (
+                  "Searching location…"
+                )}
+                <span className="ml-2 text-[9px] text-primary/70">{timeCtx.emoji} {timeCtx.label}</span>
+              </p>
+            </div>
           </div>
           <button
             onClick={handleLocate}
