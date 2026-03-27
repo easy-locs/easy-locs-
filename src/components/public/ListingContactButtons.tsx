@@ -210,7 +210,7 @@ const ListingContactButtons = ({
     if (!user || !orgId) return;
     trackClick("free_call", trackOpts);
     startCall({
-      orgId,
+      targetId: orgId,
       contextType: serviceId ? "service" : "listing",
       contextId: serviceId || listingId || undefined,
       contextLabel: listingTitle,

@@ -21,7 +21,7 @@ export function useCallActions(thread: ConversationThread | null, workspaceId: s
 
     haptic("medium");
     void startCall({
-      orgId: targetId,
+      targetId: targetId,
       threadId: thread?.v2ConversationId || thread?.threadId,
       contextType: thread?.conversationType || "direct",
       contextId: thread?.v2ConversationId || thread?.contextId,

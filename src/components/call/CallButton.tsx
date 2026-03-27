@@ -21,7 +21,7 @@ export function CallButton(props: {
           peerName: props.peerName,
         });
         void startCall({
-          orgId: props.orbitId,
+          targetId: props.orbitId,
           peerName: props.peerName || "User",
           threadId: props.conversationId,
           isVideo: callType === "video",

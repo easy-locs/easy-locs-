@@ -149,7 +149,7 @@ export default function CommCallsSection() {
 
     trackOrbitEvent("orbit.call.started", { screen: "calls", component: "CommCallsSection", action: "redial", payload: { callType: call.call_type }, result: "success" });
     await startCall({
-      orgId: peerId,
+      targetId: peerId,
       contextType: "direct",
       peerName: peerId,
       isVideo: call.call_type === "video",

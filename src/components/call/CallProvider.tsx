@@ -16,9 +16,9 @@ import IncomingCallDialog from "./IncomingCallDialog";
 import { debugLog } from "@/lib/debug/runtime-debug-bus";
 
 interface CallContextType {
-  /** Start a call to an org (provider) */
+  /** Start a call — targetId is the peer userId OR an orgId (resolved internally) */
   startCall: (opts: {
-    orgId: string;
+    targetId: string;
     threadId?: string;
     contextType?: string;
     contextId?: string;
@@ -229,7 +229,7 @@ export function CallProvider({ children }: { children: ReactNode }) {
 
   const startCall = useCallback(
     async (opts: {
-      orgId: string;
+      targetId: string;
       threadId?: string;
       contextType?: string;
       contextId?: string;
@@ -256,7 +256,7 @@ export function CallProvider({ children }: { children: ReactNode }) {
         }
 
         console.log("[CallProvider] startCall requested", {
-          orgId: opts.orgId,
+          targetId: opts.targetId,
           contextType: opts.contextType || "listing",
           contextId: opts.contextId || null,
           threadId: opts.threadId || null,
@@ -264,20 +264,20 @@ export function CallProvider({ children }: { children: ReactNode }) {
           authUserId: authUser.id,
         });
 
-        const receiverOrbitId = await resolveReceiverUserId(opts.orgId);
+        const receiverOrbitId = await resolveReceiverUserId(opts.targetId);
 
         if (!receiverOrbitId || receiverOrbitId === authUser.id) {
           const reason = receiverOrbitId === authUser.id
             ? "No other team member available to receive this call."
             : "Could not find a callable contact for this business.";
           toast.error(reason);
-          console.warn("[CallProvider] no callable target", { rawTarget: opts.orgId, resolved: receiverOrbitId, reason });
+          console.warn("[CallProvider] no callable target", { rawTarget: opts.targetId, resolved: receiverOrbitId, reason });
           return;
         }
 
         console.log("[CallProvider] sending to RPC", {
           callerOrbitId: authUser.id,
-          rawTarget: opts.orgId,
+          rawTarget: opts.targetId,
           receiverOrbitId,
         });
 
@@ -316,7 +316,7 @@ export function CallProvider({ children }: { children: ReactNode }) {
         setContextLabel(opts.contextLabel || "");
         setCallManager(manager);
         setShowCallDialog(true);
-        activeCallRef.current = { callId: callId as string, threadId: opts.threadId, orgId: opts.orgId, contextId: opts.contextId };
+        activeCallRef.current = { callId: callId as string, threadId: opts.threadId, orgId: opts.targetId, contextId: opts.contextId };
 
         console.log("[CallProvider] call manager initialized", { callId });
         platformBus.emit("call.started", { callId, role: "caller", isVideo: opts.isVideo || false, peerName: opts.peerName }, "orbit");

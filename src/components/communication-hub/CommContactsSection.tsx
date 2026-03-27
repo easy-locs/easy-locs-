@@ -414,7 +414,7 @@ export default function CommContactsSection() {
       });
 
       await initiateCall({
-        orgId: peer.peerUserId,
+        targetId: peer.peerUserId,
         threadId: thread?.v2ConversationId || thread?.threadId,
         contextType: "direct",
         contextId: thread?.v2ConversationId || thread?.contextId || "",

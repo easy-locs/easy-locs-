@@ -69,7 +69,7 @@ const TenantMessages = () => {
     const authUserId = await resolveAuthUserId();
     if (!authUserId) return;
     await startCall({
-      orgId,
+      targetId: orgId,
       contextType: "tenant",
       contextId: tenantId || undefined,
       contextLabel: L.tenantSpace || "Tenant",
@@ -83,7 +83,7 @@ const TenantMessages = () => {
     const authUserId = await resolveAuthUserId();
     if (!authUserId) return;
     await startCall({
-      orgId,
+      targetId: orgId,
       contextType: "tenant",
       contextId: tenantId || undefined,
       contextLabel: L.tenantSpace || "Tenant",
