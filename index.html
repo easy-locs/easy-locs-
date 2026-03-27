@@ -119,7 +119,7 @@
     </div>
     <script type="module" src="/src/main.tsx"></script>
     <script>
-      // Crash recovery: if React hasn't rendered after 60s, show error + reload button.
+      // Crash recovery: if React hasn't rendered after 15s, show error + reload button.
       setTimeout(function(){
         var root=document.getElementById('root');
         var el=root&&root.querySelector('#app-loading');
