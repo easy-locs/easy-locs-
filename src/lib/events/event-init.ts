@@ -35,9 +35,16 @@ const BRIDGE_MAP: Record<string, string> = {
   "wallet.transaction.created": "wallet.updated",
   "wallet.payment.success": "wallet.updated",
   "wallet.payment.failed": "wallet.updated",
+  // Wallet V2 cross-app
+  "wallet.payment.completed": "wallet.updated",
   // Messaging
   "message.sent": "message.sent",
   "conversation.created": "conversation.created",
+  // Orbit V2 cross-app
+  "orbit.message.sent": "message.sent",
+  "orbit.message.received": "message.received",
+  "orbit.call.started": "call.started",
+  "orbit.call.ended": "call.ended",
   // Booking → order-like events
   "booking.requested": "order.created",
   "booking.confirmed": "order.confirmed",
@@ -45,6 +52,16 @@ const BRIDGE_MAP: Record<string, string> = {
   "booking.cancelled": "order.cancelled",
   "booking.confirmation.required": "order.confirmation_required",
   "booking.payment.required": "order.payment_required",
+  // Booking V2 cross-app
+  "booking.created": "order.created",
+  // Radar V2 cross-app
+  "radar.location.shared": "location.shared",
+  "radar.pin.selected": "entity.click",
+  // Marketplace V2 cross-app
+  "marketplace.contact.opened": "contact.opened",
+  "marketplace.merchant.live": "entity.published",
+  // Dashboard V2 cross-app
+  "dashboard.refresh": "dashboard.refresh",
   // Storefront orchestration
   "ORDER_CREATED": "order.created",
   "ORDER_COMPLETED": "order.completed",
