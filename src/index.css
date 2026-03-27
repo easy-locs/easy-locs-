@@ -916,10 +916,16 @@ img {
   }
 }
 
-/* Ensure no horizontal overflow on mobile */
+/* Ensure no horizontal overflow on mobile + unified bottom spacing */
 @layer utilities {
   .mobile-safe {
     @apply max-w-full overflow-x-hidden;
+    padding-bottom: var(--page-bottom-pad);
+  }
+}
+@media (min-width: 1024px) {
+  .mobile-safe {
+    padding-bottom: 0 !important;
   }
 }
 
@@ -1300,10 +1306,7 @@ html {
   section .mb-14 { margin-bottom: 1.75rem !important; }
   section .mb-12 { margin-bottom: 1.5rem !important; }
 
-  /* ── 20. Bottom nav spacing ── */
-  .mobile-safe {
-    padding-bottom: max(4.5rem, calc(3.5rem + env(safe-area-inset-bottom, 0px)));
-  }
+  /* ── 20. Bottom nav spacing — handled by --page-bottom-pad ── */
 }
 
 /* ══════ iPhone SE / very small screens (< 375px) ══════ */
@@ -1702,11 +1705,7 @@ html {
 @media (display-mode: standalone) {
   .pwa-install-hint { display: none !important; }
 }
-@media (max-width: 1023px) {
-  .mobile-safe {
-    padding-bottom: max(4rem, env(safe-area-inset-bottom, 0px));
-  }
-}
+/* mobile-safe bottom spacing now unified via --page-bottom-pad */
 
 /* ══════════════════════════════════════════════════
    PREMIUM VISUAL POLISH — Shadows, borders, accents
@@ -1974,21 +1973,32 @@ html {
   --app-safe-top: env(safe-area-inset-top, 0px);
   --app-safe-bottom: env(safe-area-inset-bottom, 0px);
   --mobile-header-h: 64px;
-  --mobile-bottom-nav-h: 76px;
+  --mobile-bottom-nav-h: 72px;
   --search-input-h: 56px;
   --page-x: 16px;
+  --page-bottom-pad: calc(var(--mobile-bottom-nav-h) + var(--app-safe-bottom) + 16px);
 }
 
-/* Generic page shell */
+/* Generic page shell — consistent across ALL pages */
 .app-mobile-page {
   min-height: 100dvh;
+  min-height: -webkit-fill-available;
   padding-top: max(8px, env(safe-area-inset-top, 0px));
-  padding-bottom: calc(var(--mobile-bottom-nav-h) + var(--app-safe-bottom) + 20px);
+  padding-bottom: var(--page-bottom-pad);
   overflow-x: clip;
+  width: 100%;
 }
 
 .app-mobile-content {
-  padding-bottom: calc(var(--mobile-bottom-nav-h) + var(--app-safe-bottom) + 24px);
+  padding-bottom: var(--page-bottom-pad);
+}
+
+/* Web desktop constraint — readable max-width */
+@media (min-width: 1024px) {
+  .app-mobile-page {
+    max-width: 100%;
+    padding-bottom: 24px; /* no bottom nav on desktop */
+  }
 }
 
 /* ── Hero / Header ── */

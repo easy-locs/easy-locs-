@@ -167,7 +167,7 @@ export default function MeCommandCenter() {
   };
 
   return (
-    <div className="app-mobile-page app-mobile-content max-w-md mx-auto px-4 py-4 pb-[calc(90px+env(safe-area-inset-bottom,0px))]">
+    <div className="app-mobile-page app-mobile-content max-w-md mx-auto px-4 py-4">
       <motion.div variants={stagger} initial="hidden" animate="show" className="space-y-3">
 
         {/* ── Profile Card ── */}
