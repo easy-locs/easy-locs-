@@ -6814,6 +6814,7 @@ export type Database = {
       }
       engine_supervisor: {
         Row: {
+          concurrency_limit: number | null
           consecutive_failures: number
           created_at: string | null
           cron_interval: string | null
@@ -6821,6 +6822,7 @@ export type Database = {
           enabled: boolean
           engine_name: string
           engine_tier: string
+          frequency_seconds: number | null
           id: string
           kill_switch: boolean | null
           last_duration_ms: number | null
@@ -6829,7 +6831,10 @@ export type Database = {
           last_run_at: string | null
           last_success_at: string | null
           max_retries: number
+          max_runtime_seconds: number | null
+          priority: string | null
           restart_count: number
+          retry_policy_json: Json | null
           runtime_class: string
           status: string
           success_rate: number | null
@@ -6839,6 +6844,7 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          concurrency_limit?: number | null
           consecutive_failures?: number
           created_at?: string | null
           cron_interval?: string | null
@@ -6846,6 +6852,7 @@ export type Database = {
           enabled?: boolean
           engine_name: string
           engine_tier?: string
+          frequency_seconds?: number | null
           id?: string
           kill_switch?: boolean | null
           last_duration_ms?: number | null
@@ -6854,7 +6861,10 @@ export type Database = {
           last_run_at?: string | null
           last_success_at?: string | null
           max_retries?: number
+          max_runtime_seconds?: number | null
+          priority?: string | null
           restart_count?: number
+          retry_policy_json?: Json | null
           runtime_class?: string
           status?: string
           success_rate?: number | null
@@ -6864,6 +6874,7 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          concurrency_limit?: number | null
           consecutive_failures?: number
           created_at?: string | null
           cron_interval?: string | null
@@ -6871,6 +6882,7 @@ export type Database = {
           enabled?: boolean
           engine_name?: string
           engine_tier?: string
+          frequency_seconds?: number | null
           id?: string
           kill_switch?: boolean | null
           last_duration_ms?: number | null
@@ -6879,7 +6891,10 @@ export type Database = {
           last_run_at?: string | null
           last_success_at?: string | null
           max_retries?: number
+          max_runtime_seconds?: number | null
+          priority?: string | null
           restart_count?: number
+          retry_policy_json?: Json | null
           runtime_class?: string
           status?: string
           success_rate?: number | null
@@ -11764,6 +11779,99 @@ export type Database = {
           storefront_page_id?: string | null
           updated_at?: string | null
           user_id?: string | null
+        }
+        Relationships: []
+      }
+      merchant_scrape_runs: {
+        Row: {
+          accepted_count: number | null
+          created_at: string | null
+          discovered_count: number | null
+          engine_name: string
+          error_message: string | null
+          finished_at: string | null
+          id: string
+          metadata_json: Json | null
+          parsed_count: number | null
+          published_count: number | null
+          region: string | null
+          rejected_count: number | null
+          scraped_count: number | null
+          source: string
+          started_at: string | null
+          status: string | null
+          vertical: string | null
+        }
+        Insert: {
+          accepted_count?: number | null
+          created_at?: string | null
+          discovered_count?: number | null
+          engine_name: string
+          error_message?: string | null
+          finished_at?: string | null
+          id?: string
+          metadata_json?: Json | null
+          parsed_count?: number | null
+          published_count?: number | null
+          region?: string | null
+          rejected_count?: number | null
+          scraped_count?: number | null
+          source?: string
+          started_at?: string | null
+          status?: string | null
+          vertical?: string | null
+        }
+        Update: {
+          accepted_count?: number | null
+          created_at?: string | null
+          discovered_count?: number | null
+          engine_name?: string
+          error_message?: string | null
+          finished_at?: string | null
+          id?: string
+          metadata_json?: Json | null
+          parsed_count?: number | null
+          published_count?: number | null
+          region?: string | null
+          rejected_count?: number | null
+          scraped_count?: number | null
+          source?: string
+          started_at?: string | null
+          status?: string | null
+          vertical?: string | null
+        }
+        Relationships: []
+      }
+      merchant_source_snapshots: {
+        Row: {
+          created_at: string | null
+          diff_from_previous: Json | null
+          id: string
+          quality_score: number | null
+          seed_merchant_id: string | null
+          snapshot_json: Json
+          source: string
+          source_entity_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          diff_from_previous?: Json | null
+          id?: string
+          quality_score?: number | null
+          seed_merchant_id?: string | null
+          snapshot_json?: Json
+          source: string
+          source_entity_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          diff_from_previous?: Json | null
+          id?: string
+          quality_score?: number | null
+          seed_merchant_id?: string | null
+          snapshot_json?: Json
+          source?: string
+          source_entity_id?: string | null
         }
         Relationships: []
       }

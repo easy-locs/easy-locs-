@@ -53,16 +53,20 @@ interface RunLog {
 
 interface ScrapeRun {
   id: string;
+  engine_name: string;
   source: string;
   region: string;
+  vertical: string;
   started_at: string;
   finished_at: string | null;
   status: string;
   discovered_count: number;
   scraped_count: number;
+  parsed_count: number;
   accepted_count: number;
-  blocked_count: number;
-  failed_count: number;
+  rejected_count: number;
+  published_count: number;
+  error_message: string | null;
 }
 
 export default function AdminEngineCockpit() {
@@ -210,7 +214,7 @@ export default function AdminEngineCockpit() {
               Source Runs — Deliveroo Dubai
             </CardTitle>
           </CardHeader>
-          <CardContent className="grid grid-cols-3 md:grid-cols-7 gap-2 text-xs">
+          <CardContent className="grid grid-cols-3 md:grid-cols-9 gap-2 text-xs">
             <div className="bg-muted/30 rounded p-2">
               <p className="text-[10px] text-muted-foreground">Status</p>
               <p className="font-medium">{latestScrape.status}</p>
@@ -228,17 +232,26 @@ export default function AdminEngineCockpit() {
               <p className="font-medium">{latestScrape.scraped_count}</p>
             </div>
             <div className="bg-muted/30 rounded p-2">
+              <p className="text-[10px] text-muted-foreground">Parsed</p>
+              <p className="font-medium text-blue-500">{latestScrape.parsed_count}</p>
+            </div>
+            <div className="bg-muted/30 rounded p-2">
               <p className="text-[10px] text-muted-foreground">Accepted</p>
               <p className="font-medium text-green-500">{latestScrape.accepted_count}</p>
             </div>
             <div className="bg-muted/30 rounded p-2">
-              <p className="text-[10px] text-muted-foreground">Blocked</p>
-              <p className="font-medium text-orange-500">{latestScrape.blocked_count}</p>
+              <p className="text-[10px] text-muted-foreground">Rejected</p>
+              <p className="font-medium text-orange-500">{latestScrape.rejected_count}</p>
             </div>
             <div className="bg-muted/30 rounded p-2">
-              <p className="text-[10px] text-muted-foreground">Failed</p>
-              <p className="font-medium text-red-500">{latestScrape.failed_count}</p>
+              <p className="text-[10px] text-muted-foreground">Published</p>
+              <p className="font-medium text-emerald-500">{latestScrape.published_count}</p>
             </div>
+            {latestScrape.error_message && (
+              <div className="bg-red-500/10 rounded p-2 col-span-full">
+                <p className="text-[10px] text-red-500">{latestScrape.error_message}</p>
+              </div>
+            )}
           </CardContent>
         </Card>
       )}
