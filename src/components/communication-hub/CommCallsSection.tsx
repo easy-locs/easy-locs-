@@ -18,6 +18,7 @@ import { toast } from "sonner";
 import SwipeableCallItem from "./SwipeableCallItem";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatCallStatus, safeDisplayName, isUUID } from "@/lib/orbit/message-formatter";
+import { trackOrbitEvent } from "@/lib/orbit/orbitTelemetry";
 
 type CallFilter = "all" | "missed" | "incoming" | "outgoing";
 
@@ -146,6 +147,7 @@ export default function CommCallsSection() {
     haptic("medium");
     const peerId = call.caller_orbit_id === user?.id ? call.receiver_orbit_id : call.caller_orbit_id;
 
+    trackOrbitEvent("orbit.call.started", { screen: "calls", component: "CommCallsSection", action: "redial", payload: { callType: call.call_type }, result: "success" });
     await startCall({
       orgId: peerId,
       contextType: "direct",

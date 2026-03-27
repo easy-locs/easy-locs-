@@ -22,6 +22,7 @@ import { haptic } from "@/lib/haptics";
 import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorState } from "@/components/ui/error-state";
+import { trackOrbitEvent, guardDisplayName } from "@/lib/orbit/orbitTelemetry";
 
 // ── Types ──
 
@@ -210,6 +211,7 @@ export default function CommGroupsSection() {
   };
 
   const openGroupChat = async (group: Group) => {
+    trackOrbitEvent("orbit.group.joined", { screen: "groups", component: "CommGroupsSection", action: "open_group", payload: { groupId: group.id, type: group.group_type }, result: "success" });
     setActiveGroup(group);
     haptic("light");
     const { data: msgs } = await (supabase as any)
