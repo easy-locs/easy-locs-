@@ -212,11 +212,19 @@ export const CommunicationCenter = () => {
           }}
         >
           {isMobile && selectedThread ? (
-            <h1 className="text-sm font-semibold flex-1 truncate" style={{ color: "hsl(var(--foreground))" }}>
-              {selectedThread.name}
-            </h1>
+            <>
+              <button onClick={handleBack} className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-95 transition-transform bg-muted/60 backdrop-blur-sm mr-2 shrink-0">
+                <ArrowLeft className="w-4.5 h-4.5" />
+              </button>
+              <h1 className="text-sm font-semibold flex-1 truncate" style={{ color: "hsl(var(--foreground))" }}>
+                {selectedThread.name}
+              </h1>
+            </>
           ) : (
             <div className="flex items-center gap-2 flex-1">
+              <button onClick={() => navigate("/")} className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-95 transition-transform bg-muted/60 backdrop-blur-sm mr-1 shrink-0">
+                <ArrowLeft className="w-4.5 h-4.5" />
+              </button>
               <h1 className="text-lg font-bold tracking-tight" style={{ color: "hsl(var(--foreground))" }}>
                 Orbit
               </h1>
