@@ -56,7 +56,7 @@ function RoomCard({
       const dateStr = format(addDays(new Date(checkIn), d), "yyyy-MM-dd");
       const day = room.availability.find(a => a.date === dateStr);
       if (!day || !day.available) { allAvail = false; break; }
-      total += day.price;
+      total += day.final_price;
     }
     if (!allAvail) return null;
     return Math.round(total / nights);
