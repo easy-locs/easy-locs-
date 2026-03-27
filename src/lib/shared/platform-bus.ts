@@ -355,9 +355,11 @@ export function installPlatformReactions(): () => void {
     platformBus.onPrefix("radar.", () => refreshModule("business"))
   );
 
-  // ── Dashboard refresh events → refresh all ──
+  // ── Dashboard refresh events → targeted refresh only ──
+  // Was refreshModule("all") — reduced to avoid cascade on every event.
+  // Dashboard counters come from individual module data; no need to reload everything.
   unsubs.push(
-    platformBus.onPrefix("dashboard.", () => refreshModule("all"))
+    platformBus.onPrefix("dashboard.", () => refreshModule("business"))
   );
 
   // (tracking:completed and tracking:started now handled by tracking: prefix below)

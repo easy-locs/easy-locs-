@@ -163,19 +163,10 @@ export function installCrossAppReactions(): () => void {
     })
   );
 
-  // ── Orbit message sent → dashboard refresh ──
-  unsubs.push(
-    platformBus.on(APP_EVENTS.ORBIT_MESSAGE_SENT, () => {
-      platformBus.emit("dashboard:refresh" as any, { source: "orbit" }, "orbit");
-    })
-  );
-
-  // ── Orbit call ended → dashboard refresh ──
-  unsubs.push(
-    platformBus.on(APP_EVENTS.ORBIT_CALL_ENDED, () => {
-      platformBus.emit("dashboard:refresh" as any, { source: "orbit" }, "orbit");
-    })
-  );
+  // ── Orbit message sent / call ended ──
+  // NOTE: Removed dashboard:refresh triggers — a chat message or call
+  // should NOT cause a full dashboard refresh cascade. The communication
+  // module is already refreshed via the "orbit:" prefix listener.
 
   return () => unsubs.forEach((fn) => fn());
 }
