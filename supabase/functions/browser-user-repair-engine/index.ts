@@ -112,7 +112,7 @@ Deno.serve(async (req) => {
           elapsed_ms: s.elapsedMs,
           details_json: s.details ?? {},
         }));
-        await supabase.from("browser_repair_actions").insert(actions).catch(() => {});
+        try { await supabase.from("browser_repair_actions").insert(actions); } catch {}
       }
     } catch (err) {
       results.push({
@@ -534,7 +534,7 @@ Deno.serve(async (req) => {
       verification_status: r.autoFixApplied ? "fixed" : "detected",
       metadata_json: r.metadata ?? {},
     }));
-    if (issues.length) await supabase.from("browser_repair_issues").insert(issues).catch(() => {});
+    if (issues.length) { try { await supabase.from("browser_repair_issues").insert(issues); } catch {} }
 
     const finalStatus = failCount > 0 ? "issues_found" : fixedCount > 0 ? "partial" : "clean";
     await supabase.from("browser_repair_runs").update({
