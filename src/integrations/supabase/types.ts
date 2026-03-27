@@ -4422,6 +4422,7 @@ export type Database = {
       }
       chat_messages_v2: {
         Row: {
+          attachment_summary: string | null
           attachments: Json | null
           body: string
           conversation_id: string
@@ -4431,6 +4432,8 @@ export type Database = {
           edited_at: string | null
           failed_at: string | null
           id: string
+          media_count: number
+          media_kind: string | null
           metadata: Json | null
           reactions: Json | null
           read_at: string | null
@@ -4439,8 +4442,10 @@ export type Database = {
           sender_orbit_id: string
           sender_user_id: string
           type: string
+          view_once: boolean
         }
         Insert: {
+          attachment_summary?: string | null
           attachments?: Json | null
           body: string
           conversation_id: string
@@ -4450,6 +4455,8 @@ export type Database = {
           edited_at?: string | null
           failed_at?: string | null
           id?: string
+          media_count?: number
+          media_kind?: string | null
           metadata?: Json | null
           reactions?: Json | null
           read_at?: string | null
@@ -4458,8 +4465,10 @@ export type Database = {
           sender_orbit_id: string
           sender_user_id: string
           type?: string
+          view_once?: boolean
         }
         Update: {
+          attachment_summary?: string | null
           attachments?: Json | null
           body?: string
           conversation_id?: string
@@ -4469,6 +4478,8 @@ export type Database = {
           edited_at?: string | null
           failed_at?: string | null
           id?: string
+          media_count?: number
+          media_kind?: string | null
           metadata?: Json | null
           reactions?: Json | null
           read_at?: string | null
@@ -4477,6 +4488,7 @@ export type Database = {
           sender_orbit_id?: string
           sender_user_id?: string
           type?: string
+          view_once?: boolean
         }
         Relationships: [
           {
@@ -15379,6 +15391,33 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      orbit_media_open_logs: {
+        Row: {
+          conversation_id: string
+          created_at: string
+          id: string
+          message_id: string
+          opened_at: string
+          opened_by_user_id: string | null
+        }
+        Insert: {
+          conversation_id: string
+          created_at?: string
+          id?: string
+          message_id: string
+          opened_at?: string
+          opened_by_user_id?: string | null
+        }
+        Update: {
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          message_id?: string
+          opened_at?: string
+          opened_by_user_id?: string | null
+        }
+        Relationships: []
       }
       orbit_profiles_v2: {
         Row: {

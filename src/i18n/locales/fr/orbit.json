@@ -53,5 +53,11 @@
   "device_permissions_required": "Permissions requises",
   "retry_mic": "Réessayer micro",
   "retry_camera": "Réessayer caméra",
-  "missed_call": "Appel manqué"
+  "missed_call": "Appel manqué",
+  "view_once_on": "Vue unique activée",
+  "view_once_off": "Vue unique désactivée",
+  "send_attachments": "Envoyer les pièces jointes",
+  "attachment_send_failed": "Échec de l'envoi",
+  "remove": "Supprimer",
+  "download": "Télécharger"
 }

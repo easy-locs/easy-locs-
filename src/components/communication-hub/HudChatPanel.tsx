@@ -61,6 +61,14 @@ import { OrbitIncomingCallBar } from "@/components/orbit/OrbitIncomingCallBar";
 import { OrbitCallControls } from "@/components/orbit/OrbitCallControls";
 import { OrbitCallMiniPlayer } from "@/components/orbit/OrbitCallMiniPlayer";
 import { OrbitCallPermissionBanner } from "@/components/orbit/OrbitCallPermissionBanner";
+import { useOrbitAttachmentQueue } from "@/hooks/useOrbitAttachmentQueue";
+import { useOrbitUploadTransport } from "@/hooks/useOrbitUploadTransport";
+import { useOrbitAttachmentSend } from "@/hooks/useOrbitAttachmentSend";
+import { useOrbitViewOnce } from "@/hooks/useOrbitViewOnce";
+import { OrbitAttachmentPickerBar } from "@/components/orbit/OrbitAttachmentPickerBar";
+import { OrbitUploadQueuePreview } from "@/components/orbit/OrbitUploadQueuePreview";
+import { OrbitMediaMessage } from "@/components/orbit/OrbitMediaMessage";
+import { OrbitAttachmentViewer } from "@/components/orbit/OrbitAttachmentViewer";
 
 // V2 only — no legacy SYSTEM_SENDER_ID needed
 
@@ -81,7 +89,12 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
   const { settings: privacySettings } = usePrivacySettings();
   const voiceRecorder = useVoiceRecorder();
   const scrollRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
   const [voicePreview, setVoicePreview] = useState<{ blob: Blob; duration: number; url: string } | null>(null);
+  const [viewOnceEnabled, setViewOnceEnabled] = useState(false);
+  const [viewerOpen, setViewerOpen] = useState(false);
+  const [viewerAttachment, setViewerAttachment] = useState<any>(null);
 
   const selection = useMessageSelection();
   const security = useSecurityDialogs();
@@ -143,6 +156,19 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
   });
 
   const payment = usePaymentDialogs({ thread, orgId, locale, resolveAuthUserId });
+
+  // Orbit Attachments Pro — Bloc 11
+  const attachmentQueue = useOrbitAttachmentQueue();
+  const uploadTransport = useOrbitUploadTransport();
+
+  const attachmentSend = useOrbitAttachmentSend({
+    conversationId: thread?.v2ConversationId ?? null,
+    currentUserId: user?.id ?? null,
+    currentOrbitId: myOrbitId ?? null,
+    onAfterSend: () => loader.loadMessages(),
+  });
+
+  const viewOnceHook = useOrbitViewOnce({ currentUserId: user?.id ?? null });
 
   // Orbit UX Bloc 8 — scroll, composer, actions, thread UI
   const composer = useOrbitComposerState();
@@ -280,6 +306,54 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
       peerName: thread.name || "Contact",
       mode: "video",
     });
+  };
+
+  // Attachment file handlers
+  const handlePickFiles = () => fileInputRef.current?.click();
+  const handlePickCamera = () => cameraInputRef.current?.click();
+  const handlePickGallery = () => fileInputRef.current?.click();
+
+  const handleFilesSelected = (files: FileList | null) => {
+    if (!files?.length) return;
+    attachmentQueue.enqueueFiles(files);
+  };
+
+  const handleUploadAndSendAttachments = async () => {
+    for (const item of attachmentQueue.queue) {
+      if (item.status === "uploaded") continue;
+      try {
+        attachmentQueue.setItemProgress(item.localId, 15);
+        const uploaded = await uploadTransport.uploadSingleFile({
+          file: item.file,
+          pathPrefix: "orbit-media",
+          onProgress: (progress) => attachmentQueue.setItemProgress(item.localId, progress),
+        });
+        attachmentQueue.markUploaded(item.localId, uploaded.publicUrl);
+      } catch (err: any) {
+        attachmentQueue.markFailed(item.localId, err?.message || "Upload failed");
+      }
+    }
+
+    const atts = attachmentQueue.uploadedAttachments.map((x) => ({
+      ...x,
+      viewOnce: viewOnceEnabled,
+    }));
+    if (!atts.length) return;
+
+    await attachmentSend.sendAttachments({ attachments: atts, body: "", viewOnce: viewOnceEnabled });
+    attachmentQueue.clearQueue();
+    setViewOnceEnabled(false);
+  };
+
+  const handleOpenAttachment = async (message: any, attachment: any) => {
+    setViewerAttachment(attachment);
+    setViewerOpen(true);
+    if (attachment.viewOnce && thread?.v2ConversationId) {
+      await viewOnceHook.markViewOnceOpened({
+        messageId: message.id,
+        conversationId: thread.v2ConversationId,
+      });
+    }
   };
 
   // Edit mode: inject original body into composer
@@ -676,13 +750,41 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
         />
 
         <OrbitMediaBar
-          attachmentCount={0}
+          attachmentCount={attachmentQueue.queue.length}
           recording={voiceRecorder.recording}
-          onOpenGallery={() => attachments.fileInputRef.current?.click()}
-          onOpenCamera={() => attachments.fileInputRef.current?.click()}
-          onOpenFiles={() => attachments.fileInputRef.current?.click()}
+          onOpenGallery={handlePickGallery}
+          onOpenCamera={handlePickCamera}
+          onOpenFiles={handlePickFiles}
           onStartVoice={() => composer.setIsRecording(!composer.isRecording)}
         />
+
+        <OrbitAttachmentPickerBar
+          onPickFiles={handlePickFiles}
+          onPickCamera={handlePickCamera}
+          onPickGallery={handlePickGallery}
+          onToggleViewOnce={() => setViewOnceEnabled((prev) => !prev)}
+          viewOnce={viewOnceEnabled}
+        />
+
+        <OrbitUploadQueuePreview
+          queue={attachmentQueue.queue}
+          onRemove={attachmentQueue.removeQueueItem}
+        />
+
+        {attachmentQueue.queue.length > 0 && (
+          <div className="px-3 py-2 flex justify-end" style={{ borderTop: "1px solid hsl(var(--border) / 0.08)" }}>
+            <button
+              onClick={() => { void handleUploadAndSendAttachments(); }}
+              className="rounded-xl bg-primary text-primary-foreground px-4 py-2 text-xs font-medium"
+              disabled={attachmentSend.sendingAttachments}
+            >
+              {attachmentSend.sendingAttachments ? "Sending..." : "Send attachments"}
+            </button>
+          </div>
+        )}
+
+        <input ref={fileInputRef} type="file" multiple className="hidden" onChange={(e) => handleFilesSelected(e.target.files)} />
+        <input ref={cameraInputRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => handleFilesSelected(e.target.files)} />
       </div>
 
       <Sheet open={payment.paymentLinkDialog} onOpenChange={payment.setPaymentLinkDialog}>
@@ -785,6 +887,12 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
           currentContextId={thread.contextId || ""}
         />
       )}
+
+      <OrbitAttachmentViewer
+        open={viewerOpen}
+        attachment={viewerAttachment}
+        onClose={() => { setViewerOpen(false); setViewerAttachment(null); }}
+      />
     </>
   );
 }
