@@ -138,6 +138,7 @@ export default function CommGroupsSection() {
     const { data, error } = await (supabase as any)
       .from("conversations_v2")
       .select("*")
+      .in("type", ["group", "channel", "community"])
       .order("updated_at", { ascending: false });
 
     if (error) { setLoadError(error.message); setLoading(false); return; }
@@ -149,8 +150,8 @@ export default function CommGroupsSection() {
           .eq("group_id", g.id);
         const { data: lastMsg } = await (supabase as any)
           .from("chat_messages_v2")
-          .select("content, created_at")
-          .eq("group_id", g.id)
+          .select("body, created_at")
+          .eq("conversation_id", g.id)
           .order("created_at", { ascending: false })
           .limit(1);
         return {
@@ -158,7 +159,7 @@ export default function CommGroupsSection() {
           group_type: g.group_type || "group",
           posting_permission: g.posting_permission || "everyone",
           member_count: count || 0,
-          last_message: lastMsg?.[0]?.content || null,
+          last_message: lastMsg?.[0]?.body || null,
           last_message_at: lastMsg?.[0]?.created_at || g.created_at,
         };
       }));
