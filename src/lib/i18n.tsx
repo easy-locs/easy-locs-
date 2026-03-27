@@ -448,21 +448,8 @@ async function loadPageTranslations(): Promise<void> {
 
   pageTranslationsPromise = (async () => {
     try {
-      const [frMod, enMod] = await Promise.all([
-        import("./i18n-pages-fr"),
-        import("./i18n-pages-en"),
-      ]);
-      pageFr = frMod.default;
-      pageEn = enMod.default;
+      // Page translations consolidated — no separate files needed
       pageTranslationsLoaded = true;
-
-      // Load secondary locales in background
-      void Promise.allSettled([
-        import("./i18n-pages-es").then(m => { pageEs = m.default; }),
-        import("./i18n-pages-de").then(m => { pageDe = m.default; }),
-        import("./i18n-pages-it").then(m => { pageIt = m.default; }),
-        import("./i18n-pages-pt").then(m => { pagePt = m.default; }),
-      ]);
     } catch (e) {
       pageTranslationsLoaded = false;
       console.warn("[i18n] Failed to load page translations", e);
