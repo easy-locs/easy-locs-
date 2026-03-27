@@ -165,39 +165,49 @@ export async function getOrCreateContextThread(
 ): Promise<ContextThreadResult | null> {
   const { contextType, contextId, orgId, initiatorId, participantIds, title, subtitle, metadata } = req;
 
-  // 1. Check for existing thread
-  const { data: existing } = await supabase
-    .from("conversation_threads")
-    .select("id, context_id, context_type, org_id")
-    .eq("context_type", contextType)
-    .eq("context_id", contextId)
+  const db = supabase as any;
+
+  // 1. Check for existing V2 conversation with this context
+  const { data: existing } = await db
+    .from("conversations_v2")
+    .select("id, metadata, type")
+    .contains("metadata", { context_type: contextType, context_id: contextId })
     .limit(1)
     .maybeSingle();
 
   if (existing) {
     return {
       threadId: existing.id,
-      contextId: existing.context_id!,
-      contextType: contextType,
-      orgId: existing.org_id,
+      contextId,
+      contextType,
+      orgId,
       isNew: false,
     };
   }
 
-  // 2. Create new thread
+  // 2. Create new V2 conversation
   try {
     const config = CONTEXT_TYPE_REGISTRY[contextType];
-    const { data: newThread, error } = await supabase
-      .from("conversation_threads")
+    const participants = participantIds.map(uid => ({
+      userId: uid,
+      orbitId: null,
+      email: null,
+      displayName: null,
+    }));
+
+    const { data: newConv, error } = await db
+      .from("conversations_v2")
       .insert({
-        org_id: orgId,
-        context_type: contextType,
-        context_id: contextId,
-        initiator_id: initiatorId,
-        participant_ids: participantIds,
-        provider_name: title,
-        listing_title: subtitle || null,
-        status: "active",
+        type: contextType === "direct" ? "direct" : "group",
+        title,
+        participants,
+        metadata: {
+          context_type: contextType,
+          context_id: contextId,
+          org_id: orgId,
+          subtitle: subtitle || null,
+          ...metadata,
+        },
         last_message_at: new Date().toISOString(),
       })
       .select("id")
@@ -205,24 +215,20 @@ export async function getOrCreateContextThread(
 
     if (error) throw error;
 
-    // 3. Auto-seed system message if configured
+    // 3. Auto-seed system message in V2
     if (config.autoSystemMessages) {
-      await supabase.from("messages").insert({
-        org_id: orgId,
-        sender_id: initiatorId,
-        content: `${config.emoji} ${config.label} thread created: ${title}`,
-        context_id: contextId,
-        context_type: contextType,
-        message_type: "system",
-        category: contextType === "rent_call" ? "lease" : contextType === "order" ? "payment" : "general",
-        contact_name: "System",
-        conversation_status: "active",
-        thread_id: newThread.id,
-      } as any);
+      await db.from("chat_messages_v2").insert({
+        conversation_id: newConv.id,
+        sender_user_id: initiatorId,
+        sender_orbit_id: `orbit_${initiatorId.slice(0, 12)}`,
+        type: "system",
+        body: `${config.emoji} ${config.label} thread created: ${title}`,
+        metadata: { context_type: contextType, context_id: contextId },
+      });
     }
 
     return {
-      threadId: newThread.id,
+      threadId: newConv.id,
       contextId,
       contextType,
       orgId,
@@ -230,21 +236,20 @@ export async function getOrCreateContextThread(
     };
   } catch (e) {
     console.error("[context-thread-factory] Failed to create thread:", e);
-    // Race condition fallback — thread may have been created concurrently
-    const { data: fallback } = await supabase
-      .from("conversation_threads")
-      .select("id, context_id, context_type, org_id")
-      .eq("context_type", contextType)
-      .eq("context_id", contextId)
+    // Race condition fallback
+    const { data: fallback } = await db
+      .from("conversations_v2")
+      .select("id, metadata, type")
+      .contains("metadata", { context_type: contextType, context_id: contextId })
       .limit(1)
       .maybeSingle();
 
     if (fallback) {
       return {
         threadId: fallback.id,
-        contextId: fallback.context_id!,
+        contextId,
         contextType,
-        orgId: fallback.org_id,
+        orgId,
         isNew: false,
       };
     }
@@ -271,18 +276,19 @@ export async function injectThreadSystemMessage(opts: {
     ? JSON.stringify({ text: opts.content, action: opts.actionPayload })
     : opts.content;
 
-  return supabase.from("messages").insert({
-    org_id: opts.orgId,
-    sender_id: "00000000-0000-0000-0000-000000000000", // System sender
-    content: messageContent,
-    context_id: opts.contextId,
-    context_type: opts.contextType,
-    message_type: "system",
-    category: opts.category || "general",
-    contact_name: "System",
-    conversation_status: "active",
-    thread_id: opts.threadId,
-  } as any);
+  const db = supabase as any;
+  return db.from("chat_messages_v2").insert({
+    conversation_id: opts.threadId,
+    sender_user_id: "00000000-0000-0000-0000-000000000000",
+    sender_orbit_id: "system",
+    type: "system",
+    body: messageContent,
+    metadata: {
+      context_type: opts.contextType,
+      context_id: opts.contextId,
+      category: opts.category || "general",
+    },
+  });
 }
 
 /** Structured action payload embedded in system messages */

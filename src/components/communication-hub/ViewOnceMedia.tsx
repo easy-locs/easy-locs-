@@ -44,7 +44,7 @@ export default function ViewOnceMedia({ messageId, attachmentUrl, isMe, viewOnce
     haptic("medium");
 
     // Mark as opened in DB
-    await supabase.from("messages").update({
+    await supabase.from("chat_messages_v2").update({
       view_once_opened_at: new Date().toISOString(),
       view_once_opened_by: currentUserId,
     } as any).eq("id", messageId);

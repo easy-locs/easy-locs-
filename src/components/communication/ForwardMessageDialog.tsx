@@ -51,54 +51,27 @@ export default function ForwardMessageDialog({
     (async () => {
       try {
         // Query conversation_threads where this user is a participant
-        const { data: threadRows, error: threadErr } = await supabase
-          .from("conversation_threads")
-          .select("id, context_id, context_type, org_id, provider_name, listing_title, participant_ids")
-          .contains("participant_ids", [userId])
+        // Load V2 conversations for forward targets
+        const { data: convRows, error: convErr } = await (supabase as any)
+          .from("conversations_v2")
+          .select("id, type, title, participants, metadata, last_message_at")
           .order("last_message_at", { ascending: false })
           .limit(100);
 
-        if (threadErr) throw threadErr;
+        if (convErr) throw convErr;
 
-        // Also get threads from messages where user participated (fallback)
-        const { data: msgThreads } = await supabase
-          .from("messages")
-          .select("context_id, org_id, contact_name, thread_id")
-          .or(`sender_id.eq.${userId},contact_email.eq.${userEmail}`)
-          .not("context_id", "is", null)
-          .order("created_at", { ascending: false })
-          .limit(200);
-
-        const seen = new Set<string>();
         const result: TargetThread[] = [];
-
-        // Add conversation_threads first (authoritative)
-        if (threadRows) {
-          for (const row of threadRows) {
-            if (row.context_id && row.context_id !== currentContextId && !seen.has(row.context_id)) {
-              seen.add(row.context_id);
+        if (convRows) {
+          for (const row of convRows) {
+            if (row.id !== currentContextId) {
+              const participants = Array.isArray(row.participants) ? row.participants : [];
+              const peerName = participants.find((p: any) => p.userId !== userId)?.displayName;
               result.push({
                 id: row.id,
-                context_id: row.context_id,
-                context_type: row.context_type || "direct",
-                org_id: row.org_id,
-                display_name: row.provider_name || row.listing_title || t("chat.conversation") || "Conversation",
-              });
-            }
-          }
-        }
-
-        // Add from messages (if not already seen)
-        if (msgThreads) {
-          for (const m of msgThreads) {
-            if (m.context_id && m.context_id !== currentContextId && !seen.has(m.context_id)) {
-              seen.add(m.context_id);
-              result.push({
-                id: m.thread_id || "",
-                context_id: m.context_id,
-                context_type: m.context_id.startsWith("direct:") ? "direct" : "booking",
-                org_id: m.org_id,
-                display_name: m.contact_name || t("chat.conversation") || "Conversation",
+                context_id: row.id,
+                context_type: row.type || "direct",
+                org_id: (row.metadata as any)?.org_id || "",
+                display_name: row.title || peerName || t("chat.conversation") || "Conversation",
               });
             }
           }
@@ -118,38 +91,22 @@ export default function ForwardMessageDialog({
     setForwarding(true);
     setError(null);
     try {
-      // Build insert payload
-      const insertPayload: any = {
-        org_id: selectedThread.org_id,
-        sender_id: userId,
-        content: messageContent,
-        context_id: selectedThread.context_id,
-        context_type: selectedThread.context_type,
-        contact_email: userEmail,
-        contact_name: userName,
-        message_type: "user",
-        conversation_status: "waiting_provider",
-        forwarded_from: messageId,
-      };
-
-      // Include thread_id if we have it
-      if (selectedThread.id) {
-        insertPayload.thread_id = selectedThread.id;
-      }
-
-      const { error: insertErr } = await supabase.from("messages").insert(insertPayload);
+      // V2 canonical forward
+      const { error: insertErr } = await (supabase as any).from("chat_messages_v2").insert({
+        conversation_id: selectedThread.context_id,
+        sender_user_id: userId,
+        sender_orbit_id: `orbit_${userId.slice(0, 12)}`,
+        type: "text",
+        body: messageContent,
+        metadata: { forwarded_from: messageId },
+      });
       if (insertErr) throw insertErr;
 
-      // Update last_message_at on target thread for proper ordering
-      if (selectedThread.id) {
-        await supabase
-          .from("conversation_threads")
-          .update({ last_message_at: new Date().toISOString(), updated_at: new Date().toISOString() })
-          .eq("id", selectedThread.id)
-          .then(({ error: updateErr }) => {
-            if (updateErr) console.warn("[Forward] Thread update failed:", updateErr);
-          });
-      }
+      // Update conversation last_message_at
+      await (supabase as any)
+        .from("conversations_v2")
+        .update({ last_message_at: new Date().toISOString(), updated_at: new Date().toISOString() })
+        .eq("id", selectedThread.context_id);
 
       toast.success(
         (t("chat.forwarded_to") || "Forwarded to") + " " + (selectedThread.display_name || t("chat.conversation") || "conversation")

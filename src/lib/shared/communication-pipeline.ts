@@ -31,22 +31,27 @@ import { createNotification } from "./notification-engine";
 export async function sendCommunicationEvent(event: CommunicationEvent): Promise<void> {
   const results = { message: false, notification: false, email: false };
 
-  // 1. Save message in communication center
+  // 1. Save message in V2 communication system (if a conversation context exists)
   try {
-    await supabase.from("messages").insert({
-      org_id: event.orgId,
-      sender_id: event.senderId || null,
-      content: event.meta.booking_id
-        ? `${event.message}\n\n[Booking: ${event.meta.booking_id}]`
-        : event.message,
-      category: event.category || "general",
-      attachment_url: event.attachmentUrl || null,
-      read: false,
-      context_type: event.meta.target_type || "general",
-      context_id: event.meta.target_id || null,
-      contact_name: event.recipientEmail ? undefined : undefined,
-      contact_email: event.recipientEmail || null,
-    } as any);
+    // Communication pipeline messages go to chat_messages_v2 if a conversation is available
+    // Otherwise, this is a notification-only event
+    const contextConvId = (event.meta as any)?.conversation_id;
+    if (contextConvId) {
+      await (supabase as any).from("chat_messages_v2").insert({
+        conversation_id: contextConvId,
+        sender_user_id: event.senderId || "00000000-0000-0000-0000-000000000000",
+        sender_orbit_id: "system",
+        type: "system",
+        body: event.meta.booking_id
+          ? `${event.message}\n\n[Booking: ${event.meta.booking_id}]`
+          : event.message,
+        metadata: {
+          context_type: event.meta.target_type || "general",
+          context_id: event.meta.target_id || null,
+          category: event.category || "general",
+        },
+      });
+    }
     results.message = true;
   } catch (e) {
     console.error("[comm-pipeline] message insert failed:", e);
