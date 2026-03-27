@@ -156,8 +156,8 @@ export default function PremiumMerchantCard({
             )}
           </div>
           <div className="p-2.5 space-y-1">
-            <h3 className="text-[13px] font-bold text-foreground line-clamp-1">{name}</h3>
-            {category && <p className="text-[10px] text-muted-foreground line-clamp-1">{category}</p>}
+            <h3 className="text-[13px] font-bold text-foreground line-clamp-2 leading-snug">{name}</h3>
+            {category && <p className="text-[10px] text-muted-foreground line-clamp-1 leading-snug">{category}</p>}
             <div className="flex items-center gap-2 pt-0.5">
               <RatingBadge />
               {distance && (
