@@ -530,47 +530,32 @@ export function useConversationThreads() {
       }
 
       if (allMsgs.length > 0) {
+        // Group messages by conversation_id for efficient lookup
+        const msgByConv = new Map<string, any[]>();
         for (const m of allMsgs) {
-          let key: string | null = null;
+          const cid = m.conversation_id;
+          if (!cid) continue;
+          if (!msgByConv.has(cid)) msgByConv.set(cid, []);
+          msgByConv.get(cid)!.push(m);
+        }
 
-          if (m.context_type && m.context_id) {
-            if (m.context_type === "real_estate_lead") key = `lead-${m.context_id}`;
-            else if (m.context_type === "tenant") key = `tenant-${m.context_id}`;
-            else if (m.context_type === "direct") {
-              for (const [k, t] of threadMap) {
-                if (t.conversationType === "direct" && (t.contextId === m.context_id || t.threadId === m.thread_id)) {
-                  key = k; break;
-                }
-              }
-            }
-            else if (m.context_type === "guest_session") key = `guest-${m.context_id}`;
-            else if (["marketplace_booking", "concierge_booking", "seasonal_booking", "booking"].includes(m.context_type)) key = `booking-${m.context_id}`;
-          } else if (m.guest_session_id) {
-            key = `guest-${m.guest_session_id}`;
-          } else if (m.booking_id) {
-            key = `booking-${m.booking_id}`;
-          } else if (m.tenant_id) {
-            key = `tenant-${m.tenant_id}`;
-          }
+        // Match messages to threads
+        for (const [, thread] of threadMap) {
+          const convId = thread.v2ConversationId || thread.contextId;
+          if (!convId) continue;
+          const msgs = msgByConv.get(convId);
+          if (!msgs?.length) continue;
 
-          // Also try thread_id matching
-          if (!key && m.thread_id) {
-            for (const [k, t] of threadMap) {
-              if (t.threadId === m.thread_id) {
-                key = k; break;
-              }
-            }
-          }
-
-          if (!key) continue;
-          const thread = threadMap.get(key);
-          if (!thread) continue;
+          // First message is newest (ordered desc)
           if (!thread.lastMessage) {
-            thread.lastMessage = m.content;
-            thread.lastMessageTime = m.created_at;
+            thread.lastMessage = msgs[0].body;
+            thread.lastMessageTime = msgs[0].created_at;
           }
-          if (!m.read && m.sender_id !== user?.id) {
-            thread.unreadCount++;
+          // Count unread
+          for (const m of msgs) {
+            if (!m.read_at && m.sender_user_id !== user?.id) {
+              thread.unreadCount++;
+            }
           }
         }
       }
