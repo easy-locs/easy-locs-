@@ -1,8 +1,9 @@
 /**
- * ReceiveQrPanel — Direct "My QR" with amount/currency selection + copy/share.
- * No intermediate screen. Uses the unified QR engine.
+ * ReceiveQrPanel — "My QR" with Easy-Locs branded QR.
+ * Currency LOCKED to country default (no manual selector).
+ * Clean, no duplicates.
  */
-import { useState, useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Copy, Check, Share2 } from "lucide-react";
 import BrandedQR from "@/components/qr/BrandedQR";
 import { motion } from "framer-motion";
@@ -12,14 +13,13 @@ import { formatMoney } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
-const CURRENCIES = ["AED", "USD", "EUR", "GBP", "MAD"];
-
 export default function ReceiveQrPanel() {
   const { user } = useAuth();
   const [amount, setAmount] = useState<string>("");
-  const [currency, setCurrency] = useState("AED");
   const [copied, setCopied] = useState(false);
 
+  // Currency locked to country default — no manual selector
+  const currency = "AED";
   const displayName = user?.user_metadata?.name || user?.email?.split("@")[0] || "Me";
 
   const payload = useMemo(() => {
@@ -36,7 +36,6 @@ export default function ReceiveQrPanel() {
     try {
       await navigator.clipboard.writeText(link);
     } catch {
-      // Fallback for non-HTTPS / iframe contexts
       const ta = document.createElement("textarea");
       ta.value = link;
       ta.style.position = "fixed";
@@ -58,9 +57,7 @@ export default function ReceiveQrPanel() {
       : `Pay ${displayName}`;
     try {
       await navigator.share({ title: text, url: link });
-    } catch {
-      // cancelled
-    }
+    } catch { /* cancelled */ }
   };
 
   if (!user?.id) {
@@ -77,88 +74,51 @@ export default function ReceiveQrPanel() {
       animate={{ opacity: 1, scale: 1 }}
       className="space-y-5"
     >
-      {/* QR Code */}
-      <div className="flex flex-col items-center gap-4 rounded-2xl border border-border bg-card p-6">
-        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+      {/* QR Code — Easy-Locs branded */}
+      <div className="flex flex-col items-center gap-4 rounded-3xl border border-border/20 bg-card p-8">
+        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
           My Payment QR
         </p>
-        <div>
-          <BrandedQR value={link} size={180} />
+        <BrandedQR value={link} size={220} />
+        <div className="text-center">
+          <p className="text-base font-bold text-foreground">{displayName}</p>
+          <p className="text-[10px] text-muted-foreground mt-0.5">Easy-Locs Wallet · {currency}</p>
         </div>
-        <p className="text-sm font-semibold text-foreground">{displayName}</p>
         {parseFloat(amount) > 0 && (
-          <p className="text-lg font-bold text-foreground">
+          <p className="text-2xl font-black text-foreground tabular-nums">
             {formatMoney(parseFloat(amount), currency)}
           </p>
         )}
       </div>
 
-      {/* Amount + Currency */}
-      <div className="space-y-3">
-        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground px-1">
-          Amount (optional)
+      {/* Amount — optional, currency locked */}
+      <div className="space-y-2">
+        <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground px-1">
+          Request amount (optional)
         </p>
-        <div className="flex gap-2">
+        <div className="flex gap-2 items-center">
           <Input
             type="number"
             inputMode="decimal"
             placeholder="0.00"
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
-            className="flex-1 rounded-xl"
+            className="flex-1 rounded-xl h-12 text-lg font-bold"
           />
-          <div className="flex gap-1">
-            {CURRENCIES.slice(0, 3).map((c) => (
-              <button
-                key={c}
-                type="button"
-                onClick={() => setCurrency(c)}
-                className={`rounded-xl px-3 py-2 text-xs font-semibold transition ${
-                  currency === c
-                    ? "bg-primary text-primary-foreground"
-                    : "border border-border bg-card text-foreground hover:bg-muted"
-                }`}
-              >
-                {c}
-              </button>
-            ))}
+          <div className="px-4 py-3 rounded-xl bg-primary/10 text-primary text-xs font-black">
+            {currency}
           </div>
-        </div>
-        {/* More currencies */}
-        <div className="flex gap-1">
-          {CURRENCIES.slice(3).map((c) => (
-            <button
-              key={c}
-              type="button"
-              onClick={() => setCurrency(c)}
-              className={`rounded-xl px-3 py-2 text-xs font-semibold transition ${
-                currency === c
-                  ? "bg-primary text-primary-foreground"
-                  : "border border-border bg-card text-foreground hover:bg-muted"
-              }`}
-            >
-              {c}
-            </button>
-          ))}
         </div>
       </div>
 
       {/* Actions */}
       <div className="flex gap-3">
-        <Button
-          variant="outline"
-          className="flex-1 rounded-xl gap-2"
-          onClick={handleCopy}
-        >
+        <Button variant="outline" className="flex-1 rounded-xl gap-2 h-12" onClick={handleCopy}>
           {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
           {copied ? "Copied" : "Copy link"}
         </Button>
         {"share" in navigator && (
-          <Button
-            variant="outline"
-            className="flex-1 rounded-xl gap-2"
-            onClick={handleShare}
-          >
+          <Button variant="outline" className="flex-1 rounded-xl gap-2 h-12" onClick={handleShare}>
             <Share2 className="h-4 w-4" />
             Share
           </Button>
