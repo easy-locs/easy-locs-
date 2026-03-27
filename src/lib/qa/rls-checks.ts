@@ -1,11 +1,11 @@
 import { supabase } from "@/integrations/supabase/client";
 
 const TABLES_TO_CHECK = [
-  "workspaces",
+  "profiles",
   "orders",
   "mobility_jobs",
-  "wallet_balances",
-  "user_profiles",
+  "wallet_balances_v2",
+  "wallet_accounts",
 ] as const;
 
 export async function verifyRlsBasicAccess() {
