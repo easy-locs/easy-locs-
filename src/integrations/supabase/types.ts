@@ -2257,6 +2257,104 @@ export type Database = {
           },
         ]
       }
+      browser_repair_issues: {
+        Row: {
+          auto_fix_applied: boolean
+          created_at: string
+          fix_summary: string | null
+          flow_key: string | null
+          id: string
+          issue_type: string
+          metadata_json: Json | null
+          page_key: string | null
+          root_cause: string | null
+          run_id: string | null
+          selector_or_component: string | null
+          severity: string
+          summary: string | null
+          verification_status: string | null
+        }
+        Insert: {
+          auto_fix_applied?: boolean
+          created_at?: string
+          fix_summary?: string | null
+          flow_key?: string | null
+          id?: string
+          issue_type: string
+          metadata_json?: Json | null
+          page_key?: string | null
+          root_cause?: string | null
+          run_id?: string | null
+          selector_or_component?: string | null
+          severity?: string
+          summary?: string | null
+          verification_status?: string | null
+        }
+        Update: {
+          auto_fix_applied?: boolean
+          created_at?: string
+          fix_summary?: string | null
+          flow_key?: string | null
+          id?: string
+          issue_type?: string
+          metadata_json?: Json | null
+          page_key?: string | null
+          root_cause?: string | null
+          run_id?: string | null
+          selector_or_component?: string | null
+          severity?: string
+          summary?: string | null
+          verification_status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "browser_repair_issues_run_id_fkey"
+            columns: ["run_id"]
+            isOneToOne: false
+            referencedRelation: "browser_repair_runs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      browser_repair_runs: {
+        Row: {
+          created_at: string
+          fail_count: number
+          finished_at: string | null
+          fixed_count: number
+          id: string
+          pass_count: number
+          report_json: Json | null
+          scenario_count: number
+          started_at: string
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          fail_count?: number
+          finished_at?: string | null
+          fixed_count?: number
+          id?: string
+          pass_count?: number
+          report_json?: Json | null
+          scenario_count?: number
+          started_at?: string
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          fail_count?: number
+          finished_at?: string | null
+          fixed_count?: number
+          id?: string
+          pass_count?: number
+          report_json?: Json | null
+          scenario_count?: number
+          started_at?: string
+          status?: string
+        }
+        Relationships: []
+      }
       buildings: {
         Row: {
           address: string
