@@ -58,6 +58,24 @@ const TopHeroBanner = memo(({ city, greeting, timezone, onLocationTap }: { city:
 
   return (
     <div className="relative mb-4 overflow-hidden rounded-[1.75rem] px-4 pb-3 pt-3" style={{ background: hero.gradient }}>
+      {/* Animated shimmer overlay */}
+      <motion.div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background: "linear-gradient(105deg, transparent 35%, hsla(0,0%,100%,0.06) 50%, transparent 65%)",
+        }}
+        animate={{ x: ["-120%", "200%"] }}
+        transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", repeatDelay: 3 }}
+      />
+      
+      {/* Ambient glow */}
+      <motion.div
+        className="absolute top-0 right-0 w-32 h-32 rounded-full pointer-events-none"
+        style={{ background: "radial-gradient(circle, hsla(0,0%,100%,0.1) 0%, transparent 70%)" }}
+        animate={{ scale: [1, 1.3, 1], opacity: [0.3, 0.6, 0.3] }}
+        transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+      />
+
       {/* Location + Notification row */}
       <div className="relative z-10 mb-3 flex items-center justify-between gap-3">
         <button onClick={onLocationTap} className="flex min-w-0 max-w-[78%] items-center gap-2 active:scale-95 transition-transform">
@@ -72,19 +90,45 @@ const TopHeroBanner = memo(({ city, greeting, timezone, onLocationTap }: { city:
       {/* Title + emoji */}
       <div className="relative z-10 mb-2 flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1 pr-1">
-          <h2 className="line-clamp-2 text-base font-black leading-snug text-white text-balance">{hero.title}</h2>
-          <p className="mt-0.5 line-clamp-2 text-[11px] leading-relaxed text-white/70">{hero.subtitle}</p>
+          <motion.h2
+            className="line-clamp-2 text-base font-black leading-snug text-white text-balance"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            {hero.title}
+          </motion.h2>
+          <motion.p
+            className="mt-0.5 line-clamp-2 text-[11px] leading-relaxed text-white/70"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.15 }}
+          >
+            {hero.subtitle}
+          </motion.p>
         </div>
-        <span className="text-2xl select-none shrink-0 opacity-60">{hero.emoji}</span>
+        <motion.span
+          className="text-2xl select-none shrink-0"
+          animate={{ scale: [1, 1.15, 1], rotate: [0, 5, -5, 0] }}
+          transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+        >
+          {hero.emoji}
+        </motion.span>
       </div>
 
       {/* CTA */}
-      <Link
-        to={hero.route}
-        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/20 text-white text-[11px] font-bold active:bg-white/30 transition-colors relative z-10 mb-2"
+      <motion.div
+        initial={{ opacity: 0, y: 6 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
       >
-        {hero.cta} <ChevronRight className="h-3 w-3" />
-      </Link>
+        <Link
+          to={hero.route}
+          className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/20 backdrop-blur-sm text-white text-[11px] font-bold active:bg-white/30 transition-colors relative z-10 mb-2 border border-white/10"
+        >
+          {hero.cta} <ChevronRight className="h-3 w-3" />
+        </Link>
+      </motion.div>
 
       {/* Search bar inside banner */}
       <div className="relative z-10">
