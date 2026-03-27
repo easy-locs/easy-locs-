@@ -59,7 +59,7 @@ export function useConversationThreads() {
         supabase.from("concierge_orders").select("id, guest_name, guest_email, guest_phone, status, total_price, currency, service_id, service_date, property_label, property_id").eq("org_id", orgId).order("created_at", { ascending: false }).limit(200),
         supabase.from("booking_requests").select("id, guest_name, guest_email, guest_phone, status, check_in, check_out, property_id").eq("org_id", orgId).order("created_at", { ascending: false }).limit(200),
         supabase.from("real_estate_leads").select("id, name, email, phone, status, message, listing_id, created_at").eq("org_id", orgId).order("created_at", { ascending: false }).limit(200),
-        supabase.from("guest_sessions").select("id, display_name, email, context_type, context_id, created_at, expires_at").eq("org_id", orgId).order("created_at", { ascending: false }).limit(50).then(r => r).catch(() => ({ data: null })),
+        supabase.from("guest_sessions").select("id, display_name, email, context_type, context_id, created_at, expires_at").eq("org_id", orgId).order("created_at", { ascending: false }).limit(50).then(r => r, () => ({ data: null, error: null, count: null, status: 200, statusText: "OK" })),
       ]);
 
       const tenants = tenantRes.data;
@@ -71,10 +71,10 @@ export function useConversationThreads() {
 
       // ── Parallel sub-lookups for related entities ──
       const propertyIds = (tenants || []).filter(t => t.property_id).map(t => t.property_id!);
-      const mSvcIds = [...new Set((mBookings || []).map(b => b.service_id).filter(Boolean))];
-      const cSvcIds = [...new Set((cOrders || []).map(o => o.service_id).filter(Boolean))];
-      const sPropIds = [...new Set((sBookings || []).map(b => b.property_id).filter(Boolean))];
-      const listingIds = [...new Set((reLeads || []).map(l => l.listing_id).filter(Boolean))];
+      const mSvcIds = [...new Set((mBookings || []).map(b => b.service_id).filter(Boolean))] as string[];
+      const cSvcIds = [...new Set((cOrders || []).map(o => o.service_id).filter(Boolean))] as string[];
+      const sPropIds = [...new Set((sBookings || []).map(b => b.property_id).filter(Boolean))] as string[];
+      const listingIds = [...new Set((reLeads || []).map(l => l.listing_id).filter(Boolean))] as string[];
 
       const [propRes, mSvcRes, cSvcRes, sPropRes, listingRes] = await Promise.all([
         propertyIds.length > 0 ? supabase.from("properties").select("id, label, country").in("id", propertyIds) : { data: [] },
