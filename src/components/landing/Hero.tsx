@@ -8,15 +8,15 @@ import { useI18n } from "@/lib/i18n";
 import EasyLocsLogo from "@/components/brand/EasyLocsLogo";
 
 const UNIVERSES = [
-  { icon: UtensilsCrossed, label: "Food", color: "hsl(15 80% 55%)", bg: "hsl(15 80% 55% / 0.12)" },
-  { icon: ShoppingCart, label: "Grocery", color: "hsl(142 60% 45%)", bg: "hsl(142 60% 45% / 0.12)" },
-  { icon: Wrench, label: "Services", color: "hsl(220 70% 55%)", bg: "hsl(220 70% 55% / 0.12)" },
-  { icon: Car, label: "Ride", color: "hsl(270 60% 55%)", bg: "hsl(270 60% 55% / 0.12)" },
-  { icon: Send, label: "Send", color: "hsl(190 70% 45%)", bg: "hsl(190 70% 45% / 0.12)" },
-  { icon: Plane, label: "Travel", color: "hsl(250 65% 55%)", bg: "hsl(250 65% 55% / 0.12)" },
-  { icon: Building2, label: "Property", color: "hsl(38 65% 50%)", bg: "hsl(38 65% 50% / 0.12)" },
-  { icon: Wallet, label: "Wallet", color: "hsl(152 60% 42%)", bg: "hsl(152 60% 42% / 0.12)" },
-  { icon: MessageCircle, label: "Orbit", color: "hsl(210 80% 52%)", bg: "hsl(210 80% 52% / 0.12)" },
+  { icon: UtensilsCrossed, label: "Food", color: "hsl(15 80% 55%)", bg: "hsl(15 80% 55% / 0.12)", to: "/food" },
+  { icon: ShoppingCart, label: "Grocery", color: "hsl(142 60% 45%)", bg: "hsl(142 60% 45% / 0.12)", to: "/grocery" },
+  { icon: Wrench, label: "Services", color: "hsl(220 70% 55%)", bg: "hsl(220 70% 55% / 0.12)", to: "/services-hub" },
+  { icon: Car, label: "Ride", color: "hsl(270 60% 55%)", bg: "hsl(270 60% 55% / 0.12)", to: "/mobility/taxi" },
+  { icon: Send, label: "Send", color: "hsl(190 70% 45%)", bg: "hsl(190 70% 45% / 0.12)", to: "/send" },
+  { icon: Plane, label: "Travel", color: "hsl(250 65% 55%)", bg: "hsl(250 65% 55% / 0.12)", to: "/travel" },
+  { icon: Building2, label: "Property", color: "hsl(38 65% 50%)", bg: "hsl(38 65% 50% / 0.12)", to: "/property-hub" },
+  { icon: Wallet, label: "Wallet", color: "hsl(152 60% 42%)", bg: "hsl(152 60% 42% / 0.12)", to: "/wallet" },
+  { icon: MessageCircle, label: "Orbit", color: "hsl(210 80% 52%)", bg: "hsl(210 80% 52% / 0.12)", to: "/orbit" },
 ];
 
 const FLOATING_CARDS = [
@@ -187,9 +187,11 @@ const Hero = () => {
             {/* Universe chips — single scrollable row on mobile */}
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }} className="flex gap-1 sm:gap-1.5 overflow-x-auto sm:flex-wrap sm:justify-center lg:justify-start scrollbar-none pb-1">
               {UNIVERSES.map((u, i) => (
-                <motion.span key={u.label} initial={{ opacity: 0, scale: 0.85 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.45 + i * 0.03 }} className="inline-flex items-center gap-0.5 sm:gap-1 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full text-[9px] sm:text-[10px] font-semibold border shrink-0 whitespace-nowrap" style={{ background: u.bg, borderColor: `${u.color}25`, color: u.color }}>
-                  <u.icon className="h-2.5 w-2.5 shrink-0" />{u.label}
-                </motion.span>
+                <motion.div key={u.label} initial={{ opacity: 0, scale: 0.85 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.45 + i * 0.03 }}>
+                  <Link to={u.to} className="inline-flex items-center gap-0.5 sm:gap-1 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full text-[9px] sm:text-[10px] font-semibold border shrink-0 whitespace-nowrap active:scale-95 transition-transform" style={{ background: u.bg, borderColor: `${u.color}25`, color: u.color }}>
+                    <u.icon className="h-2.5 w-2.5 shrink-0" />{u.label}
+                  </Link>
+                </motion.div>
               ))}
             </motion.div>
 
