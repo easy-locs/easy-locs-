@@ -98,14 +98,14 @@ export const useBookingStore = create<BookingStore>((set, get) => ({
 
     set((state) => ({ bookings: [booking, ...state.bookings] }));
 
-    platformBus.emit("booking.requested", { booking }, "marketplace");
+    platformBus.emit("booking:requested", { booking }, "marketplace");
 
     if (flowMode === "instant_book") {
-      platformBus.emit("booking.payment.required", {
+      platformBus.emit("booking:payment_required", {
         bookingId: booking.id, amount: booking.amount, currency: booking.currency, listingId: booking.listingId,
       }, "marketplace");
     } else {
-      platformBus.emit("booking.confirmation.required", {
+      platformBus.emit("booking:confirmation_required", {
         bookingId: booking.id, listingId: booking.listingId,
       }, "marketplace");
     }
@@ -123,7 +123,7 @@ export const useBookingStore = create<BookingStore>((set, get) => ({
       }),
     }));
     if (confirmed) {
-      platformBus.emit("booking.confirmed", { bookingId: (confirmed as BookingRecordV2).id, transactionId: (confirmed as BookingRecordV2).transactionId }, "marketplace");
+      platformBus.emit("booking:confirmed", { bookingId: (confirmed as BookingRecordV2).id, transactionId: (confirmed as BookingRecordV2).transactionId }, "marketplace");
     }
   },
 
@@ -143,7 +143,7 @@ export const useBookingStore = create<BookingStore>((set, get) => ({
         b.id === bookingId ? { ...b, status: "cancelled" as const, updatedAt: new Date().toISOString() } : b
       ),
     }));
-    platformBus.emit("booking.cancelled", { bookingId, listingId: booking.listingId }, "marketplace");
+    platformBus.emit("booking:cancelled", { bookingId, listingId: booking.listingId }, "marketplace");
   },
 
   completeBooking: (bookingId) => {
@@ -154,7 +154,7 @@ export const useBookingStore = create<BookingStore>((set, get) => ({
         b.id === bookingId ? { ...b, status: "completed" as const, updatedAt: new Date().toISOString() } : b
       ),
     }));
-    platformBus.emit("booking.completed", { bookingId, listingId: booking.listingId }, "marketplace");
+    platformBus.emit("booking:completed", { bookingId, listingId: booking.listingId }, "marketplace");
   },
 
   getBookingById: (bookingId) => get().bookings.find((b) => b.id === bookingId) ?? null,

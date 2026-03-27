@@ -168,15 +168,15 @@ export default function QrScannerPage() {
     console.log(`[QR] decode time: ${decodeMs.toFixed(0)}ms`);
 
     if (!payload) {
-      platformBus.emit("qr.scan.failed", { raw, reason: "unsupported_format" }, "system");
+      platformBus.emit("qr:scan_failed", { raw, reason: "unsupported_format" }, "system");
       setE("Unsupported QR format"); setS("error"); return;
     }
     if (isExpired(payload)) {
-      platformBus.emit("qr.scan.expired", { action: payload.action }, "system");
+      platformBus.emit("qr:scan_expired", { action: payload.action }, "system");
       setE("QR code expired"); setS("error"); return;
     }
 
-    platformBus.emit("qr.scan.decoded", { action: payload.action, raw }, "system");
+    platformBus.emit("qr:scan_decoded", { action: payload.action, raw }, "system");
 
     const completePayment = async (draft: PendingQrPayment, amount: number) => {
       if (!Number.isFinite(amount) || amount <= 0) {
@@ -389,7 +389,7 @@ export default function QrScannerPage() {
 
     const route = resolveRoute(payload);
     if (route) {
-      platformBus.emit("qr.navigation", { action: payload.action, route }, "system");
+      platformBus.emit("qr:navigation", { action: payload.action, route }, "system");
       navigateRef.current(route, { replace: true }); return;
     }
     setE("Unsupported QR format"); setS("error");
