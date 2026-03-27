@@ -551,6 +551,7 @@ const MerchantMenuCategoryManagerPage = safeLazy(() => import("./pages/merchant/
 const AdminMenuQualityControlPage = safeLazy(() => import("./pages/admin/AdminMenuQualityControlPage"), "AdminMenuQualityControlPage");
 const AdminUxLiveTestPage = safeLazy(() => import("./pages/admin/AdminUxLiveTestPage"), "AdminUxLiveTestPage");
 const HyperRadarPage = safeLazy(() => import("./pages/HyperRadarPage"), "HyperRadarPage");
+const AdminEngineCockpit = safeLazy(() => import("./pages/AdminEngineCockpit"), "AdminEngineCockpit");
 // PJ-PO block
 // V1WalletHubPage removed — legacy redirect
 
@@ -1050,6 +1051,7 @@ const App = () => (
                 <Route path="/admin/orchestration" element={<ProtectedRoute><AdminOrchestrationPage /></ProtectedRoute>} />
                 <Route path="/admin/pipeline" element={<ProtectedRoute><AdminPipelinePage /></ProtectedRoute>} />
                  <Route path="/admin/engines" element={<ProtectedRoute><AdminEnginesDashboardPage /></ProtectedRoute>} />
+                 <Route path="/admin/engine-cockpit" element={<ProtectedRoute><AdminEngineCockpit /></ProtectedRoute>} />
                 <Route path="/admin/backend-truth" element={<ProtectedRoute><AdminBackendTruthPage /></ProtectedRoute>} />
                 <Route path="/admin/garage" element={<ProtectedRoute><AdminGaragePage /></ProtectedRoute>} />
                <Route path="/permissions" element={<PermissionCenterPage />} />
