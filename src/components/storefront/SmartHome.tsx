@@ -57,7 +57,7 @@ const TopHeroBanner = memo(({ city, greeting, timezone, onLocationTap }: { city:
   const locationLabel = city || "your area";
 
   return (
-    <div className="relative mb-4 overflow-visible rounded-[1.75rem] px-4 pb-3 pt-3" style={{ background: hero.gradient }}>
+    <div className="relative mb-4 overflow-hidden rounded-[1.75rem] px-4 pb-3 pt-3" style={{ background: hero.gradient }}>
       {/* Location + Notification row */}
       <div className="relative z-10 mb-3 flex items-center justify-between gap-3">
         <button onClick={onLocationTap} className="flex min-w-0 max-w-[72%] items-center gap-2 active:scale-95 transition-transform">
@@ -87,7 +87,7 @@ const TopHeroBanner = memo(({ city, greeting, timezone, onLocationTap }: { city:
       </Link>
 
       {/* Search bar inside banner */}
-      <div className="relative z-20">
+      <div className="relative z-10">
         <UnifiedSearchBar variant="fullscreen" placeholder="Search anything…" />
       </div>
     </div>
@@ -126,10 +126,10 @@ function CategoryCard({ cat, index }: { cat: SmartCategory; index: number }) {
     >
       <Link
         to={cat.route}
-        className="group relative flex h-[96px] w-[82px] flex-col items-center justify-between overflow-visible rounded-2xl border border-border/10 bg-muted/30 p-2 transition-all duration-150 active:scale-[0.92]"
+        className="group relative flex h-[96px] w-[82px] flex-col items-center justify-between overflow-hidden rounded-2xl border border-border/10 bg-muted/30 p-2 transition-all duration-150 active:scale-[0.92]"
       >
         {cat.subtitle && (
-          <span className="absolute -top-1 -right-1 text-[7px] font-bold px-1.5 py-0.5 rounded-md bg-primary text-primary-foreground leading-none z-10">
+          <span className="absolute top-0.5 right-0.5 text-[7px] font-bold px-1.5 py-0.5 rounded-md bg-primary text-primary-foreground leading-none z-10">
             {cat.subtitle}
           </span>
         )}
@@ -167,7 +167,7 @@ function DynamicSection({ section, shops, index }: { section: { key: string; tit
           <Link
             key={shop.id}
             to={`/s/${shop.slug}`}
-            className="shrink-0 w-[182px] rounded-2xl border border-border/15 bg-card overflow-visible active:scale-[0.96] transition-transform"
+            className="shrink-0 w-[170px] rounded-2xl border border-border/15 bg-card overflow-hidden active:scale-[0.96] transition-transform"
           >
             <div className="relative flex h-[112px] items-center justify-center overflow-hidden rounded-t-2xl bg-muted/20">
               {(shop.banner_url || shop.logo_url) ? (
