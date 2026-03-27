@@ -160,9 +160,8 @@ export default function AdminEngineCockpit() {
     if (filter === "real") return (e.total_rows_affected ?? 0) > 0 || (e.last_duration_ms ?? 0) > 100;
     if (filter === "noop") return (e.last_duration_ms ?? 0) === 0;
     if (filter === "error") return e.status === "error" || e.consecutive_failures > 0;
-    if (filter === "blocked") {
-      return blockedLogs.some(l => l.engine_name === e.engine_name);
-    }
+    if (filter === "blocked") return blockedLogs.some(l => l.engine_name === e.engine_name);
+    if (filter === "browser_repair") return e.engine_name === "browser-user-repair-engine";
     return true;
   });
 
