@@ -19726,6 +19726,230 @@ export type Database = {
         }
         Relationships: []
       }
+      runtime_qa_runs: {
+        Row: {
+          created_at: string
+          critical_count: number
+          degraded_count: number
+          duration_ms: number | null
+          engine_name: string
+          fail_count: number
+          finished_at: string | null
+          fixed_count: number
+          id: string
+          metadata_json: Json
+          pass_count: number
+          report_json: Json
+          scope: string
+          started_at: string
+          status: string
+          total_modules: number
+          total_scenarios: number
+          warning_count: number
+        }
+        Insert: {
+          created_at?: string
+          critical_count?: number
+          degraded_count?: number
+          duration_ms?: number | null
+          engine_name?: string
+          fail_count?: number
+          finished_at?: string | null
+          fixed_count?: number
+          id?: string
+          metadata_json?: Json
+          pass_count?: number
+          report_json?: Json
+          scope?: string
+          started_at?: string
+          status?: string
+          total_modules?: number
+          total_scenarios?: number
+          warning_count?: number
+        }
+        Update: {
+          created_at?: string
+          critical_count?: number
+          degraded_count?: number
+          duration_ms?: number | null
+          engine_name?: string
+          fail_count?: number
+          finished_at?: string | null
+          fixed_count?: number
+          id?: string
+          metadata_json?: Json
+          pass_count?: number
+          report_json?: Json
+          scope?: string
+          started_at?: string
+          status?: string
+          total_modules?: number
+          total_scenarios?: number
+          warning_count?: number
+        }
+        Relationships: []
+      }
+      runtime_qa_scenarios: {
+        Row: {
+          area: string
+          auto_fix_applied: boolean
+          created_at: string
+          duration_ms: number
+          fix_summary: string | null
+          id: string
+          issue_type: string | null
+          metadata_json: Json
+          module_key: string
+          root_cause: string | null
+          route_key: string | null
+          run_id: string
+          scenario_key: string
+          severity: string
+          status: string
+          summary: string | null
+        }
+        Insert: {
+          area: string
+          auto_fix_applied?: boolean
+          created_at?: string
+          duration_ms?: number
+          fix_summary?: string | null
+          id?: string
+          issue_type?: string | null
+          metadata_json?: Json
+          module_key: string
+          root_cause?: string | null
+          route_key?: string | null
+          run_id: string
+          scenario_key: string
+          severity: string
+          status: string
+          summary?: string | null
+        }
+        Update: {
+          area?: string
+          auto_fix_applied?: boolean
+          created_at?: string
+          duration_ms?: number
+          fix_summary?: string | null
+          id?: string
+          issue_type?: string | null
+          metadata_json?: Json
+          module_key?: string
+          root_cause?: string | null
+          route_key?: string | null
+          run_id?: string
+          scenario_key?: string
+          severity?: string
+          status?: string
+          summary?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "runtime_qa_scenarios_run_id_fkey"
+            columns: ["run_id"]
+            isOneToOne: false
+            referencedRelation: "runtime_qa_runs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      runtime_qa_steps: {
+        Row: {
+          created_at: string
+          details_json: Json
+          elapsed_ms: number
+          id: string
+          module_key: string
+          run_id: string
+          scenario_id: string | null
+          scenario_key: string
+          status: string
+          step_key: string
+        }
+        Insert: {
+          created_at?: string
+          details_json?: Json
+          elapsed_ms?: number
+          id?: string
+          module_key: string
+          run_id: string
+          scenario_id?: string | null
+          scenario_key: string
+          status: string
+          step_key: string
+        }
+        Update: {
+          created_at?: string
+          details_json?: Json
+          elapsed_ms?: number
+          id?: string
+          module_key?: string
+          run_id?: string
+          scenario_id?: string | null
+          scenario_key?: string
+          status?: string
+          step_key?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "runtime_qa_steps_run_id_fkey"
+            columns: ["run_id"]
+            isOneToOne: false
+            referencedRelation: "runtime_qa_runs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "runtime_qa_steps_scenario_id_fkey"
+            columns: ["scenario_id"]
+            isOneToOne: false
+            referencedRelation: "runtime_qa_scenarios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      runtime_qa_watchdog: {
+        Row: {
+          consecutive_failures: number
+          created_at: string
+          current_issue: string | null
+          current_status: string
+          id: string
+          last_seen_fail_at: string | null
+          last_seen_ok_at: string | null
+          metadata_json: Json
+          module_key: string
+          route_key: string
+          updated_at: string
+        }
+        Insert: {
+          consecutive_failures?: number
+          created_at?: string
+          current_issue?: string | null
+          current_status?: string
+          id?: string
+          last_seen_fail_at?: string | null
+          last_seen_ok_at?: string | null
+          metadata_json?: Json
+          module_key: string
+          route_key: string
+          updated_at?: string
+        }
+        Update: {
+          consecutive_failures?: number
+          created_at?: string
+          current_issue?: string | null
+          current_status?: string
+          id?: string
+          last_seen_fail_at?: string | null
+          last_seen_ok_at?: string | null
+          metadata_json?: Json
+          module_key?: string
+          route_key?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       sales_ai_activities: {
         Row: {
           activity_type: string
