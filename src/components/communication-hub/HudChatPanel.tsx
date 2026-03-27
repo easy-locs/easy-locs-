@@ -517,9 +517,9 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
         <OrbitMediaBar
           attachmentCount={0}
           recording={voiceRecorder.recording}
-          onOpenGallery={() => attachments.setShowAttachmentMenu?.(true)}
-          onOpenCamera={() => attachments.setShowAttachmentMenu?.(true)}
-          onOpenFiles={() => attachments.setShowAttachmentMenu?.(true)}
+          onOpenGallery={() => attachments.fileInputRef.current?.click()}
+          onOpenCamera={() => attachments.fileInputRef.current?.click()}
+          onOpenFiles={() => attachments.fileInputRef.current?.click()}
           onStartVoice={() => composer.setIsRecording(!composer.isRecording)}
         />
       </div>
