@@ -769,22 +769,7 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
           t={t}
         />
 
-        <OrbitMediaBar
-          attachmentCount={attachmentQueue.queue.length}
-          recording={voiceRecorder.recording}
-          onOpenGallery={handlePickGallery}
-          onOpenCamera={handlePickCamera}
-          onOpenFiles={handlePickFiles}
-          onStartVoice={() => composer.setIsRecording(!composer.isRecording)}
-        />
-
-        <OrbitAttachmentPickerBar
-          onPickFiles={handlePickFiles}
-          onPickCamera={handlePickCamera}
-          onPickGallery={handlePickGallery}
-          onToggleViewOnce={() => setViewOnceEnabled((prev) => !prev)}
-          viewOnce={viewOnceEnabled}
-        />
+        {/* Attachment queue preview only — media/attachment picker bars removed to prevent overlap */}
 
         <OrbitUploadQueuePreview
           queue={attachmentQueue.queue}
