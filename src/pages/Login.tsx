@@ -102,9 +102,13 @@ const Login = () => {
   const inputClass = "w-full bg-background border border-border rounded-xl ps-10 pe-4 h-[var(--input-height)] text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-accent/40 focus:border-accent/40 transition-all";
 
   return (
-    <div className="app-mobile-page bg-hero flex items-center justify-center p-4 pt-20 sm:pt-4 relative">
+    <div className="app-mobile-page bg-hero flex flex-col items-center justify-center p-4 min-h-screen relative">
       <SEOHead title="Login — Easy-Locs" description="Sign in to your Easy-Locs account." noindex />
-      <AuthBrand />
+
+      {/* Logo — centered above card */}
+      <div className="mb-6">
+        <AppLogo variant="auth" linkTo="/" />
+      </div>
 
       <motion.div
         initial={{ opacity: 0, y: 20, scale: 0.98 }}
@@ -112,8 +116,8 @@ const Login = () => {
         transition={{ duration: 0.5, type: "spring", stiffness: 200 }}
         className="bg-card rounded-2xl shadow-card-hover p-8 sm:p-10 max-w-md w-full border border-border/50"
       >
-        <h1 className="text-2xl font-bold text-foreground mb-1">{t("auth.login.title")}</h1>
-        <p className="text-muted-foreground text-sm mb-6">{t("auth.login.subtitle")}</p>
+        <h1 className="text-2xl font-bold text-foreground mb-1 text-center">{t("auth.login.title")}</h1>
+        <p className="text-muted-foreground text-sm mb-6 text-center">{t("auth.login.subtitle")}</p>
 
         {/* Tabs */}
         <div className="flex gap-1 bg-muted/50 rounded-xl p-1 mb-6">
