@@ -1,5 +1,5 @@
 /**
- * Admin Engine Cockpit — Real-time engine health, logs, kill switches, blocked runs.
+ * Admin Engine Cockpit — Real-time engine health, logs, kill switches, blocked runs, browser repair.
  */
 import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -10,10 +10,38 @@ import { Switch } from "@/components/ui/switch";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Activity, AlertTriangle, CheckCircle2, Clock, Power, RefreshCw,
-  Shield, Zap, XCircle, Timer, Database, ShieldAlert
+  Shield, Zap, XCircle, Timer, Database, ShieldAlert, Bug, Wrench
 } from "lucide-react";
 
 const db = supabase as any;
+
+interface BrowserRepairRun {
+  id: string;
+  started_at: string;
+  finished_at: string | null;
+  status: string;
+  scenario_count: number;
+  pass_count: number;
+  fail_count: number;
+  fixed_count: number;
+  warning_count: number;
+  duration_ms: number | null;
+  report_json: any;
+}
+
+interface BrowserRepairIssue {
+  id: string;
+  run_id: string;
+  page_key: string;
+  flow_key: string;
+  severity: string;
+  issue_type: string;
+  summary: string;
+  auto_fix_applied: boolean;
+  fix_summary: string | null;
+  verification_status: string;
+  created_at: string;
+}
 
 interface EngineRow {
   engine_name: string;
