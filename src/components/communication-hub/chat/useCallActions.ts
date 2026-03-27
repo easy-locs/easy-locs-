@@ -12,9 +12,10 @@ export function useCallActions(thread: ConversationThread | null, workspaceId: s
   const { startCall, isInCall, isStartingCall } = useCall();
 
   const handleStartCall = useCallback((isVideo: boolean) => {
-    const targetId = thread?.peerUserId || thread?.tenantId || workspaceId;
+    // Resolve the actual peer to call — never use workspaceId/orgId as the call target
+    const targetId = thread?.peerUserId || thread?.tenantId;
     if (!targetId) {
-      toast.error("Unable to resolve call target");
+      toast.error("Unable to resolve call target — no peer found");
       return;
     }
 
@@ -28,7 +29,7 @@ export function useCallActions(thread: ConversationThread | null, workspaceId: s
       peerName: thread?.name || "Contact",
       isVideo,
     });
-  }, [workspaceId, thread, startCall]);
+  }, [thread, startCall]);
 
   return { handleStartCall, isInCall, isStartingCall };
 }
