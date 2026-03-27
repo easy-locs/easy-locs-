@@ -2488,6 +2488,7 @@ export type Database = {
       }
       browser_repair_issues: {
         Row: {
+          area: string | null
           auto_fix_applied: boolean
           created_at: string
           fix_summary: string | null
@@ -2504,6 +2505,7 @@ export type Database = {
           verification_status: string | null
         }
         Insert: {
+          area?: string | null
           auto_fix_applied?: boolean
           created_at?: string
           fix_summary?: string | null
@@ -2520,6 +2522,7 @@ export type Database = {
           verification_status?: string | null
         }
         Update: {
+          area?: string | null
           auto_fix_applied?: boolean
           created_at?: string
           fix_summary?: string | null
@@ -2550,6 +2553,7 @@ export type Database = {
           blocked_count: number | null
           created_at: string
           critical_count: number | null
+          degraded_count: number
           duration_ms: number | null
           engine_name: string
           environment: string | null
@@ -2571,6 +2575,7 @@ export type Database = {
           blocked_count?: number | null
           created_at?: string
           critical_count?: number | null
+          degraded_count?: number
           duration_ms?: number | null
           engine_name?: string
           environment?: string | null
@@ -2592,6 +2597,7 @@ export type Database = {
           blocked_count?: number | null
           created_at?: string
           critical_count?: number | null
+          degraded_count?: number
           duration_ms?: number | null
           engine_name?: string
           environment?: string | null
