@@ -40,7 +40,7 @@ export function useWalletRealtime() {
       .on(
         "postgres_changes",
         {
-          event: "INSERT",
+          event: "*",
           schema: "public",
           table: "wallet_transactions_v2",
           filter: `user_id=eq.${user.id}`,
