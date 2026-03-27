@@ -86,7 +86,8 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, showCont
   const [pendingOffline, setPendingOffline] = useState<any[]>([]);
 
   const [rawMessages, setRawMessages] = useState<ChatMessage[]>([]);
-  const { messages } = useDecryptedMessages(rawMessages, decrypt, user?.id);
+  const { messages: decryptedMessages } = useDecryptedMessages(rawMessages, decrypt, user?.id);
+  const messages = decryptedMessages as ChatMessage[];
   const [selectedCategory, setSelectedCategory] = useState("general");
   const [convStatus, setConvStatus] = useState("active");
   const [uploading, setUploading] = useState(false);
