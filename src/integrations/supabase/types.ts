@@ -2298,6 +2298,68 @@ export type Database = {
           },
         ]
       }
+      browser_repair_events: {
+        Row: {
+          after_json: Json | null
+          area: string
+          attempted_fix: boolean | null
+          before_json: Json | null
+          created_at: string
+          detected_value: string | null
+          fix_status: string | null
+          fix_summary: string | null
+          flow: string
+          id: string
+          issue_code: string | null
+          issue_label: string | null
+          route: string | null
+          run_id: string | null
+          severity: string
+        }
+        Insert: {
+          after_json?: Json | null
+          area: string
+          attempted_fix?: boolean | null
+          before_json?: Json | null
+          created_at?: string
+          detected_value?: string | null
+          fix_status?: string | null
+          fix_summary?: string | null
+          flow: string
+          id?: string
+          issue_code?: string | null
+          issue_label?: string | null
+          route?: string | null
+          run_id?: string | null
+          severity?: string
+        }
+        Update: {
+          after_json?: Json | null
+          area?: string
+          attempted_fix?: boolean | null
+          before_json?: Json | null
+          created_at?: string
+          detected_value?: string | null
+          fix_status?: string | null
+          fix_summary?: string | null
+          flow?: string
+          id?: string
+          issue_code?: string | null
+          issue_label?: string | null
+          route?: string | null
+          run_id?: string | null
+          severity?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "browser_repair_events_run_id_fkey"
+            columns: ["run_id"]
+            isOneToOne: false
+            referencedRelation: "browser_repair_runs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       browser_repair_issues: {
         Row: {
           auto_fix_applied: boolean
@@ -2359,7 +2421,9 @@ export type Database = {
       }
       browser_repair_runs: {
         Row: {
+          blocked_count: number | null
           created_at: string
+          critical_count: number | null
           duration_ms: number | null
           engine_name: string
           environment: string | null
@@ -2367,15 +2431,20 @@ export type Database = {
           finished_at: string | null
           fixed_count: number
           id: string
+          metadata_json: Json | null
           pass_count: number
+          repaired_count: number | null
           report_json: Json | null
           scenario_count: number
           started_at: string
           status: string
+          total_checks: number | null
           warning_count: number
         }
         Insert: {
+          blocked_count?: number | null
           created_at?: string
+          critical_count?: number | null
           duration_ms?: number | null
           engine_name?: string
           environment?: string | null
@@ -2383,15 +2452,20 @@ export type Database = {
           finished_at?: string | null
           fixed_count?: number
           id?: string
+          metadata_json?: Json | null
           pass_count?: number
+          repaired_count?: number | null
           report_json?: Json | null
           scenario_count?: number
           started_at?: string
           status?: string
+          total_checks?: number | null
           warning_count?: number
         }
         Update: {
+          blocked_count?: number | null
           created_at?: string
+          critical_count?: number | null
           duration_ms?: number | null
           engine_name?: string
           environment?: string | null
@@ -2399,12 +2473,45 @@ export type Database = {
           finished_at?: string | null
           fixed_count?: number
           id?: string
+          metadata_json?: Json | null
           pass_count?: number
+          repaired_count?: number | null
           report_json?: Json | null
           scenario_count?: number
           started_at?: string
           status?: string
+          total_checks?: number | null
           warning_count?: number
+        }
+        Relationships: []
+      }
+      browser_repair_watchdog: {
+        Row: {
+          consecutive_failures: number | null
+          current_issue: string | null
+          current_status: string | null
+          id: string
+          last_seen_ok_at: string | null
+          page_key: string
+          updated_at: string | null
+        }
+        Insert: {
+          consecutive_failures?: number | null
+          current_issue?: string | null
+          current_status?: string | null
+          id?: string
+          last_seen_ok_at?: string | null
+          page_key: string
+          updated_at?: string | null
+        }
+        Update: {
+          consecutive_failures?: number | null
+          current_issue?: string | null
+          current_status?: string | null
+          id?: string
+          last_seen_ok_at?: string | null
+          page_key?: string
+          updated_at?: string | null
         }
         Relationships: []
       }
