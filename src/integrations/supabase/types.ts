@@ -6765,9 +6765,14 @@ export type Database = {
           error_message: string | null
           finished_at: string | null
           id: string
+          input_hash: string | null
           metadata_json: Json | null
+          output_hash: string | null
+          rows_read: number | null
+          side_effect_count: number | null
           started_at: string
           status: string
+          trigger_source: string | null
         }
         Insert: {
           category?: string
@@ -6778,9 +6783,14 @@ export type Database = {
           error_message?: string | null
           finished_at?: string | null
           id?: string
+          input_hash?: string | null
           metadata_json?: Json | null
+          output_hash?: string | null
+          rows_read?: number | null
+          side_effect_count?: number | null
           started_at?: string
           status?: string
+          trigger_source?: string | null
         }
         Update: {
           category?: string
@@ -6791,9 +6801,14 @@ export type Database = {
           error_message?: string | null
           finished_at?: string | null
           id?: string
+          input_hash?: string | null
           metadata_json?: Json | null
+          output_hash?: string | null
+          rows_read?: number | null
+          side_effect_count?: number | null
           started_at?: string
           status?: string
+          trigger_source?: string | null
         }
         Relationships: []
       }
@@ -6802,10 +6817,12 @@ export type Database = {
           consecutive_failures: number
           created_at: string | null
           cron_interval: string | null
+          dry_run: boolean | null
           enabled: boolean
           engine_name: string
           engine_tier: string
           id: string
+          kill_switch: boolean | null
           last_duration_ms: number | null
           last_error_at: string | null
           last_error_message: string | null
@@ -6815,16 +6832,22 @@ export type Database = {
           restart_count: number
           runtime_class: string
           status: string
+          success_rate: number | null
+          timeout_ms: number | null
+          total_rows_affected: number | null
+          total_runs: number | null
           updated_at: string | null
         }
         Insert: {
           consecutive_failures?: number
           created_at?: string | null
           cron_interval?: string | null
+          dry_run?: boolean | null
           enabled?: boolean
           engine_name: string
           engine_tier?: string
           id?: string
+          kill_switch?: boolean | null
           last_duration_ms?: number | null
           last_error_at?: string | null
           last_error_message?: string | null
@@ -6834,16 +6857,22 @@ export type Database = {
           restart_count?: number
           runtime_class?: string
           status?: string
+          success_rate?: number | null
+          timeout_ms?: number | null
+          total_rows_affected?: number | null
+          total_runs?: number | null
           updated_at?: string | null
         }
         Update: {
           consecutive_failures?: number
           created_at?: string | null
           cron_interval?: string | null
+          dry_run?: boolean | null
           enabled?: boolean
           engine_name?: string
           engine_tier?: string
           id?: string
+          kill_switch?: boolean | null
           last_duration_ms?: number | null
           last_error_at?: string | null
           last_error_message?: string | null
@@ -6853,6 +6882,10 @@ export type Database = {
           restart_count?: number
           runtime_class?: string
           status?: string
+          success_rate?: number | null
+          timeout_ms?: number | null
+          total_rows_affected?: number | null
+          total_runs?: number | null
           updated_at?: string | null
         }
         Relationships: []
