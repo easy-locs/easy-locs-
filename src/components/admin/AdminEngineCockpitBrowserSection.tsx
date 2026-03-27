@@ -1,5 +1,9 @@
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { BrowserRepairRunButton } from "./BrowserRepairRunButton";
-import { WatchdogLivePanel } from "./WatchdogLivePanel";
+import { BrowserRepairRunSummaryCard } from "./BrowserRepairRunSummaryCard";
+import { BrowserRepairWatchdogPanel } from "./BrowserRepairWatchdogPanel";
+import { buildBrowserRepairCockpitMetrics } from "@/lib/browser-repair/browser-repair-cockpit-metrics";
 
 type Props = {
   latestRun?: any;
@@ -10,6 +14,24 @@ export function AdminEngineCockpitBrowserSection({
   latestRun,
   issues = [],
 }: Props) {
+  const [watchdog, setWatchdog] = useState<any[]>([]);
+
+  useEffect(() => {
+    (async () => {
+      const { data } = await (supabase as any)
+        .from("browser_repair_watchdog")
+        .select("*")
+        .order("consecutive_failures", { ascending: false });
+      setWatchdog(data ?? []);
+    })();
+  }, []);
+
+  const metrics = buildBrowserRepairCockpitMetrics(
+    latestRun ? [latestRun] : [],
+    issues,
+    watchdog
+  );
+
   return (
     <div className="space-y-6">
       <div className="space-y-4">
@@ -24,43 +46,30 @@ export function AdminEngineCockpitBrowserSection({
           <BrowserRepairRunButton />
         </div>
 
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
-          <div className="rounded-xl border border-border bg-card p-3 text-center">
-            <p className="text-xs text-muted-foreground">Scenarios</p>
-            <p className="text-lg font-bold text-foreground">
-              {latestRun?.scenario_count ?? 0}
-            </p>
-          </div>
+        {/* Run summary card */}
+        <BrowserRepairRunSummaryCard latestRun={latestRun} />
 
+        {/* Cockpit metrics overview */}
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           <div className="rounded-xl border border-border bg-card p-3 text-center">
-            <p className="text-xs text-muted-foreground">Pass</p>
-            <p className="text-lg font-bold text-foreground">
-              {latestRun?.pass_count ?? 0}
-            </p>
+            <p className="text-xs text-muted-foreground">Total issues</p>
+            <p className="text-lg font-bold text-foreground">{metrics.totalIssues}</p>
           </div>
-
           <div className="rounded-xl border border-border bg-card p-3 text-center">
-            <p className="text-xs text-muted-foreground">Fail</p>
-            <p className="text-lg font-bold text-destructive">
-              {latestRun?.fail_count ?? 0}
-            </p>
+            <p className="text-xs text-muted-foreground">Critical</p>
+            <p className="text-lg font-bold text-destructive">{metrics.criticalIssues}</p>
           </div>
-
           <div className="rounded-xl border border-border bg-card p-3 text-center">
-            <p className="text-xs text-muted-foreground">Fixed</p>
-            <p className="text-lg font-bold text-foreground">
-              {latestRun?.fixed_count ?? 0}
-            </p>
+            <p className="text-xs text-muted-foreground">Auto-fixed</p>
+            <p className="text-lg font-bold text-foreground">{metrics.fixedIssues}</p>
           </div>
-
           <div className="rounded-xl border border-border bg-card p-3 text-center">
-            <p className="text-xs text-muted-foreground">Warnings</p>
-            <p className="text-lg font-bold text-foreground">
-              {latestRun?.warning_count ?? 0}
-            </p>
+            <p className="text-xs text-muted-foreground">Failing pages</p>
+            <p className="text-lg font-bold text-destructive">{metrics.failingPages}</p>
           </div>
         </div>
 
+        {/* Issues list */}
         <div className="space-y-2">
           {issues.slice(0, 12).map((issue: any) => (
             <div
@@ -72,7 +81,7 @@ export function AdminEngineCockpitBrowserSection({
                   {issue.page_key} / {issue.flow_key}
                 </p>
                 <p className="text-[11px] text-muted-foreground">
-                  {issue.issue_type}
+                  {issue.area ? `${issue.area} · ` : ""}{issue.issue_type}
                 </p>
                 <p className="text-xs text-foreground">{issue.summary}</p>
                 {issue.fix_summary && (
@@ -99,7 +108,8 @@ export function AdminEngineCockpitBrowserSection({
         </div>
       </div>
 
-      <WatchdogLivePanel />
+      {/* Watchdog panel */}
+      <BrowserRepairWatchdogPanel watchdog={watchdog} />
     </div>
   );
 }
