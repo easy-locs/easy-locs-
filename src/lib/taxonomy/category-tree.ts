@@ -683,3 +683,39 @@ export function isVehicleEligible(vehicleType: string, jobType: MobilityJobType)
   if (!allowed) return false;
   return allowed.includes(jobType);
 }
+
+// ═══════════════════════════════════════════════════════════
+//  BACKWARD-COMPAT EXPORTS (replacing category-hierarchy.ts + MarketplaceCategories.ts)
+// ═══════════════════════════════════════════════════════════
+
+export type SubCategoryCompat = { value: string; label: string; emoji: string };
+export type CategoryGroupCompat = { value: string; label: string; emoji: string; subcategories: SubCategoryCompat[] };
+
+/** CATEGORY_HIERARCHY — flat view grouped by vertical (replaces @/lib/category-hierarchy) */
+export const CATEGORY_HIERARCHY: CategoryGroupCompat[] = CATEGORY_TREE.map(c => ({
+  value: c.vertical,
+  label: c.label,
+  emoji: c.emoji,
+  subcategories: c.subcategories.map(s => ({ value: s.value, label: s.label, emoji: s.emoji })),
+}));
+
+/** getSubcategoryInfo — lookup subcategory by value */
+export function getSubcategoryInfo(value: string): SubCategoryCompat | undefined {
+  const resolved = resolveSubcategory(value);
+  if (!resolved) return undefined;
+  return { value: resolved.subcategory.value, label: resolved.subcategory.label, emoji: resolved.subcategory.emoji };
+}
+
+/** MARKETPLACE_CATEGORIES — flat list of all subcategories with group (replaces MarketplaceCategories.ts) */
+export const MARKETPLACE_CATEGORIES = CATEGORY_TREE.flatMap(primary =>
+  primary.subcategories.map(sub => ({
+    value: sub.value,
+    label: sub.label,
+    icon: sub.emoji,
+    group: primary.label,
+  }))
+);
+
+/** getCategoryInfo — lookup marketplace category */
+export const getCategoryInfo = (cat: string) =>
+  MARKETPLACE_CATEGORIES.find(c => c.value === cat) || { value: cat, label: cat, icon: "📦", group: "Other" };
