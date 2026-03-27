@@ -127,8 +127,8 @@ const ClientDashboard = () => {
           timeline.push({
             id: `msg-${m.id}`,
             icon: MessageCircle,
-            label: m.contact_name || "Provider",
-            detail: m.content?.substring(0, 60) || "",
+            label: (m.metadata as any)?.contact_name || "Provider",
+            detail: m.body?.substring(0, 60) || "",
             time: m.created_at,
             type: "message",
             link: "/client/messages",
