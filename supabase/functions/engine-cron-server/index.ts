@@ -313,7 +313,18 @@ Deno.serve(async (req) => {
           updated_at: new Date().toISOString(),
         };
 
-        await supabase.from("storefront_pages").update(patch as any).eq("id", storefront.id);
+        // ── FIREWALL GUARD on storefront visibility writes ──
+        const fwResult = await guardedUpdate(
+          "concrete-surface-sync",
+          "storefront_pages",
+          storefront.id,
+          patch,
+          { ranking_score: storefront.ranking_score, visibility_mode: storefront.visibility_mode }
+        );
+        if (fwResult.blocked) {
+          firewallBlocked++;
+          continue;
+        }
         storefrontsSynced++;
 
         if (catalogItems.length >= 3) {
