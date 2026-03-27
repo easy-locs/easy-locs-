@@ -1,7 +1,7 @@
 import { memo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { MapPin, ArrowRight, Users, Moon, CheckCircle, Bed, Bath, Maximize, Lock } from "lucide-react";
-import { getSubcategoryInfo } from "@/lib/category-hierarchy";
+import { getSubcategoryInfo } from "@/lib/taxonomy/category-tree";
 import { useI18n } from "@/lib/i18n";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import SaveButton from "@/components/explore/SaveButton";

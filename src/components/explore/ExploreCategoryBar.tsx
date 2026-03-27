@@ -1,6 +1,6 @@
 import { useRef, useState, useEffect, useCallback } from "react";
 import { Globe, ChevronLeft, ChevronRight } from "lucide-react";
-import { CATEGORY_HIERARCHY } from "@/lib/category-hierarchy";
+import { CATEGORY_HIERARCHY } from "@/lib/taxonomy/category-tree";
 import { useI18n } from "@/lib/i18n";
 
 interface ExploreCategoryBarProps {

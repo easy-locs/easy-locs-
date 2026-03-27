@@ -26,7 +26,7 @@ import { toast } from "sonner";
 import ScrollableFilterBar from "@/components/ui/ScrollableFilterBar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorState } from "@/components/ui/error-state";
-import { CATEGORY_HIERARCHY } from "@/lib/category-hierarchy";
+import { CATEGORY_HIERARCHY } from "@/lib/taxonomy/category-tree";
 const NearbyLeafletMap = lazy(() => import("./NearbyLeafletMap"));
 
 interface NearbyItem {

@@ -24,7 +24,7 @@ import { dispatchSyncEvent, syncPaymentRequest } from "@/lib/shared/sync-engine"
 import { useBookingLifecycle } from "@/hooks/useBookingLifecycle";
 import BookingRequestCenter from "@/components/marketplace/BookingRequestCenter";
 import BookingDialog from "@/components/marketplace/BookingDialog";
-import { MARKETPLACE_CATEGORIES, getCategoryInfo } from "@/components/marketplace/MarketplaceCategories";
+import { MARKETPLACE_CATEGORIES, getCategoryInfo } from "@/lib/taxonomy/category-tree";
 import ReviewsManagerPanel from "@/components/marketplace/ReviewsManagerPanel";
 import { computeExchangeRate, RATES_TO_EUR } from "@/hooks/useCurrencyConversion";
 import { useEnsureOrg } from "@/hooks/useEnsureOrg";
