@@ -32,14 +32,18 @@ if (typeof window !== "undefined") {
 // Remove the static loading fallback as soon as the app bundle starts executing.
 rootElement.innerHTML = "";
 
+console.info("[MAIN_BOOT_START]", performance.now().toFixed(1), "ms");
+
 try {
+  console.info("[MAIN_BOOT_RENDER] createRoot + render");
   ReactDOM.createRoot(rootElement).render(
     <HashRouter>
       <App />
     </HashRouter>
   );
+  console.info("[MAIN_BOOT_DONE]", performance.now().toFixed(1), "ms");
 } catch (err) {
-  console.error("[Boot] React render crashed", err);
+  console.error("[MAIN_BOOT_CRASH]", err);
   rootElement.innerHTML = `
     <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;font-family:system-ui;">
       <div style="text-align:center;max-width:400px;padding:20px;">
