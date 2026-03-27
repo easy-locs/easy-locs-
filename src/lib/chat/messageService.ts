@@ -1,6 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import DOMPurify from "dompurify";
 import type { ChatMessageRow } from "@/lib/types/comms";
+import { sendInAppNotification } from "@/lib/notifications/notification-dispatcher";
 
 /**
  * Resolves the current auth user ID. Required for sender_user_id (NOT NULL).
@@ -26,6 +27,7 @@ async function resolveOrbitId(userId: string): Promise<string> {
 export async function sendTextMessage(input: {
   conversationId: string;
   senderOrbitId?: string;
+  senderDisplayName?: string;
   receiverOrbitId?: string;
   body: string;
 }): Promise<ChatMessageRow> {
@@ -71,7 +73,65 @@ export async function sendTextMessage(input: {
     })
     .eq("id", input.conversationId);
 
+  // Notify other participants (non-blocking)
+  void notifyConversationParticipants({
+    conversationId: input.conversationId,
+    messageId: data.id,
+    senderUserId: userId,
+    senderDisplayName: input.senderDisplayName || senderOrbitId,
+    bodyPreview: safeBody.slice(0, 120),
+  });
+
   return data as ChatMessageRow;
+}
+
+/**
+ * Notify all conversation participants (except sender) about a new message.
+ */
+async function notifyConversationParticipants(ctx: {
+  conversationId: string;
+  messageId: string;
+  senderUserId: string;
+  senderDisplayName: string;
+  bodyPreview: string;
+}) {
+  try {
+    const { data: conv } = await (supabase as any)
+      .from("conversations_v2")
+      .select("participants")
+      .eq("id", ctx.conversationId)
+      .single();
+
+    if (!conv?.participants || !Array.isArray(conv.participants)) return;
+
+    const recipients = conv.participants
+      .filter((p: any) => p.userId && p.userId !== ctx.senderUserId)
+      .map((p: any) => p.userId as string);
+
+    await Promise.allSettled(
+      recipients.map((targetUserId: string) =>
+        sendInAppNotification({
+          userId: targetUserId,
+          type: "new_message",
+          eventType: "chat.message.created",
+          domain: "orbit",
+          actor: "client",
+          title: ctx.senderDisplayName || "New message",
+          body: ctx.bodyPreview,
+          deepLink: `/orbit/conversations/${ctx.conversationId}`,
+          dedupKey: `chat.message.created:${ctx.messageId}:${targetUserId}`,
+          data: {
+            conversationId: ctx.conversationId,
+            messageId: ctx.messageId,
+            senderUserId: ctx.senderUserId,
+          },
+          relatedConversationId: ctx.conversationId,
+        })
+      )
+    );
+  } catch (err) {
+    console.error("[notifyConversationParticipants] error:", err);
+  }
 }
 
 export async function createCallSystemMessage(input: {

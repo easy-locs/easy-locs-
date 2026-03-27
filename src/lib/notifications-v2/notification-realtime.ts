@@ -21,7 +21,7 @@ export function subscribeNotifications(
       {
         event: "INSERT",
         schema: "public",
-        table: "notifications_v2",
+        table: "notifications",
         filter: `user_id=eq.${userId}`,
       },
       (payload) => {

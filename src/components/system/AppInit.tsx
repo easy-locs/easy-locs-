@@ -9,6 +9,7 @@ import { ensureWalletAccount } from "@/lib/wallet/ensureWalletAccount";
 import { useWalletStore } from "@/stores/walletStore";
 import { useFavoritesStore } from "@/stores/favoritesStore";
 import { useSavedSearchStore } from "@/stores/savedSearchStore";
+import { useNotificationV2Store } from "@/stores/notificationV2Store";
 
 /**
  * AppInit — initializes V2 auth, hydrates orbit profile, wallet, favorites and saved searches.
@@ -35,6 +36,7 @@ export function AppInit() {
       useWalletStore.setState({ wallet: null, transactions: [], loading: false });
       useFavoritesStore.setState({ items: [], loading: false });
       useSavedSearchStore.setState({ items: [], loading: false });
+      useNotificationV2Store.getState().clear();
       return;
     }
 

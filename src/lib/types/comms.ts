@@ -8,6 +8,7 @@ export type OrbitProfileRow = {
 
 export type ConversationParticipant = {
   orbitId: string;
+  userId?: string | null;
   email?: string | null;
   displayName?: string | null;
 };
