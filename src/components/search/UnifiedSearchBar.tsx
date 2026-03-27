@@ -134,7 +134,7 @@ export default function UnifiedSearchBar({
           )}
         >
           <Search className="h-4 w-4 shrink-0" />
-          <span className="min-w-0 flex-1 text-left text-sm font-medium leading-snug break-words line-clamp-2">{defaultPlaceholder}</span>
+          <span className="min-w-0 flex-1 text-left text-sm font-medium leading-snug break-words">{defaultPlaceholder}</span>
         </button>
 
         <AnimatePresence>
@@ -163,7 +163,7 @@ export default function UnifiedSearchBar({
                     onChange={(e) => setQuery(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
                     placeholder={defaultPlaceholder}
-                    className="h-12 w-full min-w-0 rounded-2xl border border-border/30 bg-card pl-10 pr-9 text-sm font-medium text-foreground outline-none focus:ring-2 focus:ring-primary/20"
+                    className="search-premium-field h-12 w-full min-w-0 rounded-2xl border border-border/30 bg-card pl-10 pr-9 text-sm font-medium text-foreground outline-none focus:ring-2 focus:ring-primary/20"
                   />
                   {query && (
                     <button
@@ -231,7 +231,7 @@ export default function UnifiedSearchBar({
           placeholder={defaultPlaceholder}
           autoFocus={autoFocus}
           className={cn(
-            "w-full min-w-0 bg-card border border-border/30 text-foreground outline-none transition-all",
+            "search-premium-field w-full min-w-0 bg-card border border-border/30 text-foreground outline-none transition-all",
             isHero
               ? "h-14 rounded-2xl pl-11 pr-10 text-[15px] font-medium shadow-lg focus:ring-2 focus:ring-primary/30 sm:text-base"
               : "h-12 rounded-2xl pl-10 pr-9 text-sm font-medium shadow-sm focus:ring-2 focus:ring-primary/20"
@@ -376,7 +376,7 @@ function AutocompleteSection({
         <button
           key={item.id}
           onClick={() => onClick(item)}
-          className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-muted/50 active:bg-muted transition-colors text-left"
+          className="w-full flex items-start gap-3 px-4 py-3 hover:bg-muted/50 active:bg-muted transition-colors text-left"
         >
           {item.imageUrl ? (
             <img src={item.imageUrl} alt="" className="w-9 h-9 rounded-xl object-cover bg-muted shrink-0" />
@@ -385,23 +385,23 @@ function AutocompleteSection({
               <Search className="w-3.5 h-3.5 text-muted-foreground" />
             </div>
           )}
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-foreground break-words line-clamp-2 leading-snug">{item.title}</p>
+          <div className="flex-1 min-w-0 py-0.5">
+            <p className="text-sm font-medium text-foreground break-words leading-snug [text-wrap:balance]">{item.title}</p>
             {item.subtitle && (
-              <p className="text-[11px] text-muted-foreground break-words line-clamp-2 leading-snug">{item.subtitle}</p>
+              <p className="mt-0.5 text-[11px] text-muted-foreground break-words leading-snug">{item.subtitle}</p>
             )}
           </div>
           {item.price != null && (
-            <span className="text-xs font-bold text-primary shrink-0">
+            <span className="pt-0.5 text-xs font-bold text-primary shrink-0">
               {item.price.toFixed(2)} {item.currency}
             </span>
           )}
           {item.rating != null && (
-            <span className="text-[11px] text-muted-foreground shrink-0">
+            <span className="pt-0.5 text-[11px] text-muted-foreground shrink-0">
               ⭐ {item.rating.toFixed(1)}
             </span>
           )}
-          <ChevronRight className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+          <ChevronRight className="mt-1 w-3.5 h-3.5 text-muted-foreground shrink-0" />
         </button>
       ))}
     </div>

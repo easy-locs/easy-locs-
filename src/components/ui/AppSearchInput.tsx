@@ -24,7 +24,7 @@ export function AppSearchInput({
   onBlur,
 }: AppSearchInputProps) {
   return (
-    <div className={cn("search-shell", className)}>
+    <div className={cn("search-shell min-w-0", className)}>
       <Search className="search-shell__icon text-muted-foreground" />
 
       <input
@@ -36,7 +36,7 @@ export function AppSearchInput({
         onBlur={onBlur}
         placeholder={placeholder}
         className={cn(
-          "search-shell__input bg-card border border-border/40 text-foreground placeholder:text-muted-foreground outline-none transition-all",
+          "search-shell__input search-premium-field bg-card border border-border/40 text-foreground placeholder:text-muted-foreground outline-none transition-all",
           "focus:border-primary/40 focus:ring-2 focus:ring-primary/20",
           inputClassName,
         )}
