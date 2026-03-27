@@ -1,2 +1,2 @@
 /** Stub */
-export async function runFranchiseDedup(..._args: any[]) { return { status: "stub", results: [] }; }
+export async function runFranchiseDedup(..._args: any[]) { return { status: "stub", results: [], flagged: 0 }; }
