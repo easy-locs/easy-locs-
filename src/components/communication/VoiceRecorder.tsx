@@ -1,137 +1,179 @@
 import { useRef, useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { Mic, X, Send, Loader2 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { haptic } from "@/lib/haptics";
 
 const db = supabase as any;
 
-type Props = {
-  thread: {
-    id: string;
-    v2ConversationId?: string | null;
-    peerOrbitId?: string | null;
-  } | null;
-  myOrbitId?: string | null;
-  resolveAuthUserId: () => Promise<string | null>;
-  onThreadUpdate: (threadId: string, updates: Record<string, unknown>) => void;
-};
+interface Props {
+  orgId: string;
+  contextId: string;
+  userId: string;
+  userEmail: string;
+  userName: string;
+  onSent: (msg: any) => void;
+}
 
-export default function VoiceRecorder({
-  thread,
-  myOrbitId,
-  resolveAuthUserId,
-  onThreadUpdate,
-}: Props) {
+export default function VoiceRecorder({ orgId, contextId, userId, userEmail, userName, onSent }: Props) {
   const [recording, setRecording] = useState(false);
-  const [sending, setSending] = useState(false);
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const chunksRef = useRef<BlobPart[]>([]);
+  const [duration, setDuration] = useState(0);
+  const [cancelled, setCancelled] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const recorderRef = useRef<MediaRecorder | null>(null);
+  const chunksRef = useRef<Blob[]>([]);
+  const timerRef = useRef<ReturnType<typeof setInterval> | undefined>(undefined);
+  const startXRef = useRef(0);
 
   const startRecording = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const recorder = new MediaRecorder(stream);
-      chunksRef.current = [];
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
+      });
 
-      recorder.ondataavailable = (e) => {
-        if (e.data.size > 0) chunksRef.current.push(e.data);
-      };
-
-      recorder.start();
-      mediaRecorderRef.current = recorder;
-      setRecording(true);
-    } catch (e: any) {
-      toast.error(e?.message || "Microphone access failed.");
-    }
-  };
-
-  const stopRecording = async () => {
-    if (!mediaRecorderRef.current || !thread?.v2ConversationId) return;
-
-    const authUserId = await resolveAuthUserId();
-    if (!authUserId) {
-      toast.error("Authentication required.");
-      return;
-    }
-
-    setSending(true);
-
-    mediaRecorderRef.current.onstop = async () => {
-      try {
-        const blob = new Blob(chunksRef.current, { type: "audio/webm" });
-        const fileName = `voice-${Date.now()}.webm`;
-        const path = `orbit/${thread.v2ConversationId}/${fileName}`;
-
-        const { error: uploadError } = await supabase.storage
-          .from("chat-attachments")
-          .upload(path, blob, {
-            contentType: "audio/webm",
-            upsert: false,
-          });
-
-        if (uploadError) throw uploadError;
-
-        const { data } = supabase.storage
-          .from("chat-attachments")
-          .getPublicUrl(path);
-
-        const now = new Date().toISOString();
-        const body = "🎤 Voice message";
-
-        const { error } = await db.from("chat_messages_v2").insert({
-          conversation_id: thread.v2ConversationId,
-          sender_user_id: authUserId,
-          sender_orbit_id: myOrbitId || `orbit_${authUserId.slice(0, 12)}`,
-          receiver_orbit_id: thread.peerOrbitId ?? null,
-          type: "voice",
-          body,
-          attachments: [
-            {
-              name: fileName,
-              type: "audio/webm",
-              size: blob.size,
-              url: data.publicUrl,
-            },
-          ],
-        });
-
-        if (error) throw error;
-
-        await db
-          .from("conversations_v2")
-          .update({
-            last_message_at: now,
-            last_message_preview: body,
-            updated_at: now,
-          })
-          .eq("id", thread.v2ConversationId);
-
-        onThreadUpdate(thread.id, {
-          lastMessage: body,
-          lastMessageTime: now,
-          lastMessagePreview: body,
-        });
-
-        toast.success("Voice message sent.");
-      } catch (e: any) {
-        toast.error(e?.message || "Voice send failed.");
-      } finally {
-        setSending(false);
+      const mimeOpts: MediaRecorderOptions = {};
+      if (typeof MediaRecorder.isTypeSupported === "function") {
+        if (MediaRecorder.isTypeSupported("audio/webm;codecs=opus")) mimeOpts.mimeType = "audio/webm;codecs=opus";
+        else if (MediaRecorder.isTypeSupported("audio/webm")) mimeOpts.mimeType = "audio/webm";
+        else if (MediaRecorder.isTypeSupported("audio/mp4")) mimeOpts.mimeType = "audio/mp4";
       }
-    };
-
-    mediaRecorderRef.current.stop();
-    mediaRecorderRef.current.stream.getTracks().forEach((t) => t.stop());
-    setRecording(false);
+      const recorder = new MediaRecorder(stream, mimeOpts);
+      chunksRef.current = [];
+      recorder.ondataavailable = (e) => { if (e.data.size > 0) chunksRef.current.push(e.data); };
+      recorder.start(100);
+      recorderRef.current = recorder;
+      setRecording(true);
+      setCancelled(false);
+      setDuration(0);
+      haptic("medium");
+      timerRef.current = setInterval(() => setDuration(d => d + 1), 1000);
+    } catch (e: any) {
+      toast.error(e?.name === "NotAllowedError" ? "Microphone access denied" : "Microphone unavailable");
+    }
   };
+
+  const stopAndSend = async () => {
+    if (!recorderRef.current || cancelled) return;
+    const recorder = recorderRef.current;
+
+    return new Promise<void>((resolve) => {
+      recorder.onstop = async () => {
+        if (timerRef.current) clearInterval(timerRef.current);
+        recorder.stream.getTracks().forEach(t => t.stop());
+
+        if (chunksRef.current.length === 0 || duration < 1) {
+          setRecording(false);
+          resolve();
+          return;
+        }
+
+        setUploading(true);
+        haptic("light");
+        try {
+          const mime = recorderRef.current?.mimeType || "audio/webm";
+          const ext = mime.includes("mp4") ? "m4a" : mime.includes("webm") ? "webm" : "ogg";
+          const blob = new Blob(chunksRef.current, { type: mime });
+          const path = `${orgId}/${contextId}/voice-${Date.now()}.${ext}`;
+          const { error } = await supabase.storage.from("chat-attachments").upload(path, blob);
+          if (error) throw error;
+          const { data: signed } = await supabase.storage.from("chat-attachments").createSignedUrl(path, 60 * 60 * 24 * 365);
+          const url = signed?.signedUrl || path;
+
+          const { data: inserted } = await db.from("chat_messages_v2").insert({
+            conversation_id: contextId,
+            sender_user_id: userId,
+            sender_orbit_id: `orbit_${userId.slice(0, 12)}`,
+            type: "audio",
+            body: `🎤 Voice message (${formatDur(duration)})`,
+            metadata: { audio_url: url, audio_duration_seconds: duration },
+          }).select("*").single();
+
+          if (inserted) onSent(inserted);
+        } catch (e: any) {
+          toast.error(e.message || "Failed to send voice message");
+        }
+        setUploading(false);
+        setRecording(false);
+        resolve();
+      };
+      recorder.stop();
+    });
+  };
+
+  const cancelRecording = () => {
+    setCancelled(true);
+    haptic("light");
+    if (recorderRef.current && recorderRef.current.state !== "inactive") {
+      recorderRef.current.onstop = () => {
+        recorderRef.current?.stream.getTracks().forEach(t => t.stop());
+      };
+      recorderRef.current.stop();
+    }
+    if (timerRef.current) clearInterval(timerRef.current);
+    setRecording(false);
+    chunksRef.current = [];
+  };
+
+  if (uploading) {
+    return (
+      <div className="flex items-center gap-2 px-3 py-2">
+        <Loader2 className="h-4 w-4 animate-spin text-primary" />
+        <span className="text-xs font-medium text-muted-foreground">Sending…</span>
+      </div>
+    );
+  }
+
+  if (recording) {
+    return (
+      <AnimatePresence>
+        <motion.div
+          initial={{ opacity: 0, y: 4 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: 4 }}
+          className="flex items-center gap-3 flex-1 px-3"
+          onTouchStart={(e) => { startXRef.current = e.touches[0].clientX; }}
+          onTouchMove={(e) => { if (startXRef.current - e.touches[0].clientX > 100) cancelRecording(); }}
+        >
+          <button
+            onClick={cancelRecording}
+            className="shrink-0 h-10 w-10 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 rounded-full flex items-center justify-center active:scale-90 transition-transform bg-destructive/12 text-destructive"
+          >
+            <X className="h-4 w-4" />
+          </button>
+
+          <div className="flex-1 flex items-center gap-2.5 min-w-0">
+            <div className="h-3 w-3 rounded-full shrink-0 animate-pulse bg-destructive" />
+            <span className="text-sm font-mono tabular-nums font-semibold text-foreground">
+              {formatDur(duration)}
+            </span>
+            <span className="text-[10px] shrink-0 text-muted-foreground">← Slide</span>
+          </div>
+
+          <button
+            onClick={stopAndSend}
+            className="shrink-0 h-12 w-12 rounded-full flex items-center justify-center active:scale-90 transition-transform bg-primary text-primary-foreground shadow-md"
+          >
+            <Send className="h-5 w-5" />
+          </button>
+        </motion.div>
+      </AnimatePresence>
+    );
+  }
 
   return (
     <button
-      type="button"
-      onClick={recording ? stopRecording : startRecording}
-      disabled={sending}
-      className="rounded-xl border border-border px-3 py-2 text-sm text-foreground hover:bg-muted"
+      onClick={startRecording}
+      className="shrink-0 h-10 w-10 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 rounded-full flex items-center justify-center transition-all active:scale-90 bg-muted text-muted-foreground border border-border"
+      title="Tap to record"
     >
-      {recording ? "Stop" : sending ? "Sending..." : "Voice"}
+      <Mic className="h-4 w-4" />
     </button>
   );
+}
+
+function formatDur(s: number) {
+  const m = Math.floor(s / 60);
+  const sec = s % 60;
+  return `${m}:${sec.toString().padStart(2, "0")}`;
 }
