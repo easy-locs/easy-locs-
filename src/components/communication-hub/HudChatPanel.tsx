@@ -61,6 +61,14 @@ import { OrbitIncomingCallBar } from "@/components/orbit/OrbitIncomingCallBar";
 import { OrbitCallControls } from "@/components/orbit/OrbitCallControls";
 import { OrbitCallMiniPlayer } from "@/components/orbit/OrbitCallMiniPlayer";
 import { OrbitCallPermissionBanner } from "@/components/orbit/OrbitCallPermissionBanner";
+import { useOrbitAttachmentQueue } from "@/hooks/useOrbitAttachmentQueue";
+import { useOrbitUploadTransport } from "@/hooks/useOrbitUploadTransport";
+import { useOrbitAttachmentSend } from "@/hooks/useOrbitAttachmentSend";
+import { useOrbitViewOnce } from "@/hooks/useOrbitViewOnce";
+import { OrbitAttachmentPickerBar } from "@/components/orbit/OrbitAttachmentPickerBar";
+import { OrbitUploadQueuePreview } from "@/components/orbit/OrbitUploadQueuePreview";
+import { OrbitMediaMessage } from "@/components/orbit/OrbitMediaMessage";
+import { OrbitAttachmentViewer } from "@/components/orbit/OrbitAttachmentViewer";
 
 // V2 only — no legacy SYSTEM_SENDER_ID needed
 
@@ -81,7 +89,12 @@ export default function HudChatPanel({ thread, onBack, onToggleContext, onThread
   const { settings: privacySettings } = usePrivacySettings();
   const voiceRecorder = useVoiceRecorder();
   const scrollRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
   const [voicePreview, setVoicePreview] = useState<{ blob: Blob; duration: number; url: string } | null>(null);
+  const [viewOnceEnabled, setViewOnceEnabled] = useState(false);
+  const [viewerOpen, setViewerOpen] = useState(false);
+  const [viewerAttachment, setViewerAttachment] = useState<any>(null);
 
   const selection = useMessageSelection();
   const security = useSecurityDialogs();

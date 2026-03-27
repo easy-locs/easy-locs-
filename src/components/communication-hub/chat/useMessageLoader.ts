@@ -65,7 +65,12 @@ function mapV2ToChat(m: any, conversationId: string): ChatMessage {
     failed: !!m.failed_at,
     reply_to_message_id: m.reply_to_message_id ?? null,
     metadata: m.metadata ?? {},
-  };
+    attachments: Array.isArray(m.attachments) ? m.attachments : [],
+    view_once: !!m.view_once,
+    media_kind: m.media_kind || null,
+    media_count: m.media_count || 0,
+    attachment_summary: m.attachment_summary || null,
+  } as any;
 }
 
 export function useMessageLoader({
