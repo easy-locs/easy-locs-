@@ -1974,21 +1974,32 @@ html {
   --app-safe-top: env(safe-area-inset-top, 0px);
   --app-safe-bottom: env(safe-area-inset-bottom, 0px);
   --mobile-header-h: 64px;
-  --mobile-bottom-nav-h: 76px;
+  --mobile-bottom-nav-h: 72px;
   --search-input-h: 56px;
   --page-x: 16px;
+  --page-bottom-pad: calc(var(--mobile-bottom-nav-h) + var(--app-safe-bottom) + 16px);
 }
 
-/* Generic page shell */
+/* Generic page shell — consistent across ALL pages */
 .app-mobile-page {
   min-height: 100dvh;
+  min-height: -webkit-fill-available;
   padding-top: max(8px, env(safe-area-inset-top, 0px));
-  padding-bottom: calc(var(--mobile-bottom-nav-h) + var(--app-safe-bottom) + 20px);
+  padding-bottom: var(--page-bottom-pad);
   overflow-x: clip;
+  width: 100%;
 }
 
 .app-mobile-content {
-  padding-bottom: calc(var(--mobile-bottom-nav-h) + var(--app-safe-bottom) + 24px);
+  padding-bottom: var(--page-bottom-pad);
+}
+
+/* Web desktop constraint — readable max-width */
+@media (min-width: 1024px) {
+  .app-mobile-page {
+    max-width: 100%;
+    padding-bottom: 24px; /* no bottom nav on desktop */
+  }
 }
 
 /* ── Hero / Header ── */
