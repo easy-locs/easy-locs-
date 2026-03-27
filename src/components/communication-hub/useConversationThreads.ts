@@ -265,8 +265,8 @@ export function useConversationThreads() {
       // ── 7. Conversation threads table (direct, listing, business, team) ──
       try {
         // Query threads owned by this org OR where current user is a participant (cross-org direct threads)
-        const { data: convThreads } = await supabase
-          .from("conversations_v2" as any)
+        const { data: convThreads } = await (supabase as any)
+          .from("conversations_v2")
           .select("*")
           .or(`org_id.eq.${orgId}${user?.id ? `,participant_ids.cs.{${user.id}}` : ""}`)
           .order("last_message_at", { ascending: false })
@@ -503,11 +503,10 @@ export function useConversationThreads() {
       // Also fetch direct messages that may be in a different org
       if (directContextIds.length > 0) {
         msgQueries.push(
-          supabase
-            .from("messages")
-            .select("tenant_id, booking_id, content, created_at, read, sender_id, context_type, context_id, thread_id, guest_session_id")
-            .eq("context_type", "direct")
-            .in("context_id", directContextIds)
+          (supabase as any)
+            .from("chat_messages_v2")
+            .select("conversation_id, body, created_at, sender_user_id, type, metadata")
+            .in("conversation_id", directContextIds)
             .order("created_at", { ascending: false })
             .limit(500)
         );
