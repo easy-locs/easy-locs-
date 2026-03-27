@@ -70,6 +70,7 @@ async function flushTelemetry() {
   try {
     const { data: sessionData } = await supabase.auth.getUser();
     const userId = sessionData?.user?.id || null;
+    if (!userId) return;
     const rows = batch.map(e => ({
       event_name: e.name,
       screen: e.screen,

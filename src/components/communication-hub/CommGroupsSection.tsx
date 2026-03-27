@@ -133,7 +133,12 @@ export default function CommGroupsSection() {
   // ── Data Loading ──
 
   const loadGroups = useCallback(async () => {
-    if (!user?.id) return;
+    if (!user?.id) {
+      setGroups([]);
+      setLoadError(null);
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     setLoadError(null);
     const { data, error } = await (supabase as any)
