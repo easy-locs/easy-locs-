@@ -316,7 +316,7 @@ export default function CommGroupsSection() {
     }
   };
 
-  const togglePin = async (_message?: GroupMessage) => {
+  const togglePin = async (_message: GroupMessage) => {
     toast.info("Pinning is disabled on Orbit groups until pin metadata is fully connected.");
   };
 
