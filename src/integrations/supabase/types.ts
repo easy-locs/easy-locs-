@@ -2257,6 +2257,75 @@ export type Database = {
           },
         ]
       }
+      browser_front_incidents: {
+        Row: {
+          auto_fix_applied: boolean
+          auto_fix_summary: string | null
+          component_key: string | null
+          created_at: string
+          first_seen_at: string
+          flow_key: string | null
+          hit_count: number
+          id: string
+          issue_type: string
+          last_seen_at: string
+          metadata_json: Json
+          page_url: string | null
+          route_key: string | null
+          session_id: string
+          severity: string
+          status: string
+          summary: string | null
+          title: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          auto_fix_applied?: boolean
+          auto_fix_summary?: string | null
+          component_key?: string | null
+          created_at?: string
+          first_seen_at?: string
+          flow_key?: string | null
+          hit_count?: number
+          id?: string
+          issue_type: string
+          last_seen_at?: string
+          metadata_json?: Json
+          page_url?: string | null
+          route_key?: string | null
+          session_id: string
+          severity?: string
+          status?: string
+          summary?: string | null
+          title: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          auto_fix_applied?: boolean
+          auto_fix_summary?: string | null
+          component_key?: string | null
+          created_at?: string
+          first_seen_at?: string
+          flow_key?: string | null
+          hit_count?: number
+          id?: string
+          issue_type?: string
+          last_seen_at?: string
+          metadata_json?: Json
+          page_url?: string | null
+          route_key?: string | null
+          session_id?: string
+          severity?: string
+          status?: string
+          summary?: string | null
+          title?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       browser_repair_actions: {
         Row: {
           created_at: string
@@ -2512,6 +2581,66 @@ export type Database = {
           last_seen_ok_at?: string | null
           page_key?: string
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      browser_telemetry_events: {
+        Row: {
+          action_key: string | null
+          component_key: string | null
+          created_at: string
+          duration_ms: number | null
+          error_stack: string | null
+          event_type: string
+          flow_key: string | null
+          id: string
+          message: string | null
+          metadata_json: Json
+          org_id: string | null
+          page_url: string | null
+          route_key: string | null
+          session_id: string
+          severity: string
+          status: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action_key?: string | null
+          component_key?: string | null
+          created_at?: string
+          duration_ms?: number | null
+          error_stack?: string | null
+          event_type: string
+          flow_key?: string | null
+          id?: string
+          message?: string | null
+          metadata_json?: Json
+          org_id?: string | null
+          page_url?: string | null
+          route_key?: string | null
+          session_id: string
+          severity?: string
+          status?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action_key?: string | null
+          component_key?: string | null
+          created_at?: string
+          duration_ms?: number | null
+          error_stack?: string | null
+          event_type?: string
+          flow_key?: string | null
+          id?: string
+          message?: string | null
+          metadata_json?: Json
+          org_id?: string | null
+          page_url?: string | null
+          route_key?: string | null
+          session_id?: string
+          severity?: string
+          status?: string | null
+          user_id?: string | null
         }
         Relationships: []
       }
