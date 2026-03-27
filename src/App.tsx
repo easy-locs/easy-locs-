@@ -28,6 +28,7 @@ import { PermissionBootstrap } from "@/components/boot/PermissionBootstrap";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import ChunkRecoveryBoundary from "@/components/system/ChunkRecoveryBoundary";
+import BrowserTelemetryProvider from "@/components/system/BrowserTelemetryProvider";
 import CountryGuard from "@/components/dashboard/CountryGuard";
 import { UnifiedPaymentProvider } from "@/payments/UnifiedPaymentSystem";
 
@@ -553,6 +554,7 @@ const AdminMenuQualityControlPage = safeLazy(() => import("./pages/admin/AdminMe
 const AdminUxLiveTestPage = safeLazy(() => import("./pages/admin/AdminUxLiveTestPage"), "AdminUxLiveTestPage");
 const HyperRadarPage = safeLazy(() => import("./pages/HyperRadarPage"), "HyperRadarPage");
 const AdminEngineCockpit = safeLazy(() => import("./pages/AdminEngineCockpit"), "AdminEngineCockpit");
+const AdminBrowserRepairPage = safeLazy(() => import("./pages/admin/AdminBrowserRepairPage"), "AdminBrowserRepairPage");
 // PJ-PO block
 // V1WalletHubPage removed — legacy redirect
 
@@ -657,6 +659,7 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <I18nProvider>
     <GlobalExperienceProvider>
+    <BrowserTelemetryProvider>
     <TooltipProvider>
       <Toaster />
       <Sonner />
@@ -1054,6 +1057,7 @@ const App = () => (
                 <Route path="/admin/pipeline" element={<ProtectedRoute><AdminPipelinePage /></ProtectedRoute>} />
                  <Route path="/admin/engines" element={<ProtectedRoute><AdminEnginesDashboardPage /></ProtectedRoute>} />
                  <Route path="/admin/engine-cockpit" element={<ProtectedRoute><AdminEngineCockpit /></ProtectedRoute>} />
+                 <Route path="/admin/browser-repair" element={<ProtectedRoute><AdminBrowserRepairPage /></ProtectedRoute>} />
                 <Route path="/admin/backend-truth" element={<ProtectedRoute><AdminBackendTruthPage /></ProtectedRoute>} />
                 <Route path="/admin/garage" element={<ProtectedRoute><AdminGaragePage /></ProtectedRoute>} />
                <Route path="/permissions" element={<PermissionCenterPage />} />
@@ -1254,6 +1258,7 @@ const App = () => (
            </CallProvider>
         </AuthProvider>
     </TooltipProvider>
+    </BrowserTelemetryProvider>
     </GlobalExperienceProvider>
     </I18nProvider>
   </QueryClientProvider>
