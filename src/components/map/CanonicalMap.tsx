@@ -678,8 +678,8 @@ export default memo(function CanonicalMap({
     <div className={`relative w-full h-full ${className}`} style={{ minHeight: 300 }}>
       <div ref={containerRef} className="absolute inset-0 rounded-2xl overflow-hidden" />
 
-      {/* Subtle atmospheric rain overlay */}
-      {weather.isRaining && (
+      {/* Subtle atmospheric rain overlay — only when truly raining */}
+      {weather.isRaining && radarEnabled && (
         <div
           className="pointer-events-none absolute inset-0 rounded-2xl transition-opacity duration-1000"
           style={{ background: "linear-gradient(180deg, rgba(50,90,160,0.03) 0%, rgba(30,60,120,0.04) 100%)" }}
