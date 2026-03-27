@@ -95,31 +95,27 @@ export class SupabaseBackendSecurityContract implements BackendSecurityContract 
   }
 
   async issueTurnConfig(): Promise<HardenedRtcConfig> {
-    const { data } = await (supabase as any)
-      .from("rtc_config")
-      .select("*")
-      .eq("active", true)
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .maybeSingle();
-
-    if (!data?.ice_servers) {
-      return {
-        iceServers: [
-          { urls: "stun:stun.l.google.com:19302" },
-          { urls: "stun:stun1.l.google.com:19302" },
-        ],
-        iceTransportPolicy: "all",
-        bundlePolicy: "max-bundle",
-        rtcpMuxPolicy: "require",
-      };
-    }
-
-    return {
-      iceServers: data.ice_servers,
-      iceTransportPolicy: data.ice_transport_policy ?? "all",
+    const FALLBACK: HardenedRtcConfig = {
+      iceServers: [
+        { urls: "stun:stun.l.google.com:19302" },
+        { urls: "stun:stun1.l.google.com:19302" },
+      ],
+      iceTransportPolicy: "all",
       bundlePolicy: "max-bundle",
       rtcpMuxPolicy: "require",
     };
+
+    try {
+      const { data, error } = await supabase.functions.invoke("get-turn-credentials");
+      if (error || !data?.iceServers) return FALLBACK;
+      return {
+        iceServers: data.iceServers,
+        iceTransportPolicy: data.iceTransportPolicy ?? "all",
+        bundlePolicy: "max-bundle",
+        rtcpMuxPolicy: "require",
+      };
+    } catch {
+      return FALLBACK;
+    }
   }
 }
