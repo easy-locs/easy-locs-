@@ -17,9 +17,9 @@ export default function OrbitAppShell({ children }: { children?: React.ReactNode
 
   useEffect(() => {
     if (!user?.id) return;
+    // One-time hydration on mount — no polling interval.
+    // Realtime signals handle incremental updates via useRealtimeHub.
     refreshModule("all", user.id, orgId || undefined);
-    const interval = setInterval(() => refreshModule("all", user.id, orgId || undefined), 60_000);
-    return () => clearInterval(interval);
   }, [user?.id, orgId]);
 
   useEffect(() => {
