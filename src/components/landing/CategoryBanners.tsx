@@ -147,8 +147,8 @@ export default function CategoryBanners() {
                         <cat.icon className="h-3.5 w-3.5" style={{ color: cat.accent }} />
                       </div>
                       <div className="min-w-0">
-                        <h3 className="text-xs sm:text-sm font-bold text-white leading-tight truncate">{cat.title}</h3>
-                        <p className="text-[8px] sm:text-[9px] text-white/50 truncate">{cat.count} {cat.countLabel}</p>
+                        <h3 className="text-xs sm:text-sm font-bold text-white leading-tight line-clamp-2">{cat.title}</h3>
+                        <p className="text-[8px] sm:text-[9px] text-white/50 line-clamp-1">{cat.count} {cat.countLabel}</p>
                       </div>
                     </div>
                     <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl text-[9px] sm:text-[10px] font-bold text-white backdrop-blur-md border border-white/10 group-hover:gap-1.5 transition-all" style={{ background: `${cat.accent}80` }}>
