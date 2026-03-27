@@ -1,6 +1,7 @@
 /**
- * RealtimeMessageToast — Global listener for incoming messages.
+ * RealtimeMessageToast — Global listener for incoming V2 messages.
  * Shows a toast when a new message arrives, regardless of current page.
+ * V3: Migrated to chat_messages_v2.
  */
 import { useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -9,7 +10,7 @@ import { toast } from "sonner";
 import { MessageSquare } from "lucide-react";
 
 export default function RealtimeMessageToast() {
-  const { user, activeRole, orgId } = useAuth();
+  const { user } = useAuth();
   const lastNotified = useRef<string>("");
 
   useEffect(() => {
@@ -19,32 +20,17 @@ export default function RealtimeMessageToast() {
       .channel("msg-toast-listener")
       .on(
         "postgres_changes",
-        { event: "INSERT", schema: "public", table: "messages" },
+        { event: "INSERT", schema: "public", table: "chat_messages_v2" },
         (payload) => {
           const msg = payload.new as any;
           // Don't notify for own messages
-          if (msg.sender_id === user.id) return;
-          // Don't notify system messages
-          if (msg.sender_id === "00000000-0000-0000-0000-000000000000") return;
+          if (msg.sender_user_id === user.id) return;
           // Deduplicate
           if (msg.id === lastNotified.current) return;
           lastNotified.current = msg.id;
 
-          // Check relevance based on role
-          let isRelevant = false;
-          if (activeRole === "landlord" && orgId && msg.org_id === orgId) {
-            isRelevant = true;
-          } else if (activeRole === "tenant" && msg.tenant_id) {
-            // Will show for any tenant message - basic check
-            isRelevant = true;
-          } else if (activeRole === "client" && user.email && msg.contact_email?.toLowerCase() === user.email.toLowerCase()) {
-            isRelevant = true;
-          }
-
-          if (!isRelevant) return;
-
-          const senderName = msg.contact_name || msg.contact_email || "Someone";
-          const preview = (msg.content || "").slice(0, 80);
+          const senderName = msg.metadata?.sender_name || "Someone";
+          const preview = (msg.body || "").slice(0, 80);
 
           toast(senderName, {
             description: preview || "New message",
@@ -53,8 +39,7 @@ export default function RealtimeMessageToast() {
             action: {
               label: "View",
               onClick: () => {
-                const base = activeRole === "landlord" ? "/dashboard/communication" : activeRole === "tenant" ? "/tenant/messages" : "/client/messages";
-                window.location.href = base;
+                window.location.href = `/orbit?conversation=${msg.conversation_id}`;
               },
             },
           });
@@ -63,7 +48,7 @@ export default function RealtimeMessageToast() {
       .subscribe();
 
     return () => { supabase.removeChannel(channel); };
-  }, [user, activeRole, orgId]);
+  }, [user]);
 
   return null;
 }
