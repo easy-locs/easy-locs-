@@ -419,6 +419,7 @@ const AdminMapEnginePage = safeLazy(() => import("./pages/admin/AdminMapEnginePa
 const AdminNotificationEnginePage = safeLazy(() => import("./pages/admin/AdminNotificationEnginePage"), "AdminNotificationEnginePage");
 const OwnerCockpitPage = safeLazy(() => import("./pages/admin/OwnerCockpitPage"), "OwnerCockpitPage");
 const SuperMapPage = safeLazy(() => import("./pages/SuperMapPage"), "SuperMapPage");
+const CanonicalMapTestPage = safeLazy(() => import("./pages/CanonicalMapTestPage"), "CanonicalMapTestPage");
 const OnboardingQualityDashboardPage = safeLazy(() => import("./pages/admin/OnboardingQualityDashboardPage"), "OnboardingQualityDashboardPage");
 const UnifiedGlobalEnginePage = safeLazy(() => import("./pages/admin/UnifiedGlobalEnginePage"), "UnifiedGlobalEnginePage");
 const AIDecisionsDashboardPage = safeLazy(() => import("./pages/admin/AIDecisionsDashboardPage"), "AIDecisionsDashboardPage");
@@ -815,6 +816,7 @@ const App = () => (
               {/* /travel/hotels already redirects to /travel/stays at line 895 */}
 
               <Route path="/super-map" element={<SuperMapPage />} />
+              <Route path="/map-lab" element={<CanonicalMapTestPage />} />
               <Route path="/map" element={<Navigate to="/radar" replace />} />
               <Route path="/radar" element={<HyperRadarPage />} />
               {/* /shops already routed to RetailHub above — ShopsPage is legacy */}
