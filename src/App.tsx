@@ -258,7 +258,7 @@ const AdminDispatchBoardPage = safeLazy(() => import("./pages/AdminDispatchBoard
 const AdminSLAPage = safeLazy(() => import("./pages/AdminSLAPage"), "AdminSLAPage");
 const RefundRequestPage = safeLazy(() => import("./pages/RefundRequestPage"), "RefundRequestPage");
 // OrbitLiveCallPage removed — legacy, calls handled by CallProvider
-const OrbitContactsPage = safeLazy(() => import("./components/orbit/OrbitContactsDirectory"), "OrbitContactsPage");
+const OrbitContactsPage = safeLazy(() => import("./pages/OrbitContactsPageV2"), "OrbitContactsPage");
 const TeamCommandCenterPage = safeLazy(() => import("./pages/TeamCommandCenterPage"), "TeamCommandCenterPage");
 const AdminTrustGraphPage = safeLazy(() => import("./pages/AdminTrustGraphPage"), "AdminTrustGraphPage");
 const ExecutiveKPIBoardPage = safeLazy(() => import("./pages/ExecutiveKPIBoardPage"), "ExecutiveKPIBoardPage");
